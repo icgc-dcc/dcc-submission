@@ -4,7 +4,7 @@ package org.icgc.dcc.http.jersey;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
 import org.glassfish.grizzly.http.server.HttpHandler;
-import org.glassfish.jersey.grizzly2.GrizzlyHttpContainerProvider;
+import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpContainerProvider;
 import org.glassfish.jersey.server.ApplicationHandler;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.icgc.dcc.http.HttpHandlerProvider;
