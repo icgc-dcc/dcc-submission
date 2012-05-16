@@ -44,9 +44,64 @@
       <version>${jersey-version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>com.google.code.morphia</groupId>
+      <artifactId>morphia</artifactId>
+      <version>0.99.1-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>com.mysema.querydsl</groupId>
+      <artifactId>querydsl-mongodb</artifactId>
+      <version>${querydsl.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+      <version>1.6.1</version>
+    </dependency>
   </dependencies>
+  <repositories>
+    <repository>
+      <id>morphia</id>
+      <url>https://morphia.googlecode.com/svn/mavenrepo</url>
+    </repository>
+  </repositories>
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>add-source</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>${project.build.directory}/generated-sources/java/</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>com.mysema.maven</groupId>
+        <artifactId>maven-apt-plugin</artifactId>
+        <version>1.0.3</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>process</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/generated-sources/java</outputDirectory>
+              <processor>com.mysema.query.mongodb.morphia.MorphiaAnnotationProcessor</processor>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
@@ -63,8 +118,37 @@
         </configuration>
       </plugin>
     </plugins>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.eclipse.m2e</groupId>
+          <artifactId>lifecycle-mapping</artifactId>
+          <version>1.0.0</version>
+          <configuration>
+            <lifecycleMappingMetadata>
+              <pluginExecutions>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>com.mysema.maven</groupId>
+                    <artifactId>maven-apt-plugin</artifactId>
+                    <versionRange>[1.0.3,)</versionRange>
+                    <goals>
+                      <goal>process</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <execute />
+                  </action>
+                </pluginExecution>
+              </pluginExecutions>
+            </lifecycleMappingMetadata>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
   </build>
   <properties>
+    <querydsl.version>2.5.0</querydsl.version>
     <jersey-version>2.0-m04</jersey-version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
