@@ -11,7 +11,10 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.util.Set;
 
-public class DccHttpServer extends AbstractService {
+/**
+ * A {@code Service} for manging the {@code HttpServer} lifecycle.
+ */
+public class HttpServerService extends AbstractService {
 
   private final Config config;
 
@@ -20,7 +23,7 @@ public class DccHttpServer extends AbstractService {
   private final Set<HttpHandlerProvider> handlerProviders;
 
   @Inject
-  public DccHttpServer(Config config, HttpServer server, Set<HttpHandlerProvider> handlerProviders) {
+  public HttpServerService(Config config, HttpServer server, Set<HttpHandlerProvider> handlerProviders) {
     this.config = config;
     this.server = server;
     this.handlerProviders = handlerProviders;
