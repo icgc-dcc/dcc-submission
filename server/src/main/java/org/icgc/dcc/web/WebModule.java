@@ -1,8 +1,10 @@
 package org.icgc.dcc.web;
 
+import org.glassfish.jersey.media.json.JsonJacksonModule;
+import org.glassfish.jersey.server.ResourceConfig;
+
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
-import org.glassfish.jersey.server.ResourceConfig;
 
 public class WebModule extends AbstractModule {
 
@@ -12,14 +14,16 @@ public class WebModule extends AbstractModule {
   }
 
   /**
-   * Used to register resources in {@code Jersey}. This is required because {@code Jersey} cannot use Guice to discover resources.
+   * Used to register resources in {@code Jersey}. This is required because {@code Jersey} cannot use Guice to discover
+   * resources.
    */
   public static class RootResources {
     @Inject
     public RootResources(ResourceConfig config) {
+      config.addModules(new JsonJacksonModule());
       config.addClasses(MyResource.class);
+      config.addClasses(ProjectResource.class);
     }
   }
-
 
 }

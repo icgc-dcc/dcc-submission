@@ -1,4 +1,4 @@
-package org.icgc.dcc.web.inject;
+package org.icgc.dcc.http.jersey;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
