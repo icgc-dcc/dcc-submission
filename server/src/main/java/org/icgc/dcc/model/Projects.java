@@ -9,6 +9,7 @@ import com.mysema.query.mongodb.MongodbQuery;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
 import com.mysema.query.types.Predicate;
 
+// TODO: make an abstract base class
 public class Projects {
 
   private final Morphia morphia;
@@ -28,8 +29,12 @@ public class Projects {
     return datastore;
   }
 
+  public MongodbQuery<Project> query() {
+    return new MorphiaQuery<Project>(morphia, datastore, QProject.project);
+  }
+
   public MongodbQuery<Project> where(Predicate predicate) {
-    return new MorphiaQuery<Project>(morphia, datastore, QProject.project).where(predicate);
+    return query().where(predicate);
   }
 
 }

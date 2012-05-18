@@ -1,5 +1,7 @@
 package org.icgc.dcc.web;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -12,8 +14,8 @@ import org.icgc.dcc.model.Project;
 import org.icgc.dcc.model.Projects;
 import org.icgc.dcc.model.QProject;
 
-import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
+import com.mongodb.MongoException.DuplicateKey;
 
 @Path("projects")
 public class ProjectResource {
@@ -23,9 +25,13 @@ public class ProjectResource {
 
   @POST
   public Response addProject(Project project) {
-    Preconditions.checkArgument(project != null);
-    projects.datastore().save(project);
-    return Response.created(UriBuilder.fromResource(ProjectResource.class).path(project.accessionId).build()).build();
+    checkArgument(project != null);
+    try {
+      projects.datastore().save(project);
+      return Response.created(UriBuilder.fromResource(ProjectResource.class).path(project.accessionId).build()).build();
+    } catch(DuplicateKey e) {
+      return Response.status(Status.BAD_REQUEST).build();
+    }
   }
 
   @GET

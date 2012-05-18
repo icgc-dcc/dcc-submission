@@ -1,18 +1,22 @@
 package org.icgc.dcc.http;
 
-import com.google.common.util.concurrent.AbstractService;
-import com.typesafe.config.Config;
+import static com.google.common.base.Preconditions.checkArgument;
+
+import java.io.IOException;
+import java.util.Set;
+
+import javax.inject.Inject;
+
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.http.server.NetworkListener;
 import org.glassfish.grizzly.http.server.ServerConfiguration;
 import org.glassfish.jersey.internal.ProcessingException;
 
-import javax.inject.Inject;
-import java.io.IOException;
-import java.util.Set;
+import com.google.common.util.concurrent.AbstractService;
+import com.typesafe.config.Config;
 
 /**
- * A {@code Service} for manging the {@code HttpServer} lifecycle.
+ * A {@code Service} for managing the {@code HttpServer} lifecycle.
  */
 public class HttpServerService extends AbstractService {
 
@@ -24,6 +28,9 @@ public class HttpServerService extends AbstractService {
 
   @Inject
   public HttpServerService(Config config, HttpServer server, Set<HttpHandlerProvider> handlerProviders) {
+    checkArgument(config != null);
+    checkArgument(server != null);
+    checkArgument(handlerProviders != null);
     this.config = config;
     this.server = server;
     this.handlerProviders = handlerProviders;
@@ -36,16 +43,18 @@ public class HttpServerService extends AbstractService {
     server.addListener(new NetworkListener("http", host, port));
 
     final ServerConfiguration serverConfig = server.getServerConfiguration();
-    for (HttpHandlerProvider provider : handlerProviders) {
+    for(HttpHandlerProvider provider : handlerProviders) {
       serverConfig.addHttpHandler(provider.get(), provider.path());
     }
 
-    //serverConfig.addHttpHandler(new StaticHttpHandler(ImmutableSet.copyOf(config.getStringList("http.resources"))), "/");
+    // TODO: add a Handler for static files. This is tied to the way we package and deploy the app.
+    // serverConfig.addHttpHandler(new
+    // StaticHttpHandler(ImmutableSet.copyOf(config.getStringList("http.resources"))),"/");
 
     try {
       server.start();
       notifyStarted();
-    } catch (IOException ex) {
+    } catch(IOException ex) {
       throw new ProcessingException("IOException thrown when trying to start grizzly server", ex);
     }
   }

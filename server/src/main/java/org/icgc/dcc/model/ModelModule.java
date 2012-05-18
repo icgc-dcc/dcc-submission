@@ -7,6 +7,8 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import com.mongodb.Mongo;
+import com.mongodb.MongoURI;
+import com.typesafe.config.Config;
 
 public class ModelModule extends AbstractModule {
 
@@ -14,11 +16,13 @@ public class ModelModule extends AbstractModule {
   protected void configure() {
     bind(Mongo.class).toProvider(new Provider<Mongo>() {
 
+      @Inject
+      private Config config;
+
       @Override
       public Mongo get() {
         try {
-          // TODO: read connection parameters from config
-          return new Mongo("localhost");
+          return new MongoURI(config.getString("mongo.uri")).connect();
         } catch(Exception e) {
           throw new RuntimeException(e);
         }
@@ -28,6 +32,9 @@ public class ModelModule extends AbstractModule {
     bind(Datastore.class).toProvider(new Provider<Datastore>() {
 
       @Inject
+      Config config;
+
+      @Inject
       Mongo mongo;
 
       @Inject
@@ -35,8 +42,10 @@ public class ModelModule extends AbstractModule {
 
       @Override
       public Datastore get() {
-        // TODO: get database name from config
-        return morphia.createDatastore(mongo, "icgc");
+        MongoURI uri = new MongoURI(config.getString("mongo.uri"));
+        Datastore datastore = morphia.createDatastore(mongo, uri.getDatabase());
+        datastore.ensureIndexes();
+        return datastore;
       }
     }).in(Singleton.class);
 
