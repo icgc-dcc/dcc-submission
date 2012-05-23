@@ -11,8 +11,8 @@ public class JerseyModule extends AbstractModule {
   @Override
   protected void configure() {
     bind(ResourceConfig.class).toInstance(new ResourceConfig());
-    Multibinder<HttpHandlerProvider> uriBinder = Multibinder.newSetBinder(binder(), HttpHandlerProvider.class);
-    uriBinder.addBinding().to(JerseyHandler.class);
+    Multibinder<HttpHandlerProvider> handlerBinder = Multibinder.newSetBinder(binder(), HttpHandlerProvider.class);
+    handlerBinder.addBinding().to(JerseyHandler.class);
     install(new InjectModule());
   }
 }

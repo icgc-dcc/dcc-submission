@@ -2,6 +2,8 @@ package org.icgc.dcc.model;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
+import com.google.code.morphia.logging.MorphiaLoggerFactory;
+import com.google.code.morphia.logging.slf4j.SLF4JLogrImplFactory;
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
@@ -14,6 +16,9 @@ public class ModelModule extends AbstractModule {
 
   @Override
   protected void configure() {
+    // Use SLF4J with Morphia
+    MorphiaLoggerFactory.registerLogger(SLF4JLogrImplFactory.class);
+
     bind(Mongo.class).toProvider(new Provider<Mongo>() {
 
       @Inject

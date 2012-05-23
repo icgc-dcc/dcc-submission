@@ -10,7 +10,8 @@ import javax.inject.Inject;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.http.server.NetworkListener;
 import org.glassfish.grizzly.http.server.ServerConfiguration;
-import org.glassfish.jersey.internal.ProcessingException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.util.concurrent.AbstractService;
 import com.typesafe.config.Config;
@@ -19,6 +20,8 @@ import com.typesafe.config.Config;
  * A {@code Service} for managing the {@code HttpServer} lifecycle.
  */
 public class HttpServerService extends AbstractService {
+
+  private static final Logger log = LoggerFactory.getLogger(HttpServerService.class);
 
   private final Config config;
 
@@ -55,7 +58,8 @@ public class HttpServerService extends AbstractService {
       server.start();
       notifyStarted();
     } catch(IOException ex) {
-      throw new ProcessingException("IOException thrown when trying to start grizzly server", ex);
+      log.error("Failed to start HTTP server on {}:{} : {}", new Object[] { host, port, ex.getMessage() });
+      notifyFailed(ex);
     }
   }
 
