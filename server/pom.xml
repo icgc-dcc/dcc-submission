@@ -109,6 +109,14 @@
         <version>2.7.1</version>
         <configuration>
           <targetJdk>1.6</targetJdk>
+          <rulesets>
+            <ruleset>/rulesets/basic.xml</ruleset>
+            <ruleset>/rulesets/unusedcode.xml</ruleset>
+            <ruleset>/rulesets/codesize.xml</ruleset>
+          </rulesets>
+          <excludeRoots>
+            <excludeRoot>${project.build.directory}/generated-sources/java/</excludeRoot>
+          </excludeRoots>
         </configuration>
       </plugin>
       <plugin>
