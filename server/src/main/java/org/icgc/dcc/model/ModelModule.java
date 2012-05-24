@@ -1,5 +1,7 @@
 package org.icgc.dcc.model;
 
+import org.icgc.dcc.model.dictionary.Dictionary;
+
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
 import com.google.code.morphia.logging.MorphiaLoggerFactory;
@@ -54,7 +56,7 @@ public class ModelModule extends AbstractModule {
       }
     }).in(Singleton.class);
 
-    bindModelClasses(Project.class);
+    bindModelClasses(Project.class, Dictionary.class);
     bind(Projects.class);
   }
 

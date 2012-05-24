@@ -1,0 +1,33 @@
+{
+  "version": "v6a",
+  "files" :[
+    {
+     "name":"ssm_m",
+     "label": "Simple Somatic Mutation - Metadata",
+     "pattern": "ssm_m.*",
+     "role": "SUBMISSION",
+     "fields":[
+       {
+         "name":"donor_id",
+         "label": "Donor ID",
+         "valueType": "TEXT"
+       }
+     ]
+    }
+    ,
+    {
+     "name":"ssm_p",
+     "label": "Simple Somatic Mutation - Primary",
+     "pattern": "ssm_p.*",
+     "role": "SUBMISSION",
+     "fields":[
+       {
+         "name":"donor_id",
+         "label": "Donor ID",
+         "valueType": "TEXT"
+       }
+     ]
+    }
+    
+  ]
+}

@@ -22,7 +22,7 @@ public class WebModule extends AbstractModule {
     public RootResources(ResourceConfig config) {
       config.addModules(new JsonJacksonModule());
       config.addClasses(MyResource.class);
-      config.addClasses(ProjectResource.class);
+      config.addClasses(ProjectResource.class, DictionaryResource.class);
     }
   }
 
