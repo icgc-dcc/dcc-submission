@@ -10,7 +10,10 @@
        {
          "name":"donor_id",
          "label": "Donor ID",
-         "valueType": "TEXT"
+         "valueType": "TEXT",
+         "restrictions" : [
+           { "type" : "foreign-key", "config": {"schema":"donor", "field":"donor_id"} }
+         ]
        }
      ]
     }
@@ -24,7 +27,10 @@
        {
          "name":"donor_id",
          "label": "Donor ID",
-         "valueType": "TEXT"
+         "valueType": "TEXT",
+         "restrictions" : [
+           { "type" : "foreign-key", "config": {"schema":"donor", "field":"donor_id"} }
+         ]
        }
      ]
     }
