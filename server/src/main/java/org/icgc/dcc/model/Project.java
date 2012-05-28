@@ -1,21 +1,25 @@
 package org.icgc.dcc.model;
 
-import org.codehaus.jackson.annotate.JsonIgnore;
+import java.util.List;
 
-import com.google.code.morphia.annotations.Entity;
-import com.google.code.morphia.annotations.Id;
+import com.google.code.morphia.annotations.Embedded;
 import com.google.code.morphia.annotations.Indexed;
 
-@Entity
-public class Project {
-
-  @Id
-  @JsonIgnore
-  public String id;
+@Embedded
+public class Project extends BaseEntity implements HasName {
 
   @Indexed(unique = true)
   public String accessionId;
 
   public String name;
+
+  protected List<String> users;
+
+  protected List<String> groups;
+
+  @Override
+  public String getName() {
+    return name;
+  }
 
 }
