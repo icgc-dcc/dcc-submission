@@ -1,0 +1,6 @@
+<FindBugsFilter>
+  <!-- Exclude generated code -->
+  <Match>
+    <Class name="~.*\.model\.Q.*" />
+  </Match>
+</FindBugsFilter>
