@@ -7,6 +7,7 @@ import com.google.code.morphia.Morphia;
 import com.google.inject.Inject;
 import com.mysema.query.mongodb.MongodbQuery;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
+import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Predicate;
 
 // TODO: make an abstract base class
@@ -30,7 +31,7 @@ public class Projects {
   }
 
   public MongodbQuery<Project> query() {
-    return new MorphiaQuery<Project>(morphia, datastore, QProject.project);
+    return new MorphiaQuery<Project>(morphia, datastore, (EntityPath<Project>) QProject.project);
   }
 
   public MongodbQuery<Project> where(Predicate predicate) {

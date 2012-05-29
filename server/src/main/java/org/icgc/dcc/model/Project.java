@@ -6,12 +6,12 @@ import com.google.code.morphia.annotations.Embedded;
 import com.google.code.morphia.annotations.Indexed;
 
 @Embedded
-public class Project extends BaseEntity implements HasName {
+public class Project implements HasName {
 
   @Indexed(unique = true)
-  public String accessionId;
+  protected String accessionId;
 
-  public String name;
+  protected String name;
 
   protected List<String> users;
 
@@ -20,6 +20,26 @@ public class Project extends BaseEntity implements HasName {
   @Override
   public String getName() {
     return name;
+  }
+
+  public String getAccessionId() {
+    return accessionId;
+  }
+
+  public void setAccessionId(String accessionId) {
+    this.accessionId = accessionId;
+  }
+
+  public List<String> getUsers() {
+    return users;
+  }
+
+  public List<String> getGroups() {
+    return groups;
+  }
+
+  public void setName(String name) {
+    this.name = name;
   }
 
 }

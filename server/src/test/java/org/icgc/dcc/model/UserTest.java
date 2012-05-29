@@ -13,7 +13,7 @@ import com.google.code.morphia.Morphia;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
 
-public class BaseEntityTest {
+public class UserTest {
 
   @Test
   public void test() {
@@ -21,21 +21,22 @@ public class BaseEntityTest {
       // use local host as test MongoDB for now
       Mongo mongo = new Mongo("localhost");
       Morphia morphia = new Morphia();
-      morphia.map(BaseEntity.class);
+      morphia.map(User.class);
       Datastore ds = morphia.createDatastore(mongo, "testDB");
 
       // save base Entity to mongoDB
-      BaseEntity baseEntity = new BaseEntity();
-      ds.save(baseEntity);
+      User user = new User();
+      user.setUsername("user");
+      user.getRoles().add("admin");
+      ds.save(user);
 
       // load base entity from mongoDB
-      ObjectId entityID = baseEntity.getId();
-      BaseEntity entity = ds.get(BaseEntity.class, entityID);
+      ObjectId entityID = user.getId();
+      User userDB = ds.get(User.class, entityID);
 
-      // check if baseEntity is saved to mongoDB
-      assertEquals(baseEntity.getId(), entity.getId());
-      assertEquals(baseEntity.getCreated(), entity.getCreated());
-      assertEquals(baseEntity.getLastUpdate(), entity.getLastUpdate());
+      assertEquals(user.getId(), userDB.getId());
+      assertEquals(user.getName(), userDB.getName());
+      assertEquals(user.getRoles().size(), userDB.getRoles().size());
 
     } catch(UnknownHostException e) {
       e.printStackTrace();
@@ -50,7 +51,6 @@ public class BaseEntityTest {
 
       fail(e.getMessage());
     }
-
   }
 
 }
