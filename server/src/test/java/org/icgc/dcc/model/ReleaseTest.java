@@ -26,12 +26,17 @@ public class ReleaseTest {
 
       // save base Entity to mongoDB
       Release release = new Release();
+      release.setName("release");
+      release.setState(ReleaseState.OPENED);
 
       Project project = new Project();
+      project.setName("project");
+      project.setAccessionId("1234");
 
       Submission submission = new Submission();
-
+      submission.setState(SubmissionState.VALID);
       submission.setProject(project);
+
       release.getSubmissions().add(submission);
 
       ds.save(release);
@@ -40,7 +45,18 @@ public class ReleaseTest {
       ObjectId entityID = release.getId();
       Release releaseDB = ds.get(Release.class, entityID);
 
-      assertEquals(release.getId(), releaseDB.getId());
+      // check release object
+      assertEquals(release.getSubmissions().size(), releaseDB.getSubmissions().size());
+      assertEquals(release.getName(), releaseDB.getName());
+      assertEquals(release.getState(), releaseDB.getState());
+
+      Submission submissionDB = releaseDB.getSubmissions().get(0);
+      assertEquals(submission.getState(), submissionDB.getState());
+
+      Project projectDB = submissionDB.getProject();
+      assertEquals(project.getName(), projectDB.getName());
+      assertEquals(project.getAccessionId(), projectDB.getAccessionId());
+
     } catch(UnknownHostException e) {
       e.printStackTrace();
 
