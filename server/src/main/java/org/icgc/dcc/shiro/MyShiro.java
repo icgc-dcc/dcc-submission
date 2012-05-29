@@ -34,7 +34,7 @@ public class MyShiro {
   public void doIt() {
 
     // test can get some params
-    log.info(config.getString("shiro.realm"));
+    log.info(this.config.getString("shiro.realm"));
 
     // Now that a simple Shiro environment is set up, let's see what you can do:
 
