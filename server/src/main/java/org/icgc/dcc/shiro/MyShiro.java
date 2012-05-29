@@ -27,15 +27,14 @@ public class MyShiro {
   @Inject
   private Config config;
 
+  @SuppressWarnings("unused")
   @Inject
-  private SecurityManager securityManager;
+  private SecurityManager securityManager; // must inject it even if not used (not sure why)
 
   public void doIt() {
 
     // test can get some params
-    log.info(config.getString("shiro.users.brett.passwd"));
-
-    SecurityUtils.setSecurityManager(this.securityManager);
+    log.info(config.getString("shiro.realm"));
 
     // Now that a simple Shiro environment is set up, let's see what you can do:
 
@@ -68,32 +67,10 @@ public class MyShiro {
       catch(AuthenticationException ae) {
         // unexpected condition? error?
       }
-    }
 
-    // say who they are:
-    // print their identifying principal (in this case, a username):
-    log.info("User [" + currentUser.getPrincipal() + "] logged in successfully.");
-
-    // test a role:
-    if(currentUser.hasRole("schwartz")) {
-      log.info("May the Schwartz be with you!");
-    } else {
-      log.info("Hello, mere mortal.");
-    }
-
-    // test a typed permission (not instance-level)
-    if(currentUser.isPermitted("lightsaber:weild")) {
-      log.info("You may use a lightsaber ring.  Use it wisely.");
-    } else {
-      log.info("Sorry, lightsaber rings are for schwartz masters only.");
-    }
-
-    // a (very powerful) Instance Level permission:
-    if(currentUser.isPermitted("winnebago:drive:eagle5")) {
-      log.info("You are permitted to 'drive' the winnebago with license plate (id) 'eagle5'.  "
-          + "Here are the keys - have fun!");
-    } else {
-      log.info("Sorry, you aren't allowed to drive the 'eagle5' winnebago!");
+      // say who they are:
+      // print their identifying principal (in this case, a username):
+      log.info("User [" + currentUser.getPrincipal() + "] logged in successfully.");
     }
 
     // all done - log out!

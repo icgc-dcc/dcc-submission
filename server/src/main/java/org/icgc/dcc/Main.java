@@ -9,6 +9,8 @@ import org.icgc.dcc.http.HttpModule;
 import org.icgc.dcc.http.jersey.InjectModule;
 import org.icgc.dcc.http.jersey.JerseyModule;
 import org.icgc.dcc.model.ModelModule;
+import org.icgc.dcc.shiro.MyShiro;
+import org.icgc.dcc.shiro.ShiroModule;
 import org.icgc.dcc.web.WebModule;
 
 import com.google.inject.Guice;
@@ -23,9 +25,14 @@ public class Main {
         new InjectModule(),//
         new JerseyModule(),//
         new WebModule(),//
-        new ModelModule());
+        new ModelModule(),//
+        new ShiroModule());
+
+    injector.getInstance(MyShiro.class).doIt();// for testing purposes (TODO: remove)
+
     injector.getInstance(DccRuntime.class).start();
     System.in.read();
     injector.getInstance(DccRuntime.class).stop();
+
   }
 }
