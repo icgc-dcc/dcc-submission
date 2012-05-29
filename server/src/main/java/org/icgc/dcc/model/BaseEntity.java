@@ -1,5 +1,6 @@
 package org.icgc.dcc.model;
 
+import org.bson.types.ObjectId;
 import org.codehaus.jackson.annotate.JsonIgnore;
 
 import com.google.code.morphia.annotations.Entity;
@@ -10,10 +11,10 @@ public class BaseEntity extends Timestamped implements HasId {
 
   @Id
   @JsonIgnore
-  protected String id;
+  protected ObjectId id;
 
   @Override
-  public String getId() {
+  public ObjectId getId() {
     return id;
   }
 }

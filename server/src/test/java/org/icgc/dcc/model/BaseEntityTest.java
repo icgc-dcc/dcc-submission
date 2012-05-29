@@ -5,6 +5,7 @@ import static org.junit.Assert.fail;
 
 import java.net.UnknownHostException;
 
+import org.bson.types.ObjectId;
 import org.junit.Test;
 
 import com.google.code.morphia.Datastore;
@@ -25,11 +26,10 @@ public class BaseEntityTest {
 
       // save base Entity to mongoDB
       BaseEntity baseEntity = new BaseEntity();
-      String baseID = baseEntity.getId();
       ds.save(baseEntity);
 
       // load base entity from mongoDB
-      String entityID = baseEntity.getId();
+      ObjectId entityID = baseEntity.getId();
       BaseEntity entity = ds.get(BaseEntity.class, entityID);
 
       assertEquals(baseEntity.getId(), entity.getId());
