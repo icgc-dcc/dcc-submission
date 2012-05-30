@@ -28,7 +28,8 @@ public class ProjectResource {
     checkArgument(project != null);
     try {
       projects.datastore().save(project);
-      return Response.created(UriBuilder.fromResource(ProjectResource.class).path(project.accessionId).build()).build();
+      return Response.created(UriBuilder.fromResource(ProjectResource.class).path(project.getAccessionId()).build())
+          .build();
     } catch(DuplicateKey e) {
       return Response.status(Status.BAD_REQUEST).build();
     }

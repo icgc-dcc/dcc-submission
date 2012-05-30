@@ -1,5 +1,6 @@
 package org.icgc.dcc.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.google.code.morphia.annotations.Entity;
@@ -11,10 +12,26 @@ public class Release extends BaseEntity implements HasName {
 
   protected ReleaseState state;
 
-  protected List<Submission> submissions;
+  protected List<Submission> submissions = new ArrayList<Submission>();
 
   @Override
   public String getName() {
     return name;
+  }
+
+  public ReleaseState getState() {
+    return state;
+  }
+
+  public void setState(ReleaseState state) {
+    this.state = state;
+  }
+
+  public List<Submission> getSubmissions() {
+    return submissions;
+  }
+
+  public void setName(String name) {
+    this.name = name;
   }
 }
