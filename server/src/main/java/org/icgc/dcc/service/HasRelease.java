@@ -12,7 +12,7 @@ public class HasRelease {
   }
 
   public ReleaseFilesystem getReleaseFilesystem() {
-    // TODO implementation have to wait till ReleaseFilesystem is finished
+    // TODO implementation have to wait till HDFS Filesystem is finished
     return null;
   }
 

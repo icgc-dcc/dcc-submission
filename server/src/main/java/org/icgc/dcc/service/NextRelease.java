@@ -14,6 +14,7 @@ public class NextRelease extends HasRelease {
   }
 
   public boolean validate(Submission submission) {
+    // TODO detailed implementation will be filled in after validation is done
     return false;
   }
 }
