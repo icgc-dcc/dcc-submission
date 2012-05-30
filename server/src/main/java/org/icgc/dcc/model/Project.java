@@ -17,6 +17,21 @@ public class Project implements HasName {
 
   protected List<String> groups;
 
+  public Project() {
+    super();
+  }
+
+  public Project(String name) {
+    super();
+    this.setName(name);
+  }
+
+  public Project(String name, String accessionID) {
+    super();
+    this.setName(name);
+    this.setAccessionId(accessionID);
+  }
+
   @Override
   public String getName() {
     return name;

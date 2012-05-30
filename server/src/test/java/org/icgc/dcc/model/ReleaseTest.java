@@ -6,7 +6,7 @@ import static org.junit.Assert.fail;
 import java.net.UnknownHostException;
 
 import org.bson.types.ObjectId;
-import org.junit.Test;
+import org.testng.annotations.Test;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
@@ -15,7 +15,7 @@ import com.mongodb.MongoException;
 
 public class ReleaseTest {
 
-  @Test
+  @Test(groups = { "mongodb" })
   public void test() {
     try {
       // use local host as test MongoDB for now
@@ -25,13 +25,9 @@ public class ReleaseTest {
       Datastore ds = morphia.createDatastore(mongo, "testDB");
 
       // save base Entity to mongoDB
-      Release release = new Release();
-      release.setName("release");
-      release.setState(ReleaseState.OPENED);
+      Release release = new Release("release");
 
-      Project project = new Project();
-      project.setName("project");
-      project.setAccessionId("1234");
+      Project project = new Project("project", "1234");
 
       Submission submission = new Submission();
       submission.setState(SubmissionState.VALID);
