@@ -22,8 +22,11 @@ public class NextRelease extends HasRelease {
     submission.setState(SubmissionState.SIGNED_OFF);
   }
 
-  public CompletedRelease release(Release nextRelease) throws IllegalReleaseStateException {
+  public NextRelease release(Release nextRelease) throws IllegalReleaseStateException {
+    // set old release to be completed
     nextRelease.setState(ReleaseState.COMPLETED);
-    return new CompletedRelease(nextRelease);
+    // create new next release and return
+    Release newNextRelease = new Release();
+    return new NextRelease(newNextRelease);
   }
 }

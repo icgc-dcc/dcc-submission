@@ -36,8 +36,11 @@ public class ReleaseService {
   }
 
   public NextRelease getNextRelease() throws IllegalReleaseStateException {
-    Release nextRelease = new Release();
-    return new NextRelease(nextRelease);
+    MongodbQuery<Release> query = this.where(QRelease.release.state.eq(ReleaseState.OPENED));
+    // at any time there should only be one release open which is the next release
+    checkArgument(query.list().size() == 1);
+
+    return new NextRelease(query.list().get(0));
   }
 
   public MongodbQuery<Release> query() {
