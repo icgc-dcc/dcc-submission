@@ -3,7 +3,7 @@ package org.icgc.dcc.service;
 import org.icgc.dcc.model.Release;
 import org.icgc.dcc.model.ReleaseState;
 
-public class IllegalReleaseStateException extends Exception {
+public class IllegalReleaseStateException extends RuntimeException {
 
   private final Release release;
 
