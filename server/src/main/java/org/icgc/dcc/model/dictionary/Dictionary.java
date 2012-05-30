@@ -15,8 +15,6 @@ public class Dictionary extends BaseEntity {
   @Indexed(unique = true)
   public String version;
 
-  public Date lastUpdate;
-
   public List<FileSchema> files;
 
   @PrePersist
