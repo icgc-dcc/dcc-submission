@@ -56,7 +56,7 @@ public class ModelModule extends AbstractModule {
       }
     }).in(Singleton.class);
 
-    bindModelClasses(Project.class, Dictionary.class);
+    bindModelClasses(Project.class, Release.class, Submission.class, User.class, Dictionary.class);
     bind(Projects.class);
   }
 

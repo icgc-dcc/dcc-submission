@@ -1,6 +1,8 @@
 package org.icgc.dcc.model;
 
+import org.bson.types.ObjectId;
+
 public interface HasId {
 
-  public String getId();
+  public ObjectId getId();
 }
