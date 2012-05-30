@@ -4,17 +4,11 @@ import static org.junit.Assert.assertEquals;
 
 import org.icgc.dcc.model.Release;
 import org.icgc.dcc.model.ReleaseState;
-import org.junit.Test;
+import org.testng.annotations.Test;
 
 public class CompletedReleaseTest {
 
-  @Test(expected = IllegalReleaseStateException.class)
-  public void testException() {
-    Release release = new Release();
-    new CompletedRelease(release);
-  }
-
-  @Test
+  @Test(groups = { "unit" })
   public void testState() {
     Release release = new Release();
     release.setState(ReleaseState.COMPLETED);

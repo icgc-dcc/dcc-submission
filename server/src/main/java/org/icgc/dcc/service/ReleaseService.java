@@ -51,7 +51,11 @@ public class ReleaseService {
     return query().where(predicate);
   }
 
-  public Iterable<CompletedRelease> getCompletedReleases() throws IllegalReleaseStateException {
+  public Datastore getDatastore() {
+    return this.datastore;
+  }
+
+  public List<CompletedRelease> getCompletedReleases() throws IllegalReleaseStateException {
     List<CompletedRelease> completedReleases = new ArrayList<CompletedRelease>();
 
     MongodbQuery<Release> query = this.where(QRelease.release.state.eq(ReleaseState.COMPLETED));
@@ -63,7 +67,7 @@ public class ReleaseService {
     return completedReleases;
   }
 
-  public Iterable<HasRelease> list() {
+  public List<HasRelease> list() {
     List<HasRelease> list = new ArrayList<HasRelease>();
 
     MongodbQuery<Release> query = this.query();

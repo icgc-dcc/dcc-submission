@@ -4,11 +4,11 @@ import static org.junit.Assert.assertEquals;
 
 import org.icgc.dcc.model.Release;
 import org.icgc.dcc.model.ReleaseState;
-import org.junit.Test;
+import org.testng.annotations.Test;
 
 public class HasReleaseTest {
 
-  @Test
+  @Test(groups = { "unit" })
   public void test() {
     Release release = new Release();
     HasRelease hasRelease = new HasRelease(release);

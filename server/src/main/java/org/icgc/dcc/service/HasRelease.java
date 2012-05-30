@@ -2,7 +2,6 @@ package org.icgc.dcc.service;
 
 import org.icgc.dcc.filesystem.ReleaseFilesystem;
 import org.icgc.dcc.model.Release;
-import org.icgc.dcc.model.ReleaseState;
 
 public class HasRelease {
 
@@ -10,8 +9,6 @@ public class HasRelease {
 
   public HasRelease(Release release) {
     this.release = release;
-    // set release state to be opened when new a release
-    this.release.setState(ReleaseState.OPENED);
   }
 
   public ReleaseFilesystem getReleaseFilesystem() {

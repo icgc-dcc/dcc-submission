@@ -25,13 +25,9 @@ public class ReleaseTest {
       Datastore ds = morphia.createDatastore(mongo, "testDB");
 
       // save base Entity to mongoDB
-      Release release = new Release();
-      release.setName("release");
-      release.setState(ReleaseState.OPENED);
+      Release release = new Release("release");
 
-      Project project = new Project();
-      project.setName("project");
-      project.setAccessionId("1234");
+      Project project = new Project("project", "1234");
 
       Submission submission = new Submission();
       submission.setState(SubmissionState.VALID);
