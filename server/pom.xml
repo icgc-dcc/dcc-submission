@@ -25,7 +25,7 @@
     <dependency>
       <groupId>org.glassfish.jersey.containers</groupId>
       <artifactId>jersey-container-grizzly2-http</artifactId>
-      <version>${jersey-version}</version>
+      <version>${jersey.version}</version>
       <exclusions>
         <exclusion>
           <artifactId>guava-osgi</artifactId>
@@ -36,19 +36,7 @@
     <dependency>
       <groupId>org.glassfish.jersey.media</groupId>
       <artifactId>jersey-media-json</artifactId>
-      <version>${jersey-version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.glassfish.jersey.core</groupId>
-      <artifactId>jersey-client</artifactId>
-      <version>${jersey-version}</version>
-      <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <artifactId>guava-osgi</artifactId>
-          <groupId>com.googlecode.guava-osgi</groupId>
-        </exclusion>
-      </exclusions>
+      <version>${jersey.version}</version>
     </dependency>
     <dependency>
       <groupId>com.google.code.morphia</groupId>
@@ -89,20 +77,39 @@
       <version>${slf4j.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.apache.shiro</groupId>
+      <artifactId>shiro-core</artifactId>
+      <version>${shiro.version}</version>
+    </dependency>
+    <!-- Test Dependencies -->
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.10</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.shiro</groupId>
-      <artifactId>shiro-core</artifactId>
-      <version>1.2.0</version>
+      <groupId>org.glassfish.jersey.core</groupId>
+      <artifactId>jersey-client</artifactId>
+      <version>${jersey.version}</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>guava-osgi</artifactId>
+          <groupId>com.googlecode.guava-osgi</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
     	<groupId>org.testng</groupId>
     	<artifactId>testng</artifactId>
     	<version>6.1.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>1.9.0</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
   <repositories>
@@ -236,7 +243,8 @@
     <logback.version>1.0.3</logback.version>
     <querydsl.version>2.5.0</querydsl.version>
     <morphia.version>0.99.1-SNAPSHOT</morphia.version>
-    <jersey-version>2.0-m04</jersey-version>
+    <jersey.version>2.0-m04</jersey.version>
+    <shiro.version>1.2.0</shiro.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 </project>
