@@ -23,6 +23,7 @@ import cascading.property.AppProps;
 import cascading.scheme.hadoop.TextLine;
 import cascading.tap.Tap;
 import cascading.tap.hadoop.Hfs;
+import cascading.tap.local.FileTap;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
@@ -32,37 +33,40 @@ public class Main {
 
     Pipe pipe = new Pipe("pipe");
     pipe = new GroupBy(pipe, new Fields("offset"));
-    pipe = new Every(pipe, new Fields("offset"), new LineNumberBuffer(), Fields.ALL);
+    pipe = new Every(pipe, new LineNumberBuffer());
     pipe = new Each(pipe, new AddValidationFieldsFunction(), Fields.ALL);
-    pipe = new Each(pipe, new Fields("line", "offset", "_errors"), new LineLengthValidator(), Fields.ALL);
+    pipe = new Each(pipe, new Fields("line", "_errors"), new LineLengthValidator(), Fields.REPLACE);
+
+    Flow<?> flow;
+    if(args[0].equals("--local")) {
+      flow = makeLocal(args, pipe);
+    } else {
+      flow = makeHadoop(args, pipe);
+    }
+
+    flow.writeDOT("/tmp/dot.dot");
+
+    flow.start();
+  }
+
+  private static Flow<?> makeLocal(String[] args, Pipe pipe) {
+    FlowConnector connector = new LocalFlowConnector();
+
+    Tap source = new FileTap(new cascading.scheme.local.TextLine(new Fields("offset", "line")), args[1]);
+    Tap sink = new FileTap(new cascading.scheme.local.TextLine(), args[2]);
+
+    return connector.connect(source, sink, pipe);
+  }
+
+  private static Flow<?> makeHadoop(String[] args, Pipe pipe) {
+    Properties props = new Properties();
+    AppProps.setApplicationJarClass(props, Main.class);
+    FlowConnector connector = new HadoopFlowConnector(props);
 
     Tap source = new Hfs(new TextLine(), args[0]);
     Tap sink = new Hfs(new TextLine(), args[1]);
 
-    FlowConnector connector;
-    if(args[0].equals("--local")) {
-      connector = makeLocal();
-    } else {
-      connector = makeHadoop();
-    }
-
-    Flow<?> flow = connector.connect(source, sink, pipe);
-
-    // flow.writeDOT("/tmp/dot.dot");
-
-    flow.start();
-
-  }
-
-  private static FlowConnector makeLocal() {
-    return new LocalFlowConnector();
-  }
-
-  private static FlowConnector makeHadoop() {
-    Properties props = new Properties();
-    AppProps.setApplicationJarClass(props, Main.class);
-    FlowConnector connector = new HadoopFlowConnector(props);
-    return connector;
+    return connector.connect(source, sink, pipe);
   }
 
   public static class LineNumberBuffer extends BaseOperation<LineNumberBuffer.Context> implements
@@ -73,13 +77,11 @@ public class Main {
     }
 
     public LineNumberBuffer() {
-      // expects 1 argument, fail otherwise
-      super(1, new Fields("num"));
+      super(0, new Fields("num"));
     }
 
     public LineNumberBuffer(Fields fieldDeclaration) {
-      // expects 1 argument, fail otherwise
-      super(1, fieldDeclaration);
+      super(0, fieldDeclaration);
     }
 
     @Override
@@ -93,6 +95,8 @@ public class Main {
       bufferCall.getContext().value++;
       Tuple result = new Tuple();
       result.add(bufferCall.getContext().value);
+      // We have to iterate on the values, otherwise, the output is null
+      TupleEntry e = bufferCall.getArgumentsIterator().next();
       bufferCall.getOutputCollector().add(result);
     }
   }
@@ -100,18 +104,18 @@ public class Main {
   public static final class LineLengthValidator extends BaseOperation implements Function {
 
     LineLengthValidator() {
-      super(3);
+      super(2, Fields.ARGS);
     }
 
     @Override
     public void operate(FlowProcess arg0, FunctionCall functionCall) {
       TupleEntry arguments = functionCall.getArguments();
       String line = arguments.getString(0);
+      List<String> errors = (List<String>) arguments.getObject(1);
       if(line != null && line.length() > 10) {
-        List<String> errors = (List<String>) arguments.getObject(2);
-        errors.add(String.format("Line %d is too long: %d", arguments.getInteger(1), line.length()));
+        errors.add(String.format("Line is too long: %d", line.length()));
       }
-      functionCall.getOutputCollector().add(new Tuple());
+      functionCall.getOutputCollector().add(new Tuple(line, errors));
     }
   }
 
