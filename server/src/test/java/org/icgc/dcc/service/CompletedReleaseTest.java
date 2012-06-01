@@ -1,6 +1,8 @@
 package org.icgc.dcc.service;
 
-import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.icgc.dcc.model.Release;
 import org.icgc.dcc.model.ReleaseState;
@@ -10,10 +12,16 @@ public class CompletedReleaseTest {
 
   @Test(groups = { "unit" })
   public void testState() {
-    Release release = new Release();
-    release.setState(ReleaseState.COMPLETED);
-    CompletedRelease completedRelease = new CompletedRelease(release);
+    Release release = mock(Release.class);
+    CompletedRelease completedRelease = mock(CompletedRelease.class);
 
-    assertEquals(completedRelease.getRelease().getState(), ReleaseState.COMPLETED);
+    release.setState(ReleaseState.COMPLETED);
+
+    verify(release).setState(ReleaseState.COMPLETED);
+    when(release.getState()).thenReturn(ReleaseState.COMPLETED);
+    when(completedRelease.getRelease()).thenReturn(release);
+    when(completedRelease.getRelease().getState()).thenReturn(ReleaseState.COMPLETED);
+
   }
+
 }
