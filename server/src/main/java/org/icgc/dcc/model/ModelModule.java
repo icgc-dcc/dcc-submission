@@ -1,6 +1,7 @@
 package org.icgc.dcc.model;
 
 import org.icgc.dcc.model.dictionary.Dictionary;
+import org.icgc.dcc.service.ReleaseService;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
@@ -58,6 +59,7 @@ public class ModelModule extends AbstractModule {
 
     bindModelClasses(Project.class, Release.class, Submission.class, User.class, Dictionary.class);
     bind(Projects.class);
+    bind(ReleaseService.class);
   }
 
   private void bindModelClasses(final Class<?>... models) {

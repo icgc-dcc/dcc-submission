@@ -14,6 +14,17 @@ public class Release extends BaseEntity implements HasName {
 
   protected List<Submission> submissions = new ArrayList<Submission>();
 
+  public Release() {
+    super();
+    this.setState(ReleaseState.OPENED);
+  }
+
+  public Release(String name) {
+    super();
+    this.setName(name);
+    this.setState(ReleaseState.OPENED);
+  }
+
   @Override
   public String getName() {
     return name;
