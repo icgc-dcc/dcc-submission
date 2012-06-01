@@ -1,6 +1,7 @@
 package org.icgc.dcc.service;
 
-import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.icgc.dcc.model.Release;
 import org.icgc.dcc.model.ReleaseState;
@@ -10,10 +11,18 @@ public class HasReleaseTest {
 
   @Test(groups = { "unit" })
   public void test() {
-    Release release = new Release();
-    HasRelease hasRelease = new HasRelease(release);
+    Release release = mock(Release.class);
+    HasRelease hasRelease = mock(HasRelease.class);
 
-    assertEquals(hasRelease.getRelease().getState(), ReleaseState.OPENED);
+    when(hasRelease.getRelease()).thenReturn(release);
+
+    release.setState(ReleaseState.OPENED);
+
+    when(hasRelease.getRelease().getState()).thenReturn(ReleaseState.OPENED);
+
+    release.setName("release");
+
+    when(hasRelease.getRelease().getName()).thenReturn("release");
   }
 
 }

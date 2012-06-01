@@ -14,13 +14,13 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.ext.FilterContext;
 
-import org.junit.Test;
+import org.testng.annotations.Test;
 
 import com.google.common.net.HttpHeaders;
 
 public class BasicHttpAuthenticationRequestFilterTest {
 
-  @Test
+  @Test(groups = { "unit" })
   public void test_preMatchFilter_handlesMissingHeader() throws IOException {
     // Create a few mock instances
     Request mockRequest = mock(Request.class);

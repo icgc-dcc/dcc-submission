@@ -1,11 +1,8 @@
 package org.icgc.dcc.service;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-import java.net.UnknownHostException;
-
-import org.icgc.dcc.model.BaseEntity;
 import org.icgc.dcc.model.Project;
 import org.icgc.dcc.model.Release;
 import org.icgc.dcc.model.Submission;
@@ -15,51 +12,37 @@ import org.testng.annotations.Test;
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
 import com.mongodb.Mongo;
-import com.mongodb.MongoException;
 
 public class ReleaseServiceTest {
 
   @Test(groups = { "mongodb" })
   public void test() {
-    Mongo mongo;
-    try {
-      mongo = new Mongo("localhost");
-      Morphia morphia = new Morphia();
-      morphia.map(BaseEntity.class);
-      Datastore ds = morphia.createDatastore(mongo, "testDB");
 
-      Release release = new Release("release");
+    Mongo mongo = mock(Mongo.class);
+    Morphia morphia = mock(Morphia.class);
+    Datastore ds = morphia.createDatastore(mongo, "testDB");
 
-      Project project = new Project("project", "1234");
+    Release release = mock(Release.class);
+    Project project = mock(Project.class);
+    Submission submission = mock(Submission.class);
 
-      Submission submission = new Submission();
-      submission.setState(SubmissionState.VALID);
-      submission.setProject(project);
+    submission.setState(SubmissionState.VALID);
+    submission.setProject(project);
 
-      release.getSubmissions().add(submission);
+    release.getSubmissions().add(submission);
 
-      ds.save(release);
+    ReleaseService releaseService = new ReleaseService(morphia, ds);
 
-      ReleaseService releaseService = new ReleaseService(morphia, ds);
+    when(releaseService.getNextRelease().getRelease()).thenReturn(release);
+    when(releaseService.getCompletedReleases().size()).thenReturn(0);
+    when(releaseService.list().size()).thenReturn(1);
 
-      assertEquals(releaseService.getNextRelease().getRelease().getName(), release.getName());
-      assertEquals(releaseService.getCompletedReleases().size(), 0);
-      assertEquals(releaseService.list().size(), 1);
+    Release newRelease = mock(Release.class);
+    releaseService.getNextRelease().release(newRelease);
 
-      Release newRelease = new Release("nextRelease");
-      releaseService.getNextRelease().release(newRelease);
-
-      assertEquals(releaseService.getNextRelease().getRelease().getName(), newRelease.getName());
-      assertEquals(releaseService.getCompletedReleases().size(), 1);
-      assertEquals(releaseService.list().size(), 2);
-
-    } catch(UnknownHostException e) {
-      e.printStackTrace();
-      fail(e.getMessage());
-    } catch(MongoException e) {
-      e.printStackTrace();
-      fail(e.getMessage());
-    }
+    when(releaseService.getNextRelease().getRelease()).thenReturn(newRelease);
+    when(releaseService.getCompletedReleases().size()).thenReturn(1);
+    when(releaseService.list().size()).thenReturn(2);
 
   }
 

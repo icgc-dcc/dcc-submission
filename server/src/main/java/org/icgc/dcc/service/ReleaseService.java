@@ -40,7 +40,7 @@ public class ReleaseService {
     // at any time there should only be one release open which is the next release
     checkArgument(query.list().size() == 1);
 
-    return new NextRelease(query.list().get(0));
+    return new NextRelease(query.list().get(0), datastore);
   }
 
   public MongodbQuery<Release> query() {
