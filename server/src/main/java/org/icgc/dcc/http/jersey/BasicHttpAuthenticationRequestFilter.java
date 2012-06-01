@@ -75,11 +75,11 @@ public class BasicHttpAuthenticationRequestFilter implements PreMatchRequestFilt
         String authenticationToken = split[1];
 
         // decoding it from base 64 ()
-        String decodeToString = Base64.decodeToString(authenticationToken);
+        String decodedAuthenticationToken = Base64.decodeToString(authenticationToken);
 
         // splitting it (username and password are expected to be colon-separated)
-        String[] decoded = decodeToString.split(TOKEN_INFO_SEPARATOR, 2);// adapted from Obiba's
-                                                                         // HttpAuthorizationToken.java
+        String[] decoded = decodedAuthenticationToken.split(TOKEN_INFO_SEPARATOR, 2);// adapted from Obiba's
+        // HttpAuthorizationToken.java
 
         if(decoded.length != 2) {
           // TODO: add error message?
