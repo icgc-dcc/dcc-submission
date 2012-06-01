@@ -5,7 +5,6 @@ import java.io.IOException;
 import javax.ws.rs.BindingPriority;
 import javax.ws.rs.core.RequestHeaders;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.ext.FilterContext;
 import javax.ws.rs.ext.PreMatchRequestFilter;
 import javax.ws.rs.ext.Provider;
@@ -16,70 +15,98 @@ import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.authc.LockedAccountException;
 import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.authc.UsernamePasswordToken;
-import org.apache.shiro.session.Session;
+import org.apache.shiro.codec.Base64;
 import org.apache.shiro.subject.Subject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.net.HttpHeaders;
-import com.google.inject.Inject;
-import com.typesafe.config.Config;
 
-/* filters are annotated this way in JAX-RS 2.0 */
-@Provider
-/* the lower the number, the higher the priority [https://github.com/resteasy/Resteasy/pull/26/files - TODO: confirm] */
-@BindingPriority(0)
-/* we want it bound to all resources (global binding is default) */
 /**
  * Authentication filter
  * 
+ * try it with: $ curl -v -H "Authorization: Basic $(echo -n "brett:brettspasswd" | base64)"
+ * http://localhost:5379/ws/myresource
+ * 
  * @author Anthony Cros (anthony.cros@oicr.on.ca)
  */
+@Provider
+@BindingPriority(BindingPriority.SECURITY)
 public class BasicHttpAuthenticationRequestFilter implements PreMatchRequestFilter {
 
   private static final Logger log = LoggerFactory.getLogger(BasicHttpAuthenticationRequestFilter.class);
 
-  private static final String WWW_AUTHENTICATE_REALM = "DCC"; // TODO: put elsewhere, application-wide name
+  private static final String HTTP_BASIC = "Basic"; // TODO: existing constant somewhere?
 
-  @Inject
-  private Config config;
+  private static final String TOKEN_INFO_SEPARATOR = ":";
+
+  private static final String WWW_AUTHENTICATE_REALM = "DCC"; // TODO: put elsewhere, application-wide name
 
   @Override
   public void preMatchFilter(FilterContext filterContext) throws IOException {
 
     RequestHeaders headers = filterContext.getRequest().getHeaders();
 
+    // get authorization header
     String authorizationHeader = headers.getHeader(HttpHeaders.AUTHORIZATION);
-    log.info("authorizationHeader = " + authorizationHeader);
+    log.debug("authorizationHeader = " + authorizationHeader);
 
-    String authenticateHeader = headers.getHeader(HttpHeaders.WWW_AUTHENTICATE);
-    log.info("authenticateHeader = " + authenticateHeader);
-
+    // check if provided
     if(authorizationHeader == null || authorizationHeader.isEmpty()) {
-      ResponseBuilder responseBuilder = Response.status(Response.Status.UNAUTHORIZED);
-      responseBuilder.header(HttpHeaders.WWW_AUTHENTICATE, "Basic realm=\"" + WWW_AUTHENTICATE_REALM + "\"");
-      Response response = responseBuilder.build();
-      log.info("response = " + response.getStatus() + ", " + response.getHeaders().asMap());
+      Response response =
+          filterContext
+              .createResponse()
+              .status(Response.Status.UNAUTHORIZED)
+              .header(HttpHeaders.WWW_AUTHENTICATE,
+                  String.format("%s realm=\"%s\"", HTTP_BASIC, WWW_AUTHENTICATE_REALM)).build();
 
-      filterContext.setResponse(response); // does not seem to work for now, probably not implemented in jersey for now
-                                           // (TODO)
+      // TODO: does not seem to work for now, probably not implemented in jersey for now (m04)
+      filterContext.setResponse(response);
     } else {
-      if(authorizationHeader != null && !authorizationHeader.isEmpty()) {
-        Subject currentSubject = SecurityUtils.getSubject();
+      // expected to be like: "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ=="
+      String[] split = authorizationHeader.split(" ", 2);
+      if(split.length != 2 || !split[0].equals(HTTP_BASIC)) {
+        // TODO: add error message?
+        Response response = filterContext.createResponse().status(Response.Status.BAD_REQUEST).build();
+        filterContext.setResponse(response);
+      } else {
 
-        Session session = currentSubject.getSession();
-        session.setAttribute("someKey", "aValue");
-        String value = (String) session.getAttribute("someKey");
-        if(value.equals("aValue")) {
-          log.info("Retrieved the correct value! [" + value + "]");
-        }
+        // grabbing the "QWxhZGRpbjpvcGVuIHNlc2FtZQ==" part
+        String authenticationToken = split[1];
 
-        // let's login the current user so we can check against roles and permissions:
-        if(!currentSubject.isAuthenticated()) {
-          UsernamePasswordToken token = new UsernamePasswordToken("brett", "brettspasswd");
+        // decoding it from base 64 ()
+        String decodeToString = Base64.decodeToString(authenticationToken);
+
+        // splitting it (username and password are expected to be colon-separated)
+        String[] decoded = decodeToString.split(TOKEN_INFO_SEPARATOR, 2);// adapted from Obiba's
+                                                                         // HttpAuthorizationToken.java
+
+        if(decoded.length != 2) {
+          // TODO: add error message?
+          Response response = filterContext.createResponse().status(Response.Status.BAD_REQUEST).build();
+          filterContext.setResponse(response); // see comment above
+          // TODO: should we allow using "return;"...?
+        } else {
+
+          // grab username
+          String username = decoded[0];
+          log.info("username = \"" + username + "\"");
+
+          // grab password
+          String password = decoded[1];
+          log.info("password decoded (" + password.length() + " characters long)");
+
+          // grab current user
+          Subject currentUser = SecurityUtils.getSubject(); // no need to inject anything
+
+          // build token from credentials
+          UsernamePasswordToken token = new UsernamePasswordToken(username, password);
           token.setRememberMe(true);
+
+          // TODO: proper shiro handling (this is dummy)
           try {
-            currentSubject.login(token);
+            // attempt to login user
+            currentUser.login(token);
           } catch(UnknownAccountException uae) {
             log.info("There is no user with username of " + token.getPrincipal());
           } catch(IncorrectCredentialsException ice) {
@@ -95,14 +122,9 @@ public class BasicHttpAuthenticationRequestFilter implements PreMatchRequestFilt
 
           // say who they are:
           // print their identifying principal (in this case, a username):
-          log.info("User [" + currentSubject.getPrincipal() + "] logged in successfully.");
+          log.info("User [" + currentUser.getPrincipal() + "] logged in successfully.");
         }
-
       }
-
-      // String authorization = getAuthorizationHeader(request);
-      // String sessionId = extractSessionId(request);
-      // HttpAuthorizationToken token = new HttpAuthorizationToken(X_OPAL_AUTH, authorization);
     }
 
   }
