@@ -23,6 +23,8 @@ public class FileSchema {
 
   public List<Field> fields;
 
+  public List<Restriction> restrictions;
+
   public Optional<Field> field(final String name) {
     return Iterables.tryFind(fields, new Predicate<Field>() {
 
