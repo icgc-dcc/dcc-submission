@@ -2,10 +2,10 @@ package org.icgc.dcc.model;
 
 import java.util.List;
 
-import com.google.code.morphia.annotations.Embedded;
+import com.google.code.morphia.annotations.Entity;
 import com.google.code.morphia.annotations.Indexed;
 
-@Embedded
+@Entity
 public class Project extends BaseEntity implements HasName {
 
   @Indexed(unique = true)
