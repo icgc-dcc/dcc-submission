@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.icgc.dcc.config.ConfigModule;
 import org.icgc.dcc.core.CoreModule;
 import org.icgc.dcc.core.DccRuntime;
+import org.icgc.dcc.filesystem.DccFilesystem;
 import org.icgc.dcc.http.HttpModule;
 import org.icgc.dcc.http.jersey.InjectModule;
 import org.icgc.dcc.http.jersey.JerseyModule;
@@ -28,7 +29,9 @@ public class Main {
         new ModelModule(),//
         new ShiroModule());
 
-    injector.getInstance(MyShiro.class).doIt();// for testing purposes (TODO: remove)
+    // for development purposes only (TODO: remove)
+    injector.getInstance(MyShiro.class).doIt();
+    injector.getInstance(DccFilesystem.class).doIt();
 
     injector.getInstance(DccRuntime.class).start();
     System.in.read();

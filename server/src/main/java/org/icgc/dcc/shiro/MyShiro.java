@@ -1,5 +1,7 @@
 package org.icgc.dcc.shiro;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.IncorrectCredentialsException;
@@ -24,12 +26,18 @@ public class MyShiro {
 
   private static final Logger log = LoggerFactory.getLogger(MyShiro.class);
 
-  @Inject
-  private Config config;
+  private final Config config;
 
   @SuppressWarnings("unused")
+  private final SecurityManager securityManager; // must inject it even if not used (not sure why)
+
   @Inject
-  private SecurityManager securityManager; // must inject it even if not used (not sure why)
+  public MyShiro(Config config, SecurityManager securityManager) {
+    checkArgument(config != null);
+    checkArgument(securityManager != null);
+    this.config = config;
+    this.securityManager = securityManager;
+  }
 
   public void doIt() {
 
