@@ -7,11 +7,11 @@ import org.icgc.dcc.model.Release;
 import org.icgc.dcc.model.ReleaseState;
 import org.icgc.dcc.model.Submission;
 import org.icgc.dcc.model.SubmissionState;
-import org.testng.annotations.Test;
+import org.junit.Test;
 
 public class NextReleaseTest {
 
-  @Test(groups = { "mongodb" })
+  @Test
   public void test() {
     NextRelease nextRelease = mock(NextRelease.class);
     Release release = mock(Release.class);

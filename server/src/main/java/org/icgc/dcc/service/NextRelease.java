@@ -9,7 +9,7 @@ import org.icgc.dcc.model.SubmissionState;
 
 import com.google.code.morphia.Datastore;
 
-public class NextRelease extends HasRelease {
+public class NextRelease extends BaseRelease {
 
   private final Datastore datastore;
 

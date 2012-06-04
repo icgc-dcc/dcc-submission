@@ -3,20 +3,9 @@ package org.icgc.dcc.service;
 import org.icgc.dcc.filesystem.ReleaseFilesystem;
 import org.icgc.dcc.model.Release;
 
-public class HasRelease {
+public interface HasRelease {
 
-  protected Release release;
+  public ReleaseFilesystem getReleaseFilesystem();
 
-  public HasRelease(Release release) {
-    this.release = release;
-  }
-
-  public ReleaseFilesystem getReleaseFilesystem() {
-    // TODO implementation have to wait till HDFS Filesystem is finished
-    return null;
-  }
-
-  public Release getRelease() {
-    return release;
-  }
+  public Release getRelease();
 }

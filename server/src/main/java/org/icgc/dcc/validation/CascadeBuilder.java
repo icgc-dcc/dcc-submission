@@ -8,7 +8,7 @@ import org.icgc.dcc.model.dictionary.FileSchema;
 
 import cascading.pipe.Pipe;
 
-import com.beust.jcommander.internal.Maps;
+import com.google.common.collect.Maps;
 
 public class CascadeBuilder {
 

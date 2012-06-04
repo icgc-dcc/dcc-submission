@@ -14,12 +14,15 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.ext.FilterContext;
 
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.mgt.DefaultSecurityManager;
+import org.apache.shiro.authc.UsernamePasswordToken;
+import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.subject.Subject;
+import org.apache.shiro.subject.SubjectContext;
+import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
-import org.testng.annotations.Test;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 
 import com.google.common.net.HttpHeaders;
 
@@ -34,6 +37,10 @@ public class BasicHttpAuthenticationRequestFilterTest {
 
   private ResponseBuilder mockBuilder;
 
+  private SecurityManager securityManager;
+
+  private BasicHttpAuthenticationRequestFilter basicHttpAuthenticationRequestFilter;
+
   @Before
   public void setUp() {
 
@@ -42,35 +49,36 @@ public class BasicHttpAuthenticationRequestFilterTest {
     this.mockHeaders = mock(RequestHeaders.class);
     this.mockContext = mock(FilterContext.class);
     this.mockBuilder = mock(ResponseBuilder.class);
+    this.securityManager = mock(SecurityManager.class);
+
+    this.basicHttpAuthenticationRequestFilter = new BasicHttpAuthenticationRequestFilter(this.securityManager);
 
     // Create some behaviour
     when(this.mockContext.getRequest()).thenReturn(this.mockRequest);
     when(this.mockRequest.getHeaders()).thenReturn(this.mockHeaders);
   }
 
-  // FIXME: this does not work, not sure how to mockitify the SecurityUtils that provides Subject (returns null as is)
-  @Ignore
   @Test
-  @SuppressWarnings("all")
   public void test_preMatchFilter_handlesCorrectAuthorizationHeader() throws IOException {
-
-    org.apache.shiro.mgt.SecurityManager securityManager = mock(DefaultSecurityManager.class);
     Subject subject = mock(Subject.class);
 
-    SecurityUtils.setSecurityManager(securityManager);
-    when(SecurityUtils.getSubject()).thenReturn(subject);
-
-    // This test is testing that the header is malformed
+    when(this.securityManager.createSubject(any(SubjectContext.class))).thenReturn(subject);
     when(this.mockHeaders.getHeader(HttpHeaders.AUTHORIZATION))//
-        .thenReturn("Basic YnJldHQ6YnJldHRzcGFzc3dkCg=="); // encodes "brett:brettspasswd" in base64
-                                                           // (can generate from: $ echo "brett/brettspasswd" | base64)
-    this.prepareOkResponse();
+        .thenReturn("Basic YnJldHQ6YnJldHRzcGFzc3dk"); // encodes "brett:brettspasswd" in base64
+                                                       // (generate using: $ echo -n "brett:brettspasswd" | base64)
+                                                       // this.prepareOkResponse();
     this.runFilter();
-    verify(this.mockBuilder).status(Response.Status.OK);
-    verify(this.mockBuilder).header(HttpHeaders.CONTENT_LENGTH, "5"); // TODO: fix length (dummy one)
+    ArgumentCaptor<UsernamePasswordToken> argument = ArgumentCaptor.forClass(UsernamePasswordToken.class);
+    // Make sure there was a login attempt and capture the token
+    verify(subject).login(argument.capture());
+    // Assert username and password match
+    Assert.assertEquals("brett", argument.getValue().getUsername());
+    Assert.assertArrayEquals("brettspasswd".toCharArray(), argument.getValue().getPassword());
+
+    verify(this.mockContext, Mockito.never()).setResponse(any(Response.class));
   }
 
-  @Test(groups = { "unit" })
+  @Test
   public void test_preMatchFilter_handlesMissingHeader() throws IOException {
 
     // This test is testing that the header is absent
@@ -86,33 +94,24 @@ public class BasicHttpAuthenticationRequestFilterTest {
 
   @Test
   public void test_preMatchFilter_handlesMalformedAuthorizationHeader1() throws IOException {
-
-    // This test is testing that the header is malformed
-    when(this.mockHeaders.getHeader(HttpHeaders.AUTHORIZATION))//
-        .thenReturn("Basi YnJldHQ6YnJldHRzcGFzc3dkCg=="); // "Basic" mispelled
-    this.prepareAnyResponse();
-    this.runFilter();
-    verify(this.mockBuilder).status(Response.Status.BAD_REQUEST);
+    testMalformedHeader("Basi YnJldHQ6YnJldHRzcGFzc3dkCg==");
   }
 
   @Test
   public void test_preMatchFilter_handlesMalformedAuthorizationHeader2() throws IOException {
-
-    // This test is testing that the header is malformed
-    when(this.mockHeaders.getHeader(HttpHeaders.AUTHORIZATION))//
-        .thenReturn("Basic YnJldHQvYnJldHRzcGFzc3dkCg=="); // invalid base64 token (missing encoded ":", using "/"
-                                                           // instead)
-    this.prepareAnyResponse();
-    this.runFilter();
-    verify(this.mockBuilder).status(Response.Status.BAD_REQUEST);
+    testMalformedHeader("Basic YnJldHQvYnJldHRzcGFzc3dkCg==");
   }
 
   @Test
   public void test_preMatchFilter_handlesMalformedAuthorizationHeader3() throws IOException {
+    testMalformedHeader("Basic");
+  }
 
-    // This test is testing that the header is malformed
-    when(this.mockHeaders.getHeader(HttpHeaders.AUTHORIZATION))//
-        .thenReturn("Basic"); // credentials missing
+  /**
+   * Common test fixture for a malformed header
+   */
+  private void testMalformedHeader(String malformed) throws IOException {
+    when(this.mockHeaders.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn(malformed);
     this.prepareAnyResponse();
     this.runFilter();
     verify(this.mockBuilder).status(Response.Status.BAD_REQUEST);
@@ -125,14 +124,8 @@ public class BasicHttpAuthenticationRequestFilterTest {
     when(this.mockBuilder.header(anyString(), any())).thenReturn(this.mockBuilder);
   }
 
-  private void prepareOkResponse() {
-    when(this.mockContext.createResponse()).thenReturn(this.mockBuilder);
-    when(this.mockBuilder.status(Response.Status.OK)).thenReturn(this.mockBuilder);
-    when(this.mockBuilder.header(anyString(), any())).thenReturn(this.mockBuilder);
-  }
-
   // Exercise the code we're testing
   private void runFilter() throws IOException {
-    new BasicHttpAuthenticationRequestFilter().preMatchFilter(this.mockContext);
+    this.basicHttpAuthenticationRequestFilter.preMatchFilter(this.mockContext);
   }
 }

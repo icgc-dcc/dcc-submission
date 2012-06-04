@@ -6,11 +6,11 @@ import static org.mockito.Mockito.when;
 
 import org.icgc.dcc.model.Release;
 import org.icgc.dcc.model.ReleaseState;
-import org.testng.annotations.Test;
+import org.junit.Test;
 
 public class CompletedReleaseTest {
 
-  @Test(groups = { "unit" })
+  @Test
   public void testState() {
     Release release = mock(Release.class);
     CompletedRelease completedRelease = mock(CompletedRelease.class);
