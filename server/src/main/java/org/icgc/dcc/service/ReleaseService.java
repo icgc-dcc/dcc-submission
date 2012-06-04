@@ -73,7 +73,7 @@ public class ReleaseService {
     MongodbQuery<Release> query = this.query();
 
     for(Release release : query.list()) {
-      list.add(new HasRelease(release));
+      list.add(new BaseRelease(release));
     }
 
     return list;
