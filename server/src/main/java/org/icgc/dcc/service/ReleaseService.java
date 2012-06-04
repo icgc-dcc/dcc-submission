@@ -6,14 +6,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.icgc.dcc.model.QRelease;
+import org.icgc.dcc.model.QSubmission;
 import org.icgc.dcc.model.Release;
 import org.icgc.dcc.model.ReleaseState;
+import org.icgc.dcc.model.Submission;
+import org.icgc.dcc.model.SubmissionState;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
 import com.google.inject.Inject;
 import com.mysema.query.mongodb.MongodbQuery;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
+import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Predicate;
 
 public class ReleaseService {
@@ -55,6 +59,10 @@ public class ReleaseService {
     return this.datastore;
   }
 
+  public Morphia getMorphia() {
+    return this.morphia;
+  }
+
   public List<CompletedRelease> getCompletedReleases() throws IllegalReleaseStateException {
     List<CompletedRelease> completedReleases = new ArrayList<CompletedRelease>();
 
@@ -77,5 +85,29 @@ public class ReleaseService {
     }
 
     return list;
+  }
+
+  public List<Submission> getQueued() {
+    MorphiaQuery<Submission> query =
+        new MorphiaQuery<Submission>(morphia, datastore, (EntityPath<Submission>) QSubmission.submission);
+
+    List<Submission> submissions = query.where(QSubmission.submission.state.eq(SubmissionState.QUEUED)).list();
+    return submissions;
+  }
+
+  public List<Submission> getSubmissionFromAccessionId(String accessionId) {
+    MorphiaQuery<Submission> query =
+        new MorphiaQuery<Submission>(morphia, datastore, (EntityPath<Submission>) QSubmission.submission);
+
+    List<Submission> submissions = query.where(QSubmission.submission.project.accessionId.eq(accessionId)).list();
+    return submissions;
+  }
+
+  public List<Submission> getSignedOff() {
+    MorphiaQuery<Submission> query =
+        new MorphiaQuery<Submission>(morphia, datastore, (EntityPath<Submission>) QSubmission.submission);
+
+    List<Submission> submissions = query.where(QSubmission.submission.state.eq(SubmissionState.SIGNED_OFF)).list();
+    return submissions;
   }
 }
