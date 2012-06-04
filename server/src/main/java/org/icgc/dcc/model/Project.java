@@ -6,7 +6,7 @@ import com.google.code.morphia.annotations.Embedded;
 import com.google.code.morphia.annotations.Indexed;
 
 @Embedded
-public class Project implements HasName {
+public class Project extends BaseEntity implements HasName {
 
   @Indexed(unique = true)
   protected String accessionId;
