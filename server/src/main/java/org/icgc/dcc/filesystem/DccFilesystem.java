@@ -14,14 +14,19 @@ public class DccFilesystem {
 
   private final Config config;
 
+  private final IFilesystem fileSystem;
+
   @Inject
-  public DccFilesystem(Config config) {
+  public DccFilesystem(Config config, IFilesystem fileSystem) {
     checkArgument(config != null);
+    checkArgument(fileSystem != null);
     this.config = config;
+    this.fileSystem = fileSystem;
   }
 
   public void doIt() {
-    // test can get some params
+    // dummy
     log.info("use_hdfs = " + this.config.getBoolean("fs.use_hdfs"));
+    log.info("ls = \n" + this.fileSystem.ls());
   }
 }

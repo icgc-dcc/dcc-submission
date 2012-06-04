@@ -6,6 +6,7 @@ import org.icgc.dcc.config.ConfigModule;
 import org.icgc.dcc.core.CoreModule;
 import org.icgc.dcc.core.DccRuntime;
 import org.icgc.dcc.filesystem.DccFilesystem;
+import org.icgc.dcc.filesystem.FilesystemModule;
 import org.icgc.dcc.http.HttpModule;
 import org.icgc.dcc.http.jersey.InjectModule;
 import org.icgc.dcc.http.jersey.JerseyModule;
@@ -27,7 +28,9 @@ public class Main {
         new JerseyModule(),//
         new WebModule(),//
         new ModelModule(),//
-        new ShiroModule());
+        new ShiroModule(),//
+        new FilesystemModule()//
+        );
 
     // for development purposes only (TODO: remove)
     injector.getInstance(MyShiro.class).doIt();
