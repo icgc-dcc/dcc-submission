@@ -1,5 +1,7 @@
 package org.icgc.dcc.http.jersey;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.io.IOException;
 
 import javax.ws.rs.BindingPriority;
@@ -9,18 +11,19 @@ import javax.ws.rs.ext.FilterContext;
 import javax.ws.rs.ext.PreMatchRequestFilter;
 import javax.ws.rs.ext.Provider;
 
-import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.authc.LockedAccountException;
 import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.codec.Base64;
+import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.subject.Subject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.net.HttpHeaders;
+import com.google.inject.Inject;
 
 /**
  * Authentication filter
@@ -41,6 +44,14 @@ public class BasicHttpAuthenticationRequestFilter implements PreMatchRequestFilt
   private static final String TOKEN_INFO_SEPARATOR = ":";
 
   private static final String WWW_AUTHENTICATE_REALM = "DCC"; // TODO: put elsewhere, application-wide name
+
+  public SecurityManager securityManager;
+
+  @Inject
+  public BasicHttpAuthenticationRequestFilter(SecurityManager securityManager) {
+    checkArgument(securityManager != null);
+    this.securityManager = securityManager;
+  }
 
   @Override
   public void preMatchFilter(FilterContext filterContext) throws IOException {
@@ -96,12 +107,15 @@ public class BasicHttpAuthenticationRequestFilter implements PreMatchRequestFilt
           String password = decoded[1];
           log.info("password decoded (" + password.length() + " characters long)");
 
-          // grab current user
-          Subject currentUser = SecurityUtils.getSubject(); // no need to inject anything
-
           // build token from credentials
           UsernamePasswordToken token = new UsernamePasswordToken(username, password);
           token.setRememberMe(true);
+
+          // grab current user
+          // TODO reproduce: ThreadContext.getSubject(); behavior non-statically
+          Subject.Builder subjectBuilder = new Subject.Builder(this.securityManager); // avoid using static
+                                                                                      // SecurityUtils
+          Subject currentUser = subjectBuilder.buildSubject();
 
           // TODO: proper shiro handling (this is dummy)
           try {
