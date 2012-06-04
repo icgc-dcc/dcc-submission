@@ -7,7 +7,7 @@ import org.icgc.dcc.model.Project;
 import org.icgc.dcc.model.Release;
 import org.icgc.dcc.model.Submission;
 import org.icgc.dcc.model.SubmissionState;
-import org.testng.annotations.Test;
+import org.junit.Test;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
@@ -15,7 +15,7 @@ import com.mongodb.Mongo;
 
 public class ReleaseServiceTest {
 
-  @Test(groups = { "mongodb" })
+  @Test
   public void test() {
 
     Mongo mongo = mock(Mongo.class);

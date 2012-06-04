@@ -6,7 +6,7 @@ import static org.junit.Assert.fail;
 import java.net.UnknownHostException;
 
 import org.bson.types.ObjectId;
-import org.testng.annotations.Test;
+import org.junit.Test;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
@@ -15,7 +15,7 @@ import com.mongodb.MongoException;
 
 public class BaseEntityTest {
 
-  @Test(groups = { "mongodb" })
+  @Test
   public void test() {
     try {
       // use local host as test MongoDB for now
