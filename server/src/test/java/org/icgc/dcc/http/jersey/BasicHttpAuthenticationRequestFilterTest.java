@@ -14,11 +14,14 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.ext.FilterContext;
 
+import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.subject.SubjectContext;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import com.google.common.net.HttpHeaders;
@@ -61,10 +64,17 @@ public class BasicHttpAuthenticationRequestFilterTest {
 
     when(this.securityManager.createSubject(any(SubjectContext.class))).thenReturn(subject);
     when(this.mockHeaders.getHeader(HttpHeaders.AUTHORIZATION))//
-        .thenReturn("Basic YnJldHQ6YnJldHRzcGFzc3dkCg=="); // encodes "brett:brettspasswd" in base64
-                                                           // (can generate from: $ echo "brett/brettspasswd" | base64)
-                                                           // this.prepareOkResponse();
+        .thenReturn("Basic YnJldHQ6YnJldHRzcGFzc3dk"); // encodes "brett:brettspasswd" in base64
+                                                       // (generate using: $ echo -n "brett:brettspasswd" | base64)
+                                                       // this.prepareOkResponse();
     this.runFilter();
+    ArgumentCaptor<UsernamePasswordToken> argument = ArgumentCaptor.forClass(UsernamePasswordToken.class);
+    // Make sure there was a login attempt and capture the token
+    verify(subject).login(argument.capture());
+    // Assert username and password match
+    Assert.assertEquals("brett", argument.getValue().getUsername());
+    Assert.assertArrayEquals("brettspasswd".toCharArray(), argument.getValue().getPassword());
+
     verify(this.mockContext, Mockito.never()).setResponse(any(Response.class));
   }
 
@@ -84,33 +94,24 @@ public class BasicHttpAuthenticationRequestFilterTest {
 
   @Test
   public void test_preMatchFilter_handlesMalformedAuthorizationHeader1() throws IOException {
-
-    // This test is testing that the header is malformed
-    when(this.mockHeaders.getHeader(HttpHeaders.AUTHORIZATION))//
-        .thenReturn("Basi YnJldHQ6YnJldHRzcGFzc3dkCg=="); // "Basic" mispelled
-    this.prepareAnyResponse();
-    this.runFilter();
-    verify(this.mockBuilder).status(Response.Status.BAD_REQUEST);
+    testMalformedHeader("Basi YnJldHQ6YnJldHRzcGFzc3dkCg==");
   }
 
   @Test
   public void test_preMatchFilter_handlesMalformedAuthorizationHeader2() throws IOException {
-
-    // This test is testing that the header is malformed
-    when(this.mockHeaders.getHeader(HttpHeaders.AUTHORIZATION))//
-        .thenReturn("Basic YnJldHQvYnJldHRzcGFzc3dkCg=="); // invalid base64 token (missing encoded ":", using "/"
-                                                           // instead)
-    this.prepareAnyResponse();
-    this.runFilter();
-    verify(this.mockBuilder).status(Response.Status.BAD_REQUEST);
+    testMalformedHeader("Basic YnJldHQvYnJldHRzcGFzc3dkCg==");
   }
 
   @Test
   public void test_preMatchFilter_handlesMalformedAuthorizationHeader3() throws IOException {
+    testMalformedHeader("Basic");
+  }
 
-    // This test is testing that the header is malformed
-    when(this.mockHeaders.getHeader(HttpHeaders.AUTHORIZATION))//
-        .thenReturn("Basic"); // credentials missing
+  /**
+   * Common test fixture for a malformed header
+   */
+  private void testMalformedHeader(String malformed) throws IOException {
+    when(this.mockHeaders.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn(malformed);
     this.prepareAnyResponse();
     this.runFilter();
     verify(this.mockBuilder).status(Response.Status.BAD_REQUEST);
