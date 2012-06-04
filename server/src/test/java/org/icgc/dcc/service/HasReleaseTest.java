@@ -5,11 +5,11 @@ import static org.mockito.Mockito.when;
 
 import org.icgc.dcc.model.Release;
 import org.icgc.dcc.model.ReleaseState;
-import org.testng.annotations.Test;
+import org.junit.Test;
 
 public class HasReleaseTest {
 
-  @Test(groups = { "unit" })
+  @Test
   public void test() {
     Release release = mock(Release.class);
     HasRelease hasRelease = mock(HasRelease.class);

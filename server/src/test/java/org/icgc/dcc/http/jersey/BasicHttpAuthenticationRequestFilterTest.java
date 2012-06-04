@@ -19,7 +19,7 @@ import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.subject.Subject;
 import org.junit.Before;
 import org.junit.Ignore;
-import org.testng.annotations.Test;
+import org.junit.Test;
 
 import com.google.common.net.HttpHeaders;
 
@@ -70,7 +70,7 @@ public class BasicHttpAuthenticationRequestFilterTest {
     verify(this.mockBuilder).header(HttpHeaders.CONTENT_LENGTH, "5"); // TODO: fix length (dummy one)
   }
 
-  @Test(groups = { "unit" })
+  @Test
   public void test_preMatchFilter_handlesMissingHeader() throws IOException {
 
     // This test is testing that the header is absent
