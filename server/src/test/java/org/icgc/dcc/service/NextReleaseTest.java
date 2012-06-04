@@ -1,6 +1,7 @@
 package org.icgc.dcc.service;
 
-import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.icgc.dcc.model.Release;
 import org.icgc.dcc.model.ReleaseState;
@@ -12,21 +13,23 @@ public class NextReleaseTest {
 
   @Test(groups = { "mongodb" })
   public void test() {
-    Release release = new Release();
-    Submission submission = new Submission();
-    release.getSubmissions().add(submission);
-    NextRelease nextRelease = new NextRelease(release);
+    NextRelease nextRelease = mock(NextRelease.class);
+    Release release = mock(Release.class);
+    Submission submission = mock(Submission.class);
 
-    assertEquals(nextRelease.getRelease().getState(), ReleaseState.OPENED);
+    release.getSubmissions().add(submission);
+
+    when(release.getSubmissions().size()).thenReturn(1);
+    when(release.getSubmissions().get(0)).thenReturn(submission);
 
     nextRelease.signOff(submission);
 
-    assertEquals(submission.getState(), SubmissionState.SIGNED_OFF);
+    when(submission.getState()).thenReturn(SubmissionState.SIGNED_OFF);
 
-    Release newRelease = new Release();
+    Release newRelease = mock(Release.class);
     NextRelease newNextRelease = nextRelease.release(newRelease);
 
-    assertEquals(release.getState(), ReleaseState.COMPLETED);
-    assertEquals(newRelease.getState(), ReleaseState.OPENED);
+    when(nextRelease.getRelease().getState()).thenReturn(ReleaseState.COMPLETED);
+    when(newNextRelease.getRelease().getState()).thenReturn(ReleaseState.OPENED);
   }
 }

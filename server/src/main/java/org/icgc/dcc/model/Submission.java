@@ -5,7 +5,6 @@ import com.google.code.morphia.annotations.Embedded;
 @Embedded
 public class Submission {
 
-  @Embedded
   protected Project project;
 
   protected SubmissionState state;

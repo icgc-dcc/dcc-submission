@@ -1,22 +1,25 @@
 package org.icgc.dcc.service;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import org.icgc.dcc.model.Release;
 import org.icgc.dcc.model.ReleaseState;
 import org.icgc.dcc.model.Submission;
 import org.icgc.dcc.model.SubmissionState;
 
-import com.google.inject.Inject;
+import com.google.code.morphia.Datastore;
 
 public class NextRelease extends HasRelease {
 
-  @Inject
-  private ReleaseService releaseService;
+  private final Datastore datastore;
 
-  public NextRelease(Release release) throws IllegalReleaseStateException {
+  public NextRelease(Release release, Datastore datastore) throws IllegalReleaseStateException {
     super(release);
     if(release.getState() != ReleaseState.OPENED) {
       throw new IllegalReleaseStateException(release, ReleaseState.OPENED);
     }
+    checkArgument(datastore != null);
+    this.datastore = datastore;
   }
 
   public void validate(Submission submission) {
@@ -28,7 +31,7 @@ public class NextRelease extends HasRelease {
     submission.setState(SubmissionState.SIGNED_OFF);
 
     // persist the state change with mongoDB
-    this.releaseService.getDatastore().save(submission);
+    this.datastore.save(submission);
   }
 
   public NextRelease release(Release nextRelease) throws IllegalReleaseStateException {
@@ -37,9 +40,9 @@ public class NextRelease extends HasRelease {
     nextRelease.setState(ReleaseState.OPENED);
 
     // persist the new release with mongoDB
-    this.releaseService.getDatastore().save(this.getRelease());
-    this.releaseService.getDatastore().save(nextRelease);
+    this.datastore.save(this.getRelease());
+    this.datastore.save(nextRelease);
 
-    return new NextRelease(nextRelease);
+    return new NextRelease(nextRelease, this.datastore);
   }
 }
