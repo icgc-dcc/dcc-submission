@@ -28,7 +28,6 @@ public class ProjectResource {
   private Projects projects;
 
   @GET
-  @Produces("application/json")
   public Response getProjects() {
     List<Project> projectlist = projects.query().list();
     if(projectlist == null) {
