@@ -24,6 +24,8 @@ public class WebModule extends AbstractModule {
       config.addModules(new JsonJacksonModule());
       config.addClasses(MyResource.class);
       config.addClasses(ProjectResource.class);
+      config.addClasses(ReleaseResource.class);
+      config.addClasses(NextReleaseResource.class);
       config.addClasses(BasicHttpAuthenticationRequestFilter.class);
     }
   }
