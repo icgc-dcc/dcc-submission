@@ -7,10 +7,12 @@ import org.icgc.dcc.model.Release;
 import org.icgc.dcc.model.ReleaseState;
 import org.icgc.dcc.model.Submission;
 import org.icgc.dcc.model.SubmissionState;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class NextReleaseTest {
 
+  @Ignore
   @Test
   public void test() {
     NextRelease nextRelease = mock(NextRelease.class);

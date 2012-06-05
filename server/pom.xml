@@ -111,6 +111,11 @@
 	  <artifactId>hadoop-hdfs</artifactId>
 	  <version>0.23.1</version>
 	</dependency>
+    <dependency>
+    	<groupId>com.sun.jersey.jersey-test-framework</groupId>
+    	<artifactId>jersey-test-framework-grizzly</artifactId>
+    	<version>1.12</version>
+    </dependency>
   </dependencies>
   <repositories>
     <repository>
