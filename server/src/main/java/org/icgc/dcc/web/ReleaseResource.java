@@ -1,6 +1,7 @@
 package org.icgc.dcc.web;
 
-import java.util.ArrayList;
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.util.List;
 
 import javax.ws.rs.GET;
@@ -11,9 +12,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.icgc.dcc.model.QRelease;
+import org.icgc.dcc.model.QSubmission;
 import org.icgc.dcc.model.Release;
-import org.icgc.dcc.model.Submission;
-import org.icgc.dcc.service.HasRelease;
 import org.icgc.dcc.service.ReleaseService;
 
 import com.google.inject.Inject;
@@ -26,11 +26,8 @@ public class ReleaseResource {
 
   @GET
   public Response getResources() {
-    List<HasRelease> hasReleases = releaseService.list();
-    List<Release> releases = new ArrayList<Release>();
-    for(HasRelease hasRelease : hasReleases) {
-      releases.add(hasRelease.getRelease());
-    }
+    List<Release> releases = releaseService.query().list();
+
     return Response.ok(releases).build();
   }
 
@@ -46,20 +43,33 @@ public class ReleaseResource {
 
   @PUT
   @Path("{name}")
-  public Response updateRelease() {
-    return Response.ok().build();
+  public Response updateRelease(@PathParam("name") String name, Release release) {
+    checkArgument(release != null);
+
+    if(this.releaseService.where(QRelease.release.name.eq(release.getName())).list().isEmpty()) {
+      this.releaseService.createInitialRelease(release);
+    }
+    // for now nothing is allowed to change
+    /*
+     * UpdateOperations<Release> ops =
+     * this.releaseService.getDatastore().createUpdateOperations(Release.class).set("state", release.getState());
+     * 
+     * Query<Release> updateQuery =
+     * this.releaseService.getDatastore().createQuery(Release.class).field("name").equal(name);
+     * 
+     * this.releaseService.getDatastore().update(updateQuery, ops);
+     */
+    return Response.ok(release).build();
   }
 
   @GET
   @Path("{name}/submissions/{accessionId}")
   public Response getSubmission(@PathParam("name") String name, @PathParam("accessionId") String accessionId) {
-    Release release = releaseService.where(QRelease.release.name.eq(name)).singleResult();
-    List<Submission> submissions = new ArrayList<Submission>();
-    for(Submission submission : release.getSubmissions()) {
-      if(submission.getProject().getAccessionId().equals(accessionId)) {
-        submissions.add(submission);
-      }
-    }
-    return Response.ok(submissions).build();
+    Release release =
+        releaseService.query()
+            .where(QRelease.release.name.eq(name), QSubmission.submission.project.accessionId.eq(accessionId))
+            .uniqueResult();
+
+    return Response.ok(release.getSubmissions()).build();
   }
 }

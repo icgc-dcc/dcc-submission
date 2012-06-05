@@ -65,9 +65,7 @@ public class ProjectResource {
   @Path("{accessionId}")
   public Response updateProject(@PathParam("accessionId") String accessionId, Project project) {
     checkArgument(project != null);
-    if(project == null) {
-      return Response.status(Status.NOT_FOUND).build();
-    }
+
     // update project use morphia query
     UpdateOperations<Project> ops =
         projects.datastore().createUpdateOperations(Project.class).set("name", project.getName());
