@@ -4,6 +4,7 @@ import org.icgc.dcc.model.Release;
 import org.icgc.dcc.model.ReleaseState;
 
 public class IllegalReleaseStateException extends RuntimeException {
+  private static final long serialVersionUID = 3199743377772054709L;
 
   private final Release release;
 

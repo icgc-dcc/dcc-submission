@@ -2,10 +2,14 @@ package org.icgc.dcc.web;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.List;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
@@ -22,6 +26,16 @@ public class ProjectResource {
 
   @Inject
   private Projects projects;
+
+  @GET
+  @Produces("application/json")
+  public Response getProjects() {
+    List<Project> projectlist = projects.query().list();
+    if(projectlist == null) {
+      return Response.status(Status.NOT_FOUND).build();
+    }
+    return Response.ok(projectlist).build();
+  }
 
   @POST
   public Response addProject(Project project) {
@@ -45,4 +59,24 @@ public class ProjectResource {
     return Response.ok(project).build();
   }
 
+  @PUT
+  @Path("{accessionId}")
+  public Response updateProject(@PathParam("accessionId") String accessionId) {
+    Project project = projects.where(QProject.project.accessionId.eq(accessionId)).uniqueResult();
+    if(project == null) {
+      return Response.status(Status.NOT_FOUND).build();
+    }
+    return Response.ok(project).build();
+  }
+
+  @GET
+  @Path("{accessionId}/releases")
+  @Produces("application/json")
+  public Response getReleases(@PathParam("accessionId") String accessionId) {
+    Project project = projects.where(QProject.project.accessionId.eq(accessionId)).uniqueResult();
+    if(project == null) {
+      return Response.status(Status.NOT_FOUND).build();
+    }
+    return Response.ok(projects.getReleases(project)).build();
+  }
 }
