@@ -92,6 +92,18 @@ public class ReleaseService {
     this.datastore.save(initRelease);
   }
 
+  public List<Submission> getSubmission(String releaseName, String accessionId) {
+    Release release = this.where(QRelease.release.name.eq(releaseName)).uniqueResult();
+    if(release == null) return null;
+
+    List<Submission> result = new ArrayList<Submission>();
+    for(Submission submission : release.getSubmissions()) {
+      if(submission.getAccessionId().equals(accessionId)) result.add(submission);
+    }
+
+    return result;
+  }
+
   public List<Submission> getQueued() {
     MorphiaQuery<Submission> query =
         new MorphiaQuery<Submission>(morphia, datastore, (EntityPath<Submission>) QSubmission.submission);
