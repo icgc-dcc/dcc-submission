@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.icgc.dcc.model.QRelease;
-import org.icgc.dcc.model.QSubmission;
 import org.icgc.dcc.model.Release;
 import org.icgc.dcc.model.ReleaseState;
 import org.icgc.dcc.model.Submission;
@@ -17,7 +16,6 @@ import com.google.code.morphia.Morphia;
 import com.google.inject.Inject;
 import com.mysema.query.mongodb.MongodbQuery;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
-import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Predicate;
 
 public class ReleaseService {
@@ -104,27 +102,33 @@ public class ReleaseService {
     return result;
   }
 
-  public List<Submission> getQueued() {
-    MorphiaQuery<Submission> query =
-        new MorphiaQuery<Submission>(morphia, datastore, (EntityPath<Submission>) QSubmission.submission);
-
-    List<Submission> submissions = query.where(QSubmission.submission.state.eq(SubmissionState.QUEUED)).list();
-    return submissions;
+  public List<String> getQueued() {
+    return this.getSubmission(SubmissionState.QUEUED);
   }
 
-  public List<Submission> getSubmissionFromAccessionId(String accessionId) {
-    MorphiaQuery<Submission> query =
-        new MorphiaQuery<Submission>(morphia, datastore, (EntityPath<Submission>) QSubmission.submission);
+  public boolean queue(List<String> accessionIds) {
 
-    List<Submission> submissions = query.where(QSubmission.submission.accessionId.eq(accessionId)).list();
-    return submissions;
+    return true;
   }
 
-  public List<Submission> getSignedOff() {
-    MorphiaQuery<Submission> query =
-        new MorphiaQuery<Submission>(morphia, datastore, (EntityPath<Submission>) QSubmission.submission);
+  public void deleteQueuedRequest() {
 
-    List<Submission> submissions = query.where(QSubmission.submission.state.eq(SubmissionState.SIGNED_OFF)).list();
-    return submissions;
+  }
+
+  public List<String> getSignedOff() {
+    return this.getSubmission(SubmissionState.SIGNED_OFF);
+  }
+
+  public boolean SignOff(List<String> accessionIds) {
+
+    return true;
+  }
+
+  private List<String> getSubmission(SubmissionState state) {
+    List<String> result = new ArrayList<String>();
+    for(Submission submission : this.getNextRelease().getRelease().getSubmissions()) {
+      if(submission.getState().equals(state)) result.add(submission.getAccessionId());
+    }
+    return result;
   }
 }
