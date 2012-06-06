@@ -4,12 +4,12 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.List;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
@@ -18,6 +18,8 @@ import org.icgc.dcc.model.Project;
 import org.icgc.dcc.model.Projects;
 import org.icgc.dcc.model.QProject;
 
+import com.google.code.morphia.query.Query;
+import com.google.code.morphia.query.UpdateOperations;
 import com.google.inject.Inject;
 import com.mongodb.MongoException.DuplicateKey;
 
@@ -37,6 +39,7 @@ public class ProjectResource {
   }
 
   @POST
+  @Consumes("application/json")
   public Response addProject(Project project) {
     checkArgument(project != null);
     try {
@@ -60,17 +63,22 @@ public class ProjectResource {
 
   @PUT
   @Path("{accessionId}")
-  public Response updateProject(@PathParam("accessionId") String accessionId) {
-    Project project = projects.where(QProject.project.accessionId.eq(accessionId)).uniqueResult();
-    if(project == null) {
-      return Response.status(Status.NOT_FOUND).build();
-    }
+  public Response updateProject(@PathParam("accessionId") String accessionId, Project project) {
+    checkArgument(project != null);
+
+    // update project use morphia query
+    UpdateOperations<Project> ops =
+        projects.datastore().createUpdateOperations(Project.class).set("name", project.getName());
+    Query<Project> updateQuery =
+        projects.datastore().createQuery(Project.class).field("accessionId").equal(accessionId);
+
+    projects.datastore().update(updateQuery, ops);
+
     return Response.ok(project).build();
   }
 
   @GET
   @Path("{accessionId}/releases")
-  @Produces("application/json")
   public Response getReleases(@PathParam("accessionId") String accessionId) {
     Project project = projects.where(QProject.project.accessionId.eq(accessionId)).uniqueResult();
     if(project == null) {

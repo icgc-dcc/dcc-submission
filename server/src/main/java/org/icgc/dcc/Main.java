@@ -34,7 +34,14 @@ public class Main {
 
     // for development purposes only (TODO: remove)
     injector.getInstance(MyShiro.class).doIt();
-    injector.getInstance(DccFilesystem.class).doIt();
+    try {
+      if("anthony".equals(System.getProperty("user.name"))) {// FIXME: temporary workaround, so program does not break
+                                                             // for those who don't have hadoop/test environment setup
+        injector.getInstance(DccFilesystem.class).doIt();
+      }
+    } catch(Exception e) { // TODO: what's our policy on exception for now?
+      throw new RuntimeException(e);
+    }
 
     injector.getInstance(DccRuntime.class).start();
     System.in.read();
