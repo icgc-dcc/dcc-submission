@@ -133,7 +133,13 @@
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-hdfs</artifactId>
-      <version>${hadoop.version}</version>
+      <version>${hadoop-cdh.version}</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>commons-logging</artifactId>
+          <groupId>commons-logging</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <!-- Test Dependencies -->
     <dependency>
@@ -165,6 +171,22 @@
     <repository>
       <id>morphia</id>
       <url>https://morphia.googlecode.com/svn/mavenrepo</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>cloudera</id>
+      <url>https://repository.cloudera.com/artifactory/cloudera-repos/.</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
     </repository>
     <repository>
       <id>conjars.org</id>
@@ -310,6 +332,9 @@
     <jersey.version>2.0-m04</jersey.version>
     <shiro.version>1.2.0</shiro.version>
     <hadoop.version>0.23.1</hadoop.version>
+    <cdh.version>cdh4.0.0b2</cdh.version>
+    <hadoop-cdh.version>${hadoop.version}-${cdh.version}</hadoop-cdh.version>
+    <hadoop-mr1-cdh.version>${hadoop.version}-mr1-${cdh.version}</hadoop-mr1-cdh.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 </project>
