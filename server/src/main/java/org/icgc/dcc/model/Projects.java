@@ -45,7 +45,7 @@ public class Projects {
     List<Release> releases = new ArrayList<Release>();
     for(Release release : releaseQuery.list()) {
       for(Submission submission : release.getSubmissions()) {
-        if(submission.getProject().equals(project)) {
+        if(submission.getAccessionId().equals(project.getAccessionId())) {
           releases.add(release);
           continue;
         }
