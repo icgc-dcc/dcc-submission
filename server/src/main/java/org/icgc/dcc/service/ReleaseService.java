@@ -88,7 +88,8 @@ public class ReleaseService {
   }
 
   public void createInitialRelease(Release initRelease) {
-
+    // create the first release
+    this.datastore.save(initRelease);
   }
 
   public List<Submission> getQueued() {

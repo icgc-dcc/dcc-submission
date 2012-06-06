@@ -46,19 +46,20 @@ public class ReleaseResource {
   public Response updateRelease(@PathParam("name") String name, Release release) {
     checkArgument(release != null);
 
-    if(this.releaseService.where(QRelease.release.name.eq(release.getName())).list().isEmpty()) {
+    if(this.releaseService.list().isEmpty()) {
       this.releaseService.createInitialRelease(release);
+    } else {
+      // for now nothing is allowed to change
+      /*
+       * UpdateOperations<Release> ops =
+       * this.releaseService.getDatastore().createUpdateOperations(Release.class).set("state", release.getState());
+       * 
+       * Query<Release> updateQuery =
+       * this.releaseService.getDatastore().createQuery(Release.class).field("name").equal(name);
+       * 
+       * this.releaseService.getDatastore().update(updateQuery, ops);
+       */
     }
-    // for now nothing is allowed to change
-    /*
-     * UpdateOperations<Release> ops =
-     * this.releaseService.getDatastore().createUpdateOperations(Release.class).set("state", release.getState());
-     * 
-     * Query<Release> updateQuery =
-     * this.releaseService.getDatastore().createQuery(Release.class).field("name").equal(name);
-     * 
-     * this.releaseService.getDatastore().update(updateQuery, ops);
-     */
     return Response.ok(release).build();
   }
 
