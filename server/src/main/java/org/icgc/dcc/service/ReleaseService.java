@@ -104,7 +104,7 @@ public class ReleaseService {
     MorphiaQuery<Submission> query =
         new MorphiaQuery<Submission>(morphia, datastore, (EntityPath<Submission>) QSubmission.submission);
 
-    List<Submission> submissions = query.where(QSubmission.submission.project.accessionId.eq(accessionId)).list();
+    List<Submission> submissions = query.where(QSubmission.submission.accessionId.eq(accessionId)).list();
     return submissions;
   }
 

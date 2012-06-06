@@ -47,7 +47,7 @@ public class NextReleaseResource {
     List<String> projectIds = new ArrayList<String>();
 
     for(Submission submission : releaseService.getQueued()) {
-      projectIds.add(submission.getProject().getAccessionId());
+      projectIds.add(submission.getAccessionId());
     }
 
     return Response.ok(projectIds).build();
@@ -84,7 +84,7 @@ public class NextReleaseResource {
     List<String> projectIds = new ArrayList<String>();
 
     for(Submission submission : releaseService.getSignedOff()) {
-      projectIds.add(submission.getProject().getAccessionId());
+      projectIds.add(submission.getAccessionId());
     }
 
     return Response.ok(projectIds).build();

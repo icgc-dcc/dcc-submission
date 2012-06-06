@@ -31,7 +31,7 @@ public class ReleaseTest {
 
       Submission submission = new Submission();
       submission.setState(SubmissionState.VALID);
-      submission.setProject(project);
+      submission.setAccessionId(project.getAccessionId());
 
       release.getSubmissions().add(submission);
 
@@ -49,9 +49,8 @@ public class ReleaseTest {
       Submission submissionDB = releaseDB.getSubmissions().get(0);
       assertEquals(submission.getState(), submissionDB.getState());
 
-      Project projectDB = submissionDB.getProject();
-      assertEquals(project.getName(), projectDB.getName());
-      assertEquals(project.getAccessionId(), projectDB.getAccessionId());
+      String projectId = submissionDB.getAccessionId();
+      assertEquals(project.getAccessionId(), projectId);
 
     } catch(UnknownHostException e) {
       e.printStackTrace();
