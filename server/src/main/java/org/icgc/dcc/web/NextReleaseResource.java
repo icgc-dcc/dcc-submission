@@ -25,7 +25,8 @@ public class NextReleaseResource {
 
   @GET
   public Response getNextRelease() {
-    return Response.ok().build();
+    NextRelease nextRelease = releaseService.getNextRelease();
+    return Response.ok(nextRelease.getRelease()).build();
   }
 
   @POST

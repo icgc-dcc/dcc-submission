@@ -87,6 +87,10 @@ public class ReleaseService {
     return list;
   }
 
+  public void createInitialRelease(Release initRelease) {
+
+  }
+
   public List<Submission> getQueued() {
     MorphiaQuery<Submission> query =
         new MorphiaQuery<Submission>(morphia, datastore, (EntityPath<Submission>) QSubmission.submission);
