@@ -29,20 +29,18 @@ public class FilesystemProvider implements Provider<FileSystem> {
   public FileSystem get() {
 
     boolean useHdfs = this.config.getBoolean(ConfigConstants.FS_USE_HDFS);
-    if(useHdfs) { // else will use default: "file:///" (read "file://" and "/")
+    if(useHdfs) { // else will use default: "file:///" (read "file://" + "/")
 
       String host = this.config.getString(ConfigConstants.FS__HDFS__HOST);
       Integer port = this.config.getInt(ConfigConstants.FS__HDFS__PORT);
 
       checkArgument(host != null);
       checkArgument(port != null);
-      // TODO: defaults
+      // TODO: defaults?
 
       String hdfsURL = "hdfs://" + host + ":" + port;// TODO constants
       log.info("hdfs URL = " + hdfsURL);
-      this.configuration.set(HadoopConstants.FS_DEFAULT_NAME__PROPERTY,//
-          hdfsURL);
-      // TODO: put in config
+      this.configuration.set(HadoopConstants.FS_DEFAULT_NAME__PROPERTY, hdfsURL);
     }
 
     FileSystem fileSystem = null;

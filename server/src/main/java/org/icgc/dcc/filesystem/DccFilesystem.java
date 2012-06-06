@@ -45,7 +45,9 @@ public class DccFilesystem {
     Path rootPath = new Path(root);
     boolean rootExists = this.fileSystem.exists(rootPath);
     if(!rootExists) {
-      throw new RuntimeException(root + " does not exist");
+      log.info(root + " does not exist");
+      this.fileSystem.mkdirs(rootPath);
+      log.info("created " + root);
     }
 
     FileStatus[] listStatus = this.fileSystem.listStatus(rootPath); // non-recursive
