@@ -112,7 +112,12 @@ public class ReleaseService {
   }
 
   public void deleteQueuedRequest() {
-
+    List<String> accessionIds = this.getQueued();
+    for(String accessionId : accessionIds) {
+      Query<Release> deleteQuery =
+          this.datastore.createQuery(Release.class).filter("submissions.accessionId", accessionId);
+      this.datastore.delete(deleteQuery);
+    }
   }
 
   public List<String> getSignedOff() {
@@ -135,8 +140,10 @@ public class ReleaseService {
     UpdateOperations<Release> ops;
     Query<Release> updateQuery;
 
+    checkArgument(accessionIds != null);
+
     for(String accessionId : accessionIds) {
-      ops = this.datastore.createUpdateOperations(Release.class).set("submissions.state", state);
+      ops = this.datastore.createUpdateOperations(Release.class).disableValidation().set("submissions.$.state", state);
       updateQuery =
           this.datastore.createQuery(Release.class).filter("name =", this.getNextRelease().getRelease().getName())
               .filter("submissions.accessionId =", accessionId);
