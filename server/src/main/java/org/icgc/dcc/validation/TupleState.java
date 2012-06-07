@@ -42,7 +42,7 @@ public class TupleState implements Serializable {
 
   @Override
   public String toString() {
-    return Objects.toStringHelper(this).add("valid", isValid()).add("errors", errors).toString();
+    return Objects.toStringHelper(TupleState.class).add("valid", isValid()).add("errors", errors).toString();
   }
 
   /**
