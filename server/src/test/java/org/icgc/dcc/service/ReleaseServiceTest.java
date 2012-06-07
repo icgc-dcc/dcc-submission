@@ -1,51 +1,97 @@
 package org.icgc.dcc.service;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
+import java.net.UnknownHostException;
+
+import org.icgc.dcc.model.BaseEntity;
 import org.icgc.dcc.model.Project;
 import org.icgc.dcc.model.Release;
 import org.icgc.dcc.model.Submission;
 import org.icgc.dcc.model.SubmissionState;
-import org.junit.Ignore;
+import org.junit.Before;
 import org.junit.Test;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
 import com.mongodb.Mongo;
+import com.mongodb.MongoException;
 
 public class ReleaseServiceTest {
 
-  @Ignore
-  @Test
-  public void test() {
+  private ReleaseService releaseService;
 
-    Mongo mongo = mock(Mongo.class);
-    Morphia morphia = mock(Morphia.class);
-    Datastore ds = morphia.createDatastore(mongo, "testDB");
+  private Release release;
 
-    Release release = mock(Release.class);
-    Project project = mock(Project.class);
-    Submission submission = mock(Submission.class);
+  @Before
+  public void setUp() {
+    try {
+      // use local host as test MongoDB for now
+      Mongo mongo = new Mongo("localhost");
+      Morphia morphia = new Morphia();
+      morphia.map(BaseEntity.class);
+      Datastore ds = morphia.createDatastore(mongo, "testDB");
 
-    submission.setState(SubmissionState.VALID);
-    submission.setAccessionId(project.getAccessionId());
+      ds.delete(ds.createQuery(Release.class));
+      ds.delete(ds.createQuery(Project.class));
 
-    release.getSubmissions().add(submission);
+      release = new Release();
+      Project project = new Project();
+      Submission submission = new Submission();
 
-    ReleaseService releaseService = new ReleaseService(morphia, ds);
+      submission.setState(SubmissionState.VALID);
+      submission.setAccessionId(project.getAccessionId());
 
-    when(releaseService.getNextRelease().getRelease()).thenReturn(release);
-    when(releaseService.getCompletedReleases().size()).thenReturn(0);
-    when(releaseService.list().size()).thenReturn(1);
+      release.getSubmissions().add(submission);
 
-    Release newRelease = mock(Release.class);
-    releaseService.getNextRelease().release(newRelease);
+      releaseService = new ReleaseService(morphia, ds);
+      releaseService.createInitialRelease(release);
+    } catch(UnknownHostException e) {
+      e.printStackTrace();
 
-    when(releaseService.getNextRelease().getRelease()).thenReturn(newRelease);
-    when(releaseService.getCompletedReleases().size()).thenReturn(1);
-    when(releaseService.list().size()).thenReturn(2);
+      fail(e.getMessage());
+    } catch(MongoException e) {
+      e.printStackTrace();
 
+      fail(e.getMessage());
+    } catch(NullPointerException e) {
+      e.printStackTrace();
+
+      fail(e.getMessage());
+    }
   }
 
+  @Test
+  public void test_getNextRelease_isCorrectRelease() {
+    assertEquals(release.getId(), releaseService.getNextRelease().getRelease().getId());
+
+    Release newRelease = addNewRelease();
+
+    assertEquals(newRelease.getId(), releaseService.getNextRelease().getRelease().getId());
+  }
+
+  @Test
+  public void test_getCompletedReleases_isCorrectSize() {
+    assertEquals(0, releaseService.getCompletedReleases().size());
+
+    addNewRelease();
+
+    assertEquals(1, releaseService.getCompletedReleases().size());
+  }
+
+  @Test
+  public void test_list_isCorrectSize() {
+    assertEquals(1, releaseService.list().size());
+
+    addNewRelease();
+
+    assertEquals(2, releaseService.list().size());
+  }
+
+  private Release addNewRelease() {
+    Release newRelease = new Release();
+    releaseService.getNextRelease().release(newRelease);
+    return newRelease;
+  }
 }
