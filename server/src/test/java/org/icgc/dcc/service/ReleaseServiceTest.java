@@ -24,6 +24,8 @@ public class ReleaseServiceTest {
 
   private Release release;
 
+  final private String testDbName = "testDb";
+
   @Before
   public void setUp() {
     try {
@@ -31,11 +33,13 @@ public class ReleaseServiceTest {
       Mongo mongo = new Mongo("localhost");
       Morphia morphia = new Morphia();
       morphia.map(BaseEntity.class);
-      Datastore ds = morphia.createDatastore(mongo, "testDB");
+      Datastore ds = morphia.createDatastore(mongo, testDbName);
 
+      // Clear out the test database before each test
       ds.delete(ds.createQuery(Release.class));
       ds.delete(ds.createQuery(Project.class));
 
+      // Set up a minimal test case
       release = new Release();
       Project project = new Project();
       Submission submission = new Submission();
@@ -45,6 +49,7 @@ public class ReleaseServiceTest {
 
       release.getSubmissions().add(submission);
 
+      // Create the releaseService and populate it with the initial release
       releaseService = new ReleaseService(morphia, ds);
       releaseService.createInitialRelease(release);
     } catch(UnknownHostException e) {
