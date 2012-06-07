@@ -32,13 +32,18 @@ public class NextRelease extends BaseRelease {
     // set submission state to be signed off
     submission.setState(SubmissionState.SIGNED_OFF);
 
-    // persist the state change with mongoDB
-    this.datastore.save(submission);
+    UpdateOperations<Release> ops =
+        this.datastore.createUpdateOperations(Release.class).set("submissions.state", SubmissionState.SIGNED_OFF);
+    Query<Release> updateQuery =
+        this.datastore.createQuery(Release.class).field("submissions.accessionId").equal(submission.getAccessionId());
+
+    this.datastore.update(updateQuery, ops);
+
   }
 
   public NextRelease release(Release nextRelease) throws IllegalReleaseStateException {
     // set old release to be completed
-    String oldReleaseName = this.getRelease().getName();
+    String curReleaseName = this.getRelease().getName();
 
     this.getRelease().setState(ReleaseState.COMPLETED);
     nextRelease.setState(ReleaseState.OPENED);
@@ -46,7 +51,7 @@ public class NextRelease extends BaseRelease {
     // update the newly changed status to mongoDB
     UpdateOperations<Release> ops =
         this.datastore.createUpdateOperations(Release.class).set("state", ReleaseState.COMPLETED);
-    Query<Release> updateQuery = this.datastore.createQuery(Release.class).field("name").equal(oldReleaseName);
+    Query<Release> updateQuery = this.datastore.createQuery(Release.class).field("name").equal(curReleaseName);
 
     this.datastore.update(updateQuery, ops);
     // save the newly created release to mongoDB

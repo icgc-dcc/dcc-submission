@@ -87,10 +87,10 @@ public class ReleaseResource {
   @GET
   @Path("{name}/submissions/{accessionId}")
   public Response getSubmission(@PathParam("name") String name, @PathParam("accessionId") String accessionId) {
-    List<Submission> submissions = this.releaseService.getSubmission(name, accessionId);
-    if(submissions == null) {
+    Submission submission = this.releaseService.getSubmission(name, accessionId);
+    if(submission == null) {
       return Response.status(Status.NOT_FOUND).build();
     }
-    return Response.ok(submissions).build();
+    return Response.ok(submission).build();
   }
 }
