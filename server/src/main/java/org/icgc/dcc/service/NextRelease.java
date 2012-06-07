@@ -33,9 +33,11 @@ public class NextRelease extends BaseRelease {
     submission.setState(SubmissionState.SIGNED_OFF);
 
     UpdateOperations<Release> ops =
-        this.datastore.createUpdateOperations(Release.class).set("submissions.state", SubmissionState.SIGNED_OFF);
+        this.datastore.createUpdateOperations(Release.class).disableValidation()
+            .set("submissions.$.state", SubmissionState.SIGNED_OFF);
     Query<Release> updateQuery =
-        this.datastore.createQuery(Release.class).field("submissions.accessionId").equal(submission.getAccessionId());
+        this.datastore.createQuery(Release.class).filter("name", this.getRelease().getName())
+            .filter("submissions.accessionId", submission.getAccessionId());
 
     this.datastore.update(updateQuery, ops);
 
@@ -48,14 +50,15 @@ public class NextRelease extends BaseRelease {
     this.getRelease().setState(ReleaseState.COMPLETED);
     nextRelease.setState(ReleaseState.OPENED);
 
+    // save the newly created release to mongoDB
+    this.datastore.save(nextRelease);
+
     // update the newly changed status to mongoDB
     UpdateOperations<Release> ops =
         this.datastore.createUpdateOperations(Release.class).set("state", ReleaseState.COMPLETED);
     Query<Release> updateQuery = this.datastore.createQuery(Release.class).field("name").equal(curReleaseName);
 
     this.datastore.update(updateQuery, ops);
-    // save the newly created release to mongoDB
-    this.datastore.save(nextRelease);
 
     return new NextRelease(nextRelease, this.datastore);
   }
