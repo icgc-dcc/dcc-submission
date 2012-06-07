@@ -72,7 +72,7 @@ public class NextReleaseResource {
   @POST
   @Path("signed")
   public Response signOff(List<String> accessionIds) {
-    if(this.releaseService.SignOff(accessionIds)) return Response.ok().build();
+    if(this.releaseService.signOff(accessionIds)) return Response.ok().build();
     else
       return Response.status(Status.BAD_REQUEST).build();
   }

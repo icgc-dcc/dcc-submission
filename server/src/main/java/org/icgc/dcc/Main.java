@@ -5,8 +5,8 @@ import java.io.IOException;
 import org.icgc.dcc.config.ConfigModule;
 import org.icgc.dcc.core.CoreModule;
 import org.icgc.dcc.core.DccRuntime;
-import org.icgc.dcc.filesystem.DccFilesystem;
-import org.icgc.dcc.filesystem.FilesystemModule;
+import org.icgc.dcc.filesystem.DccFileSystem;
+import org.icgc.dcc.filesystem.FileSystemModule;
 import org.icgc.dcc.http.HttpModule;
 import org.icgc.dcc.http.jersey.InjectModule;
 import org.icgc.dcc.http.jersey.JerseyModule;
@@ -29,13 +29,13 @@ public class Main {
         new WebModule(),//
         new ModelModule(),//
         new ShiroModule(),//
-        new FilesystemModule()//
+        new FileSystemModule()//
         );
 
     // for development purposes only (TODO: remove)
     injector.getInstance(MyShiro.class).doIt();
     try {
-      injector.getInstance(DccFilesystem.class).doIt();
+      injector.getInstance(DccFileSystem.class).testIt();
     } catch(Exception e) { // TODO: what's our policy on exception for now?
       throw new RuntimeException(e);
     }

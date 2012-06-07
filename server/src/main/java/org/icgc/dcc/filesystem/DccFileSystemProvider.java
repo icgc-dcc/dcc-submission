@@ -7,7 +7,7 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.typesafe.config.Config;
 
-public class DccFilesystemProvider implements Provider<DccFilesystem> {
+public class DccFileSystemProvider implements Provider<DccFileSystem> {
 
   @Inject
   private Config config;
@@ -19,8 +19,8 @@ public class DccFilesystemProvider implements Provider<DccFilesystem> {
   private FileSystem fileSystem;
 
   @Override
-  public DccFilesystem get() {
-    return new DccFilesystem(this.config, this.projects, this.fileSystem);
+  public DccFileSystem get() {
+    return new DccFileSystem(this.config, this.projects, this.fileSystem);
   }
 
 }

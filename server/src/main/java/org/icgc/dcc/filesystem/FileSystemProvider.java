@@ -16,8 +16,8 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.typesafe.config.Config;
 
-public class FilesystemProvider implements Provider<FileSystem> {
-  private static final Logger log = LoggerFactory.getLogger(FilesystemProvider.class);
+public class FileSystemProvider implements Provider<FileSystem> {
+  private static final Logger log = LoggerFactory.getLogger(FileSystemProvider.class);
 
   @Inject
   private final Configuration configuration = new Configuration(); // hadoop's

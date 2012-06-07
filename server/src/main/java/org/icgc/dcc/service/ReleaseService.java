@@ -119,7 +119,7 @@ public class ReleaseService {
     return this.getSubmission(SubmissionState.SIGNED_OFF);
   }
 
-  public boolean SignOff(List<String> accessionIds) {
+  public boolean signOff(List<String> accessionIds) {
     return this.setState(accessionIds, SubmissionState.SIGNED_OFF);
   }
 
