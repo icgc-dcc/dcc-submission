@@ -3,6 +3,7 @@ package org.icgc.dcc.model;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.google.code.morphia.Datastore;
@@ -45,7 +46,7 @@ public class Projects {
     List<Release> releases = new ArrayList<Release>();
     for(Release release : releaseQuery.list()) {
       for(Submission submission : release.getSubmissions()) {
-        if(submission.getProject().equals(project)) {
+        if(submission.getAccessionId().equals(project.getAccessionId())) {
           releases.add(release);
           continue;
         }
@@ -55,4 +56,8 @@ public class Projects {
     return releases;
   }
 
+  // TODO
+  public List<Project> listProjects() {
+    return Arrays.asList(new Project("OICR_prostate"), new Project("OICR_pancreas"), new Project("TCGA"));
+  }
 }
