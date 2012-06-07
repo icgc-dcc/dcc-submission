@@ -8,15 +8,17 @@ import cascading.tuple.TupleEntry;
 
 public class ValidationFields extends Fields {
 
-  public static final String STATE_FIELD = "_state";
+  public static final String STATE_FIELD_NAME = "_state";
+
+  public static final Fields STATE_FIELD = new Fields(STATE_FIELD_NAME);
 
   public static TupleState state(TupleEntry te) {
-    return (TupleState) te.getObject(STATE_FIELD);
+    return (TupleState) te.getObject(STATE_FIELD_NAME);
   }
 
   @ConstructorProperties({ "fields" })
   public ValidationFields(Comparable... fields) {
-    super(concat(fields, STATE_FIELD));
+    super(concat(fields, STATE_FIELD_NAME));
   }
 
   private static Comparable[] concat(Comparable[] fields, Comparable... extra) {

@@ -13,6 +13,7 @@ import cascading.operation.Buffer;
 import cascading.operation.BufferCall;
 import cascading.operation.Function;
 import cascading.operation.FunctionCall;
+import cascading.operation.OperationCall;
 import cascading.pipe.Every;
 import cascading.pipe.GroupBy;
 import cascading.pipe.Pipe;
@@ -83,9 +84,13 @@ public class UniqueFieldsRestriction implements FieldRestriction, PipeExtender {
     }
 
     @Override
-    public void operate(FlowProcess flowProcess, BufferCall bufferCall) {
-      TupleEntry group = bufferCall.getGroup();
+    public void prepare(FlowProcess flowProcess, OperationCall operationCall) {
+      // TODO Auto-generated method stub
+      super.prepare(flowProcess, operationCall);
+    }
 
+    @Override
+    public void operate(FlowProcess flowProcess, BufferCall bufferCall) {
       int count = 0;
       Iterator<TupleEntry> i = bufferCall.getArgumentsIterator();
       while(i.hasNext()) {
@@ -102,7 +107,7 @@ public class UniqueFieldsRestriction implements FieldRestriction, PipeExtender {
   private static class CountIsOne extends BaseOperation implements Function {
 
     private CountIsOne() {
-      super(2, new Fields(ValidationFields.STATE_FIELD));
+      super(2, ValidationFields.STATE_FIELD);
     }
 
     @Override
