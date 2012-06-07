@@ -120,7 +120,9 @@ public class DccFilesystem {
     checkArgument(this.checkExistence(releasePath)); // TODO: better assert somewhere?
 
     // create sub-directory for each project
-    List<Project> projectList = this.projects.listProjects();
+    List<Project> projectList = this.projects.getProjects();
+    checkArgument(!projectList.isEmpty(), "project list cannot be empty");
+    log.info("# of projects = " + projectList.size());
     for(Project project : projectList) {
 
       // create path for project within the release
@@ -128,9 +130,8 @@ public class DccFilesystem {
       log.info("\t" + "project path = " + projectStringPath);
       Path projectPath = new Path(projectStringPath);
       checkArgument(!this.checkExistence(projectPath)); // theoretically can't really happen since we throw an exception
-                                                        // if the
-                                                        // release already exists and we assume all projects have unique
-                                                        // names... TODO?
+                                                        // if the release already exists and we assume all projects have
+                                                        // unique names... TODO?
 
       // create corresponding project directory
       this.createDirectory(projectPath);

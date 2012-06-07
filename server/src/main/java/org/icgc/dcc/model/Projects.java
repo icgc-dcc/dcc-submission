@@ -3,7 +3,6 @@ package org.icgc.dcc.model;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import com.google.code.morphia.Datastore;
@@ -56,8 +55,12 @@ public class Projects {
     return releases;
   }
 
-  // TODO
-  public List<Project> listProjects() {
-    return Arrays.asList(new Project("OICR_prostate"), new Project("OICR_pancreas"), new Project("TCGA"));
+  public List<Project> getProjects() {
+    MorphiaQuery<Project> projectQuery = new MorphiaQuery<Project>(this.morphia, this.datastore, QProject.project);
+    List<Project> projectList = new ArrayList<Project>();
+    for(Project project : projectQuery.list()) {
+      projectList.add(project);
+    }
+    return projectList;
   }
 }
