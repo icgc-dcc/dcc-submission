@@ -1,12 +1,12 @@
 package org.icgc.dcc.validation;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
 import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.FileSchema;
 import org.icgc.dcc.model.dictionary.ValueType;
+import org.icgc.dcc.validation.CascadeBuilder.PipeExtender;
 
 import cascading.flow.Flow;
 import cascading.flow.FlowConnector;
@@ -44,7 +44,9 @@ public class CopyOfMain {
 
     Pipe pipe = new Pipe(studyB.name);
     pipe = new Each(pipe, new AddValidationFieldsFunction(), Fields.ALL);
-    pipe = new FileSchemaPipeBuilder(pipe, studyB).getTails()[0];
+    PipeExtender extender = new UniqueFieldsRestriction.Factory().build(null, null);
+    pipe = extender.extend(pipe);
+    // pipe = new FileSchemaPipeBuilder(pipe, studyB).getTails()[0];
 
     Flow<?> flow;
     if(args[0].equals("--local")) {
@@ -138,7 +140,7 @@ public class CopyOfMain {
   public static final class AddValidationFieldsFunction extends BaseOperation implements Function {
 
     public AddValidationFieldsFunction() {
-      super(0, new Fields("_errors"));
+      super(0, new Fields(ValidationFields.STATE_FIELD));
     }
 
     @Override
@@ -146,7 +148,7 @@ public class CopyOfMain {
       // create a Tuple to hold our result values
       Tuple result = new Tuple();
 
-      result.add(new ArrayList<String>());
+      result.add(new TupleState());
 
       // return the result Tuple
       functionCall.getOutputCollector().add(result);

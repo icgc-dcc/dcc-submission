@@ -3,10 +3,12 @@ package org.icgc.dcc.validation;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.annotation.Nullable;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
 /**
@@ -38,6 +40,11 @@ public class TupleState implements Serializable {
     return isValid() == false;
   }
 
+  @Override
+  public String toString() {
+    return Objects.toStringHelper(this).add("valid", isValid()).add("errors", errors).toString();
+  }
+
   /**
    * Used to lazily instantiate the errors list. This method never returns {@code null}.
    */
@@ -58,6 +65,12 @@ public class TupleState implements Serializable {
     private TupleError(int code, Object... parameters) {
       this.code = code;
       this.parameters = parameters;
+    }
+
+    @Override
+    public String toString() {
+      return Objects.toStringHelper(TupleError.class).add("code", code).add("parameters", Arrays.toString(parameters))
+          .toString();
     }
 
   }
