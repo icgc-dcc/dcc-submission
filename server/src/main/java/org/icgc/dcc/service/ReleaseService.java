@@ -13,6 +13,8 @@ import org.icgc.dcc.model.SubmissionState;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
+import com.google.code.morphia.query.Query;
+import com.google.code.morphia.query.UpdateOperations;
 import com.google.inject.Inject;
 import com.mysema.query.mongodb.MongodbQuery;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
@@ -90,16 +92,15 @@ public class ReleaseService {
     this.datastore.save(initRelease);
   }
 
-  public List<Submission> getSubmission(String releaseName, String accessionId) {
+  public Submission getSubmission(String releaseName, String accessionId) {
     Release release = this.where(QRelease.release.name.eq(releaseName)).uniqueResult();
-    if(release == null) return null;
+    checkArgument(release != null);
 
-    List<Submission> result = new ArrayList<Submission>();
     for(Submission submission : release.getSubmissions()) {
-      if(submission.getAccessionId().equals(accessionId)) result.add(submission);
+      if(submission.getAccessionId().equals(accessionId)) return submission;
     }
 
-    return result;
+    return null;
   }
 
   public List<String> getQueued() {
@@ -107,8 +108,7 @@ public class ReleaseService {
   }
 
   public boolean queue(List<String> accessionIds) {
-
-    return true;
+    return this.setState(accessionIds, SubmissionState.QUEUED);
   }
 
   public void deleteQueuedRequest() {
@@ -120,8 +120,7 @@ public class ReleaseService {
   }
 
   public boolean SignOff(List<String> accessionIds) {
-
-    return true;
+    return this.setState(accessionIds, SubmissionState.SIGNED_OFF);
   }
 
   private List<String> getSubmission(SubmissionState state) {
@@ -130,5 +129,20 @@ public class ReleaseService {
       if(submission.getState().equals(state)) result.add(submission.getAccessionId());
     }
     return result;
+  }
+
+  private boolean setState(List<String> accessionIds, SubmissionState state) {
+    UpdateOperations<Release> ops;
+    Query<Release> updateQuery;
+
+    for(String accessionId : accessionIds) {
+      ops = this.datastore.createUpdateOperations(Release.class).set("submissions.state", state);
+      updateQuery =
+          this.datastore.createQuery(Release.class).filter("name =", this.getNextRelease().getRelease().getName())
+              .filter("submissions.accessionId =", accessionId);
+      this.datastore.update(updateQuery, ops);
+    }
+
+    return true;
   }
 }
