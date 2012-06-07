@@ -29,7 +29,7 @@ public class ReleaseServiceTest {
     Submission submission = mock(Submission.class);
 
     submission.setState(SubmissionState.VALID);
-    submission.setProject(project);
+    submission.setAccessionId(project.getAccessionId());
 
     release.getSubmissions().add(submission);
 

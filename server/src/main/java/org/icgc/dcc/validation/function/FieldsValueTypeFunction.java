@@ -18,7 +18,7 @@ public final class FieldsValueTypeFunction extends BaseOperation implements Func
   private final FileSchema schema;
 
   public FieldsValueTypeFunction(FileSchema schema) {
-    super(Fields.ALL);
+    super(Fields.ARGS);
     this.schema = schema;
   }
 

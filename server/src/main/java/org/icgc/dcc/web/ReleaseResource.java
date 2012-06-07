@@ -12,8 +12,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.icgc.dcc.model.QRelease;
-import org.icgc.dcc.model.QSubmission;
 import org.icgc.dcc.model.Release;
+import org.icgc.dcc.model.Submission;
 import org.icgc.dcc.service.ReleaseService;
 
 import com.google.inject.Inject;
@@ -63,14 +63,34 @@ public class ReleaseResource {
     return Response.ok(release).build();
   }
 
+  /*
+   * // web service for adding submission to release (testing use only)
+   * 
+   * @POST
+   * 
+   * @Consumes("application/json")
+   * 
+   * @Path("{name}") public Response addSubmission(@PathParam("name") String name, Submission submission) {
+   * checkArgument(submission != null);
+   * 
+   * UpdateOperations<Release> ops =
+   * this.releaseService.getDatastore().createUpdateOperations(Release.class).add("submissions", submission);
+   * 
+   * Query<Release> updateQuery =
+   * this.releaseService.getDatastore().createQuery(Release.class).field("name").equal(name);
+   * 
+   * this.releaseService.getDatastore().update(updateQuery, ops);
+   * 
+   * return Response.ok(submission).build(); }
+   */
+
   @GET
   @Path("{name}/submissions/{accessionId}")
   public Response getSubmission(@PathParam("name") String name, @PathParam("accessionId") String accessionId) {
-    Release release =
-        releaseService.query()
-            .where(QRelease.release.name.eq(name), QSubmission.submission.project.accessionId.eq(accessionId))
-            .uniqueResult();
-
-    return Response.ok(release.getSubmissions()).build();
+    List<Submission> submissions = this.releaseService.getSubmission(name, accessionId);
+    if(submissions == null) {
+      return Response.status(Status.NOT_FOUND).build();
+    }
+    return Response.ok(submissions).build();
   }
 }

@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.icgc.dcc.model.QRelease;
-import org.icgc.dcc.model.QSubmission;
 import org.icgc.dcc.model.Release;
 import org.icgc.dcc.model.ReleaseState;
 import org.icgc.dcc.model.Submission;
@@ -17,7 +16,6 @@ import com.google.code.morphia.Morphia;
 import com.google.inject.Inject;
 import com.mysema.query.mongodb.MongodbQuery;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
-import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Predicate;
 
 public class ReleaseService {
@@ -92,27 +90,45 @@ public class ReleaseService {
     this.datastore.save(initRelease);
   }
 
-  public List<Submission> getQueued() {
-    MorphiaQuery<Submission> query =
-        new MorphiaQuery<Submission>(morphia, datastore, (EntityPath<Submission>) QSubmission.submission);
+  public List<Submission> getSubmission(String releaseName, String accessionId) {
+    Release release = this.where(QRelease.release.name.eq(releaseName)).uniqueResult();
+    if(release == null) return null;
 
-    List<Submission> submissions = query.where(QSubmission.submission.state.eq(SubmissionState.QUEUED)).list();
-    return submissions;
+    List<Submission> result = new ArrayList<Submission>();
+    for(Submission submission : release.getSubmissions()) {
+      if(submission.getAccessionId().equals(accessionId)) result.add(submission);
+    }
+
+    return result;
   }
 
-  public List<Submission> getSubmissionFromAccessionId(String accessionId) {
-    MorphiaQuery<Submission> query =
-        new MorphiaQuery<Submission>(morphia, datastore, (EntityPath<Submission>) QSubmission.submission);
-
-    List<Submission> submissions = query.where(QSubmission.submission.project.accessionId.eq(accessionId)).list();
-    return submissions;
+  public List<String> getQueued() {
+    return this.getSubmission(SubmissionState.QUEUED);
   }
 
-  public List<Submission> getSignedOff() {
-    MorphiaQuery<Submission> query =
-        new MorphiaQuery<Submission>(morphia, datastore, (EntityPath<Submission>) QSubmission.submission);
+  public boolean queue(List<String> accessionIds) {
 
-    List<Submission> submissions = query.where(QSubmission.submission.state.eq(SubmissionState.SIGNED_OFF)).list();
-    return submissions;
+    return true;
+  }
+
+  public void deleteQueuedRequest() {
+
+  }
+
+  public List<String> getSignedOff() {
+    return this.getSubmission(SubmissionState.SIGNED_OFF);
+  }
+
+  public boolean SignOff(List<String> accessionIds) {
+
+    return true;
+  }
+
+  private List<String> getSubmission(SubmissionState state) {
+    List<String> result = new ArrayList<String>();
+    for(Submission submission : this.getNextRelease().getRelease().getSubmissions()) {
+      if(submission.getState().equals(state)) result.add(submission.getAccessionId());
+    }
+    return result;
   }
 }

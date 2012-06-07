@@ -8,6 +8,8 @@ import org.icgc.dcc.model.Submission;
 import org.icgc.dcc.model.SubmissionState;
 
 import com.google.code.morphia.Datastore;
+import com.google.code.morphia.query.Query;
+import com.google.code.morphia.query.UpdateOperations;
 
 public class NextRelease extends BaseRelease {
 
@@ -36,11 +38,18 @@ public class NextRelease extends BaseRelease {
 
   public NextRelease release(Release nextRelease) throws IllegalReleaseStateException {
     // set old release to be completed
+    String oldReleaseName = this.getRelease().getName();
+
     this.getRelease().setState(ReleaseState.COMPLETED);
     nextRelease.setState(ReleaseState.OPENED);
 
-    // persist the new release with mongoDB
-    this.datastore.save(this.getRelease());
+    // update the newly changed status to mongoDB
+    UpdateOperations<Release> ops =
+        this.datastore.createUpdateOperations(Release.class).set("state", ReleaseState.COMPLETED);
+    Query<Release> updateQuery = this.datastore.createQuery(Release.class).field("name").equal(oldReleaseName);
+
+    this.datastore.update(updateQuery, ops);
+    // save the newly created release to mongoDB
     this.datastore.save(nextRelease);
 
     return new NextRelease(nextRelease, this.datastore);
