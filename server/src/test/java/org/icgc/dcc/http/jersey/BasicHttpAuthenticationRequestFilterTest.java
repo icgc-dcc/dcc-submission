@@ -28,7 +28,6 @@ import com.google.common.net.HttpHeaders;
 
 public class BasicHttpAuthenticationRequestFilterTest {
 
-  // Create a few mock instances
   private Request mockRequest;
 
   private RequestHeaders mockHeaders;

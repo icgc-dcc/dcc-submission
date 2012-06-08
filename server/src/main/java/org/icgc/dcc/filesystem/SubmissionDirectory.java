@@ -41,7 +41,7 @@ public class SubmissionDirectory {
    * (non-recursive) TODO: confirm
    */
   public Iterable<String> listFile(Pattern pattern) {
-    List<Path> pathList = HadoopUtils.ls(this.dccFileSystem.fileSystem, this.submissionDirectoryPath, pattern);
+    List<Path> pathList = HadoopUtils.ls(this.dccFileSystem.getFileSystem(), this.submissionDirectoryPath, pattern);
     return HadoopUtils.toFilenameList(pathList);
   }
 
@@ -51,13 +51,13 @@ public class SubmissionDirectory {
 
   public String addFile(String filename, InputStream data) {
     String filepath = this.dccFileSystem.buildFilepath(this.release, this.project, filename);
-    HadoopUtils.touch(this.dccFileSystem.fileSystem, filepath, data);
+    HadoopUtils.touch(this.dccFileSystem.getFileSystem(), filepath, data);
     return filepath;
   }
 
   public String deleteFile(String filename) {
     String filepath = this.dccFileSystem.buildFilepath(this.release, this.project, filename);
-    HadoopUtils.rm(this.dccFileSystem.fileSystem, filepath);
+    HadoopUtils.rm(this.dccFileSystem.getFileSystem(), filepath);
     return filepath;
   }
 

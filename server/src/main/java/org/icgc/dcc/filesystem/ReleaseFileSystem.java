@@ -46,7 +46,7 @@ public class ReleaseFileSystem {
     List<Project> projectList = this.projects.getProjects();
     for(Project project : projectList) {
       boolean hasUser = project.hasUser(this.user.getName());
-      if(hasUser) {
+      if(hasUser) {// TODO: use guava instead?
         SubmissionDirectory submissionDirectory = this.getSubmissionDirectory(project);
         submissionDirectoryList.add(submissionDirectory);
       }
@@ -57,9 +57,9 @@ public class ReleaseFileSystem {
 
   public SubmissionDirectory getSubmissionDirectory(Project project) {
     String projectStringPath = this.dccFileSystem.buildProjectStringPath(this.release, project);
-    boolean exists = HadoopUtils.checkExistence(this.dccFileSystem.fileSystem, projectStringPath);
-    if(exists) {
-      throw new ReleaseFileSystemException("release directory " + projectStringPath + " already exists");
+    boolean exists = HadoopUtils.checkExistence(this.dccFileSystem.getFileSystem(), projectStringPath);
+    if(!exists) {
+      throw new ReleaseFileSystemException("release directory " + projectStringPath + " does not exists");
     }
     return new SubmissionDirectory(this.dccFileSystem, this.release, project);
   }
