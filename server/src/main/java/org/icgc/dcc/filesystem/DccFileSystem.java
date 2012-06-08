@@ -61,19 +61,6 @@ public class DccFileSystem {
     this.mkdirsRootDirectory();
   }
 
-  /**
-   * Creates root directory if it does not exist
-   */
-  private void mkdirsRootDirectory() {
-    // create root dir if it does not exist
-    boolean rootExists = HadoopUtils.checkExistence(this.fileSystem, this.root);
-    if(!rootExists) {
-      log.info(this.root + " does not exist");
-      HadoopUtils.mkdir(this.fileSystem, this.root);
-      log.info("created " + this.root);
-    }
-  }
-
   // TODO: put as proper tests
   public void testIt() throws Exception {
     log.info("ls = " + HadoopUtils.toFilenameList(HadoopUtils.ls(this.fileSystem, this.root)));
@@ -207,4 +194,18 @@ public class DccFileSystem {
   public String buildFilepath(Release release, Project project, String filename) {
     return this.buildProjectStringPath(release, project) + "/" + filename;
   }
+
+  /**
+   * Creates root directory if it does not exist
+   */
+  private void mkdirsRootDirectory() {
+    // create root dir if it does not exist
+    boolean rootExists = HadoopUtils.checkExistence(this.fileSystem, this.root);
+    if(!rootExists) {
+      log.info(this.root + " does not exist");
+      HadoopUtils.mkdir(this.fileSystem, this.root);
+      log.info("created " + this.root);
+    }
+  }
+
 }
