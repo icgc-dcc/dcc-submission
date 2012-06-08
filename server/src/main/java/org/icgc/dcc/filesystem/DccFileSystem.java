@@ -34,7 +34,7 @@ public class DccFileSystem {
 
   private final Projects projects;
 
-  private String root;
+  private final String root;
 
   @Inject
   public DccFileSystem(Config config, Projects projects, FileSystem fileSystem) {
@@ -48,10 +48,15 @@ public class DccFileSystem {
     this.projects = projects;
     this.fileSystem = fileSystem;
 
+    // grab root directory
+    this.root = this.config.getString(ConfigConstants.FS_ROOT_PARAMETER);
+    checkArgument(this.root != null);
+
     log.info("use_hdfs = " + this.config.getBoolean(ConfigConstants.FS_USE_HDFS));
     log.info("fileSystem = " + this.fileSystem.getClass().getSimpleName());
     log.info("home = " + this.fileSystem.getHomeDirectory());
     log.info("wd = " + this.fileSystem.getWorkingDirectory());
+    log.info("root = " + this.root);
 
     this.mkdirsRootDirectory();
   }
@@ -60,12 +65,6 @@ public class DccFileSystem {
    * Creates root directory if it does not exist
    */
   private void mkdirsRootDirectory() {
-
-    // grab root directory
-    this.root = this.config.getString(ConfigConstants.FS_ROOT_PARAMETER);
-    checkArgument(this.root != null);
-    log.info("root = " + this.root);
-
     // create root dir if it does not exist
     boolean rootExists = HadoopUtils.checkExistence(this.fileSystem, this.root);
     if(!rootExists) {
