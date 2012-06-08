@@ -1,6 +1,7 @@
 package org.icgc.dcc.filesystem;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -8,6 +9,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.hsqldb.lib.StringInputStream;
 import org.icgc.dcc.config.ConfigConstants;
 import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
@@ -18,6 +20,7 @@ import org.icgc.dcc.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Joiner;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
 
@@ -71,6 +74,7 @@ public class DccFileSystem {
     myUser.setUsername("vegeta");
 
     Project myProject = new Project("dragon_balls_quest");
+    myProject.setAccessionId("DBQ");
 
     this.ensureReleaseFilesystem(myRelease);
 
@@ -129,6 +133,7 @@ public class DccFileSystem {
     boolean exists = HadoopUtils.checkExistence(this.fileSystem, releaseStringPath);
     if(exists) {
       log.info("filesystem for release " + release.getName() + " already exists");
+      ensureSubmissionDirectories(release);
     } else {
       log.info("creating filesystem for release " + release.getName());
       this.createReleaseFilesystem(release);
@@ -155,44 +160,51 @@ public class DccFileSystem {
 
     // create corresponding release directory
     HadoopUtils.mkdir(this.fileSystem, buildReleaseStringPath);
-    checkArgument(HadoopUtils.checkExistence(this.fileSystem, buildReleaseStringPath)); // TODO: better assert
-                                                                                        // somewhere?
+    checkState(HadoopUtils.checkExistence(this.fileSystem, buildReleaseStringPath)); // TODO: better assert
+                                                                                     // somewhere?
+    ensureSubmissionDirectories(release);
+  }
 
+  public void mkdirProjectDirectory(Release release, Project project) {
+    checkArgument(release != null);
+    checkArgument(project != null);
+    // create path for project within the release
+    String projectStringPath = this.buildProjectStringPath(release, project);
+    log.info("\t" + "project path = " + projectStringPath);
+    if(HadoopUtils.checkExistence(this.fileSystem, projectStringPath) == false) {
+      // create corresponding project directory
+      HadoopUtils.mkdir(this.fileSystem, projectStringPath);
+      checkState(HadoopUtils.checkExistence(this.fileSystem, projectStringPath));
+    }
+  }
+
+  public String buildReleaseStringPath(Release release) {
+    checkArgument(release != null);
+    return concatPath(this.root, release.getName());
+  }
+
+  public String buildProjectStringPath(Release release, Project project) {
+    checkArgument(project != null);
+    return concatPath(this.buildReleaseStringPath(release), project.getAccessionId());
+  }
+
+  public String buildFilepath(Release release, Project project, String filename) {
+    checkArgument(filename != null);
+    return concatPath(this.buildProjectStringPath(release, project), filename);
+  }
+
+  private void ensureSubmissionDirectories(Release release) {
     // create sub-directory for each project
     List<Project> projectList = this.projects.getProjects();
-    checkArgument(!projectList.isEmpty(), "project list cannot be empty");
+    checkState(projectList != null);
     log.info("# of projects = " + projectList.size());
     for(Project project : projectList) {
       this.mkdirProjectDirectory(release, project);
     }
   }
 
-  public void mkdirProjectDirectory(Release release, Project project) {
-
-    // create path for project within the release
-    String projectStringPath = this.buildProjectStringPath(release, project);
-    log.info("\t" + "project path = " + projectStringPath);
-    checkArgument(!HadoopUtils.checkExistence(this.fileSystem, projectStringPath)); // theoretically can't really happen
-                                                                                    // since
-    // we throw an exception
-    // if the release already exists and we assume all projects have
-    // unique names... TODO?
-
-    // create corresponding project directory
-    HadoopUtils.mkdir(this.fileSystem, projectStringPath);
-    checkArgument(HadoopUtils.checkExistence(this.fileSystem, projectStringPath));
-  }
-
-  public String buildReleaseStringPath(Release release) {
-    return this.root + "/" + release.getName();
-  }
-
-  public String buildProjectStringPath(Release release, Project project) {
-    return this.buildReleaseStringPath(release) + "/" + project.getName();
-  }
-
-  public String buildFilepath(Release release, Project project, String filename) {
-    return this.buildProjectStringPath(release, project) + "/" + filename;
+  private String concatPath(String... parts) {
+    return Joiner.on(Path.SEPARATOR_CHAR).join(parts);
   }
 
   /**
