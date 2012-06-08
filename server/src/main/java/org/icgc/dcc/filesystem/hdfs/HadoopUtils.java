@@ -33,16 +33,16 @@ public class HadoopUtils {
     return content;
   }
 
-  public static void mkdir(FileSystem fileSystem, String stringPath) {
+  public static void mkdirs(FileSystem fileSystem, String stringPath) {
     Path path = new Path(stringPath);
     boolean mkdirs;
     try {
       mkdirs = fileSystem.mkdirs(path);
     } catch(IOException e) {
-      throw new HdfsException();// TODO: proper (throughout class)
+      throw new HdfsException(e);
     }
     if(!mkdirs) {
-      throw new HdfsException();
+      throw new HdfsException("could not create " + stringPath);
     }
   }
 
@@ -53,9 +53,13 @@ public class HadoopUtils {
       out = fileSystem.create(path);
       ByteStreams.copy(in, out);
     } catch(IOException e) {
+<<<<<<< HEAD
+      throw new HdfsException(e);
+=======
       throw new HdfsException();
     } finally {
       Closeables.closeQuietly(out);
+>>>>>>> a8a41aa36b99e75aac22309bac304ffc6cb26349
     }
   }
 
@@ -73,10 +77,10 @@ public class HadoopUtils {
       Path path = new Path(stringPath);
       delete = fileSystem.delete(path, recursive);
     } catch(IOException e) {
-      throw new HdfsException();
+      throw new HdfsException(e);
     }
     if(!delete) {
-      throw new HdfsException();
+      throw new HdfsException("could not remove " + stringPath);
     }
   }
 
@@ -86,7 +90,7 @@ public class HadoopUtils {
     try {
       exists = fileSystem.exists(path);
     } catch(IOException e) {
-      throw new HdfsException();
+      throw new HdfsException(e);
     }
     return exists;
   }
@@ -100,7 +104,7 @@ public class HadoopUtils {
     try {
       listStatus = fileSystem.listStatus(path);
     } catch(IOException e) {
-      throw new HdfsException();
+      throw new HdfsException(e);
     }
     List<Path> ls = new ArrayList<Path>();
     for(FileStatus fileStatus : listStatus) {
