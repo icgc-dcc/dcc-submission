@@ -1,7 +1,5 @@
 package org.icgc.dcc.service;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.filesystem.ReleaseFileSystem;
 import org.icgc.dcc.model.Release;
@@ -17,7 +15,7 @@ public class BaseRelease implements HasRelease {
   private DccFileSystem dccFilesystem; // TODO: constructor injection
 
   public BaseRelease(Release release) {
-    checkArgument(this.dccFilesystem != null);
+    // checkArgument(this.dccFilesystem != null); // TODO: uncomment once constructor injection is set up
     this.release = release;
   }
 
