@@ -12,6 +12,6 @@ public class FileSystemModule extends AbstractModule {
   protected void configure() {
     bind(Configuration.class).toInstance(new Configuration());
     bind(FileSystem.class).toProvider(FileSystemProvider.class).in(Singleton.class);
-    bind(DccFileSystem.class).toProvider(DccFileSystemProvider.class).in(Singleton.class);
+    bind(DccFileSystem.class).in(Singleton.class);
   }
 }

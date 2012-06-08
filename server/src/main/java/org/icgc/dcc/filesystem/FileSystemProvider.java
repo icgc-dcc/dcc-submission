@@ -17,13 +17,20 @@ import com.google.inject.Provider;
 import com.typesafe.config.Config;
 
 public class FileSystemProvider implements Provider<FileSystem> {
+
   private static final Logger log = LoggerFactory.getLogger(FileSystemProvider.class);
 
-  @Inject
-  private final Configuration configuration = new Configuration(); // hadoop's
+  private final Configuration configuration; // hadoop's
+
+  private final Config config; // typesafe's
 
   @Inject
-  private Config config; // typesafe's
+  FileSystemProvider(Config config, Configuration hadoopConfig) {
+    checkArgument(config != null);
+    checkArgument(hadoopConfig != null);
+    this.config = config;
+    this.configuration = hadoopConfig;
+  }
 
   @Override
   public FileSystem get() {
