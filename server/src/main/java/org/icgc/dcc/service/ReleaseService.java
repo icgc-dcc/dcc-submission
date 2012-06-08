@@ -97,7 +97,9 @@ public class ReleaseService {
     checkArgument(release != null);
 
     for(Submission submission : release.getSubmissions()) {
-      if(submission.getAccessionId().equals(accessionId)) return submission;
+      if(submission.getAccessionId().equals(accessionId)) {
+        return submission;
+      }
     }
 
     return null;
@@ -113,11 +115,11 @@ public class ReleaseService {
 
   public void deleteQueuedRequest() {
     List<String> accessionIds = this.getQueued();
-    for(String accessionId : accessionIds) {
-      Query<Release> deleteQuery =
-          this.datastore.createQuery(Release.class).filter("submissions.accessionId", accessionId);
-      this.datastore.delete(deleteQuery);
-    }
+
+    Query<Release> deleteQuery =
+        this.datastore.createQuery(Release.class).filter("submissions.accessionId in", accessionIds);
+    this.datastore.delete(deleteQuery);
+
   }
 
   public List<String> getSignedOff() {
@@ -131,7 +133,9 @@ public class ReleaseService {
   private List<String> getSubmission(SubmissionState state) {
     List<String> result = new ArrayList<String>();
     for(Submission submission : this.getNextRelease().getRelease().getSubmissions()) {
-      if(submission.getState().equals(state)) result.add(submission.getAccessionId());
+      if(submission.getState().equals(state)) {
+        result.add(submission.getAccessionId());
+      }
     }
     return result;
   }
@@ -142,13 +146,11 @@ public class ReleaseService {
 
     checkArgument(accessionIds != null);
 
-    for(String accessionId : accessionIds) {
-      ops = this.datastore.createUpdateOperations(Release.class).disableValidation().set("submissions.$.state", state);
-      updateQuery =
-          this.datastore.createQuery(Release.class).filter("name =", this.getNextRelease().getRelease().getName())
-              .filter("submissions.accessionId =", accessionId);
-      this.datastore.update(updateQuery, ops);
-    }
+    ops = this.datastore.createUpdateOperations(Release.class).disableValidation().set("submissions.$.state", state);
+    updateQuery =
+        this.datastore.createQuery(Release.class).filter("name =", this.getNextRelease().getRelease().getName())
+            .filter("submissions.accessionId in", accessionIds);
+    this.datastore.update(updateQuery, ops);
 
     return true;
   }
