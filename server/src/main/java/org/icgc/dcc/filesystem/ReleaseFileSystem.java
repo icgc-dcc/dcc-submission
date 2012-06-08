@@ -5,6 +5,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.icgc.dcc.filesystem.exception.ReleaseFileSystemException;
+import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
 import org.icgc.dcc.model.Project;
 import org.icgc.dcc.model.Projects;
 import org.icgc.dcc.model.Release;
@@ -54,6 +56,11 @@ public class ReleaseFileSystem {
   }
 
   public SubmissionDirectory getSubmissionDirectory(Project project) {
+    String projectStringPath = this.dccFileSystem.buildProjectStringPath(this.release, project);
+    boolean exists = HadoopUtils.checkExistence(this.dccFileSystem.fileSystem, projectStringPath);
+    if(exists) {
+      throw new ReleaseFileSystemException("release directory " + projectStringPath + " already exists");
+    }
     return new SubmissionDirectory(this.dccFileSystem, this.release, project);
   }
 

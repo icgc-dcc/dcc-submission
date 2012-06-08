@@ -2,14 +2,11 @@ package org.icgc.dcc.filesystem;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import org.apache.hadoop.fs.FileSystem;
-import org.hsqldb.lib.StringInputStream;
 import org.icgc.dcc.config.ConfigConstants;
+import org.icgc.dcc.filesystem.exception.DccFileSystemException;
 import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
 import org.icgc.dcc.model.Project;
 import org.icgc.dcc.model.Projects;
@@ -34,7 +31,7 @@ public class DccFileSystem {
 
   private final Projects projects;
 
-  private String root;
+  private String rootStringPath;
 
   @Inject
   public DccFileSystem(Config config, Projects projects, FileSystem fileSystem) {
@@ -56,68 +53,33 @@ public class DccFileSystem {
     this.mkdirsRootDirectory();
   }
 
+  // TODO: for tests only (remove later)
+  public FileSystem getFileSystem() {
+    return this.fileSystem;
+  }
+
+  // TODO: for tests only (remove later?)
+  public String getRootStringPath() {
+    return this.rootStringPath;
+  }
+
   /**
    * Creates root directory if it does not exist
    */
   private void mkdirsRootDirectory() {
 
     // grab root directory
-    this.root = this.config.getString(ConfigConstants.FS_ROOT_PARAMETER);
-    checkArgument(this.root != null);
-    log.info("root = " + this.root);
+    this.rootStringPath = this.config.getString(ConfigConstants.FS_ROOT_PARAMETER);
+    checkArgument(this.rootStringPath != null);
+    log.info("root = " + this.rootStringPath);
 
     // create root dir if it does not exist
-    boolean rootExists = HadoopUtils.checkExistence(this.fileSystem, this.root);
+    boolean rootExists = HadoopUtils.checkExistence(this.fileSystem, this.rootStringPath);
     if(!rootExists) {
-      log.info(this.root + " does not exist");
-      HadoopUtils.mkdir(this.fileSystem, this.root);
-      log.info("created " + this.root);
+      log.info(this.rootStringPath + " does not exist");
+      HadoopUtils.mkdirs(this.fileSystem, this.rootStringPath);
+      log.info("created " + this.rootStringPath);
     }
-  }
-
-  // TODO: put as proper tests
-  public void testIt() throws Exception {
-    log.info("ls = " + HadoopUtils.toFilenameList(HadoopUtils.ls(this.fileSystem, this.root)));
-
-    Release myRelease = new Release("ICGC4");
-
-    User myUser = new User();
-    myUser.setUsername("vegeta");
-
-    Project myProject = new Project("dragon_balls_quest");
-
-    this.ensureReleaseFilesystem(myRelease);
-
-    ReleaseFileSystem myReleaseFilesystem = this.getReleaseFilesystem(myRelease, myUser);
-    log.info("release file system = " + myReleaseFilesystem);
-
-    Iterable<SubmissionDirectory> mySubmissionDirectoryList = myReleaseFilesystem.listSubmissionDirectory();
-    log.info("mySubmissionDirectoryList # = " + ((ArrayList<SubmissionDirectory>) mySubmissionDirectoryList).size());
-    log.info("read only = " + myReleaseFilesystem.isReadOnly());
-
-    SubmissionDirectory mySubmissionDirectory = myReleaseFilesystem.getSubmissionDirectory(myProject);
-
-    String filename1 = "cnsm__bla__bla__p__bla__bla.tsv";
-    InputStream in1 = new StringInputStream("header1\theader2\theader3\na\tb\tc\nd\te\tf\tg\n");
-    String filepath1 = mySubmissionDirectory.addFile(filename1, in1);
-    HadoopUtils.checkExistence(this.fileSystem, filepath1);
-    log.info("added file = " + filepath1);
-
-    String filename2 = "cnsm__bla__bla__s__bla__bla.tsv";
-    InputStream in2 = new StringInputStream("header9\theader8\theader7\nz\tb\ty\nx\tw\tv\tu\n");
-    String filepath2 = mySubmissionDirectory.addFile(filename2, in2);
-    HadoopUtils.checkExistence(this.fileSystem, filepath2);
-    log.info("added file = " + filepath2);
-
-    Iterable<String> fileList1 = mySubmissionDirectory.listFile();
-    log.info("ls1 = " + fileList1);
-
-    Iterable<String> fileList2 = mySubmissionDirectory.listFile(Pattern.compile(".*__p__.*"));
-    log.info("ls2 = " + fileList2);
-
-    mySubmissionDirectory.deleteFile(filename1);
-
-    HadoopUtils.rmr(this.fileSystem, this.root + "/" + myRelease.getName());
   }
 
   /**
@@ -159,18 +121,18 @@ public class DccFileSystem {
    * @param release the new release
    */
   public void createReleaseFilesystem(Release release) {// TODO: make private?
-    String buildReleaseStringPath = this.buildReleaseStringPath(release);
+    String releaseStringPath = this.buildReleaseStringPath(release);
 
-    // check for pre-existence
-    boolean exists = HadoopUtils.checkExistence(this.fileSystem, buildReleaseStringPath);
+    // check for pre-existence (at this point we expect it not to)
+    boolean exists = HadoopUtils.checkExistence(this.fileSystem, releaseStringPath);
     if(exists) {
-      throw new DccFileSystemException(this.fileSystem, this.root);
+      throw new DccFileSystemException("release directory " + releaseStringPath + " already exists");
     }
 
     // create corresponding release directory
-    HadoopUtils.mkdir(this.fileSystem, buildReleaseStringPath);
-    checkArgument(HadoopUtils.checkExistence(this.fileSystem, buildReleaseStringPath)); // TODO: better assert
-                                                                                        // somewhere?
+    HadoopUtils.mkdirs(this.fileSystem, releaseStringPath);
+    checkArgument(HadoopUtils.checkExistence(this.fileSystem, releaseStringPath)); // TODO: better assert
+                                                                                   // somewhere?
 
     // create sub-directory for each project
     List<Project> projectList = this.projects.getProjects();
@@ -186,19 +148,18 @@ public class DccFileSystem {
     // create path for project within the release
     String projectStringPath = this.buildProjectStringPath(release, project);
     log.info("\t" + "project path = " + projectStringPath);
-    checkArgument(!HadoopUtils.checkExistence(this.fileSystem, projectStringPath)); // theoretically can't really happen
-                                                                                    // since
-    // we throw an exception
-    // if the release already exists and we assume all projects have
-    // unique names... TODO?
+    checkArgument(!HadoopUtils.checkExistence(//
+        this.fileSystem, projectStringPath)); // theoretically can't really happen since we throw an exception if the
+                                              // release already exists and we assume all projects have unique names...
+                                              // TODO?
 
     // create corresponding project directory
-    HadoopUtils.mkdir(this.fileSystem, projectStringPath);
+    HadoopUtils.mkdirs(this.fileSystem, projectStringPath);
     checkArgument(HadoopUtils.checkExistence(this.fileSystem, projectStringPath));
   }
 
   public String buildReleaseStringPath(Release release) {
-    return this.root + "/" + release.getName();
+    return this.rootStringPath + "/" + release.getName();
   }
 
   public String buildProjectStringPath(Release release, Project project) {
