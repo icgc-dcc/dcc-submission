@@ -53,13 +53,9 @@ public class HadoopUtils {
       out = fileSystem.create(path);
       ByteStreams.copy(in, out);
     } catch(IOException e) {
-<<<<<<< HEAD
       throw new HdfsException(e);
-=======
-      throw new HdfsException();
     } finally {
       Closeables.closeQuietly(out);
->>>>>>> a8a41aa36b99e75aac22309bac304ffc6cb26349
     }
   }
 
