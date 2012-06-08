@@ -1,6 +1,7 @@
 package org.icgc.dcc.service;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -96,13 +97,17 @@ public class ReleaseService {
     Release release = this.where(QRelease.release.name.eq(releaseName)).uniqueResult();
     checkArgument(release != null);
 
+    Submission result = null;
     for(Submission submission : release.getSubmissions()) {
       if(submission.getAccessionId().equals(accessionId)) {
-        return submission;
+        result = submission;
+        break;
       }
     }
 
-    return null;
+    checkState(result != null);
+
+    return result;
   }
 
   public List<String> getQueued() {
