@@ -2,7 +2,6 @@ package org.icgc.dcc.web;
 
 import java.util.List;
 
-import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -29,7 +28,6 @@ public class NextReleaseResource {
   }
 
   @POST
-  @Consumes("application/json")
   public Response release(Release nextRelease) {
     NextRelease oldRelease = releaseService.getNextRelease();
     NextRelease newRelease = oldRelease.release(nextRelease);
@@ -48,9 +46,11 @@ public class NextReleaseResource {
   @POST
   @Path("queue")
   public Response queue(List<String> accessionIds) {
-    if(this.releaseService.queue(accessionIds)) return Response.ok().build();
-    else
+    if(this.releaseService.queue(accessionIds)) {
+      return Response.ok().build();
+    } else {
       return Response.status(Status.BAD_REQUEST).build();
+    }
   }
 
   @DELETE
@@ -72,8 +72,10 @@ public class NextReleaseResource {
   @POST
   @Path("signed")
   public Response signOff(List<String> accessionIds) {
-    if(this.releaseService.signOff(accessionIds)) return Response.ok().build();
-    else
+    if(this.releaseService.signOff(accessionIds)) {
+      return Response.ok().build();
+    } else {
       return Response.status(Status.BAD_REQUEST).build();
+    }
   }
 }
