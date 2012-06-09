@@ -1,10 +1,8 @@
 package org.icgc.dcc.service;
 
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -18,7 +16,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.code.morphia.Datastore;
-import com.google.code.morphia.query.FieldEnd;
 import com.google.code.morphia.query.Query;
 import com.google.code.morphia.query.UpdateOperations;
 
@@ -34,13 +31,13 @@ public class NextReleaseTest {
 
   private Query<Release> query;
 
-  private FieldEnd<Query<Release>> fieldEnd;
+  private UpdateOperations<Release> updates;
 
   @SuppressWarnings("unchecked")
   @Before
   public void setUp() {
     release = mock(Release.class);
-    UpdateOperations<Release> updates = mock(UpdateOperations.class);
+    updates = mock(UpdateOperations.class);
     when(release.getState()).thenReturn(ReleaseState.OPENED);
 
     ds = mock(Datastore.class);
@@ -53,22 +50,13 @@ public class NextReleaseTest {
     query = mock(Query.class);
     when(ds.createQuery(Release.class)).thenReturn(query);
     when(query.filter(anyString(), any())).thenReturn(query);
-
-    fieldEnd = mock(FieldEnd.class);
-
-    when(fieldEnd.equal(anyString())).thenReturn(query);
   }
 
-  @Test
+  @Test(expected = IllegalReleaseStateException.class)
   public void test_NextRelease_throwsWhenBadReleaseState() {
     when(release.getState()).thenReturn(ReleaseState.COMPLETED);
 
-    try {
-      new NextRelease(release, ds);
-      fail("No error thrown despite incorrect release state");
-    } catch(IllegalReleaseStateException e) {
-      return;
-    }
+    new NextRelease(release, ds);
   }
 
   @Test
@@ -80,14 +68,13 @@ public class NextReleaseTest {
     verify(submission).setState(SubmissionState.SIGNED_OFF);
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   public void test_signOff_submissionSaved() {
     Submission submission = signOffSetUp();
 
     nextRelease.signOff(submission);
 
-    verify(ds).update(eq(query), any(UpdateOperations.class));
+    verify(ds).update(query, updates);
   }
 
   @Test
@@ -108,7 +95,6 @@ public class NextReleaseTest {
     verify(release2).setState(ReleaseState.OPENED);
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   public void test_release_datastoreUpdated() {
     releaseSetUp();
@@ -116,8 +102,8 @@ public class NextReleaseTest {
     nextRelease.release(release2);
 
     verify(ds).createUpdateOperations(Release.class);
-    verify(ds).createQuery(Release.class);
-    verify(ds).update(eq(query), any(UpdateOperations.class));
+    verify(updates).set("state", ReleaseState.COMPLETED);
+    verify(ds).update(release, updates);
     verify(ds).save(release2);
   }
 
@@ -139,13 +125,12 @@ public class NextReleaseTest {
   private void releaseSetUp() {
     release2 = mock(Release.class);
     when(release2.getState()).thenReturn(ReleaseState.OPENED);
-
-    when(query.field("name")).thenReturn(fieldEnd);
+    when(updates.set("state", ReleaseState.COMPLETED)).thenReturn(updates);
   }
 
   private Submission signOffSetUp() {
     Submission submission = mock(Submission.class);
-    when(query.field("submissions.accessionId")).thenReturn(fieldEnd);
+    when(updates.set("submissions.$.state", SubmissionState.SIGNED_OFF)).thenReturn(updates);
     return submission;
   }
 }
