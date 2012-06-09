@@ -22,6 +22,7 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Iterables;
 import com.google.inject.Inject;
 
 @RunWith(GuiceJUnitRunner.class)
@@ -113,9 +114,8 @@ public class FileSystemFunctionalTest extends FileSystemTest {
 
     Iterable<String> fileList1 = mySubmissionDirectory.listFile();
     Assert.assertNotNull(fileList1);
-    Assert.assertEquals(//
-        "[cnsm__bla__bla__s__bla__bla.tsv, cnsm__bla__bla__p__bla__bla.tsv]",//
-        fileList1.toString());
+    Assert.assertTrue(Iterables.contains(fileList1, "cnsm__bla__bla__s__bla__bla.tsv"));
+    Assert.assertTrue(Iterables.contains(fileList1, "cnsm__bla__bla__p__bla__bla.tsv"));
     log.info("ls1 = " + fileList1);
 
     Iterable<String> fileList2 = mySubmissionDirectory.listFile(Pattern.compile(".*__p__.*"));
