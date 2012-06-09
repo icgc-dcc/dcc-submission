@@ -1,4 +1,4 @@
-package org.icgc.dcc.filesystem.exception;
+package org.icgc.dcc.filesystem;
 
 public class DccFileSystemException extends RuntimeException {
   private static final long serialVersionUID = 1680629270933172614L;

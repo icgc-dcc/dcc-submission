@@ -6,7 +6,6 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.icgc.dcc.config.ConfigConstants;
 import org.icgc.dcc.model.Project;
 import org.icgc.dcc.model.Projects;
 import org.icgc.dcc.model.Release;
@@ -54,7 +53,7 @@ public class FileSystemTest {
     this.mockProject = mock(Project.class);
     this.mockProjects = mock(Projects.class);
 
-    when(this.mockConfig.getString(ConfigConstants.FS_ROOT_PARAMETER)).thenReturn(ROOT_DIR);
+    when(this.mockConfig.getString(FsConfig.FS_ROOT)).thenReturn(ROOT_DIR);
 
     when(this.mockRelease.getName()).thenReturn(RELEASE_NAME);
 

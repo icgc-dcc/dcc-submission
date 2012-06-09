@@ -1,6 +1,7 @@
 package org.icgc.dcc.filesystem;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 
 import java.io.InputStream;
 import java.util.List;
@@ -34,7 +35,7 @@ public class SubmissionDirectory {
     this.project = project;
 
     this.submissionDirectoryPath = this.dccFileSystem.buildProjectStringPath(this.release, this.project);
-    checkArgument(this.submissionDirectoryPath != null);
+    checkState(this.submissionDirectoryPath != null);
   }
 
   /**

@@ -7,8 +7,6 @@ import java.util.List;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.config.ConfigConstants;
-import org.icgc.dcc.filesystem.exception.DccFileSystemException;
 import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
 import org.icgc.dcc.model.Project;
 import org.icgc.dcc.model.Projects;
@@ -49,14 +47,13 @@ public class DccFileSystem {
     this.fileSystem = fileSystem;
 
     // grab root directory
-    this.rootStringPath = this.config.getString(ConfigConstants.FS_ROOT_PARAMETER);
-    checkArgument(this.rootStringPath != null);
+    this.rootStringPath = this.config.getString(FsConfig.FS_ROOT);
+    checkState(this.rootStringPath != null);
 
-    log.info("use_hdfs = " + this.config.getBoolean(ConfigConstants.FS_USE_HDFS));
     log.info("fileSystem = " + this.fileSystem.getClass().getSimpleName());
+    log.info("rootStringPath = " + this.rootStringPath);
     log.info("home = " + this.fileSystem.getHomeDirectory());
     log.info("wd = " + this.fileSystem.getWorkingDirectory());
-    log.info("rootStringPath = " + this.rootStringPath);
 
     this.mkdirsRootDirectory();
   }
@@ -120,7 +117,6 @@ public class DccFileSystem {
 
     // create corresponding release directory
     HadoopUtils.mkdirs(this.fileSystem, releaseStringPath);
-    checkState(HadoopUtils.checkExistence(this.fileSystem, releaseStringPath));
     ensureSubmissionDirectories(release);
   }
 
