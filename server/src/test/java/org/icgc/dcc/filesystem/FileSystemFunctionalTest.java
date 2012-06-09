@@ -30,6 +30,7 @@ import com.google.inject.Inject;
 HttpModule.class, JerseyModule.class,// TODO: find out why those two seem necessary
 ModelModule.class, FileSystemModule.class })
 public class FileSystemFunctionalTest extends FileSystemTest {
+
   private static final Logger log = LoggerFactory.getLogger(FileSystemFunctionalTest.class);
 
   protected DccFileSystem dccFileSystem;
