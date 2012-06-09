@@ -40,16 +40,19 @@ public class NextReleaseTest {
   @Before
   public void setUp() {
     release = mock(Release.class);
+    UpdateOperations<Release> updates = mock(UpdateOperations.class);
     when(release.getState()).thenReturn(ReleaseState.OPENED);
 
     ds = mock(Datastore.class);
 
     nextRelease = new NextRelease(release, ds);
 
-    when(ds.createUpdateOperations(Release.class)).thenReturn(mock(UpdateOperations.class));
+    when(ds.createUpdateOperations(Release.class)).thenReturn(updates);
+    when(updates.disableValidation()).thenReturn(updates);
 
     query = mock(Query.class);
     when(ds.createQuery(Release.class)).thenReturn(query);
+    when(query.filter(anyString(), any())).thenReturn(query);
 
     fieldEnd = mock(FieldEnd.class);
 
