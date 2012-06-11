@@ -19,6 +19,7 @@ public class ModelModule extends AbstractModule {
   @Override
   protected void configure() {
     // Use SLF4J with Morphia
+    MorphiaLoggerFactory.reset();
     MorphiaLoggerFactory.registerLogger(SLF4JLogrImplFactory.class);
 
     bind(Mongo.class).toProvider(new Provider<Mongo>() {
