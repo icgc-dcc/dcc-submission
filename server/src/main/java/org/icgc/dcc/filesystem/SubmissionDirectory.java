@@ -11,6 +11,8 @@ import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
 import org.icgc.dcc.model.Project;
 import org.icgc.dcc.model.Release;
 import org.icgc.dcc.model.ReleaseState;
+import org.icgc.dcc.model.Submission;
+import org.icgc.dcc.model.SubmissionState;
 
 public class SubmissionDirectory {
 
@@ -20,28 +22,29 @@ public class SubmissionDirectory {
 
   private final Project project;
 
-  private final String submissionDirectoryPath;
+  private final Submission submission;
 
-  public SubmissionDirectory(DccFileSystem dccFileSystem, Release release, Project project) {
+  public SubmissionDirectory(DccFileSystem dccFileSystem, Release release, Project project, Submission submission) {
     super();
 
     checkArgument(dccFileSystem != null);
     checkArgument(release != null);
     checkArgument(project != null);
+    checkArgument(submission != null);
 
     this.dccFileSystem = dccFileSystem;
     this.release = release;
     this.project = project;
-
-    this.submissionDirectoryPath = this.dccFileSystem.buildProjectStringPath(this.release, this.project);
-    checkArgument(this.submissionDirectoryPath != null);
+    this.submission = submission;
   }
 
   /**
    * (non-recursive) TODO: confirm
    */
   public Iterable<String> listFile(Pattern pattern) {
-    List<Path> pathList = HadoopUtils.ls(this.dccFileSystem.getFileSystem(), this.submissionDirectoryPath, pattern);
+    String submissionDirectoryPath = this.dccFileSystem.buildProjectStringPath(this.release, this.project);
+    checkArgument(submissionDirectoryPath != null);
+    List<Path> pathList = HadoopUtils.ls(this.dccFileSystem.getFileSystem(), submissionDirectoryPath, pattern);
     return HadoopUtils.toFilenameList(pathList);
   }
 
@@ -62,9 +65,8 @@ public class SubmissionDirectory {
   }
 
   public boolean isReadOnly() {
-    boolean readOnlyRelease = ReleaseState.COMPLETED.equals(this.release.getState());
-    boolean validating = false;// TODO: ?
-    return readOnlyRelease || validating;
+    SubmissionState state = this.submission.getState();
+    return this.release.getState() == ReleaseState.COMPLETED//
+        || state == SubmissionState.QUEUED || state == SubmissionState.SIGNED_OFF;
   }
-
 }

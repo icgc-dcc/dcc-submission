@@ -14,6 +14,7 @@ import org.icgc.dcc.model.Project;
 import org.icgc.dcc.model.Projects;
 import org.icgc.dcc.model.Release;
 import org.icgc.dcc.model.User;
+import org.icgc.dcc.service.ReleaseService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,19 +33,23 @@ public class DccFileSystem {
 
   private final Config config;
 
+  private final ReleaseService releases;
+
   private final Projects projects;
 
   private final String rootStringPath;
 
   @Inject
-  public DccFileSystem(Config config, Projects projects, FileSystem fileSystem) {
+  public DccFileSystem(Config config, ReleaseService releases, Projects projects, FileSystem fileSystem) {
     super();
 
     checkArgument(config != null);
+    checkArgument(releases != null);
     checkArgument(projects != null);
     checkArgument(fileSystem != null);
 
     this.config = config;
+    this.releases = releases;
     this.projects = projects;
     this.fileSystem = fileSystem;
 
@@ -75,7 +80,7 @@ public class DccFileSystem {
    * it on the fly (for now we have very few users and don't plan on having millions ever).
    */
   public ReleaseFileSystem getReleaseFilesystem(Release release, User user) {
-    return new ReleaseFileSystem(this, this.projects, release, user);
+    return new ReleaseFileSystem(this, this.releases, this.projects, release, user);
   }
 
   /**

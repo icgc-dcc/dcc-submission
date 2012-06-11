@@ -64,6 +64,7 @@ public class Projects {
   public void addProject(Project project) {
     this.saveProject(project);
 
+    // TODO: add corresonding test
     // TODO: this will actually need to throw an event and let DccFilesystem catch it so it can perform the following:
     if(false) {
       ReleaseService releaseService = null;

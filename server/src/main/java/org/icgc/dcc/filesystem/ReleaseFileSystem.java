@@ -11,7 +11,9 @@ import org.icgc.dcc.model.Project;
 import org.icgc.dcc.model.Projects;
 import org.icgc.dcc.model.Release;
 import org.icgc.dcc.model.ReleaseState;
+import org.icgc.dcc.model.Submission;
 import org.icgc.dcc.model.User;
+import org.icgc.dcc.service.ReleaseService;
 
 public class ReleaseFileSystem {
 
@@ -19,19 +21,24 @@ public class ReleaseFileSystem {
 
   private final Projects projects;
 
+  private final ReleaseService releases;
+
   private final Release release;
 
   private final User user;
 
-  public ReleaseFileSystem(DccFileSystem dccFilesystem, Projects projects, Release release, User user) {
+  public ReleaseFileSystem(DccFileSystem dccFilesystem, ReleaseService releases, Projects projects, Release release,
+      User user) {
     super();
 
     checkArgument(dccFilesystem != null);
+    checkArgument(releases != null);
     checkArgument(projects != null);
     checkArgument(release != null);
     checkArgument(user != null);
 
     this.dccFileSystem = dccFilesystem;
+    this.releases = releases;
     this.projects = projects;
     this.release = release;
     this.user = user;
@@ -61,7 +68,8 @@ public class ReleaseFileSystem {
     if(!exists) {
       throw new ReleaseFileSystemException("release directory " + projectStringPath + " does not exists");
     }
-    return new SubmissionDirectory(this.dccFileSystem, this.release, project);
+    Submission submission = this.releases.getSubmission(this.release.getName(), project.getAccessionId());
+    return new SubmissionDirectory(this.dccFileSystem, this.release, project, submission);
   }
 
   public boolean isReadOnly() {

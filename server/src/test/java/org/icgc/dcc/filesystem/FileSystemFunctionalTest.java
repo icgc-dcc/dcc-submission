@@ -44,7 +44,7 @@ public class FileSystemFunctionalTest extends FileSystemTest {
   public void setUp() throws IOException {
     super.setUp();
 
-    this.dccFileSystem = new DccFileSystem(this.mockConfig, this.mockProjects, this.fileSystem);
+    this.dccFileSystem = new DccFileSystem(this.mockConfig, this.mockReleases, this.mockProjects, this.fileSystem);
   }
 
   @Test
@@ -92,12 +92,16 @@ public class FileSystemFunctionalTest extends FileSystemTest {
 
     log.info("mySubmissionDirectoryList # = " + size);
 
-    boolean readOnly = myReleaseFilesystem.isReadOnly();
-    Assert.assertFalse(readOnly);
-    log.info("read only = " + readOnly);
+    boolean releaseReadOnly = myReleaseFilesystem.isReadOnly();
+    Assert.assertFalse(releaseReadOnly);
+    log.info("release read only = " + releaseReadOnly);
 
     SubmissionDirectory mySubmissionDirectory = myReleaseFilesystem.getSubmissionDirectory(this.mockProject);
     Assert.assertNotNull(mySubmissionDirectory);
+
+    boolean submissionReadOnly = mySubmissionDirectory.isReadOnly();
+    Assert.assertTrue(submissionReadOnly);
+    log.info("submission read only = " + submissionReadOnly);
 
     InputStream in1 = new StringInputStream("header1\theader2\theader3\na\tb\tc\nd\te\tf\tg\n");
     String filepath1 = mySubmissionDirectory.addFile(FILENAME_1, in1);

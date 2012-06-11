@@ -10,7 +10,10 @@ import org.icgc.dcc.config.ConfigConstants;
 import org.icgc.dcc.model.Project;
 import org.icgc.dcc.model.Projects;
 import org.icgc.dcc.model.Release;
+import org.icgc.dcc.model.Submission;
+import org.icgc.dcc.model.SubmissionState;
 import org.icgc.dcc.model.User;
+import org.icgc.dcc.service.ReleaseService;
 import org.junit.Before;
 
 import com.typesafe.config.Config;
@@ -41,7 +44,11 @@ public class FileSystemTest {
 
   protected Project mockProject;
 
+  protected Submission mockSubmission;
+
   protected Config mockConfig;
+
+  protected ReleaseService mockReleases;
 
   protected Projects mockProjects;
 
@@ -52,6 +59,8 @@ public class FileSystemTest {
     this.mockRelease = mock(Release.class);
     this.mockUser = mock(User.class);
     this.mockProject = mock(Project.class);
+    this.mockSubmission = mock(Submission.class);
+    this.mockReleases = mock(ReleaseService.class);
     this.mockProjects = mock(Projects.class);
 
     when(this.mockConfig.getString(ConfigConstants.FS_ROOT_PARAMETER)).thenReturn(ROOT_DIR);
@@ -64,6 +73,11 @@ public class FileSystemTest {
     when(this.mockProject.getAccessionId()).thenReturn(PROJECT_ACCESSION_ID);
     when(this.mockProject.hasUser(this.mockUser.getName())).thenReturn(true);
 
+    when(this.mockSubmission.getState()).thenReturn(SubmissionState.SIGNED_OFF);
+
     when(this.mockProjects.getProjects()).thenReturn(Arrays.asList(new Project[] { this.mockProject }));
+
+    when(this.mockReleases.getSubmission(this.mockRelease.getName(), this.mockProject.getAccessionId())).thenReturn(
+        this.mockSubmission);
   }
 }
