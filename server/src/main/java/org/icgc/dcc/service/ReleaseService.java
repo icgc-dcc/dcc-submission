@@ -44,6 +44,8 @@ public class ReleaseService {
     MongodbQuery<Release> query = this.where(QRelease.release.state.eq(ReleaseState.OPENED));
     // at any time there should only be one release open which is the next release
     List<Release> nextRelease = query.list();
+
+    checkState(nextRelease != null);
     checkState(nextRelease.size() == 1);
 
     return new NextRelease(nextRelease.get(0), datastore);
@@ -122,10 +124,7 @@ public class ReleaseService {
   public void deleteQueuedRequest() {
     List<String> accessionIds = this.getQueued();
 
-    Query<Release> deleteQuery =
-        this.datastore.createQuery(Release.class).filter("submissions.accessionId in", accessionIds);
-    this.datastore.delete(deleteQuery);
-
+    this.setState(accessionIds, SubmissionState.NOT_VALIDATED);
   }
 
   public List<String> getSignedOff() {
