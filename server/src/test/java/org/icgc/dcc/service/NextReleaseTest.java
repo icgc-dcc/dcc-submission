@@ -1,37 +1,136 @@
 package org.icgc.dcc.service;
 
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.icgc.dcc.model.Release;
 import org.icgc.dcc.model.ReleaseState;
 import org.icgc.dcc.model.Submission;
 import org.icgc.dcc.model.SubmissionState;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.google.code.morphia.Datastore;
+import com.google.code.morphia.query.Query;
+import com.google.code.morphia.query.UpdateOperations;
+
 public class NextReleaseTest {
 
-  @Ignore
+  private NextRelease nextRelease;
+
+  private Release release;
+
+  private Release release2;
+
+  private Datastore ds;
+
+  private Query<Release> query;
+
+  private UpdateOperations<Release> updates;
+
+  @SuppressWarnings("unchecked")
+  @Before
+  public void setUp() {
+    release = mock(Release.class);
+    updates = mock(UpdateOperations.class);
+    when(release.getState()).thenReturn(ReleaseState.OPENED);
+
+    ds = mock(Datastore.class);
+
+    nextRelease = new NextRelease(release, ds);
+
+    when(ds.createUpdateOperations(Release.class)).thenReturn(updates);
+    when(updates.disableValidation()).thenReturn(updates);
+
+    query = mock(Query.class);
+    when(ds.createQuery(Release.class)).thenReturn(query);
+    when(query.filter(anyString(), any())).thenReturn(query);
+  }
+
+  @Test(expected = IllegalReleaseStateException.class)
+  public void test_NextRelease_throwsWhenBadReleaseState() {
+    when(release.getState()).thenReturn(ReleaseState.COMPLETED);
+
+    new NextRelease(release, ds);
+  }
+
   @Test
-  public void test() {
-    NextRelease nextRelease = mock(NextRelease.class);
-    Release release = mock(Release.class);
-    Submission submission = mock(Submission.class);
-
-    release.getSubmissions().add(submission);
-
-    when(release.getSubmissions().size()).thenReturn(1);
-    when(release.getSubmissions().get(0)).thenReturn(submission);
+  public void test_signOff_stateSet() {
+    Submission submission = signOffSetUp();
 
     nextRelease.signOff(submission);
 
-    when(submission.getState()).thenReturn(SubmissionState.SIGNED_OFF);
+    verify(submission).setState(SubmissionState.SIGNED_OFF);
+  }
 
-    Release newRelease = mock(Release.class);
-    NextRelease newNextRelease = nextRelease.release(newRelease);
+  @Test
+  public void test_signOff_submissionSaved() {
+    Submission submission = signOffSetUp();
 
-    when(nextRelease.getRelease().getState()).thenReturn(ReleaseState.COMPLETED);
-    when(newNextRelease.getRelease().getState()).thenReturn(ReleaseState.OPENED);
+    nextRelease.signOff(submission);
+
+    verify(ds).update(query, updates);
+  }
+
+  @Test
+  public void test_release_setPreviousStateToCompleted() {
+    releaseSetUp();
+
+    nextRelease.release(release2);
+
+    verify(release).setState(ReleaseState.COMPLETED);
+  }
+
+  @Test
+  public void test_release_setNewStateToOpened() {
+    releaseSetUp();
+
+    nextRelease.release(release2);
+
+    verify(release2).setState(ReleaseState.OPENED);
+  }
+
+  @Test
+  public void test_release_datastoreUpdated() {
+    releaseSetUp();
+
+    nextRelease.release(release2);
+
+    verify(ds).createUpdateOperations(Release.class);
+    verify(updates).set("state", ReleaseState.COMPLETED);
+    verify(ds).update(release, updates);
+    verify(ds).save(release2);
+  }
+
+  @Test
+  public void test_release_correctReturnValue() {
+    releaseSetUp();
+
+    NextRelease newRelease = nextRelease.release(release2);
+
+    assertTrue(newRelease.getRelease().equals(release2));
+  }
+
+  @Ignore
+  @Test
+  public void test_validate() {
+    // TODO Create tests once the validation is implemented
+  }
+
+  private void releaseSetUp() {
+    release2 = mock(Release.class);
+    when(release2.getState()).thenReturn(ReleaseState.OPENED);
+    when(updates.set("state", ReleaseState.COMPLETED)).thenReturn(updates);
+  }
+
+  private Submission signOffSetUp() {
+    Submission submission = mock(Submission.class);
+    when(updates.set("submissions.$.state", SubmissionState.SIGNED_OFF)).thenReturn(updates);
+    return submission;
   }
 }

@@ -31,7 +31,7 @@ public class ProjectResource {
 
   @GET
   public Response getProjects() {
-    List<Project> projectlist = projects.query().list();
+    List<Project> projectlist = projects.getProjects();
     if(projectlist == null) {
       return Response.status(Status.NOT_FOUND).build();
     }
@@ -43,7 +43,7 @@ public class ProjectResource {
   public Response addProject(Project project) {
     checkArgument(project != null);
     try {
-      projects.datastore().save(project);
+      this.projects.addProject(project);
       return Response.created(UriBuilder.fromResource(ProjectResource.class).path(project.getAccessionId()).build())
           .build();
     } catch(DuplicateKey e) {

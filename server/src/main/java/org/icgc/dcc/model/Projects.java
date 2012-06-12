@@ -3,8 +3,10 @@ package org.icgc.dcc.model;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+
+import org.icgc.dcc.filesystem.DccFileSystem;
+import org.icgc.dcc.service.ReleaseService;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
@@ -23,8 +25,10 @@ public class Projects {
   @Inject
   public Projects(Morphia morphia, Datastore datastore) {
     super();
+
     checkArgument(morphia != null);
     checkArgument(datastore != null);
+
     this.morphia = morphia;
     this.datastore = datastore;
   }
@@ -56,8 +60,25 @@ public class Projects {
     return releases;
   }
 
-  // TODO
-  public List<Project> listProjects() {
-    return Arrays.asList(new Project("OICR_prostate"), new Project("OICR_pancreas"), new Project("TCGA"));
+  @SuppressWarnings("all")
+  public void addProject(Project project) {
+    this.saveProject(project);
+
+    // TODO: add corresonding test
+    // TODO: this will actually need to throw an event and let DccFilesystem catch it so it can perform the following:
+    if(false) {
+      ReleaseService releaseService = null;
+      DccFileSystem dccFilesystem = null;
+      Release release = releaseService.getNextRelease().getRelease();
+      dccFilesystem.mkdirProjectDirectory(release, project);
+    }
+  }
+
+  public List<Project> getProjects() {
+    return this.query().list();
+  }
+
+  public void saveProject(Project project) {
+    this.datastore().save(project);
   }
 }

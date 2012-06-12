@@ -1,20 +1,27 @@
 package org.icgc.dcc.service;
 
-import org.icgc.dcc.filesystem.ReleaseFilesystem;
+import org.icgc.dcc.filesystem.DccFileSystem;
+import org.icgc.dcc.filesystem.ReleaseFileSystem;
 import org.icgc.dcc.model.Release;
+import org.icgc.dcc.model.User;
+
+import com.google.inject.Inject;
 
 public class BaseRelease implements HasRelease {
 
   protected Release release;
 
+  @Inject
+  private DccFileSystem dccFilesystem; // TODO: constructor injection
+
   public BaseRelease(Release release) {
+    // checkArgument(this.dccFilesystem != null); // TODO: uncomment once constructor injection is set up
     this.release = release;
   }
 
   @Override
-  public ReleaseFilesystem getReleaseFilesystem() {
-    // TODO implementation have to wait till HDFS Filesystem is finished
-    return null;
+  public ReleaseFileSystem getReleaseFilesystem(User user) {
+    return this.dccFilesystem.getReleaseFilesystem(this.release, user);
   }
 
   @Override

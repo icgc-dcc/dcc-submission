@@ -57,4 +57,7 @@ public class Project extends BaseEntity implements HasName {
     this.name = name;
   }
 
+  public boolean hasUser(String name) {
+    return this.users != null && this.users.contains(name);
+  }
 }

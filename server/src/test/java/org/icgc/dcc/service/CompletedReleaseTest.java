@@ -1,7 +1,7 @@
 package org.icgc.dcc.service;
 
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.icgc.dcc.model.Release;
@@ -11,17 +11,24 @@ import org.junit.Test;
 public class CompletedReleaseTest {
 
   @Test
-  public void testState() {
-    Release release = mock(Release.class);
-    CompletedRelease completedRelease = mock(CompletedRelease.class);
+  public void test_CompletedRelease_throwsIfIllegalState() {
+    Release mockRelease = mock(Release.class);
+    when(mockRelease.getState()).thenReturn(ReleaseState.OPENED);
 
-    release.setState(ReleaseState.COMPLETED);
+    try {
+      new CompletedRelease(mockRelease);
+      fail("Exception expected but none thrown");
+    } catch(IllegalReleaseStateException e) {
 
-    verify(release).setState(ReleaseState.COMPLETED);
-    when(release.getState()).thenReturn(ReleaseState.COMPLETED);
-    when(completedRelease.getRelease()).thenReturn(release);
-    when(completedRelease.getRelease().getState()).thenReturn(ReleaseState.COMPLETED);
+    }
+  }
 
+  @Test
+  public void test_CompletedRelease_doesNotThrow() {
+    Release mockRelease = mock(Release.class);
+    when(mockRelease.getState()).thenReturn(ReleaseState.COMPLETED);
+
+    new CompletedRelease(mockRelease);
   }
 
 }

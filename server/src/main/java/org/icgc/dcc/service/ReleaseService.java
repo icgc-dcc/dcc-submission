@@ -1,6 +1,7 @@
 package org.icgc.dcc.service;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +14,8 @@ import org.icgc.dcc.model.SubmissionState;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
+import com.google.code.morphia.query.Query;
+import com.google.code.morphia.query.UpdateOperations;
 import com.google.inject.Inject;
 import com.mysema.query.mongodb.MongodbQuery;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
@@ -40,9 +43,12 @@ public class ReleaseService {
   public NextRelease getNextRelease() throws IllegalReleaseStateException {
     MongodbQuery<Release> query = this.where(QRelease.release.state.eq(ReleaseState.OPENED));
     // at any time there should only be one release open which is the next release
-    checkArgument(query.list().size() == 1);
+    List<Release> nextRelease = query.list();
 
-    return new NextRelease(query.list().get(0), datastore);
+    checkState(nextRelease != null);
+    checkState(nextRelease.size() == 1);
+
+    return new NextRelease(nextRelease.get(0), datastore);
   }
 
   public MongodbQuery<Release> query() {
@@ -90,14 +96,19 @@ public class ReleaseService {
     this.datastore.save(initRelease);
   }
 
-  public List<Submission> getSubmission(String releaseName, String accessionId) {
+  public Submission getSubmission(String releaseName, String accessionId) {
     Release release = this.where(QRelease.release.name.eq(releaseName)).uniqueResult();
-    if(release == null) return null;
+    checkArgument(release != null);
 
-    List<Submission> result = new ArrayList<Submission>();
+    Submission result = null;
     for(Submission submission : release.getSubmissions()) {
-      if(submission.getAccessionId().equals(accessionId)) result.add(submission);
+      if(submission.getAccessionId().equals(accessionId)) {
+        result = submission;
+        break;
+      }
     }
+
+    checkState(result != null);
 
     return result;
   }
@@ -107,28 +118,45 @@ public class ReleaseService {
   }
 
   public boolean queue(List<String> accessionIds) {
-
-    return true;
+    return this.setState(accessionIds, SubmissionState.QUEUED);
   }
 
   public void deleteQueuedRequest() {
+    List<String> accessionIds = this.getQueued();
 
+    this.setState(accessionIds, SubmissionState.NOT_VALIDATED);
   }
 
   public List<String> getSignedOff() {
     return this.getSubmission(SubmissionState.SIGNED_OFF);
   }
 
-  public boolean SignOff(List<String> accessionIds) {
-
-    return true;
+  public boolean signOff(List<String> accessionIds) {
+    return this.setState(accessionIds, SubmissionState.SIGNED_OFF);
   }
 
   private List<String> getSubmission(SubmissionState state) {
     List<String> result = new ArrayList<String>();
     for(Submission submission : this.getNextRelease().getRelease().getSubmissions()) {
-      if(submission.getState().equals(state)) result.add(submission.getAccessionId());
+      if(submission.getState().equals(state)) {
+        result.add(submission.getAccessionId());
+      }
     }
     return result;
+  }
+
+  private boolean setState(List<String> accessionIds, SubmissionState state) {
+    UpdateOperations<Release> ops;
+    Query<Release> updateQuery;
+
+    checkArgument(accessionIds != null);
+
+    ops = this.datastore.createUpdateOperations(Release.class).disableValidation().set("submissions.$.state", state);
+    updateQuery =
+        this.datastore.createQuery(Release.class).filter("name =", this.getNextRelease().getRelease().getName())
+            .filter("submissions.accessionId in", accessionIds);
+    this.datastore.update(updateQuery, ops);
+
+    return true;
   }
 }
