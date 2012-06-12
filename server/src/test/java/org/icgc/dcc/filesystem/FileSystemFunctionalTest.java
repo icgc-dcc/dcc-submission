@@ -8,7 +8,6 @@ import java.util.regex.Pattern;
 import junit.framework.Assert;
 
 import org.apache.hadoop.fs.FileSystem;
-import org.hsqldb.lib.StringInputStream;
 import org.icgc.dcc.config.ConfigModule;
 import org.icgc.dcc.core.CoreModule;
 import org.icgc.dcc.filesystem.GuiceJUnitRunner.GuiceModules;
@@ -23,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Iterables;
+import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
 
 @RunWith(GuiceJUnitRunner.class)
@@ -50,7 +50,7 @@ public class FileSystemFunctionalTest extends FileSystemTest {
   }
 
   @Test
-  public void test_fileSystem_typicalWorkflow() { // TODO: split?
+  public void test_fileSystem_typicalWorkflow() throws IOException { // TODO: split?
     FileSystem fileSystem = this.dccFileSystem.getFileSystem();
 
     Iterable<String> filenameList0 =
@@ -105,13 +105,15 @@ public class FileSystemFunctionalTest extends FileSystemTest {
     Assert.assertTrue(submissionReadOnly);
     log.info("submission read only = " + submissionReadOnly);
 
-    InputStream in1 = new StringInputStream("header1\theader2\theader3\na\tb\tc\nd\te\tf\tg\n");
+    InputStream in1 =
+        ByteStreams.newInputStreamSupplier("header1\theader2\theader3\na\tb\tc\nd\te\tf\tg\n".getBytes()).getInput();
     String filepath1 = mySubmissionDirectory.addFile(FILENAME_1, in1);
     boolean exists1 = HadoopUtils.checkExistence(fileSystem, filepath1);
     Assert.assertTrue(exists1);
     log.info("added file = " + filepath1);
 
-    InputStream in2 = new StringInputStream("header9\theader8\theader7\nz\tb\ty\nx\tw\tv\tu\n");
+    InputStream in2 =
+        ByteStreams.newInputStreamSupplier("header9\theader8\theader7\nz\tb\ty\nx\tw\tv\tu\n".getBytes()).getInput();
     String filepath2 = mySubmissionDirectory.addFile(FILENAME_2, in2);
     boolean exists2 = HadoopUtils.checkExistence(fileSystem, filepath2);
     Assert.assertTrue(exists2);

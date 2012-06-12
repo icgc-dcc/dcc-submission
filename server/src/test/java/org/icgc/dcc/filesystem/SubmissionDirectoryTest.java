@@ -12,8 +12,9 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.hsqldb.lib.StringInputStream;
 import org.junit.Test;
+
+import com.google.common.io.ByteStreams;
 
 public class SubmissionDirectoryTest extends FileSystemTest {
 
@@ -47,8 +48,8 @@ public class SubmissionDirectoryTest extends FileSystemTest {
 
   @Test
   public void test_addFile_addFile() throws IOException {
-    this.submissionDirectory.addFile(FILENAME_1, new StringInputStream(
-        "header1\theader2\theader3\na\tb\tc\nd\te\tf\tg\n"));
+    this.submissionDirectory.addFile(FILENAME_1,
+        ByteStreams.newInputStreamSupplier("header1\theader2\theader3\na\tb\tc\nd\te\tf\tg\n".getBytes()).getInput());
 
     String ls = this.submissionDirectory.listFile().toString();
     Assert.assertEquals("[]", ls);// TODO: not very useful...
