@@ -22,7 +22,6 @@ public class WebModule extends AbstractModule {
     @Inject
     public RootResources(ResourceConfig config) {
       config.addModules(new JsonJacksonModule());
-      config.addClasses(MyResource.class);
       config.addClasses(ProjectResource.class);
       config.addClasses(ReleaseResource.class);
       config.addClasses(NextReleaseResource.class);
