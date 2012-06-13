@@ -17,25 +17,35 @@
  */
 package org.icgc.dcc.model.dictionary;
 
+import java.util.List;
+
+import org.icgc.dcc.model.BaseEntity;
+import org.icgc.dcc.model.HasName;
+
 import com.google.code.morphia.annotations.Entity;
 
 /**
- * TODO
+ * Describes a list of codes (see {@code Term})
  */
 @Entity
-public class CodeList {
+public class CodeList extends BaseEntity implements HasName {
 
-  private String name;// TODO has name?
+  private String name;
 
   private String label;
+
+  private List<Term> terms;
 
   public CodeList() {
     super();
   }
 
-  /**
-   * @return the name
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.icgc.dcc.model.HasName#getName()
    */
+  @Override
   public String getName() {
     return name;
   }
@@ -61,4 +71,17 @@ public class CodeList {
     this.label = label;
   }
 
+  /**
+   * @return the terms
+   */
+  public List<Term> getTerms() {
+    return terms;
+  }
+
+  /**
+   * @param terms the terms to set
+   */
+  public void setTerms(List<Term> terms) {
+    this.terms = terms;
+  }
 }

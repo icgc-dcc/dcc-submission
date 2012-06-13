@@ -19,12 +19,12 @@ package org.icgc.dcc.model.dictionary;
 
 import java.util.List;
 
-import com.google.code.morphia.annotations.Entity;
+import com.google.code.morphia.annotations.Embedded;
 
 /**
- * TODO
+ * Describes a field that has {@code Restriction}s and that is part of a {@code FileSchema}
  */
-@Entity
+@Embedded
 public class Field {
 
   private String name;
