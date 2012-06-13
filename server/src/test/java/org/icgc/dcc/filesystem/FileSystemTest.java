@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import org.icgc.dcc.model.Project;
-import org.icgc.dcc.model.Projects;
+import org.icgc.dcc.model.ProjectService;
 import org.icgc.dcc.model.Release;
 import org.icgc.dcc.model.Submission;
 import org.icgc.dcc.model.SubmissionState;
@@ -49,7 +49,7 @@ public class FileSystemTest {
 
   protected ReleaseService mockReleases;
 
-  protected Projects mockProjects;
+  protected ProjectService mockProjects;
 
   @Before
   public void setUp() throws IOException {
@@ -60,7 +60,7 @@ public class FileSystemTest {
     this.mockProject = mock(Project.class);
     this.mockSubmission = mock(Submission.class);
     this.mockReleases = mock(ReleaseService.class);
-    this.mockProjects = mock(Projects.class);
+    this.mockProjects = mock(ProjectService.class);
 
     when(this.mockConfig.getString(FsConfig.FS_ROOT)).thenReturn(ROOT_DIR);
 

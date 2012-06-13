@@ -9,7 +9,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
 import org.icgc.dcc.model.Project;
-import org.icgc.dcc.model.Projects;
+import org.icgc.dcc.model.ProjectService;
 import org.icgc.dcc.model.Release;
 import org.icgc.dcc.model.User;
 import org.icgc.dcc.service.ReleaseService;
@@ -33,12 +33,12 @@ public class DccFileSystem {
 
   private final ReleaseService releases;
 
-  private final Projects projects;
+  private final ProjectService projects;
 
   private final String rootStringPath;
 
   @Inject
-  public DccFileSystem(Config config, ReleaseService releases, Projects projects, FileSystem fileSystem) {
+  public DccFileSystem(Config config, ReleaseService releases, ProjectService projects, FileSystem fileSystem) {
     super();
 
     checkArgument(config != null);

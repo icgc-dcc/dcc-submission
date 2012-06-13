@@ -13,7 +13,6 @@ import javax.ws.rs.ext.Provider;
 
 import org.apache.shiro.codec.Base64;
 import org.apache.shiro.mgt.SecurityManager;
-import org.icgc.dcc.shiro.ShiroPasswordAuthenticator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,8 +24,6 @@ import com.google.inject.Inject;
  * 
  * try it with: $ curl -v -H "Authorization: Basic $(echo -n "brett:brettspasswd" | base64)"
  * http://localhost:5379/ws/myresource
- * 
- * @author Anthony Cros (anthony.cros@oicr.on.ca)
  */
 @Provider
 @BindingPriority(BindingPriority.SECURITY)

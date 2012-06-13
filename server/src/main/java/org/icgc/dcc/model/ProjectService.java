@@ -16,14 +16,14 @@ import com.mysema.query.mongodb.morphia.MorphiaQuery;
 import com.mysema.query.types.Predicate;
 
 // TODO: make an abstract base class
-public class Projects {
+public class ProjectService {
 
   private final Morphia morphia;
 
   private final Datastore datastore;
 
   @Inject
-  public Projects(Morphia morphia, Datastore datastore) {
+  public ProjectService(Morphia morphia, Datastore datastore) {
     super();
 
     checkArgument(morphia != null);

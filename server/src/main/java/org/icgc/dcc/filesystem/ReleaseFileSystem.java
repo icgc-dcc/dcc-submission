@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
 import org.icgc.dcc.model.Project;
-import org.icgc.dcc.model.Projects;
+import org.icgc.dcc.model.ProjectService;
 import org.icgc.dcc.model.Release;
 import org.icgc.dcc.model.ReleaseState;
 import org.icgc.dcc.model.Submission;
@@ -18,7 +18,7 @@ public class ReleaseFileSystem {
 
   private final DccFileSystem dccFileSystem;
 
-  private final Projects projects;
+  private final ProjectService projects;
 
   private final ReleaseService releases;
 
@@ -26,7 +26,7 @@ public class ReleaseFileSystem {
 
   private final User user;
 
-  public ReleaseFileSystem(DccFileSystem dccFilesystem, ReleaseService releases, Projects projects, Release release,
+  public ReleaseFileSystem(DccFileSystem dccFilesystem, ReleaseService releases, ProjectService projects, Release release,
       User user) {
     super();
 

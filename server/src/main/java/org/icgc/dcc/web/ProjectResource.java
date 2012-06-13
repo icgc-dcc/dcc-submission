@@ -15,7 +15,7 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
 
 import org.icgc.dcc.model.Project;
-import org.icgc.dcc.model.Projects;
+import org.icgc.dcc.model.ProjectService;
 import org.icgc.dcc.model.QProject;
 
 import com.google.code.morphia.query.Query;
@@ -27,7 +27,7 @@ import com.mongodb.MongoException.DuplicateKey;
 public class ProjectResource {
 
   @Inject
-  private Projects projects;
+  private ProjectService projects;
 
   @GET
   public Response getProjects() {
