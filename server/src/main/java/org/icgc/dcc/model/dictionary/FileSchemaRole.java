@@ -17,49 +17,9 @@
  */
 package org.icgc.dcc.model.dictionary;
 
-import com.google.code.morphia.annotations.Entity;
-import com.mongodb.BasicDBObject;
-
 /**
- * TODO
+ * Possible roles for a {@code FileSchema}
  */
-@Entity
-public class Restriction {
-
-  private String type;
-
-  private BasicDBObject config;
-
-  public Restriction() {
-    super();
-  }
-
-  /**
-   * @return the type
-   */
-  public String getType() {
-    return type;
-  }
-
-  /**
-   * @param type the type to set
-   */
-  public void setType(String type) {
-    this.type = type;
-  }
-
-  /**
-   * @return the config
-   */
-  public BasicDBObject getConfig() {
-    return config;
-  }
-
-  /**
-   * @param config the config to set
-   */
-  public void setConfig(BasicDBObject config) {
-    this.config = config;
-  }
-
+public enum FileSchemaRole {
+  SUBMISSION, SYSTEM;
 }

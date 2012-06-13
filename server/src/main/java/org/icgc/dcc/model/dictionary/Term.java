@@ -18,48 +18,63 @@
 package org.icgc.dcc.model.dictionary;
 
 import com.google.code.morphia.annotations.Entity;
-import com.mongodb.BasicDBObject;
 
 /**
  * TODO
  */
 @Entity
-public class Restriction {
+public class Term {
 
-  private String type;
+  private String code;
 
-  private BasicDBObject config;
+  private String value;
 
-  public Restriction() {
+  private String uri;
+
+  public Term() {
     super();
   }
 
   /**
-   * @return the type
+   * @return the code
    */
-  public String getType() {
-    return type;
+  public String getCode() {
+    return code;
   }
 
   /**
-   * @param type the type to set
+   * @param code the code to set
    */
-  public void setType(String type) {
-    this.type = type;
+  public void setCode(String code) {
+    this.code = code;
   }
 
   /**
-   * @return the config
+   * @return the value
    */
-  public BasicDBObject getConfig() {
-    return config;
+  public String getValue() {
+    return value;
   }
 
   /**
-   * @param config the config to set
+   * @param value the value to set
    */
-  public void setConfig(BasicDBObject config) {
-    this.config = config;
+  public void setValue(String value) {
+    this.value = value;
+  }
+
+  /**
+   * @return the uri
+   */
+  public String getUri() {
+    return uri;
+  }
+
+  /**
+   * @param uri the uri to set
+   */
+  public void setUri(String uri) {
+    this.uri = uri;
   }
 
 }

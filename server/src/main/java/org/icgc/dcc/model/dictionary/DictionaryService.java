@@ -17,49 +17,43 @@
  */
 package org.icgc.dcc.model.dictionary;
 
-import com.google.code.morphia.annotations.Entity;
-import com.mongodb.BasicDBObject;
+import static com.google.common.base.Preconditions.checkArgument;
+
+import com.google.code.morphia.Datastore;
+import com.google.code.morphia.Morphia;
+import com.google.inject.Inject;
+import com.mysema.query.mongodb.MongodbQuery;
+import com.mysema.query.mongodb.morphia.MorphiaQuery;
+import com.mysema.query.types.Predicate;
 
 /**
  * TODO
  */
-@Entity
-public class Restriction {
+public class DictionaryService {
 
-  private String type;
+  private final Morphia morphia;
 
-  private BasicDBObject config;
+  private final Datastore datastore;
 
-  public Restriction() {
+  @Inject
+  public DictionaryService(Morphia morphia, Datastore datastore) {
     super();
+    checkArgument(morphia != null);
+    checkArgument(datastore != null);
+    this.morphia = morphia;
+    this.datastore = datastore;
   }
 
-  /**
-   * @return the type
-   */
-  public String getType() {
-    return type;
+  public Datastore datastore() {
+    return datastore;
   }
 
-  /**
-   * @param type the type to set
-   */
-  public void setType(String type) {
-    this.type = type;
+  public MongodbQuery<Dictionary> query() {
+    return new MorphiaQuery<Dictionary>(morphia, datastore, QDictionary.dictionary);
   }
 
-  /**
-   * @return the config
-   */
-  public BasicDBObject getConfig() {
-    return config;
-  }
-
-  /**
-   * @param config the config to set
-   */
-  public void setConfig(BasicDBObject config) {
-    this.config = config;
+  public MongodbQuery<Dictionary> where(Predicate predicate) {
+    return query().where(predicate);
   }
 
 }

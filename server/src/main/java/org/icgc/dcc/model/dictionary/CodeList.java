@@ -18,48 +18,47 @@
 package org.icgc.dcc.model.dictionary;
 
 import com.google.code.morphia.annotations.Entity;
-import com.mongodb.BasicDBObject;
 
 /**
  * TODO
  */
 @Entity
-public class Restriction {
+public class CodeList {
 
-  private String type;
+  private String name;// TODO has name?
 
-  private BasicDBObject config;
+  private String label;
 
-  public Restriction() {
+  public CodeList() {
     super();
   }
 
   /**
-   * @return the type
+   * @return the name
    */
-  public String getType() {
-    return type;
+  public String getName() {
+    return name;
   }
 
   /**
-   * @param type the type to set
+   * @param name the name to set
    */
-  public void setType(String type) {
-    this.type = type;
+  public void setName(String name) {
+    this.name = name;
   }
 
   /**
-   * @return the config
+   * @return the label
    */
-  public BasicDBObject getConfig() {
-    return config;
+  public String getLabel() {
+    return label;
   }
 
   /**
-   * @param config the config to set
+   * @param label the label to set
    */
-  public void setConfig(BasicDBObject config) {
-    this.config = config;
+  public void setLabel(String label) {
+    this.label = label;
   }
 
 }
