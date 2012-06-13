@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.shiro;
 
+import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.authc.LockedAccountException;
@@ -51,13 +52,8 @@ public class ShiroPasswordAuthenticator implements PasswordAuthenticator {
     // build token from credentials
     UsernamePasswordToken token = new UsernamePasswordToken(username, password, false, host);
 
-    // grab current user
-    // TODO reproduce: ThreadContext.getSubject(); behavior non-statically
-    Subject.Builder subjectBuilder = new Subject.Builder(this.securityManager); // avoid using static
-    // SecurityUtils
-    Subject currentUser = subjectBuilder.buildSubject();
+    Subject currentUser = SecurityUtils.getSubject();
 
-    // TODO: proper shiro handling (this is dummy)
     try {
       // attempt to login user
       currentUser.login(token);
@@ -72,11 +68,14 @@ public class ShiroPasswordAuthenticator implements PasswordAuthenticator {
     // ... catch more exceptions here (maybe custom ones specific to your application?
     catch(AuthenticationException ae) {
       // unexpected condition? error?
+      log.info("Unknown error logging in " + token.getPrincipal() + "Please contact your administrator.");
     }
 
-    // say who they are:
-    // print their identifying principal (in this case, a username):
-    log.info("User [" + currentUser.getPrincipal() + "] logged in successfully.");
+    if(currentUser.isAuthenticated()) {
+      // say who they are:
+      // print their identifying principal (in this case, a username):
+      log.info("User [" + currentUser.getPrincipal() + "] logged in successfully.");
+    }
     return currentUser.isAuthenticated();
   }
 
