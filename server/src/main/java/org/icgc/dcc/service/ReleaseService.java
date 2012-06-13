@@ -118,6 +118,7 @@ public class ReleaseService {
   }
 
   public boolean queue(List<String> projectKeys) {
+    this.getNextRelease().release.enqueue(projectKeys);
     return this.setState(projectKeys, SubmissionState.QUEUED);
   }
 
@@ -125,6 +126,7 @@ public class ReleaseService {
     List<String> projectKeys = this.getQueued();
 
     this.setState(projectKeys, SubmissionState.NOT_VALIDATED);
+    this.getNextRelease().release.emptyQueue();
   }
 
   public List<String> getSignedOff() {
