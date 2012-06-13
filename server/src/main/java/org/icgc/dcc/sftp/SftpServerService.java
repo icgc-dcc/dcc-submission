@@ -17,21 +17,20 @@
  */
 package org.icgc.dcc.sftp;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.io.IOException;
 
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authc.AuthenticationException;
-import org.apache.shiro.authc.UsernamePasswordToken;
+import org.apache.shiro.mgt.SecurityManager;
 import org.apache.sshd.SshServer;
 import org.apache.sshd.common.NamedFactory;
 import org.apache.sshd.common.Session;
 import org.apache.sshd.server.Command;
 import org.apache.sshd.server.FileSystemFactory;
 import org.apache.sshd.server.FileSystemView;
-import org.apache.sshd.server.PasswordAuthenticator;
 import org.apache.sshd.server.keyprovider.PEMGeneratorHostKeyProvider;
-import org.apache.sshd.server.session.ServerSession;
 import org.apache.sshd.server.sftp.SftpSubsystem;
+import org.icgc.dcc.shiro.ShiroPasswordAuthenticator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,27 +49,14 @@ public class SftpServerService extends AbstractService {
   private final SshServer sshd;
 
   @Inject
-  public SftpServerService(Config config, Integer port) {
+  public SftpServerService(Config config, Integer port, final SecurityManager securityManager) {
+    checkArgument(securityManager != null);
+    checkArgument(port != null);
 
     sshd = SshServer.setUpDefaultServer();
     sshd.setPort(port);
     sshd.setKeyPairProvider(new PEMGeneratorHostKeyProvider(System.getProperty("HOME") + "/conf/sshd.pem", "RSA", 2048));
-    sshd.setPasswordAuthenticator(new PasswordAuthenticator() {
-
-      @Override
-      public boolean authenticate(String username, String password, ServerSession session) {
-        try {
-          SecurityUtils.getSubject().login(
-              new UsernamePasswordToken(username, password.toCharArray(), session.getIoSession().getRemoteAddress()
-                  .toString()));
-          // Sessions don't expire automatically
-          SecurityUtils.getSubject().getSession().setTimeout(-1);
-        } catch(AuthenticationException ae) {
-          return false;
-        }
-        return SecurityUtils.getSubject().isAuthenticated();
-      }
-    });
+    sshd.setPasswordAuthenticator(new ShiroPasswordAuthenticator(securityManager));
 
     sshd.setFileSystemFactory(new FileSystemFactory() {
       @Override
