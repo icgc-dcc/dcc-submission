@@ -67,7 +67,7 @@ public class ReleaseFileSystem {
     if(!exists) {
       throw new DccFileSystemException("release directory " + projectStringPath + " does not exists");
     }
-    Submission submission = this.releases.getSubmission(this.release.getName(), project.getAccessionId());
+    Submission submission = this.releases.getSubmission(this.release.getName(), project.getProjectKey());
     return new SubmissionDirectory(this.dccFileSystem, this.release, project, submission);
   }
 

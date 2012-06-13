@@ -50,7 +50,7 @@ public class Projects {
     List<Release> releases = new ArrayList<Release>();
     for(Release release : releaseQuery.list()) {
       for(Submission submission : release.getSubmissions()) {
-        if(submission.getAccessionId().equals(project.getAccessionId())) {
+        if(submission.getProjectKey().equals(project.getProjectKey())) {
           releases.add(release);
           continue;
         }
