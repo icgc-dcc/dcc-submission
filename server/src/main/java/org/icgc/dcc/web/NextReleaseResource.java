@@ -63,7 +63,7 @@ public class NextReleaseResource {
 
   @GET
   @Path("signed")
-  public Response getSginedOff() {
+  public Response getSignedOff() {
     List<String> projectIds = this.releaseService.getSignedOff();
 
     return Response.ok(projectIds).build();
