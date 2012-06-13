@@ -7,7 +7,6 @@ import org.icgc.dcc.core.CoreModule;
 import org.icgc.dcc.core.DccRuntime;
 import org.icgc.dcc.filesystem.FileSystemModule;
 import org.icgc.dcc.http.HttpModule;
-import org.icgc.dcc.http.jersey.InjectModule;
 import org.icgc.dcc.http.jersey.JerseyModule;
 import org.icgc.dcc.model.ModelModule;
 import org.icgc.dcc.shiro.ShiroModule;
@@ -22,7 +21,6 @@ public class Main {
     Injector injector = Guice.createInjector(new ConfigModule(ConfigFactory.load()),//
         new CoreModule(),//
         new HttpModule(),//
-        new InjectModule(),//
         new JerseyModule(),//
         new WebModule(),//
         new ModelModule(),//
