@@ -37,7 +37,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.AbstractService;
 import com.google.inject.Inject;
-import com.typesafe.config.Config;
 
 /**
  * 
@@ -49,7 +48,7 @@ public class SftpServerService extends AbstractService {
   private final SshServer sshd;
 
   @Inject
-  public SftpServerService(Config config, Integer port, final SecurityManager securityManager) {
+  public SftpServerService(Integer port, final SecurityManager securityManager) {
     checkArgument(securityManager != null);
     checkArgument(port != null);
 
