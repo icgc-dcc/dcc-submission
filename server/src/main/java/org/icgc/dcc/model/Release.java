@@ -14,6 +14,8 @@ public class Release extends BaseEntity implements HasName {
 
   protected List<Submission> submissions = new ArrayList<Submission>();
 
+  protected List<String> projectKeys = new ArrayList<String>();
+
   public Release() {
     super();
     this.setState(ReleaseState.OPENED);
@@ -44,5 +46,9 @@ public class Release extends BaseEntity implements HasName {
 
   public void setName(String name) {
     this.name = name;
+  }
+
+  public List<String> getProjectKeys() {
+    return projectKeys;
   }
 }
