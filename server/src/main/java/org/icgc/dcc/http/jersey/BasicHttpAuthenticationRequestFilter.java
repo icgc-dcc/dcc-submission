@@ -13,6 +13,7 @@ import javax.ws.rs.ext.Provider;
 
 import org.apache.shiro.codec.Base64;
 import org.apache.shiro.mgt.SecurityManager;
+import org.icgc.dcc.shiro.ShiroPasswordAuthenticator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
