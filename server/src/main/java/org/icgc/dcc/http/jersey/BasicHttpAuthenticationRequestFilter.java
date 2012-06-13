@@ -40,10 +40,15 @@ public class BasicHttpAuthenticationRequestFilter implements PreMatchRequestFilt
 
   public SecurityManager securityManager;
 
+  private final ShiroPasswordAuthenticator passwordAuthenticator;
+
   @Inject
-  public BasicHttpAuthenticationRequestFilter(SecurityManager securityManager) {
+  public BasicHttpAuthenticationRequestFilter(SecurityManager securityManager,
+      ShiroPasswordAuthenticator passwordAuthenticator) {
     checkArgument(securityManager != null);
+    checkArgument(passwordAuthenticator != null);
     this.securityManager = securityManager;
+    this.passwordAuthenticator = passwordAuthenticator;
   }
 
   @Override
@@ -101,7 +106,7 @@ public class BasicHttpAuthenticationRequestFilter implements PreMatchRequestFilt
           log.info("password decoded (" + password.length() + " characters long)");
 
           // The empty string here is for the host; this can be added later for host filtering and/or logging
-          new ShiroPasswordAuthenticator(securityManager).authenticate(username, password, "");
+          this.passwordAuthenticator.authenticate(username, password, "");
         }
       }
     }
