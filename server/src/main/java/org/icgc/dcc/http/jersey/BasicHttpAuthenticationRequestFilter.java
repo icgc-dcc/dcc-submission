@@ -12,8 +12,7 @@ import javax.ws.rs.ext.PreMatchRequestFilter;
 import javax.ws.rs.ext.Provider;
 
 import org.apache.shiro.codec.Base64;
-import org.apache.shiro.mgt.SecurityManager;
-import org.icgc.dcc.shiro.ShiroPasswordAuthenticator;
+import org.icgc.dcc.security.UsernamePasswordAuthenticator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,16 +37,11 @@ public class BasicHttpAuthenticationRequestFilter implements PreMatchRequestFilt
 
   private static final String WWW_AUTHENTICATE_REALM = "DCC"; // TODO: put elsewhere, application-wide name
 
-  public SecurityManager securityManager;
-
-  private final ShiroPasswordAuthenticator passwordAuthenticator;
+  private final UsernamePasswordAuthenticator passwordAuthenticator;
 
   @Inject
-  public BasicHttpAuthenticationRequestFilter(SecurityManager securityManager,
-      ShiroPasswordAuthenticator passwordAuthenticator) {
-    checkArgument(securityManager != null);
+  public BasicHttpAuthenticationRequestFilter(UsernamePasswordAuthenticator passwordAuthenticator) {
     checkArgument(passwordAuthenticator != null);
-    this.securityManager = securityManager;
     this.passwordAuthenticator = passwordAuthenticator;
   }
 
@@ -106,7 +100,7 @@ public class BasicHttpAuthenticationRequestFilter implements PreMatchRequestFilt
           log.info("password decoded (" + password.length() + " characters long)");
 
           // The empty string here is for the host; this can be added later for host filtering and/or logging
-          this.passwordAuthenticator.authenticate(username, password, "");
+          this.passwordAuthenticator.authenticate(username, password.toCharArray(), "");
         }
       }
     }

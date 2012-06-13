@@ -14,8 +14,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.ext.FilterContext;
 
-import org.apache.shiro.mgt.SecurityManager;
-import org.icgc.dcc.shiro.ShiroPasswordAuthenticator;
+import org.icgc.dcc.security.UsernamePasswordAuthenticator;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -32,11 +31,9 @@ public class BasicHttpAuthenticationRequestFilterTest {
 
   private ResponseBuilder mockBuilder;
 
-  private SecurityManager securityManager;
-
   private BasicHttpAuthenticationRequestFilter basicHttpAuthenticationRequestFilter;
 
-  private ShiroPasswordAuthenticator shiroPasswordAuthenticator;
+  private UsernamePasswordAuthenticator usernamePasswordAuthenticator;
 
   @Before
   public void setUp() {
@@ -46,11 +43,10 @@ public class BasicHttpAuthenticationRequestFilterTest {
     this.mockHeaders = mock(RequestHeaders.class);
     this.mockContext = mock(FilterContext.class);
     this.mockBuilder = mock(ResponseBuilder.class);
-    this.securityManager = mock(SecurityManager.class);
-    this.shiroPasswordAuthenticator = mock(ShiroPasswordAuthenticator.class);
+    this.usernamePasswordAuthenticator = mock(UsernamePasswordAuthenticator.class);
 
     this.basicHttpAuthenticationRequestFilter =
-        new BasicHttpAuthenticationRequestFilter(this.securityManager, this.shiroPasswordAuthenticator);
+        new BasicHttpAuthenticationRequestFilter(this.usernamePasswordAuthenticator);
 
     // Create some behaviour
     when(this.mockContext.getRequest()).thenReturn(this.mockRequest);
@@ -67,7 +63,7 @@ public class BasicHttpAuthenticationRequestFilterTest {
     this.runFilter();
     // Make sure there was a login attempt and capture the token
     // Assert username and password match
-    verify(this.shiroPasswordAuthenticator).authenticate("brett", "brettspasswd", "");
+    verify(this.usernamePasswordAuthenticator).authenticate("brett", "brettspasswd".toCharArray(), "");
     verify(this.mockContext, Mockito.never()).setResponse(any(Response.class));
   }
 
