@@ -17,12 +17,13 @@
  */
 package org.icgc.dcc.model.dictionary;
 
-import com.google.code.morphia.annotations.Entity;
+import com.google.code.morphia.annotations.Embedded;
 
 /**
- * TODO
+ * Describes a controlled term as part of a {@code CodeList}, which is simply a code (usually integer or integer-looking
+ * string) associated with a value, and a URI as reference for the controlled term
  */
-@Entity
+@Embedded
 public class Term {
 
   private String code;

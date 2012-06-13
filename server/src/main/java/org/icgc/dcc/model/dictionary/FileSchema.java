@@ -19,16 +19,16 @@ package org.icgc.dcc.model.dictionary;
 
 import java.util.List;
 
-import com.google.code.morphia.annotations.Entity;
+import com.google.code.morphia.annotations.Embedded;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 
 /**
- * TODO
+ * Describes a file schema that contains {@code Field}s and that is part of a {@code Dictionary}
  */
-@Entity
+@Embedded
 public class FileSchema {
 
   private final String name;
@@ -42,8 +42,6 @@ public class FileSchema {
   private List<String> uniqueFields;
 
   private List<Field> fields;
-
-  private List<Restriction> restrictions;
 
   public FileSchema(String name) {
     super();
@@ -138,20 +136,6 @@ public class FileSchema {
    */
   public void setFields(List<Field> fields) {
     this.fields = fields;
-  }
-
-  /**
-   * @return the restrictions
-   */
-  public List<Restriction> getRestrictions() {
-    return restrictions;
-  }
-
-  /**
-   * @param restrictions the restrictions to set
-   */
-  public void setRestrictions(List<Restriction> restrictions) {
-    this.restrictions = restrictions;
   }
 
   /**

@@ -17,21 +17,21 @@
  */
 package org.icgc.dcc.model.dictionary;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import org.icgc.dcc.model.BaseEntity;
+import org.icgc.dcc.model.HasName;
 
 import com.google.code.morphia.annotations.Entity;
 import com.google.code.morphia.annotations.Indexed;
 import com.google.code.morphia.annotations.PrePersist;
 
 /**
- * TODO
+ * Describes a dictionary that contains {@code FileSchema}ta and that may be used by some releases
  */
 @Entity
-public class Dictionary extends BaseEntity {
+public class Dictionary extends BaseEntity implements HasName {
 
   @Indexed(unique = true)
   private final String version;
@@ -55,6 +55,16 @@ public class Dictionary extends BaseEntity {
     this.state = DictionaryState.CLOSED;
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.icgc.dcc.model.HasName#getName()
+   */
+  @Override
+  public String getName() {
+    return this.version;
+  }
+
   /**
    * @return the version
    */
@@ -73,7 +83,7 @@ public class Dictionary extends BaseEntity {
    * @return the files
    */
   public List<FileSchema> getFiles() {
-    return new ArrayList<FileSchema>(files);
+    return files;
   }
 
   /**

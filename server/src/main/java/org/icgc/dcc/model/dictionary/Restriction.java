@@ -17,13 +17,15 @@
  */
 package org.icgc.dcc.model.dictionary;
 
-import com.google.code.morphia.annotations.Entity;
+import com.google.code.morphia.annotations.Embedded;
 import com.mongodb.BasicDBObject;
 
 /**
- * TODO
+ * Describes a restriction that applies to some {@code Field}(s)
+ * 
+ * TODO: possibly to some file schemata too in the future
  */
-@Entity
+@Embedded
 public class Restriction {
 
   private String type;
