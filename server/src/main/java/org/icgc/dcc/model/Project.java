@@ -9,7 +9,7 @@ import com.google.code.morphia.annotations.Indexed;
 public class Project extends BaseEntity implements HasName {
 
   @Indexed(unique = true)
-  protected String accessionId;
+  protected String key;
 
   protected String name;
 
@@ -26,10 +26,10 @@ public class Project extends BaseEntity implements HasName {
     this.setName(name);
   }
 
-  public Project(String name, String accessionID) {
+  public Project(String name, String projectKey) {
     super();
     this.setName(name);
-    this.setAccessionId(accessionID);
+    this.setProjectKey(projectKey);
   }
 
   @Override
@@ -37,12 +37,12 @@ public class Project extends BaseEntity implements HasName {
     return name;
   }
 
-  public String getAccessionId() {
-    return accessionId;
+  public String getProjectKey() {
+    return key;
   }
 
-  public void setAccessionId(String accessionId) {
-    this.accessionId = accessionId;
+  public void setProjectKey(String projectKey) {
+    this.key = projectKey;
   }
 
   public List<String> getUsers() {

@@ -17,9 +17,71 @@
  */
 package org.icgc.dcc.model.dictionary;
 
+import java.util.List;
+
+import org.icgc.dcc.model.BaseEntity;
+import org.icgc.dcc.model.HasName;
+
+import com.google.code.morphia.annotations.Entity;
+
 /**
- * Possible (data) types for a {@code Field}
+ * Describes a list of codes (see {@code Term})
  */
-public enum ValueType {
-  TEXT, INTEGER, DATETIME, DECIMAL
+@Entity
+public class CodeList extends BaseEntity implements HasName {
+
+  private String name;
+
+  private String label;
+
+  private List<Term> terms;
+
+  public CodeList() {
+    super();
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.icgc.dcc.model.HasName#getName()
+   */
+  @Override
+  public String getName() {
+    return name;
+  }
+
+  /**
+   * @param name the name to set
+   */
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  /**
+   * @return the label
+   */
+  public String getLabel() {
+    return label;
+  }
+
+  /**
+   * @param label the label to set
+   */
+  public void setLabel(String label) {
+    this.label = label;
+  }
+
+  /**
+   * @return the terms
+   */
+  public List<Term> getTerms() {
+    return terms;
+  }
+
+  /**
+   * @param terms the terms to set
+   */
+  public void setTerms(List<Term> terms) {
+    this.terms = terms;
+  }
 }

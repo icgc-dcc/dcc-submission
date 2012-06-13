@@ -45,7 +45,7 @@ public class ReleaseServiceTest {
       Submission submission = new Submission();
 
       submission.setState(SubmissionState.VALID);
-      submission.setAccessionId(project.getAccessionId());
+      submission.setProjectKey(project.getProjectKey());
 
       release.getSubmissions().add(submission);
 

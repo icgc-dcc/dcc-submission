@@ -11,14 +11,9 @@ import javax.ws.rs.ext.FilterContext;
 import javax.ws.rs.ext.PreMatchRequestFilter;
 import javax.ws.rs.ext.Provider;
 
-import org.apache.shiro.authc.AuthenticationException;
-import org.apache.shiro.authc.IncorrectCredentialsException;
-import org.apache.shiro.authc.LockedAccountException;
-import org.apache.shiro.authc.UnknownAccountException;
-import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.codec.Base64;
 import org.apache.shiro.mgt.SecurityManager;
-import org.apache.shiro.subject.Subject;
+import org.icgc.dcc.shiro.ShiroPasswordAuthenticator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,8 +25,6 @@ import com.google.inject.Inject;
  * 
  * try it with: $ curl -v -H "Authorization: Basic $(echo -n "brett:brettspasswd" | base64)"
  * http://localhost:5379/ws/myresource
- * 
- * @author Anthony Cros (anthony.cros@oicr.on.ca)
  */
 @Provider
 @BindingPriority(BindingPriority.SECURITY)
@@ -107,36 +100,8 @@ public class BasicHttpAuthenticationRequestFilter implements PreMatchRequestFilt
           String password = decoded[1];
           log.info("password decoded (" + password.length() + " characters long)");
 
-          // build token from credentials
-          UsernamePasswordToken token = new UsernamePasswordToken(username, password);
-          token.setRememberMe(true);
-
-          // grab current user
-          // TODO reproduce: ThreadContext.getSubject(); behavior non-statically
-          Subject.Builder subjectBuilder = new Subject.Builder(this.securityManager); // avoid using static
-                                                                                      // SecurityUtils
-          Subject currentUser = subjectBuilder.buildSubject();
-
-          // TODO: proper shiro handling (this is dummy)
-          try {
-            // attempt to login user
-            currentUser.login(token);
-          } catch(UnknownAccountException uae) {
-            log.info("There is no user with username of " + token.getPrincipal());
-          } catch(IncorrectCredentialsException ice) {
-            log.info("Password for account " + token.getPrincipal() + " was incorrect!");
-          } catch(LockedAccountException lae) {
-            log.info("The account for username " + token.getPrincipal() + " is locked.  "
-                + "Please contact your administrator to unlock it.");
-          }
-          // ... catch more exceptions here (maybe custom ones specific to your application?
-          catch(AuthenticationException ae) {
-            // unexpected condition? error?
-          }
-
-          // say who they are:
-          // print their identifying principal (in this case, a username):
-          log.info("User [" + currentUser.getPrincipal() + "] logged in successfully.");
+          // The empty string here is for the host; this can be added later for host filtering and/or logging
+          new ShiroPasswordAuthenticator(securityManager).authenticate(username, password, "");
         }
       }
     }

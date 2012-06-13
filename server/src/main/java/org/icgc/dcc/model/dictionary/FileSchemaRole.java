@@ -18,8 +18,8 @@
 package org.icgc.dcc.model.dictionary;
 
 /**
- * Possible (data) types for a {@code Field}
+ * Possible roles for a {@code FileSchema}
  */
-public enum ValueType {
-  TEXT, INTEGER, DATETIME, DECIMAL
+public enum FileSchemaRole {
+  SUBMISSION, SYSTEM;
 }

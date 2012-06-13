@@ -18,8 +18,8 @@
 package org.icgc.dcc.model.dictionary;
 
 /**
- * Possible (data) types for a {@code Field}
+ * Possible states for a {@code Dictionary}
  */
-public enum ValueType {
-  TEXT, INTEGER, DATETIME, DECIMAL
+public enum DictionaryState {
+  OPENED, CLOSED;
 }

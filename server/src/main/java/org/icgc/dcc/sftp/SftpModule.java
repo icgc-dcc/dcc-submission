@@ -15,11 +15,16 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.model.dictionary;
+package org.icgc.dcc.sftp;
 
-/**
- * Possible (data) types for a {@code Field}
- */
-public enum ValueType {
-  TEXT, INTEGER, DATETIME, DECIMAL
+import org.icgc.dcc.core.AbstractDccModule;
+
+public class SftpModule extends AbstractDccModule {
+
+  @Override
+  protected void configure() {
+    // TODO Bind to shell factory and shell container
+    bindService(SftpServerService.class);
+  }
+
 }

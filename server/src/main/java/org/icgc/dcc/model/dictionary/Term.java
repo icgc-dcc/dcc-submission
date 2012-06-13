@@ -17,9 +17,65 @@
  */
 package org.icgc.dcc.model.dictionary;
 
+import com.google.code.morphia.annotations.Embedded;
+
 /**
- * Possible (data) types for a {@code Field}
+ * Describes a controlled term as part of a {@code CodeList}, which is simply a code (usually integer or integer-looking
+ * string) associated with a value, and a URI as reference for the controlled term
  */
-public enum ValueType {
-  TEXT, INTEGER, DATETIME, DECIMAL
+@Embedded
+public class Term {
+
+  private String code;
+
+  private String value;
+
+  private String uri;
+
+  public Term() {
+    super();
+  }
+
+  /**
+   * @return the code
+   */
+  public String getCode() {
+    return code;
+  }
+
+  /**
+   * @param code the code to set
+   */
+  public void setCode(String code) {
+    this.code = code;
+  }
+
+  /**
+   * @return the value
+   */
+  public String getValue() {
+    return value;
+  }
+
+  /**
+   * @param value the value to set
+   */
+  public void setValue(String value) {
+    this.value = value;
+  }
+
+  /**
+   * @return the uri
+   */
+  public String getUri() {
+    return uri;
+  }
+
+  /**
+   * @param uri the uri to set
+   */
+  public void setUri(String uri) {
+    this.uri = uri;
+  }
+
 }
