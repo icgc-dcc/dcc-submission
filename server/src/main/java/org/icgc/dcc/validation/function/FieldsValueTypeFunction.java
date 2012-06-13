@@ -31,7 +31,7 @@ public final class FieldsValueTypeFunction extends BaseOperation implements Func
       if(maybeField.isPresent()) {
         String value = functionCall.getArguments().getString(argument);
         try {
-          Object parsedValue = parse(maybeField.get().valueType, value);
+          Object parsedValue = parse(maybeField.get().getValueType(), value);
           result.add(parsedValue);
         } catch(IllegalArgumentException e) {
           result.add(null);
@@ -46,8 +46,6 @@ public final class FieldsValueTypeFunction extends BaseOperation implements Func
 
   private Object parse(ValueType valueType, String value) {
     switch(valueType) {
-    case DATE:
-      break;
     case DATETIME:
       break;
     case DECIMAL:

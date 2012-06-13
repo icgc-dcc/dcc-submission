@@ -60,7 +60,7 @@ public class ValueTypeFieldRestriction implements FieldRestriction, PipeExtender
 
     @Override
     public FieldRestriction build(Field field, DBObject configuration) {
-      return new ValueTypeFieldRestriction(field.name, field.valueType);
+      return new ValueTypeFieldRestriction(field.getName(), field.getValueType());
     }
 
   }
@@ -80,8 +80,6 @@ public class ValueTypeFieldRestriction implements FieldRestriction, PipeExtender
 
     private Object parse(String value) {
       switch(type) {
-      case DATE:
-        break;
       case DATETIME:
         break;
       case DECIMAL:

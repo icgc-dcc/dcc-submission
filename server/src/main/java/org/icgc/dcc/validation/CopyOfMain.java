@@ -36,13 +36,11 @@ public class CopyOfMain {
 
   public static void main(String[] args) {
 
-    FileSchema studyB = new FileSchema();
-    studyB.name = "StudyB";
-    studyB.fields =
-        ImmutableList.<Field> builder().add(makeField("id", ValueType.INTEGER))
-            .add(makeField("bmi", ValueType.DECIMAL)).build();
+    FileSchema studyB = new FileSchema("StudyB");
+    studyB.setFields(ImmutableList.<Field> builder().add(makeField("id", ValueType.INTEGER))
+        .add(makeField("bmi", ValueType.DECIMAL)).build());
 
-    Pipe pipe = new Pipe(studyB.name);
+    Pipe pipe = new Pipe(studyB.getName());
     pipe = new Each(pipe, new AddValidationFieldsFunction(), Fields.ALL);
     PipeExtender extender = new UniqueFieldsRestriction.Factory().build(null, null);
     pipe = extender.extend(pipe);
@@ -62,8 +60,8 @@ public class CopyOfMain {
 
   private static Field makeField(String name, ValueType type) {
     Field f = new Field();
-    f.name = name;
-    f.valueType = type;
+    f.setName(name);
+    f.setValueType(type);
     return f;
   }
 

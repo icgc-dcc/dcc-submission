@@ -17,7 +17,7 @@ public class CascadeBuilder {
   public CascadeBuilder(Iterable<FileSchema> heads) {
     checkArgument(heads != null);
     for(FileSchema head : heads) {
-      assemblies.put(head, new Pipe(head.name));
+      assemblies.put(head, new Pipe(head.getName()));
     }
   }
 
