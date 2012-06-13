@@ -87,6 +87,11 @@
       <version>${shiro.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.apache.sshd</groupId>
+      <artifactId>sshd-core</artifactId>
+      <version>${mina.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-common</artifactId>
       <version>${hadoop-cdh.version}</version>
@@ -137,11 +142,6 @@
       <artifactId>mockito-core</artifactId>
       <version>1.9.0</version>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-    	<groupId>org.apache.sshd</groupId>
-    	<artifactId>sshd-core</artifactId>
-    	<version>0.6.0</version>
     </dependency>
   </dependencies>
   <repositories>
@@ -294,6 +294,7 @@
     <morphia.version>0.99.1-SNAPSHOT</morphia.version>
     <jersey.version>2.0-m04</jersey.version>
     <shiro.version>1.2.0</shiro.version>
+    <mina.version>0.6.0</mina.version>
     <hadoop.version>2.0.0</hadoop.version>
     <cdh.version>cdh4.0.0</cdh.version>
     <hadoop-cdh.version>${hadoop.version}-${cdh.version}</hadoop-cdh.version>
