@@ -18,19 +18,14 @@
 package org.icgc.dcc.sftp;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.sshd.SshServer;
-import org.apache.sshd.common.Factory;
 import org.apache.sshd.common.NamedFactory;
 import org.apache.sshd.common.Session;
 import org.apache.sshd.server.Command;
-import org.apache.sshd.server.Environment;
-import org.apache.sshd.server.ExitCallback;
 import org.apache.sshd.server.FileSystemFactory;
 import org.apache.sshd.server.FileSystemView;
 import org.apache.sshd.server.PasswordAuthenticator;
@@ -60,15 +55,6 @@ public class SftpServerService extends AbstractService {
     sshd = SshServer.setUpDefaultServer();
     sshd.setPort(port);
     sshd.setKeyPairProvider(new PEMGeneratorHostKeyProvider(System.getProperty("HOME") + "/conf/sshd.pem", "RSA", 2048));
-    sshd.setShellFactory(new Factory<Command>() {
-
-      @Override
-      public Command create() {
-
-        return new ShellCommand();
-      }
-
-    });
     sshd.setPasswordAuthenticator(new PasswordAuthenticator() {
 
       @Override
@@ -112,52 +98,6 @@ public class SftpServerService extends AbstractService {
       sshd.stop(true);
     } catch(InterruptedException e) {
       throw new RuntimeException(e);
-    }
-  }
-
-  private class ShellCommand implements Command {
-
-    private Thread thread;
-
-    private ExitCallback exitCallback;
-
-    private InputStream in;
-
-    private OutputStream out;
-
-    private OutputStream err;
-
-    @Override
-    @SuppressWarnings("deprecation")
-    public void destroy() {
-      thread.stop();
-    }
-
-    @Override
-    public void setErrorStream(OutputStream err) {
-      this.err = err;
-    }
-
-    @Override
-    public void setExitCallback(ExitCallback callback) {
-      exitCallback = callback;
-    }
-
-    @Override
-    public void setInputStream(InputStream in) {
-      this.in = in;
-    }
-
-    @Override
-    public void setOutputStream(OutputStream out) {
-      this.out = out;
-    }
-
-    @Override
-    public void start(Environment env) throws IOException {
-      thread = new Thread();// new Thread(shell);
-      thread.setDaemon(true);
-      thread.start();
     }
   }
 }
