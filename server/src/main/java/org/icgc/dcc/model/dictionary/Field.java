@@ -39,58 +39,34 @@ public class Field {
     super();
   }
 
-  /**
-   * @return the name
-   */
   public String getName() {
     return name;
   }
 
-  /**
-   * @param name the name to set
-   */
   public void setName(String name) {
     this.name = name;
   }
 
-  /**
-   * @return the label
-   */
   public String getLabel() {
     return label;
   }
 
-  /**
-   * @param label the label to set
-   */
   public void setLabel(String label) {
     this.label = label;
   }
 
-  /**
-   * @return the valueType
-   */
   public ValueType getValueType() {
     return valueType;
   }
 
-  /**
-   * @param valueType the valueType to set
-   */
   public void setValueType(ValueType valueType) {
     this.valueType = valueType;
   }
 
-  /**
-   * @return the restrictions
-   */
   public List<Restriction> getRestrictions() {
     return restrictions;
   }
 
-  /**
-   * @param restrictions the restrictions to set
-   */
   public void setRestrictions(List<Restriction> restrictions) {
     this.restrictions = restrictions;
   }

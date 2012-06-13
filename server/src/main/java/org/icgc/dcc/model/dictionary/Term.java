@@ -36,44 +36,26 @@ public class Term {
     super();
   }
 
-  /**
-   * @return the code
-   */
   public String getCode() {
     return code;
   }
 
-  /**
-   * @param code the code to set
-   */
   public void setCode(String code) {
     this.code = code;
   }
 
-  /**
-   * @return the value
-   */
   public String getValue() {
     return value;
   }
 
-  /**
-   * @param value the value to set
-   */
   public void setValue(String value) {
     this.value = value;
   }
 
-  /**
-   * @return the uri
-   */
   public String getUri() {
     return uri;
   }
 
-  /**
-   * @param uri the uri to set
-   */
   public void setUri(String uri) {
     this.uri = uri;
   }

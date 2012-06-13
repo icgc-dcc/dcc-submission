@@ -68,79 +68,46 @@ public class FileSchema {
     });
   }
 
-  /**
-   * @return the label
-   */
   public String getLabel() {
     return label;
   }
 
-  /**
-   * @param label the label to set
-   */
   public void setLabel(String label) {
     this.label = label;
   }
 
-  /**
-   * @return the pattern
-   */
   public String getPattern() {
     return pattern;
   }
 
-  /**
-   * @param pattern the pattern to set
-   */
   public void setPattern(String pattern) {
     this.pattern = pattern;
   }
 
-  /**
-   * @return the role
-   */
   public FileSchemaRole getRole() {
     return role;
   }
 
-  /**
-   * @param role the role to set
-   */
   public void setRole(FileSchemaRole role) {
     this.role = role;
   }
 
-  /**
-   * @return the uniqueFields
-   */
   public List<String> getUniqueFields() {
     return uniqueFields;
   }
 
-  /**
-   * @param uniqueFields the uniqueFields to set
-   */
   public void setUniqueFields(List<String> uniqueFields) {
     this.uniqueFields = uniqueFields;
   }
 
-  /**
-   * @return the fields
-   */
   public List<Field> getFields() {
     return fields;
   }
 
-  /**
-   * @param fields the fields to set
-   */
   public void setFields(List<Field> fields) {
     this.fields = fields;
   }
 
-  /**
-   * @return the name
-   */
   public String getName() {
     return name;
   }
