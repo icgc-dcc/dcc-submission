@@ -35,7 +35,7 @@ public class NextRelease extends BaseRelease {
             .set("submissions.$.state", SubmissionState.SIGNED_OFF);
     Query<Release> updateQuery =
         this.datastore.createQuery(Release.class).filter("_id", this.getRelease().getId())
-            .filter("submissions.accessionId", submission.getAccessionId());
+            .filter("submissions.projectKey", submission.getProjectKey());
 
     this.datastore.update(updateQuery, ops);
 

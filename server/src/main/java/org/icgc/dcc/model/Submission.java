@@ -5,7 +5,7 @@ import com.google.code.morphia.annotations.Embedded;
 @Embedded
 public class Submission {
 
-  protected String accessionId;
+  protected String projectKey;
 
   protected SubmissionState state;
 
@@ -17,11 +17,11 @@ public class Submission {
     this.state = state;
   }
 
-  public String getAccessionId() {
-    return accessionId;
+  public String getProjectKey() {
+    return projectKey;
   }
 
-  public void setAccessionId(String accessionId) {
-    this.accessionId = accessionId;
+  public void setProjectKey(String projectKey) {
+    this.projectKey = projectKey;
   }
 }

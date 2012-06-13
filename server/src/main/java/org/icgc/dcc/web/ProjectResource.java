@@ -44,7 +44,7 @@ public class ProjectResource {
     checkArgument(project != null);
     try {
       this.projects.addProject(project);
-      return Response.created(UriBuilder.fromResource(ProjectResource.class).path(project.getAccessionId()).build())
+      return Response.created(UriBuilder.fromResource(ProjectResource.class).path(project.getProjectKey()).build())
           .build();
     } catch(DuplicateKey e) {
       return Response.status(Status.BAD_REQUEST).build();
@@ -52,9 +52,9 @@ public class ProjectResource {
   }
 
   @GET
-  @Path("{accessionId}")
-  public Response getIt(@PathParam("accessionId") String accessionId) {
-    Project project = projects.where(QProject.project.accessionId.eq(accessionId)).uniqueResult();
+  @Path("{projectKey}")
+  public Response getIt(@PathParam("projectKey") String projectKey) {
+    Project project = projects.where(QProject.project.key.eq(projectKey)).uniqueResult();
     if(project == null) {
       return Response.status(Status.NOT_FOUND).build();
     }
@@ -62,15 +62,14 @@ public class ProjectResource {
   }
 
   @PUT
-  @Path("{accessionId}")
-  public Response updateProject(@PathParam("accessionId") String accessionId, Project project) {
+  @Path("{projectKey}")
+  public Response updateProject(@PathParam("projectKey") String projectKey, Project project) {
     checkArgument(project != null);
 
     // update project use morphia query
     UpdateOperations<Project> ops =
         projects.datastore().createUpdateOperations(Project.class).set("name", project.getName());
-    Query<Project> updateQuery =
-        projects.datastore().createQuery(Project.class).field("accessionId").equal(accessionId);
+    Query<Project> updateQuery = projects.datastore().createQuery(Project.class).field("key").equal(projectKey);
 
     projects.datastore().update(updateQuery, ops);
 
@@ -78,9 +77,9 @@ public class ProjectResource {
   }
 
   @GET
-  @Path("{accessionId}/releases")
-  public Response getReleases(@PathParam("accessionId") String accessionId) {
-    Project project = projects.where(QProject.project.accessionId.eq(accessionId)).uniqueResult();
+  @Path("{projectKey}/releases")
+  public Response getReleases(@PathParam("projectKey") String projectKey) {
+    Project project = projects.where(QProject.project.key.eq(projectKey)).uniqueResult();
     if(project == null) {
       return Response.status(Status.NOT_FOUND).build();
     }

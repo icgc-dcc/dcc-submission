@@ -85,9 +85,9 @@ public class ReleaseResource {
    */
 
   @GET
-  @Path("{name}/submissions/{accessionId}")
-  public Response getSubmission(@PathParam("name") String name, @PathParam("accessionId") String accessionId) {
-    Submission submission = this.releaseService.getSubmission(name, accessionId);
+  @Path("{name}/submissions/{projectKey}")
+  public Response getSubmission(@PathParam("name") String name, @PathParam("projectKey") String projectKey) {
+    Submission submission = this.releaseService.getSubmission(name, projectKey);
     if(submission == null) {
       return Response.status(Status.NOT_FOUND).build();
     }

@@ -145,7 +145,7 @@ public class DccFileSystem {
 
   public String buildProjectStringPath(Release release, Project project) {
     checkArgument(project != null);
-    return concatPath(this.buildReleaseStringPath(release), project.getAccessionId());
+    return concatPath(this.buildReleaseStringPath(release), project.getProjectKey());
   }
 
   public String buildFilepath(Release release, Project project, String filename) {

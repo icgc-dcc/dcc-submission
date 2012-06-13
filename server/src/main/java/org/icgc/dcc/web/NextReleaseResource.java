@@ -45,8 +45,8 @@ public class NextReleaseResource {
 
   @POST
   @Path("queue")
-  public Response queue(List<String> accessionIds) {
-    if(this.releaseService.queue(accessionIds)) {
+  public Response queue(List<String> projectKeys) {
+    if(this.releaseService.queue(projectKeys)) {
       return Response.ok().build();
     } else {
       return Response.status(Status.BAD_REQUEST).build();
@@ -71,8 +71,8 @@ public class NextReleaseResource {
 
   @POST
   @Path("signed")
-  public Response signOff(List<String> accessionIds) {
-    if(this.releaseService.signOff(accessionIds)) {
+  public Response signOff(List<String> projectKeys) {
+    if(this.releaseService.signOff(projectKeys)) {
       return Response.ok().build();
     } else {
       return Response.status(Status.BAD_REQUEST).build();
