@@ -36,30 +36,18 @@ public class Restriction {
     super();
   }
 
-  /**
-   * @return the type
-   */
   public String getType() {
     return type;
   }
 
-  /**
-   * @param type the type to set
-   */
   public void setType(String type) {
     this.type = type;
   }
 
-  /**
-   * @return the config
-   */
   public BasicDBObject getConfig() {
     return config;
   }
 
-  /**
-   * @param config the config to set
-   */
   public void setConfig(BasicDBObject config) {
     this.config = config;
   }
