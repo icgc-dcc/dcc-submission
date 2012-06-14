@@ -37,6 +37,7 @@ import com.google.inject.Inject;
  */
 public class ShiroPasswordAuthenticator implements UsernamePasswordAuthenticator {
 
+  @SuppressWarnings("unused")
   private final SecurityManager securityManager;
 
   @Inject
