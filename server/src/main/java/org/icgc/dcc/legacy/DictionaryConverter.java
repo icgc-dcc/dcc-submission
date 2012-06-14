@@ -25,9 +25,13 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.io.FilenameUtils;
+import org.codehaus.jackson.JsonGenerationException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.model.dictionary.Dictionary;
 import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.FileSchema;
+import org.icgc.dcc.model.dictionary.ValueType;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Splitter;
@@ -37,9 +41,18 @@ import com.google.common.io.Files;
  * 
  */
 public class DictionaryConverter {
+	private Dictionary dictionary;
+
+	private final ValueTypeConverter valueConverter = new ValueTypeConverter();
+
+	public void saveToJSON(String fileName) throws JsonGenerationException,
+			JsonMappingException, IOException {
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.writeValue(new File(fileName), dictionary);
+	}
 
 	public Dictionary readDictionary(String folder) throws IOException {
-		Dictionary dictionary = new Dictionary("1.0");
+		dictionary = new Dictionary("1.0");
 		File tsvFolder = new File(folder);
 		File[] tsvFiles = tsvFolder.listFiles(new FilenameFilter() {
 
@@ -92,8 +105,13 @@ public class DictionaryConverter {
 		Iterable<String> values = Splitter.on('\t').trimResults()
 				.omitEmptyStrings().split(line);
 
-		String name = values.iterator().next();
+		Iterator<String> iterator = values.iterator();
+		String name = iterator.next();
 		field.setName(name);
+
+		String dataType = iterator.next();
+		ValueType valueType = valueConverter.getMap().get(dataType);
+		field.setValueType(valueType);
 
 		return field;
 	}
