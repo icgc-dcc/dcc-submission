@@ -19,6 +19,7 @@ package org.icgc.dcc.legacy;
 
 import java.io.IOException;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -26,6 +27,7 @@ import org.junit.Test;
  */
 public class DictionaryConverterTest {
 
+	@Ignore
 	@Test
 	public void test() throws IOException {
 		DictionaryConverter dc = new DictionaryConverter();

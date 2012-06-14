@@ -15,38 +15,20 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.model;
+package org.icgc.dcc.web.mapper;
 
-import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.ext.ExceptionMapper;
+import javax.ws.rs.ext.Provider;
 
-/**
- * Utility class for interaction between responses and objects with {@code HasTimestamps}
- */
-public final class ResponseTimestamper {
+import org.icgc.dcc.model.UnsatisfiedPreconditionException;
 
-  /**
-   * Sets the Last-Modified header in a ResponseBuilder object based on the Last Update property of a HasTimestamps
-   * object. If the Last Update property is null, no time stamp will be added and any existing time stamp will be
-   * removed.
-   * 
-   * @param responseBuilder
-   * @param hasTimestamps
-   * @return
-   */
-  public static ResponseBuilder setLastModified(ResponseBuilder responseBuilder, HasTimestamps hasTimestamps) {
-    return responseBuilder.lastModified(hasTimestamps.getLastUpdate());
+@Provider
+public class UnsatisfiedPrecondtionExceptionMapper implements ExceptionMapper<UnsatisfiedPreconditionException> {
+
+  @Override
+  public Response toResponse(UnsatisfiedPreconditionException exception) {
+    return exception.getResponse().build();
   }
 
-  public static ResponseBuilder ok(HasTimestamps hasTimestamps) {
-    return ResponseTimestamper.setLastModified(Response.ok(hasTimestamps), hasTimestamps);
-  }
-
-  public static final void evaluate(Request request, HasTimestamps hasTimestamps) {
-    ResponseBuilder rb = request.evaluatePreconditions(hasTimestamps.getLastUpdate());
-    if(rb != null) {
-      throw new UnsatisfiedPreconditionException(rb);
-    }
-  }
 }

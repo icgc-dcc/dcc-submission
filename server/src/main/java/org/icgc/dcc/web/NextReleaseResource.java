@@ -6,6 +6,8 @@ import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
@@ -29,11 +31,13 @@ public class NextReleaseResource {
   }
 
   @POST
-  public Response release(Release nextRelease) {
+  public Response release(Release nextRelease, @Context Request req) {
     NextRelease oldRelease = releaseService.getNextRelease();
+    // Check the timestamp of the oldRelease, since that is the object being updated
+    ResponseTimestamper.evaluate(req, oldRelease.getRelease());
     NextRelease newRelease = oldRelease.release(nextRelease);
 
-    return Response.ok(newRelease).build();
+    return ResponseTimestamper.ok(newRelease.getRelease()).build();
   }
 
   @GET
@@ -46,7 +50,8 @@ public class NextReleaseResource {
 
   @POST
   @Path("queue")
-  public Response queue(List<String> projectKeys) {
+  public Response queue(List<String> projectKeys, @Context Request req) {
+    ResponseTimestamper.evaluate(req, this.releaseService.getNextRelease().getRelease());
     if(this.releaseService.queue(projectKeys)) {
       return Response.ok().build();
     } else {
@@ -72,7 +77,8 @@ public class NextReleaseResource {
 
   @POST
   @Path("signed")
-  public Response signOff(List<String> projectKeys) {
+  public Response signOff(List<String> projectKeys, @Context Request req) {
+    ResponseTimestamper.evaluate(req, this.releaseService.getNextRelease().getRelease());
     if(this.releaseService.signOff(projectKeys)) {
       return Response.ok().build();
     } else {
