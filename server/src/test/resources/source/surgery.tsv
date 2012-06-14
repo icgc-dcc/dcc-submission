@@ -1,0 +1,7 @@
+# name	datatype	required?	primary key?	deconvolution level	mapping file
+donor_id	TEXT	true	false		
+procedure_interval	INTEGER	true	false		
+procedure_type	VARCHAR(128)	true	false		{codec.dir}/dr_surgical_procedures__procedure_type.tsv
+procedure_site	VARCHAR(128)	true	false		
+resection_status	VARCHAR(128)	true	false		{codec.dir}/dr_surgical_procedures__resection_status.tsv
+specimen_id	TEXT	true	false		

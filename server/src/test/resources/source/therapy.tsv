@@ -1,0 +1,7 @@
+# name	datatype	required?	primary key?	deconvolution level	mapping file
+donor_id	TEXT	true	false		
+therapy_start_interval	INTEGER	true	false		
+therapy_duration	INTEGER	true	false		
+therapy_type	TEXT	true	false		
+therapy_response	VARCHAR(128)	true	false		{codec.dir}/dr_therapy__therapy_response.tsv
+therapy_notes	TEXT	true	false		

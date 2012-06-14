@@ -8,11 +8,14 @@ import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.icgc.dcc.model.QRelease;
 import org.icgc.dcc.model.Release;
+import org.icgc.dcc.model.ResponseTimestamper;
 import org.icgc.dcc.model.Submission;
 import org.icgc.dcc.service.ReleaseService;
 
@@ -38,13 +41,15 @@ public class ReleaseResource {
     if(release == null) {
       return Response.status(Status.NOT_FOUND).build();
     }
-    return Response.ok(release).build();
+    return ResponseTimestamper.ok(release).build();
   }
 
   @PUT
   @Path("{name}")
-  public Response updateRelease(@PathParam("name") String name, Release release) {
+  public Response updateRelease(@PathParam("name") String name, Release release, @Context Request req) {
     checkArgument(release != null);
+
+    ResponseTimestamper.evaluate(req, release);
 
     if(this.releaseService.list().isEmpty()) {
       this.releaseService.createInitialRelease(release);
@@ -60,7 +65,7 @@ public class ReleaseResource {
        * this.releaseService.getDatastore().update(updateQuery, ops);
        */
     }
-    return Response.ok(release).build();
+    return ResponseTimestamper.ok(release).build();
   }
 
   /*

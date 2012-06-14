@@ -1,0 +1,20 @@
+# name	datatype	required?	primary key?	deconvolution level	mapping file
+analysis_id	VARCHAR(64)	true	false		
+sample_id	VARCHAR(64)	true	false		
+gene_stable_id	VARCHAR(64)	true	false		
+gene_chromosome	VARCHAR(64)	true	false		{codec.dir}/appendix_B6.tsv
+gene_strand	INTEGER	true	false		{codec.dir}/exp_g__gene_strand.tsv
+gene_start	INTEGER	true	false		
+gene_end	INTEGER	true	false		
+normalized_read_count	FLOAT(5,2)	true	false		
+raw_read_count	INTEGER	true	false		
+normalized_expression_level	FLOAT(5,2)	false	false		
+fold_change	FLOAT(5,2)	false	false		
+reference_sample	VARCHAR(64)	false	false		
+quality_score	INTEGER	false	false		
+probability	FLOAT(3,2)	false	false		
+is_annotated	VARCHAR(64)	false	false		{codec.dir}/exp_g__is_annotated.tsv
+validation_status	VARCHAR(64)	true	false		{codec.dir}/exp_g__validation_status.tsv
+validation_platform	VARCHAR(512)	false	false		{codec.dir}/appendix_B5.tsv
+probeset_id	VARCHAR(128)	false	false		
+note	TEXT	false	false		

@@ -1,0 +1,11 @@
+1	primary tumour
+2	tumour local recurrence
+3	tumour metastasis to local lymph node
+4	tumour metastasis to distant location
+5	peripheral blood
+6	bone marrow
+7	lymph node
+8	normal control (tissue adjacent to primary)
+9	normal control (blood)
+10	normal control (other)
+11	tumour (other)

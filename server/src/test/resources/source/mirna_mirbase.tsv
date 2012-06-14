@@ -1,0 +1,10 @@
+# name	datatype	required?	primary key?	deconvolution level	mapping file
+xref_mirbase_id	TEXT	true	false		
+mirna_seq	TEXT	true	false		
+transcript_id	VARCHAR(256)	true	false		
+overlap_type	VARCHAR(32)	true	false		
+number	INTEGER	true	false		
+transcript_source	VARCHAR(64)	true	false		
+transcript_name	VARCHAR(128)	true	false		
+gene_stable_id	VARCHAR(128)	true	false		
+gene_symbol	VARCHAR(128)	true	false		

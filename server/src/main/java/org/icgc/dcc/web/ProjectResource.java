@@ -10,6 +10,8 @@ import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
@@ -17,6 +19,7 @@ import javax.ws.rs.core.UriBuilder;
 import org.icgc.dcc.model.Project;
 import org.icgc.dcc.model.ProjectService;
 import org.icgc.dcc.model.QProject;
+import org.icgc.dcc.model.ResponseTimestamper;
 
 import com.google.code.morphia.query.Query;
 import com.google.code.morphia.query.UpdateOperations;
@@ -58,13 +61,15 @@ public class ProjectResource {
     if(project == null) {
       return Response.status(Status.NOT_FOUND).build();
     }
-    return Response.ok(project).build();
+    return ResponseTimestamper.ok(project).build();
   }
 
   @PUT
   @Path("{projectKey}")
-  public Response updateProject(@PathParam("projectKey") String projectKey, Project project) {
+  public Response updateProject(@PathParam("projectKey") String projectKey, Project project, @Context Request req) {
     checkArgument(project != null);
+
+    ResponseTimestamper.evaluate(req, project);
 
     // update project use morphia query
     UpdateOperations<Project> ops =
@@ -73,7 +78,7 @@ public class ProjectResource {
 
     projects.datastore().update(updateQuery, ops);
 
-    return Response.ok(project).build();
+    return ResponseTimestamper.ok(project).build();
   }
 
   @GET

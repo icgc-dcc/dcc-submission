@@ -1,0 +1,12 @@
+# name	datatype	required?	primary key?	deconvolution level	mapping file
+analysis_id	TEXT	true	false		
+control_sample_id	TEXT	true	false		
+variation_id	TEXT	true	false		
+consequence_type	INTEGER	true	false		{codec.dir}/appendix_B7.tsv
+aa_variation	TEXT	false	false		
+cds_variation	TEXT	false	false		
+protein_domain_affected	TEXT	false	false		
+gene_affected	TEXT	false	false		
+transcript_affected	TEXT	false	false		
+gene_build_version	INTEGER	true	false		
+note	TEXT	false	false		

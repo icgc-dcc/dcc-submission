@@ -25,9 +25,15 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.io.FilenameUtils;
+import org.codehaus.jackson.JsonGenerationException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.model.dictionary.Dictionary;
 import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.FileSchema;
+import org.icgc.dcc.model.dictionary.FileSchemaRole;
+import org.icgc.dcc.model.dictionary.Restriction;
+import org.icgc.dcc.model.dictionary.ValueType;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Splitter;
@@ -37,9 +43,18 @@ import com.google.common.io.Files;
  * 
  */
 public class DictionaryConverter {
+	private Dictionary dictionary;
+
+	private final ValueTypeConverter valueConverter = new ValueTypeConverter();
+
+	public void saveToJSON(String fileName) throws JsonGenerationException,
+			JsonMappingException, IOException {
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.writeValue(new File(fileName), dictionary);
+	}
 
 	public Dictionary readDictionary(String folder) throws IOException {
-		Dictionary dictionary = new Dictionary("1.0");
+		dictionary = new Dictionary("1.0");
 		File tsvFolder = new File(folder);
 		File[] tsvFiles = tsvFolder.listFiles(new FilenameFilter() {
 
@@ -77,12 +92,20 @@ public class DictionaryConverter {
 			this.readTSVHeader(lineIterator.next());
 		}
 		// Read field
+		List<String> uniqueFields = new ArrayList<String>();
 		List<Field> fields = new ArrayList<Field>();
 		while (lineIterator.hasNext()) {
 			Field field = this.readField(lineIterator.next());
 			fields.add(field);
+			if (field.isUnique()) {
+				uniqueFields.add(field.getName());
+			}
 		}
 		fileSchema.setFields(fields);
+
+		fileSchema.setUniqueFields(uniqueFields);
+
+		fileSchema.setRole(FileSchemaRole.SUBMISSION);
 
 		return fileSchema;
 	}
@@ -92,8 +115,33 @@ public class DictionaryConverter {
 		Iterable<String> values = Splitter.on('\t').trimResults()
 				.omitEmptyStrings().split(line);
 
-		String name = values.iterator().next();
+		Iterator<String> iterator = values.iterator();
+		String name = iterator.next();
 		field.setName(name);
+
+		String dataType = iterator.next();
+		ValueType valueType = valueConverter.getMap().get(dataType);
+		field.setValueType(valueType);
+
+		List<Restriction> restrictions = new ArrayList<Restriction>();
+
+		// add required restriction
+		String required = iterator.next();
+		if (Boolean.parseBoolean(required)) {
+			Restriction requiredRestriction = new Restriction();
+			requiredRestriction.setType("required");
+			restrictions.add(requiredRestriction);
+		}
+
+		// add primary-key restriction
+		String primaryKey = iterator.next();
+		if (Boolean.parseBoolean(primaryKey)) {
+			Restriction primaryKeyRestriction = new Restriction();
+			primaryKeyRestriction.setType("primary-key");
+			restrictions.add(primaryKeyRestriction);
+		}
+
+		field.setRestrictions(restrictions);
 
 		return field;
 	}

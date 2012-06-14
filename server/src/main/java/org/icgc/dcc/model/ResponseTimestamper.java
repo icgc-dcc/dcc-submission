@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.model;
 
+import javax.ws.rs.core.Request;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
 /**
@@ -35,5 +37,16 @@ public final class ResponseTimestamper {
    */
   public static ResponseBuilder setLastModified(ResponseBuilder responseBuilder, HasTimestamps hasTimestamps) {
     return responseBuilder.lastModified(hasTimestamps.getLastUpdate());
+  }
+
+  public static ResponseBuilder ok(HasTimestamps hasTimestamps) {
+    return ResponseTimestamper.setLastModified(Response.ok(hasTimestamps), hasTimestamps);
+  }
+
+  public static void evaluate(Request request, HasTimestamps hasTimestamps) {
+    ResponseBuilder rb = request.evaluatePreconditions(hasTimestamps.getLastUpdate());
+    if(rb != null) {
+      throw new UnsatisfiedPreconditionException(rb);
+    }
   }
 }

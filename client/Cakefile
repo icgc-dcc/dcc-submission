@@ -1,0 +1,38 @@
+{exec} = require 'child_process'
+wrench = require 'wrench'
+connect = require 'connect'
+proxy = require 'http-proxy'
+
+task "start", "start doing stuff", ->
+	# Deep-copy an existing directory
+	console.log 'Copying /src files to /target...'
+	exec 'mkdir -p target/webapp'
+	wrench.copyDirSyncRecursive 'src/main/webapp', 'target/webapp'
+	console.log 'Watching CoffeeScript files...'
+	exec 'coffee --watch --compile --output target/webapp/js/ src/main/webapp/coffee/', (err, stdout, stderr) ->
+	    throw err if err
+	    console.log stdout + stderr
+
+	# Redefining the "server" task for this project. Note that the output
+	# displayed by --help will reflect the new task description.
+	console.log 'Starting web server...'
+
+	server = proxy.createServer (req, res, proxy) ->
+		if req.url.match /^\/?ws/
+			backend =
+				host: 'localhost'
+				port: 5379
+		else 
+			backend =
+				host: 'localhost'
+				port: 3000
+	
+		proxy.proxyRequest(req, res, backend)
+
+	server.listen 3001, ->
+		addr = server.address()
+		console.log "front-end listening on http://#{addr.address}:#{addr.port}"
+
+	connect()
+		.use(connect.static('target/webapp'))
+		.listen 3000

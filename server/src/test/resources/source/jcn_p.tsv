@@ -1,0 +1,28 @@
+# name	datatype	required?	primary key?	deconvolution level	mapping file
+analysis_id	VARCHAR(64)	true	false		
+sample_id	VARCHAR(64)	true	false		
+junction_id	VARCHAR(256)	true	false		
+gene_stable_id	VARCHAR(64)	true	false		
+gene_chromosome	VARCHAR(64)	true	false		{codec.dir}/appendix_B6.tsv
+gene_strand	INTEGER	true	false		{codec.dir}/jcn_p__gene_strand.tsv
+gene_start	INTEGER	true	false		
+gene_end	INTEGER	true	false		
+second_gene_stable_id	VARCHAR(64)	false	false		
+exon1_chromosome	VARCHAR(64)	true	false		{codec.dir}/appendix_B6.tsv
+exon1_number_bases	INTEGER	true	false		
+exon1_end	INTEGER	true	false		
+exon1_strand	INTEGER	false	false		{codec.dir}/jcn_p__exon1_strand.tsv
+exon2_chromosome	VARCHAR(64)	true	false		{codec.dir}/appendix_B6.tsv
+exon2_number_bases	INTEGER	true	false		
+exon2_start	INTEGER	true	false		
+exon2_strand	INTEGER	false	false		{codec.dir}/jcn_p__exon2_strand.tsv
+is_fusion_gene	VARCHAR(16)	false	false		{codec.dir}/jcn_p__is_fusion_gene.tsv
+is_novel_splice_form	VARCHAR(16)	false	false		{codec.dir}/jcn_p__is_novel_splice_form.tsv
+junction_seq	TEXT	false	false		
+junction_type	VARCHAR(64)	false	false		{codec.dir}/jcn_p__junction_type.tsv
+junction_read_count	FLOAT(5,2)	true	false		
+quality_score	INTEGER	false	false		
+probability	FLOAT(3,2)	false	false		
+validation_status	VARCHAR(64)	true	false		{codec.dir}/jcn_p__validation_status.tsv
+validation_platform	VARCHAR(512)	false	false		{codec.dir}/appendix_B5.tsv
+note	TEXT	false	false		

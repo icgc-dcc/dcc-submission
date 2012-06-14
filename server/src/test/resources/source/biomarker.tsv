@@ -1,0 +1,6 @@
+# name	datatype	required?	primary key?	deconvolution level	mapping file
+donor_id	TEXT	true	false		
+specimen_id	TEXT	true	false		
+biomarker_name	TEXT	true	false		
+biomarker_threshold	TEXT	true	false		
+biomarker_positive	VARCHAR(128)	true	false		{codec.dir}/dr_biomarkers__biomarker_positive.tsv

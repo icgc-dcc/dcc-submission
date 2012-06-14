@@ -1,0 +1,18 @@
+# name	datatype	required?	primary key?	deconvolution level	mapping file
+donor_id	VARCHAR(64)	true	false		
+donor_sex	VARCHAR(128)	true	false		{codec.dir}/dr__donor_sex.tsv
+donor_region_of_residence	VARCHAR(64)	true	false		
+donor_vital_status	VARCHAR(128)	true	false		{codec.dir}/dr__donor_vital_status.tsv
+disease_status_last_followup	VARCHAR(128)	true	false		{codec.dir}/dr__disease_status_last_followup.tsv
+donor_relapse_type	VARCHAR(128)	true	false		{codec.dir}/dr__donor_relapse_type.tsv
+donor_age_at_diagnosis	INTEGER	true	false		
+donor_age_at_enrollment	INTEGER	true	false		
+donor_age_at_last_followup	INTEGER	true	false		
+donor_relapse_interval	INTEGER	true	false		
+donor_diagnosis_icd10	VARCHAR(64)	true	false		
+donor_tumour_staging_system_at_diagnosis	VARCHAR(64)	true	false		
+donor_tumour_stage_at_diagnosis	VARCHAR(64)	true	false		
+donor_tumour_stage_at_diagnosis_supplemental	VARCHAR(64)	false	false		
+donor_survival_time	INTEGER	true	false		
+donor_interval_of_last_followup	INTEGER	true	false		
+donor_notes	TEXT	false	false		
