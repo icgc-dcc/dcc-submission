@@ -1,0 +1,14 @@
+# name	datatype	required?	primary key?	deconvolution level	mapping file
+analysis_id	TEXT	true	false		
+analyzed_sample_id	TEXT	true	false		
+methylated_fragment_id	VARCHAR(128)	true	false		
+chromosome	VARCHAR(64)	true	false		{codec.dir}/appendix_B6.tsv
+chromosome_start	INTEGER	true	false		
+chromosome_end	INTEGER	true	false		
+chromosome_strand	INTEGER	false	false		{codec.dir}/meth_p__chromosome_strand.tsv
+beta_value	FLOAT(5,2)	false	false		
+quality_score	INTEGER	false	false		
+probability	FLOAT(3,2)	false	false		
+validation_status	VARCHAR(64)	true	false		{codec.dir}/meth_p__validation_status.tsv
+validation_platform	VARCHAR(512)	false	false		{codec.dir}/appendix_B5.tsv
+note	TEXT	false	false		

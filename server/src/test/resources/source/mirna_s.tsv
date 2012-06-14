@@ -1,0 +1,8 @@
+# name	datatype	required?	primary key?	deconvolution level	mapping file
+mirna_seq	TEXT	true	false		
+chromosome	VARCHAR(64)	true	false		{codec.dir}/appendix_B6.tsv
+chromosome_start	INTEGER	true	false		
+chromosome_end	INTEGER	true	false		
+chromosome_strand	INTEGER	false	false		{codec.dir}/mirna_s__chromosome_strand.tsv
+xref_mirbase_id	VARCHAR(64)	false	false		
+note	TEXT	false	false		

@@ -22,53 +22,62 @@ import java.util.List;
 import com.google.code.morphia.annotations.Embedded;
 
 /**
- * Describes a field that has {@code Restriction}s and that is part of a {@code FileSchema}
+ * Describes a field that has {@code Restriction}s and that is part of a
+ * {@code FileSchema}
  */
 @Embedded
 public class Field {
 
-  private String name;
+	private String name;
 
-  private String label;
+	private String label;
 
-  private ValueType valueType;
+	private ValueType valueType;
 
-  private List<Restriction> restrictions;
+	private List<Restriction> restrictions;
 
-  public Field() {
-    super();
-  }
+	public Field() {
+		super();
+	}
 
-  public String getName() {
-    return name;
-  }
+	public String getName() {
+		return name;
+	}
 
-  public void setName(String name) {
-    this.name = name;
-  }
+	public void setName(String name) {
+		this.name = name;
+	}
 
-  public String getLabel() {
-    return label;
-  }
+	public String getLabel() {
+		return label;
+	}
 
-  public void setLabel(String label) {
-    this.label = label;
-  }
+	public void setLabel(String label) {
+		this.label = label;
+	}
 
-  public ValueType getValueType() {
-    return valueType;
-  }
+	public ValueType getValueType() {
+		return valueType;
+	}
 
-  public void setValueType(ValueType valueType) {
-    this.valueType = valueType;
-  }
+	public void setValueType(ValueType valueType) {
+		this.valueType = valueType;
+	}
 
-  public List<Restriction> getRestrictions() {
-    return restrictions;
-  }
+	public List<Restriction> getRestrictions() {
+		return restrictions;
+	}
 
-  public void setRestrictions(List<Restriction> restrictions) {
-    this.restrictions = restrictions;
-  }
+	public void setRestrictions(List<Restriction> restrictions) {
+		this.restrictions = restrictions;
+	}
 
+	public boolean isUnique() {
+		for (Restriction restriction : restrictions) {
+			if (restriction.getType().equals("primary-key")) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

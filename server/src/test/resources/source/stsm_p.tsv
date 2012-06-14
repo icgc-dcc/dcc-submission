@@ -1,0 +1,28 @@
+# name	datatype	required?	primary key?	deconvolution level	mapping file
+analysis_id	VARCHAR(64)	true	false		
+analyzed_sample_id	VARCHAR(64)	true	false		
+sv_id	VARCHAR(32)	true	false		
+placement	INTEGER	true	false		
+annotation	VARCHAR(256)	true	false		
+interpreted_annotation	VARCHAR(256)	false	false		
+variant_type	VARCHAR(128)	true	false		{codec.dir}/appendix_B9.tsv
+chr_from	VARCHAR(64)	true	false		{codec.dir}/appendix_B6.tsv
+chr_from_bkpt	INTEGER	true	false		
+chr_from_strand	INTEGER	true	false		{codec.dir}/stsm_p__chr_from_strand.tsv
+chr_from_range	INTEGER	false	false		
+chr_from_flanking_seq	VARCHAR(512)	false	false		
+chr_to	VARCHAR(64)	true	false		{codec.dir}/appendix_B6.tsv
+chr_to_bkpt	INTEGER	true	false		
+chr_to_strand	INTEGER	true	false		{codec.dir}/stsm_p__chr_to_strand.tsv
+chr_to_range	INTEGER	false	false		
+chr_to_flanking_seq	VARCHAR(512)	false	false		
+microhomology_sequence	TEXT	false	false		
+non_templated_sequence	TEXT	false	false		
+evidence	VARCHAR(128)	false	false		{codec.dir}/stsm_p__evidence.tsv
+quality_score	INTEGER	false	false		
+probability	FLOAT(3,2)	false	false		
+zygosity	VARCHAR(64)	false	false		{codec.dir}/stsm_p__zygosity.tsv
+validation_status	VARCHAR(64)	true	false		{codec.dir}/stsm_p__validation_status.tsv
+validation_platform	VARCHAR(512)	false	false		{codec.dir}/appendix_B5.tsv
+db_xref	VARCHAR(256)	false	false		
+note	TEXT	false	false		

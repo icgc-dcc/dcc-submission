@@ -1,0 +1,8 @@
+# name	datatype	required?	primary key?	deconvolution level	mapping file
+donor_id	TEXT	true	false		
+relationship_type	VARCHAR(128)	true	false		{codec.dir}/dr_family_history__relationship_type.tsv
+relationship_type_other	TEXT	true	false		
+relationship_sex	VARCHAR(128)	true	false		{codec.dir}/dr_family_history__relationship_sex.tsv
+relationship_age	INTEGER	true	false		
+relationship_disease_icd10	TEXT	true	false		
+relationship_disease	TEXT	true	false		

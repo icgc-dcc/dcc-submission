@@ -1,0 +1,25 @@
+# name	datatype	required?	primary key?	deconvolution level	mapping file
+donor_id	VARCHAR(64)	true	false		
+specimen_id	VARCHAR(64)	true	false		
+specimen_type	VARCHAR(128)	true	false		{codec.dir}/specimen__specimen_type.tsv
+specimen_type_other	VARCHAR(64)	true	false		
+specimen_interval	INTEGER	true	false		
+specimen_donor_treatment_type	VARCHAR(128)	true	false		{codec.dir}/specimen__specimen_donor_treatment_type.tsv
+specimen_donor_treatment_type_other	VARCHAR(64)	true	false		
+specimen_processing	VARCHAR(128)	true	false		{codec.dir}/specimen__specimen_processing.tsv
+specimen_processing_other	VARCHAR(64)	true	false		
+specimen_storage	VARCHAR(128)	true	false		{codec.dir}/specimen__specimen_storage.tsv
+specimen_storage_other	VARCHAR(64)	true	false		
+tumour_confirmed	VARCHAR(128)	true	false		{codec.dir}/specimen__tumour_confirmed.tsv
+specimen_biobank	VARCHAR(64)	true	false		
+specimen_biobank_id	VARCHAR(64)	true	false		
+specimen_available	VARCHAR(128)	true	false		{codec.dir}/specimen__specimen_available.tsv
+tumour_histological_type	VARCHAR(64)	true	false		
+tumour_grading_system	VARCHAR(64)	true	false		
+tumour_grade	VARCHAR(64)	true	false		
+tumour_grade_supplemental	VARCHAR(64)	true	false		
+tumour_stage_system	VARCHAR(64)	true	false		
+tumour_stage	VARCHAR(64)	true	false		
+tumour_stage_supplemental	VARCHAR(64)	false	false		
+digital_image_of_stained_section	TEXT	true	false		
+specimen_notes	TEXT	false	false		

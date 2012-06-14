@@ -1,0 +1,8 @@
+# name	datatype	required?	primary key?	deconvolution level	mapping file
+analysis_id	VARCHAR(64)	true	false		
+analyzed_sample_id	VARCHAR(64)	true	false		
+mutation_id	VARCHAR(128)	true	false		
+gene_affected	VARCHAR(512)	true	false	1.1	
+transcript_affected	TEXT	false	false	1.2	
+gene_build_version	INTEGER	true	false		
+note	TEXT	false	false		

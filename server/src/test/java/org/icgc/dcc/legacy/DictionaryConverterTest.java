@@ -19,7 +19,6 @@ package org.icgc.dcc.legacy;
 
 import java.io.IOException;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -27,12 +26,22 @@ import org.junit.Test;
  */
 public class DictionaryConverterTest {
 
-	@Ignore
 	@Test
 	public void test() throws IOException {
 		DictionaryConverter dc = new DictionaryConverter();
-		dc.readDictionary("/Users/lyao/Documents/workspace/executor/.dcc-loader/data_model/source/");
-		dc.saveToJSON("/Users/lyao/Documents/workspace/data-submission/server/src/main/resources/dictionary.json");
+		dc.readDictionary("src/test/resources/source/");
+		dc.saveToJSON("src/test/resources/dictionary.json");
+
+		/*
+		 * File testFile = new File("src/test/resources/dictionary.json"); File
+		 * refFile = new File("src/main/resources/dictionary.json");
+		 * 
+		 * ObjectMapper mapper = new ObjectMapper(); JsonNode testTree =
+		 * mapper.readTree(FileUtils .readFileToString(testFile)); JsonNode
+		 * refTree = mapper.readTree(FileUtils.readFileToString(refFile));
+		 * 
+		 * assertTrue(refTree.equals(testTree));
+		 */
 	}
 
 }

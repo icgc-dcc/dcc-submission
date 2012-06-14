@@ -1,0 +1,7 @@
+# name	datatype	required?	primary key?	deconvolution level	mapping file
+analyzed_sample_id	VARCHAR(64)	true	false		
+specimen_id	VARCHAR(64)	true	false		
+analyzed_sample_type	VARCHAR(128)	true	false		{codec.dir}/sp__analyzed_sample_type.tsv
+analyzed_sample_type_other	VARCHAR(64)	false	false		
+analyzed_sample_interval	INTEGER	false	false		
+analyzed_sample_notes	TEXT	false	false		

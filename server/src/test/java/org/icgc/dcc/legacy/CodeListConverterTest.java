@@ -19,7 +19,6 @@ package org.icgc.dcc.legacy;
 
 import java.io.IOException;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -27,12 +26,22 @@ import org.junit.Test;
  */
 public class CodeListConverterTest {
 
-	@Ignore
 	@Test
 	public void test() throws IOException {
 		CodeListConverter clc = new CodeListConverter();
-		clc.readCodec("/Users/lyao/Documents/workspace/executor/.dcc-loader/codec");
-		clc.saveToJSON("/Users/lyao/Documents/workspace/data-submission/server/src/main/resources/codeList.json");
+		clc.readCodec("src/test/resources/codec");
+		clc.saveToJSON("src/test/resources/codeList.json");
+
+		/*
+		 * File testFile = new File("src/test/resources/codeList.json"); File
+		 * refFile = new File("src/main/resources/codeList.json");
+		 * 
+		 * ObjectMapper mapper = new ObjectMapper(); JsonNode testTree =
+		 * mapper.readTree(FileUtils .readFileToString(testFile)); JsonNode
+		 * refTree = mapper.readTree(FileUtils.readFileToString(refFile));
+		 * 
+		 * assertTrue(refTree.equals(testTree));
+		 */
 	}
 
 }
