@@ -10,6 +10,8 @@ import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
@@ -64,8 +66,10 @@ public class ProjectResource {
 
   @PUT
   @Path("{projectKey}")
-  public Response updateProject(@PathParam("projectKey") String projectKey, Project project) {
+  public Response updateProject(@PathParam("projectKey") String projectKey, Project project, @Context Request req) {
     checkArgument(project != null);
+
+    ResponseTimestamper.evaluate(req, project);
 
     // update project use morphia query
     UpdateOperations<Project> ops =
