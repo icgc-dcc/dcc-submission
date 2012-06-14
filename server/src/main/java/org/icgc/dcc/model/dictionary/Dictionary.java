@@ -55,41 +55,25 @@ public class Dictionary extends BaseEntity implements HasName {
     this.state = DictionaryState.CLOSED;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.icgc.dcc.model.HasName#getName()
-   */
   @Override
   public String getName() {
     return this.version;
   }
 
-  /**
-   * @return the version
-   */
   public String getVersion() {
     return version;
   }
 
-  /**
-   * @return the state
-   */
   public DictionaryState getState() {
     return state;
   }
 
-  /**
-   * @return the files
-   */
   public List<FileSchema> getFiles() {
     return files;
   }
 
-  /**
-   * @param files the files to set
-   */
   public void setFiles(List<FileSchema> files) {
     this.files = files;
   }
+
 }

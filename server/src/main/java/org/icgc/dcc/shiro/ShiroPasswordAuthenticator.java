@@ -25,30 +25,30 @@ import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.subject.Subject;
-import org.apache.sshd.server.PasswordAuthenticator;
-import org.apache.sshd.server.session.ServerSession;
 import org.icgc.dcc.http.jersey.BasicHttpAuthenticationRequestFilter;
+import org.icgc.dcc.security.UsernamePasswordAuthenticator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.inject.Inject;
+
 /**
- * 
+ * Implements {@code UsernamePasswordAuthenticator} on top of {@code Shiro}
  */
+public class ShiroPasswordAuthenticator implements UsernamePasswordAuthenticator {
 
-public class ShiroPasswordAuthenticator implements PasswordAuthenticator {
-
+  @SuppressWarnings("unused")
   private final SecurityManager securityManager;
 
-  /**
-   * @param securityManager
-   */
+  @Inject
   public ShiroPasswordAuthenticator(SecurityManager securityManager) {
     this.securityManager = securityManager;
   }
 
   private static final Logger log = LoggerFactory.getLogger(BasicHttpAuthenticationRequestFilter.class);
 
-  public boolean authenticate(final String username, final String password, final String host) {
+  @Override
+  public boolean authenticate(final String username, final char[] password, final String host) {
     // build token from credentials
     UsernamePasswordToken token = new UsernamePasswordToken(username, password, false, host);
 
@@ -79,14 +79,4 @@ public class ShiroPasswordAuthenticator implements PasswordAuthenticator {
     return currentUser.isAuthenticated();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.apache.sshd.server.PasswordAuthenticator#authenticate(java.lang.String, java.lang.String,
-   * org.apache.sshd.server.session.ServerSession)
-   */
-  @Override
-  public boolean authenticate(String username, String password, ServerSession session) {
-    return authenticate(username, password, session.getIoSession().getRemoteAddress().toString());
-  }
 }

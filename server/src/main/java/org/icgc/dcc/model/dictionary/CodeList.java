@@ -40,47 +40,27 @@ public class CodeList extends BaseEntity implements HasName {
     super();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.icgc.dcc.model.HasName#getName()
-   */
   @Override
   public String getName() {
     return name;
   }
 
-  /**
-   * @param name the name to set
-   */
   public void setName(String name) {
     this.name = name;
   }
 
-  /**
-   * @return the label
-   */
   public String getLabel() {
     return label;
   }
 
-  /**
-   * @param label the label to set
-   */
   public void setLabel(String label) {
     this.label = label;
   }
 
-  /**
-   * @return the terms
-   */
   public List<Term> getTerms() {
     return terms;
   }
 
-  /**
-   * @param terms the terms to set
-   */
   public void setTerms(List<Term> terms) {
     this.terms = terms;
   }

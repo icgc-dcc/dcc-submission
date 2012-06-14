@@ -21,16 +21,17 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.IOException;
 
-import org.apache.shiro.mgt.SecurityManager;
 import org.apache.sshd.SshServer;
 import org.apache.sshd.common.NamedFactory;
 import org.apache.sshd.common.Session;
 import org.apache.sshd.server.Command;
 import org.apache.sshd.server.FileSystemFactory;
 import org.apache.sshd.server.FileSystemView;
+import org.apache.sshd.server.PasswordAuthenticator;
 import org.apache.sshd.server.keyprovider.PEMGeneratorHostKeyProvider;
+import org.apache.sshd.server.session.ServerSession;
 import org.apache.sshd.server.sftp.SftpSubsystem;
-import org.icgc.dcc.shiro.ShiroPasswordAuthenticator;
+import org.icgc.dcc.security.UsernamePasswordAuthenticator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,14 +49,20 @@ public class SftpServerService extends AbstractService {
   private final SshServer sshd;
 
   @Inject
-  public SftpServerService(Integer port, final SecurityManager securityManager) {
-    checkArgument(securityManager != null);
+  public SftpServerService(Integer port, final UsernamePasswordAuthenticator passwordAuthenticator) {
+    checkArgument(passwordAuthenticator != null);
     checkArgument(port != null);
 
     sshd = SshServer.setUpDefaultServer();
     sshd.setPort(port);
     sshd.setKeyPairProvider(new PEMGeneratorHostKeyProvider(System.getProperty("HOME") + "/conf/sshd.pem", "RSA", 2048));
-    sshd.setPasswordAuthenticator(new ShiroPasswordAuthenticator(securityManager));
+    sshd.setPasswordAuthenticator(new PasswordAuthenticator() {
+
+      @Override
+      public boolean authenticate(String username, String password, ServerSession session) {
+        return passwordAuthenticator.authenticate(username, password.toCharArray(), null);
+      }
+    });
 
     sshd.setFileSystemFactory(new FileSystemFactory() {
       @Override
