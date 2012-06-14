@@ -17,70 +17,17 @@
  */
 package org.icgc.dcc.model.dictionary;
 
-import static com.google.common.base.Preconditions.checkArgument;
+public class DictionaryServiceException extends RuntimeException {
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.icgc.dcc.model.BaseEntity;
-import org.icgc.dcc.model.HasName;
-
-import com.google.code.morphia.annotations.Entity;
-
-/**
- * Describes a list of codes (see {@code Term})
- */
-@Entity
-public class CodeList extends BaseEntity implements HasName {
-
-  private String name;
-
-  private String label;
-
-  private List<Term> terms;
-
-  public CodeList() {
-    super();
-    terms = new ArrayList<Term>();
+  public DictionaryServiceException(Exception e) {
+    super(e);
   }
 
-  public CodeList(String name) {
-    this();
-    checkArgument(label != null);
-    this.name = name;
-    this.label = name;
+  public DictionaryServiceException(String message) {
+    super(message);
   }
 
-  @Override
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public String getLabel() {
-    return label;
-  }
-
-  public void setLabel(String label) {
-    this.label = label;
-  }
-
-  public List<Term> getTerms() {
-    return terms;
-  }
-
-  public void setTerms(List<Term> terms) {
-    this.terms = terms;
-  }
-
-  public void addTerm(Term term) {
-    terms.add(term);
-  }
-
-  public boolean containsTerm(Term term) {
-    return terms.contains(term);
+  public DictionaryServiceException(String message, Exception e) {
+    super(message, e);
   }
 }

@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.model.dictionary;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -31,14 +33,32 @@ import com.google.code.morphia.annotations.PrePersist;
  * Describes a dictionary that contains {@code FileSchema}ta and that may be used by some releases
  */
 @Entity
-public class Dictionary extends BaseEntity implements HasName {
+public class Dictionary extends BaseEntity implements HasName, Serializable {
 
   @Indexed(unique = true)
-  private final String version;
+  private String version;
 
   private DictionaryState state;
 
   private List<FileSchema> files;
+
+  public Dictionary() {
+    super();
+    this.state = DictionaryState.OPENED;
+    this.files = new ArrayList<FileSchema>();
+  }
+
+  public Dictionary(Dictionary dictionary) {
+    this();
+
+    // TODO: visitor way
+    this.version = dictionary.version;
+    this.state = dictionary.state;
+    this.files = new ArrayList<FileSchema>();
+    for(FileSchema fileSchema : dictionary.files) {
+      this.files.add(new FileSchema(fileSchema));
+    }
+  }
 
   public Dictionary(String version) {
     super();
@@ -70,6 +90,14 @@ public class Dictionary extends BaseEntity implements HasName {
 
   public List<FileSchema> getFiles() {
     return files;
+  }
+
+  public void setVersion(String version) {
+    this.version = version;
+  }
+
+  public void setState(DictionaryState state) {
+    this.state = state;
   }
 
   public void setFiles(List<FileSchema> files) {

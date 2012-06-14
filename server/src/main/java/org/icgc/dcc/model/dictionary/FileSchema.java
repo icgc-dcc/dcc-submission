@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.model.dictionary;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.google.code.morphia.annotations.Embedded;
@@ -31,7 +32,7 @@ import com.google.common.collect.Iterables;
 @Embedded
 public class FileSchema {
 
-  private final String name;
+  private String name;
 
   private String label;
 
@@ -43,9 +44,29 @@ public class FileSchema {
 
   private List<Field> fields;
 
-  public FileSchema(String name) {
+  public FileSchema() {
     super();
+    this.uniqueFields = new ArrayList<String>();
+    this.fields = new ArrayList<Field>();
+  }
+
+  public FileSchema(String name) {
+    this();
     this.name = name;
+  }
+
+  public FileSchema(FileSchema fileSchema) {
+    this();
+
+    // TODO: visitor way
+    this.name = fileSchema.name;
+    this.label = fileSchema.label;
+    this.pattern = fileSchema.pattern;
+    this.role = fileSchema.role;
+    this.uniqueFields = new ArrayList<String>(fileSchema.uniqueFields);
+    for(Field field : fileSchema.fields) {
+      this.fields.add(new Field(field));
+    }
   }
 
   public Optional<Field> field(final String name) {
