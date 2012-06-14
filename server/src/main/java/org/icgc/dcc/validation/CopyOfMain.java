@@ -1,8 +1,12 @@
 package org.icgc.dcc.validation;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 
+import org.codehaus.jackson.JsonProcessingException;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.icgc.dcc.model.dictionary.Dictionary;
 import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.FileSchema;
 import org.icgc.dcc.model.dictionary.ValueType;
@@ -29,13 +33,19 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
+import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
+import com.google.common.io.Resources;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
 public class CopyOfMain {
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws JsonProcessingException, IOException {
+
+    Dictionary d =
+        new ObjectMapper().reader(Dictionary.class).readValue(
+            Resources.toString(CopyOfMain.class.getResource("/dictionary.json"), Charsets.UTF_8));
 
     FileSchema studyB = new FileSchema("StudyB");
     studyB.setFields(ImmutableList.<Field> builder()//

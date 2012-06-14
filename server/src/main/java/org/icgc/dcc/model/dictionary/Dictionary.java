@@ -34,11 +34,16 @@ import com.google.code.morphia.annotations.PrePersist;
 public class Dictionary extends BaseEntity implements HasName {
 
   @Indexed(unique = true)
-  private final String version;
+  private String version;
+
+  private String name;
 
   private DictionaryState state;
 
   private List<FileSchema> files;
+
+  public Dictionary() {
+  }
 
   public Dictionary(String version) {
     super();

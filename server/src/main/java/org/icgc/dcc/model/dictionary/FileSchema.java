@@ -31,7 +31,7 @@ import com.google.common.collect.Iterables;
 @Embedded
 public class FileSchema {
 
-  private final String name;
+  private String name;
 
   private String label;
 
@@ -42,6 +42,10 @@ public class FileSchema {
   private List<String> uniqueFields;
 
   private List<Field> fields;
+
+  public FileSchema() {
+
+  }
 
   public FileSchema(String name) {
     super();
