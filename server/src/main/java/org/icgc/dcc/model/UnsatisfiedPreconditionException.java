@@ -17,36 +17,19 @@
  */
 package org.icgc.dcc.model;
 
-import javax.ws.rs.core.Request;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
 /**
- * Utility class for interaction between responses and objects with {@code HasTimestamps}
+ * 
  */
-public final class ResponseTimestamper {
+public class UnsatisfiedPreconditionException extends RuntimeException {
+  private final ResponseBuilder rb;
 
-  /**
-   * Sets the Last-Modified header in a ResponseBuilder object based on the Last Update property of a HasTimestamps
-   * object. If the Last Update property is null, no time stamp will be added and any existing time stamp will be
-   * removed.
-   * 
-   * @param responseBuilder
-   * @param hasTimestamps
-   * @return
-   */
-  public static ResponseBuilder setLastModified(ResponseBuilder responseBuilder, HasTimestamps hasTimestamps) {
-    return responseBuilder.lastModified(hasTimestamps.getLastUpdate());
+  public UnsatisfiedPreconditionException(ResponseBuilder rb) {
+    this.rb = rb;
   }
 
-  public static ResponseBuilder ok(HasTimestamps hasTimestamps) {
-    return ResponseTimestamper.setLastModified(Response.ok(hasTimestamps), hasTimestamps);
-  }
-
-  public static final void evaluate(Request request, HasTimestamps hasTimestamps) {
-    ResponseBuilder rb = request.evaluatePreconditions(hasTimestamps.getLastUpdate());
-    if(rb != null) {
-      throw new UnsatisfiedPreconditionException(rb);
-    }
+  public ResponseBuilder getResponse() {
+    return this.rb;
   }
 }
