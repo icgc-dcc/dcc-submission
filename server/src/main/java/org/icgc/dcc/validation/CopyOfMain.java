@@ -6,7 +6,6 @@ import java.util.Properties;
 import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.FileSchema;
 import org.icgc.dcc.model.dictionary.ValueType;
-import org.icgc.dcc.validation.CascadeBuilder.PipeExtender;
 
 import cascading.flow.Flow;
 import cascading.flow.FlowConnector;
@@ -31,20 +30,27 @@ import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
 import com.google.common.collect.ImmutableList;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 
 public class CopyOfMain {
 
   public static void main(String[] args) {
 
     FileSchema studyB = new FileSchema("StudyB");
-    studyB.setFields(ImmutableList.<Field> builder().add(makeField("id", ValueType.INTEGER))
+    studyB.setFields(ImmutableList.<Field> builder()//
+        .add(makeField("id", ValueType.INTEGER))//
+        .add(makeField("CC", ValueType.TEXT))//
+        .add(makeField("snp", ValueType.TEXT))//
         .add(makeField("bmi", ValueType.DECIMAL)).build());
 
     Pipe pipe = new Pipe(studyB.getName());
     pipe = new Each(pipe, new AddValidationFieldsFunction(), Fields.ALL);
-    PipeExtender extender = new UniqueFieldsRestriction.Factory().build(null, null);
-    pipe = extender.extend(pipe);
-    // pipe = new FileSchemaPipeBuilder(pipe, studyB).getTails()[0];
+    pipe = new UniqueFieldsRestriction.Factory().build(null, null).extend(pipe);
+    DBObject config = new BasicDBObject();
+    config.put("values", new String[] { "1", "2" });
+    pipe = new DiscreteValuesFieldRestriction.Factory().build(studyB.field("CC").get(), config).extend(pipe);
+    pipe = new DiscreteValuesFieldRestriction.Factory().build(studyB.field("snp").get(), config).extend(pipe);
 
     Flow<?> flow;
     if(args[0].equals("--local")) {
@@ -138,7 +144,7 @@ public class CopyOfMain {
   public static final class AddValidationFieldsFunction extends BaseOperation implements Function {
 
     public AddValidationFieldsFunction() {
-      super(0, new Fields(ValidationFields.STATE_FIELD));
+      super(0, new Fields(ValidationFields.STATE_FIELD_NAME));
     }
 
     @Override

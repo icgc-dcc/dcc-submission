@@ -26,7 +26,7 @@ import com.mongodb.DBObject;
 
 public class UniqueFieldsRestriction implements FieldRestriction, PipeExtender {
 
-  private static final String NAME = "uniqe";
+  private static final String NAME = "unique";
 
   private final List<String> fields;
 
