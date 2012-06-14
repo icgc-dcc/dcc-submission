@@ -17,6 +17,7 @@ import javax.ws.rs.core.UriBuilder;
 import org.icgc.dcc.model.Project;
 import org.icgc.dcc.model.ProjectService;
 import org.icgc.dcc.model.QProject;
+import org.icgc.dcc.model.ResponseTimestamper;
 
 import com.google.code.morphia.query.Query;
 import com.google.code.morphia.query.UpdateOperations;
@@ -58,7 +59,7 @@ public class ProjectResource {
     if(project == null) {
       return Response.status(Status.NOT_FOUND).build();
     }
-    return Response.ok(project).build();
+    return ResponseTimestamper.ok(project).build();
   }
 
   @PUT
@@ -73,7 +74,7 @@ public class ProjectResource {
 
     projects.datastore().update(updateQuery, ops);
 
-    return Response.ok(project).build();
+    return ResponseTimestamper.ok(project).build();
   }
 
   @GET

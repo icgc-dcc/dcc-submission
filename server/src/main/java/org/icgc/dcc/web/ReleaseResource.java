@@ -13,6 +13,7 @@ import javax.ws.rs.core.Response.Status;
 
 import org.icgc.dcc.model.QRelease;
 import org.icgc.dcc.model.Release;
+import org.icgc.dcc.model.ResponseTimestamper;
 import org.icgc.dcc.model.Submission;
 import org.icgc.dcc.service.ReleaseService;
 
@@ -38,7 +39,7 @@ public class ReleaseResource {
     if(release == null) {
       return Response.status(Status.NOT_FOUND).build();
     }
-    return Response.ok(release).build();
+    return ResponseTimestamper.ok(release).build();
   }
 
   @PUT
@@ -60,7 +61,7 @@ public class ReleaseResource {
        * this.releaseService.getDatastore().update(updateQuery, ops);
        */
     }
-    return Response.ok(release).build();
+    return ResponseTimestamper.ok(release).build();
   }
 
   /*

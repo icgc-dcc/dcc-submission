@@ -11,8 +11,9 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
 
-import org.icgc.dcc.model.dictionary.DictionaryService;
+import org.icgc.dcc.model.ResponseTimestamper;
 import org.icgc.dcc.model.dictionary.Dictionary;
+import org.icgc.dcc.model.dictionary.DictionaryService;
 import org.icgc.dcc.model.dictionary.QDictionary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +49,7 @@ public class DictionaryResource {
       return Response.status(Status.NOT_FOUND).build();
     }
     dictionaries.datastore().delete(d, WriteConcern.SAFE);
-    return Response.ok(d).build();
+    return ResponseTimestamper.ok(d).build();
   }
 
   @GET
@@ -57,7 +58,7 @@ public class DictionaryResource {
     if(d == null) {
       return Response.status(Status.NOT_FOUND).build();
     }
-    return Response.ok(d).build();
+    return ResponseTimestamper.ok(d).build();
   }
 
   @GET
@@ -67,6 +68,6 @@ public class DictionaryResource {
     if(d == null) {
       return Response.status(Status.NOT_FOUND).build();
     }
-    return Response.ok(d).build();
+    return ResponseTimestamper.ok(d).build();
   }
 }

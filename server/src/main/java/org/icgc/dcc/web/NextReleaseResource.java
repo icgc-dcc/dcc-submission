@@ -10,6 +10,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.icgc.dcc.model.Release;
+import org.icgc.dcc.model.ResponseTimestamper;
 import org.icgc.dcc.service.NextRelease;
 import org.icgc.dcc.service.ReleaseService;
 
@@ -24,7 +25,7 @@ public class NextReleaseResource {
   @GET
   public Response getNextRelease() {
     NextRelease nextRelease = releaseService.getNextRelease();
-    return Response.ok(nextRelease.getRelease()).build();
+    return ResponseTimestamper.ok(nextRelease.getRelease()).build();
   }
 
   @POST
