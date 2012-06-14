@@ -31,13 +31,13 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.model.dictionary.Dictionary;
 import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.FileSchema;
+import org.icgc.dcc.model.dictionary.FileSchemaRole;
 import org.icgc.dcc.model.dictionary.Restriction;
 import org.icgc.dcc.model.dictionary.ValueType;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Splitter;
 import com.google.common.io.Files;
-import com.mongodb.BasicDBObject;
 
 /**
  * 
@@ -99,6 +99,8 @@ public class DictionaryConverter {
 		}
 		fileSchema.setFields(fields);
 
+		fileSchema.setRole(FileSchemaRole.SUBMISSION);
+
 		return fileSchema;
 	}
 
@@ -119,21 +121,19 @@ public class DictionaryConverter {
 
 		// add required restriction
 		String required = iterator.next();
-		Restriction requiredRestriction = new Restriction();
-		requiredRestriction.setType("required");
-		BasicDBObject requirConfig = new BasicDBObject();
-		requirConfig.put("required", Boolean.valueOf(required));
-		requiredRestriction.setConfig(requirConfig);
-		restrictions.add(requiredRestriction);
+		if (Boolean.parseBoolean(required)) {
+			Restriction requiredRestriction = new Restriction();
+			requiredRestriction.setType("required");
+			restrictions.add(requiredRestriction);
+		}
 
 		// add primary-key restriction
 		String primaryKey = iterator.next();
-		Restriction primaryKeyRestriction = new Restriction();
-		primaryKeyRestriction.setType("primary-key");
-		BasicDBObject primaryKeyConfig = new BasicDBObject();
-		primaryKeyConfig.put("primary-key", Boolean.valueOf(primaryKey));
-		primaryKeyRestriction.setConfig(primaryKeyConfig);
-		restrictions.add(primaryKeyRestriction);
+		if (Boolean.parseBoolean(primaryKey)) {
+			Restriction primaryKeyRestriction = new Restriction();
+			primaryKeyRestriction.setType("primary-key");
+			restrictions.add(primaryKeyRestriction);
+		}
 
 		field.setRestrictions(restrictions);
 
