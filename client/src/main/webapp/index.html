@@ -6,10 +6,10 @@
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
 <script type="text/javascript">
   $(function() {
-    $.get('/ws/myresource', function(data) {
-        $('#proxy').append(data);
-      })
-  })
+    $.getJSON('/ws/releases', function(data) {
+        console.log(data);
+     });
+  });
 </script>
 </head>
 <body>

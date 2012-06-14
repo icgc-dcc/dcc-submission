@@ -1,7 +1,7 @@
 {exec} = require 'child_process'
 wrench = require 'wrench'
 connect = require 'connect'
-httpProxy = require 'http-proxy'
+proxy = require 'http-proxy'
 
 task "start", "start doing stuff", ->
 	# Deep-copy an existing directory
@@ -15,9 +15,24 @@ task "start", "start doing stuff", ->
 
 	# Redefining the "server" task for this project. Note that the output
 	# displayed by --help will reflect the new task description.
-	console.log 'Starting static web server in "/target/webapp" on port 3333.'
+	console.log 'Starting web server...'
 
-	httpProxy.createServer(5379, 'localhost').listen(8000);
+	server = proxy.createServer (req, res, proxy) ->
+		if req.url.match /^\/?ws/
+			backend =
+				host: 'localhost'
+				port: 5379
+		else 
+			backend =
+				host: 'localhost'
+				port: 3000
+	
+		proxy.proxyRequest(req, res, backend)
+
+	server.listen 3001, ->
+		addr = server.address()
+		console.log "front-end listening on http://#{addr.address}:#{addr.port}"
+
 	connect()
 		.use(connect.static('../../../target/webapp'))
-		.listen(5379);	
+		.listen 3000
