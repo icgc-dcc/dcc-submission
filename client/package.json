@@ -1,4 +1,3 @@
-
 {
 	"name": "DCC-Submission",
 	"version": "0.1.0-m3",
@@ -17,7 +16,7 @@
         "http-proxy": "0.8.1"
 	},
 	"docco_husky": {
-		"output_dir": "../../../target/webapp/docs",
+		"output_dir": "target/webapp/docs",
 		"content_dir": "coffee",
 	    "project_name": "DCC Submission"
 	}

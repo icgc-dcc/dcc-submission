@@ -6,10 +6,10 @@ proxy = require 'http-proxy'
 task "start", "start doing stuff", ->
 	# Deep-copy an existing directory
 	console.log 'Copying /src files to /target...'
-	exec 'mkdir -p ../../../target/webapp'
-	wrench.copyDirSyncRecursive '.', '../../../target/webapp'
+	exec 'mkdir -p target/webapp'
+	wrench.copyDirSyncRecursive 'src/main/webapp', 'target/webapp'
 	console.log 'Watching CoffeeScript files...'
-	exec 'coffee --watch --compile --output ../../../target/webapp/js/ coffee/', (err, stdout, stderr) ->
+	exec 'coffee --watch --compile --output target/webapp/js/ src/main/webapp/coffee/', (err, stdout, stderr) ->
 	    throw err if err
 	    console.log stdout + stderr
 
@@ -34,5 +34,5 @@ task "start", "start doing stuff", ->
 		console.log "front-end listening on http://#{addr.address}:#{addr.port}"
 
 	connect()
-		.use(connect.static('../../../target/webapp'))
+		.use(connect.static('target/webapp'))
 		.listen 3000
