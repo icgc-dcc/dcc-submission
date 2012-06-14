@@ -1,0 +1,17 @@
+{exec} = require 'child_process'
+wrench = require 'wrench'
+connect = require 'connect'
+
+task "start", "start doing stuff", ->
+	# Deep-copy an existing directory
+	console.log 'Copying /src files to /target...'
+	wrench.copyDirSyncRecursive '.', '../../../target/webapp'
+	console.log 'Watching CoffeeScript files...'
+	exec 'coffee --watch --compile --output ../../../target/webapp/js/ coffee/', (err, stdout, stderr) ->
+	    throw err if err
+	    console.log stdout + stderr
+
+	# Redefining the "server" task for this project. Note that the output
+	# displayed by --help will reflect the new task description.
+	console.log 'Starting static web server in "/target/webapp" on port 3333.'
+	connect(connect.static('../../../target/webapp')).listen(3333);	
