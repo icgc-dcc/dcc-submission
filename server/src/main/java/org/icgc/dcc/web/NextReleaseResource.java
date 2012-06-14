@@ -10,6 +10,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.icgc.dcc.model.Release;
+import org.icgc.dcc.model.ResponseTimestamper;
 import org.icgc.dcc.service.NextRelease;
 import org.icgc.dcc.service.ReleaseService;
 
@@ -24,7 +25,7 @@ public class NextReleaseResource {
   @GET
   public Response getNextRelease() {
     NextRelease nextRelease = releaseService.getNextRelease();
-    return Response.ok(nextRelease.getRelease()).build();
+    return ResponseTimestamper.ok(nextRelease.getRelease()).build();
   }
 
   @POST
@@ -45,8 +46,8 @@ public class NextReleaseResource {
 
   @POST
   @Path("queue")
-  public Response queue(List<String> accessionIds) {
-    if(this.releaseService.queue(accessionIds)) {
+  public Response queue(List<String> projectKeys) {
+    if(this.releaseService.queue(projectKeys)) {
       return Response.ok().build();
     } else {
       return Response.status(Status.BAD_REQUEST).build();
@@ -63,7 +64,7 @@ public class NextReleaseResource {
 
   @GET
   @Path("signed")
-  public Response getSginedOff() {
+  public Response getSignedOff() {
     List<String> projectIds = this.releaseService.getSignedOff();
 
     return Response.ok(projectIds).build();
@@ -71,8 +72,8 @@ public class NextReleaseResource {
 
   @POST
   @Path("signed")
-  public Response signOff(List<String> accessionIds) {
-    if(this.releaseService.signOff(accessionIds)) {
+  public Response signOff(List<String> projectKeys) {
+    if(this.releaseService.signOff(projectKeys)) {
       return Response.ok().build();
     } else {
       return Response.status(Status.BAD_REQUEST).build();

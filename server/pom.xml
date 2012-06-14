@@ -73,6 +73,11 @@
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
+      <artifactId>jcl-over-slf4j</artifactId>
+      <version>${slf4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
       <artifactId>jul-to-slf4j</artifactId>
       <version>${slf4j.version}</version>
     </dependency>
@@ -82,10 +87,41 @@
       <version>${shiro.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.hadoop</groupId>
-	  <artifactId>hadoop-core</artifactId>
-	  <version>1.0.3</version>
+      <groupId>org.apache.sshd</groupId>
+      <artifactId>sshd-core</artifactId>
+      <version>${mina.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-common</artifactId>
+      <version>${hadoop-cdh.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>commons-logging</groupId>
+          <artifactId>commons-logging</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-logging</groupId>
+          <artifactId>commons-logging-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <!-- 
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-core</artifactId>
+      <version>${hadoop-mr1-cdh.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>commons-logging</groupId>
+          <artifactId>commons-logging</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency> -->
     <!-- Test Dependencies -->
     <dependency>
       <groupId>junit</groupId>
@@ -262,8 +298,9 @@
     <morphia.version>0.99.1-SNAPSHOT</morphia.version>
     <jersey.version>2.0-m04</jersey.version>
     <shiro.version>1.2.0</shiro.version>
-    <hadoop.version>0.23.1</hadoop.version>
-    <cdh.version>cdh4.0.0b2</cdh.version>
+    <mina.version>0.6.0</mina.version>
+    <hadoop.version>2.0.0</hadoop.version>
+    <cdh.version>cdh4.0.0</cdh.version>
     <hadoop-cdh.version>${hadoop.version}-${cdh.version}</hadoop-cdh.version>
     <hadoop-mr1-cdh.version>${hadoop.version}-mr1-${cdh.version}</hadoop-mr1-cdh.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

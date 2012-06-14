@@ -15,8 +15,9 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
 
 import org.icgc.dcc.model.Project;
-import org.icgc.dcc.model.Projects;
+import org.icgc.dcc.model.ProjectService;
 import org.icgc.dcc.model.QProject;
+import org.icgc.dcc.model.ResponseTimestamper;
 
 import com.google.code.morphia.query.Query;
 import com.google.code.morphia.query.UpdateOperations;
@@ -27,7 +28,7 @@ import com.mongodb.MongoException.DuplicateKey;
 public class ProjectResource {
 
   @Inject
-  private Projects projects;
+  private ProjectService projects;
 
   @GET
   public Response getProjects() {
@@ -44,7 +45,7 @@ public class ProjectResource {
     checkArgument(project != null);
     try {
       this.projects.addProject(project);
-      return Response.created(UriBuilder.fromResource(ProjectResource.class).path(project.getAccessionId()).build())
+      return Response.created(UriBuilder.fromResource(ProjectResource.class).path(project.getProjectKey()).build())
           .build();
     } catch(DuplicateKey e) {
       return Response.status(Status.BAD_REQUEST).build();
@@ -52,35 +53,34 @@ public class ProjectResource {
   }
 
   @GET
-  @Path("{accessionId}")
-  public Response getIt(@PathParam("accessionId") String accessionId) {
-    Project project = projects.where(QProject.project.accessionId.eq(accessionId)).uniqueResult();
+  @Path("{projectKey}")
+  public Response getIt(@PathParam("projectKey") String projectKey) {
+    Project project = projects.where(QProject.project.key.eq(projectKey)).uniqueResult();
     if(project == null) {
       return Response.status(Status.NOT_FOUND).build();
     }
-    return Response.ok(project).build();
+    return ResponseTimestamper.ok(project).build();
   }
 
   @PUT
-  @Path("{accessionId}")
-  public Response updateProject(@PathParam("accessionId") String accessionId, Project project) {
+  @Path("{projectKey}")
+  public Response updateProject(@PathParam("projectKey") String projectKey, Project project) {
     checkArgument(project != null);
 
     // update project use morphia query
     UpdateOperations<Project> ops =
         projects.datastore().createUpdateOperations(Project.class).set("name", project.getName());
-    Query<Project> updateQuery =
-        projects.datastore().createQuery(Project.class).field("accessionId").equal(accessionId);
+    Query<Project> updateQuery = projects.datastore().createQuery(Project.class).field("key").equal(projectKey);
 
     projects.datastore().update(updateQuery, ops);
 
-    return Response.ok(project).build();
+    return ResponseTimestamper.ok(project).build();
   }
 
   @GET
-  @Path("{accessionId}/releases")
-  public Response getReleases(@PathParam("accessionId") String accessionId) {
-    Project project = projects.where(QProject.project.accessionId.eq(accessionId)).uniqueResult();
+  @Path("{projectKey}/releases")
+  public Response getReleases(@PathParam("projectKey") String projectKey) {
+    Project project = projects.where(QProject.project.key.eq(projectKey)).uniqueResult();
     if(project == null) {
       return Response.status(Status.NOT_FOUND).build();
     }

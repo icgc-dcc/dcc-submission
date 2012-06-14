@@ -19,8 +19,6 @@ import com.typesafe.config.Config;
 
 /**
  * dummy class (from Shiro's Quickstart.java) to test if config is properly loaded and shiro works
- * 
- * @author Anthony Cros (anthony.cros@oicr.on.ca)
  */
 public class MyShiro {
 

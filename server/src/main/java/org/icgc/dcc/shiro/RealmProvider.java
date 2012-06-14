@@ -12,19 +12,17 @@ import com.typesafe.config.Config;
 public class RealmProvider implements Provider<Realm> {
   private static final Logger log = LoggerFactory.getLogger(RealmProvider.class);
 
-  private static final String SHIRO_INI_FILE = "shiro.realm";
-
   @Inject
   private Config config;
 
   @Override
   public Realm get() {
 
-    String shiroIniFilePath = this.config.getString(SHIRO_INI_FILE);
+    String shiroIniFilePath = this.config.getString(ShiroConfig.SHIRO_INI_FILE);
     log.debug("shiroIniFilePath = " + shiroIniFilePath);
 
     IniRealm iniRealm = new IniRealm();
-    iniRealm.setResourcePath("classpath:" + shiroIniFilePath);
+    iniRealm.setResourcePath("classpath:" + shiroIniFilePath);// TODO: existing constant for that?
     iniRealm.init();
 
     return iniRealm;
