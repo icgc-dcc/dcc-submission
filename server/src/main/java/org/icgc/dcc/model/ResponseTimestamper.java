@@ -43,7 +43,7 @@ public final class ResponseTimestamper {
     return ResponseTimestamper.setLastModified(Response.ok(hasTimestamps), hasTimestamps);
   }
 
-  public static final void evaluate(Request request, HasTimestamps hasTimestamps) {
+  public static void evaluate(Request request, HasTimestamps hasTimestamps) {
     ResponseBuilder rb = request.evaluatePreconditions(hasTimestamps.getLastUpdate());
     if(rb != null) {
       throw new UnsatisfiedPreconditionException(rb);
