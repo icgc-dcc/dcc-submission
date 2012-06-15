@@ -125,7 +125,7 @@ public class DictionaryService {
     return newDictionary;
   }
 
-  public Dictionary add(Dictionary dictionary) {
+  public void add(Dictionary dictionary) {
     checkArgument(dictionary != null);
     String version = dictionary.getVersion();
     if(this.getFromVersion(version) != null) {
@@ -133,8 +133,6 @@ public class DictionaryService {
     }
 
     this.datastore.save(dictionary);
-
-    return dictionary;
   }
 
   public CodeList getCodeList(String name) {
