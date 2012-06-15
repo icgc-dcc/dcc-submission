@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.legacy;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
@@ -50,19 +48,6 @@ public class DictionaryConverterTest {
     Iterator<Entry<String, JsonNode>> testRoot = testTree.getFields();
     Iterator<Entry<String, JsonNode>> refRoot = refTree.getFields();
 
-    int testNum = 0;
-    while(testRoot.hasNext()) {
-      Entry<String, JsonNode> testNode = testRoot.next();
-      testNum++;
-    }
-
-    int refNum = 0;
-    while(refRoot.hasNext()) {
-      Entry<String, JsonNode> refNode = refRoot.next();
-      refNum++;
-    }
-
-    assertEquals(testNum, refNum);
   }
 
 }
