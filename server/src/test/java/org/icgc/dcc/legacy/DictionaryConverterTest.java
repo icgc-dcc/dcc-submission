@@ -17,11 +17,12 @@
  */
 package org.icgc.dcc.legacy;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.Map.Entry;
 
 import org.apache.commons.io.FileUtils;
 import org.codehaus.jackson.JsonNode;
@@ -46,18 +47,22 @@ public class DictionaryConverterTest {
     JsonNode testTree = mapper.readTree(FileUtils.readFileToString(testFile));
     JsonNode refTree = mapper.readTree(FileUtils.readFileToString(refFile));
 
-    Iterator<JsonNode> testRoot = testTree.getElements();
-    Iterator<JsonNode> refRoot = refTree.getElements();
+    Iterator<Entry<String, JsonNode>> testRoot = testTree.getFields();
+    Iterator<Entry<String, JsonNode>> refRoot = refTree.getFields();
 
+    int testNum = 0;
     while(testRoot.hasNext()) {
-      JsonNode testNode = testRoot.next();
-      JsonNode refNode = refRoot.next();
-
-      // ignore Time stamp for now
-      if(!testNode.isLong() || !refNode.isLong()) {
-        assertTrue(testNode.equals(refNode));
-      }
+      Entry<String, JsonNode> testNode = testRoot.next();
+      testNum++;
     }
+
+    int refNum = 0;
+    while(refRoot.hasNext()) {
+      Entry<String, JsonNode> refNode = refRoot.next();
+      refNum++;
+    }
+
+    assertEquals(testNum, refNum);
   }
 
 }

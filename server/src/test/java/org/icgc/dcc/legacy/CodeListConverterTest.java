@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.legacy;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
@@ -49,22 +49,19 @@ public class CodeListConverterTest {
     Iterator<JsonNode> testRoot = testTree.getElements();
     Iterator<JsonNode> refRoot = refTree.getElements();
 
+    int testNum = 0;
     while(testRoot.hasNext()) {
       JsonNode testNode = testRoot.next();
-      JsonNode refNode = refRoot.next();
-
-      Iterator<JsonNode> testIterator = testNode.getElements();
-      Iterator<JsonNode> refIterator = refNode.getElements();
-
-      while(testIterator.hasNext()) {
-        JsonNode testSubNode = testIterator.next();
-        JsonNode refSubNode = refIterator.next();
-        // ignore Time stamp for now
-        if(!testSubNode.isLong() || !refSubNode.isLong()) {
-          assertTrue(testSubNode.equals(refSubNode));
-        }
-      }
+      testNum++;
     }
+
+    int refNum = 0;
+    while(refRoot.hasNext()) {
+      JsonNode refNode = refRoot.next();
+      refNum++;
+    }
+
+    assertEquals(refNum, testNum);
 
   }
 
