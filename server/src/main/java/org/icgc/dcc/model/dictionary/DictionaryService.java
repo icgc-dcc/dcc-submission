@@ -26,8 +26,6 @@ import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
 import com.google.code.morphia.query.Query;
 import com.google.code.morphia.query.UpdateOperations;
-import com.google.common.base.Splitter;
-import com.google.common.collect.Iterables;
 import com.google.inject.Inject;
 import com.mysema.query.mongodb.MongodbQuery;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
@@ -37,18 +35,6 @@ import com.mysema.query.types.Predicate;
  * Offers various CRUD operations pertaining to {@code Dictionary}
  */
 public class DictionaryService {
-
-  private static final String DICTIONARY_VERSION = Iterables.getLast(Splitter.on(".").split(
-      QDictionary.dictionary.version.toString()));
-
-  private static final String DICTIONARY_STATE = Iterables.getLast(Splitter.on(".").split(
-      QDictionary.dictionary.state.toString()));
-
-  private static final String CODE_LIST_NAME = Iterables.getLast(Splitter.on(".").split(
-      QCodeList.codeList.name.toString()));
-
-  private static final String CODE_LIST_TERMS = Iterables.getLast(Splitter.on(".").split(
-      QCodeList.codeList.terms.toString()));
 
   private final Morphia morphia;
 
@@ -100,7 +86,7 @@ public class DictionaryService {
     checkState(updateQuery.countAll() == 1);
     UpdateOperations<Dictionary> ops =
         this.datastore.createUpdateOperations(Dictionary.class).disableValidation()
-            .set(DICTIONARY_STATE, DictionaryState.CLOSED);
+            .set("state", DictionaryState.CLOSED);
     this.datastore.update(updateQuery, ops);
   }
 
@@ -165,14 +151,14 @@ public class DictionaryService {
     }
     codeList.addTerm(term);
 
-    Query<CodeList> updateQuery = this.datastore.createQuery(CodeList.class).filter(CODE_LIST_NAME + " = ", name);
+    Query<CodeList> updateQuery = this.datastore.createQuery(CodeList.class).filter("name" + " = ", name);
     checkState(updateQuery.countAll() == 1);
     UpdateOperations<CodeList> ops =
-        this.datastore.createUpdateOperations(CodeList.class).disableValidation().add(CODE_LIST_TERMS, term);
+        this.datastore.createUpdateOperations(CodeList.class).disableValidation().add("terms", term);
     this.datastore.update(updateQuery, ops);
   }
 
   private Query<Dictionary> buildQuery(Dictionary dictionary) {
-    return this.datastore.createQuery(Dictionary.class).filter(DICTIONARY_VERSION + " = ", dictionary.getVersion());
+    return this.datastore.createQuery(Dictionary.class).filter("version" + " = ", dictionary.getVersion());
   }
 }
