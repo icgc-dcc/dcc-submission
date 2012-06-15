@@ -17,8 +17,15 @@
  */
 package org.icgc.dcc.legacy;
 
-import java.io.IOException;
+import static org.junit.Assert.assertTrue;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Iterator;
+
+import org.apache.commons.io.FileUtils;
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Test;
 
 /**
@@ -26,22 +33,31 @@ import org.junit.Test;
  */
 public class DictionaryConverterTest {
 
-	@Test
-	public void test() throws IOException {
-		DictionaryConverter dc = new DictionaryConverter();
-		dc.readDictionary("src/test/resources/source/");
-		dc.saveToJSON("src/test/resources/dictionary.json");
+  @Test
+  public void test() throws IOException {
+    DictionaryConverter dc = new DictionaryConverter();
+    dc.readDictionary("src/test/resources/source/");
+    dc.saveToJSON("src/test/resources/dictionary.json");
 
-		/*
-		 * File testFile = new File("src/test/resources/dictionary.json"); File
-		 * refFile = new File("src/main/resources/dictionary.json");
-		 * 
-		 * ObjectMapper mapper = new ObjectMapper(); JsonNode testTree =
-		 * mapper.readTree(FileUtils .readFileToString(testFile)); JsonNode
-		 * refTree = mapper.readTree(FileUtils.readFileToString(refFile));
-		 * 
-		 * assertTrue(refTree.equals(testTree));
-		 */
-	}
+    File testFile = new File("src/test/resources/dictionary.json");
+    File refFile = new File("src/main/resources/dictionary.json");
+
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode testTree = mapper.readTree(FileUtils.readFileToString(testFile));
+    JsonNode refTree = mapper.readTree(FileUtils.readFileToString(refFile));
+
+    Iterator<JsonNode> testRoot = testTree.getElements();
+    Iterator<JsonNode> refRoot = refTree.getElements();
+
+    while(testRoot.hasNext()) {
+      JsonNode testNode = testRoot.next();
+      JsonNode refNode = refRoot.next();
+
+      // ignore Time stamp for now
+      if(!testNode.isLong() || !refNode.isLong()) {
+        assertTrue(testNode.equals(refNode));
+      }
+    }
+  }
 
 }
