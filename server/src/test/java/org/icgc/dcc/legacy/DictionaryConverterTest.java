@@ -36,7 +36,7 @@ public class DictionaryConverterTest {
   @Test
   public void test() throws IOException {
     DictionaryConverter dc = new DictionaryConverter();
-    dc.readDictionary("src/test/resources/source/");
+    dc.readDictionary("src/test/resources/converter/source/");
     dc.saveToJSON("src/test/resources/dictionary.json");
 
     File testFile = new File("src/test/resources/dictionary.json");

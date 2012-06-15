@@ -36,7 +36,7 @@ public class CodeListConverterTest {
   @Test
   public void test() throws IOException {
     CodeListConverter clc = new CodeListConverter();
-    clc.readCodec("src/test/resources/codec");
+    clc.readCodec("src/test/resources/converter/codec");
     clc.saveToJSON("src/test/resources/codeList.json");
 
     File testFile = new File("src/test/resources/codeList.json");
@@ -44,7 +44,6 @@ public class CodeListConverterTest {
 
     ObjectMapper mapper = new ObjectMapper();
     JsonNode testTree = mapper.readTree(FileUtils.readFileToString(testFile));
-
     JsonNode refTree = mapper.readTree(FileUtils.readFileToString(refFile));
 
     Iterator<JsonNode> testRoot = testTree.getElements();
