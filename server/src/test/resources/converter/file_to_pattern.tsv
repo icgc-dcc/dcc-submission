@@ -1,0 +1,43 @@
+# DCC-83
+#
+# see https://wiki.oicr.on.ca/display/DCCINT/Submission+File+Format
+#   clinical: leadJurisdiction__tumourType__institution__fileType__dateFileCreated.txt
+#       example:
+#           ca__01__068__donor__20090713.txt
+#           ca__01__068__sample__20090713.txt
+#   experimental: featureType__leadJurisdiction__tumourType__institution__fileType__platform__dateFileCreated.txt
+#       example:
+#           ssm__ca__01__068__p__8__20090713.txt
+#           cngv__ca__01__068__m__8__20090713.txt
+#
+# source table name --> java pattern string
+#
+biomarker	^\\w+__\\d+__\\d+__biomarker__\\d+\\.txt$
+cnsm_m	^cnsm__\\w+__\\d+__\\d+__m__\\d+__\\d+\\.txt$
+cnsm_p	^cnsm__\\w+__\\d+__\\d+__p__\\d+__\\d+\\.txt$
+cnsm_s	^cnsm__\\w+__\\d+__\\d+__s__\\d+__\\d+\\.txt$
+donor	^\\w+__\\d+__\\d+__donor__\\d+\\.txt$
+exp_g	^exp__\\w+__\\d+__\\d+__g__\\d+__\\d+\\.txt$
+exp_m	^exp__\\w+__\\d+__\\d+__m__\\d+__\\d+\\.txt$
+exposure	^\\w+__\\d+__\\d+__exposure__\\d+\\.txt$
+family	^\\w+__\\d+__\\d+__family__\\d+\\.txt$
+jcn_m	^jcn__\\w+__\\d+__\\d+__m__\\d+__\\d+\\.txt$
+jcn_p	^jcn__\\w+__\\d+__\\d+__p__\\d+__\\d+\\.txt$
+meth_m	^meth__\\w+__\\d+__\\d+__m__\\d+__\\d+\\.txt$
+meth_p	^meth__\\w+__\\d+__\\d+__p__\\d+__\\d+\\.txt$
+meth_s	^meth__\\w+__\\d+__\\d+__s__\\d+__\\d+\\.txt$
+mirna_m	^mirna__\\w+__\\d+__\\d+__m__\\d+__\\d+\\.txt$
+mirna_p	^mirna__\\w+__\\d+__\\d+__p__\\d+__\\d+\\.txt$
+mirna_s	^mirna__\\w+__\\d+__\\d+__s__\\d+__\\d+\\.txt$
+sample	^\\w+__\\d+__\\d+__sample__\\d+\\.txt$
+sgv_m	^sgv__\\w+__\\d+__\\d+__m__\\d+__\\d+\\.txt$
+sgv_p	^sgv__\\w+__\\d+__\\d+__p__\\d+__\\d+\\.txt$
+specimen	^\\w+__\\d+__\\d+__specimen__\\d+\\.txt$
+ssm_m	^ssm__\\w+__\\d+__\\d+__m__\\d+__\\d+\\.txt$
+ssm_p	^ssm__\\w+__\\d+__\\d+__p__\\d+__\\d+\\.txt$
+ssm_s	^ssm__\\w+__\\d+__\\d+__s__\\d+__\\d+\\.txt$
+stsm_m	^stsm__\\w+__\\d+__\\d+__m__\\d+__\\d+\\.txt$
+stsm_p	^stsm__\\w+__\\d+__\\d+__p__\\d+__\\d+\\.txt$
+stsm_s	^stsm__\\w+__\\d+__\\d+__s__\\d+__\\d+\\.txt$
+surgery	^\\w+__\\d+__\\d+__surgery__\\d+\\.txt$
+therapy	^\\w+__\\d+__\\d+__therapy__\\d+\\.txt$
