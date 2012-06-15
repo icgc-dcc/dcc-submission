@@ -34,6 +34,7 @@ import javax.ws.rs.core.Response.Status;
 import org.icgc.dcc.model.ResponseTimestamper;
 import org.icgc.dcc.model.dictionary.CodeList;
 import org.icgc.dcc.model.dictionary.DictionaryService;
+import org.icgc.dcc.model.dictionary.Term;
 
 import com.google.inject.Inject;
 
@@ -61,6 +62,7 @@ public class CodeListResource {
   @GET
   @Path("{name}")
   public Response getCodeList(@PathParam("name") String name) {
+    checkArgument(name != null);
     CodeList c = this.dictionaries.getCodeList(name);
     if(c == null) {
       return Response.status(Status.NOT_FOUND).build();
@@ -71,6 +73,9 @@ public class CodeListResource {
   @PUT
   @Path("{name}")
   public Response updateCodeList(@PathParam("name") String name, CodeList newCodeList, @Context Request req) {
+    checkArgument(name != null);
+    checkArgument(newCodeList != null);
+
     CodeList oldCodeList = this.dictionaries.getCodeList(name);
     if(oldCodeList == null) {
       return Response.status(Status.NOT_FOUND).build();
@@ -81,5 +86,30 @@ public class CodeListResource {
     this.dictionaries.updateCodeList(newCodeList);
 
     return ResponseTimestamper.ok(newCodeList).build();
+  }
+
+  @POST
+  @Path("{name}/terms")
+  public Response addTerms(@PathParam("name") String name, List<Term> terms, @Context Request req) {
+    checkArgument(name != null);
+    checkArgument(terms != null);
+    CodeList c = this.dictionaries.getCodeList(name);
+    if(c == null) {
+      return Response.status(Status.NOT_FOUND).build();
+    }
+    ResponseTimestamper.evaluate(req, c);
+
+    // First check if the terms exist. The DictionaryService addTerm method checks too, but we don't want to add some of
+    // the list and then have it fail part way through
+    for(Term term : terms) {
+      if(c.containsTerm(term)) {
+        return Response.status(Status.BAD_REQUEST).build();
+      }
+    }
+    for(Term term : terms) {
+      this.dictionaries.addTerm(name, term);
+    }
+
+    return ResponseTimestamper.ok(c).build();
   }
 }
