@@ -3,6 +3,7 @@ package org.icgc.dcc.web;
 import org.glassfish.jersey.media.json.JsonJacksonModule;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.icgc.dcc.http.jersey.BasicHttpAuthenticationRequestFilter;
+import org.icgc.dcc.web.mapper.UnsatisfiedPrecondtionExceptionMapper;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
@@ -26,6 +27,7 @@ public class WebModule extends AbstractModule {
       config.addClasses(ReleaseResource.class);
       config.addClasses(NextReleaseResource.class);
       config.addClasses(BasicHttpAuthenticationRequestFilter.class);
+      config.addClasses(UnsatisfiedPrecondtionExceptionMapper.class);
     }
   }
 
