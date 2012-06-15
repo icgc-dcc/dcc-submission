@@ -95,6 +95,7 @@ public class DictionaryService {
   }
 
   public void close(Dictionary dictionary) {
+    checkArgument(dictionary != null);
     Query<Dictionary> updateQuery = this.buildQuery(dictionary);
     checkState(updateQuery.countAll() == 1);
     UpdateOperations<Dictionary> ops =
@@ -119,13 +120,12 @@ public class DictionaryService {
 
     Dictionary newDictionary = new Dictionary(oldDictionary);
     newDictionary.setVersion(newVersion);
-
     this.add(newDictionary);
 
     return newDictionary;
   }
 
-  public Dictionary add(Dictionary dictionary) {
+  public void add(Dictionary dictionary) {
     checkArgument(dictionary != null);
     String version = dictionary.getVersion();
     if(this.getFromVersion(version) != null) {
@@ -133,16 +133,23 @@ public class DictionaryService {
     }
 
     this.datastore.save(dictionary);
+  }
 
-    return dictionary;
+  public List<CodeList> listCodeList() {
+    return this.queryCodeList().list();
   }
 
   public CodeList getCodeList(String name) {
-    return new MorphiaQuery<CodeList>(morphia, datastore, QCodeList.codeList).where(QCodeList.codeList.name.eq(name))
-        .singleResult();
+    checkArgument(name != null);
+    return this.queryCodeList().where(QCodeList.codeList.name.eq(name)).singleResult();
+  }
+
+  private MorphiaQuery<CodeList> queryCodeList() {
+    return new MorphiaQuery<CodeList>(morphia, datastore, QCodeList.codeList);
   }
 
   public CodeList createCodeList(String name) {
+    checkArgument(name != null);
     CodeList codeList = new CodeList(name);
     this.datastore.save(codeList);
     return codeList;

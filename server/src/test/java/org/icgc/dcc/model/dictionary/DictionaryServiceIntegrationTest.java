@@ -28,7 +28,6 @@ import org.icgc.dcc.http.jersey.JerseyModule;
 import org.icgc.dcc.model.ModelModule;
 import org.icgc.dcc.service.HasRelease;
 import org.icgc.dcc.service.ReleaseService;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,9 +41,9 @@ import com.google.inject.Inject;
  */
 @RunWith(GuiceJUnitRunner.class)
 @GuiceModules({ ConfigModule.class, CoreModule.class, HttpModule.class, JerseyModule.class, ModelModule.class })
-public class DictionaryServiceTest {
+public class DictionaryServiceIntegrationTest {
 
-  private static final Logger log = LoggerFactory.getLogger(DictionaryServiceTest.class);
+  private static final Logger log = LoggerFactory.getLogger(DictionaryServiceIntegrationTest.class);
 
   private DictionaryService dictionaryService;
 
@@ -60,7 +59,7 @@ public class DictionaryServiceTest {
     this.releaseService = releaseService;
   }
 
-  @Test
+  // @Test
   public void test_dictionary_typicalWorkflow() {
 
     List<HasRelease> releaseList = releaseService.list();
@@ -96,7 +95,7 @@ public class DictionaryServiceTest {
 
     log.info("" + Iterables.transform(dictionaryService.list(), function));
 
-    Dictionary clone = dictionaryService.clone("vd8", "vd9");
+    Dictionary clone = dictionaryService.clone("vd8", "vd10");
     log.info(clone.getVersion() + "-" + clone.getState());
     log.info("" + Iterables.transform(dictionaryService.list(), function));
 
