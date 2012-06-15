@@ -19,16 +19,11 @@ import org.icgc.dcc.model.ResponseTimestamper;
 import org.icgc.dcc.model.dictionary.Dictionary;
 import org.icgc.dcc.model.dictionary.DictionaryService;
 import org.icgc.dcc.model.dictionary.DictionaryState;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 
 @Path("dictionaries")
 public class DictionaryResource {
-
-  private static final Logger log = LoggerFactory.getLogger(DictionaryResource.class);
-
   @Inject
   private DictionaryService dictionaries;
 
