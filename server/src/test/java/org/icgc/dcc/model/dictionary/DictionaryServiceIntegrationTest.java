@@ -19,16 +19,8 @@ package org.icgc.dcc.model.dictionary;
 
 import java.util.List;
 
-import org.icgc.dcc.config.ConfigModule;
-import org.icgc.dcc.core.CoreModule;
-import org.icgc.dcc.filesystem.GuiceJUnitRunner;
-import org.icgc.dcc.filesystem.GuiceJUnitRunner.GuiceModules;
-import org.icgc.dcc.http.HttpModule;
-import org.icgc.dcc.http.jersey.JerseyModule;
-import org.icgc.dcc.model.ModelModule;
 import org.icgc.dcc.service.HasRelease;
 import org.icgc.dcc.service.ReleaseService;
-import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,8 +31,8 @@ import com.google.inject.Inject;
 /**
  * TODO: remove - just to test quickly
  */
-@RunWith(GuiceJUnitRunner.class)
-@GuiceModules({ ConfigModule.class, CoreModule.class, HttpModule.class, JerseyModule.class, ModelModule.class })
+// @RunWith(GuiceJUnitRunner.class)
+// @GuiceModules({ ConfigModule.class, CoreModule.class, HttpModule.class, JerseyModule.class, ModelModule.class })
 public class DictionaryServiceIntegrationTest {
 
   private static final Logger log = LoggerFactory.getLogger(DictionaryServiceIntegrationTest.class);
@@ -79,8 +71,6 @@ public class DictionaryServiceIntegrationTest {
       }
     };
     log.info("" + Iterables.transform(dictionaryService.list(), function));
-
-    // System.exit(0);
 
     Dictionary dictionary = dictionaryService.getFromVersion("vd1");
     log.info(dictionary.getVersion() + " - " + dictionary.getState());
