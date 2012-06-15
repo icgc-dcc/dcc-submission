@@ -24,6 +24,8 @@ import java.util.List;
 
 import org.icgc.dcc.model.BaseEntity;
 import org.icgc.dcc.model.HasName;
+import org.icgc.dcc.model.dictionary.visitor.DictionaryElement;
+import org.icgc.dcc.model.dictionary.visitor.DictionaryVisitor;
 
 import com.google.code.morphia.annotations.Entity;
 import com.google.code.morphia.annotations.Indexed;
@@ -33,7 +35,7 @@ import com.google.code.morphia.annotations.PrePersist;
  * Describes a dictionary that contains {@code FileSchema}ta and that may be used by some releases
  */
 @Entity
-public class Dictionary extends BaseEntity implements HasName, Serializable {
+public class Dictionary extends BaseEntity implements HasName, DictionaryElement, Serializable {
 
   @Indexed(unique = true)
   private String version;
@@ -64,6 +66,14 @@ public class Dictionary extends BaseEntity implements HasName, Serializable {
     super();
     this.version = version;
     this.state = DictionaryState.OPENED;
+  }
+
+  @Override
+  public void accept(DictionaryVisitor dictionaryVisitor) {
+    for(FileSchema fileSchema : files) {
+      fileSchema.accept(dictionaryVisitor);
+    }
+    dictionaryVisitor.visit(this);
   }
 
   @PrePersist

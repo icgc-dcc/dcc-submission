@@ -15,57 +15,43 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.model.dictionary;
+package org.icgc.dcc.model.dictionary.visitor;
 
-import org.icgc.dcc.model.dictionary.visitor.DictionaryElement;
-import org.icgc.dcc.model.dictionary.visitor.DictionaryVisitor;
-
-import com.google.code.morphia.annotations.Embedded;
-import com.mongodb.BasicDBObject;
+import org.icgc.dcc.model.dictionary.Dictionary;
+import org.icgc.dcc.model.dictionary.Field;
+import org.icgc.dcc.model.dictionary.FileSchema;
+import org.icgc.dcc.model.dictionary.Restriction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Describes a restriction that applies to some {@code Field}(s)
+ * Visits every {@code Dictionary}-related objects and creates a clone for the corresponding object
  * 
- * TODO: possibly to some file schemata too in the future
+ * TODO: in progress
  */
-@Embedded
-public class Restriction implements DictionaryElement {
+public class DictionaryCloneVisitor extends BaseDictionaryVisitor {
 
-  private String type;
+  private static final Logger log = LoggerFactory.getLogger(DictionaryCloneVisitor.class);
 
-  private BasicDBObject config;
-
-  public Restriction() {
-    super();
-  }
-
-  public Restriction(Restriction restriction) {
-    this();
-
-    // TODO: visitor way
-    this.type = restriction.type;
-    this.config = new BasicDBObject(restriction.config);
+  @Override
+  public void visit(Dictionary dictionary) {
+    log.info("clone visiting dictionary " + dictionary.getVersion());
+    // TODO
   }
 
   @Override
-  public void accept(DictionaryVisitor dictionaryVisitor) {
-    dictionaryVisitor.visit(this);
+  public void visit(FileSchema fileSchema) {
+    log.info("clone visiting fileSchema " + fileSchema.getName());
   }
 
-  public String getType() {
-    return type;
+  @Override
+  public void visit(Field field) {
+    log.info("clone visiting field " + field.getName());
   }
 
-  public void setType(String type) {
-    this.type = type;
-  }
-
-  public BasicDBObject getConfig() {
-    return config;
-  }
-
-  public void setConfig(BasicDBObject config) {
-    this.config = config;
+  @Override
+  public void visit(Restriction restriction) {
+    log.info("clone visiting restriction " + restriction.getType());
   }
 
 }

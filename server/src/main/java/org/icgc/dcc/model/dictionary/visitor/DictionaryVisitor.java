@@ -15,57 +15,24 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.model.dictionary;
+package org.icgc.dcc.model.dictionary.visitor;
 
-import org.icgc.dcc.model.dictionary.visitor.DictionaryElement;
-import org.icgc.dcc.model.dictionary.visitor.DictionaryVisitor;
-
-import com.google.code.morphia.annotations.Embedded;
-import com.mongodb.BasicDBObject;
+import org.icgc.dcc.model.dictionary.Dictionary;
+import org.icgc.dcc.model.dictionary.Field;
+import org.icgc.dcc.model.dictionary.FileSchema;
+import org.icgc.dcc.model.dictionary.Restriction;
 
 /**
- * Describes a restriction that applies to some {@code Field}(s)
- * 
- * TODO: possibly to some file schemata too in the future
+ * Allows a visitor implementation to visit all {@code Dictionary}-related objects
  */
-@Embedded
-public class Restriction implements DictionaryElement {
+public interface DictionaryVisitor {
 
-  private String type;
+  public void visit(Dictionary dictionary);
 
-  private BasicDBObject config;
+  public void visit(FileSchema fileSchema);
 
-  public Restriction() {
-    super();
-  }
+  public void visit(Field field);
 
-  public Restriction(Restriction restriction) {
-    this();
-
-    // TODO: visitor way
-    this.type = restriction.type;
-    this.config = new BasicDBObject(restriction.config);
-  }
-
-  @Override
-  public void accept(DictionaryVisitor dictionaryVisitor) {
-    dictionaryVisitor.visit(this);
-  }
-
-  public String getType() {
-    return type;
-  }
-
-  public void setType(String type) {
-    this.type = type;
-  }
-
-  public BasicDBObject getConfig() {
-    return config;
-  }
-
-  public void setConfig(BasicDBObject config) {
-    this.config = config;
-  }
+  public void visit(Restriction restriction);
 
 }

@@ -20,6 +20,9 @@ package org.icgc.dcc.model.dictionary;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.icgc.dcc.model.dictionary.visitor.DictionaryElement;
+import org.icgc.dcc.model.dictionary.visitor.DictionaryVisitor;
+
 import com.google.code.morphia.annotations.Embedded;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
@@ -30,7 +33,7 @@ import com.google.common.collect.Iterables;
  * Describes a file schema that contains {@code Field}s and that is part of a {@code Dictionary}
  */
 @Embedded
-public class FileSchema {
+public class FileSchema implements DictionaryElement {
 
   private String name;
 
@@ -67,6 +70,14 @@ public class FileSchema {
     for(Field field : fileSchema.fields) {
       this.fields.add(new Field(field));
     }
+  }
+
+  @Override
+  public void accept(DictionaryVisitor dictionaryVisitor) {
+    for(Field field : fields) {
+      field.accept(dictionaryVisitor);
+    }
+    dictionaryVisitor.visit(this);
   }
 
   public Optional<Field> field(final String name) {
