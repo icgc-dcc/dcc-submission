@@ -141,6 +141,25 @@ public class DictionaryService {
     return codeList;
   }
 
+  public void updateCodeList(CodeList newCodeList) {
+    checkArgument(newCodeList != null);
+    String name = newCodeList.getName();
+    CodeList oldCodeList = this.getCodeList(name);
+    if(oldCodeList == null) {
+      throw new DictionaryServiceException("cannot perform update to non-existant codeList: " + name);
+    }
+    if(oldCodeList.getTerms().equals(newCodeList.getTerms()) == false) {
+      throw new DictionaryServiceException("cannot perform update on codelists with different terms");
+    }
+
+    oldCodeList.setLabel(newCodeList.getLabel());
+    Query<CodeList> updateQuery = this.datastore.createQuery(CodeList.class).filter("name" + " = ", name);
+    checkState(updateQuery.countAll() == 1);
+    UpdateOperations<CodeList> ops =
+        this.datastore.createUpdateOperations(CodeList.class).disableValidation().set("label", newCodeList.getLabel());
+    this.datastore.update(updateQuery, ops);
+  }
+
   public void addTerm(String name, Term term) {
     checkArgument(name != null);
     checkArgument(term != null);

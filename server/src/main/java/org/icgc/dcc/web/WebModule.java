@@ -27,6 +27,7 @@ public class WebModule extends AbstractModule {
       config.addClasses(ReleaseResource.class);
       config.addClasses(NextReleaseResource.class);
       config.addClasses(DictionaryResource.class);
+      config.addClasses(CodeListResource.class);
       config.addClasses(BasicHttpAuthenticationRequestFilter.class);
       config.addClasses(UnsatisfiedPrecondtionExceptionMapper.class);
     }
