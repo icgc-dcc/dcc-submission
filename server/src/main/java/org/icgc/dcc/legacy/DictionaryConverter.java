@@ -92,12 +92,18 @@ public class DictionaryConverter {
 			this.readTSVHeader(lineIterator.next());
 		}
 		// Read field
+		List<String> uniqueFields = new ArrayList<String>();
 		List<Field> fields = new ArrayList<Field>();
 		while (lineIterator.hasNext()) {
 			Field field = this.readField(lineIterator.next());
 			fields.add(field);
+			if (field.isUnique()) {
+				uniqueFields.add(field.getName());
+			}
 		}
 		fileSchema.setFields(fields);
+
+		fileSchema.setUniqueFields(uniqueFields);
 
 		fileSchema.setRole(FileSchemaRole.SUBMISSION);
 

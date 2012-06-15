@@ -17,6 +17,9 @@
  */
 package org.icgc.dcc.model.dictionary;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import java.util.ArrayList;
 import java.util.List;
 
 import org.icgc.dcc.model.BaseEntity;
@@ -38,6 +41,14 @@ public class CodeList extends BaseEntity implements HasName {
 
   public CodeList() {
     super();
+    terms = new ArrayList<Term>();
+  }
+
+  public CodeList(String name) {
+    this();
+    checkArgument(label != null);
+    this.name = name;
+    this.label = name;
   }
 
   @Override
@@ -63,5 +74,13 @@ public class CodeList extends BaseEntity implements HasName {
 
   public void setTerms(List<Term> terms) {
     this.terms = terms;
+  }
+
+  public void addTerm(Term term) {
+    terms.add(term);
+  }
+
+  public boolean containsTerm(Term term) {
+    return terms.contains(term);
   }
 }

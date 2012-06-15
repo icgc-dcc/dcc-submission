@@ -1,0 +1,15 @@
+# name	datatype	required?	primary key?	deconvolution level	mapping file
+analysis_id	VARCHAR(64)	true	false		
+sample_id	VARCHAR(64)	true	false		
+assembly_version	VARCHAR(64)	true	false		
+gene_build_version	INTEGER	true	false		{codec.dir}/mirna_m__gene_build_version.tsv
+platform	VARCHAR(512)	true	false		{codec.dir}/appendix_B5.tsv
+experimental_protocol	VARCHAR(512)	false	false		
+base_calling_algorithm	VARCHAR(512)	true	false		
+alignment_algorithm	VARCHAR(512)	true	false		
+normalization_algorithm	VARCHAR(512)	true	false		
+other_analysis_algorithm	VARCHAR(512)	false	false		
+seq_coverage	FLOAT(5,2)	false	false		
+raw_data_repository	VARCHAR(128)	false	false		{codec.dir}/appendix_B12.tsv
+raw_data_accession	VARCHAR(128)	false	false		
+note	TEXT	false	false		

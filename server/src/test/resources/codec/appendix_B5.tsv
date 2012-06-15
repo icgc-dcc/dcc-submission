@@ -1,0 +1,75 @@
+1	PCR
+2	qPCR
+3	capillary sequencing
+4	SOLiD sequencing
+5	Illumina GA sequencing
+6	454 sequencing
+7	Helicos sequencing
+8	Affymetrix Genome-Wide Human SNP Array 6.0
+9	Affymetrix Genome-Wide Human SNP Array 5.0
+10	Affymetrix Mapping 100K Array Set
+11	Affymetrix Mapping 500K Array Set
+12	Affymetrix Mapping 10K 2.0 Array Set
+13	Affymetrix EMET Plus Premier Pack
+14	Agilent Whole Human Genome Oligo Microarray Kit
+15	Agilent Human Genome 244A
+16	Agilent Human Genome 105A
+17	Agilent Human CNV Association 2x105K
+18	Agilent Human Genome 44K
+19	Agilent Human CGH 1x1M
+20	Agilent Human CGH 2x400K
+21	Agilent Human CGH 4x180K
+22	Agilent Human CGH 8x60K
+23	Agilent Human CNV 2x400K
+24	Agilent Human miRNA Microarray Kit (v2)
+25	Agilent Human CpG Island Microarray Kit
+26	Agilent Human Promoter ChIP-on-chip Microarray Set
+27	Agilent Human SpliceArray
+28	Illumina human1m-duo
+29	Illumina human660w-quad
+30	Illumina humancytosnp-12
+31	Illumina human510s-duo
+32	Illumina humanmethylation27
+33	Illumina goldengate methylation
+34	Illumina HumanHT-12 v4.0 beadchip
+35	Illumina HumanWG-6 v3.0 beadchip
+36	Illumina HumanRef-8 v3.0 beadchip
+37	Illumina microRNA Expression Profiling Panel
+38	Illumina humanht-16
+39	Illumina humanht-17
+40	Nimblegen Human CGH 3x720 Whole-Genome v3.0 Array
+41	Nimblegen Human CGH 2.1M Whole-Genome v2.0D Array
+42	Nimblegen Gene Expression 385K
+43	Nimblegen Gene Expression 4x72K
+44	Nimblegen Gene Expression 12x135K
+45	Nimblegen Human Methylation 2.1M Whole-Genome sets
+46	Nimblegen Human Methylation 385K Whole-Genome sets
+47	Nimblegen CGS
+48	Illumina Human1M OmniQuad chip
+49	PCR and capillary sequencing
+50	Custom-designed gene expression array
+51	Affymetrix HT Human Genome U133A Array Plate Set
+52	Agilent 244K Custom Gene Expression G4502A-07-1
+53	Agilent 244K Custom Gene Expression G4502A-07-2
+54	Agilent 244K Custom Gene Expression G4502A-07-3
+55	Agilent Human Genome CGH Custom Microaary 2x415K
+56	Affymetrix Human U133 Plus PM
+57	Affymetrix Human U133 Plus 2.0
+58	Affymetrix Human Exon 1.0 ST
+59	Almac Human CRC
+60	Illumina HiSeq
+61	Affymetrix Human MIP 330K
+62	Affymetrix Human Gene 1.0 ST
+63	Illumina Human Omni1-Quad beadchip
+64	Sequenom MassARRAY
+65	Custom-designed cDNA array
+66	Illumina HumanHap550
+67	Ion Torrent PGM
+68	Illumina GoldenGate Methylation Cancer Panel I
+69	Illumina Infinium HumanMethylation450
+70	Agilent 8 x 15K Human miRNA-specific microarray
+71	M.D. Anderson Reverse Phase Protein Array Core
+72	Microsatellite Instability Analysis
+73	Agilent 244K Custom Gene Expression G4502A-07
+74	Illumina HumanCNV370-Duo v1.0 BeadChip
+75	Illumina HumanOmniExpress BeadChip

@@ -1,0 +1,4 @@
+1	single base substitution
+2	insertion of <=200bp
+3	deletion of <=200bp
+4	multiple base substitution (>=2bp and <=200bp)

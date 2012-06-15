@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.model.dictionary;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.google.code.morphia.annotations.Embedded;
@@ -37,6 +38,19 @@ public class Field {
 
   public Field() {
     super();
+    this.restrictions = new ArrayList<Restriction>();
+  }
+
+  public Field(Field field) {
+    this();
+
+    // TODO: visitor way
+    this.name = field.name;
+    this.label = field.label;
+    this.valueType = field.valueType;
+    for(Restriction restriction : field.restrictions) {
+      this.restrictions.add(new Restriction(restriction));
+    }
   }
 
   public String getName() {
@@ -71,4 +85,12 @@ public class Field {
     this.restrictions = restrictions;
   }
 
+  public boolean isUnique() {
+    for(Restriction restriction : restrictions) {
+      if(restriction.getType().equals("primary-key")) {
+        return true;
+      }
+    }
+    return false;
+  }
 }

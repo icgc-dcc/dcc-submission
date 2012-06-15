@@ -1,0 +1,5 @@
+# name	datatype	required?	primary key?	deconvolution level	mapping file
+donor_id	TEXT	true	false		
+exposure_type	TEXT	true	false		
+exposure_intensity	INTEGER	true	false		
+exposure_notes	TEXT	true	false		

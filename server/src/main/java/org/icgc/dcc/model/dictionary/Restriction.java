@@ -36,6 +36,14 @@ public class Restriction {
     super();
   }
 
+  public Restriction(Restriction restriction) {
+    this();
+
+    // TODO: visitor way
+    this.type = restriction.type;
+    this.config = new BasicDBObject(restriction.config);
+  }
+
   public String getType() {
     return type;
   }

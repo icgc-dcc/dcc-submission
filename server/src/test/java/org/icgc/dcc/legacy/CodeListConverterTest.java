@@ -17,9 +17,15 @@
  */
 package org.icgc.dcc.legacy;
 
-import java.io.IOException;
+import static org.junit.Assert.assertTrue;
 
-import org.junit.Ignore;
+import java.io.File;
+import java.io.IOException;
+import java.util.Iterator;
+
+import org.apache.commons.io.FileUtils;
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Test;
 
 /**
@@ -27,12 +33,40 @@ import org.junit.Test;
  */
 public class CodeListConverterTest {
 
-	@Ignore
-	@Test
-	public void test() throws IOException {
-		CodeListConverter clc = new CodeListConverter();
-		clc.readCodec("/Users/lyao/Documents/workspace/executor/.dcc-loader/codec");
-		clc.saveToJSON("/Users/lyao/Documents/workspace/data-submission/server/src/main/resources/codeList.json");
-	}
+  @Test
+  public void test() throws IOException {
+    CodeListConverter clc = new CodeListConverter();
+    clc.readCodec("src/test/resources/codec");
+    clc.saveToJSON("src/test/resources/codeList.json");
+
+    File testFile = new File("src/test/resources/codeList.json");
+    File refFile = new File("src/main/resources/codeList.json");
+
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode testTree = mapper.readTree(FileUtils.readFileToString(testFile));
+
+    JsonNode refTree = mapper.readTree(FileUtils.readFileToString(refFile));
+
+    Iterator<JsonNode> testRoot = testTree.getElements();
+    Iterator<JsonNode> refRoot = refTree.getElements();
+
+    while(testRoot.hasNext()) {
+      JsonNode testNode = testRoot.next();
+      JsonNode refNode = refRoot.next();
+
+      Iterator<JsonNode> testIterator = testNode.getElements();
+      Iterator<JsonNode> refIterator = refNode.getElements();
+
+      while(testIterator.hasNext()) {
+        JsonNode testSubNode = testIterator.next();
+        JsonNode refSubNode = refIterator.next();
+        // ignore Time stamp for now
+        if(!testSubNode.isLong() || !refSubNode.isLong()) {
+          assertTrue(testSubNode.equals(refSubNode));
+        }
+      }
+    }
+
+  }
 
 }
