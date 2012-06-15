@@ -86,8 +86,11 @@ public class DictionaryService {
   }
 
   public void update(Dictionary dictionary) {
+    checkArgument(dictionary != null);
     Query<Dictionary> udpateQuery = this.buildQuery(dictionary);
-    checkState(udpateQuery.countAll() == 1);
+    if(udpateQuery.countAll() != 1) {
+      throw new DictionaryServiceException("cannot update an unexisting dictionary: " + dictionary.getVersion());
+    }
     this.datastore.updateFirst(udpateQuery, dictionary, false);
   }
 
@@ -101,6 +104,8 @@ public class DictionaryService {
   }
 
   public Dictionary clone(String oldVersion, String newVersion) {
+    checkArgument(oldVersion != null);
+    checkArgument(newVersion != null);
     if(oldVersion.equals(newVersion)) {
       throw new DictionaryServiceException("cannot clone a dictionary using the same version: " + newVersion);
     }
@@ -115,9 +120,21 @@ public class DictionaryService {
     Dictionary newDictionary = new Dictionary(oldDictionary);
     newDictionary.setVersion(newVersion);
 
-    this.datastore.save(newDictionary);
+    this.add(newDictionary);
 
     return newDictionary;
+  }
+
+  public Dictionary add(Dictionary dictionary) {
+    checkArgument(dictionary != null);
+    String version = dictionary.getVersion();
+    if(this.getFromVersion(version) != null) {
+      throw new DictionaryServiceException("cannot add an existing dictionary: " + version);
+    }
+
+    this.datastore.save(dictionary);
+
+    return dictionary;
   }
 
   public CodeList getCodeList(String name) {
