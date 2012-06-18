@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.model.dictionary;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -112,6 +114,18 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
 
   public void setFiles(List<FileSchema> files) {
     this.files = files;
+  }
+
+  public FileSchema getFileSchema(String fileName) {
+    FileSchema result = null;
+    for(FileSchema fileSchema : this.files) {
+      if(fileSchema.getName().equals(fileName)) {
+        result = fileSchema;
+        break;
+      }
+    }
+    checkState(result != null);
+    return result;
   }
 
 }
