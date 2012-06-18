@@ -43,110 +43,130 @@ import com.google.common.io.Files;
  * 
  */
 public class DictionaryConverter {
-	private Dictionary dictionary;
+  private Dictionary dictionary;
 
-	private final ValueTypeConverter valueConverter = new ValueTypeConverter();
+  private final ValueTypeConverter valueConverter = new ValueTypeConverter();
 
-	public void saveToJSON(String fileName) throws JsonGenerationException,
-			JsonMappingException, IOException {
-		ObjectMapper mapper = new ObjectMapper();
-		mapper.writeValue(new File(fileName), dictionary);
-	}
+  public void saveToJSON(String fileName) throws JsonGenerationException, JsonMappingException, IOException {
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.writeValue(new File(fileName), dictionary);
+  }
 
-	public Dictionary readDictionary(String folder) throws IOException {
-		dictionary = new Dictionary("1.0");
-		File tsvFolder = new File(folder);
-		File[] tsvFiles = tsvFolder.listFiles(new FilenameFilter() {
+  public Dictionary readDictionary(String folder) throws IOException {
+    if(dictionary == null) {
+      dictionary = new Dictionary("1.0");
+    }
+    File tsvFolder = new File(folder);
+    File[] tsvFiles = tsvFolder.listFiles(new FilenameFilter() {
 
-			@Override
-			public boolean accept(File dir, String name) {
-				return name.endsWith(".tsv");
-			}
+      @Override
+      public boolean accept(File dir, String name) {
+        return name.endsWith(".tsv");
+      }
 
-		});
+    });
 
-		List<FileSchema> fileSchemas = new ArrayList<FileSchema>();
+    List<FileSchema> fileSchemas = new ArrayList<FileSchema>();
 
-		for (File tsvFile : tsvFiles) {
-			fileSchemas.add(this.readFileSchema(tsvFile));
-		}
+    for(File tsvFile : tsvFiles) {
+      fileSchemas.add(this.readFileSchema(tsvFile));
+    }
 
-		dictionary.setFiles(fileSchemas);
+    dictionary.setFiles(fileSchemas);
 
-		return dictionary;
-	}
+    this.readFilePattern("src/test/resources/converter/file_to_pattern.tsv");
 
-	private FileSchema readFileSchema(File tsvFile) throws IOException {
-		String FileSchemaName = FilenameUtils
-				.removeExtension(tsvFile.getName());
-		FileSchema fileSchema = new FileSchema(FileSchemaName);
+    return dictionary;
+  }
 
-		String fileSchemaText = Files.toString(tsvFile, Charsets.UTF_8);
+  private void readFilePattern(String tsvFile) throws IOException {
+    String filePatternText = Files.toString(new File(tsvFile), Charsets.UTF_8);
 
-		Iterable<String> lines = Splitter.on('\n').trimResults()
-				.omitEmptyStrings().split(fileSchemaText);
+    Iterable<String> lines = Splitter.on('\n').trimResults().omitEmptyStrings().split(filePatternText);
 
-		Iterator<String> lineIterator = lines.iterator();
-		// Read TSV header
-		if (lineIterator.hasNext()) {
-			this.readTSVHeader(lineIterator.next());
-		}
-		// Read field
-		List<String> uniqueFields = new ArrayList<String>();
-		List<Field> fields = new ArrayList<Field>();
-		while (lineIterator.hasNext()) {
-			Field field = this.readField(lineIterator.next());
-			fields.add(field);
-			if (field.isUnique()) {
-				uniqueFields.add(field.getName());
-			}
-		}
-		fileSchema.setFields(fields);
+    Iterator<String> lineIterator = lines.iterator();
+    while(lineIterator.hasNext()) {
+      String line = lineIterator.next();
+      if(!line.startsWith("#")) {
+        Iterable<String> values = Splitter.on('\t').trimResults().omitEmptyStrings().split(line);
+        Iterator<String> valueIterator = values.iterator();
 
-		fileSchema.setUniqueFields(uniqueFields);
+        String fileSchemaName = valueIterator.next();
+        String filePattern = valueIterator.next();
 
-		fileSchema.setRole(FileSchemaRole.SUBMISSION);
+        this.dictionary.getFileSchema(fileSchemaName).setPattern(filePattern);
+      }
+    }
+  }
 
-		return fileSchema;
-	}
+  private FileSchema readFileSchema(File tsvFile) throws IOException {
+    String FileSchemaName = FilenameUtils.removeExtension(tsvFile.getName());
+    FileSchema fileSchema = new FileSchema(FileSchemaName);
 
-	private Field readField(String line) {
-		Field field = new Field();
-		Iterable<String> values = Splitter.on('\t').trimResults()
-				.omitEmptyStrings().split(line);
+    String fileSchemaText = Files.toString(tsvFile, Charsets.UTF_8);
 
-		Iterator<String> iterator = values.iterator();
-		String name = iterator.next();
-		field.setName(name);
+    Iterable<String> lines = Splitter.on('\n').trimResults().omitEmptyStrings().split(fileSchemaText);
 
-		String dataType = iterator.next();
-		ValueType valueType = valueConverter.getMap().get(dataType);
-		field.setValueType(valueType);
+    Iterator<String> lineIterator = lines.iterator();
+    // Read TSV header
+    if(lineIterator.hasNext()) {
+      this.readTSVHeader(lineIterator.next());
+    }
+    // Read field
+    List<String> uniqueFields = new ArrayList<String>();
+    List<Field> fields = new ArrayList<Field>();
+    while(lineIterator.hasNext()) {
+      Field field = this.readField(lineIterator.next());
+      fields.add(field);
+      if(field.isUnique()) {
+        uniqueFields.add(field.getName());
+      }
+    }
+    fileSchema.setFields(fields);
 
-		List<Restriction> restrictions = new ArrayList<Restriction>();
+    fileSchema.setUniqueFields(uniqueFields);
 
-		// add required restriction
-		String required = iterator.next();
-		if (Boolean.parseBoolean(required)) {
-			Restriction requiredRestriction = new Restriction();
-			requiredRestriction.setType("required");
-			restrictions.add(requiredRestriction);
-		}
+    fileSchema.setRole(FileSchemaRole.SUBMISSION);
 
-		// add primary-key restriction
-		String primaryKey = iterator.next();
-		if (Boolean.parseBoolean(primaryKey)) {
-			Restriction primaryKeyRestriction = new Restriction();
-			primaryKeyRestriction.setType("primary-key");
-			restrictions.add(primaryKeyRestriction);
-		}
+    return fileSchema;
+  }
 
-		field.setRestrictions(restrictions);
+  private Field readField(String line) {
+    Field field = new Field();
+    Iterable<String> values = Splitter.on('\t').trimResults().omitEmptyStrings().split(line);
 
-		return field;
-	}
+    Iterator<String> iterator = values.iterator();
+    String name = iterator.next();
+    field.setName(name);
 
-	private Iterable<String> readTSVHeader(String line) {
-		return Splitter.on('\t').trimResults().omitEmptyStrings().split(line);
-	}
+    String dataType = iterator.next();
+    ValueType valueType = valueConverter.getMap().get(dataType);
+    field.setValueType(valueType);
+
+    List<Restriction> restrictions = new ArrayList<Restriction>();
+
+    // add required restriction
+    String required = iterator.next();
+    if(Boolean.parseBoolean(required)) {
+      Restriction requiredRestriction = new Restriction();
+      requiredRestriction.setType("required");
+      restrictions.add(requiredRestriction);
+    }
+
+    // add primary-key restriction
+    String primaryKey = iterator.next();
+    if(Boolean.parseBoolean(primaryKey)) {
+      Restriction primaryKeyRestriction = new Restriction();
+      primaryKeyRestriction.setType("primary-key");
+      restrictions.add(primaryKeyRestriction);
+    }
+
+    field.setRestrictions(restrictions);
+
+    return field;
+  }
+
+  private Iterable<String> readTSVHeader(String line) {
+    return Splitter.on('\t').trimResults().omitEmptyStrings().split(line);
+  }
 }

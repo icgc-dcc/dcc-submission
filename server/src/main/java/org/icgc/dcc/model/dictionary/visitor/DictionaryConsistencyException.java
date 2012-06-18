@@ -17,24 +17,16 @@
  */
 package org.icgc.dcc.model.dictionary.visitor;
 
-import org.icgc.dcc.model.dictionary.Dictionary;
-import org.icgc.dcc.model.dictionary.Field;
-import org.icgc.dcc.model.dictionary.FileSchema;
-import org.icgc.dcc.model.dictionary.Restriction;
+public class DictionaryConsistencyException extends RuntimeException {
+  public DictionaryConsistencyException(Exception e) {
+    super(e);
+  }
 
-/**
- * Allows a visitor implementation to visit all {@code Dictionary}-related objects
- * 
- * The current implementation expects "pre-order" traversal, where the parent objects are visited before its children
- */
-public interface DictionaryVisitor {
+  public DictionaryConsistencyException(String message) {
+    super(message);
+  }
 
-  public void visit(Dictionary dictionary);
-
-  public void visit(FileSchema fileSchema);
-
-  public void visit(Field field);
-
-  public void visit(Restriction restriction);
-
+  public DictionaryConsistencyException(String message, Exception e) {
+    super(message, e);
+  }
 }

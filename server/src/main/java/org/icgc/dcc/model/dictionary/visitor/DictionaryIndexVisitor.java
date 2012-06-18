@@ -17,71 +17,88 @@
  */
 package org.icgc.dcc.model.dictionary.visitor;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.icgc.dcc.model.dictionary.Dictionary;
 import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.FileSchema;
-import org.icgc.dcc.model.dictionary.Restriction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Visits every {@code Dictionary}-related objects and creates an index of the elements for efficient lookup.
  * 
- * TODO: in progress
  */
 public class DictionaryIndexVisitor extends BaseDictionaryVisitor {
 
   private static final Logger log = LoggerFactory.getLogger(DictionaryIndexVisitor.class);
 
-  @SuppressWarnings("unused")
-  private final Map<String, Dictionary> dictionaries;
+  private final Map<String, FileSchema> fileSchemas;
+
+  private final Map<String, Map<String, Field>> schemaToField;
+
+  private String currentSchemaName;
 
   public DictionaryIndexVisitor() {
-    dictionaries = new TreeMap<String, Dictionary>();
-  }
-
-  @Override
-  public void visit(Dictionary dictionary) {
-    log.info("index visiting dictionary " + dictionary.getVersion());
-    // TODO
+    this.fileSchemas = new TreeMap<String, FileSchema>();
+    this.schemaToField = new TreeMap<String, Map<String, Field>>();
   }
 
   @Override
   public void visit(FileSchema fileSchema) {
-    log.info("index visiting fileSchema " + fileSchema.getName());
+    String schemaName = fileSchema.getName();
+    log.info("index visiting fileSchema " + schemaName);
+    if(this.fileSchemas.containsKey(schemaName)) {
+      throw new DictionaryIndexException("Non-unique FileSchema name: " + schemaName);
+    }
+    this.fileSchemas.put(schemaName, fileSchema);
+    currentSchemaName = schemaName;
   }
 
   @Override
   public void visit(Field field) {
-    log.info("index visiting field " + field.getName());
-  }
-
-  @Override
-  public void visit(Restriction restriction) {
-    log.info("index visiting restriction " + restriction.getType());
+    String fieldName = field.getName();
+    Map<String, Field> fields = this.schemaToField.get(currentSchemaName);
+    if(fields == null) {
+      fields = new TreeMap<String, Field>();
+    }
+    if(fields.containsKey(fieldName)) {
+      throw new DictionaryIndexException("Non-unique Field name " + fieldName + " in FileSchema " + currentSchemaName);
+    }
+    fields.put(fieldName, field);
+    this.schemaToField.put(currentSchemaName, fields);
   }
 
   public boolean hasFileSchema(String name) {
-    // TODO
-    return false;
+    return this.fileSchemas.containsKey(name);
   }
 
   public FileSchema getFileSchema(String name) {
-    return null;
+    return this.fileSchemas.get(name);
   }
 
   public boolean hasField(String fileSchemaName, String fieldName) {
-    return false;
+    Map<String, Field> fields = this.schemaToField.get(fileSchemaName);
+    if(fields == null) {
+      return false;
+    }
+    return fields.containsKey(fieldName);
   }
 
   public Field getField(String fileSchemaName, String fieldName) {
-    return null;
+    Map<String, Field> fields = this.schemaToField.get(fileSchemaName);
+    if(fields == null) {
+      throw new DictionaryIndexException("FileSchema " + fileSchemaName + " does not exist in index");
+    }
+    return fields.get(fieldName);
   }
 
-  public Iterable<String> getFieldNames(String name) {
-    return null;
+  public Iterable<String> getFieldNames(String fileSchemaName) {
+    Map<String, Field> fields = this.schemaToField.get(fileSchemaName);
+    if(fields == null) {
+      throw new DictionaryIndexException("FileSchema " + fileSchemaName + " does not exist in index");
+    }
+    return new HashSet<String>(fields.keySet());
   }
 }
