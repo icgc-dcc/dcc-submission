@@ -1,10 +1,10 @@
 define [
   'views/base/view'
-  'text!templates/hello_world.hbs'
+  'text!templates/release.hbs'
 ], (View, template) ->
   'use strict'
 
-  class HelloWorldView extends View
+  class ReleaseView extends View
 
     # Save the template string in a prototype property.
     # This is overwritten with the compiled template function.
@@ -12,7 +12,7 @@ define [
     template: template
     template = null
 
-    className: 'hello-world'
+    className: 'release'
 
     # Automatically append to the DOM on render
     container: '#page-container'
