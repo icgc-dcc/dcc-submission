@@ -39,14 +39,6 @@ public class Restriction implements DictionaryElement {
     super();
   }
 
-  public Restriction(Restriction restriction) {
-    this();
-
-    // TODO: visitor way
-    this.type = restriction.type;
-    this.config = new BasicDBObject(restriction.config);
-  }
-
   @Override
   public void accept(DictionaryVisitor dictionaryVisitor) {
     dictionaryVisitor.visit(this);
