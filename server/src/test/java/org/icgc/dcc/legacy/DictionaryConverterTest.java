@@ -22,10 +22,14 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPathExpressionException;
+
 import org.apache.commons.io.FileUtils;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Test;
+import org.xml.sax.SAXException;
 
 /**
  * 
@@ -33,7 +37,7 @@ import org.junit.Test;
 public class DictionaryConverterTest {
 
   @Test
-  public void test() throws IOException {
+  public void test() throws IOException, XPathExpressionException, ParserConfigurationException, SAXException {
     DictionaryConverter dc = new DictionaryConverter();
     dc.readDictionary("src/test/resources/converter/source/");
     dc.saveToJSON("src/test/resources/dictionary.json");
@@ -42,6 +46,7 @@ public class DictionaryConverterTest {
     File refFile = new File("src/main/resources/dictionary.json");
 
     ObjectMapper mapper = new ObjectMapper();
+
     JsonNode testTree = mapper.readTree(FileUtils.readFileToString(testFile));
     JsonNode refTree = mapper.readTree(FileUtils.readFileToString(refFile));
 

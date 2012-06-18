@@ -24,6 +24,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPathExpressionException;
+
 import org.apache.commons.io.FilenameUtils;
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.JsonMappingException;
@@ -34,6 +39,11 @@ import org.icgc.dcc.model.dictionary.FileSchema;
 import org.icgc.dcc.model.dictionary.FileSchemaRole;
 import org.icgc.dcc.model.dictionary.Restriction;
 import org.icgc.dcc.model.dictionary.ValueType;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Splitter;
@@ -52,7 +62,8 @@ public class DictionaryConverter {
     mapper.writeValue(new File(fileName), dictionary);
   }
 
-  public Dictionary readDictionary(String folder) throws IOException {
+  public Dictionary readDictionary(String folder) throws IOException, XPathExpressionException,
+      ParserConfigurationException, SAXException {
     if(dictionary == null) {
       dictionary = new Dictionary("1.0");
     }
@@ -76,6 +87,8 @@ public class DictionaryConverter {
 
     this.readFilePattern("src/test/resources/converter/file_to_pattern.tsv");
 
+    this.readXMLinfo("src/test/resources/converter/icgc.0.7.xml");
+
     return dictionary;
   }
 
@@ -94,9 +107,45 @@ public class DictionaryConverter {
         String fileSchemaName = valueIterator.next();
         String filePattern = valueIterator.next();
 
-        this.dictionary.getFileSchema(fileSchemaName).setPattern(filePattern);
+        this.dictionary.fileSchema(fileSchemaName).get().setPattern(filePattern);
       }
     }
+  }
+
+  private void readXMLinfo(String xmlFile) throws ParserConfigurationException, SAXException, IOException,
+      XPathExpressionException {
+
+    DocumentBuilderFactory domFactory = DocumentBuilderFactory.newInstance();
+    DocumentBuilder builder = domFactory.newDocumentBuilder();
+    Document doc = builder.parse(xmlFile);
+
+    NodeList sourceTables = doc.getElementsByTagName("sourcetable");
+    // NodeList relations = doc.getElementsByTagName("relation");
+
+    for(int i = 0; i < sourceTables.getLength(); i++) {
+      Element node = (Element) sourceTables.item(i);
+      String name = node.getAttributes().getNamedItem("name").getTextContent();
+
+      if(this.dictionary.hasFileSchema(name)) {
+        FileSchema fileSchema = this.dictionary.fileSchema(name).get();
+        NodeList columns = node.getElementsByTagName("column");
+
+        for(int j = 0; j < columns.getLength(); j++) {
+          Node columnNode = columns.item(j);
+          String colName = columnNode.getAttributes().getNamedItem("name").getTextContent();
+          String colLabel = columnNode.getAttributes().getNamedItem("description").getTextContent();
+
+          if(fileSchema.hasField(colName)) {
+            fileSchema.field(colName).get().setLabel(colLabel);
+          }
+        }
+      }
+
+    }
+
+    /*
+     * for(int i = 0; i < relations.getLength(); i++) { Node node = relations.item(i); }
+     */
   }
 
   private FileSchema readFileSchema(File tsvFile) throws IOException {
