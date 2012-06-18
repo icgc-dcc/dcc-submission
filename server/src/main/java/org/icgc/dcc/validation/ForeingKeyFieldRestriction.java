@@ -5,6 +5,8 @@ import static com.google.common.base.Preconditions.checkState;
 import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.FileSchema;
 
+import cascading.pipe.Pipe;
+
 import com.mongodb.DBObject;
 
 public class ForeingKeyFieldRestriction implements FieldRestriction {
@@ -31,8 +33,12 @@ public class ForeingKeyFieldRestriction implements FieldRestriction {
   }
 
   @Override
+  public Pipe extend(Pipe pipe) {
+    return null;
+  }
+
+  @Override
   public void visitCascade(FileSchema schema, Field field, CascadeBuilder builder) {
-    // TODO Auto-generated method stub
 
   }
 

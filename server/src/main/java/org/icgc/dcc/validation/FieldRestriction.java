@@ -2,8 +2,9 @@ package org.icgc.dcc.validation;
 
 import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.FileSchema;
+import org.icgc.dcc.validation.CascadeBuilder.PipeExtender;
 
-public interface FieldRestriction {
+public interface FieldRestriction extends PipeExtender {
 
   public String getName();
 

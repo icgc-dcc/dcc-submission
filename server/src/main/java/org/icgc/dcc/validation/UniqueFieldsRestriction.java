@@ -30,8 +30,8 @@ public class UniqueFieldsRestriction implements FieldRestriction, PipeExtender {
 
   private final List<String> fields;
 
-  private UniqueFieldsRestriction(List<String> fields) {
-    this.fields = fields;
+  private UniqueFieldsRestriction(String[] fields) {
+    this.fields = ImmutableList.copyOf(fields);
   }
 
   @Override
@@ -71,8 +71,8 @@ public class UniqueFieldsRestriction implements FieldRestriction, PipeExtender {
 
     @Override
     public UniqueFieldsRestriction build(Field field, DBObject configuration) {
-      // Object fields = configuration.get("fields");
-      return new UniqueFieldsRestriction(ImmutableList.of("id"));
+      String[] fields = (String[]) configuration.get("fields");
+      return new UniqueFieldsRestriction(fields);
     }
 
   }
