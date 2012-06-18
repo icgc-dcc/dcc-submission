@@ -58,10 +58,11 @@ public class Field implements DictionaryElement {
 
   @Override
   public void accept(DictionaryVisitor dictionaryVisitor) {
+    dictionaryVisitor.visit(this);
+
     for(Restriction restriction : restrictions) {
       restriction.accept(dictionaryVisitor);
     }
-    dictionaryVisitor.visit(this);
   }
 
   public String getName() {

@@ -24,6 +24,8 @@ import org.icgc.dcc.model.dictionary.Restriction;
 
 /**
  * Allows a visitor implementation to visit all {@code Dictionary}-related objects
+ * 
+ * The current implementation expects "pre-order" traversal, where the parent objects are visited before its children
  */
 public interface DictionaryVisitor {
 

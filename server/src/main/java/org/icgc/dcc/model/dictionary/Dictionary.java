@@ -72,10 +72,10 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
 
   @Override
   public void accept(DictionaryVisitor dictionaryVisitor) {
+    dictionaryVisitor.visit(this);
     for(FileSchema fileSchema : files) {
       fileSchema.accept(dictionaryVisitor);
     }
-    dictionaryVisitor.visit(this);
   }
 
   @PrePersist

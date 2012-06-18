@@ -38,6 +38,8 @@ public class DictionaryIndexVisitor extends BaseDictionaryVisitor {
 
   private final Map<String, Map<String, Field>> schemaToField;
 
+  private String previousSchemaName;
+
   public DictionaryIndexVisitor() {
     this.fileSchemas = new TreeMap<String, FileSchema>();
     this.schemaToField = new TreeMap<String, Map<String, Field>>();
@@ -51,18 +53,21 @@ public class DictionaryIndexVisitor extends BaseDictionaryVisitor {
       throw new DictionaryIndexException("Non-unique FileSchema name: " + schemaName);
     }
     this.fileSchemas.put(schemaName, fileSchema);
-    for(Field field : fileSchema.getFields()) {
-      String fieldName = field.getName();
-      Map<String, Field> fields = this.schemaToField.get(schemaName);
-      if(fields == null) {
-        fields = new TreeMap<String, Field>();
-      }
-      if(fields.containsKey(fieldName)) {
-        throw new DictionaryIndexException("Non-unique Field name " + fieldName + " in FileSchema " + schemaName);
-      }
-      fields.put(fieldName, field);
-      this.schemaToField.put(schemaName, fields);
+    previousSchemaName = schemaName;
+  }
+
+  @Override
+  public void visit(Field field) {
+    String fieldName = field.getName();
+    Map<String, Field> fields = this.schemaToField.get(previousSchemaName);
+    if(fields == null) {
+      fields = new TreeMap<String, Field>();
     }
+    if(fields.containsKey(fieldName)) {
+      throw new DictionaryIndexException("Non-unique Field name " + fieldName + " in FileSchema " + previousSchemaName);
+    }
+    fields.put(fieldName, field);
+    this.schemaToField.put(previousSchemaName, fields);
   }
 
   public boolean hasFileSchema(String name) {

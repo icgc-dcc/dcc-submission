@@ -74,10 +74,10 @@ public class FileSchema implements DictionaryElement {
 
   @Override
   public void accept(DictionaryVisitor dictionaryVisitor) {
+    dictionaryVisitor.visit(this);
     for(Field field : fields) {
       field.accept(dictionaryVisitor);
     }
-    dictionaryVisitor.visit(this);
   }
 
   public Optional<Field> field(final String name) {
