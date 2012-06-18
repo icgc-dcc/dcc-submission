@@ -50,18 +50,6 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
     this.files = new ArrayList<FileSchema>();
   }
 
-  public Dictionary(Dictionary dictionary) {
-    this();
-
-    // TODO: visitor way
-    this.version = dictionary.version;
-    this.state = dictionary.state;
-    this.files = new ArrayList<FileSchema>();
-    for(FileSchema fileSchema : dictionary.files) {
-      this.files.add(new FileSchema(fileSchema));
-    }
-  }
-
   public Dictionary(String version) {
     super();
     this.version = version;
@@ -70,10 +58,10 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
 
   @Override
   public void accept(DictionaryVisitor dictionaryVisitor) {
+    dictionaryVisitor.visit(this);
     for(FileSchema fileSchema : files) {
       fileSchema.accept(dictionaryVisitor);
     }
-    dictionaryVisitor.visit(this);
   }
 
   @PrePersist
@@ -112,6 +100,10 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
 
   public void setFiles(List<FileSchema> files) {
     this.files = files;
+  }
+
+  public void addFile(FileSchema file) {
+    this.files.add(file);
   }
 
 }
