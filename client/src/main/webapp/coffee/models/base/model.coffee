@@ -1,5 +1,6 @@
 define (require) ->
 	Chaplin = require 'chaplin'
+	Backbone = require "backbone"
 
 	"use strict"
 
@@ -8,9 +9,11 @@ define (require) ->
 		apiRoot: "http://localhost:3001/ws/"
 		urlKey: "_id"
 
+
 		urlPath: ->
 			console.debug 'Model#urlPath'
 			''
+
 
 		urlRoot: ->
 			console.debug 'Model#urlRoot'
@@ -22,14 +25,26 @@ define (require) ->
 			else
 				throw new Error('Model must redefine urlPath')
 
+
 		url: ->
 			console.debug 'Model#url'
-			base = @urlRoot()
-			base
+			@urlRoot()
+
+		
+		sendAuthorization: (xhr) =>
+				token = "username".concat ":", "password"
+				console.debug 'Model#xhr', "Basic ".concat btoa token
+				xhr.setRequestHeader 'Authorization', "Basic ".concat btoa token
+
 
 		fetch: (options) ->
 			console.debug 'Model#fetch'
+			
 			@trigger 'loadStart'
 			(options ?= {}).success = =>
 				@trigger 'load'
-			super
+			options.beforeSend = @sendAuthorization
+
+			super(options)
+			
+		
