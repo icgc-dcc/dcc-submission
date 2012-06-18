@@ -1,8 +1,8 @@
 define [
   'chaplin'
-  'models/hello_world'
+  'models/Release'
   'views/hello_world_view'
-], (Chaplin, HelloWorld, HelloWorldView) ->
+], (Chaplin, Release, HelloWorldView) ->
   'use strict'
 
   class HelloWorldController extends Chaplin.Controller
@@ -13,6 +13,10 @@ define [
       ''
 
     show: (params) ->
-      #console.debug 'HelloWorldController#show'
-      @model = new HelloWorld()
+      console.debug 'HelloWorldController#show'
+      @model = new Release()
+      console.debug @model
+      @model.fetch()
+      console.debug @model
       @view = new HelloWorldView model: @model
+      
