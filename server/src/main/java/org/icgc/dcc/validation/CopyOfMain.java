@@ -10,7 +10,6 @@ import org.icgc.dcc.model.dictionary.Dictionary;
 import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.FileSchema;
 import org.icgc.dcc.model.dictionary.Restriction;
-import org.icgc.dcc.validation.CascadeBuilder.PipeExtender;
 
 import cascading.flow.Flow;
 import cascading.flow.FlowConnector;

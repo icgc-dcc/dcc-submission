@@ -3,7 +3,6 @@ package org.icgc.dcc.validation;
 import static com.google.common.base.Preconditions.checkState;
 
 import org.icgc.dcc.model.dictionary.Field;
-import org.icgc.dcc.model.dictionary.FileSchema;
 
 import cascading.pipe.Pipe;
 
@@ -37,12 +36,17 @@ public class ForeingKeyFieldRestriction implements FieldRestriction {
     return null;
   }
 
-  @Override
-  public void visitCascade(FileSchema schema, Field field, CascadeBuilder builder) {
-
-  }
-
   public static class Factory implements FieldRestrictionFactory {
+
+    @Override
+    public String getType() {
+      return NAME;
+    }
+
+    @Override
+    public FieldRestrictionSchema getSchema() {
+      return null;
+    }
 
     @Override
     public boolean builds(String name) {

@@ -1,8 +1,5 @@
 package org.icgc.dcc.validation;
 
-import java.util.Arrays;
-import java.util.Set;
-
 import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.validation.FieldRestrictionSchema.FieldRestrictionParameter;
 import org.icgc.dcc.validation.FieldRestrictionSchema.Type;
@@ -15,20 +12,22 @@ import cascading.pipe.Each;
 import cascading.pipe.Pipe;
 import cascading.tuple.Fields;
 
-import com.google.common.collect.ImmutableSet;
 import com.mongodb.DBObject;
 
-public class DiscreteValuesFieldRestriction implements FieldRestriction, PipeExtender {
+public class RangeFieldRestriction implements FieldRestriction, PipeExtender {
 
-  private static final String NAME = "in";
+  private static final String NAME = "range";
 
   private final String field;
 
-  private final String[] values;
+  private final Number min;
 
-  private DiscreteValuesFieldRestriction(String field, String[] values) {
+  private final Number max;
+
+  private RangeFieldRestriction(String field, Number min, Number max) {
     this.field = field;
-    this.values = values;
+    this.min = min;
+    this.max = max;
   }
 
   @Override
@@ -38,18 +37,19 @@ public class DiscreteValuesFieldRestriction implements FieldRestriction, PipeExt
 
   @Override
   public String getLabel() {
-    return String.format("in[%s]", Arrays.toString(values));
+    return String.format("range[%d-%d]", min, max);
   }
 
   @Override
   public Pipe extend(Pipe pipe) {
-    return new Each(pipe, new ValidationFields(field), new InValuesFunction(values), Fields.REPLACE);
+    return new Each(pipe, new ValidationFields(field), new RangeFunction(min, max), Fields.REPLACE);
   }
 
   public static class Factory implements FieldRestrictionFactory {
 
     private final FieldRestrictionSchema schema = new FieldRestrictionSchema(//
-        new FieldRestrictionParameter("values", Type.TEXT, "list of allowable values (e.g.: 1,2,3)", true));
+        new FieldRestrictionParameter("min", Type.NUMBER, "minimum value (inclusive)"), //
+        new FieldRestrictionParameter("max", Type.NUMBER, "maximu value (exclusive)"));
 
     @Override
     public String getType() {
@@ -67,28 +67,30 @@ public class DiscreteValuesFieldRestriction implements FieldRestriction, PipeExt
     }
 
     @Override
-    public DiscreteValuesFieldRestriction build(Field field, DBObject configuration) {
-      String[] values = (String[]) configuration.get("values");
-      return new DiscreteValuesFieldRestriction(field.getName(), values);
+    public RangeFieldRestriction build(Field field, DBObject configuration) {
+      Number min = (Number) configuration.get("min");
+      Number max = (Number) configuration.get("max");
+      return new RangeFieldRestriction(field.getName(), min, max);
     }
 
   }
 
-  public class InValuesFunction extends BaseOperation implements Function {
+  public class RangeFunction extends BaseOperation implements Function {
 
-    private final Set<String> values;
+    private final Number min;
 
-    private InValuesFunction(String[] values) {
+    private final Number max;
+
+    private RangeFunction(Number min, Number max) {
       super(2, Fields.ARGS);
-      this.values = ImmutableSet.copyOf(values);
+      this.min = min;
+      this.max = max;
     }
 
     @Override
     public void operate(FlowProcess flowProcess, FunctionCall functionCall) {
-      String value = functionCall.getArguments().getString(0);
-      if(values.contains(value) == false) {
-        ValidationFields.state(functionCall.getArguments()).reportError(500, value, values);
-      }
+      Object value = functionCall.getArguments().getObject(0);
+      // TODO: range check
       functionCall.getOutputCollector().add(functionCall.getArguments());
     }
 

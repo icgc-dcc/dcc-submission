@@ -4,8 +4,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.icgc.dcc.model.dictionary.Field;
-import org.icgc.dcc.model.dictionary.FileSchema;
-import org.icgc.dcc.validation.CascadeBuilder.PipeExtender;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -45,11 +43,6 @@ public class UniqueFieldsRestriction implements FieldRestriction, PipeExtender {
   }
 
   @Override
-  public void visitCascade(FileSchema schema, Field field, CascadeBuilder builder) {
-
-  }
-
-  @Override
   public Pipe extend(Pipe pipe) {
     Fields groupFields = new Fields(fields.toArray(new String[] {}));
     pipe = new GroupBy(pipe, groupFields);
@@ -63,6 +56,16 @@ public class UniqueFieldsRestriction implements FieldRestriction, PipeExtender {
   }
 
   public static class Factory implements FieldRestrictionFactory {
+
+    @Override
+    public String getType() {
+      return NAME;
+    }
+
+    @Override
+    public FieldRestrictionSchema getSchema() {
+      return null;
+    }
 
     @Override
     public boolean builds(String name) {

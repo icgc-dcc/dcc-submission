@@ -1,9 +1,7 @@
 package org.icgc.dcc.validation;
 
 import org.icgc.dcc.model.dictionary.Field;
-import org.icgc.dcc.model.dictionary.FileSchema;
 import org.icgc.dcc.model.dictionary.ValueType;
-import org.icgc.dcc.validation.CascadeBuilder.PipeExtender;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -17,8 +15,6 @@ import cascading.tuple.Tuple;
 import com.mongodb.DBObject;
 
 public class ValueTypeFieldRestriction implements FieldRestriction, PipeExtender {
-
-  private static final String ERROR_FIELD = "_errors";
 
   private static final String NAME = "value-type";
 
@@ -42,16 +38,21 @@ public class ValueTypeFieldRestriction implements FieldRestriction, PipeExtender
   }
 
   @Override
-  public void visitCascade(FileSchema schema, Field field, CascadeBuilder builder) {
-
-  }
-
-  @Override
   public Pipe extend(Pipe pipe) {
-    return new Each(pipe, new Fields(field, ERROR_FIELD), new ValueTypeFunction(), Fields.REPLACE);
+    return new Each(pipe, new ValidationFields(field), new ValueTypeFunction(), Fields.REPLACE);
   }
 
   public static class Factory implements FieldRestrictionFactory {
+
+    @Override
+    public String getType() {
+      return NAME;
+    }
+
+    @Override
+    public FieldRestrictionSchema getSchema() {
+      return null;
+    }
 
     @Override
     public boolean builds(String name) {
@@ -74,6 +75,7 @@ public class ValueTypeFieldRestriction implements FieldRestriction, PipeExtender
         Object parsedValue = parse(value);
         functionCall.getOutputCollector().add(new Tuple(parsedValue));
       } catch(IllegalArgumentException e) {
+        ValidationFields.state(functionCall.getArguments()).reportError(500, value);
         functionCall.getOutputCollector().add(new Tuple((Object) null));
       }
     }
