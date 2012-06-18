@@ -42,20 +42,15 @@ public class DictionaryService {
 
   private final Datastore datastore;
 
-  @SuppressWarnings("unused")
-  private final DictionaryCloneVisitor dictionaryCloneVisitor;
-
   @Inject
   public DictionaryService(Morphia morphia, Datastore datastore, DictionaryCloneVisitor dictionaryClone) {
     super();
 
     checkArgument(morphia != null);
     checkArgument(datastore != null);
-    checkArgument(dictionaryClone != null);
 
     this.morphia = morphia;
     this.datastore = datastore;
-    this.dictionaryCloneVisitor = dictionaryClone;
   }
 
   public Datastore datastore() {
@@ -112,10 +107,12 @@ public class DictionaryService {
       throw new DictionaryServiceException("cannot clone to an already existing dictionary: " + newVersion);
     }
 
-    // TODO: replace with:
-    // this.dictionaryCloneVisitor.visit(oldDictionary);
-    Dictionary newDictionary = new Dictionary(oldDictionary);
+    DictionaryCloneVisitor dictionaryCloneVisitor = new DictionaryCloneVisitor();
+    oldDictionary.accept(dictionaryCloneVisitor);
+
+    Dictionary newDictionary = dictionaryCloneVisitor.getDictionaryClone();
     newDictionary.setVersion(newVersion);
+
     this.add(newDictionary);
 
     return newDictionary;
