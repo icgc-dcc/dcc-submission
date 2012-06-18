@@ -11,6 +11,8 @@ import org.icgc.dcc.model.Release;
 import org.icgc.dcc.model.ReleaseState;
 import org.icgc.dcc.model.Submission;
 import org.icgc.dcc.model.SubmissionState;
+import org.icgc.dcc.model.dictionary.Dictionary;
+import org.icgc.dcc.model.dictionary.DictionaryState;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -26,6 +28,8 @@ public class NextReleaseTest {
   private Release release;
 
   private Release release2;
+
+  private Dictionary dictionary;
 
   private Datastore ds;
 
@@ -116,6 +120,43 @@ public class NextReleaseTest {
     assertTrue(newRelease.getRelease().equals(release2));
   }
 
+  @Test
+  public void test_release_newDictionarySet() {
+    releaseSetUp();
+
+    assertTrue(release2.getDictionary() == null);
+
+    nextRelease.release(release2);
+
+    verify(release2).setDictionary(dictionary);
+  }
+
+  @Test
+  public void test_release_dictionaryClosed() {
+    releaseSetUp();
+
+    assertTrue(release.getDictionary().equals(dictionary));
+    assertTrue(dictionary.getState() == DictionaryState.OPENED);
+
+    nextRelease.release(release2);
+
+    verify(dictionary).close();
+  }
+
+  @Test(expected = ReleaseException.class)
+  public void test_release_throwsMissingDictionaryException() {
+    assertTrue(release.getDictionary() == null);
+
+    nextRelease.release(release);
+  }
+
+  @Test(expected = ReleaseException.class)
+  public void test_release_newReleaseUniqueness() {
+    releaseSetUp();
+
+    nextRelease.release(release);
+  }
+
   @Ignore
   @Test
   public void test_validate() {
@@ -123,8 +164,13 @@ public class NextReleaseTest {
   }
 
   private void releaseSetUp() {
+    dictionary = mock(Dictionary.class);
+    when(release.getDictionary()).thenReturn(dictionary);
+    when(dictionary.getState()).thenReturn(DictionaryState.OPENED);
+
     release2 = mock(Release.class);
     when(release2.getState()).thenReturn(ReleaseState.OPENED);
+    when(release2.getDictionary()).thenReturn(null);
     when(updates.set("state", ReleaseState.COMPLETED)).thenReturn(updates);
   }
 

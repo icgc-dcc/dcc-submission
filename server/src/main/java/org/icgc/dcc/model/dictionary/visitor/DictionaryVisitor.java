@@ -15,39 +15,24 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.legacy;
+package org.icgc.dcc.model.dictionary.visitor;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.Map.Entry;
-
-import org.apache.commons.io.FileUtils;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.junit.Test;
+import org.icgc.dcc.model.dictionary.Dictionary;
+import org.icgc.dcc.model.dictionary.Field;
+import org.icgc.dcc.model.dictionary.FileSchema;
+import org.icgc.dcc.model.dictionary.Restriction;
 
 /**
- * 
+ * Allows a visitor implementation to visit all {@code Dictionary}-related objects
  */
-public class DictionaryConverterTest {
+public interface DictionaryVisitor {
 
-  @Test
-  public void test() throws IOException {
-    DictionaryConverter dc = new DictionaryConverter();
-    dc.readDictionary("src/test/resources/converter/source/");
-    dc.saveToJSON("src/test/resources/dictionary.json");
+  public void visit(Dictionary dictionary);
 
-    File testFile = new File("src/test/resources/dictionary.json");
-    File refFile = new File("src/main/resources/dictionary.json");
+  public void visit(FileSchema fileSchema);
 
-    ObjectMapper mapper = new ObjectMapper();
-    JsonNode testTree = mapper.readTree(FileUtils.readFileToString(testFile));
-    JsonNode refTree = mapper.readTree(FileUtils.readFileToString(refFile));
+  public void visit(Field field);
 
-    Iterator<Entry<String, JsonNode>> testRoot = testTree.getFields();
-    Iterator<Entry<String, JsonNode>> refRoot = refTree.getFields();
-
-  }
+  public void visit(Restriction restriction);
 
 }

@@ -15,39 +15,33 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.legacy;
+package org.icgc.dcc.model.dictionary.visitor;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.Map.Entry;
-
-import org.apache.commons.io.FileUtils;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.junit.Test;
+import org.icgc.dcc.model.dictionary.Dictionary;
+import org.icgc.dcc.model.dictionary.Field;
+import org.icgc.dcc.model.dictionary.FileSchema;
+import org.icgc.dcc.model.dictionary.Restriction;
 
 /**
- * 
+ * Base implementation for {@code BaseDictionaryVisitor} that intentionally does not do anything (subclasses are to
+ * extend this base class as opposed to implement the interface directly)
  */
-public class DictionaryConverterTest {
+public abstract class BaseDictionaryVisitor implements DictionaryVisitor {
 
-  @Test
-  public void test() throws IOException {
-    DictionaryConverter dc = new DictionaryConverter();
-    dc.readDictionary("src/test/resources/converter/source/");
-    dc.saveToJSON("src/test/resources/dictionary.json");
+  @Override
+  public void visit(Dictionary dictionary) {
+  }
 
-    File testFile = new File("src/test/resources/dictionary.json");
-    File refFile = new File("src/main/resources/dictionary.json");
+  @Override
+  public void visit(FileSchema fileSchema) {
+  }
 
-    ObjectMapper mapper = new ObjectMapper();
-    JsonNode testTree = mapper.readTree(FileUtils.readFileToString(testFile));
-    JsonNode refTree = mapper.readTree(FileUtils.readFileToString(refFile));
+  @Override
+  public void visit(Field field) {
+  }
 
-    Iterator<Entry<String, JsonNode>> testRoot = testTree.getFields();
-    Iterator<Entry<String, JsonNode>> refRoot = refTree.getFields();
-
+  @Override
+  public void visit(Restriction restriction) {
   }
 
 }

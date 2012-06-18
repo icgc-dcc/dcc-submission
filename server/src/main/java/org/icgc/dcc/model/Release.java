@@ -3,6 +3,8 @@ package org.icgc.dcc.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.icgc.dcc.model.dictionary.Dictionary;
+
 import com.google.code.morphia.annotations.Entity;
 
 @Entity
@@ -15,6 +17,8 @@ public class Release extends BaseEntity implements HasName {
   protected List<Submission> submissions = new ArrayList<Submission>();
 
   protected List<String> projectKeys = new ArrayList<String>();
+
+  protected Dictionary dictionary;
 
   public Release() {
     super();
@@ -62,5 +66,13 @@ public class Release extends BaseEntity implements HasName {
 
   public void emptyQueue() {
     this.projectKeys = new ArrayList<String>();
+  }
+
+  public Dictionary getDictionary() {
+    return this.dictionary;
+  }
+
+  public void setDictionary(Dictionary dictionary) {
+    this.dictionary = dictionary;
   }
 }

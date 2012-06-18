@@ -22,6 +22,8 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.util.List;
 
+import org.icgc.dcc.model.dictionary.visitor.DictionaryCloneVisitor;
+
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
 import com.google.code.morphia.query.Query;
@@ -40,15 +42,20 @@ public class DictionaryService {
 
   private final Datastore datastore;
 
+  @SuppressWarnings("unused")
+  private final DictionaryCloneVisitor dictionaryCloneVisitor;
+
   @Inject
-  public DictionaryService(Morphia morphia, Datastore datastore) {
+  public DictionaryService(Morphia morphia, Datastore datastore, DictionaryCloneVisitor dictionaryClone) {
     super();
 
     checkArgument(morphia != null);
     checkArgument(datastore != null);
+    checkArgument(dictionaryClone != null);
 
     this.morphia = morphia;
     this.datastore = datastore;
+    this.dictionaryCloneVisitor = dictionaryClone;
   }
 
   public Datastore datastore() {
@@ -73,20 +80,21 @@ public class DictionaryService {
 
   public void update(Dictionary dictionary) {
     checkArgument(dictionary != null);
-    Query<Dictionary> udpateQuery = this.buildQuery(dictionary);
-    if(udpateQuery.countAll() != 1) {
+    Query<Dictionary> updateQuery = this.buildQuery(dictionary);
+    if(updateQuery.countAll() != 1) {
       throw new DictionaryServiceException("cannot update an unexisting dictionary: " + dictionary.getVersion());
     }
-    this.datastore.updateFirst(udpateQuery, dictionary, false);
+    this.datastore.updateFirst(updateQuery, dictionary, false);
   }
 
   public void close(Dictionary dictionary) {
     checkArgument(dictionary != null);
     Query<Dictionary> updateQuery = this.buildQuery(dictionary);
-    checkState(updateQuery.countAll() == 1);
+    if(updateQuery.countAll() != 1) {
+      throw new DictionaryServiceException("cannot close an unexisting dictionary: " + dictionary.getVersion());
+    }
     UpdateOperations<Dictionary> ops =
-        this.datastore.createUpdateOperations(Dictionary.class).disableValidation()
-            .set("state", DictionaryState.CLOSED);
+        this.datastore.createUpdateOperations(Dictionary.class).set("state", DictionaryState.CLOSED);
     this.datastore.update(updateQuery, ops);
   }
 
@@ -104,6 +112,8 @@ public class DictionaryService {
       throw new DictionaryServiceException("cannot clone to an already existing dictionary: " + newVersion);
     }
 
+    // TODO: replace with:
+    // this.dictionaryCloneVisitor.visit(oldDictionary);
     Dictionary newDictionary = new Dictionary(oldDictionary);
     newDictionary.setVersion(newVersion);
     this.add(newDictionary);
@@ -137,6 +147,9 @@ public class DictionaryService {
   public CodeList createCodeList(String name) {
     checkArgument(name != null);
     CodeList codeList = new CodeList(name);
+    if(getCodeList(name) != null) {
+      throw new DictionaryServiceException("cannot create existant codeList: " + name);
+    }
     this.datastore.save(codeList);
     return codeList;
   }
@@ -156,7 +169,7 @@ public class DictionaryService {
     Query<CodeList> updateQuery = this.datastore.createQuery(CodeList.class).filter("name" + " = ", name);
     checkState(updateQuery.countAll() == 1);
     UpdateOperations<CodeList> ops =
-        this.datastore.createUpdateOperations(CodeList.class).disableValidation().set("label", newCodeList.getLabel());
+        this.datastore.createUpdateOperations(CodeList.class).set("label", newCodeList.getLabel());
     this.datastore.update(updateQuery, ops);
   }
 
@@ -172,8 +185,7 @@ public class DictionaryService {
 
     Query<CodeList> updateQuery = this.datastore.createQuery(CodeList.class).filter("name" + " = ", name);
     checkState(updateQuery.countAll() == 1);
-    UpdateOperations<CodeList> ops =
-        this.datastore.createUpdateOperations(CodeList.class).disableValidation().add("terms", term);
+    UpdateOperations<CodeList> ops = this.datastore.createUpdateOperations(CodeList.class).add("terms", term);
     this.datastore.update(updateQuery, ops);
   }
 

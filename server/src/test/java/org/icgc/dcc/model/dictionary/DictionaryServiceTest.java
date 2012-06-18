@@ -1,0 +1,108 @@
+/**
+ * Copyright 2012(c) The Ontario Institute for Cancer Research. All rights reserved.
+ *
+ * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
+ * You should have received a copy of the GNU General Public License along with 
+ * this program. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY 
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT 
+ * SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, 
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED 
+ * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; 
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER 
+ * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
+ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+package org.icgc.dcc.model.dictionary;
+
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import org.icgc.dcc.model.dictionary.visitor.DictionaryCloneVisitor;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+
+import com.google.code.morphia.Datastore;
+import com.google.code.morphia.Morphia;
+import com.google.code.morphia.query.Query;
+import com.mysema.query.mongodb.MongodbQuery;
+import com.mysema.query.types.Predicate;
+
+public class DictionaryServiceTest {
+
+  private Morphia mockMorphia;
+
+  private Datastore mockDatastore;
+
+  private DictionaryCloneVisitor mockDictionaryCloneVisitor;
+
+  private MongodbQuery<Dictionary> mockMongodbQuery;
+
+  private Query<Dictionary> mockQuery;
+
+  private Dictionary mockDictionary;
+
+  private DictionaryService dictionaryService;
+
+  @Before
+  @SuppressWarnings("unchecked")
+  // TODO: how to mock parametized?
+  public void setUp() {
+    mockMorphia = mock(Morphia.class);
+    mockDatastore = mock(Datastore.class);
+    mockDictionaryCloneVisitor = mock(DictionaryCloneVisitor.class);
+    mockMongodbQuery = mock(MongodbQuery.class);
+    mockDictionary = mock(Dictionary.class);
+    mockQuery = mock(Query.class);
+
+    when(mockDictionary.getVersion()).thenReturn("abc");
+    when(mockDatastore.createQuery(Dictionary.class)).thenReturn(mockQuery);
+    when(mockQuery.filter(anyString(), anyString())).thenReturn(mockQuery);
+    when(mockQuery.countAll()).thenReturn(0L).thenReturn(0L);
+    when(mockMongodbQuery.where(any(Predicate.class))).thenReturn(mockMongodbQuery);
+    when(mockMongodbQuery.singleResult()).thenReturn(null).thenReturn(mockDictionary).thenReturn(mockDictionary);
+
+    this.dictionaryService = new DictionaryService(mockMorphia, mockDatastore, mockDictionaryCloneVisitor);
+  }
+
+  @Test(expected = DictionaryServiceException.class)
+  // TODO: is there a way to check message too?
+  public void test_update_failOnUnexisting() {
+    dictionaryService.update(mockDictionary);
+  }
+
+  @Test(expected = DictionaryServiceException.class)
+  public void test_close_failOnUnexisting() {
+    dictionaryService.close(mockDictionary);
+  }
+
+  @Test(expected = DictionaryServiceException.class)
+  public void test_clone_failOnSameVersion() {
+    dictionaryService.clone("v1", "v1");
+  }
+
+  @Ignore
+  @Test(expected = DictionaryServiceException.class)
+  public void test_clone_failOnUnexisting() {
+    dictionaryService.clone("v1", "v2");
+    // TODO: requires to dig into MorphiaQuery constructor...
+  }
+
+  @Ignore
+  @Test(expected = DictionaryServiceException.class)
+  public void test_clone_failOnExisting() {
+    dictionaryService.clone("v1", "v2");
+  }
+
+  @Ignore
+  @Test(expected = DictionaryServiceException.class)
+  public void test_add_failOnExisting() {
+    dictionaryService.add(mockDictionary);
+  }
+
+}

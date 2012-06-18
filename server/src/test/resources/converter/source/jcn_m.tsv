@@ -9,7 +9,7 @@ base_calling_algorithm	VARCHAR(512)	true	false
 alignment_algorithm	VARCHAR(512)	true	false		
 normalization_algorithm	VARCHAR(512)	true	false		
 other_analysis_algorithm	VARCHAR(512)	false	false		
-seq_coverage	FLOAT(5,2)	false	false		{codec.dir}/jcn_m__seq_coverage.tsv
+seq_coverage	FLOAT(5,2)	false	false		
 raw_data_repository	VARCHAR(128)	true	false		{codec.dir}/appendix_B12.tsv
 raw_data_accession	VARCHAR(128)	true	false		
 note	TEXT	false	false		

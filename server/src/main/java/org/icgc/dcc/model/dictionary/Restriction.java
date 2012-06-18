@@ -17,6 +17,9 @@
  */
 package org.icgc.dcc.model.dictionary;
 
+import org.icgc.dcc.model.dictionary.visitor.DictionaryElement;
+import org.icgc.dcc.model.dictionary.visitor.DictionaryVisitor;
+
 import com.google.code.morphia.annotations.Embedded;
 import com.mongodb.BasicDBObject;
 
@@ -26,7 +29,7 @@ import com.mongodb.BasicDBObject;
  * TODO: possibly to some file schemata too in the future
  */
 @Embedded
-public class Restriction {
+public class Restriction implements DictionaryElement {
 
   private String type;
 
@@ -42,6 +45,11 @@ public class Restriction {
     // TODO: visitor way
     this.type = restriction.type;
     this.config = new BasicDBObject(restriction.config);
+  }
+
+  @Override
+  public void accept(DictionaryVisitor dictionaryVisitor) {
+    dictionaryVisitor.visit(this);
   }
 
   public String getType() {

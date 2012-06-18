@@ -20,13 +20,16 @@ package org.icgc.dcc.model.dictionary;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.icgc.dcc.model.dictionary.visitor.DictionaryElement;
+import org.icgc.dcc.model.dictionary.visitor.DictionaryVisitor;
+
 import com.google.code.morphia.annotations.Embedded;
 
 /**
  * Describes a field that has {@code Restriction}s and that is part of a {@code FileSchema}
  */
 @Embedded
-public class Field {
+public class Field implements DictionaryElement {
 
   private String name;
 
@@ -51,6 +54,14 @@ public class Field {
     for(Restriction restriction : field.restrictions) {
       this.restrictions.add(new Restriction(restriction));
     }
+  }
+
+  @Override
+  public void accept(DictionaryVisitor dictionaryVisitor) {
+    for(Restriction restriction : restrictions) {
+      restriction.accept(dictionaryVisitor);
+    }
+    dictionaryVisitor.visit(this);
   }
 
   public String getName() {

@@ -15,39 +15,43 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.legacy;
+package org.icgc.dcc.model.dictionary.visitor;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.Map.Entry;
-
-import org.apache.commons.io.FileUtils;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.junit.Test;
+import org.icgc.dcc.model.dictionary.Dictionary;
+import org.icgc.dcc.model.dictionary.Field;
+import org.icgc.dcc.model.dictionary.FileSchema;
+import org.icgc.dcc.model.dictionary.Restriction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
+ * Visits every {@code Dictionary}-related objects and creates a clone for the corresponding object
  * 
+ * TODO: in progress
  */
-public class DictionaryConverterTest {
+public class DictionaryCloneVisitor extends BaseDictionaryVisitor {
 
-  @Test
-  public void test() throws IOException {
-    DictionaryConverter dc = new DictionaryConverter();
-    dc.readDictionary("src/test/resources/converter/source/");
-    dc.saveToJSON("src/test/resources/dictionary.json");
+  private static final Logger log = LoggerFactory.getLogger(DictionaryCloneVisitor.class);
 
-    File testFile = new File("src/test/resources/dictionary.json");
-    File refFile = new File("src/main/resources/dictionary.json");
+  @Override
+  public void visit(Dictionary dictionary) {
+    log.info("clone visiting dictionary " + dictionary.getVersion());
+    // TODO
+  }
 
-    ObjectMapper mapper = new ObjectMapper();
-    JsonNode testTree = mapper.readTree(FileUtils.readFileToString(testFile));
-    JsonNode refTree = mapper.readTree(FileUtils.readFileToString(refFile));
+  @Override
+  public void visit(FileSchema fileSchema) {
+    log.info("clone visiting fileSchema " + fileSchema.getName());
+  }
 
-    Iterator<Entry<String, JsonNode>> testRoot = testTree.getFields();
-    Iterator<Entry<String, JsonNode>> refRoot = refTree.getFields();
+  @Override
+  public void visit(Field field) {
+    log.info("clone visiting field " + field.getName());
+  }
 
+  @Override
+  public void visit(Restriction restriction) {
+    log.info("clone visiting restriction " + restriction.getType());
   }
 
 }

@@ -10,6 +10,7 @@ import org.icgc.dcc.model.Project;
 import org.icgc.dcc.model.Release;
 import org.icgc.dcc.model.Submission;
 import org.icgc.dcc.model.SubmissionState;
+import org.icgc.dcc.model.dictionary.Dictionary;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -48,6 +49,7 @@ public class ReleaseServiceTest {
       submission.setProjectKey(project.getProjectKey());
 
       release.getSubmissions().add(submission);
+      release.setDictionary(new Dictionary());
 
       // Create the releaseService and populate it with the initial release
       releaseService = new ReleaseService(morphia, ds);
