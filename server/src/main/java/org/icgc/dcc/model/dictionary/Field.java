@@ -44,24 +44,13 @@ public class Field implements DictionaryElement {
     this.restrictions = new ArrayList<Restriction>();
   }
 
-  public Field(Field field) {
-    this();
-
-    // TODO: visitor way
-    this.name = field.name;
-    this.label = field.label;
-    this.valueType = field.valueType;
-    for(Restriction restriction : field.restrictions) {
-      this.restrictions.add(new Restriction(restriction));
-    }
-  }
-
   @Override
   public void accept(DictionaryVisitor dictionaryVisitor) {
+    dictionaryVisitor.visit(this);
+
     for(Restriction restriction : restrictions) {
       restriction.accept(dictionaryVisitor);
     }
-    dictionaryVisitor.visit(this);
   }
 
   public String getName() {
@@ -94,6 +83,10 @@ public class Field implements DictionaryElement {
 
   public void setRestrictions(List<Restriction> restrictions) {
     this.restrictions = restrictions;
+  }
+
+  public void addRestriction(Restriction restriction) {
+    this.restrictions.add(restriction);
   }
 
   public boolean isUnique() {
