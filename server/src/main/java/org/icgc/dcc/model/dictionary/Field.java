@@ -95,13 +95,4 @@ public class Field implements DictionaryElement {
   public void setRestrictions(List<Restriction> restrictions) {
     this.restrictions = restrictions;
   }
-
-  public boolean isUnique() {
-    for(Restriction restriction : restrictions) {
-      if(restriction.getType().equals("primary-key")) {
-        return true;
-      }
-    }
-    return false;
-  }
 }
