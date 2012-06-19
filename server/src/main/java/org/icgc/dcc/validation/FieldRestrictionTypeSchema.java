@@ -21,9 +21,9 @@ import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 
-public class FieldRestrictionSchema {
+public class FieldRestrictionTypeSchema {
 
-  public enum Type {
+  public enum ParameterType {
     NUMBER, TEXT, FIELD_REFERENCE
   }
 
@@ -31,21 +31,21 @@ public class FieldRestrictionSchema {
 
     private final String key;
 
-    private final Type type;
+    private final ParameterType type;
 
     private final String description;
 
     private final boolean repeated;
 
-    public FieldRestrictionParameter(String key, Type type) {
+    public FieldRestrictionParameter(String key, ParameterType type) {
       this(key, type, null, false);
     }
 
-    public FieldRestrictionParameter(String key, Type type, String description) {
+    public FieldRestrictionParameter(String key, ParameterType type, String description) {
       this(key, type, description, false);
     }
 
-    public FieldRestrictionParameter(String key, Type type, String description, boolean repeated) {
+    public FieldRestrictionParameter(String key, ParameterType type, String description, boolean repeated) {
       this.key = key;
       this.type = type;
       this.description = description;
@@ -56,7 +56,7 @@ public class FieldRestrictionSchema {
       return key;
     }
 
-    public Type getType() {
+    public ParameterType getType() {
       return type;
     }
 
@@ -72,7 +72,7 @@ public class FieldRestrictionSchema {
 
   private final List<FieldRestrictionParameter> parameters;
 
-  public FieldRestrictionSchema(FieldRestrictionParameter... parameters) {
+  public FieldRestrictionTypeSchema(FieldRestrictionParameter... parameters) {
     this.parameters = ImmutableList.copyOf(parameters);
   }
 

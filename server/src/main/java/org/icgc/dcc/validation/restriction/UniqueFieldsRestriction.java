@@ -1,9 +1,14 @@
-package org.icgc.dcc.validation;
+package org.icgc.dcc.validation.restriction;
 
 import java.util.Iterator;
 import java.util.List;
 
 import org.icgc.dcc.model.dictionary.Field;
+import org.icgc.dcc.validation.FieldRestriction;
+import org.icgc.dcc.validation.FieldRestrictionType;
+import org.icgc.dcc.validation.FieldRestrictionTypeSchema;
+import org.icgc.dcc.validation.TupleState;
+import org.icgc.dcc.validation.ValidationFields;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -22,7 +27,7 @@ import cascading.tuple.TupleEntry;
 import com.google.common.collect.ImmutableList;
 import com.mongodb.DBObject;
 
-public class UniqueFieldsRestriction implements FieldRestriction, PipeExtender {
+public class UniqueFieldsRestriction implements FieldRestriction {
 
   private static final String NAME = "unique";
 
@@ -55,7 +60,7 @@ public class UniqueFieldsRestriction implements FieldRestriction, PipeExtender {
     return pipe;
   }
 
-  public static class Factory implements FieldRestrictionFactory {
+  public static class Type implements FieldRestrictionType {
 
     @Override
     public String getType() {
@@ -63,7 +68,7 @@ public class UniqueFieldsRestriction implements FieldRestriction, PipeExtender {
     }
 
     @Override
-    public FieldRestrictionSchema getSchema() {
+    public FieldRestrictionTypeSchema getSchema() {
       return null;
     }
 

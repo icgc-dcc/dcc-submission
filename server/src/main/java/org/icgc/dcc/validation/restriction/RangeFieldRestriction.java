@@ -1,8 +1,12 @@
-package org.icgc.dcc.validation;
+package org.icgc.dcc.validation.restriction;
 
 import org.icgc.dcc.model.dictionary.Field;
-import org.icgc.dcc.validation.FieldRestrictionSchema.FieldRestrictionParameter;
-import org.icgc.dcc.validation.FieldRestrictionSchema.Type;
+import org.icgc.dcc.validation.FieldRestriction;
+import org.icgc.dcc.validation.FieldRestrictionType;
+import org.icgc.dcc.validation.FieldRestrictionTypeSchema;
+import org.icgc.dcc.validation.FieldRestrictionTypeSchema.FieldRestrictionParameter;
+import org.icgc.dcc.validation.FieldRestrictionTypeSchema.ParameterType;
+import org.icgc.dcc.validation.ValidationFields;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -14,7 +18,7 @@ import cascading.tuple.Fields;
 
 import com.mongodb.DBObject;
 
-public class RangeFieldRestriction implements FieldRestriction, PipeExtender {
+public class RangeFieldRestriction implements FieldRestriction {
 
   private static final String NAME = "range";
 
@@ -45,11 +49,11 @@ public class RangeFieldRestriction implements FieldRestriction, PipeExtender {
     return new Each(pipe, new ValidationFields(field), new RangeFunction(min, max), Fields.REPLACE);
   }
 
-  public static class Factory implements FieldRestrictionFactory {
+  public static class Type implements FieldRestrictionType {
 
-    private final FieldRestrictionSchema schema = new FieldRestrictionSchema(//
-        new FieldRestrictionParameter("min", Type.NUMBER, "minimum value (inclusive)"), //
-        new FieldRestrictionParameter("max", Type.NUMBER, "maximu value (exclusive)"));
+    private final FieldRestrictionTypeSchema schema = new FieldRestrictionTypeSchema(//
+        new FieldRestrictionParameter("min", ParameterType.NUMBER, "minimum value (inclusive)"), //
+        new FieldRestrictionParameter("max", ParameterType.NUMBER, "maximum value (inclusive)"));
 
     @Override
     public String getType() {
@@ -62,7 +66,7 @@ public class RangeFieldRestriction implements FieldRestriction, PipeExtender {
     }
 
     @Override
-    public FieldRestrictionSchema getSchema() {
+    public FieldRestrictionTypeSchema getSchema() {
       return schema;
     }
 

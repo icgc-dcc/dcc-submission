@@ -1,11 +1,16 @@
-package org.icgc.dcc.validation;
+package org.icgc.dcc.validation.restriction;
 
 import java.util.Arrays;
 import java.util.Set;
 
 import org.icgc.dcc.model.dictionary.Field;
-import org.icgc.dcc.validation.FieldRestrictionSchema.FieldRestrictionParameter;
-import org.icgc.dcc.validation.FieldRestrictionSchema.Type;
+import org.icgc.dcc.validation.FieldRestriction;
+import org.icgc.dcc.validation.FieldRestrictionType;
+import org.icgc.dcc.validation.FieldRestrictionTypeSchema;
+import org.icgc.dcc.validation.FieldRestrictionTypeSchema.FieldRestrictionParameter;
+import org.icgc.dcc.validation.FieldRestrictionTypeSchema.ParameterType;
+import org.icgc.dcc.validation.PipeExtender;
+import org.icgc.dcc.validation.ValidationFields;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -46,10 +51,10 @@ public class DiscreteValuesFieldRestriction implements FieldRestriction, PipeExt
     return new Each(pipe, new ValidationFields(field), new InValuesFunction(values), Fields.REPLACE);
   }
 
-  public static class Factory implements FieldRestrictionFactory {
+  public static class Type implements FieldRestrictionType {
 
-    private final FieldRestrictionSchema schema = new FieldRestrictionSchema(//
-        new FieldRestrictionParameter("values", Type.TEXT, "list of allowable values (e.g.: 1,2,3)", true));
+    private final FieldRestrictionTypeSchema schema = new FieldRestrictionTypeSchema(//
+        new FieldRestrictionParameter("values", ParameterType.TEXT, "list of allowable values (e.g.: 1,2,3)", true));
 
     @Override
     public String getType() {
@@ -62,7 +67,7 @@ public class DiscreteValuesFieldRestriction implements FieldRestriction, PipeExt
     }
 
     @Override
-    public FieldRestrictionSchema getSchema() {
+    public FieldRestrictionTypeSchema getSchema() {
       return schema;
     }
 

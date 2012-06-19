@@ -1,8 +1,11 @@
-package org.icgc.dcc.validation;
+package org.icgc.dcc.validation.restriction;
 
 import static com.google.common.base.Preconditions.checkState;
 
 import org.icgc.dcc.model.dictionary.Field;
+import org.icgc.dcc.validation.FieldRestriction;
+import org.icgc.dcc.validation.FieldRestrictionType;
+import org.icgc.dcc.validation.FieldRestrictionTypeSchema;
 
 import cascading.pipe.Pipe;
 
@@ -36,7 +39,7 @@ public class ForeingKeyFieldRestriction implements FieldRestriction {
     return null;
   }
 
-  public static class Factory implements FieldRestrictionFactory {
+  public static class Factory implements FieldRestrictionType {
 
     @Override
     public String getType() {
@@ -44,7 +47,7 @@ public class ForeingKeyFieldRestriction implements FieldRestriction {
     }
 
     @Override
-    public FieldRestrictionSchema getSchema() {
+    public FieldRestrictionTypeSchema getSchema() {
       return null;
     }
 

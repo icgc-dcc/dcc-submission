@@ -22,7 +22,15 @@ import cascading.pipe.Pipe;
 /**
  * Extends a {@code Pipe}
  */
-interface PipeExtender {
+public interface PipeExtender {
+
+  public PipeExtender IDENTITY = new PipeExtender() {
+
+    @Override
+    public Pipe extend(Pipe pipe) {
+      return pipe;
+    }
+  };
 
   public Pipe extend(Pipe pipe);
 

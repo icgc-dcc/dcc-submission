@@ -4,13 +4,13 @@ import org.icgc.dcc.model.dictionary.Field;
 
 import com.mongodb.DBObject;
 
-public interface FieldRestrictionFactory {
+public interface FieldRestrictionType {
 
   public String getType();
 
-  public boolean builds(String name);
+  public boolean builds(String type);
 
-  public FieldRestrictionSchema getSchema();
+  public FieldRestrictionTypeSchema getSchema();
 
   public FieldRestriction build(Field field, DBObject configuration);
 
