@@ -163,35 +163,23 @@ public class DictionaryConverter {
     if(lineIterator.hasNext()) {
       this.readTSVHeader(lineIterator.next());
     }
-    // Read field
+    // initialize unique fields
     List<String> uniqueFields = new ArrayList<String>();
+    fileSchema.setUniqueFields(uniqueFields);
+    // Read field
     List<Field> fields = new ArrayList<Field>();
     while(lineIterator.hasNext()) {
-      Field field = this.readField(lineIterator.next());
+      Field field = this.readField(lineIterator.next(), fileSchema);
       fields.add(field);
-      if(isUnique(field)) {
-        uniqueFields.add(field.getName());
-      }
     }
     fileSchema.setFields(fields);
-
-    fileSchema.setUniqueFields(uniqueFields);
 
     fileSchema.setRole(FileSchemaRole.SUBMISSION);
 
     return fileSchema;
   }
 
-  public boolean isUnique(Field field) {
-    for(Restriction restriction : field.getRestrictions()) {
-      if(restriction.getType().equals("primary-key")) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  private Field readField(String line) {
+  private Field readField(String line, FileSchema fileSchema) {
     Field field = new Field();
     Iterable<String> values = Splitter.on('\t').trimResults().omitEmptyStrings().split(line);
 
@@ -213,12 +201,10 @@ public class DictionaryConverter {
       restrictions.add(requiredRestriction);
     }
 
-    // add primary-key restriction
+    // add unique field if primary key is true
     String primaryKey = iterator.next();
     if(Boolean.parseBoolean(primaryKey)) {
-      Restriction primaryKeyRestriction = new Restriction();
-      primaryKeyRestriction.setType("primary-key");
-      restrictions.add(primaryKeyRestriction);
+      fileSchema.getUniqueFields().add(name);
     }
 
     field.setRestrictions(restrictions);

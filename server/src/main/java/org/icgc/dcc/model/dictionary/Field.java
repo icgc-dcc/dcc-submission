@@ -95,5 +95,4 @@ public class Field implements DictionaryElement {
   public void setRestrictions(List<Restriction> restrictions) {
     this.restrictions = restrictions;
   }
-
 }

@@ -161,9 +161,6 @@ public class DictionaryService {
     if(oldCodeList == null) {
       throw new DictionaryServiceException("cannot perform update to non-existant codeList: " + name);
     }
-    if(oldCodeList.getTerms().equals(newCodeList.getTerms()) == false) {
-      throw new DictionaryServiceException("cannot perform update on codelists with different terms");
-    }
 
     oldCodeList.setLabel(newCodeList.getLabel());
     Query<CodeList> updateQuery = this.datastore.createQuery(CodeList.class).filter("name" + " = ", name);
