@@ -30,8 +30,15 @@ public interface PipeExtender {
     public Pipe extend(Pipe pipe) {
       return pipe;
     }
+
+    @Override
+    public String describe() {
+      return "";
+    }
   };
 
   public Pipe extend(Pipe pipe);
+
+  public String describe();
 
 }

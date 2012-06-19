@@ -1,10 +1,11 @@
 package org.icgc.dcc.validation.restriction;
 
 import org.icgc.dcc.model.dictionary.Field;
+import org.icgc.dcc.model.dictionary.Restriction;
 import org.icgc.dcc.model.dictionary.ValueType;
-import org.icgc.dcc.validation.FieldRestriction;
-import org.icgc.dcc.validation.FieldRestrictionType;
 import org.icgc.dcc.validation.FieldRestrictionTypeSchema;
+import org.icgc.dcc.validation.PipeExtender;
+import org.icgc.dcc.validation.RestrictionType;
 import org.icgc.dcc.validation.ValidationFields;
 
 import cascading.flow.FlowProcess;
@@ -16,9 +17,7 @@ import cascading.pipe.Pipe;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 
-import com.mongodb.DBObject;
-
-public class ValueTypeFieldRestriction implements FieldRestriction {
+public class ValueTypeFieldRestriction implements PipeExtender {
 
   private static final String NAME = "value-type";
 
@@ -32,12 +31,7 @@ public class ValueTypeFieldRestriction implements FieldRestriction {
   }
 
   @Override
-  public String getName() {
-    return NAME;
-  }
-
-  @Override
-  public String getLabel() {
+  public String describe() {
     return String.format("valueType[%s]", type);
   }
 
@@ -46,7 +40,7 @@ public class ValueTypeFieldRestriction implements FieldRestriction {
     return new Each(pipe, new ValidationFields(field), new ValueTypeFunction(), Fields.REPLACE);
   }
 
-  public static class Type implements FieldRestrictionType {
+  public static class Type implements RestrictionType {
 
     @Override
     public String getType() {
@@ -64,7 +58,7 @@ public class ValueTypeFieldRestriction implements FieldRestriction {
     }
 
     @Override
-    public FieldRestriction build(Field field, DBObject configuration) {
+    public PipeExtender build(Field field, Restriction restriction) {
       return new ValueTypeFieldRestriction(field.getName(), field.getValueType());
     }
 

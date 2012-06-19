@@ -4,9 +4,10 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.icgc.dcc.model.dictionary.Field;
-import org.icgc.dcc.validation.FieldRestriction;
-import org.icgc.dcc.validation.FieldRestrictionType;
+import org.icgc.dcc.model.dictionary.Restriction;
 import org.icgc.dcc.validation.FieldRestrictionTypeSchema;
+import org.icgc.dcc.validation.PipeExtender;
+import org.icgc.dcc.validation.RestrictionType;
 import org.icgc.dcc.validation.TupleState;
 import org.icgc.dcc.validation.ValidationFields;
 
@@ -27,7 +28,7 @@ import cascading.tuple.TupleEntry;
 import com.google.common.collect.ImmutableList;
 import com.mongodb.DBObject;
 
-public class UniqueFieldsRestriction implements FieldRestriction {
+public class UniqueFieldsRestriction implements PipeExtender {
 
   private static final String NAME = "unique";
 
@@ -38,12 +39,7 @@ public class UniqueFieldsRestriction implements FieldRestriction {
   }
 
   @Override
-  public String getName() {
-    return NAME;
-  }
-
-  @Override
-  public String getLabel() {
+  public String describe() {
     return String.format("unique[%s]", fields);
   }
 
@@ -60,7 +56,7 @@ public class UniqueFieldsRestriction implements FieldRestriction {
     return pipe;
   }
 
-  public static class Type implements FieldRestrictionType {
+  public static class Type implements RestrictionType {
 
     @Override
     public String getType() {
@@ -78,7 +74,8 @@ public class UniqueFieldsRestriction implements FieldRestriction {
     }
 
     @Override
-    public UniqueFieldsRestriction build(Field field, DBObject configuration) {
+    public UniqueFieldsRestriction build(Field field, Restriction restriction) {
+      DBObject configuration = restriction.getConfig();
       String[] fields = (String[]) configuration.get("fields");
       return new UniqueFieldsRestriction(fields);
     }

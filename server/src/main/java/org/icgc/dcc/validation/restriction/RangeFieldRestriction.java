@@ -1,11 +1,12 @@
 package org.icgc.dcc.validation.restriction;
 
 import org.icgc.dcc.model.dictionary.Field;
-import org.icgc.dcc.validation.FieldRestriction;
-import org.icgc.dcc.validation.FieldRestrictionType;
+import org.icgc.dcc.model.dictionary.Restriction;
 import org.icgc.dcc.validation.FieldRestrictionTypeSchema;
 import org.icgc.dcc.validation.FieldRestrictionTypeSchema.FieldRestrictionParameter;
 import org.icgc.dcc.validation.FieldRestrictionTypeSchema.ParameterType;
+import org.icgc.dcc.validation.PipeExtender;
+import org.icgc.dcc.validation.RestrictionType;
 import org.icgc.dcc.validation.ValidationFields;
 
 import cascading.flow.FlowProcess;
@@ -18,7 +19,7 @@ import cascading.tuple.Fields;
 
 import com.mongodb.DBObject;
 
-public class RangeFieldRestriction implements FieldRestriction {
+public class RangeFieldRestriction implements PipeExtender {
 
   private static final String NAME = "range";
 
@@ -35,12 +36,7 @@ public class RangeFieldRestriction implements FieldRestriction {
   }
 
   @Override
-  public String getName() {
-    return NAME;
-  }
-
-  @Override
-  public String getLabel() {
+  public String describe() {
     return String.format("range[%d-%d]", min, max);
   }
 
@@ -49,7 +45,7 @@ public class RangeFieldRestriction implements FieldRestriction {
     return new Each(pipe, new ValidationFields(field), new RangeFunction(min, max), Fields.REPLACE);
   }
 
-  public static class Type implements FieldRestrictionType {
+  public static class Type implements RestrictionType {
 
     private final FieldRestrictionTypeSchema schema = new FieldRestrictionTypeSchema(//
         new FieldRestrictionParameter("min", ParameterType.NUMBER, "minimum value (inclusive)"), //
@@ -71,7 +67,8 @@ public class RangeFieldRestriction implements FieldRestriction {
     }
 
     @Override
-    public RangeFieldRestriction build(Field field, DBObject configuration) {
+    public RangeFieldRestriction build(Field field, Restriction restriction) {
+      DBObject configuration = restriction.getConfig();
       Number min = (Number) configuration.get("min");
       Number max = (Number) configuration.get("max");
       return new RangeFieldRestriction(field.getName(), min, max);

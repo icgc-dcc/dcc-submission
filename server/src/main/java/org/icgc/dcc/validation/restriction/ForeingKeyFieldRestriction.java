@@ -3,15 +3,16 @@ package org.icgc.dcc.validation.restriction;
 import static com.google.common.base.Preconditions.checkState;
 
 import org.icgc.dcc.model.dictionary.Field;
-import org.icgc.dcc.validation.FieldRestriction;
-import org.icgc.dcc.validation.FieldRestrictionType;
+import org.icgc.dcc.model.dictionary.Restriction;
 import org.icgc.dcc.validation.FieldRestrictionTypeSchema;
+import org.icgc.dcc.validation.PipeExtender;
+import org.icgc.dcc.validation.RestrictionType;
 
 import cascading.pipe.Pipe;
 
 import com.mongodb.DBObject;
 
-public class ForeingKeyFieldRestriction implements FieldRestriction {
+public class ForeingKeyFieldRestriction implements PipeExtender {
 
   private static final String NAME = "foreign-key";
 
@@ -25,12 +26,7 @@ public class ForeingKeyFieldRestriction implements FieldRestriction {
   }
 
   @Override
-  public String getName() {
-    return NAME;
-  }
-
-  @Override
-  public String getLabel() {
+  public String describe() {
     return String.format("fk[%s:%s]", schema, field);
   }
 
@@ -39,7 +35,7 @@ public class ForeingKeyFieldRestriction implements FieldRestriction {
     return null;
   }
 
-  public static class Factory implements FieldRestrictionType {
+  public static class Type implements RestrictionType {
 
     @Override
     public String getType() {
@@ -57,7 +53,8 @@ public class ForeingKeyFieldRestriction implements FieldRestriction {
     }
 
     @Override
-    public FieldRestriction build(Field field, DBObject configuration) {
+    public PipeExtender build(Field field, Restriction restriction) {
+      DBObject configuration = restriction.getConfig();
       checkState(configuration.containsField("schema"));
       checkState(configuration.containsField("field"));
 

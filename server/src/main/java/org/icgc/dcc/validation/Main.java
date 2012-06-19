@@ -10,7 +10,7 @@ import org.icgc.dcc.model.dictionary.Dictionary;
 import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.FileSchema;
 import org.icgc.dcc.model.dictionary.Restriction;
-import org.icgc.dcc.validation.restriction.DiscreteValuesFieldRestriction;
+import org.icgc.dcc.validation.restriction.DiscreteValuesPipeExtender;
 import org.icgc.dcc.validation.restriction.UniqueFieldsRestriction;
 
 import cascading.flow.Flow;
@@ -38,8 +38,7 @@ import com.mongodb.BasicDBObject;
 
 public class Main {
 
-  static private List<? extends FieldRestrictionType> factories = ImmutableList
-      .of(new DiscreteValuesFieldRestriction.Type());
+  static private List<? extends RestrictionType> factories = ImmutableList.of(new DiscreteValuesPipeExtender.Type());
 
   public static void main(String[] args) throws JsonProcessingException, IOException {
 
@@ -52,7 +51,7 @@ public class Main {
       pipe = new Each(pipe, new AddValidationFieldsFunction(), Fields.ALL);
       BasicDBObject config = new BasicDBObject();
       config.put("fields", fs.getUniqueFields().toArray(new String[] {}));
-      pipe = new UniqueFieldsRestriction.Type().build(null, config).extend(pipe);
+      pipe = new UniqueFieldsRestriction.Type().build(null, null).extend(pipe);
       for(Field f : fs.getFields()) {
         for(Restriction r : f.getRestrictions()) {
           pipe = getFieldRestriction(f, r).extend(pipe);
@@ -66,9 +65,9 @@ public class Main {
   }
 
   private static PipeExtender getFieldRestriction(Field field, Restriction r) {
-    for(FieldRestrictionType f : factories) {
+    for(RestrictionType f : factories) {
       if(f.builds(r.getType())) {
-        return f.build(field, r.getConfig());
+        return f.build(field, r);
       }
     }
     return PipeExtender.IDENTITY;
