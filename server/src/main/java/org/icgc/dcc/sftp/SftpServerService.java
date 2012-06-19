@@ -21,6 +21,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.IOException;
 
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.sshd.SshServer;
 import org.apache.sshd.common.NamedFactory;
 import org.apache.sshd.common.Session;
@@ -49,7 +50,7 @@ public class SftpServerService extends AbstractService {
   private final SshServer sshd;
 
   @Inject
-  public SftpServerService(Integer port, final UsernamePasswordAuthenticator passwordAuthenticator) {
+  public SftpServerService(Integer port, final UsernamePasswordAuthenticator passwordAuthenticator, final FileSystem fs) {
     checkArgument(passwordAuthenticator != null);
     checkArgument(port != null);
 
@@ -67,8 +68,7 @@ public class SftpServerService extends AbstractService {
     sshd.setFileSystemFactory(new FileSystemFactory() {
       @Override
       public FileSystemView createFileSystemView(Session session) throws IOException {
-        // TODO Hook in to DCC filesystem classes via HdfsFileSystemView
-        return null;
+        return new HdfsFileSystemView(fs);
       }
     });
     sshd.setSubsystemFactories(ImmutableList.<NamedFactory<Command>> of(new SftpSubsystem.Factory()));
