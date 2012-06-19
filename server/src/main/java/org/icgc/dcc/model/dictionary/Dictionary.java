@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.model.dictionary;
 
-import static com.google.common.base.Preconditions.checkState;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -32,6 +30,9 @@ import org.icgc.dcc.model.dictionary.visitor.DictionaryVisitor;
 import com.google.code.morphia.annotations.Entity;
 import com.google.code.morphia.annotations.Indexed;
 import com.google.code.morphia.annotations.PrePersist;
+import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 
 /**
  * Describes a dictionary that contains {@code FileSchema}ta and that may be used by some releases
@@ -116,16 +117,23 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
     this.files = files;
   }
 
-  public FileSchema getFileSchema(String fileName) {
-    FileSchema result = null;
+  public Optional<FileSchema> fileSchema(final String fileName) {
+    return Iterables.tryFind(this.files, new Predicate<FileSchema>() {
+
+      @Override
+      public boolean apply(FileSchema input) {
+        return input.getName().equals(fileName);
+      }
+    });
+  }
+
+  public boolean hasFileSchema(String fileName) {
     for(FileSchema fileSchema : this.files) {
       if(fileSchema.getName().equals(fileName)) {
-        result = fileSchema;
-        break;
+        return true;
       }
     }
-    checkState(result != null);
-    return result;
+    return false;
   }
 
 }

@@ -144,4 +144,12 @@ public class FileSchema implements DictionaryElement {
     return name;
   }
 
+  public boolean hasField(String fieldName) {
+    for(Field field : this.fields) {
+      if(field.getName().equals(fieldName)) {
+        return true;
+      }
+    }
+    return false;
+  }
 }
