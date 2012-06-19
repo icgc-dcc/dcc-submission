@@ -120,7 +120,6 @@ public class DictionaryConverter {
     Document doc = builder.parse(xmlFile);
 
     NodeList sourceTables = doc.getElementsByTagName("sourcetable");
-    // NodeList relations = doc.getElementsByTagName("relation");
 
     for(int i = 0; i < sourceTables.getLength(); i++) {
       Element node = (Element) sourceTables.item(i);
@@ -142,10 +141,6 @@ public class DictionaryConverter {
       }
 
     }
-
-    /*
-     * for(int i = 0; i < relations.getLength(); i++) { Node node = relations.item(i); }
-     */
   }
 
   private FileSchema readFileSchema(File tsvFile) throws IOException {
