@@ -60,6 +60,8 @@ public class DictionaryConverter {
   public void saveToJSON(String fileName) throws JsonGenerationException, JsonMappingException, IOException {
     ObjectMapper mapper = new ObjectMapper();
     mapper.writeValue(new File(fileName), dictionary);
+
+    mapper.readValue(new File(fileName), Dictionary.class);
   }
 
   public Dictionary readDictionary(String folder) throws IOException, XPathExpressionException,
@@ -167,7 +169,7 @@ public class DictionaryConverter {
     while(lineIterator.hasNext()) {
       Field field = this.readField(lineIterator.next());
       fields.add(field);
-      if(field.isUnique()) {
+      if(isUnique(field)) {
         uniqueFields.add(field.getName());
       }
     }
@@ -178,6 +180,15 @@ public class DictionaryConverter {
     fileSchema.setRole(FileSchemaRole.SUBMISSION);
 
     return fileSchema;
+  }
+
+  public boolean isUnique(Field field) {
+    for(Restriction restriction : field.getRestrictions()) {
+      if(restriction.getType().equals("primary-key")) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private Field readField(String line) {
