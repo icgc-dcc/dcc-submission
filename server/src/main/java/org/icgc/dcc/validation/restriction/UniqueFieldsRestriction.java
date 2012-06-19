@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.Restriction;
-import org.icgc.dcc.validation.FieldRestrictionTypeSchema;
+import org.icgc.dcc.validation.RestrictionTypeSchema;
 import org.icgc.dcc.validation.PipeExtender;
 import org.icgc.dcc.validation.RestrictionType;
 import org.icgc.dcc.validation.TupleState;
@@ -64,7 +64,7 @@ public class UniqueFieldsRestriction implements PipeExtender {
     }
 
     @Override
-    public FieldRestrictionTypeSchema getSchema() {
+    public RestrictionTypeSchema getSchema() {
       return null;
     }
 

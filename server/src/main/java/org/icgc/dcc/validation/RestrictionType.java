@@ -9,7 +9,7 @@ public interface RestrictionType {
 
   public boolean builds(String type);
 
-  public FieldRestrictionTypeSchema getSchema();
+  public RestrictionTypeSchema getSchema();
 
   public PipeExtender build(Field field, Restriction restriction);
 

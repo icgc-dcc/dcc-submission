@@ -21,7 +21,7 @@ import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 
-public class FieldRestrictionTypeSchema {
+public class RestrictionTypeSchema {
 
   public enum ParameterType {
     NUMBER, TEXT, FIELD_REFERENCE
@@ -72,7 +72,7 @@ public class FieldRestrictionTypeSchema {
 
   private final List<FieldRestrictionParameter> parameters;
 
-  public FieldRestrictionTypeSchema(FieldRestrictionParameter... parameters) {
+  public RestrictionTypeSchema(FieldRestrictionParameter... parameters) {
     this.parameters = ImmutableList.copyOf(parameters);
   }
 

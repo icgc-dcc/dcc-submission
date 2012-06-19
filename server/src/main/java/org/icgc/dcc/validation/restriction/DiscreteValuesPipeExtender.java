@@ -5,11 +5,11 @@ import java.util.Set;
 
 import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.Restriction;
-import org.icgc.dcc.validation.FieldRestrictionTypeSchema;
-import org.icgc.dcc.validation.FieldRestrictionTypeSchema.FieldRestrictionParameter;
-import org.icgc.dcc.validation.FieldRestrictionTypeSchema.ParameterType;
 import org.icgc.dcc.validation.PipeExtender;
 import org.icgc.dcc.validation.RestrictionType;
+import org.icgc.dcc.validation.RestrictionTypeSchema;
+import org.icgc.dcc.validation.RestrictionTypeSchema.FieldRestrictionParameter;
+import org.icgc.dcc.validation.RestrictionTypeSchema.ParameterType;
 import org.icgc.dcc.validation.ValidationFields;
 
 import cascading.flow.FlowProcess;
@@ -47,7 +47,7 @@ public class DiscreteValuesPipeExtender implements PipeExtender {
 
   public static class Type implements RestrictionType {
 
-    private final FieldRestrictionTypeSchema schema = new FieldRestrictionTypeSchema(//
+    private final RestrictionTypeSchema schema = new RestrictionTypeSchema(//
         new FieldRestrictionParameter("values", ParameterType.TEXT, "list of allowable values (e.g.: 1,2,3)", true));
 
     @Override
@@ -61,7 +61,7 @@ public class DiscreteValuesPipeExtender implements PipeExtender {
     }
 
     @Override
-    public FieldRestrictionTypeSchema getSchema() {
+    public RestrictionTypeSchema getSchema() {
       return schema;
     }
 

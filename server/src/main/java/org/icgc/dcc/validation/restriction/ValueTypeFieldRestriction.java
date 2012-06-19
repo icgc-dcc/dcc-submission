@@ -3,7 +3,7 @@ package org.icgc.dcc.validation.restriction;
 import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.Restriction;
 import org.icgc.dcc.model.dictionary.ValueType;
-import org.icgc.dcc.validation.FieldRestrictionTypeSchema;
+import org.icgc.dcc.validation.RestrictionTypeSchema;
 import org.icgc.dcc.validation.PipeExtender;
 import org.icgc.dcc.validation.RestrictionType;
 import org.icgc.dcc.validation.ValidationFields;
@@ -48,7 +48,7 @@ public class ValueTypeFieldRestriction implements PipeExtender {
     }
 
     @Override
-    public FieldRestrictionTypeSchema getSchema() {
+    public RestrictionTypeSchema getSchema() {
       return null;
     }
 

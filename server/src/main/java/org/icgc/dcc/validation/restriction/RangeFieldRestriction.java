@@ -2,9 +2,9 @@ package org.icgc.dcc.validation.restriction;
 
 import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.Restriction;
-import org.icgc.dcc.validation.FieldRestrictionTypeSchema;
-import org.icgc.dcc.validation.FieldRestrictionTypeSchema.FieldRestrictionParameter;
-import org.icgc.dcc.validation.FieldRestrictionTypeSchema.ParameterType;
+import org.icgc.dcc.validation.RestrictionTypeSchema;
+import org.icgc.dcc.validation.RestrictionTypeSchema.FieldRestrictionParameter;
+import org.icgc.dcc.validation.RestrictionTypeSchema.ParameterType;
 import org.icgc.dcc.validation.PipeExtender;
 import org.icgc.dcc.validation.RestrictionType;
 import org.icgc.dcc.validation.ValidationFields;
@@ -47,7 +47,7 @@ public class RangeFieldRestriction implements PipeExtender {
 
   public static class Type implements RestrictionType {
 
-    private final FieldRestrictionTypeSchema schema = new FieldRestrictionTypeSchema(//
+    private final RestrictionTypeSchema schema = new RestrictionTypeSchema(//
         new FieldRestrictionParameter("min", ParameterType.NUMBER, "minimum value (inclusive)"), //
         new FieldRestrictionParameter("max", ParameterType.NUMBER, "maximum value (inclusive)"));
 
@@ -62,7 +62,7 @@ public class RangeFieldRestriction implements PipeExtender {
     }
 
     @Override
-    public FieldRestrictionTypeSchema getSchema() {
+    public RestrictionTypeSchema getSchema() {
       return schema;
     }
 
