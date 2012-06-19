@@ -47,6 +47,8 @@ public class FileSchema implements DictionaryElement {
 
   private List<Field> fields;
 
+  private Relation relation;
+
   public FileSchema() {
 
   }
@@ -151,5 +153,19 @@ public class FileSchema implements DictionaryElement {
       }
     }
     return false;
+  }
+
+  /**
+   * @return the relation
+   */
+  public Relation getRelation() {
+    return relation;
+  }
+
+  /**
+   * @param relation the relation to set
+   */
+  public void setRelation(Relation relation) {
+    this.relation = relation;
   }
 }

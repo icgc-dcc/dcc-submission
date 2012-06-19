@@ -20,6 +20,7 @@ package org.icgc.dcc.model.dictionary.visitor;
 import org.icgc.dcc.model.dictionary.Dictionary;
 import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.FileSchema;
+import org.icgc.dcc.model.dictionary.Relation;
 import org.icgc.dcc.model.dictionary.Restriction;
 
 /**
@@ -44,4 +45,7 @@ public abstract class BaseDictionaryVisitor implements DictionaryVisitor {
   public void visit(Restriction restriction) {
   }
 
+  @Override
+  public void visit(Relation relation) {
+  }
 }

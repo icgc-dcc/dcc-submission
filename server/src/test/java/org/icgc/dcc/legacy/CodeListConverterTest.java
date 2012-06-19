@@ -18,10 +18,10 @@
 package org.icgc.dcc.legacy;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Iterator;
 
 import org.apache.commons.io.FileUtils;
 import org.codehaus.jackson.JsonNode;
@@ -34,7 +34,8 @@ import org.junit.Test;
 public class CodeListConverterTest {
 
   @Test
-  public void test() throws IOException {
+  public void test_codeListConverter_compareJSON() throws IOException {
+
     CodeListConverter clc = new CodeListConverter();
     clc.readCodec("src/test/resources/converter/codec");
     clc.saveToJSON("src/test/resources/codeList.json");
@@ -43,26 +44,32 @@ public class CodeListConverterTest {
     File refFile = new File("src/main/resources/codeList.json");
 
     ObjectMapper mapper = new ObjectMapper();
+
     JsonNode testTree = mapper.readTree(FileUtils.readFileToString(testFile));
     JsonNode refTree = mapper.readTree(FileUtils.readFileToString(refFile));
 
-    Iterator<JsonNode> testRoot = testTree.getElements();
-    Iterator<JsonNode> refRoot = refTree.getElements();
+    assertEquals(refTree.size(), testTree.size());
 
-    int testNum = 0;
-    while(testRoot.hasNext()) {
-      JsonNode testNode = testRoot.next();
-      testNum++;
+    for(int i = 0; i < refTree.size(); i++) {
+      JsonNode refCodeList = refTree.get(i);
+      JsonNode testCodeList = this.findNode(testTree, refCodeList.get("name"));
+
+      assertTrue(testCodeList != null);
+
+      assertEquals(refCodeList.get("name"), testCodeList.get("name"));
+      assertEquals(refCodeList.get("label"), testCodeList.get("label"));
+      assertEquals(refCodeList.get("terms"), testCodeList.get("terms"));
     }
 
-    int refNum = 0;
-    while(refRoot.hasNext()) {
-      JsonNode refNode = refRoot.next();
-      refNum++;
+  }
+
+  private JsonNode findNode(JsonNode tree, JsonNode name) {
+    for(int i = 0; i < tree.size(); i++) {
+      if(tree.get(i).get("name").equals(name)) {
+        return tree.get(i);
+      }
     }
-
-    assertEquals(refNum, testNum);
-
+    return null;
   }
 
 }
