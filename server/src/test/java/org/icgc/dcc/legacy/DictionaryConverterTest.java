@@ -72,7 +72,7 @@ public class DictionaryConverterTest {
     // check each FileSchema
     for(int i = 0; i < refFileSchemaList.size(); i++) {
       JsonNode refNode = refFileSchemaList.get(i);
-      JsonNode testNode = testFileSchemaList.get(i);
+      JsonNode testNode = this.findNode(testFileSchemaList, refNode.get("name"));
 
       assertEquals(refNode.get("name"), testNode.get("name"));
       assertEquals(refNode.get("label"), testNode.get("label"));
@@ -81,6 +81,15 @@ public class DictionaryConverterTest {
       assertEquals(refNode.get("uniqueFields"), testNode.get("uniqueFields"));
       assertEquals(refNode.get("fields"), testNode.get("fields"));
     }
+  }
+
+  private JsonNode findNode(JsonNode tree, JsonNode name) {
+    for(int i = 0; i < tree.size(); i++) {
+      if(tree.get(i).get("name").equals(name)) {
+        return tree.get(i);
+      }
+    }
+    return null;
   }
 
 }

@@ -18,6 +18,7 @@
 package org.icgc.dcc.legacy;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -50,14 +51,25 @@ public class CodeListConverterTest {
     assertEquals(refTree.size(), testTree.size());
 
     for(int i = 0; i < refTree.size(); i++) {
-      JsonNode testCodeList = testTree.get(i);
       JsonNode refCodeList = refTree.get(i);
+      JsonNode testCodeList = this.findNode(testTree, refCodeList.get("name"));
+
+      assertTrue(testCodeList != null);
 
       assertEquals(refCodeList.get("name"), testCodeList.get("name"));
       assertEquals(refCodeList.get("label"), testCodeList.get("label"));
       assertEquals(refCodeList.get("terms"), testCodeList.get("terms"));
     }
 
+  }
+
+  private JsonNode findNode(JsonNode tree, JsonNode name) {
+    for(int i = 0; i < tree.size(); i++) {
+      if(tree.get(i).get("name").equals(name)) {
+        return tree.get(i);
+      }
+    }
+    return null;
   }
 
 }
