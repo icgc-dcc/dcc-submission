@@ -69,13 +69,13 @@ public class DictionaryIndexVisitTest {
 
   @Test
   public void test_visit_noErrors() {
-    visitor.visit(fileSchema);
+    mockAccept(visitor);
   }
 
   @Test(expected = DictionaryIndexException.class)
   public void test_visit_nonUniqueSchemaName() {
-    visitor.visit(fileSchema);
-    visitor.visit(fileSchema);
+    mockAccept(visitor);
+    mockAccept(visitor);
   }
 
   @Test(expected = DictionaryIndexException.class)
@@ -84,72 +84,72 @@ public class DictionaryIndexVisitTest {
     when(duplicateField.getName()).thenReturn(FIELD1_NAME);
     fileSchema.getFields().add(duplicateField);
 
-    visitor.visit(fileSchema);
+    mockAccept(visitor);
   }
 
   @Test
   public void test_hasFileSchema_returnsTrue() {
-    visitor.visit(fileSchema);
+    mockAccept(visitor);
     assertTrue(visitor.hasFileSchema(FILESCHEMA_NAME));
   }
 
   @Test
   public void test_hasFileSchema_returnsFalse() {
-    visitor.visit(fileSchema);
+    mockAccept(visitor);
     assertTrue(visitor.hasFileSchema("nonexistentSchema") == false);
   }
 
   @Test
   public void test_getFileSchema_returnsExpectedObject() {
-    visitor.visit(fileSchema);
+    mockAccept(visitor);
     assertTrue(visitor.getFileSchema(FILESCHEMA_NAME).equals(this.fileSchema));
   }
 
   @Test
   public void test_getFileSchema_returnsNull() {
-    visitor.visit(fileSchema);
+    mockAccept(visitor);
     assertTrue(visitor.getFileSchema("nonexistentSchema") == null);
   }
 
   @Test
   public void test_hasField_returnsTrue() {
-    visitor.visit(fileSchema);
+    mockAccept(visitor);
     assertTrue(visitor.hasField(FILESCHEMA_NAME, FIELD1_NAME));
   }
 
   @Test
   public void test_hasField_returnsFalseForField() {
-    visitor.visit(fileSchema);
+    mockAccept(visitor);
     assertTrue(visitor.hasField(FILESCHEMA_NAME, "nonexistentField") == false);
   }
 
   @Test
   public void test_hasField_returnsFalseForSchema() {
-    visitor.visit(fileSchema);
+    mockAccept(visitor);
     assertTrue(visitor.hasField("nonexistentSchema", FIELD1_NAME) == false);
   }
 
   @Test
   public void test_getField_returnsExpectedField() {
-    visitor.visit(fileSchema);
+    mockAccept(visitor);
     assertTrue(visitor.getField(FILESCHEMA_NAME, FIELD1_NAME).equals(field1));
   }
 
   @Test
   public void test_getField_returnsNull() {
-    visitor.visit(fileSchema);
+    mockAccept(visitor);
     assertTrue(visitor.getField(FILESCHEMA_NAME, "nonexistentField") == null);
   }
 
   @Test(expected = DictionaryIndexException.class)
   public void test_getField_throwsException() {
-    visitor.visit(fileSchema);
+    mockAccept(visitor);
     visitor.getField("nonexistentField", FIELD1_NAME);
   }
 
   @Test
   public void test_getFieldNames_containsExpected() {
-    visitor.visit(fileSchema);
+    mockAccept(visitor);
     Set<String> fieldNames = Sets.newHashSet(visitor.getFieldNames(FILESCHEMA_NAME));
     for(Field field : fileSchema.getFields()) {
       assertTrue(fieldNames.contains(field.getName()));
@@ -159,7 +159,14 @@ public class DictionaryIndexVisitTest {
 
   @Test(expected = DictionaryIndexException.class)
   public void test_getFieldNames_throwsException() {
-    visitor.visit(fileSchema);
+    mockAccept(visitor);
     visitor.getFieldNames("nonexistentField");
+  }
+
+  private void mockAccept(DictionaryIndexVisitor visitor) {
+    visitor.visit(fileSchema);
+    for(Field field : fileSchema.getFields()) {
+      visitor.visit(field);
+    }
   }
 }
