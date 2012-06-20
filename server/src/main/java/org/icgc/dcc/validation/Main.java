@@ -10,6 +10,8 @@ import org.icgc.dcc.model.dictionary.Dictionary;
 import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.FileSchema;
 import org.icgc.dcc.model.dictionary.Restriction;
+import org.icgc.dcc.validation.cascading.TupleState;
+import org.icgc.dcc.validation.cascading.ValidationFields;
 import org.icgc.dcc.validation.restriction.DiscreteValuesPipeExtender;
 import org.icgc.dcc.validation.restriction.UniqueFieldsRestriction;
 

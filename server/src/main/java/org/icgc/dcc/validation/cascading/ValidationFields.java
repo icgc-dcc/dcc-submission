@@ -1,4 +1,4 @@
-package org.icgc.dcc.validation;
+package org.icgc.dcc.validation.cascading;
 
 import java.beans.ConstructorProperties;
 import java.util.Arrays;

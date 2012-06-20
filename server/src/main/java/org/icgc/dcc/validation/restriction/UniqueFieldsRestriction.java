@@ -8,8 +8,8 @@ import org.icgc.dcc.model.dictionary.Restriction;
 import org.icgc.dcc.validation.RestrictionTypeSchema;
 import org.icgc.dcc.validation.PipeExtender;
 import org.icgc.dcc.validation.RestrictionType;
-import org.icgc.dcc.validation.TupleState;
-import org.icgc.dcc.validation.ValidationFields;
+import org.icgc.dcc.validation.cascading.TupleState;
+import org.icgc.dcc.validation.cascading.ValidationFields;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;

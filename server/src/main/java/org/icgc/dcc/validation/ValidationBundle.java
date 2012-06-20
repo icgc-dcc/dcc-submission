@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 
 import org.icgc.dcc.filesystem.SubmissionDirectory;
 import org.icgc.dcc.model.dictionary.FileSchema;
+import org.icgc.dcc.validation.cascading.ValidationFields;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;

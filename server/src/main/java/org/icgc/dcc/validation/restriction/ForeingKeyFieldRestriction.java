@@ -8,7 +8,7 @@ import org.icgc.dcc.validation.PipeExtender;
 import org.icgc.dcc.validation.PipeJoiner;
 import org.icgc.dcc.validation.RestrictionType;
 import org.icgc.dcc.validation.RestrictionTypeSchema;
-import org.icgc.dcc.validation.ValidationFields;
+import org.icgc.dcc.validation.cascading.ValidationFields;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
