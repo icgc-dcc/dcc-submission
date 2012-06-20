@@ -15,16 +15,10 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.validation;
+package org.icgc.dcc.validation.plan;
 
-import org.icgc.dcc.model.dictionary.FileSchema;
+import org.icgc.dcc.validation.PipeExtender;
 
-public interface Plan {
-
-  public void prepare(FileSchema schema);
-
-  public void extendInternalCheck(FileSchema fileSchema, PipeExtender extender);
-
-  public void extendExternalCheck(FileSchema lhs, FileSchema rhs, PipeJoiner joiner);
+public interface InternalIntegrityPlanElement extends PlanElement, PipeExtender {
 
 }

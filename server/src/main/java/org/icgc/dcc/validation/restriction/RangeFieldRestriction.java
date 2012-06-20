@@ -2,12 +2,13 @@ package org.icgc.dcc.validation.restriction;
 
 import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.Restriction;
+import org.icgc.dcc.validation.RestrictionType;
 import org.icgc.dcc.validation.RestrictionTypeSchema;
 import org.icgc.dcc.validation.RestrictionTypeSchema.FieldRestrictionParameter;
 import org.icgc.dcc.validation.RestrictionTypeSchema.ParameterType;
 import org.icgc.dcc.validation.cascading.ValidationFields;
-import org.icgc.dcc.validation.PipeExtender;
-import org.icgc.dcc.validation.RestrictionType;
+import org.icgc.dcc.validation.plan.InternalIntegrityPlanElement;
+import org.icgc.dcc.validation.plan.FileSchemaPlan;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -19,7 +20,7 @@ import cascading.tuple.Fields;
 
 import com.mongodb.DBObject;
 
-public class RangeFieldRestriction implements PipeExtender {
+public class RangeFieldRestriction implements InternalIntegrityPlanElement {
 
   private static final String NAME = "range";
 
@@ -67,11 +68,11 @@ public class RangeFieldRestriction implements PipeExtender {
     }
 
     @Override
-    public RangeFieldRestriction build(Field field, Restriction restriction) {
+    public void apply(FileSchemaPlan plan, Field field, Restriction restriction) {
       DBObject configuration = restriction.getConfig();
       Number min = (Number) configuration.get("min");
       Number max = (Number) configuration.get("max");
-      return new RangeFieldRestriction(field.getName(), min, max);
+      plan.apply(new RangeFieldRestriction(field.getName(), min, max));
     }
 
   }

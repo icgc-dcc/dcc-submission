@@ -5,12 +5,13 @@ import java.util.Set;
 
 import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.Restriction;
-import org.icgc.dcc.validation.PipeExtender;
 import org.icgc.dcc.validation.RestrictionType;
 import org.icgc.dcc.validation.RestrictionTypeSchema;
 import org.icgc.dcc.validation.RestrictionTypeSchema.FieldRestrictionParameter;
 import org.icgc.dcc.validation.RestrictionTypeSchema.ParameterType;
 import org.icgc.dcc.validation.cascading.ValidationFields;
+import org.icgc.dcc.validation.plan.InternalIntegrityPlanElement;
+import org.icgc.dcc.validation.plan.FileSchemaPlan;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -22,7 +23,7 @@ import cascading.tuple.Fields;
 
 import com.google.common.collect.ImmutableSet;
 
-public class DiscreteValuesPipeExtender implements PipeExtender {
+public class DiscreteValuesPipeExtender implements InternalIntegrityPlanElement {
 
   private static final String NAME = "in";
 
@@ -66,9 +67,9 @@ public class DiscreteValuesPipeExtender implements PipeExtender {
     }
 
     @Override
-    public PipeExtender build(Field field, Restriction restriction) {
+    public void apply(FileSchemaPlan plan, Field field, Restriction restriction) {
       String[] values = (String[]) restriction.getConfig().get("values");
-      return new DiscreteValuesPipeExtender(field.getName(), values);
+      plan.apply(new DiscreteValuesPipeExtender(field.getName(), values));
     }
 
   }

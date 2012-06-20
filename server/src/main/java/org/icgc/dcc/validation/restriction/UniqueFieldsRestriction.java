@@ -5,11 +5,12 @@ import java.util.List;
 
 import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.Restriction;
-import org.icgc.dcc.validation.RestrictionTypeSchema;
-import org.icgc.dcc.validation.PipeExtender;
 import org.icgc.dcc.validation.RestrictionType;
+import org.icgc.dcc.validation.RestrictionTypeSchema;
 import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.cascading.ValidationFields;
+import org.icgc.dcc.validation.plan.InternalIntegrityPlanElement;
+import org.icgc.dcc.validation.plan.FileSchemaPlan;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -28,7 +29,7 @@ import cascading.tuple.TupleEntry;
 import com.google.common.collect.ImmutableList;
 import com.mongodb.DBObject;
 
-public class UniqueFieldsRestriction implements PipeExtender {
+public class UniqueFieldsRestriction implements InternalIntegrityPlanElement {
 
   private static final String NAME = "unique";
 
@@ -74,10 +75,10 @@ public class UniqueFieldsRestriction implements PipeExtender {
     }
 
     @Override
-    public UniqueFieldsRestriction build(Field field, Restriction restriction) {
+    public void apply(FileSchemaPlan plan, Field field, Restriction restriction) {
       DBObject configuration = restriction.getConfig();
       String[] fields = (String[]) configuration.get("fields");
-      return new UniqueFieldsRestriction(fields);
+      plan.apply(new UniqueFieldsRestriction(fields));
     }
 
   }

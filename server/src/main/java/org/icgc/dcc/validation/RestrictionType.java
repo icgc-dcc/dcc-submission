@@ -2,6 +2,7 @@ package org.icgc.dcc.validation;
 
 import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.Restriction;
+import org.icgc.dcc.validation.plan.FileSchemaPlan;
 
 public interface RestrictionType {
 
@@ -11,6 +12,6 @@ public interface RestrictionType {
 
   public RestrictionTypeSchema getSchema();
 
-  public PipeExtender build(Field field, Restriction restriction);
+  public void apply(FileSchemaPlan plan, Field field, Restriction restriction);
 
 }

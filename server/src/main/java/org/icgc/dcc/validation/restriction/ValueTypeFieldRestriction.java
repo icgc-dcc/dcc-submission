@@ -3,10 +3,11 @@ package org.icgc.dcc.validation.restriction;
 import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.Restriction;
 import org.icgc.dcc.model.dictionary.ValueType;
-import org.icgc.dcc.validation.RestrictionTypeSchema;
-import org.icgc.dcc.validation.PipeExtender;
 import org.icgc.dcc.validation.RestrictionType;
+import org.icgc.dcc.validation.RestrictionTypeSchema;
 import org.icgc.dcc.validation.cascading.ValidationFields;
+import org.icgc.dcc.validation.plan.InternalIntegrityPlanElement;
+import org.icgc.dcc.validation.plan.FileSchemaPlan;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -17,7 +18,7 @@ import cascading.pipe.Pipe;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 
-public class ValueTypeFieldRestriction implements PipeExtender {
+public class ValueTypeFieldRestriction implements InternalIntegrityPlanElement {
 
   private static final String NAME = "value-type";
 
@@ -58,10 +59,9 @@ public class ValueTypeFieldRestriction implements PipeExtender {
     }
 
     @Override
-    public PipeExtender build(Field field, Restriction restriction) {
-      return new ValueTypeFieldRestriction(field.getName(), field.getValueType());
+    public void apply(FileSchemaPlan plan, Field field, Restriction restriction) {
+      plan.apply(new ValueTypeFieldRestriction(field.getName(), field.getValueType()));
     }
-
   }
 
   private final class ValueTypeFunction extends BaseOperation implements Function {

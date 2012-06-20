@@ -1,8 +1,9 @@
 package org.icgc.dcc.validation;
 
+import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.util.List;
-import java.util.Properties;
 
 import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -12,87 +13,91 @@ import org.icgc.dcc.model.dictionary.FileSchema;
 import org.icgc.dcc.model.dictionary.Restriction;
 import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.cascading.ValidationFields;
+import org.icgc.dcc.validation.plan.DefaultPlan;
+import org.icgc.dcc.validation.plan.FileSchemaPlan;
 import org.icgc.dcc.validation.restriction.DiscreteValuesPipeExtender;
-import org.icgc.dcc.validation.restriction.UniqueFieldsRestriction;
+import org.icgc.dcc.validation.restriction.ForeingKeyFieldRestriction;
 
-import cascading.flow.Flow;
-import cascading.flow.FlowConnector;
+import cascading.cascade.Cascade;
 import cascading.flow.FlowProcess;
-import cascading.flow.hadoop.HadoopFlowConnector;
-import cascading.flow.local.LocalFlowConnector;
 import cascading.operation.BaseOperation;
 import cascading.operation.Function;
 import cascading.operation.FunctionCall;
-import cascading.pipe.Each;
-import cascading.pipe.Pipe;
-import cascading.property.AppProps;
-import cascading.scheme.hadoop.TextLine;
-import cascading.tap.Tap;
-import cascading.tap.hadoop.Hfs;
-import cascading.tap.local.FileTap;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Resources;
-import com.mongodb.BasicDBObject;
 
 public class Main {
 
-  static private List<? extends RestrictionType> factories = ImmutableList.of(new DiscreteValuesPipeExtender.Type());
+  static private List<? extends RestrictionType> factories = ImmutableList.of(new DiscreteValuesPipeExtender.Type(),
+      new ForeingKeyFieldRestriction.Type());
 
-  public static void main(String[] args) throws JsonProcessingException, IOException {
+  private final File root;
 
-    Dictionary d =
+  private final File output;
+
+  private final Dictionary dictionary;
+
+  public Main(String[] args) throws JsonProcessingException, IOException {
+    this.root = new File(args[0]);
+    this.output = new File(args[1]);
+    this.dictionary =
         new ObjectMapper().reader(Dictionary.class).readValue(
             Resources.toString(Main.class.getResource("/dictionary.json"), Charsets.UTF_8));
+  }
 
-    for(FileSchema fs : d.getFiles()) {
-      Pipe pipe = new Pipe(fs.getName());
-      pipe = new Each(pipe, new AddValidationFieldsFunction(), Fields.ALL);
-      BasicDBObject config = new BasicDBObject();
-      config.put("fields", fs.getUniqueFields().toArray(new String[] {}));
-      pipe = new UniqueFieldsRestriction.Type().build(null, null).extend(pipe);
-      for(Field f : fs.getFields()) {
+  public static void main(String[] args) throws JsonProcessingException, IOException {
+    new Main(args).doit();
+  }
+
+  private void doit() {
+    for(File f : output.listFiles()) {
+      if(f.isFile()) {
+        f.delete();
+      }
+    }
+
+    DefaultPlan dp = new DefaultPlan();
+    for(FileSchema fs : dictionary.getFiles()) {
+      if(hasFile(fs)) {
+        dp.prepare(fs);
+      }
+    }
+
+    for(FileSchemaPlan fsPlan : dp.getSchemaPlans()) {
+      for(Field f : fsPlan.getSchema().getFields()) {
         for(Restriction r : f.getRestrictions()) {
-          pipe = getFieldRestriction(f, r).extend(pipe);
+          applyFieldRestriction(fsPlan, f, r);
         }
       }
-      Flow<?> flow = makeLocal(args, pipe);
-      flow.writeDOT("/tmp/dot.dot");
-
-      flow.start();
     }
+
+    Cascade c = dp.plan(root, output);
+    c.writeDOT("/tmp/dot.dot");
+    c.start();
   }
 
-  private static PipeExtender getFieldRestriction(Field field, Restriction r) {
-    for(RestrictionType f : factories) {
-      if(f.builds(r.getType())) {
-        return f.build(field, r);
+  private boolean hasFile(final FileSchema fs) {
+    File[] files = root.listFiles(new FileFilter() {
+
+      @Override
+      public boolean accept(File pathname) {
+        return pathname.getName().contains(fs.getName());
+        // return Pattern.matches(fs.getPattern(), pathname.getName());
+      }
+    });
+    return files != null && files.length > 0;
+  }
+
+  private static void applyFieldRestriction(FileSchemaPlan plan, Field field, Restriction restriction) {
+    for(RestrictionType type : factories) {
+      if(type.builds(restriction.getType())) {
+        type.apply(plan, field, restriction);
       }
     }
-    return PipeExtender.IDENTITY;
-  }
-
-  private static Flow<?> makeLocal(String[] args, Pipe pipe) {
-    FlowConnector connector = new LocalFlowConnector();
-
-    Tap source = new FileTap(new cascading.scheme.local.TextDelimited(true, ","), args[1]);
-    Tap sink = new FileTap(new cascading.scheme.local.TextDelimited(true, "\t"), args[2]);
-
-    return connector.connect(source, sink, pipe);
-  }
-
-  private static Flow<?> makeHadoop(String[] args, Pipe pipe) {
-    Properties props = new Properties();
-    AppProps.setApplicationJarClass(props, Main.class);
-    FlowConnector connector = new HadoopFlowConnector(props);
-
-    Tap source = new Hfs(new TextLine(), args[0]);
-    Tap sink = new Hfs(new TextLine(), args[1]);
-
-    return connector.connect(source, sink, pipe);
   }
 
   public static final class AddValidationFieldsFunction extends BaseOperation implements Function {
