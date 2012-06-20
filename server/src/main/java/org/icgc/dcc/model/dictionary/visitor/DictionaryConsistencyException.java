@@ -15,49 +15,18 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.model.dictionary;
+package org.icgc.dcc.model.dictionary.visitor;
 
-import org.icgc.dcc.model.dictionary.visitor.DictionaryElement;
-import org.icgc.dcc.model.dictionary.visitor.DictionaryVisitor;
-
-import com.google.code.morphia.annotations.Embedded;
-import com.mongodb.BasicDBObject;
-
-/**
- * Describes a restriction that applies to some {@code Field}(s)
- * 
- * TODO: possibly to some file schemata too in the future
- */
-@Embedded
-public class Restriction implements DictionaryElement {
-
-  private String type;
-
-  private BasicDBObject config;
-
-  public Restriction() {
-    super();
+public class DictionaryConsistencyException extends RuntimeException {
+  public DictionaryConsistencyException(Exception e) {
+    super(e);
   }
 
-  @Override
-  public void accept(DictionaryVisitor dictionaryVisitor) {
-    dictionaryVisitor.visit(this);
+  public DictionaryConsistencyException(String message) {
+    super(message);
   }
 
-  public String getType() {
-    return type;
+  public DictionaryConsistencyException(String message, Exception e) {
+    super(message, e);
   }
-
-  public void setType(String type) {
-    this.type = type;
-  }
-
-  public BasicDBObject getConfig() {
-    return config;
-  }
-
-  public void setConfig(BasicDBObject config) {
-    this.config = config;
-  }
-
 }

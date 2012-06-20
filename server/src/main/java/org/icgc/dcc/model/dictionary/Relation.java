@@ -23,69 +23,95 @@ import java.util.List;
 import org.icgc.dcc.model.dictionary.visitor.DictionaryElement;
 import org.icgc.dcc.model.dictionary.visitor.DictionaryVisitor;
 
-import com.google.code.morphia.annotations.Embedded;
+import com.google.code.morphia.annotations.Entity;
 
 /**
- * Describes a field that has {@code Restriction}s and that is part of a {@code FileSchema}
+ * 
  */
-@Embedded
-public class Field implements DictionaryElement {
+@Entity
+public class Relation implements DictionaryElement {
 
-  private String name;
+  private final List<String> fields;
 
-  private String label;
+  private String other;
 
-  private ValueType valueType;
+  private String allowOrphan;
 
-  private List<Restriction> restrictions;
+  private String joinType;
 
-  public Field() {
-    super();
-    this.restrictions = new ArrayList<Restriction>();
+  private final List<String> otherFields;
+
+  public Relation() {
+    fields = new ArrayList<String>();
+    otherFields = new ArrayList<String>();
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.icgc.dcc.model.dictionary.visitor.DictionaryElement#accept(org.icgc.dcc.model.dictionary.visitor.DictionaryVisitor
+   * )
+   */
   @Override
   public void accept(DictionaryVisitor dictionaryVisitor) {
     dictionaryVisitor.visit(this);
-
-    for(Restriction restriction : restrictions) {
-      restriction.accept(dictionaryVisitor);
-    }
   }
 
-  public String getName() {
-    return name;
+  /**
+   * @return the fields
+   */
+  public List<String> getFields() {
+    return fields;
   }
 
-  public void setName(String name) {
-    this.name = name;
+  /**
+   * @return the other
+   */
+  public String getOther() {
+    return other;
   }
 
-  public String getLabel() {
-    return label;
+  /**
+   * @param other the other to set
+   */
+  public void setOther(String other) {
+    this.other = other;
   }
 
-  public void setLabel(String label) {
-    this.label = label;
+  /**
+   * @return the otherFields
+   */
+  public List<String> getOtherFields() {
+    return otherFields;
   }
 
-  public ValueType getValueType() {
-    return valueType;
+  /**
+   * @return the allowOrphan
+   */
+  public String getAllowOrphan() {
+    return allowOrphan;
   }
 
-  public void setValueType(ValueType valueType) {
-    this.valueType = valueType;
+  /**
+   * @param allowOrphan the allowOrphan to set
+   */
+  public void setAllowOrphan(String allowOrphan) {
+    this.allowOrphan = allowOrphan;
   }
 
-  public List<Restriction> getRestrictions() {
-    return restrictions;
+  /**
+   * @return the joinType
+   */
+  public String getJoinType() {
+    return joinType;
   }
 
-  public void setRestrictions(List<Restriction> restrictions) {
-    this.restrictions = restrictions;
+  /**
+   * @param joinType the joinType to set
+   */
+  public void setJoinType(String joinType) {
+    this.joinType = joinType;
   }
 
-  public void addRestriction(Restriction restriction) {
-    this.restrictions.add(restriction);
-  }
 }

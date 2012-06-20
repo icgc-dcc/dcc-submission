@@ -47,10 +47,13 @@ public class FileSchema implements DictionaryElement {
 
   private List<Field> fields;
 
+  private Relation relation;
+
   public FileSchema() {
     super();
     this.uniqueFields = new ArrayList<String>();
     this.fields = new ArrayList<Field>();
+    this.relation = new Relation();
   }
 
   public FileSchema(String name) {
@@ -58,26 +61,12 @@ public class FileSchema implements DictionaryElement {
     this.name = name;
   }
 
-  public FileSchema(FileSchema fileSchema) {
-    this();
-
-    // TODO: visitor way
-    this.name = fileSchema.name;
-    this.label = fileSchema.label;
-    this.pattern = fileSchema.pattern;
-    this.role = fileSchema.role;
-    this.uniqueFields = new ArrayList<String>(fileSchema.uniqueFields);
-    for(Field field : fileSchema.fields) {
-      this.fields.add(new Field(field));
-    }
-  }
-
   @Override
   public void accept(DictionaryVisitor dictionaryVisitor) {
+    dictionaryVisitor.visit(this);
     for(Field field : fields) {
       field.accept(dictionaryVisitor);
     }
-    dictionaryVisitor.visit(this);
   }
 
   public Optional<Field> field(final String name) {
@@ -112,6 +101,10 @@ public class FileSchema implements DictionaryElement {
     return pattern;
   }
 
+  public void setName(String name) {
+    this.name = name;
+  }
+
   public void setPattern(String pattern) {
     this.pattern = pattern;
   }
@@ -140,6 +133,10 @@ public class FileSchema implements DictionaryElement {
     this.fields = fields;
   }
 
+  public void addField(Field field) {
+    this.fields.add(field);
+  }
+
   public String getName() {
     return name;
   }
@@ -151,5 +148,19 @@ public class FileSchema implements DictionaryElement {
       }
     }
     return false;
+  }
+
+  /**
+   * @return the relation
+   */
+  public Relation getRelation() {
+    return relation;
+  }
+
+  /**
+   * @param relation the relation to set
+   */
+  public void setRelation(Relation relation) {
+    this.relation = relation;
   }
 }
