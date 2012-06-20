@@ -53,6 +53,7 @@ public class FileSchema implements DictionaryElement {
     super();
     this.uniqueFields = new ArrayList<String>();
     this.fields = new ArrayList<Field>();
+    this.relation = new Relation();
   }
 
   public FileSchema(String name) {
