@@ -63,29 +63,75 @@ public class DictionaryConverterTest {
     assertEquals(refTree.get("version"), testTree.get("version"));
     assertEquals(refTree.get("state"), testTree.get("state"));
 
-    JsonNode testFileSchemaList = testTree.get("files");
-    JsonNode refFileSchemaList = refTree.get("files");
+    this.test_compare_fileSchema(refTree.get("files"), testTree.get("files"));
+  }
 
+  private void test_compare_fileSchema(JsonNode refFileSchemas, JsonNode testFileSchemas) {
     // check FileSchema List Size
-    assertEquals(refFileSchemaList.size(), testFileSchemaList.size());
-
+    assertEquals(refFileSchemas.size(), testFileSchemas.size());
     // check each FileSchema
-    for(int i = 0; i < refFileSchemaList.size(); i++) {
-      JsonNode refNode = refFileSchemaList.get(i);
-      JsonNode testNode = this.findNode(testFileSchemaList, refNode.get("name"));
+    for(int i = 0; i < refFileSchemas.size(); i++) {
+      JsonNode refNode = refFileSchemas.get(i);
+      JsonNode testNode = this.findNode(testFileSchemas, refNode.get("name"));
 
       assertEquals(refNode.get("name"), testNode.get("name"));
       assertEquals(refNode.get("label"), testNode.get("label"));
       assertEquals(refNode.get("pattern"), testNode.get("pattern"));
       assertEquals(refNode.get("role"), testNode.get("role"));
       assertEquals(refNode.get("uniqueFields"), testNode.get("uniqueFields"));
-      assertEquals(refNode.get("fields"), testNode.get("fields"));
+      this.test_compare_field(refNode.get("fields"), testNode.get("fields"));
+      this.test_compare_relation(refNode.get("relation"), testNode.get("relation"));
+
     }
+  }
+
+  private void test_compare_field(JsonNode refFields, JsonNode testFields) {
+    assertEquals(refFields.size(), testFields.size());
+
+    for(int i = 0; i < refFields.size(); i++) {
+      JsonNode refField = refFields.get(i);
+      JsonNode testField = this.findNode(testFields, refField.get("name"));
+
+      assertEquals(refField.get("name"), testField.get("name"));
+      assertEquals(refField.get("label"), testField.get("label"));
+      assertEquals(refField.get("valueType"), testField.get("valueType"));
+
+      this.test_compare_restriction(refField.get("restrictions"), testField.get("restrictions"));
+    }
+  }
+
+  private void test_compare_restriction(JsonNode refRestrictions, JsonNode testRestrictions) {
+    assertEquals(refRestrictions.size(), testRestrictions.size());
+
+    for(int i = 0; i < refRestrictions.size(); i++) {
+      JsonNode refRestriction = refRestrictions.get(i);
+      JsonNode testRestriction = this.findRestrictionNode(testRestrictions, refRestriction.get("type"));
+
+      assertEquals(refRestriction.get("type"), testRestriction.get("type"));
+      assertEquals(refRestriction.get("config"), testRestriction.get("config"));
+    }
+  }
+
+  private void test_compare_relation(JsonNode refRelation, JsonNode testRelation) {
+    assertEquals(refRelation.get("fields"), testRelation.get("fields"));
+    assertEquals(refRelation.get("other"), testRelation.get("other"));
+    assertEquals(refRelation.get("allowOrphan"), testRelation.get("allowOrphan"));
+    assertEquals(refRelation.get("joinType"), testRelation.get("joinType"));
+    assertEquals(refRelation.get("otherFields"), testRelation.get("otherFields"));
   }
 
   private JsonNode findNode(JsonNode tree, JsonNode name) {
     for(int i = 0; i < tree.size(); i++) {
       if(tree.get(i).get("name").equals(name)) {
+        return tree.get(i);
+      }
+    }
+    return null;
+  }
+
+  private JsonNode findRestrictionNode(JsonNode tree, JsonNode type) {
+    for(int i = 0; i < tree.size(); i++) {
+      if(tree.get(i).get("type").equals(type)) {
         return tree.get(i);
       }
     }

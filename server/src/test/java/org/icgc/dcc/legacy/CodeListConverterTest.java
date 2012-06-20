@@ -58,9 +58,26 @@ public class CodeListConverterTest {
 
       assertEquals(refCodeList.get("name"), testCodeList.get("name"));
       assertEquals(refCodeList.get("label"), testCodeList.get("label"));
-      assertEquals(refCodeList.get("terms"), testCodeList.get("terms"));
+
+      this.test_compare_termNodes(refCodeList.get("terms"), testCodeList.get("terms"));
     }
 
+  }
+
+  private void test_compare_termNodes(JsonNode refTerms, JsonNode testTerms) {
+    assertEquals(refTerms.size(), testTerms.size());
+
+    // check each individual terms
+    for(int j = 0; j < refTerms.size(); j++) {
+      JsonNode refTerm = refTerms.get(j);
+      JsonNode testTerm = this.findTermNode(testTerms, refTerm.get("code"));
+
+      assertTrue(testTerm != null);
+
+      assertEquals(refTerm.get("code"), testTerm.get("code"));
+      assertEquals(refTerm.get("value"), testTerm.get("value"));
+      assertEquals(refTerm.get("uri"), testTerm.get("uri"));
+    }
   }
 
   private JsonNode findNode(JsonNode tree, JsonNode name) {
@@ -72,4 +89,12 @@ public class CodeListConverterTest {
     return null;
   }
 
+  private JsonNode findTermNode(JsonNode tree, JsonNode code) {
+    for(int i = 0; i < tree.size(); i++) {
+      if(tree.get(i).get("code").equals(code)) {
+        return tree.get(i);
+      }
+    }
+    return null;
+  }
 }
