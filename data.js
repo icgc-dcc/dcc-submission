@@ -4,83 +4,89 @@ db.dropDatabase();
 
 // Project
 db.Project.insert([{
-	"key": "",
-	"users": "",
-	"groups": ""
+	"key": "project1",
+	"users": ["admin"],
+	"groups": ["admin"]
 }, {
-	"key": "",
-	"users": "",
-	"groups": ""
+	"key": "project2",
+	"users": ["admin"],
+	"groups": ["admin"]
 }]);
 
 
 // Dictionary
 db.Dictionary.insert([{
-	"version": "",
-	"state": "",
+	"version": "1.0",
+	"state": "OPENED",
 	"files": [{
-		"name": "",
+		"name": "biomarker",
 		"label": "",
-		"pattern": "",
-		"role": "",
+		"pattern": "^\\w+__\\d+__\\d+__biomarker__\\d+\\.txt$",
+		"role": "SUBMISSION",
 		"uniqueFields": [
 			"", 
 			""
 		],
-		"fields": [{
-			"name": "",
-			"label": "",
-			"valueType": "",
-			"restrictions": [{
-					"type": "",
-					"config": {}
-				}, {
-					"type": "",
-					"config": {}
-			}]
-		}, {
-			"name": "",
-			"label": "",
-			"valueType": "",
-			"restrictions": [{
-					"type": "",
-					"config": {}
-				}, {
-					"type": "",
-					"config": {}
-			}]
-		}]
+		"relation": {
+            "fields": [
+            ],
+            "otherFields": [
+            ],
+            "other": null,
+            "allowOrphan": null,
+            "joinType": null
+        },
+		"fields": [
+            {
+            "name": "donor_id",
+            "label": "Unique identifier for the donor; assigned by data provider. It must be coded, and correspond to a donor ID listed in the donor data file.",
+            "valueType": "TEXT",
+            "restrictions": [
+              {
+                "type": "required",
+                "config": null
+              }
+            ]
+            },
+            {
+            "name": "specimen_id",
+            "label": "ID of the specimen on which biomarker ascertainment was performed, if applicable",
+            "valueType": "TEXT",
+            "restrictions": [
+              {
+                "type": "required",
+                "config": null
+              }
+            ]
+            }
+        ]
 	}] 
-}, {
-	"version": "",
-	"state": "",
-	"files": []	
 }]);
 
 
 // Code List
 db.CodeList.insert([{
-		"name": "",
+		"name": "appendix_B10",
 		"label": "",
 		"terms": [{
-				"code": "",
-				"value": "",
+				"code": "1",
+				"value": "GRCh37",
 				"uri": ""
 			}, {
-				"code": "",
-				"value": "",
+				"code": "2",
+				"value": "NCBI36",
 				"uri": ""
 		}]
 	}, {
-		"name": "",
+		"name": "appendix_B12",
 		"label": "",
 		"terms": [{
-				"code": "",
-				"value": "",
+				"code": "1",
+				"value": "EGA",
 				"uri": ""
 			}, {
-				"code": "",
-				"value": "",
+				"code": "2",
+				"value": "dbSNP",
 				"uri": ""
 		}]
 }]);
@@ -88,27 +94,27 @@ db.CodeList.insert([{
 
 // Release
 db.Release.insert([{
-		"name": "",
-		"state": "",
+		"name": "release1",
+		"state": "COMPLETED",
 		"submissions": [{
-				"projectKey": "",
-				"state": ""
+				"projectKey": "project1",
+				"state": "NOT_VALIDATED"
 			},{
-				"projectKey": "",
-				"state": ""
+				"projectKey": "project2",
+				"state": "QUEUED"
 		}],
 		"projectKeys": [],
-		"dictionary": ""
+		"dictionary": "1.0"
 	}, {
-		"name": "",
-		"state": "",
+		"name": "release2",
+		"state": "OPENED",
 		"submissions": [{
-				"projectKey": "",
-				"state": ""
+				"projectKey": "project1",
+				"state": "QUEUED"
 			},{
-				"projectKey": "",
-				"state": ""
+				"projectKey": "project2",
+				"state": "SIGNED_OFF"
 		}],
-		"projectKeys": [],
-		"dictionary": ""
+		"projectKeys": [project1],
+		"dictionary": "1.0"
 }]);
