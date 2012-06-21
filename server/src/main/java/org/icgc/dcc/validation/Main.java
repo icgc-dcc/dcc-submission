@@ -22,6 +22,7 @@ import org.icgc.dcc.validation.restriction.ForeingKeyFieldRestriction;
 import cascading.cascade.Cascade;
 import cascading.flow.Flow;
 import cascading.flow.FlowProcess;
+import cascading.flow.local.LocalFlowConnector;
 import cascading.operation.BaseOperation;
 import cascading.operation.Function;
 import cascading.operation.FunctionCall;
@@ -64,7 +65,7 @@ public class Main {
       }
     }
 
-    DefaultPlan dp = new DefaultPlan();
+    DefaultPlan dp = new DefaultPlan(new LocalFlowConnector());
     for(FileSchema fs : dictionary.getFiles()) {
       if(hasFile(fs)) {
         dp.prepare(fs);

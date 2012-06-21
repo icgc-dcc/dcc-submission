@@ -27,8 +27,8 @@ import org.icgc.dcc.model.dictionary.FileSchema;
 import cascading.cascade.Cascade;
 import cascading.cascade.CascadeConnector;
 import cascading.cascade.CascadeDef;
+import cascading.flow.FlowConnector;
 import cascading.flow.FlowDef;
-import cascading.flow.local.LocalFlowConnector;
 import cascading.scheme.local.TextDelimited;
 import cascading.tap.Tap;
 import cascading.tap.local.FileTap;
@@ -40,8 +40,10 @@ public class DefaultPlan implements Plan {
 
   private final Map<String, FileSchemaPlan> plans = Maps.newHashMap();
 
-  public DefaultPlan() {
+  private final FlowConnector flowConnector;
 
+  public DefaultPlan(FlowConnector flowConnector) {
+    this.flowConnector = flowConnector;
   }
 
   @Override
@@ -70,7 +72,7 @@ public class DefaultPlan implements Plan {
       File out = new File(output, plan.getSchema().getName() + ".tsv");
       File extout = new File(output, plan.getSchema().getName() + ".ext.tsv");
 
-      def.addFlow(new LocalFlowConnector().connect(plan.internalFlow(tap(in), tap(out))));
+      def.addFlow(flowConnector.connect(plan.internalFlow(tap(in), tap(out))));
       for(FileSchema fs : plan.dependsOn()) {
         if(externalFlow.getSources().containsKey(fs.getName()) == false) {
           externalFlow.addSource(fs.getName(), tap(file(root, fs)));
@@ -78,7 +80,7 @@ public class DefaultPlan implements Plan {
       }
       plan.externalFlow(externalFlow, tap(in), tap(extout));
     }
-    def.addFlow(new LocalFlowConnector().connect(externalFlow));
+    def.addFlow(flowConnector.connect(externalFlow));
     return new CascadeConnector().connect(def);
   }
 
