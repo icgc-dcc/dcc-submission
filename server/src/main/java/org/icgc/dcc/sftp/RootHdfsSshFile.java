@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.sshd.server.SshFile;
 import org.icgc.dcc.filesystem.ReleaseFileSystem;
@@ -30,13 +29,13 @@ import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
 /**
  * 
  */
-public class RootHdfsSshFile extends BaseHdfsSshFile {
+public class RootHdfsSshFile extends HdfsSshFile {
 
-  private final ReleaseFileSystem releaseFileSystem;
+  protected final ReleaseFileSystem rfs;
 
-  public RootHdfsSshFile(Path path, FileSystem fs, ReleaseFileSystem releaseFileSystem) {
-    super(path, fs);
-    this.releaseFileSystem = releaseFileSystem;
+  public RootHdfsSshFile(ReleaseFileSystem rfs) {
+    super(rfs);
+    this.rfs = rfs;
   }
 
   @Override
@@ -89,8 +88,7 @@ public class RootHdfsSshFile extends BaseHdfsSshFile {
     List<Path> pathList = HadoopUtils.ls(fs, getAbsolutePath());
     List<SshFile> sshFileList = new ArrayList<SshFile>();
     for(Path path : pathList) {
-      sshFileList.add(new DirectoryHdfsSshFile(path, fs, releaseFileSystem.getSubmissionDirectory(path.getName()),
-          releaseFileSystem));
+      sshFileList.add(new DirectoryHdfsSshFile(this, path.getName()));
     }
     return sshFileList;
   }
