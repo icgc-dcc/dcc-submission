@@ -115,6 +115,6 @@ db.Release.insert([{
 				"projectKey": "project2",
 				"state": "SIGNED_OFF"
 		}],
-		"projectKeys": [project1],
+		"projectKeys": ["project1"],
 		"dictionary": "1.0"
 }]);
