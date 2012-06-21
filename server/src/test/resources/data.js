@@ -1,4 +1,3 @@
-use icgc;
 db.dropDatabase();
 
 
