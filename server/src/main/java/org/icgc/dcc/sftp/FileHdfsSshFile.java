@@ -18,13 +18,10 @@
 package org.icgc.dcc.sftp;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.List;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.sshd.server.SshFile;
 import org.icgc.dcc.filesystem.ReleaseFileSystem;
 import org.icgc.dcc.filesystem.SubmissionDirectory;
@@ -32,21 +29,14 @@ import org.icgc.dcc.filesystem.SubmissionDirectory;
 /**
  * 
  */
-public class HdfsSshFile implements SshFile {
-
-  private final String SEPARATOR = "/";
-
-  private final Path path;
-
-  private final FileSystem fs;
+public class FileHdfsSshFile extends BaseHdfsSshFile {
 
   private final SubmissionDirectory directory;
 
   private final ReleaseFileSystem releaseFileSystem;
 
-  public HdfsSshFile(Path path, FileSystem fs, SubmissionDirectory directory, ReleaseFileSystem releaseFileSystem) {
-    this.path = path;
-    this.fs = fs;
+  public FileHdfsSshFile(Path path, FileSystem fs, SubmissionDirectory directory, ReleaseFileSystem releaseFileSystem) {
+    super(path, fs);
     this.directory = directory;
     this.releaseFileSystem = releaseFileSystem;
   }
@@ -72,101 +62,21 @@ public class HdfsSshFile implements SshFile {
   }
 
   @Override
-  public boolean doesExist() {
-    try {
-      return this.fs.exists(path);
-    } catch(IOException e) {
-      e.printStackTrace();
-      return false;
-    }
-  }
-
-  @Override
-  public boolean isReadable() {
-    FsAction u;
-    try {
-      u = fs.getFileStatus(path).getPermission().getUserAction();
-    } catch(IOException e) {
-      e.printStackTrace();
-      return false;
-    }
-    return (u == FsAction.ALL || u == FsAction.READ_WRITE || u == FsAction.READ || u == FsAction.READ_EXECUTE);
-  }
-
-  @Override
   public boolean isWritable() {
     if(directory.isReadOnly()) {
       return false;
     }
-    FsAction u;
-    try {
-      u = fs.getFileStatus(path).getPermission().getUserAction();
-    } catch(IOException e) {
-      e.printStackTrace();
-      return false;
-    }
-    return (u == FsAction.ALL || u == FsAction.READ_WRITE || u == FsAction.WRITE || u == FsAction.WRITE_EXECUTE);
-  }
-
-  @Override
-  public boolean isExecutable() {
-    return false;
-  }
-
-  @Override
-  public boolean isRemovable() {
-    return isWritable();
+    return super.isWritable();
   }
 
   @Override
   public SshFile getParentFile() {
-    return new HdfsSshDir(this.path.getParent(), this.fs, this.directory, this.releaseFileSystem);
-  }
-
-  @Override
-  public long getLastModified() {
-    try {
-      return this.fs.getFileStatus(path).getModificationTime();
-    } catch(IOException e) {
-      e.printStackTrace();
-      return 0;
-    }
-  }
-
-  @Override
-  public boolean setLastModified(long time) {
-    try {
-      this.fs.setTimes(path, time, -1);
-      return true;
-    } catch(IOException e) {
-      e.printStackTrace();
-    }
-    return false;
-  }
-
-  @Override
-  public long getSize() {
-    try {
-      return fs.getFileStatus(path).getLen();
-    } catch(IOException e) {
-      e.printStackTrace();
-    }
-    return 0;
+    return new DirectoryHdfsSshFile(this.path.getParent(), this.fs, this.directory, this.releaseFileSystem);
   }
 
   @Override
   public boolean mkdir() {
     return false;
-  }
-
-  @Override
-  public boolean delete() {
-    try {
-      return this.fs.delete(this.path, true);
-    } catch(IOException e) {
-      e.printStackTrace();
-      return false;
-    }
   }
 
   @Override
@@ -197,20 +107,4 @@ public class HdfsSshFile implements SshFile {
   public List<SshFile> listSshFiles() {
     return null;
   }
-
-  @Override
-  public OutputStream createOutputStream(long offset) throws IOException {
-    return fs.create(path);
-  }
-
-  @Override
-  public InputStream createInputStream(long offset) throws IOException {
-    return fs.open(path);
-  }
-
-  @Override
-  public void handleClose() throws IOException {
-
-  }
-
 }
