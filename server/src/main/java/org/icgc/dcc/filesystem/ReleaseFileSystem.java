@@ -15,8 +15,8 @@ import org.icgc.dcc.model.Submission;
 import org.icgc.dcc.model.User;
 import org.icgc.dcc.service.ProjectService;
 import org.icgc.dcc.service.ReleaseService;
-import org.icgc.dcc.sftp.HdfsSshDir;
-import org.icgc.dcc.sftp.HdfsSshFile;
+import org.icgc.dcc.sftp.DirectoryHdfsSshFile;
+import org.icgc.dcc.sftp.FileHdfsSshFile;
 
 public class ReleaseFileSystem {
 
@@ -99,12 +99,12 @@ public class ReleaseFileSystem {
       Project project = projects.getProject(originalFilePath.getName());
       SubmissionDirectory sd = getSubmissionDirectory(project);
       absoluteFile = this.dccFileSystem.buildProjectStringPath(release, project);
-      return new HdfsSshDir(new Path(absoluteFile), this.dccFileSystem.getFileSystem(), sd, this);
+      return new DirectoryHdfsSshFile(new Path(absoluteFile), this.dccFileSystem.getFileSystem(), sd, this);
     } else if(originalFilePath.depth() == 2) {
       Project project = projects.getProject(originalFilePath.getParent().getName());
       SubmissionDirectory sd = getSubmissionDirectory(project);
       absoluteFile = this.dccFileSystem.buildFilepath(release, project, originalFilePath.getName());
-      return new HdfsSshFile(new Path(absoluteFile), this.dccFileSystem.getFileSystem(), sd, this);
+      return new FileHdfsSshFile(new Path(absoluteFile), this.dccFileSystem.getFileSystem(), sd, this);
     } else {
       throw new DccFileSystemException("Invalid file path: " + file);
     }

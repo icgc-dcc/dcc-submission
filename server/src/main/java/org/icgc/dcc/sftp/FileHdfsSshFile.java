@@ -20,24 +20,30 @@ package org.icgc.dcc.sftp;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.sshd.server.SshFile;
+import org.icgc.dcc.filesystem.ReleaseFileSystem;
+import org.icgc.dcc.filesystem.SubmissionDirectory;
 
 /**
  * 
  */
-public class FileHdfsSshFile extends HdfsSshFile {
+public class FileHdfsSshFile extends BaseHdfsSshFile {
 
-  private final DirectoryHdfsSshFile directory;
+  private final SubmissionDirectory directory;
 
-  public FileHdfsSshFile(DirectoryHdfsSshFile directory, String fileName) {
-    super(new Path(directory.path, fileName), directory.fs);
+  private final ReleaseFileSystem releaseFileSystem;
+
+  public FileHdfsSshFile(Path path, FileSystem fs, SubmissionDirectory directory, ReleaseFileSystem releaseFileSystem) {
+    super(path, fs);
     this.directory = directory;
+    this.releaseFileSystem = releaseFileSystem;
   }
 
   @Override
   public String getAbsolutePath() {
-    return this.directory.getAbsolutePath() + SEPARATOR + path.getName();
+    return SEPARATOR + directory.getProjectKey() + SEPARATOR + path.getName();
   }
 
   @Override
@@ -57,7 +63,7 @@ public class FileHdfsSshFile extends HdfsSshFile {
 
   @Override
   public boolean isWritable() {
-    if(directory.isWritable() == false) {
+    if(directory.isReadOnly()) {
       return false;
     }
     return super.isWritable();
@@ -65,7 +71,7 @@ public class FileHdfsSshFile extends HdfsSshFile {
 
   @Override
   public SshFile getParentFile() {
-    return directory;
+    return new DirectoryHdfsSshFile(this.path.getParent(), this.fs, this.directory, this.releaseFileSystem);
   }
 
   @Override
