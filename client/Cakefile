@@ -3,7 +3,6 @@ wrench = require 'wrench'
 nodewatch = require 'nodewatch'
 httpProxy = require 'http-proxy'
 express = require 'express'
-connect = require 'connect'
 
 
 # ANSI Terminal Colors
