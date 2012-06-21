@@ -85,7 +85,6 @@ handlebars = (callback) ->
   launch 'node_modules/.bin/handlebars', options, callback
 
 server = (callback) ->
-  ###
   server = express.createServer();
       
   server.configure ->
@@ -101,12 +100,7 @@ server = (callback) ->
     response.sendfile "target/webapp/index.html"
 
   server.listen 3000
-  ###
-
-  connect()
-    .use(connect.static 'target/webapp')
-    .listen 3000
-
+  
   # Setup proxy to redirect /ws/* request to the DCC REST server  
   options =
     router:
