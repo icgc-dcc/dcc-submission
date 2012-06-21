@@ -3,6 +3,7 @@ wrench = require 'wrench'
 nodewatch = require 'nodewatch'
 httpProxy = require 'http-proxy'
 express = require 'express'
+connect = require 'connect'
 
 
 # ANSI Terminal Colors
@@ -69,7 +70,7 @@ clean = (callback) ->
   launch 'rm', options, callback
 
 copy = (callback) ->
-  exec 'cp -r src/main/webapp/ target', ->
+  exec 'cp -r src/main/webapp target/', ->
     exec 'mv target/webapp/vendor target/webapp/js/', ->
       exec 'cp -r src/main/webapp/coffee/views/templates target/webapp/js/app/views/', ->
         options = ['-rf', 'target/webapp/coffee']
@@ -84,6 +85,7 @@ handlebars = (callback) ->
   launch 'node_modules/.bin/handlebars', options, callback
 
 server = (callback) ->
+  ###
   server = express.createServer();
       
   server.configure ->
@@ -99,11 +101,16 @@ server = (callback) ->
     response.sendfile "target/webapp/index.html"
 
   server.listen 3000
+  ###
+
+  connect()
+    .use(connect.static 'target/webapp')
+    .listen 3000
 
   # Setup proxy to redirect /ws/* request to the DCC REST server  
   options =
     router:
-      'localhost/ws/': 'localhost:5379'
+      'localhost/ws/': 'localhost:5379/ws/'
       'localhost': 'localhost:3000'
 
   httpProxy.createServer(options).listen 3001, ->
