@@ -1,38 +1,115 @@
-{exec} = require 'child_process'
+{spawn, exec} = require 'child_process'
 wrench = require 'wrench'
-connect = require 'connect'
-proxy = require 'http-proxy'
+nodewatch = require 'nodewatch'
+httpProxy = require 'http-proxy'
+express = require 'express'
 
-task "start", "start doing stuff", ->
-	# Deep-copy an existing directory
-	console.log 'Copying /src files to /target...'
-	exec 'mkdir -p target/webapp'
-	wrench.copyDirSyncRecursive 'src/main/webapp', 'target/webapp'
-	console.log 'Watching CoffeeScript files...'
-	exec 'coffee --watch --compile --output target/webapp/js/ src/main/webapp/coffee/', (err, stdout, stderr) ->
-	    throw err if err
-	    console.log stdout + stderr
 
-	# Redefining the "server" task for this project. Note that the output
-	# displayed by --help will reflect the new task description.
-	console.log 'Starting web server...'
+# ANSI Terminal Colors
+bold = '\x1b[0;1m'
+green = '\x1b[0;32m'
+reset = '\x1b[0m'
+red = '\x1b[0;31m'
 
-	server = proxy.createServer (req, res, proxy) ->
-		if req.url.match /^\/?ws/
-			backend =
-				host: 'localhost'
-				port: 5379
-		else 
-			backend =
-				host: 'localhost'
-				port: 3000
-	
-		proxy.proxyRequest(req, res, backend)
+try
+  which = require('which').sync
+catch err
+  which = null
 
-	server.listen 3001, ->
-		addr = server.address()
-		console.log "front-end listening on http://#{addr.address}:#{addr.port}"
+task 'develop', 'Compiles source files, watches for changes and starts server', -> develop()
+task 'prod', 'Compiles, minifies and joins source files', -> production()
+task 'docs', 'Generate documentaion', -> docs()
+task 'tests', 'Run tests', -> tests()
 
-	connect()
-		.use(connect.static('target/webapp'))
-		.listen 3000
+###
+task 'clean', 'Clean target files', -> clean -> 
+  colourLog 'Target files successfully cleaned.', green
+task 'build', 'Compiles source files to target', -> build -> 
+  colourLog 'Source files compiled successfully.', green
+task 'watch', 'Watches source files for changes for changes', -> build -> watch -> 
+  timeLog 'Watching source files...\n'
+task 'server', 'Starts Web Server on port 3001', -> server()
+###
+
+launch = (cmd, options=[], callback) ->
+  cmd = which(cmd) if which
+  app = spawn cmd, options
+  app.stdout.pipe(process.stdout)
+  app.stderr.on 'data', (data) ->
+    process.stdout.write "#{red}Failed!#{reset}\n#{data}"
+
+  app.on 'exit', (status) -> callback?() if status is 0
+
+develop = (callback) ->
+  build -> server -> watch -> callback?() 
+
+prod = (callback) ->
+  build -> handlebars -> minify -> server -> callback?() 
+
+build = (callback) ->
+  clean -> coffee 'src/main/webapp/coffee/', 'target/webapp/js/app', -> copy -> callback?()
+
+watch = (callback) ->
+  nodewatch.add('src/main/webapp', true).onChange (file,prev,curr,action) ->
+    [path, ext] = file.split(".")
+    if ext is "coffee"
+      timeLog "#{bold}#{file}#{reset} was #{action}d - compiling to javascript..."
+      target = path.replace('src/main', 'target').replace('coffee', 'js/app')
+      coffee file, "#{target}/..", -> colourLog "Success!", green
+    else
+      target = file.replace 'src/main', 'target'
+      timeLog "#{bold}#{file}#{reset} was #{action}d - copying to target..."
+      launch 'cp', [file, target], -> colourLog "Success!", green
+
+  callback?()
+
+clean = (callback) ->
+  options = ['-rf', 'target/webapp']
+  launch 'rm', options, callback
+
+copy = (callback) ->
+  exec 'cp -r src/main/webapp/ target', ->
+    exec 'mv target/webapp/vendor target/webapp/js/', ->
+      exec 'cp -r src/main/webapp/coffee/views/templates target/webapp/js/app/views/', ->
+        options = ['-rf', 'target/webapp/coffee']
+        launch 'rm', options, callback
+    
+coffee = (cs, js, callback) ->
+  options = ['-c', '-o', js, cs]
+  launch 'coffee', options, callback
+
+handlebars = (callback) ->
+  options = ['src/main/webapp/coffee/views/templates', '-f', 'target/webapp/js/app/views/templates.js']
+  launch 'node_modules/.bin/handlebars', options, callback
+
+server = (callback) ->
+  server = express.createServer();
+      
+  server.configure ->
+    server.use express.methodOverride()
+    server.use express.bodyParser()
+    server.use express.static 'target/webapp'
+    server.use express.errorHandler
+      dumpExceptions: true 
+      showStack: true
+    server.use server.router
+
+  server.get /^(?!\/?(assets|vendor|js|tests|docs))/, (request, response) ->
+    response.sendfile "target/webapp/index.html"
+
+  server.listen 3000
+
+  # Setup proxy to redirect /ws/* request to the DCC REST server  
+  options =
+    router:
+      'localhost/ws/': 'localhost:5379'
+      'localhost': 'localhost:3000'
+
+  httpProxy.createServer(options).listen 3001, ->
+    timeLog "Development Server listening on http://localhost:3001...\n"
+
+  callback?()
+
+# When watching scripts, it's useful to log changes with the timestamp.
+timeLog = (message) -> process.stdout.write "#{bold}#{(new Date).toLocaleTimeString()}#{reset} - #{message}"
+colourLog = (message, color=reset) -> console.log "#{color}#{message}#{reset}"
