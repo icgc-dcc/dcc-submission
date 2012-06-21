@@ -24,6 +24,8 @@ import java.util.Map;
 
 import org.icgc.dcc.model.dictionary.FileSchema;
 import org.icgc.dcc.validation.Main;
+import org.icgc.dcc.validation.cascading.TupleStates;
+import org.icgc.dcc.validation.cascading.ValidationFields;
 
 import cascading.flow.FlowDef;
 import cascading.pipe.Each;
@@ -96,7 +98,8 @@ class DefaultFileSchemaPlan implements FileSchemaPlan {
 
   @Override
   public FlowDef internalFlow(Tap source, Tap sink) {
-    return new FlowDef().setName(getSchema().getName() + ".int").addSource(head, source).addTailSink(validTail, sink);
+    Pipe tail = applyFilter(validTail);
+    return new FlowDef().setName(getSchema().getName() + ".int").addSource(head, source).addTailSink(tail, sink);
   }
 
   @Override
@@ -111,6 +114,11 @@ class DefaultFileSchemaPlan implements FileSchemaPlan {
 
   private Pipe applySystemPipes(Pipe pipe) {
     return new Each(pipe, new Main.AddValidationFieldsFunction(), Fields.ALL);
+  }
+
+  private Pipe applyFilter(Pipe pipe) {
+    return new Retain(new Each(pipe, TupleStates.keepInvalidTuplesFilter()), new Fields(
+        ValidationFields.STATE_FIELD_NAME));
   }
 
   private Pipe mergeJoinedTails() {
