@@ -19,6 +19,7 @@ import org.icgc.dcc.validation.restriction.DiscreteValuesPipeExtender;
 import org.icgc.dcc.validation.restriction.ForeingKeyFieldRestriction;
 
 import cascading.cascade.Cascade;
+import cascading.flow.Flow;
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
 import cascading.operation.Function;
@@ -54,9 +55,11 @@ public class Main {
   }
 
   private void doit() {
-    for(File f : output.listFiles()) {
-      if(f.isFile()) {
-        f.delete();
+    if(output.exists() && output.listFiles() != null) {
+      for(File f : output.listFiles()) {
+        if(f.isFile()) {
+          f.delete();
+        }
       }
     }
 
@@ -76,7 +79,10 @@ public class Main {
     }
 
     Cascade c = dp.plan(root, output);
-    c.writeDOT("/tmp/dot.dot");
+    c.writeDOT("/tmp/cascade.dot");
+    for(Flow flow : c.getFlows()) {
+      flow.writeDOT("/tmp/" + flow.getName() + ".dot");
+    }
     c.start();
   }
 
