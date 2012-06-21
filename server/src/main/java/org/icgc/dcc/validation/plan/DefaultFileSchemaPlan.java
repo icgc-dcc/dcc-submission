@@ -80,9 +80,9 @@ class DefaultFileSchemaPlan implements FileSchemaPlan {
   @Override
   public void apply(ExternalIntegrityPlanElement element) {
     Pipe lhs = trim(element.lhsFields());
-    Pipe rhs = plan.getPlan(element.rhs()).trim(element.rhsFields());
+    Pipe rhs = plan.getSchemaPlan(element.rhs()).trim(element.rhsFields());
     joinedTails.add(element.join(lhs, rhs));
-    parents.add(plan.getPlan(element.rhs()).getSchema());
+    parents.add(plan.getSchemaPlan(element.rhs()).getSchema());
   }
 
   @Override

@@ -30,7 +30,7 @@ public interface Plan {
 
   public List<FileSchemaPlan> getSchemaPlans();
 
-  public FileSchemaPlan getPlan(String schema);
+  public FileSchemaPlan getSchemaPlan(String schema);
 
   public Cascade plan(File root, File out);
 

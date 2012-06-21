@@ -55,7 +55,7 @@ public class DefaultPlan implements Plan {
   }
 
   @Override
-  public FileSchemaPlan getPlan(String schema) {
+  public FileSchemaPlan getSchemaPlan(String schema) {
     FileSchemaPlan schemaPlan = this.plans.get(schema);
     if(schemaPlan == null) throw new IllegalStateException("no plan for " + schema);
     return schemaPlan;
