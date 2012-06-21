@@ -27,7 +27,10 @@ import org.icgc.dcc.model.dictionary.FileSchema;
 import cascading.cascade.Cascade;
 import cascading.cascade.CascadeConnector;
 import cascading.cascade.CascadeDef;
+import cascading.flow.FlowDef;
+import cascading.flow.local.LocalFlowConnector;
 import cascading.scheme.local.TextDelimited;
+import cascading.tap.Tap;
 import cascading.tap.local.FileTap;
 
 import com.google.common.collect.ImmutableList;
@@ -61,14 +64,26 @@ public class DefaultPlan implements Plan {
   @Override
   public Cascade plan(File root, File output) {
     CascadeDef def = new CascadeDef();
+    FlowDef externalFlow = new FlowDef().setName("external");
     for(FileSchemaPlan plan : getSchemaPlans()) {
       File in = file(root, plan.getSchema());
       File out = new File(output, plan.getSchema().getName() + ".tsv");
+      File extout = new File(output, plan.getSchema().getName() + ".ext.tsv");
 
-      def.addFlow(plan.connect(new FileTap(new TextDelimited(true, "\t"), in.getAbsolutePath()), new FileTap(
-          new TextDelimited(true, "\t"), out.getAbsolutePath())));
+      def.addFlow(new LocalFlowConnector().connect(plan.internalFlow(tap(in), tap(out))));
+      for(FileSchema fs : plan.dependsOn()) {
+        if(externalFlow.getSources().containsKey(fs.getName()) == false) {
+          externalFlow.addSource(fs.getName(), tap(file(root, fs)));
+        }
+      }
+      plan.externalFlow(externalFlow, tap(in), tap(extout));
     }
+    def.addFlow(new LocalFlowConnector().connect(externalFlow));
     return new CascadeConnector().connect(def);
+  }
+
+  private Tap tap(File file) {
+    return new FileTap(new TextDelimited(true, "\t"), file.getAbsolutePath());
   }
 
   private File file(File root, final FileSchema schema) {

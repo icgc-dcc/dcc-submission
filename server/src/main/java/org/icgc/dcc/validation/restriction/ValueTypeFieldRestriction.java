@@ -6,8 +6,8 @@ import org.icgc.dcc.model.dictionary.ValueType;
 import org.icgc.dcc.validation.RestrictionType;
 import org.icgc.dcc.validation.RestrictionTypeSchema;
 import org.icgc.dcc.validation.cascading.ValidationFields;
-import org.icgc.dcc.validation.plan.InternalIntegrityPlanElement;
-import org.icgc.dcc.validation.plan.FileSchemaPlan;
+import org.icgc.dcc.validation.plan.BaseInternalIntegrityPlanElement;
+import org.icgc.dcc.validation.plan.PlanElement;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -18,7 +18,7 @@ import cascading.pipe.Pipe;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 
-public class ValueTypeFieldRestriction implements InternalIntegrityPlanElement {
+public class ValueTypeFieldRestriction extends BaseInternalIntegrityPlanElement {
 
   private static final String NAME = "value-type";
 
@@ -59,8 +59,8 @@ public class ValueTypeFieldRestriction implements InternalIntegrityPlanElement {
     }
 
     @Override
-    public void apply(FileSchemaPlan plan, Field field, Restriction restriction) {
-      plan.apply(new ValueTypeFieldRestriction(field.getName(), field.getValueType()));
+    public PlanElement build(Field field, Restriction restriction) {
+      return new ValueTypeFieldRestriction(field.getName(), field.getValueType());
     }
   }
 

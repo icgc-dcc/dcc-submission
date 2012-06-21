@@ -2,13 +2,15 @@ package org.icgc.dcc.validation.restriction;
 
 import static com.google.common.base.Preconditions.checkState;
 
+import java.util.Iterator;
+
 import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.Restriction;
 import org.icgc.dcc.validation.RestrictionType;
 import org.icgc.dcc.validation.RestrictionTypeSchema;
 import org.icgc.dcc.validation.cascading.ValidationFields;
-import org.icgc.dcc.validation.plan.ExternalIntegrityPlanElement;
-import org.icgc.dcc.validation.plan.FileSchemaPlan;
+import org.icgc.dcc.validation.plan.BaseExternalIntegrityPlanElement;
+import org.icgc.dcc.validation.plan.PlanElement;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -19,10 +21,12 @@ import cascading.pipe.Every;
 import cascading.pipe.Pipe;
 import cascading.pipe.joiner.LeftJoin;
 import cascading.tuple.Fields;
+import cascading.tuple.Tuple;
+import cascading.tuple.TupleEntry;
 
 import com.mongodb.DBObject;
 
-public class ForeingKeyFieldRestriction implements ExternalIntegrityPlanElement {
+public class ForeingKeyFieldRestriction extends BaseExternalIntegrityPlanElement {
 
   private static final String NAME = "foreign-key";
 
@@ -62,9 +66,9 @@ public class ForeingKeyFieldRestriction implements ExternalIntegrityPlanElement 
   public Pipe join(Pipe lhs, Pipe rhs) {
     String joinedFieldName = schema + "$" + field;
     Pipe pipe =
-        new CoGroup(lhs, new Fields(lhsField), rhs, new Fields(field), new Fields(lhsField,
-            ValidationFields.STATE_FIELD_NAME, joinedFieldName), new LeftJoin());
-    pipe = new Every(pipe, new ValidationFields(lhsField, joinedFieldName), new NoNullBuffer(), Fields.RESULTS);
+        new CoGroup(lhs, new Fields(lhsField), rhs, new Fields(field), new Fields(lhsField, joinedFieldName),
+            new LeftJoin());
+    pipe = new Every(pipe, new Fields(lhsField, joinedFieldName), new NoNullBuffer(), Fields.RESULTS);
     return pipe;
   }
 
@@ -86,21 +90,31 @@ public class ForeingKeyFieldRestriction implements ExternalIntegrityPlanElement 
     }
 
     @Override
-    public void apply(FileSchemaPlan plan, Field field, Restriction restriction) {
+    public PlanElement build(Field field, Restriction restriction) {
       DBObject configuration = restriction.getConfig();
       checkState(configuration.containsField("schema"));
       checkState(configuration.containsField("field"));
-      plan.apply(new ForeingKeyFieldRestriction(field.getName(), configuration.get("schema").toString(), configuration
-          .get("field").toString()));
+      return new ForeingKeyFieldRestriction(field.getName(), configuration.get("schema").toString(), configuration.get(
+          "field").toString());
     }
 
   }
 
   private static class NoNullBuffer extends BaseOperation implements Buffer {
 
+    private NoNullBuffer() {
+      super(2, new Fields(ValidationFields.STATE_FIELD_NAME));
+    }
+
     @Override
     public void operate(FlowProcess flowProcess, BufferCall bufferCall) {
-
+      Iterator<TupleEntry> iter = bufferCall.getArgumentsIterator();
+      while(iter.hasNext()) {
+        TupleEntry e = iter.next();
+        if(e.getObject(1) == null) {
+          bufferCall.getOutputCollector().add(new Tuple("null"));
+        }
+      }
     }
   }
 

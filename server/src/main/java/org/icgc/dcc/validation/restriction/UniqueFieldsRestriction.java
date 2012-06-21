@@ -9,8 +9,8 @@ import org.icgc.dcc.validation.RestrictionType;
 import org.icgc.dcc.validation.RestrictionTypeSchema;
 import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.cascading.ValidationFields;
-import org.icgc.dcc.validation.plan.InternalIntegrityPlanElement;
-import org.icgc.dcc.validation.plan.FileSchemaPlan;
+import org.icgc.dcc.validation.plan.BaseInternalIntegrityPlanElement;
+import org.icgc.dcc.validation.plan.PlanElement;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -29,7 +29,7 @@ import cascading.tuple.TupleEntry;
 import com.google.common.collect.ImmutableList;
 import com.mongodb.DBObject;
 
-public class UniqueFieldsRestriction implements InternalIntegrityPlanElement {
+public class UniqueFieldsRestriction extends BaseInternalIntegrityPlanElement {
 
   private static final String NAME = "unique";
 
@@ -75,10 +75,10 @@ public class UniqueFieldsRestriction implements InternalIntegrityPlanElement {
     }
 
     @Override
-    public void apply(FileSchemaPlan plan, Field field, Restriction restriction) {
+    public PlanElement build(Field field, Restriction restriction) {
       DBObject configuration = restriction.getConfig();
       String[] fields = (String[]) configuration.get("fields");
-      plan.apply(new UniqueFieldsRestriction(fields));
+      return new UniqueFieldsRestriction(fields);
     }
 
   }

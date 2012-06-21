@@ -25,11 +25,9 @@ import java.util.Map;
 import org.icgc.dcc.model.dictionary.FileSchema;
 import org.icgc.dcc.validation.Main;
 
-import cascading.flow.Flow;
 import cascading.flow.FlowDef;
-import cascading.flow.local.LocalFlowConnector;
-import cascading.flow.planner.PlannerException;
 import cascading.pipe.Each;
+import cascading.pipe.Merge;
 import cascading.pipe.Pipe;
 import cascading.pipe.assembly.Retain;
 import cascading.tap.Tap;
@@ -46,11 +44,13 @@ class DefaultFileSchemaPlan implements FileSchemaPlan {
 
   private final Pipe head;
 
-  private Pipe validTail;
-
   private final Map<String[], Pipe> trimmedTails = Maps.newHashMap();
 
   private final List<Pipe> joinedTails = Lists.newLinkedList();
+
+  private final List<FileSchema> parents = Lists.newLinkedList();
+
+  private Pipe validTail;
 
   DefaultFileSchemaPlan(Plan plan, FileSchema fileSchema) {
     checkArgument(plan != null);
@@ -68,6 +68,11 @@ class DefaultFileSchemaPlan implements FileSchemaPlan {
   }
 
   @Override
+  public Iterable<FileSchema> dependsOn() {
+    return parents;
+  }
+
+  @Override
   public void apply(InternalIntegrityPlanElement element) {
     validTail = element.extend(validTail);
   }
@@ -77,6 +82,7 @@ class DefaultFileSchemaPlan implements FileSchemaPlan {
     Pipe lhs = trim(element.lhsFields());
     Pipe rhs = plan.getPlan(element.rhs()).trim(element.rhsFields());
     joinedTails.add(element.join(lhs, rhs));
+    parents.add(plan.getPlan(element.rhs()).getSchema());
   }
 
   @Override
@@ -89,19 +95,26 @@ class DefaultFileSchemaPlan implements FileSchemaPlan {
   }
 
   @Override
-  public Flow connect(Tap source, Tap sink) {
-    FlowDef def = new FlowDef();
-    def.setName(getSchema().getName()).addSource(validTail, source).addSink(validTail, sink).addTail(validTail);
-    try {
-      return new LocalFlowConnector().connect(source, sink, validTail);
-    } catch(PlannerException e) {
-      System.err.println(getSchema().getName());
-      throw e;
+  public FlowDef internalFlow(Tap source, Tap sink) {
+    return new FlowDef().setName(getSchema().getName() + ".int").addSource(head, source).addTailSink(validTail, sink);
+  }
+
+  @Override
+  public void externalFlow(FlowDef external, Tap source, Tap sink) {
+    if(joinedTails.size() > 0) {
+      if(external.getSources().containsKey(head.getName()) == false) {
+        external.addSource(head, source);
+      }
+      external.addTailSink(mergeJoinedTails(), sink);
     }
   }
 
   private Pipe applySystemPipes(Pipe pipe) {
     return new Each(pipe, new Main.AddValidationFieldsFunction(), Fields.ALL);
+  }
+
+  private Pipe mergeJoinedTails() {
+    return new Merge(joinedTails.toArray(new Pipe[] {}));
   }
 
 }

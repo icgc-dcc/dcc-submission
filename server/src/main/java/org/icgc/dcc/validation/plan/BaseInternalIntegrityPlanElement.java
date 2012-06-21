@@ -17,26 +17,10 @@
  */
 package org.icgc.dcc.validation.plan;
 
-import org.icgc.dcc.model.dictionary.FileSchema;
+public abstract class BaseInternalIntegrityPlanElement implements InternalIntegrityPlanElement {
 
-import cascading.flow.FlowDef;
-import cascading.pipe.Pipe;
-import cascading.tap.Tap;
-
-public interface FileSchemaPlan {
-
-  public FileSchema getSchema();
-
-  public Iterable<FileSchema> dependsOn();
-
-  public void apply(InternalIntegrityPlanElement element);
-
-  public void apply(ExternalIntegrityPlanElement element);
-
-  public Pipe trim(String... fields);
-
-  public FlowDef internalFlow(Tap source, Tap sink);
-
-  public void externalFlow(FlowDef external, Tap source, Tap sink);
-
+  @Override
+  public void apply(FileSchemaPlan schemaPlan) {
+    schemaPlan.apply(this);
+  }
 }

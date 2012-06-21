@@ -15,6 +15,7 @@ import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.cascading.ValidationFields;
 import org.icgc.dcc.validation.plan.DefaultPlan;
 import org.icgc.dcc.validation.plan.FileSchemaPlan;
+import org.icgc.dcc.validation.plan.PlanElement;
 import org.icgc.dcc.validation.restriction.DiscreteValuesPipeExtender;
 import org.icgc.dcc.validation.restriction.ForeingKeyFieldRestriction;
 
@@ -73,7 +74,7 @@ public class Main {
     for(FileSchemaPlan fsPlan : dp.getSchemaPlans()) {
       for(Field f : fsPlan.getSchema().getFields()) {
         for(Restriction r : f.getRestrictions()) {
-          applyFieldRestriction(fsPlan, f, r);
+          getRestriction(f, r).apply(fsPlan);
         }
       }
     }
@@ -98,12 +99,25 @@ public class Main {
     return files != null && files.length > 0;
   }
 
-  private static void applyFieldRestriction(FileSchemaPlan plan, Field field, Restriction restriction) {
+  private PlanElement getRestriction(Field field, Restriction restriction) {
     for(RestrictionType type : factories) {
       if(type.builds(restriction.getType())) {
-        type.apply(plan, field, restriction);
+        return type.build(field, restriction);
       }
     }
+    return new PlanElement() {
+
+      @Override
+      public String describe() {
+        return "";
+      }
+
+      @Override
+      public void apply(FileSchemaPlan schemaPlan) {
+
+      }
+
+    };
   }
 
   public static final class AddValidationFieldsFunction extends BaseOperation implements Function {

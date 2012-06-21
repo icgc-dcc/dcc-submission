@@ -2,7 +2,7 @@ package org.icgc.dcc.validation;
 
 import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.Restriction;
-import org.icgc.dcc.validation.plan.FileSchemaPlan;
+import org.icgc.dcc.validation.plan.PlanElement;
 
 public interface RestrictionType {
 
@@ -12,6 +12,6 @@ public interface RestrictionType {
 
   public RestrictionTypeSchema getSchema();
 
-  public void apply(FileSchemaPlan plan, Field field, Restriction restriction);
+  public PlanElement build(Field field, Restriction restriction);
 
 }
