@@ -5,4 +5,4 @@ define ->
   # `match` is match method of the Router
   (match) ->
 
-    match '', 'helloWorld#show'
+    match '', 'release#show'
