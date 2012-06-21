@@ -20,6 +20,7 @@ package org.icgc.dcc.sftp;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.fs.FileSystem;
@@ -28,11 +29,12 @@ import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.sshd.server.SshFile;
 import org.icgc.dcc.filesystem.ReleaseFileSystem;
 import org.icgc.dcc.filesystem.SubmissionDirectory;
+import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
 
 /**
  * 
  */
-public class HdfsSshFile implements SshFile {
+public class HdfsSshDir implements SshFile {
 
   private final String SEPARATOR = "/";
 
@@ -44,7 +46,7 @@ public class HdfsSshFile implements SshFile {
 
   private final ReleaseFileSystem releaseFileSystem;
 
-  public HdfsSshFile(Path path, FileSystem fs, SubmissionDirectory directory, ReleaseFileSystem releaseFileSystem) {
+  public HdfsSshDir(Path path, FileSystem fs, SubmissionDirectory directory, ReleaseFileSystem releaseFileSystem) {
     this.path = path;
     this.fs = fs;
     this.directory = directory;
@@ -53,7 +55,10 @@ public class HdfsSshFile implements SshFile {
 
   @Override
   public String getAbsolutePath() {
-    return SEPARATOR + directory.getProjectKey() + SEPARATOR + path.getName();
+    if(isFile()) {
+      return SEPARATOR + directory.getProjectKey() + SEPARATOR + path.getName();
+    }
+    return SEPARATOR + directory.getProjectKey();
   }
 
   @Override
@@ -63,12 +68,22 @@ public class HdfsSshFile implements SshFile {
 
   @Override
   public boolean isDirectory() {
-    return false;
+    try {
+      return this.fs.isDirectory(path);
+    } catch(IOException e) {
+      e.printStackTrace();
+      return false;
+    }
   }
 
   @Override
   public boolean isFile() {
-    return true;
+    try {
+      return this.fs.isFile(path);
+    } catch(IOException e) {
+      e.printStackTrace();
+      return false;
+    }
   }
 
   @Override
@@ -120,7 +135,7 @@ public class HdfsSshFile implements SshFile {
 
   @Override
   public SshFile getParentFile() {
-    return new HdfsSshDir(this.path.getParent(), this.fs, this.directory, this.releaseFileSystem);
+    return new HdfsSshRoot(this.path, this.fs, this.releaseFileSystem);
   }
 
   @Override
@@ -156,6 +171,13 @@ public class HdfsSshFile implements SshFile {
 
   @Override
   public boolean mkdir() {
+    try {
+      if(isDirectory()) {
+        return create();
+      }
+    } catch(IOException e) {
+      e.printStackTrace();
+    }
     return false;
   }
 
@@ -195,7 +217,12 @@ public class HdfsSshFile implements SshFile {
 
   @Override
   public List<SshFile> listSshFiles() {
-    return null;
+    List<Path> pathList = HadoopUtils.ls(fs, getAbsolutePath());
+    List<SshFile> sshFileList = new ArrayList<SshFile>();
+    for(Path path : pathList) {
+      sshFileList.add(new HdfsSshFile(path, fs, directory, releaseFileSystem));
+    }
+    return sshFileList;
   }
 
   @Override

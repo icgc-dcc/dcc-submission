@@ -5,6 +5,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.fs.Path;
+import org.apache.sshd.server.SshFile;
 import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
 import org.icgc.dcc.model.Project;
 import org.icgc.dcc.model.Release;
@@ -13,6 +15,8 @@ import org.icgc.dcc.model.Submission;
 import org.icgc.dcc.model.User;
 import org.icgc.dcc.service.ProjectService;
 import org.icgc.dcc.service.ReleaseService;
+import org.icgc.dcc.sftp.HdfsSshDir;
+import org.icgc.dcc.sftp.HdfsSshFile;
 
 public class ReleaseFileSystem {
 
@@ -87,11 +91,22 @@ public class ReleaseFileSystem {
     return ReleaseState.COMPLETED == this.release.getState(); // TODO: better way?
   }
 
-  public DccFileSystem getDccFileSystem() {
-    return this.dccFileSystem;
-  }
+  public SshFile getSftpFile(String file) {
+    Path originalFilePath = new Path(file);
+    String absoluteFile;
 
-  public Release getRelease() {
-    return this.release;
+    if(originalFilePath.depth() == 1) {
+      Project project = projects.getProject(originalFilePath.getName());
+      SubmissionDirectory sd = getSubmissionDirectory(project);
+      absoluteFile = this.dccFileSystem.buildProjectStringPath(release, project);
+      return new HdfsSshDir(new Path(absoluteFile), this.dccFileSystem.getFileSystem(), sd, this);
+    } else if(originalFilePath.depth() == 2) {
+      Project project = projects.getProject(originalFilePath.getParent().getName());
+      SubmissionDirectory sd = getSubmissionDirectory(project);
+      absoluteFile = this.dccFileSystem.buildFilepath(release, project, originalFilePath.getName());
+      return new HdfsSshFile(new Path(absoluteFile), this.dccFileSystem.getFileSystem(), sd, this);
+    } else {
+      throw new DccFileSystemException("Invalid file path: " + file);
+    }
   }
 }
