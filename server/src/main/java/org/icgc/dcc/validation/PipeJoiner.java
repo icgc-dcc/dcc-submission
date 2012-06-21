@@ -23,6 +23,4 @@ public interface PipeJoiner {
 
   public Pipe join(Pipe lhs, Pipe rhs);
 
-  public String describe();
-
 }

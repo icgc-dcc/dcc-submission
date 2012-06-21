@@ -31,14 +31,8 @@ public interface PipeExtender {
       return pipe;
     }
 
-    @Override
-    public String describe() {
-      return "";
-    }
   };
 
   public Pipe extend(Pipe pipe);
-
-  public String describe();
 
 }

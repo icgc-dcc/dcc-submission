@@ -19,4 +19,6 @@ package org.icgc.dcc.validation.plan;
 
 public interface PlanElement {
 
+  public String describe();
+
 }
