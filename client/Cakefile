@@ -17,11 +17,12 @@ catch err
   which = null
 
 task 'develop', 'Compiles source files, watches for changes and starts server', -> develop()
-task 'prod', 'Compiles, minifies and joins source files', -> production()
-task 'docs', 'Generate documentaion', -> docs()
-task 'tests', 'Run tests', -> tests()
+### Not fully implemented
+#task 'prod', 'Compiles, minifies and joins source files', -> production()
+#task 'docs', 'Generate documentaion', -> docs()
+#task 'tests', 'Run tests', -> tests()
 
-###
+### Use these for testing
 task 'clean', 'Clean target files', -> clean -> 
   colourLog 'Target files successfully cleaned.', green
 task 'build', 'Compiles source files to target', -> build -> 
