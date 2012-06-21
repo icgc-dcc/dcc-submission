@@ -25,11 +25,13 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.sshd.server.SshFile;
+import org.icgc.dcc.filesystem.DccFileSystem;
+import org.icgc.dcc.filesystem.ReleaseFileSystem;
 
 /**
  * 
  */
-public abstract class BaseHdfsSshFile implements SshFile {
+public abstract class HdfsSshFile implements SshFile {
 
   protected final String SEPARATOR = "/";
 
@@ -37,9 +39,15 @@ public abstract class BaseHdfsSshFile implements SshFile {
 
   protected final FileSystem fs;
 
-  protected BaseHdfsSshFile(Path path, FileSystem fs) {
+  protected HdfsSshFile(Path path, FileSystem fs) {
     this.path = path;
     this.fs = fs;
+  }
+
+  protected HdfsSshFile(ReleaseFileSystem rfs) {
+    DccFileSystem dccFS = rfs.getDccFileSystem();
+    this.path = new Path(dccFS.buildReleaseStringPath(rfs.getRelease()));
+    this.fs = dccFS.getFileSystem();
   }
 
   @Override
