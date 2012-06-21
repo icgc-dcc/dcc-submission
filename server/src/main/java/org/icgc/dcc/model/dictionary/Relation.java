@@ -35,6 +35,10 @@ public class Relation implements DictionaryElement {
 
   private String other;
 
+  private String allowOrphan;
+
+  private String joinType;
+
   private final List<String> otherFields;
 
   public Relation() {
@@ -80,6 +84,34 @@ public class Relation implements DictionaryElement {
    */
   public List<String> getOtherFields() {
     return otherFields;
+  }
+
+  /**
+   * @return the allowOrphan
+   */
+  public String getAllowOrphan() {
+    return allowOrphan;
+  }
+
+  /**
+   * @param allowOrphan the allowOrphan to set
+   */
+  public void setAllowOrphan(String allowOrphan) {
+    this.allowOrphan = allowOrphan;
+  }
+
+  /**
+   * @return the joinType
+   */
+  public String getJoinType() {
+    return joinType;
+  }
+
+  /**
+   * @param joinType the joinType to set
+   */
+  public void setJoinType(String joinType) {
+    this.joinType = joinType;
   }
 
 }

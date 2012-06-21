@@ -47,6 +47,10 @@ public class DictionaryServiceTest {
 
   private Dictionary mockDictionary;
 
+  private CodeList mockCodeList;
+
+  private Term mockTerm;
+
   private DictionaryService dictionaryService;
 
   @Before
@@ -58,9 +62,13 @@ public class DictionaryServiceTest {
     mockDictionaryCloneVisitor = mock(DictionaryCloneVisitor.class);
     mockMongodbQuery = mock(MongodbQuery.class);
     mockDictionary = mock(Dictionary.class);
+    mockCodeList = mock(CodeList.class);
+    mockTerm = mock(Term.class);
     mockQuery = mock(Query.class);
 
     when(mockDictionary.getVersion()).thenReturn("abc");
+    when(mockCodeList.getName()).thenReturn("def");
+    when(mockTerm.getCode()).thenReturn("ghi");
     when(mockDatastore.createQuery(Dictionary.class)).thenReturn(mockQuery);
     when(mockQuery.filter(anyString(), anyString())).thenReturn(mockQuery);
     when(mockQuery.countAll()).thenReturn(0L).thenReturn(0L);
@@ -86,11 +94,11 @@ public class DictionaryServiceTest {
     dictionaryService.clone("v1", "v1");
   }
 
+  // TODO: all further test would require to dig into mocking querydsl's MorphiaQuery constructor...
   @Ignore
   @Test(expected = DictionaryServiceException.class)
   public void test_clone_failOnUnexisting() {
     dictionaryService.clone("v1", "v2");
-    // TODO: requires to dig into MorphiaQuery constructor...
   }
 
   @Ignore
@@ -105,4 +113,15 @@ public class DictionaryServiceTest {
     dictionaryService.add(mockDictionary);
   }
 
+  @Ignore
+  @Test(expected = DictionaryServiceException.class)
+  public void test_updateCodeList_failOnExisting() {
+    dictionaryService.updateCodeList(mockCodeList);
+  }
+
+  @Ignore
+  @Test(expected = DictionaryServiceException.class)
+  public void test_addTerm_failOnExisting() {
+    dictionaryService.addTerm(mockCodeList.getName(), mockTerm);
+  }
 }

@@ -37,6 +37,7 @@ import org.icgc.dcc.model.dictionary.Dictionary;
 import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.FileSchema;
 import org.icgc.dcc.model.dictionary.FileSchemaRole;
+import org.icgc.dcc.model.dictionary.Relation;
 import org.icgc.dcc.model.dictionary.Restriction;
 import org.icgc.dcc.model.dictionary.ValueType;
 import org.w3c.dom.Document;
@@ -89,9 +90,53 @@ public class DictionaryConverter {
 
     this.readFilePattern("src/test/resources/converter/file_to_pattern.tsv");
 
+    this.readRelations("src/test/resources/converter/icgc_relations.txt");
+
     this.readXMLinfo("src/test/resources/converter/icgc.0.7.xml");
 
     return dictionary;
+  }
+
+  private void readRelations(String tsvFile) throws IOException {
+    String relationsText = Files.toString(new File(tsvFile), Charsets.UTF_8);
+
+    Iterable<String> lines = Splitter.on('\n').trimResults().omitEmptyStrings().split(relationsText);
+    Iterator<String> lineIterator = lines.iterator();
+
+    this.readTSVHeader(lineIterator.next());
+
+    while(lineIterator.hasNext()) {
+      String line = lineIterator.next();
+
+      Iterable<String> values = Splitter.on('\t').trimResults().omitEmptyStrings().split(line);
+      Iterator<String> valueIterator = values.iterator();
+
+      String leftTable = valueIterator.next();
+      String leftKey = valueIterator.next();
+      Iterator<String> leftKeyIterator = Splitter.on(',').trimResults().omitEmptyStrings().split(leftKey).iterator();
+      String rightTable = valueIterator.next();
+      String rightKey = valueIterator.next();
+      Iterator<String> rightKeyIterator = Splitter.on(',').trimResults().omitEmptyStrings().split(rightKey).iterator();
+      String allowOrphan = valueIterator.next();
+      String joinType = valueIterator.next();
+
+      if(this.dictionary.hasFileSchema(leftTable)) {
+        FileSchema leftFileSchema = this.dictionary.fileSchema(leftTable).get();
+        Relation relation = leftFileSchema.getRelation();
+
+        while(leftKeyIterator.hasNext()) {
+          relation.getFields().add(leftKeyIterator.next());
+        }
+
+        while(rightKeyIterator.hasNext()) {
+          relation.getOtherFields().add(rightKeyIterator.next());
+        }
+
+        relation.setOther(rightTable);
+        relation.setAllowOrphan(allowOrphan);
+        relation.setJoinType(joinType);
+      }
+    }
   }
 
   private void readFilePattern(String tsvFile) throws IOException {
