@@ -14,6 +14,7 @@ import org.icgc.dcc.model.Submission;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
+import com.google.common.collect.Iterables;
 import com.google.inject.Inject;
 import com.mysema.query.mongodb.MongodbQuery;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
@@ -80,6 +81,19 @@ public class ProjectService {
 
   public List<Project> getProjects() {
     return this.query().list();
+  }
+
+  public Project getProject(final String projectKey) {
+    Project project = Iterables.find(this.getProjects(), new com.google.common.base.Predicate<Project>() {
+      @Override
+      public boolean apply(Project input) {
+        return input.getProjectKey().equals(projectKey);
+      }
+    }, null);
+    if(project == null) {
+      throw new ProjectServiceException("No project found with key " + projectKey);
+    }
+    return project;
   }
 
   public void saveProject(Project project) {

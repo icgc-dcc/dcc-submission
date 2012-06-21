@@ -15,42 +15,18 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.sftp;
+package org.icgc.dcc.model;
 
-import org.apache.sshd.server.FileSystemView;
-import org.apache.sshd.server.SshFile;
-import org.icgc.dcc.filesystem.ReleaseFileSystem;
-
-/**
- * Bridge between the SSHd SftpModule and the DCC file system
- */
-public class HdfsFileSystemView implements FileSystemView {
-
-  private final ReleaseFileSystem releaseFs;
-
-  public HdfsFileSystemView(ReleaseFileSystem releaseFs) {
-    this.releaseFs = releaseFs;
+public class ProjectServiceException extends RuntimeException {
+  public ProjectServiceException(Exception e) {
+    super(e);
   }
 
-  /**
-   * Get file object.
-   * @param file The path to the file to get
-   * @return The {@link SshFile} for the provided path
-   */
-  @Override
-  public SshFile getFile(String file) {
-    return this.releaseFs.getSftpFile(file);
+  public ProjectServiceException(String message) {
+    super(message);
   }
 
-  /**
-   * Get file object.
-   * @param baseDir The reference towards which the file should be resolved
-   * @param file The path to the file to get
-   * @return The {@link SshFile} for the provided path
-   */
-  @Override
-  public SshFile getFile(SshFile baseDir, String file) {
-    // TODO implement
-    return null;
+  public ProjectServiceException(String message, Exception e) {
+    super(message, e);
   }
 }
