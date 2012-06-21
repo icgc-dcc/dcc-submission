@@ -9,7 +9,7 @@
 		"chai": "1.0.4",
 		"jquery": "1.7.2",
 		"requirejs": "2.0.2",
-		"express": "2.3.3",
+		"express": "2.5.10",
 		"nodewatch": "0.1.0",
 		"http-proxy": "0.8.1",
     "wrench": "1.3.9"
