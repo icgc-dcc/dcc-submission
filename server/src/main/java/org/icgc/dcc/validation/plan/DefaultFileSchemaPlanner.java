@@ -38,9 +38,9 @@ import cascading.tuple.Fields;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-class DefaultFileSchemaPlan implements FileSchemaPlan {
+class DefaultFileSchemaPlanner implements FileSchemaPlanner {
 
-  private final Plan plan;
+  private final Planner plan;
 
   private final FileSchema fileSchema;
 
@@ -54,7 +54,7 @@ class DefaultFileSchemaPlan implements FileSchemaPlan {
 
   private Pipe validTail;
 
-  DefaultFileSchemaPlan(Plan plan, FileSchema fileSchema) {
+  DefaultFileSchemaPlanner(Planner plan, FileSchema fileSchema) {
     checkArgument(plan != null);
     checkArgument(fileSchema != null);
     this.plan = plan;

@@ -36,29 +36,29 @@ import cascading.tap.local.FileTap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
-public class DefaultPlan implements Plan {
+public class DefaultPlanner implements Planner {
 
-  private final Map<String, FileSchemaPlan> plans = Maps.newHashMap();
+  private final Map<String, FileSchemaPlanner> plans = Maps.newHashMap();
 
   private final FlowConnector flowConnector;
 
-  public DefaultPlan(FlowConnector flowConnector) {
+  public DefaultPlanner(FlowConnector flowConnector) {
     this.flowConnector = flowConnector;
   }
 
   @Override
   public void prepare(FileSchema schema) {
-    this.plans.put(schema.getName(), new DefaultFileSchemaPlan(this, schema));
+    this.plans.put(schema.getName(), new DefaultFileSchemaPlanner(this, schema));
   }
 
   @Override
-  public List<FileSchemaPlan> getSchemaPlans() {
+  public List<FileSchemaPlanner> getSchemaPlans() {
     return ImmutableList.copyOf(plans.values());
   }
 
   @Override
-  public FileSchemaPlan getSchemaPlan(String schema) {
-    FileSchemaPlan schemaPlan = this.plans.get(schema);
+  public FileSchemaPlanner getSchemaPlan(String schema) {
+    FileSchemaPlanner schemaPlan = this.plans.get(schema);
     if(schemaPlan == null) throw new IllegalStateException("no plan for " + schema);
     return schemaPlan;
   }
@@ -67,7 +67,7 @@ public class DefaultPlan implements Plan {
   public Cascade plan(File root, File output) {
     CascadeDef def = new CascadeDef();
     FlowDef externalFlow = new FlowDef().setName("external");
-    for(FileSchemaPlan plan : getSchemaPlans()) {
+    for(FileSchemaPlanner plan : getSchemaPlans()) {
       File in = file(root, plan.getSchema());
       File out = new File(output, plan.getSchema().getName() + ".tsv");
       File extout = new File(output, plan.getSchema().getName() + ".ext.tsv");

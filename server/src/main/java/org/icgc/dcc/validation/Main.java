@@ -13,8 +13,8 @@ import org.icgc.dcc.model.dictionary.FileSchema;
 import org.icgc.dcc.model.dictionary.Restriction;
 import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.cascading.ValidationFields;
-import org.icgc.dcc.validation.plan.DefaultPlan;
-import org.icgc.dcc.validation.plan.FileSchemaPlan;
+import org.icgc.dcc.validation.plan.DefaultPlanner;
+import org.icgc.dcc.validation.plan.FileSchemaPlanner;
 import org.icgc.dcc.validation.plan.PlanElement;
 import org.icgc.dcc.validation.restriction.DiscreteValuesPipeExtender;
 import org.icgc.dcc.validation.restriction.ForeingKeyFieldRestriction;
@@ -65,14 +65,14 @@ public class Main {
       }
     }
 
-    DefaultPlan dp = new DefaultPlan(new LocalFlowConnector());
+    DefaultPlanner dp = new DefaultPlanner(new LocalFlowConnector());
     for(FileSchema fs : dictionary.getFiles()) {
       if(hasFile(fs)) {
         dp.prepare(fs);
       }
     }
 
-    for(FileSchemaPlan fsPlan : dp.getSchemaPlans()) {
+    for(FileSchemaPlanner fsPlan : dp.getSchemaPlans()) {
       for(Field f : fsPlan.getSchema().getFields()) {
         for(Restriction r : f.getRestrictions()) {
           getRestriction(f, r).apply(fsPlan);
@@ -114,7 +114,7 @@ public class Main {
       }
 
       @Override
-      public void apply(FileSchemaPlan schemaPlan) {
+      public void apply(FileSchemaPlanner schemaPlan) {
 
       }
 

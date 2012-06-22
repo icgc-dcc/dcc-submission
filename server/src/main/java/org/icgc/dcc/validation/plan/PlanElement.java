@@ -21,6 +21,6 @@ public interface PlanElement {
 
   public String describe();
 
-  public void apply(FileSchemaPlan schemaPlan);
+  public void apply(FileSchemaPlanner schemaPlan);
 
 }

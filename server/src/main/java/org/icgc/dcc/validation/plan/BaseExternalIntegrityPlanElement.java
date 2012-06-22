@@ -20,7 +20,7 @@ package org.icgc.dcc.validation.plan;
 public abstract class BaseExternalIntegrityPlanElement implements ExternalIntegrityPlanElement {
 
   @Override
-  public void apply(FileSchemaPlan schemaPlan) {
+  public void apply(FileSchemaPlanner schemaPlan) {
     schemaPlan.apply(this);
   }
 }

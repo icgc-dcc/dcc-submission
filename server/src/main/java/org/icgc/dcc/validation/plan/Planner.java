@@ -17,26 +17,21 @@
  */
 package org.icgc.dcc.validation.plan;
 
+import java.io.File;
+import java.util.List;
+
 import org.icgc.dcc.model.dictionary.FileSchema;
 
-import cascading.flow.FlowDef;
-import cascading.pipe.Pipe;
-import cascading.tap.Tap;
+import cascading.cascade.Cascade;
 
-public interface FileSchemaPlan {
+public interface Planner {
 
-  public FileSchema getSchema();
+  public void prepare(FileSchema schema);
 
-  public Iterable<FileSchema> dependsOn();
+  public List<FileSchemaPlanner> getSchemaPlans();
 
-  public void apply(InternalIntegrityPlanElement element);
+  public FileSchemaPlanner getSchemaPlan(String schema);
 
-  public void apply(ExternalIntegrityPlanElement element);
-
-  public Pipe trim(String... fields);
-
-  public FlowDef internalFlow(Tap source, Tap sink);
-
-  public void externalFlow(FlowDef external, Tap source, Tap sink);
+  public Cascade plan(File root, File out);
 
 }
