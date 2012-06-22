@@ -11,6 +11,8 @@ import org.icgc.dcc.model.Release;
 import org.icgc.dcc.model.Submission;
 import org.icgc.dcc.model.SubmissionState;
 import org.icgc.dcc.model.dictionary.Dictionary;
+import org.icgc.dcc.model.dictionary.DictionaryService;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -21,6 +23,12 @@ import com.mongodb.MongoException;
 
 public class ReleaseServiceTest {
 
+  private Datastore datastore;
+
+  private Dictionary dictionary;
+
+  private DictionaryService dictionaryService;
+
   private ReleaseService releaseService;
 
   private Release release;
@@ -30,18 +38,26 @@ public class ReleaseServiceTest {
   @Before
   public void setUp() {
     try {
+
       // use local host as test MongoDB for now
       Mongo mongo = new Mongo("localhost");
       Morphia morphia = new Morphia();
       morphia.map(BaseEntity.class);
-      Datastore ds = morphia.createDatastore(mongo, testDbName);
+      datastore = morphia.createDatastore(mongo, testDbName);
 
       // Clear out the test database before each test
-      ds.delete(ds.createQuery(Release.class));
-      ds.delete(ds.createQuery(Project.class));
+      datastore.delete(datastore.createQuery(Release.class));
+      datastore.delete(datastore.createQuery(Project.class));
 
       // Set up a minimal test case
+      dictionary = new Dictionary();
+      dictionary.setVersion("foo");
+
+      dictionaryService = new DictionaryService(morphia, datastore, null);
+      dictionaryService.add(dictionary);
+
       release = new Release();
+
       Project project = new Project();
       Submission submission = new Submission();
 
@@ -49,10 +65,11 @@ public class ReleaseServiceTest {
       submission.setProjectKey(project.getProjectKey());
 
       release.getSubmissions().add(submission);
-      release.setDictionary(new Dictionary());
+
+      release.setDictionary(dictionary);
 
       // Create the releaseService and populate it with the initial release
-      releaseService = new ReleaseService(morphia, ds);
+      releaseService = new ReleaseService(morphia, datastore);
       releaseService.createInitialRelease(release);
     } catch(UnknownHostException e) {
       e.printStackTrace();
@@ -67,6 +84,11 @@ public class ReleaseServiceTest {
 
       fail(e.getMessage());
     }
+  }
+
+  @After
+  public void tearDown() {
+    datastore.delete(dictionary);
   }
 
   @Test

@@ -6,6 +6,7 @@ import java.util.List;
 import org.icgc.dcc.model.dictionary.Dictionary;
 
 import com.google.code.morphia.annotations.Entity;
+import com.google.code.morphia.annotations.Reference;
 
 @Entity
 public class Release extends BaseEntity implements HasName {
@@ -18,6 +19,7 @@ public class Release extends BaseEntity implements HasName {
 
   protected List<String> projectKeys = new ArrayList<String>();
 
+  @Reference
   protected Dictionary dictionary;
 
   public Release() {
