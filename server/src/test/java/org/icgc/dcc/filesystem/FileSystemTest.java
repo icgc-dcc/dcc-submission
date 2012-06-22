@@ -7,11 +7,11 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import org.icgc.dcc.model.Project;
-import org.icgc.dcc.model.ProjectService;
 import org.icgc.dcc.model.Release;
 import org.icgc.dcc.model.Submission;
 import org.icgc.dcc.model.SubmissionState;
 import org.icgc.dcc.model.User;
+import org.icgc.dcc.service.ProjectService;
 import org.icgc.dcc.service.ReleaseService;
 import org.junit.Before;
 
