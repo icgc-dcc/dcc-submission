@@ -7,11 +7,11 @@ import java.util.List;
 
 import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
 import org.icgc.dcc.model.Project;
-import org.icgc.dcc.model.ProjectService;
 import org.icgc.dcc.model.Release;
 import org.icgc.dcc.model.ReleaseState;
 import org.icgc.dcc.model.Submission;
 import org.icgc.dcc.model.User;
+import org.icgc.dcc.service.ProjectService;
 import org.icgc.dcc.service.ReleaseService;
 
 public class ReleaseFileSystem {

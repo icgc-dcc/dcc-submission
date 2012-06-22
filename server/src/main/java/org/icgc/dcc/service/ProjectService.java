@@ -1,4 +1,4 @@
-package org.icgc.dcc.model;
+package org.icgc.dcc.service;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -6,7 +6,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.icgc.dcc.filesystem.DccFileSystem;
-import org.icgc.dcc.service.ReleaseService;
+import org.icgc.dcc.model.Project;
+import org.icgc.dcc.model.QProject;
+import org.icgc.dcc.model.QRelease;
+import org.icgc.dcc.model.Release;
+import org.icgc.dcc.model.Submission;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;

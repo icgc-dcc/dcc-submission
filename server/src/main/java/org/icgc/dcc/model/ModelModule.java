@@ -4,6 +4,7 @@ import org.icgc.dcc.model.dictionary.CodeList;
 import org.icgc.dcc.model.dictionary.Dictionary;
 import org.icgc.dcc.model.dictionary.DictionaryService;
 import org.icgc.dcc.model.dictionary.visitor.DictionaryCloneVisitor;
+import org.icgc.dcc.service.ProjectService;
 import org.icgc.dcc.service.ReleaseService;
 
 import com.google.code.morphia.Datastore;
