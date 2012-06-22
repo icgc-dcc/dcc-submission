@@ -18,7 +18,9 @@
 package org.icgc.dcc.validation.plan;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -35,18 +37,21 @@ import cascading.pipe.assembly.Retain;
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 class DefaultFileSchemaPlanner implements FileSchemaPlanner {
 
-  private final Planner plan;
+  private final Planner planner;
 
   private final FileSchema fileSchema;
 
   private final Pipe head;
 
-  private final Map<String[], Pipe> trimmedTails = Maps.newHashMap();
+  private final Map<List<String>, Pipe> trimmedTails = Maps.newHashMap();
+
+  private final Map<String, String[]> trimmedHeads = Maps.newHashMap();
 
   private final List<Pipe> joinedTails = Lists.newLinkedList();
 
@@ -57,7 +62,7 @@ class DefaultFileSchemaPlanner implements FileSchemaPlanner {
   DefaultFileSchemaPlanner(Planner plan, FileSchema fileSchema) {
     checkArgument(plan != null);
     checkArgument(fileSchema != null);
-    this.plan = plan;
+    this.planner = plan;
     this.fileSchema = fileSchema;
     this.validTail = this.head = new Pipe(fileSchema.getName());
 
@@ -82,34 +87,51 @@ class DefaultFileSchemaPlanner implements FileSchemaPlanner {
   @Override
   public void apply(ExternalIntegrityPlanElement element) {
     Pipe lhs = trim(element.lhsFields());
-    Pipe rhs = plan.getSchemaPlan(element.rhs()).trim(element.rhsFields());
+    Pipe rhs = planner.getSchemaPlan(element.rhs()).trim(element.rhsFields());
+    checkState(lhs != null);
+    checkState(rhs != null);
+    trimmedHeads.put(fileSchema.getName(), element.lhsFields());
+    trimmedHeads.put(element.rhs(), element.rhsFields());
     joinedTails.add(element.join(lhs, rhs));
-    parents.add(plan.getSchemaPlan(element.rhs()).getSchema());
+    parents.add(planner.getSchemaPlan(element.rhs()).getSchema());
   }
 
   @Override
   public Pipe trim(String... fields) {
-    if(trimmedTails.containsKey(fields) == false) {
-      Pipe trim = new Retain(head, new Fields(fields));
-      trimmedTails.put(fields, trim);
+    List<String> key = Arrays.asList(fields);
+    if(trimmedTails.containsKey(key) == false) {
+      Pipe newHead = new Pipe(fileSchema.getName() + ":" + Joiner.on("-").join(fields), head);
+      Pipe trim = new Retain(newHead, new Fields(fields));
+      trimmedTails.put(key, trim);
     }
-    return trimmedTails.get(fields);
+    return trimmedTails.get(key);
   }
 
   @Override
-  public FlowDef internalFlow(Tap source, Tap sink) {
+  public FlowDef internalFlow() {
     Pipe tail = applyFilter(validTail);
-    return new FlowDef().setName(getSchema().getName() + ".int").addSource(head, source).addTailSink(tail, sink);
+    Tap source = planner.getSourceTap(fileSchema.getName());
+    Tap sink = planner.getInternalSinkTap(fileSchema.getName());
+
+    FlowDef def = new FlowDef().setName(getSchema().getName() + ".int").addSource(head, source).addTailSink(tail, sink);
+    for(Map.Entry<List<String>, Pipe> e : trimmedTails.entrySet()) {
+      def.addTailSink(e.getValue(), planner.getTrimmedTap(fileSchema.getName(), e.getKey().toArray(new String[] {})));
+    }
+    return def;
   }
 
   @Override
-  public void externalFlow(FlowDef external, Tap source, Tap sink) {
+  public FlowDef externalFlow() {
     if(joinedTails.size() > 0) {
-      if(external.getSources().containsKey(head.getName()) == false) {
-        external.addSource(head, source);
+      Tap sink = planner.getExternalSinkTap(fileSchema.getName());
+      FlowDef def = new FlowDef().setName(getSchema().getName() + ".ext").addTailSink(mergeJoinedTails(), sink);
+
+      for(Map.Entry<String, String[]> e : trimmedHeads.entrySet()) {
+        def.addSource(e.getKey(), planner.getTrimmedTap(e.getKey(), e.getValue()));
       }
-      external.addTailSink(mergeJoinedTails(), sink);
+      return def;
     }
+    return null;
   }
 
   private Pipe applySystemPipes(Pipe pipe) {
@@ -117,8 +139,7 @@ class DefaultFileSchemaPlanner implements FileSchemaPlanner {
   }
 
   private Pipe applyFilter(Pipe pipe) {
-    return new Retain(new Each(pipe, TupleStates.keepInvalidTuplesFilter()), new Fields(
-        ValidationFields.STATE_FIELD_NAME));
+    return new Retain(new Each(pipe, TupleStates.keepInvalidTuplesFilter()), ValidationFields.STATE_FIELD);
   }
 
   private Pipe mergeJoinedTails() {

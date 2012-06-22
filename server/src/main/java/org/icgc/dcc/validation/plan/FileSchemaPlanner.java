@@ -21,7 +21,6 @@ import org.icgc.dcc.model.dictionary.FileSchema;
 
 import cascading.flow.FlowDef;
 import cascading.pipe.Pipe;
-import cascading.tap.Tap;
 
 public interface FileSchemaPlanner {
 
@@ -35,8 +34,8 @@ public interface FileSchemaPlanner {
 
   public Pipe trim(String... fields);
 
-  public FlowDef internalFlow(Tap source, Tap sink);
+  public FlowDef internalFlow();
 
-  public void externalFlow(FlowDef external, Tap source, Tap sink);
+  public FlowDef externalFlow();
 
 }

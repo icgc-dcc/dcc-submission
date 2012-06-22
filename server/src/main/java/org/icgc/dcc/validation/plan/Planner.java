@@ -17,12 +17,12 @@
  */
 package org.icgc.dcc.validation.plan;
 
-import java.io.File;
 import java.util.List;
 
 import org.icgc.dcc.model.dictionary.FileSchema;
 
 import cascading.cascade.Cascade;
+import cascading.tap.Tap;
 
 public interface Planner {
 
@@ -30,8 +30,16 @@ public interface Planner {
 
   public List<FileSchemaPlanner> getSchemaPlans();
 
+  public Tap getSourceTap(String schema);
+
+  public Tap getInternalSinkTap(String schema);
+
+  public Tap getTrimmedTap(String schema, String[] fields);
+
+  public Tap getExternalSinkTap(String schema);
+
   public FileSchemaPlanner getSchemaPlan(String schema);
 
-  public Cascade plan(File root, File out);
+  public Cascade plan();
 
 }

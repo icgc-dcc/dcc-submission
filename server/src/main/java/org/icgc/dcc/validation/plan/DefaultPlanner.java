@@ -32,17 +32,25 @@ import cascading.flow.FlowDef;
 import cascading.scheme.local.TextDelimited;
 import cascading.tap.Tap;
 import cascading.tap.local.FileTap;
+import cascading.tuple.Fields;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
 public class DefaultPlanner implements Planner {
 
+  private final File root;
+
+  private final File output;
+
   private final Map<String, FileSchemaPlanner> plans = Maps.newHashMap();
 
   private final FlowConnector flowConnector;
 
-  public DefaultPlanner(FlowConnector flowConnector) {
+  public DefaultPlanner(File root, File output, FlowConnector flowConnector) {
+    this.root = root;
+    this.output = output;
     this.flowConnector = flowConnector;
   }
 
@@ -64,24 +72,37 @@ public class DefaultPlanner implements Planner {
   }
 
   @Override
-  public Cascade plan(File root, File output) {
+  public Cascade plan() {
     CascadeDef def = new CascadeDef();
-    FlowDef externalFlow = new FlowDef().setName("external");
     for(FileSchemaPlanner plan : getSchemaPlans()) {
-      File in = file(root, plan.getSchema());
-      File out = new File(output, plan.getSchema().getName() + ".tsv");
-      File extout = new File(output, plan.getSchema().getName() + ".ext.tsv");
-
-      def.addFlow(flowConnector.connect(plan.internalFlow(tap(in), tap(out))));
-      for(FileSchema fs : plan.dependsOn()) {
-        if(externalFlow.getSources().containsKey(fs.getName()) == false) {
-          externalFlow.addSource(fs.getName(), tap(file(root, fs)));
-        }
+      def.addFlow(flowConnector.connect(plan.internalFlow()));
+      FlowDef external = plan.externalFlow();
+      if(external != null) {
+        def.addFlow(flowConnector.connect(external));
       }
-      plan.externalFlow(externalFlow, tap(in), tap(extout));
     }
-    def.addFlow(flowConnector.connect(externalFlow));
     return new CascadeConnector().connect(def);
+  }
+
+  @Override
+  public Tap getSourceTap(String schema) {
+    return tap(file(root, getSchemaPlan(schema).getSchema()));
+  }
+
+  @Override
+  public Tap getInternalSinkTap(String schema) {
+    return tap(new File(output, schema + ".internal.tsv"));
+  }
+
+  @Override
+  public Tap getExternalSinkTap(String schema) {
+    return tap(new File(output, schema + ".external.tsv"));
+  }
+
+  @Override
+  public Tap getTrimmedTap(String schema, String[] fields) {
+    File trimmed = new File(output, schema + "-" + Joiner.on("_").join(fields) + ".tsv");
+    return new FileTap(new TextDelimited(new Fields(fields), true, "\t"), trimmed.getAbsolutePath());
   }
 
   private Tap tap(File file) {

@@ -65,7 +65,7 @@ public class Main {
       }
     }
 
-    DefaultPlanner dp = new DefaultPlanner(new LocalFlowConnector());
+    DefaultPlanner dp = new DefaultPlanner(root, output, new LocalFlowConnector());
     for(FileSchema fs : dictionary.getFiles()) {
       if(hasFile(fs)) {
         dp.prepare(fs);
@@ -80,10 +80,10 @@ public class Main {
       }
     }
 
-    Cascade c = dp.plan(root, output);
-    c.writeDOT("/tmp/cascade.dot");
+    Cascade c = dp.plan();
+    c.writeDOT(new File(output, "cascade.dot").getAbsolutePath());
     for(Flow flow : c.getFlows()) {
-      flow.writeDOT("/tmp/" + flow.getName() + ".dot");
+      flow.writeDOT(new File(output, flow.getName() + ".dot").getAbsolutePath());
     }
     c.start();
   }
