@@ -73,4 +73,8 @@ public class SubmissionDirectory {
   public String getProjectKey() {
     return this.project.getProjectKey();
   }
+
+  public void notifyModified() {
+    this.submission.setState(SubmissionState.NOT_VALIDATED);
+  }
 }

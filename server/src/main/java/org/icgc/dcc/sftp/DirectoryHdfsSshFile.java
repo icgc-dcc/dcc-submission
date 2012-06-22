@@ -17,28 +17,30 @@
  */
 package org.icgc.dcc.sftp;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.sshd.server.SshFile;
+import org.icgc.dcc.filesystem.DccFileSystemException;
 import org.icgc.dcc.filesystem.SubmissionDirectory;
 import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
 
-/**
- * 
- */
-public class DirectoryHdfsSshFile extends HdfsSshFile {
+class DirectoryHdfsSshFile extends HdfsSshFile {
 
   private final SubmissionDirectory directory;
 
-  protected final RootHdfsSshFile root;
+  private final RootHdfsSshFile root;
 
   public DirectoryHdfsSshFile(RootHdfsSshFile root, String directoryName) {
-    super(new Path(root.path, directoryName), root.fs);
+    super(new Path(root.path, directoryName.isEmpty() ? "/" : directoryName), root.fs);
+    checkNotNull(root);
+    checkNotNull(directoryName);
     this.root = root;
-    this.directory = root.rfs.getSubmissionDirectory(directoryName);
+    this.directory = root.getSubmissionDirectory(directoryName);
   }
 
   @Override
@@ -53,22 +55,12 @@ public class DirectoryHdfsSshFile extends HdfsSshFile {
 
   @Override
   public boolean isDirectory() {
-    try {
-      return this.fs.isDirectory(path);
-    } catch(IOException e) {
-      e.printStackTrace();
-      return false;
-    }
+    return true;
   }
 
   @Override
   public boolean isFile() {
-    try {
-      return this.fs.isFile(path);
-    } catch(IOException e) {
-      e.printStackTrace();
-      return false;
-    }
+    return false;
   }
 
   @Override
@@ -89,7 +81,7 @@ public class DirectoryHdfsSshFile extends HdfsSshFile {
     try {
       return create();
     } catch(IOException e) {
-      e.printStackTrace();
+      log.error("File system error", e);
     }
     return false;
   }
@@ -113,18 +105,33 @@ public class DirectoryHdfsSshFile extends HdfsSshFile {
     try {
       return this.fs.rename(path, new Path(destination.getAbsolutePath()));
     } catch(IOException e) {
-      e.printStackTrace();
+      log.error("File system error", e);
     }
     return false;
   }
 
   @Override
   public List<SshFile> listSshFiles() {
-    List<Path> pathList = HadoopUtils.ls(fs, getAbsolutePath());
+    List<Path> pathList = HadoopUtils.ls(fs, path.toString());
     List<SshFile> sshFileList = new ArrayList<SshFile>();
     for(Path path : pathList) {
       sshFileList.add(new FileHdfsSshFile(this, path.getName()));
     }
     return sshFileList;
+  }
+
+  @Override
+  public HdfsSshFile getChild(Path filePath) {
+    switch(filePath.depth()) {
+    case 0:
+      return this;
+    case 1:
+      return new FileHdfsSshFile(this, filePath.getName());
+    }
+    throw new DccFileSystemException("Invalid file path: " + this.getAbsolutePath() + filePath.toString());
+  }
+
+  protected void notifyModified() {
+    this.directory.notifyModified();
   }
 }

@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.sftp;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import org.apache.hadoop.fs.Path;
 import org.apache.sshd.server.FileSystemView;
 import org.apache.sshd.server.SshFile;
@@ -41,8 +43,7 @@ public class HdfsFileSystemView implements FileSystemView {
    */
   @Override
   public SshFile getFile(String file) {
-    Path filePath = new Path(file);
-
+    Path filePath = getFilePath(file);
     RootHdfsSshFile root = new RootHdfsSshFile(rfs);
 
     switch(filePath.depth()) {
@@ -66,30 +67,18 @@ public class HdfsFileSystemView implements FileSystemView {
    */
   @Override
   public SshFile getFile(SshFile baseDir, String file) {
+    Path filePath = getFilePath(file);
+
+    if(baseDir instanceof HdfsSshFile) {
+      return ((HdfsSshFile) baseDir).getChild(filePath);
+    }
+    throw new IllegalStateException("Invalid SshFile: " + baseDir.toString());
+  }
+
+  private Path getFilePath(String file) {
+    checkNotNull(file);
+    file = (file.isEmpty() || file.equals(".")) ? "/" : file;
     Path filePath = new Path(file);
-
-    if(baseDir instanceof RootHdfsSshFile) {
-      RootHdfsSshFile root = (RootHdfsSshFile) baseDir;
-      switch(filePath.depth()) {
-      case 0:
-        return root;
-      case 1:
-        return new DirectoryHdfsSshFile(root, filePath.getName());
-      case 2:
-        DirectoryHdfsSshFile parentDir = new DirectoryHdfsSshFile(root, filePath.getParent().getName());
-        return new FileHdfsSshFile(parentDir, filePath.getName());
-      }
-    }
-
-    if(baseDir instanceof DirectoryHdfsSshFile) {
-      DirectoryHdfsSshFile parentDir = (DirectoryHdfsSshFile) baseDir;
-      switch(filePath.depth()) {
-      case 0:
-        return parentDir;
-      case 1:
-        return new FileHdfsSshFile(parentDir, filePath.getName());
-      }
-    }
-    throw new DccFileSystemException("Invalid file path: " + baseDir.getAbsolutePath() + file);
+    return filePath;
   }
 }

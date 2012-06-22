@@ -1,6 +1,7 @@
 package org.icgc.dcc.filesystem;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,12 +63,14 @@ public class ReleaseFileSystem {
   }
 
   public SubmissionDirectory getSubmissionDirectory(Project project) {
+    checkNotNull(project);
     checkSubmissionDirectory(project);
     Submission submission = this.releases.getSubmission(this.release.getName(), project.getProjectKey());
     return new SubmissionDirectory(this.dccFileSystem, this.release, project, submission);
   }
 
   public SubmissionDirectory getSubmissionDirectory(String projectKey) {
+    checkNotNull(projectKey);
     return getSubmissionDirectory(projects.getProject(projectKey));
   }
 

@@ -23,15 +23,17 @@ import java.util.List;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.sshd.server.SshFile;
+import org.icgc.dcc.filesystem.DccFileSystemException;
 import org.icgc.dcc.filesystem.ReleaseFileSystem;
+import org.icgc.dcc.filesystem.SubmissionDirectory;
 import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
 
 /**
  * 
  */
-public class RootHdfsSshFile extends HdfsSshFile {
+class RootHdfsSshFile extends HdfsSshFile {
 
-  protected final ReleaseFileSystem rfs;
+  private final ReleaseFileSystem rfs;
 
   public RootHdfsSshFile(ReleaseFileSystem rfs) {
     super(rfs);
@@ -85,11 +87,34 @@ public class RootHdfsSshFile extends HdfsSshFile {
 
   @Override
   public List<SshFile> listSshFiles() {
-    List<Path> pathList = HadoopUtils.ls(fs, getAbsolutePath());
+    List<Path> pathList = HadoopUtils.ls(fs, path.toString());
     List<SshFile> sshFileList = new ArrayList<SshFile>();
     for(Path path : pathList) {
       sshFileList.add(new DirectoryHdfsSshFile(this, path.getName()));
     }
     return sshFileList;
+  }
+
+  public SubmissionDirectory getSubmissionDirectory(String directoryName) {
+    return this.rfs.getSubmissionDirectory(directoryName);
+  }
+
+  @Override
+  public HdfsSshFile getChild(Path filePath) {
+    switch(filePath.depth()) {
+    case 0:
+      return this;
+    case 1:
+      return new DirectoryHdfsSshFile(this, filePath.getName());
+    case 2:
+      DirectoryHdfsSshFile parentDir = new DirectoryHdfsSshFile(this, filePath.getParent().getName());
+      return new FileHdfsSshFile(parentDir, filePath.getName());
+    }
+    throw new DccFileSystemException("Invalid file path: " + this.getAbsolutePath() + filePath.toString());
+  }
+
+  @Override
+  public void truncate() throws IOException {
+
   }
 }

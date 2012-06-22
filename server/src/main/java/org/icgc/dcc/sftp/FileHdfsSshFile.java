@@ -22,15 +22,16 @@ import java.util.List;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.sshd.server.SshFile;
+import org.icgc.dcc.filesystem.DccFileSystemException;
 
 /**
  * 
  */
-public class FileHdfsSshFile extends HdfsSshFile {
+class FileHdfsSshFile extends HdfsSshFile {
 
   private final DirectoryHdfsSshFile directory;
 
-  public FileHdfsSshFile(DirectoryHdfsSshFile directory, String fileName) {
+  FileHdfsSshFile(DirectoryHdfsSshFile directory, String fileName) {
     super(new Path(directory.path, fileName), directory.fs);
     this.directory = directory;
   }
@@ -60,7 +61,15 @@ public class FileHdfsSshFile extends HdfsSshFile {
     if(directory.isWritable() == false) {
       return false;
     }
-    return super.isWritable();
+    if(doesExist()) {
+      return super.isWritable();
+    }
+    return true;
+  }
+
+  @Override
+  public boolean isRemovable() {
+    return isWritable();
   }
 
   @Override
@@ -77,7 +86,24 @@ public class FileHdfsSshFile extends HdfsSshFile {
   public boolean create() throws IOException {
     if(isWritable()) {
       this.fs.create(path);
+      this.directory.notifyModified();
       return true;
+    }
+    return false;
+  }
+
+  @Override
+  public boolean delete() {
+    if(isRemovable()) {
+      try {
+        boolean success = this.fs.delete(path, false);
+        if(success) {
+          this.directory.notifyModified();
+        }
+        return success;
+      } catch(IOException e) {
+        log.error("File system error", e);
+      }
     }
     return false;
   }
@@ -89,10 +115,16 @@ public class FileHdfsSshFile extends HdfsSshFile {
 
   @Override
   public boolean move(SshFile destination) {
-    try {
-      return this.fs.rename(path, new Path(destination.getAbsolutePath()));
-    } catch(IOException e) {
-      e.printStackTrace();
+    if(isWritable()) {
+      try {
+        boolean success = this.fs.rename(path, new Path(destination.getAbsolutePath()));
+        if(success) {
+          this.directory.notifyModified();
+        }
+        return success;
+      } catch(IOException e) {
+        log.error("File system error", e);
+      }
     }
     return false;
   }
@@ -100,5 +132,10 @@ public class FileHdfsSshFile extends HdfsSshFile {
   @Override
   public List<SshFile> listSshFiles() {
     return null;
+  }
+
+  @Override
+  public HdfsSshFile getChild(Path filePath) {
+    throw new DccFileSystemException("Invalid file path: " + this.getAbsolutePath() + filePath.toString());
   }
 }

@@ -27,11 +27,15 @@ import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.sshd.server.SshFile;
 import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.filesystem.ReleaseFileSystem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
  */
-public abstract class HdfsSshFile implements SshFile {
+abstract class HdfsSshFile implements SshFile {
+
+  protected static final Logger log = LoggerFactory.getLogger(HdfsSshFile.class);
 
   protected final String SEPARATOR = "/";
 
@@ -55,7 +59,7 @@ public abstract class HdfsSshFile implements SshFile {
     try {
       return this.fs.exists(path);
     } catch(IOException e) {
-      e.printStackTrace();
+      log.error("File system error", e);
       return false;
     }
   }
@@ -66,7 +70,7 @@ public abstract class HdfsSshFile implements SshFile {
     try {
       u = fs.getFileStatus(path).getPermission().getUserAction();
     } catch(IOException e) {
-      e.printStackTrace();
+      log.error("File system error", e);
       return false;
     }
     return (u == FsAction.ALL || u == FsAction.READ_WRITE || u == FsAction.READ || u == FsAction.READ_EXECUTE);
@@ -78,7 +82,7 @@ public abstract class HdfsSshFile implements SshFile {
     try {
       u = fs.getFileStatus(path).getPermission().getUserAction();
     } catch(IOException e) {
-      e.printStackTrace();
+      log.error("File system error", e);
       return false;
     }
     return (u == FsAction.ALL || u == FsAction.READ_WRITE || u == FsAction.WRITE || u == FsAction.WRITE_EXECUTE);
@@ -99,7 +103,7 @@ public abstract class HdfsSshFile implements SshFile {
     try {
       return this.fs.getFileStatus(path).getModificationTime();
     } catch(IOException e) {
-      e.printStackTrace();
+      log.error("File system error", e);
       return 0;
     }
   }
@@ -110,7 +114,7 @@ public abstract class HdfsSshFile implements SshFile {
       this.fs.setTimes(path, time, -1);
       return true;
     } catch(IOException e) {
-      e.printStackTrace();
+      log.error("File system error", e);
     }
     return false;
   }
@@ -120,7 +124,7 @@ public abstract class HdfsSshFile implements SshFile {
     try {
       return fs.getFileStatus(path).getLen();
     } catch(IOException e) {
-      e.printStackTrace();
+      log.error("File system error", e);
     }
     return 0;
   }
@@ -133,11 +137,6 @@ public abstract class HdfsSshFile implements SshFile {
   @Override
   public boolean delete() {
     return false;
-  }
-
-  @Override
-  public void truncate() throws IOException {
-
   }
 
   @Override
@@ -160,4 +159,5 @@ public abstract class HdfsSshFile implements SshFile {
 
   }
 
+  public abstract HdfsSshFile getChild(Path filePath);
 }
