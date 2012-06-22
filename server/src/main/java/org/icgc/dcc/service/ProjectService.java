@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.model.Project;
+import org.icgc.dcc.model.ProjectServiceException;
 import org.icgc.dcc.model.QProject;
 import org.icgc.dcc.model.QRelease;
 import org.icgc.dcc.model.Release;
