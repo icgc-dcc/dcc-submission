@@ -5,6 +5,7 @@ requirejs.config
   # Specify the paths of vendor libraries
   paths:
     jquery: '../vendor/jquery-1.7.2'
+    jqSerializeObject: '../vendor/jquery.ba-serializeobject',
     underscore: '../vendor/underscore-1.3.3'
     backbone: '../vendor/backbone-0.9.2'
     chaplin: '../vendor/chaplin'
@@ -25,9 +26,17 @@ requirejs.config
     
   # For easier development, disable browser caching
   # Of course, this should be removed in a production environment
-  #, urlArgs: 'bust=' +  (new Date()).getTime()
+  , urlArgs: 'bust=' +  (new Date()).getTime()
+
+
+# Add any extra deps that should be loaded with jquery
+define "base", [
+  'jquery'
+  'bootstrap'
+  'jqSerializeObject'
+], ($) -> $
 
 # Bootstrap the application
-require ['dcc_submission_application'], (DccSubmissionApplication) ->
+require ['dcc_submission_application', 'base'], (DccSubmissionApplication) ->
   dcc = new DccSubmissionApplication()
   dcc.initialize()

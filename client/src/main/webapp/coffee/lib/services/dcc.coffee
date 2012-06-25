@@ -33,9 +33,10 @@ define (require) ->
 
     # Trigger login popup
     triggerLogin: (loginContext) ->
-      console.debug 'DCCServiceProvider#triggerLogin', loginContext
-      callback = _(@loginHandler).bind(this, @loginHandler)
-      window.location = URL
+      console.debug 'DCCServiceProvider#triggerLogin', loginContext, @
+      #callback = _(@loginHandler).bind(this, @loginHandler)
+      #window.location = URL
+      window.location.reload()
 
     # Callback for the login popup
     loginHandler: (loginContext, response) =>
@@ -72,5 +73,5 @@ define (require) ->
       else
         Chaplin.mediator.publish 'serviceProviderSession', _.extend response,
           provider: this
-          userId: response.id
+          userId: response.responseText
           accessToken: @accessToken

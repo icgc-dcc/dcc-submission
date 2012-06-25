@@ -7,6 +7,7 @@ define (require) ->
   class LoginView extends View
     template: template
     id: 'login'
+    className: 'modal hide fade'
     container: '#content-container'
     autoRender: true
 
@@ -15,6 +16,10 @@ define (require) ->
       super
       console.debug 'LoginView#initialize', @el, @$el, options, options.serviceProviders
       @initButtons options.serviceProviders
+      @$el.modal 
+        "keyboard": false
+        "backdrop": "static"
+        "show": true
 
     # In this project we currently only have one service provider and therefore
     # one button. But this should allow for different service providers.
@@ -42,8 +47,15 @@ define (require) ->
         serviceProvider.fail failed
 
     loginWith: (serviceProviderName, serviceProvider, e) ->
-      console.debug 'LoginView#loginWith', serviceProviderName, serviceProvider
+      console.debug 'LoginView#loginWith', serviceProviderName, serviceProvider, e
       e.preventDefault()
+      
+      # TODO - added just to make it work
+      loginDetails = @$("form").serializeObject()
+      @accessToken = btoa loginDetails.username.concat ":", loginDetails.password
+      localStorage.setItem 'accessToken', @accessToken
+      console.debug @accessToken, atob @accessToken 
+      #
       return unless serviceProvider.isLoaded()
       Chaplin.mediator.publish 'login:pickService', serviceProviderName
       Chaplin.mediator.publish '!login', serviceProviderName
@@ -58,5 +70,4 @@ define (require) ->
         .removeClass('service-loading')
         .addClass('service-unavailable')
         .attr('disabled', true)
-        .attr('title', "Error connecting. Please check whether you are
-  blocking #{utils.upcase(serviceProviderName)}.")
+        .attr('title', "Error connecting. Please check whether you are blocking #{utils.upcase(serviceProviderName)}.")

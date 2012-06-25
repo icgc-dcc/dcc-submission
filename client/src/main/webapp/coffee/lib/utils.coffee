@@ -134,8 +134,7 @@ define (require) ->
     
     sendAuthorization: (xhr) =>
       console.debug 'utils#sendAuthorization'
-      
       @accessToken = localStorage.getItem 'accessToken'
-      xhr.setRequestHeader 'Authorization', "Basic ".concat btoa @accessToken
+      xhr.setRequestHeader 'Authorization', "Basic  #{@accessToken}"
 
   utils
