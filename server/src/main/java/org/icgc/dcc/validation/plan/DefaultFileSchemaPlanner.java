@@ -109,25 +109,27 @@ class DefaultFileSchemaPlanner implements FileSchemaPlanner {
 
   @Override
   public FlowDef internalFlow() {
+    CascadingStrategy strategy = planner.getCascadingStrategy();
     Pipe tail = applyFilter(validTail);
-    Tap source = planner.getSourceTap(fileSchema.getName());
-    Tap sink = planner.getInternalSinkTap(fileSchema.getName());
+    Tap source = strategy.getSourceTap(fileSchema);
+    Tap sink = strategy.getInternalSinkTap(fileSchema.getName());
 
     FlowDef def = new FlowDef().setName(getSchema().getName() + ".int").addSource(head, source).addTailSink(tail, sink);
     for(Map.Entry<List<String>, Pipe> e : trimmedTails.entrySet()) {
-      def.addTailSink(e.getValue(), planner.getTrimmedTap(fileSchema.getName(), e.getKey().toArray(new String[] {})));
+      def.addTailSink(e.getValue(), strategy.getTrimmedTap(fileSchema.getName(), e.getKey().toArray(new String[] {})));
     }
     return def;
   }
 
   @Override
   public FlowDef externalFlow() {
+    CascadingStrategy strategy = planner.getCascadingStrategy();
     if(joinedTails.size() > 0) {
-      Tap sink = planner.getExternalSinkTap(fileSchema.getName());
+      Tap sink = strategy.getExternalSinkTap(fileSchema.getName());
       FlowDef def = new FlowDef().setName(getSchema().getName() + ".ext").addTailSink(mergeJoinedTails(), sink);
 
       for(Map.Entry<String, String[]> e : trimmedHeads.entrySet()) {
-        def.addSource(e.getKey(), planner.getTrimmedTap(e.getKey(), e.getValue()));
+        def.addSource(e.getKey(), strategy.getTrimmedTap(e.getKey(), e.getValue()));
       }
       return def;
     }

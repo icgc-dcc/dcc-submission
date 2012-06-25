@@ -15,6 +15,7 @@ import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.cascading.ValidationFields;
 import org.icgc.dcc.validation.plan.DefaultPlanner;
 import org.icgc.dcc.validation.plan.FileSchemaPlanner;
+import org.icgc.dcc.validation.plan.LocalCascadingStrategy;
 import org.icgc.dcc.validation.plan.PlanElement;
 import org.icgc.dcc.validation.restriction.DiscreteValuesPipeExtender;
 import org.icgc.dcc.validation.restriction.ForeingKeyFieldRestriction;
@@ -22,7 +23,6 @@ import org.icgc.dcc.validation.restriction.ForeingKeyFieldRestriction;
 import cascading.cascade.Cascade;
 import cascading.flow.Flow;
 import cascading.flow.FlowProcess;
-import cascading.flow.local.LocalFlowConnector;
 import cascading.operation.BaseOperation;
 import cascading.operation.Function;
 import cascading.operation.FunctionCall;
@@ -65,7 +65,7 @@ public class Main {
       }
     }
 
-    DefaultPlanner dp = new DefaultPlanner(root, output, new LocalFlowConnector());
+    DefaultPlanner dp = new DefaultPlanner(new LocalCascadingStrategy(root, output));
     for(FileSchema fs : dictionary.getFiles()) {
       if(hasFile(fs)) {
         dp.prepare(fs);

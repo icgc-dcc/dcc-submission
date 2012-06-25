@@ -113,28 +113,14 @@ public class DictionaryConverter {
 
       String leftTable = valueIterator.next();
       String leftKey = valueIterator.next();
-      Iterator<String> leftKeyIterator = Splitter.on(',').trimResults().omitEmptyStrings().split(leftKey).iterator();
+      Iterable<String> leftKeys = Splitter.on(',').trimResults().omitEmptyStrings().split(leftKey);
       String rightTable = valueIterator.next();
       String rightKey = valueIterator.next();
-      Iterator<String> rightKeyIterator = Splitter.on(',').trimResults().omitEmptyStrings().split(rightKey).iterator();
-      String allowOrphan = valueIterator.next();
-      String joinType = valueIterator.next();
+      Iterable<String> rightKeys = Splitter.on(',').trimResults().omitEmptyStrings().split(rightKey);
 
       if(this.dictionary.hasFileSchema(leftTable)) {
         FileSchema leftFileSchema = this.dictionary.fileSchema(leftTable).get();
-        Relation relation = leftFileSchema.getRelation();
-
-        while(leftKeyIterator.hasNext()) {
-          relation.getFields().add(leftKeyIterator.next());
-        }
-
-        while(rightKeyIterator.hasNext()) {
-          relation.getOtherFields().add(rightKeyIterator.next());
-        }
-
-        relation.setOther(rightTable);
-        relation.setAllowOrphan(allowOrphan);
-        relation.setJoinType(joinType);
+        leftFileSchema.setRelation(new Relation(leftKeys, rightTable, rightKeys));
       }
     }
   }

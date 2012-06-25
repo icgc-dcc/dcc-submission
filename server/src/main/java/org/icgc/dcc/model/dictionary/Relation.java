@@ -23,21 +23,15 @@ import java.util.List;
 import org.icgc.dcc.model.dictionary.visitor.DictionaryElement;
 import org.icgc.dcc.model.dictionary.visitor.DictionaryVisitor;
 
-import com.google.code.morphia.annotations.Entity;
+import com.google.code.morphia.annotations.Embedded;
+import com.google.common.collect.Lists;
 
-/**
- * 
- */
-@Entity
+@Embedded
 public class Relation implements DictionaryElement {
 
   private final List<String> fields;
 
   private String other;
-
-  private String allowOrphan;
-
-  private String joinType;
 
   private final List<String> otherFields;
 
@@ -46,72 +40,31 @@ public class Relation implements DictionaryElement {
     otherFields = new ArrayList<String>();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.icgc.dcc.model.dictionary.visitor.DictionaryElement#accept(org.icgc.dcc.model.dictionary.visitor.DictionaryVisitor
-   * )
-   */
+  public Relation(Iterable<String> leftFields, String right, Iterable<String> rightFields) {
+    fields = Lists.newArrayList(leftFields);
+    this.other = right;
+    otherFields = Lists.newArrayList(rightFields);
+  }
+
   @Override
   public void accept(DictionaryVisitor dictionaryVisitor) {
     dictionaryVisitor.visit(this);
   }
 
-  /**
-   * @return the fields
-   */
   public List<String> getFields() {
     return fields;
   }
 
-  /**
-   * @return the other
-   */
   public String getOther() {
     return other;
   }
 
-  /**
-   * @param other the other to set
-   */
   public void setOther(String other) {
     this.other = other;
   }
 
-  /**
-   * @return the otherFields
-   */
   public List<String> getOtherFields() {
     return otherFields;
-  }
-
-  /**
-   * @return the allowOrphan
-   */
-  public String getAllowOrphan() {
-    return allowOrphan;
-  }
-
-  /**
-   * @param allowOrphan the allowOrphan to set
-   */
-  public void setAllowOrphan(String allowOrphan) {
-    this.allowOrphan = allowOrphan;
-  }
-
-  /**
-   * @return the joinType
-   */
-  public String getJoinType() {
-    return joinType;
-  }
-
-  /**
-   * @param joinType the joinType to set
-   */
-  public void setJoinType(String joinType) {
-    this.joinType = joinType;
   }
 
 }

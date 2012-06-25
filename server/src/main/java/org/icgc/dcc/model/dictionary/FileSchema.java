@@ -53,7 +53,6 @@ public class FileSchema implements DictionaryElement {
     super();
     this.uniqueFields = new ArrayList<String>();
     this.fields = new ArrayList<Field>();
-    this.relation = new Relation();
   }
 
   public FileSchema(String name) {
@@ -152,16 +151,10 @@ public class FileSchema implements DictionaryElement {
     return false;
   }
 
-  /**
-   * @return the relation
-   */
   public Relation getRelation() {
     return relation;
   }
 
-  /**
-   * @param relation the relation to set
-   */
   public void setRelation(Relation relation) {
     this.relation = relation;
   }

@@ -17,22 +17,21 @@
  */
 package org.icgc.dcc.validation.plan;
 
-import java.util.List;
-
 import org.icgc.dcc.model.dictionary.FileSchema;
 
-import cascading.cascade.Cascade;
+import cascading.flow.FlowConnector;
+import cascading.tap.Tap;
 
-public interface Planner {
+public interface CascadingStrategy {
 
-  public void prepare(FileSchema schema);
+  public FlowConnector getFlowConnector();
 
-  public List<FileSchemaPlanner> getSchemaPlans();
+  public Tap getSourceTap(FileSchema schema);
 
-  public FileSchemaPlanner getSchemaPlan(String schema);
+  public Tap getInternalSinkTap(String schema);
 
-  public CascadingStrategy getCascadingStrategy();
+  public Tap getTrimmedTap(String schema, String[] fields);
 
-  public Cascade plan();
+  public Tap getExternalSinkTap(String schema);
 
 }
