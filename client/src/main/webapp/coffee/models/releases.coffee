@@ -3,7 +3,10 @@ define (require) ->
 
 	"use strict"
 
-	class Release extends Collection
-		url: ""
-		urlPath: ->
-			"releases/"
+	class Releases extends Collection
+		url: ->
+		  "ws/releases/"
+		  
+	 initialize: ->
+      console.debug 'Releases#initialize'
+      super

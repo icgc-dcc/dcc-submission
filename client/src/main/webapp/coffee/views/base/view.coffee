@@ -1,14 +1,12 @@
 define [
   'handlebars'
   'chaplin'
+  'lib/utils'
   'lib/view_helper' # Just load the view helpers, no return value
-], (Handlebars, Chaplin) ->
+], (Handlebars, Chaplin, utils) ->
   'use strict'
 
   class View extends Chaplin.View
-    # Override Chaplin.View::initialize in order to make stuff work.
-    initialize: ->
-      super
   
     getTemplateData: ->
       Model = require 'models/base/model'
