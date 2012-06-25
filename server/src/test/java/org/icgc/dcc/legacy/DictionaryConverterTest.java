@@ -48,9 +48,9 @@ public class DictionaryConverterTest {
 
     DictionaryConverter dc = new DictionaryConverter();
     dc.readDictionary("src/test/resources/converter/source/");
-    dc.saveToJSON("src/test/resources/dictionary.json");
+    dc.saveToJSON("target/dictionary.json");
 
-    File testFile = new File("src/test/resources/dictionary.json");
+    File testFile = new File("target//dictionary.json");
     File refFile = new File("src/main/resources/dictionary.json");
 
     ObjectMapper mapper = new ObjectMapper();

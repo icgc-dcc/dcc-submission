@@ -38,9 +38,9 @@ public class CodeListConverterTest {
 
     CodeListConverter clc = new CodeListConverter();
     clc.readCodec("src/test/resources/converter/codec");
-    clc.saveToJSON("src/test/resources/codeList.json");
+    clc.saveToJSON("target/codeList.json");
 
-    File testFile = new File("src/test/resources/codeList.json");
+    File testFile = new File("target/codeList.json");
     File refFile = new File("src/main/resources/codeList.json");
 
     ObjectMapper mapper = new ObjectMapper();
