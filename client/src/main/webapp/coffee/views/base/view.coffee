@@ -7,7 +7,7 @@ define [
   'use strict'
 
   class View extends Chaplin.View
-  
+
     getTemplateData: ->
       Model = require 'models/base/model'
       serialize = (object) ->
