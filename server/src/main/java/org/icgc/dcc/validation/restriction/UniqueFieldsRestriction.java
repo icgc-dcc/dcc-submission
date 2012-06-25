@@ -9,8 +9,9 @@ import org.icgc.dcc.validation.RestrictionType;
 import org.icgc.dcc.validation.RestrictionTypeSchema;
 import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.cascading.ValidationFields;
-import org.icgc.dcc.validation.plan.BaseInternalIntegrityPlanElement;
+import org.icgc.dcc.validation.plan.InternalIntegrityPlanElement;
 import org.icgc.dcc.validation.plan.PlanElement;
+import org.icgc.dcc.validation.plan.PlanPhase;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -29,7 +30,7 @@ import cascading.tuple.TupleEntry;
 import com.google.common.collect.ImmutableList;
 import com.mongodb.DBObject;
 
-public class UniqueFieldsRestriction extends BaseInternalIntegrityPlanElement {
+public class UniqueFieldsRestriction implements InternalIntegrityPlanElement {
 
   private static final String NAME = "unique";
 
@@ -42,6 +43,11 @@ public class UniqueFieldsRestriction extends BaseInternalIntegrityPlanElement {
   @Override
   public String describe() {
     return String.format("unique[%s]", fields);
+  }
+
+  @Override
+  public PlanPhase phase() {
+    return PlanPhase.INTERNAL;
   }
 
   @Override

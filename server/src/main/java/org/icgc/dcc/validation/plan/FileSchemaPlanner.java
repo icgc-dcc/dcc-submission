@@ -26,14 +26,12 @@ public interface FileSchemaPlanner {
 
   public FileSchema getSchema();
 
-  public void apply(InternalIntegrityPlanElement element);
+  public PlanPhase getPhase();
 
-  public void apply(ExternalIntegrityPlanElement element);
+  public void apply(PlanElement element);
 
   public Pipe trim(String... fields);
 
-  public FlowDef internalFlow();
-
-  public FlowDef externalFlow();
+  public FlowDef plan();
 
 }

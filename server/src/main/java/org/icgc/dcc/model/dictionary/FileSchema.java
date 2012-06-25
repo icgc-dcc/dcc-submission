@@ -68,6 +68,9 @@ public class FileSchema implements DictionaryElement {
     for(Field field : fields) {
       field.accept(dictionaryVisitor);
     }
+    if(relation != null) {
+      relation.accept(dictionaryVisitor);
+    }
   }
 
   public Optional<Field> field(final String name) {

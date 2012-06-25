@@ -10,8 +10,9 @@ import org.icgc.dcc.validation.RestrictionTypeSchema;
 import org.icgc.dcc.validation.RestrictionTypeSchema.FieldRestrictionParameter;
 import org.icgc.dcc.validation.RestrictionTypeSchema.ParameterType;
 import org.icgc.dcc.validation.cascading.ValidationFields;
-import org.icgc.dcc.validation.plan.BaseInternalIntegrityPlanElement;
+import org.icgc.dcc.validation.plan.InternalIntegrityPlanElement;
 import org.icgc.dcc.validation.plan.PlanElement;
+import org.icgc.dcc.validation.plan.PlanPhase;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -23,7 +24,7 @@ import cascading.tuple.Fields;
 
 import com.google.common.collect.ImmutableSet;
 
-public class DiscreteValuesPipeExtender extends BaseInternalIntegrityPlanElement {
+public class DiscreteValuesPipeExtender implements InternalIntegrityPlanElement {
 
   private static final String NAME = "in";
 
@@ -39,6 +40,11 @@ public class DiscreteValuesPipeExtender extends BaseInternalIntegrityPlanElement
   @Override
   public String describe() {
     return String.format("in[%s]", Arrays.toString(values));
+  }
+
+  @Override
+  public PlanPhase phase() {
+    return PlanPhase.INTERNAL;
   }
 
   @Override

@@ -9,8 +9,9 @@ import org.icgc.dcc.model.dictionary.Restriction;
 import org.icgc.dcc.validation.RestrictionType;
 import org.icgc.dcc.validation.RestrictionTypeSchema;
 import org.icgc.dcc.validation.cascading.ValidationFields;
-import org.icgc.dcc.validation.plan.BaseExternalIntegrityPlanElement;
+import org.icgc.dcc.validation.plan.ExternalIntegrityPlanElement;
 import org.icgc.dcc.validation.plan.PlanElement;
+import org.icgc.dcc.validation.plan.PlanPhase;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -26,7 +27,7 @@ import cascading.tuple.TupleEntry;
 
 import com.mongodb.DBObject;
 
-public class ForeingKeyFieldRestriction extends BaseExternalIntegrityPlanElement {
+public class ForeingKeyFieldRestriction implements ExternalIntegrityPlanElement {
 
   private static final String NAME = "foreign-key";
 
@@ -45,6 +46,11 @@ public class ForeingKeyFieldRestriction extends BaseExternalIntegrityPlanElement
   @Override
   public String describe() {
     return String.format("fk[%s:%s]", schema, field);
+  }
+
+  @Override
+  public PlanPhase phase() {
+    return PlanPhase.EXTERNAL;
   }
 
   @Override

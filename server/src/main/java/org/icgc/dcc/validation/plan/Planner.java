@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.validation.plan;
 
-import java.util.List;
-
 import org.icgc.dcc.model.dictionary.FileSchema;
 
 import cascading.cascade.Cascade;
@@ -27,9 +25,7 @@ public interface Planner {
 
   public void prepare(FileSchema schema);
 
-  public List<FileSchemaPlanner> getSchemaPlans();
-
-  public FileSchemaPlanner getSchemaPlan(String schema);
+  public FileSchemaPlanner getSchemaPlan(PlanPhase phase, String schema);
 
   public CascadingStrategy getCascadingStrategy();
 

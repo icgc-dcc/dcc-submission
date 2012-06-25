@@ -8,15 +8,12 @@ import java.util.List;
 import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.model.dictionary.Dictionary;
-import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.FileSchema;
-import org.icgc.dcc.model.dictionary.Restriction;
 import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.cascading.ValidationFields;
 import org.icgc.dcc.validation.plan.DefaultPlanner;
-import org.icgc.dcc.validation.plan.FileSchemaPlanner;
 import org.icgc.dcc.validation.plan.LocalCascadingStrategy;
-import org.icgc.dcc.validation.plan.PlanElement;
+import org.icgc.dcc.validation.plan.PlanPhase;
 import org.icgc.dcc.validation.restriction.DiscreteValuesPipeExtender;
 import org.icgc.dcc.validation.restriction.ForeingKeyFieldRestriction;
 
@@ -71,15 +68,9 @@ public class Main {
         dp.prepare(fs);
       }
     }
-
-    for(FileSchemaPlanner fsPlan : dp.getSchemaPlans()) {
-      for(Field f : fsPlan.getSchema().getFields()) {
-        for(Restriction r : f.getRestrictions()) {
-          getRestriction(f, r).apply(fsPlan);
-        }
-      }
+    for(PlanPhase phase : PlanPhase.values()) {
+      dp.planPhase(phase);
     }
-
     Cascade c = dp.plan();
     c.writeDOT(new File(output, "cascade.dot").getAbsolutePath());
     for(Flow flow : c.getFlows()) {
@@ -98,27 +89,6 @@ public class Main {
       }
     });
     return files != null && files.length > 0;
-  }
-
-  private PlanElement getRestriction(Field field, Restriction restriction) {
-    for(RestrictionType type : factories) {
-      if(type.builds(restriction.getType())) {
-        return type.build(field, restriction);
-      }
-    }
-    return new PlanElement() {
-
-      @Override
-      public String describe() {
-        return "";
-      }
-
-      @Override
-      public void apply(FileSchemaPlanner schemaPlan) {
-
-      }
-
-    };
   }
 
   public static final class AddValidationFieldsFunction extends BaseOperation implements Function {

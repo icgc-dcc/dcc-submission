@@ -118,9 +118,9 @@ public class DictionaryConverter {
       String rightKey = valueIterator.next();
       Iterable<String> rightKeys = Splitter.on(',').trimResults().omitEmptyStrings().split(rightKey);
 
-      if(this.dictionary.hasFileSchema(leftTable)) {
-        FileSchema leftFileSchema = this.dictionary.fileSchema(leftTable).get();
-        leftFileSchema.setRelation(new Relation(leftKeys, rightTable, rightKeys));
+      if(this.dictionary.hasFileSchema(rightTable)) {
+        FileSchema leftFileSchema = this.dictionary.fileSchema(rightTable).get();
+        leftFileSchema.setRelation(new Relation(rightKeys, leftTable, leftKeys));
       }
     }
   }
