@@ -17,12 +17,32 @@
  */
 package org.icgc.dcc.web;
 
+import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.Response;
+
+import com.sun.jersey.core.util.Base64;
 
 /**
  * 
  */
-@Path("user/self")
+@Path("users/self")
 public class UserResource {
+  @GET
+  public Response getRoles(@Context HttpHeaders headers) {
+    String auth = headers.getRequestHeader("authorization").get(0);
+
+    auth = auth.substring("Basic ".length());
+    String[] values = new String(Base64.base64Decode(auth)).split(":");
+    String username = values[0];
+    String password = values[1];
+
+    // TODO add actual authentication via shiro
+    // TODO hook in to user object to return roles
+
+    return Response.ok(username).build();
+  }
 
 }
