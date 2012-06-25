@@ -8,7 +8,7 @@ define (require) ->
     template: template
     id: 'login'
     className: 'modal hide fade'
-    container: '#content-container'
+    container: 'body'
     autoRender: true
 
     # Expects the serviceProviders in the options

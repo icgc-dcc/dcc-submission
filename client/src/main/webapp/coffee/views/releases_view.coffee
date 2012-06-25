@@ -11,10 +11,11 @@ define [
     template: template
     template = null
     
-    container: '#page-container'
+    container: '#content-container'
+    containerMethod: 'html'
     autoRender: true    
     tagName: 'div'
-    id: 'my-releases'
+    id: 'releases-view'
     listSelector: 'ol'
     fallbackSelector: '.fallback'
     loadingSelector: '.loading'

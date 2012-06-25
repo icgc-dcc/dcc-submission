@@ -1,6 +1,7 @@
 define (require) ->
   Chaplin = require 'chaplin'
   SessionController = require 'controllers/session_controller'
+  NavigationController = require 'controllers/navigation_controller'
   Layout = require 'views/layout'
   routes = require 'routes'
 
@@ -54,6 +55,7 @@ define (require) ->
       # or navigation views.
       # e.g. new NavigationController()
       new SessionController()
+      new NavigationController()
       
     # Create additional mediator properties
     # -------------------------------------
