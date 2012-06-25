@@ -26,8 +26,6 @@ public interface FileSchemaPlanner {
 
   public FileSchema getSchema();
 
-  public Iterable<FileSchema> dependsOn();
-
   public void apply(InternalIntegrityPlanElement element);
 
   public void apply(ExternalIntegrityPlanElement element);

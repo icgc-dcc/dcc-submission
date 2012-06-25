@@ -55,8 +55,6 @@ class DefaultFileSchemaPlanner implements FileSchemaPlanner {
 
   private final List<Pipe> joinedTails = Lists.newLinkedList();
 
-  private final List<FileSchema> parents = Lists.newLinkedList();
-
   private Pipe validTail;
 
   DefaultFileSchemaPlanner(Planner plan, FileSchema fileSchema) {
@@ -75,11 +73,6 @@ class DefaultFileSchemaPlanner implements FileSchemaPlanner {
   }
 
   @Override
-  public Iterable<FileSchema> dependsOn() {
-    return parents;
-  }
-
-  @Override
   public void apply(InternalIntegrityPlanElement element) {
     validTail = element.extend(validTail);
   }
@@ -93,7 +86,6 @@ class DefaultFileSchemaPlanner implements FileSchemaPlanner {
     trimmedHeads.put(fileSchema.getName(), element.lhsFields());
     trimmedHeads.put(element.rhs(), element.rhsFields());
     joinedTails.add(element.join(lhs, rhs));
-    parents.add(planner.getSchemaPlan(element.rhs()).getSchema());
   }
 
   @Override
