@@ -107,6 +107,7 @@ public class NextReleaseTest {
 
     verify(ds).createUpdateOperations(Release.class);
     verify(updates).set("state", ReleaseState.COMPLETED);
+    verify(updates).set("releaseDate", release.getReleaseDate());
     verify(ds).update(release, updates);
     verify(ds).save(release2);
   }
@@ -172,6 +173,7 @@ public class NextReleaseTest {
     when(release2.getState()).thenReturn(ReleaseState.OPENED);
     when(release2.getDictionary()).thenReturn(null);
     when(updates.set("state", ReleaseState.COMPLETED)).thenReturn(updates);
+    when(updates.set("releaseDate", release.getReleaseDate())).thenReturn(updates);
   }
 
   private Submission signOffSetUp() {
