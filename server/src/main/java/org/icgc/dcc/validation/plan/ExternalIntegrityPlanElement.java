@@ -19,6 +19,9 @@ package org.icgc.dcc.validation.plan;
 
 import org.icgc.dcc.validation.PipeJoiner;
 
+/**
+ * A {@code PlanElement} that requires joining before applying a validation.
+ */
 public interface ExternalIntegrityPlanElement extends PlanElement, PipeJoiner {
 
   /**
