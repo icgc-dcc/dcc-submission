@@ -1,10 +1,9 @@
-define [
-  'views/base/collection_view'
-  'text!views/templates/releases.handlebars'
-  'models/release'
-  'views/release_view'
-], (CollectionView, template, Release, ReleaseView) ->
-
+define (require) ->
+  CollectionView = require 'views/base/collection_view'
+  Release = require 'models/release'
+  CompactReleaseView = require 'views/compact_release_view'
+  template = require 'text!views/templates/releases.handlebars'
+ 
   'use strict'
 
   class ReleasesView extends CollectionView
@@ -16,15 +15,9 @@ define [
     autoRender: true    
     tagName: 'div'
     id: 'releases-view'
-    listSelector: 'ol'
-    fallbackSelector: '.fallback'
-    loadingSelector: '.loading'
-          
-    initialize: ->
-      console.debug 'ReleasesView#initialize', @collection
-      super
+    listSelector: 'tbody'
       
     getView: (item) -> 
       console.debug 'ReleasesView#getView', item
-      new ReleaseView model: item
+      new CompactReleaseView model: item
     
