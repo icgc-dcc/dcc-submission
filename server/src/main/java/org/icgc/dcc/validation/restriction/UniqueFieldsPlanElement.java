@@ -3,13 +3,8 @@ package org.icgc.dcc.validation.restriction;
 import java.util.Iterator;
 import java.util.List;
 
-import org.icgc.dcc.model.dictionary.Field;
-import org.icgc.dcc.model.dictionary.Restriction;
-import org.icgc.dcc.validation.RestrictionType;
-import org.icgc.dcc.validation.RestrictionTypeSchema;
 import org.icgc.dcc.validation.cascading.ValidationFields;
 import org.icgc.dcc.validation.plan.InternalPlanElement;
-import org.icgc.dcc.validation.plan.PlanElement;
 import org.icgc.dcc.validation.plan.PlanPhase;
 
 import cascading.flow.FlowProcess;
@@ -23,15 +18,12 @@ import cascading.tuple.Fields;
 import cascading.tuple.TupleEntry;
 
 import com.google.common.collect.ImmutableList;
-import com.mongodb.DBObject;
 
-public class UniqueFieldsRestriction implements InternalPlanElement {
-
-  private static final String NAME = "unique";
+public class UniqueFieldsPlanElement implements InternalPlanElement {
 
   private final List<String> fields;
 
-  private UniqueFieldsRestriction(String[] fields) {
+  public UniqueFieldsPlanElement(Iterable<String> fields) {
     this.fields = ImmutableList.copyOf(fields);
   }
 
@@ -56,32 +48,6 @@ public class UniqueFieldsRestriction implements InternalPlanElement {
     // pipe = new Each(pipe, new ValidationFields("count"), new CountIsOne(), Fields.REPLACE);
     // pipe = new Discard(pipe, new Fields("count"));
     return pipe;
-  }
-
-  public static class Type implements RestrictionType {
-
-    @Override
-    public String getType() {
-      return NAME;
-    }
-
-    @Override
-    public RestrictionTypeSchema getSchema() {
-      return null;
-    }
-
-    @Override
-    public boolean builds(String name) {
-      return NAME.equals(name);
-    }
-
-    @Override
-    public PlanElement build(Field field, Restriction restriction) {
-      DBObject configuration = restriction.getConfig();
-      String[] fields = (String[]) configuration.get("fields");
-      return new UniqueFieldsRestriction(fields);
-    }
-
   }
 
   private static class CountBuffer extends BaseOperation implements Buffer {

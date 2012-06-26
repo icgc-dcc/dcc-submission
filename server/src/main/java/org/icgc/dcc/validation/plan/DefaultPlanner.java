@@ -31,6 +31,7 @@ import org.icgc.dcc.model.dictionary.visitor.BaseDictionaryVisitor;
 import org.icgc.dcc.model.dictionary.visitor.DictionaryVisitor;
 import org.icgc.dcc.validation.RestrictionType;
 import org.icgc.dcc.validation.restriction.RelationPlanElement;
+import org.icgc.dcc.validation.restriction.UniqueFieldsPlanElement;
 import org.icgc.dcc.validation.restriction.ValueTypePlanElement;
 
 import cascading.cascade.Cascade;
@@ -105,8 +106,8 @@ public class DefaultPlanner implements Planner {
 
   private void planInternalFlow() {
     for(FileSchema s : plannedSchema) {
-      for(DictionaryVisitor visitor : ImmutableList.of(new ValueTypeVisitor(), new RestrictionsVisitor(
-          PlanPhase.INTERNAL))) {
+      for(DictionaryVisitor visitor : ImmutableList.of(new UniqueFieldsVisitor(), new ValueTypeVisitor(),
+          new RestrictionsVisitor(PlanPhase.INTERNAL))) {
         s.accept(visitor);
       }
     }
@@ -154,6 +155,18 @@ public class DefaultPlanner implements Planner {
     protected void apply(PlanElement element) {
       getSchemaPlan(element.phase(), getFileSchema().getName()).apply(element);
     }
+  }
+
+  private class UniqueFieldsVisitor extends BasePlanningVisitor {
+
+    @Override
+    public void visit(FileSchema fileSchema) {
+      super.visit(fileSchema);
+      if(fileSchema.getUniqueFields().size() > 0) {
+        apply(new UniqueFieldsPlanElement(fileSchema.getUniqueFields()));
+      }
+    }
+
   }
 
   private class ValueTypeVisitor extends BasePlanningVisitor {
