@@ -54,7 +54,6 @@ public class DefaultPlanner implements Planner {
 
   public DefaultPlanner(CascadingStrategy cascadingStrategy) {
     this.cascadingStrategy = cascadingStrategy;
-
     for(PlanPhase phase : PlanPhase.values()) {
       plans.put(phase, new Planners(phase));
     }
@@ -101,7 +100,7 @@ public class DefaultPlanner implements Planner {
 
   private void planInternalFlow() {
     for(FileSchema s : plannedSchema) {
-      for(DictionaryVisitor visitor : ImmutableList.of(new ValueTypeFlowVisitor(), new RestrictionFlowVisitor(
+      for(DictionaryVisitor visitor : ImmutableList.of(new ValueTypeVisitor(), new RestrictionsVisitor(
           PlanPhase.INTERNAL))) {
         s.accept(visitor);
       }
@@ -110,8 +109,8 @@ public class DefaultPlanner implements Planner {
 
   private void planExternalFlow() {
     for(FileSchema s : plannedSchema) {
-      for(DictionaryVisitor visitor : ImmutableList.of(new RestrictionFlowVisitor(PlanPhase.EXTERNAL),
-          new RelationFlowVisitor())) {
+      for(DictionaryVisitor visitor : ImmutableList.of(new RestrictionsVisitor(PlanPhase.EXTERNAL),
+          new RelationVisitor())) {
         s.accept(visitor);
       }
     }
@@ -132,7 +131,7 @@ public class DefaultPlanner implements Planner {
     return null;
   }
 
-  private class BaseFlowVisitor extends BaseDictionaryVisitor {
+  private class BasePlanningVisitor extends BaseDictionaryVisitor {
 
     private FileSchema fileSchema;
 
@@ -155,21 +154,25 @@ public class DefaultPlanner implements Planner {
     public FileSchema getFileSchema() {
       return fileSchema;
     }
-  }
 
-  private class ValueTypeFlowVisitor extends BaseFlowVisitor {
-
-    @Override
-    public void visit(Field field) {
-      getSchemaPlan(PlanPhase.INTERNAL, getFileSchema().getName()).apply(new ValueTypePlanElement(field));
+    protected void apply(PlanElement element) {
+      getSchemaPlan(element.phase(), getFileSchema().getName()).apply(element);
     }
   }
 
-  private class RestrictionFlowVisitor extends BaseFlowVisitor {
+  private class ValueTypeVisitor extends BasePlanningVisitor {
+
+    @Override
+    public void visit(Field field) {
+      apply(new ValueTypePlanElement(field));
+    }
+  }
+
+  private class RestrictionsVisitor extends BasePlanningVisitor {
 
     private final PlanPhase phase;
 
-    RestrictionFlowVisitor(PlanPhase phase) {
+    RestrictionsVisitor(PlanPhase phase) {
       this.phase = phase;
     }
 
@@ -177,17 +180,16 @@ public class DefaultPlanner implements Planner {
     public void visit(Restriction restriction) {
       PlanElement element = getRestriction(getField(), restriction);
       if(element != null && element.phase() == phase) {
-        getSchemaPlan(phase, getFileSchema().getName()).apply(element);
+        apply(element);
       }
     }
   }
 
-  private class RelationFlowVisitor extends BaseFlowVisitor {
+  private class RelationVisitor extends BasePlanningVisitor {
 
     @Override
     public void visit(Relation relation) {
-      getSchemaPlan(PlanPhase.EXTERNAL, getFileSchema().getName()).apply(
-          new RelationPlanElement(getFileSchema(), relation));
+      apply(new RelationPlanElement(getFileSchema(), relation));
     }
 
   }
