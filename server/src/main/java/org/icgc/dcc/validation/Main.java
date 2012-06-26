@@ -12,7 +12,6 @@ import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.cascading.ValidationFields;
 import org.icgc.dcc.validation.plan.DefaultPlanner;
 import org.icgc.dcc.validation.plan.LocalCascadingStrategy;
-import org.icgc.dcc.validation.plan.PlanPhase;
 
 import cascading.cascade.Cascade;
 import cascading.flow.Flow;
@@ -60,9 +59,6 @@ public class Main {
       if(hasFile(fs)) {
         dp.prepare(fs);
       }
-    }
-    for(PlanPhase phase : PlanPhase.values()) {
-      dp.planPhase(phase);
     }
     Cascade c = dp.plan();
     c.writeDOT(new File(output, "cascade.dot").getAbsolutePath());

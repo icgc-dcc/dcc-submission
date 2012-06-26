@@ -66,43 +66,6 @@ public class DefaultPlanner implements Planner {
     plans.get(PlanPhase.EXTERNAL).planFor(schema.getName(), new DefaultExternalFlowPlanner(this, schema));
   }
 
-  public void planPhase(final PlanPhase phase) {
-    DictionaryVisitor phaseVisitor = new BaseDictionaryVisitor() {
-
-      private FileSchemaPlanner planner;
-
-      private Field field;
-
-      @Override
-      public void visit(FileSchema fileSchema) {
-        planner = plans.get(phase).planner(fileSchema.getName());
-      }
-
-      @Override
-      public void visit(Field field) {
-        this.field = field;
-      }
-
-      @Override
-      public void visit(Restriction restriction) {
-        PlanElement element = getRestriction(field, restriction);
-        if(element != null && element.phase() == phase) {
-          planner.apply(element);
-        }
-      }
-
-      @Override
-      public void visit(Relation relation) {
-        if(phase == PlanPhase.EXTERNAL) {
-          planner.apply(new RelationPlanElement(planner.getSchema(), relation));
-        }
-      }
-    };
-    for(FileSchema fs : plannedSchema) {
-      fs.accept(phaseVisitor);
-    }
-  }
-
   @Override
   public InternalFlowPlanner getInternalFlow(String schema) {
     return (InternalFlowPlanner) getSchemaPlan(PlanPhase.INTERNAL, schema);
@@ -115,6 +78,8 @@ public class DefaultPlanner implements Planner {
 
   @Override
   public Cascade plan() {
+    planInternalFlow();
+    planExternalFlow();
     CascadeDef def = new CascadeDef();
     for(Planners p : plans.values()) {
       for(FileSchemaPlanner plan : p.planners.values()) {
@@ -132,6 +97,23 @@ public class DefaultPlanner implements Planner {
     return cascadingStrategy;
   }
 
+  private void planInternalFlow() {
+    for(FileSchema s : plannedSchema) {
+      for(DictionaryVisitor visitor : ImmutableList.of(new RestrictionFlowVisitor(PlanPhase.INTERNAL))) {
+        s.accept(visitor);
+      }
+    }
+  }
+
+  private void planExternalFlow() {
+    for(FileSchema s : plannedSchema) {
+      for(DictionaryVisitor visitor : ImmutableList.of(new RestrictionFlowVisitor(PlanPhase.EXTERNAL),
+          new RelationFlowVisitor())) {
+        s.accept(visitor);
+      }
+    }
+  }
+
   private FileSchemaPlanner getSchemaPlan(PlanPhase phase, String schema) {
     FileSchemaPlanner schemaPlan = this.plans.get(phase).planner(schema);
     if(schemaPlan == null) throw new IllegalStateException("no plan for " + schema);
@@ -145,6 +127,58 @@ public class DefaultPlanner implements Planner {
       }
     }
     return null;
+  }
+
+  private class BaseFlowVisitor extends BaseDictionaryVisitor {
+
+    private FileSchema fileSchema;
+
+    private Field field;
+
+    @Override
+    public void visit(FileSchema fileSchema) {
+      this.fileSchema = fileSchema;
+    }
+
+    @Override
+    public void visit(Field field) {
+      this.field = field;
+    }
+
+    public Field getField() {
+      return field;
+    }
+
+    public FileSchema getFileSchema() {
+      return fileSchema;
+    }
+  }
+
+  private class RestrictionFlowVisitor extends BaseFlowVisitor {
+
+    private final PlanPhase phase;
+
+    RestrictionFlowVisitor(PlanPhase phase) {
+      this.phase = phase;
+    }
+
+    @Override
+    public void visit(Restriction restriction) {
+      PlanElement element = getRestriction(getField(), restriction);
+      if(element != null && element.phase() == phase) {
+        getSchemaPlan(phase, getFileSchema().getName()).apply(element);
+      }
+    }
+  }
+
+  private class RelationFlowVisitor extends BaseFlowVisitor {
+
+    @Override
+    public void visit(Relation relation) {
+      getSchemaPlan(PlanPhase.EXTERNAL, getFileSchema().getName()).apply(
+          new RelationPlanElement(getFileSchema(), relation));
+    }
+
   }
 
   private class Planners {
