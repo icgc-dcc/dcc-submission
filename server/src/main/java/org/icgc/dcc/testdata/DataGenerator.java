@@ -86,6 +86,7 @@ public class DataGenerator {
     groups.clear();
     groups.add("admin");
     project2.setGroups(groups);
+    this.projectService.addProject(project2);
 
     // add Dictionary
     Dictionary firstDict = new Dictionary("1.0");
