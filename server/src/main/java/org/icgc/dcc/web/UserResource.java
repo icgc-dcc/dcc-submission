@@ -56,7 +56,7 @@ public class UserResource {
 
       User user = users.getUser(username);
       if(user != null) {
-        return Response.ok().build();
+        return Response.ok(user).build();
       }
       return Response.status(Status.NOT_FOUND).build();
     }
