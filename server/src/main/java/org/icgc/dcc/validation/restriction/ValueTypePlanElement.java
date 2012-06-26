@@ -17,8 +17,6 @@ import cascading.tuple.Tuple;
 
 public class ValueTypePlanElement implements InternalIntegrityPlanElement {
 
-  private static final String NAME = "value-type";
-
   private final Field field;
 
   private final ValueType type;
