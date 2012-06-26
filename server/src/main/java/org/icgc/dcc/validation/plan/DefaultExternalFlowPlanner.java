@@ -65,10 +65,8 @@ class DefaultExternalFlowPlanner implements ExternalFlowPlanner {
     Trim trimLhs = planner.getInternalFlow(getSchema().getName()).addTrimmedOutput(element.lhsFields());
     Trim trimRhs = planner.getInternalFlow(element.rhs()).addTrimmedOutput(element.rhsFields());
 
-    Pipe lhs = new Pipe(trimLhs.getName());
-    trimmedHeads.put(trimLhs, lhs);
-    Pipe rhs = new Pipe(trimRhs.getName());
-    trimmedHeads.put(trimRhs, rhs);
+    Pipe lhs = getTrimmedHead(trimLhs);
+    Pipe rhs = getTrimmedHead(trimRhs);
 
     joinedTails.add(element.join(lhs, rhs));
   }
@@ -86,6 +84,15 @@ class DefaultExternalFlowPlanner implements ExternalFlowPlanner {
       return def;
     }
     return null;
+  }
+
+  private Pipe getTrimmedHead(Trim trim) {
+    Pipe head = trimmedHeads.get(trim);
+    if(head == null) {
+      head = new Pipe(trim.getName());
+      trimmedHeads.put(trim, head);
+    }
+    return head;
   }
 
   private Pipe mergeJoinedTails() {

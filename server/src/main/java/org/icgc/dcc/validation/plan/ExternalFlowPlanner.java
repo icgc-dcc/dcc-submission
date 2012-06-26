@@ -17,6 +17,6 @@
  */
 package org.icgc.dcc.validation.plan;
 
-public interface ExternalFlowPlanner extends FileSchemaPlanner {
 
+public interface ExternalFlowPlanner extends FileSchemaPlanner {
 }
