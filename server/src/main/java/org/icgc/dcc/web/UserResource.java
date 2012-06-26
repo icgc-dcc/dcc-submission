@@ -35,9 +35,9 @@ public class UserResource {
     String auth = headers.getRequestHeader("authorization").get(0);
 
     auth = auth.substring("Basic ".length());
-    String[] values = new String(Base64.base64Decode(auth)).split(":");
+    String[] values = new String(Base64.base64Decode(auth)).split(":", -1);
     String username = values[0];
-    String password = values[1];
+    String password = values.length > 1 ? values[1] : "";
 
     // TODO add actual authentication via shiro
     // TODO hook in to user object to return roles
