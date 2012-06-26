@@ -30,7 +30,7 @@ public interface CascadingStrategy {
 
   public Tap getInternalSinkTap(String schema);
 
-  public Tap getTrimmedTap(String schema, String[] fields);
+  public Tap getTrimmedTap(Trim trim);
 
   public Tap getExternalSinkTap(String schema);
 

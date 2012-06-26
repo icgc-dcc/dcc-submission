@@ -66,9 +66,9 @@ public class LocalCascadingStrategy implements CascadingStrategy {
   }
 
   @Override
-  public Tap getTrimmedTap(String schema, String[] fields) {
-    File trimmed = new File(output, schema + "-" + Joiner.on("_").join(fields) + ".tsv");
-    return new FileTap(new TextDelimited(new Fields(fields), true, "\t"), trimmed.getAbsolutePath());
+  public Tap getTrimmedTap(Trim trim) {
+    File trimmed = new File(output, trim.getSchema() + "-" + Joiner.on("_").join(trim.getFields()) + ".tsv");
+    return new FileTap(new TextDelimited(new Fields(trim.getFields()), true, "\t"), trimmed.getAbsolutePath());
   }
 
   private Tap tap(File file) {

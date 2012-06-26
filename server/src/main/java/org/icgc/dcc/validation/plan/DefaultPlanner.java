@@ -80,6 +80,7 @@ public class DefaultPlanner implements Planner {
   public Cascade plan() {
     planInternalFlow();
     planExternalFlow();
+
     CascadeDef def = new CascadeDef();
     for(Planners p : plans.values()) {
       for(FileSchemaPlanner plan : p.planners.values()) {

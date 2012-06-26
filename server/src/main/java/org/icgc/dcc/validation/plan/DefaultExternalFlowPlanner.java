@@ -81,7 +81,7 @@ class DefaultExternalFlowPlanner implements ExternalFlowPlanner {
       FlowDef def = new FlowDef().setName(getSchema().getName() + ".ext").addTailSink(mergeJoinedTails(), sink);
 
       for(Trim trim : trimmedHeads.keySet()) {
-        def.addSource(trim.getName(), strategy.getTrimmedTap(trim.getSchema(), trim.getFields()));
+        def.addSource(trim.getName(), strategy.getTrimmedTap(trim));
       }
       return def;
     }

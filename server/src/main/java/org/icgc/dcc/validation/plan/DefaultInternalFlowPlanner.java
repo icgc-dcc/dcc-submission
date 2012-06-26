@@ -92,7 +92,7 @@ class DefaultInternalFlowPlanner implements InternalFlowPlanner {
 
     FlowDef def = new FlowDef().setName(getSchema().getName() + ".int").addSource(head, source).addTailSink(tail, sink);
     for(Map.Entry<Trim, Pipe> e : trimmedTails.entrySet()) {
-      def.addTailSink(e.getValue(), strategy.getTrimmedTap(fileSchema.getName(), e.getKey().getFields()));
+      def.addTailSink(e.getValue(), strategy.getTrimmedTap(e.getKey()));
     }
     return def;
   }
