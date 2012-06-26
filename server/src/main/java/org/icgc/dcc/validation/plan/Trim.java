@@ -21,6 +21,9 @@ import java.util.Arrays;
 
 import com.google.common.base.Joiner;
 
+/**
+ * Holds a reference to trimmed content. Used to plan outputs from the internal flow and inputs for the external flow.
+ */
 public class Trim {
 
   private final String schema;
