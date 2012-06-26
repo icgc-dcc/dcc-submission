@@ -30,6 +30,8 @@ import org.icgc.dcc.validation.visitor.RelationPlanningVisitor;
 import org.icgc.dcc.validation.visitor.RestrictionPlanningVisitor;
 import org.icgc.dcc.validation.visitor.UniqueFieldsPlanningVisitor;
 import org.icgc.dcc.validation.visitor.ValueTypePlanningVisitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cascading.cascade.Cascade;
 import cascading.cascade.CascadeConnector;
@@ -42,6 +44,8 @@ import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 
 public class DefaultPlanner implements Planner {
+
+  private static final Logger log = LoggerFactory.getLogger(DefaultPlanner.class);
 
   private final List<PlanningVisitor> internalFlowVisitors;
 
@@ -110,12 +114,12 @@ public class DefaultPlanner implements Planner {
   }
 
   private void plan(List<PlanningVisitor> visitors) {
-    for(FileSchema s : plannedSchema) {
+    for(FileSchema fs : plannedSchema) {
       for(PlanningVisitor visitor : visitors) {
-        s.accept(visitor);
+        fs.accept(visitor);
         for(PlanElement element : visitor.getElements()) {
-          System.out.println("Applying " + element.describe());
-          getSchemaPlan(visitor.getPhase(), s.getName()).apply(element);
+          log.info("[{}]: applying plan element {}", fs.getName(), element.describe());
+          getSchemaPlan(visitor.getPhase(), fs.getName()).apply(element);
         }
       }
     }
