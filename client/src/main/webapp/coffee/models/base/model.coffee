@@ -25,7 +25,12 @@ define (require) ->
 
     url: ->
       console.debug 'Model#url'
-      @urlRoot()
+      base = @urlRoot()
+      url = if @get(@urlKey)?
+        base + encodeURIComponent(@get(@urlKey))
+      else
+        base
+      url
 
     fetch: (options) ->
       console.debug 'Model#fetch'
