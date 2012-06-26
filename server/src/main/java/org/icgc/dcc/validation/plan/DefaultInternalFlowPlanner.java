@@ -22,7 +22,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.util.Map;
 
 import org.icgc.dcc.model.dictionary.FileSchema;
-import org.icgc.dcc.validation.Main;
+import org.icgc.dcc.validation.cascading.AddValidationFieldsFunction;
 import org.icgc.dcc.validation.cascading.TupleStates;
 import org.icgc.dcc.validation.cascading.ValidationFields;
 
@@ -101,7 +101,7 @@ class DefaultInternalFlowPlanner implements InternalFlowPlanner {
   }
 
   private Pipe applySystemPipes(Pipe pipe) {
-    return new Each(pipe, new Main.AddValidationFieldsFunction(), Fields.ALL);
+    return new Each(pipe, new AddValidationFieldsFunction(), Fields.ALL);
   }
 
   private Pipe applyFilter(Pipe pipe) {

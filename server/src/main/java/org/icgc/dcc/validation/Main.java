@@ -8,19 +8,11 @@ import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.model.dictionary.Dictionary;
 import org.icgc.dcc.model.dictionary.FileSchema;
-import org.icgc.dcc.validation.cascading.TupleState;
-import org.icgc.dcc.validation.cascading.ValidationFields;
 import org.icgc.dcc.validation.plan.DefaultPlanner;
 import org.icgc.dcc.validation.plan.LocalCascadingStrategy;
 
 import cascading.cascade.Cascade;
 import cascading.flow.Flow;
-import cascading.flow.FlowProcess;
-import cascading.operation.BaseOperation;
-import cascading.operation.Function;
-import cascading.operation.FunctionCall;
-import cascading.tuple.Fields;
-import cascading.tuple.Tuple;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
@@ -78,24 +70,5 @@ public class Main {
       }
     });
     return files != null && files.length > 0;
-  }
-
-  public static final class AddValidationFieldsFunction extends BaseOperation implements Function {
-
-    public AddValidationFieldsFunction() {
-      super(0, new Fields(ValidationFields.STATE_FIELD_NAME));
-    }
-
-    @Override
-    public void operate(FlowProcess process, FunctionCall functionCall) {
-      // create a Tuple to hold our result values
-      Tuple result = new Tuple();
-
-      result.add(new TupleState());
-
-      // return the result Tuple
-      functionCall.getOutputCollector().add(result);
-    }
-
   }
 }
