@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.validation.plan;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -53,6 +55,8 @@ public class DefaultPlanner implements Planner {
 
   @Inject
   public DefaultPlanner(Set<RestrictionType> restrictionTypes, CascadingStrategy cascadingStrategy) {
+    checkArgument(restrictionTypes != null);
+    checkArgument(cascadingStrategy != null);
     this.restrictionTypes = restrictionTypes;
     this.cascadingStrategy = cascadingStrategy;
     for(PlanPhase phase : PlanPhase.values()) {
