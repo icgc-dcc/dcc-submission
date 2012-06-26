@@ -21,7 +21,7 @@ import org.icgc.dcc.model.dictionary.FileSchema;
 
 import cascading.flow.FlowDef;
 
-public interface FileSchemaPlanner {
+public interface FileSchemaFlowPlanner {
 
   public FileSchema getSchema();
 

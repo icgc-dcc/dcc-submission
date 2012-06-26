@@ -18,7 +18,7 @@
 package org.icgc.dcc.validation.plan;
 
 
-public interface InternalFlowPlanner extends FileSchemaPlanner {
+public interface InternalFlowPlanner extends FileSchemaFlowPlanner {
 
   public Trim addTrimmedOutput(String... fields);
 

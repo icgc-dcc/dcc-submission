@@ -88,7 +88,7 @@ public class DefaultPlanner implements Planner {
 
     CascadeDef def = new CascadeDef();
     for(Planners p : plans.values()) {
-      for(FileSchemaPlanner plan : p.planners.values()) {
+      for(FileSchemaFlowPlanner plan : p.planners.values()) {
         FlowDef flowDef = plan.plan();
         if(flowDef != null) {
           def.addFlow(cascadingStrategy.getFlowConnector().connect(flowDef));
@@ -121,8 +121,8 @@ public class DefaultPlanner implements Planner {
     }
   }
 
-  private FileSchemaPlanner getSchemaPlan(PlanPhase phase, String schema) {
-    FileSchemaPlanner schemaPlan = this.plans.get(phase).planner(schema);
+  private FileSchemaFlowPlanner getSchemaPlan(PlanPhase phase, String schema) {
+    FileSchemaFlowPlanner schemaPlan = this.plans.get(phase).planner(schema);
     if(schemaPlan == null) throw new IllegalStateException("no plan for " + schema);
     return schemaPlan;
   }
@@ -198,19 +198,19 @@ public class DefaultPlanner implements Planner {
 
     private final PlanPhase phase;
 
-    private final Map<String, FileSchemaPlanner> planners = Maps.newHashMap();
+    private final Map<String, FileSchemaFlowPlanner> planners = Maps.newHashMap();
 
     public Planners(PlanPhase phase) {
       this.phase = phase;
     }
 
-    FileSchemaPlanner planFor(String name, FileSchemaPlanner planner) {
+    FileSchemaFlowPlanner planFor(String name, FileSchemaFlowPlanner planner) {
       this.planners.put(name, planner);
       return planner;
     }
 
-    FileSchemaPlanner planner(String name) {
-      FileSchemaPlanner schemaPlan = this.planners.get(name);
+    FileSchemaFlowPlanner planner(String name) {
+      FileSchemaFlowPlanner schemaPlan = this.planners.get(name);
       if(schemaPlan == null) throw new IllegalStateException("no plan for " + name + " in phase " + phase);
       return schemaPlan;
     }
