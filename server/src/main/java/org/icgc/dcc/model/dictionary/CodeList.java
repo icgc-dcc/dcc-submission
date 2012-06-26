@@ -46,9 +46,9 @@ public class CodeList extends BaseEntity implements HasName {
 
   public CodeList(String name) {
     this();
-    checkArgument(label != null);
     this.name = name;
     this.label = name;
+    checkArgument(label != null);
   }
 
   @Override

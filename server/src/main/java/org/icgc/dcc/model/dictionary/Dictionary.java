@@ -54,9 +54,8 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
   }
 
   public Dictionary(String version) {
-    super();
+    this();
     this.version = version;
-    this.state = DictionaryState.OPENED;
   }
 
   @Override
