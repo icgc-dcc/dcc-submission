@@ -61,7 +61,7 @@ class DefaultExternalFlowPlanner implements ExternalFlowPlanner {
 
   @Override
   public void apply(PlanElement e) {
-    ExternalIntegrityPlanElement element = (ExternalIntegrityPlanElement) e;
+    ExternalPlanElement element = (ExternalPlanElement) e;
     Trim trimLhs = planner.getInternalFlow(getSchema().getName()).addTrimmedOutput(element.lhsFields());
     Trim trimRhs = planner.getInternalFlow(element.rhs()).addTrimmedOutput(element.rhsFields());
 

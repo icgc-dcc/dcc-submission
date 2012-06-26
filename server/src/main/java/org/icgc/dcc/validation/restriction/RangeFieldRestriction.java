@@ -7,7 +7,7 @@ import org.icgc.dcc.validation.RestrictionTypeSchema;
 import org.icgc.dcc.validation.RestrictionTypeSchema.FieldRestrictionParameter;
 import org.icgc.dcc.validation.RestrictionTypeSchema.ParameterType;
 import org.icgc.dcc.validation.cascading.ValidationFields;
-import org.icgc.dcc.validation.plan.InternalIntegrityPlanElement;
+import org.icgc.dcc.validation.plan.InternalPlanElement;
 import org.icgc.dcc.validation.plan.PlanElement;
 import org.icgc.dcc.validation.plan.PlanPhase;
 
@@ -21,7 +21,7 @@ import cascading.tuple.Fields;
 
 import com.mongodb.DBObject;
 
-public class RangeFieldRestriction implements InternalIntegrityPlanElement {
+public class RangeFieldRestriction implements InternalPlanElement {
 
   private static final String NAME = "range";
 

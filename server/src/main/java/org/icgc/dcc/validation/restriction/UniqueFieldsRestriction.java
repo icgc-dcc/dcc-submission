@@ -8,7 +8,7 @@ import org.icgc.dcc.model.dictionary.Restriction;
 import org.icgc.dcc.validation.RestrictionType;
 import org.icgc.dcc.validation.RestrictionTypeSchema;
 import org.icgc.dcc.validation.cascading.ValidationFields;
-import org.icgc.dcc.validation.plan.InternalIntegrityPlanElement;
+import org.icgc.dcc.validation.plan.InternalPlanElement;
 import org.icgc.dcc.validation.plan.PlanElement;
 import org.icgc.dcc.validation.plan.PlanPhase;
 
@@ -25,7 +25,7 @@ import cascading.tuple.TupleEntry;
 import com.google.common.collect.ImmutableList;
 import com.mongodb.DBObject;
 
-public class UniqueFieldsRestriction implements InternalIntegrityPlanElement {
+public class UniqueFieldsRestriction implements InternalPlanElement {
 
   private static final String NAME = "unique";
 

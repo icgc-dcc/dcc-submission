@@ -6,7 +6,7 @@ import java.util.Iterator;
 import org.icgc.dcc.model.dictionary.FileSchema;
 import org.icgc.dcc.model.dictionary.Relation;
 import org.icgc.dcc.validation.cascading.ValidationFields;
-import org.icgc.dcc.validation.plan.ExternalIntegrityPlanElement;
+import org.icgc.dcc.validation.plan.ExternalPlanElement;
 import org.icgc.dcc.validation.plan.PlanPhase;
 
 import cascading.flow.FlowProcess;
@@ -21,7 +21,7 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
-public class RelationPlanElement implements ExternalIntegrityPlanElement {
+public class RelationPlanElement implements ExternalPlanElement {
 
   private final String[] lhsFields;
 

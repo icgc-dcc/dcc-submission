@@ -9,7 +9,7 @@ import org.icgc.dcc.model.dictionary.Restriction;
 import org.icgc.dcc.validation.RestrictionType;
 import org.icgc.dcc.validation.RestrictionTypeSchema;
 import org.icgc.dcc.validation.cascading.ValidationFields;
-import org.icgc.dcc.validation.plan.ExternalIntegrityPlanElement;
+import org.icgc.dcc.validation.plan.ExternalPlanElement;
 import org.icgc.dcc.validation.plan.PlanElement;
 import org.icgc.dcc.validation.plan.PlanPhase;
 
@@ -27,7 +27,7 @@ import cascading.tuple.TupleEntry;
 
 import com.mongodb.DBObject;
 
-public class ForeingKeyFieldRestriction implements ExternalIntegrityPlanElement {
+public class ForeingKeyFieldRestriction implements ExternalPlanElement {
 
   private static final String NAME = "foreign-key";
 

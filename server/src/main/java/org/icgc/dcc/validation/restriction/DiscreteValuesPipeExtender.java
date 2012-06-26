@@ -10,7 +10,7 @@ import org.icgc.dcc.validation.RestrictionTypeSchema;
 import org.icgc.dcc.validation.RestrictionTypeSchema.FieldRestrictionParameter;
 import org.icgc.dcc.validation.RestrictionTypeSchema.ParameterType;
 import org.icgc.dcc.validation.cascading.ValidationFields;
-import org.icgc.dcc.validation.plan.InternalIntegrityPlanElement;
+import org.icgc.dcc.validation.plan.InternalPlanElement;
 import org.icgc.dcc.validation.plan.PlanElement;
 import org.icgc.dcc.validation.plan.PlanPhase;
 
@@ -24,7 +24,7 @@ import cascading.tuple.Fields;
 
 import com.google.common.collect.ImmutableSet;
 
-public class DiscreteValuesPipeExtender implements InternalIntegrityPlanElement {
+public class DiscreteValuesPipeExtender implements InternalPlanElement {
 
   private static final String NAME = "in";
 

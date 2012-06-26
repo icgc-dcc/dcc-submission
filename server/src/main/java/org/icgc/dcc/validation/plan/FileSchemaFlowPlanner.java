@@ -21,6 +21,9 @@ import org.icgc.dcc.model.dictionary.FileSchema;
 
 import cascading.flow.FlowDef;
 
+/**
+ * Plans the {@code Flow} for a particular {@code FileSchema} for a {@code PlanPhase}.
+ */
 public interface FileSchemaFlowPlanner {
 
   public FileSchema getSchema();

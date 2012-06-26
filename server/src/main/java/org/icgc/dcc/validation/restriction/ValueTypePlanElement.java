@@ -3,7 +3,7 @@ package org.icgc.dcc.validation.restriction;
 import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.ValueType;
 import org.icgc.dcc.validation.cascading.ValidationFields;
-import org.icgc.dcc.validation.plan.InternalIntegrityPlanElement;
+import org.icgc.dcc.validation.plan.InternalPlanElement;
 import org.icgc.dcc.validation.plan.PlanPhase;
 
 import cascading.flow.FlowProcess;
@@ -15,7 +15,7 @@ import cascading.pipe.Pipe;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 
-public class ValueTypePlanElement implements InternalIntegrityPlanElement {
+public class ValueTypePlanElement implements InternalPlanElement {
 
   private final Field field;
 

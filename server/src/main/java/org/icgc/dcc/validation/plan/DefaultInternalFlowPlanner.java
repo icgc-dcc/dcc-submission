@@ -65,7 +65,7 @@ class DefaultInternalFlowPlanner implements InternalFlowPlanner {
   @Override
   public void apply(PlanElement element) {
     checkArgument(element != null);
-    validTail = ((InternalIntegrityPlanElement) element).extend(validTail);
+    validTail = ((InternalPlanElement) element).extend(validTail);
   }
 
   @Override

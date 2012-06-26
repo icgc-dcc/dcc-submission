@@ -17,8 +17,26 @@
  */
 package org.icgc.dcc.validation.plan;
 
-import org.icgc.dcc.validation.PipeExtender;
+import org.icgc.dcc.validation.PipeJoiner;
 
-public interface InternalIntegrityPlanElement extends PlanElement, PipeExtender {
+/**
+ * A {@code PlanElement} that requires joining before applying a validation.
+ */
+public interface ExternalPlanElement extends PlanElement, PipeJoiner {
+
+  /**
+   * Returns the fields of the left side of the join
+   */
+  public String[] lhsFields();
+
+  /**
+   * Returns the fields of the right side of the join
+   */
+  public String[] rhsFields();
+
+  /**
+   * Returns the schema name of the right side of the join
+   */
+  public String rhs();
 
 }
