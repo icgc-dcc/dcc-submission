@@ -30,6 +30,7 @@ import org.icgc.dcc.validation.RestrictionType;
 import org.icgc.dcc.validation.restriction.DiscreteValuesPipeExtender;
 import org.icgc.dcc.validation.restriction.ForeingKeyFieldRestriction;
 import org.icgc.dcc.validation.restriction.RelationPlanElement;
+import org.icgc.dcc.validation.restriction.ValueTypePlanElement;
 
 import cascading.cascade.Cascade;
 import cascading.cascade.CascadeConnector;
@@ -100,7 +101,8 @@ public class DefaultPlanner implements Planner {
 
   private void planInternalFlow() {
     for(FileSchema s : plannedSchema) {
-      for(DictionaryVisitor visitor : ImmutableList.of(new RestrictionFlowVisitor(PlanPhase.INTERNAL))) {
+      for(DictionaryVisitor visitor : ImmutableList.of(new ValueTypeFlowVisitor(), new RestrictionFlowVisitor(
+          PlanPhase.INTERNAL))) {
         s.accept(visitor);
       }
     }
@@ -152,6 +154,14 @@ public class DefaultPlanner implements Planner {
 
     public FileSchema getFileSchema() {
       return fileSchema;
+    }
+  }
+
+  private class ValueTypeFlowVisitor extends BaseFlowVisitor {
+
+    @Override
+    public void visit(Field field) {
+      getSchemaPlan(PlanPhase.INTERNAL, getFileSchema().getName()).apply(new ValueTypePlanElement(field));
     }
   }
 

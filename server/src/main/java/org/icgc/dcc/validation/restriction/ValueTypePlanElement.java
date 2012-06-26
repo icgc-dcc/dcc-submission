@@ -1,13 +1,9 @@
 package org.icgc.dcc.validation.restriction;
 
 import org.icgc.dcc.model.dictionary.Field;
-import org.icgc.dcc.model.dictionary.Restriction;
 import org.icgc.dcc.model.dictionary.ValueType;
-import org.icgc.dcc.validation.RestrictionType;
-import org.icgc.dcc.validation.RestrictionTypeSchema;
 import org.icgc.dcc.validation.cascading.ValidationFields;
 import org.icgc.dcc.validation.plan.InternalIntegrityPlanElement;
-import org.icgc.dcc.validation.plan.PlanElement;
 import org.icgc.dcc.validation.plan.PlanPhase;
 
 import cascading.flow.FlowProcess;
@@ -19,17 +15,17 @@ import cascading.pipe.Pipe;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 
-public class ValueTypeFieldRestriction implements InternalIntegrityPlanElement {
+public class ValueTypePlanElement implements InternalIntegrityPlanElement {
 
   private static final String NAME = "value-type";
 
-  private final String field;
+  private final Field field;
 
   private final ValueType type;
 
-  private ValueTypeFieldRestriction(String field, ValueType type) {
+  public ValueTypePlanElement(Field field) {
     this.field = field;
-    this.type = type;
+    this.type = field.getValueType();
   }
 
   @Override
@@ -44,49 +40,32 @@ public class ValueTypeFieldRestriction implements InternalIntegrityPlanElement {
 
   @Override
   public Pipe extend(Pipe pipe) {
-    return new Each(pipe, new ValidationFields(field), new ValueTypeFunction(), Fields.REPLACE);
-  }
-
-  public static class Type implements RestrictionType {
-
-    @Override
-    public String getType() {
-      return NAME;
-    }
-
-    @Override
-    public RestrictionTypeSchema getSchema() {
-      return null;
-    }
-
-    @Override
-    public boolean builds(String name) {
-      return NAME.equals(name);
-    }
-
-    @Override
-    public PlanElement build(Field field, Restriction restriction) {
-      return new ValueTypeFieldRestriction(field.getName(), field.getValueType());
-    }
+    return new Each(pipe, new ValidationFields(field.getName()), new ValueTypeFunction(), Fields.REPLACE);
   }
 
   private final class ValueTypeFunction extends BaseOperation implements Function {
+
+    ValueTypeFunction() {
+      super(2, Fields.ARGS);
+    }
 
     @Override
     public void operate(FlowProcess flowProcess, FunctionCall functionCall) {
       String value = functionCall.getArguments().getString(0);
       try {
         Object parsedValue = parse(value);
-        functionCall.getOutputCollector().add(new Tuple(parsedValue));
+        functionCall.getOutputCollector().add(
+            new Tuple(parsedValue, ValidationFields.state(functionCall.getArguments())));
       } catch(IllegalArgumentException e) {
         ValidationFields.state(functionCall.getArguments()).reportError(500, value);
-        functionCall.getOutputCollector().add(new Tuple((Object) null));
+        functionCall.getOutputCollector().add(functionCall.getArguments());
       }
     }
 
     private Object parse(String value) {
       switch(type) {
       case DATETIME:
+        // TODO: parse datetime
         break;
       case DECIMAL:
         return Double.valueOf(value);

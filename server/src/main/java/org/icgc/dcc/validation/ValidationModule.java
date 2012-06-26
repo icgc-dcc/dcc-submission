@@ -3,7 +3,6 @@ package org.icgc.dcc.validation;
 import org.icgc.dcc.validation.restriction.DiscreteValuesPipeExtender;
 import org.icgc.dcc.validation.restriction.ForeingKeyFieldRestriction;
 import org.icgc.dcc.validation.restriction.RangeFieldRestriction;
-import org.icgc.dcc.validation.restriction.ValueTypeFieldRestriction;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
@@ -20,7 +19,6 @@ public class ValidationModule extends AbstractModule {
     bindRestriction(ForeingKeyFieldRestriction.Type.class);
     bindRestriction(DiscreteValuesPipeExtender.Type.class);
     bindRestriction(RangeFieldRestriction.Type.class);
-    bindRestriction(ValueTypeFieldRestriction.Type.class);
   }
 
   private void bindRestriction(Class<? extends RestrictionType> f) {

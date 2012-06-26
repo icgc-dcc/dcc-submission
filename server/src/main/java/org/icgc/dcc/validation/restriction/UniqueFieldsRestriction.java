@@ -7,7 +7,6 @@ import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.Restriction;
 import org.icgc.dcc.validation.RestrictionType;
 import org.icgc.dcc.validation.RestrictionTypeSchema;
-import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.cascading.ValidationFields;
 import org.icgc.dcc.validation.plan.InternalIntegrityPlanElement;
 import org.icgc.dcc.validation.plan.PlanElement;
@@ -17,14 +16,10 @@ import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
 import cascading.operation.Buffer;
 import cascading.operation.BufferCall;
-import cascading.operation.Function;
-import cascading.operation.FunctionCall;
-import cascading.operation.OperationCall;
 import cascading.pipe.Every;
 import cascading.pipe.GroupBy;
 import cascading.pipe.Pipe;
 import cascading.tuple.Fields;
-import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
 import com.google.common.collect.ImmutableList;
@@ -96,12 +91,6 @@ public class UniqueFieldsRestriction implements InternalIntegrityPlanElement {
     }
 
     @Override
-    public void prepare(FlowProcess flowProcess, OperationCall operationCall) {
-      // TODO Auto-generated method stub
-      super.prepare(flowProcess, operationCall);
-    }
-
-    @Override
     public void operate(FlowProcess flowProcess, BufferCall bufferCall) {
       int count = 0;
       Iterator<TupleEntry> i = bufferCall.getArgumentsIterator();
@@ -112,25 +101,6 @@ public class UniqueFieldsRestriction implements InternalIntegrityPlanElement {
         }
         count++;
         bufferCall.getOutputCollector().add(tupleEntry.getTupleCopy());
-      }
-    }
-  }
-
-  private static class CountIsOne extends BaseOperation implements Function {
-
-    private CountIsOne() {
-      super(2, ValidationFields.STATE_FIELD);
-    }
-
-    @Override
-    public void operate(FlowProcess flowProcess, FunctionCall functionCall) {
-      int count = functionCall.getArguments().getInteger("count");
-      if(count > 1) {
-        TupleState state = ValidationFields.state(functionCall.getArguments());
-        state.reportError(500, count);
-        functionCall.getOutputCollector().add(new Tuple(state));
-      } else {
-
       }
     }
   }
