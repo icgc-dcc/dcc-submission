@@ -19,6 +19,7 @@ package org.icgc.dcc.validation.plan;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.FileSchema;
@@ -27,8 +28,6 @@ import org.icgc.dcc.model.dictionary.Restriction;
 import org.icgc.dcc.model.dictionary.visitor.BaseDictionaryVisitor;
 import org.icgc.dcc.model.dictionary.visitor.DictionaryVisitor;
 import org.icgc.dcc.validation.RestrictionType;
-import org.icgc.dcc.validation.restriction.DiscreteValuesPipeExtender;
-import org.icgc.dcc.validation.restriction.ForeingKeyFieldRestriction;
 import org.icgc.dcc.validation.restriction.RelationPlanElement;
 import org.icgc.dcc.validation.restriction.ValueTypePlanElement;
 
@@ -40,11 +39,11 @@ import cascading.flow.FlowDef;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.inject.Inject;
 
 public class DefaultPlanner implements Planner {
 
-  static private List<? extends RestrictionType> types = ImmutableList.of(new DiscreteValuesPipeExtender.Type(),
-      new ForeingKeyFieldRestriction.Type());
+  private final Set<? extends RestrictionType> restrictionTypes;
 
   private final List<FileSchema> plannedSchema = Lists.newLinkedList();
 
@@ -52,7 +51,9 @@ public class DefaultPlanner implements Planner {
 
   private final Map<PlanPhase, Planners> plans = Maps.newHashMap();
 
-  public DefaultPlanner(CascadingStrategy cascadingStrategy) {
+  @Inject
+  public DefaultPlanner(Set<RestrictionType> restrictionTypes, CascadingStrategy cascadingStrategy) {
+    this.restrictionTypes = restrictionTypes;
     this.cascadingStrategy = cascadingStrategy;
     for(PlanPhase phase : PlanPhase.values()) {
       plans.put(phase, new Planners(phase));
@@ -122,15 +123,6 @@ public class DefaultPlanner implements Planner {
     return schemaPlan;
   }
 
-  private PlanElement getRestriction(Field field, Restriction restriction) {
-    for(RestrictionType type : types) {
-      if(type.builds(restriction.getType())) {
-        return type.build(field, restriction);
-      }
-    }
-    return null;
-  }
-
   private class BasePlanningVisitor extends BaseDictionaryVisitor {
 
     private FileSchema fileSchema;
@@ -178,9 +170,13 @@ public class DefaultPlanner implements Planner {
 
     @Override
     public void visit(Restriction restriction) {
-      PlanElement element = getRestriction(getField(), restriction);
-      if(element != null && element.phase() == phase) {
-        apply(element);
+      for(RestrictionType type : restrictionTypes) {
+        if(type.builds(restriction.getType())) {
+          PlanElement element = type.build(getField(), restriction);
+          if(element.phase() == phase) {
+            apply(element);
+          }
+        }
       }
     }
   }

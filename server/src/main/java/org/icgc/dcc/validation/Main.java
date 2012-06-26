@@ -8,14 +8,15 @@ import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.model.dictionary.Dictionary;
 import org.icgc.dcc.model.dictionary.FileSchema;
-import org.icgc.dcc.validation.plan.DefaultPlanner;
-import org.icgc.dcc.validation.plan.LocalCascadingStrategy;
+import org.icgc.dcc.validation.plan.Planner;
 
 import cascading.cascade.Cascade;
 import cascading.flow.Flow;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 
 public class Main {
 
@@ -46,13 +47,15 @@ public class Main {
       }
     }
 
-    DefaultPlanner dp = new DefaultPlanner(new LocalCascadingStrategy(root, output));
+    Injector injector = Guice.createInjector(new ValidationModule(root, output));
+
+    Planner planner = injector.getInstance(Planner.class);
     for(FileSchema fs : dictionary.getFiles()) {
       if(hasFile(fs)) {
-        dp.prepare(fs);
+        planner.prepare(fs);
       }
     }
-    Cascade c = dp.plan();
+    Cascade c = planner.plan();
     c.writeDOT(new File(output, "cascade.dot").getAbsolutePath());
     for(Flow flow : c.getFlows()) {
       flow.writeDOT(new File(output, flow.getName() + ".dot").getAbsolutePath());
