@@ -1,5 +1,6 @@
 package org.icgc.dcc.validation.restriction;
 
+import java.util.Arrays;
 import java.util.Iterator;
 
 import org.icgc.dcc.model.dictionary.FileSchema;
@@ -36,7 +37,7 @@ public class RelationPlanElement implements ExternalIntegrityPlanElement {
 
   @Override
   public String describe() {
-    return String.format("fk[%s:%s]", rhs, rhsFields);
+    return String.format("fk[%s->%s:%s]", Arrays.toString(lhsFields), rhs, Arrays.toString(rhsFields));
   }
 
   @Override
