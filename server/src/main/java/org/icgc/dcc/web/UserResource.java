@@ -22,7 +22,13 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
+import org.icgc.dcc.model.User;
+import org.icgc.dcc.security.UsernamePasswordAuthenticator;
+import org.icgc.dcc.service.UserService;
+
+import com.google.inject.Inject;
 import com.sun.jersey.core.util.Base64;
 
 /**
@@ -30,6 +36,13 @@ import com.sun.jersey.core.util.Base64;
  */
 @Path("users/self")
 public class UserResource {
+
+  @Inject
+  private UserService users;
+
+  @Inject
+  private UsernamePasswordAuthenticator passwordAuthenticator;
+
   @GET
   public Response getRoles(@Context HttpHeaders headers) {
     String auth = headers.getRequestHeader("authorization").get(0);
@@ -39,10 +52,15 @@ public class UserResource {
     String username = values[0];
     String password = values.length > 1 ? values[1] : "";
 
-    // TODO add actual authentication via shiro
-    // TODO hook in to user object to return roles
+    if(passwordAuthenticator.authenticate(username, password.toCharArray(), null)) {
 
-    return Response.ok(username).build();
+      User user = users.getUser(username);
+      if(user != null) {
+        return Response.ok().build();
+      }
+      return Response.status(Status.NOT_FOUND).build();
+    }
+    return Response.status(Status.UNAUTHORIZED).build();
   }
 
 }
