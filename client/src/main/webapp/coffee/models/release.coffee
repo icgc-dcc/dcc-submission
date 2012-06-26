@@ -1,10 +1,14 @@
-define (require, exports, module) ->
-	Model = require 'models/base/model'	
+define (require) ->
+  Model = require 'models/base/model'	
 
-	"use strict"
+  "use strict"
 
-	class Release extends Model
-		urlKey: "name"
+  class Release extends Model
+    urlKey: "name"
+    urlPath: ->
+      "releases/"
 
-		urlPath: ->
-			"releases/"
+    fetch: ->
+      console.debug 'Release#fetch', @
+      @id = @get "identifier"
+      super

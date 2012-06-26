@@ -1,12 +1,39 @@
 define [
   'handlebars'
   'chaplin'
+  'lib/utils'
   'lib/view_helper' # Just load the view helpers, no return value
-], (Handlebars, Chaplin) ->
+], (Handlebars, Chaplin, utils) ->
   'use strict'
 
   class View extends Chaplin.View
-
+  
+    getTemplateData: ->
+      Model = require 'models/base/model'
+      serialize = (object) ->
+        result = {}
+        for key, value of object
+          result[key] = if value instanceof Model
+            serialize value.getAttributes()
+          else
+            value
+        result
+  
+      modelAttributes = @model and @model.getAttributes()
+      templateData = if modelAttributes
+        # Return an object which delegates to the returned attributes
+        # object so a custom getTemplateData might safely add and alter
+        # properties (at least primitive values).
+        utils.beget serialize modelAttributes
+      else
+        {}
+  
+      # If the model is a Deferred, add a flag to get the Deferred state
+      if @model and typeof @model.state is 'function'
+        templateData.resolved = @model.state() is 'resolved'
+  
+      templateData
+  
     getTemplateFunction: ->
 
       # Template compilation
