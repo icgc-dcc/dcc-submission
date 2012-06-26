@@ -17,20 +17,6 @@
  */
 package org.icgc.dcc.validation.plan;
 
-import org.icgc.dcc.model.dictionary.FileSchema;
-
-import cascading.cascade.Cascade;
-
-public interface Planner {
-
-  public void prepare(FileSchema schema);
-
-  public InternalFlowPlanner getInternalFlow(String schema);
-
-  public ExternalFlowPlanner getExternalFlow(String schema);
-
-  public CascadingStrategy getCascadingStrategy();
-
-  public Cascade plan();
+public interface ExternalFlowPlanner extends FileSchemaPlanner {
 
 }

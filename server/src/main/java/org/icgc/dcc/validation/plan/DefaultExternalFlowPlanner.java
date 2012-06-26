@@ -33,7 +33,7 @@ import cascading.tap.Tap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-class ExternalPhaseFileSchemaPlanner implements FileSchemaPlanner {
+class DefaultExternalFlowPlanner implements ExternalFlowPlanner {
 
   private final Planner planner;
 
@@ -43,7 +43,7 @@ class ExternalPhaseFileSchemaPlanner implements FileSchemaPlanner {
 
   private final List<Pipe> joinedTails = Lists.newLinkedList();
 
-  ExternalPhaseFileSchemaPlanner(Planner plan, FileSchema fileSchema) {
+  DefaultExternalFlowPlanner(Planner plan, FileSchema fileSchema) {
     checkArgument(plan != null);
     checkArgument(fileSchema != null);
     this.planner = plan;
@@ -63,18 +63,13 @@ class ExternalPhaseFileSchemaPlanner implements FileSchemaPlanner {
   @Override
   public void apply(PlanElement e) {
     ExternalIntegrityPlanElement element = (ExternalIntegrityPlanElement) e;
-    Pipe lhs = planner.getSchemaPlan(PlanPhase.INTERNAL, getSchema().getName()).trim(element.lhsFields());
-    Pipe rhs = planner.getSchemaPlan(PlanPhase.INTERNAL, element.rhs()).trim(element.rhsFields());
+    Pipe lhs = planner.getInternalFlow(getSchema().getName()).addTrimmedOutput(element.lhsFields());
+    Pipe rhs = planner.getInternalFlow(element.rhs()).addTrimmedOutput(element.rhsFields());
     checkState(lhs != null);
     checkState(rhs != null);
     trimmedHeads.put(fileSchema.getName(), element.lhsFields());
     trimmedHeads.put(element.rhs(), element.rhsFields());
     joinedTails.add(element.join(lhs, rhs));
-  }
-
-  @Override
-  public Pipe trim(String... fields) {
-    return null;
   }
 
   @Override

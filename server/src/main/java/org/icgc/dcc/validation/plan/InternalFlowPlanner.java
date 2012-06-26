@@ -17,20 +17,10 @@
  */
 package org.icgc.dcc.validation.plan;
 
-import org.icgc.dcc.model.dictionary.FileSchema;
+import cascading.pipe.Pipe;
 
-import cascading.cascade.Cascade;
+public interface InternalFlowPlanner extends FileSchemaPlanner {
 
-public interface Planner {
-
-  public void prepare(FileSchema schema);
-
-  public InternalFlowPlanner getInternalFlow(String schema);
-
-  public ExternalFlowPlanner getExternalFlow(String schema);
-
-  public CascadingStrategy getCascadingStrategy();
-
-  public Cascade plan();
+  public Pipe addTrimmedOutput(String... fields);
 
 }

@@ -20,7 +20,6 @@ package org.icgc.dcc.validation.plan;
 import org.icgc.dcc.model.dictionary.FileSchema;
 
 import cascading.flow.FlowDef;
-import cascading.pipe.Pipe;
 
 public interface FileSchemaPlanner {
 
@@ -29,8 +28,6 @@ public interface FileSchemaPlanner {
   public PlanPhase getPhase();
 
   public void apply(PlanElement element);
-
-  public Pipe trim(String... fields);
 
   public FlowDef plan();
 

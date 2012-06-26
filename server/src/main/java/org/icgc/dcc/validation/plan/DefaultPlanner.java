@@ -62,8 +62,8 @@ public class DefaultPlanner implements Planner {
   @Override
   public void prepare(FileSchema schema) {
     plannedSchema.add(schema);
-    plans.get(PlanPhase.INTERNAL).planFor(schema.getName(), new InternalPhaseFileSchemaPlanner(this, schema));
-    plans.get(PlanPhase.EXTERNAL).planFor(schema.getName(), new ExternalPhaseFileSchemaPlanner(this, schema));
+    plans.get(PlanPhase.INTERNAL).planFor(schema.getName(), new DefaultInternalFlowPlanner(this, schema));
+    plans.get(PlanPhase.EXTERNAL).planFor(schema.getName(), new DefaultExternalFlowPlanner(this, schema));
   }
 
   public void planPhase(final PlanPhase phase) {
@@ -104,10 +104,13 @@ public class DefaultPlanner implements Planner {
   }
 
   @Override
-  public FileSchemaPlanner getSchemaPlan(PlanPhase phase, String schema) {
-    FileSchemaPlanner schemaPlan = this.plans.get(phase).planner(schema);
-    if(schemaPlan == null) throw new IllegalStateException("no plan for " + schema);
-    return schemaPlan;
+  public InternalFlowPlanner getInternalFlow(String schema) {
+    return (InternalFlowPlanner) getSchemaPlan(PlanPhase.INTERNAL, schema);
+  }
+
+  @Override
+  public ExternalFlowPlanner getExternalFlow(String schema) {
+    return (ExternalFlowPlanner) getSchemaPlan(PlanPhase.EXTERNAL, schema);
   }
 
   @Override
@@ -127,6 +130,12 @@ public class DefaultPlanner implements Planner {
   @Override
   public CascadingStrategy getCascadingStrategy() {
     return cascadingStrategy;
+  }
+
+  private FileSchemaPlanner getSchemaPlan(PlanPhase phase, String schema) {
+    FileSchemaPlanner schemaPlan = this.plans.get(phase).planner(schema);
+    if(schemaPlan == null) throw new IllegalStateException("no plan for " + schema);
+    return schemaPlan;
   }
 
   private PlanElement getRestriction(Field field, Restriction restriction) {

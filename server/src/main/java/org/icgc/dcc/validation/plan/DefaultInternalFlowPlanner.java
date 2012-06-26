@@ -38,7 +38,7 @@ import cascading.tuple.Fields;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
 
-class InternalPhaseFileSchemaPlanner implements FileSchemaPlanner {
+class DefaultInternalFlowPlanner implements InternalFlowPlanner {
 
   private final Planner planner;
 
@@ -50,7 +50,7 @@ class InternalPhaseFileSchemaPlanner implements FileSchemaPlanner {
 
   private Pipe validTail;
 
-  InternalPhaseFileSchemaPlanner(Planner plan, FileSchema fileSchema) {
+  DefaultInternalFlowPlanner(Planner plan, FileSchema fileSchema) {
     checkArgument(plan != null);
     checkArgument(fileSchema != null);
     this.planner = plan;
@@ -76,10 +76,10 @@ class InternalPhaseFileSchemaPlanner implements FileSchemaPlanner {
   };
 
   @Override
-  public Pipe trim(String... fields) {
+  public Pipe addTrimmedOutput(String... fields) {
     List<String> key = Arrays.asList(fields);
     if(trimmedTails.containsKey(key) == false) {
-      Pipe newHead = new Pipe(fileSchema.getName() + ":" + Joiner.on("-").join(fields), validTail);
+      Pipe newHead = new Pipe(fileSchema.getName() + ":" + Joiner.on("-").join(fields), head);
       Pipe trim = new Retain(newHead, new Fields(fields));
       trimmedTails.put(key, trim);
     }
