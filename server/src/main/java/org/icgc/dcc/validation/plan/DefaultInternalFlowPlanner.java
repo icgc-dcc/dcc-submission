@@ -19,8 +19,6 @@ package org.icgc.dcc.validation.plan;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 import org.icgc.dcc.model.dictionary.FileSchema;
@@ -35,7 +33,6 @@ import cascading.pipe.assembly.Retain;
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
 
-import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
 
 class DefaultInternalFlowPlanner implements InternalFlowPlanner {
@@ -46,7 +43,7 @@ class DefaultInternalFlowPlanner implements InternalFlowPlanner {
 
   private final Pipe head;
 
-  private final Map<List<String>, Pipe> trimmedTails = Maps.newHashMap();
+  private final Map<Trim, Pipe> trimmedTails = Maps.newHashMap();
 
   private Pipe validTail;
 
@@ -76,14 +73,14 @@ class DefaultInternalFlowPlanner implements InternalFlowPlanner {
   };
 
   @Override
-  public Pipe addTrimmedOutput(String... fields) {
-    List<String> key = Arrays.asList(fields);
-    if(trimmedTails.containsKey(key) == false) {
-      Pipe newHead = new Pipe(fileSchema.getName() + ":" + Joiner.on("-").join(fields), head);
-      Pipe trim = new Retain(newHead, new Fields(fields));
-      trimmedTails.put(key, trim);
+  public Trim addTrimmedOutput(String... fields) {
+    Trim trim = new Trim(fileSchema.getName(), fields);
+    if(trimmedTails.containsKey(trim) == false) {
+      Pipe newHead = new Pipe(trim.getName(), validTail);
+      Pipe tail = new Retain(newHead, new Fields(fields));
+      trimmedTails.put(trim, tail);
     }
-    return trimmedTails.get(key);
+    return trim;
   }
 
   @Override
@@ -94,8 +91,8 @@ class DefaultInternalFlowPlanner implements InternalFlowPlanner {
     Tap sink = strategy.getInternalSinkTap(fileSchema.getName());
 
     FlowDef def = new FlowDef().setName(getSchema().getName() + ".int").addSource(head, source).addTailSink(tail, sink);
-    for(Map.Entry<List<String>, Pipe> e : trimmedTails.entrySet()) {
-      def.addTailSink(e.getValue(), strategy.getTrimmedTap(fileSchema.getName(), e.getKey().toArray(new String[] {})));
+    for(Map.Entry<Trim, Pipe> e : trimmedTails.entrySet()) {
+      def.addTailSink(e.getValue(), strategy.getTrimmedTap(fileSchema.getName(), e.getKey().getFields()));
     }
     return def;
   }

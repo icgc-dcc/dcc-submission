@@ -3,7 +3,6 @@ package org.icgc.dcc.validation;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.util.List;
 
 import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -14,8 +13,6 @@ import org.icgc.dcc.validation.cascading.ValidationFields;
 import org.icgc.dcc.validation.plan.DefaultPlanner;
 import org.icgc.dcc.validation.plan.LocalCascadingStrategy;
 import org.icgc.dcc.validation.plan.PlanPhase;
-import org.icgc.dcc.validation.restriction.DiscreteValuesPipeExtender;
-import org.icgc.dcc.validation.restriction.ForeingKeyFieldRestriction;
 
 import cascading.cascade.Cascade;
 import cascading.flow.Flow;
@@ -27,13 +24,9 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 
 import com.google.common.base.Charsets;
-import com.google.common.collect.ImmutableList;
 import com.google.common.io.Resources;
 
 public class Main {
-
-  static private List<? extends RestrictionType> factories = ImmutableList.of(new DiscreteValuesPipeExtender.Type(),
-      new ForeingKeyFieldRestriction.Type());
 
   private final File root;
 

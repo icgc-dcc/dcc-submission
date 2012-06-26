@@ -17,9 +17,49 @@
  */
 package org.icgc.dcc.validation.plan;
 
+import java.util.Arrays;
 
-public interface InternalFlowPlanner extends FileSchemaPlanner {
+import com.google.common.base.Joiner;
 
-  public Trim addTrimmedOutput(String... fields);
+public class Trim {
 
+  private final String schema;
+
+  private final String[] fields;
+
+  public Trim(String schema, String... fields) {
+    this.schema = schema;
+    this.fields = fields;
+  }
+
+  public String getSchema() {
+    return schema;
+  }
+
+  public String[] getFields() {
+    return fields;
+  }
+
+  public String getName() {
+    return schema + ":" + Joiner.on('-').join(fields);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if(obj == null) {
+      return false;
+    }
+    if(obj instanceof Trim == false) {
+      return super.equals(obj);
+    }
+    Trim rhs = (Trim) obj;
+    return this.schema.equals(rhs.schema) && Arrays.equals(fields, rhs.fields);
+  }
+
+  @Override
+  public int hashCode() {
+    int hashCode = schema.hashCode();
+    hashCode += 37 * Arrays.hashCode(fields);
+    return hashCode;
+  }
 }

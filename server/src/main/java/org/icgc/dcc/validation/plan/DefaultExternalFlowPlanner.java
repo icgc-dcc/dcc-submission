@@ -18,7 +18,6 @@
 package org.icgc.dcc.validation.plan;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
 
 import java.util.List;
 import java.util.Map;
@@ -39,7 +38,7 @@ class DefaultExternalFlowPlanner implements ExternalFlowPlanner {
 
   private final FileSchema fileSchema;
 
-  private final Map<String, String[]> trimmedHeads = Maps.newHashMap();
+  private final Map<Trim, Pipe> trimmedHeads = Maps.newHashMap();
 
   private final List<Pipe> joinedTails = Lists.newLinkedList();
 
@@ -63,12 +62,14 @@ class DefaultExternalFlowPlanner implements ExternalFlowPlanner {
   @Override
   public void apply(PlanElement e) {
     ExternalIntegrityPlanElement element = (ExternalIntegrityPlanElement) e;
-    Pipe lhs = planner.getInternalFlow(getSchema().getName()).addTrimmedOutput(element.lhsFields());
-    Pipe rhs = planner.getInternalFlow(element.rhs()).addTrimmedOutput(element.rhsFields());
-    checkState(lhs != null);
-    checkState(rhs != null);
-    trimmedHeads.put(fileSchema.getName(), element.lhsFields());
-    trimmedHeads.put(element.rhs(), element.rhsFields());
+    Trim trimLhs = planner.getInternalFlow(getSchema().getName()).addTrimmedOutput(element.lhsFields());
+    Trim trimRhs = planner.getInternalFlow(element.rhs()).addTrimmedOutput(element.rhsFields());
+
+    Pipe lhs = new Pipe(trimLhs.getName());
+    trimmedHeads.put(trimLhs, lhs);
+    Pipe rhs = new Pipe(trimRhs.getName());
+    trimmedHeads.put(trimRhs, rhs);
+
     joinedTails.add(element.join(lhs, rhs));
   }
 
@@ -79,8 +80,8 @@ class DefaultExternalFlowPlanner implements ExternalFlowPlanner {
       Tap sink = strategy.getExternalSinkTap(fileSchema.getName());
       FlowDef def = new FlowDef().setName(getSchema().getName() + ".ext").addTailSink(mergeJoinedTails(), sink);
 
-      for(Map.Entry<String, String[]> e : trimmedHeads.entrySet()) {
-        def.addSource(e.getKey(), strategy.getTrimmedTap(e.getKey(), e.getValue()));
+      for(Trim trim : trimmedHeads.keySet()) {
+        def.addSource(trim.getName(), strategy.getTrimmedTap(trim.getSchema(), trim.getFields()));
       }
       return def;
     }
