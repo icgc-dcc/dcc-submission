@@ -64,6 +64,7 @@ class DefaultInternalFlowPlanner implements InternalFlowPlanner {
 
   @Override
   public void apply(PlanElement element) {
+    checkArgument(element != null);
     validTail = ((InternalIntegrityPlanElement) element).extend(validTail);
   }
 
@@ -74,6 +75,8 @@ class DefaultInternalFlowPlanner implements InternalFlowPlanner {
 
   @Override
   public Trim addTrimmedOutput(String... fields) {
+    checkArgument(fields != null);
+    checkArgument(fields.length > 0);
     Trim trim = new Trim(fileSchema.getName(), fields);
     if(trimmedTails.containsKey(trim) == false) {
       Pipe newHead = new Pipe(trim.getName(), validTail);
