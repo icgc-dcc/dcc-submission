@@ -17,9 +17,48 @@
  */
 package org.icgc.dcc.service;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import org.icgc.dcc.model.QUser;
+import org.icgc.dcc.model.User;
+
+import com.google.code.morphia.Datastore;
+import com.google.code.morphia.Morphia;
+import com.google.inject.Inject;
+import com.mysema.query.mongodb.MongodbQuery;
+import com.mysema.query.mongodb.morphia.MorphiaQuery;
+import com.mysema.query.types.Predicate;
+
 /**
  * 
  */
 public class UserService {
+  private final Morphia morphia;
 
+  private final Datastore datastore;
+
+  @Inject
+  public UserService(Morphia morphia, Datastore datastore) {
+    super();
+    checkArgument(morphia != null);
+    checkArgument(datastore != null);
+    this.morphia = morphia;
+    this.datastore = datastore;
+  }
+
+  public MongodbQuery<User> query() {
+    return new MorphiaQuery<User>(morphia, datastore, QUser.user);
+  }
+
+  public MongodbQuery<User> where(Predicate predicate) {
+    return query().where(predicate);
+  }
+
+  public User getUser(String name) {
+    return this.where(QUser.user.name.eq(name)).singleResult();
+  }
+
+  public void saveUser(User user) {
+    this.datastore.save(user);
+  }
 }

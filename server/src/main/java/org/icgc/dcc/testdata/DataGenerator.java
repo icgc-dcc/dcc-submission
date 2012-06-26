@@ -1,0 +1,158 @@
+/**
+ * Copyright 2012(c) The Ontario Institute for Cancer Research. All rights reserved.
+ *
+ * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
+ * You should have received a copy of the GNU General Public License along with 
+ * this program. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY 
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT 
+ * SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, 
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED 
+ * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; 
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER 
+ * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
+ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+package org.icgc.dcc.testdata;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.icgc.dcc.model.Project;
+import org.icgc.dcc.model.Release;
+import org.icgc.dcc.model.Submission;
+import org.icgc.dcc.model.SubmissionState;
+import org.icgc.dcc.model.User;
+import org.icgc.dcc.model.dictionary.Dictionary;
+import org.icgc.dcc.model.dictionary.DictionaryService;
+import org.icgc.dcc.model.dictionary.Field;
+import org.icgc.dcc.model.dictionary.FileSchema;
+import org.icgc.dcc.model.dictionary.FileSchemaRole;
+import org.icgc.dcc.model.dictionary.Term;
+import org.icgc.dcc.model.dictionary.ValueType;
+import org.icgc.dcc.service.ProjectService;
+import org.icgc.dcc.service.ReleaseService;
+import org.icgc.dcc.service.UserService;
+
+import com.google.inject.Inject;
+
+/**
+ * using data.js as a template to populate data
+ */
+public class DataGenerator {
+
+  private final DictionaryService dictionaryService;
+
+  private final ProjectService projectService;
+
+  private final ReleaseService releaseService;
+
+  private final UserService userService;
+
+  @Inject
+  public DataGenerator(DictionaryService dict, ProjectService project, ReleaseService release, UserService user) {
+    this.dictionaryService = dict;
+    this.projectService = project;
+    this.releaseService = release;
+    this.userService = user;
+  }
+
+  public void generateTestData() {
+    // add Admin User
+    User user = new User();
+    user.setUsername("admin");
+    user.getRoles().add("admin");
+    this.userService.saveUser(user);
+
+    // add Project1
+    Project project1 = new Project("project1");
+    project1.setProjectKey("project1");
+    List<String> users = new ArrayList<String>();
+    users.add("admin");
+    project1.setUsers(users);
+    List<String> groups = new ArrayList<String>();
+    groups.add("admin");
+    project1.setGroups(groups);
+    this.projectService.addProject(project1);
+
+    // add Project2
+    Project project2 = new Project("project2");
+    project2.setProjectKey("project2");
+    users.clear();
+    users.add("admin");
+    project2.setUsers(users);
+    groups.clear();
+    groups.add("admin");
+    project2.setGroups(groups);
+
+    // add Dictionary
+    Dictionary firstDict = new Dictionary("1.0");
+
+    // add FileSchema to Dictionary
+    FileSchema file = new FileSchema("biomarker");
+    file.setPattern("^\\w+__\\d+__\\d+__biomarker__\\d+\\.txt$");
+    file.setRole(FileSchemaRole.SUBMISSION);
+
+    // add Field donor_id to FileSchema
+    Field donor_id = new Field();
+    donor_id.setName("donor_id");
+    donor_id
+        .setLabel("Unique identifier for the donor; assigned by data provider. It must be coded, and correspond to a donor ID listed in the donor data file.");
+    donor_id.setValueType(ValueType.TEXT);
+    file.addField(donor_id);
+    // add Field specimen_id to FileSchema
+    Field specimen_id = new Field();
+    specimen_id.setName("specimen_id");
+    specimen_id.setLabel("ID of the specimen on which biomarker ascertainment was performed, if applicable");
+    specimen_id.setValueType(ValueType.TEXT);
+    file.addField(specimen_id);
+
+    firstDict.addFile(file);
+
+    this.dictionaryService.add(firstDict);
+
+    // add CodeList
+    this.dictionaryService.createCodeList("appendix_B10");
+    this.dictionaryService.addTerm("appendix_B10", new Term("1", "GRCh37", ""));
+    this.dictionaryService.addTerm("appendix_B10", new Term("2", "NCBI36", ""));
+
+    this.dictionaryService.createCodeList("appendix_B12");
+    this.dictionaryService.addTerm("appendix_B12", new Term("1", "EGA", ""));
+    this.dictionaryService.addTerm("appendix_B12", new Term("2", "dbSNP", ""));
+
+    // add Release
+    Release firstRelease = new Release("release1");
+    firstRelease.setDictionary(firstDict);
+
+    // add submission1
+    Submission submission1 = new Submission();
+    submission1.setProjectKey("project1");
+    submission1.setState(SubmissionState.SIGNED_OFF);
+    firstRelease.getSubmissions().add(submission1);
+    // add submission2
+    Submission submission2 = new Submission();
+    submission2.setProjectKey("project2");
+    submission2.setState(SubmissionState.SIGNED_OFF);
+    firstRelease.getSubmissions().add(submission2);
+
+    this.releaseService.createInitialRelease(firstRelease);
+
+    // release release1
+    Release secondRelease = new Release("release2");
+    secondRelease.setDictionary(firstDict);
+
+    Submission submission3 = new Submission();
+    submission3.setProjectKey("project1");
+    submission3.setState(SubmissionState.QUEUED);
+    secondRelease.getSubmissions().add(submission3);
+
+    Submission submission4 = new Submission();
+    submission4.setProjectKey("project2");
+    submission4.setState(SubmissionState.NOT_VALIDATED);
+    secondRelease.getSubmissions().add(submission4);
+
+    this.releaseService.getNextRelease().release(secondRelease);
+  }
+}

@@ -36,6 +36,13 @@ public class Term {
     super();
   }
 
+  public Term(String code, String value, String uri) {
+    this();
+    this.code = code;
+    this.value = value;
+    this.uri = uri;
+  }
+
   public String getCode() {
     return code;
   }

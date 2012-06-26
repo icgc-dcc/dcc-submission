@@ -65,14 +65,14 @@ public class NextRelease extends BaseRelease {
     // save the newly created release to mongoDB
     this.datastore.save(nextRelease);
 
+    oldRelease.setState(ReleaseState.COMPLETED);
+    oldRelease.setReleaseDate();
     // update the newly changed status to mongoDB
     UpdateOperations<Release> ops =
-        this.datastore.createUpdateOperations(Release.class).set("state", ReleaseState.COMPLETED);
+        this.datastore.createUpdateOperations(Release.class).set("state", ReleaseState.COMPLETED)
+            .set("releaseDate", oldRelease.getReleaseDate());
 
     this.datastore.update(oldRelease, ops);
-
-    // set old release to be completed
-    oldRelease.setState(ReleaseState.COMPLETED);
 
     return new NextRelease(nextRelease, this.datastore);
   }

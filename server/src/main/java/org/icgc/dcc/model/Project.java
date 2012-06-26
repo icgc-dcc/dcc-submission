@@ -49,8 +49,16 @@ public class Project extends BaseEntity implements HasName {
     return users;
   }
 
+  public void setUsers(List<String> users) {
+    this.users = users;
+  }
+
   public List<String> getGroups() {
     return groups;
+  }
+
+  public void setGroups(List<String> groups) {
+    this.groups = groups;
   }
 
   public void setName(String name) {
