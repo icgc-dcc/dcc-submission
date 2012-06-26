@@ -1,6 +1,7 @@
 package org.icgc.dcc.model;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.icgc.dcc.model.dictionary.Dictionary;
@@ -18,6 +19,8 @@ public class Release extends BaseEntity implements HasName {
   protected List<Submission> submissions = new ArrayList<Submission>();
 
   protected List<String> projectKeys = new ArrayList<String>();
+
+  protected Date releaseDate;
 
   @Reference
   protected Dictionary dictionary;
@@ -76,5 +79,13 @@ public class Release extends BaseEntity implements HasName {
 
   public void setDictionary(Dictionary dictionary) {
     this.dictionary = dictionary;
+  }
+
+  public Date getReleaseDate() {
+    return releaseDate;
+  }
+
+  public void setReleaseDate() {
+    this.releaseDate = new Date();
   }
 }
