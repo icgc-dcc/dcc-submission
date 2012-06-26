@@ -23,16 +23,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.FileSchema;
-import org.icgc.dcc.model.dictionary.Relation;
-import org.icgc.dcc.model.dictionary.Restriction;
-import org.icgc.dcc.model.dictionary.visitor.BaseDictionaryVisitor;
-import org.icgc.dcc.model.dictionary.visitor.DictionaryVisitor;
+import org.icgc.dcc.validation.PlanningVisitor;
 import org.icgc.dcc.validation.RestrictionType;
-import org.icgc.dcc.validation.restriction.RelationPlanElement;
-import org.icgc.dcc.validation.restriction.UniqueFieldsPlanElement;
-import org.icgc.dcc.validation.restriction.ValueTypePlanElement;
+import org.icgc.dcc.validation.visitor.RelationPlanningVisitor;
+import org.icgc.dcc.validation.visitor.RestrictionPlanningVisitor;
+import org.icgc.dcc.validation.visitor.UniqueFieldsPlanningVisitor;
+import org.icgc.dcc.validation.visitor.ValueTypePlanningVisitor;
 
 import cascading.cascade.Cascade;
 import cascading.cascade.CascadeConnector;
@@ -46,7 +43,9 @@ import com.google.inject.Inject;
 
 public class DefaultPlanner implements Planner {
 
-  private final Set<? extends RestrictionType> restrictionTypes;
+  private final List<PlanningVisitor> internalFlowVisitors;
+
+  private final List<PlanningVisitor> externalFlowVisitors;
 
   private final List<FileSchema> plannedSchema = Lists.newLinkedList();
 
@@ -58,11 +57,17 @@ public class DefaultPlanner implements Planner {
   public DefaultPlanner(Set<RestrictionType> restrictionTypes, CascadingStrategy cascadingStrategy) {
     checkArgument(restrictionTypes != null);
     checkArgument(cascadingStrategy != null);
-    this.restrictionTypes = restrictionTypes;
     this.cascadingStrategy = cascadingStrategy;
     for(PlanPhase phase : PlanPhase.values()) {
       plans.put(phase, new Planners(phase));
     }
+
+    internalFlowVisitors =
+        ImmutableList.of(new ValueTypePlanningVisitor(), new UniqueFieldsPlanningVisitor(),
+            new RestrictionPlanningVisitor(PlanPhase.INTERNAL, restrictionTypes));
+    externalFlowVisitors =
+        ImmutableList.of(new RelationPlanningVisitor(), new RestrictionPlanningVisitor(PlanPhase.EXTERNAL,
+            restrictionTypes));
   }
 
   @Override
@@ -84,8 +89,8 @@ public class DefaultPlanner implements Planner {
 
   @Override
   public Cascade plan() {
-    planInternalFlow();
-    planExternalFlow();
+    plan(internalFlowVisitors);
+    plan(externalFlowVisitors);
 
     CascadeDef def = new CascadeDef();
     for(Planners p : plans.values()) {
@@ -104,20 +109,14 @@ public class DefaultPlanner implements Planner {
     return cascadingStrategy;
   }
 
-  private void planInternalFlow() {
+  private void plan(List<PlanningVisitor> visitors) {
     for(FileSchema s : plannedSchema) {
-      for(DictionaryVisitor visitor : ImmutableList.of(new UniqueFieldsVisitor(), new ValueTypeVisitor(),
-          new RestrictionsVisitor(PlanPhase.INTERNAL))) {
+      for(PlanningVisitor visitor : visitors) {
         s.accept(visitor);
-      }
-    }
-  }
-
-  private void planExternalFlow() {
-    for(FileSchema s : plannedSchema) {
-      for(DictionaryVisitor visitor : ImmutableList.of(new RestrictionsVisitor(PlanPhase.EXTERNAL),
-          new RelationVisitor())) {
-        s.accept(visitor);
+        for(PlanElement element : visitor.getElements()) {
+          System.out.println("Applying " + element.describe());
+          getSchemaPlan(visitor.getPhase(), s.getName()).apply(element);
+        }
       }
     }
   }
@@ -126,85 +125,6 @@ public class DefaultPlanner implements Planner {
     FileSchemaFlowPlanner schemaPlan = this.plans.get(phase).planner(schema);
     if(schemaPlan == null) throw new IllegalStateException("no plan for " + schema);
     return schemaPlan;
-  }
-
-  private class BasePlanningVisitor extends BaseDictionaryVisitor {
-
-    private FileSchema fileSchema;
-
-    private Field field;
-
-    @Override
-    public void visit(FileSchema fileSchema) {
-      this.fileSchema = fileSchema;
-    }
-
-    @Override
-    public void visit(Field field) {
-      this.field = field;
-    }
-
-    public Field getField() {
-      return field;
-    }
-
-    public FileSchema getFileSchema() {
-      return fileSchema;
-    }
-
-    protected void apply(PlanElement element) {
-      getSchemaPlan(element.phase(), getFileSchema().getName()).apply(element);
-    }
-  }
-
-  private class UniqueFieldsVisitor extends BasePlanningVisitor {
-
-    @Override
-    public void visit(FileSchema fileSchema) {
-      super.visit(fileSchema);
-      if(fileSchema.getUniqueFields().size() > 0) {
-        apply(new UniqueFieldsPlanElement(fileSchema.getUniqueFields()));
-      }
-    }
-
-  }
-
-  private class ValueTypeVisitor extends BasePlanningVisitor {
-
-    @Override
-    public void visit(Field field) {
-      apply(new ValueTypePlanElement(field));
-    }
-  }
-
-  private class RestrictionsVisitor extends BasePlanningVisitor {
-
-    private final PlanPhase phase;
-
-    RestrictionsVisitor(PlanPhase phase) {
-      this.phase = phase;
-    }
-
-    @Override
-    public void visit(Restriction restriction) {
-      for(RestrictionType type : restrictionTypes) {
-        if(type.builds(restriction.getType())) {
-          PlanElement element = type.build(getField(), restriction);
-          if(element.phase() == phase) {
-            apply(element);
-          }
-        }
-      }
-    }
-  }
-
-  private class RelationVisitor extends BasePlanningVisitor {
-
-    @Override
-    public void visit(Relation relation) {
-      apply(new RelationPlanElement(getFileSchema(), relation));
-    }
-
   }
 
   private class Planners {
