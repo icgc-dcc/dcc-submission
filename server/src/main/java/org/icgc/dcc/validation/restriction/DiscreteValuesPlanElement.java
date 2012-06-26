@@ -24,7 +24,7 @@ import cascading.tuple.Fields;
 
 import com.google.common.collect.ImmutableSet;
 
-public class DiscreteValuesPipeExtender implements InternalPlanElement {
+public class DiscreteValuesPlanElement implements InternalPlanElement {
 
   private static final String NAME = "in";
 
@@ -32,7 +32,7 @@ public class DiscreteValuesPipeExtender implements InternalPlanElement {
 
   private final String[] values;
 
-  private DiscreteValuesPipeExtender(String field, String[] values) {
+  private DiscreteValuesPlanElement(String field, String[] values) {
     this.field = field;
     this.values = values;
   }
@@ -75,7 +75,7 @@ public class DiscreteValuesPipeExtender implements InternalPlanElement {
     @Override
     public PlanElement build(Field field, Restriction restriction) {
       String[] values = (String[]) restriction.getConfig().get("values");
-      return new DiscreteValuesPipeExtender(field.getName(), values);
+      return new DiscreteValuesPlanElement(field.getName(), values);
     }
 
   }
