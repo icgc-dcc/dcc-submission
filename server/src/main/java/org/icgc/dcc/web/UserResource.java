@@ -58,7 +58,7 @@ public class UserResource {
       if(user != null) {
         return Response.ok(user).build();
       }
-      return Response.status(Status.NOT_FOUND).build();
+      return Response.status(Status.INTERNAL_SERVER_ERROR).build();
     }
     return Response.status(Status.UNAUTHORIZED).build();
   }

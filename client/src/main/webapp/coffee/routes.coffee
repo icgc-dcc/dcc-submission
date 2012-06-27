@@ -7,3 +7,4 @@ define ->
 
     match 'releases/:release_name', 'release#show'
     match 'releases', 'release#list'
+    match 'projects', 'project#list'

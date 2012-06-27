@@ -55,7 +55,7 @@ public class UserService {
   }
 
   public User getUser(String name) {
-    return this.where(QUser.user.name.eq(name)).singleResult();
+    return this.where(QUser.user.username.eq(name)).singleResult();
   }
 
   public void saveUser(User user) {
