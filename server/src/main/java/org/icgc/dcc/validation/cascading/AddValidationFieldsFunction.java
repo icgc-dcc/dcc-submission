@@ -31,13 +31,7 @@ public final class AddValidationFieldsFunction extends BaseOperation implements 
 
   @Override
   public void operate(FlowProcess process, FunctionCall functionCall) {
-    // create a Tuple to hold our result values
-    Tuple result = new Tuple();
-
-    result.add(new TupleState());
-
-    // return the result Tuple
-    functionCall.getOutputCollector().add(result);
+    functionCall.getOutputCollector().add(new Tuple(new TupleState()));
   }
 
 }
