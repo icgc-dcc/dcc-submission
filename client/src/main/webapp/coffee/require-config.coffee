@@ -10,6 +10,7 @@ requirejs.config
     backbone: '../vendor/backbone-0.9.2'
     chaplin: '../vendor/chaplin'
     bootstrap: '../vendor/bootstrap.min'
+    moment: '../vendor/moment'
     text: '../vendor/require-text-2.0.0'
     handlebars: '../vendor/handlebars-1.0.0.beta.6'
     
@@ -34,6 +35,7 @@ define "base", [
   'jquery'
   'bootstrap'
   'jqSerializeObject'
+  'moment'
 ], ($) -> $
 
 # Bootstrap the application

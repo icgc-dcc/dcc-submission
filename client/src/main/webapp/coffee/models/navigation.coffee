@@ -5,4 +5,5 @@ define (require) ->
     defaults:
       items: [
         {href: '/releases', title: 'Releases', active:'active'}
+        #{href: '/projects', title: 'Projects', active:''}
       ]
