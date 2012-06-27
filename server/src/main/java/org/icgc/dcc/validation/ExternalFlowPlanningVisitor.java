@@ -15,10 +15,23 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.validation.plan;
+package org.icgc.dcc.validation;
 
-public enum FlowType {
 
-  INTERNAL, EXTERNAL
+public class ExternalFlowPlanningVisitor extends PlanningVisitor<ExternalPlanElement> {
+
+  public ExternalFlowPlanningVisitor() {
+    super(FlowType.EXTERNAL);
+  }
+
+  @Override
+  public void apply(Plan plan) {
+    for(ExternalFlowPlanner planner : plan.getExternalFlows()) {
+      planner.getSchema().accept(this);
+      for(ExternalPlanElement e : getElements()) {
+        planner.apply(e);
+      }
+    }
+  }
 
 }

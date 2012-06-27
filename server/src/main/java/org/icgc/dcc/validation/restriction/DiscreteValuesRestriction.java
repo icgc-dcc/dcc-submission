@@ -6,14 +6,14 @@ import java.util.Set;
 import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.Restriction;
 import org.icgc.dcc.validation.ErrorCodeRegistry;
+import org.icgc.dcc.validation.FlowType;
+import org.icgc.dcc.validation.InternalPlanElement;
+import org.icgc.dcc.validation.PlanElement;
 import org.icgc.dcc.validation.RestrictionType;
 import org.icgc.dcc.validation.RestrictionTypeSchema;
 import org.icgc.dcc.validation.RestrictionTypeSchema.FieldRestrictionParameter;
 import org.icgc.dcc.validation.RestrictionTypeSchema.ParameterType;
 import org.icgc.dcc.validation.cascading.ValidationFields;
-import org.icgc.dcc.validation.plan.FlowType;
-import org.icgc.dcc.validation.plan.InternalPlanElement;
-import org.icgc.dcc.validation.plan.PlanElement;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;

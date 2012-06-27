@@ -15,14 +15,37 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.validation.plan;
+package org.icgc.dcc.validation;
 
-public interface ExternalFlowPlanner extends FileSchemaFlowPlanner {
+import cascading.pipe.Pipe;
+
+/**
+ * A {@code PlanElement} that requires joining before applying a validation.
+ */
+public interface ExternalPlanElement extends PlanElement {
 
   /**
-   * Applies an {@code ExternalPlanElement} to this {@code planner}
-   * @param planElement
+   * Returns the fields of the left side of the join
    */
-  public void apply(ExternalPlanElement planElement);
+  public String[] lhsFields();
+
+  /**
+   * Returns the fields of the right side of the join
+   */
+  public String[] rhsFields();
+
+  /**
+   * Returns the schema name of the right side of the join
+   */
+  public String rhs();
+
+  /**
+   * Joins two {@code Pipe}s into a single one.
+   * 
+   * @param lhs left side to join
+   * @param rhs right side to join
+   * @return joined {@code Pipe}
+   */
+  public Pipe join(Pipe lhs, Pipe rhs);
 
 }

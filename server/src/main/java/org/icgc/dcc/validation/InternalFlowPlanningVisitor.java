@@ -15,37 +15,23 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.validation.plan;
+package org.icgc.dcc.validation;
 
-import cascading.pipe.Pipe;
 
-/**
- * A {@code PlanElement} that requires joining before applying a validation.
- */
-public interface ExternalPlanElement extends PlanElement {
+public class InternalFlowPlanningVisitor extends PlanningVisitor<InternalPlanElement> {
 
-  /**
-   * Returns the fields of the left side of the join
-   */
-  public String[] lhsFields();
+  public InternalFlowPlanningVisitor() {
+    super(FlowType.INTERNAL);
+  }
 
-  /**
-   * Returns the fields of the right side of the join
-   */
-  public String[] rhsFields();
-
-  /**
-   * Returns the schema name of the right side of the join
-   */
-  public String rhs();
-
-  /**
-   * Joins two {@code Pipe}s into a single one.
-   * 
-   * @param lhs left side to join
-   * @param rhs right side to join
-   * @return joined {@code Pipe}
-   */
-  public Pipe join(Pipe lhs, Pipe rhs);
+  @Override
+  public void apply(Plan plan) {
+    for(InternalFlowPlanner planner : plan.getInternalFlows()) {
+      planner.getSchema().accept(this);
+      for(InternalPlanElement e : getElements()) {
+        planner.apply(e);
+      }
+    }
+  }
 
 }

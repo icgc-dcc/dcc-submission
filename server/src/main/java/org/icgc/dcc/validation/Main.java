@@ -6,9 +6,6 @@ import java.io.IOException;
 import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.model.dictionary.Dictionary;
-import org.icgc.dcc.validation.plan.CascadingStrategy;
-import org.icgc.dcc.validation.plan.Plan;
-import org.icgc.dcc.validation.plan.Planner;
 
 import cascading.cascade.Cascade;
 import cascading.flow.Flow;

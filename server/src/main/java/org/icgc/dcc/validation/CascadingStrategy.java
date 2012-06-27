@@ -15,25 +15,23 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.validation.plan;
+package org.icgc.dcc.validation;
 
-/**
- * Plans the internal flow for a particular {@code FileSchema}
- */
-public interface InternalFlowPlanner extends FileSchemaFlowPlanner {
+import org.icgc.dcc.model.dictionary.FileSchema;
 
-  /**
-   * Ensures that this flow will produce the requested trimmed output.
-   * 
-   * @param fields the fields to keep in the trimmed output
-   * @return a {@code Trim} instance representing this unique trimmed output
-   */
-  public Trim addTrimmedOutput(String... fields);
+import cascading.flow.FlowConnector;
+import cascading.tap.Tap;
 
-  /**
-   * Applies an {@code InternalPlanElement} to this {@code planner}
-   * @param planElement
-   */
-  public void apply(InternalPlanElement planElement);
+public interface CascadingStrategy {
+
+  public FlowConnector getFlowConnector();
+
+  public Tap<?, ?, ?> getSourceTap(FileSchema schema);
+
+  public Tap<?, ?, ?> getInternalSinkTap(FileSchema schema);
+
+  public Tap<?, ?, ?> getTrimmedTap(Trim trim);
+
+  public Tap<?, ?, ?> getExternalSinkTap(FileSchema schema);
 
 }

@@ -15,23 +15,12 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.validation.plan;
+package org.icgc.dcc.validation;
 
-import org.icgc.dcc.model.dictionary.FileSchema;
+import org.icgc.dcc.model.dictionary.Dictionary;
 
-import cascading.flow.FlowConnector;
-import cascading.tap.Tap;
+public interface Planner {
 
-public interface CascadingStrategy {
-
-  public FlowConnector getFlowConnector();
-
-  public Tap<?, ?, ?> getSourceTap(FileSchema schema);
-
-  public Tap<?, ?, ?> getInternalSinkTap(FileSchema schema);
-
-  public Tap<?, ?, ?> getTrimmedTap(Trim trim);
-
-  public Tap<?, ?, ?> getExternalSinkTap(FileSchema schema);
+  public Plan plan(FileSchemaDirectory directory, Dictionary dictionary) throws PlannerException;
 
 }

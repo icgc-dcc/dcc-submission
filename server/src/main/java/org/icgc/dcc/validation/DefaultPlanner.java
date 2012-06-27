@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.validation.plan;
+package org.icgc.dcc.validation;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -24,8 +24,6 @@ import java.util.Set;
 
 import org.icgc.dcc.model.dictionary.Dictionary;
 import org.icgc.dcc.model.dictionary.FileSchema;
-import org.icgc.dcc.validation.FileSchemaDirectory;
-import org.icgc.dcc.validation.RestrictionType;
 import org.icgc.dcc.validation.visitor.ExternalRestrictionPlanningVisitor;
 import org.icgc.dcc.validation.visitor.InternalRestrictionPlanningVisitor;
 import org.icgc.dcc.validation.visitor.RelationPlanningVisitor;

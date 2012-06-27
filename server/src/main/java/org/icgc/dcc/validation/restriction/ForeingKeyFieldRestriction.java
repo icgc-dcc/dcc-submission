@@ -6,12 +6,12 @@ import java.util.Iterator;
 
 import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.Restriction;
+import org.icgc.dcc.validation.ExternalPlanElement;
+import org.icgc.dcc.validation.FlowType;
+import org.icgc.dcc.validation.PlanElement;
 import org.icgc.dcc.validation.RestrictionType;
 import org.icgc.dcc.validation.RestrictionTypeSchema;
 import org.icgc.dcc.validation.cascading.ValidationFields;
-import org.icgc.dcc.validation.plan.ExternalPlanElement;
-import org.icgc.dcc.validation.plan.FlowType;
-import org.icgc.dcc.validation.plan.PlanElement;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;

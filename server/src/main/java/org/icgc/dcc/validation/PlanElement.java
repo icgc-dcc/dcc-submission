@@ -15,24 +15,17 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.validation.plan;
+package org.icgc.dcc.validation;
 
-public class PlannerException extends RuntimeException {
+/**
+ * An element of a {@code Plan}. These instances are applicable to {@code FileSchemaFlowPlanner}.
+ */
+public interface PlanElement {
 
-  public PlannerException() {
-    super();
-  }
-
-  public PlannerException(String message, Throwable cause) {
-    super(message, cause);
-  }
-
-  public PlannerException(String message) {
-    super(message);
-  }
-
-  public PlannerException(Throwable cause) {
-    super(cause);
-  }
+  /**
+   * Describes this element to humans
+   * @return
+   */
+  public String describe();
 
 }

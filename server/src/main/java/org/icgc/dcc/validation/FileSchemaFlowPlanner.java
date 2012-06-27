@@ -15,17 +15,19 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.validation.plan;
+package org.icgc.dcc.validation;
+
+import org.icgc.dcc.model.dictionary.FileSchema;
+
+import cascading.flow.Flow;
 
 /**
- * An element of a {@code Plan}. These instances are applicable to {@code FileSchemaFlowPlanner}.
+ * Plans a {@code Flow} for a particular {@code FileSchema}.
  */
-public interface PlanElement {
+public interface FileSchemaFlowPlanner {
 
-  /**
-   * Describes this element to humans
-   * @return
-   */
-  public String describe();
+  public FileSchema getSchema();
+
+  public Flow<?> connect(CascadingStrategy cascadingStrategy);
 
 }

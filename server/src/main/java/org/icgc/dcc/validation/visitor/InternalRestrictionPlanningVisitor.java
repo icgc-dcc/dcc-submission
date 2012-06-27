@@ -3,11 +3,11 @@ package org.icgc.dcc.validation.visitor;
 import java.util.Set;
 
 import org.icgc.dcc.model.dictionary.Restriction;
+import org.icgc.dcc.validation.FlowType;
+import org.icgc.dcc.validation.InternalFlowPlanningVisitor;
+import org.icgc.dcc.validation.InternalPlanElement;
+import org.icgc.dcc.validation.PlanElement;
 import org.icgc.dcc.validation.RestrictionType;
-import org.icgc.dcc.validation.plan.FlowType;
-import org.icgc.dcc.validation.plan.InternalFlowPlanningVisitor;
-import org.icgc.dcc.validation.plan.InternalPlanElement;
-import org.icgc.dcc.validation.plan.PlanElement;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Sets;

@@ -15,13 +15,14 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.validation.plan;
+package org.icgc.dcc.validation;
 
-import org.icgc.dcc.model.dictionary.Dictionary;
-import org.icgc.dcc.validation.FileSchemaDirectory;
+public interface ExternalFlowPlanner extends FileSchemaFlowPlanner {
 
-public interface Planner {
-
-  public Plan plan(FileSchemaDirectory directory, Dictionary dictionary) throws PlannerException;
+  /**
+   * Applies an {@code ExternalPlanElement} to this {@code planner}
+   * @param planElement
+   */
+  public void apply(ExternalPlanElement planElement);
 
 }

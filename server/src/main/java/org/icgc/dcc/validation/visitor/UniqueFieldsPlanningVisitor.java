@@ -21,9 +21,9 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.icgc.dcc.model.dictionary.FileSchema;
+import org.icgc.dcc.validation.InternalFlowPlanningVisitor;
+import org.icgc.dcc.validation.InternalPlanElement;
 import org.icgc.dcc.validation.cascading.ValidationFields;
-import org.icgc.dcc.validation.plan.InternalFlowPlanningVisitor;
-import org.icgc.dcc.validation.plan.InternalPlanElement;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;

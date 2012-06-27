@@ -22,9 +22,9 @@ import java.util.Iterator;
 
 import org.icgc.dcc.model.dictionary.FileSchema;
 import org.icgc.dcc.model.dictionary.Relation;
+import org.icgc.dcc.validation.ExternalFlowPlanningVisitor;
+import org.icgc.dcc.validation.ExternalPlanElement;
 import org.icgc.dcc.validation.cascading.ValidationFields;
-import org.icgc.dcc.validation.plan.ExternalFlowPlanningVisitor;
-import org.icgc.dcc.validation.plan.ExternalPlanElement;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;

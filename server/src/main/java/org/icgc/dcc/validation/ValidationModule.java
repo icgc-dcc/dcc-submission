@@ -2,10 +2,6 @@ package org.icgc.dcc.validation;
 
 import java.io.File;
 
-import org.icgc.dcc.validation.plan.CascadingStrategy;
-import org.icgc.dcc.validation.plan.DefaultPlanner;
-import org.icgc.dcc.validation.plan.LocalCascadingStrategy;
-import org.icgc.dcc.validation.plan.Planner;
 import org.icgc.dcc.validation.restriction.DiscreteValuesRestriction;
 import org.icgc.dcc.validation.restriction.ForeingKeyFieldRestriction;
 import org.icgc.dcc.validation.restriction.RangeFieldRestriction;

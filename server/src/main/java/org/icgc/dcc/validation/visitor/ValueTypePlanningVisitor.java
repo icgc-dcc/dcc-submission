@@ -19,9 +19,9 @@ package org.icgc.dcc.validation.visitor;
 
 import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.ValueType;
+import org.icgc.dcc.validation.InternalFlowPlanningVisitor;
+import org.icgc.dcc.validation.InternalPlanElement;
 import org.icgc.dcc.validation.cascading.ValidationFields;
-import org.icgc.dcc.validation.plan.InternalFlowPlanningVisitor;
-import org.icgc.dcc.validation.plan.InternalPlanElement;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
