@@ -19,7 +19,7 @@ package org.icgc.dcc.validation.visitor;
 
 import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.ValueType;
-import org.icgc.dcc.validation.PlanningVisitor;
+import org.icgc.dcc.validation.InternalFlowPlanningVisitor;
 import org.icgc.dcc.validation.cascading.ValidationFields;
 import org.icgc.dcc.validation.plan.InternalPlanElement;
 import org.icgc.dcc.validation.plan.PlanPhase;
@@ -33,10 +33,9 @@ import cascading.pipe.Pipe;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 
-public class ValueTypePlanningVisitor extends PlanningVisitor {
+public class ValueTypePlanningVisitor extends InternalFlowPlanningVisitor {
 
   public ValueTypePlanningVisitor() {
-    super(PlanPhase.INTERNAL);
   }
 
   @Override

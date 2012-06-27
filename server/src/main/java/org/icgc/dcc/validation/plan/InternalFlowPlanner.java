@@ -17,9 +17,23 @@
  */
 package org.icgc.dcc.validation.plan;
 
-
+/**
+ * Plans the internal flow for a particular {@code FileSchema}
+ */
 public interface InternalFlowPlanner extends FileSchemaFlowPlanner {
 
+  /**
+   * Ensures that this flow will produce the requested trimmed output.
+   * 
+   * @param fields the fields to keep in the trimmed output
+   * @return a {@code Trim} instance representing this unique trimmed output
+   */
   public Trim addTrimmedOutput(String... fields);
+
+  /**
+   * Applies an {@code InternalPlanElement} to this {@code planner}
+   * @param planElement
+   */
+  public void apply(InternalPlanElement planElement);
 
 }

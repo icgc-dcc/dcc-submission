@@ -20,17 +20,16 @@ package org.icgc.dcc.validation.visitor;
 import java.util.Set;
 
 import org.icgc.dcc.model.dictionary.Restriction;
-import org.icgc.dcc.validation.PlanningVisitor;
+import org.icgc.dcc.validation.ExternalFlowPlanningVisitor;
 import org.icgc.dcc.validation.RestrictionType;
+import org.icgc.dcc.validation.plan.ExternalPlanElement;
 import org.icgc.dcc.validation.plan.PlanElement;
-import org.icgc.dcc.validation.plan.PlanPhase;
 
-public class RestrictionPlanningVisitor extends PlanningVisitor {
+public class ExternalRestrictionPlanningVisitor extends ExternalFlowPlanningVisitor {
 
   private final Set<RestrictionType> restrictionTypes;
 
-  public RestrictionPlanningVisitor(PlanPhase phase, Set<RestrictionType> restrictionTypes) {
-    super(phase);
+  public ExternalRestrictionPlanningVisitor(Set<RestrictionType> restrictionTypes) {
     this.restrictionTypes = restrictionTypes;
   }
 
@@ -40,7 +39,7 @@ public class RestrictionPlanningVisitor extends PlanningVisitor {
       if(type.builds(restriction.getType())) {
         PlanElement element = type.build(getCurrentField(), restriction);
         if(element.phase() == getPhase()) {
-          collect(element);
+          collect((ExternalPlanElement) element);
         }
       }
     }

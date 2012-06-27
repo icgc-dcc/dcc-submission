@@ -26,12 +26,12 @@ public interface CascadingStrategy {
 
   public FlowConnector getFlowConnector();
 
-  public Tap getSourceTap(FileSchema schema);
+  public Tap<?, ?, ?> getSourceTap(FileSchema schema);
 
-  public Tap getInternalSinkTap(String schema);
+  public Tap<?, ?, ?> getInternalSinkTap(String schema);
 
-  public Tap getTrimmedTap(Trim trim);
+  public Tap<?, ?, ?> getTrimmedTap(Trim trim);
 
-  public Tap getExternalSinkTap(String schema);
+  public Tap<?, ?, ?> getExternalSinkTap(String schema);
 
 }

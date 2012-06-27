@@ -24,11 +24,13 @@ import java.util.Set;
 
 import org.icgc.dcc.model.dictionary.Dictionary;
 import org.icgc.dcc.model.dictionary.FileSchema;
+import org.icgc.dcc.validation.ExternalFlowPlanningVisitor;
 import org.icgc.dcc.validation.FileSchemaDirectory;
-import org.icgc.dcc.validation.PlanningVisitor;
+import org.icgc.dcc.validation.InternalFlowPlanningVisitor;
 import org.icgc.dcc.validation.RestrictionType;
+import org.icgc.dcc.validation.visitor.ExternalRestrictionPlanningVisitor;
+import org.icgc.dcc.validation.visitor.InternalRestrictionPlanningVisitor;
 import org.icgc.dcc.validation.visitor.RelationPlanningVisitor;
-import org.icgc.dcc.validation.visitor.RestrictionPlanningVisitor;
 import org.icgc.dcc.validation.visitor.UniqueFieldsPlanningVisitor;
 import org.icgc.dcc.validation.visitor.ValueTypePlanningVisitor;
 
@@ -39,9 +41,9 @@ import com.google.inject.Inject;
 
 public class DefaultPlanner implements Planner {
 
-  private final List<PlanningVisitor> internalFlowVisitors;
+  private final List<InternalFlowPlanningVisitor> internalFlowVisitors;
 
-  private final List<PlanningVisitor> externalFlowVisitors;
+  private final List<ExternalFlowPlanningVisitor> externalFlowVisitors;
 
   private final CascadingStrategy cascadingStrategy;
 
@@ -52,10 +54,10 @@ public class DefaultPlanner implements Planner {
     this.cascadingStrategy = cascadingStrategy;
     internalFlowVisitors =
         ImmutableList.of(new ValueTypePlanningVisitor(), new UniqueFieldsPlanningVisitor(),
-            new RestrictionPlanningVisitor(PlanPhase.INTERNAL, restrictionTypes));
+            new InternalRestrictionPlanningVisitor(restrictionTypes));
     externalFlowVisitors =
-        ImmutableList.of(new RelationPlanningVisitor(), new RestrictionPlanningVisitor(PlanPhase.EXTERNAL,
-            restrictionTypes));
+        ImmutableList.<ExternalFlowPlanningVisitor> of(new RelationPlanningVisitor(),
+            new ExternalRestrictionPlanningVisitor(restrictionTypes));
   }
 
   @Override
@@ -67,8 +69,12 @@ public class DefaultPlanner implements Planner {
             fileSchema));
       }
     }
-    plan.apply(internalFlowVisitors);
-    plan.apply(externalFlowVisitors);
+    for(InternalFlowPlanningVisitor visitor : internalFlowVisitors) {
+      visitor.apply(plan);
+    }
+    for(ExternalFlowPlanningVisitor visitor : externalFlowVisitors) {
+      visitor.apply(plan);
+    }
 
     return plan.connect(cascadingStrategy);
   }

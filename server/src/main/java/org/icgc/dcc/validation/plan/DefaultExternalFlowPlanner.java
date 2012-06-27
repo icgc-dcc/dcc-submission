@@ -56,13 +56,7 @@ class DefaultExternalFlowPlanner implements ExternalFlowPlanner {
   }
 
   @Override
-  public PlanPhase getPhase() {
-    return PlanPhase.EXTERNAL;
-  }
-
-  @Override
-  public void apply(PlanElement e) {
-    ExternalPlanElement element = (ExternalPlanElement) e;
+  public void apply(ExternalPlanElement element) {
     Trim trimLhs = plan.getInternalFlow(getSchema().getName()).addTrimmedOutput(element.lhsFields());
     Trim trimRhs = plan.getInternalFlow(element.rhs()).addTrimmedOutput(element.rhsFields());
 
@@ -73,9 +67,9 @@ class DefaultExternalFlowPlanner implements ExternalFlowPlanner {
   }
 
   @Override
-  public Flow connect(CascadingStrategy strategy) {
+  public Flow<?> connect(CascadingStrategy strategy) {
     if(joinedTails.size() > 0) {
-      Tap sink = strategy.getExternalSinkTap(fileSchema.getName());
+      Tap<?, ?, ?> sink = strategy.getExternalSinkTap(fileSchema.getName());
       FlowDef def = new FlowDef().setName(getSchema().getName() + ".external").addTailSink(mergeJoinedTails(), sink);
 
       for(Trim trim : trimmedHeads.keySet()) {

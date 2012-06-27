@@ -64,15 +64,10 @@ class DefaultInternalFlowPlanner implements InternalFlowPlanner {
   }
 
   @Override
-  public void apply(PlanElement element) {
+  public void apply(InternalPlanElement element) {
     checkArgument(element != null);
-    validTail = ((InternalPlanElement) element).extend(validTail);
+    validTail = element.extend(validTail);
   }
-
-  @Override
-  public PlanPhase getPhase() {
-    return PlanPhase.INTERNAL;
-  };
 
   @Override
   public Trim addTrimmedOutput(String... fields) {
@@ -88,10 +83,10 @@ class DefaultInternalFlowPlanner implements InternalFlowPlanner {
   }
 
   @Override
-  public Flow connect(CascadingStrategy strategy) {
+  public Flow<?> connect(CascadingStrategy strategy) {
     Pipe tail = applyFilter(validTail);
-    Tap source = strategy.getSourceTap(fileSchema);
-    Tap sink = strategy.getInternalSinkTap(fileSchema.getName());
+    Tap<?, ?, ?> source = strategy.getSourceTap(fileSchema);
+    Tap<?, ?, ?> sink = strategy.getInternalSinkTap(fileSchema.getName());
 
     FlowDef def = new FlowDef()//
         .setName(getSchema().getName() + ".internal")//

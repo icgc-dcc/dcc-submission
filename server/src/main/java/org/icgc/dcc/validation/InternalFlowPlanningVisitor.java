@@ -15,13 +15,27 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.validation.plan;
+package org.icgc.dcc.validation;
 
-import org.icgc.dcc.validation.PipeExtender;
+import org.icgc.dcc.validation.plan.InternalFlowPlanner;
+import org.icgc.dcc.validation.plan.InternalPlanElement;
+import org.icgc.dcc.validation.plan.Plan;
+import org.icgc.dcc.validation.plan.PlanPhase;
 
-/**
- * A {@code PlanElement} applicable to a {@code InternalFlowPlanner}
- */
-public interface InternalPlanElement extends PlanElement, PipeExtender {
+public class InternalFlowPlanningVisitor extends PlanningVisitor<InternalPlanElement> {
+
+  public InternalFlowPlanningVisitor() {
+    super(PlanPhase.INTERNAL);
+  }
+
+  @Override
+  public void apply(Plan plan) {
+    for(InternalFlowPlanner planner : plan.getInternalFlows()) {
+      planner.getSchema().accept(this);
+      for(InternalPlanElement e : getElements()) {
+        planner.apply(e);
+      }
+    }
+  }
 
 }

@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.icgc.dcc.model.dictionary.FileSchema;
-import org.icgc.dcc.validation.PlanningVisitor;
 
 import cascading.cascade.Cascade;
 import cascading.cascade.CascadeConnector;
@@ -66,29 +65,10 @@ public class Plan {
     return externalPlanners.values();
   }
 
-  public void apply(Iterable<PlanningVisitor> visitors) {
-    for(PlanningVisitor visitor : visitors) {
-      if(visitor.getPhase() == PlanPhase.INTERNAL) {
-        apply(getInternalFlows(), visitor);
-      } else if(visitor.getPhase() == PlanPhase.EXTERNAL) {
-        apply(getExternalFlows(), visitor);
-      }
-    }
-  }
-
-  private void apply(Iterable<? extends FileSchemaFlowPlanner> planners, PlanningVisitor visitor) {
-    for(FileSchemaFlowPlanner fs : planners) {
-      fs.getSchema().accept(visitor);
-      for(PlanElement element : visitor.getElements()) {
-        fs.apply(element);
-      }
-    }
-  }
-
   public Cascade connect(CascadingStrategy cascadingStrategy) {
     CascadeDef cascade = new CascadeDef();
     for(FileSchemaFlowPlanner plan : Iterables.concat(internalPlanners.values(), externalPlanners.values())) {
-      Flow flow = plan.connect(cascadingStrategy);
+      Flow<?> flow = plan.connect(cascadingStrategy);
       if(flow != null) {
         cascade.addFlow(flow);
       }

@@ -22,16 +22,17 @@ import java.util.List;
 import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.FileSchema;
 import org.icgc.dcc.model.dictionary.visitor.BaseDictionaryVisitor;
+import org.icgc.dcc.validation.plan.Plan;
 import org.icgc.dcc.validation.plan.PlanElement;
 import org.icgc.dcc.validation.plan.PlanPhase;
 
 import com.google.common.collect.Lists;
 
-public class PlanningVisitor extends BaseDictionaryVisitor {
+public abstract class PlanningVisitor<T extends PlanElement> extends BaseDictionaryVisitor {
 
   private final PlanPhase phase;
 
-  private final List<PlanElement> elements = Lists.newArrayList();
+  private final List<T> elements = Lists.newArrayList();
 
   private FileSchema currentSchema;
 
@@ -45,7 +46,7 @@ public class PlanningVisitor extends BaseDictionaryVisitor {
     return phase;
   }
 
-  public List<PlanElement> getElements() {
+  public List<T> getElements() {
     return elements;
   }
 
@@ -68,7 +69,9 @@ public class PlanningVisitor extends BaseDictionaryVisitor {
     this.currentField = field;
   }
 
-  protected void collect(PlanElement element) {
+  public abstract void apply(Plan plan);
+
+  protected void collect(T element) {
     this.elements.add(element);
   }
 

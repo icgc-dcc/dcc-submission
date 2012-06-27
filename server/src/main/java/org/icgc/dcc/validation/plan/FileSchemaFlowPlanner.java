@@ -22,16 +22,12 @@ import org.icgc.dcc.model.dictionary.FileSchema;
 import cascading.flow.Flow;
 
 /**
- * Plans the {@code Flow} for a particular {@code FileSchema} for a {@code PlanPhase}.
+ * Plans a {@code Flow} for a particular {@code FileSchema}.
  */
 public interface FileSchemaFlowPlanner {
 
   public FileSchema getSchema();
 
-  public PlanPhase getPhase();
-
-  public void apply(PlanElement element);
-
-  public Flow connect(CascadingStrategy cascadingStrategy);
+  public Flow<?> connect(CascadingStrategy cascadingStrategy);
 
 }
