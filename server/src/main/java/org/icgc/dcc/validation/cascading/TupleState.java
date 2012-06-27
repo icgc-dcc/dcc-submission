@@ -67,6 +67,14 @@ public class TupleState implements Serializable {
       this.parameters = parameters;
     }
 
+    public int code() {
+      return code;
+    }
+
+    public Object[] parameters() {
+      return parameters;
+    }
+
     @Override
     public String toString() {
       return Objects.toStringHelper(TupleError.class).add("code", code).add("parameters", Arrays.toString(parameters))
