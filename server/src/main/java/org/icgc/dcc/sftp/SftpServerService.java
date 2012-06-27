@@ -31,8 +31,10 @@ import org.apache.sshd.server.PasswordAuthenticator;
 import org.apache.sshd.server.keyprovider.PEMGeneratorHostKeyProvider;
 import org.apache.sshd.server.session.ServerSession;
 import org.apache.sshd.server.sftp.SftpSubsystem;
-import org.icgc.dcc.filesystem.ReleaseFileSystem;
+import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.security.UsernamePasswordAuthenticator;
+import org.icgc.dcc.service.ReleaseService;
+import org.icgc.dcc.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +53,8 @@ public class SftpServerService extends AbstractService {
   private final SshServer sshd;
 
   @Inject
-  public SftpServerService(Config config, final UsernamePasswordAuthenticator passwordAuthenticator, final FileSystem fs) {
+  public SftpServerService(Config config, final UsernamePasswordAuthenticator passwordAuthenticator,
+      final DccFileSystem fs, final ReleaseService releaseService, final UserService userService) {
     checkArgument(passwordAuthenticator != null);
 
     sshd = SshServer.setUpDefaultServer();
@@ -68,7 +71,7 @@ public class SftpServerService extends AbstractService {
     sshd.setFileSystemFactory(new FileSystemFactory() {
       @Override
       public FileSystemView createFileSystemView(Session session) throws IOException {
-        return new HdfsFileSystemView(fs);
+        return new HdfsFileSystemView(fs, releaseService, userService, passwordAuthenticator);
       }
     });
     sshd.setSubsystemFactories(ImmutableList.<NamedFactory<Command>> of(new SftpSubsystem.Factory()));

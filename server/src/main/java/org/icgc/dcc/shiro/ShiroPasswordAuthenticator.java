@@ -79,4 +79,9 @@ public class ShiroPasswordAuthenticator implements UsernamePasswordAuthenticator
     return currentUser.isAuthenticated();
   }
 
+  @Override
+  public String getCurrentUser() {
+    return SecurityUtils.getSubject().getPrincipal().toString();
+  }
+
 }

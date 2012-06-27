@@ -28,4 +28,6 @@ public interface UsernamePasswordAuthenticator {
    */
   public boolean authenticate(String username, char[] password, String host);
 
+  public String getCurrentUser();
+
 }

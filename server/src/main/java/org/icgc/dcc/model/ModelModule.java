@@ -6,6 +6,7 @@ import org.icgc.dcc.model.dictionary.DictionaryService;
 import org.icgc.dcc.model.dictionary.visitor.DictionaryCloneVisitor;
 import org.icgc.dcc.service.ProjectService;
 import org.icgc.dcc.service.ReleaseService;
+import org.icgc.dcc.service.UserService;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
@@ -65,6 +66,7 @@ public class ModelModule extends AbstractModule {
     bindModelClasses(Project.class, Release.class, User.class, Dictionary.class, CodeList.class);
     bind(ProjectService.class);
     bind(ReleaseService.class);
+    bind(UserService.class);
     bind(DictionaryCloneVisitor.class);// TODO: here?
     bind(DictionaryService.class);
   }
