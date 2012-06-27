@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.Restriction;
+import org.icgc.dcc.validation.ErrorCodeRegistry;
 import org.icgc.dcc.validation.RestrictionType;
 import org.icgc.dcc.validation.RestrictionTypeSchema;
 import org.icgc.dcc.validation.RestrictionTypeSchema.FieldRestrictionParameter;
@@ -52,6 +53,10 @@ public class DiscreteValuesRestriction implements InternalPlanElement {
     private final RestrictionTypeSchema schema = new RestrictionTypeSchema(//
         new FieldRestrictionParameter("values", ParameterType.TEXT, "list of allowable values (e.g.: 1,2,3)", true));
 
+    public Type() {
+      ErrorCodeRegistry.get().register(500, "invalid value %s for field %s. Expected one of the following values: %s");
+    }
+
     @Override
     public String getType() {
       return NAME;
@@ -93,7 +98,8 @@ public class DiscreteValuesRestriction implements InternalPlanElement {
     public void operate(FlowProcess flowProcess, FunctionCall functionCall) {
       String value = functionCall.getArguments().getString(0);
       if(values.contains(value) == false) {
-        ValidationFields.state(functionCall.getArguments()).reportError(500, value, values);
+        Object fieldName = functionCall.getArguments().getFields().get(0);
+        ValidationFields.state(functionCall.getArguments()).reportError(500, value, fieldName, values);
       }
       functionCall.getOutputCollector().add(functionCall.getArguments());
     }
