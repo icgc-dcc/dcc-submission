@@ -1,6 +1,7 @@
 define (require) ->
   Chaplin = require 'chaplin'
-
+  utils = require 'lib/utils'
+  
   "use strict"
 
   class Model extends Chaplin.Model
@@ -8,11 +9,9 @@ define (require) ->
     apiRoot: "http://localhost:3001/ws/"
     urlKey: "_id"
 
-
     urlPath: ->
       console.debug 'Model#urlPath'
       ''
-
 
     urlRoot: ->
       console.debug 'Model#urlRoot'
@@ -24,17 +23,14 @@ define (require) ->
       else
         throw new Error('Model must redefine urlPath')
 
-
     url: ->
       console.debug 'Model#url'
-      @urlRoot()
-
-    
-    sendAuthorization: (xhr) =>
-        token = "username".concat ":", "password"
-        console.debug 'Model#xhr', "Basic ".concat btoa token
-        xhr.setRequestHeader 'Authorization', "Basic ".concat btoa token
-
+      base = @urlRoot()
+      url = if @get(@urlKey)?
+        base + encodeURIComponent(@get(@urlKey))
+      else
+        base
+      url
 
     fetch: (options) ->
       console.debug 'Model#fetch'
@@ -42,6 +38,6 @@ define (require) ->
       @trigger 'loadStart'
       (options ?= {}).success = =>
         @trigger 'load'
-      options.beforeSend = @sendAuthorization
+      options.beforeSend = utils.sendAuthorization
 
       super(options)

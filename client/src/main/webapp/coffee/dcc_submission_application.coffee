@@ -1,8 +1,10 @@
-define [
-  'chaplin'
-  'views/layout'
-  'routes'
-], (Chaplin, Layout, routes) ->
+define (require) ->
+  Chaplin = require 'chaplin'
+  SessionController = require 'controllers/session_controller'
+  NavigationController = require 'controllers/navigation_controller'
+  Layout = require 'views/layout'
+  routes = require 'routes'
+
   'use strict'
 
   # The application object
@@ -52,7 +54,9 @@ define [
       # and views which are needed the whole time, for example header, footer
       # or navigation views.
       # e.g. new NavigationController()
-
+      new SessionController()
+      new NavigationController()
+      
     # Create additional mediator properties
     # -------------------------------------
     initMediator: ->

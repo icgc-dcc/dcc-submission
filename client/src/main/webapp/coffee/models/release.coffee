@@ -8,7 +8,5 @@ define (require) ->
     urlPath: ->
       "releases/"
 
-    fetch: ->
-      console.debug 'Release#fetch', @
-      @id = @get "identifier"
-      super
+    initialize: ->
+      console.debug 'Release#show', @

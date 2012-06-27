@@ -20,6 +20,8 @@ package org.icgc.dcc.testdata;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.fs.FileSystem;
+import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.model.Project;
 import org.icgc.dcc.model.Release;
 import org.icgc.dcc.model.Submission;
@@ -32,11 +34,13 @@ import org.icgc.dcc.model.dictionary.FileSchema;
 import org.icgc.dcc.model.dictionary.FileSchemaRole;
 import org.icgc.dcc.model.dictionary.Term;
 import org.icgc.dcc.model.dictionary.ValueType;
+import org.icgc.dcc.service.CompletedRelease;
 import org.icgc.dcc.service.ProjectService;
 import org.icgc.dcc.service.ReleaseService;
 import org.icgc.dcc.service.UserService;
 
 import com.google.inject.Inject;
+import com.typesafe.config.Config;
 
 /**
  * using data.js as a template to populate data
@@ -51,12 +55,19 @@ public class DataGenerator {
 
   private final UserService userService;
 
+  private final Config config;
+
+  private final FileSystem fileSystem;
+
   @Inject
-  public DataGenerator(DictionaryService dict, ProjectService project, ReleaseService release, UserService user) {
+  public DataGenerator(DictionaryService dict, ProjectService project, ReleaseService release, UserService user,
+      Config config, FileSystem fileSystem) {
     this.dictionaryService = dict;
     this.projectService = project;
     this.releaseService = release;
     this.userService = user;
+    this.config = config;
+    this.fileSystem = fileSystem;
   }
 
   public void generateTestData() {
@@ -155,5 +166,16 @@ public class DataGenerator {
     secondRelease.getSubmissions().add(submission4);
 
     this.releaseService.getNextRelease().release(secondRelease);
+  }
+
+  public void generateFileSystem() {
+    DccFileSystem filesystem =
+        new DccFileSystem(this.config, this.releaseService, this.projectService, this.fileSystem);
+
+    for(CompletedRelease release : this.releaseService.getCompletedReleases()) {
+      filesystem.createReleaseFilesystem(release.getRelease());
+    }
+
+    filesystem.createReleaseFilesystem(this.releaseService.getNextRelease().getRelease());
   }
 }
