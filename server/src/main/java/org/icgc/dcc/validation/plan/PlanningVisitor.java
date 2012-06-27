@@ -33,7 +33,7 @@ import com.google.common.collect.Lists;
  */
 public abstract class PlanningVisitor<T extends PlanElement> extends BaseDictionaryVisitor {
 
-  private final PlanPhase phase;
+  private final FlowType phase;
 
   private final List<T> elements = Lists.newArrayList();
 
@@ -41,11 +41,11 @@ public abstract class PlanningVisitor<T extends PlanElement> extends BaseDiction
 
   private Field currentField;
 
-  public PlanningVisitor(PlanPhase phase) {
+  public PlanningVisitor(FlowType phase) {
     this.phase = phase;
   }
 
-  public PlanPhase getPhase() {
+  public FlowType getFlow() {
     return phase;
   }
 

@@ -10,8 +10,8 @@ import org.icgc.dcc.validation.RestrictionType;
 import org.icgc.dcc.validation.RestrictionTypeSchema;
 import org.icgc.dcc.validation.cascading.ValidationFields;
 import org.icgc.dcc.validation.plan.ExternalPlanElement;
+import org.icgc.dcc.validation.plan.FlowType;
 import org.icgc.dcc.validation.plan.PlanElement;
-import org.icgc.dcc.validation.plan.PlanPhase;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -49,11 +49,6 @@ public class ForeingKeyFieldRestriction implements ExternalPlanElement {
   }
 
   @Override
-  public PlanPhase phase() {
-    return PlanPhase.EXTERNAL;
-  }
-
-  @Override
   public String[] lhsFields() {
     return new String[] { lhsField };
   }
@@ -83,6 +78,11 @@ public class ForeingKeyFieldRestriction implements ExternalPlanElement {
     @Override
     public String getType() {
       return NAME;
+    }
+
+    @Override
+    public FlowType flow() {
+      return FlowType.EXTERNAL;
     }
 
     @Override

@@ -22,7 +22,6 @@ import org.icgc.dcc.model.dictionary.ValueType;
 import org.icgc.dcc.validation.cascading.ValidationFields;
 import org.icgc.dcc.validation.plan.InternalFlowPlanningVisitor;
 import org.icgc.dcc.validation.plan.InternalPlanElement;
-import org.icgc.dcc.validation.plan.PlanPhase;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -60,11 +59,6 @@ public class ValueTypePlanningVisitor extends InternalFlowPlanningVisitor {
     @Override
     public String describe() {
       return String.format("valueType[%s:%s]", field.getName(), type);
-    }
-
-    @Override
-    public PlanPhase phase() {
-      return PlanPhase.INTERNAL;
     }
 
     @Override

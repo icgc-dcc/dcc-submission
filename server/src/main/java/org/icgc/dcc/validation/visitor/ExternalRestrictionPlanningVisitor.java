@@ -23,14 +23,25 @@ import org.icgc.dcc.model.dictionary.Restriction;
 import org.icgc.dcc.validation.RestrictionType;
 import org.icgc.dcc.validation.plan.ExternalFlowPlanningVisitor;
 import org.icgc.dcc.validation.plan.ExternalPlanElement;
+import org.icgc.dcc.validation.plan.FlowType;
 import org.icgc.dcc.validation.plan.PlanElement;
+
+import com.google.common.base.Predicate;
+import com.google.common.collect.Sets;
 
 public class ExternalRestrictionPlanningVisitor extends ExternalFlowPlanningVisitor {
 
   private final Set<RestrictionType> restrictionTypes;
 
   public ExternalRestrictionPlanningVisitor(Set<RestrictionType> restrictionTypes) {
-    this.restrictionTypes = restrictionTypes;
+    this.restrictionTypes = Sets.filter(restrictionTypes, new Predicate<RestrictionType>() {
+
+      @Override
+      public boolean apply(RestrictionType input) {
+        return input.flow() == FlowType.EXTERNAL;
+      }
+
+    });
   }
 
   @Override
@@ -38,9 +49,7 @@ public class ExternalRestrictionPlanningVisitor extends ExternalFlowPlanningVisi
     for(RestrictionType type : restrictionTypes) {
       if(type.builds(restriction.getType())) {
         PlanElement element = type.build(getCurrentField(), restriction);
-        if(element.phase() == getPhase()) {
-          collect((ExternalPlanElement) element);
-        }
+        collect((ExternalPlanElement) element);
       }
     }
   }

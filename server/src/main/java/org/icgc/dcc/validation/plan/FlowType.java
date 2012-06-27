@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.validation.plan;
 
-public enum PlanPhase {
+public enum FlowType {
 
   INTERNAL, EXTERNAL
 

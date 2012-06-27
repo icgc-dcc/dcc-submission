@@ -10,9 +10,9 @@ import org.icgc.dcc.validation.RestrictionTypeSchema;
 import org.icgc.dcc.validation.RestrictionTypeSchema.FieldRestrictionParameter;
 import org.icgc.dcc.validation.RestrictionTypeSchema.ParameterType;
 import org.icgc.dcc.validation.cascading.ValidationFields;
+import org.icgc.dcc.validation.plan.FlowType;
 import org.icgc.dcc.validation.plan.InternalPlanElement;
 import org.icgc.dcc.validation.plan.PlanElement;
-import org.icgc.dcc.validation.plan.PlanPhase;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -43,11 +43,6 @@ public class DiscreteValuesRestriction implements InternalPlanElement {
   }
 
   @Override
-  public PlanPhase phase() {
-    return PlanPhase.INTERNAL;
-  }
-
-  @Override
   public Pipe extend(Pipe pipe) {
     return new Each(pipe, new ValidationFields(field), new InValuesFunction(values), Fields.REPLACE);
   }
@@ -60,6 +55,11 @@ public class DiscreteValuesRestriction implements InternalPlanElement {
     @Override
     public String getType() {
       return NAME;
+    }
+
+    @Override
+    public FlowType flow() {
+      return FlowType.INTERNAL;
     }
 
     @Override

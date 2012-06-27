@@ -62,7 +62,7 @@ public class DefaultPlanner implements Planner {
   public Cascade plan(FileSchemaDirectory directory, Dictionary dictionary) {
     checkArgument(directory != null);
     checkArgument(dictionary != null);
-    
+
     Plan plan = new Plan();
     for(FileSchema fileSchema : dictionary.getFiles()) {
       if(directory.hasFile(fileSchema)) {

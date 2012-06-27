@@ -25,7 +25,6 @@ import org.icgc.dcc.model.dictionary.Relation;
 import org.icgc.dcc.validation.cascading.ValidationFields;
 import org.icgc.dcc.validation.plan.ExternalFlowPlanningVisitor;
 import org.icgc.dcc.validation.plan.ExternalPlanElement;
-import org.icgc.dcc.validation.plan.PlanPhase;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -69,11 +68,6 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
     @Override
     public String describe() {
       return String.format("fk[%s->%s:%s]", Arrays.toString(lhsFields), rhs, Arrays.toString(rhsFields));
-    }
-
-    @Override
-    public PlanPhase phase() {
-      return PlanPhase.EXTERNAL;
     }
 
     @Override

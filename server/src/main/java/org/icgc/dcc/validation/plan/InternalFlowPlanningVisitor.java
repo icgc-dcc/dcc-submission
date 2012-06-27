@@ -21,7 +21,7 @@ package org.icgc.dcc.validation.plan;
 public class InternalFlowPlanningVisitor extends PlanningVisitor<InternalPlanElement> {
 
   public InternalFlowPlanningVisitor() {
-    super(PlanPhase.INTERNAL);
+    super(FlowType.INTERNAL);
   }
 
   @Override

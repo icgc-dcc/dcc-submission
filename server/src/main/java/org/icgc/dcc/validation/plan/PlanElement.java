@@ -28,10 +28,4 @@ public interface PlanElement {
    */
   public String describe();
 
-  /**
-   * The flow this element applies to.
-   * @return
-   */
-  public PlanPhase phase();
-
 }

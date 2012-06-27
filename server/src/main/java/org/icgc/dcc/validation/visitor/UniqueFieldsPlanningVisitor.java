@@ -24,7 +24,6 @@ import org.icgc.dcc.model.dictionary.FileSchema;
 import org.icgc.dcc.validation.cascading.ValidationFields;
 import org.icgc.dcc.validation.plan.InternalFlowPlanningVisitor;
 import org.icgc.dcc.validation.plan.InternalPlanElement;
-import org.icgc.dcc.validation.plan.PlanPhase;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -65,11 +64,6 @@ public class UniqueFieldsPlanningVisitor extends InternalFlowPlanningVisitor {
     @Override
     public String describe() {
       return String.format("unique[%s]", fields);
-    }
-
-    @Override
-    public PlanPhase phase() {
-      return PlanPhase.INTERNAL;
     }
 
     @Override

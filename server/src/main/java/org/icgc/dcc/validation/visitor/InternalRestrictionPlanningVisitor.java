@@ -4,16 +4,27 @@ import java.util.Set;
 
 import org.icgc.dcc.model.dictionary.Restriction;
 import org.icgc.dcc.validation.RestrictionType;
+import org.icgc.dcc.validation.plan.FlowType;
 import org.icgc.dcc.validation.plan.InternalFlowPlanningVisitor;
 import org.icgc.dcc.validation.plan.InternalPlanElement;
 import org.icgc.dcc.validation.plan.PlanElement;
+
+import com.google.common.base.Predicate;
+import com.google.common.collect.Sets;
 
 public class InternalRestrictionPlanningVisitor extends InternalFlowPlanningVisitor {
 
   private final Set<RestrictionType> restrictionTypes;
 
   public InternalRestrictionPlanningVisitor(Set<RestrictionType> restrictionTypes) {
-    this.restrictionTypes = restrictionTypes;
+    this.restrictionTypes = Sets.filter(restrictionTypes, new Predicate<RestrictionType>() {
+
+      @Override
+      public boolean apply(RestrictionType input) {
+        return input.flow() == FlowType.INTERNAL;
+      }
+
+    });
   }
 
   @Override
@@ -21,9 +32,7 @@ public class InternalRestrictionPlanningVisitor extends InternalFlowPlanningVisi
     for(RestrictionType type : restrictionTypes) {
       if(type.builds(restriction.getType())) {
         PlanElement element = type.build(getCurrentField(), restriction);
-        if(element.phase() == getPhase()) {
-          collect((InternalPlanElement) element);
-        }
+        collect((InternalPlanElement) element);
       }
     }
   }
