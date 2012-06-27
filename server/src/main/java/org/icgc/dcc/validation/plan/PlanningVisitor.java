@@ -59,7 +59,7 @@ public abstract class PlanningVisitor<T extends PlanElement> extends BaseDiction
 
   @Override
   public void visit(FileSchema fileSchema) {
-    // Clear the collected elements
+    // Clear the collected elements. This allows re-using this instance for multiple plans
     elements.clear();
     this.currentSchema = fileSchema;
   }
