@@ -22,8 +22,8 @@ import java.util.Iterator;
 
 import org.icgc.dcc.model.dictionary.FileSchema;
 import org.icgc.dcc.model.dictionary.Relation;
-import org.icgc.dcc.validation.ExternalFlowPlanningVisitor;
 import org.icgc.dcc.validation.cascading.ValidationFields;
+import org.icgc.dcc.validation.plan.ExternalFlowPlanningVisitor;
 import org.icgc.dcc.validation.plan.ExternalPlanElement;
 import org.icgc.dcc.validation.plan.PlanPhase;
 
@@ -39,6 +39,9 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
+/**
+ * Creates {@code PlanElement}s for {@code Relation}.
+ */
 public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
 
   public RelationPlanningVisitor() {
@@ -51,8 +54,6 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
 
   private static class RelationPlanElement implements ExternalPlanElement {
 
-    private final String lhs;
-
     private final String[] lhsFields;
 
     private final String rhs;
@@ -60,7 +61,6 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
     private final String[] rhsFields;
 
     private RelationPlanElement(FileSchema fileSchema, Relation relation) {
-      this.lhs = fileSchema.getName();
       this.lhsFields = relation.getFields().toArray(new String[] {});
       this.rhs = relation.getOther();
       this.rhsFields = relation.getOtherFields().toArray(new String[] {});
@@ -68,7 +68,7 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
 
     @Override
     public String describe() {
-      return String.format("fk[%s:%s->%s:%s]", lhs, Arrays.toString(lhsFields), rhs, Arrays.toString(rhsFields));
+      return String.format("fk[%s->%s:%s]", Arrays.toString(lhsFields), rhs, Arrays.toString(rhsFields));
     }
 
     @Override

@@ -15,19 +15,22 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.validation;
+package org.icgc.dcc.validation.plan;
 
 import java.util.List;
 
 import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.FileSchema;
 import org.icgc.dcc.model.dictionary.visitor.BaseDictionaryVisitor;
-import org.icgc.dcc.validation.plan.Plan;
-import org.icgc.dcc.validation.plan.PlanElement;
-import org.icgc.dcc.validation.plan.PlanPhase;
 
 import com.google.common.collect.Lists;
 
+/**
+ * A {@code DictionaryVisitor} that collects {@code PlanElement} during its visit. Elements are cleared upon each visit
+ * of a new {@code FileSchema}.
+ * 
+ * @param <T> the type of {@code PlanElement} collected by this visitor
+ */
 public abstract class PlanningVisitor<T extends PlanElement> extends BaseDictionaryVisitor {
 
   private final PlanPhase phase;
@@ -46,10 +49,6 @@ public abstract class PlanningVisitor<T extends PlanElement> extends BaseDiction
     return phase;
   }
 
-  public List<T> getElements() {
-    return elements;
-  }
-
   public Field getCurrentField() {
     return currentField;
   }
@@ -60,8 +59,9 @@ public abstract class PlanningVisitor<T extends PlanElement> extends BaseDiction
 
   @Override
   public void visit(FileSchema fileSchema) {
-    this.currentSchema = fileSchema;
+    // Clear the collected elements
     elements.clear();
+    this.currentSchema = fileSchema;
   }
 
   @Override
@@ -69,7 +69,15 @@ public abstract class PlanningVisitor<T extends PlanElement> extends BaseDiction
     this.currentField = field;
   }
 
+  /**
+   * Applies the collected {@code PlanElement} to the specified {@code Plan}
+   * @param plan
+   */
   public abstract void apply(Plan plan);
+
+  protected List<T> getElements() {
+    return elements;
+  }
 
   protected void collect(T element) {
     this.elements.add(element);

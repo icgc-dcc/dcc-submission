@@ -25,6 +25,8 @@ import org.icgc.dcc.model.dictionary.FileSchema;
 import org.icgc.dcc.validation.cascading.AddValidationFieldsFunction;
 import org.icgc.dcc.validation.cascading.TupleStates;
 import org.icgc.dcc.validation.cascading.ValidationFields;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cascading.flow.Flow;
 import cascading.flow.FlowDef;
@@ -37,6 +39,8 @@ import cascading.tuple.Fields;
 import com.google.common.collect.Maps;
 
 class DefaultInternalFlowPlanner implements InternalFlowPlanner {
+
+  private static final Logger log = LoggerFactory.getLogger(DefaultInternalFlowPlanner.class);
 
   private final Plan plan;
 
@@ -66,6 +70,7 @@ class DefaultInternalFlowPlanner implements InternalFlowPlanner {
   @Override
   public void apply(InternalPlanElement element) {
     checkArgument(element != null);
+    log.info("[{}] applying element [{}]", fileSchema.getName(), element.describe());
     validTail = element.extend(validTail);
   }
 

@@ -21,8 +21,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.icgc.dcc.model.dictionary.FileSchema;
-import org.icgc.dcc.validation.InternalFlowPlanningVisitor;
 import org.icgc.dcc.validation.cascading.ValidationFields;
+import org.icgc.dcc.validation.plan.InternalFlowPlanningVisitor;
 import org.icgc.dcc.validation.plan.InternalPlanElement;
 import org.icgc.dcc.validation.plan.PlanPhase;
 
@@ -38,6 +38,9 @@ import cascading.tuple.TupleEntry;
 
 import com.google.common.collect.ImmutableList;
 
+/**
+ * Creates {@code PlanElement}s for unique fields of a {@code FileSchema}.
+ */
 public class UniqueFieldsPlanningVisitor extends InternalFlowPlanningVisitor {
 
   public UniqueFieldsPlanningVisitor() {

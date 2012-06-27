@@ -20,8 +20,8 @@ package org.icgc.dcc.validation.visitor;
 import java.util.Set;
 
 import org.icgc.dcc.model.dictionary.Restriction;
-import org.icgc.dcc.validation.ExternalFlowPlanningVisitor;
 import org.icgc.dcc.validation.RestrictionType;
+import org.icgc.dcc.validation.plan.ExternalFlowPlanningVisitor;
 import org.icgc.dcc.validation.plan.ExternalPlanElement;
 import org.icgc.dcc.validation.plan.PlanElement;
 

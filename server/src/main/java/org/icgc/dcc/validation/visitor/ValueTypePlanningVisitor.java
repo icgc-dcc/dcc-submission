@@ -19,8 +19,8 @@ package org.icgc.dcc.validation.visitor;
 
 import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.ValueType;
-import org.icgc.dcc.validation.InternalFlowPlanningVisitor;
 import org.icgc.dcc.validation.cascading.ValidationFields;
+import org.icgc.dcc.validation.plan.InternalFlowPlanningVisitor;
 import org.icgc.dcc.validation.plan.InternalPlanElement;
 import org.icgc.dcc.validation.plan.PlanPhase;
 
@@ -33,6 +33,9 @@ import cascading.pipe.Pipe;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 
+/**
+ * Creates {@code PlanElement}s for validating the {@code ValueType} of a {@code Field}.
+ */
 public class ValueTypePlanningVisitor extends InternalFlowPlanningVisitor {
 
   public ValueTypePlanningVisitor() {

@@ -51,7 +51,7 @@ public class Main {
     Planner planner = injector.getInstance(Planner.class);
     Cascade c = planner.plan(new LocalFileSchemaDirectory(root), dictionary);
     c.writeDOT(new File(output, "cascade.dot").getAbsolutePath());
-    for(Flow flow : c.getFlows()) {
+    for(Flow<?> flow : c.getFlows()) {
       flow.writeDOT(new File(output, flow.getName() + ".dot").getAbsolutePath());
     }
     if(c.getFlows().size() > 0) {

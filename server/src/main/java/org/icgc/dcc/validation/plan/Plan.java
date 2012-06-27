@@ -52,7 +52,7 @@ public class Plan {
   }
 
   public Iterable<InternalFlowPlanner> getInternalFlows() {
-    return internalPlanners.values();
+    return Iterables.unmodifiableIterable(internalPlanners.values());
   }
 
   public ExternalFlowPlanner getExternalFlow(String schema) {
@@ -62,7 +62,7 @@ public class Plan {
   }
 
   public Iterable<ExternalFlowPlanner> getExternalFlows() {
-    return externalPlanners.values();
+    return Iterables.unmodifiableIterable(externalPlanners.values());
   }
 
   public Cascade connect(CascadingStrategy cascadingStrategy) {

@@ -15,12 +15,8 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.validation;
+package org.icgc.dcc.validation.plan;
 
-import org.icgc.dcc.validation.plan.ExternalFlowPlanner;
-import org.icgc.dcc.validation.plan.ExternalPlanElement;
-import org.icgc.dcc.validation.plan.Plan;
-import org.icgc.dcc.validation.plan.PlanPhase;
 
 public class ExternalFlowPlanningVisitor extends PlanningVisitor<ExternalPlanElement> {
 

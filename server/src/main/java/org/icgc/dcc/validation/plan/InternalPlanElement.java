@@ -17,11 +17,16 @@
  */
 package org.icgc.dcc.validation.plan;
 
-import org.icgc.dcc.validation.PipeExtender;
+import cascading.pipe.Pipe;
 
 /**
  * A {@code PlanElement} applicable to a {@code InternalFlowPlanner}
  */
-public interface InternalPlanElement extends PlanElement, PipeExtender {
+public interface InternalPlanElement extends PlanElement {
+
+  /**
+   * Extends a {@code Pipe} and returns the resulting {@code Pipe}. This is analogous to a {@code SubAssembly}.
+   */
+  public Pipe extend(Pipe pipe);
 
 }

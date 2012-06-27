@@ -51,27 +51,27 @@ public class LocalCascadingStrategy implements CascadingStrategy {
   }
 
   @Override
-  public Tap getSourceTap(FileSchema schema) {
+  public Tap<?, ?, ?> getSourceTap(FileSchema schema) {
     return tap(file(schema));
   }
 
   @Override
-  public Tap getInternalSinkTap(String schema) {
+  public Tap<?, ?, ?> getInternalSinkTap(String schema) {
     return tap(new File(output, schema + ".internal.tsv"));
   }
 
   @Override
-  public Tap getExternalSinkTap(String schema) {
+  public Tap<?, ?, ?> getExternalSinkTap(String schema) {
     return tap(new File(output, schema + ".external.tsv"));
   }
 
   @Override
-  public Tap getTrimmedTap(Trim trim) {
+  public Tap<?, ?, ?> getTrimmedTap(Trim trim) {
     File trimmed = new File(output, trim.getSchema() + "#" + Joiner.on("-").join(trim.getFields()) + ".tsv");
     return new FileTap(new TextDelimited(new Fields(trim.getFields()), true, "\t"), trimmed.getAbsolutePath());
   }
 
-  private Tap tap(File file) {
+  private Tap<?, ?, ?> tap(File file) {
     return new FileTap(new TextDelimited(true, "\t"), file.getAbsolutePath());
   }
 

@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.icgc.dcc.model.dictionary.FileSchema;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cascading.flow.Flow;
 import cascading.flow.FlowDef;
@@ -34,6 +36,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 class DefaultExternalFlowPlanner implements ExternalFlowPlanner {
+
+  private static final Logger log = LoggerFactory.getLogger(DefaultInternalFlowPlanner.class);
 
   private final Plan plan;
 
@@ -57,6 +61,8 @@ class DefaultExternalFlowPlanner implements ExternalFlowPlanner {
 
   @Override
   public void apply(ExternalPlanElement element) {
+    checkArgument(element != null);
+    log.info("[{}] applying element [{}]", fileSchema.getName(), element.describe());
     Trim trimLhs = plan.getInternalFlow(getSchema().getName()).addTrimmedOutput(element.lhsFields());
     Trim trimRhs = plan.getInternalFlow(element.rhs()).addTrimmedOutput(element.rhsFields());
 

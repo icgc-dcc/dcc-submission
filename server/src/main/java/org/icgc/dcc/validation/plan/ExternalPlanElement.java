@@ -17,12 +17,12 @@
  */
 package org.icgc.dcc.validation.plan;
 
-import org.icgc.dcc.validation.PipeJoiner;
+import cascading.pipe.Pipe;
 
 /**
  * A {@code PlanElement} that requires joining before applying a validation.
  */
-public interface ExternalPlanElement extends PlanElement, PipeJoiner {
+public interface ExternalPlanElement extends PlanElement {
 
   /**
    * Returns the fields of the left side of the join
@@ -38,5 +38,14 @@ public interface ExternalPlanElement extends PlanElement, PipeJoiner {
    * Returns the schema name of the right side of the join
    */
   public String rhs();
+
+  /**
+   * Joins two {@code Pipe}s into a single one.
+   * 
+   * @param lhs left side to join
+   * @param rhs right side to join
+   * @return joined {@code Pipe}
+   */
+  public Pipe join(Pipe lhs, Pipe rhs);
 
 }

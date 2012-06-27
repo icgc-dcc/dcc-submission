@@ -24,9 +24,7 @@ import java.util.Set;
 
 import org.icgc.dcc.model.dictionary.Dictionary;
 import org.icgc.dcc.model.dictionary.FileSchema;
-import org.icgc.dcc.validation.ExternalFlowPlanningVisitor;
 import org.icgc.dcc.validation.FileSchemaDirectory;
-import org.icgc.dcc.validation.InternalFlowPlanningVisitor;
 import org.icgc.dcc.validation.RestrictionType;
 import org.icgc.dcc.validation.visitor.ExternalRestrictionPlanningVisitor;
 import org.icgc.dcc.validation.visitor.InternalRestrictionPlanningVisitor;
@@ -62,6 +60,9 @@ public class DefaultPlanner implements Planner {
 
   @Override
   public Cascade plan(FileSchemaDirectory directory, Dictionary dictionary) {
+    checkArgument(directory != null);
+    checkArgument(dictionary != null);
+    
     Plan plan = new Plan();
     for(FileSchema fileSchema : dictionary.getFiles()) {
       if(directory.hasFile(fileSchema)) {

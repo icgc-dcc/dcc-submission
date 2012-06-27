@@ -6,7 +6,7 @@ import org.icgc.dcc.validation.plan.CascadingStrategy;
 import org.icgc.dcc.validation.plan.DefaultPlanner;
 import org.icgc.dcc.validation.plan.LocalCascadingStrategy;
 import org.icgc.dcc.validation.plan.Planner;
-import org.icgc.dcc.validation.restriction.DiscreteValuesPlanElement;
+import org.icgc.dcc.validation.restriction.DiscreteValuesRestriction;
 import org.icgc.dcc.validation.restriction.ForeingKeyFieldRestriction;
 import org.icgc.dcc.validation.restriction.RangeFieldRestriction;
 
@@ -32,15 +32,15 @@ public class ValidationModule extends AbstractModule {
     types = Multibinder.newSetBinder(binder(), RestrictionType.class);
 
     bindRestriction(ForeingKeyFieldRestriction.Type.class);
-    bindRestriction(DiscreteValuesPlanElement.Type.class);
+    bindRestriction(DiscreteValuesRestriction.Type.class);
     bindRestriction(RangeFieldRestriction.Type.class);
 
     bind(Planner.class).to(DefaultPlanner.class);
     bind(CascadingStrategy.class).toInstance(new LocalCascadingStrategy(root, output));
   }
 
-  private void bindRestriction(Class<? extends RestrictionType> f) {
-    types.addBinding().to(f).in(Singleton.class);
+  private void bindRestriction(Class<? extends RestrictionType> type) {
+    types.addBinding().to(type).in(Singleton.class);
   }
 
 }
