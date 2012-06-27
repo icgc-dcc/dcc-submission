@@ -6,6 +6,8 @@ import java.io.IOException;
 import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.model.dictionary.Dictionary;
+import org.icgc.dcc.validation.plan.CascadingStrategy;
+import org.icgc.dcc.validation.plan.Plan;
 import org.icgc.dcc.validation.plan.Planner;
 
 import cascading.cascade.Cascade;
@@ -49,7 +51,8 @@ public class Main {
     Injector injector = Guice.createInjector(new ValidationModule(root, output));
 
     Planner planner = injector.getInstance(Planner.class);
-    Cascade c = planner.plan(new LocalFileSchemaDirectory(root), dictionary);
+    Plan plan = planner.plan(new LocalFileSchemaDirectory(root), dictionary);
+    Cascade c = plan.connect(injector.getInstance(CascadingStrategy.class));
     c.writeDOT(new File(output, "cascade.dot").getAbsolutePath());
     for(Flow<?> flow : c.getFlows()) {
       flow.writeDOT(new File(output, flow.getName() + ".dot").getAbsolutePath());

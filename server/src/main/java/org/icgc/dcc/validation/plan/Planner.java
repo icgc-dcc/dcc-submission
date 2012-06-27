@@ -20,12 +20,8 @@ package org.icgc.dcc.validation.plan;
 import org.icgc.dcc.model.dictionary.Dictionary;
 import org.icgc.dcc.validation.FileSchemaDirectory;
 
-import cascading.cascade.Cascade;
-
 public interface Planner {
 
-  public CascadingStrategy getCascadingStrategy();
-
-  public Cascade plan(FileSchemaDirectory directory, Dictionary dictionary) throws PlannerException;
+  public Plan plan(FileSchemaDirectory directory, Dictionary dictionary) throws PlannerException;
 
 }

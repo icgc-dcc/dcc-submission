@@ -32,8 +32,6 @@ import org.icgc.dcc.validation.visitor.RelationPlanningVisitor;
 import org.icgc.dcc.validation.visitor.UniqueFieldsPlanningVisitor;
 import org.icgc.dcc.validation.visitor.ValueTypePlanningVisitor;
 
-import cascading.cascade.Cascade;
-
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
 
@@ -43,13 +41,9 @@ public class DefaultPlanner implements Planner {
 
   private final List<ExternalFlowPlanningVisitor> externalFlowVisitors;
 
-  private final CascadingStrategy cascadingStrategy;
-
   @Inject
-  public DefaultPlanner(Set<RestrictionType> restrictionTypes, CascadingStrategy cascadingStrategy) {
+  public DefaultPlanner(Set<RestrictionType> restrictionTypes) {
     checkArgument(restrictionTypes != null);
-    checkArgument(cascadingStrategy != null);
-    this.cascadingStrategy = cascadingStrategy;
     internalFlowVisitors = ImmutableList.of(//
         new ValueTypePlanningVisitor(),//
         new UniqueFieldsPlanningVisitor(),//
@@ -61,7 +55,7 @@ public class DefaultPlanner implements Planner {
   }
 
   @Override
-  public Cascade plan(FileSchemaDirectory directory, Dictionary dictionary) {
+  public Plan plan(FileSchemaDirectory directory, Dictionary dictionary) {
     checkArgument(directory != null);
     checkArgument(dictionary != null);
 
@@ -79,12 +73,7 @@ public class DefaultPlanner implements Planner {
       visitor.apply(plan);
     }
 
-    return plan.connect(cascadingStrategy);
-  }
-
-  @Override
-  public CascadingStrategy getCascadingStrategy() {
-    return cascadingStrategy;
+    return plan;
   }
 
 }
