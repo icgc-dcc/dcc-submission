@@ -27,6 +27,7 @@ import org.icgc.dcc.filesystem.DccFileSystemException;
 import org.icgc.dcc.filesystem.ReleaseFileSystem;
 import org.icgc.dcc.filesystem.SubmissionDirectory;
 import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
+import org.mortbay.log.Log;
 
 /**
  * 
@@ -90,7 +91,11 @@ class RootHdfsSshFile extends HdfsSshFile {
     List<Path> pathList = HadoopUtils.ls(fs, path.toString());
     List<SshFile> sshFileList = new ArrayList<SshFile>();
     for(Path path : pathList) {
-      sshFileList.add(new DirectoryHdfsSshFile(this, path.getName()));
+      try {
+        sshFileList.add(new DirectoryHdfsSshFile(this, path.getName()));
+      } catch(DccFileSystemException e) {
+        Log.info("Directory skipped due to insufficient permissions: " + path.getName());
+      }
     }
     return sshFileList;
   }
