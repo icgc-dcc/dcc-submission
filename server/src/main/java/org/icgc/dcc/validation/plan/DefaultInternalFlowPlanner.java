@@ -93,7 +93,7 @@ class DefaultInternalFlowPlanner implements InternalFlowPlanner {
   public Flow<?> connect(CascadingStrategy strategy) {
     Pipe tail = applyFilter(validTail);
     Tap<?, ?, ?> source = strategy.getSourceTap(fileSchema);
-    Tap<?, ?, ?> sink = strategy.getInternalSinkTap(fileSchema.getName());
+    Tap<?, ?, ?> sink = strategy.getInternalSinkTap(fileSchema);
 
     FlowDef def = new FlowDef()//
         .setName(getSchema().getName() + ".internal")//

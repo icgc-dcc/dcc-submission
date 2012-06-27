@@ -50,12 +50,14 @@ public class DefaultPlanner implements Planner {
     checkArgument(restrictionTypes != null);
     checkArgument(cascadingStrategy != null);
     this.cascadingStrategy = cascadingStrategy;
-    internalFlowVisitors =
-        ImmutableList.of(new ValueTypePlanningVisitor(), new UniqueFieldsPlanningVisitor(),
-            new InternalRestrictionPlanningVisitor(restrictionTypes));
-    externalFlowVisitors =
-        ImmutableList.<ExternalFlowPlanningVisitor> of(new RelationPlanningVisitor(),
-            new ExternalRestrictionPlanningVisitor(restrictionTypes));
+    internalFlowVisitors = ImmutableList.of(//
+        new ValueTypePlanningVisitor(),//
+        new UniqueFieldsPlanningVisitor(),//
+        new InternalRestrictionPlanningVisitor(restrictionTypes));
+
+    externalFlowVisitors = ImmutableList.<ExternalFlowPlanningVisitor> of(//
+        new RelationPlanningVisitor(),//
+        new ExternalRestrictionPlanningVisitor(restrictionTypes));
   }
 
   @Override

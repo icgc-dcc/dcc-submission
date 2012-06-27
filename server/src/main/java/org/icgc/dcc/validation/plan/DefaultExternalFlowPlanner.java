@@ -75,7 +75,7 @@ class DefaultExternalFlowPlanner implements ExternalFlowPlanner {
   @Override
   public Flow<?> connect(CascadingStrategy strategy) {
     if(joinedTails.size() > 0) {
-      Tap<?, ?, ?> sink = strategy.getExternalSinkTap(fileSchema.getName());
+      Tap<?, ?, ?> sink = strategy.getExternalSinkTap(fileSchema);
       FlowDef def = new FlowDef().setName(getSchema().getName() + ".external").addTailSink(mergeJoinedTails(), sink);
 
       for(Trim trim : trimmedHeads.keySet()) {

@@ -28,10 +28,10 @@ public interface CascadingStrategy {
 
   public Tap<?, ?, ?> getSourceTap(FileSchema schema);
 
-  public Tap<?, ?, ?> getInternalSinkTap(String schema);
+  public Tap<?, ?, ?> getInternalSinkTap(FileSchema schema);
 
   public Tap<?, ?, ?> getTrimmedTap(Trim trim);
 
-  public Tap<?, ?, ?> getExternalSinkTap(String schema);
+  public Tap<?, ?, ?> getExternalSinkTap(FileSchema schema);
 
 }

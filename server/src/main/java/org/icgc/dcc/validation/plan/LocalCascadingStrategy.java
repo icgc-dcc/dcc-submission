@@ -56,13 +56,13 @@ public class LocalCascadingStrategy implements CascadingStrategy {
   }
 
   @Override
-  public Tap<?, ?, ?> getInternalSinkTap(String schema) {
-    return tap(new File(output, schema + ".internal.tsv"));
+  public Tap<?, ?, ?> getInternalSinkTap(FileSchema schema) {
+    return tap(new File(output, schema.getName() + ".internal.tsv"));
   }
 
   @Override
-  public Tap<?, ?, ?> getExternalSinkTap(String schema) {
-    return tap(new File(output, schema + ".external.tsv"));
+  public Tap<?, ?, ?> getExternalSinkTap(FileSchema schema) {
+    return tap(new File(output, schema.getName() + ".external.tsv"));
   }
 
   @Override
