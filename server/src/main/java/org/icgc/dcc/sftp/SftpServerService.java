@@ -39,6 +39,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.AbstractService;
 import com.google.inject.Inject;
+import com.typesafe.config.Config;
 
 /**
  * 
@@ -50,13 +51,12 @@ public class SftpServerService extends AbstractService {
   private final SshServer sshd;
 
   @Inject
-  public SftpServerService(Integer port, final UsernamePasswordAuthenticator passwordAuthenticator, final FileSystem fs) {
+  public SftpServerService(Config config, final UsernamePasswordAuthenticator passwordAuthenticator, final FileSystem fs) {
     checkArgument(passwordAuthenticator != null);
-    checkArgument(port != null);
 
     sshd = SshServer.setUpDefaultServer();
-    sshd.setPort(port);
-    sshd.setKeyPairProvider(new PEMGeneratorHostKeyProvider(System.getProperty("HOME") + "/conf/sshd.pem", "RSA", 2048));
+    sshd.setPort(config.getInt("sftp.port"));
+    sshd.setKeyPairProvider(new PEMGeneratorHostKeyProvider(config.getString("sftp.path"), "RSA", 2048));
     sshd.setPasswordAuthenticator(new PasswordAuthenticator() {
 
       @Override
