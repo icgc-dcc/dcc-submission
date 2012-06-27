@@ -24,10 +24,6 @@ import cascading.cascade.Cascade;
 
 public interface Planner {
 
-  public InternalFlowPlanner getInternalFlow(String schema);
-
-  public ExternalFlowPlanner getExternalFlow(String schema);
-
   public CascadingStrategy getCascadingStrategy();
 
   public Cascade plan(FileSchemaDirectory directory, Dictionary dictionary);

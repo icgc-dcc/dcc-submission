@@ -26,6 +26,7 @@ import org.icgc.dcc.validation.cascading.AddValidationFieldsFunction;
 import org.icgc.dcc.validation.cascading.TupleStates;
 import org.icgc.dcc.validation.cascading.ValidationFields;
 
+import cascading.flow.Flow;
 import cascading.flow.FlowDef;
 import cascading.pipe.Each;
 import cascading.pipe.Pipe;
@@ -37,7 +38,7 @@ import com.google.common.collect.Maps;
 
 class DefaultInternalFlowPlanner implements InternalFlowPlanner {
 
-  private final Planner planner;
+  private final Plan plan;
 
   private final FileSchema fileSchema;
 
@@ -47,10 +48,10 @@ class DefaultInternalFlowPlanner implements InternalFlowPlanner {
 
   private Pipe validTail;
 
-  DefaultInternalFlowPlanner(Planner plan, FileSchema fileSchema) {
+  DefaultInternalFlowPlanner(Plan plan, FileSchema fileSchema) {
     checkArgument(plan != null);
     checkArgument(fileSchema != null);
-    this.planner = plan;
+    this.plan = plan;
     this.fileSchema = fileSchema;
     this.validTail = this.head = new Pipe(fileSchema.getName());
 
@@ -87,17 +88,20 @@ class DefaultInternalFlowPlanner implements InternalFlowPlanner {
   }
 
   @Override
-  public FlowDef plan() {
-    CascadingStrategy strategy = planner.getCascadingStrategy();
+  public Flow connect(CascadingStrategy strategy) {
     Pipe tail = applyFilter(validTail);
     Tap source = strategy.getSourceTap(fileSchema);
     Tap sink = strategy.getInternalSinkTap(fileSchema.getName());
 
-    FlowDef def = new FlowDef().setName(getSchema().getName() + ".int").addSource(head, source).addTailSink(tail, sink);
+    FlowDef def = new FlowDef()//
+        .setName(getSchema().getName() + ".internal")//
+        .addSource(head, source)//
+        .addTailSink(tail, sink);
+
     for(Map.Entry<Trim, Pipe> e : trimmedTails.entrySet()) {
       def.addTailSink(e.getValue(), strategy.getTrimmedTap(e.getKey()));
     }
-    return def;
+    return strategy.getFlowConnector().connect(def);
   }
 
   private Pipe applySystemPipes(Pipe pipe) {

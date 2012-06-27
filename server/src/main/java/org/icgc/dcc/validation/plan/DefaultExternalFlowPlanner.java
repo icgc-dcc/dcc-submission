@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.icgc.dcc.model.dictionary.FileSchema;
 
+import cascading.flow.Flow;
 import cascading.flow.FlowDef;
 import cascading.pipe.Merge;
 import cascading.pipe.Pipe;
@@ -34,7 +35,7 @@ import com.google.common.collect.Maps;
 
 class DefaultExternalFlowPlanner implements ExternalFlowPlanner {
 
-  private final Planner planner;
+  private final Plan plan;
 
   private final FileSchema fileSchema;
 
@@ -42,10 +43,10 @@ class DefaultExternalFlowPlanner implements ExternalFlowPlanner {
 
   private final List<Pipe> joinedTails = Lists.newLinkedList();
 
-  DefaultExternalFlowPlanner(Planner plan, FileSchema fileSchema) {
+  DefaultExternalFlowPlanner(Plan plan, FileSchema fileSchema) {
     checkArgument(plan != null);
     checkArgument(fileSchema != null);
-    this.planner = plan;
+    this.plan = plan;
     this.fileSchema = fileSchema;
   }
 
@@ -62,8 +63,8 @@ class DefaultExternalFlowPlanner implements ExternalFlowPlanner {
   @Override
   public void apply(PlanElement e) {
     ExternalPlanElement element = (ExternalPlanElement) e;
-    Trim trimLhs = planner.getInternalFlow(getSchema().getName()).addTrimmedOutput(element.lhsFields());
-    Trim trimRhs = planner.getInternalFlow(element.rhs()).addTrimmedOutput(element.rhsFields());
+    Trim trimLhs = plan.getInternalFlow(getSchema().getName()).addTrimmedOutput(element.lhsFields());
+    Trim trimRhs = plan.getInternalFlow(element.rhs()).addTrimmedOutput(element.rhsFields());
 
     Pipe lhs = getTrimmedHead(trimLhs);
     Pipe rhs = getTrimmedHead(trimRhs);
@@ -72,16 +73,15 @@ class DefaultExternalFlowPlanner implements ExternalFlowPlanner {
   }
 
   @Override
-  public FlowDef plan() {
-    CascadingStrategy strategy = planner.getCascadingStrategy();
+  public Flow connect(CascadingStrategy strategy) {
     if(joinedTails.size() > 0) {
       Tap sink = strategy.getExternalSinkTap(fileSchema.getName());
-      FlowDef def = new FlowDef().setName(getSchema().getName() + ".ext").addTailSink(mergeJoinedTails(), sink);
+      FlowDef def = new FlowDef().setName(getSchema().getName() + ".external").addTailSink(mergeJoinedTails(), sink);
 
       for(Trim trim : trimmedHeads.keySet()) {
         def.addSource(trim.getName(), strategy.getTrimmedTap(trim));
       }
-      return def;
+      return strategy.getFlowConnector().connect(def);
     }
     return null;
   }

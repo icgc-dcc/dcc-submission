@@ -19,7 +19,7 @@ package org.icgc.dcc.validation.plan;
 
 import org.icgc.dcc.model.dictionary.FileSchema;
 
-import cascading.flow.FlowDef;
+import cascading.flow.Flow;
 
 /**
  * Plans the {@code Flow} for a particular {@code FileSchema} for a {@code PlanPhase}.
@@ -32,6 +32,6 @@ public interface FileSchemaFlowPlanner {
 
   public void apply(PlanElement element);
 
-  public FlowDef plan();
+  public Flow connect(CascadingStrategy cascadingStrategy);
 
 }

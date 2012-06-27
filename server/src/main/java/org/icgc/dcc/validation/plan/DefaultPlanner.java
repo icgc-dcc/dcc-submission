@@ -20,7 +20,6 @@ package org.icgc.dcc.validation.plan;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.icgc.dcc.model.dictionary.Dictionary;
@@ -32,30 +31,19 @@ import org.icgc.dcc.validation.visitor.RelationPlanningVisitor;
 import org.icgc.dcc.validation.visitor.RestrictionPlanningVisitor;
 import org.icgc.dcc.validation.visitor.UniqueFieldsPlanningVisitor;
 import org.icgc.dcc.validation.visitor.ValueTypePlanningVisitor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import cascading.cascade.Cascade;
-import cascading.cascade.CascadeConnector;
-import cascading.cascade.CascadeDef;
-import cascading.flow.FlowDef;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 
 public class DefaultPlanner implements Planner {
-
-  private static final Logger log = LoggerFactory.getLogger(DefaultPlanner.class);
 
   private final List<PlanningVisitor> internalFlowVisitors;
 
   private final List<PlanningVisitor> externalFlowVisitors;
 
   private final CascadingStrategy cascadingStrategy;
-
-  private final Map<PlanPhase, Planners> plans = Maps.newHashMap();
 
   @Inject
   public DefaultPlanner(Set<RestrictionType> restrictionTypes, CascadingStrategy cascadingStrategy) {
@@ -71,41 +59,18 @@ public class DefaultPlanner implements Planner {
   }
 
   @Override
-  public InternalFlowPlanner getInternalFlow(String schema) {
-    return (InternalFlowPlanner) getSchemaPlan(PlanPhase.INTERNAL, schema);
-  }
-
-  @Override
-  public ExternalFlowPlanner getExternalFlow(String schema) {
-    return (ExternalFlowPlanner) getSchemaPlan(PlanPhase.EXTERNAL, schema);
-  }
-
-  @Override
   public Cascade plan(FileSchemaDirectory directory, Dictionary dictionary) {
-    List<FileSchema> plannedSchema = Lists.newArrayList();
-    for(PlanPhase phase : PlanPhase.values()) {
-      plans.put(phase, new Planners(phase));
-    }
+    Plan plan = new Plan();
     for(FileSchema fileSchema : dictionary.getFiles()) {
       if(directory.hasFile(fileSchema)) {
-        plannedSchema.add(fileSchema);
-        plans.get(PlanPhase.INTERNAL).planFor(fileSchema.getName(), new DefaultInternalFlowPlanner(this, fileSchema));
-        plans.get(PlanPhase.EXTERNAL).planFor(fileSchema.getName(), new DefaultExternalFlowPlanner(this, fileSchema));
+        plan.include(fileSchema, new DefaultInternalFlowPlanner(plan, fileSchema), new DefaultExternalFlowPlanner(plan,
+            fileSchema));
       }
     }
-    plan(plannedSchema, internalFlowVisitors);
-    plan(plannedSchema, externalFlowVisitors);
+    plan.apply(internalFlowVisitors);
+    plan.apply(externalFlowVisitors);
 
-    CascadeDef def = new CascadeDef();
-    for(Planners p : plans.values()) {
-      for(FileSchemaFlowPlanner plan : p.planners.values()) {
-        FlowDef flowDef = plan.plan();
-        if(flowDef != null) {
-          def.addFlow(cascadingStrategy.getFlowConnector().connect(flowDef));
-        }
-      }
-    }
-    return new CascadeConnector().connect(def);
+    return plan.connect(cascadingStrategy);
   }
 
   @Override
@@ -113,44 +78,4 @@ public class DefaultPlanner implements Planner {
     return cascadingStrategy;
   }
 
-  private void plan(List<FileSchema> plannedSchema, List<PlanningVisitor> visitors) {
-    for(FileSchema fs : plannedSchema) {
-      for(PlanningVisitor visitor : visitors) {
-        fs.accept(visitor);
-        for(PlanElement element : visitor.getElements()) {
-          log.info("[{}]: applying plan element {}", fs.getName(), element.describe());
-          getSchemaPlan(visitor.getPhase(), fs.getName()).apply(element);
-        }
-      }
-    }
-  }
-
-  private FileSchemaFlowPlanner getSchemaPlan(PlanPhase phase, String schema) {
-    FileSchemaFlowPlanner schemaPlan = this.plans.get(phase).planner(schema);
-    if(schemaPlan == null) throw new IllegalStateException("no plan for " + schema);
-    return schemaPlan;
-  }
-
-  private class Planners {
-
-    private final PlanPhase phase;
-
-    private final Map<String, FileSchemaFlowPlanner> planners = Maps.newHashMap();
-
-    public Planners(PlanPhase phase) {
-      this.phase = phase;
-    }
-
-    FileSchemaFlowPlanner planFor(String name, FileSchemaFlowPlanner planner) {
-      this.planners.put(name, planner);
-      return planner;
-    }
-
-    FileSchemaFlowPlanner planner(String name) {
-      FileSchemaFlowPlanner schemaPlan = this.planners.get(name);
-      if(schemaPlan == null) throw new IllegalStateException("no plan for " + name + " in phase " + phase);
-      return schemaPlan;
-    }
-
-  }
 }
