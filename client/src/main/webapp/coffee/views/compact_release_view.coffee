@@ -12,11 +12,12 @@ define (require) ->
     
     initialize: ->
       console.debug @model
-      # This should be a Handlebars helper in lib/view_helper
-      # Along with the 'Complete' button check: ex {{completeRelease state}}
-      releaseDate = if @model.get "releaseDate"
-        moment(@model.get "releaseDate").format("YYYY-M-D")
-      else
-        "<em>Unreleased</em>"
-      @model.set "releaseDate", releaseDate
+      
+      @$('.modal').modal "show": true
+        
+      @delegate 'click', '.btn', @completeRelease
+      
+    completeRelease: (e) -> 
+      console.debug "CompactReleaseView#completeRelease", @model, e
+      @$('#completeRelease').modal('show')
       
