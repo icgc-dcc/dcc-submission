@@ -17,15 +17,22 @@
  */
 package org.icgc.dcc.validation.plan;
 
-import org.icgc.dcc.model.dictionary.Dictionary;
-import org.icgc.dcc.validation.FileSchemaDirectory;
+public class PlannerException extends RuntimeException {
 
-import cascading.cascade.Cascade;
+  public PlannerException() {
+    super();
+  }
 
-public interface Planner {
+  public PlannerException(String message, Throwable cause) {
+    super(message, cause);
+  }
 
-  public CascadingStrategy getCascadingStrategy();
+  public PlannerException(String message) {
+    super(message);
+  }
 
-  public Cascade plan(FileSchemaDirectory directory, Dictionary dictionary) throws PlannerException;
+  public PlannerException(Throwable cause) {
+    super(cause);
+  }
 
 }

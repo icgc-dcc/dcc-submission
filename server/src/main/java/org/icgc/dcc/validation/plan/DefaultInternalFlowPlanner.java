@@ -19,6 +19,7 @@ package org.icgc.dcc.validation.plan;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.Arrays;
 import java.util.Map;
 
 import org.icgc.dcc.model.dictionary.FileSchema;
@@ -82,6 +83,7 @@ class DefaultInternalFlowPlanner implements InternalFlowPlanner {
     if(trimmedTails.containsKey(trim) == false) {
       Pipe newHead = new Pipe(trim.getName(), validTail);
       Pipe tail = new Retain(newHead, new Fields(fields));
+      log.info("[{}] planned trimmed output with {}", fileSchema.getName(), Arrays.toString(trim.getFields()));
       trimmedTails.put(trim, tail);
     }
     return trim;
