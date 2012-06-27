@@ -22,6 +22,7 @@ import java.net.UnknownHostException;
 import org.apache.hadoop.fs.FileSystem;
 import org.icgc.dcc.config.ConfigModule;
 import org.icgc.dcc.core.CoreModule;
+import org.icgc.dcc.filesystem.DccFileSystemException;
 import org.icgc.dcc.filesystem.FileSystemModule;
 import org.icgc.dcc.filesystem.GuiceJUnitRunner;
 import org.icgc.dcc.filesystem.GuiceJUnitRunner.GuiceModules;
@@ -98,7 +99,11 @@ public class DataGeneratorTest {
         new DataGenerator(dictService, projectService, releaseService, userService, config, fileSystem);
 
     generator.generateTestData();
-    generator.generateFileSystem();
+    try {
+      generator.generateFileSystem();
+    } catch(DccFileSystemException e) {
+      e.printStackTrace();
+    }
   }
 
 }

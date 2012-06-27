@@ -15,19 +15,18 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.security;
+package org.icgc.dcc.model;
 
-/**
- * Contract for authenticating a user based on username-password tokens.
- */
-public interface UsernamePasswordAuthenticator {
+public class ProjectServiceException extends RuntimeException {
+  public ProjectServiceException(Exception e) {
+    super(e);
+  }
 
-  /**
-   * 
-   * @return true when authentication succeeds, false otherwise.
-   */
-  public boolean authenticate(String username, char[] password, String host);
+  public ProjectServiceException(String message) {
+    super(message);
+  }
 
-  public String getCurrentUser();
-
+  public ProjectServiceException(String message, Exception e) {
+    super(message, e);
+  }
 }

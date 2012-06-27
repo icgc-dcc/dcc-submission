@@ -1,6 +1,7 @@
 package org.icgc.dcc.filesystem;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,8 +27,8 @@ public class ReleaseFileSystem {
 
   private final User user;
 
-  public ReleaseFileSystem(DccFileSystem dccFilesystem, ReleaseService releases, ProjectService projects, Release release,
-      User user) {
+  public ReleaseFileSystem(DccFileSystem dccFilesystem, ReleaseService releases, ProjectService projects,
+      Release release, User user) {
     super();
 
     checkArgument(dccFilesystem != null);
@@ -62,16 +63,38 @@ public class ReleaseFileSystem {
   }
 
   public SubmissionDirectory getSubmissionDirectory(Project project) {
-    String projectStringPath = this.dccFileSystem.buildProjectStringPath(this.release, project);
-    boolean exists = HadoopUtils.checkExistence(this.dccFileSystem.getFileSystem(), projectStringPath);
-    if(!exists) {
-      throw new DccFileSystemException("release directory " + projectStringPath + " does not exists");
-    }
+    checkNotNull(project);
+    checkSubmissionDirectory(project);
     Submission submission = this.releases.getSubmission(this.release.getName(), project.getProjectKey());
     return new SubmissionDirectory(this.dccFileSystem, this.release, project, submission);
   }
 
+  public SubmissionDirectory getSubmissionDirectory(String projectKey) {
+    checkNotNull(projectKey);
+    return getSubmissionDirectory(projects.getProject(projectKey));
+  }
+
+  private void checkSubmissionDirectory(Project project) {
+    if(project.hasUser(this.user.getName()) == false) {
+      throw new DccFileSystemException("User " + this.user.getName() + " does not have permission to access project "
+          + project);
+    }
+    String projectStringPath = this.dccFileSystem.buildProjectStringPath(this.release, project);
+    boolean exists = HadoopUtils.checkExistence(this.dccFileSystem.getFileSystem(), projectStringPath);
+    if(exists == false) {
+      throw new DccFileSystemException("Release directory " + projectStringPath + " does not exist");
+    }
+  }
+
   public boolean isReadOnly() {
-    return ReleaseState.COMPLETED.equals(this.release.getState()); // TODO: better way?
+    return ReleaseState.COMPLETED == this.release.getState(); // TODO: better way?
+  }
+
+  public DccFileSystem getDccFileSystem() {
+    return this.dccFileSystem;
+  }
+
+  public Release getRelease() {
+    return this.release;
   }
 }

@@ -99,6 +99,17 @@ public class DataGenerator {
     project2.setGroups(groups);
     this.projectService.addProject(project2);
 
+    // add Project3
+    Project project3 = new Project("project3");
+    project3.setProjectKey("project3");
+    users.clear();
+    users.add("bogus");
+    project3.setUsers(users);
+    groups.clear();
+    groups.add("bogus");
+    project3.setGroups(groups);
+    this.projectService.addProject(project3);
+
     // add Dictionary
     Dictionary firstDict = new Dictionary("1.0");
 

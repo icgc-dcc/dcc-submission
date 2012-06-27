@@ -69,4 +69,12 @@ public class SubmissionDirectory {
     return this.release.getState() == ReleaseState.COMPLETED//
         || state == SubmissionState.QUEUED || state == SubmissionState.SIGNED_OFF;
   }
+
+  public String getProjectKey() {
+    return this.project.getProjectKey();
+  }
+
+  public void notifyModified() {
+    this.submission.setState(SubmissionState.NOT_VALIDATED);
+  }
 }
