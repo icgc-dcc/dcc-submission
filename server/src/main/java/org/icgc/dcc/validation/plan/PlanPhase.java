@@ -17,9 +17,6 @@
  */
 package org.icgc.dcc.validation.plan;
 
-/**
- * 
- */
 public enum PlanPhase {
 
   INTERNAL, EXTERNAL

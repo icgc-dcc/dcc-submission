@@ -17,10 +17,21 @@
  */
 package org.icgc.dcc.validation.plan;
 
+/**
+ * An element of a {@code Plan}. These instances are applicable to {@code FileSchemaFlowPlanner}.
+ */
 public interface PlanElement {
 
+  /**
+   * Describes this element to humans
+   * @return
+   */
   public String describe();
 
+  /**
+   * The flow this element applies to.
+   * @return
+   */
   public PlanPhase phase();
 
 }
