@@ -1,13 +1,11 @@
 package org.icgc.dcc.validation;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 
 import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.model.dictionary.Dictionary;
-import org.icgc.dcc.model.dictionary.FileSchema;
 import org.icgc.dcc.validation.plan.Planner;
 
 import cascading.cascade.Cascade;
@@ -29,6 +27,7 @@ public class Main {
   public Main(String[] args) throws JsonProcessingException, IOException {
     this.root = new File(args[0]);
     this.output = new File(args[1]);
+    this.output.mkdirs();
     this.dictionary =
         new ObjectMapper().reader(Dictionary.class).readValue(
             Resources.toString(Main.class.getResource("/dictionary.json"), Charsets.UTF_8));
@@ -50,28 +49,13 @@ public class Main {
     Injector injector = Guice.createInjector(new ValidationModule(root, output));
 
     Planner planner = injector.getInstance(Planner.class);
-    for(FileSchema fs : dictionary.getFiles()) {
-      if(hasFile(fs)) {
-        planner.prepare(fs);
-      }
-    }
-    Cascade c = planner.plan();
+    Cascade c = planner.plan(new LocalFileSchemaDirectory(root), dictionary);
     c.writeDOT(new File(output, "cascade.dot").getAbsolutePath());
     for(Flow flow : c.getFlows()) {
       flow.writeDOT(new File(output, flow.getName() + ".dot").getAbsolutePath());
     }
-    c.start();
-  }
-
-  private boolean hasFile(final FileSchema fs) {
-    File[] files = root.listFiles(new FileFilter() {
-
-      @Override
-      public boolean accept(File pathname) {
-        return pathname.getName().contains(fs.getName());
-        // return Pattern.matches(fs.getPattern(), pathname.getName());
-      }
-    });
-    return files != null && files.length > 0;
+    if(c.getFlows().size() > 0) {
+      c.start();
+    }
   }
 }

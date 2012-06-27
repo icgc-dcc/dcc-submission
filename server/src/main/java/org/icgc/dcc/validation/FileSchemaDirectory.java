@@ -15,21 +15,18 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.validation.plan;
+package org.icgc.dcc.validation;
 
-import org.icgc.dcc.model.dictionary.Dictionary;
-import org.icgc.dcc.validation.FileSchemaDirectory;
+import org.icgc.dcc.model.dictionary.FileSchema;
 
-import cascading.cascade.Cascade;
+/**
+ * A directory that contains files associated with {@code FileSchema}. Each {@code FileSchema} is expected to have at
+ * most one file in this directory.
+ */
+public interface FileSchemaDirectory {
 
-public interface Planner {
+  public String getFile(FileSchema fileSchema);
 
-  public InternalFlowPlanner getInternalFlow(String schema);
-
-  public ExternalFlowPlanner getExternalFlow(String schema);
-
-  public CascadingStrategy getCascadingStrategy();
-
-  public Cascade plan(FileSchemaDirectory directory, Dictionary dictionary);
+  public boolean hasFile(FileSchema fileSchema);
 
 }

@@ -23,7 +23,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.icgc.dcc.model.dictionary.Dictionary;
 import org.icgc.dcc.model.dictionary.FileSchema;
+import org.icgc.dcc.validation.FileSchemaDirectory;
 import org.icgc.dcc.validation.PlanningVisitor;
 import org.icgc.dcc.validation.RestrictionType;
 import org.icgc.dcc.validation.visitor.RelationPlanningVisitor;
@@ -51,8 +53,6 @@ public class DefaultPlanner implements Planner {
 
   private final List<PlanningVisitor> externalFlowVisitors;
 
-  private final List<FileSchema> plannedSchema = Lists.newLinkedList();
-
   private final CascadingStrategy cascadingStrategy;
 
   private final Map<PlanPhase, Planners> plans = Maps.newHashMap();
@@ -62,23 +62,12 @@ public class DefaultPlanner implements Planner {
     checkArgument(restrictionTypes != null);
     checkArgument(cascadingStrategy != null);
     this.cascadingStrategy = cascadingStrategy;
-    for(PlanPhase phase : PlanPhase.values()) {
-      plans.put(phase, new Planners(phase));
-    }
-
     internalFlowVisitors =
         ImmutableList.of(new ValueTypePlanningVisitor(), new UniqueFieldsPlanningVisitor(),
             new RestrictionPlanningVisitor(PlanPhase.INTERNAL, restrictionTypes));
     externalFlowVisitors =
         ImmutableList.of(new RelationPlanningVisitor(), new RestrictionPlanningVisitor(PlanPhase.EXTERNAL,
             restrictionTypes));
-  }
-
-  @Override
-  public void prepare(FileSchema schema) {
-    plannedSchema.add(schema);
-    plans.get(PlanPhase.INTERNAL).planFor(schema.getName(), new DefaultInternalFlowPlanner(this, schema));
-    plans.get(PlanPhase.EXTERNAL).planFor(schema.getName(), new DefaultExternalFlowPlanner(this, schema));
   }
 
   @Override
@@ -92,9 +81,20 @@ public class DefaultPlanner implements Planner {
   }
 
   @Override
-  public Cascade plan() {
-    plan(internalFlowVisitors);
-    plan(externalFlowVisitors);
+  public Cascade plan(FileSchemaDirectory directory, Dictionary dictionary) {
+    List<FileSchema> plannedSchema = Lists.newArrayList();
+    for(PlanPhase phase : PlanPhase.values()) {
+      plans.put(phase, new Planners(phase));
+    }
+    for(FileSchema fileSchema : dictionary.getFiles()) {
+      if(directory.hasFile(fileSchema)) {
+        plannedSchema.add(fileSchema);
+        plans.get(PlanPhase.INTERNAL).planFor(fileSchema.getName(), new DefaultInternalFlowPlanner(this, fileSchema));
+        plans.get(PlanPhase.EXTERNAL).planFor(fileSchema.getName(), new DefaultExternalFlowPlanner(this, fileSchema));
+      }
+    }
+    plan(plannedSchema, internalFlowVisitors);
+    plan(plannedSchema, externalFlowVisitors);
 
     CascadeDef def = new CascadeDef();
     for(Planners p : plans.values()) {
@@ -113,7 +113,7 @@ public class DefaultPlanner implements Planner {
     return cascadingStrategy;
   }
 
-  private void plan(List<PlanningVisitor> visitors) {
+  private void plan(List<FileSchema> plannedSchema, List<PlanningVisitor> visitors) {
     for(FileSchema fs : plannedSchema) {
       for(PlanningVisitor visitor : visitors) {
         fs.accept(visitor);
