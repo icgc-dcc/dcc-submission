@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.icgc.dcc.model.BaseEntity;
 import org.icgc.dcc.model.HasName;
 import org.icgc.dcc.model.dictionary.visitor.DictionaryElement;
@@ -76,6 +77,7 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
   }
 
   @Override
+  @JsonIgnore
   public String getName() {
     return this.version;
   }

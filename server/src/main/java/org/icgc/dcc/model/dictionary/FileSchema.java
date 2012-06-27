@@ -56,8 +56,10 @@ public class FileSchema implements DictionaryElement {
   }
 
   public FileSchema(String name) {
-    this();
+    super();
     this.name = name;
+    this.uniqueFields = new ArrayList<String>();
+    this.fields = new ArrayList<Field>();
   }
 
   @Override
@@ -65,6 +67,9 @@ public class FileSchema implements DictionaryElement {
     dictionaryVisitor.visit(this);
     for(Field field : fields) {
       field.accept(dictionaryVisitor);
+    }
+    if(relation != null) {
+      relation.accept(dictionaryVisitor);
     }
   }
 

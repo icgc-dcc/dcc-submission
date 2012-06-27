@@ -61,6 +61,8 @@ public class DictionaryConverter {
   public void saveToJSON(String fileName) throws JsonGenerationException, JsonMappingException, IOException {
     ObjectMapper mapper = new ObjectMapper();
     mapper.writeValue(new File(fileName), dictionary);
+
+    mapper.readValue(new File(fileName), Dictionary.class);
   }
 
   public Dictionary readDictionary(String folder) throws IOException, XPathExpressionException,
@@ -116,9 +118,9 @@ public class DictionaryConverter {
       String rightKey = valueIterator.next();
       Iterable<String> rightKeys = Splitter.on(',').trimResults().omitEmptyStrings().split(rightKey);
 
-      if(this.dictionary.hasFileSchema(leftTable)) {
-        FileSchema leftFileSchema = this.dictionary.fileSchema(leftTable).get();
-        leftFileSchema.setRelation(new Relation(leftKeys, rightTable, rightKeys));
+      if(this.dictionary.hasFileSchema(rightTable)) {
+        FileSchema leftFileSchema = this.dictionary.fileSchema(rightTable).get();
+        leftFileSchema.setRelation(new Relation(rightKeys, leftTable, leftKeys));
       }
     }
   }
@@ -195,7 +197,6 @@ public class DictionaryConverter {
     while(lineIterator.hasNext()) {
       Field field = this.readField(lineIterator.next(), fileSchema);
       fields.add(field);
-
     }
     fileSchema.setFields(fields);
 
