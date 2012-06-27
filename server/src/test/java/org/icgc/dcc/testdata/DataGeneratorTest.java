@@ -19,22 +19,60 @@ package org.icgc.dcc.testdata;
 
 import java.net.UnknownHostException;
 
+import org.apache.hadoop.fs.FileSystem;
+import org.icgc.dcc.config.ConfigModule;
+import org.icgc.dcc.core.CoreModule;
+import org.icgc.dcc.filesystem.FileSystemModule;
+import org.icgc.dcc.filesystem.GuiceJUnitRunner;
+import org.icgc.dcc.filesystem.GuiceJUnitRunner.GuiceModules;
+import org.icgc.dcc.http.HttpModule;
+import org.icgc.dcc.http.jersey.JerseyModule;
 import org.icgc.dcc.model.BaseEntity;
+import org.icgc.dcc.model.ModelModule;
 import org.icgc.dcc.model.dictionary.DictionaryService;
 import org.icgc.dcc.service.ProjectService;
 import org.icgc.dcc.service.ReleaseService;
 import org.icgc.dcc.service.UserService;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
+import com.google.inject.Inject;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
+import com.typesafe.config.Config;
 
 /**
  * 
  */
+@RunWith(GuiceJUnitRunner.class)
+@GuiceModules({ ConfigModule.class, CoreModule.class,//
+HttpModule.class, JerseyModule.class,// TODO: find out why those two seem necessary
+ModelModule.class, FileSystemModule.class })
 public class DataGeneratorTest {
+
+  private FileSystem fileSystem;
+
+  private Config config;
+
+  private DictionaryService dictService;
+
+  private ProjectService projectService;
+
+  private ReleaseService releaseService;
+
+  private UserService userService;
+
+  @Inject
+  public void setFileSystem(FileSystem fileSystem) {
+    this.fileSystem = fileSystem;
+  }
+
+  @Inject
+  public void setConfig(Config config) {
+    this.config = config;
+  }
 
   @Test
   public void test_integration_datamodel() throws UnknownHostException, MongoException {
@@ -51,13 +89,16 @@ public class DataGeneratorTest {
     mongo.getDB("icgc").getCollection("User").drop();
     mongo.getDB("icgc").getCollection("CodeList").drop();
 
-    DictionaryService dictService = new DictionaryService(morphia, datastore, null);
-    ProjectService projectService = new ProjectService(morphia, datastore);
-    ReleaseService releaseService = new ReleaseService(morphia, datastore);
-    UserService userService = new UserService(morphia, datastore);
+    this.dictService = new DictionaryService(morphia, datastore, null);
+    this.projectService = new ProjectService(morphia, datastore);
+    this.releaseService = new ReleaseService(morphia, datastore);
+    this.userService = new UserService(morphia, datastore);
 
-    DataGenerator generator = new DataGenerator(dictService, projectService, releaseService, userService);
+    DataGenerator generator =
+        new DataGenerator(dictService, projectService, releaseService, userService, config, fileSystem);
+
     generator.generateTestData();
+    generator.generateFileSystem();
   }
 
 }
