@@ -24,6 +24,8 @@ requirejs.config
       exports: '_'
     bootstrap:
       deps: ['jquery']
+    jqSerializeObject:
+      deps: ['jquery']
     
   # For easier development, disable browser caching
   # Of course, this should be removed in a production environment

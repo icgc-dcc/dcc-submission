@@ -8,4 +8,4 @@ define (require) ->
     logout: ->
       localStorage.clear()
       Chaplin.mediator.publish '!logout'
-      @redirectTo 'release', 'list'
+      #@redirectTo 'release', 'list'
