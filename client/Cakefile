@@ -140,7 +140,7 @@ server = (callback) ->
   # Setup proxy to redirect /ws/* request to the DCC REST server  
   options =
     router:
-      "localhost/ws/": "localhost:5379/ws/"
+      "localhost/ws/": "localhost:5380/ws/"
       "localhost": "localhost:3000"
 
   httpProxy.createServer(options).listen 3001, ->
