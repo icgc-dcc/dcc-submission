@@ -114,6 +114,7 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
         while(iter.hasNext()) {
           TupleEntry e = iter.next();
           if(e.getObject(1) == null) {
+            // TODO: report error.
             bufferCall.getOutputCollector().add(new Tuple("null"));
           }
         }
