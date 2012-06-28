@@ -37,14 +37,6 @@ public class Main {
   }
 
   private void doit() {
-    if(output.exists() && output.listFiles() != null) {
-      for(File f : output.listFiles()) {
-        if(f.isFile()) {
-          f.delete();
-        }
-      }
-    }
-
     Injector injector = Guice.createInjector(new ValidationModule(root, output));
 
     Planner planner = injector.getInstance(Planner.class);

@@ -18,9 +18,11 @@
 package org.icgc.dcc.validation;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.util.regex.Pattern;
 
 import org.icgc.dcc.model.dictionary.FileSchema;
 
@@ -52,12 +54,18 @@ public class LocalFileSchemaDirectory implements FileSchemaDirectory {
   }
 
   private File[] matches(final FileSchema fileSchema) {
+    if(fileSchema.getPattern() == null) {
+      return null;
+    }
     return directory.listFiles(new FileFilter() {
 
       @Override
       public boolean accept(File pathname) {
-        return pathname.getName().contains(fileSchema.getName());
-        // return Pattern.matches(fs.getPattern(), pathname.getName());
+        // return pathname.getName().contains(fileSchema.getName());
+        checkNotNull(fileSchema.getPattern(), "schema " + fileSchema.getName() + " has no pattern");
+        System.out.println(fileSchema.getPattern() + " matches " + pathname.getName() + " : "
+            + Pattern.matches(fileSchema.getPattern(), pathname.getName()));
+        return Pattern.matches(fileSchema.getPattern(), pathname.getName());
       }
     });
   }

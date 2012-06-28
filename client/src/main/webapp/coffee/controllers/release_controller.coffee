@@ -18,7 +18,7 @@ define (require) ->
     show: (params) ->
       console.debug 'ReleaseController#show', params
       @title = params.id
-      @model = new Release {name: params.release_name}
+      @model = new Release {name: params.name}
       @view = new ReleaseView {@model}
       @model.fetch()
 

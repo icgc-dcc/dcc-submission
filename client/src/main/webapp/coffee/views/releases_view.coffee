@@ -16,7 +16,7 @@ define (require) ->
     tagName: 'div'
     id: 'releases-view'
     listSelector: 'tbody'
-      
+    
     getView: (item) -> 
       console.debug 'ReleasesView#getView', item
       new CompactReleaseView model: item
