@@ -42,7 +42,10 @@ public class ValueTypePlanningVisitor extends InternalFlowPlanningVisitor {
 
   @Override
   public void visit(Field field) {
-    collect(new ValueTypePlanElement(field));
+    // No need to verify ValueType.TEXT since everything can be a String...
+    if(field.getValueType() != ValueType.TEXT) {
+      collect(new ValueTypePlanElement(field));
+    }
   }
 
   private class ValueTypePlanElement implements InternalPlanElement {
