@@ -54,6 +54,9 @@ import com.google.common.io.Files;
  * 
  */
 public class DictionaryConverter {
+
+  private static String DICTIONARY_VERSION = "0.6c";
+
   private Dictionary dictionary;
 
   private final ValueTypeConverter valueConverter = new ValueTypeConverter();
@@ -68,7 +71,7 @@ public class DictionaryConverter {
   public Dictionary readDictionary(String folder) throws IOException, XPathExpressionException,
       ParserConfigurationException, SAXException {
     if(dictionary == null) {
-      dictionary = new Dictionary("1.0");
+      dictionary = new Dictionary(DICTIONARY_VERSION);
     }
     File tsvFolder = new File(folder);
     File[] tsvFiles = tsvFolder.listFiles(new FilenameFilter() {
