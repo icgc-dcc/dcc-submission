@@ -2,6 +2,7 @@ package org.icgc.dcc.validation.restriction;
 
 import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.Restriction;
+import org.icgc.dcc.validation.ErrorCodeRegistry;
 import org.icgc.dcc.validation.FlowType;
 import org.icgc.dcc.validation.InternalPlanElement;
 import org.icgc.dcc.validation.PlanElement;
@@ -53,6 +54,11 @@ public class RangeFieldRestriction implements InternalPlanElement {
         new FieldRestrictionParameter("min", ParameterType.NUMBER, "minimum value (inclusive)"), //
         new FieldRestrictionParameter("max", ParameterType.NUMBER, "maximum value (inclusive)"));
 
+    public Type() {
+      ErrorCodeRegistry.get().register(501, "number %d is out of range for field %s. Expected value between %d and %d");
+      ErrorCodeRegistry.get().register(502, "%s is not a number for field %s. Expected a number");
+    }
+
     @Override
     public String getType() {
       return NAME;
@@ -98,7 +104,18 @@ public class RangeFieldRestriction implements InternalPlanElement {
     @Override
     public void operate(FlowProcess flowProcess, FunctionCall functionCall) {
       Object value = functionCall.getArguments().getObject(0);
-      // TODO: range check
+
+      Object fieldName = functionCall.getArguments().getFields().get(0);
+
+      if(value instanceof Number) {
+        Number num = (Number) value;
+        if(num.longValue() < this.min.longValue() || num.longValue() > this.max.longValue()) {
+          ValidationFields.state(functionCall.getArguments()).reportError(501, num.longValue(), fieldName,
+              this.min.longValue(), this.max.longValue());
+        }
+      } else {
+        ValidationFields.state(functionCall.getArguments()).reportError(502, value.toString(), fieldName);
+      }
       functionCall.getOutputCollector().add(functionCall.getArguments());
     }
 
