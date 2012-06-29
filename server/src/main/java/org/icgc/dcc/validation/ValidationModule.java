@@ -3,7 +3,6 @@ package org.icgc.dcc.validation;
 import java.io.File;
 
 import org.icgc.dcc.validation.restriction.DiscreteValuesRestriction;
-import org.icgc.dcc.validation.restriction.ForeingKeyFieldRestriction;
 import org.icgc.dcc.validation.restriction.RangeFieldRestriction;
 
 import com.google.inject.AbstractModule;
@@ -27,11 +26,11 @@ public class ValidationModule extends AbstractModule {
   protected void configure() {
     types = Multibinder.newSetBinder(binder(), RestrictionType.class);
 
-    bindRestriction(ForeingKeyFieldRestriction.Type.class);
     bindRestriction(DiscreteValuesRestriction.Type.class);
     bindRestriction(RangeFieldRestriction.Type.class);
 
     bind(Planner.class).to(DefaultPlanner.class);
+    bind(FileSchemaDirectory.class).toInstance(new LocalFileSchemaDirectory(root));
     bind(CascadingStrategy.class).toInstance(new LocalCascadingStrategy(root, output));
   }
 

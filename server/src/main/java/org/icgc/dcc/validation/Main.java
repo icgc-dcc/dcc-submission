@@ -40,7 +40,7 @@ public class Main {
     Injector injector = Guice.createInjector(new ValidationModule(root, output));
 
     Planner planner = injector.getInstance(Planner.class);
-    Plan plan = planner.plan(new LocalFileSchemaDirectory(root), dictionary);
+    Plan plan = planner.plan(injector.getInstance(FileSchemaDirectory.class), dictionary);
     Cascade c = plan.connect(injector.getInstance(CascadingStrategy.class));
     c.writeDOT(new File(output, "cascade.dot").getAbsolutePath());
     for(Flow<?> flow : c.getFlows()) {
