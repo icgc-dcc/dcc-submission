@@ -31,11 +31,11 @@ public class BasicHttpAuthenticationRequestFilter implements ContainerRequestFil
 
   private static final Logger log = LoggerFactory.getLogger(BasicHttpAuthenticationRequestFilter.class);
 
-  private static final String HTTP_BASIC = "X-DCC-Auth"; // TODO: existing constant somewhere?
+  private static final String HTTP_AUTH_PREFIX = "X-DCC-Auth";
 
   private static final String TOKEN_INFO_SEPARATOR = ":";
 
-  private static final String WWW_AUTHENTICATE_REALM = "DCC"; // TODO: put elsewhere, application-wide name
+  private static final String WWW_AUTHENTICATE_REALM = "DCC";
 
   private final UsernamePasswordAuthenticator passwordAuthenticator;
 
@@ -50,50 +50,37 @@ public class BasicHttpAuthenticationRequestFilter implements ContainerRequestFil
 
     MultivaluedMap<String, String> headers = containerRequestContext.getHeaders();
 
-    // get authorization header
     String authorizationHeader = headers.getFirst(HttpHeaders.AUTHORIZATION);
     log.debug("authorizationHeader = " + authorizationHeader);
 
-    // check if provided
     if(authorizationHeader == null || authorizationHeader.isEmpty()) {
       Response response = createUnauthorizedResponse();
-
-      // TODO: does not seem to work for now, probably not implemented in jersey for now (m04)
       containerRequestContext.abortWith(response);
     } else {
       // expected to be like: "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ=="
       String[] split = authorizationHeader.split(" ", 2);
-      if(split.length != 2 || !split[0].equals(HTTP_BASIC)) {
+      if(split.length != 2 || !split[0].equals(HTTP_AUTH_PREFIX)) {
         log.error("Invalid authorization header: " + authorizationHeader);
         Response response = Response.status(Response.Status.BAD_REQUEST).build();
         containerRequestContext.abortWith(response);
       } else {
-
-        // grabbing the "QWxhZGRpbjpvcGVuIHNlc2FtZQ==" part
         String authenticationToken = split[1];
 
-        // decoding it from base 64 ()
         String decodedAuthenticationToken = Base64.decodeToString(authenticationToken);
 
-        // splitting it (username and password are expected to be colon-separated)
-        String[] decoded = decodedAuthenticationToken.split(TOKEN_INFO_SEPARATOR, 2);// adapted from Obiba's
-        // HttpAuthorizationToken.java
+        String[] decoded = decodedAuthenticationToken.split(TOKEN_INFO_SEPARATOR, 2);
 
         if(decoded.length != 2) {
           log.error("Expected 2 components of decoded authorization header; received " + decoded.length);
           Response response = Response.status(Response.Status.BAD_REQUEST).build();
-          containerRequestContext.abortWith(response); // see comment above
+          containerRequestContext.abortWith(response);
         } else {
-
-          // grab username
           String username = decoded[0];
           log.info("username = \"" + username + "\"");
 
-          // grab password
           String password = decoded[1];
           log.info("password decoded (" + password.length() + " characters long)");
 
-          // The empty string here is for the host; this can be added later for host filtering and/or logging
           if(this.passwordAuthenticator.authenticate(username, password.toCharArray(), "") == false) {
             Response response = createUnauthorizedResponse();
             containerRequestContext.abortWith(response);
@@ -105,8 +92,9 @@ public class BasicHttpAuthenticationRequestFilter implements ContainerRequestFil
   }
 
   private Response createUnauthorizedResponse() {
-    return Response.status(Response.Status.UNAUTHORIZED)
-        .header(HttpHeaders.WWW_AUTHENTICATE, String.format("%s realm=\"%s\"", HTTP_BASIC, WWW_AUTHENTICATE_REALM))
-        .build();
+    return Response
+        .status(Response.Status.UNAUTHORIZED)
+        .header(HttpHeaders.WWW_AUTHENTICATE,
+            String.format("%s realm=\"%s\"", HTTP_AUTH_PREFIX, WWW_AUTHENTICATE_REALM)).build();
   }
 }
