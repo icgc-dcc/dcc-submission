@@ -236,6 +236,19 @@ public class DictionaryConverter {
       fileSchema.getUniqueFields().add(name);
     }
 
+    // deconvolution
+    String deconvolution = iterator.next();
+    if(deconvolution.isEmpty()) {
+
+    }
+
+    String codeList = iterator.next();
+    if(!codeList.isEmpty()) {
+      Restriction codeListRestriction = new Restriction();
+      codeListRestriction.setType("codelist");
+      restrictions.add(codeListRestriction);
+    }
+
     field.setRestrictions(restrictions);
 
     return field;
