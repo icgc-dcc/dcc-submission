@@ -24,7 +24,7 @@ task "develop", "Compiles source files, watches for changes and starts server", 
 # Not fully implemented
 #task "prod", "Compiles, minifies and joins source files", -> production()
 #task "docs", "Generate documentaion", -> docs()
-#task "tests", "Run tests", -> tests()
+task "tests", "Run tests", -> tests()
 
 ### Use these for testing
 task "clean", "Clean target files", -> clean -> 
@@ -39,7 +39,7 @@ task "server", "Starts Web Server on port 3001", -> server()
 launch = (cmd, options=[], callback) ->
   cmd = which(cmd) if which
   app = spawn cmd, options
-  app.stdout.pipe(process.stdout)
+  app.stdout.pipe(process.stdout)    
   app.stderr.on "data", (data) ->
     growl("#{data}", { title: 'Failed!'})
     process.stdout.write "#{red}Failed!#{reset}\n#{data}"
@@ -47,7 +47,7 @@ launch = (cmd, options=[], callback) ->
   app.on "exit", (status) -> callback?() if status is 0
 
 develop = (callback) ->
-  build -> server -> watch -> callback?() 
+  build -> server -> watch -> tests -> callback?() 
 
 prod = (callback) ->
   build -> minify -> server -> callback?() 
@@ -145,6 +145,12 @@ server = (callback) ->
 
   httpProxy.createServer(options).listen 3001, ->
     timeLog "Development Server listening on http://localhost:3001...\n"
+
+  callback?()
+
+tests = (callback) ->
+  options = ["src/test/coffee", "--compilers", "coffee:coffee-script", "--reporter", "dot", "--growl", "--watch"]
+  app = spawn "mocha", options#, { customFds: [0,1,2] }
 
   callback?()
 
