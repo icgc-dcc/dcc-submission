@@ -5,10 +5,10 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.io.IOException;
 
 import javax.ws.rs.BindingPriority;
-import javax.ws.rs.core.RequestHeaders;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.FilterContext;
-import javax.ws.rs.ext.PreMatchRequestFilter;
 import javax.ws.rs.ext.Provider;
 
 import org.apache.shiro.codec.Base64;
@@ -27,11 +27,11 @@ import com.google.inject.Inject;
  */
 @Provider
 @BindingPriority(BindingPriority.SECURITY)
-public class BasicHttpAuthenticationRequestFilter implements PreMatchRequestFilter {
+public class BasicHttpAuthenticationRequestFilter implements ContainerRequestFilter {
 
   private static final Logger log = LoggerFactory.getLogger(BasicHttpAuthenticationRequestFilter.class);
 
-  private static final String HTTP_BASIC = "Basic"; // TODO: existing constant somewhere?
+  private static final String HTTP_BASIC = "X-DCC-Auth"; // TODO: existing constant somewhere?
 
   private static final String TOKEN_INFO_SEPARATOR = ":";
 
@@ -46,32 +46,27 @@ public class BasicHttpAuthenticationRequestFilter implements PreMatchRequestFilt
   }
 
   @Override
-  public void preMatchFilter(FilterContext filterContext) throws IOException {
+  public void filter(ContainerRequestContext containerRequestContext) throws IOException {
 
-    RequestHeaders headers = filterContext.getRequest().getHeaders();
+    MultivaluedMap<String, String> headers = containerRequestContext.getHeaders();
 
     // get authorization header
-    String authorizationHeader = headers.getHeader(HttpHeaders.AUTHORIZATION);
+    String authorizationHeader = headers.getFirst(HttpHeaders.AUTHORIZATION);
     log.debug("authorizationHeader = " + authorizationHeader);
 
     // check if provided
     if(authorizationHeader == null || authorizationHeader.isEmpty()) {
-      Response response =
-          filterContext
-              .createResponse()
-              .status(Response.Status.UNAUTHORIZED)
-              .header(HttpHeaders.WWW_AUTHENTICATE,
-                  String.format("%s realm=\"%s\"", HTTP_BASIC, WWW_AUTHENTICATE_REALM)).build();
+      Response response = createUnauthorizedResponse();
 
       // TODO: does not seem to work for now, probably not implemented in jersey for now (m04)
-      filterContext.setResponse(response);
+      containerRequestContext.abortWith(response);
     } else {
       // expected to be like: "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ=="
       String[] split = authorizationHeader.split(" ", 2);
       if(split.length != 2 || !split[0].equals(HTTP_BASIC)) {
-        // TODO: add error message?
-        Response response = filterContext.createResponse().status(Response.Status.BAD_REQUEST).build();
-        filterContext.setResponse(response);
+        log.error("Invalid authorization header: " + authorizationHeader);
+        Response response = Response.status(Response.Status.BAD_REQUEST).build();
+        containerRequestContext.abortWith(response);
       } else {
 
         // grabbing the "QWxhZGRpbjpvcGVuIHNlc2FtZQ==" part
@@ -85,10 +80,9 @@ public class BasicHttpAuthenticationRequestFilter implements PreMatchRequestFilt
         // HttpAuthorizationToken.java
 
         if(decoded.length != 2) {
-          // TODO: add error message?
-          Response response = filterContext.createResponse().status(Response.Status.BAD_REQUEST).build();
-          filterContext.setResponse(response); // see comment above
-          // TODO: should we allow using "return;"...?
+          log.error("Expected 2 components of decoded authorization header; received " + decoded.length);
+          Response response = Response.status(Response.Status.BAD_REQUEST).build();
+          containerRequestContext.abortWith(response); // see comment above
         } else {
 
           // grab username
@@ -100,10 +94,19 @@ public class BasicHttpAuthenticationRequestFilter implements PreMatchRequestFilt
           log.info("password decoded (" + password.length() + " characters long)");
 
           // The empty string here is for the host; this can be added later for host filtering and/or logging
-          this.passwordAuthenticator.authenticate(username, password.toCharArray(), "");
+          if(this.passwordAuthenticator.authenticate(username, password.toCharArray(), "") == false) {
+            Response response = createUnauthorizedResponse();
+            containerRequestContext.abortWith(response);
+          }
         }
       }
     }
 
+  }
+
+  private Response createUnauthorizedResponse() {
+    return Response.status(Response.Status.UNAUTHORIZED)
+        .header(HttpHeaders.WWW_AUTHENTICATE, String.format("%s realm=\"%s\"", HTTP_BASIC, WWW_AUTHENTICATE_REALM))
+        .build();
   }
 }
