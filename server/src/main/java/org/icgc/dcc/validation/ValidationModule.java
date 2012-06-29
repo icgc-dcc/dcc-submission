@@ -4,6 +4,7 @@ import java.io.File;
 
 import org.icgc.dcc.validation.restriction.DiscreteValuesRestriction;
 import org.icgc.dcc.validation.restriction.RangeFieldRestriction;
+import org.icgc.dcc.validation.restriction.RequiredRestriction;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
@@ -28,6 +29,7 @@ public class ValidationModule extends AbstractModule {
 
     bindRestriction(DiscreteValuesRestriction.Type.class);
     bindRestriction(RangeFieldRestriction.Type.class);
+    bindRestriction(RequiredRestriction.Type.class);
 
     bind(Planner.class).to(DefaultPlanner.class);
     bind(FileSchemaDirectory.class).toInstance(new LocalFileSchemaDirectory(root));
