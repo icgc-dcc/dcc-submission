@@ -29,7 +29,6 @@ import org.icgc.dcc.security.UsernamePasswordAuthenticator;
 import org.icgc.dcc.service.UserService;
 
 import com.google.inject.Inject;
-import com.sun.jersey.core.util.Base64;
 
 /**
  * 
@@ -45,22 +44,13 @@ public class UserResource {
 
   @GET
   public Response getRoles(@Context HttpHeaders headers) {
-    String auth = headers.getRequestHeader("authorization").get(0);
+    String username = passwordAuthenticator.getCurrentUser();
+    User user = users.getUser(username);
 
-    auth = auth.substring("Basic ".length());
-    String[] values = new String(Base64.base64Decode(auth)).split(":", -1);
-    String username = values[0];
-    String password = values.length > 1 ? values[1] : "";
-
-    if(passwordAuthenticator.authenticate(username, password.toCharArray(), null)) {
-
-      User user = users.getUser(username);
-      if(user != null) {
-        return Response.ok(user).build();
-      }
-      return Response.status(Status.INTERNAL_SERVER_ERROR).build();
+    if(user != null) {
+      return Response.ok(user).build();
     }
-    return Response.status(Status.UNAUTHORIZED).build();
+    return Response.status(Status.INTERNAL_SERVER_ERROR).build();
   }
 
 }
