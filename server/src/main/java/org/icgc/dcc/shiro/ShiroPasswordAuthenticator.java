@@ -25,6 +25,7 @@ import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.ThreadContext;
 import org.icgc.dcc.http.jersey.BasicHttpAuthenticationRequestFilter;
 import org.icgc.dcc.security.UsernamePasswordAuthenticator;
 import org.slf4j.Logger;
@@ -52,6 +53,7 @@ public class ShiroPasswordAuthenticator implements UsernamePasswordAuthenticator
     // build token from credentials
     UsernamePasswordToken token = new UsernamePasswordToken(username, password, false, host);
 
+    ThreadContext.remove(); // TODO remove this once it is correctly done when the response is sent out
     Subject currentUser = SecurityUtils.getSubject();
 
     try {
