@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -236,17 +237,21 @@ public class DictionaryConverter {
       fileSchema.getUniqueFields().add(name);
     }
 
-    // deconvolution
-    String deconvolution = iterator.next();
-    if(deconvolution.isEmpty()) {
+    try {
+      // deconvolution
+      String deconvolution = iterator.next();
+      if(deconvolution.isEmpty()) {
 
-    }
+      }
 
-    String codeList = iterator.next();
-    if(!codeList.isEmpty()) {
-      Restriction codeListRestriction = new Restriction();
-      codeListRestriction.setType("codelist");
-      restrictions.add(codeListRestriction);
+      String codeList = iterator.next();
+      if(!codeList.isEmpty()) {
+        Restriction codeListRestriction = new Restriction();
+        codeListRestriction.setType("codelist");
+        restrictions.add(codeListRestriction);
+      }
+    } catch(NoSuchElementException e) {
+      e.printStackTrace();
     }
 
     field.setRestrictions(restrictions);
