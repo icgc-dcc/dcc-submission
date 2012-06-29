@@ -84,7 +84,7 @@ clean = (callback) ->
 copy = (callback) ->
   exec "cp -r #{SRC} target/", ->
     exec "mv #{TARGET}/vendor #{TARGET}/js/", ->
-      exec 'cp -r #{SRC}/coffee/views/templates #{TARGET}/js/app/views/', ->
+      exec "cp -r #{SRC}/coffee/views/templates target/webapp/js/app/views/", ->
         options = ["-rf", "#{TARGET}/coffee"]
         launch "rm", options, callback
     
