@@ -32,7 +32,7 @@ public class RequiredRestriction implements InternalPlanElement {
 
   @Override
   public String describe() {
-    return String.format(NAME + "(" + field + ")");
+    return String.format("%s[%s]", NAME, field);
   }
 
   @Override

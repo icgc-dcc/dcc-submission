@@ -21,6 +21,7 @@ import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.ValueType;
 import org.icgc.dcc.validation.InternalFlowPlanningVisitor;
 import org.icgc.dcc.validation.InternalPlanElement;
+import org.icgc.dcc.validation.PlannerException;
 import org.icgc.dcc.validation.cascading.ValidationFields;
 
 import cascading.flow.FlowProcess;
@@ -31,14 +32,18 @@ import cascading.pipe.Each;
 import cascading.pipe.Pipe;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
+import cascading.tuple.TupleEntry;
 
 /**
  * Creates {@code PlanElement}s for validating the {@code ValueType} of a {@code Field}.
  */
 public class ValueTypePlanningVisitor extends InternalFlowPlanningVisitor {
 
-  public ValueTypePlanningVisitor() {
-  }
+  private static final String NAME = "valueType";
+
+  private static final String DISPLAY_NAME = "value type";
+
+  private static final int CODE = 499;
 
   @Override
   public void visit(Field field) {
@@ -61,7 +66,7 @@ public class ValueTypePlanningVisitor extends InternalFlowPlanningVisitor {
 
     @Override
     public String describe() {
-      return String.format("valueType[%s:%s]", field.getName(), type);
+      return String.format("%s[%s:%s]", NAME, field.getName(), type);
     }
 
     @Override
@@ -69,42 +74,41 @@ public class ValueTypePlanningVisitor extends InternalFlowPlanningVisitor {
       return new Each(pipe, new ValidationFields(field.getName()), new ValueTypeFunction(), Fields.REPLACE);
     }
 
+    @SuppressWarnings("rawtypes")
     private final class ValueTypeFunction extends BaseOperation implements Function {
 
-      ValueTypeFunction() {
+      public ValueTypeFunction() {
         super(2, Fields.ARGS);
       }
 
       @Override
       public void operate(FlowProcess flowProcess, FunctionCall functionCall) {
-        String value = functionCall.getArguments().getString(0);
+        TupleEntry arguments = functionCall.getArguments();
+        String value = arguments.getString(0);
         try {
           Object parsedValue = parse(value);
-          functionCall.getOutputCollector().add(
-              new Tuple(parsedValue, ValidationFields.state(functionCall.getArguments())));
+          functionCall.getOutputCollector().add(new Tuple(parsedValue, ValidationFields.state(arguments)));
         } catch(IllegalArgumentException e) {
-          // TODO: report errors correctly.
-          ValidationFields.state(functionCall.getArguments()).reportError(500, value);
-          functionCall.getOutputCollector().add(functionCall.getArguments());
+          Object fieldName = arguments.getFields().get(0);
+          ValidationFields.state(arguments).reportError(CODE, value, fieldName, type);
+          functionCall.getOutputCollector().add(arguments);
         }
       }
 
       private Object parse(String value) {
         switch(type) {
         case DATETIME:
-          // TODO: parse datetime
-          break;
+          throw new PlannerException(DISPLAY_NAME + " " + ValueType.DATETIME + " is not supported at the moment");
         case DECIMAL:
           return Double.valueOf(value);
         case INTEGER:
           return Long.valueOf(value);
         case TEXT:
-          return value;
+          throw new PlannerException(DISPLAY_NAME + " " + ValueType.TEXT + " should not be validated");
+        default:
+          throw new PlannerException("unknown " + type + " " + DISPLAY_NAME);
         }
-        return null;
       }
-
     }
   }
-
 }
