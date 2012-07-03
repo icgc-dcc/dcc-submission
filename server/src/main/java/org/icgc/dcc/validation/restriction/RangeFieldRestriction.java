@@ -26,6 +26,19 @@ public class RangeFieldRestriction implements InternalPlanElement {
 
   private static final String NAME = "range";
 
+  private static final int RANGE_CODE = 501;
+
+  private static final String RANGE_MESSAGE =
+      "number %d is out of range for field %s. Expected value between %d and %d";
+
+  private static final int TYPE_CODE = 502;
+
+  private static final String TYPE_MESSAGE = "%s is not a number for field %s. Expected a number";
+
+  private static final String MIN = "min";
+
+  private static final String MAX = "max";
+
   private final String field;
 
   private final Number min;
@@ -51,12 +64,12 @@ public class RangeFieldRestriction implements InternalPlanElement {
   public static class Type implements RestrictionType {
 
     private final RestrictionTypeSchema schema = new RestrictionTypeSchema(//
-        new FieldRestrictionParameter("min", ParameterType.NUMBER, "minimum value (inclusive)"), //
-        new FieldRestrictionParameter("max", ParameterType.NUMBER, "maximum value (inclusive)"));
+        new FieldRestrictionParameter(MIN, ParameterType.NUMBER, "minimum value (inclusive)"), //
+        new FieldRestrictionParameter(MAX, ParameterType.NUMBER, "maximum value (inclusive)"));
 
     public Type() {
-      ErrorCodeRegistry.get().register(501, "number %d is out of range for field %s. Expected value between %d and %d");
-      ErrorCodeRegistry.get().register(502, "%s is not a number for field %s. Expected a number");
+      ErrorCodeRegistry.get().register(RANGE_CODE, RANGE_MESSAGE);
+      ErrorCodeRegistry.get().register(TYPE_CODE, TYPE_MESSAGE);
     }
 
     @Override
@@ -82,13 +95,14 @@ public class RangeFieldRestriction implements InternalPlanElement {
     @Override
     public PlanElement build(Field field, Restriction restriction) {
       DBObject configuration = restriction.getConfig();
-      Number min = (Number) configuration.get("min");
-      Number max = (Number) configuration.get("max");
+      Number min = (Number) configuration.get(MIN);
+      Number max = (Number) configuration.get(MAX);
       return new RangeFieldRestriction(field.getName(), min, max);
     }
 
   }
 
+  @SuppressWarnings("rawtypes")
   public class RangeFunction extends BaseOperation implements Function {
 
     private final Number min;
@@ -110,11 +124,11 @@ public class RangeFieldRestriction implements InternalPlanElement {
       if(value instanceof Number) {
         Number num = (Number) value;
         if(num.longValue() < this.min.longValue() || num.longValue() > this.max.longValue()) {
-          ValidationFields.state(functionCall.getArguments()).reportError(501, num.longValue(), fieldName,
+          ValidationFields.state(functionCall.getArguments()).reportError(RANGE_CODE, num.longValue(), fieldName,
               this.min.longValue(), this.max.longValue());
         }
       } else {
-        ValidationFields.state(functionCall.getArguments()).reportError(502, value.toString(), fieldName);
+        ValidationFields.state(functionCall.getArguments()).reportError(TYPE_CODE, value.toString(), fieldName);
       }
       functionCall.getOutputCollector().add(functionCall.getArguments());
     }

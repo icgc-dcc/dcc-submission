@@ -24,6 +24,8 @@ public class RequiredRestriction implements InternalPlanElement {
 
   private static final int CODE = 503;
 
+  private static final String MESSAGE = "value missing for required field: %s";
+
   private final String field;
 
   private RequiredRestriction(String field) {
@@ -45,7 +47,7 @@ public class RequiredRestriction implements InternalPlanElement {
     private final RestrictionTypeSchema schema = new RestrictionTypeSchema();
 
     public Type() {
-      ErrorCodeRegistry.get().register(CODE, "value missing for required field: %s");
+      ErrorCodeRegistry.get().register(CODE, MESSAGE);
     }
 
     @Override
