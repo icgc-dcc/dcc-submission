@@ -18,6 +18,7 @@
 package org.icgc.dcc.testdata;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.fs.FileSystem;
@@ -32,6 +33,7 @@ import org.icgc.dcc.model.dictionary.DictionaryService;
 import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.FileSchema;
 import org.icgc.dcc.model.dictionary.FileSchemaRole;
+import org.icgc.dcc.model.dictionary.Restriction;
 import org.icgc.dcc.model.dictionary.Term;
 import org.icgc.dcc.model.dictionary.ValueType;
 import org.icgc.dcc.service.CompletedRelease;
@@ -40,6 +42,7 @@ import org.icgc.dcc.service.ReleaseService;
 import org.icgc.dcc.service.UserService;
 
 import com.google.inject.Inject;
+import com.mongodb.BasicDBObject;
 import com.typesafe.config.Config;
 
 /**
@@ -118,6 +121,15 @@ public class DataGenerator {
     file.setPattern("^\\w+__\\d+__\\d+__biomarker__\\d+\\.txt$");
     file.setRole(FileSchemaRole.SUBMISSION);
 
+    // create at least one restriction
+    BasicDBObject config = new BasicDBObject();
+    config.put("values", "");
+
+    Restriction restriction = new Restriction();
+    restriction.setType("in");
+    restriction.setConfig(config);
+    List<Restriction> restrictions = Arrays.asList(restriction);
+
     // add Field donor_id to FileSchema
     Field donor_id = new Field();
     donor_id.setName("donor_id");
@@ -125,11 +137,21 @@ public class DataGenerator {
         .setLabel("Unique identifier for the donor; assigned by data provider. It must be coded, and correspond to a donor ID listed in the donor data file.");
     donor_id.setValueType(ValueType.TEXT);
     file.addField(donor_id);
+
+    // add Field donor_sex to FileSchema
+    Field donor_sex = new Field();
+    donor_sex.setName("donor_sex");
+    donor_sex
+        .setLabel("Donor biological sex. \"Other\" has been removed from the controlled vocabulary due to identifiability concerns.");
+    donor_sex.setValueType(ValueType.TEXT);
+    file.addField(donor_sex);
+
     // add Field specimen_id to FileSchema
     Field specimen_id = new Field();
     specimen_id.setName("specimen_id");
     specimen_id.setLabel("ID of the specimen on which biomarker ascertainment was performed, if applicable");
     specimen_id.setValueType(ValueType.TEXT);
+    specimen_id.setRestrictions(restrictions);
     file.addField(specimen_id);
 
     firstDict.addFile(file);
