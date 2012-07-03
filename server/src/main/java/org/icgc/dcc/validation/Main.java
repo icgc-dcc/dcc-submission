@@ -29,7 +29,7 @@ public class Main {
     this.output.mkdirs();
     this.dictionary =
         new ObjectMapper().reader(Dictionary.class).readValue(
-            Resources.toString(Main.class.getResource("/dictionary2.json"), Charsets.UTF_8));
+            Resources.toString(Main.class.getResource("/dictionary.json"), Charsets.UTF_8));
   }
 
   public static void main(String[] args) throws JsonProcessingException, IOException {
@@ -37,13 +37,6 @@ public class Main {
   }
 
   private void doit() {
-    if(output.exists() && output.listFiles() != null) {
-      for(File f : output.listFiles()) {
-        if(f.isFile()) {
-          f.delete();
-        }
-      }
-    }
     Injector injector = Guice.createInjector(new ValidationModule(root, output));
 
     Planner planner = injector.getInstance(Planner.class);
@@ -56,11 +49,5 @@ public class Main {
     if(c.getFlows().size() > 0) {
       c.start();
     }
-    try {
-      Thread.sleep(1000);
-      System.out.println("done");
-    } catch(InterruptedException e) {
-    }
-
   }
 }
