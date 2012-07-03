@@ -53,7 +53,7 @@ public class RangeFieldRestriction implements InternalPlanElement {
 
   @Override
   public String describe() {
-    return String.format("range[%d-%d]", min, max);
+    return String.format("%s[%d-%d]", NAME, min, max);
   }
 
   @Override

@@ -56,6 +56,10 @@ public class CodeListRestriction implements InternalPlanElement {
 
   private static final int CODE = 504;
 
+  private static final String MESSAGE = "invalid value %s for field %s. Expected code or value from CodeList %s";
+
+  private static final String FIELD = "name";
+
   private final String field;
 
   private final String codeListName;
@@ -97,11 +101,11 @@ public class CodeListRestriction implements InternalPlanElement {
   public static class Type implements RestrictionType {
 
     private final RestrictionTypeSchema schema = new RestrictionTypeSchema(//
-        new FieldRestrictionParameter("name", ParameterType.TEXT, "Name of codeList against which to check the value",
+        new FieldRestrictionParameter(FIELD, ParameterType.TEXT, "Name of codeList against which to check the value",
             true));
 
     public Type() {
-      ErrorCodeRegistry.get().register(504, "invalid value %s for field %s. Expected code or value from CodeList %s");
+      ErrorCodeRegistry.get().register(CODE, MESSAGE);
     }
 
     @Override
@@ -126,7 +130,7 @@ public class CodeListRestriction implements InternalPlanElement {
 
     @Override
     public PlanElement build(Field field, Restriction restriction) {
-      String codeListName = restriction.getConfig().getString("name");
+      String codeListName = restriction.getConfig().getString(FIELD);
       return new CodeListRestriction(field.getName(), codeListName);
     }
 
