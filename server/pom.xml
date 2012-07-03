@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.icgc.dcc</groupId>
@@ -113,7 +114,8 @@
           <groupId>commons-logging</groupId>
         </exclusion>
       </exclusions>
-    </dependency><dependency>
+    </dependency>
+    <dependency>
       <groupId>cascading</groupId>
       <artifactId>cascading-test</artifactId>
       <version>${cascading.version}</version>
@@ -212,8 +214,18 @@
   </dependencies>
   <repositories>
     <repository>
-      <id>morphia</id>
+      <id>internal</id>
       <url>http://seqwaremaven.oicr.on.ca/artifactory/dcc-dependencies</url>
+    </repository>
+    <repository>
+      <id>morphia</id>
+      <url> http://morphia.googlecode.com/svn/mavenrepo/</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
     </repository>
     <repository>
       <id>cloudera</id>
