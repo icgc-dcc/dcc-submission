@@ -22,12 +22,23 @@ import cascading.operation.FunctionCall;
 import cascading.pipe.Each;
 import cascading.pipe.Pipe;
 import cascading.tuple.Fields;
+import cascading.tuple.TupleEntry;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 
 public class DiscreteValuesRestriction implements InternalPlanElement {
 
   private static final String NAME = "in";
+
+  private static final int CODE = 505;
+
+  private static final String MESSAGE = "invalid value %s for field %s. Expected one of the following values: %s";
+
+  private static final String DESCRIPTION = "list of allowable values (e.g.: 1,2,3)";
+
+  private static final String PARAM = "values";
 
   private final String field;
 
@@ -40,7 +51,7 @@ public class DiscreteValuesRestriction implements InternalPlanElement {
 
   @Override
   public String describe() {
-    return String.format("in[%s]", Arrays.toString(values));
+    return String.format("%s[%s:%s]", NAME, field, Arrays.toString(values));
   }
 
   @Override
@@ -51,10 +62,10 @@ public class DiscreteValuesRestriction implements InternalPlanElement {
   public static class Type implements RestrictionType {
 
     private final RestrictionTypeSchema schema = new RestrictionTypeSchema(//
-        new FieldRestrictionParameter("values", ParameterType.TEXT, "list of allowable values (e.g.: 1,2,3)", true));
+        new FieldRestrictionParameter(PARAM, ParameterType.TEXT, DESCRIPTION, true));
 
     public Type() {
-      ErrorCodeRegistry.get().register(500, "invalid value %s for field %s. Expected one of the following values: %s");
+      ErrorCodeRegistry.get().register(CODE, MESSAGE);
     }
 
     @Override
@@ -79,12 +90,14 @@ public class DiscreteValuesRestriction implements InternalPlanElement {
 
     @Override
     public PlanElement build(Field field, Restriction restriction) {
-      String[] values = (String[]) restriction.getConfig().get("values");
+      String valuesString = (String) restriction.getConfig().get(PARAM);// expects comma-separated like: "male,female"
+      Iterable<String> split = Splitter.on(Restriction.CONFIG_VALUE_SEPARATOR).split(valuesString);
+      String[] values = Iterables.toArray(split, String.class);
       return new DiscreteValuesRestriction(field.getName(), values);
     }
-
   }
 
+  @SuppressWarnings("rawtypes")
   public class InValuesFunction extends BaseOperation implements Function {
 
     private final Set<String> values;
@@ -96,12 +109,13 @@ public class DiscreteValuesRestriction implements InternalPlanElement {
 
     @Override
     public void operate(FlowProcess flowProcess, FunctionCall functionCall) {
-      String value = functionCall.getArguments().getString(0);
+      TupleEntry arguments = functionCall.getArguments();
+      String value = arguments.getString(0);
       if(values.contains(value) == false) {
-        Object fieldName = functionCall.getArguments().getFields().get(0);
-        ValidationFields.state(functionCall.getArguments()).reportError(500, value, fieldName, values);
+        Object fieldName = arguments.getFields().get(0);
+        ValidationFields.state(arguments).reportError(CODE, value, fieldName, values);
       }
-      functionCall.getOutputCollector().add(functionCall.getArguments());
+      functionCall.getOutputCollector().add(arguments);
     }
 
   }

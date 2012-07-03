@@ -31,6 +31,9 @@ import com.mongodb.BasicDBObject;
 @Embedded
 public class Restriction implements DictionaryElement {
 
+  public static final String CONFIG_VALUE_SEPARATOR = ","; // simple key-value pair for now, so the value can hold a
+                                                           // comma-separated list of values
+
   private String type;
 
   private BasicDBObject config;

@@ -19,6 +19,7 @@ package org.icgc.dcc.validation.visitor;
 
 import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.ValueType;
+import org.icgc.dcc.validation.ErrorCodeRegistry;
 import org.icgc.dcc.validation.InternalFlowPlanningVisitor;
 import org.icgc.dcc.validation.InternalPlanElement;
 import org.icgc.dcc.validation.PlannerException;
@@ -44,6 +45,12 @@ public class ValueTypePlanningVisitor extends InternalFlowPlanningVisitor {
   private static final String DISPLAY_NAME = "value type";
 
   private static final int CODE = 499;
+
+  private static final String MESSAGE = "invalid value type for value %s for field %s. Expected: %s";
+
+  static {
+    ErrorCodeRegistry.get().register(CODE, MESSAGE);
+  }
 
   @Override
   public void visit(Field field) {
