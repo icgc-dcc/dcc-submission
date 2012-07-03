@@ -45,7 +45,7 @@ public class RangeFieldRestriction implements InternalPlanElement {
 
   private final Number max;
 
-  private RangeFieldRestriction(String field, Number min, Number max) {
+  protected RangeFieldRestriction(String field, Number min, Number max) {
     this.field = field;
     this.min = min;
     this.max = max;
@@ -103,13 +103,13 @@ public class RangeFieldRestriction implements InternalPlanElement {
   }
 
   @SuppressWarnings("rawtypes")
-  public class RangeFunction extends BaseOperation implements Function {
+  public static class RangeFunction extends BaseOperation implements Function {
 
     private final Number min;
 
     private final Number max;
 
-    private RangeFunction(Number min, Number max) {
+    protected RangeFunction(Number min, Number max) {
       super(2, Fields.ARGS);
       this.min = min;
       this.max = max;
