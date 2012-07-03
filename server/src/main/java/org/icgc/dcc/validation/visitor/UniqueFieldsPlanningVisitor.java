@@ -17,10 +17,12 @@
  */
 package org.icgc.dcc.validation.visitor;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 import org.icgc.dcc.model.dictionary.FileSchema;
+import org.icgc.dcc.validation.ErrorCodeRegistry;
 import org.icgc.dcc.validation.InternalFlowPlanningVisitor;
 import org.icgc.dcc.validation.InternalPlanElement;
 import org.icgc.dcc.validation.cascading.ValidationFields;
@@ -42,7 +44,14 @@ import com.google.common.collect.ImmutableList;
  */
 public class UniqueFieldsPlanningVisitor extends InternalFlowPlanningVisitor {
 
-  public UniqueFieldsPlanningVisitor() {
+  private static final String NAME = "unique";
+
+  private static final int CODE = 498;
+
+  private static final String MESSAGE = "invalid set of values (%s) for fields %s. Expected to be unique";
+
+  static {
+    ErrorCodeRegistry.get().register(CODE, MESSAGE);
   }
 
   @Override
@@ -53,7 +62,7 @@ public class UniqueFieldsPlanningVisitor extends InternalFlowPlanningVisitor {
     }
   }
 
-  private static class UniqueFieldsPlanElement implements InternalPlanElement {
+  static class UniqueFieldsPlanElement implements InternalPlanElement {
 
     private final List<String> fields;
 
@@ -63,42 +72,49 @@ public class UniqueFieldsPlanningVisitor extends InternalFlowPlanningVisitor {
 
     @Override
     public String describe() {
-      return String.format("unique[%s]", fields);
+      return String.format("%s[%s]", NAME, fields);
     }
 
     @Override
     public Pipe extend(Pipe pipe) {
       Fields groupFields = new Fields(fields.toArray(new String[] {}));
       pipe = new GroupBy(pipe, groupFields);
-      pipe = new Every(pipe, Fields.ALL, new CountBuffer(), Fields.RESULTS);
-
-      // These don't work because you can only obtain Fields.GROUP or Fields.VALUES, but not both
-      // pipe = new CountBy(pipe, groupFields, new Fields("count"));
-      // pipe = new Each(pipe, new ValidationFields("count"), new CountIsOne(), Fields.REPLACE);
-      // pipe = new Discard(pipe, new Fields("count"));
+      pipe = new Every(pipe, Fields.ALL, new CountBuffer(fields), Fields.RESULTS);
       return pipe;
     }
 
-    private static class CountBuffer extends BaseOperation implements Buffer {
+    @SuppressWarnings("rawtypes")
+    static class CountBuffer extends BaseOperation implements Buffer {
+      private final List<String> fields;
 
-      CountBuffer() {
+      CountBuffer(List<String> fields) {
         super(Fields.ARGS);
+        this.fields = ImmutableList.copyOf(fields);
       }
 
       @Override
+      @SuppressWarnings("unchecked")
       public void operate(FlowProcess flowProcess, BufferCall bufferCall) {
         int count = 0;
         Iterator<TupleEntry> i = bufferCall.getArgumentsIterator();
         while(i.hasNext()) {
           TupleEntry tupleEntry = i.next();
           if(count > 0) {
-            ValidationFields.state(tupleEntry).reportError(500, "not unique");
+            List<String> values = fetchValues(tupleEntry);
+            ValidationFields.state(tupleEntry).reportError(CODE, values, fields);
           }
           count++;
           bufferCall.getOutputCollector().add(tupleEntry.getTupleCopy());
         }
       }
-    }
 
+      private List<String> fetchValues(TupleEntry tupleEntry) {
+        List<String> values = new ArrayList<String>();
+        for(String field : fields) { // not worth making non-anonymous guava Function (needs to know tupleEntry)
+          values.add(tupleEntry.getString(field));
+        }
+        return values;
+      }
+    }
   }
 }

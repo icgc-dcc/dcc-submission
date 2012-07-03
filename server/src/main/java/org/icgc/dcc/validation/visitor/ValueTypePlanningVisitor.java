@@ -46,7 +46,7 @@ public class ValueTypePlanningVisitor extends InternalFlowPlanningVisitor {
 
   private static final int CODE = 499;
 
-  private static final String MESSAGE = "invalid value type for value %s for field %s. Expected: %s";
+  private static final String MESSAGE = "invalid value (%s) for field %s. Expected type is: %s";
 
   static {
     ErrorCodeRegistry.get().register(CODE, MESSAGE);
@@ -56,36 +56,39 @@ public class ValueTypePlanningVisitor extends InternalFlowPlanningVisitor {
   public void visit(Field field) {
     // No need to verify ValueType.TEXT since everything can be a String...
     if(field.getValueType() != ValueType.TEXT) {
-      collect(new ValueTypePlanElement(field));
+      collect(new ValueTypePlanElement(field.getName(), field.getValueType()));
     }
   }
 
-  private class ValueTypePlanElement implements InternalPlanElement {
+  static class ValueTypePlanElement implements InternalPlanElement {
 
-    private final Field field;
+    private final String field;
 
-    private final ValueType type;
+    protected final ValueType type;
 
-    private ValueTypePlanElement(Field field) {
+    private ValueTypePlanElement(String field, ValueType type) {
       this.field = field;
-      this.type = field.getValueType();
+      this.type = type;
     }
 
     @Override
     public String describe() {
-      return String.format("%s[%s:%s]", NAME, field.getName(), type);
+      return String.format("%s[%s:%s]", NAME, field, type);
     }
 
     @Override
     public Pipe extend(Pipe pipe) {
-      return new Each(pipe, new ValidationFields(field.getName()), new ValueTypeFunction(), Fields.REPLACE);
+      return new Each(pipe, new ValidationFields(field), new ValueTypeFunction(type), Fields.REPLACE);
     }
 
     @SuppressWarnings("rawtypes")
-    private final class ValueTypeFunction extends BaseOperation implements Function {
+    static final class ValueTypeFunction extends BaseOperation implements Function {
 
-      public ValueTypeFunction() {
+      protected final ValueType type;
+
+      ValueTypeFunction(ValueType type) {
         super(2, Fields.ARGS);
+        this.type = type;
       }
 
       @Override

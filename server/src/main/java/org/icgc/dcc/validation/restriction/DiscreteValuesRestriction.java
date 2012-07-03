@@ -98,7 +98,7 @@ public class DiscreteValuesRestriction implements InternalPlanElement {
   }
 
   @SuppressWarnings("rawtypes")
-  public class InValuesFunction extends BaseOperation implements Function {
+  static final class InValuesFunction extends BaseOperation implements Function {
 
     private final Set<String> values;
 
