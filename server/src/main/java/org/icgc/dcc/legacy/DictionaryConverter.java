@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -50,6 +49,7 @@ import org.xml.sax.SAXException;
 import com.google.common.base.Charsets;
 import com.google.common.base.Splitter;
 import com.google.common.io.Files;
+import com.mongodb.BasicDBObject;
 
 /**
  * 
@@ -186,7 +186,7 @@ public class DictionaryConverter {
 
     String fileSchemaText = Files.toString(tsvFile, Charsets.UTF_8);
 
-    Iterable<String> lines = Splitter.on('\n').trimResults().omitEmptyStrings().split(fileSchemaText);
+    Iterable<String> lines = Splitter.on('\n').omitEmptyStrings().split(fileSchemaText);
 
     Iterator<String> lineIterator = lines.iterator();
     // Read TSV header
@@ -211,7 +211,7 @@ public class DictionaryConverter {
 
   private Field readField(String line, FileSchema fileSchema) {
     Field field = new Field();
-    Iterable<String> values = Splitter.on('\t').trimResults().omitEmptyStrings().split(line);
+    Iterable<String> values = Splitter.on('\t').split(line);
 
     Iterator<String> iterator = values.iterator();
     String name = iterator.next();
@@ -237,21 +237,23 @@ public class DictionaryConverter {
       fileSchema.getUniqueFields().add(name);
     }
 
-    try {
-      // deconvolution
-      String deconvolution = iterator.next();
-      if(deconvolution.isEmpty()) {
+    // deconvolution
+    String deconvolution = iterator.next();
+    if(deconvolution.isEmpty()) {
 
-      }
+    }
 
-      String codeList = iterator.next();
-      if(!codeList.isEmpty()) {
-        Restriction codeListRestriction = new Restriction();
-        codeListRestriction.setType("codelist");
-        restrictions.add(codeListRestriction);
-      }
-    } catch(NoSuchElementException e) {
-      e.printStackTrace();
+    String codeList = iterator.next();
+    if(!codeList.isEmpty()) {
+      Restriction codeListRestriction = new Restriction();
+      codeListRestriction.setType("codelist");
+      codeListRestriction.setConfig(new BasicDBObject());
+      Iterator<String> nameIterator = Splitter.on('/').split(codeList).iterator();
+      nameIterator.next();
+      String codeListName = nameIterator.next();
+      codeListName = codeListName.substring(0, codeListName.length() - 4);
+      codeListRestriction.getConfig().append("name", codeListName);
+      restrictions.add(codeListRestriction);
     }
 
     field.setRestrictions(restrictions);
