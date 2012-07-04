@@ -19,10 +19,10 @@ package org.icgc.dcc.validation.visitor;
 
 import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.ValueType;
-import org.icgc.dcc.validation.ValidationErrorCode;
 import org.icgc.dcc.validation.InternalFlowPlanningVisitor;
 import org.icgc.dcc.validation.InternalPlanElement;
 import org.icgc.dcc.validation.PlannerException;
+import org.icgc.dcc.validation.ValidationErrorCode;
 import org.icgc.dcc.validation.cascading.ValidationFields;
 
 import cascading.flow.FlowProcess;
@@ -52,13 +52,13 @@ public class ValueTypePlanningVisitor extends InternalFlowPlanningVisitor {
     }
   }
 
-  static class ValueTypePlanElement implements InternalPlanElement {
+  public static class ValueTypePlanElement implements InternalPlanElement {
 
     private final String field;
 
     protected final ValueType type;
 
-    private ValueTypePlanElement(String field, ValueType type) {
+    public ValueTypePlanElement(String field, ValueType type) {
       this.field = field;
       this.type = type;
     }
@@ -74,11 +74,11 @@ public class ValueTypePlanningVisitor extends InternalFlowPlanningVisitor {
     }
 
     @SuppressWarnings("rawtypes")
-    static final class ValueTypeFunction extends BaseOperation implements Function {
+    public static final class ValueTypeFunction extends BaseOperation implements Function {
 
       protected final ValueType type;
 
-      ValueTypeFunction(ValueType type) {
+      public ValueTypeFunction(ValueType type) {
         super(2, Fields.ARGS);
         this.type = type;
       }
@@ -102,7 +102,12 @@ public class ValueTypePlanningVisitor extends InternalFlowPlanningVisitor {
         case DATETIME:
           throw new PlannerException(DISPLAY_NAME + " " + ValueType.DATETIME + " is not supported at the moment");
         case DECIMAL:
-          return Double.valueOf(value);
+          Double doubleValue = Double.valueOf(value);
+          if(null != doubleValue
+              && (doubleValue == Double.POSITIVE_INFINITY || doubleValue == Double.NEGATIVE_INFINITY)) {
+            throw new NumberFormatException();
+          }
+          return doubleValue;
         case INTEGER:
           return Long.valueOf(value);
         case TEXT:
