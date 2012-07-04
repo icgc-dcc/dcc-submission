@@ -43,37 +43,50 @@ public class RangeFieldRestrictionTest extends CascadingTestCase {
   }
 
   @Test
-  public void test_range_function() {
+  public void test_range_lower_bound() {
+    TupleState state = this.test_range_function(new Integer(1));
+    assertTrue(state.isValid());
+  }
+
+  @Test
+  public void test_range_upper_bound() {
+    TupleState state = this.test_range_function(new Integer(10));
+    assertTrue(state.isValid());
+  }
+
+  @Test
+  public void test_range_out_bound() {
+    TupleState state = this.test_range_function(new Integer(0));
+    assertTrue(state.isInvalid());
+  }
+
+  @Test
+  public void test_range_negative() {
+    TupleState state = this.test_range_function(new Integer(-1));
+    assertTrue(state.isInvalid());
+  }
+
+  @Test
+  public void test_empty_string() {
+    TupleState state = this.test_range_function("");
+    assertTrue(state.isInvalid());
+  }
+
+  private TupleState test_range_function(Object tupleValue) {
     RangeFunction function = new RangeFunction(new Integer(1), new Integer(10));
 
     Fields incoming = new Fields("number", "_state");
-    TupleEntry[] tuples =
-        new TupleEntry[] { new TupleEntry(incoming, new Tuple(new Integer(1), new TupleState())), new TupleEntry(
-            incoming, new Tuple(new Integer(0), new TupleState())), new TupleEntry(incoming, new Tuple(new Integer(10),
-            new TupleState())), new TupleEntry(incoming, new Tuple(new Integer(-1), new TupleState())) };
+    TupleEntry[] tuples = new TupleEntry[] { new TupleEntry(incoming, new Tuple(tupleValue, new TupleState())) };
 
     TupleListCollector c = CascadingTestCase.invokeFunction(function, tuples, incoming);
 
     Iterator<Tuple> iterator = c.iterator();
 
     Tuple t = iterator.next();
-    assertEquals(new Integer(1), t.getObject(0));
+
+    assertEquals(tupleValue, t.getObject(0));
     TupleState state = (TupleState) t.getObject(1);
-    assertTrue(state.isValid());
 
-    t = iterator.next();
-    assertEquals(new Integer(0), t.getObject(0));
-    state = (TupleState) t.getObject(1);
-    assertTrue(!state.isValid());
-
-    t = iterator.next();
-    assertEquals(new Integer(10), t.getObject(0));
-    state = (TupleState) t.getObject(1);
-    assertTrue(state.isValid());
-
-    t = iterator.next();
-    assertEquals(new Integer(-1), t.getObject(0));
-    state = (TupleState) t.getObject(1);
-    assertTrue(!state.isValid());
+    return state;
   }
 }
