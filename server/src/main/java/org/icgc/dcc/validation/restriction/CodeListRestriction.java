@@ -49,9 +49,6 @@ import com.google.inject.Inject;
 
 public class CodeListRestriction implements InternalPlanElement {
 
-  @Inject
-  private DictionaryService dictionaries;
-
   private static final String NAME = "codeList";
 
   private static final int CODE = 504;
@@ -68,7 +65,7 @@ public class CodeListRestriction implements InternalPlanElement {
 
   private final Set<String> values;
 
-  private CodeListRestriction(String field, String codeListName) {
+  protected CodeListRestriction(String field, String codeListName, DictionaryService dictionaries) {
     this.field = field;
     this.codeListName = codeListName;
     CodeList codeList = dictionaries.getCodeList(codeListName);
@@ -89,7 +86,7 @@ public class CodeListRestriction implements InternalPlanElement {
 
   @Override
   public String describe() {
-    return String.format("%s[%s]", NAME, field);
+    return String.format("%s[%s:%s]", NAME, field, codeListName);
   }
 
   @Override
@@ -99,6 +96,9 @@ public class CodeListRestriction implements InternalPlanElement {
   }
 
   public static class Type implements RestrictionType {
+
+    @Inject
+    private DictionaryService dictionaries;
 
     private final RestrictionTypeSchema schema = new RestrictionTypeSchema(//
         new FieldRestrictionParameter(FIELD, ParameterType.TEXT, "Name of codeList against which to check the value",
@@ -131,7 +131,7 @@ public class CodeListRestriction implements InternalPlanElement {
     @Override
     public PlanElement build(Field field, Restriction restriction) {
       String codeListName = restriction.getConfig().getString(FIELD);
-      return new CodeListRestriction(field.getName(), codeListName);
+      return new CodeListRestriction(field.getName(), codeListName, dictionaries);
     }
 
   }
@@ -145,7 +145,7 @@ public class CodeListRestriction implements InternalPlanElement {
 
     private final Set<String> values;
 
-    private InCodeListFunction(String codeListName, Set<String> codes, Set<String> values) {
+    protected InCodeListFunction(String codeListName, Set<String> codes, Set<String> values) {
       super(2, Fields.ARGS);
       this.codeListName = codeListName;
       this.codes = codes;
@@ -154,7 +154,8 @@ public class CodeListRestriction implements InternalPlanElement {
 
     @Override
     public void operate(FlowProcess flowProcess, FunctionCall functionCall) {
-      String value = functionCall.getArguments().getString(0);
+      Object object = functionCall.getArguments().getObject(0);
+      String value = object == null ? null : object.toString();
       if(codes.contains(value) == false && values.contains(value) == false) {
         Object fieldName = functionCall.getArguments().getFields().get(0);
         ValidationFields.state(functionCall.getArguments()).reportError(CODE, value, fieldName, codeListName);

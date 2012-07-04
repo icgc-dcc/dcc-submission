@@ -2,6 +2,7 @@ package org.icgc.dcc.validation;
 
 import java.io.File;
 
+import org.icgc.dcc.validation.restriction.CodeListRestriction;
 import org.icgc.dcc.validation.restriction.DiscreteValuesRestriction;
 import org.icgc.dcc.validation.restriction.RangeFieldRestriction;
 import org.icgc.dcc.validation.restriction.RequiredRestriction;
@@ -30,6 +31,7 @@ public class ValidationModule extends AbstractModule {
     bindRestriction(DiscreteValuesRestriction.Type.class);
     bindRestriction(RangeFieldRestriction.Type.class);
     bindRestriction(RequiredRestriction.Type.class);
+    bindRestriction(CodeListRestriction.Type.class);
 
     bind(Planner.class).to(DefaultPlanner.class);
     bind(FileSchemaDirectory.class).toInstance(new LocalFileSchemaDirectory(root));
