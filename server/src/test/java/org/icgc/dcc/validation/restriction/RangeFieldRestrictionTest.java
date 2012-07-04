@@ -49,7 +49,8 @@ public class RangeFieldRestrictionTest extends CascadingTestCase {
     Fields incoming = new Fields("number", "_state");
     TupleEntry[] tuples =
         new TupleEntry[] { new TupleEntry(incoming, new Tuple(new Integer(1), new TupleState())), new TupleEntry(
-            incoming, new Tuple(new Integer(0), new TupleState())) };
+            incoming, new Tuple(new Integer(0), new TupleState())), new TupleEntry(incoming, new Tuple(new Integer(10),
+            new TupleState())), new TupleEntry(incoming, new Tuple(new Integer(-1), new TupleState())) };
 
     TupleListCollector c = CascadingTestCase.invokeFunction(function, tuples, incoming);
 
@@ -62,6 +63,16 @@ public class RangeFieldRestrictionTest extends CascadingTestCase {
 
     t = iterator.next();
     assertEquals(new Integer(0), t.getObject(0));
+    state = (TupleState) t.getObject(1);
+    assertTrue(!state.isValid());
+
+    t = iterator.next();
+    assertEquals(new Integer(10), t.getObject(0));
+    state = (TupleState) t.getObject(1);
+    assertTrue(state.isValid());
+
+    t = iterator.next();
+    assertEquals(new Integer(-1), t.getObject(0));
     state = (TupleState) t.getObject(1);
     assertTrue(!state.isValid());
   }
