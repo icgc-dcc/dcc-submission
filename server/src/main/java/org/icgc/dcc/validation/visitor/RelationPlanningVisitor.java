@@ -22,8 +22,10 @@ import java.util.Iterator;
 
 import org.icgc.dcc.model.dictionary.FileSchema;
 import org.icgc.dcc.model.dictionary.Relation;
+import org.icgc.dcc.validation.ErrorCodeRegistry;
 import org.icgc.dcc.validation.ExternalFlowPlanningVisitor;
 import org.icgc.dcc.validation.ExternalPlanElement;
+import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.cascading.ValidationFields;
 
 import cascading.flow.FlowProcess;
@@ -43,7 +45,14 @@ import cascading.tuple.TupleEntry;
  */
 public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
 
-  public RelationPlanningVisitor() {
+  private static final String NAME = "fk";
+
+  private static final int CODE = 497;
+
+  private static final String MESSAGE = "invalid value (%s) for field %s. Expected to match a value in: %s.%s";
+
+  static {
+    ErrorCodeRegistry.get().register(CODE, MESSAGE);
   }
 
   @Override
@@ -67,7 +76,7 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
 
     @Override
     public String describe() {
-      return String.format("fk[%s->%s:%s]", Arrays.toString(lhsFields), rhs, Arrays.toString(rhsFields));
+      return String.format("%s[%s->%s:%s]", NAME, Arrays.toString(lhsFields), rhs, Arrays.toString(rhsFields));
     }
 
     @Override
@@ -86,11 +95,11 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
     }
 
     @Override
-    public Pipe join(Pipe lhs, Pipe rhs) {
+    public Pipe join(Pipe lhsPipe, Pipe rhsPipe) {
       String[] renamed = rename();
       Fields merged = Fields.merge(new Fields(lhsFields), new Fields(renamed));
-      Pipe pipe = new CoGroup(lhs, new Fields(lhsFields), rhs, new Fields(rhsFields), merged, new LeftJoin());
-      pipe = new Every(pipe, merged, new NoNullBuffer(), Fields.RESULTS);
+      Pipe pipe = new CoGroup(lhsPipe, new Fields(lhsFields), rhsPipe, new Fields(rhsFields), merged, new LeftJoin());
+      pipe = new Every(pipe, merged, new NoNullBuffer(lhsFields, rhs, rhsFields), Fields.RESULTS);
       return pipe;
     }
 
@@ -102,25 +111,36 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
       return renamed;
     }
 
-    private static class NoNullBuffer extends BaseOperation implements Buffer {
+    @SuppressWarnings("rawtypes")
+    static class NoNullBuffer extends BaseOperation implements Buffer {
 
-      private NoNullBuffer() {
+      private final String[] lhsFields;
+
+      private final String rhs;
+
+      private final String[] rhsFields;
+
+      NoNullBuffer(String[] lhsFields, String rhs, String[] rhsFields) {
         super(2, new Fields(ValidationFields.STATE_FIELD_NAME));
+        this.lhsFields = lhsFields;
+        this.rhs = rhs;
+        this.rhsFields = rhsFields;
       }
 
       @Override
+      @SuppressWarnings("unchecked")
       public void operate(FlowProcess flowProcess, BufferCall bufferCall) {
         Iterator<TupleEntry> iter = bufferCall.getArgumentsIterator();
         while(iter.hasNext()) {
-          TupleEntry e = iter.next();
-          if(e.getObject(1) == null) {
-            // TODO: report error.
-            bufferCall.getOutputCollector().add(new Tuple("null"));
+          TupleEntry tupleEntry = iter.next();
+          if(tupleEntry.getObject(1) == null) {
+            String unmatchedValue = tupleEntry.getString(0);
+            TupleState tupleState = new TupleState();
+            tupleState.reportError(CODE, unmatchedValue, Arrays.asList(lhsFields), rhs, Arrays.asList(rhsFields));
+            bufferCall.getOutputCollector().add(new Tuple(tupleState));
           }
         }
       }
     }
-
   }
-
 }
