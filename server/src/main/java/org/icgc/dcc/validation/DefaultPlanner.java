@@ -35,19 +35,17 @@ import com.google.inject.Inject;
 
 public class DefaultPlanner implements Planner {
 
-  private final List<InternalFlowPlanningVisitor> internalFlowVisitors;
-
-  private final List<ExternalFlowPlanningVisitor> externalFlowVisitors;
+  private final List<? extends PlanningVisitor<?>> planningVisitors;
 
   @Inject
   public DefaultPlanner(Set<RestrictionType> restrictionTypes) {
     checkArgument(restrictionTypes != null);
-    internalFlowVisitors = ImmutableList.of(//
+    planningVisitors = ImmutableList.of(//
+        // Internal
         new ValueTypePlanningVisitor(),//
         new UniqueFieldsPlanningVisitor(),//
-        new InternalRestrictionPlanningVisitor(restrictionTypes));
-
-    externalFlowVisitors = ImmutableList.<ExternalFlowPlanningVisitor> of(//
+        new InternalRestrictionPlanningVisitor(restrictionTypes), //
+        // External
         new RelationPlanningVisitor(),//
         new ExternalRestrictionPlanningVisitor(restrictionTypes));
   }
@@ -64,13 +62,9 @@ public class DefaultPlanner implements Planner {
             fileSchema));
       }
     }
-    for(InternalFlowPlanningVisitor visitor : internalFlowVisitors) {
+    for(PlanningVisitor<?> visitor : planningVisitors) {
       visitor.apply(plan);
     }
-    for(ExternalFlowPlanningVisitor visitor : externalFlowVisitors) {
-      visitor.apply(plan);
-    }
-
     return plan;
   }
 

@@ -3727,6 +3727,5 @@
       "other" : "sample",
       "otherFields" : [ "analyzed_sample_id" ]
     }
-  } ],
-  "report" : null
+  } ]
 }
