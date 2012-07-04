@@ -2,12 +2,12 @@ package org.icgc.dcc.validation.restriction;
 
 import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.Restriction;
-import org.icgc.dcc.validation.ValidationErrorCode;
 import org.icgc.dcc.validation.FlowType;
 import org.icgc.dcc.validation.InternalPlanElement;
 import org.icgc.dcc.validation.PlanElement;
 import org.icgc.dcc.validation.RestrictionType;
 import org.icgc.dcc.validation.RestrictionTypeSchema;
+import org.icgc.dcc.validation.ValidationErrorCode;
 import org.icgc.dcc.validation.cascading.ValidationFields;
 
 import cascading.flow.FlowProcess;
@@ -24,7 +24,7 @@ public class RequiredRestriction implements InternalPlanElement {
 
   private final String field;
 
-  private RequiredRestriction(String field) {
+  protected RequiredRestriction(String field) {
     this.field = field;
   }
 
@@ -70,9 +70,9 @@ public class RequiredRestriction implements InternalPlanElement {
   }
 
   @SuppressWarnings("rawtypes")
-  public class SpecifiedFunction extends BaseOperation implements Function {
+  public static class SpecifiedFunction extends BaseOperation implements Function {
 
-    private SpecifiedFunction() {
+    protected SpecifiedFunction() {
       super(2, Fields.ARGS);
     }
 
@@ -81,8 +81,8 @@ public class RequiredRestriction implements InternalPlanElement {
       String value = functionCall.getArguments().getString(0);
       if(value == null || value.isEmpty()) {
         Object fieldName = functionCall.getArguments().getFields().get(0);
-        ValidationFields.state(functionCall.getArguments())
-            .reportError(ValidationErrorCode.MISSING_VALUE_ERROR, value, fieldName);
+        ValidationFields.state(functionCall.getArguments()).reportError(ValidationErrorCode.MISSING_VALUE_ERROR, value,
+            fieldName);
       }
       functionCall.getOutputCollector().add(functionCall.getArguments());
     }
