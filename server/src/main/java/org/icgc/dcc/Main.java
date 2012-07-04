@@ -9,6 +9,7 @@ import org.icgc.dcc.filesystem.FileSystemModule;
 import org.icgc.dcc.http.HttpModule;
 import org.icgc.dcc.http.jersey.JerseyModule;
 import org.icgc.dcc.model.ModelModule;
+import org.icgc.dcc.service.ValidationServiceModule;
 import org.icgc.dcc.sftp.SftpModule;
 import org.icgc.dcc.shiro.ShiroModule;
 import org.icgc.dcc.web.WebModule;
@@ -27,7 +28,8 @@ public class Main {
         new ModelModule(),//
         new ShiroModule(),//
         new FileSystemModule(),//
-        new SftpModule()//
+        new SftpModule(),//
+        new ValidationServiceModule()//
         );
 
     injector.getInstance(DccRuntime.class).start();
