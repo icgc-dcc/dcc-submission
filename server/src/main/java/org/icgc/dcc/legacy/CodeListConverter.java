@@ -39,64 +39,61 @@ import com.google.common.io.Files;
  * 
  */
 public class CodeListConverter {
-	private final List<CodeList> codec = new ArrayList<CodeList>();
+  private final List<CodeList> codec = new ArrayList<CodeList>();
 
-	public void saveToJSON(String fileName) throws JsonGenerationException,
-			JsonMappingException, IOException {
-		ObjectMapper mapper = new ObjectMapper();
-		mapper.writeValue(new File(fileName), codec);
-	}
+  public void saveToJSON(String fileName) throws JsonGenerationException, JsonMappingException, IOException {
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.writerWithDefaultPrettyPrinter().writeValue(new File(fileName), codec);
+  }
 
-	public void readCodec(String folder) throws IOException {
+  public void readCodec(String folder) throws IOException {
 
-		File tsvFolder = new File(folder);
-		File[] tsvFiles = tsvFolder.listFiles(new FilenameFilter() {
+    File tsvFolder = new File(folder);
+    File[] tsvFiles = tsvFolder.listFiles(new FilenameFilter() {
 
-			@Override
-			public boolean accept(File dir, String name) {
-				return name.endsWith(".tsv");
-			}
+      @Override
+      public boolean accept(File dir, String name) {
+        return name.endsWith(".tsv");
+      }
 
-		});
+    });
 
-		for (File tsvFile : tsvFiles) {
-			this.codec.add(this.readCodeList(tsvFile));
-		}
-	}
+    for(File tsvFile : tsvFiles) {
+      this.codec.add(this.readCodeList(tsvFile));
+    }
+  }
 
-	private CodeList readCodeList(File tsvFile) throws IOException {
-		CodeList codeList = new CodeList();
-		String codeListName = FilenameUtils.removeExtension(tsvFile.getName());
-		codeList.setName(codeListName);
+  private CodeList readCodeList(File tsvFile) throws IOException {
+    CodeList codeList = new CodeList();
+    String codeListName = FilenameUtils.removeExtension(tsvFile.getName());
+    codeList.setName(codeListName);
 
-		String codeListText = Files.toString(tsvFile, Charsets.UTF_8);
+    String codeListText = Files.toString(tsvFile, Charsets.UTF_8);
 
-		Iterable<String> lines = Splitter.on('\n').trimResults()
-				.omitEmptyStrings().split(codeListText);
+    Iterable<String> lines = Splitter.on('\n').trimResults().omitEmptyStrings().split(codeListText);
 
-		List<Term> terms = new ArrayList<Term>();
-		for (String line : lines) {
-			terms.add(this.readTerm(line));
-		}
-		codeList.setTerms(terms);
+    List<Term> terms = new ArrayList<Term>();
+    for(String line : lines) {
+      terms.add(this.readTerm(line));
+    }
+    codeList.setTerms(terms);
 
-		return codeList;
-	}
+    return codeList;
+  }
 
-	private Term readTerm(String line) {
-		Term term = new Term();
+  private Term readTerm(String line) {
+    Term term = new Term();
 
-		Iterable<String> values = Splitter.on('\t').trimResults()
-				.omitEmptyStrings().split(line);
+    Iterable<String> values = Splitter.on('\t').trimResults().omitEmptyStrings().split(line);
 
-		Iterator<String> iterator = values.iterator();
+    Iterator<String> iterator = values.iterator();
 
-		String code = iterator.next();
-		String value = iterator.next();
+    String code = iterator.next();
+    String value = iterator.next();
 
-		term.setCode(code);
-		term.setValue(value);
+    term.setCode(code);
+    term.setValue(value);
 
-		return term;
-	}
+    return term;
+  }
 }
