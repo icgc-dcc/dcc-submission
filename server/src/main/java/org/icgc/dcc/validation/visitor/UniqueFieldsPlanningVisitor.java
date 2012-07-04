@@ -22,9 +22,9 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.icgc.dcc.model.dictionary.FileSchema;
-import org.icgc.dcc.validation.ValidationErrorCode;
 import org.icgc.dcc.validation.InternalFlowPlanningVisitor;
 import org.icgc.dcc.validation.InternalPlanElement;
+import org.icgc.dcc.validation.ValidationErrorCode;
 import org.icgc.dcc.validation.cascading.ValidationFields;
 
 import cascading.flow.FlowProcess;
@@ -87,17 +87,26 @@ public class UniqueFieldsPlanningVisitor extends InternalFlowPlanningVisitor {
       @Override
       @SuppressWarnings("unchecked")
       public void operate(FlowProcess flowProcess, BufferCall bufferCall) {
-        int count = 0;
+        boolean isNonUnique = false;
         Iterator<TupleEntry> i = bufferCall.getArgumentsIterator();
-        while(i.hasNext()) {
-          TupleEntry tupleEntry = i.next();
-          if(count > 0) {
-            List<String> values = fetchValues(tupleEntry);
-            ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.UNIQUE_VALUE_ERROR, values, fields);
+        if(i.hasNext()) {
+          TupleEntry firstTuple = i.next();
+          while(i.hasNext()) {
+            isNonUnique = true;
+            TupleEntry tupleEntry = i.next();
+            reportError(tupleEntry);
+            bufferCall.getOutputCollector().add(tupleEntry.getTupleCopy());
           }
-          count++;
-          bufferCall.getOutputCollector().add(tupleEntry.getTupleCopy());
+          if(isNonUnique) {
+            reportError(firstTuple);
+          }
+          bufferCall.getOutputCollector().add(firstTuple.getTupleCopy());
         }
+      }
+
+      private void reportError(TupleEntry firstTuple) {
+        List<String> values = fetchValues(firstTuple);
+        ValidationFields.state(firstTuple).reportError(ValidationErrorCode.UNIQUE_VALUE_ERROR, values, fields);
       }
 
       private List<String> fetchValues(TupleEntry tupleEntry) {
