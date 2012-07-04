@@ -22,7 +22,7 @@ import java.util.Iterator;
 
 import org.icgc.dcc.model.dictionary.FileSchema;
 import org.icgc.dcc.model.dictionary.Relation;
-import org.icgc.dcc.validation.ErrorCodeRegistry;
+import org.icgc.dcc.validation.ValidationErrorCode;
 import org.icgc.dcc.validation.ExternalFlowPlanningVisitor;
 import org.icgc.dcc.validation.ExternalPlanElement;
 import org.icgc.dcc.validation.cascading.TupleState;
@@ -46,14 +46,6 @@ import cascading.tuple.TupleEntry;
 public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
 
   private static final String NAME = "fk";
-
-  private static final int CODE = 497;
-
-  private static final String MESSAGE = "invalid value (%s) for field %s. Expected to match a value in: %s.%s";
-
-  static {
-    ErrorCodeRegistry.get().register(CODE, MESSAGE);
-  }
 
   @Override
   public void visit(Relation relation) {
@@ -136,7 +128,8 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
           if(tupleEntry.getObject(1) == null) {
             String unmatchedValue = tupleEntry.getString(0);
             TupleState tupleState = new TupleState();
-            tupleState.reportError(CODE, unmatchedValue, Arrays.asList(lhsFields), rhs, Arrays.asList(rhsFields));
+            tupleState.reportError(ValidationErrorCode.MISSING_RELATION_ERROR, unmatchedValue, Arrays.asList(lhsFields), rhs,
+                Arrays.asList(rhsFields));
             bufferCall.getOutputCollector().add(new Tuple(tupleState));
           }
         }

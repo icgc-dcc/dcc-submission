@@ -8,6 +8,8 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import org.icgc.dcc.validation.ValidationErrorCode;
+
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
@@ -23,8 +25,8 @@ public class TupleState implements Serializable {
 
   }
 
-  public void reportError(int code, @Nullable Object... parameters) {
-    checkArgument(code > 0);
+  public void reportError(ValidationErrorCode code, @Nullable Object... parameters) {
+    checkArgument(code != null);
     ensureErrors().add(new TupleError(code, parameters));
   }
 
@@ -58,16 +60,16 @@ public class TupleState implements Serializable {
    */
   public static final class TupleError {
 
-    private final int code;
+    private final ValidationErrorCode code;
 
     private final Object[] parameters;
 
-    private TupleError(int code, Object... parameters) {
+    private TupleError(ValidationErrorCode code, Object... parameters) {
       this.code = code;
       this.parameters = parameters;
     }
 
-    public int code() {
+    public ValidationErrorCode code() {
       return code;
     }
 

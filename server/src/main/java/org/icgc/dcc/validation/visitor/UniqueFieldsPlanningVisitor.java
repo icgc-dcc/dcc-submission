@@ -22,7 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.icgc.dcc.model.dictionary.FileSchema;
-import org.icgc.dcc.validation.ErrorCodeRegistry;
+import org.icgc.dcc.validation.ValidationErrorCode;
 import org.icgc.dcc.validation.InternalFlowPlanningVisitor;
 import org.icgc.dcc.validation.InternalPlanElement;
 import org.icgc.dcc.validation.cascading.ValidationFields;
@@ -45,14 +45,6 @@ import com.google.common.collect.ImmutableList;
 public class UniqueFieldsPlanningVisitor extends InternalFlowPlanningVisitor {
 
   private static final String NAME = "unique";
-
-  private static final int CODE = 498;
-
-  private static final String MESSAGE = "invalid set of values (%s) for fields %s. Expected to be unique";
-
-  static {
-    ErrorCodeRegistry.get().register(CODE, MESSAGE);
-  }
 
   @Override
   public void visit(FileSchema fileSchema) {
@@ -101,7 +93,7 @@ public class UniqueFieldsPlanningVisitor extends InternalFlowPlanningVisitor {
           TupleEntry tupleEntry = i.next();
           if(count > 0) {
             List<String> values = fetchValues(tupleEntry);
-            ValidationFields.state(tupleEntry).reportError(CODE, values, fields);
+            ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.UNIQUE_VALUE_ERROR, values, fields);
           }
           count++;
           bufferCall.getOutputCollector().add(tupleEntry.getTupleCopy());

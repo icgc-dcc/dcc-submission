@@ -25,7 +25,7 @@ import org.icgc.dcc.model.dictionary.DictionaryService;
 import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.Restriction;
 import org.icgc.dcc.model.dictionary.Term;
-import org.icgc.dcc.validation.ErrorCodeRegistry;
+import org.icgc.dcc.validation.ValidationErrorCode;
 import org.icgc.dcc.validation.FlowType;
 import org.icgc.dcc.validation.InternalPlanElement;
 import org.icgc.dcc.validation.PlanElement;
@@ -50,10 +50,6 @@ import com.google.inject.Inject;
 public class CodeListRestriction implements InternalPlanElement {
 
   private static final String NAME = "codeList";
-
-  private static final int CODE = 504;
-
-  private static final String MESSAGE = "invalid value %s for field %s. Expected code or value from CodeList %s";
 
   private static final String FIELD = "name";
 
@@ -103,10 +99,6 @@ public class CodeListRestriction implements InternalPlanElement {
     private final RestrictionTypeSchema schema = new RestrictionTypeSchema(//
         new FieldRestrictionParameter(FIELD, ParameterType.TEXT, "Name of codeList against which to check the value",
             true));
-
-    public Type() {
-      ErrorCodeRegistry.get().register(CODE, MESSAGE);
-    }
 
     @Override
     public String getType() {
@@ -158,7 +150,8 @@ public class CodeListRestriction implements InternalPlanElement {
       String value = object == null ? null : object.toString();
       if(codes.contains(value) == false && values.contains(value) == false) {
         Object fieldName = functionCall.getArguments().getFields().get(0);
-        ValidationFields.state(functionCall.getArguments()).reportError(CODE, value, fieldName, codeListName);
+        ValidationFields.state(functionCall.getArguments()).reportError(ValidationErrorCode.CODELIST_ERROR, value, fieldName,
+            codeListName);
       }
       functionCall.getOutputCollector().add(functionCall.getArguments());
     }

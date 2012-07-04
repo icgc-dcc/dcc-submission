@@ -5,7 +5,7 @@ import java.util.Set;
 
 import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.Restriction;
-import org.icgc.dcc.validation.ErrorCodeRegistry;
+import org.icgc.dcc.validation.ValidationErrorCode;
 import org.icgc.dcc.validation.FlowType;
 import org.icgc.dcc.validation.InternalPlanElement;
 import org.icgc.dcc.validation.PlanElement;
@@ -31,10 +31,6 @@ import com.google.common.collect.Iterables;
 public class DiscreteValuesRestriction implements InternalPlanElement {
 
   private static final String NAME = "in";
-
-  private static final int CODE = 505;
-
-  private static final String MESSAGE = "invalid value %s for field %s. Expected one of the following values: %s";
 
   private static final String DESCRIPTION = "list of allowable values (e.g.: 1,2,3)";
 
@@ -63,10 +59,6 @@ public class DiscreteValuesRestriction implements InternalPlanElement {
 
     private final RestrictionTypeSchema schema = new RestrictionTypeSchema(//
         new FieldRestrictionParameter(PARAM, ParameterType.TEXT, DESCRIPTION, true));
-
-    public Type() {
-      ErrorCodeRegistry.get().register(CODE, MESSAGE);
-    }
 
     @Override
     public String getType() {
@@ -113,7 +105,7 @@ public class DiscreteValuesRestriction implements InternalPlanElement {
       String value = arguments.getString(0);
       if(values.contains(value) == false) {
         Object fieldName = arguments.getFields().get(0);
-        ValidationFields.state(arguments).reportError(CODE, value, fieldName, values);
+        ValidationFields.state(arguments).reportError(ValidationErrorCode.DISCRETE_VALUES_ERROR, value, fieldName, values);
       }
       functionCall.getOutputCollector().add(arguments);
     }

@@ -2,7 +2,7 @@ package org.icgc.dcc.validation.restriction;
 
 import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.Restriction;
-import org.icgc.dcc.validation.ErrorCodeRegistry;
+import org.icgc.dcc.validation.ValidationErrorCode;
 import org.icgc.dcc.validation.FlowType;
 import org.icgc.dcc.validation.InternalPlanElement;
 import org.icgc.dcc.validation.PlanElement;
@@ -21,10 +21,6 @@ import cascading.tuple.Fields;
 public class RequiredRestriction implements InternalPlanElement {
 
   private static final String NAME = "required";// TODO: create enum for valid Restriction types?
-
-  private static final int CODE = 503;
-
-  private static final String MESSAGE = "value missing for required field: %s";
 
   private final String field;
 
@@ -45,10 +41,6 @@ public class RequiredRestriction implements InternalPlanElement {
   public static class Type implements RestrictionType {
 
     private final RestrictionTypeSchema schema = new RestrictionTypeSchema();
-
-    public Type() {
-      ErrorCodeRegistry.get().register(CODE, MESSAGE);
-    }
 
     @Override
     public String getType() {
@@ -89,7 +81,8 @@ public class RequiredRestriction implements InternalPlanElement {
       String value = functionCall.getArguments().getString(0);
       if(value == null || value.isEmpty()) {
         Object fieldName = functionCall.getArguments().getFields().get(0);
-        ValidationFields.state(functionCall.getArguments()).reportError(CODE, value, fieldName);
+        ValidationFields.state(functionCall.getArguments())
+            .reportError(ValidationErrorCode.MISSING_VALUE_ERROR, value, fieldName);
       }
       functionCall.getOutputCollector().add(functionCall.getArguments());
     }

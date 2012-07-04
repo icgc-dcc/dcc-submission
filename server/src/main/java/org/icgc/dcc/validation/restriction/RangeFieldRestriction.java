@@ -2,7 +2,7 @@ package org.icgc.dcc.validation.restriction;
 
 import org.icgc.dcc.model.dictionary.Field;
 import org.icgc.dcc.model.dictionary.Restriction;
-import org.icgc.dcc.validation.ErrorCodeRegistry;
+import org.icgc.dcc.validation.ValidationErrorCode;
 import org.icgc.dcc.validation.FlowType;
 import org.icgc.dcc.validation.InternalPlanElement;
 import org.icgc.dcc.validation.PlanElement;
@@ -25,15 +25,6 @@ import com.mongodb.DBObject;
 public class RangeFieldRestriction implements InternalPlanElement {
 
   private static final String NAME = "range";
-
-  private static final int RANGE_CODE = 501;
-
-  private static final String RANGE_MESSAGE =
-      "number %d is out of range for field %s. Expected value between %d and %d";
-
-  private static final int TYPE_CODE = 502;
-
-  private static final String TYPE_MESSAGE = "%s is not a number for field %s. Expected a number";
 
   private static final String MIN = "min";
 
@@ -66,11 +57,6 @@ public class RangeFieldRestriction implements InternalPlanElement {
     private final RestrictionTypeSchema schema = new RestrictionTypeSchema(//
         new FieldRestrictionParameter(MIN, ParameterType.NUMBER, "minimum value (inclusive)"), //
         new FieldRestrictionParameter(MAX, ParameterType.NUMBER, "maximum value (inclusive)"));
-
-    public Type() {
-      ErrorCodeRegistry.get().register(RANGE_CODE, RANGE_MESSAGE);
-      ErrorCodeRegistry.get().register(TYPE_CODE, TYPE_MESSAGE);
-    }
 
     @Override
     public String getType() {
@@ -124,11 +110,12 @@ public class RangeFieldRestriction implements InternalPlanElement {
       if(value instanceof Number) {
         Number num = (Number) value;
         if(num.longValue() < this.min.longValue() || num.longValue() > this.max.longValue()) {
-          ValidationFields.state(functionCall.getArguments()).reportError(RANGE_CODE, num.longValue(), fieldName,
-              this.min.longValue(), this.max.longValue());
+          ValidationFields.state(functionCall.getArguments()).reportError(ValidationErrorCode.OUT_OF_RANGE_ERROR, num.longValue(),
+              fieldName, this.min.longValue(), this.max.longValue());
         }
       } else {
-        ValidationFields.state(functionCall.getArguments()).reportError(TYPE_CODE, value.toString(), fieldName);
+        ValidationFields.state(functionCall.getArguments()).reportError(ValidationErrorCode.NOT_A_NUMBER_ERROR, value.toString(),
+            fieldName);
       }
       functionCall.getOutputCollector().add(functionCall.getArguments());
     }
