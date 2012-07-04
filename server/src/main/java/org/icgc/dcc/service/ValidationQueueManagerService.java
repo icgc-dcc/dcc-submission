@@ -37,7 +37,7 @@ public class ValidationQueueManagerService extends AbstractService {
   private final ReleaseService releaseService;
 
   @Inject
-  public ValidationQueueManagerService(ReleaseService releaseService) {
+  public ValidationQueueManagerService(final ReleaseService releaseService) {
     checkArgument(releaseService != null);
     this.releaseService = releaseService;
   }
