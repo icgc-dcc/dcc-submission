@@ -40,7 +40,7 @@ public class DiscreteValuesRestriction implements InternalPlanElement {
 
   private final String[] values;
 
-  private DiscreteValuesRestriction(String field, String[] values) {
+  protected DiscreteValuesRestriction(String field, String[] values) {
     this.field = field;
     this.values = values;
   }
@@ -90,11 +90,11 @@ public class DiscreteValuesRestriction implements InternalPlanElement {
   }
 
   @SuppressWarnings("rawtypes")
-  static final class InValuesFunction extends BaseOperation implements Function {
+  public static class InValuesFunction extends BaseOperation implements Function {
 
     private final Set<String> values;
 
-    private InValuesFunction(String[] values) {
+    protected InValuesFunction(String[] values) {
       super(2, Fields.ARGS);
       this.values = ImmutableSet.copyOf(values);
     }
