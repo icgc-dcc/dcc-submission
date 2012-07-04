@@ -64,7 +64,7 @@ public class DictionaryConverter {
 
   public void saveToJSON(String fileName) throws JsonGenerationException, JsonMappingException, IOException {
     ObjectMapper mapper = new ObjectMapper();
-    mapper.writeValue(new File(fileName), dictionary);
+    mapper.writerWithDefaultPrettyPrinter().writeValue(new File(fileName), dictionary);
 
     mapper.readValue(new File(fileName), Dictionary.class);
   }
