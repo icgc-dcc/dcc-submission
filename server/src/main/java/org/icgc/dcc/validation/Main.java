@@ -5,6 +5,8 @@ import java.io.IOException;
 
 import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.icgc.dcc.config.ConfigModule;
+import org.icgc.dcc.model.ModelModule;
 import org.icgc.dcc.model.dictionary.Dictionary;
 
 import cascading.cascade.Cascade;
@@ -14,6 +16,7 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.typesafe.config.ConfigFactory;
 
 public class Main {
 
@@ -37,7 +40,10 @@ public class Main {
   }
 
   private void doit() {
-    Injector injector = Guice.createInjector(new ValidationModule(root, output));
+    Injector injector = Guice.createInjector(new ValidationModule(root, output),//
+        new ConfigModule(ConfigFactory.load()),//
+        new ModelModule()//
+        );
 
     Planner planner = injector.getInstance(Planner.class);
     Plan plan = planner.plan(injector.getInstance(FileSchemaDirectory.class), dictionary);
