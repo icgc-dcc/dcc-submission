@@ -24,6 +24,9 @@ import java.util.Map;
 
 import org.icgc.dcc.model.dictionary.FileSchema;
 import org.icgc.dcc.validation.cascading.AddValidationFieldsFunction;
+import org.icgc.dcc.validation.cascading.RemoveEmptyLineFilter;
+import org.icgc.dcc.validation.cascading.RemoveHeaderFilter;
+import org.icgc.dcc.validation.cascading.StructralCheckFunction;
 import org.icgc.dcc.validation.cascading.TupleStates;
 import org.icgc.dcc.validation.cascading.ValidationFields;
 import org.slf4j.Logger;
@@ -60,6 +63,9 @@ class DefaultInternalFlowPlanner implements InternalFlowPlanner {
     this.fileSchema = fileSchema;
     this.validTail = this.head = new Pipe(fileSchema.getName());
 
+    this.validTail = applyHeaderFilterPipes(this.validTail);
+    this.validTail = applyEmptyLineFilterPipes(this.validTail);
+    this.validTail = applyStructuralCheck(this.validTail);
     this.validTail = applySystemPipes(this.validTail);
   }
 
@@ -106,8 +112,20 @@ class DefaultInternalFlowPlanner implements InternalFlowPlanner {
     return strategy.getFlowConnector().connect(def);
   }
 
+  private Pipe applyStructuralCheck(Pipe pipe) {
+    return new Each(pipe, new StructralCheckFunction(), Fields.ALL);
+  }
+
   private Pipe applySystemPipes(Pipe pipe) {
     return new Each(pipe, new AddValidationFieldsFunction(), Fields.ALL);
+  }
+
+  private Pipe applyHeaderFilterPipes(Pipe pipe) {
+    return new Each(pipe, new RemoveHeaderFilter());
+  }
+
+  private Pipe applyEmptyLineFilterPipes(Pipe pipe) {
+    return new Each(pipe, new RemoveEmptyLineFilter());
   }
 
   private Pipe applyFilter(Pipe pipe) {

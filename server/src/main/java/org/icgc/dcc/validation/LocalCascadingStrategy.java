@@ -19,17 +19,20 @@ package org.icgc.dcc.validation;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.util.Iterator;
 
 import org.icgc.dcc.model.dictionary.FileSchema;
 
 import cascading.flow.FlowConnector;
 import cascading.flow.local.LocalFlowConnector;
 import cascading.scheme.local.TextDelimited;
+import cascading.scheme.local.TextLine;
 import cascading.tap.Tap;
 import cascading.tap.local.FileTap;
 import cascading.tuple.Fields;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
 
 /**
  * 
@@ -52,7 +55,7 @@ public class LocalCascadingStrategy implements CascadingStrategy {
 
   @Override
   public Tap<?, ?, ?> getSourceTap(FileSchema schema) {
-    return tap(file(schema));
+    return tapSource(file(schema));
   }
 
   @Override
@@ -75,6 +78,10 @@ public class LocalCascadingStrategy implements CascadingStrategy {
     return new FileTap(new TextDelimited(true, "\t"), file.getAbsolutePath());
   }
 
+  private Tap<?, ?, ?> tapSource(File file) {
+    return new FileTap(new TextLine(), file.getAbsolutePath());
+  }
+
   private File file(final FileSchema schema) {
     File[] files = source.listFiles(new FileFilter() {
 
@@ -85,5 +92,18 @@ public class LocalCascadingStrategy implements CascadingStrategy {
       }
     });
     return files[0];
+  }
+
+  private Fields parseFileHeader(String firstLine) {
+    Fields fields = new Fields();
+
+    Iterable<String> header = Splitter.on('\t').split(firstLine);
+    Iterator<String> iterator = header.iterator();
+    while(iterator.hasNext()) {
+      Fields field = new Fields(iterator.next());
+      fields.append(field);
+    }
+
+    return fields;
   }
 }
