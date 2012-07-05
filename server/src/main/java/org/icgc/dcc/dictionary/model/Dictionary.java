@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.dictionary.model;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -39,7 +38,7 @@ import com.google.common.collect.Iterables;
  * Describes a dictionary that contains {@code FileSchema}ta and that may be used by some releases
  */
 @Entity
-public class Dictionary extends BaseEntity implements HasName, DictionaryElement, Serializable {
+public class Dictionary extends BaseEntity implements HasName, DictionaryElement {
 
   @Indexed(unique = true)
   private String version;
