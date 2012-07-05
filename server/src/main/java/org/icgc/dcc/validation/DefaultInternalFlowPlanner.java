@@ -127,7 +127,7 @@ class DefaultInternalFlowPlanner implements InternalFlowPlanner {
 
   private Pipe applyStructuralCheck(Pipe pipe) {
     this.structralCheck = new StructralCheckFunction();
-    return new Each(pipe, this.structralCheck, Fields.RESULTS.append(new Fields("num")));
+    return new Each(pipe, this.structralCheck, Fields.RESULTS);
   }
 
   private Pipe applySystemPipes(Pipe pipe) {
