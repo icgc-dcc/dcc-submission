@@ -67,8 +67,8 @@ public class Plan {
 
   public Cascade connect(CascadingStrategy cascadingStrategy) {
     CascadeDef cascade = new CascadeDef();
-    for(FileSchemaFlowPlanner plan : Iterables.concat(internalPlanners.values(), externalPlanners.values())) {
-      Flow<?> flow = plan.connect(cascadingStrategy);
+    for(FileSchemaFlowPlanner planner : Iterables.concat(internalPlanners.values(), externalPlanners.values())) {
+      Flow<?> flow = planner.connect(cascadingStrategy);
       if(flow != null) {
         cascade.addFlow(flow);
       }

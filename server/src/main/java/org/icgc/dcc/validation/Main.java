@@ -2,12 +2,15 @@ package org.icgc.dcc.validation;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.config.ConfigModule;
 import org.icgc.dcc.core.morphia.MorphiaModule;
 import org.icgc.dcc.dictionary.model.Dictionary;
+import org.icgc.dcc.service.ValidationQueueManagerService;
+import org.icgc.dcc.service.ValidationServiceModule;
 
 import cascading.cascade.Cascade;
 import cascading.flow.Flow;
@@ -39,21 +42,33 @@ public class Main {
     new Main(args).doit();
   }
 
+  @SuppressWarnings("rawtypes")
   private void doit() {
     Injector injector = Guice.createInjector(new ValidationModule(root, output),//
         new ConfigModule(ConfigFactory.load()),//
-        new MorphiaModule()//
+        new MorphiaModule(),//
+        new ValidationServiceModule()//
         );
 
     Planner planner = injector.getInstance(Planner.class);
     Plan plan = planner.plan(injector.getInstance(FileSchemaDirectory.class), dictionary);
-    Cascade c = plan.connect(injector.getInstance(CascadingStrategy.class));
-    c.writeDOT(new File(output, "cascade.dot").getAbsolutePath());
-    for(Flow<?> flow : c.getFlows()) {
+
+    Cascade cascade = plan.connect(injector.getInstance(CascadingStrategy.class));
+    cascade.writeDOT(new File(output, "cascade.dot").getAbsolutePath());
+
+    List<Flow> flows = cascade.getFlows();
+    for(Flow flow : flows) {
       flow.writeDOT(new File(output, flow.getName() + ".dot").getAbsolutePath());
     }
-    if(c.getFlows().size() > 0) {
-      c.start();
+
+    ValidationCallback callback = injector.getInstance(ValidationQueueManagerService.class);
+    for(Flow flow : flows) {
+      String projectKey = plan.toString();// TODO: actually get project key
+      ValidationFlowListener listener = new ValidationFlowListener(callback, flows, projectKey);
+      flow.addListener(listener);
+    }
+    if(flows.size() > 0) {
+      cascade.start();
     }
   }
 }

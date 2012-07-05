@@ -21,6 +21,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import org.icgc.dcc.release.NextRelease;
 import org.icgc.dcc.release.ReleaseService;
+import org.icgc.dcc.release.model.Submission;
+import org.icgc.dcc.validation.ValidationCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +34,7 @@ import com.google.inject.Inject;
  * - launches validation for queue submissions<br>
  * - updates submission states upon termination of the validation process
  */
-public class ValidationQueueManagerService extends AbstractService {
+public class ValidationQueueManagerService extends AbstractService implements ValidationCallback {
 
   private static final Logger log = LoggerFactory.getLogger(ValidationQueueManagerService.class);
 
@@ -47,14 +49,21 @@ public class ValidationQueueManagerService extends AbstractService {
   @Override
   protected void doStart() {
     notifyStarted();
-    // TODO: dummy for now
-    NextRelease nextRelease = releaseService.getNextRelease();
-    log.info(nextRelease.getRelease().getName());
   }
 
   @Override
   protected void doStop() {
     notifyStopped();
+  }
+
+  @Override
+  public void handleSuccessfulValidation(String projectKey) {
+    NextRelease nextRelease = releaseService.getNextRelease();
+    log.info(">>>" + nextRelease.getRelease().getName());
+
+    String releaseName = nextRelease.getRelease().getName();
+    Submission submission = releaseService.getSubmission(releaseName, projectKey);
+    nextRelease.validate(submission);
   }
 
 }
