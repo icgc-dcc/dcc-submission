@@ -31,10 +31,9 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.icgc.dcc.model.ResponseTimestamper;
-import org.icgc.dcc.model.dictionary.CodeList;
-import org.icgc.dcc.model.dictionary.DictionaryService;
-import org.icgc.dcc.model.dictionary.Term;
+import org.icgc.dcc.dictionary.DictionaryService;
+import org.icgc.dcc.dictionary.model.CodeList;
+import org.icgc.dcc.dictionary.model.Term;
 
 import com.google.inject.Inject;
 

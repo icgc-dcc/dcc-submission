@@ -6,13 +6,13 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.icgc.dcc.model.Project;
-import org.icgc.dcc.model.Release;
-import org.icgc.dcc.model.Submission;
-import org.icgc.dcc.model.SubmissionState;
-import org.icgc.dcc.model.User;
-import org.icgc.dcc.service.ProjectService;
-import org.icgc.dcc.service.ReleaseService;
+import org.icgc.dcc.core.model.Project;
+import org.icgc.dcc.core.model.User;
+import org.icgc.dcc.release.ProjectService;
+import org.icgc.dcc.release.ReleaseService;
+import org.icgc.dcc.release.model.Release;
+import org.icgc.dcc.release.model.Submission;
+import org.icgc.dcc.release.model.SubmissionState;
 import org.junit.Before;
 
 import com.typesafe.config.Config;

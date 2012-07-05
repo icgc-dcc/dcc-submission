@@ -8,9 +8,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.icgc.dcc.model.dictionary.CodeList;
-import org.icgc.dcc.model.dictionary.DictionaryService;
-import org.icgc.dcc.model.dictionary.Term;
+import org.icgc.dcc.dictionary.DictionaryService;
+import org.icgc.dcc.dictionary.model.CodeList;
+import org.icgc.dcc.dictionary.model.Term;
 import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.restriction.CodeListRestriction.InCodeListFunction;
 import org.junit.Test;

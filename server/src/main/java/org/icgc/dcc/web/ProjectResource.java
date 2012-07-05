@@ -16,10 +16,9 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
 
-import org.icgc.dcc.model.Project;
-import org.icgc.dcc.model.QProject;
-import org.icgc.dcc.model.ResponseTimestamper;
-import org.icgc.dcc.service.ProjectService;
+import org.icgc.dcc.core.model.Project;
+import org.icgc.dcc.core.model.QProject;
+import org.icgc.dcc.release.ProjectService;
 
 import com.google.code.morphia.query.Query;
 import com.google.code.morphia.query.UpdateOperations;

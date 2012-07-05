@@ -13,11 +13,10 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.icgc.dcc.model.QRelease;
-import org.icgc.dcc.model.Release;
-import org.icgc.dcc.model.ResponseTimestamper;
-import org.icgc.dcc.model.Submission;
-import org.icgc.dcc.service.ReleaseService;
+import org.icgc.dcc.release.ReleaseService;
+import org.icgc.dcc.release.model.QRelease;
+import org.icgc.dcc.release.model.Release;
+import org.icgc.dcc.release.model.Submission;
 
 import com.google.inject.Inject;
 

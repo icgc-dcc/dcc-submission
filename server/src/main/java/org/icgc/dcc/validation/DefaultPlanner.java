@@ -22,8 +22,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.util.List;
 import java.util.Set;
 
-import org.icgc.dcc.model.dictionary.Dictionary;
-import org.icgc.dcc.model.dictionary.FileSchema;
+import org.icgc.dcc.dictionary.model.Dictionary;
+import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.validation.visitor.ExternalRestrictionPlanningVisitor;
 import org.icgc.dcc.validation.visitor.InternalRestrictionPlanningVisitor;
 import org.icgc.dcc.validation.visitor.RelationPlanningVisitor;

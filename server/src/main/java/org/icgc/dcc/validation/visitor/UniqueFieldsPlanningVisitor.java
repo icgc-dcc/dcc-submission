@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.icgc.dcc.model.dictionary.FileSchema;
+import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.validation.InternalFlowPlanningVisitor;
 import org.icgc.dcc.validation.InternalPlanElement;
 import org.icgc.dcc.validation.ValidationErrorCode;

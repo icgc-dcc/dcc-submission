@@ -19,7 +19,7 @@ package org.icgc.dcc.validation.visitor;
 
 import java.util.Set;
 
-import org.icgc.dcc.model.dictionary.Restriction;
+import org.icgc.dcc.dictionary.model.Restriction;
 import org.icgc.dcc.validation.ExternalFlowPlanningVisitor;
 import org.icgc.dcc.validation.ExternalPlanElement;
 import org.icgc.dcc.validation.FlowType;

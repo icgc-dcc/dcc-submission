@@ -20,7 +20,7 @@ package org.icgc.dcc.legacy;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.icgc.dcc.model.dictionary.ValueType;
+import org.icgc.dcc.dictionary.model.ValueType;
 
 /**
  * 

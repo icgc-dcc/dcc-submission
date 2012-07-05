@@ -15,10 +15,9 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
 
-import org.icgc.dcc.model.ResponseTimestamper;
-import org.icgc.dcc.model.dictionary.Dictionary;
-import org.icgc.dcc.model.dictionary.DictionaryService;
-import org.icgc.dcc.model.dictionary.DictionaryState;
+import org.icgc.dcc.dictionary.DictionaryService;
+import org.icgc.dcc.dictionary.model.Dictionary;
+import org.icgc.dcc.dictionary.model.DictionaryState;
 
 import com.google.inject.Inject;
 

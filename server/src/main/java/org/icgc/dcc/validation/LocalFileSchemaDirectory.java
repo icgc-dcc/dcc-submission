@@ -22,7 +22,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.io.File;
 import java.io.FileFilter;
 
-import org.icgc.dcc.model.dictionary.FileSchema;
+import org.icgc.dcc.dictionary.model.FileSchema;
 
 public class LocalFileSchemaDirectory implements FileSchemaDirectory {
 

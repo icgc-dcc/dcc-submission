@@ -1,12 +1,15 @@
 package org.icgc.dcc.model;
 
-import org.icgc.dcc.model.dictionary.CodeList;
-import org.icgc.dcc.model.dictionary.Dictionary;
-import org.icgc.dcc.model.dictionary.DictionaryService;
-import org.icgc.dcc.model.dictionary.visitor.DictionaryCloneVisitor;
-import org.icgc.dcc.service.ProjectService;
-import org.icgc.dcc.service.ReleaseService;
-import org.icgc.dcc.service.UserService;
+import org.icgc.dcc.core.UserService;
+import org.icgc.dcc.core.model.Project;
+import org.icgc.dcc.core.model.User;
+import org.icgc.dcc.dictionary.DictionaryService;
+import org.icgc.dcc.dictionary.model.CodeList;
+import org.icgc.dcc.dictionary.model.Dictionary;
+import org.icgc.dcc.dictionary.visitor.DictionaryCloneVisitor;
+import org.icgc.dcc.release.ProjectService;
+import org.icgc.dcc.release.ReleaseService;
+import org.icgc.dcc.release.model.Release;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
@@ -20,6 +23,10 @@ import com.mongodb.Mongo;
 import com.mongodb.MongoURI;
 import com.typesafe.config.Config;
 
+/**
+ * TODO: refactor into MorphiaModule, DictionaryModule and ReleaseModule
+ */
+@Deprecated
 public class ModelModule extends AbstractModule {
 
   @Override

@@ -1,7 +1,7 @@
 package org.icgc.dcc.validation;
 
-import org.icgc.dcc.model.dictionary.Field;
-import org.icgc.dcc.model.dictionary.Restriction;
+import org.icgc.dcc.dictionary.model.Field;
+import org.icgc.dcc.dictionary.model.Restriction;
 
 public interface RestrictionType {
 

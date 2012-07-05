@@ -31,10 +31,10 @@ import org.apache.sshd.server.PasswordAuthenticator;
 import org.apache.sshd.server.keyprovider.PEMGeneratorHostKeyProvider;
 import org.apache.sshd.server.session.ServerSession;
 import org.apache.sshd.server.sftp.SftpSubsystem;
+import org.icgc.dcc.core.UserService;
 import org.icgc.dcc.filesystem.DccFileSystem;
+import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.security.UsernamePasswordAuthenticator;
-import org.icgc.dcc.service.ReleaseService;
-import org.icgc.dcc.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -6,14 +6,14 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.icgc.dcc.core.model.Project;
+import org.icgc.dcc.core.model.User;
 import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
-import org.icgc.dcc.model.Project;
-import org.icgc.dcc.model.Release;
-import org.icgc.dcc.model.ReleaseState;
-import org.icgc.dcc.model.Submission;
-import org.icgc.dcc.model.User;
-import org.icgc.dcc.service.ProjectService;
-import org.icgc.dcc.service.ReleaseService;
+import org.icgc.dcc.release.ProjectService;
+import org.icgc.dcc.release.ReleaseService;
+import org.icgc.dcc.release.model.Release;
+import org.icgc.dcc.release.model.ReleaseState;
+import org.icgc.dcc.release.model.Submission;
 
 public class ReleaseFileSystem {
 

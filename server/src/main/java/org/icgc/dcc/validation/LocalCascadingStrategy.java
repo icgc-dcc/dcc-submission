@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.util.Iterator;
 
 import org.apache.commons.io.FileUtils;
-import org.icgc.dcc.model.dictionary.FileSchema;
+import org.icgc.dcc.dictionary.model.FileSchema;
 
 import cascading.flow.FlowConnector;
 import cascading.flow.local.LocalFlowConnector;

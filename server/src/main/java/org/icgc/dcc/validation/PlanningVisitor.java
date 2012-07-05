@@ -19,9 +19,9 @@ package org.icgc.dcc.validation;
 
 import java.util.List;
 
-import org.icgc.dcc.model.dictionary.Field;
-import org.icgc.dcc.model.dictionary.FileSchema;
-import org.icgc.dcc.model.dictionary.visitor.BaseDictionaryVisitor;
+import org.icgc.dcc.dictionary.model.Field;
+import org.icgc.dcc.dictionary.model.FileSchema;
+import org.icgc.dcc.dictionary.visitor.BaseDictionaryVisitor;
 
 import com.google.common.collect.Lists;
 

@@ -19,6 +19,8 @@ package org.icgc.dcc.service;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import org.icgc.dcc.release.NextRelease;
+import org.icgc.dcc.release.ReleaseService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

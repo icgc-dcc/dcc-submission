@@ -25,8 +25,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.icgc.dcc.model.dictionary.Field;
-import org.icgc.dcc.model.dictionary.FileSchema;
+import org.icgc.dcc.dictionary.model.Field;
+import org.icgc.dcc.dictionary.model.FileSchema;
+import org.icgc.dcc.dictionary.visitor.DictionaryIndexException;
+import org.icgc.dcc.dictionary.visitor.DictionaryIndexVisitor;
 import org.junit.Before;
 import org.junit.Test;
 

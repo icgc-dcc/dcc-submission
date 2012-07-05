@@ -22,13 +22,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import org.apache.hadoop.fs.Path;
 import org.apache.sshd.server.FileSystemView;
 import org.apache.sshd.server.SshFile;
+import org.icgc.dcc.core.UserService;
+import org.icgc.dcc.core.model.User;
 import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.filesystem.DccFileSystemException;
 import org.icgc.dcc.filesystem.ReleaseFileSystem;
-import org.icgc.dcc.model.User;
+import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.security.UsernamePasswordAuthenticator;
-import org.icgc.dcc.service.ReleaseService;
-import org.icgc.dcc.service.UserService;
 
 /**
  * Bridge between the SSHd SftpModule and the DCC file system

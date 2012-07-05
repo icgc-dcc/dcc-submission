@@ -22,7 +22,12 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.icgc.dcc.model.dictionary.visitor.DictionaryCloneVisitor;
+import org.icgc.dcc.dictionary.DictionaryService;
+import org.icgc.dcc.dictionary.DictionaryServiceException;
+import org.icgc.dcc.dictionary.model.CodeList;
+import org.icgc.dcc.dictionary.model.Dictionary;
+import org.icgc.dcc.dictionary.model.Term;
+import org.icgc.dcc.dictionary.visitor.DictionaryCloneVisitor;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;

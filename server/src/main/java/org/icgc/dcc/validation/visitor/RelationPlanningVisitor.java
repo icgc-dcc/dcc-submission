@@ -20,8 +20,8 @@ package org.icgc.dcc.validation.visitor;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import org.icgc.dcc.model.dictionary.FileSchema;
-import org.icgc.dcc.model.dictionary.Relation;
+import org.icgc.dcc.dictionary.model.FileSchema;
+import org.icgc.dcc.dictionary.model.Relation;
 import org.icgc.dcc.validation.ValidationErrorCode;
 import org.icgc.dcc.validation.ExternalFlowPlanningVisitor;
 import org.icgc.dcc.validation.ExternalPlanElement;

@@ -19,7 +19,7 @@ package org.icgc.dcc.validation.visitor;
 
 import java.util.Iterator;
 
-import org.icgc.dcc.model.dictionary.Field;
+import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.validation.InternalFlowPlanningVisitor;
 import org.icgc.dcc.validation.InternalPlanElement;
 

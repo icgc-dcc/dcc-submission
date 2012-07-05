@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.validation;
 
-import org.icgc.dcc.model.dictionary.Dictionary;
+import org.icgc.dcc.dictionary.model.Dictionary;
 
 public interface Planner {
 

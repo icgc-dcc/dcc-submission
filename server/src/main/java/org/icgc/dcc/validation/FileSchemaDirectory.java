@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.validation;
 
-import org.icgc.dcc.model.dictionary.FileSchema;
+import org.icgc.dcc.dictionary.model.FileSchema;
 
 /**
  * A directory that contains files associated with {@code FileSchema}. Each {@code FileSchema} is expected to have at

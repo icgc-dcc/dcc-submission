@@ -19,7 +19,7 @@ package org.icgc.dcc.validation;
 
 import java.io.IOException;
 
-import org.icgc.dcc.model.dictionary.FileSchema;
+import org.icgc.dcc.dictionary.model.FileSchema;
 
 import cascading.flow.FlowConnector;
 import cascading.tap.Tap;

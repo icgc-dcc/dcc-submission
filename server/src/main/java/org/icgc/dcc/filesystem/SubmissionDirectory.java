@@ -7,12 +7,12 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
-import org.icgc.dcc.model.Project;
-import org.icgc.dcc.model.Release;
-import org.icgc.dcc.model.ReleaseState;
-import org.icgc.dcc.model.Submission;
-import org.icgc.dcc.model.SubmissionState;
+import org.icgc.dcc.release.model.Release;
+import org.icgc.dcc.release.model.ReleaseState;
+import org.icgc.dcc.release.model.Submission;
+import org.icgc.dcc.release.model.SubmissionState;
 
 public class SubmissionDirectory {
 

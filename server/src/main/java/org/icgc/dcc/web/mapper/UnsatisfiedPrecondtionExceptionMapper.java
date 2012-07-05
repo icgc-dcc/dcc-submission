@@ -21,7 +21,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
-import org.icgc.dcc.model.UnsatisfiedPreconditionException;
+import org.icgc.dcc.web.UnsatisfiedPreconditionException;
 
 @Provider
 public class UnsatisfiedPrecondtionExceptionMapper implements ExceptionMapper<UnsatisfiedPreconditionException> {

@@ -3,8 +3,8 @@ package org.icgc.dcc.validation.restriction;
 import java.util.Arrays;
 import java.util.Set;
 
-import org.icgc.dcc.model.dictionary.Field;
-import org.icgc.dcc.model.dictionary.Restriction;
+import org.icgc.dcc.dictionary.model.Field;
+import org.icgc.dcc.dictionary.model.Restriction;
 import org.icgc.dcc.validation.ValidationErrorCode;
 import org.icgc.dcc.validation.FlowType;
 import org.icgc.dcc.validation.InternalPlanElement;

@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 
-import org.icgc.dcc.model.dictionary.FileSchema;
+import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.validation.cascading.AddValidationFieldsFunction;
 import org.icgc.dcc.validation.cascading.RemoveEmptyLineFilter;
 import org.icgc.dcc.validation.cascading.RemoveHeaderFilter;

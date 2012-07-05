@@ -19,7 +19,7 @@ package org.icgc.dcc.validation;
 
 import java.util.Iterator;
 
-import org.icgc.dcc.model.dictionary.ValueType;
+import org.icgc.dcc.dictionary.model.ValueType;
 import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.cascading.ValidationFields;
 import org.icgc.dcc.validation.visitor.ValueTypePlanningVisitor.ValueTypePlanElement.ValueTypeFunction;

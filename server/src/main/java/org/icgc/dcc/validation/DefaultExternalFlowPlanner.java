@@ -22,7 +22,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.util.List;
 import java.util.Map;
 
-import org.icgc.dcc.model.dictionary.FileSchema;
+import org.icgc.dcc.dictionary.model.FileSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

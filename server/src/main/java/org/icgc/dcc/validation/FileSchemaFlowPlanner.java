@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.validation;
 
-import org.icgc.dcc.model.dictionary.FileSchema;
+import org.icgc.dcc.dictionary.model.FileSchema;
 
 import cascading.flow.Flow;
 

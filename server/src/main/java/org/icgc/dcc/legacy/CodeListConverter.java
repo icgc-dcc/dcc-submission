@@ -28,8 +28,8 @@ import org.apache.commons.io.FilenameUtils;
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.icgc.dcc.model.dictionary.CodeList;
-import org.icgc.dcc.model.dictionary.Term;
+import org.icgc.dcc.dictionary.model.CodeList;
+import org.icgc.dcc.dictionary.model.Term;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Splitter;

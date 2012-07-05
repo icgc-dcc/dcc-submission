@@ -20,7 +20,7 @@ package org.icgc.dcc.validation;
 import java.util.List;
 import java.util.Map;
 
-import org.icgc.dcc.model.dictionary.FileSchema;
+import org.icgc.dcc.dictionary.model.FileSchema;
 
 import cascading.cascade.Cascade;
 import cascading.cascade.CascadeConnector;

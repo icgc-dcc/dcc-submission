@@ -24,9 +24,9 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.icgc.dcc.model.User;
+import org.icgc.dcc.core.UserService;
+import org.icgc.dcc.core.model.User;
 import org.icgc.dcc.security.UsernamePasswordAuthenticator;
-import org.icgc.dcc.service.UserService;
 
 import com.google.inject.Inject;
 
