@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.validation.cascading;
 
+import java.util.ArrayList;
+
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
 import cascading.operation.Function;
@@ -25,6 +27,9 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
+import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
+
 /**
  * 
  */
@@ -32,13 +37,25 @@ public class StructralCheckFunction extends BaseOperation implements Function {
 
   @Override
   public void operate(FlowProcess flowProcess, FunctionCall functionCall) {
-    // TODO Auto-generated method stub
     TupleEntry arguments = functionCall.getArguments();
     Fields header = arguments.getFields();
     Fields schemaHeader = this.fieldDeclaration;
-    for(int i = 0; i < header.size() - arguments.size(); i++) {
-      functionCall.getOutputCollector().add(new Tuple((Object) null));
-    }
+
+    // Fields declared = new Fields("offset");
+    // declared = declared.append(schemaHeader);
+    // functionCall.getOutputCollector().setFields(declared);
+    functionCall.getOutputCollector().setFields(schemaHeader);
+
+    ArrayList<String> tupleValue = new ArrayList<String>();
+    String offset = arguments.getString("num");
+    tupleValue.add(offset);
+
+    String line = arguments.getString("line");
+    Iterable<String> splitter = Splitter.on('\t').split(line);
+    tupleValue.addAll(Lists.newArrayList(splitter));
+
+    functionCall.getOutputCollector().add(new Tuple(tupleValue.toArray(new Object[schemaHeader.size()])));
+
   }
 
   public void setFieldDeclaration(Fields header) {

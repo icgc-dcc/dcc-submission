@@ -20,7 +20,6 @@ package org.icgc.dcc.validation;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.util.Iterator;
 
 import org.icgc.dcc.dictionary.model.FileSchema;
 
@@ -35,6 +34,7 @@ import cascading.tuple.Fields;
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
+import com.google.common.collect.Iterables;
 import com.google.common.io.Files;
 
 /**
@@ -99,17 +99,11 @@ public class LocalCascadingStrategy implements CascadingStrategy {
 
   @Override
   public Fields getFileHeader(FileSchema schema) throws IOException {
-    Fields fields = new Fields();
 
     String firstLine = Files.readFirstLine(file(schema), Charsets.UTF_8);
 
     Iterable<String> header = Splitter.on('\t').split(firstLine);
-    Iterator<String> iterator = header.iterator();
-    while(iterator.hasNext()) {
-      Fields field = new Fields(iterator.next());
-      fields.append(field);
-    }
 
-    return fields;
+    return new Fields(Iterables.toArray(header, String.class));
   }
 }
