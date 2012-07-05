@@ -1,15 +1,4 @@
-package org.icgc.dcc.model;
-
-import org.icgc.dcc.core.ProjectService;
-import org.icgc.dcc.core.UserService;
-import org.icgc.dcc.core.model.Project;
-import org.icgc.dcc.core.model.User;
-import org.icgc.dcc.dictionary.DictionaryService;
-import org.icgc.dcc.dictionary.model.CodeList;
-import org.icgc.dcc.dictionary.model.Dictionary;
-import org.icgc.dcc.dictionary.visitor.DictionaryCloneVisitor;
-import org.icgc.dcc.release.ReleaseService;
-import org.icgc.dcc.release.model.Release;
+package org.icgc.dcc.core.morphia;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
@@ -23,17 +12,15 @@ import com.mongodb.Mongo;
 import com.mongodb.MongoURI;
 import com.typesafe.config.Config;
 
-/**
- * TODO: refactor into MorphiaModule, DictionaryModule and ReleaseModule
- */
-@Deprecated
-public class ModelModule extends AbstractModule {
+public class MorphiaModule extends AbstractModule {
 
   @Override
   protected void configure() {
     // Use SLF4J with Morphia
     MorphiaLoggerFactory.reset();
     MorphiaLoggerFactory.registerLogger(SLF4JLogrImplFactory.class);
+
+    bind(Morphia.class).toInstance(new Morphia());
 
     bind(Mongo.class).toProvider(new Provider<Mongo>() {
 
@@ -69,21 +56,6 @@ public class ModelModule extends AbstractModule {
         return datastore;
       }
     }).in(Singleton.class);
-
-    bindModelClasses(Project.class, Release.class, User.class, Dictionary.class, CodeList.class);
-    bind(ProjectService.class);
-    bind(ReleaseService.class);
-    bind(UserService.class);
-    bind(DictionaryCloneVisitor.class);// TODO: here?
-    bind(DictionaryService.class);
-  }
-
-  private void bindModelClasses(final Class<?>... models) {
-    Morphia morphia = new Morphia();
-    for(Class<?> model : models) {
-      morphia.map(model);
-    }
-    bind(Morphia.class).toInstance(morphia);
   }
 
 }

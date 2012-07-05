@@ -1,5 +1,7 @@
 package org.icgc.dcc.core;
 
+import org.icgc.dcc.core.model.BaseEntity;
+
 import com.google.common.util.concurrent.Service;
 import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
@@ -15,6 +17,9 @@ public abstract class AbstractDccModule extends AbstractModule {
     bind(serviceClass).in(Singleton.class);
     Multibinder<Service> servicesBinder = Multibinder.newSetBinder(binder(), Service.class);
     servicesBinder.addBinding().to(serviceClass);
+  }
+
+  protected void bindModelClasses(Class<? extends BaseEntity>... entities) {
   }
 
 }

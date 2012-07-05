@@ -25,6 +25,7 @@ import org.icgc.dcc.core.CoreModule;
 import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.core.UserService;
 import org.icgc.dcc.core.model.BaseEntity;
+import org.icgc.dcc.core.morphia.MorphiaModule;
 import org.icgc.dcc.dictionary.DictionaryService;
 import org.icgc.dcc.filesystem.DccFileSystemException;
 import org.icgc.dcc.filesystem.FileSystemModule;
@@ -32,7 +33,6 @@ import org.icgc.dcc.filesystem.GuiceJUnitRunner;
 import org.icgc.dcc.filesystem.GuiceJUnitRunner.GuiceModules;
 import org.icgc.dcc.http.HttpModule;
 import org.icgc.dcc.http.jersey.JerseyModule;
-import org.icgc.dcc.model.ModelModule;
 import org.icgc.dcc.release.ReleaseService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -50,7 +50,7 @@ import com.typesafe.config.Config;
 @RunWith(GuiceJUnitRunner.class)
 @GuiceModules({ ConfigModule.class, CoreModule.class,//
 HttpModule.class, JerseyModule.class,// TODO: find out why those two seem necessary
-ModelModule.class, FileSystemModule.class })
+MorphiaModule.class, FileSystemModule.class })
 public class DataGeneratorTest {
 
   private FileSystem fileSystem;
@@ -90,7 +90,7 @@ public class DataGeneratorTest {
     mongo.getDB("icgc").getCollection("User").drop();
     mongo.getDB("icgc").getCollection("CodeList").drop();
 
-    this.dictService = new DictionaryService(morphia, datastore, null);
+    this.dictService = new DictionaryService(morphia, datastore);
     this.projectService = new ProjectService(morphia, datastore);
     this.releaseService = new ReleaseService(morphia, datastore);
     this.userService = new UserService(morphia, datastore);

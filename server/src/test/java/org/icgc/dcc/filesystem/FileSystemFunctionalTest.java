@@ -10,11 +10,11 @@ import junit.framework.Assert;
 import org.apache.hadoop.fs.FileSystem;
 import org.icgc.dcc.config.ConfigModule;
 import org.icgc.dcc.core.CoreModule;
+import org.icgc.dcc.core.morphia.MorphiaModule;
 import org.icgc.dcc.filesystem.GuiceJUnitRunner.GuiceModules;
 import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
 import org.icgc.dcc.http.HttpModule;
 import org.icgc.dcc.http.jersey.JerseyModule;
-import org.icgc.dcc.model.ModelModule;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,7 +28,7 @@ import com.google.inject.Inject;
 @RunWith(GuiceJUnitRunner.class)
 @GuiceModules({ ConfigModule.class, CoreModule.class,//
 HttpModule.class, JerseyModule.class,// TODO: find out why those two seem necessary
-ModelModule.class, FileSystemModule.class })
+MorphiaModule.class, FileSystemModule.class })
 public class FileSystemFunctionalTest extends FileSystemTest {
 
   private static final Logger log = LoggerFactory.getLogger(FileSystemFunctionalTest.class);

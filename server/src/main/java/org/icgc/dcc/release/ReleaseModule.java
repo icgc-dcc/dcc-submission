@@ -15,17 +15,17 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.dictionary;
+package org.icgc.dcc.release;
 
 import org.icgc.dcc.core.AbstractDccModule;
 
 import com.google.inject.Singleton;
 
-public class DictionaryModule extends AbstractDccModule {
+public class ReleaseModule extends AbstractDccModule {
 
   @Override
   protected void configure() {
-    bind(DictionaryService.class).in(Singleton.class);
+    bind(ReleaseService.class).in(Singleton.class);
   }
 
 }

@@ -5,10 +5,12 @@ import java.io.IOException;
 import org.icgc.dcc.config.ConfigModule;
 import org.icgc.dcc.core.CoreModule;
 import org.icgc.dcc.core.DccRuntime;
+import org.icgc.dcc.core.morphia.MorphiaModule;
+import org.icgc.dcc.dictionary.DictionaryModule;
 import org.icgc.dcc.filesystem.FileSystemModule;
 import org.icgc.dcc.http.HttpModule;
 import org.icgc.dcc.http.jersey.JerseyModule;
-import org.icgc.dcc.model.ModelModule;
+import org.icgc.dcc.release.ReleaseModule;
 import org.icgc.dcc.service.ValidationServiceModule;
 import org.icgc.dcc.sftp.SftpModule;
 import org.icgc.dcc.shiro.ShiroModule;
@@ -25,12 +27,13 @@ public class Main {
         new HttpModule(),//
         new JerseyModule(),//
         new WebModule(),//
-        new ModelModule(),//
+        new MorphiaModule(),//
         new ShiroModule(),//
         new FileSystemModule(),//
         new SftpModule(),//
-        new ValidationServiceModule()//
-        );
+        new ValidationServiceModule(),//
+        new DictionaryModule(),//
+        new ReleaseModule());
 
     injector.getInstance(DccRuntime.class).start();
     System.in.read();

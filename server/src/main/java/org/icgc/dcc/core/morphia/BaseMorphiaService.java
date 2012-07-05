@@ -15,17 +15,43 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.dictionary;
+package org.icgc.dcc.core.morphia;
 
-import org.icgc.dcc.core.AbstractDccModule;
+import static com.google.common.base.Preconditions.checkArgument;
 
-import com.google.inject.Singleton;
+import com.google.code.morphia.Datastore;
+import com.google.code.morphia.Morphia;
+import com.google.inject.Inject;
 
-public class DictionaryModule extends AbstractDccModule {
+public abstract class BaseMorphiaService {
 
-  @Override
-  protected void configure() {
-    bind(DictionaryService.class).in(Singleton.class);
+  private final Morphia morphia;
+
+  private final Datastore datastore;
+
+  @Inject
+  public BaseMorphiaService(Morphia morphia, Datastore datastore) {
+    super();
+    checkArgument(morphia != null);
+    checkArgument(datastore != null);
+    this.morphia = morphia;
+    this.datastore = datastore;
   }
 
+  public Datastore datastore() {
+    return datastore;
+  }
+
+  public Morphia morphia() {
+    return morphia;
+  }
+
+  protected void registerModelClasses(Class<?>... entities) {
+    if(entities != null) {
+      for(Class<?> e : entities) {
+        morphia.map(e);
+        datastore.ensureIndexes(e);
+      }
+    }
+  }
 }

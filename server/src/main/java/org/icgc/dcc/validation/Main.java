@@ -6,8 +6,8 @@ import java.io.IOException;
 import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.config.ConfigModule;
+import org.icgc.dcc.core.morphia.MorphiaModule;
 import org.icgc.dcc.dictionary.model.Dictionary;
-import org.icgc.dcc.model.ModelModule;
 
 import cascading.cascade.Cascade;
 import cascading.flow.Flow;
@@ -42,7 +42,7 @@ public class Main {
   private void doit() {
     Injector injector = Guice.createInjector(new ValidationModule(root, output),//
         new ConfigModule(ConfigFactory.load()),//
-        new ModelModule()//
+        new MorphiaModule()//
         );
 
     Planner planner = injector.getInstance(Planner.class);

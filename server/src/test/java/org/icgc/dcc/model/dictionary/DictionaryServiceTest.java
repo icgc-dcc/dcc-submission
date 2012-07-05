@@ -80,7 +80,7 @@ public class DictionaryServiceTest {
     when(mockMongodbQuery.where(any(Predicate.class))).thenReturn(mockMongodbQuery);
     when(mockMongodbQuery.singleResult()).thenReturn(null).thenReturn(mockDictionary).thenReturn(mockDictionary);
 
-    this.dictionaryService = new DictionaryService(mockMorphia, mockDatastore, mockDictionaryCloneVisitor);
+    this.dictionaryService = new DictionaryService(mockMorphia, mockDatastore);
   }
 
   @Test(expected = DictionaryServiceException.class)

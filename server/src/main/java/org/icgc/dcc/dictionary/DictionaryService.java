@@ -22,6 +22,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.util.List;
 
+import org.icgc.dcc.core.morphia.BaseMorphiaService;
 import org.icgc.dcc.dictionary.model.CodeList;
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.DictionaryState;
@@ -42,29 +43,16 @@ import com.mysema.query.types.Predicate;
 /**
  * Offers various CRUD operations pertaining to {@code Dictionary}
  */
-public class DictionaryService {
-
-  private final Morphia morphia;
-
-  private final Datastore datastore;
+public class DictionaryService extends BaseMorphiaService {
 
   @Inject
-  public DictionaryService(Morphia morphia, Datastore datastore, DictionaryCloneVisitor dictionaryClone) {
-    super();
-
-    checkArgument(morphia != null);
-    checkArgument(datastore != null);
-
-    this.morphia = morphia;
-    this.datastore = datastore;
-  }
-
-  public Datastore datastore() {
-    return datastore;
+  public DictionaryService(Morphia morphia, Datastore datastore) {
+    super(morphia, datastore);
+    registerModelClasses(Dictionary.class, CodeList.class);
   }
 
   public MongodbQuery<Dictionary> query() {
-    return new MorphiaQuery<Dictionary>(morphia, datastore, QDictionary.dictionary);
+    return new MorphiaQuery<Dictionary>(morphia(), datastore(), QDictionary.dictionary);
   }
 
   public MongodbQuery<Dictionary> where(Predicate predicate) {
@@ -85,7 +73,7 @@ public class DictionaryService {
     if(updateQuery.countAll() != 1) {
       throw new DictionaryServiceException("cannot update an unexisting dictionary: " + dictionary.getVersion());
     }
-    this.datastore.updateFirst(updateQuery, dictionary, false);
+    datastore().updateFirst(updateQuery, dictionary, false);
   }
 
   public void close(Dictionary dictionary) {
@@ -95,8 +83,8 @@ public class DictionaryService {
       throw new DictionaryServiceException("cannot close an unexisting dictionary: " + dictionary.getVersion());
     }
     UpdateOperations<Dictionary> ops =
-        this.datastore.createUpdateOperations(Dictionary.class).set("state", DictionaryState.CLOSED);
-    this.datastore.update(updateQuery, ops);
+        datastore().createUpdateOperations(Dictionary.class).set("state", DictionaryState.CLOSED);
+    datastore().update(updateQuery, ops);
   }
 
   public Dictionary clone(String oldVersion, String newVersion) {
@@ -131,7 +119,7 @@ public class DictionaryService {
       throw new DictionaryServiceException("cannot add an existing dictionary: " + version);
     }
 
-    this.datastore.save(dictionary);
+    datastore().save(dictionary);
   }
 
   public List<CodeList> listCodeList() {
@@ -144,7 +132,7 @@ public class DictionaryService {
   }
 
   private MorphiaQuery<CodeList> queryCodeList() {
-    return new MorphiaQuery<CodeList>(morphia, datastore, QCodeList.codeList);
+    return new MorphiaQuery<CodeList>(morphia(), datastore(), QCodeList.codeList);
   }
 
   public CodeList createCodeList(String name) {
@@ -153,7 +141,7 @@ public class DictionaryService {
     if(getCodeList(name) != null) {
       throw new DictionaryServiceException("cannot create existant codeList: " + name);
     }
-    this.datastore.save(codeList);
+    datastore().save(codeList);
     return codeList;
   }
 
@@ -166,11 +154,11 @@ public class DictionaryService {
     }
 
     oldCodeList.setLabel(newCodeList.getLabel());
-    Query<CodeList> updateQuery = this.datastore.createQuery(CodeList.class).filter("name" + " = ", name);
+    Query<CodeList> updateQuery = datastore().createQuery(CodeList.class).filter("name" + " = ", name);
     checkState(updateQuery.countAll() == 1);
     UpdateOperations<CodeList> ops =
-        this.datastore.createUpdateOperations(CodeList.class).set("label", newCodeList.getLabel());
-    this.datastore.update(updateQuery, ops);
+        datastore().createUpdateOperations(CodeList.class).set("label", newCodeList.getLabel());
+    datastore().update(updateQuery, ops);
   }
 
   public void addTerm(String name, Term term) {
@@ -183,13 +171,13 @@ public class DictionaryService {
     }
     codeList.addTerm(term);
 
-    Query<CodeList> updateQuery = this.datastore.createQuery(CodeList.class).filter("name" + " = ", name);
+    Query<CodeList> updateQuery = datastore().createQuery(CodeList.class).filter("name" + " = ", name);
     checkState(updateQuery.countAll() == 1);
-    UpdateOperations<CodeList> ops = this.datastore.createUpdateOperations(CodeList.class).add("terms", term);
-    this.datastore.update(updateQuery, ops);
+    UpdateOperations<CodeList> ops = datastore().createUpdateOperations(CodeList.class).add("terms", term);
+    datastore().update(updateQuery, ops);
   }
 
   private Query<Dictionary> buildQuery(Dictionary dictionary) {
-    return this.datastore.createQuery(Dictionary.class).filter("version" + " = ", dictionary.getVersion());
+    return datastore().createQuery(Dictionary.class).filter("version" + " = ", dictionary.getVersion());
   }
 }

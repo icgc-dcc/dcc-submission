@@ -9,7 +9,6 @@ import org.icgc.dcc.core.model.BaseEntity;
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.dictionary.DictionaryService;
 import org.icgc.dcc.dictionary.model.Dictionary;
-import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.release.model.SubmissionState;
@@ -54,7 +53,7 @@ public class ReleaseServiceTest {
       dictionary = new Dictionary();
       dictionary.setVersion("foo");
 
-      dictionaryService = new DictionaryService(morphia, datastore, null);
+      dictionaryService = new DictionaryService(morphia, datastore);
       dictionaryService.add(dictionary);
 
       release = new Release();
