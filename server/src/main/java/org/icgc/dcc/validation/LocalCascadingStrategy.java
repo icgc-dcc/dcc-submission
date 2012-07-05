@@ -22,7 +22,6 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.util.Iterator;
 
-import org.apache.commons.io.FileUtils;
 import org.icgc.dcc.dictionary.model.FileSchema;
 
 import cascading.flow.FlowConnector;
@@ -33,8 +32,10 @@ import cascading.tap.Tap;
 import cascading.tap.local.FileTap;
 import cascading.tuple.Fields;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
+import com.google.common.io.Files;
 
 /**
  * 
@@ -100,10 +101,9 @@ public class LocalCascadingStrategy implements CascadingStrategy {
   public Fields getFileHeader(FileSchema schema) throws IOException {
     Fields fields = new Fields();
 
-    String file = FileUtils.readFileToString(file(schema));
-    Iterator<String> headerIterator = Splitter.on('\n').split(file).iterator();
+    String firstLine = Files.readFirstLine(file(schema), Charsets.UTF_8);
 
-    Iterable<String> header = Splitter.on('\t').split(headerIterator.next());
+    Iterable<String> header = Splitter.on('\t').split(firstLine);
     Iterator<String> iterator = header.iterator();
     while(iterator.hasNext()) {
       Fields field = new Fields(iterator.next());

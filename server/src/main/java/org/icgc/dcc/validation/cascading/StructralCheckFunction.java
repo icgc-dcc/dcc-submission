@@ -30,20 +30,18 @@ import cascading.tuple.TupleEntry;
  */
 public class StructralCheckFunction extends BaseOperation implements Function {
 
-  private final Fields header;
-
-  public StructralCheckFunction(Fields header) {
-    super();
-    this.header = header;
-  }
-
   @Override
   public void operate(FlowProcess flowProcess, FunctionCall functionCall) {
     // TODO Auto-generated method stub
     TupleEntry arguments = functionCall.getArguments();
     Fields header = arguments.getFields();
+    Fields schemaHeader = this.fieldDeclaration;
     for(int i = 0; i < header.size() - arguments.size(); i++) {
       functionCall.getOutputCollector().add(new Tuple((Object) null));
     }
+  }
+
+  public void setFieldDeclaration(Fields header) {
+    this.fieldDeclaration = header;
   }
 }

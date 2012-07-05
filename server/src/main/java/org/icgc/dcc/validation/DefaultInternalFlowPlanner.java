@@ -57,7 +57,7 @@ class DefaultInternalFlowPlanner implements InternalFlowPlanner {
 
   private Pipe validTail;
 
-  private Fields header;
+  private StructralCheckFunction structralCheck;
 
   DefaultInternalFlowPlanner(Plan plan, FileSchema fileSchema) {
     checkArgument(plan != null);
@@ -66,9 +66,13 @@ class DefaultInternalFlowPlanner implements InternalFlowPlanner {
     this.fileSchema = fileSchema;
     this.validTail = this.head = new Pipe(fileSchema.getName());
 
-    this.validTail = applyHeaderFilterPipes(this.validTail);
+    // apply pipe for removing empty line
     this.validTail = applyEmptyLineFilterPipes(this.validTail);
+    // apply pipe for removing header
+    this.validTail = applyHeaderFilterPipes(this.validTail);
+    // apply structural check for making sure # of fields is matched with header
     this.validTail = applyStructuralCheck(this.validTail);
+    // apply system pipe
     this.validTail = applySystemPipes(this.validTail);
   }
 
@@ -104,7 +108,8 @@ class DefaultInternalFlowPlanner implements InternalFlowPlanner {
     Tap<?, ?, ?> source = strategy.getSourceTap(fileSchema);
     Tap<?, ?, ?> sink = strategy.getInternalSinkTap(fileSchema);
     try {
-      this.header = strategy.getFileHeader(fileSchema);
+      Fields header = strategy.getFileHeader(fileSchema);
+      this.structralCheck.setFieldDeclaration(header);
     } catch(IOException e) {
       e.printStackTrace();
     }
@@ -121,7 +126,8 @@ class DefaultInternalFlowPlanner implements InternalFlowPlanner {
   }
 
   private Pipe applyStructuralCheck(Pipe pipe) {
-    return new Each(pipe, new StructralCheckFunction(this.header), Fields.ALL);
+    this.structralCheck = new StructralCheckFunction();
+    return new Each(pipe, this.structralCheck, Fields.ALL);
   }
 
   private Pipe applySystemPipes(Pipe pipe) {
@@ -129,11 +135,11 @@ class DefaultInternalFlowPlanner implements InternalFlowPlanner {
   }
 
   private Pipe applyHeaderFilterPipes(Pipe pipe) {
-    return new Each(pipe, new RemoveHeaderFilter(this.header));
+    return new Each(pipe, new RemoveHeaderFilter());
   }
 
   private Pipe applyEmptyLineFilterPipes(Pipe pipe) {
-    return new Each(pipe, new RemoveEmptyLineFilter(this.header));
+    return new Each(pipe, new RemoveEmptyLineFilter());
   }
 
   private Pipe applyFilter(Pipe pipe) {
