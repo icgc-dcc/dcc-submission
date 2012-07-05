@@ -32,46 +32,57 @@ import cascading.tuple.TupleListCollector;
 /**
  * 
  */
-public class DiscreteValueRestrictionTest extends CascadingTestCase {
+public class DiscreteValuesRestrictionTest extends CascadingTestCase {
 
-  private static final String[] VALUES = { "A", "B", "C" };
+  private static final String[] VALUES = { "A", "B", "C", "easy", "as", "1", "2", "3.0" };
 
   @Test
-  public void test_discrete_value_restriction() {
-    DiscreteValuesRestriction restriction = new DiscreteValuesRestriction("field", VALUES);
+  public void test_discreteValuesRestriction_describe() {
+    DiscreteValuesRestriction restriction = new DiscreteValuesRestriction("J5", VALUES);
 
-    assertEquals("in[field:[A, B, C]]", restriction.describe());
-
+    assertEquals("in[J5:[A, B, C, easy, as, 1, 2, 3.0]]", restriction.describe());
   }
 
   @Test
-  public void test_valid_value() {
-    TupleState state = this.test_discrete_function("A", VALUES);
+  public void test_string() {
+    TupleState state = this.test_InValuesFunction("A", VALUES);
     assertTrue(state.isValid());
   }
 
   @Test
+  public void test_integer() {
+    TupleState state = this.test_InValuesFunction(2, VALUES);
+    assertTrue(state.isValid());
+  }
+
+  @Test
+  public void test_float() {
+    TupleState state = this.test_InValuesFunction(3.0, VALUES);
+    assertTrue(state.isValid());
+  }
+
+  @Test
+  public void test_missingValue() {
+    TupleState state = this.test_InValuesFunction("NotInList", VALUES);
+    assertTrue(state.isInvalid());
+  }
+
+  @Test
   public void test_null() {
-    TupleState state = this.test_discrete_function(null, VALUES);
+    TupleState state = this.test_InValuesFunction(null, VALUES);
     assertTrue(state.isInvalid());
   }
 
   @Test
-  public void test_invalid_type() {
-    TupleState state = this.test_discrete_function(35, VALUES);
+  public void test_emptyString() {
+    TupleState state = this.test_InValuesFunction("", VALUES);
     assertTrue(state.isInvalid());
   }
 
-  @Test
-  public void test_empty_string() {
-    TupleState state = this.test_discrete_function("", VALUES);
-    assertTrue(state.isInvalid());
-  }
-
-  private TupleState test_discrete_function(Object tupleValue, String[] values) {
+  private TupleState test_InValuesFunction(Object tupleValue, String[] values) {
     InValuesFunction function = new InValuesFunction(values);
 
-    Fields incoming = new Fields("field", "_state");
+    Fields incoming = new Fields("J5", "_state");
     TupleEntry[] tuples = new TupleEntry[] { new TupleEntry(incoming, new Tuple(tupleValue, new TupleState())) };
 
     TupleListCollector c = CascadingTestCase.invokeFunction(function, tuples, incoming);
