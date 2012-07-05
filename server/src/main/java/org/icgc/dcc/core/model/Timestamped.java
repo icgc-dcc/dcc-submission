@@ -10,12 +10,14 @@ public class Timestamped implements HasTimestamps {
 
   @Override
   public Date getLastUpdate() {
-    return lastUpdate;
+    // Date is mutable
+    return new Date(lastUpdate.getTime());
   }
 
   @Override
   public Date getCreated() {
-    return created;
+    // Date is mutable
+    return new Date(created.getTime());
   }
 
 }
