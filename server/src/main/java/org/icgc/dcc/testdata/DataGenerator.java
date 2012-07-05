@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.fs.FileSystem;
+import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.core.UserService;
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.core.model.User;
@@ -35,7 +36,6 @@ import org.icgc.dcc.dictionary.model.Term;
 import org.icgc.dcc.dictionary.model.ValueType;
 import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.release.CompletedRelease;
-import org.icgc.dcc.release.ProjectService;
 import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.Submission;

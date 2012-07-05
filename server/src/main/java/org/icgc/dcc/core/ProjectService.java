@@ -1,4 +1,4 @@
-package org.icgc.dcc.release;
+package org.icgc.dcc.core;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -8,6 +8,7 @@ import java.util.List;
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.core.model.QProject;
 import org.icgc.dcc.filesystem.DccFileSystem;
+import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.QRelease;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.Submission;

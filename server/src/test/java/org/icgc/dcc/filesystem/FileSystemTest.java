@@ -6,9 +6,9 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.util.Arrays;
 
+import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.core.model.User;
-import org.icgc.dcc.release.ProjectService;
 import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.Submission;

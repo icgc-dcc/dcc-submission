@@ -1,5 +1,6 @@
 package org.icgc.dcc.model;
 
+import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.core.UserService;
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.core.model.User;
@@ -7,7 +8,6 @@ import org.icgc.dcc.dictionary.DictionaryService;
 import org.icgc.dcc.dictionary.model.CodeList;
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.visitor.DictionaryCloneVisitor;
-import org.icgc.dcc.release.ProjectService;
 import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.Release;
 

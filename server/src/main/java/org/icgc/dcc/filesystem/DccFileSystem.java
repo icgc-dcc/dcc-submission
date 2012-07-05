@@ -7,10 +7,10 @@ import java.util.List;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.core.model.User;
 import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
-import org.icgc.dcc.release.ProjectService;
 import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.Release;
 import org.slf4j.Logger;
