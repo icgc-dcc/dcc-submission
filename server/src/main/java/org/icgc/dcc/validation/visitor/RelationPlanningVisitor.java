@@ -22,9 +22,9 @@ import java.util.Iterator;
 
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.dictionary.model.Relation;
-import org.icgc.dcc.validation.ValidationErrorCode;
 import org.icgc.dcc.validation.ExternalFlowPlanningVisitor;
 import org.icgc.dcc.validation.ExternalPlanElement;
+import org.icgc.dcc.validation.ValidationErrorCode;
 import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.cascading.ValidationFields;
 
@@ -52,7 +52,7 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
     collect(new RelationPlanElement(getCurrentSchema(), relation));
   }
 
-  private static class RelationPlanElement implements ExternalPlanElement {
+  static class RelationPlanElement implements ExternalPlanElement {
 
     private final String[] lhsFields;
 
@@ -128,8 +128,8 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
           if(tupleEntry.getObject(1) == null) {
             String unmatchedValue = tupleEntry.getString(0);
             TupleState tupleState = new TupleState();
-            tupleState.reportError(ValidationErrorCode.MISSING_RELATION_ERROR, unmatchedValue, Arrays.asList(lhsFields), rhs,
-                Arrays.asList(rhsFields));
+            tupleState.reportError(ValidationErrorCode.MISSING_RELATION_ERROR, unmatchedValue,
+                Arrays.asList(lhsFields), rhs, Arrays.asList(rhsFields));
             bufferCall.getOutputCollector().add(new Tuple(tupleState));
           }
         }
