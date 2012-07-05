@@ -46,7 +46,6 @@ public class Main {
   private void doit() {
     Injector injector = Guice.createInjector(new ValidationModule(root, output),//
         new ConfigModule(ConfigFactory.load()),//
-        new MorphiaModule(),//
         new MorphiaModule()//
         , new ValidationServiceModule()//
         );
