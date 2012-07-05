@@ -30,8 +30,11 @@ import cascading.tuple.TupleEntry;
  */
 public class StructralCheckFunction extends BaseOperation implements Function {
 
-  public StructralCheckFunction() {
+  private final Fields header;
+
+  public StructralCheckFunction(Fields header) {
     super();
+    this.header = header;
   }
 
   @Override

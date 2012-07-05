@@ -21,17 +21,19 @@ import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
 import cascading.operation.Filter;
 import cascading.operation.FilterCall;
+import cascading.tuple.Fields;
 
 /**
  * 
  */
 public class RemoveEmptyLineFilter extends BaseOperation implements Filter {
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see cascading.operation.Filter#isRemove(cascading.flow.FlowProcess, cascading.operation.FilterCall)
-   */
+  private final Fields header;
+
+  public RemoveEmptyLineFilter(Fields header) {
+    this.header = header;
+  }
+
   @Override
   public boolean isRemove(FlowProcess flowProcess, FilterCall filterCall) {
     // TODO Auto-generated method stub

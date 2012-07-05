@@ -19,6 +19,7 @@ package org.icgc.dcc.validation;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -55,6 +56,8 @@ class DefaultInternalFlowPlanner implements InternalFlowPlanner {
   private final Map<Trim, Pipe> trimmedTails = Maps.newHashMap();
 
   private Pipe validTail;
+
+  private Fields header;
 
   DefaultInternalFlowPlanner(Plan plan, FileSchema fileSchema) {
     checkArgument(plan != null);
@@ -100,6 +103,11 @@ class DefaultInternalFlowPlanner implements InternalFlowPlanner {
     Pipe tail = applyFilter(validTail);
     Tap<?, ?, ?> source = strategy.getSourceTap(fileSchema);
     Tap<?, ?, ?> sink = strategy.getInternalSinkTap(fileSchema);
+    try {
+      this.header = strategy.getFileHeader(fileSchema);
+    } catch(IOException e) {
+      e.printStackTrace();
+    }
 
     FlowDef def = new FlowDef()//
         .setName(getSchema().getName() + ".internal")//
@@ -113,7 +121,7 @@ class DefaultInternalFlowPlanner implements InternalFlowPlanner {
   }
 
   private Pipe applyStructuralCheck(Pipe pipe) {
-    return new Each(pipe, new StructralCheckFunction(), Fields.ALL);
+    return new Each(pipe, new StructralCheckFunction(this.header), Fields.ALL);
   }
 
   private Pipe applySystemPipes(Pipe pipe) {
@@ -121,11 +129,11 @@ class DefaultInternalFlowPlanner implements InternalFlowPlanner {
   }
 
   private Pipe applyHeaderFilterPipes(Pipe pipe) {
-    return new Each(pipe, new RemoveHeaderFilter());
+    return new Each(pipe, new RemoveHeaderFilter(this.header));
   }
 
   private Pipe applyEmptyLineFilterPipes(Pipe pipe) {
-    return new Each(pipe, new RemoveEmptyLineFilter());
+    return new Each(pipe, new RemoveEmptyLineFilter(this.header));
   }
 
   private Pipe applyFilter(Pipe pipe) {

@@ -17,10 +17,13 @@
  */
 package org.icgc.dcc.validation;
 
+import java.io.IOException;
+
 import org.icgc.dcc.model.dictionary.FileSchema;
 
 import cascading.flow.FlowConnector;
 import cascading.tap.Tap;
+import cascading.tuple.Fields;
 
 public interface CascadingStrategy {
 
@@ -34,4 +37,5 @@ public interface CascadingStrategy {
 
   public Tap<?, ?, ?> getExternalSinkTap(FileSchema schema);
 
+  public Fields getFileHeader(FileSchema schema) throws IOException;
 }

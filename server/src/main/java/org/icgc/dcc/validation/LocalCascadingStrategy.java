@@ -19,8 +19,10 @@ package org.icgc.dcc.validation;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
 import java.util.Iterator;
 
+import org.apache.commons.io.FileUtils;
 import org.icgc.dcc.model.dictionary.FileSchema;
 
 import cascading.flow.FlowConnector;
@@ -94,10 +96,14 @@ public class LocalCascadingStrategy implements CascadingStrategy {
     return files[0];
   }
 
-  private Fields parseFileHeader(String firstLine) {
+  @Override
+  public Fields getFileHeader(FileSchema schema) throws IOException {
     Fields fields = new Fields();
 
-    Iterable<String> header = Splitter.on('\t').split(firstLine);
+    String file = FileUtils.readFileToString(file(schema));
+    Iterator<String> headerIterator = Splitter.on('\n').split(file).iterator();
+
+    Iterable<String> header = Splitter.on('\t').split(headerIterator.next());
     Iterator<String> iterator = header.iterator();
     while(iterator.hasNext()) {
       Fields field = new Fields(iterator.next());
