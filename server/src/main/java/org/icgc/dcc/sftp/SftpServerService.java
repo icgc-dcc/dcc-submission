@@ -82,8 +82,11 @@ public class SftpServerService extends AbstractService {
     try {
       log.info("Starting DCC SSH Server on port {}", sshd.getPort());
       sshd.start();
+      notifyStarted();
     } catch(IOException e) {
-      throw new RuntimeException(e);
+      log.error("Failed to start SFTP server on {}:{} : {}",
+          new Object[] { sshd.getHost(), sshd.getPort(), e.getMessage() });
+      notifyFailed(e);
     }
   }
 
@@ -91,8 +94,11 @@ public class SftpServerService extends AbstractService {
   protected void doStop() {
     try {
       sshd.stop(true);
+      notifyStopped();
     } catch(InterruptedException e) {
-      throw new RuntimeException(e);
+      log.error("Failed to stop SFTP server on {}:{} : {}",
+          new Object[] { sshd.getHost(), sshd.getPort(), e.getMessage() });
+      notifyFailed(e);
     }
   }
 }

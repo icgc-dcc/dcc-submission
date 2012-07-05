@@ -40,19 +40,19 @@ public class ValueTypeFunctionTest extends CascadingTestCase {
 
     @SuppressWarnings("rawtypes")
     Function function = new ValueTypeFunction(ValueType.INTEGER);
-    ValidationFields resultFields = new ValidationFields(FIELD_NAME);
+    ValidationFields fields = new ValidationFields(FIELD_NAME);
     TupleEntry[] argumentsArray = new TupleEntry[] {//
-        new TupleEntry(resultFields, new Tuple("2", new TupleState())),// ok: basic
-        new TupleEntry(resultFields, new Tuple("-4", new TupleState())),// ok: negative
-        new TupleEntry(resultFields, new Tuple("23409823049", new TupleState())),// ok: big
-        new TupleEntry(resultFields,
+        new TupleEntry(fields, new Tuple("2", new TupleState())),// ok: basic
+        new TupleEntry(fields, new Tuple("-4", new TupleState())),// ok: negative
+        new TupleEntry(fields, new Tuple("23409823049", new TupleState())),// ok: big
+        new TupleEntry(fields,
             new Tuple("2340982304459834958743985794835787398579878539487359", new TupleState())),// wrong: too big
-        new TupleEntry(resultFields, new Tuple("abc", new TupleState())),// wrong: string
-        new TupleEntry(resultFields, new Tuple("3.5", new TupleState())),// wrong: decimal
-        new TupleEntry(resultFields, new Tuple("", new TupleState())),// wrong: empty
+        new TupleEntry(fields, new Tuple("abc", new TupleState())),// wrong: string
+        new TupleEntry(fields, new Tuple("3.5", new TupleState())),// wrong: decimal
+        new TupleEntry(fields, new Tuple("", new TupleState())),// wrong: empty
         };
 
-    TupleListCollector tupleListCollector = CascadingTestCase.invokeFunction(function, argumentsArray, resultFields);
+    TupleListCollector tupleListCollector = CascadingTestCase.invokeFunction(function, argumentsArray, fields);
     Iterator<TupleEntry> entryIterator = tupleListCollector.entryIterator();
     handleValid(entryIterator.next(), FIELD_NAME, new Long(2));
     handleValid(entryIterator.next(), FIELD_NAME, new Long(-4));

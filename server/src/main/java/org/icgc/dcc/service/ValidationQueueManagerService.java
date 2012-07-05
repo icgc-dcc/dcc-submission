@@ -46,8 +46,7 @@ public class ValidationQueueManagerService extends AbstractService {
 
   @Override
   protected void doStart() {
-    log.info("Starting DCC Validation Queue Manager");
-
+    notifyStarted();
     // TODO: dummy for now
     NextRelease nextRelease = releaseService.getNextRelease();
     log.info(nextRelease.getRelease().getName());
@@ -55,7 +54,7 @@ public class ValidationQueueManagerService extends AbstractService {
 
   @Override
   protected void doStop() {
-    log.info("Stopping DCC Validation Queue Manager");
+    notifyStopped();
   }
 
 }
