@@ -58,7 +58,7 @@ public class TupleState implements Serializable {
    * Holds an error. The {@code code} uniquely identifies the error (e.g.: range error) and the {@code parameters}
    * capture the error details (e.g.: the expected range; min and max).
    */
-  public static final class TupleError {
+  public static final class TupleError implements Serializable {
 
     private final ValidationErrorCode code;
 
