@@ -84,7 +84,7 @@ public class Release extends BaseEntity implements HasName {
   }
 
   public Date getReleaseDate() {
-    return releaseDate;
+    return releaseDate != null ? new Date(releaseDate.getTime()) : null;
   }
 
   public void setReleaseDate() {
