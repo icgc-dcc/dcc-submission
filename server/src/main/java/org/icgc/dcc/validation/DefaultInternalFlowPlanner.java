@@ -77,6 +77,11 @@ class DefaultInternalFlowPlanner implements InternalFlowPlanner {
   }
 
   @Override
+  public String getName() {
+    return getSchema().getName() + ".internal";
+  }
+
+  @Override
   public FileSchema getSchema() {
     return fileSchema;
   }
@@ -84,7 +89,7 @@ class DefaultInternalFlowPlanner implements InternalFlowPlanner {
   @Override
   public void apply(InternalPlanElement element) {
     checkArgument(element != null);
-    log.info("[{}] applying element [{}]", fileSchema.getName(), element.describe());
+    log.info("[{}] applying element [{}]", getName(), element.describe());
     validTail = element.extend(validTail);
   }
 
@@ -96,7 +101,7 @@ class DefaultInternalFlowPlanner implements InternalFlowPlanner {
     if(trimmedTails.containsKey(trim) == false) {
       Pipe newHead = new Pipe(trim.getName(), validTail);
       Pipe tail = new Retain(newHead, new Fields(fields));
-      log.info("[{}] planned trimmed output with {}", fileSchema.getName(), Arrays.toString(trim.getFields()));
+      log.info("[{}] planned trimmed output with {}", getName(), Arrays.toString(trim.getFields()));
       trimmedTails.put(trim, tail);
     }
     return trim;
@@ -117,7 +122,7 @@ class DefaultInternalFlowPlanner implements InternalFlowPlanner {
     }
 
     FlowDef def = new FlowDef()//
-        .setName(getSchema().getName() + ".internal")//
+        .setName(getName())//
         .addSource(head, source)//
         .addTailSink(tail, sink);
 
