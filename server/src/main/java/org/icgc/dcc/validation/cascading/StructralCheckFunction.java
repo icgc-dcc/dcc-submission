@@ -18,7 +18,9 @@
 package org.icgc.dcc.validation.cascading;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.FileSchema;
@@ -33,7 +35,6 @@ import cascading.tuple.TupleEntry;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 
 /**
  * 
@@ -45,26 +46,38 @@ public class StructralCheckFunction extends BaseOperation implements Function {
   @Override
   public void operate(FlowProcess flowProcess, FunctionCall functionCall) {
     TupleEntry arguments = functionCall.getArguments();
-    Fields header = arguments.getFields();
-    Fields schemaHeader = this.fieldDeclaration;
+    Fields header = this.fieldDeclaration;
+    List<Field> fields = fileSchema.getFields();
+    List<String> fieldNames = new ArrayList<String>();
+    for(Field field : fields) {
+      fieldNames.add(field.getName());
+    }
+    Fields schemaHeader = new Fields(fieldNames.toArray(new String[fields.size()]));
 
     Fields declared = new Fields("offset");
     declared = declared.append(schemaHeader);
     functionCall.getOutputCollector().setFields(declared);
     functionCall.getOutputCollector().setFields(schemaHeader);
 
-    ArrayList<String> tupleValue = new ArrayList<String>();
+    Map<String, String> valueMap = new HashMap<String, String>();
     String offset = arguments.getString("offset");
-    tupleValue.add(offset);
+    valueMap.put("offset", offset);
 
     String line = arguments.getString("line");
     Iterable<String> splitter = Splitter.on('\t').split(line);
-    tupleValue.addAll(Lists.newArrayList(splitter));
+    String[] values = Iterables.toArray(splitter, String.class);
+    for(int i = 0; i < values.length; i++) {
+      valueMap.put((String) header.get(i), values[i]);
+    }
 
-    List<Field> fields = fileSchema.getFields();
+    String[] tupleValue = new String[schemaHeader.size()];
+
+    for(int i = 0; i < schemaHeader.size(); i++) {
+      tupleValue[i] = valueMap.get(schemaHeader.get(i));
+    }
 
     // functionCall.getOutputCollector().add(new Tuple(tupleValue.toArray(new Object[schemaHeader.size()])));
-    functionCall.getOutputCollector().add(new Tuple(Iterables.toArray(splitter, String.class)));
+    functionCall.getOutputCollector().add(new Tuple(tupleValue));
   }
 
   public void setFieldDeclaration(Fields header) {
