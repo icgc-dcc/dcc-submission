@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.commons.io.FilenameUtils;
 import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.config.ConfigModule;
@@ -11,6 +12,8 @@ import org.icgc.dcc.core.morphia.MorphiaModule;
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.service.ValidationQueueManagerService;
 import org.icgc.dcc.service.ValidationServiceModule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cascading.cascade.Cascade;
 import cascading.flow.Flow;
@@ -22,6 +25,7 @@ import com.google.inject.Injector;
 import com.typesafe.config.ConfigFactory;
 
 public class Main {
+  private static final Logger log = LoggerFactory.getLogger(Main.class);
 
   private final File root;
 
@@ -50,6 +54,10 @@ public class Main {
         new ValidationServiceModule()//
         );
 
+    // TODO: DCC-119 to give the submission name properly to main class
+    String projectKey = FilenameUtils.getBaseName(this.root.getAbsolutePath());
+    log.info("projectKey = {}", projectKey);
+
     Planner planner = injector.getInstance(Planner.class);
     Plan plan = planner.plan(injector.getInstance(FileSchemaDirectory.class), dictionary);
 
@@ -63,7 +71,6 @@ public class Main {
 
     ValidationCallback callback = injector.getInstance(ValidationQueueManagerService.class);
     for(Flow flow : flows) {
-      String projectKey = plan.toString();// TODO: actually get project key
       ValidationFlowListener listener = new ValidationFlowListener(callback, flows, projectKey);
       flow.addListener(listener);
     }

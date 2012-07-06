@@ -58,10 +58,12 @@ public class ValidationQueueManagerService extends AbstractService implements Va
 
   @Override
   public void handleSuccessfulValidation(String projectKey) {
-    NextRelease nextRelease = releaseService.getNextRelease();
-    log.info(">>>" + nextRelease.getRelease().getName());
+    log.info("projectKey = " + projectKey);
 
+    NextRelease nextRelease = releaseService.getNextRelease();
     String releaseName = nextRelease.getRelease().getName();
+    log.info("release = " + releaseName);
+
     Submission submission = releaseService.getSubmission(releaseName, projectKey);
     nextRelease.validate(submission);
   }
