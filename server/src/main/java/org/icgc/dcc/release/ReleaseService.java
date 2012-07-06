@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.icgc.dcc.core.morphia.BaseMorphiaService;
@@ -121,6 +122,10 @@ public class ReleaseService extends BaseMorphiaService {
 
   public boolean signOff(List<String> projectKeys) {
     return this.setState(projectKeys, SubmissionState.SIGNED_OFF);
+  }
+
+  public boolean setToValid(String projectKey) {
+    return this.setState(Arrays.asList(projectKey), SubmissionState.VALID);
   }
 
   private List<String> getSubmission(SubmissionState state) {

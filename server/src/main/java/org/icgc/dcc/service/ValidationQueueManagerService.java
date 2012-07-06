@@ -19,9 +19,8 @@ package org.icgc.dcc.service;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import org.icgc.dcc.release.NextRelease;
 import org.icgc.dcc.release.ReleaseService;
-import org.icgc.dcc.release.model.Submission;
+import org.icgc.dcc.release.model.SubmissionState;
 import org.icgc.dcc.validation.ValidationCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,14 +57,8 @@ public class ValidationQueueManagerService extends AbstractService implements Va
 
   @Override
   public void handleSuccessfulValidation(String projectKey) {
-    log.info("projectKey = " + projectKey);
-
-    NextRelease nextRelease = releaseService.getNextRelease();
-    String releaseName = nextRelease.getRelease().getName();
-    log.info("release = " + releaseName);
-
-    Submission submission = releaseService.getSubmission(releaseName, projectKey);
-    nextRelease.validate(submission);
+    log.info("setting project {} to {}", projectKey, SubmissionState.VALID);
+    releaseService.setToValid(projectKey);
   }
 
 }
