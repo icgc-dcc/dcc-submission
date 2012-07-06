@@ -98,13 +98,15 @@ public class ValueTypePlanningVisitor extends InternalFlowPlanningVisitor {
       }
 
       private Object parse(String value) {
+        if(value == null) {
+          return null;
+        }
         switch(type) {
         case DATETIME:
           throw new PlannerException(DISPLAY_NAME + " " + ValueType.DATETIME + " is not supported at the moment");
         case DECIMAL:
           Double doubleValue = Double.valueOf(value);
-          if(null != doubleValue
-              && (doubleValue == Double.POSITIVE_INFINITY || doubleValue == Double.NEGATIVE_INFINITY)) {
+          if(doubleValue == Double.POSITIVE_INFINITY || doubleValue == Double.NEGATIVE_INFINITY) {
             throw new NumberFormatException();
           }
           return doubleValue;

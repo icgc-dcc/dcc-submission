@@ -2,7 +2,6 @@ package org.icgc.dcc.validation.restriction;
 
 import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.Restriction;
-import org.icgc.dcc.validation.ValidationErrorCode;
 import org.icgc.dcc.validation.FlowType;
 import org.icgc.dcc.validation.InternalPlanElement;
 import org.icgc.dcc.validation.PlanElement;
@@ -10,6 +9,7 @@ import org.icgc.dcc.validation.RestrictionType;
 import org.icgc.dcc.validation.RestrictionTypeSchema;
 import org.icgc.dcc.validation.RestrictionTypeSchema.FieldRestrictionParameter;
 import org.icgc.dcc.validation.RestrictionTypeSchema.ParameterType;
+import org.icgc.dcc.validation.ValidationErrorCode;
 import org.icgc.dcc.validation.cascading.ValidationFields;
 
 import cascading.flow.FlowProcess;
@@ -110,12 +110,12 @@ public class RangeFieldRestriction implements InternalPlanElement {
       if(value instanceof Number) {
         Number num = (Number) value;
         if(num.longValue() < this.min.longValue() || num.longValue() > this.max.longValue()) {
-          ValidationFields.state(functionCall.getArguments()).reportError(ValidationErrorCode.OUT_OF_RANGE_ERROR, num.longValue(),
-              fieldName, this.min.longValue(), this.max.longValue());
+          ValidationFields.state(functionCall.getArguments()).reportError(ValidationErrorCode.OUT_OF_RANGE_ERROR,
+              num.longValue(), fieldName, this.min.longValue(), this.max.longValue());
         }
-      } else {
-        ValidationFields.state(functionCall.getArguments()).reportError(ValidationErrorCode.NOT_A_NUMBER_ERROR, value.toString(),
-            fieldName);
+      } else if(value != null) {
+        ValidationFields.state(functionCall.getArguments()).reportError(ValidationErrorCode.NOT_A_NUMBER_ERROR,
+            value.toString(), fieldName);
       }
       functionCall.getOutputCollector().add(functionCall.getArguments());
     }

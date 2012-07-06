@@ -148,7 +148,7 @@ public class CodeListRestriction implements InternalPlanElement {
     public void operate(FlowProcess flowProcess, FunctionCall functionCall) {
       Object object = functionCall.getArguments().getObject(0);
       String value = object == null ? null : object.toString();
-      if(codes.contains(value) == false && values.contains(value) == false) {
+      if(value != null && codes.contains(value) == false && values.contains(value) == false) {
         Object fieldName = functionCall.getArguments().getFields().get(0);
         ValidationFields.state(functionCall.getArguments()).reportError(ValidationErrorCode.CODELIST_ERROR, value,
             fieldName, codeListName);

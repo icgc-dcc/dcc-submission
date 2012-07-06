@@ -43,36 +43,42 @@ public class RangeFieldRestrictionTest extends CascadingTestCase {
   }
 
   @Test
-  public void test_range_lower_bound() {
-    TupleState state = this.test_range_function(new Integer(1), new Integer(1), new Integer(10));
+  public void test_null() {
+    TupleState state = this.test_RangeFunction(null, new Integer(1), new Integer(10));
     assertTrue(state.isValid());
   }
 
   @Test
-  public void test_range_upper_bound() {
-    TupleState state = this.test_range_function(new Integer(10), new Integer(1), new Integer(10));
+  public void test_lowerBound() {
+    TupleState state = this.test_RangeFunction(new Integer(1), new Integer(1), new Integer(10));
     assertTrue(state.isValid());
   }
 
   @Test
-  public void test_range_out_bound() {
-    TupleState state = this.test_range_function(new Integer(0), new Integer(1), new Integer(10));
+  public void test_upperBound() {
+    TupleState state = this.test_RangeFunction(new Integer(10), new Integer(1), new Integer(10));
+    assertTrue(state.isValid());
+  }
+
+  @Test
+  public void test_outOfBounds() {
+    TupleState state = this.test_RangeFunction(new Integer(0), new Integer(1), new Integer(10));
     assertTrue(state.isInvalid());
   }
 
   @Test
-  public void test_range_negative() {
-    TupleState state = this.test_range_function(new Integer(-1), new Integer(1), new Integer(10));
+  public void test_negative() {
+    TupleState state = this.test_RangeFunction(new Integer(-1), new Integer(1), new Integer(10));
     assertTrue(state.isInvalid());
   }
 
   @Test
-  public void test_empty_string() {
-    TupleState state = this.test_range_function("", new Integer(1), new Integer(10));
+  public void test_emptyString() {
+    TupleState state = this.test_RangeFunction("", new Integer(1), new Integer(10));
     assertTrue(state.isInvalid());
   }
 
-  private TupleState test_range_function(Object tupleValue, Number minValue, Number maxValue) {
+  private TupleState test_RangeFunction(Object tupleValue, Number minValue, Number maxValue) {
     RangeFunction function = new RangeFunction(minValue, maxValue);
 
     Fields incoming = new Fields("number", "_state");

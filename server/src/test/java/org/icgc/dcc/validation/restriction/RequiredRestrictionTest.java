@@ -35,32 +35,31 @@ import cascading.tuple.TupleListCollector;
 public class RequiredRestrictionTest extends CascadingTestCase {
 
   @Test
-  public void test_discrete_value_restriction() {
+  public void test_requiredRestriction_describe() {
     RequiredRestriction restriction = new RequiredRestriction("field");
 
     assertEquals("required[field]", restriction.describe());
-
   }
 
   @Test
-  public void test_entered_value() {
-    TupleState state = this.test_required_function("anything");
+  public void test_enteredValue() {
+    TupleState state = this.test_SpecifiedFunction("anything");
     assertTrue(state.isValid());
   }
 
   @Test
   public void test_null() {
-    TupleState state = this.test_required_function(null);
+    TupleState state = this.test_SpecifiedFunction(null);
     assertTrue(state.isInvalid());
   }
 
   @Test
-  public void test_empty_string() {
-    TupleState state = this.test_required_function("");
+  public void test_emptyString() {
+    TupleState state = this.test_SpecifiedFunction("");
     assertTrue(state.isInvalid());
   }
 
-  private TupleState test_required_function(Object tupleValue) {
+  private TupleState test_SpecifiedFunction(Object tupleValue) {
     SpecifiedFunction function = new SpecifiedFunction();
 
     Fields incoming = new Fields("field", "_state");

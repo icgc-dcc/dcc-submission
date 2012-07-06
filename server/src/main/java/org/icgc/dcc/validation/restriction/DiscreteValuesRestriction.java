@@ -5,7 +5,6 @@ import java.util.Set;
 
 import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.Restriction;
-import org.icgc.dcc.validation.ValidationErrorCode;
 import org.icgc.dcc.validation.FlowType;
 import org.icgc.dcc.validation.InternalPlanElement;
 import org.icgc.dcc.validation.PlanElement;
@@ -13,6 +12,7 @@ import org.icgc.dcc.validation.RestrictionType;
 import org.icgc.dcc.validation.RestrictionTypeSchema;
 import org.icgc.dcc.validation.RestrictionTypeSchema.FieldRestrictionParameter;
 import org.icgc.dcc.validation.RestrictionTypeSchema.ParameterType;
+import org.icgc.dcc.validation.ValidationErrorCode;
 import org.icgc.dcc.validation.cascading.ValidationFields;
 
 import cascading.flow.FlowProcess;
@@ -103,9 +103,10 @@ public class DiscreteValuesRestriction implements InternalPlanElement {
     public void operate(FlowProcess flowProcess, FunctionCall functionCall) {
       TupleEntry arguments = functionCall.getArguments();
       String value = arguments.getString(0);
-      if(values.contains(value) == false) {
+      if(value != null && values.contains(value) == false) {
         Object fieldName = arguments.getFields().get(0);
-        ValidationFields.state(arguments).reportError(ValidationErrorCode.DISCRETE_VALUES_ERROR, value, fieldName, values);
+        ValidationFields.state(arguments).reportError(ValidationErrorCode.DISCRETE_VALUES_ERROR, value, fieldName,
+            values);
       }
       functionCall.getOutputCollector().add(arguments);
     }

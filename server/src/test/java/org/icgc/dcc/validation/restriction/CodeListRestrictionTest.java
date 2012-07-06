@@ -107,7 +107,7 @@ public class CodeListRestrictionTest extends CascadingTestCase {
   public void test_InCodeListFunction_nullValue() {
     TupleState state = testRig_InCodeListFunction(null);
 
-    assertFalse(state.isValid());
+    assertTrue(state.isValid());
   }
 
   private TupleState testRig_InCodeListFunction(Object tupleValue) {

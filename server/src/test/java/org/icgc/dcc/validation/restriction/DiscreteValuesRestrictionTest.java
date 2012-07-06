@@ -44,6 +44,12 @@ public class DiscreteValuesRestrictionTest extends CascadingTestCase {
   }
 
   @Test
+  public void test_null() {
+    TupleState state = this.test_InValuesFunction(null, VALUES);
+    assertTrue(state.isValid());
+  }
+
+  @Test
   public void test_string() {
     TupleState state = this.test_InValuesFunction("A", VALUES);
     assertTrue(state.isValid());
@@ -64,12 +70,6 @@ public class DiscreteValuesRestrictionTest extends CascadingTestCase {
   @Test
   public void test_missingValue() {
     TupleState state = this.test_InValuesFunction("NotInList", VALUES);
-    assertTrue(state.isInvalid());
-  }
-
-  @Test
-  public void test_null() {
-    TupleState state = this.test_InValuesFunction(null, VALUES);
     assertTrue(state.isInvalid());
   }
 
