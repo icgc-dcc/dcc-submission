@@ -39,16 +39,18 @@ import com.google.common.collect.Lists;
  */
 public class StructralCheckFunction extends BaseOperation implements Function {
 
-  private final Fields schemaHeader;
+  private Fields fileHeader;
 
   public StructralCheckFunction(FileSchema fileSchema) {
     super(1);
+
     List<Field> fields = fileSchema.getFields();
     List<String> fieldNames = new ArrayList<String>();
     for(Field field : fields) {
       fieldNames.add(field.getName());
     }
-    schemaHeader = new Fields(fieldNames.toArray(new String[fields.size()]));
+    this.fieldDeclaration = new Fields(fieldNames.toArray(new String[fields.size()]));
+
   }
 
   @Override
@@ -56,24 +58,24 @@ public class StructralCheckFunction extends BaseOperation implements Function {
     TupleEntry arguments = functionCall.getArguments();
 
     // parse line into tuple values
-    String line = arguments.getString("line");
+    String line = arguments.getString(0);
     Iterable<String> splitter = Splitter.on('\t').split(line);
     List<String> values = Lists.newArrayList(splitter);
 
-    Fields missingFields = schemaHeader.subtract(fieldDeclaration);
-    Fields resultFields = this.fieldDeclaration.append(missingFields);
+    Fields missingFields = fieldDeclaration.subtract(fileHeader);
+    Fields resultFields = this.fileHeader.append(missingFields);
 
     // add null value to all missing fields
     for(int i = 0; i < missingFields.size(); i++) {
       values.add(null);
     }
 
-    TupleEntry tupleEntry = new TupleEntry(schemaHeader, new Tuple(values.toArray(new String[resultFields.size()])));
+    TupleEntry tupleEntry = new TupleEntry(fieldDeclaration, new Tuple(values.toArray(new String[values.size()])));
 
     functionCall.getOutputCollector().add(tupleEntry);
   }
 
-  public void setFieldDeclaration(Fields header) {
-    this.fieldDeclaration = header;
+  public void setFileHeader(Fields header) {
+    this.fileHeader = header;
   }
 }

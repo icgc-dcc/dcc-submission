@@ -108,7 +108,7 @@ class DefaultInternalFlowPlanner implements InternalFlowPlanner {
     Tap<?, ?, ?> sink = strategy.getInternalSinkTap(fileSchema);
     try {
       Fields header = strategy.getFileHeader(fileSchema);
-      this.structralCheck.setFieldDeclaration(header);
+      this.structralCheck.setFileHeader(header);
 
     } catch(IOException e) {
       e.printStackTrace();
