@@ -58,7 +58,7 @@ public class LocalCascadingStrategy implements CascadingStrategy {
 
   @Override
   public Tap<?, ?, ?> getSourceTap(FileSchema schema) {
-    return tap(file(schema));
+    return tapSource(file(schema));
   }
 
   @Override
@@ -82,7 +82,7 @@ public class LocalCascadingStrategy implements CascadingStrategy {
   }
 
   private Tap<?, ?, ?> tapSource(File file) {
-    return new FileTap(new TextLine(), file.getAbsolutePath());
+    return new FileTap(new TextLine(new Fields("offset", "line")), file.getAbsolutePath());
   }
 
   private File file(final FileSchema schema) {

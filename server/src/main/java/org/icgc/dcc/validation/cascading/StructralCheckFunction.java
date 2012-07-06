@@ -18,6 +18,10 @@
 package org.icgc.dcc.validation.cascading;
 
 import java.util.ArrayList;
+import java.util.List;
+
+import org.icgc.dcc.dictionary.model.Field;
+import org.icgc.dcc.dictionary.model.FileSchema;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -28,6 +32,7 @@ import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
 import com.google.common.base.Splitter;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 /**
@@ -35,30 +40,38 @@ import com.google.common.collect.Lists;
  */
 public class StructralCheckFunction extends BaseOperation implements Function {
 
+  private FileSchema fileSchema;
+
   @Override
   public void operate(FlowProcess flowProcess, FunctionCall functionCall) {
     TupleEntry arguments = functionCall.getArguments();
     Fields header = arguments.getFields();
     Fields schemaHeader = this.fieldDeclaration;
 
-    // Fields declared = new Fields("offset");
-    // declared = declared.append(schemaHeader);
-    // functionCall.getOutputCollector().setFields(declared);
+    Fields declared = new Fields("offset");
+    declared = declared.append(schemaHeader);
+    functionCall.getOutputCollector().setFields(declared);
     functionCall.getOutputCollector().setFields(schemaHeader);
 
     ArrayList<String> tupleValue = new ArrayList<String>();
-    String offset = arguments.getString("num");
+    String offset = arguments.getString("offset");
     tupleValue.add(offset);
 
     String line = arguments.getString("line");
     Iterable<String> splitter = Splitter.on('\t').split(line);
     tupleValue.addAll(Lists.newArrayList(splitter));
 
-    functionCall.getOutputCollector().add(new Tuple(tupleValue.toArray(new Object[schemaHeader.size()])));
+    List<Field> fields = fileSchema.getFields();
 
+    // functionCall.getOutputCollector().add(new Tuple(tupleValue.toArray(new Object[schemaHeader.size()])));
+    functionCall.getOutputCollector().add(new Tuple(Iterables.toArray(splitter, String.class)));
   }
 
   public void setFieldDeclaration(Fields header) {
     this.fieldDeclaration = header;
+  }
+
+  public void setFileSchema(FileSchema fileSchema) {
+    this.fileSchema = fileSchema;
   }
 }
