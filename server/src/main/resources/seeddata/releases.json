@@ -1,0 +1,103 @@
+[
+   {
+      "name":"release2",
+      "state":"OPENED",
+      "submissions":[
+         {
+            "projectKey":"project1",
+            "state":"QUEUED"
+         },
+         {
+            "projectKey":"project2",
+            "state":"NOT_VALIDATED"
+         }
+      ],
+      "dictionary":{
+         "version":"1.0",
+         "state":"OPENED",
+         "files":[
+            {
+               "name":"biomarker",
+               "pattern":"^\\w+__\\d+__\\d+__biomarker__\\d+\\.txt$",
+               "role":"SUBMISSION",
+               "fields":[
+                  {
+                     "name":"donor_id",
+                     "label":"Unique identifier for the donor; assigned by data provider. It must be coded, and correspond to a donor ID listed in the donor data file.",
+                     "valueType":"TEXT"
+                  },
+                  {
+                     "name":"donor_sex",
+                     "label":"Donor biological sex. \"Other\" has been removed from the controlled vocabulary due to identifiability concerns.",
+                     "valueType":"TEXT"
+                  },
+                  {
+                     "name":"specimen_id",
+                     "label":"ID of the specimen on which biomarker ascertainment was performed, if applicable",
+                     "valueType":"TEXT",
+                     "restrictions":[
+                        {
+                           "type":"in",
+                           "config":{
+                              "values":""
+                           }
+                        }
+                     ]
+                  }
+               ]
+            }
+         ]
+      }
+   },
+   {
+      "name":"release1",
+      "releaseDate" : "2012-07-06T16:34:22.314Z",
+      "state":"COMPLETED",
+      "submissions":[
+         {
+            "projectKey":"project1",
+            "state":"SIGNED_OFF"
+         },
+         {
+            "projectKey":"project2",
+            "state":"SIGNED_OFF"
+         }
+      ],
+      "dictionary":{
+         "version":"1.0",
+         "state":"OPENED",
+         "files":[
+            {
+               "name":"biomarker",
+               "pattern":"^\\w+__\\d+__\\d+__biomarker__\\d+\\.txt$",
+               "role":"SUBMISSION",
+               "fields":[
+                  {
+                     "name":"donor_id",
+                     "label":"Unique identifier for the donor; assigned by data provider. It must be coded, and correspond to a donor ID listed in the donor data file.",
+                     "valueType":"TEXT"
+                  },
+                  {
+                     "name":"donor_sex",
+                     "label":"Donor biological sex. \"Other\" has been removed from the controlled vocabulary due to identifiability concerns.",
+                     "valueType":"TEXT"
+                  },
+                  {
+                     "name":"specimen_id",
+                     "label":"ID of the specimen on which biomarker ascertainment was performed, if applicable",
+                     "valueType":"TEXT",
+                     "restrictions":[
+                        {
+                           "type":"in",
+                           "config":{
+                              "values":""
+                           }
+                        }
+                     ]
+                  }
+               ]
+            }
+         ]
+      }
+   }
+]

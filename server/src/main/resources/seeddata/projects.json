@@ -1,0 +1,29 @@
+[
+   {
+      "name":"project1",
+      "users":[
+         "admin"
+      ],
+      "groups":[
+         "admin"
+      ]
+   },
+      {
+      "name":"project2",
+      "users":[
+         "admin","brett"
+      ],
+      "groups":[
+         "admin"
+      ]
+   },
+      {
+      "name":"project3",
+      "users":[
+         "bogus"
+      ],
+      "groups":[
+         "bogus"
+      ]
+   }
+]
