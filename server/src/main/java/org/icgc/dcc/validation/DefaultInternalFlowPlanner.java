@@ -67,11 +67,11 @@ class DefaultInternalFlowPlanner implements InternalFlowPlanner {
     this.validTail = this.head = new Pipe(fileSchema.getName());
 
     // apply pipe for removing empty line
-    this.validTail = applyEmptyLineFilterPipes(this.validTail);
+    // this.validTail = applyEmptyLineFilterPipes(this.validTail);
     // apply pipe for removing header
-    this.validTail = applyHeaderFilterPipes(this.validTail);
+    // this.validTail = applyHeaderFilterPipes(this.validTail);
     // apply structural check for making sure # of fields is matched with header
-    this.validTail = applyStructuralCheck(this.validTail);
+    // this.validTail = applyStructuralCheck(this.validTail);
     // apply system pipe
     this.validTail = applySystemPipes(this.validTail);
   }
@@ -109,7 +109,7 @@ class DefaultInternalFlowPlanner implements InternalFlowPlanner {
     Tap<?, ?, ?> sink = strategy.getInternalSinkTap(fileSchema);
     try {
       Fields header = strategy.getFileHeader(fileSchema);
-      this.structralCheck.setFieldDeclaration(header);
+      // this.structralCheck.setFieldDeclaration(header);
     } catch(IOException e) {
       e.printStackTrace();
     }

@@ -58,7 +58,7 @@ public class LocalCascadingStrategy implements CascadingStrategy {
 
   @Override
   public Tap<?, ?, ?> getSourceTap(FileSchema schema) {
-    return tapSource(file(schema));
+    return tap(file(schema));
   }
 
   @Override
