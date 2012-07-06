@@ -70,7 +70,7 @@ public class StructralCheckFunction extends BaseOperation implements Function {
       values.add(null);
     }
 
-    TupleEntry tupleEntry = new TupleEntry(fieldDeclaration, new Tuple(values.toArray(new String[values.size()])));
+    TupleEntry tupleEntry = new TupleEntry(resultFields, new Tuple(values.toArray(new String[values.size()])));
 
     functionCall.getOutputCollector().add(tupleEntry);
   }
