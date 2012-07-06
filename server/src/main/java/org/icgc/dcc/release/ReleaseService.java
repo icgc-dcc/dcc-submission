@@ -94,8 +94,28 @@ public class ReleaseService extends BaseMorphiaService {
     return result;
   }
 
+  int count = 0;
+
   public List<String> getQueued() {
-    return this.getSubmission(SubmissionState.QUEUED);
+    // return this.getSubmission(SubmissionState.QUEUED);
+    List<String> queued = null;
+    switch(count) {
+    case 0:
+      queued = Arrays.asList("project1", "project2");
+      break;
+    case 1:
+      queued = Arrays.asList("project2");
+      break;
+    case 5:
+      queued = Arrays.asList("project3");
+      break;
+    }
+    count++;
+    return queued;
+  }
+
+  public String dequeue(boolean valid) {
+    return "project1";
   }
 
   public boolean queue(List<String> projectKeys) {
@@ -123,10 +143,6 @@ public class ReleaseService extends BaseMorphiaService {
 
   public boolean signOff(List<String> projectKeys) {
     return this.setState(projectKeys, SubmissionState.SIGNED_OFF);
-  }
-
-  public boolean setToValid(String projectKey) {
-    return this.setState(Arrays.asList(projectKey), SubmissionState.VALID);
   }
 
   private List<String> getSubmission(SubmissionState state) {

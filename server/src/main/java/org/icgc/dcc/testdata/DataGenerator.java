@@ -182,21 +182,35 @@ public class DataGenerator {
     submission2.setState(SubmissionState.SIGNED_OFF);
     firstRelease.getSubmissions().add(submission2);
 
+    // add submission3
+    Submission submission3 = new Submission();
+    submission3.setProjectKey("project3");
+    submission3.setState(SubmissionState.QUEUED);
+    firstRelease.getSubmissions().add(submission3);
+    // add submission4
+    Submission submission4 = new Submission();
+    submission3.setProjectKey("project4");
+    submission3.setState(SubmissionState.QUEUED);
+    firstRelease.getSubmissions().add(submission4);
+
+    firstRelease.enqueue("project3");
+    firstRelease.enqueue("project4");
+
     this.releaseService.createInitialRelease(firstRelease);
 
     // release release1
     Release secondRelease = new Release("release2");
     secondRelease.setDictionary(firstDict);
 
-    Submission submission3 = new Submission();
-    submission3.setProjectKey("project1");
-    submission3.setState(SubmissionState.QUEUED);
-    secondRelease.getSubmissions().add(submission3);
+    Submission submission5 = new Submission();
+    submission5.setProjectKey("project1");
+    submission5.setState(SubmissionState.QUEUED);
+    secondRelease.getSubmissions().add(submission5);
 
-    Submission submission4 = new Submission();
-    submission4.setProjectKey("project2");
-    submission4.setState(SubmissionState.NOT_VALIDATED);
-    secondRelease.getSubmissions().add(submission4);
+    Submission submission6 = new Submission();
+    submission6.setProjectKey("project2");
+    submission6.setState(SubmissionState.NOT_VALIDATED);
+    secondRelease.getSubmissions().add(submission6);
 
     this.releaseService.getNextRelease().release(secondRelease);
   }

@@ -22,18 +22,19 @@ import com.typesafe.config.ConfigFactory;
 
 public class Main {
   public static void main(String[] args) throws IOException {
-    Injector injector = Guice.createInjector(new ConfigModule(ConfigFactory.load()),//
-        new CoreModule(),//
-        new HttpModule(),//
-        new JerseyModule(),//
-        new WebModule(),//
-        new MorphiaModule(),//
-        new ShiroModule(),//
-        new FileSystemModule(),//
-        new SftpModule(),//
-        new ValidationServiceModule(),//
-        new DictionaryModule(),//
-        new ReleaseModule());
+    Injector injector = Guice.createInjector(new ConfigModule(ConfigFactory.load())//
+        , new CoreModule()//
+        , new HttpModule()//
+        , new JerseyModule()//
+        , new WebModule()//
+        , new MorphiaModule()//
+        , new ShiroModule()//
+        , new FileSystemModule()//
+        , new SftpModule()//
+        , new DictionaryModule()//
+        , new ReleaseModule()//
+        , new ValidationServiceModule()//
+        );
 
     injector.getInstance(DccRuntime.class).start();
     System.in.read();

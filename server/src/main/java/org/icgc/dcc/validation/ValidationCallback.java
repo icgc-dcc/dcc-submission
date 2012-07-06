@@ -18,7 +18,7 @@
 package org.icgc.dcc.validation;
 
 /**
- * TODO
+ * Callback interface for {@code ValidationQueueManagerService}
  */
 public interface ValidationCallback {
   void handleSuccessfulValidation(String projectKey);

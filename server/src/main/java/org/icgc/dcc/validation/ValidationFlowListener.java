@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.validation;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -27,7 +29,7 @@ import cascading.flow.FlowListener;
 import cascading.stats.FlowStats;
 
 /**
- * 
+ * Listens for events sent by individual {@code Flow}s
  */
 public class ValidationFlowListener implements FlowListener {
 
@@ -42,9 +44,12 @@ public class ValidationFlowListener implements FlowListener {
 
   @SuppressWarnings("rawtypes")
   ValidationFlowListener(ValidationCallback callback, List<Flow> flows, String projectKey) {
+    checkArgument(flows != null);
+    checkArgument(projectKey != null);
+
     this.flows = flows;
     this.projectKey = projectKey;
-    this.callback = callback;
+    this.callback = callback; // allow callback to be null (when running validation independently)
   }
 
   @Override
@@ -62,17 +67,19 @@ public class ValidationFlowListener implements FlowListener {
       }
     }
 
-    // TODO: check either/or
-    if(successfulCascade) {
+    checkArgument((successfulCascade && failedCascade) == false, "successfulCascade = " + successfulCascade
+        + ", failedCascade = " + failedCascade);
+    if(successfulCascade && null != callback) {
       callback.handleSuccessfulValidation(projectKey);
     } else if(failedCascade) {
       // TODO
-    }
+    } // else: other flows must still be running
   }
 
   @Override
   @SuppressWarnings("rawtypes")
   public void onStarting(Flow flow) {
+    log.info("starting flow {}", flow.getName());
   }
 
   @Override
@@ -85,6 +92,7 @@ public class ValidationFlowListener implements FlowListener {
   @SuppressWarnings("rawtypes")
   public boolean onThrowable(Flow flow, Throwable t) {
     log.info("error in flow {}: {}", flow.getName(), t.getMessage());
+    t.printStackTrace();// at lease print it so we don't miss it; TODO: pass it somewhere instead?
     return false;
   }
 }
