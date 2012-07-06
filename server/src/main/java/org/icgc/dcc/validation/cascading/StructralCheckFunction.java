@@ -41,7 +41,12 @@ import com.google.common.collect.Iterables;
  */
 public class StructralCheckFunction extends BaseOperation implements Function {
 
-  private FileSchema fileSchema;
+  private final FileSchema fileSchema;
+
+  public StructralCheckFunction(FileSchema fileSchema) {
+    super(1);
+    this.fileSchema = fileSchema;
+  }
 
   @Override
   public void operate(FlowProcess flowProcess, FunctionCall functionCall) {
@@ -54,14 +59,10 @@ public class StructralCheckFunction extends BaseOperation implements Function {
     }
     Fields schemaHeader = new Fields(fieldNames.toArray(new String[fields.size()]));
 
-    Fields declared = new Fields("offset");
-    declared = declared.append(schemaHeader);
-    functionCall.getOutputCollector().setFields(declared);
     functionCall.getOutputCollector().setFields(schemaHeader);
 
+    // parse line into tuple values
     Map<String, String> valueMap = new HashMap<String, String>();
-    String offset = arguments.getString("offset");
-    valueMap.put("offset", offset);
 
     String line = arguments.getString("line");
     Iterable<String> splitter = Splitter.on('\t').split(line);
@@ -76,15 +77,10 @@ public class StructralCheckFunction extends BaseOperation implements Function {
       tupleValue[i] = valueMap.get(schemaHeader.get(i));
     }
 
-    // functionCall.getOutputCollector().add(new Tuple(tupleValue.toArray(new Object[schemaHeader.size()])));
     functionCall.getOutputCollector().add(new Tuple(tupleValue));
   }
 
   public void setFieldDeclaration(Fields header) {
     this.fieldDeclaration = header;
-  }
-
-  public void setFileSchema(FileSchema fileSchema) {
-    this.fileSchema = fileSchema;
   }
 }

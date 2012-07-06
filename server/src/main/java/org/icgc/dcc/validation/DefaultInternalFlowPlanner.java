@@ -115,7 +115,6 @@ class DefaultInternalFlowPlanner implements InternalFlowPlanner {
     try {
       Fields header = strategy.getFileHeader(fileSchema);
       this.structralCheck.setFieldDeclaration(header);
-      this.structralCheck.setFileSchema(fileSchema);
 
     } catch(IOException e) {
       e.printStackTrace();
@@ -133,8 +132,8 @@ class DefaultInternalFlowPlanner implements InternalFlowPlanner {
   }
 
   private Pipe applyStructuralCheck(Pipe pipe) {
-    this.structralCheck = new StructralCheckFunction();
-    return new Each(pipe, this.structralCheck, Fields.RESULTS);
+    this.structralCheck = new StructralCheckFunction(fileSchema);
+    return new Each(pipe, new Fields("line"), this.structralCheck, Fields.SWAP);
   }
 
   private Pipe applySystemPipes(Pipe pipe) {
