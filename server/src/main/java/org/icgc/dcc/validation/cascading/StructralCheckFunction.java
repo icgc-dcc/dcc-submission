@@ -18,9 +18,7 @@
 package org.icgc.dcc.validation.cascading;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.FileSchema;
@@ -34,50 +32,45 @@ import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
 import com.google.common.base.Splitter;
-import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 
 /**
  * 
  */
 public class StructralCheckFunction extends BaseOperation implements Function {
 
-  private final FileSchema fileSchema;
+  private final Fields schemaHeader;
 
   public StructralCheckFunction(FileSchema fileSchema) {
     super(1);
-    this.fileSchema = fileSchema;
-  }
-
-  @Override
-  public void operate(FlowProcess flowProcess, FunctionCall functionCall) {
-    TupleEntry arguments = functionCall.getArguments();
-    Fields header = this.fieldDeclaration;
     List<Field> fields = fileSchema.getFields();
     List<String> fieldNames = new ArrayList<String>();
     for(Field field : fields) {
       fieldNames.add(field.getName());
     }
-    Fields schemaHeader = new Fields(fieldNames.toArray(new String[fields.size()]));
+    schemaHeader = new Fields(fieldNames.toArray(new String[fields.size()]));
+  }
 
-    functionCall.getOutputCollector().setFields(schemaHeader);
+  @Override
+  public void operate(FlowProcess flowProcess, FunctionCall functionCall) {
+    TupleEntry arguments = functionCall.getArguments();
 
     // parse line into tuple values
-    Map<String, String> valueMap = new HashMap<String, String>();
-
     String line = arguments.getString("line");
     Iterable<String> splitter = Splitter.on('\t').split(line);
-    String[] values = Iterables.toArray(splitter, String.class);
-    for(int i = 0; i < values.length; i++) {
-      valueMap.put((String) header.get(i), values[i]);
+    List<String> values = Lists.newArrayList(splitter);
+
+    Fields missingFields = schemaHeader.subtract(fieldDeclaration);
+    Fields resultFields = this.fieldDeclaration.append(missingFields);
+
+    // add null value to all missing fields
+    for(int i = 0; i < missingFields.size(); i++) {
+      values.add(null);
     }
 
-    String[] tupleValue = new String[schemaHeader.size()];
+    TupleEntry tupleEntry = new TupleEntry(schemaHeader, new Tuple(values.toArray(new String[resultFields.size()])));
 
-    for(int i = 0; i < schemaHeader.size(); i++) {
-      tupleValue[i] = valueMap.get(schemaHeader.get(i));
-    }
-
-    functionCall.getOutputCollector().add(new Tuple(tupleValue));
+    functionCall.getOutputCollector().add(tupleEntry);
   }
 
   public void setFieldDeclaration(Fields header) {
