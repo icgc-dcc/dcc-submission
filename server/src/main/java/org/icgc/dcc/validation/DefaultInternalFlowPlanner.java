@@ -66,12 +66,6 @@ class DefaultInternalFlowPlanner implements InternalFlowPlanner {
     this.fileSchema = fileSchema;
     this.validTail = this.head = new Pipe(fileSchema.getName());
 
-    // apply pipe for removing empty line
-    this.validTail = applyEmptyLineFilterPipes(this.validTail);
-    // apply pipe for removing header
-    this.validTail = applyHeaderFilterPipes(this.validTail);
-    // apply structural check for making sure # of fields is matched with header
-    this.validTail = applyStructuralCheck(this.validTail);
     // apply system pipe
     this.validTail = applySystemPipes(this.validTail);
   }
@@ -131,21 +125,13 @@ class DefaultInternalFlowPlanner implements InternalFlowPlanner {
     return strategy.getFlowConnector().connect(def);
   }
 
-  private Pipe applyStructuralCheck(Pipe pipe) {
-    this.structralCheck = new StructralCheckFunction(fileSchema);
-    return new Each(pipe, new Fields("line"), this.structralCheck, Fields.SWAP);
-  }
-
   private Pipe applySystemPipes(Pipe pipe) {
+    pipe = new Each(pipe, new RemoveEmptyLineFilter());
+    pipe = new Each(pipe, new RemoveHeaderFilter());
+    this.structralCheck = new StructralCheckFunction(fileSchema);
+    // parse "line" into the actual expected fields
+    pipe = new Each(pipe, new Fields("line"), this.structralCheck, Fields.SWAP);
     return new Each(pipe, new AddValidationFieldsFunction(), Fields.ALL);
-  }
-
-  private Pipe applyHeaderFilterPipes(Pipe pipe) {
-    return new Each(pipe, new RemoveHeaderFilter());
-  }
-
-  private Pipe applyEmptyLineFilterPipes(Pipe pipe) {
-    return new Each(pipe, new RemoveEmptyLineFilter());
   }
 
   private Pipe applyFilter(Pipe pipe) {
