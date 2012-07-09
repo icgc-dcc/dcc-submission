@@ -58,13 +58,24 @@ public class ReleaseServiceTest {
 
       release = new Release();
 
-      Project project = new Project();
-      Submission submission = new Submission();
+      Project project1 = new Project("Project One", "p1");
+      Project project2 = new Project("Project Two", "p2");
+      Project project3 = new Project("Project Three", "p3");
+      Submission validSubmission = new Submission();
+      validSubmission.setState(SubmissionState.VALID);
+      validSubmission.setProjectKey(project1.getKey());
 
-      submission.setState(SubmissionState.VALID);
-      submission.setProjectKey(project.getProjectKey());
+      Submission notValidatedSubmission = new Submission();
+      notValidatedSubmission.setState(SubmissionState.NOT_VALIDATED);
+      notValidatedSubmission.setProjectKey(project2.getKey());
 
-      release.getSubmissions().add(submission);
+      Submission queuedSubmission = new Submission();
+      queuedSubmission.setState(SubmissionState.QUEUED);
+      queuedSubmission.setProjectKey(project3.getKey());
+
+      release.getSubmissions().add(validSubmission);
+      release.getSubmissions().add(notValidatedSubmission);
+      release.getSubmissions().add(queuedSubmission);
 
       release.setDictionary(dictionary);
 
@@ -94,28 +105,29 @@ public class ReleaseServiceTest {
   @Test
   public void test_getNextRelease_isCorrectRelease() {
     assertEquals(release.getId(), releaseService.getNextRelease().getRelease().getId());
-
     Release newRelease = addNewRelease();
-
     assertEquals(newRelease.getId(), releaseService.getNextRelease().getRelease().getId());
   }
 
   @Test
   public void test_getCompletedReleases_isCorrectSize() {
     assertEquals(0, releaseService.getCompletedReleases().size());
-
     addNewRelease();
-
     assertEquals(1, releaseService.getCompletedReleases().size());
   }
 
   @Test
   public void test_list_isCorrectSize() {
     assertEquals(1, releaseService.list().size());
-
     addNewRelease();
-
     assertEquals(2, releaseService.list().size());
+  }
+
+  @Test
+  public void test_queueNotValidatedSubmission() {
+    // System.out.println(release.getProjectKeys());
+    // System.out.println(releaseService.getQueued());
+    // releaseService.queue(release.getProjectKeys());
   }
 
   private Release addNewRelease() {

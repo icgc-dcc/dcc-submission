@@ -65,7 +65,7 @@ public class ReleaseFileSystem {
   public SubmissionDirectory getSubmissionDirectory(Project project) {
     checkNotNull(project);
     checkSubmissionDirectory(project);
-    Submission submission = this.releases.getSubmission(this.release.getName(), project.getProjectKey());
+    Submission submission = this.releases.getSubmission(this.release.getName(), project.getKey());
     return new SubmissionDirectory(this.dccFileSystem, this.release, project, submission);
   }
 

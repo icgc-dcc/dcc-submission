@@ -71,7 +71,7 @@ public class SubmissionDirectory {
   }
 
   public String getProjectKey() {
-    return this.project.getProjectKey();
+    return this.project.getKey();
   }
 
   public void notifyModified() {

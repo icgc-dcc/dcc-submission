@@ -2,7 +2,9 @@ package org.icgc.dcc.release.model;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 import org.icgc.dcc.core.model.BaseEntity;
 import org.icgc.dcc.core.model.HasName;
@@ -20,7 +22,7 @@ public class Release extends BaseEntity implements HasName {
 
   protected List<Submission> submissions = new ArrayList<Submission>();
 
-  protected List<String> projectKeys = new ArrayList<String>();
+  protected Queue<String> queue = new LinkedList<String>();
 
   protected Date releaseDate;
 
@@ -43,6 +45,10 @@ public class Release extends BaseEntity implements HasName {
     return name;
   }
 
+  public void setName(String name) {
+    this.name = name;
+  }
+
   public ReleaseState getState() {
     return state;
   }
@@ -55,24 +61,8 @@ public class Release extends BaseEntity implements HasName {
     return submissions;
   }
 
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public List<String> getProjectKeys() {
-    return projectKeys;
-  }
-
-  public void enqueue(String projectKey) {
-    this.projectKeys.add(projectKey);
-  }
-
-  public void enqueue(List<String> newProjectKeys) {
-    this.projectKeys.addAll(newProjectKeys);
-  }
-
-  public void emptyQueue() {
-    this.projectKeys = new ArrayList<String>();
+  public void addSubmission(Submission submission) {
+    this.getSubmissions().add(submission);
   }
 
   public Dictionary getDictionary() {
@@ -89,5 +79,25 @@ public class Release extends BaseEntity implements HasName {
 
   public void setReleaseDate() {
     this.releaseDate = new Date();
+  }
+
+  public Queue<String> getQueue() {
+    return queue;
+  }
+
+  public void enqueue(String projectKey) {
+    this.getQueue().add(projectKey);
+  }
+
+  public void enqueue(List<String> projectKeys) {
+    this.getQueue().addAll(projectKeys);
+  }
+
+  public String dequeue() {
+    return this.getQueue().remove();
+  }
+
+  public void emptyQueue() {
+    this.queue = new LinkedList<String>();
   }
 }

@@ -109,6 +109,13 @@ public class ReleaseService extends BaseMorphiaService {
     return this.setState(projectKeys, SubmissionState.QUEUED);
   }
 
+  public String dequeue(SubmissionState state) {
+    String dequeued = this.getNextRelease().release.dequeue();
+    List<String> projectKeys = this.getQueued();
+    this.setState(projectKeys, state);
+    return dequeued;
+  }
+
   public void deleteQueuedRequest() {
     List<String> projectKeys = this.getQueued();
 
