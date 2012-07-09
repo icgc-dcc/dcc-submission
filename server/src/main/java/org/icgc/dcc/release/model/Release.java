@@ -86,11 +86,15 @@ public class Release extends BaseEntity implements HasName {
   }
 
   public void enqueue(String projectKey) {
-    this.getQueue().add(projectKey);
+    if(projectKey != null && !projectKey.isEmpty()) {
+      this.getQueue().add(projectKey);
+    }
   }
 
   public void enqueue(List<String> projectKeys) {
-    this.getQueue().addAll(projectKeys);
+    for(String projectKey : projectKeys) {
+      this.enqueue(projectKey);
+    }
   }
 
   public String dequeue() {

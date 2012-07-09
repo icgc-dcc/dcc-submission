@@ -31,21 +31,6 @@ public class ReleaseService extends BaseMorphiaService {
     registerModelClasses(Release.class);
   }
 
-  public ReleaseState nextReleaseState() throws IllegalReleaseStateException {
-    return getNextRelease().getRelease().getState();
-  }
-
-  public NextRelease getNextRelease() throws IllegalReleaseStateException {
-    MongodbQuery<Release> query = this.where(QRelease.release.state.eq(ReleaseState.OPENED));
-    // at any time there should only be one release open which is the next release
-    List<Release> nextRelease = query.list();
-
-    checkState(nextRelease != null);
-    checkState(nextRelease.size() == 1);
-
-    return new NextRelease(nextRelease.get(0), datastore());
-  }
-
   public MongodbQuery<Release> query() {
     return new MorphiaQuery<Release>(morphia(), datastore(), QRelease.release);
   }
@@ -54,16 +39,18 @@ public class ReleaseService extends BaseMorphiaService {
     return query().where(predicate);
   }
 
-  public List<CompletedRelease> getCompletedReleases() throws IllegalReleaseStateException {
-    List<CompletedRelease> completedReleases = new ArrayList<CompletedRelease>();
+  public void createInitialRelease(Release initRelease) {
+    // create the first release
+    datastore().save(initRelease);
+  }
 
-    MongodbQuery<Release> query = this.where(QRelease.release.state.eq(ReleaseState.COMPLETED));
+  public NextRelease getNextRelease() throws IllegalReleaseStateException {
+    Release nextRelease = this.query().where(QRelease.release.state.eq(ReleaseState.OPENED)).singleResult();
+    return new NextRelease(nextRelease, datastore());
+  }
 
-    for(Release release : query.list()) {
-      completedReleases.add(new CompletedRelease(release));
-    }
-
-    return completedReleases;
+  public ReleaseState nextReleaseState() throws IllegalReleaseStateException {
+    return getNextRelease().getRelease().getState();
   }
 
   public List<HasRelease> list() {
@@ -78,9 +65,16 @@ public class ReleaseService extends BaseMorphiaService {
     return list;
   }
 
-  public void createInitialRelease(Release initRelease) {
-    // create the first release
-    datastore().save(initRelease);
+  public List<CompletedRelease> getCompletedReleases() throws IllegalReleaseStateException {
+    List<CompletedRelease> completedReleases = new ArrayList<CompletedRelease>();
+
+    MongodbQuery<Release> query = this.where(QRelease.release.state.eq(ReleaseState.COMPLETED));
+
+    for(Release release : query.list()) {
+      completedReleases.add(new CompletedRelease(release));
+    }
+
+    return completedReleases;
   }
 
   public Submission getSubmission(String releaseName, String projectKey) {

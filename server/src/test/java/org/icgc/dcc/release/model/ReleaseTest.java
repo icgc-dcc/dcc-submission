@@ -81,6 +81,22 @@ public class ReleaseTest {
   }
 
   @Test
+  public void test_enqueue_oneKey_null() {
+    assertEquals(0, release.getQueue().size());
+    String projectKey = null;
+    release.enqueue(projectKey);
+    assertEquals(0, release.getQueue().size());
+  }
+
+  @Test
+  public void test_enqueue_oneKey_emptyString() {
+    assertEquals(0, release.getQueue().size());
+    String projectKey = "";
+    release.enqueue(projectKey);
+    assertEquals(0, release.getQueue().size());
+  }
+
+  @Test
   public void test_enqueue_manyKeys() {
     assertEquals(0, release.getQueue().size());
     List<String> projectKeys = new ArrayList<String>();
@@ -89,6 +105,28 @@ public class ReleaseTest {
     release.enqueue(projectKeys);
     assertEquals(2, release.getQueue().size());
     assertEquals("pkey1", release.getQueue().peek());
+  }
+
+  @Test
+  public void test_enqueue_manyKeys_null() {
+    assertEquals(0, release.getQueue().size());
+    List<String> projectKeys = new ArrayList<String>();
+    projectKeys.add(null);
+    projectKeys.add("pkey");
+    release.enqueue(projectKeys);
+    assertEquals(1, release.getQueue().size());
+    assertEquals("pkey", release.getQueue().peek());
+  }
+
+  @Test
+  public void test_enqueue_manyKeys_emptyString() {
+    assertEquals(0, release.getQueue().size());
+    List<String> projectKeys = new ArrayList<String>();
+    projectKeys.add("");
+    projectKeys.add("pkey");
+    release.enqueue(projectKeys);
+    assertEquals(1, release.getQueue().size());
+    assertEquals("pkey", release.getQueue().peek());
   }
 
   @Test
@@ -102,7 +140,6 @@ public class ReleaseTest {
     assertEquals("pkey1", release.dequeue());
     assertEquals(1, release.getQueue().size());
     assertEquals("pkey2", release.getQueue().peek());
-
   }
 
   @Test
