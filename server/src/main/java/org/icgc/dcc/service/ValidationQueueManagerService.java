@@ -92,10 +92,9 @@ public class ValidationQueueManagerService extends AbstractExecutionThreadServic
     scheduleAtFixedRate = scheduler.scheduleAtFixedRate(new Runnable() {
       @Override
       public void run() {
-        log.info("polling every second");
         if(isRunning()) {
           List<String> queued = releaseService.getQueued();
-          log.info("queued = {}", queued);
+          log.info("polling every second; queued = {}", queued);
           if(null != queued && !queued.isEmpty()) {
             String projectKey = queued.get(0);
             Release release = releaseService.getNextRelease().getRelease();

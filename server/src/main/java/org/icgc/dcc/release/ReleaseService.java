@@ -4,7 +4,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.icgc.dcc.core.morphia.BaseMorphiaService;
@@ -94,28 +93,8 @@ public class ReleaseService extends BaseMorphiaService {
     return result;
   }
 
-  int count = 0;
-
   public List<String> getQueued() {
-    // return this.getSubmission(SubmissionState.QUEUED);
-    List<String> queued = null;
-    switch(count) {
-    case 0:
-      queued = Arrays.asList("project1", "project2");
-      break;
-    case 1:
-      queued = Arrays.asList("project2");
-      break;
-    case 5:
-      queued = Arrays.asList("project3");
-      break;
-    }
-    count++;
-    return queued;
-  }
-
-  public String dequeue(boolean valid) {
-    return "project1";
+    return this.getSubmission(SubmissionState.QUEUED);
   }
 
   public boolean queue(List<String> projectKeys) {
@@ -123,10 +102,10 @@ public class ReleaseService extends BaseMorphiaService {
     return this.setState(projectKeys, SubmissionState.QUEUED);
   }
 
-  public String dequeue(SubmissionState state) {
+  public String dequeue(boolean valid) {
     String dequeued = this.getNextRelease().release.dequeue();
     List<String> projectKeys = this.getQueued();
-    this.setState(projectKeys, state);
+    this.setState(projectKeys, valid ? SubmissionState.VALID : SubmissionState.INVALID);
     return dequeued;
   }
 
