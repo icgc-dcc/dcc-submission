@@ -117,8 +117,8 @@ public class DataGenerator {
     Dictionary firstDict = new Dictionary("1.0");
 
     // add FileSchema to Dictionary
-    FileSchema file = new FileSchema("biomarker");
-    file.setPattern("^\\w+__\\d+__\\d+__biomarker__\\d+\\.txt$");
+    FileSchema file = new FileSchema("donor");
+    file.setPattern("^\\w+__\\d+__\\d+__donor__\\d+\\.txt$");
     file.setRole(FileSchemaRole.SUBMISSION);
 
     // create at least one restriction
