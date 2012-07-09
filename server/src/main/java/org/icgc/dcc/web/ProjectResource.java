@@ -46,7 +46,7 @@ public class ProjectResource {
     checkArgument(project != null);
     try {
       this.projects.addProject(project);
-      return Response.created(UriBuilder.fromResource(ProjectResource.class).path(project.getProjectKey()).build())
+      return Response.created(UriBuilder.fromResource(ProjectResource.class).path(project.getKey()).build())
           .build();
     } catch(DuplicateKey e) {
       return Response.status(Status.BAD_REQUEST).build();

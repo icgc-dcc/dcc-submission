@@ -56,7 +56,7 @@ public class ProjectService {
     List<Release> releases = new ArrayList<Release>();
     for(Release release : releaseQuery.list()) {
       for(Submission submission : release.getSubmissions()) {
-        if(submission.getProjectKey().equals(project.getProjectKey())) {
+        if(submission.getProjectKey().equals(project.getKey())) {
           releases.add(release);
           continue;
         }
@@ -88,7 +88,7 @@ public class ProjectService {
     Project project = Iterables.find(this.getProjects(), new com.google.common.base.Predicate<Project>() {
       @Override
       public boolean apply(Project input) {
-        return input.getProjectKey().equals(projectKey);
+        return input.getKey().equals(projectKey);
       }
     }, null);
     if(project == null) {

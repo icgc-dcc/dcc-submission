@@ -82,7 +82,7 @@ public class DataGenerator {
 
     // add Project1
     Project project1 = new Project("project1");
-    project1.setProjectKey("project1");
+    project1.setKey("project1");
     List<String> users = new ArrayList<String>();
     users.add("admin");
     project1.setUsers(users);
@@ -93,7 +93,7 @@ public class DataGenerator {
 
     // add Project2
     Project project2 = new Project("project2");
-    project2.setProjectKey("project2");
+    project2.setKey("project2");
     users.clear();
     users.add("admin");
     project2.setUsers(users);
@@ -104,7 +104,7 @@ public class DataGenerator {
 
     // add Project3
     Project project3 = new Project("project3");
-    project3.setProjectKey("project3");
+    project3.setKey("project3");
     users.clear();
     users.add("bogus");
     project3.setUsers(users);

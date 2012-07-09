@@ -2,7 +2,6 @@ package org.icgc.dcc.core.model;
 
 import java.util.List;
 
-
 import com.google.code.morphia.annotations.Entity;
 import com.google.code.morphia.annotations.Indexed;
 
@@ -27,10 +26,10 @@ public class Project extends BaseEntity implements HasName {
     this.setName(name);
   }
 
-  public Project(String name, String projectKey) {
+  public Project(String name, String key) {
     super();
     this.setName(name);
-    this.setProjectKey(projectKey);
+    this.setKey(key);
   }
 
   @Override
@@ -38,12 +37,16 @@ public class Project extends BaseEntity implements HasName {
     return name;
   }
 
-  public String getProjectKey() {
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public String getKey() {
     return key;
   }
 
-  public void setProjectKey(String projectKey) {
-    this.key = projectKey;
+  public void setKey(String key) {
+    this.key = key;
   }
 
   public List<String> getUsers() {
@@ -60,10 +63,6 @@ public class Project extends BaseEntity implements HasName {
 
   public void setGroups(List<String> groups) {
     this.groups = groups;
-  }
-
-  public void setName(String name) {
-    this.name = name;
   }
 
   public boolean hasUser(String name) {

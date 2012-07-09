@@ -69,14 +69,14 @@ public class FileSystemTest {
     when(this.mockUser.getName()).thenReturn(USERNAME);
 
     when(this.mockProject.getName()).thenReturn(PROJECT_NAME);
-    when(this.mockProject.getProjectKey()).thenReturn(PROJECT_KEY);
+    when(this.mockProject.getKey()).thenReturn(PROJECT_KEY);
     when(this.mockProject.hasUser(this.mockUser.getName())).thenReturn(true);
 
     when(this.mockSubmission.getState()).thenReturn(SubmissionState.SIGNED_OFF);
 
     when(this.mockProjects.getProjects()).thenReturn(Arrays.asList(new Project[] { this.mockProject }));
 
-    when(this.mockReleases.getSubmission(this.mockRelease.getName(), this.mockProject.getProjectKey())).thenReturn(
+    when(this.mockReleases.getSubmission(this.mockRelease.getName(), this.mockProject.getKey())).thenReturn(
         this.mockSubmission);
   }
 }
