@@ -137,7 +137,7 @@ public class FileSystemFunctionalTest extends FileSystemTest {
     Iterable<String> fileList3 = mySubmissionDirectory.listFile();
     Assert.assertNotNull(fileList3);
     Assert.assertEquals(//
-        "[cnsm__bla__bla__s__bla__bla.tsv]",//
+        "[cnsm__bla__bla__s__bla__bla.tsv, .validation]",//
         fileList3.toString());
     log.info("ls3 = " + fileList3);
   }
