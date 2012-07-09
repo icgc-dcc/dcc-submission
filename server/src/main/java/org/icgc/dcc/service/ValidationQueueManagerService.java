@@ -81,7 +81,7 @@ public class ValidationQueueManagerService extends AbstractExecutionThreadServic
   }
 
   @Override
-  protected void shutDown() throws Exception { // TODO: figure out why this is called before run()
+  protected void shutDown() throws Exception {
     log.info("shutting down validation queue service manager");
     super.shutDown();
   }
@@ -95,7 +95,7 @@ public class ValidationQueueManagerService extends AbstractExecutionThreadServic
         if(isRunning()) {
           List<String> queued = releaseService.getQueued();
           log.info("polling every second; queued = {}", queued);
-          if(null != queued && !queued.isEmpty()) {
+          if(null != queued && queued.isEmpty() == false) {
             String projectKey = queued.get(0);
             Release release = releaseService.getNextRelease().getRelease();
             validationService.validate(release, projectKey, thisAsCallback);
@@ -105,7 +105,7 @@ public class ValidationQueueManagerService extends AbstractExecutionThreadServic
     }, POLLING_FREQUENCY_PER_SEC, POLLING_FREQUENCY_PER_SEC, TimeUnit.SECONDS);
 
     synchronized(scheduleAtFixedRate) {
-      scheduleAtFixedRate.wait();// TODO: better?
+      // scheduleAtFixedRate.wait();// TODO: better?
     }
   }
 

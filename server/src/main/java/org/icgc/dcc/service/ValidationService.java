@@ -20,6 +20,7 @@ package org.icgc.dcc.service;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.File;
+import java.util.List;
 
 import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.core.model.Project;
@@ -29,19 +30,26 @@ import org.icgc.dcc.filesystem.ReleaseFileSystem;
 import org.icgc.dcc.filesystem.SubmissionDirectory;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.validation.CascadingStrategy;
+import org.icgc.dcc.validation.ExternalFlowPlanner;
 import org.icgc.dcc.validation.FileSchemaDirectory;
+import org.icgc.dcc.validation.InternalFlowPlanner;
 import org.icgc.dcc.validation.LocalCascadingStrategy;
 import org.icgc.dcc.validation.LocalFileSchemaDirectory;
+import org.icgc.dcc.validation.Plan;
 import org.icgc.dcc.validation.Planner;
 import org.icgc.dcc.validation.ValidationCallback;
-import org.icgc.dcc.validation.Validator;
+import org.icgc.dcc.validation.ValidationFlowListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cascading.cascade.Cascade;
+import cascading.flow.Flow;
+
+import com.google.common.collect.Iterables;
 import com.google.inject.Inject;
 
 /**
- * 
+ * Wraps validation call for the {@code ValidationQueueManagerService} and {@Main} (the validation one) to use
  */
 public class ValidationService {
 
@@ -69,8 +77,11 @@ public class ValidationService {
   }
 
   public void validate(Release release, String projectKey, ValidationCallback validationCallback) {
-    Project project = projectService.getProject(projectKey);
+    Dictionary dictionary = release.getDictionary();
+
     ReleaseFileSystem releaseFilesystem = dccFileSystem.getReleaseFilesystem(release);
+
+    Project project = projectService.getProject(projectKey);
     SubmissionDirectory submissionDirectory = releaseFilesystem.getSubmissionDirectory(project);
 
     File rootDir = new File(submissionDirectory.getSubmissionDirPath());
@@ -78,11 +89,37 @@ public class ValidationService {
     FileSchemaDirectory fileSchemaDirectory = new LocalFileSchemaDirectory(rootDir);
     CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir);
 
-    Dictionary dictionary = release.getDictionary();
-
     log.info("starting validation on project {}", projectKey);
-    new Validator(planner, fileSchemaDirectory, cascadingStrategy, dictionary, validationCallback, projectKey)
-        .validate();
+    Cascade cascade = planCascade(projectKey, validationCallback, fileSchemaDirectory, cascadingStrategy, dictionary);
+    runCascade(cascade);
     log.info("validation finished for project {}", projectKey);
+  }
+
+  @SuppressWarnings("rawtypes")
+  private Cascade planCascade(String projectKey, ValidationCallback validationCallback,
+      FileSchemaDirectory fileSchemaDirectory, CascadingStrategy cascadingStrategy, Dictionary dictionary) {
+    Plan plan = planner.plan(fileSchemaDirectory, dictionary);
+    log.info("# internal flows: {}", Iterables.toArray(plan.getInternalFlows(), InternalFlowPlanner.class).length);
+    log.info("# external flows: {}", Iterables.toArray(plan.getExternalFlows(), ExternalFlowPlanner.class).length);
+
+    Cascade cascade = plan.connect(cascadingStrategy);
+    if(validationCallback != null) {
+      List<Flow> flows = cascade.getFlows();
+      for(Flow flow : flows) {
+        ValidationFlowListener listener = new ValidationFlowListener(validationCallback, flows, projectKey);
+        flow.addListener(listener);// TODO: once a cascade listener is available, use it instead
+      }
+    }
+    return cascade;
+  }
+
+  private void runCascade(Cascade cascade) {
+    int size = cascade.getFlows().size();
+    if(size > 0) {
+      log.info("starting cascased with {} flows", size);
+      cascade.start();
+    } else {
+      log.info("no flows to run");
+    }
   }
 }

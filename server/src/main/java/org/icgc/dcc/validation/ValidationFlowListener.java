@@ -43,7 +43,7 @@ public class ValidationFlowListener implements FlowListener {
   private final ValidationCallback callback;
 
   @SuppressWarnings("rawtypes")
-  ValidationFlowListener(ValidationCallback callback, List<Flow> flows, String projectKey) {
+  public ValidationFlowListener(ValidationCallback callback, List<Flow> flows, String projectKey) {
     checkArgument(flows != null);
     checkArgument(projectKey != null);
 
