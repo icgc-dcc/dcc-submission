@@ -77,7 +77,7 @@ public class ReleaseTest {
     String projectKey = "pkey";
     release.enqueue(projectKey);
     assertEquals(1, release.getQueue().size());
-    assertEquals("pkey", release.getQueue().peek());
+    assertEquals("pkey", release.getQueue().get(0));
   }
 
   @Test
@@ -104,7 +104,7 @@ public class ReleaseTest {
     projectKeys.add("pkey2");
     release.enqueue(projectKeys);
     assertEquals(2, release.getQueue().size());
-    assertEquals("pkey1", release.getQueue().peek());
+    assertEquals("pkey1", release.getQueue().get(0));
   }
 
   @Test
@@ -115,7 +115,7 @@ public class ReleaseTest {
     projectKeys.add("pkey");
     release.enqueue(projectKeys);
     assertEquals(1, release.getQueue().size());
-    assertEquals("pkey", release.getQueue().peek());
+    assertEquals("pkey", release.getQueue().get(0));
   }
 
   @Test
@@ -126,7 +126,7 @@ public class ReleaseTest {
     projectKeys.add("pkey");
     release.enqueue(projectKeys);
     assertEquals(1, release.getQueue().size());
-    assertEquals("pkey", release.getQueue().peek());
+    assertEquals("pkey", release.getQueue().get(0));
   }
 
   @Test
@@ -139,7 +139,7 @@ public class ReleaseTest {
     assertEquals(2, release.getQueue().size());
     assertEquals("pkey1", release.dequeue());
     assertEquals(1, release.getQueue().size());
-    assertEquals("pkey2", release.getQueue().peek());
+    assertEquals("pkey2", release.getQueue().get(0));
   }
 
   @Test

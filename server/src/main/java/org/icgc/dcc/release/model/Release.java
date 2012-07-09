@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 
 import org.icgc.dcc.core.model.BaseEntity;
 import org.icgc.dcc.core.model.HasName;
@@ -22,7 +21,7 @@ public class Release extends BaseEntity implements HasName {
 
   protected List<Submission> submissions = new ArrayList<Submission>();
 
-  protected Queue<String> queue = new LinkedList<String>();
+  protected List<String> queue = new ArrayList<String>();
 
   protected Date releaseDate;
 
@@ -81,7 +80,7 @@ public class Release extends BaseEntity implements HasName {
     this.releaseDate = new Date();
   }
 
-  public Queue<String> getQueue() {
+  public List<String> getQueue() {
     return queue;
   }
 
@@ -98,7 +97,7 @@ public class Release extends BaseEntity implements HasName {
   }
 
   public String dequeue() {
-    return this.getQueue().remove();
+    return this.getQueue().remove(0);
   }
 
   public void emptyQueue() {
