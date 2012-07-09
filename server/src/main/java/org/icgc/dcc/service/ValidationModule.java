@@ -32,13 +32,14 @@ import com.google.inject.multibindings.Multibinder;
 /**
  * Module for the ({@code ValidationQueueManagerService})
  */
-public class ValidationServiceModule extends AbstractDccModule {
+public class ValidationModule extends AbstractDccModule {
 
   private Multibinder<RestrictionType> types;
 
   @Override
   protected void configure() {
     bindService(ValidationQueueManagerService.class);
+    bind(ValidationService.class);
     bind(Planner.class).to(DefaultPlanner.class);
     types = Multibinder.newSetBinder(binder(), RestrictionType.class);
 

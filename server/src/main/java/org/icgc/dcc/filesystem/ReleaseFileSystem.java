@@ -8,7 +8,6 @@ import java.util.List;
 
 import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.core.model.Project;
-import org.icgc.dcc.core.model.User;
 import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
 import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.Release;
@@ -25,23 +24,27 @@ public class ReleaseFileSystem {
 
   private final Release release;
 
-  private final User user;
+  private final String username;
 
   public ReleaseFileSystem(DccFileSystem dccFilesystem, ReleaseService releases, ProjectService projects,
-      Release release, User user) {
+      Release release, String username) {
     super();
 
     checkArgument(dccFilesystem != null);
     checkArgument(releases != null);
     checkArgument(projects != null);
     checkArgument(release != null);
-    checkArgument(user != null);
 
     this.dccFileSystem = dccFilesystem;
     this.releases = releases;
     this.projects = projects;
     this.release = release;
-    this.user = user;
+    this.username = username; // may be null
+  }
+
+  public ReleaseFileSystem(DccFileSystem dccFilesystem, ReleaseService releases, ProjectService projects,
+      Release release) {
+    this(dccFilesystem, releases, projects, release, null);
   }
 
   /**
@@ -50,11 +53,10 @@ public class ReleaseFileSystem {
   public Iterable<SubmissionDirectory> listSubmissionDirectory() {
     List<SubmissionDirectory> submissionDirectoryList = new ArrayList<SubmissionDirectory>();
 
-    List<Project> projectList = this.projects.getProjects();
+    List<Project> projectList = projects.getProjects();
     for(Project project : projectList) {
-      boolean hasUser = project.hasUser(this.user.getName());
-      if(hasUser) {// TODO: use guava instead?
-        SubmissionDirectory submissionDirectory = this.getSubmissionDirectory(project);
+      if(hasPrivileges(project)) {
+        SubmissionDirectory submissionDirectory = getSubmissionDirectory(project);
         submissionDirectoryList.add(submissionDirectory);
       }
     }
@@ -64,9 +66,9 @@ public class ReleaseFileSystem {
 
   public SubmissionDirectory getSubmissionDirectory(Project project) {
     checkNotNull(project);
-    checkSubmissionDirectory(project);
-    Submission submission = this.releases.getSubmission(this.release.getName(), project.getKey());
-    return new SubmissionDirectory(this.dccFileSystem, this.release, project, submission);
+    checkSubmissionDirectory(project); // also checks privileges
+    Submission submission = releases.getSubmission(release.getName(), project.getKey());
+    return new SubmissionDirectory(dccFileSystem, release, project, submission);
   }
 
   public SubmissionDirectory getSubmissionDirectory(String projectKey) {
@@ -75,26 +77,34 @@ public class ReleaseFileSystem {
   }
 
   private void checkSubmissionDirectory(Project project) {
-    if(project.hasUser(this.user.getName()) == false) {
-      throw new DccFileSystemException("User " + this.user.getName() + " does not have permission to access project "
-          + project);
+    checkNotNull(project);
+    if(hasPrivileges(project) == false) {
+      throw new DccFileSystemException("User " + username + " does not have permission to access project " + project);
     }
-    String projectStringPath = this.dccFileSystem.buildProjectStringPath(this.release, project);
-    boolean exists = HadoopUtils.checkExistence(this.dccFileSystem.getFileSystem(), projectStringPath);
+    String projectStringPath = dccFileSystem.buildProjectStringPath(release, project);
+    boolean exists = HadoopUtils.checkExistence(dccFileSystem.getFileSystem(), projectStringPath);
     if(exists == false) {
       throw new DccFileSystemException("Release directory " + projectStringPath + " does not exist");
     }
   }
 
   public boolean isReadOnly() {
-    return ReleaseState.COMPLETED == this.release.getState(); // TODO: better way?
+    return ReleaseState.COMPLETED == release.getState();
   }
 
   public DccFileSystem getDccFileSystem() {
-    return this.dccFileSystem;
+    return dccFileSystem;
   }
 
   public Release getRelease() {
-    return this.release;
+    return release;
+  }
+
+  private boolean isApplication() {
+    return username == null;
+  }
+
+  private boolean hasPrivileges(Project project) {
+    return isApplication() || project.hasUser(username);
   }
 }

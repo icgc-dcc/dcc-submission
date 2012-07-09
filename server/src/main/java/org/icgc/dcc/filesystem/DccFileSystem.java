@@ -24,6 +24,8 @@ public class DccFileSystem {
 
   private static final Logger log = LoggerFactory.getLogger(DccFileSystem.class);
 
+  public static final String VALIDATION_DIRNAME = ".validation";
+
   /**
    * This is the only hadoop element in this class (everything else is handled in HadoopUtils)
    */
@@ -77,7 +79,16 @@ public class DccFileSystem {
    * it on the fly (for now we have very few users and don't plan on having millions ever).
    */
   public ReleaseFileSystem getReleaseFilesystem(Release release, User user) {
-    return new ReleaseFileSystem(this, this.releases, this.projects, release, user);
+    return new ReleaseFileSystem(this, this.releases, this.projects, release, user.getName());
+  }
+
+  /**
+   * Creates new project-tailored "view" of a given release filesystem. As a result, only a subset of the user-tailored
+   * are actually accessible () We may change that behavior later to not creating it on the fly (for now we have very
+   * few users and don't plan on having millions ever).
+   */
+  public ReleaseFileSystem getReleaseFilesystem(Release release) {
+    return new ReleaseFileSystem(this, this.releases, this.projects, release);
   }
 
   /**
@@ -128,11 +139,17 @@ public class DccFileSystem {
   public void mkdirProjectDirectory(Release release, Project project) {
     checkArgument(release != null);
     checkArgument(project != null);
-    // create path for project within the release
+
     String projectStringPath = this.buildProjectStringPath(release, project);
+    createDirIfDoesNotExist(projectStringPath);
+    String validationStringPath = this.buildValidationDirStringPath(release, project);
+    createDirIfDoesNotExist(validationStringPath);
+
     log.info("\t" + "project path = " + projectStringPath);
+  }
+
+  private void createDirIfDoesNotExist(String projectStringPath) {
     if(HadoopUtils.checkExistence(this.fileSystem, projectStringPath) == false) {
-      // create corresponding project directory
       HadoopUtils.mkdirs(this.fileSystem, projectStringPath);
       checkState(HadoopUtils.checkExistence(this.fileSystem, projectStringPath));
     }
@@ -148,9 +165,13 @@ public class DccFileSystem {
     return concatPath(this.buildReleaseStringPath(release), project.getKey());
   }
 
-  public String buildFilepath(Release release, Project project, String filename) {
+  public String buildFileStringPath(Release release, Project project, String filename) {
     checkArgument(filename != null);
     return concatPath(this.buildProjectStringPath(release, project), filename);
+  }
+
+  public String buildValidationDirStringPath(Release release, Project project) {
+    return concatPath(this.buildProjectStringPath(release, project), VALIDATION_DIRNAME);
   }
 
   private void ensureSubmissionDirectories(Release release) {

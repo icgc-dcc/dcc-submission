@@ -42,9 +42,8 @@ public class SubmissionDirectory {
    * (non-recursive) TODO: confirm
    */
   public Iterable<String> listFile(Pattern pattern) {
-    String submissionDirectoryPath = this.dccFileSystem.buildProjectStringPath(this.release, this.project);
-    checkArgument(submissionDirectoryPath != null);
-    List<Path> pathList = HadoopUtils.ls(this.dccFileSystem.getFileSystem(), submissionDirectoryPath, pattern);
+    checkArgument(pattern != null);
+    List<Path> pathList = HadoopUtils.ls(this.dccFileSystem.getFileSystem(), getSubmissionDirPath(), pattern);
     return HadoopUtils.toFilenameList(pathList);
   }
 
@@ -53,13 +52,13 @@ public class SubmissionDirectory {
   }
 
   public String addFile(String filename, InputStream data) {
-    String filepath = this.dccFileSystem.buildFilepath(this.release, this.project, filename);
+    String filepath = this.dccFileSystem.buildFileStringPath(this.release, this.project, filename);
     HadoopUtils.touch(this.dccFileSystem.getFileSystem(), filepath, data);
     return filepath;
   }
 
   public String deleteFile(String filename) {
-    String filepath = this.dccFileSystem.buildFilepath(this.release, this.project, filename);
+    String filepath = this.dccFileSystem.buildFileStringPath(this.release, this.project, filename);
     HadoopUtils.rm(this.dccFileSystem.getFileSystem(), filepath);
     return filepath;
   }
@@ -76,5 +75,13 @@ public class SubmissionDirectory {
 
   public void notifyModified() {
     this.submission.setState(SubmissionState.NOT_VALIDATED);
+  }
+
+  public String getSubmissionDirPath() {
+    return dccFileSystem.buildProjectStringPath(release, project);
+  }
+
+  public String getValidationDirPath() {
+    return dccFileSystem.buildValidationDirStringPath(release, project);
   }
 }

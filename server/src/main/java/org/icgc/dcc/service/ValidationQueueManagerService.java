@@ -19,7 +19,6 @@ package org.icgc.dcc.service;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import java.io.File;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -27,12 +26,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.icgc.dcc.release.ReleaseService;
-import org.icgc.dcc.validation.CascadingStrategy;
-import org.icgc.dcc.validation.FileSchemaDirectory;
-import org.icgc.dcc.validation.LocalCascadingStrategy;
-import org.icgc.dcc.validation.LocalFileSchemaDirectory;
-import org.icgc.dcc.validation.Main;
-import org.icgc.dcc.validation.Planner;
+import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.validation.ValidationCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,21 +53,20 @@ public class ValidationQueueManagerService extends AbstractExecutionThreadServic
 
   private final ReleaseService releaseService;
 
-  private final Planner planner;
+  private final ValidationService validationService;
 
   private final ValidationCallback thisAsCallback;
 
   @Inject
-  public ValidationQueueManagerService(final ReleaseService releaseService, final Planner planner) {
+  public ValidationQueueManagerService(final ReleaseService releaseService, ValidationService validationService) {
 
     checkArgument(releaseService != null);
-    checkArgument(planner != null);
+    checkArgument(validationService != null);
 
     this.releaseService = releaseService;
-    this.planner = planner;
+    this.validationService = validationService;
 
     this.thisAsCallback = this;
-
   }
 
   @Override
@@ -105,24 +98,10 @@ public class ValidationQueueManagerService extends AbstractExecutionThreadServic
           log.info("queued = {}", queued);
           if(null != queued && !queued.isEmpty()) {
             String projectKey = queued.get(0);
-            runValidation(projectKey); // TODO: write dedicated method to get first element
+            Release release = releaseService.getNextRelease().getRelease();
+            validationService.validate(release, projectKey, thisAsCallback);
           }
         }
-      }
-
-      private void runValidation(String projectKey) {
-
-        // TODO: use nextRelease.validate(null) instead
-        String releaseDir = "/home/anthony/tmp/val/stsm2";// TODO
-        File root = new File(releaseDir + "/" + projectKey);
-        File output = new File("/home/anthony/tmp/val/output");// TODO
-
-        FileSchemaDirectory fileSchemaDirectory = new LocalFileSchemaDirectory(root);
-        CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(root, output);
-
-        log.info("starting validation on project {}", projectKey);
-        new Main(root, output).process(projectKey, planner, fileSchemaDirectory, cascadingStrategy, thisAsCallback);
-        log.info("validation finished for project {}", projectKey);
       }
     }, POLLING_FREQUENCY_PER_SEC, POLLING_FREQUENCY_PER_SEC, TimeUnit.SECONDS);
 
@@ -135,13 +114,19 @@ public class ValidationQueueManagerService extends AbstractExecutionThreadServic
   protected void triggerShutdown() {
     boolean cancel = scheduleAtFixedRate.cancel(true);
     log.info("attempt to cancel returned {}", cancel);
-
-    // TODO: kill scheduleAtFixedRate
     super.triggerShutdown();
   }
 
   @Override
   public void handleSuccessfulValidation(String projectKey) {
-    releaseService.dequeue(true);// TODO: add check that projectkey is the one expected (shouddl be)
+    checkArgument(projectKey != null);
+    String dequeuedProjectKey = releaseService.dequeue(true);
+    if(dequeuedProjectKey.equals(projectKey) == false) {
+      throw new ValidationServiceException(
+          String
+              .format(
+                  "the project key dequeued from the validation queue does not match the expected project key provided: %s != %s",
+                  dequeuedProjectKey, projectKey));
+    }
   }
 }

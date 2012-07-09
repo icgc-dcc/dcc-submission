@@ -25,10 +25,6 @@ public class NextRelease extends BaseRelease {
     this.datastore = datastore;
   }
 
-  public void validate(Submission submission) {
-    // TODO detailed implementation will be filled in after validation is done
-  }
-
   public void signOff(Submission submission) {
 
     UpdateOperations<Release> ops =

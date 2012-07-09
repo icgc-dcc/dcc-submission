@@ -11,7 +11,7 @@ import org.icgc.dcc.filesystem.FileSystemModule;
 import org.icgc.dcc.http.HttpModule;
 import org.icgc.dcc.http.jersey.JerseyModule;
 import org.icgc.dcc.release.ReleaseModule;
-import org.icgc.dcc.service.ValidationServiceModule;
+import org.icgc.dcc.service.ValidationModule;
 import org.icgc.dcc.sftp.SftpModule;
 import org.icgc.dcc.shiro.ShiroModule;
 import org.icgc.dcc.web.WebModule;
@@ -33,7 +33,7 @@ public class Main {
         , new SftpModule()//
         , new DictionaryModule()//
         , new ReleaseModule()//
-        , new ValidationServiceModule()//
+        , new ValidationModule()//
         );
 
     injector.getInstance(DccRuntime.class).start();

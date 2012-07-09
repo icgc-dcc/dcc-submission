@@ -9,9 +9,6 @@ import static org.mockito.Mockito.when;
 
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.DictionaryState;
-import org.icgc.dcc.release.IllegalReleaseStateException;
-import org.icgc.dcc.release.NextRelease;
-import org.icgc.dcc.release.ReleaseException;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.Submission;
