@@ -15,16 +15,15 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.service;
+package org.icgc.dcc.validation;
 
 import org.icgc.dcc.core.AbstractDccModule;
-import org.icgc.dcc.validation.DefaultPlanner;
-import org.icgc.dcc.validation.Planner;
-import org.icgc.dcc.validation.RestrictionType;
 import org.icgc.dcc.validation.restriction.CodeListRestriction;
 import org.icgc.dcc.validation.restriction.DiscreteValuesRestriction;
 import org.icgc.dcc.validation.restriction.RangeFieldRestriction;
 import org.icgc.dcc.validation.restriction.RequiredRestriction;
+import org.icgc.dcc.validation.service.ValidationQueueManagerService;
+import org.icgc.dcc.validation.service.ValidationService;
 
 import com.google.inject.Singleton;
 import com.google.inject.multibindings.Multibinder;

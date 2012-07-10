@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.service;
+package org.icgc.dcc.validation.service;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -30,9 +30,7 @@ import org.icgc.dcc.filesystem.ReleaseFileSystem;
 import org.icgc.dcc.filesystem.SubmissionDirectory;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.validation.CascadingStrategy;
-import org.icgc.dcc.validation.ExternalFlowPlanner;
 import org.icgc.dcc.validation.FileSchemaDirectory;
-import org.icgc.dcc.validation.InternalFlowPlanner;
 import org.icgc.dcc.validation.LocalCascadingStrategy;
 import org.icgc.dcc.validation.LocalFileSchemaDirectory;
 import org.icgc.dcc.validation.Plan;
@@ -99,8 +97,8 @@ public class ValidationService {
   private Cascade planCascade(ValidationCallback validationCallback, String projectKey,
       FileSchemaDirectory fileSchemaDirectory, CascadingStrategy cascadingStrategy, Dictionary dictionary) {
     Plan plan = planner.plan(fileSchemaDirectory, dictionary);
-    log.info("# internal flows: {}", Iterables.toArray(plan.getInternalFlows(), InternalFlowPlanner.class).length);
-    log.info("# external flows: {}", Iterables.toArray(plan.getExternalFlows(), ExternalFlowPlanner.class).length);
+    log.info("# internal flows: {}", Iterables.size(plan.getInternalFlows()));
+    log.info("# external flows: {}", Iterables.size(plan.getExternalFlows()));
 
     Cascade cascade = plan.connect(cascadingStrategy);
     if(validationCallback != null) {

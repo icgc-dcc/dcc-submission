@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.service;
+package org.icgc.dcc.validation.service;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -31,6 +31,7 @@ import org.icgc.dcc.validation.ValidationCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Optional;
 import com.google.common.util.concurrent.AbstractService;
 import com.google.inject.Inject;
 
@@ -70,7 +71,16 @@ public class ValidationQueueManagerService extends AbstractService implements Va
   @Override
   protected void doStart() {
     notifyStarted();
+    startScheduler();
+  }
 
+  @Override
+  protected void doStop() {
+    stopScheduler();
+    notifyStopped();
+  }
+
+  private void startScheduler() {
     schedule = scheduler.scheduleWithFixedDelay(new Runnable() {
       @Override
       public void run() {
@@ -87,24 +97,18 @@ public class ValidationQueueManagerService extends AbstractService implements Va
     }, POLLING_FREQUENCY_PER_SEC, POLLING_FREQUENCY_PER_SEC, TimeUnit.SECONDS);
   }
 
-  @Override
-  protected void doStop() {
+  private void stopScheduler() {
     boolean cancel = schedule.cancel(true);
     log.info("attempt to cancel returned {}", cancel);
-    notifyStopped();
   }
 
   @Override
   public void handleSuccessfulValidation(String projectKey) {
     checkArgument(projectKey != null);
     log.info("successful validation - dequeuing project key {}", projectKey);
-    String dequeuedProjectKey = releaseService.dequeue(true);
-    if(dequeuedProjectKey.equals(projectKey) == false) {
-      throw new ValidationServiceException(
-          String
-              .format(
-                  "the project key dequeued from the validation queue does not match the expected project key provided: %s != %s",
-                  dequeuedProjectKey, projectKey));
+    Optional<String> dequeuedProjectKey = releaseService.dequeue(projectKey, true);
+    if(dequeuedProjectKey.isPresent() == false) {
+      log.warn("could not dequeue project {}, maybe the queue was emptied in the meantime?", projectKey);
     }
   }
 

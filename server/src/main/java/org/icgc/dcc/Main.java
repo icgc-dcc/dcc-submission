@@ -11,9 +11,9 @@ import org.icgc.dcc.filesystem.FileSystemModule;
 import org.icgc.dcc.http.HttpModule;
 import org.icgc.dcc.http.jersey.JerseyModule;
 import org.icgc.dcc.release.ReleaseModule;
-import org.icgc.dcc.service.ValidationModule;
 import org.icgc.dcc.sftp.SftpModule;
 import org.icgc.dcc.shiro.ShiroModule;
+import org.icgc.dcc.validation.ValidationModule;
 import org.icgc.dcc.web.WebModule;
 
 import com.google.inject.Guice;

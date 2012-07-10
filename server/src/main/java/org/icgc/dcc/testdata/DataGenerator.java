@@ -147,12 +147,12 @@ public class DataGenerator {
     file.addField(donor_sex);
 
     // add Field specimen_id to FileSchema
-    Field specimen_id = new Field();
-    specimen_id.setName("specimen_id");
-    specimen_id.setLabel("ID of the specimen on which biomarker ascertainment was performed, if applicable");
-    specimen_id.setValueType(ValueType.TEXT);
-    specimen_id.setRestrictions(restrictions);
-    file.addField(specimen_id);
+    Field donor_notes = new Field();
+    donor_notes.setName("donor_notes");
+    donor_notes.setLabel("notes");
+    donor_notes.setValueType(ValueType.TEXT);
+    donor_notes.setRestrictions(restrictions);
+    file.addField(donor_notes);
 
     firstDict.addFile(file);
 

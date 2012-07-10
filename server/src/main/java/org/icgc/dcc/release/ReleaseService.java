@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.icgc.dcc.core.morphia.BaseMorphiaService;
@@ -17,6 +18,7 @@ import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
 import com.google.code.morphia.query.Query;
 import com.google.code.morphia.query.UpdateOperations;
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
 import com.mysema.query.mongodb.MongodbQuery;
@@ -99,10 +101,18 @@ public class ReleaseService extends BaseMorphiaService {
     return this.setState(projectKeys, SubmissionState.QUEUED);
   }
 
-  public String dequeue(boolean valid) {
-    String dequeued = this.getNextRelease().release.dequeue();
+  public Optional<String> dequeue(String projectKey, boolean valid) {
+    Optional<String> dequeued = Optional.<String> absent();
     List<String> projectKeys = this.getQueued();
-    this.setState(projectKeys, valid ? SubmissionState.VALID : SubmissionState.INVALID);
+    if(null != projectKeys && projectKeys.isEmpty() == false) {
+      String first = projectKeys.get(0);
+      if(null != first && first.equals(projectKey)) {
+        dequeued = Optional.<String> of(this.getNextRelease().release.dequeue());
+
+        this.setState(dequeued.get(), valid ? SubmissionState.VALID : SubmissionState.INVALID);
+        // TODO: actually update the queue in db (throughough class)
+      }
+    }
     return dequeued;
   }
 
@@ -133,6 +143,10 @@ public class ReleaseService extends BaseMorphiaService {
       }
     }
     return result;
+  }
+
+  private boolean setState(String projectKey, SubmissionState state) {
+    return setState(Arrays.asList(projectKey), state);
   }
 
   private boolean setState(List<String> projectKeys, SubmissionState state) {

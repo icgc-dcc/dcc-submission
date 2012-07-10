@@ -8,8 +8,7 @@ import org.icgc.dcc.filesystem.FileSystemModule;
 import org.icgc.dcc.release.CompletedRelease;
 import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.Release;
-import org.icgc.dcc.service.ValidationModule;
-import org.icgc.dcc.service.ValidationService;
+import org.icgc.dcc.validation.service.ValidationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
