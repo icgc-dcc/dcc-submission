@@ -31,7 +31,7 @@ import org.icgc.dcc.validation.ValidationCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.util.concurrent.AbstractExecutionThreadService;
+import com.google.common.util.concurrent.AbstractService;
 import com.google.inject.Inject;
 
 /**
@@ -39,23 +39,21 @@ import com.google.inject.Inject;
  * - launches validation for queue submissions<br>
  * - updates submission states upon termination of the validation process
  */
-public class ValidationQueueManagerService extends AbstractExecutionThreadService implements ValidationCallback {
+public class ValidationQueueManagerService extends AbstractService implements ValidationCallback {
 
   private static final Logger log = LoggerFactory.getLogger(ValidationQueueManagerService.class);
-
-  private static final String SERVICE_NAME = "VQMS";
 
   private static final int POLLING_FREQUENCY_PER_SEC = 1;
 
   private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-
-  private ScheduledFuture<?> scheduleAtFixedRate;
 
   private final ReleaseService releaseService;
 
   private final ValidationService validationService;
 
   private final ValidationCallback thisAsCallback;
+
+  private ScheduledFuture<?> scheduleAtFixedRate;
 
   @Inject
   public ValidationQueueManagerService(final ReleaseService releaseService, ValidationService validationService) {
@@ -70,26 +68,10 @@ public class ValidationQueueManagerService extends AbstractExecutionThreadServic
   }
 
   @Override
-  protected String getServiceName() {
-    return SERVICE_NAME;
-  }
+  protected void doStart() {
+    notifyStarted();
 
-  @Override
-  protected void startUp() throws Exception {
-    log.info("starting up validation queue service manager");
-    super.startUp();
-  }
-
-  @Override
-  protected void shutDown() throws Exception {
-    log.info("shutting down validation queue service manager");
-    super.shutDown();
-  }
-
-  @Override
-  protected void run() throws Exception {
-
-    scheduleAtFixedRate = scheduler.scheduleAtFixedRate(new Runnable() {
+    scheduleAtFixedRate = scheduler.scheduleWithFixedDelay(new Runnable() {
       @Override
       public void run() {
         if(isRunning()) {
@@ -103,22 +85,19 @@ public class ValidationQueueManagerService extends AbstractExecutionThreadServic
         }
       }
     }, POLLING_FREQUENCY_PER_SEC, POLLING_FREQUENCY_PER_SEC, TimeUnit.SECONDS);
-
-    synchronized(scheduleAtFixedRate) {
-      // scheduleAtFixedRate.wait();// TODO: better?
-    }
   }
 
   @Override
-  protected void triggerShutdown() {
+  protected void doStop() {
     boolean cancel = scheduleAtFixedRate.cancel(true);
     log.info("attempt to cancel returned {}", cancel);
-    super.triggerShutdown();
+    notifyStopped();
   }
 
   @Override
   public void handleSuccessfulValidation(String projectKey) {
     checkArgument(projectKey != null);
+    log.info("successful validation - dequeuing project key {}", projectKey);
     String dequeuedProjectKey = releaseService.dequeue(true);
     if(dequeuedProjectKey.equals(projectKey) == false) {
       throw new ValidationServiceException(

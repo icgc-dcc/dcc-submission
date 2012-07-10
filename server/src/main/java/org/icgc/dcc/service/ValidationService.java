@@ -90,13 +90,13 @@ public class ValidationService {
     CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir);
 
     log.info("starting validation on project {}", projectKey);
-    Cascade cascade = planCascade(projectKey, validationCallback, fileSchemaDirectory, cascadingStrategy, dictionary);
-    runCascade(cascade);
+    Cascade cascade = planCascade(validationCallback, projectKey, fileSchemaDirectory, cascadingStrategy, dictionary);
+    runCascade(cascade, validationCallback, projectKey);
     log.info("validation finished for project {}", projectKey);
   }
 
   @SuppressWarnings("rawtypes")
-  private Cascade planCascade(String projectKey, ValidationCallback validationCallback,
+  private Cascade planCascade(ValidationCallback validationCallback, String projectKey,
       FileSchemaDirectory fileSchemaDirectory, CascadingStrategy cascadingStrategy, Dictionary dictionary) {
     Plan plan = planner.plan(fileSchemaDirectory, dictionary);
     log.info("# internal flows: {}", Iterables.toArray(plan.getInternalFlows(), InternalFlowPlanner.class).length);
@@ -113,13 +113,14 @@ public class ValidationService {
     return cascade;
   }
 
-  private void runCascade(Cascade cascade) {
+  private void runCascade(Cascade cascade, ValidationCallback validationCallback, String projectKey) {
     int size = cascade.getFlows().size();
     if(size > 0) {
       log.info("starting cascased with {} flows", size);
       cascade.start();
     } else {
       log.info("no flows to run");
+      validationCallback.handleSuccessfulValidation(projectKey);
     }
   }
 }
