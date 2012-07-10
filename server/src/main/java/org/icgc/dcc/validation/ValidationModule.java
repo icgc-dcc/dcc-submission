@@ -46,8 +46,6 @@ public class ValidationModule extends AbstractDccModule {
     bindRestriction(RangeFieldRestriction.Type.class);
     bindRestriction(RequiredRestriction.Type.class);
     bindRestriction(CodeListRestriction.Type.class);
-
-    bind(Planner.class).to(DefaultPlanner.class);
   }
 
   private void bindRestriction(Class<? extends RestrictionType> type) {
