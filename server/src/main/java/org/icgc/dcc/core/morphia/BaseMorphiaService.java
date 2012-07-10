@@ -22,20 +22,27 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
 import com.google.inject.Inject;
+import com.mysema.query.mongodb.MongodbQuery;
+import com.mysema.query.mongodb.morphia.MorphiaQuery;
+import com.mysema.query.types.EntityPath;
+import com.mysema.query.types.Predicate;
 
-public abstract class BaseMorphiaService {
+public abstract class BaseMorphiaService<T> {
 
   private final Morphia morphia;
 
   private final Datastore datastore;
 
+  private final EntityPath<T> entityPath;
+
   @Inject
-  public BaseMorphiaService(Morphia morphia, Datastore datastore) {
+  public BaseMorphiaService(Morphia morphia, Datastore datastore, EntityPath<T> entityPath) {
     super();
     checkArgument(morphia != null);
     checkArgument(datastore != null);
     this.morphia = morphia;
     this.datastore = datastore;
+    this.entityPath = entityPath;
   }
 
   public Datastore datastore() {
@@ -44,6 +51,14 @@ public abstract class BaseMorphiaService {
 
   public Morphia morphia() {
     return morphia;
+  }
+
+  public MongodbQuery<T> query() {
+    return new MorphiaQuery<T>(morphia(), datastore(), entityPath);
+  }
+
+  public MongodbQuery<T> where(Predicate predicate) {
+    return query().where(predicate);
   }
 
   protected void registerModelClasses(Class<?>... entities) {

@@ -22,23 +22,13 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
 import com.mysema.query.mongodb.MongodbQuery;
-import com.mysema.query.mongodb.morphia.MorphiaQuery;
-import com.mysema.query.types.Predicate;
 
-public class ReleaseService extends BaseMorphiaService {
+public class ReleaseService extends BaseMorphiaService<Release> {
 
   @Inject
   public ReleaseService(Morphia morphia, Datastore datastore) {
-    super(morphia, datastore);
+    super(morphia, datastore, QRelease.release);
     registerModelClasses(Release.class);
-  }
-
-  public MongodbQuery<Release> query() {
-    return new MorphiaQuery<Release>(morphia(), datastore(), QRelease.release);
-  }
-
-  public MongodbQuery<Release> where(Predicate predicate) {
-    return query().where(predicate);
   }
 
   public void createInitialRelease(Release initRelease) {

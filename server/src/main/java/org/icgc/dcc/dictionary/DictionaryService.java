@@ -36,27 +36,17 @@ import com.google.code.morphia.Morphia;
 import com.google.code.morphia.query.Query;
 import com.google.code.morphia.query.UpdateOperations;
 import com.google.inject.Inject;
-import com.mysema.query.mongodb.MongodbQuery;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
-import com.mysema.query.types.Predicate;
 
 /**
  * Offers various CRUD operations pertaining to {@code Dictionary}
  */
-public class DictionaryService extends BaseMorphiaService {
+public class DictionaryService extends BaseMorphiaService<Dictionary> {
 
   @Inject
   public DictionaryService(Morphia morphia, Datastore datastore) {
-    super(morphia, datastore);
+    super(morphia, datastore, QDictionary.dictionary);
     registerModelClasses(Dictionary.class, CodeList.class);
-  }
-
-  public MongodbQuery<Dictionary> query() {
-    return new MorphiaQuery<Dictionary>(morphia(), datastore(), QDictionary.dictionary);
-  }
-
-  public MongodbQuery<Dictionary> where(Predicate predicate) {
-    return query().where(predicate);
   }
 
   public List<Dictionary> list() {

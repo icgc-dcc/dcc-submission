@@ -1,12 +1,11 @@
 package org.icgc.dcc.core;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.core.model.QProject;
+import org.icgc.dcc.core.morphia.BaseMorphiaService;
 import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.QRelease;
@@ -17,42 +16,18 @@ import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
 import com.google.common.collect.Iterables;
 import com.google.inject.Inject;
-import com.mysema.query.mongodb.MongodbQuery;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
-import com.mysema.query.types.Predicate;
 
-// TODO: make an abstract base class
-public class ProjectService {
-
-  private final Morphia morphia;
-
-  private final Datastore datastore;
+public class ProjectService extends BaseMorphiaService<Project> {
 
   @Inject
   public ProjectService(Morphia morphia, Datastore datastore) {
-    super();
-
-    checkArgument(morphia != null);
-    checkArgument(datastore != null);
-
-    this.morphia = morphia;
-    this.datastore = datastore;
-  }
-
-  public Datastore datastore() {
-    return datastore;
-  }
-
-  public MongodbQuery<Project> query() {
-    return new MorphiaQuery<Project>(morphia, datastore, QProject.project);
-  }
-
-  public MongodbQuery<Project> where(Predicate predicate) {
-    return query().where(predicate);
+    super(morphia, datastore, QProject.project);
+    super.registerModelClasses(Project.class);
   }
 
   public List<Release> getReleases(Project project) {
-    MorphiaQuery<Release> releaseQuery = new MorphiaQuery<Release>(morphia, datastore, QRelease.release);
+    MorphiaQuery<Release> releaseQuery = new MorphiaQuery<Release>(morphia(), datastore(), QRelease.release);
     List<Release> releases = new ArrayList<Release>();
     for(Release release : releaseQuery.list()) {
       for(Submission submission : release.getSubmissions()) {
