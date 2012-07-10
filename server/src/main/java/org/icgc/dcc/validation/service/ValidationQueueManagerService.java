@@ -85,12 +85,16 @@ public class ValidationQueueManagerService extends AbstractService implements Va
       @Override
       public void run() {
         if(isRunning()) {
-          List<String> queued = releaseService.getQueued();
-          log.info("polling every second; queued = {}", queued);
-          if(null != queued && queued.isEmpty() == false) {
-            String projectKey = queued.get(0);
-            Release release = releaseService.getNextRelease().getRelease();
-            validationService.validate(release, projectKey, thisAsCallback);
+          try {
+            List<String> queued = releaseService.getQueued();
+            log.info("polling every second; queued = {}", queued);
+            if(null != queued && queued.isEmpty() == false) {
+              String projectKey = queued.get(0);
+              Release release = releaseService.getNextRelease().getRelease();
+              validationService.validate(release, projectKey, thisAsCallback);
+            }
+          } catch(Exception e) {
+            log.error("an error occured while processing the validation queue", e);
           }
         }
       }
