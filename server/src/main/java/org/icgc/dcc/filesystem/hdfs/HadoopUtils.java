@@ -94,7 +94,7 @@ public class HadoopUtils {
   /**
    * non-recursively
    */
-  public static List<Path> ls(FileSystem fileSystem, String stringPath, Pattern pattern) {
+  private static List<Path> ls(FileSystem fileSystem, String stringPath, Pattern pattern, boolean file, boolean dir) {
     Path path = new Path(stringPath);
     FileStatus[] listStatus;
     try {
@@ -105,15 +105,36 @@ public class HadoopUtils {
     List<Path> ls = new ArrayList<Path>();
     for(FileStatus fileStatus : listStatus) {
       String filename = fileStatus.getPath().getName();
-      if(null == pattern || pattern.matcher(filename).matches()) {
+      if(((fileStatus.isFile() && file) || (fileStatus.isDirectory() && dir)) && //
+          (null == pattern || pattern.matcher(filename).matches())) {
         ls.add(fileStatus.getPath());
       }
     }
     return ls;
   }
 
-  public static List<Path> ls(FileSystem fileSystem, String stringPath) {
-    return ls(fileSystem, stringPath, null);
+  public static List<Path> lsFile(FileSystem fileSystem, String stringPath, Pattern pattern) {
+    return ls(fileSystem, stringPath, pattern, true, false);
+  }
+
+  public static List<Path> lsDir(FileSystem fileSystem, String stringPath, Pattern pattern) {
+    return ls(fileSystem, stringPath, pattern, false, true);
+  }
+
+  public static List<Path> lsAll(FileSystem fileSystem, String stringPath, Pattern pattern) {
+    return ls(fileSystem, stringPath, pattern, true, true);
+  }
+
+  public static List<Path> lsFile(FileSystem fileSystem, String stringPath) {
+    return lsFile(fileSystem, stringPath, null);
+  }
+
+  public static List<Path> lsDir(FileSystem fileSystem, String stringPath) {
+    return lsDir(fileSystem, stringPath, null);
+  }
+
+  public static List<Path> lsAll(FileSystem fileSystem, String stringPath) {
+    return lsAll(fileSystem, stringPath, null);
   }
 
   public static List<String> toFilenameList(List<Path> pathList) {

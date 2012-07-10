@@ -42,7 +42,7 @@ public class SubmissionDirectory {
    * (non-recursive) TODO: confirm
    */
   public Iterable<String> listFile(Pattern pattern) {
-    List<Path> pathList = HadoopUtils.ls(this.dccFileSystem.getFileSystem(), getSubmissionDirPath(), pattern);
+    List<Path> pathList = HadoopUtils.lsFile(this.dccFileSystem.getFileSystem(), getSubmissionDirPath(), pattern);
     return HadoopUtils.toFilenameList(pathList);
   }
 

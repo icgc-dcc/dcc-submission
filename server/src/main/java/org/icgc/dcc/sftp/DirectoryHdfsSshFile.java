@@ -112,7 +112,7 @@ class DirectoryHdfsSshFile extends HdfsSshFile {
 
   @Override
   public List<SshFile> listSshFiles() {
-    List<Path> pathList = HadoopUtils.ls(fs, path.toString());
+    List<Path> pathList = HadoopUtils.lsAll(fs, path.toString());
     List<SshFile> sshFileList = new ArrayList<SshFile>();
     for(Path path : pathList) {
       sshFileList.add(new FileHdfsSshFile(this, path.getName()));

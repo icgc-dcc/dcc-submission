@@ -114,7 +114,7 @@ public class DccFileSystem {
 
     // log resulting sub-directories
     log.info("ls " + releaseStringPath + " = "
-        + HadoopUtils.toFilenameList(HadoopUtils.ls(this.fileSystem, releaseStringPath)));
+        + HadoopUtils.toFilenameList(HadoopUtils.lsAll(this.fileSystem, releaseStringPath)));
   }
 
   /**

@@ -54,7 +54,7 @@ public class FileSystemFunctionalTest extends FileSystemTest {
     FileSystem fileSystem = this.dccFileSystem.getFileSystem();
 
     Iterable<String> filenameList0 =
-        HadoopUtils.toFilenameList(HadoopUtils.ls(fileSystem, this.dccFileSystem.getRootStringPath()));
+        HadoopUtils.toFilenameList(HadoopUtils.lsDir(fileSystem, this.dccFileSystem.getRootStringPath()));
     Assert.assertNotNull(filenameList0);
     Assert.assertEquals(//
         "[]",//
@@ -64,7 +64,7 @@ public class FileSystemFunctionalTest extends FileSystemTest {
     this.dccFileSystem.ensureReleaseFilesystem(this.mockRelease);
 
     Iterable<String> filenameList1 =
-        HadoopUtils.toFilenameList(HadoopUtils.ls(fileSystem, this.dccFileSystem.getRootStringPath()));
+        HadoopUtils.toFilenameList(HadoopUtils.lsDir(fileSystem, this.dccFileSystem.getRootStringPath()));
     Assert.assertNotNull(filenameList1);
     Assert.assertEquals(//
         "[ICGC4]",//
@@ -74,7 +74,7 @@ public class FileSystemFunctionalTest extends FileSystemTest {
     String releaseStringPath = this.dccFileSystem.buildReleaseStringPath(this.mockRelease);
     log.info("releaseStringPath = " + releaseStringPath);
 
-    Iterable<String> filenameList2 = HadoopUtils.toFilenameList(HadoopUtils.ls(fileSystem, releaseStringPath));
+    Iterable<String> filenameList2 = HadoopUtils.toFilenameList(HadoopUtils.lsDir(fileSystem, releaseStringPath));
     Assert.assertNotNull(filenameList2);
     Assert.assertEquals(//
         "[DBQ]",//
@@ -137,7 +137,7 @@ public class FileSystemFunctionalTest extends FileSystemTest {
     Iterable<String> fileList3 = mySubmissionDirectory.listFile();
     Assert.assertNotNull(fileList3);
     Assert.assertEquals(//
-        "[cnsm__bla__bla__s__bla__bla.tsv, .validation]",//
+        "[cnsm__bla__bla__s__bla__bla.tsv]",//
         fileList3.toString());
     log.info("ls3 = " + fileList3);
   }
