@@ -17,6 +17,7 @@ import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
 import com.google.code.morphia.query.Query;
 import com.google.code.morphia.query.UpdateOperations;
+import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
 import com.mysema.query.mongodb.MongodbQuery;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
@@ -93,10 +94,6 @@ public class ReleaseService extends BaseMorphiaService {
     return result;
   }
 
-  public List<String> getQueued() {
-    return this.getSubmission(SubmissionState.QUEUED);
-  }
-
   public boolean queue(List<String> projectKeys) {
     this.getNextRelease().release.enqueue(projectKeys);
     return this.setState(projectKeys, SubmissionState.QUEUED);
@@ -107,6 +104,10 @@ public class ReleaseService extends BaseMorphiaService {
     List<String> projectKeys = this.getQueued();
     this.setState(projectKeys, valid ? SubmissionState.VALID : SubmissionState.INVALID);
     return dequeued;
+  }
+
+  public List<String> getQueued() {
+    return ImmutableList.copyOf(this.getSubmission(SubmissionState.QUEUED));
   }
 
   public void deleteQueuedRequest() {
