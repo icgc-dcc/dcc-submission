@@ -120,7 +120,9 @@ public class ValidationService {
       cascade.start();
     } else {
       log.info("no flows to run");
-      validationCallback.handleSuccessfulValidation(projectKey);
+      if(validationCallback != null) {
+        validationCallback.handleSuccessfulValidation(projectKey);
+      }
     }
   }
 }
