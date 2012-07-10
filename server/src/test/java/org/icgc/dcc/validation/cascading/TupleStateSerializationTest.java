@@ -26,6 +26,8 @@ import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.serializer.WritableSerialization;
 import org.apache.hadoop.mapred.JobConf;
+import org.icgc.dcc.validation.ValidationErrorCode;
+import org.icgc.dcc.validation.cascading.TupleState.TupleError;
 import org.junit.Test;
 
 import cascading.CascadingTestCase;
@@ -35,6 +37,8 @@ import cascading.tuple.hadoop.io.HadoopTupleInputStream;
 import cascading.tuple.hadoop.io.HadoopTupleOutputStream;
 import cascading.tuple.io.TupleInputStream;
 import cascading.tuple.io.TupleOutputStream;
+
+import com.google.common.collect.Iterables;
 
 /**
  * 
@@ -59,8 +63,11 @@ public class TupleStateSerializationTest extends CascadingTestCase {
     TupleOutputStream output =
         new HadoopTupleOutputStream(new FileOutputStream(file, false), tupleSerialization.getElementWriter());
 
-    Tuple tuple = new Tuple(new TupleState());
-    output.writeTuple(tuple);
+    TupleState testState = new TupleState();
+    testState.reportError(ValidationErrorCode.OUT_OF_RANGE_ERROR);
+
+    Tuple outputTuple = new Tuple(testState);
+    output.writeTuple(outputTuple);
 
     output.close();
 
@@ -68,10 +75,19 @@ public class TupleStateSerializationTest extends CascadingTestCase {
     TupleInputStream input =
         new HadoopTupleInputStream(new FileInputStream(file), tupleSerialization.getElementReader());
 
-    tuple = input.readTuple();
+    Tuple inputTuple = input.readTuple();
 
     // check the first item in the tuple is a TupleState object
-    assertTrue(tuple.getObject(0) instanceof TupleState);
+    assertTrue(inputTuple.getObject(0) instanceof TupleState);
+
+    TupleState resultState = (TupleState) inputTuple.getObject(0);
+    // make sure invalid state is serialized
+    assertEquals(testState.isInvalid(), resultState.isInvalid());
+
+    TupleError[] testErrors = Iterables.toArray(testState.errors(), TupleError.class);
+    TupleError[] resultErrors = Iterables.toArray(resultState.errors(), TupleError.class);
+    // check TupleError list is serialized
+    assertEquals(testErrors.length, resultErrors.length);
   }
 
 }

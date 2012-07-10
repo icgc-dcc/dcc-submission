@@ -22,6 +22,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Comparator;
@@ -55,7 +57,14 @@ public class TupleStateSerialization extends Configured implements Comparison<Tu
 
     @Override
     public TupleState deserialize(TupleState t) throws IOException {
-      return new TupleState();
+      ObjectInputStream output = new ObjectInputStream(in);
+      TupleState tupleState = null;
+      try {
+        tupleState = (TupleState) output.readObject();
+      } catch(ClassNotFoundException e) {
+        e.printStackTrace();
+      }
+      return tupleState;
     }
 
     @Override
@@ -79,7 +88,8 @@ public class TupleStateSerialization extends Configured implements Comparison<Tu
 
     @Override
     public void serialize(TupleState t) throws IOException {
-      WritableUtils.writeString(out, t.toString());
+      ObjectOutputStream outputStream = new ObjectOutputStream(out);
+      outputStream.writeObject(t);
     }
 
     @Override
@@ -102,7 +112,7 @@ public class TupleStateSerialization extends Configured implements Comparison<Tu
         return 1;
       }
 
-      return lhs.compareTo(rhs);
+      return 0;
     }
 
     @Override
