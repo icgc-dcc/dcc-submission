@@ -17,7 +17,7 @@ import com.google.common.collect.Lists;
  * Each {@code Tuple} should have one field that holds an instance of this class. It is used to track the state
  * (valid/invalid and corresponding reasons) of the whole {@code Tuple}.
  */
-public class TupleState implements Serializable {
+public class TupleState implements Serializable, Comparable {
 
   private List<TupleError> errors;
 
@@ -83,6 +83,11 @@ public class TupleState implements Serializable {
           .toString();
     }
 
+  }
+
+  @Override
+  public int compareTo(Object tupleState) {
+    return 0;
   }
 
 }
