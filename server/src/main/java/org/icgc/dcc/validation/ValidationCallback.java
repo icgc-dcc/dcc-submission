@@ -22,4 +22,6 @@ package org.icgc.dcc.validation;
  */
 public interface ValidationCallback {
   void handleSuccessfulValidation(String projectKey);
+
+  void handleFailedValidation(String projectKey);
 }

@@ -53,7 +53,7 @@ public class ValidationQueueManagerService extends AbstractService implements Va
 
   private final ValidationCallback thisAsCallback;
 
-  private ScheduledFuture<?> scheduleAtFixedRate;
+  private ScheduledFuture<?> schedule;
 
   @Inject
   public ValidationQueueManagerService(final ReleaseService releaseService, ValidationService validationService) {
@@ -71,7 +71,7 @@ public class ValidationQueueManagerService extends AbstractService implements Va
   protected void doStart() {
     notifyStarted();
 
-    scheduleAtFixedRate = scheduler.scheduleWithFixedDelay(new Runnable() {
+    schedule = scheduler.scheduleWithFixedDelay(new Runnable() {
       @Override
       public void run() {
         if(isRunning()) {
@@ -89,7 +89,7 @@ public class ValidationQueueManagerService extends AbstractService implements Va
 
   @Override
   protected void doStop() {
-    boolean cancel = scheduleAtFixedRate.cancel(true);
+    boolean cancel = schedule.cancel(true);
     log.info("attempt to cancel returned {}", cancel);
     notifyStopped();
   }
@@ -106,5 +106,12 @@ public class ValidationQueueManagerService extends AbstractService implements Va
                   "the project key dequeued from the validation queue does not match the expected project key provided: %s != %s",
                   dequeuedProjectKey, projectKey));
     }
+  }
+
+  @Override
+  public void handleFailedValidation(String projectKey) {
+    checkArgument(projectKey != null);
+    log.info("failed validation for project key {}", projectKey);
+    // TODO
   }
 }

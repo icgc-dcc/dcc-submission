@@ -69,11 +69,13 @@ public class ValidationFlowListener implements FlowListener {
 
     checkArgument((successfulCascade && failedCascade) == false, "successfulCascade = " + successfulCascade
         + ", failedCascade = " + failedCascade);
-    if(successfulCascade && null != callback) {
-      callback.handleSuccessfulValidation(projectKey);
-    } else if(failedCascade) {
-      // TODO
-    } // else: other flows must still be running
+    if(null != callback) {
+      if(successfulCascade) {
+        callback.handleSuccessfulValidation(projectKey);
+      } else if(failedCascade) {
+        callback.handleFailedValidation(projectKey);
+      } // else: other flows must still be running
+    }
   }
 
   @Override
