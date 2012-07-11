@@ -80,13 +80,14 @@ public class ValidationQueueManagerService extends AbstractService implements Va
   }
 
   private void startScheduler() {
+    log.info("polling queue every {} second", POLLING_FREQUENCY_PER_SEC);
     schedule = scheduler.scheduleWithFixedDelay(new Runnable() {
       @Override
       public void run() {
         if(isRunning()) {
           Optional<String> next = releaseService.getNextInQueue();
-          log.info("polling queue every second, next is {}", next);
           if(next.isPresent()) {
+            log.info("next in queue {}", next);
             try {
               Release release = releaseService.getNextRelease().getRelease();
               validationService.validate(release, next.get(), thisAsCallback);
@@ -101,8 +102,12 @@ public class ValidationQueueManagerService extends AbstractService implements Va
   }
 
   private void stopScheduler() {
-    boolean cancel = schedule.cancel(true);
-    log.info("attempt to cancel returned {}", cancel);
+    try {
+      boolean cancel = schedule.cancel(true);
+      log.info("attempt to cancel returned {}", cancel);
+    } finally {
+      scheduler.shutdown();
+    }
   }
 
   @Override
