@@ -13,8 +13,6 @@ red = "\x1b[0;31m"
 # Constants
 SRC = "src/main/webapp"
 TARGET = "target/main/webapp"
-TEST_SRC = "src/test/coffee"
-TEST_TARGET = "target/test/js"
 
 try
   which = require("which").sync
@@ -62,11 +60,12 @@ prod = (callback) ->
   build -> minify -> server -> callback?() 
 
 build = (callback) ->
-  clean -> coffee -> copy -> callback?()
+  clean -> coffee -> copy -> removeCoffee -> callback?()
   
 watch = (callback) ->
   nodewatch.add("src", true).onChange (file,prev,curr,action) ->
-    [path, ext] = file.split(".")
+    [path..., ext] = file.split(".")
+    
     switch ext
       when "coffee"
         timeLog "#{bold}#{file}#{reset} was #{action}d - compiling to javascript..."
@@ -78,11 +77,11 @@ watch = (callback) ->
       when "handlebars"
       #  timeLog "#{bold}#{file}#{reset} was #{action}d - compiling to javascript..."
       #  handlebars file, -> colourLog "Success!", green
-        target = file.replace("#{SRC}", "#{TARGET}").replace "coffee", "js/app"
+        target = file.replace "#{SRC}", "#{TARGET}"
         timeLog "#{bold}#{file}#{reset} was #{action}d - copying to target..."
         launch "cp", [file, target], -> colourLog "Success!", green
 
-      when "css", "html"
+      when "css", "html", "js"
         target = file.replace "#{SRC}", "#{TARGET}"
         timeLog "#{bold}#{file}#{reset} was #{action}d - copying to target..."
         launch "cp", [file, target], -> colourLog "Success!", green
@@ -91,23 +90,21 @@ watch = (callback) ->
   callback?()
 
 clean = (callback) ->
-  options = ["-rf", "#{TARGET}"]
-  launch "rm", options, callback
+  launch "rm", ["-rf", "#{TARGET}"], callback
 
 copy = (callback) ->
-  exec "cp -r #{SRC}/* #{TARGET}", ->
-    exec "mv #{TARGET}/vendor #{TARGET}/js/", ->
-      exec "cp -r #{SRC}/coffee/views/templates #{TARGET}/js/app/views/", ->
-        options = ["-rf", "#{TARGET}/coffee"]
-        launch "rm", options, callback
+  launch "cp", ["-r", "#{SRC}/", "#{TARGET}/.."], callback
     
+removeCoffee = (callback) ->
+  exec "find #{TARGET}/js/app -name '*.coffee' -exec rm -rf {} \\;", -> callback?()
+   
 coffee = (source, callback) ->
   if typeof source is 'function'
     callback = source
-    source = "#{SRC}/coffee/"
+    source = "#{SRC}/js/app/"
     target = "#{TARGET}/js/app/"
   else
-    target = source.replace("#{SRC}", "#{TARGET}").replace("coffee", "js/app") + "/../"
+    target = source.replace("src", "target") + "/../"
   
   options = ["-c", "-o", target, source]
   launch "coffee", options, callback
@@ -115,17 +112,17 @@ coffee = (source, callback) ->
 handlebars = (source, callback) ->
   if typeof source is 'function'
     callback = source
-    source = "#{SRC}/coffee/views/templates"
+    source = "#{SRC}/js/app/views/templates"
     exec "mkdir -p #{TARGET}/js/app/views/templates"
 
     fs.readdir(source).forEach (file) ->
       hbs = "#{source}/#{file}"
-      js = hbs.replace("#{SRC}", "#{TARGET}").replace("coffee", "js/app").replace("handlebars", "js")
+      js = hbs.replace("#{SRC}", "#{TARGET}").replace("handlebars", "js")
       options = [hbs, "-f", js]
       launch "node_modules/.bin/handlebars", options
 
   else  
-    target = source.replace("#{SRC}", "#{TARGET}").replace("coffee", "js/app").replace("handlebars", "js")
+    target = source.replace("#{SRC}", "#{TARGET}").replace("handlebars", "js")
     options = [source, "-f", target]
   
     launch "node_modules/.bin/handlebars", options
