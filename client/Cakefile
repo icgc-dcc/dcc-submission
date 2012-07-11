@@ -1,5 +1,4 @@
 {spawn, exec} = require "child_process"
-wrench = require "wrench"
 nodewatch = require "nodewatch"
 httpProxy = require "http-proxy"
 express = require "express"
@@ -13,18 +12,22 @@ red = "\x1b[0;31m"
 
 # Constants
 SRC = "src/main/webapp"
-TARGET = "target/webapp"
+TARGET = "target/main/webapp"
+TEST_SRC = "src/test/coffee"
+TEST_TARGET = "target/test/js"
 
 try
   which = require("which").sync
 catch err
   which = null
 
+test_successful = no
+
 task "develop", "Compiles source files, watches for changes and starts server", -> develop()
 # Not fully implemented
 #task "prod", "Compiles, minifies and joins source files", -> production()
 #task "docs", "Generate documentaion", -> docs()
-task "tests", "Run tests", -> tests()
+task "tests", "Run tests", -> build -> tests ->
 
 ### Use these for testing
 task "clean", "Clean target files", -> clean -> 
@@ -39,15 +42,21 @@ task "server", "Starts Web Server on port 3001", -> server()
 launch = (cmd, options=[], callback) ->
   cmd = which(cmd) if which
   app = spawn cmd, options
-  app.stdout.pipe(process.stdout)    
+  #app.stdout.pipe(process.stdout)
+  err = []  
   app.stderr.on "data", (data) ->
-    growl("#{data}", { title: 'Failed!'})
-    process.stdout.write "#{red}Failed!#{reset}\n#{data}"
-
-  app.on "exit", (status) -> callback?() if status is 0
+    err.push data
+    
+  app.on "exit", (status) -> 
+    if status is 0
+      callback?() 
+    else
+      growl("#{err.join ''}", { title: 'Failed!'})
+      process.stdout.write "#{red}Failed!#{reset}\n#{err.join ''}"
+    
 
 develop = (callback) ->
-  build -> server -> watch -> tests -> callback?() 
+  build -> server -> watch -> tests true, -> callback?() 
 
 prod = (callback) ->
   build -> minify -> server -> callback?() 
@@ -56,12 +65,15 @@ build = (callback) ->
   clean -> coffee -> copy -> callback?()
   
 watch = (callback) ->
-  nodewatch.add("#{SRC}", true).onChange (file,prev,curr,action) ->
+  nodewatch.add("src", true).onChange (file,prev,curr,action) ->
     [path, ext] = file.split(".")
     switch ext
       when "coffee"
         timeLog "#{bold}#{file}#{reset} was #{action}d - compiling to javascript..."
-        coffee file, -> colourLog "Success!", green
+        coffee file, -> 
+          colourLog "Success!", green
+          timeLog "#{bold}#{file}#{reset} was #{action}d - re-running tests..."
+          tests true, -> colourLog "Success!", green
       
       when "handlebars"
       #  timeLog "#{bold}#{file}#{reset} was #{action}d - compiling to javascript..."
@@ -70,11 +82,12 @@ watch = (callback) ->
         timeLog "#{bold}#{file}#{reset} was #{action}d - copying to target..."
         launch "cp", [file, target], -> colourLog "Success!", green
 
-      when "css"
+      when "css", "html"
         target = file.replace "#{SRC}", "#{TARGET}"
         timeLog "#{bold}#{file}#{reset} was #{action}d - copying to target..."
         launch "cp", [file, target], -> colourLog "Success!", green
-
+    
+    
   callback?()
 
 clean = (callback) ->
@@ -82,9 +95,9 @@ clean = (callback) ->
   launch "rm", options, callback
 
 copy = (callback) ->
-  exec "cp -r #{SRC} target/", ->
+  exec "cp -r #{SRC}/* #{TARGET}", ->
     exec "mv #{TARGET}/vendor #{TARGET}/js/", ->
-      exec "cp -r #{SRC}/coffee/views/templates target/webapp/js/app/views/", ->
+      exec "cp -r #{SRC}/coffee/views/templates #{TARGET}/js/app/views/", ->
         options = ["-rf", "#{TARGET}/coffee"]
         launch "rm", options, callback
     
@@ -105,7 +118,7 @@ handlebars = (source, callback) ->
     source = "#{SRC}/coffee/views/templates"
     exec "mkdir -p #{TARGET}/js/app/views/templates"
 
-    fs.readdirSync(source).forEach (file) ->
+    fs.readdir(source).forEach (file) ->
       hbs = "#{source}/#{file}"
       js = hbs.replace("#{SRC}", "#{TARGET}").replace("coffee", "js/app").replace("handlebars", "js")
       options = [hbs, "-f", js]
@@ -148,12 +161,16 @@ server = (callback) ->
 
   callback?()
 
-tests = (callback) ->
-  options = ["src/test/coffee", "--compilers", "coffee:coffee-script", "--reporter", "dot", "--growl", "--watch"]
-  app = spawn "mocha", options#, { customFds: [0,1,2] }
-
-  callback?()
-
+tests = (watch, callback) ->
+  options = ["src/test/coffee/runner.coffee", "--compilers", "coffee:coffee-script"]
+  if typeof watch is 'function'
+    callback = watch
+    options = options.concat ["--reporter", "spec"]
+    app = spawn "node_modules/.bin/mocha", options, { customFds: [0, 1, 2] }
+    callback()
+  else
+    launch "node_modules/.bin/mocha", options, callback
+  
 # When watching scripts, it"s useful to log changes with the timestamp.
 timeLog = (message) -> process.stdout.write "#{bold}#{(new Date).toLocaleTimeString()}#{reset} - #{message}"
 colourLog = (message, color=reset) -> console.log "#{color}#{message}#{reset}"
