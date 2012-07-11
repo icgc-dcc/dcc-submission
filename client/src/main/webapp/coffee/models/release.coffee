@@ -9,4 +9,4 @@ define (require) ->
       "releases/"
 
     initialize: ->
-      console.debug 'Release#show', @
+      console.debug? 'Release#show', @
