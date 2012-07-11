@@ -1,7 +1,6 @@
 package org.icgc.dcc.release;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,6 +12,8 @@ import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.release.model.SubmissionState;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
@@ -24,6 +25,8 @@ import com.mysema.query.mongodb.MongodbQuery;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
 
 public class ReleaseService extends BaseMorphiaService<Release> {
+
+  private static final Logger log = LoggerFactory.getLogger(ReleaseService.class);
 
   @Inject
   public ReleaseService(Morphia morphia, Datastore datastore) {
@@ -90,7 +93,10 @@ public class ReleaseService extends BaseMorphiaService<Release> {
       }
     }
 
-    checkState(result != null);
+    if(result == null) {
+      throw new ReleaseException(String.format("there is no project \"%s\" associated with release \"%s\"", projectKey,
+          releaseName));
+    }
 
     return result;
   }
@@ -100,6 +106,8 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   }
 
   public void signOff(List<String> projectKeys) {
+    log.info("signinng off: {}", projectKeys);
+
     SubmissionState newState = SubmissionState.SIGNED_OFF;
     Release release = getNextReleaseRelease();
 
@@ -110,6 +118,8 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   }
 
   public void deleteQueuedRequest() {
+    log.info("emptying queue");
+
     SubmissionState newState = SubmissionState.NOT_VALIDATED;
     Release release = getNextReleaseRelease(); // TODO: what if nextrelease changes in the meantime?
     List<String> projectKeys = release.getQueue();
@@ -121,6 +131,8 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   }
 
   public void queue(List<String> projectKeys) {
+    log.info("enqueuing: {}", projectKeys);
+
     SubmissionState newState = SubmissionState.QUEUED;
     Release release = this.getNextRelease().getRelease();
 
@@ -131,6 +143,8 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   }
 
   public Optional<String> dequeue(String projectKey, boolean valid) {
+    log.info("dequeuing: {}", projectKey);
+
     SubmissionState newState = valid ? SubmissionState.VALID : SubmissionState.INVALID;
     Release release = this.getNextRelease().getRelease();
 

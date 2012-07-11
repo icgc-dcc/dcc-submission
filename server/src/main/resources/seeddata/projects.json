@@ -9,7 +9,7 @@
          "admin"
       ]
    },
-      {
+   {
       "name":"project2",
       "key":"project2",
       "users":[
@@ -19,7 +19,7 @@
          "admin"
       ]
    },
-      {
+   {
       "name":"project3",
       "key":"project3",
       "users":[
@@ -28,5 +28,36 @@
       "groups":[
          "bogus"
       ]
+   },
+   {
+      "name":"project4",
+      "key":"project4",
+      "users":[
+         "bogus"
+      ],
+      "groups":[
+         "bogus"
+      ]
+   },
+   {
+      "name":"project5",
+      "key":"project5",
+      "users":[
+         "bogus"
+      ],
+      "groups":[
+         "bogus"
+      ]
+   },
+   {
+      "name":"project6",
+      "key":"project6",
+      "users":[
+         "bogus"
+      ],
+      "groups":[
+         "bogus"
+      ]
    }
 ]
+
