@@ -11,13 +11,13 @@ import com.google.code.morphia.annotations.Id;
 @Entity
 public class BaseEntity extends Timestamped implements HasId {
 
-  public BaseEntity() {
-    this.created = new Date();
-  }
-
   @Id
   @JsonIgnore
   protected ObjectId id;
+
+  protected BaseEntity() {
+    this.created = new Date();
+  }
 
   @Override
   public ObjectId getId() {
