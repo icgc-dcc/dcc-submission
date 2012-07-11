@@ -5,8 +5,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.CommonConfigurationKeys;
 import org.apache.hadoop.fs.FileSystem;
-import org.icgc.dcc.filesystem.hdfs.HadoopConfig;
 import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +34,7 @@ class FileSystemProvider implements Provider<FileSystem> {
   @Override
   public FileSystem get() {
     String fsUrl = this.config.getString(FsConfig.FS_URL);
-    this.configuration.set(HadoopConfig.FS_DEFAULT_NAME, fsUrl);
+    this.configuration.set(CommonConfigurationKeys.FS_DEFAULT_NAME_KEY, fsUrl);
     try {
       log.info("configuration = " + HadoopUtils.getConfigurationDescription(this.configuration)); // TODO formatting?
       return FileSystem.get(this.configuration);
