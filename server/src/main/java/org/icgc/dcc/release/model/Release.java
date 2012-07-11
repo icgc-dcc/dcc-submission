@@ -11,6 +11,7 @@ import org.icgc.dcc.dictionary.model.Dictionary;
 
 import com.google.code.morphia.annotations.Entity;
 import com.google.code.morphia.annotations.Reference;
+import com.google.common.base.Optional;
 
 @Entity
 public class Release extends BaseEntity implements HasName {
@@ -101,8 +102,14 @@ public class Release extends BaseEntity implements HasName {
     return this.queue.removeAll(projectKeys);
   }
 
-  public String dequeue() {
-    return this.getQueue().remove(0);
+  public Optional<String> nextInQueue() {
+    return this.queue != null && this.queue.isEmpty() == false ? Optional.<String> of(this.queue.get(0)) : Optional
+        .<String> absent();
+  }
+
+  public Optional<String> dequeue() {
+    return this.queue != null && this.queue.isEmpty() == false ? Optional.<String> of(this.queue.remove(0)) : Optional
+        .<String> absent();
   }
 
   public void emptyQueue() {

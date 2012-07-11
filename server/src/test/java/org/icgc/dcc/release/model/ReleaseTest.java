@@ -137,7 +137,7 @@ public class ReleaseTest {
     projectKeys.add("pkey2");
     release.enqueue(projectKeys);
     assertEquals(2, release.getQueue().size());
-    assertEquals("pkey1", release.dequeue());
+    assertEquals("pkey1", release.dequeue().get());
     assertEquals(1, release.getQueue().size());
     assertEquals("pkey2", release.getQueue().get(0));
   }

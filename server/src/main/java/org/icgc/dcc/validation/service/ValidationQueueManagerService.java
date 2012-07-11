@@ -19,7 +19,6 @@ package org.icgc.dcc.validation.service;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -85,16 +84,16 @@ public class ValidationQueueManagerService extends AbstractService implements Va
       @Override
       public void run() {
         if(isRunning()) {
-          try {
-            List<String> queued = releaseService.getQueued();
-            log.info("polling every second; queued = {}", queued);
-            if(null != queued && queued.isEmpty() == false) {
-              String projectKey = queued.get(0);
+          Optional<String> next = releaseService.getNextInQueue();
+          log.info("polling queue every second, next is {}", next);
+          if(next.isPresent()) {
+            try {
               Release release = releaseService.getNextRelease().getRelease();
-              validationService.validate(release, projectKey, thisAsCallback);
+              validationService.validate(release, next.get(), thisAsCallback);
+            } catch(Exception e) {
+              log.error("an error occured while processing the validation queue", e);
+              dequeue(next.get(), false);
             }
-          } catch(Exception e) {
-            log.error("an error occured while processing the validation queue", e);
           }
         }
       }
@@ -110,16 +109,20 @@ public class ValidationQueueManagerService extends AbstractService implements Va
   public void handleSuccessfulValidation(String projectKey) {
     checkArgument(projectKey != null);
     log.info("successful validation - dequeuing project key {}", projectKey);
-    Optional<String> dequeuedProjectKey = releaseService.dequeue(projectKey, true);
-    if(dequeuedProjectKey.isPresent() == false) {
-      log.warn("could not dequeue project {}, maybe the queue was emptied in the meantime?", projectKey);
-    }
+    dequeue(projectKey, true);
   }
 
   @Override
   public void handleFailedValidation(String projectKey) {
     checkArgument(projectKey != null);
     log.info("failed validation for project key {}", projectKey);
-    // TODO
+    dequeue(projectKey, false);
+  }
+
+  private void dequeue(String projectKey, boolean valid) {
+    Optional<String> dequeuedProjectKey = releaseService.dequeue(projectKey, valid);
+    if(dequeuedProjectKey.isPresent() == false) {
+      log.warn("could not dequeue project {}, maybe the queue was emptied in the meantime?", projectKey);
+    }
   }
 }

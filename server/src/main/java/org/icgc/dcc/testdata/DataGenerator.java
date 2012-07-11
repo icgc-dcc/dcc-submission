@@ -114,6 +114,17 @@ public class DataGenerator {
     project3.setGroups(groups);
     this.projectService.addProject(project3);
 
+    // add Project4
+    Project project4 = new Project("project4");
+    project4.setKey("project4");
+    users.clear();
+    users.add("bogus");
+    project4.setUsers(users);
+    groups.clear();
+    groups.add("bogus");
+    project4.setGroups(groups);
+    this.projectService.addProject(project4);
+
     // add Dictionary
     Dictionary firstDict = new Dictionary("1.0");
 
@@ -197,8 +208,8 @@ public class DataGenerator {
     submission4.setState(SubmissionState.QUEUED);
     firstRelease.getSubmissions().add(submission4);
 
-    firstRelease.enqueue("project3");
-    firstRelease.enqueue("project4");
+    // firstRelease.enqueue("project3");
+    // firstRelease.enqueue("project4");
 
     this.releaseService.createInitialRelease(firstRelease);
 

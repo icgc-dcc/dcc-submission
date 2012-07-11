@@ -17,8 +17,8 @@
  */
 package org.icgc.dcc.validation;
 
+import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -32,14 +32,10 @@ import org.icgc.dcc.validation.service.ValidationQueueManagerService;
 import org.icgc.dcc.validation.service.ValidationService;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
 
 public class ValidationQueueManagerServiceTest {
-
-  private static final Logger log = LoggerFactory.getLogger(ValidationQueueManagerServiceTest.class);
 
   private Release mockRelease;
 
@@ -64,7 +60,7 @@ public class ValidationQueueManagerServiceTest {
     when(mockReleaseService.getQueued()).thenReturn(Arrays.asList("project1", "project2", "project3"))
         .thenReturn(Arrays.asList("project2", "project3")).thenReturn(Arrays.asList("project3"))
         .thenReturn(new ArrayList<String>());
-    when(mockReleaseService.dequeue(anyString(), eq(true))).thenReturn(Optional.<String> of("project1"));
+    when(mockReleaseService.dequeue(anyString(), anyBoolean())).thenReturn(Optional.<String> of("project1"));
 
     validationQueueManagerService = new ValidationQueueManagerService(mockReleaseService, mockValidationService);
   }

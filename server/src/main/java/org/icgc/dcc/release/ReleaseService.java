@@ -3,43 +3,25 @@ package org.icgc.dcc.release;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.icgc.dcc.config.ConfigModule;
-import org.icgc.dcc.core.CoreModule;
 import org.icgc.dcc.core.morphia.BaseMorphiaService;
-import org.icgc.dcc.core.morphia.MorphiaModule;
-import org.icgc.dcc.dictionary.DictionaryModule;
-import org.icgc.dcc.filesystem.FileSystemModule;
-import org.icgc.dcc.http.HttpModule;
-import org.icgc.dcc.http.jersey.JerseyModule;
 import org.icgc.dcc.release.model.QRelease;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.release.model.SubmissionState;
-import org.icgc.dcc.sftp.SftpModule;
-import org.icgc.dcc.shiro.ShiroModule;
-import org.icgc.dcc.validation.ValidationModule;
-import org.icgc.dcc.web.WebModule;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
 import com.google.code.morphia.query.Query;
 import com.google.code.morphia.query.UpdateOperations;
-import com.google.common.base.Function;
 import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
-import com.google.inject.Guice;
 import com.google.inject.Inject;
-import com.google.inject.Injector;
 import com.mysema.query.mongodb.MongodbQuery;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
-import com.typesafe.config.ConfigFactory;
 
 public class ReleaseService extends BaseMorphiaService<Release> {
 
@@ -69,7 +51,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   }
 
   public ReleaseState nextReleaseState() throws IllegalReleaseStateException {
-    return getNextRelease().getRelease().getState();
+    return getNextReleaseRelease().getState();
   }
 
   public List<HasRelease> list() {
@@ -114,135 +96,109 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   }
 
   public List<String> getSignedOff() {
-    return (List<String>) this.getSubmission(SubmissionState.SIGNED_OFF);
+    return this.getSubmission(SubmissionState.SIGNED_OFF);
   }
 
   public void signOff(List<String> projectKeys) {
     SubmissionState newState = SubmissionState.SIGNED_OFF;
+    Release release = getNextReleaseRelease();
 
-    Release release = getNextRelease().getRelease();
-    release.removeFromQueue(projectKeys);
     updateSubmisions(projectKeys, newState);
+    release.removeFromQueue(projectKeys);
 
-    this.dbUpdateQueueAndSubmissions(projectKeys, newState);
-  }
-
-  public List<String> getQueued() {
-    return getNextRelease().getRelease().getQueue(); // TODO: safe to consider up-to-date at all time?
+    this.dbUpdateSubmissions(release, newState);
   }
 
   public void deleteQueuedRequest() {
     SubmissionState newState = SubmissionState.NOT_VALIDATED;
-
-    Release release = getNextRelease().getRelease();// TODO: what if nextrelease changes in the meantime?
+    Release release = getNextReleaseRelease(); // TODO: what if nextrelease changes in the meantime?
     List<String> projectKeys = release.getQueue();
-    release.emptyQueue();
-    updateSubmisions(projectKeys, newState);
 
-    this.dbUpdateQueueAndSubmissions(projectKeys, newState);
+    updateSubmisions(projectKeys, newState);
+    release.emptyQueue();
+
+    this.dbUpdateSubmissions(release, newState);
   }
 
   public void queue(List<String> projectKeys) {
     SubmissionState newState = SubmissionState.QUEUED;
-
     Release release = this.getNextRelease().getRelease();
-    release.enqueue(projectKeys);
-    updateSubmisions(projectKeys, newState);
 
-    this.dbUpdateQueueAndSubmissions(projectKeys, newState);
+    updateSubmisions(projectKeys, newState);
+    release.enqueue(projectKeys);
+
+    this.dbUpdateSubmissions(release, newState);
   }
 
   public Optional<String> dequeue(String projectKey, boolean valid) {
     SubmissionState newState = valid ? SubmissionState.VALID : SubmissionState.INVALID;
-
     Release release = this.getNextRelease().getRelease();
-    release.removeFromQueue(Arrays.asList(projectKey));
-    updateSubmisions(Arrays.asList(projectKey), newState);
 
-    Optional<String> dequeued = Optional.<String> absent();// TODO
+    Optional<String> dequeued = release.nextInQueue();
+    if(dequeued.isPresent() && dequeued.get().equals(projectKey)) {
+      List<String> projectKeys = Arrays.asList(projectKey);
+
+      dequeued = release.dequeue();
+      if(dequeued.isPresent() && dequeued.get().equals(projectKey)) { // could still have changed
+        updateSubmisions(projectKeys, newState);
+        this.dbUpdateSubmissions(release, newState);
+      }
+    }
+
     return dequeued;
   }
 
-  private void updateSubmisions(List<String> projectKeys, final SubmissionState state) {
-    final String releaseName = getNextRelease().getRelease().getName();
-    Iterables.transform(projectKeys,//
-        new Function<String, String>() { // TODO: is there a guava procedure equivalent?
-          @Override
-          public String apply(String input) {
-            Submission submission = getSubmission(releaseName, input);
-            submission.setState(state);// TODO: check if has indeed changed?
-            return input;
-          }
-        });
+  public List<String> getQueued() {
+    return getNextReleaseRelease().getQueue();
   }
 
-  private Iterable<String> getSubmission(final SubmissionState state) {
+  public Optional<String> getNextInQueue() {
+    return getNextReleaseRelease().nextInQueue();
+  }
+
+  private void updateSubmisions(List<String> projectKeys, final SubmissionState state) {
+    final String releaseName = getNextReleaseRelease().getName();
+    for(String projectKey : projectKeys) {
+      getSubmission(releaseName, projectKey).setState(state);
+    }
+  }
+
+  private List<String> getSubmission(final SubmissionState state) {
+    List<String> projectKeys = new ArrayList<String>();
     List<Submission> submissions = this.getNextRelease().getRelease().getSubmissions();
-    Iterable<Submission> matchingSubmissions = Iterables.filter(submissions, new Predicate<Submission>() {
-      @Override
-      public boolean apply(Submission input) {
-        return input.getState().equals(state);
+    for(Submission submission : submissions) {
+      if(state.equals(submission.getState())) {
+        submission.getProjectKey();
       }
-    });
-    Iterable<String> projectKeys = Iterables.transform(matchingSubmissions, new Function<Submission, String>() {
-      @Override
-      public String apply(Submission input) {
-        return input.getProjectKey();
-      }
-    });
+    }
     return projectKeys;
   }
 
-  public static void main(String[] args) throws IOException {
-    Injector injector = Guice.createInjector(new ConfigModule(ConfigFactory.load())//
-        , new CoreModule()//
-        , new HttpModule()//
-        , new JerseyModule()//
-        , new WebModule()//
-        , new MorphiaModule()//
-        , new ShiroModule()//
-        , new FileSystemModule()//
-        , new SftpModule()//
-        , new DictionaryModule()//
-        , new ReleaseModule()//
-        , new ValidationModule()//
-        );
+  /**
+   * Updates the queue then the submissions states accordingly
+   */
+  private void dbUpdateSubmissions(Release release, SubmissionState newState) {
+    String releaseName = release.getName();
+    List<String> queue = release.getQueue();
+    checkArgument(queue != null);
 
-    ReleaseService releaseService = injector.getInstance(ReleaseService.class);
-    NextRelease nextRelease = releaseService.getNextRelease();
-    Release release = nextRelease.getRelease();
-    List<Submission> submissions = release.getSubmissions();
+    Query<Release> updateQuery = datastore().createQuery(Release.class)//
+        .filter("name = ", releaseName);
+    UpdateOperations<Release> ops = datastore().createUpdateOperations(Release.class).disableValidation()//
+        .set("queue", queue);
+    datastore().update(updateQuery, ops);
 
-    System.out.println(release.getName());
-    System.out.println(release.getQueue());
-    System.out.println(submissions.size());
-    for(Submission s : submissions) {
-      System.out.println("\t" + s.getProjectKey() + "-" + s.getState());
-    }
-
-    releaseService.dbUpdateQueueAndSubmissions(Arrays.asList("project1", "project2"), SubmissionState.VALID);
-    release = releaseService.getNextRelease().getRelease();
-    submissions = release.getSubmissions();
-
-    System.out.println(release.getName());
-    System.out.println(release.getQueue());
-    System.out.println(submissions.size());
-    for(Submission s : submissions) {
-      System.out.println("\t" + s.getProjectKey() + "-" + s.getState());
+    for(String queued : queue) {
+      updateQuery = datastore().createQuery(Release.class)//
+          .filter("name = ", releaseName)//
+          .filter("submissions.projectKey = ", queued);
+      ops = datastore().createUpdateOperations(Release.class).disableValidation()//
+          .set("submissions.$.state", newState);
+      datastore().update(updateQuery, ops);
     }
   }
 
-  private void dbUpdateQueueAndSubmissions(List<String> projectKeys, SubmissionState state) {
-    checkArgument(projectKeys != null);
-
-    Query<Release> updateQuery = datastore().createQuery(Release.class)//
-        .filter("name =", this.getNextRelease().getRelease().getName())//
-        .filter("submissions.projectKey in", projectKeys);
-
-    UpdateOperations<Release> ops = datastore().createUpdateOperations(Release.class).disableValidation()//
-        .set("queue", projectKeys)//
-        .set("submissions.$.state", state);
-
-    datastore().update(updateQuery, ops);
+  private Release getNextReleaseRelease() {
+    return getNextRelease().getRelease();
   }
 }
