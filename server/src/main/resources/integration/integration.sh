@@ -1,5 +1,6 @@
 #!/bin/bash -x
 [[ "$PWD" =~ "src/main/resources/integration" ]] || { echo "ERROR: must run the script from src/main/resources/integration"; exit 1; }
+rm -rf /tmp/dcc_root_dir || :
 cp ../seeddata/projects.json .
 read -p "please start server with \"mvn exec:java\" then press key"
 ../seeddata/seed.sh .
