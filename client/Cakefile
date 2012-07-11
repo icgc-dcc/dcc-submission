@@ -19,7 +19,9 @@ try
 catch err
   which = null
 
-test_successful = no
+successful = 
+  cs: yes
+  test: yes
 
 task "develop", "Compiles source files, watches for changes and starts server", -> develop()
 # Not fully implemented
@@ -49,12 +51,15 @@ launch = (cmd, options=[], callback) ->
     if status is 0
       callback?() 
     else
-      growl("#{err.join ''}", { title: 'Failed!'})
+      growl "#{err.join ''}",  
+        title: 'Failed!'
+        image: __dirname + '/node_modules/mocha/images/error.png'
+      
       process.stdout.write "#{red}Failed!#{reset}\n#{err.join ''}"
     
 
 develop = (callback) ->
-  build -> server -> watch -> tests true, -> callback?() 
+  build -> server -> watch -> callback?() 
 
 prod = (callback) ->
   build -> minify -> server -> callback?() 
@@ -86,7 +91,6 @@ watch = (callback) ->
         timeLog "#{bold}#{file}#{reset} was #{action}d - copying to target..."
         launch "cp", [file, target], -> colourLog "Success!", green
     
-    
   callback?()
 
 clean = (callback) ->
@@ -107,8 +111,27 @@ coffee = (source, callback) ->
     target = source.replace("src", "target") + "/../"
   
   options = ["-c", "-o", target, source]
-  launch "coffee", options, callback
-
+  #launch "coffee", options, callback
+  app = spawn "coffee", options
+  app.stderr.on "data", (data) ->
+    successful['cs'] = no
+    err = "#{data}".split "\n"
+    growl "#{err[0]}",  
+      title: 'CoffeeScript Failed!'
+      name: 'coffee-script'
+      image: __dirname + '/node_modules/mocha/images/error.png'
+    process.stdout.write "#{red}Failed!\n#{err[0]}#{reset}\n"
+  
+  app.on "exit", (status) -> 
+    if status is 0
+      if not successful['cs']
+        successful['cs'] = yes
+        growl "#{options[3]} compiled successfully!",  
+          title: 'CoffeeScript Successful!'
+          name: 'coffee-script'
+          image: __dirname + '/node_modules/mocha/images/ok.png'
+      callback?()
+      
 handlebars = (source, callback) ->
   if typeof source is 'function'
     callback = source
@@ -159,15 +182,41 @@ server = (callback) ->
   callback?()
 
 tests = (watch, callback) ->
-  options = ["src/test/coffee/runner.coffee", "--compilers", "coffee:coffee-script"]
+  options = ["src/test/coffee/runner.coffee", "--compilers", "coffee:coffee-script", ]
   if typeof watch is 'function'
     callback = watch
     options = options.concat ["--reporter", "spec"]
     app = spawn "node_modules/.bin/mocha", options, { customFds: [0, 1, 2] }
     callback()
   else
-    launch "node_modules/.bin/mocha", options, callback
   
+    options = options.concat ["--reporter", "min"]
+    #launch "node_modules/.bin/mocha", options, callback
+    out = []
+    err = []
+    app = spawn "node_modules/.bin/mocha", options
+    app.stdout.on "data", (data) ->
+      out.push data
+    
+    app.stderr.on "data", (data) ->
+      err.push data
+    app.on "exit", (status) ->
+      if status is 0
+        if not successful['test']
+          successful['test'] = yes
+          growl "#{out[out.length - 2]}",  
+            title: 'Tests Pass Successfully!'
+            name: 'mocha'
+            image: __dirname + '/node_modules/mocha/images/ok.png'
+        callback?()
+      else
+        successful['test'] = no
+        growl "#{err[0]}".replace(':','!'),  
+          title: 'Test Failed!'
+          name: 'mocha'
+          image: __dirname + '/node_modules/mocha/images/error.png'
+        process.stdout.write "#{red}Failed!\n#{err.join ''}#{reset}"
+        
 # When watching scripts, it"s useful to log changes with the timestamp.
 timeLog = (message) -> process.stdout.write "#{bold}#{(new Date).toLocaleTimeString()}#{reset} - #{message}"
 colourLog = (message, color=reset) -> console.log "#{color}#{message}#{reset}"
