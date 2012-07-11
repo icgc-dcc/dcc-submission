@@ -1,6 +1,6 @@
-define [
-  'chaplin'
-], (Chaplin) ->
+define (require) ->
+  Chaplin = require 'chaplin'
+  utils = require 'lib/utils'
 
   class Collection extends Chaplin.Collection
     # Place your application-specific collection features here
