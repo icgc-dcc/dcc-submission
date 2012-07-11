@@ -19,6 +19,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.core.model.User;
 import org.icgc.dcc.dictionary.DictionaryService;
+import org.icgc.dcc.dictionary.model.CodeList;
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.release.model.Release;
@@ -88,6 +89,16 @@ public class SeedResource {
       this.datastore.getCollection(Dictionary.class).drop();
     }
     this.datastore.save(dictionaries);
+    return Response.status(Status.CREATED).build();
+  }
+
+  @POST
+  @Path("codelists")
+  public Response seedCodeLists(CodeList[] codelists, @DefaultValue("false") @QueryParam("delete") boolean delete) {
+    if(delete) {
+      this.datastore.getCollection(CodeList.class).drop();
+    }
+    this.datastore.save(codelists);
     return Response.status(Status.CREATED).build();
   }
 

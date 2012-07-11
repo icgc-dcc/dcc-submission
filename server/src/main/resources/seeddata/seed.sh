@@ -18,6 +18,7 @@ printusage()
 {
 	echo "USAGE: $0 DIRECTORY [SERVER]"
 	echo "Where DIRECTORY has the following structure: "
+	echo "  DIRECTORY/codelists.json"
 	echo "  DIRECTORY/dictionaries.json"
 	echo "  DIRECTORY/projects.json"
 	echo "  DIRECTORY/releases.json"
@@ -40,7 +41,7 @@ else
 			SERVER="localhost:5380"
 		fi
 		cd $1
-		for DATATYPE in users projects dictionaries releases 
+		for DATATYPE in users projects dictionaries releases codelists
 		do
 			if [ -e "$DATATYPE.json" ]; then
 				echo "Seeding database: $DATATYPE"
