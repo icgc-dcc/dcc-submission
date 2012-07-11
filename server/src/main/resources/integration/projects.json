@@ -23,40 +23,40 @@
       "name":"project3",
       "key":"project3",
       "users":[
-         "bogus"
+         "admin"
       ],
       "groups":[
-         "bogus"
+         "admin"
       ]
    },
    {
       "name":"project4",
       "key":"project4",
       "users":[
-         "bogus"
+         "admin"
       ],
       "groups":[
-         "bogus"
+         "admin"
       ]
    },
    {
       "name":"project5",
       "key":"project5",
       "users":[
-         "bogus"
+         "admin"
       ],
       "groups":[
-         "bogus"
+         "admin"
       ]
    },
    {
       "name":"project6",
       "key":"project6",
       "users":[
-         "bogus"
+         "admin"
       ],
       "groups":[
-         "bogus"
+         "admin"
       ]
    }
 ]
