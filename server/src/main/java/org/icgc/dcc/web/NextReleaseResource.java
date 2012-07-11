@@ -51,7 +51,9 @@ public class NextReleaseResource {
   @Path("queue")
   public Response queue(List<String> projectKeys, @Context Request req) {
     ResponseTimestamper.evaluate(req, this.releaseService.getNextRelease().getRelease());
-    if(this.releaseService.queue(projectKeys)) {
+
+    this.releaseService.queue(projectKeys);
+    if(true) {// TODO: acutally return false upon invalid request
       return Response.ok().build();
     } else {
       return Response.status(Status.BAD_REQUEST).build();
@@ -78,7 +80,9 @@ public class NextReleaseResource {
   @Path("signed")
   public Response signOff(List<String> projectKeys, @Context Request req) {
     ResponseTimestamper.evaluate(req, this.releaseService.getNextRelease().getRelease());
-    if(this.releaseService.signOff(projectKeys)) {
+
+    this.releaseService.signOff(projectKeys);
+    if(true) {// TODO: acutally return false upon invalid request
       return Response.ok().build();
     } else {
       return Response.status(Status.BAD_REQUEST).build();

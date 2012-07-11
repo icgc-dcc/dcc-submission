@@ -85,8 +85,9 @@ public class Release extends BaseEntity implements HasName {
   }
 
   public void enqueue(String projectKey) {
-    if(projectKey != null && !projectKey.isEmpty()) {
-      this.getQueue().add(projectKey);
+    List<String> queue = this.getQueue();
+    if(projectKey != null && !projectKey.isEmpty() && !queue.contains(projectKey)) {
+      queue.add(projectKey);
     }
   }
 
@@ -94,6 +95,10 @@ public class Release extends BaseEntity implements HasName {
     for(String projectKey : projectKeys) {
       this.enqueue(projectKey);
     }
+  }
+
+  public boolean removeFromQueue(List<String> projectKeys) {
+    return this.queue.removeAll(projectKeys);
   }
 
   public String dequeue() {
