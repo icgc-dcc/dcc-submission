@@ -86,7 +86,6 @@ watch = (callback) ->
         timeLog "#{bold}#{file}#{reset} was #{action}d - copying to target..."
         launch "cp", [file, target], -> colourLog "Success!", green
     
-    
   callback?()
 
 clean = (callback) ->

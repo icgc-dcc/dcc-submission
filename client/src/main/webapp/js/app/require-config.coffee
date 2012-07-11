@@ -4,15 +4,15 @@ requirejs.config
   baseUrl: '/js/app/'
   # Specify the paths of vendor libraries
   paths:
-    jquery: '../vendor/jquery-1.7.2'
+    jquery: '../vendor/jquery'
     jqSerializeObject: '../vendor/jquery.ba-serializeobject',
-    underscore: '../vendor/underscore-1.3.3'
-    backbone: '../vendor/backbone-0.9.2'
+    underscore: '../vendor/underscore'
+    backbone: '../vendor/backbone'
     chaplin: '../vendor/chaplin'
     bootstrap: '../vendor/bootstrap.min'
     moment: '../vendor/moment'
-    text: '../vendor/require-text-2.0.0'
-    handlebars: '../vendor/handlebars-1.0.0.beta.6'
+    text: '../vendor/require-text'
+    handlebars: '../vendor/handlebars'
     
   # Underscore and Backbone are not AMD-capable per default,
   # so we need to use the AMD wrapping of RequireJS
