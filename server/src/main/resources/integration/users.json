@@ -1,0 +1,21 @@
+[
+   {
+      "username":"admin",
+      "roles":[
+         "admin"
+      ]
+   },
+   {
+      "username":"brett",
+      "roles":[
+         "curator"
+      ]
+   },
+   {
+      "username":"richard",
+      "roles":[
+         "submitter",
+         "guest"
+      ]
+   }
+]
