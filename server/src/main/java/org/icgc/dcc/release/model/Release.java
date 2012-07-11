@@ -9,6 +9,7 @@ import org.icgc.dcc.core.model.BaseEntity;
 import org.icgc.dcc.core.model.HasName;
 
 import com.google.code.morphia.annotations.Entity;
+import com.google.common.base.Optional;
 
 @Entity
 public class Release extends BaseEntity implements HasName {
@@ -82,8 +83,9 @@ public class Release extends BaseEntity implements HasName {
   }
 
   public void enqueue(String projectKey) {
-    if(projectKey != null && !projectKey.isEmpty()) {
-      this.getQueue().add(projectKey);
+    List<String> queue = this.getQueue();
+    if(projectKey != null && !projectKey.isEmpty() && !queue.contains(projectKey)) {
+      queue.add(projectKey);
     }
   }
 
@@ -93,8 +95,18 @@ public class Release extends BaseEntity implements HasName {
     }
   }
 
-  public String dequeue() {
-    return this.getQueue().remove(0);
+  public boolean removeFromQueue(List<String> projectKeys) {
+    return this.queue.removeAll(projectKeys);
+  }
+
+  public Optional<String> nextInQueue() {
+    return this.queue != null && this.queue.isEmpty() == false ? Optional.<String> of(this.queue.get(0)) : Optional
+        .<String> absent();
+  }
+
+  public Optional<String> dequeue() {
+    return this.queue != null && this.queue.isEmpty() == false ? Optional.<String> of(this.queue.remove(0)) : Optional
+        .<String> absent();
   }
 
   public void emptyQueue() {

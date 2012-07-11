@@ -19,7 +19,6 @@ package org.icgc.dcc.validation.service;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -81,20 +80,21 @@ public class ValidationQueueManagerService extends AbstractService implements Va
   }
 
   private void startScheduler() {
+    log.info("polling queue every {} second", POLLING_FREQUENCY_PER_SEC);
     schedule = scheduler.scheduleWithFixedDelay(new Runnable() {
       @Override
       public void run() {
-        if(false && isRunning()) {
-          try {
-            List<String> queued = releaseService.getQueued();
-            log.info("polling every second; queued = {}", queued);
-            if(null != queued && queued.isEmpty() == false) {
-              String projectKey = queued.get(0);
+        if(isRunning()) {
+          Optional<String> next = releaseService.getNextInQueue();
+          if(next.isPresent()) {
+            log.info("next in queue {}", next);
+            try {
               Release release = releaseService.getNextRelease().getRelease();
-              validationService.validate(release, projectKey, thisAsCallback);
+              validationService.validate(release, next.get(), thisAsCallback);
+            } catch(Exception e) {
+              log.error("an error occured while processing the validation queue", e);
+              dequeue(next.get(), false);
             }
-          } catch(Exception e) {
-            log.error("an error occured while processing the validation queue", e);
           }
         }
       }
@@ -102,24 +102,32 @@ public class ValidationQueueManagerService extends AbstractService implements Va
   }
 
   private void stopScheduler() {
-    boolean cancel = schedule.cancel(true);
-    log.info("attempt to cancel returned {}", cancel);
+    try {
+      boolean cancel = schedule.cancel(true);
+      log.info("attempt to cancel returned {}", cancel);
+    } finally {
+      scheduler.shutdown();
+    }
   }
 
   @Override
   public void handleSuccessfulValidation(String projectKey) {
     checkArgument(projectKey != null);
     log.info("successful validation - dequeuing project key {}", projectKey);
-    Optional<String> dequeuedProjectKey = releaseService.dequeue(projectKey, true);
-    if(dequeuedProjectKey.isPresent() == false) {
-      log.warn("could not dequeue project {}, maybe the queue was emptied in the meantime?", projectKey);
-    }
+    dequeue(projectKey, true);
   }
 
   @Override
   public void handleFailedValidation(String projectKey) {
     checkArgument(projectKey != null);
     log.info("failed validation for project key {}", projectKey);
-    // TODO
+    dequeue(projectKey, false);
+  }
+
+  private void dequeue(String projectKey, boolean valid) {
+    Optional<String> dequeuedProjectKey = releaseService.dequeue(projectKey, valid);
+    if(dequeuedProjectKey.isPresent() == false) {
+      log.warn("could not dequeue project {}, maybe the queue was emptied in the meantime?", projectKey);
+    }
   }
 }

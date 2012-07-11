@@ -10,11 +10,11 @@ define (require) ->
     urlKey: "_id"
 
     urlPath: ->
-      console.debug 'Model#urlPath'
+      console.debug? 'Model#urlPath'
       ''
 
     urlRoot: ->
-      console.debug 'Model#urlRoot'
+      console.debug? 'Model#urlRoot'
       urlPath = @urlPath()
       if urlPath
         @apiRoot + urlPath
@@ -24,7 +24,7 @@ define (require) ->
         throw new Error('Model must redefine urlPath')
 
     url: ->
-      console.debug 'Model#url'
+      console.debug? 'Model#url'
       base = @urlRoot()
       url = if @get(@urlKey)?
         base + encodeURIComponent(@get(@urlKey))
@@ -33,7 +33,7 @@ define (require) ->
       url
 
     fetch: (options) ->
-      console.debug 'Model#fetch'
+      console.debug? 'Model#fetch'
       
       @trigger 'loadStart'
       (options ?= {}).success = =>

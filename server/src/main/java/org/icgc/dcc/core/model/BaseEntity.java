@@ -17,6 +17,7 @@ public class BaseEntity extends Timestamped implements HasId {
 
   protected BaseEntity() {
     this.created = new Date();
+    this.lastUpdate = this.created;
   }
 
   @Override
