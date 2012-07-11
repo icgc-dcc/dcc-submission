@@ -84,7 +84,7 @@ public class ValidationQueueManagerService extends AbstractService implements Va
     schedule = scheduler.scheduleWithFixedDelay(new Runnable() {
       @Override
       public void run() {
-        if(isRunning()) {
+        if(false && isRunning()) {
           try {
             List<String> queued = releaseService.getQueued();
             log.info("polling every second; queued = {}", queued);

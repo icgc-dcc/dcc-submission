@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.core.model.Project;
+import org.icgc.dcc.dictionary.DictionaryService;
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.filesystem.ReleaseFileSystem;
@@ -59,15 +60,20 @@ public class ValidationService {
 
   private final ProjectService projectService;
 
+  private final DictionaryService dictionaries;
+
   @Inject
-  public ValidationService(final DccFileSystem dccFileSystem, final ProjectService projectService, final Planner planner) {
+  public ValidationService(final DccFileSystem dccFileSystem, final ProjectService projectService,
+      final Planner planner, final DictionaryService dictionaries) {
     checkArgument(dccFileSystem != null);
     checkArgument(projectService != null);
     checkArgument(planner != null);
+    checkArgument(dictionaries != null);
 
     this.dccFileSystem = dccFileSystem;
     this.projectService = projectService;
     this.planner = planner;
+    this.dictionaries = dictionaries;
   }
 
   public void validate(Release release, String projectKey) {
@@ -75,7 +81,7 @@ public class ValidationService {
   }
 
   public void validate(Release release, String projectKey, ValidationCallback validationCallback) {
-    Dictionary dictionary = release.getDictionary();
+    Dictionary dictionary = this.dictionaries.getFromVersion(release.getDictionaryVersion());
 
     ReleaseFileSystem releaseFilesystem = dccFileSystem.getReleaseFilesystem(release);
 

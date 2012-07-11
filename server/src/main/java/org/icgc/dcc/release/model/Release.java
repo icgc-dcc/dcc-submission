@@ -7,10 +7,8 @@ import java.util.List;
 
 import org.icgc.dcc.core.model.BaseEntity;
 import org.icgc.dcc.core.model.HasName;
-import org.icgc.dcc.dictionary.model.Dictionary;
 
 import com.google.code.morphia.annotations.Entity;
-import com.google.code.morphia.annotations.Reference;
 
 @Entity
 public class Release extends BaseEntity implements HasName {
@@ -25,8 +23,7 @@ public class Release extends BaseEntity implements HasName {
 
   protected Date releaseDate;
 
-  @Reference
-  protected Dictionary dictionary;
+  protected String dictionaryVersion;
 
   public Release() {
     super();
@@ -64,12 +61,12 @@ public class Release extends BaseEntity implements HasName {
     this.getSubmissions().add(submission);
   }
 
-  public Dictionary getDictionary() {
-    return this.dictionary;
+  public String getDictionaryVersion() {
+    return this.dictionaryVersion;
   }
 
-  public void setDictionary(Dictionary dictionary) {
-    this.dictionary = dictionary;
+  public void setDictionaryVersion(String dictionaryVersion) {
+    this.dictionaryVersion = dictionaryVersion;
   }
 
   public Date getReleaseDate() {

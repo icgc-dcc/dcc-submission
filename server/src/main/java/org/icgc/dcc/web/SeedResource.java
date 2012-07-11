@@ -68,15 +68,6 @@ public class SeedResource {
     if(delete) {
       this.datastore.getCollection(Release.class).drop();
     }
-    for(Release release : releases) {
-      Dictionary jsonDictionary = release.getDictionary();
-      Dictionary dbDictionary = dictionaryService.getFromVersion(jsonDictionary.getVersion());
-      if(dbDictionary != null) {
-        release.setDictionary(dbDictionary);
-      } else {
-        this.datastore.save(release.getDictionary());
-      }
-    }
     this.datastore.save(releases);
     return Response.status(Status.CREATED).build();
   }

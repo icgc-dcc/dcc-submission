@@ -77,7 +77,7 @@ public class ReleaseServiceTest {
       release.getSubmissions().add(notValidatedSubmission);
       release.getSubmissions().add(queuedSubmission);
 
-      release.setDictionary(dictionary);
+      release.setDictionaryVersion(dictionary.getVersion());
 
       // Create the releaseService and populate it with the initial release
       releaseService = new ReleaseService(morphia, datastore);

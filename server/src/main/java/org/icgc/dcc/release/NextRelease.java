@@ -3,6 +3,7 @@ package org.icgc.dcc.release;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import org.icgc.dcc.dictionary.model.Dictionary;
+import org.icgc.dcc.dictionary.model.DictionaryState;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.Submission;
@@ -43,7 +44,7 @@ public class NextRelease extends BaseRelease {
   public NextRelease release(Release nextRelease) throws IllegalReleaseStateException {
     checkArgument(nextRelease != null);
     Release oldRelease = this.getRelease();
-    Dictionary oldDictionary = oldRelease.getDictionary();
+    String oldDictionary = oldRelease.getDictionaryVersion();
     if(oldDictionary == null) {
       throw new ReleaseException("Release must have associated dictionary before being completed");
     }
@@ -53,9 +54,15 @@ public class NextRelease extends BaseRelease {
 
     nextRelease.setState(ReleaseState.OPENED);
 
-    oldDictionary.close();
-    if(nextRelease.getDictionary() == null) {
-      nextRelease.setDictionary(oldRelease.getDictionary());
+    // dictionaries.getFromVersion(oldDictionary).close();
+    UpdateOperations<Dictionary> closeDictionary =
+        this.datastore.createUpdateOperations(Dictionary.class).set("state", DictionaryState.CLOSED);
+    Query<Dictionary> updateDictionary = this.datastore.createQuery(Dictionary.class).filter("version", oldDictionary);
+
+    this.datastore.update(updateDictionary, closeDictionary);
+
+    if(nextRelease.getDictionaryVersion() == null) {
+      nextRelease.setDictionaryVersion(oldRelease.getDictionaryVersion());
     }
 
     // save the newly created release to mongoDB
