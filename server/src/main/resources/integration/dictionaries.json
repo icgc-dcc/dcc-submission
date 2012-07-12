@@ -3453,7 +3453,7 @@
     "label" : null,
     "pattern" : "^\\\\w+__\\\\d+__\\\\d+__donor__\\\\d+\\\\.txt$",
     "role" : "SUBMISSION",
-    "uniqueFields" : [ ],
+    "uniqueFields" : ["donor_region_of_residence", "donor_age_at_diagnosis"],
     "fields" : [ {
       "name" : "donor_id",
       "label" : "Unique identifier for the donor; assigned by data provider. ",
