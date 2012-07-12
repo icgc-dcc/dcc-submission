@@ -42,7 +42,7 @@ public class NextReleaseResource {
   @GET
   @Path("queue")
   public Response getQueue() {
-    List<String> projectIds = this.releaseService.getQueued();
+    List<String> projectIds = releaseService.getNextRelease().getQueued();
 
     return Response.ok(projectIds.toArray()).build();
   }

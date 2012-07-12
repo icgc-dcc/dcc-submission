@@ -2,6 +2,8 @@ package org.icgc.dcc.release;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.List;
+
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.DictionaryState;
 import org.icgc.dcc.release.model.Release;
@@ -12,6 +14,7 @@ import org.icgc.dcc.release.model.SubmissionState;
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.query.Query;
 import com.google.code.morphia.query.UpdateOperations;
+import com.google.common.base.Optional;
 
 public class NextRelease extends BaseRelease {
 
@@ -24,6 +27,14 @@ public class NextRelease extends BaseRelease {
     }
     checkArgument(datastore != null);
     this.datastore = datastore;
+  }
+
+  public List<String> getQueued() {
+    return getRelease().getQueue();
+  }
+
+  public Optional<String> getNextInQueue() {
+    return getRelease().nextInQueue();
   }
 
   public void signOff(Submission submission) {

@@ -86,9 +86,8 @@ public class ValidationQueueManagerService extends AbstractService implements Va
       public void run() {
         Optional<String> next = Optional.<String> absent();
         try {
-          if(isRunning()) {
-            // log.info("running");
-            next = releaseService.getNextInQueue();
+          if(isRunning() && releaseService.hasNextRelease()) {
+            next = releaseService.getNextRelease().getNextInQueue();
             if(next.isPresent()) {
               log.info("next in queue {}", next);
               Release release = releaseService.getNextRelease().getRelease();
@@ -104,7 +103,6 @@ public class ValidationQueueManagerService extends AbstractService implements Va
         }
       }
     }, POLLING_FREQUENCY_PER_SEC, POLLING_FREQUENCY_PER_SEC, TimeUnit.SECONDS);
-    log.info("exiting run()");
   }
 
   private void stopScheduler() {

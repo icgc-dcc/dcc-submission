@@ -22,7 +22,6 @@ import com.google.code.morphia.query.UpdateOperations;
 import com.google.common.base.Optional;
 import com.google.inject.Inject;
 import com.mysema.query.mongodb.MongodbQuery;
-import com.mysema.query.mongodb.morphia.MorphiaQuery;
 
 public class ReleaseService extends BaseMorphiaService<Release> {
 
@@ -34,27 +33,18 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     registerModelClasses(Release.class);
   }
 
-  @Override
-  public MongodbQuery<Release> query() {
-    return new MorphiaQuery<Release>(morphia(), datastore(), QRelease.release);
-  }
-
-  @Override
-  public MongodbQuery<Release> where(com.mysema.query.types.Predicate predicate) {
-    return query().where(predicate);
-  }
-
   public void createInitialRelease(Release initRelease) {
     datastore().save(initRelease);
   }
 
-  public NextRelease getNextRelease() throws IllegalReleaseStateException {
-    Release nextRelease = this.query().where(QRelease.release.state.eq(ReleaseState.OPENED)).singleResult();
-    return nextRelease != null ? new NextRelease(nextRelease, datastore()) : null;
+  public boolean hasNextRelease() {
+    return this.query().where(QRelease.release.state.eq(ReleaseState.OPENED)).singleResult() != null;
   }
 
-  public ReleaseState nextReleaseState() throws IllegalReleaseStateException {
-    return getNextReleaseRelease().get().getState();// TODO: handle no releases
+  public NextRelease getNextRelease() throws IllegalReleaseStateException {
+    Release nextRelease = this.query().where(QRelease.release.state.eq(ReleaseState.OPENED)).singleResult();
+    if(nextRelease == null) throw new IllegalStateException("no next release");
+    return new NextRelease(nextRelease, datastore());
   }
 
   public List<HasRelease> list() {
@@ -109,7 +99,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     log.info("signinng off: {}", projectKeys);
 
     SubmissionState newState = SubmissionState.SIGNED_OFF;
-    Release release = getNextReleaseRelease().get();// TODO: handle no releases
+    Release release = getNextRelease().getRelease();
 
     updateSubmisions(projectKeys, newState);
     release.removeFromQueue(projectKeys);
@@ -121,7 +111,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     log.info("emptying queue");
 
     SubmissionState newState = SubmissionState.NOT_VALIDATED;
-    Release release = getNextReleaseRelease().get();// TODO: handle no releases
+    Release release = getNextRelease().getRelease();
     List<String> projectKeys = release.getQueue(); // TODO: what if nextrelease changes in the meantime?
 
     updateSubmisions(projectKeys, newState);
@@ -161,18 +151,8 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     return dequeued;
   }
 
-  public List<String> getQueued() {
-    Optional<Release> release = getNextReleaseRelease();
-    return release.isPresent() ? release.get().getQueue() : null;// TODO: handle no releases
-  }
-
-  public Optional<String> getNextInQueue() {
-    Optional<Release> release = getNextReleaseRelease();
-    return release.isPresent() ? release.get().nextInQueue() : Optional.<String> absent();
-  }
-
   private void updateSubmisions(List<String> projectKeys, final SubmissionState state) {
-    final String releaseName = getNextReleaseRelease().get().getName();// TODO: handle no releases
+    final String releaseName = getNextRelease().getRelease().getName();
     for(String projectKey : projectKeys) {
       getSubmission(releaseName, projectKey).setState(state);
     }
@@ -213,8 +193,4 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     }
   }
 
-  private Optional<Release> getNextReleaseRelease() {
-    NextRelease nextRelease = getNextRelease();
-    return null != nextRelease ? Optional.<Release> of(nextRelease.getRelease()) : Optional.<Release> absent();
-  }
 }

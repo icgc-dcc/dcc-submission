@@ -57,7 +57,7 @@ public class ValidationQueueManagerServiceTest {
     when(mockRelease.getName()).thenReturn("release1");
     when(mockNextRelease.getRelease()).thenReturn(mockRelease);
     when(mockReleaseService.getNextRelease()).thenReturn(mockNextRelease);
-    when(mockReleaseService.getQueued()).thenReturn(Arrays.asList("project1", "project2", "project3"))
+    when(mockNextRelease.getQueued()).thenReturn(Arrays.asList("project1", "project2", "project3"))
         .thenReturn(Arrays.asList("project2", "project3")).thenReturn(Arrays.asList("project3"))
         .thenReturn(new ArrayList<String>());
     when(mockReleaseService.dequeue(anyString(), anyBoolean())).thenReturn(Optional.<String> of("project1"));
