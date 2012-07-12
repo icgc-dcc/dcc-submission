@@ -87,14 +87,14 @@ public class ValueTypePlanningVisitor extends InternalFlowPlanningVisitor {
       public void operate(FlowProcess flowProcess, FunctionCall functionCall) {
         TupleEntry arguments = functionCall.getArguments();
         String value = arguments.getString(0);
+        Object parsedValue = null;
         try {
-          Object parsedValue = parse(value);
-          functionCall.getOutputCollector().add(new Tuple(parsedValue, ValidationFields.state(arguments)));
+          parsedValue = parse(value);
         } catch(IllegalArgumentException e) {
           Object fieldName = arguments.getFields().get(0);
           ValidationFields.state(arguments).reportError(ValidationErrorCode.VALUE_TYPE_ERROR, value, fieldName, type);
-          functionCall.getOutputCollector().add(arguments);
         }
+        functionCall.getOutputCollector().add(new Tuple(parsedValue, ValidationFields.state(arguments)));
       }
 
       private Object parse(String value) {
