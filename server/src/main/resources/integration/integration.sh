@@ -28,7 +28,7 @@ curl -v -XGET  http://localhost:5380/ws/nextRelease/queue -H "Authorization: X-D
 echo
 
 echo
-read -p "enqueue 3 projects"
+read -p "enqueue projects 1, 2 and 3 for release 1"
 curl -v -XPOST http://localhost:5380/ws/nextRelease/queue -H "Authorization: X-DCC-Auth YWRtaW46YWRtaW5zcGFzc3dk" -H "Content-Type: application/json" -H "Accept: application/json" --data '["project1", "project2", "project3"]'
 echo
 
@@ -60,7 +60,7 @@ read -p "here you would copy files on to the sftp server with sftp -P 5322 admin
 echo
 
 echo
-read -p "enqueue 1 project"
+read -p "enqueue project 2 for release 2"
 curl -v -XPOST http://localhost:5380/ws/nextRelease/queue -H "Authorization: X-DCC-Auth YWRtaW46YWRtaW5zcGFzc3dk" -H "Content-Type: application/json" -H "Accept: application/json" --data '["project2"]'
 echo
 
