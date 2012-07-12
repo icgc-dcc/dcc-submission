@@ -119,14 +119,14 @@ public class ValidationQueueManagerService extends AbstractService implements Va
   @Override
   public void handleSuccessfulValidation(String projectKey) {
     checkArgument(projectKey != null);
-    log.info("successful validation - dequeuing project key {}", projectKey);
+    log.info("successful validation - about to dequeue project key {}", projectKey);
     dequeue(projectKey, true);
   }
 
   @Override
   public void handleFailedValidation(String projectKey) {
     checkArgument(projectKey != null);
-    log.info("failed validation for project key {}", projectKey);
+    log.info("failed validation - about to dequeue project key {}", projectKey);
     dequeue(projectKey, false);
   }
 

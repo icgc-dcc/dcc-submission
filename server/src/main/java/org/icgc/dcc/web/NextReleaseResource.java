@@ -44,7 +44,7 @@ public class NextReleaseResource {
   public Response getQueue() {
     List<String> projectIds = this.releaseService.getQueued();
 
-    return Response.ok(projectIds).build();
+    return Response.ok(projectIds.toArray()).build();
   }
 
   @POST

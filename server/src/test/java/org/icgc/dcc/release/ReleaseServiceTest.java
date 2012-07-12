@@ -46,6 +46,7 @@ public class ReleaseServiceTest {
       datastore = morphia.createDatastore(mongo, testDbName);
 
       // Clear out the test database before each test
+      datastore.delete(datastore.createQuery(Dictionary.class));
       datastore.delete(datastore.createQuery(Release.class));
       datastore.delete(datastore.createQuery(Project.class));
 
@@ -105,21 +106,21 @@ public class ReleaseServiceTest {
   @Test
   public void test_getNextRelease_isCorrectRelease() {
     assertEquals(release.getId(), releaseService.getNextRelease().getRelease().getId());
-    Release newRelease = addNewRelease();
+    Release newRelease = addNewRelease("release2");
     assertEquals(newRelease.getId(), releaseService.getNextRelease().getRelease().getId());
   }
 
   @Test
   public void test_getCompletedReleases_isCorrectSize() {
     assertEquals(0, releaseService.getCompletedReleases().size());
-    addNewRelease();
+    addNewRelease("release2");
     assertEquals(1, releaseService.getCompletedReleases().size());
   }
 
   @Test
   public void test_list_isCorrectSize() {
     assertEquals(1, releaseService.list().size());
-    addNewRelease();
+    addNewRelease("release2");
     assertEquals(2, releaseService.list().size());
   }
 
@@ -130,8 +131,8 @@ public class ReleaseServiceTest {
     // releaseService.queue(release.getProjectKeys());
   }
 
-  private Release addNewRelease() {
-    Release newRelease = new Release();
+  private Release addNewRelease(String name) {
+    Release newRelease = new Release(name);
     releaseService.getNextRelease().release(newRelease);
     return newRelease;
   }

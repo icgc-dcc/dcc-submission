@@ -28,18 +28,25 @@ curl -v -XGET  http://localhost:5380/ws/nextRelease/queue -H "Authorization: X-D
 echo
 
 echo
-read -p "enqueue 3 projects"
+read -p "enqueue projects 1, 2 and 3 for release 1"
 curl -v -XPOST http://localhost:5380/ws/nextRelease/queue -H "Authorization: X-DCC-Auth YWRtaW46YWRtaW5zcGFzc3dk" -H "Content-Type: application/json" -H "Accept: application/json" --data '["project1", "project2", "project3"]'
 echo
 
 echo
 read -p "check submission states"
 echo
+curl -v -XGET http://localhost:5380/ws/releases/release1 -H "Authorization: X-DCC-Auth YWRtaW46YWRtaW5zcGFzc3dk" -H "Content-Type: application/json" -H "Accept: application/json"
+echo
 curl -v -XGET http://localhost:5380/ws/releases/release1/submissions/project1 -H "Authorization: X-DCC-Auth YWRtaW46YWRtaW5zcGFzc3dk" -H "Content-Type: application/json" -H "Accept: application/json"
 echo
 curl -v -XGET http://localhost:5380/ws/releases/release1/submissions/project2 -H "Authorization: X-DCC-Auth YWRtaW46YWRtaW5zcGFzc3dk" -H "Content-Type: application/json" -H "Accept: application/json"
 echo
 curl -v -XGET http://localhost:5380/ws/releases/release1/submissions/project3 -H "Authorization: X-DCC-Auth YWRtaW46YWRtaW5zcGFzc3dk" -H "Content-Type: application/json" -H "Accept: application/json"
+echo
+
+echo
+read -p "release 1st release"
+curl -v -XPOST http://localhost:5380/ws/nextRelease/ -H "Authorization: X-DCC-Auth YWRtaW46YWRtaW5zcGFzc3dk" -H "Content-Type: application/json" -H "Accept: application/json" --data @nextRelease.json
 echo
 
 echo
@@ -60,14 +67,22 @@ read -p "here you would copy files on to the sftp server with sftp -P 5322 admin
 echo
 
 echo
-read -p "enqueue 1 project"
+read -p "enqueue project 2 for release 2"
 curl -v -XPOST http://localhost:5380/ws/nextRelease/queue -H "Authorization: X-DCC-Auth YWRtaW46YWRtaW5zcGFzc3dk" -H "Content-Type: application/json" -H "Accept: application/json" --data '["project2"]'
 echo
 
 echo
 read -p "check submission states"
 echo
+curl -v -XGET http://localhost:5380/ws/releases/release2 -H "Authorization: X-DCC-Auth YWRtaW46YWRtaW5zcGFzc3dk" -H "Content-Type: application/json" -H "Accept: application/json"
+echo
 curl -v -XGET http://localhost:5380/ws/releases/release2/submissions/project2 -H "Authorization: X-DCC-Auth YWRtaW46YWRtaW5zcGFzc3dk" -H "Content-Type: application/json" -H "Accept: application/json"
+echo
+
+echo
+read -p "observe expected error"
+echo
+cat /tmp/dcc_root_dir/release2/project2/.validation/donor.internal.tsv
 echo
 
 echo

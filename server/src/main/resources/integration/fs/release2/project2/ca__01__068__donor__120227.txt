@@ -1,6 +1,6 @@
 donor_id	donor_sex	donor_region_of_residence	donor_vital_status	disease_status_last_followup	donor_relapse_type	donor_age_at_diagnosis	donor_age_at_enrollment	donor_age_at_last_followup	donor_relapse_interval	donor_diagnosis_icd10	donor_tumour_staging_system_at_diagnosis	donor_tumour_stage_at_diagnosis	donor_tumour_stage_at_diagnosis_supplemental	donor_survival_time	donor_interval_of_last_followup	donor_notes
 DN_Y20_00001	1	CX	1	5	3	42	66	68	359	Y20	TNM	T3 N1 M1		-888	334	Note2
-DN_Y20_00035	2	GL	1	4	2	57	59	59	329	Y20	TNM	T2 N2 M0		-888	400	Note1
+DN_Y20_00035	2	GL	1	4	2	57.5	59	59	329	Y20	TNM	T2 N2 M0		-888	400	Note1
 DN_Y20_00047	1	FM	1	5	1	56	62	62	384	Y20	TNM	T1 N2 M0		-888	253	Note2
 DN_Y20_00056	2	NG	1	2	2	80	80	80	397	Y20	TNM	T3 N3 M1		-888	107	Note1
 DN_Y20_00072	1	HU	1	1	1	44	71	71	367	Y20	TNM	T3 N3 M1		-888	292	Note1
