@@ -35,11 +35,18 @@ echo
 echo
 read -p "check submission states"
 echo
+curl -v -XGET http://localhost:5380/ws/releases/release1 -H "Authorization: X-DCC-Auth YWRtaW46YWRtaW5zcGFzc3dk" -H "Content-Type: application/json" -H "Accept: application/json"
+echo
 curl -v -XGET http://localhost:5380/ws/releases/release1/submissions/project1 -H "Authorization: X-DCC-Auth YWRtaW46YWRtaW5zcGFzc3dk" -H "Content-Type: application/json" -H "Accept: application/json"
 echo
 curl -v -XGET http://localhost:5380/ws/releases/release1/submissions/project2 -H "Authorization: X-DCC-Auth YWRtaW46YWRtaW5zcGFzc3dk" -H "Content-Type: application/json" -H "Accept: application/json"
 echo
 curl -v -XGET http://localhost:5380/ws/releases/release1/submissions/project3 -H "Authorization: X-DCC-Auth YWRtaW46YWRtaW5zcGFzc3dk" -H "Content-Type: application/json" -H "Accept: application/json"
+echo
+
+echo
+read -p "release 1st release"
+curl -v -XPOST http://localhost:5380/ws/nextRelease/ -H "Authorization: X-DCC-Auth YWRtaW46YWRtaW5zcGFzc3dk" -H "Content-Type: application/json" -H "Accept: application/json" --data @nextRelease.json
 echo
 
 echo
@@ -67,7 +74,15 @@ echo
 echo
 read -p "check submission states"
 echo
+curl -v -XGET http://localhost:5380/ws/releases/release2 -H "Authorization: X-DCC-Auth YWRtaW46YWRtaW5zcGFzc3dk" -H "Content-Type: application/json" -H "Accept: application/json"
+echo
 curl -v -XGET http://localhost:5380/ws/releases/release2/submissions/project2 -H "Authorization: X-DCC-Auth YWRtaW46YWRtaW5zcGFzc3dk" -H "Content-Type: application/json" -H "Accept: application/json"
+echo
+
+echo
+read -p "observe expected error"
+echo
+cat /tmp/dcc_root_dir/release2/project2/.validation/donor.internal.tsv
 echo
 
 echo

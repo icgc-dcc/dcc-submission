@@ -114,7 +114,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     updateSubmisions(projectKeys, newState);
     release.removeFromQueue(projectKeys);
 
-    this.dbUpdateSubmissions(release, newState);
+    this.dbUpdateSubmissions(release.getName(), release.getQueue(), projectKeys, newState);
   }
 
   public void deleteQueuedRequest() {
@@ -127,7 +127,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     updateSubmisions(projectKeys, newState);
     release.emptyQueue();
 
-    this.dbUpdateSubmissions(release, newState);
+    this.dbUpdateSubmissions(release.getName(), release.getQueue(), projectKeys, newState);
   }
 
   public void queue(List<String> projectKeys) {
@@ -139,7 +139,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     updateSubmisions(projectKeys, newState);
     release.enqueue(projectKeys);
 
-    this.dbUpdateSubmissions(release, newState);
+    this.dbUpdateSubmissions(release.getName(), release.getQueue(), projectKeys, newState);
   }
 
   public Optional<String> dequeue(String projectKey, boolean valid) {
@@ -151,11 +151,10 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     Optional<String> dequeued = release.nextInQueue();
     if(dequeued.isPresent() && dequeued.get().equals(projectKey)) {
       List<String> projectKeys = Arrays.asList(projectKey);
-
       dequeued = release.dequeue();
       if(dequeued.isPresent() && dequeued.get().equals(projectKey)) { // could still have changed
         updateSubmisions(projectKeys, newState);
-        this.dbUpdateSubmissions(release, newState);
+        this.dbUpdateSubmissions(release.getName(), release.getQueue(), projectKeys, newState);
       }
     }
 
@@ -193,9 +192,9 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   /**
    * Updates the queue then the submissions states accordingly
    */
-  private void dbUpdateSubmissions(Release release, SubmissionState newState) {
-    String releaseName = release.getName();
-    List<String> queue = release.getQueue();
+  private void dbUpdateSubmissions(String releaseName, List<String> queue, List<String> projectKeys,
+      SubmissionState newState) {
+    checkArgument(releaseName != null);
     checkArgument(queue != null);
 
     Query<Release> updateQuery = datastore().createQuery(Release.class)//
@@ -204,7 +203,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
         .set("queue", queue);
     datastore().update(updateQuery, ops);
 
-    for(String queued : queue) {
+    for(String queued : projectKeys) {
       updateQuery = datastore().createQuery(Release.class)//
           .filter("name = ", releaseName)//
           .filter("submissions.projectKey = ", queued);
