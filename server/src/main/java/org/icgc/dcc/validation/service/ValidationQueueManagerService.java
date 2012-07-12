@@ -84,21 +84,27 @@ public class ValidationQueueManagerService extends AbstractService implements Va
     schedule = scheduler.scheduleWithFixedDelay(new Runnable() {
       @Override
       public void run() {
-        if(isRunning()) {
-          Optional<String> next = releaseService.getNextInQueue();
-          if(next.isPresent()) {
-            log.info("next in queue {}", next);
-            try {
+        Optional<String> next = Optional.<String> absent();
+        try {
+          if(isRunning()) {
+            // log.info("running");
+            next = releaseService.getNextInQueue();
+            if(next.isPresent()) {
+              log.info("next in queue {}", next);
               Release release = releaseService.getNextRelease().getRelease();
               validationService.validate(release, next.get(), thisAsCallback);
-            } catch(Exception e) {
-              log.error("an error occured while processing the validation queue", e);
-              dequeue(next.get(), false);
             }
+          }
+        } catch(Exception e) { // exception thrown within the run method are not logged otherwise (NullPointerException
+                               // for instance)
+          log.error("an error occured while processing the validation queue", e);
+          if(next.isPresent()) {
+            dequeue(next.get(), false);
           }
         }
       }
     }, POLLING_FREQUENCY_PER_SEC, POLLING_FREQUENCY_PER_SEC, TimeUnit.SECONDS);
+    log.info("exiting run()");
   }
 
   private void stopScheduler() {

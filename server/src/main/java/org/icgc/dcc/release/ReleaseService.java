@@ -50,11 +50,11 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
   public NextRelease getNextRelease() throws IllegalReleaseStateException {
     Release nextRelease = this.query().where(QRelease.release.state.eq(ReleaseState.OPENED)).singleResult();
-    return new NextRelease(nextRelease, datastore());
+    return nextRelease != null ? new NextRelease(nextRelease, datastore()) : null;
   }
 
   public ReleaseState nextReleaseState() throws IllegalReleaseStateException {
-    return getNextReleaseRelease().getState();
+    return getNextReleaseRelease().get().getState();// TODO: handle no releases
   }
 
   public List<HasRelease> list() {
@@ -109,7 +109,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     log.info("signinng off: {}", projectKeys);
 
     SubmissionState newState = SubmissionState.SIGNED_OFF;
-    Release release = getNextReleaseRelease();
+    Release release = getNextReleaseRelease().get();// TODO: handle no releases
 
     updateSubmisions(projectKeys, newState);
     release.removeFromQueue(projectKeys);
@@ -121,8 +121,8 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     log.info("emptying queue");
 
     SubmissionState newState = SubmissionState.NOT_VALIDATED;
-    Release release = getNextReleaseRelease(); // TODO: what if nextrelease changes in the meantime?
-    List<String> projectKeys = release.getQueue();
+    Release release = getNextReleaseRelease().get();// TODO: handle no releases
+    List<String> projectKeys = release.getQueue(); // TODO: what if nextrelease changes in the meantime?
 
     updateSubmisions(projectKeys, newState);
     release.emptyQueue();
@@ -163,15 +163,17 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   }
 
   public List<String> getQueued() {
-    return getNextReleaseRelease().getQueue();
+    Optional<Release> release = getNextReleaseRelease();
+    return release.isPresent() ? release.get().getQueue() : null;// TODO: handle no releases
   }
 
   public Optional<String> getNextInQueue() {
-    return getNextReleaseRelease().nextInQueue();
+    Optional<Release> release = getNextReleaseRelease();
+    return release.isPresent() ? release.get().nextInQueue() : Optional.<String> absent();
   }
 
   private void updateSubmisions(List<String> projectKeys, final SubmissionState state) {
-    final String releaseName = getNextReleaseRelease().getName();
+    final String releaseName = getNextReleaseRelease().get().getName();// TODO: handle no releases
     for(String projectKey : projectKeys) {
       getSubmission(releaseName, projectKey).setState(state);
     }
@@ -212,7 +214,8 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     }
   }
 
-  private Release getNextReleaseRelease() {
-    return getNextRelease().getRelease();
+  private Optional<Release> getNextReleaseRelease() {
+    NextRelease nextRelease = getNextRelease();
+    return null != nextRelease ? Optional.<Release> of(nextRelease.getRelease()) : Optional.<Release> absent();
   }
 }
