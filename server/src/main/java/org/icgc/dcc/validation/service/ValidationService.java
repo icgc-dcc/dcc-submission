@@ -81,22 +81,26 @@ public class ValidationService {
   }
 
   public void validate(Release release, String projectKey, ValidationCallback validationCallback) {
-    Dictionary dictionary = this.dictionaries.getFromVersion(release.getDictionaryVersion());
+    String dictionaryVersion = release.getDictionaryVersion();
+    Dictionary dictionary = this.dictionaries.getFromVersion(dictionaryVersion);
+    if(dictionary != null) {
+      ReleaseFileSystem releaseFilesystem = dccFileSystem.getReleaseFilesystem(release);
 
-    ReleaseFileSystem releaseFilesystem = dccFileSystem.getReleaseFilesystem(release);
+      Project project = projectService.getProject(projectKey);
+      SubmissionDirectory submissionDirectory = releaseFilesystem.getSubmissionDirectory(project);
 
-    Project project = projectService.getProject(projectKey);
-    SubmissionDirectory submissionDirectory = releaseFilesystem.getSubmissionDirectory(project);
+      File rootDir = new File(submissionDirectory.getSubmissionDirPath());
+      File outputDir = new File(submissionDirectory.getValidationDirPath());
+      FileSchemaDirectory fileSchemaDirectory = new LocalFileSchemaDirectory(rootDir);
+      CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir);
 
-    File rootDir = new File(submissionDirectory.getSubmissionDirPath());
-    File outputDir = new File(submissionDirectory.getValidationDirPath());
-    FileSchemaDirectory fileSchemaDirectory = new LocalFileSchemaDirectory(rootDir);
-    CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir);
-
-    log.info("starting validation on project {}", projectKey);
-    Cascade cascade = planCascade(validationCallback, projectKey, fileSchemaDirectory, cascadingStrategy, dictionary);
-    runCascade(cascade, validationCallback, projectKey);
-    log.info("validation finished for project {}", projectKey);
+      log.info("starting validation on project {}", projectKey);
+      Cascade cascade = planCascade(validationCallback, projectKey, fileSchemaDirectory, cascadingStrategy, dictionary);
+      runCascade(cascade, validationCallback, projectKey);
+      log.info("validation finished for project {}", projectKey);
+    } else {
+      log.info("there is no dictionary with version {}", dictionaryVersion);
+    }
   }
 
   @SuppressWarnings("rawtypes")

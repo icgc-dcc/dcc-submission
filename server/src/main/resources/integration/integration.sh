@@ -1,11 +1,11 @@
 #!/bin/bash -v
+# mvn exec:java -Dexec.mainClass="org.icgc.dcc.validation.Main" -Dexec.args="release2 project2"
 
 [[ "$PWD" =~ "src/main/resources/integration" ]] || { echo "ERROR: must run the script from src/main/resources/integration"; exit 1; }
 rm -rf /tmp/dcc_root_dir || :
-cp ../seeddata/projects.json .
 
 echo
-echo "please make sure the server is started first (\"mvn exec:java\")"
+read -p "please make sure the server is started first (\"mvn exec:java\")"
 echo
 
 echo
@@ -30,6 +30,10 @@ echo
 echo
 read -p "enqueue projects 1, 2 and 3 for release 1"
 curl -v -XPOST http://localhost:5380/ws/nextRelease/queue -H "Authorization: X-DCC-Auth YWRtaW46YWRtaW5zcGFzc3dk" -H "Content-Type: application/json" -H "Accept: application/json" --data '["project1", "project2", "project3"]'
+echo
+
+echo
+read -p "give the server some time to validate"
 echo
 
 echo
@@ -69,6 +73,10 @@ echo
 echo
 read -p "enqueue project 2 for release 2"
 curl -v -XPOST http://localhost:5380/ws/nextRelease/queue -H "Authorization: X-DCC-Auth YWRtaW46YWRtaW5zcGFzc3dk" -H "Content-Type: application/json" -H "Accept: application/json" --data '["project2"]'
+echo
+
+echo
+read -p "give the server some time to validate"
 echo
 
 echo

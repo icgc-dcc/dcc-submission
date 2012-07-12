@@ -3529,6 +3529,12 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : null
+      }, {
+        "type" : "range",
+        "config" : {
+          "min" : 0,
+          "max" : 150
+        }
       } ]
     }, {
       "name" : "donor_age_at_enrollment",

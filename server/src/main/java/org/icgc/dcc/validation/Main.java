@@ -6,6 +6,7 @@ import org.icgc.dcc.config.ConfigModule;
 import org.icgc.dcc.core.morphia.MorphiaModule;
 import org.icgc.dcc.filesystem.FileSystemModule;
 import org.icgc.dcc.release.CompletedRelease;
+import org.icgc.dcc.release.NextRelease;
 import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.validation.service.ValidationService;
@@ -38,25 +39,33 @@ public class Main {
 
     ReleaseService releaseService = injector.getInstance(ReleaseService.class);
     Release release = getRelease(releaseService, releaseName);
-    checkArgument(release != null);
+    if(null != release) {
+      ValidationService validationService = injector.getInstance(ValidationService.class);
+      validationService.validate(release, projectKey);
+    } else {
+      log.info("there is no next release at the moment");
+    }
 
-    ValidationService validationService = injector.getInstance(ValidationService.class);
-    validationService.validate(release, projectKey);
   }
 
   private static Release getRelease(ReleaseService releaseService, final String releaseName) {
-    Release nextRelease = releaseService.getNextRelease().getRelease();
-    if(releaseName.equals(nextRelease.getName())) {
-      return nextRelease;
+    NextRelease nextRelease = releaseService.getNextRelease();
+    if(null != nextRelease) {
+      Release release = nextRelease.getRelease();
+      if(releaseName.equals(release.getName())) {
+        return release;
+      } else {
+        Iterable<CompletedRelease> filter =
+            Iterables.filter(releaseService.getCompletedReleases(), new Predicate<CompletedRelease>() {
+              @Override
+              public boolean apply(CompletedRelease input) {
+                return releaseName.equals(input.getRelease().getName());
+              }
+            });
+        return filter.iterator().hasNext() ? filter.iterator().next().getRelease() : null;
+      }
     } else {
-      Iterable<CompletedRelease> filter =
-          Iterables.filter(releaseService.getCompletedReleases(), new Predicate<CompletedRelease>() {
-            @Override
-            public boolean apply(CompletedRelease input) {
-              return releaseName.equals(input.getRelease().getName());
-            }
-          });
-      return filter.iterator().hasNext() ? filter.iterator().next().getRelease() : null;
+      return null;
     }
   }
 }
