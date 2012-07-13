@@ -17,6 +17,7 @@ import cascading.operation.FunctionCall;
 import cascading.pipe.Each;
 import cascading.pipe.Pipe;
 import cascading.tuple.Fields;
+import cascading.tuple.TupleEntry;
 
 public class RequiredRestriction implements InternalPlanElement {
 
@@ -78,13 +79,13 @@ public class RequiredRestriction implements InternalPlanElement {
 
     @Override
     public void operate(FlowProcess flowProcess, FunctionCall functionCall) {
-      String value = functionCall.getArguments().getString(0);
+      TupleEntry tupleEntry = functionCall.getArguments();
+      String value = tupleEntry.getString(0);
       if(value == null || value.isEmpty()) {
-        Object fieldName = functionCall.getArguments().getFields().get(0);
-        ValidationFields.state(functionCall.getArguments()).reportError(ValidationErrorCode.MISSING_VALUE_ERROR, value,
-            fieldName);
+        Object fieldName = tupleEntry.getFields().get(0);
+        ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.MISSING_VALUE_ERROR, value, fieldName);
       }
-      functionCall.getOutputCollector().add(functionCall.getArguments());
+      functionCall.getOutputCollector().add(tupleEntry.getTupleCopy());
     }
 
   }

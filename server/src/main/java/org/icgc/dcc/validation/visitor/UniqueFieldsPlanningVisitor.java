@@ -104,14 +104,14 @@ public class UniqueFieldsPlanningVisitor extends InternalFlowPlanningVisitor {
         }
       }
 
-      private void reportError(TupleEntry firstTuple) {
-        List<String> values = fetchValues(firstTuple);
-        ValidationFields.state(firstTuple).reportError(ValidationErrorCode.UNIQUE_VALUE_ERROR, values, fields);
+      private void reportError(TupleEntry tupleEntry) {
+        List<String> values = fetchValues(tupleEntry);
+        ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.UNIQUE_VALUE_ERROR, values, fields);
       }
 
       private List<String> fetchValues(TupleEntry tupleEntry) {
         List<String> values = new ArrayList<String>();
-        for(String field : fields) { // not worth making non-anonymous guava Function (needs to know tupleEntry)
+        for(String field : fields) {
           values.add(tupleEntry.getString(field));
         }
         return values;
