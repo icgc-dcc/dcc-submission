@@ -22,12 +22,14 @@ catch err
 successful = 
   cs: yes
   test: yes
+  lint: yes
 
 task "develop", "Compiles source files, watches for changes and starts server", -> develop()
 # Not fully implemented
 #task "prod", "Compiles, minifies and joins source files", -> production()
 #task "docs", "Generate documentaion", -> docs()
-task "tests", "Run tests", -> build -> tests ->
+task "tests", "Run tests", -> build -> tests()
+task "lint", "Runs cslint over coffee files", -> lint ->
 
 ### Use these for testing
 task "clean", "Clean target files", -> clean -> 
@@ -42,21 +44,12 @@ task "server", "Starts Web Server on port 3001", -> server()
 launch = (cmd, options=[], callback) ->
   cmd = which(cmd) if which
   app = spawn cmd, options
-  #app.stdout.pipe(process.stdout)
-  err = []  
+  app.stdout.pipe(process.stdout)
   app.stderr.on "data", (data) ->
-    err.push data
-    
-  app.on "exit", (status) -> 
-    if status is 0
-      callback?() 
-    else
-      growl "#{err.join ''}",  
-        title: 'Failed!'
-        image: __dirname + '/node_modules/mocha/images/error.png'
-      
-      process.stdout.write "#{red}Failed!#{reset}\n#{err.join ''}"
-    
+    process.stdout.write "#{red}Failed!#{reset}\n#{data}" 
+
+  app.on "exit", (status) -> callback?() if status is 0
+       
 
 develop = (callback) ->
   build -> server -> watch -> callback?() 
@@ -76,8 +69,10 @@ watch = (callback) ->
         timeLog "#{bold}#{file}#{reset} was #{action}d - compiling to javascript..."
         coffee file, -> 
           colourLog "Success!", green
-          timeLog "#{bold}#{file}#{reset} was #{action}d - re-running tests..."
-          tests true, -> colourLog "Success!", green
+          timeLog "#{bold}#{file}#{reset} was #{action}d - linting..."
+          lint file, ->
+            timeLog "#{bold}#{file}#{reset} was #{action}d - re-running tests..."
+            tests true, -> colourLog "Success!", green
       
       when "handlebars"
       #  timeLog "#{bold}#{file}#{reset} was #{action}d - compiling to javascript..."
@@ -105,8 +100,8 @@ removeCoffee = (callback) ->
 coffee = (source, callback) ->
   if typeof source is 'function'
     callback = source
-    source = "#{SRC}/js/app/"
-    target = "#{TARGET}/js/app/"
+    source = "src"
+    target = "target"
   else
     target = source.replace("src", "target") + "/../"
   
@@ -181,6 +176,43 @@ server = (callback) ->
 
   callback?()
 
+lint = (file, callback) ->
+  if typeof file is 'function'
+    callback = file
+    file = 'src/'
+    app = spawn "node_modules/.bin/coffeelint", ["-r", file], { customFds: [0, 1, 2] }
+    callback()
+  else
+    #launch "node_modules/.bin/coffeelint", ["-r", file], callback
+    app = spawn "node_modules/.bin/coffeelint", ["-r", file]
+    out = []
+    app.stdout.on "data", (data) ->
+      #if "#{data}".indexOf("Lint") isnt -1
+      out.push "#{data}"
+        
+    app.on "exit", (status) -> 
+      if status is 0
+        if not successful['lint']
+          successful['lint'] = yes
+          growl "#{out.join ''}".replace(/([^a-z0-9\/\n\#].*?m)/gi, ''),  
+            title: 'CoffeeLint Suceess!'
+            name: 'coffeelint'
+            image: __dirname + '/node_modules/mocha/images/ok.png'
+        console.log "#{green}Success#{reset}"
+        callback?()
+      else
+        successful['lint'] = no
+        console.log "#{red}Failed#{reset}#{out.join ''}"
+        growl "#{out.join ''}".replace(/([^a-z0-9\/\n\#].*?m)/gi, ''),  
+          title: 'CoffeeLint Warning!'
+          name: 'coffeelint'
+          image: __dirname + '/node_modules/mocha/images/error.png'
+        callback?()
+      
+  
+  
+  
+
 tests = (watch, callback) ->
   options = ["src/test/coffee/runner.coffee", "--compilers", "coffee:coffee-script", ]
   if typeof watch is 'function'
@@ -189,8 +221,7 @@ tests = (watch, callback) ->
     app = spawn "node_modules/.bin/mocha", options, { customFds: [0, 1, 2] }
     callback()
   else
-  
-    options = options.concat ["--reporter", "min"]
+    options = options.concat ["--reporter", "progress"]
     #launch "node_modules/.bin/mocha", options, callback
     out = []
     err = []
@@ -204,7 +235,7 @@ tests = (watch, callback) ->
       if status is 0
         if not successful['test']
           successful['test'] = yes
-          growl "#{out[out.length - 2]}",  
+          growl "#{out.join ''}",  
             title: 'Tests Pass Successfully!'
             name: 'mocha'
             image: __dirname + '/node_modules/mocha/images/ok.png'
