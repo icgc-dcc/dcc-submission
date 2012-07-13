@@ -37,7 +37,7 @@ public class UniqueFieldsPlanningVisitorTest {
 
     Tuple t = iterator.next();
     TupleState state = (TupleState) t.getObject(1);
-    assertFalse(state.isValid());
+    assertTrue(state.isValid());
 
     t = iterator.next();
     state = (TupleState) t.getObject(1);
