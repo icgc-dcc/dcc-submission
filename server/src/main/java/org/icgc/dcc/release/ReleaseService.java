@@ -144,6 +144,25 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     this.dbUpdateSubmissions(release.getName(), release.getQueue(), projectKeys, newState);
   }
 
+  public boolean hasProjectKey(List<String> projectKeys) {
+    for(String projectKey : projectKeys) {
+      if(!this.hasProjectKey(projectKey)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  public boolean hasProjectKey(String projectKey) {
+    Release nextRelease = this.getNextRelease().getRelease();
+    for(Submission submission : nextRelease.getSubmissions()) {
+      if(submission.getProjectKey().equals(projectKey)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   public Optional<String> dequeue(String projectKey, boolean valid) {
     log.info("dequeuing: {}", projectKey);
 
@@ -205,14 +224,4 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     }
   }
 
-  public boolean canRelease() {
-    Release nextRelease = this.getNextRelease().getRelease();
-    for(Submission submission : nextRelease.getSubmissions()) {
-      if(submission.getState() != SubmissionState.SIGNED_OFF) {
-        return false;
-      }
-    }
-
-    return true;
-  }
 }
