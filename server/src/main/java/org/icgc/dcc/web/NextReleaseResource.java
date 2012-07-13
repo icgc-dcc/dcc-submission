@@ -31,6 +31,11 @@ public class NextReleaseResource {
 
   @POST
   public Response release(Release nextRelease, @Context Request req) {
+    // check for submission state to be signed off
+    if(!releaseService.canRelease()) {
+      return Response.status(Status.BAD_REQUEST).build();
+    }
+
     NextRelease oldRelease = releaseService.getNextRelease();
     // Check the timestamp of the oldRelease, since that is the object being updated
     ResponseTimestamper.evaluate(req, oldRelease.getRelease());

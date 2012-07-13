@@ -193,4 +193,14 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     }
   }
 
+  public boolean canRelease() {
+    Release nextRelease = this.getNextRelease().getRelease();
+    for(Submission submission : nextRelease.getSubmissions()) {
+      if(submission.getState() != SubmissionState.SIGNED_OFF) {
+        return false;
+      }
+    }
+
+    return true;
+  }
 }
