@@ -2,7 +2,6 @@ package org.icgc.dcc.filesystem;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 import junit.framework.Assert;
@@ -85,14 +84,6 @@ public class FileSystemFunctionalTest extends FileSystemTest {
     ReleaseFileSystem myReleaseFilesystem = this.dccFileSystem.getReleaseFilesystem(this.mockRelease, this.mockUser);
     Assert.assertNotNull(myReleaseFilesystem);
     log.info("release file system = " + myReleaseFilesystem);
-
-    Iterable<SubmissionDirectory> mySubmissionDirectoryList = myReleaseFilesystem.listSubmissionDirectory();
-    Assert.assertNotNull(myReleaseFilesystem);
-
-    int size = ((ArrayList<SubmissionDirectory>) mySubmissionDirectoryList).size();
-    Assert.assertEquals(1, size);
-
-    log.info("mySubmissionDirectoryList # = " + size);
 
     boolean releaseReadOnly = myReleaseFilesystem.isReadOnly();
     Assert.assertFalse(releaseReadOnly);

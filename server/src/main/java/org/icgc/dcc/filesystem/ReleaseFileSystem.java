@@ -3,9 +3,6 @@ package org.icgc.dcc.filesystem;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
@@ -45,23 +42,6 @@ public class ReleaseFileSystem {
   public ReleaseFileSystem(DccFileSystem dccFilesystem, ReleaseService releases, ProjectService projects,
       Release release) {
     this(dccFilesystem, releases, projects, release, null);
-  }
-
-  /**
-   * Lists all the submission directories for release/user combination
-   */
-  public Iterable<SubmissionDirectory> listSubmissionDirectory() {
-    List<SubmissionDirectory> submissionDirectoryList = new ArrayList<SubmissionDirectory>();
-
-    List<Project> projectList = projects.getProjects();
-    for(Project project : projectList) {
-      if(hasPrivileges(project)) {
-        SubmissionDirectory submissionDirectory = getSubmissionDirectory(project);
-        submissionDirectoryList.add(submissionDirectory);
-      }
-    }
-
-    return submissionDirectoryList;
   }
 
   public SubmissionDirectory getSubmissionDirectory(Project project) {
