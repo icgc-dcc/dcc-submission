@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.sshd.server.SshFile;
+import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.filesystem.DccFileSystemException;
 import org.icgc.dcc.filesystem.ReleaseFileSystem;
 import org.icgc.dcc.filesystem.SubmissionDirectory;
@@ -36,9 +37,12 @@ class RootHdfsSshFile extends HdfsSshFile {
 
   private final ReleaseFileSystem rfs;
 
-  public RootHdfsSshFile(ReleaseFileSystem rfs) {
+  private final ProjectService projects;
+
+  public RootHdfsSshFile(ReleaseFileSystem rfs, ProjectService projects) {
     super(rfs);
     this.rfs = rfs;
+    this.projects = projects;
   }
 
   @Override
@@ -101,7 +105,7 @@ class RootHdfsSshFile extends HdfsSshFile {
   }
 
   public SubmissionDirectory getSubmissionDirectory(String directoryName) {
-    return this.rfs.getSubmissionDirectory(directoryName);
+    return this.rfs.getSubmissionDirectory(this.projects.getProject(directoryName));
   }
 
   @Override

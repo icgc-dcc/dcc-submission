@@ -32,7 +32,7 @@ public class NextReleaseResource {
   @POST
   public Response release(Release nextRelease, @Context Request req) {
     // check for submission state to be signed off
-    if(!releaseService.canRelease()) {
+    if(!releaseService.getNextRelease().canRelease()) {
       return Response.status(Status.BAD_REQUEST).build();
     }
 
