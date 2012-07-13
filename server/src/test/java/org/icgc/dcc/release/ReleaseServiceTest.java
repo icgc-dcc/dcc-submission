@@ -139,6 +139,26 @@ public class ReleaseServiceTest {
   }
 
   @Test
+  public void test_has_projectKey() {
+    assertTrue(releaseService.hasProjectKey("p1"));
+    assertTrue(releaseService.hasProjectKey("p2"));
+    assertTrue(releaseService.hasProjectKey("p3"));
+    assertTrue(!releaseService.hasProjectKey("p4"));
+  }
+
+  @Test
+  public void test_has_projectKeys() {
+    List<String> projectKeys = new ArrayList<String>();
+    projectKeys.add("p1");
+    projectKeys.add("p2");
+    projectKeys.add("p3");
+    assertTrue(releaseService.hasProjectKey(projectKeys));
+
+    projectKeys.add("p4");
+    assertTrue(!releaseService.hasProjectKey(projectKeys));
+  }
+
+  @Test
   public void test_queueNotValidatedSubmission() {
     // System.out.println(release.getProjectKeys());
     // System.out.println(releaseService.getQueued());
