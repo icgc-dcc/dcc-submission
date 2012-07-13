@@ -42,6 +42,7 @@ import cascading.operation.FunctionCall;
 import cascading.pipe.Each;
 import cascading.pipe.Pipe;
 import cascading.tuple.Fields;
+import cascading.tuple.TupleEntry;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
@@ -146,14 +147,15 @@ public class CodeListRestriction implements InternalPlanElement {
 
     @Override
     public void operate(FlowProcess flowProcess, FunctionCall functionCall) {
-      Object object = functionCall.getArguments().getObject(0);
+      TupleEntry tupleEntry = functionCall.getArguments();
+      Object object = tupleEntry.getObject(0);
       String value = object == null ? null : object.toString();
       if(value != null && codes.contains(value) == false && values.contains(value) == false) {
-        Object fieldName = functionCall.getArguments().getFields().get(0);
-        ValidationFields.state(functionCall.getArguments()).reportError(ValidationErrorCode.CODELIST_ERROR, value,
-            fieldName, codeListName);
+        Object fieldName = tupleEntry.getFields().get(0);
+        ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.CODELIST_ERROR, value, fieldName,
+            codeListName);
       }
-      functionCall.getOutputCollector().add(functionCall.getArguments());
+      functionCall.getOutputCollector().add(tupleEntry.getTupleCopy());
     }
 
   }

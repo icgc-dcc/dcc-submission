@@ -101,14 +101,14 @@ public class DiscreteValuesRestriction implements InternalPlanElement {
 
     @Override
     public void operate(FlowProcess flowProcess, FunctionCall functionCall) {
-      TupleEntry arguments = functionCall.getArguments();
-      String value = arguments.getString(0);
+      TupleEntry tupleEntry = functionCall.getArguments();
+      String value = tupleEntry.getString(0);
       if(value != null && values.contains(value) == false) {
-        Object fieldName = arguments.getFields().get(0);
-        ValidationFields.state(arguments).reportError(ValidationErrorCode.DISCRETE_VALUES_ERROR, value, fieldName,
+        Object fieldName = tupleEntry.getFields().get(0);
+        ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.DISCRETE_VALUES_ERROR, value, fieldName,
             values);
       }
-      functionCall.getOutputCollector().add(arguments);
+      functionCall.getOutputCollector().add(tupleEntry.getTupleCopy());
     }
 
   }
