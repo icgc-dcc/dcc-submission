@@ -7,6 +7,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.DictionaryState;
 import org.icgc.dcc.release.model.Release;
@@ -49,6 +52,11 @@ public class NextReleaseTest {
     updatesDict = mock(UpdateOperations.class);
 
     when(release.getState()).thenReturn(ReleaseState.OPENED);
+    List<Submission> submissions = new ArrayList<Submission>();
+    Submission s = new Submission();
+    s.setState(SubmissionState.SIGNED_OFF);
+    submissions.add(s);
+    when(release.getSubmissions()).thenReturn(submissions);
 
     ds = mock(Datastore.class);
 
