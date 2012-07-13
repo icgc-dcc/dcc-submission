@@ -4,12 +4,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.util.Arrays;
 
-import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.core.model.User;
-import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.release.model.SubmissionState;
@@ -47,10 +44,6 @@ public class FileSystemTest {
 
   protected Config mockConfig;
 
-  protected ReleaseService mockReleases;
-
-  protected ProjectService mockProjects;
-
   @Before
   public void setUp() throws IOException {
 
@@ -59,8 +52,6 @@ public class FileSystemTest {
     this.mockUser = mock(User.class);
     this.mockProject = mock(Project.class);
     this.mockSubmission = mock(Submission.class);
-    this.mockReleases = mock(ReleaseService.class);
-    this.mockProjects = mock(ProjectService.class);
 
     when(this.mockConfig.getString(FsConfig.FS_ROOT)).thenReturn(ROOT_DIR);
 
@@ -74,9 +65,6 @@ public class FileSystemTest {
 
     when(this.mockSubmission.getState()).thenReturn(SubmissionState.SIGNED_OFF);
 
-    when(this.mockProjects.getProjects()).thenReturn(Arrays.asList(new Project[] { this.mockProject }));
-
-    when(this.mockReleases.getSubmission(this.mockRelease.getName(), this.mockProject.getKey())).thenReturn(
-        this.mockSubmission);
+    when(this.mockRelease.getSubmission(this.mockProject.getKey())).thenReturn(this.mockSubmission);
   }
 }
