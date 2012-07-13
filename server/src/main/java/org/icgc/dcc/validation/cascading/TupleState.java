@@ -8,6 +8,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import org.icgc.dcc.validation.CascadingStrategy;
 import org.icgc.dcc.validation.ValidationErrorCode;
 
 import com.google.common.base.Objects;
@@ -19,10 +20,16 @@ import com.google.common.collect.Lists;
  */
 public class TupleState implements Serializable {
 
+  private int offset;
+
   private List<TupleError> errors;
 
   public TupleState() {
 
+  }
+
+  public void setOffset(int offset) {
+    this.offset = offset;
   }
 
   public void reportError(ValidationErrorCode code, @Nullable Object... parameters) {
@@ -42,9 +49,14 @@ public class TupleState implements Serializable {
     return isValid() == false;
   }
 
+  public int getOffset() {
+    return offset;
+  }
+
   @Override
   public String toString() {
-    return Objects.toStringHelper(TupleState.class).add("valid", isValid()).add("errors", errors).toString();
+    return Objects.toStringHelper(TupleState.class).add(CascadingStrategy.OFFSET_FIELD_NAME, offset)
+        .add("valid", isValid()).add("errors", errors).toString();
   }
 
   /**

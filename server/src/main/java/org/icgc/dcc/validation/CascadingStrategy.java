@@ -28,6 +28,8 @@ import cascading.tuple.Fields;
 
 public interface CascadingStrategy {
 
+  public final String OFFSET_FIELD_NAME = "offset";
+
   public FlowConnector getFlowConnector();
 
   public Tap<?, ?, ?> getSourceTap(FileSchema schema);
