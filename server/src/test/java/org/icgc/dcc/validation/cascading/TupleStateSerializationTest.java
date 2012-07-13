@@ -84,8 +84,8 @@ public class TupleStateSerializationTest extends CascadingTestCase {
     // make sure invalid state is serialized
     assertEquals(testState.isInvalid(), resultState.isInvalid());
 
-    TupleError[] testErrors = Iterables.toArray(testState.errors(), TupleError.class);
-    TupleError[] resultErrors = Iterables.toArray(resultState.errors(), TupleError.class);
+    TupleError[] testErrors = Iterables.toArray(testState.getErrors(), TupleError.class);
+    TupleError[] resultErrors = Iterables.toArray(resultState.getErrors(), TupleError.class);
     // check TupleError list is serialized
     assertEquals(testErrors.length, resultErrors.length);
   }

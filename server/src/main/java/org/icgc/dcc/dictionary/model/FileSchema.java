@@ -161,4 +161,5 @@ public class FileSchema implements DictionaryElement {
   public void setRelation(Relation relation) {
     this.relation = relation;
   }
+
 }

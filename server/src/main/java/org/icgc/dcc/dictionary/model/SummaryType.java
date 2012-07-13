@@ -15,34 +15,8 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.validation.visitor;
+package org.icgc.dcc.dictionary.model;
 
-import java.util.List;
-
-import org.icgc.dcc.validation.visitor.FrequencyPlanningVisitor.FrequencyBuffer;
-import org.junit.Assert;
-import org.junit.Test;
-
-import cascading.CascadingTestCase;
-import cascading.tuple.Fields;
-import cascading.tuple.Tuple;
-import cascading.tuple.TupleEntry;
-import cascading.tuple.TupleListCollector;
-
-import com.google.common.collect.ImmutableList;
-
-public class FrequencyPlanningVisitorTest {
-
-  @Test
-  public void test_buffer_computesFrequencies() {
-
-    FrequencyBuffer buffer = new FrequencyBuffer("gender");
-
-    TupleListCollector c =
-        CascadingTestCase.invokeBuffer(buffer, new Tuple[] { new Tuple("1"), new Tuple("1") }, Fields.RESULTS);
-
-    List<TupleEntry> entries = ImmutableList.copyOf(c.entryIterator());
-    Assert.assertEquals(1, entries.size());
-    Assert.assertEquals(2, entries.get(0).getObject(0));
-  }
+public enum SummaryType {
+  FREQUENCY
 }

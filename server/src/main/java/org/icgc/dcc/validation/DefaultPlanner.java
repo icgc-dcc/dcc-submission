@@ -24,6 +24,8 @@ import java.util.Set;
 
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.FileSchema;
+import org.icgc.dcc.validation.report.ErrorPlanningVisitor;
+import org.icgc.dcc.validation.report.SummaryPlanningVisitor;
 import org.icgc.dcc.validation.visitor.ExternalRestrictionPlanningVisitor;
 import org.icgc.dcc.validation.visitor.InternalRestrictionPlanningVisitor;
 import org.icgc.dcc.validation.visitor.RelationPlanningVisitor;
@@ -45,9 +47,12 @@ public class DefaultPlanner implements Planner {
         new ValueTypePlanningVisitor(),//
         new UniqueFieldsPlanningVisitor(),//
         new InternalRestrictionPlanningVisitor(restrictionTypes), //
+        // Reporting
+        new SummaryPlanningVisitor(),//
+        new ErrorPlanningVisitor(FlowType.INTERNAL),
         // External
         new RelationPlanningVisitor(),//
-        new ExternalRestrictionPlanningVisitor(restrictionTypes));
+        new ExternalRestrictionPlanningVisitor(restrictionTypes), new ErrorPlanningVisitor(FlowType.EXTERNAL));
   }
 
   @Override
@@ -67,5 +72,4 @@ public class DefaultPlanner implements Planner {
     }
     return plan;
   }
-
 }

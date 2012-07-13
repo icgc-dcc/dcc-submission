@@ -32,4 +32,5 @@ public interface FileSchemaFlowPlanner {
 
   public Flow<?> connect(CascadingStrategy cascadingStrategy);
 
+  public void apply(ReportingPlanElement element);
 }

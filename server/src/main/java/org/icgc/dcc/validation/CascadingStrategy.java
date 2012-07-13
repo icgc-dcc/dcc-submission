@@ -18,6 +18,7 @@
 package org.icgc.dcc.validation;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.icgc.dcc.dictionary.model.FileSchema;
 
@@ -37,5 +38,14 @@ public interface CascadingStrategy {
 
   public Tap<?, ?, ?> getExternalSinkTap(FileSchema schema);
 
+  public Tap<?, ?, ?> getReportTap(FileSchemaFlowPlanner planner, String reportName);
+
+  /**
+   * Used to read back a report that was produced during the execution of a Flow. This does not use a Tap so that it can
+   * be executed outside of a Flow.
+   */
+  public InputStream readReportTap(FileSchemaFlowPlanner planner, String reportName);
+
   public Fields getFileHeader(FileSchema schema) throws IOException;
+
 }

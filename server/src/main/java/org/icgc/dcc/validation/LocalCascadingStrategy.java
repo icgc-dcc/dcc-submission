@@ -20,8 +20,10 @@ package org.icgc.dcc.validation;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.icgc.dcc.dictionary.model.FileSchema;
+import org.icgc.dcc.validation.cascading.LocalJsonScheme;
 
 import cascading.flow.FlowConnector;
 import cascading.flow.local.LocalFlowConnector;
@@ -75,6 +77,17 @@ public class LocalCascadingStrategy implements CascadingStrategy {
   public Tap<?, ?, ?> getTrimmedTap(Trim trim) {
     File trimmed = new File(output, trim.getSchema() + "#" + Joiner.on("-").join(trim.getFields()) + ".tsv");
     return new FileTap(new TextDelimited(new Fields(trim.getFields()), true, "\t"), trimmed.getAbsolutePath());
+  }
+
+  @Override
+  public Tap<?, ?, ?> getReportTap(FileSchemaFlowPlanner schema, String reportName) {
+    File report = new File(output, String.format("%s#%s.json", schema.getName(), reportName));
+    return new FileTap(new LocalJsonScheme(), report.getAbsolutePath());
+  }
+
+  @Override
+  public InputStream readReportTap(FileSchemaFlowPlanner planner, String reportName) {
+    throw new UnsupportedOperationException("method not yet implemented");
   }
 
   private Tap<?, ?, ?> tap(File file) {

@@ -65,6 +65,17 @@ public class Plan {
     return Iterables.unmodifiableIterable(externalPlanners.values());
   }
 
+  public Iterable<? extends FileSchemaFlowPlanner> getFlows(FlowType type) {
+    switch(type) {
+    case INTERNAL:
+      return Iterables.unmodifiableIterable(internalPlanners.values());
+    case EXTERNAL:
+      return Iterables.unmodifiableIterable(externalPlanners.values());
+    default:
+      throw new IllegalArgumentException();
+    }
+  }
+
   public Cascade connect(CascadingStrategy cascadingStrategy) {
     CascadeDef cascade = new CascadeDef();
     for(FileSchemaFlowPlanner planner : Iterables.concat(internalPlanners.values(), externalPlanners.values())) {

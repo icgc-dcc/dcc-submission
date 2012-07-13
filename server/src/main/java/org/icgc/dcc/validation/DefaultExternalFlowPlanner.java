@@ -30,12 +30,11 @@ import cascading.flow.Flow;
 import cascading.flow.FlowDef;
 import cascading.pipe.Merge;
 import cascading.pipe.Pipe;
-import cascading.tap.Tap;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-class DefaultExternalFlowPlanner implements ExternalFlowPlanner {
+class DefaultExternalFlowPlanner extends BaseFileSchemaFlowPlanner implements ExternalFlowPlanner {
 
   private static final Logger log = LoggerFactory.getLogger(DefaultInternalFlowPlanner.class);
 
@@ -48,6 +47,7 @@ class DefaultExternalFlowPlanner implements ExternalFlowPlanner {
   private final List<Pipe> joinedTails = Lists.newLinkedList();
 
   DefaultExternalFlowPlanner(Plan plan, FileSchema fileSchema) {
+    super(fileSchema);
     checkArgument(plan != null);
     checkArgument(fileSchema != null);
     this.plan = plan;
@@ -80,15 +80,22 @@ class DefaultExternalFlowPlanner implements ExternalFlowPlanner {
   @Override
   public Flow<?> connect(CascadingStrategy strategy) {
     if(joinedTails.size() > 0) {
-      Tap<?, ?, ?> sink = strategy.getExternalSinkTap(fileSchema);
-      FlowDef def = new FlowDef().setName(getName()).addTailSink(mergeJoinedTails(), sink);
-
-      for(Trim trim : trimmedHeads.keySet()) {
-        def.addSource(trim.getName(), strategy.getTrimmedTap(trim));
-      }
-      return strategy.getFlowConnector().connect(def);
+      return super.connect(strategy);
     }
     return null;
+  }
+
+  @Override
+  protected FlowDef onConnect(FlowDef flowDef, CascadingStrategy strategy) {
+    for(Trim trim : trimmedHeads.keySet()) {
+      flowDef.addSource(trim.getName(), strategy.getTrimmedTap(trim));
+    }
+    return flowDef;
+  }
+
+  @Override
+  protected Pipe getTail() {
+    return mergeJoinedTails();
   }
 
   private Pipe getTrimmedHead(Trim trim) {

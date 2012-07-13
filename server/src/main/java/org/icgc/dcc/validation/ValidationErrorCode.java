@@ -22,6 +22,6 @@ public enum ValidationErrorCode {
 
   public static String format(TupleError error) {
     checkArgument(error != null);
-    return String.format(error.code().message, error.parameters());
+    return String.format(error.getCode().message, error.getParameters());
   }
 }

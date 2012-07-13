@@ -3454,6 +3454,9 @@
     "pattern" : "^\\\\w+__\\\\d+__\\\\d+__donor__\\\\d+\\\\.txt$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ ],
+    "report": {
+      "frequencies" : ["donor_id", "donor_sex"]
+    },
     "fields" : [ {
       "name" : "donor_id",
       "label" : "Unique identifier for the donor; assigned by data provider. ",

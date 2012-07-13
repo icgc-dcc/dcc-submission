@@ -20,8 +20,10 @@ package org.icgc.dcc.validation;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.icgc.dcc.dictionary.model.FileSchema;
+import org.icgc.dcc.validation.cascading.HadoopJsonScheme;
 
 import cascading.flow.FlowConnector;
 import cascading.flow.hadoop.HadoopFlowConnector;
@@ -77,6 +79,17 @@ public class HadoopCascadingStrategy implements CascadingStrategy {
     return new Lfs(new TextDelimited(new Fields(trim.getFields()), true, "\t"), trimmed.getAbsolutePath());
   }
 
+  @Override
+  public Tap<?, ?, ?> getReportTap(FileSchemaFlowPlanner schema, String reportName) {
+    File report = new File(output, String.format("%s#%s.json", schema.getName(), reportName));
+    return new Lfs(new HadoopJsonScheme(), report.getAbsolutePath());
+  }
+
+  @Override
+  public InputStream readReportTap(FileSchemaFlowPlanner planner, String reportName) {
+    throw new UnsupportedOperationException("method not yet implemented");
+  }
+
   private Tap<?, ?, ?> tap(File file) {
     return new Lfs(new TextDelimited(true, "\t"), file.getAbsolutePath());
   }
@@ -106,4 +119,5 @@ public class HadoopCascadingStrategy implements CascadingStrategy {
 
     return new Fields(Iterables.toArray(header, String.class));
   }
+
 }

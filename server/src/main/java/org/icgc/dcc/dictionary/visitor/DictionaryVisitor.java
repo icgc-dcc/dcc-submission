@@ -37,4 +37,5 @@ public interface DictionaryVisitor {
   public void visit(Restriction restriction);
 
   public void visit(Relation relation);
+
 }

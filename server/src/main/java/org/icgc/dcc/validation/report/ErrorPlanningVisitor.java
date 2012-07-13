@@ -15,38 +15,51 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.dictionary.visitor;
+package org.icgc.dcc.validation.report;
 
-import org.icgc.dcc.dictionary.model.Dictionary;
-import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.FileSchema;
-import org.icgc.dcc.dictionary.model.Relation;
-import org.icgc.dcc.dictionary.model.Restriction;
+import org.icgc.dcc.validation.FlowType;
+import org.icgc.dcc.validation.ReportingFlowPlanningVisitor;
+import org.icgc.dcc.validation.ReportingPlanElement;
+import org.icgc.dcc.validation.cascading.TupleStates;
+import org.icgc.dcc.validation.cascading.ValidationFields;
 
-/**
- * Base implementation for {@code BaseDictionaryVisitor} that intentionally does not do anything (subclasses are to
- * extend this base class as opposed to implement the interface directly)
- */
-public abstract class BaseDictionaryVisitor implements DictionaryVisitor {
+import cascading.pipe.Each;
+import cascading.pipe.Pipe;
+import cascading.pipe.assembly.Retain;
 
-  @Override
-  public void visit(Dictionary dictionary) {
+public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
+
+  public ErrorPlanningVisitor(FlowType type) {
+    super(type);
   }
 
   @Override
   public void visit(FileSchema fileSchema) {
+    super.visit(fileSchema);
+    collect(new ErrorsPlanElement());
   }
 
-  @Override
-  public void visit(Field field) {
-  }
+  static class ErrorsPlanElement implements ReportingPlanElement {
 
-  @Override
-  public void visit(Restriction restriction) {
-  }
+    public ErrorsPlanElement() {
+    }
 
-  @Override
-  public void visit(Relation relation) {
+    @Override
+    public String getName() {
+      return "errors";
+    }
+
+    @Override
+    public String describe() {
+      return String.format("errors");
+    }
+
+    @Override
+    public Pipe report(Pipe pipe) {
+      return new Retain(new Each(pipe, TupleStates.keepInvalidTuplesFilter()), ValidationFields.STATE_FIELD);
+    }
+
   }
 
 }

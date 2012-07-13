@@ -37,6 +37,8 @@ public class Field implements DictionaryElement {
 
   private ValueType valueType;
 
+  private SummaryType summaryType;
+
   private List<Restriction> restrictions;
 
   public Field() {
@@ -87,5 +89,13 @@ public class Field implements DictionaryElement {
 
   public void addRestriction(Restriction restriction) {
     this.restrictions.add(restriction);
+  }
+
+  public SummaryType getSummaryType() {
+    return summaryType;
+  }
+
+  public void setSummaryType(SummaryType summaryType) {
+    this.summaryType = summaryType;
   }
 }

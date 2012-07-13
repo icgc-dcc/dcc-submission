@@ -30,7 +30,7 @@ public class TupleState implements Serializable {
     ensureErrors().add(new TupleError(code, parameters));
   }
 
-  public Iterable<TupleError> errors() {
+  public Iterable<TupleError> getErrors() {
     return ensureErrors();
   }
 
@@ -69,11 +69,11 @@ public class TupleState implements Serializable {
       this.parameters = parameters;
     }
 
-    public ValidationErrorCode code() {
+    public ValidationErrorCode getCode() {
       return code;
     }
 
-    public Object[] parameters() {
+    public Object[] getParameters() {
       return parameters;
     }
 

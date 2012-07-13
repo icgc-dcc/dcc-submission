@@ -28,12 +28,9 @@ import org.icgc.dcc.validation.cascading.AddValidationFieldsFunction;
 import org.icgc.dcc.validation.cascading.RemoveEmptyLineFilter;
 import org.icgc.dcc.validation.cascading.RemoveHeaderFilter;
 import org.icgc.dcc.validation.cascading.StructralCheckFunction;
-import org.icgc.dcc.validation.cascading.TupleStates;
-import org.icgc.dcc.validation.cascading.ValidationFields;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cascading.flow.Flow;
 import cascading.flow.FlowDef;
 import cascading.pipe.Each;
 import cascading.pipe.Pipe;
@@ -43,7 +40,7 @@ import cascading.tuple.Fields;
 
 import com.google.common.collect.Maps;
 
-class DefaultInternalFlowPlanner implements InternalFlowPlanner {
+class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements InternalFlowPlanner {
 
   private static final Logger log = LoggerFactory.getLogger(DefaultInternalFlowPlanner.class);
 
@@ -60,6 +57,7 @@ class DefaultInternalFlowPlanner implements InternalFlowPlanner {
   private StructralCheckFunction structralCheck;
 
   DefaultInternalFlowPlanner(Plan plan, FileSchema fileSchema) {
+    super(fileSchema);
     checkArgument(plan != null);
     checkArgument(fileSchema != null);
     this.plan = plan;
@@ -102,10 +100,13 @@ class DefaultInternalFlowPlanner implements InternalFlowPlanner {
   }
 
   @Override
-  public Flow<?> connect(CascadingStrategy strategy) {
-    Pipe tail = applyFilter(validTail);
+  protected Pipe getTail() {
+    return validTail;
+  }
+
+  @Override
+  protected FlowDef onConnect(FlowDef flowDef, CascadingStrategy strategy) {
     Tap<?, ?, ?> source = strategy.getSourceTap(fileSchema);
-    Tap<?, ?, ?> sink = strategy.getInternalSinkTap(fileSchema);
     try {
       Fields header = strategy.getFileHeader(fileSchema);
       this.structralCheck.setFileHeader(header);
@@ -114,15 +115,12 @@ class DefaultInternalFlowPlanner implements InternalFlowPlanner {
       e.printStackTrace();
     }
 
-    FlowDef def = new FlowDef()//
-        .setName(getName())//
-        .addSource(head, source)//
-        .addTailSink(tail, sink);
+    flowDef.addSource(head, source);
 
     for(Map.Entry<Trim, Pipe> e : trimmedTails.entrySet()) {
-      def.addTailSink(e.getValue(), strategy.getTrimmedTap(e.getKey()));
+      flowDef.addTailSink(e.getValue(), strategy.getTrimmedTap(e.getKey()));
     }
-    return strategy.getFlowConnector().connect(def);
+    return flowDef;
   }
 
   private Pipe applySystemPipes(Pipe pipe) {
@@ -132,10 +130,6 @@ class DefaultInternalFlowPlanner implements InternalFlowPlanner {
     // parse "line" into the actual expected fields
     pipe = new Each(pipe, new Fields("line"), this.structralCheck, Fields.SWAP);
     return new Each(pipe, new AddValidationFieldsFunction(), Fields.ALL);
-  }
-
-  private Pipe applyFilter(Pipe pipe) {
-    return new Retain(new Each(pipe, TupleStates.keepInvalidTuplesFilter()), ValidationFields.STATE_FIELD);
   }
 
 }

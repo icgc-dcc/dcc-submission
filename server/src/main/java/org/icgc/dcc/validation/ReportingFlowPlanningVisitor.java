@@ -15,38 +15,22 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.dictionary.visitor;
+package org.icgc.dcc.validation;
 
-import org.icgc.dcc.dictionary.model.Dictionary;
-import org.icgc.dcc.dictionary.model.Field;
-import org.icgc.dcc.dictionary.model.FileSchema;
-import org.icgc.dcc.dictionary.model.Relation;
-import org.icgc.dcc.dictionary.model.Restriction;
+public class ReportingFlowPlanningVisitor extends PlanningVisitor<ReportingPlanElement> {
 
-/**
- * Base implementation for {@code BaseDictionaryVisitor} that intentionally does not do anything (subclasses are to
- * extend this base class as opposed to implement the interface directly)
- */
-public abstract class BaseDictionaryVisitor implements DictionaryVisitor {
-
-  @Override
-  public void visit(Dictionary dictionary) {
+  public ReportingFlowPlanningVisitor(FlowType type) {
+    super(type);
   }
 
   @Override
-  public void visit(FileSchema fileSchema) {
-  }
-
-  @Override
-  public void visit(Field field) {
-  }
-
-  @Override
-  public void visit(Restriction restriction) {
-  }
-
-  @Override
-  public void visit(Relation relation) {
+  public void apply(Plan plan) {
+    for(FileSchemaFlowPlanner planner : plan.getFlows(getFlow())) {
+      planner.getSchema().accept(this);
+      for(ReportingPlanElement e : getElements()) {
+        planner.apply(e);
+      }
+    }
   }
 
 }
