@@ -1,9 +1,12 @@
 package org.icgc.dcc.release;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.icgc.dcc.core.model.BaseEntity;
 import org.icgc.dcc.core.model.Project;
@@ -57,7 +60,7 @@ public class ReleaseServiceTest {
       dictionaryService = new DictionaryService(morphia, datastore);
       dictionaryService.add(dictionary);
 
-      release = new Release();
+      release = new Release("release1");
 
       Project project1 = new Project("Project One", "p1");
       Project project2 = new Project("Project Two", "p2");
@@ -122,6 +125,17 @@ public class ReleaseServiceTest {
     assertEquals(1, releaseService.list().size());
     addNewRelease("release2");
     assertEquals(2, releaseService.list().size());
+  }
+
+  @Test
+  public void test_can_release() {
+    assertTrue(!releaseService.getNextRelease().canRelease());
+
+    List<String> projectKeys = new ArrayList<String>();
+    projectKeys.add("p1");
+    releaseService.signOff(projectKeys);
+
+    assertTrue(releaseService.getNextRelease().canRelease());
   }
 
   @Test
