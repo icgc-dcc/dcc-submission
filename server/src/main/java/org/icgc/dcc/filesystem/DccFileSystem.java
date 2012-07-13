@@ -11,7 +11,6 @@ import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.core.model.User;
 import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
-import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.Release;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,23 +32,19 @@ public class DccFileSystem {
 
   private final Config config;
 
-  private final ReleaseService releases;
-
   private final ProjectService projects;
 
   private final String rootStringPath;
 
   @Inject
-  public DccFileSystem(Config config, ReleaseService releases, ProjectService projects, FileSystem fileSystem) {
+  public DccFileSystem(Config config, ProjectService projects, FileSystem fileSystem) {
     super();
 
     checkArgument(config != null);
-    checkArgument(releases != null);
     checkArgument(projects != null);
     checkArgument(fileSystem != null);
 
     this.config = config;
-    this.releases = releases;
     this.projects = projects;
     this.fileSystem = fileSystem;
 
@@ -79,7 +74,7 @@ public class DccFileSystem {
    * it on the fly (for now we have very few users and don't plan on having millions ever).
    */
   public ReleaseFileSystem getReleaseFilesystem(Release release, User user) {
-    return new ReleaseFileSystem(this, this.releases, this.projects, release, user.getName());
+    return new ReleaseFileSystem(this, this.projects, release, user.getName());
   }
 
   /**
@@ -88,7 +83,7 @@ public class DccFileSystem {
    * few users and don't plan on having millions ever).
    */
   public ReleaseFileSystem getReleaseFilesystem(Release release) {
-    return new ReleaseFileSystem(this, this.releases, this.projects, release);
+    return new ReleaseFileSystem(this, this.projects, release);
   }
 
   /**

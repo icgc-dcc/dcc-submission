@@ -45,7 +45,7 @@ public class FileSystemFunctionalTest extends FileSystemTest {
   public void setUp() throws IOException {
     super.setUp();
 
-    this.dccFileSystem = new DccFileSystem(this.mockConfig, this.mockReleases, this.mockProjects, this.fileSystem);
+    this.dccFileSystem = new DccFileSystem(this.mockConfig, this.mockProjects, this.fileSystem);
   }
 
   @Test

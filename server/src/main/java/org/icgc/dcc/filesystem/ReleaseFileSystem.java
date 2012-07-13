@@ -6,7 +6,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
-import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.Submission;
@@ -17,37 +16,31 @@ public class ReleaseFileSystem {
 
   private final ProjectService projects;
 
-  private final ReleaseService releases;
-
   private final Release release;
 
   private final String username;
 
-  public ReleaseFileSystem(DccFileSystem dccFilesystem, ReleaseService releases, ProjectService projects,
-      Release release, String username) {
+  public ReleaseFileSystem(DccFileSystem dccFilesystem, ProjectService projects, Release release, String username) {
     super();
 
     checkArgument(dccFilesystem != null);
-    checkArgument(releases != null);
     checkArgument(projects != null);
     checkArgument(release != null);
 
     this.dccFileSystem = dccFilesystem;
-    this.releases = releases;
     this.projects = projects;
     this.release = release;
     this.username = username; // may be null
   }
 
-  public ReleaseFileSystem(DccFileSystem dccFilesystem, ReleaseService releases, ProjectService projects,
-      Release release) {
-    this(dccFilesystem, releases, projects, release, null);
+  public ReleaseFileSystem(DccFileSystem dccFilesystem, ProjectService projects, Release release) {
+    this(dccFilesystem, projects, release, null);
   }
 
   public SubmissionDirectory getSubmissionDirectory(Project project) {
     checkNotNull(project);
     checkSubmissionDirectory(project); // also checks privileges
-    Submission submission = releases.getSubmission(release.getName(), project.getKey());
+    Submission submission = release.getSubmission(project.getKey());
     return new SubmissionDirectory(dccFileSystem, release, project, submission);
   }
 
