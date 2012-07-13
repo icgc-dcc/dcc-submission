@@ -11,6 +11,7 @@ import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.QRelease;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.Submission;
+import org.icgc.dcc.release.model.SubmissionState;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
@@ -20,10 +21,16 @@ import com.mysema.query.mongodb.morphia.MorphiaQuery;
 
 public class ProjectService extends BaseMorphiaService<Project> {
 
+  private final DccFileSystem fs;
+
+  private final ReleaseService releaseService;
+
   @Inject
-  public ProjectService(Morphia morphia, Datastore datastore) {
+  public ProjectService(Morphia morphia, Datastore datastore, DccFileSystem fs, ReleaseService releaseService) {
     super(morphia, datastore, QProject.project);
     super.registerModelClasses(Project.class);
+    this.fs = fs;
+    this.releaseService = releaseService;
   }
 
   public List<Release> getReleases(Project project) {
@@ -43,16 +50,14 @@ public class ProjectService extends BaseMorphiaService<Project> {
 
   @SuppressWarnings("all")
   public void addProject(Project project) {
-    this.saveProject(project);
+    Release release = releaseService.getNextRelease().getRelease();
+    Submission submission = new Submission();
+    submission.setProjectKey(project.getKey());
+    submission.setState(SubmissionState.NOT_VALIDATED);
+    release.addSubmission(submission);
+    fs.mkdirProjectDirectory(release, project.getKey());
 
-    // TODO: add corresonding test
-    // TODO: this will actually need to throw an event and let DccFilesystem catch it so it can perform the following:
-    if(false) {
-      ReleaseService releaseService = null;
-      DccFileSystem dccFilesystem = null;
-      Release release = releaseService.getNextRelease().getRelease();
-      dccFilesystem.mkdirProjectDirectory(release, project);
-    }
+    this.saveProject(project);
   }
 
   public List<Project> getProjects() {

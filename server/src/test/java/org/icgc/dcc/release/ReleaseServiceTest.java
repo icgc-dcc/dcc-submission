@@ -9,6 +9,7 @@ import org.icgc.dcc.core.model.BaseEntity;
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.dictionary.DictionaryService;
 import org.icgc.dcc.dictionary.model.Dictionary;
+import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.release.model.SubmissionState;
@@ -32,6 +33,8 @@ public class ReleaseServiceTest {
   private ReleaseService releaseService;
 
   private Release release;
+
+  private DccFileSystem fs;
 
   final private String testDbName = "testDb";
 
@@ -81,7 +84,7 @@ public class ReleaseServiceTest {
       release.setDictionaryVersion(dictionary.getVersion());
 
       // Create the releaseService and populate it with the initial release
-      releaseService = new ReleaseService(morphia, datastore);
+      releaseService = new ReleaseService(morphia, datastore, fs);
       releaseService.createInitialRelease(release);
     } catch(UnknownHostException e) {
       e.printStackTrace();
