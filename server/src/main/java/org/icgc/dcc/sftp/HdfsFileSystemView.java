@@ -22,6 +22,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import org.apache.hadoop.fs.Path;
 import org.apache.sshd.server.FileSystemView;
 import org.apache.sshd.server.SshFile;
+import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.core.UserService;
 import org.icgc.dcc.core.model.User;
 import org.icgc.dcc.filesystem.DccFileSystem;
@@ -37,15 +38,18 @@ public class HdfsFileSystemView implements FileSystemView {
 
   private final DccFileSystem dccFileSystem;
 
+  private final ProjectService projectService;
+
   private final ReleaseService releaseService;
 
   private final UserService userService;
 
   private final UsernamePasswordAuthenticator passwordAuthenticator;
 
-  public HdfsFileSystemView(DccFileSystem dccFileSystem, ReleaseService releaseService, UserService userService,
-      UsernamePasswordAuthenticator passwordAuthenticator) {
+  public HdfsFileSystemView(DccFileSystem dccFileSystem, ProjectService projectService, ReleaseService releaseService,
+      UserService userService, UsernamePasswordAuthenticator passwordAuthenticator) {
     this.dccFileSystem = dccFileSystem;
+    this.projectService = projectService;
     this.releaseService = releaseService;
     this.passwordAuthenticator = passwordAuthenticator;
     this.userService = userService;
@@ -62,7 +66,7 @@ public class HdfsFileSystemView implements FileSystemView {
     User currentUser = this.userService.getUser(this.passwordAuthenticator.getCurrentUser());
     ReleaseFileSystem rfs =
         this.dccFileSystem.getReleaseFilesystem(this.releaseService.getNextRelease().getRelease(), currentUser);
-    RootHdfsSshFile root = new RootHdfsSshFile(rfs);
+    RootHdfsSshFile root = new RootHdfsSshFile(rfs, this.projectService);
 
     switch(filePath.depth()) {
     case 0:

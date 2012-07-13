@@ -2,6 +2,7 @@ package org.icgc.dcc.filesystem;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.regex.Pattern;
 
 import junit.framework.Assert;
@@ -9,6 +10,7 @@ import junit.framework.Assert;
 import org.apache.hadoop.fs.FileSystem;
 import org.icgc.dcc.config.ConfigModule;
 import org.icgc.dcc.core.CoreModule;
+import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.core.morphia.MorphiaModule;
 import org.icgc.dcc.filesystem.GuiceJUnitRunner.GuiceModules;
 import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
@@ -45,7 +47,7 @@ public class FileSystemFunctionalTest extends FileSystemTest {
   public void setUp() throws IOException {
     super.setUp();
 
-    this.dccFileSystem = new DccFileSystem(this.mockConfig, this.mockProjects, this.fileSystem);
+    this.dccFileSystem = new DccFileSystem(this.mockConfig, this.fileSystem);
   }
 
   @Test
@@ -60,7 +62,7 @@ public class FileSystemFunctionalTest extends FileSystemTest {
         filenameList0.toString());
     log.info("ls0 = " + filenameList0);
 
-    this.dccFileSystem.ensureReleaseFilesystem(this.mockRelease);
+    this.dccFileSystem.ensureReleaseFilesystem(this.mockRelease, Arrays.asList(new Project[] { this.mockProject }));
 
     Iterable<String> filenameList1 =
         HadoopUtils.toFilenameList(HadoopUtils.lsDir(fileSystem, this.dccFileSystem.getRootStringPath()));

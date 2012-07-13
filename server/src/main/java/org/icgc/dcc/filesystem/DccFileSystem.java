@@ -7,7 +7,6 @@ import java.util.List;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.core.model.User;
 import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
@@ -32,20 +31,16 @@ public class DccFileSystem {
 
   private final Config config;
 
-  private final ProjectService projects;
-
   private final String rootStringPath;
 
   @Inject
-  public DccFileSystem(Config config, ProjectService projects, FileSystem fileSystem) {
+  public DccFileSystem(Config config, FileSystem fileSystem) {
     super();
 
     checkArgument(config != null);
-    checkArgument(projects != null);
     checkArgument(fileSystem != null);
 
     this.config = config;
-    this.projects = projects;
     this.fileSystem = fileSystem;
 
     // grab root directory
@@ -74,7 +69,7 @@ public class DccFileSystem {
    * it on the fly (for now we have very few users and don't plan on having millions ever).
    */
   public ReleaseFileSystem getReleaseFilesystem(Release release, User user) {
-    return new ReleaseFileSystem(this, this.projects, release, user.getName());
+    return new ReleaseFileSystem(this, release, user.getName());
   }
 
   /**
@@ -83,7 +78,7 @@ public class DccFileSystem {
    * few users and don't plan on having millions ever).
    */
   public ReleaseFileSystem getReleaseFilesystem(Release release) {
-    return new ReleaseFileSystem(this, this.projects, release);
+    return new ReleaseFileSystem(this, release);
   }
 
   /**
@@ -91,7 +86,7 @@ public class DccFileSystem {
    * 
    * @param release the new release
    */
-  public void ensureReleaseFilesystem(Release release) {
+  public void ensureReleaseFilesystem(Release release, List<Project> projectList) {
 
     // create path for release
     String releaseStringPath = this.buildReleaseStringPath(release);
@@ -101,10 +96,10 @@ public class DccFileSystem {
     boolean exists = HadoopUtils.checkExistence(this.fileSystem, releaseStringPath);
     if(exists) {
       log.info("filesystem for release " + release.getName() + " already exists");
-      ensureSubmissionDirectories(release);
+      ensureSubmissionDirectories(release, projectList);
     } else {
       log.info("creating filesystem for release " + release.getName());
-      this.createReleaseFilesystem(release);
+      this.createReleaseFilesystem(release, projectList);
     }
 
     // log resulting sub-directories
@@ -117,7 +112,7 @@ public class DccFileSystem {
    * 
    * @param release the new release
    */
-  public void createReleaseFilesystem(Release release) {// TODO: make private?
+  public void createReleaseFilesystem(Release release, List<Project> projectList) {// TODO: make private?
     String releaseStringPath = this.buildReleaseStringPath(release);
 
     // check for pre-existence (at this point we expect it not to)
@@ -128,7 +123,7 @@ public class DccFileSystem {
 
     // create corresponding release directory
     HadoopUtils.mkdirs(this.fileSystem, releaseStringPath);
-    ensureSubmissionDirectories(release);
+    ensureSubmissionDirectories(release, projectList);
   }
 
   public void mkdirProjectDirectory(Release release, Project project) {
@@ -169,9 +164,8 @@ public class DccFileSystem {
     return concatPath(this.buildProjectStringPath(release, project), VALIDATION_DIRNAME);
   }
 
-  private void ensureSubmissionDirectories(Release release) {
+  private void ensureSubmissionDirectories(Release release, List<Project> projectList) {
     // create sub-directory for each project
-    List<Project> projectList = this.projects.getProjects();
     checkState(projectList != null);
     log.info("# of projects = " + projectList.size());
     for(Project project : projectList) {
