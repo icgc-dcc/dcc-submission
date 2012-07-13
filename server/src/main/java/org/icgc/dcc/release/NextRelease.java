@@ -90,4 +90,15 @@ public class NextRelease extends BaseRelease {
 
     return new NextRelease(nextRelease, this.datastore);
   }
+
+  public boolean canRelease() {
+    Release nextRelease = this.getRelease();
+    for(Submission submission : nextRelease.getSubmissions()) {
+      if(submission.getState() == SubmissionState.SIGNED_OFF) {
+        return true;
+      }
+    }
+
+    return false;
+  }
 }
