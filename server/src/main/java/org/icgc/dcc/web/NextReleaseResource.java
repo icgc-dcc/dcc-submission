@@ -57,7 +57,7 @@ public class NextReleaseResource {
   public Response queue(List<String> projectKeys, @Context Request req) {
     ResponseTimestamper.evaluate(req, this.releaseService.getNextRelease().getRelease());
 
-    if(this.releaseService.isProjectKeysValid(projectKeys)) {
+    if(this.releaseService.hasProjectKey(projectKeys)) {
       this.releaseService.queue(projectKeys);
       return Response.ok().build();
     } else {
@@ -86,7 +86,7 @@ public class NextReleaseResource {
   public Response signOff(List<String> projectKeys, @Context Request req) {
     ResponseTimestamper.evaluate(req, this.releaseService.getNextRelease().getRelease());
 
-    if(this.releaseService.isProjectKeysValid(projectKeys)) {
+    if(this.releaseService.hasProjectKey(projectKeys)) {
       this.releaseService.signOff(projectKeys);
       return Response.ok().build();
     } else {

@@ -132,7 +132,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     this.dbUpdateSubmissions(release.getName(), release.getQueue(), projectKeys, newState);
   }
 
-  public boolean isProjectKeysValid(List<String> projectKeys) {
+  public boolean hasProjectKey(List<String> projectKeys) {
     for(String projectKey : projectKeys) {
       if(!this.hasProjectKey(projectKey)) {
         return false;

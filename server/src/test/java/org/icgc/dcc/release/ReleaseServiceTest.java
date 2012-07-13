@@ -147,15 +147,15 @@ public class ReleaseServiceTest {
   }
 
   @Test
-  public void test_is_project_key_valid() {
+  public void test_has_projectKeys() {
     List<String> projectKeys = new ArrayList<String>();
     projectKeys.add("p1");
     projectKeys.add("p2");
     projectKeys.add("p3");
-    assertTrue(releaseService.isProjectKeysValid(projectKeys));
+    assertTrue(releaseService.hasProjectKey(projectKeys));
 
     projectKeys.add("p4");
-    assertTrue(!releaseService.isProjectKeysValid(projectKeys));
+    assertTrue(!releaseService.hasProjectKey(projectKeys));
   }
 
   @Test
