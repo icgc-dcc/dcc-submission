@@ -44,8 +44,6 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
 
   private static final Logger log = LoggerFactory.getLogger(DefaultInternalFlowPlanner.class);
 
-  private final Plan plan;
-
   private final FileSchema fileSchema;
 
   private final Pipe head;
@@ -56,11 +54,14 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
 
   private StructralCheckFunction structralCheck;
 
+<<<<<<< HEAD
   DefaultInternalFlowPlanner(Plan plan, FileSchema fileSchema) {
     super(fileSchema);
     checkArgument(plan != null);
+=======
+  DefaultInternalFlowPlanner(FileSchema fileSchema) {
+>>>>>>> DCC-178 - harmonizing the baseoperations while investigating the issue
     checkArgument(fileSchema != null);
-    this.plan = plan;
     this.fileSchema = fileSchema;
     this.validTail = this.head = new Pipe(fileSchema.getName());
 

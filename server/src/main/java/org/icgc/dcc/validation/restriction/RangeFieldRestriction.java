@@ -19,6 +19,7 @@ import cascading.operation.FunctionCall;
 import cascading.pipe.Each;
 import cascading.pipe.Pipe;
 import cascading.tuple.Fields;
+import cascading.tuple.TupleEntry;
 
 import com.mongodb.DBObject;
 
@@ -103,21 +104,22 @@ public class RangeFieldRestriction implements InternalPlanElement {
 
     @Override
     public void operate(FlowProcess flowProcess, FunctionCall functionCall) {
-      Object value = functionCall.getArguments().getObject(0);
+      TupleEntry tupleEntry = functionCall.getArguments();
+      Object value = tupleEntry.getObject(0);
 
-      Object fieldName = functionCall.getArguments().getFields().get(0);
+      Object fieldName = tupleEntry.getFields().get(0);
 
       if(value instanceof Number) {
         Number num = (Number) value;
         if(num.longValue() < this.min.longValue() || num.longValue() > this.max.longValue()) {
-          ValidationFields.state(functionCall.getArguments()).reportError(ValidationErrorCode.OUT_OF_RANGE_ERROR,
-              num.longValue(), fieldName, this.min.longValue(), this.max.longValue());
+          ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.OUT_OF_RANGE_ERROR, num.longValue(),
+              fieldName, this.min.longValue(), this.max.longValue());
         }
       } else if(value != null) {
-        ValidationFields.state(functionCall.getArguments()).reportError(ValidationErrorCode.NOT_A_NUMBER_ERROR,
-            value.toString(), fieldName);
+        ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.NOT_A_NUMBER_ERROR, value.toString(),
+            fieldName);
       }
-      functionCall.getOutputCollector().add(functionCall.getArguments());
+      functionCall.getOutputCollector().add(tupleEntry.getTupleCopy());
     }
 
   }
