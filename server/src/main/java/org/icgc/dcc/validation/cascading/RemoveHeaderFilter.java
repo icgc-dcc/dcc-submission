@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.validation.cascading;
 
+import org.icgc.dcc.validation.CascadingStrategy;
+
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
 import cascading.operation.Filter;
@@ -29,7 +31,7 @@ public class RemoveHeaderFilter extends BaseOperation implements Filter {
 
   @Override
   public boolean isRemove(FlowProcess flowProcess, FilterCall filterCall) {
-    if(filterCall.getArguments().getInteger("offset") == 0) {
+    if(filterCall.getArguments().getInteger(CascadingStrategy.OFFSET_FIELD_NAME) == 0) {
       return true;
     } else {
       return false;
