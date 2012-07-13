@@ -54,13 +54,8 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
 
   private StructralCheckFunction structralCheck;
 
-<<<<<<< HEAD
-  DefaultInternalFlowPlanner(Plan plan, FileSchema fileSchema) {
-    super(fileSchema);
-    checkArgument(plan != null);
-=======
   DefaultInternalFlowPlanner(FileSchema fileSchema) {
->>>>>>> DCC-178 - harmonizing the baseoperations while investigating the issue
+    super(fileSchema);
     checkArgument(fileSchema != null);
     this.fileSchema = fileSchema;
     this.validTail = this.head = new Pipe(fileSchema.getName());
