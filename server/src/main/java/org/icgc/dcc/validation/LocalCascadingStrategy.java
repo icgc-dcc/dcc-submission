@@ -24,6 +24,7 @@ import java.io.InputStream;
 
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.validation.cascading.LocalJsonScheme;
+import org.icgc.dcc.validation.cascading.ValidationFields;
 
 import cascading.flow.FlowConnector;
 import cascading.flow.local.LocalFlowConnector;
@@ -95,7 +96,7 @@ public class LocalCascadingStrategy implements CascadingStrategy {
   }
 
   private Tap<?, ?, ?> tapSource(File file) {
-    return new FileTap(new TextLine(new Fields(CascadingStrategy.OFFSET_FIELD_NAME, "line")), file.getAbsolutePath());
+    return new FileTap(new TextLine(new Fields(ValidationFields.OFFSET_FIELD_NAME, "line")), file.getAbsolutePath());
   }
 
   private File file(final FileSchema schema) {

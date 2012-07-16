@@ -13,6 +13,8 @@ public class ValidationFields extends Fields {
 
   public static final String STATE_FIELD_NAME = "_state";
 
+  public static final String OFFSET_FIELD_NAME = "offset";
+
   public static final Fields STATE_FIELD = new Fields(STATE_FIELD_NAME);
 
   /**

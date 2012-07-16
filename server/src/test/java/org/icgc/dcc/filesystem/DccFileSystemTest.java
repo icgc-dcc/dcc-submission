@@ -2,17 +2,16 @@ package org.icgc.dcc.filesystem;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.core.model.Project;
 import org.junit.Test;
+
+import com.google.common.collect.Sets;
 
 public class DccFileSystemTest extends FileSystemTest {
 
@@ -36,13 +35,12 @@ public class DccFileSystemTest extends FileSystemTest {
   public void test_ensureReleaseFilesystem_handlesUnexistingDirectory() throws IOException {
     when(this.mockFileSystem.exists(any(Path.class)))//
         .thenReturn(false).thenReturn(false).thenReturn(true); // did not exist, still doesn't exist, exists now
-    this.dccFileSystem.ensureReleaseFilesystem(this.mockRelease, Arrays.asList(new Project[] { this.mockProject }));
-    verify(this.mockFileSystem).listStatus(new Path("/tmp/my_root_fs_dir/" + this.mockRelease.getName()));
+    this.dccFileSystem.ensureReleaseFilesystem(this.mockRelease, Sets.newHashSet(this.mockProject.getKey()));
   }
 
   @Test
   public void test_ensureReleaseFilesystem_handlesExistingDirectory() throws IOException {
     when(this.mockFileSystem.exists(any(Path.class))).thenReturn(true).thenReturn(true); // existed before, still exists
-    this.dccFileSystem.ensureReleaseFilesystem(this.mockRelease, Arrays.asList(new Project[] { this.mockProject }));
+    this.dccFileSystem.ensureReleaseFilesystem(this.mockRelease, Sets.newHashSet(this.mockProject.getKey()));
   }
 }

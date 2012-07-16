@@ -44,7 +44,7 @@ public class ReleaseFileSystem {
     if(hasPrivileges(project) == false) {
       throw new DccFileSystemException("User " + username + " does not have permission to access project " + project);
     }
-    String projectStringPath = dccFileSystem.buildProjectStringPath(release, project);
+    String projectStringPath = dccFileSystem.buildProjectStringPath(release, project.getKey());
     boolean exists = HadoopUtils.checkExistence(dccFileSystem.getFileSystem(), projectStringPath);
     if(exists == false) {
       throw new DccFileSystemException("Release directory " + projectStringPath + " does not exist");

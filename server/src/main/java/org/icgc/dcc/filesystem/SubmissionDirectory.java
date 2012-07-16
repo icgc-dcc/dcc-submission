@@ -51,13 +51,13 @@ public class SubmissionDirectory {
   }
 
   public String addFile(String filename, InputStream data) {
-    String filepath = this.dccFileSystem.buildFileStringPath(this.release, this.project, filename);
+    String filepath = this.dccFileSystem.buildFileStringPath(this.release, this.project.getKey(), filename);
     HadoopUtils.touch(this.dccFileSystem.getFileSystem(), filepath, data);
     return filepath;
   }
 
   public String deleteFile(String filename) {
-    String filepath = this.dccFileSystem.buildFileStringPath(this.release, this.project, filename);
+    String filepath = this.dccFileSystem.buildFileStringPath(this.release, this.project.getKey(), filename);
     HadoopUtils.rm(this.dccFileSystem.getFileSystem(), filepath);
     return filepath;
   }
@@ -77,10 +77,10 @@ public class SubmissionDirectory {
   }
 
   public String getSubmissionDirPath() {
-    return dccFileSystem.buildProjectStringPath(release, project);
+    return dccFileSystem.buildProjectStringPath(release, project.getKey());
   }
 
   public String getValidationDirPath() {
-    return dccFileSystem.buildValidationDirStringPath(release, project);
+    return dccFileSystem.buildValidationDirStringPath(release, project.getKey());
   }
 }

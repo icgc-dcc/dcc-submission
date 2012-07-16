@@ -4,9 +4,12 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.icgc.dcc.core.morphia.BaseMorphiaService;
+import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.release.model.QRelease;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
@@ -27,14 +30,23 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
   private static final Logger log = LoggerFactory.getLogger(ReleaseService.class);
 
+  private final DccFileSystem fs;
+
   @Inject
-  public ReleaseService(Morphia morphia, Datastore datastore) {
+  public ReleaseService(Morphia morphia, Datastore datastore, DccFileSystem fs) {
     super(morphia, datastore, QRelease.release);
+    this.fs = fs;
     registerModelClasses(Release.class);
   }
 
   public void createInitialRelease(Release initRelease) {
     datastore().save(initRelease);
+    Set<String> projectKeys = new LinkedHashSet<String>();
+    for(Submission submission : initRelease.getSubmissions()) {
+      projectKeys.add(submission.getProjectKey());
+    }
+
+    this.fs.createReleaseFilesystem(initRelease, projectKeys);
   }
 
   public boolean hasNextRelease() {
@@ -44,7 +56,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   public NextRelease getNextRelease() throws IllegalReleaseStateException {
     Release nextRelease = this.query().where(QRelease.release.state.eq(ReleaseState.OPENED)).singleResult();
     if(nextRelease == null) throw new IllegalStateException("no next release");
-    return new NextRelease(nextRelease, datastore());
+    return new NextRelease(nextRelease, datastore(), this.fs);
   }
 
   public List<HasRelease> list() {

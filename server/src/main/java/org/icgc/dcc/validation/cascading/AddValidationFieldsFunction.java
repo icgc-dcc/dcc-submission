@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.validation.cascading;
 
-import org.icgc.dcc.validation.CascadingStrategy;
-
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
 import cascading.operation.Function;
@@ -35,7 +33,7 @@ public final class AddValidationFieldsFunction extends BaseOperation implements 
   @Override
   public void operate(FlowProcess process, FunctionCall functionCall) {
     TupleState tupleState = new TupleState();
-    tupleState.setOffset(functionCall.getArguments().getInteger(CascadingStrategy.OFFSET_FIELD_NAME));
+    tupleState.setOffset(functionCall.getArguments().getInteger(ValidationFields.OFFSET_FIELD_NAME));
     functionCall.getOutputCollector().add(new Tuple(tupleState));
   }
 

@@ -12,6 +12,7 @@ import java.util.List;
 
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.DictionaryState;
+import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.Submission;
@@ -44,12 +45,15 @@ public class NextReleaseTest {
 
   private UpdateOperations<Dictionary> updatesDict;
 
+  private DccFileSystem fs;
+
   @SuppressWarnings("unchecked")
   @Before
   public void setUp() {
     release = mock(Release.class);
     updates = mock(UpdateOperations.class);
     updatesDict = mock(UpdateOperations.class);
+    fs = mock(DccFileSystem.class);
 
     when(release.getState()).thenReturn(ReleaseState.OPENED);
     List<Submission> submissions = new ArrayList<Submission>();
@@ -60,7 +64,7 @@ public class NextReleaseTest {
 
     ds = mock(Datastore.class);
 
-    nextRelease = new NextRelease(release, ds);
+    nextRelease = new NextRelease(release, ds, fs);
 
     when(ds.createUpdateOperations(Release.class)).thenReturn(updates);
     when(ds.createUpdateOperations(Dictionary.class)).thenReturn(updatesDict);
@@ -81,7 +85,7 @@ public class NextReleaseTest {
   public void test_NextRelease_throwsWhenBadReleaseState() {
     when(release.getState()).thenReturn(ReleaseState.COMPLETED);
 
-    new NextRelease(release, ds);
+    new NextRelease(release, ds, fs);
   }
 
   @Test

@@ -24,6 +24,7 @@ import java.util.List;
 import org.apache.hadoop.fs.Path;
 import org.apache.sshd.server.SshFile;
 import org.icgc.dcc.core.ProjectService;
+import org.icgc.dcc.core.ProjectServiceException;
 import org.icgc.dcc.filesystem.DccFileSystemException;
 import org.icgc.dcc.filesystem.ReleaseFileSystem;
 import org.icgc.dcc.filesystem.SubmissionDirectory;
@@ -99,6 +100,8 @@ class RootHdfsSshFile extends HdfsSshFile {
         sshFileList.add(new DirectoryHdfsSshFile(this, path.getName()));
       } catch(DccFileSystemException e) {
         Log.info("Directory skipped due to insufficient permissions: " + path.getName());
+      } catch(ProjectServiceException e) {
+        Log.info("Skipped due to no corresponding project: " + path.getName());
       }
     }
     return sshFileList;
