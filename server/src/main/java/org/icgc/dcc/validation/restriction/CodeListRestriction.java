@@ -50,7 +50,7 @@ import com.google.inject.Inject;
 
 public class CodeListRestriction implements InternalPlanElement {
 
-  private static final String NAME = "codeList";
+  private static final String NAME = "codelist";
 
   private static final String FIELD = "name";
 
