@@ -1,6 +1,6 @@
 define (require) ->
   View = require 'views/base/view'
-  template = require 'text!views/templates/compact_release.handlebars'
+  template = require 'text!views/templates/release/compact_release.handlebars'
 
   'use strict'
 
@@ -17,7 +17,7 @@ define (require) ->
         
       @delegate 'click', '.btn', @completeRelease
       
-    completeRelease: (e) -> 
+    completeRelease: (e) ->
       console.debug "CompactReleaseView#completeRelease", @model, e
       @$('#completeRelease').modal('show')
       

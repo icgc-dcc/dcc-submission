@@ -1,10 +1,10 @@
 define (require) ->
   Chaplin = require 'chaplin'
-  BaseController = require 'controllers/base/controller' 
+  BaseController = require 'controllers/base/controller'
   Release = require 'models/release'
   Releases = require 'models/releases'
-  ReleaseView = require 'views/release_view'
-  ReleasesView = require 'views/releases_view'
+  ReleaseView = require 'views/release/release_view'
+  ReleasesView = require 'views/release/releases_view'
 
   'use strict'
 
@@ -23,8 +23,6 @@ define (require) ->
       @model.fetch()
 
     list: (params) ->
-      console.debug 'ReleaseController#list'
+      console.debug 'ReleaseController#list', params
       @collection = new Releases()
-      @collection.fetch()
-      console.debug 'ReleaseController#list', @collection
       @view = new ReleasesView {@collection}
