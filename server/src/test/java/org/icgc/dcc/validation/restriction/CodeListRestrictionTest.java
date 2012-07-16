@@ -47,7 +47,7 @@ public class CodeListRestrictionTest extends CascadingTestCase {
     setup_CodeListRestriction();
     CodeListRestriction restriction = new CodeListRestriction(FIELDNAME, CODELISTNAME, this.mockDictionaries);
 
-    assertEquals(String.format("codeList[%s:%s]", FIELDNAME, CODELISTNAME), restriction.describe());
+    assertEquals(String.format("codelist[%s:%s]", FIELDNAME, CODELISTNAME), restriction.describe());
   }
 
   public void setup_InCodeListFunction() {
