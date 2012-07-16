@@ -1,6 +1,6 @@
 define (require) ->
   View = require 'views/base/view'
-  template = require 'text!views/templates/release.handlebars'
+  template = require 'text!views/templates/release/release.handlebars'
 
   'use strict'
 
@@ -10,7 +10,7 @@ define (require) ->
     
     container: '#content-container'
     containerMethod: 'html'
-    autoRender: false    
+    autoRender: false
     tagName: 'div'
     id: 'release-view'
     
