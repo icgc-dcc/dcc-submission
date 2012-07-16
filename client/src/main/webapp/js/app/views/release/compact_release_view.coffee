@@ -13,11 +13,3 @@ define (require) ->
     initialize: ->
       console.debug @model
       
-      @$('.modal').modal "show": true
-        
-      @delegate 'click', '.btn', @completeRelease
-      
-    completeRelease: (e) ->
-      console.debug "CompactReleaseView#completeRelease", @model, e
-      @$('#completeRelease').modal('show')
-      
