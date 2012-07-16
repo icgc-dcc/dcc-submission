@@ -1,16 +1,14 @@
 define (require) ->
+  Backbone = require 'backbone'
   Chaplin = require 'chaplin'
   utils = require 'lib/utils'
 
   class Collection extends Chaplin.Collection
     # Place your application-specific collection features here
     
-    fetch: (options) ->
-      console.debug 'Collection#fetch'
+    sync: (method, model, options) ->
+      console.debug? 'Collection#sync', method, model, options
       
-      @trigger 'loadStart'
-      (options ?= {}).success = =>
-        @trigger 'load'
       options.beforeSend = utils.sendAuthorization
 
-      super(options)
+      Backbone.sync(method, model, options)

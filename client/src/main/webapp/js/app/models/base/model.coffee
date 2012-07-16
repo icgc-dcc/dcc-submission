@@ -1,4 +1,5 @@
 define (require) ->
+  Backbone = require 'backbone'
   Chaplin = require 'chaplin'
   utils = require 'lib/utils'
   
@@ -31,13 +32,10 @@ define (require) ->
       else
         base
       url
-
-    fetch: (options) ->
-      console.debug? 'Model#fetch'
+    
+    sync: (method, model, options) ->
+      console.debug? 'Model#sync', method, model, options
       
-      @trigger 'loadStart'
-      (options ?= {}).success = =>
-        @trigger 'load'
       options.beforeSend = utils.sendAuthorization
 
-      super(options)
+      Backbone.sync(method, model, options)
