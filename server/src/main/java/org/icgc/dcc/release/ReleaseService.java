@@ -4,7 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -41,7 +41,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
   public void createInitialRelease(Release initRelease) {
     datastore().save(initRelease);
-    Set<String> projectKeys = new HashSet<String>();
+    Set<String> projectKeys = new LinkedHashSet<String>();
     for(Submission submission : initRelease.getSubmissions()) {
       projectKeys.add(submission.getProjectKey());
     }
