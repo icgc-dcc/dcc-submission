@@ -87,31 +87,25 @@ public class UniqueFieldsPlanningVisitor extends InternalFlowPlanningVisitor {
       @Override
       @SuppressWarnings("unchecked")
       public void operate(FlowProcess flowProcess, BufferCall bufferCall) {
-        boolean isNonUnique = false;
         Iterator<TupleEntry> i = bufferCall.getArgumentsIterator();
         if(i.hasNext()) {
           TupleEntry firstTuple = i.next();
+          bufferCall.getOutputCollector().add(firstTuple.getTupleCopy());
+          int firstOffset = ValidationFields.state(firstTuple).getOffset();
+
           while(i.hasNext()) {
-            isNonUnique = true;
             TupleEntry tupleEntry = i.next();
-            reportError(tupleEntry);
+            List<String> values = fetchValues(tupleEntry);
+            ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.UNIQUE_VALUE_ERROR, values, fields,
+                firstOffset);
             bufferCall.getOutputCollector().add(tupleEntry.getTupleCopy());
           }
-          if(isNonUnique) {
-            reportError(firstTuple);
-          }
-          bufferCall.getOutputCollector().add(firstTuple.getTupleCopy());
         }
-      }
-
-      private void reportError(TupleEntry firstTuple) {
-        List<String> values = fetchValues(firstTuple);
-        ValidationFields.state(firstTuple).reportError(ValidationErrorCode.UNIQUE_VALUE_ERROR, values, fields);
       }
 
       private List<String> fetchValues(TupleEntry tupleEntry) {
         List<String> values = new ArrayList<String>();
-        for(String field : fields) { // not worth making non-anonymous guava Function (needs to know tupleEntry)
+        for(String field : fields) {
           values.add(tupleEntry.getString(field));
         }
         return values;

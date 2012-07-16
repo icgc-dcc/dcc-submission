@@ -170,6 +170,11 @@ public class ReleaseServiceTest {
 
   private Release addNewRelease(String name) {
     Release newRelease = new Release(name);
+
+    List<String> projectKeys = new ArrayList<String>();
+    projectKeys.add("p1");
+    releaseService.signOff(projectKeys);
+
     releaseService.getNextRelease().release(newRelease);
     return newRelease;
   }

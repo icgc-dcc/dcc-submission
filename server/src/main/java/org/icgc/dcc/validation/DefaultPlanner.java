@@ -63,7 +63,7 @@ public class DefaultPlanner implements Planner {
     Plan plan = new Plan();
     for(FileSchema fileSchema : dictionary.getFiles()) {
       if(directory.hasFile(fileSchema)) {
-        plan.include(fileSchema, new DefaultInternalFlowPlanner(plan, fileSchema), new DefaultExternalFlowPlanner(plan,
+        plan.include(fileSchema, new DefaultInternalFlowPlanner(fileSchema), new DefaultExternalFlowPlanner(plan,
             fileSchema));
       }
     }

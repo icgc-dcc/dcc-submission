@@ -17,12 +17,15 @@
  */
 package org.icgc.dcc.validation.cascading;
 
+import org.icgc.dcc.validation.CascadingStrategy;
+
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
 import cascading.operation.Function;
 import cascading.operation.FunctionCall;
 import cascading.tuple.Tuple;
 
+@SuppressWarnings("rawtypes")
 public final class AddValidationFieldsFunction extends BaseOperation implements Function {
 
   public AddValidationFieldsFunction() {
@@ -31,7 +34,9 @@ public final class AddValidationFieldsFunction extends BaseOperation implements 
 
   @Override
   public void operate(FlowProcess process, FunctionCall functionCall) {
-    functionCall.getOutputCollector().add(new Tuple(new TupleState()));
+    TupleState tupleState = new TupleState();
+    tupleState.setOffset(functionCall.getArguments().getInteger(CascadingStrategy.OFFSET_FIELD_NAME));
+    functionCall.getOutputCollector().add(new Tuple(tupleState));
   }
 
 }

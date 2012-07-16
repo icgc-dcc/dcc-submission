@@ -61,6 +61,12 @@ public class NextRelease extends BaseRelease {
 
   public NextRelease release(Release nextRelease) throws IllegalReleaseStateException {
     checkArgument(nextRelease != null);
+
+    // check for submission state to be signed off
+    if(!this.canRelease()) {
+      throw new ReleaseException("Release must have at least one submission that is signed off");
+    }
+
     Release oldRelease = this.getRelease();
     String oldDictionary = oldRelease.getDictionaryVersion();
     if(oldDictionary == null) {

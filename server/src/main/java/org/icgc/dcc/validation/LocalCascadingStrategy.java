@@ -95,7 +95,7 @@ public class LocalCascadingStrategy implements CascadingStrategy {
   }
 
   private Tap<?, ?, ?> tapSource(File file) {
-    return new FileTap(new TextLine(new Fields("offset", "line")), file.getAbsolutePath());
+    return new FileTap(new TextLine(new Fields(CascadingStrategy.OFFSET_FIELD_NAME, "line")), file.getAbsolutePath());
   }
 
   private File file(final FileSchema schema) {
