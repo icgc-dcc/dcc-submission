@@ -24,6 +24,7 @@ import java.io.InputStream;
 
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.validation.cascading.HadoopJsonScheme;
+import org.icgc.dcc.validation.cascading.ValidationFields;
 
 import cascading.flow.FlowConnector;
 import cascading.flow.hadoop.HadoopFlowConnector;
@@ -95,7 +96,7 @@ public class HadoopCascadingStrategy implements CascadingStrategy {
   }
 
   private Tap<?, ?, ?> tapSource(File file) {
-    return new Lfs(new TextLine(new Fields(CascadingStrategy.OFFSET_FIELD_NAME, "line")), file.getAbsolutePath());
+    return new Lfs(new TextLine(new Fields(ValidationFields.OFFSET_FIELD_NAME, "line")), file.getAbsolutePath());
   }
 
   private File file(final FileSchema schema) {

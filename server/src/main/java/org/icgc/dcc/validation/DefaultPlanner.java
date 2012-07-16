@@ -52,7 +52,8 @@ public class DefaultPlanner implements Planner {
         new ErrorPlanningVisitor(FlowType.INTERNAL),
         // External
         new RelationPlanningVisitor(),//
-        new ExternalRestrictionPlanningVisitor(restrictionTypes), new ErrorPlanningVisitor(FlowType.EXTERNAL));
+        new ExternalRestrictionPlanningVisitor(restrictionTypes),//
+        new ErrorPlanningVisitor(FlowType.EXTERNAL));
   }
 
   @Override

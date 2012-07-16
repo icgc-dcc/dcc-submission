@@ -30,8 +30,6 @@ import com.mongodb.BasicDBObject;
 
 /**
  * Visits every {@code Dictionary}-related objects and creates a clone for the corresponding object
- * 
- * TODO: in progress
  */
 public class DictionaryCloneVisitor extends BaseDictionaryVisitor {
 

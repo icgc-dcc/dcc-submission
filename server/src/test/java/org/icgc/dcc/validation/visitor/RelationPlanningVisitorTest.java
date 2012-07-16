@@ -19,7 +19,7 @@ package org.icgc.dcc.validation.visitor;
 
 import java.util.Iterator;
 
-import org.icgc.dcc.validation.cascading.TupleState;
+import org.icgc.dcc.validation.cascading.ValidationFields;
 import org.icgc.dcc.validation.visitor.RelationPlanningVisitor.RelationPlanElement.NoNullBuffer;
 import org.junit.Test;
 
@@ -29,53 +29,76 @@ import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 import cascading.tuple.TupleListCollector;
 
+import com.google.common.collect.ObjectArrays;
+
 /**
  * 
  */
 public class RelationPlanningVisitorTest extends CascadingTestCase {
 
+  private final String[] lhsFields = { "fk1", "fk2", "fk3" };
+
+  private final String rhs = "fileName";
+
+  private final String[] rhsFields = { "pk1", "pk2", "pk3" };
+
+  private final Fields inputFields = new Fields(ObjectArrays.concat(lhsFields, rhsFields, String.class));
+
   @Test
-  public void test_validField() {
-    String[] lhsFields = { "fk" };
-    String rhs = "fileName";
-    String[] rhsFields = { "pk" };
+  public void test_operate_valid() {
 
     NoNullBuffer buffer = new NoNullBuffer(lhsFields, rhs, rhsFields);
 
-    Fields resultField = new Fields("_state");
     TupleEntry[] tuples =
-        new TupleEntry[] { new TupleEntry(resultField, new Tuple("value", "value", new TupleState())) };
+        new TupleEntry[] { new TupleEntry(new Fields(ObjectArrays.concat(lhsFields, rhsFields, String.class)),
+            new Tuple(//
+                "value1", "value2", "value3",//
+                "value1", "value2", "value3")) };
 
+    Fields resultField = new Fields("_state");
     TupleListCollector c = CascadingTestCase.invokeBuffer(buffer, tuples, resultField);
     assertEquals(c.size(), 0);
   }
 
   @Test
-  public void test_null() {
-    String[] lhsFields = { "fk" };
-    String rhs = "fileName";
-    String[] rhsFields = { "pk" };
-
-    TupleState state = this.test_NoNullBuffer("value", null, lhsFields, rhs, rhsFields);
-    assertTrue(state.isInvalid());
-  }
-
-  private TupleState test_NoNullBuffer(Object rhsTupleValue, Object lhsTupleValue, String[] lhsFields, String rhs,
-      String[] rhsFields) {
+  public void test_operate_invalid() {
     NoNullBuffer buffer = new NoNullBuffer(lhsFields, rhs, rhsFields);
 
+    TupleEntry[] tuples = new TupleEntry[] {//
+        new TupleEntry(inputFields,//
+            new Tuple("value21", "value22", "value23",//
+                null, null, null)) };
+
     Fields resultField = new Fields("_state");
-    TupleEntry[] tuples =
-        new TupleEntry[] { new TupleEntry(resultField, new Tuple(rhsTupleValue, lhsTupleValue, new TupleState())) };
-
     TupleListCollector c = CascadingTestCase.invokeBuffer(buffer, tuples, resultField);
+    assertEquals(c.size(), 1);
+    assertTrue(ValidationFields.state(c.entryIterator().next()).isInvalid());
+  }
 
-    Iterator<Tuple> iterator = c.iterator();
+  @Test
+  public void test_operate_mix() {
+    NoNullBuffer buffer = new NoNullBuffer(lhsFields, rhs, rhsFields);
 
-    Tuple t = iterator.next();
+    TupleEntry[] tuples = new TupleEntry[] {//
+        new TupleEntry(inputFields, new Tuple(//
+            "value1", "value2", "value3",//
+            "value1", "value2", "value3")),//
+        new TupleEntry(inputFields, new Tuple(//
+            "value21", "value22", "value23",//
+            null, null, null)),//
+        new TupleEntry(inputFields, new Tuple(//
+            "value11", "value12", "value13",//
+            "value11", "value12", "value13")),//
+        new TupleEntry(inputFields, new Tuple(//
+            "value41", "value42", "value43",//
+            null, null, null)), };
 
-    TupleState state = (TupleState) t.getObject(0);
+    Fields resultField = new Fields("_state");
+    TupleListCollector c = CascadingTestCase.invokeBuffer(buffer, tuples, resultField);
+    assertEquals(c.size(), 2);
 
-    return state;
+    Iterator<TupleEntry> entryIterator = c.entryIterator();
+    assertTrue(ValidationFields.state(entryIterator.next()).isInvalid());
+    assertTrue(ValidationFields.state(entryIterator.next()).isInvalid());
   }
 }
