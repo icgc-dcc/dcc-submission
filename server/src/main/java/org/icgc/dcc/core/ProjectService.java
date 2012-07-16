@@ -15,6 +15,8 @@ import org.icgc.dcc.release.model.SubmissionState;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
+import com.google.code.morphia.query.Query;
+import com.google.code.morphia.query.UpdateOperations;
 import com.google.common.collect.Iterables;
 import com.google.inject.Inject;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
@@ -56,6 +58,11 @@ public class ProjectService extends BaseMorphiaService<Project> {
     submission.setState(SubmissionState.NOT_VALIDATED);
     release.addSubmission(submission);
     fs.mkdirProjectDirectory(release, project.getKey());
+
+    Query<Release> updateQuery = datastore().createQuery(Release.class)//
+        .filter("name = ", release.getName());
+    UpdateOperations<Release> ops = datastore().createUpdateOperations(Release.class).add("submissions", submission);
+    datastore().update(updateQuery, ops);
 
     this.saveProject(project);
   }
