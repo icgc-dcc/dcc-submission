@@ -17,8 +17,13 @@
  */
 package org.icgc.dcc.validation.visitor;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.dictionary.model.Relation;
@@ -64,6 +69,8 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
       this.lhsFields = relation.getFields().toArray(new String[] {});
       this.rhs = relation.getOther();
       this.rhsFields = relation.getOtherFields().toArray(new String[] {});
+      checkArgument(this.lhsFields.length == this.rhsFields.length, this.lhsFields.length + " != "
+          + this.rhsFields.length);
     }
 
     @Override
@@ -112,11 +119,16 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
 
       private final String[] rhsFields;
 
+      private final int size;
+
       NoNullBuffer(String[] lhsFields, String rhs, String[] rhsFields) {
         super(2, new Fields(ValidationFields.STATE_FIELD_NAME));
         this.lhsFields = lhsFields;
         this.rhs = rhs;
         this.rhsFields = rhsFields;
+        checkArgument(this.lhsFields.length == this.rhsFields.length, this.lhsFields.length + " != "
+            + this.rhsFields.length);
+        this.size = this.lhsFields.length;
       }
 
       @Override
@@ -125,14 +137,30 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
         Iterator<TupleEntry> iter = bufferCall.getArgumentsIterator();
         while(iter.hasNext()) {
           TupleEntry tupleEntry = iter.next();
-          if(tupleEntry.getObject(1) == null) {
-            String unmatchedValue = tupleEntry.getString(0);
+          if(tupleEntry.getObject(size) == null) {
+            checkState(checkRemainingRightFields(tupleEntry));
+            List<String> unmatchedValues = new ArrayList<String>();
+            for(int i = 0; i < size; i++) {
+              unmatchedValues.add(tupleEntry.getString(i));
+            }
             TupleState tupleState = new TupleState();
-            tupleState.reportError(ValidationErrorCode.MISSING_RELATION_ERROR, unmatchedValue,
+            tupleState.reportError(ValidationErrorCode.MISSING_RELATION_ERROR, unmatchedValues,
                 Arrays.asList(lhsFields), rhs, Arrays.asList(rhsFields));
             bufferCall.getOutputCollector().add(new Tuple(tupleState));
           }
         }
+      }
+
+      /**
+       * Checks that the remaining fields are also null (at this stage they should be design)
+       */
+      private boolean checkRemainingRightFields(TupleEntry tupleEntry) {
+        for(int i = size + 1; i < size + size; i++) {
+          if(tupleEntry.getString(i) != null) {
+            return false;
+          }
+        }
+        return true;
       }
     }
   }
