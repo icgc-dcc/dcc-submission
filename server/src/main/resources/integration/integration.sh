@@ -49,12 +49,22 @@ curl -v -XGET http://localhost:5380/ws/releases/release1/submissions/project3 -H
 echo
 
 echo
-read -p "release 1st release"
+read -p "release 1st release (expect to fail due to no signed off submissions)"
 curl -v -XPOST http://localhost:5380/ws/nextRelease/ -H "Authorization: X-DCC-Auth YWRtaW46YWRtaW5zcGFzc3dk" -H "Content-Type: application/json" -H "Accept: application/json" --data @nextRelease.json
 echo
 
 echo
-read -p "release 1st release"
+read -p "sign off on project 1"
+curl -v -XPOST http://localhost:5380/ws/nextRelease/signed -H "Authorization: X-DCC-Auth YWRtaW46YWRtaW5zcGFzc3dk" -H "Content-Type: application/json" -H "Accept: application/json" --data @projectkeys.json
+echo
+
+echo
+read -p "release 1st release (expect success)"
+curl -v -XPOST http://localhost:5380/ws/nextRelease/ -H "Authorization: X-DCC-Auth YWRtaW46YWRtaW5zcGFzc3dk" -H "Content-Type: application/json" -H "Accept: application/json" --data @nextRelease.json
+echo
+
+echo
+read -p "release 1st release (expect to fail due to duplicate release)"
 curl -v -XPOST http://localhost:5380/ws/nextRelease/ -H "Authorization: X-DCC-Auth YWRtaW46YWRtaW5zcGFzc3dk" -H "Content-Type: application/json" -H "Accept: application/json" --data @nextRelease.json
 echo
 

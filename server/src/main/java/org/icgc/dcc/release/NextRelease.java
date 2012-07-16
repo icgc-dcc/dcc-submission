@@ -2,10 +2,13 @@ package org.icgc.dcc.release;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.DictionaryState;
+import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.Submission;
@@ -20,13 +23,17 @@ public class NextRelease extends BaseRelease {
 
   private final Datastore datastore;
 
-  public NextRelease(Release release, Datastore datastore) throws IllegalReleaseStateException {
+  private final DccFileSystem fs;
+
+  public NextRelease(Release release, Datastore datastore, DccFileSystem fs) throws IllegalReleaseStateException {
     super(release);
     if(release.getState() != ReleaseState.OPENED) {
       throw new IllegalReleaseStateException(release, ReleaseState.OPENED);
     }
     checkArgument(datastore != null);
+    checkArgument(fs != null);
     this.datastore = datastore;
+    this.fs = fs;
   }
 
   public List<String> getQueued() {
@@ -85,6 +92,12 @@ public class NextRelease extends BaseRelease {
     // save the newly created release to mongoDB
     this.datastore.save(nextRelease);
 
+    Set<String> projectKeys = new HashSet<String>();
+    for(Submission submission : nextRelease.getSubmissions()) {
+      projectKeys.add(submission.getProjectKey());
+    }
+    this.fs.createReleaseFilesystem(nextRelease, projectKeys);
+
     oldRelease.setState(ReleaseState.COMPLETED);
     oldRelease.setReleaseDate();
     // update the newly changed status to mongoDB
@@ -94,7 +107,7 @@ public class NextRelease extends BaseRelease {
 
     this.datastore.update(oldRelease, ops);
 
-    return new NextRelease(nextRelease, this.datastore);
+    return new NextRelease(nextRelease, this.datastore, this.fs);
   }
 
   public boolean canRelease() {
