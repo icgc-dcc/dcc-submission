@@ -1,4 +1,5 @@
 define (require) ->
+  Chaplin = require 'chaplin'
   View = require 'views/base/view'
   NextRelease = require 'models/next_release'
   template = require 'text!views/templates/release/complete_release.handlebars'
@@ -29,6 +30,7 @@ define (require) ->
         success: (data) ->
           @.$('.modal').modal('hide')
           # publish completeRelease here
+          Chaplin.mediator.publish "completeRelease"
           
         error: (model, error) ->
           err = error.statusText + error.responseText
@@ -36,5 +38,5 @@ define (require) ->
           
           if alert.length
             alert.text(err)
-          else 
+          else
             @.$('fieldset').before("<div class='alert alert-error'>#{err}</div>")

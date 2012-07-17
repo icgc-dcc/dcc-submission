@@ -23,5 +23,5 @@ define (require) ->
       @collection.fetch()
       
     getView: (item) ->
-      console.debug 'ReleasesView#getView', item
+      #console.debug 'ReleaseCollectionView#getView', item
       new CompactReleaseView model: item

@@ -9,7 +9,7 @@ define (require) ->
       "nextRelease/"
 
     defaults:
-      "submissions": []
+      "submissions": [{"projectKey": "p1", "state": "SIGNED_OFF"}]
 
     initialize: ->
       console.debug? 'NextRelease#initialize', @
