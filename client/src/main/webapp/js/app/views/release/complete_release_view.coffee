@@ -24,5 +24,17 @@ define (require) ->
       
     completeRelease: ->
       console.debug "CompleteReleaseView#completeRelease"
-      nextRelease = new NextRelease {name: @.$('#nextRelease').val()}
-      nextRelease.save()
+      nextRelease = new NextRelease()
+      nextRelease.save {name: @.$('#nextRelease').val()}
+        success: (data) ->
+          @.$('.modal').modal('hide')
+          # publish completeRelease here
+          
+        error: (model, error) ->
+          err = error.statusText + error.responseText
+          alert = @.$('.alert.alert-error')
+          
+          if alert.length
+            alert.text(err)
+          else 
+            @.$('fieldset').before("<div class='alert alert-error'>#{err}</div>")

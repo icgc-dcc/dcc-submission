@@ -8,5 +8,8 @@ define (require) ->
     urlPath: ->
       "nextRelease/"
 
+    defaults:
+      "submissions": []
+
     initialize: ->
       console.debug? 'NextRelease#initialize', @
