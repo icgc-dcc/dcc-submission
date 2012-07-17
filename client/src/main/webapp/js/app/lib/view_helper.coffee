@@ -30,7 +30,7 @@ define [
       options.inverse(this)
 
   Handlebars.registerHelper 'if_admin', (options) ->
-    if "admin" not in mediator.user.get "roles"
+    if "admin" in mediator.user.get "roles"
       options.fn(this)
     else
       options.inverse(this)
@@ -39,9 +39,9 @@ define [
   Handlebars.registerHelper 'release_action', (state) ->
     return false unless state is 'OPENED'
     new Handlebars.SafeString """
-    <button 
-      class="btn btn-primary btn-small" 
-      id="complete-release-popup-button" 
+    <button
+      class="btn btn-primary btn-small"
+      id="complete-release-popup-button"
       data-toggle="modal"
       href="#complete-release-popup">
       Complete
