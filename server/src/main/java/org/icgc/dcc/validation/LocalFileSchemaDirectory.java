@@ -62,7 +62,8 @@ public class LocalFileSchemaDirectory implements FileSchemaDirectory {
       public boolean accept(File pathname) {
         // return pathname.getName().contains(fileSchema.getName());
         // checkNotNull(fileSchema.getPattern(), "schema " + fileSchema.getName() + " has no pattern");
-        return Pattern.matches(fileSchema.getPattern(), pathname.getName());
+        return pathname.getName().contains(fileSchema.getName())
+            && Pattern.matches(fileSchema.getPattern(), pathname.getName());
       }
     });
   }
