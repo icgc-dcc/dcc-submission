@@ -39,29 +39,13 @@ define [
   Handlebars.registerHelper 'release_action', (state) ->
     return false unless state is 'OPENED'
     new Handlebars.SafeString """
-    <button class="btn btn-primary btn-small" data-toggle="modal" href="#completeRelease">
+    <button 
+      class="btn btn-primary btn-small" 
+      id="complete-release-popup-button" 
+      data-toggle="modal"
+      href="#complete-release-popup">
       Complete
     </button>
-    <div class="modal hide fase" id="completeRelease">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal">×</button>
-        <h3>Complete release</h3>
-      </div>
-      <div class="modal-body">
-        <fieldset class="well form-inline">
-        <div class="control-group">
-            <label class="control-label" for="nextRelease">Next Release Name</label>
-            <div class="controls">
-              <input type="text" id="nextRelease">
-            </div>
-          </div>
-      </fieldset>
-      </div>
-      <div class="modal-footer">
-        <a href="#" class="btn" data-dismiss="modal">Close</a>
-        <a href="#" class="btn btn-success">Complete release</a>
-      </div>
-    </div>
     """
 
   # Return a Unreleased if no release date

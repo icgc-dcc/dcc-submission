@@ -11,13 +11,8 @@ define (require) ->
     tagName: 'tr'
     
     initialize: ->
-      console.debug @model
-      
-      @$('.modal').modal "show": true
-        
-      @delegate 'click', '.btn', @completeRelease
-      
-    completeRelease: (e) ->
-      console.debug "CompactReleaseView#completeRelease", @model, e
-      @$('#completeRelease').modal('show')
+      #console.debug "CompactReleaseView#initialize", @model
+      # this is needed because disposing of subviews breaks otherwise
+      # don't know why
+      @subviews = {}
       
