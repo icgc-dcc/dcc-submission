@@ -1,5 +1,6 @@
 package org.icgc.dcc.validation.report;
 
+import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
 public class FieldReport {
@@ -12,7 +13,7 @@ public class FieldReport {
 
   protected long nulls;
 
-  protected DBObject summary;
+  protected BasicDBObject summary;
 
   public String getName() {
     return name;
@@ -50,7 +51,7 @@ public class FieldReport {
     return summary;
   }
 
-  public void setSummary(DBObject summary) {
+  public void setSummary(BasicDBObject summary) {
     this.summary = summary;
   }
 
