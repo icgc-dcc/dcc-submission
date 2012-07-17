@@ -17,44 +17,21 @@
  */
 package org.icgc.dcc.validation.report;
 
-import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.FileSchema;
+import org.icgc.dcc.dictionary.model.SummaryType;
 import org.icgc.dcc.validation.FlowType;
 import org.icgc.dcc.validation.ReportingFlowPlanningVisitor;
-import org.icgc.dcc.validation.ReportingPlanElement;
-
-import cascading.flow.FlowProcess;
-import cascading.operation.BaseOperation;
-import cascading.operation.Buffer;
-import cascading.operation.BufferCall;
-import cascading.operation.Insert;
-import cascading.pipe.Each;
-import cascading.pipe.Every;
-import cascading.pipe.GroupBy;
-import cascading.pipe.Merge;
-import cascading.pipe.Pipe;
-import cascading.pipe.assembly.CountBy;
-import cascading.pipe.assembly.Rename;
-import cascading.pipe.assembly.Retain;
-import cascading.tuple.Fields;
-import cascading.tuple.Tuple;
-import cascading.tuple.TupleEntry;
-
-import com.google.common.collect.Maps;
+import org.icgc.dcc.validation.report.AggregateReportingPlanElement.AveragePlanElement;
+import org.icgc.dcc.validation.report.AggregateReportingPlanElement.CompletenessPlanElement;
+import org.icgc.dcc.validation.report.AggregateReportingPlanElement.MinMaxPlanElement;
 
 public class SummaryPlanningVisitor extends ReportingFlowPlanningVisitor {
-
-  private static final String FIELD = "field";
-
-  private static final String VALUE = "value";
-
-  private static final String FREQ = "freq";
-
-  private static final String REPORT = "report";
 
   public SummaryPlanningVisitor() {
     super(FlowType.INTERNAL);
@@ -63,91 +40,72 @@ public class SummaryPlanningVisitor extends ReportingFlowPlanningVisitor {
   @Override
   public void visit(FileSchema fileSchema) {
     super.visit(fileSchema);
-    collect(new FrequencyPlanElement(fileSchema.getFields()));
+    Map<SummaryType, List<Field>> summaryTypeToFields = buildSummaryTypeToFields(fileSchema);
+    collectElements(fileSchema.getName(), summaryTypeToFields);
   }
 
-  public static class FieldSummary {
+  private Map<SummaryType, List<Field>> buildSummaryTypeToFields(FileSchema fileSchema) {
+    Map<SummaryType, List<Field>> summaryTypeToFields = new LinkedHashMap<SummaryType, List<Field>>();
+    for(SummaryType summaryType : SummaryType.values()) {
+      for(Field field : fileSchema.getFields()) {
+        SummaryType summaryTypeTmp = field.getSummaryType();
 
-    public String field;
+        summaryTypeTmp = cheat(field, summaryTypeTmp);
 
-    public long populated;
+        if(summaryTypeTmp == null) {
+          summaryTypeTmp = SummaryType.COMPLETENESS;// TODO: ok as default?
+        }
 
-    public long nulls;
-
-    public Map<String, Object> summary = Maps.newLinkedHashMap();
-
-  }
-
-  static class FrequencyPlanElement implements ReportingPlanElement {
-
-    private final List<Field> fields;
-
-    public FrequencyPlanElement(List<Field> fields) {
-      this.fields = fields;
-    }
-
-    @Override
-    public String getName() {
-      return "frequencies";
-    }
-
-    @Override
-    public String describe() {
-      return String.format("freq%s", fields);
-    }
-
-    @Override
-    public Pipe report(Pipe pipe) {
-      Pipe[] freqs = new Pipe[fields.size()];
-      int i = 0;
-      for(Field field : fields) {
-        // TODO: handle all types of SummaryType
-        freqs[i++] = frequency(field.getName(), pipe);
-      }
-      pipe = new Merge(freqs);
-      pipe = new GroupBy(pipe, new Fields(FIELD));
-      pipe = new Every(pipe, new Fields(VALUE, FREQ), new SummaryBuffer(), new Fields(REPORT));
-      return pipe;
-    }
-
-    private Pipe frequency(String field, Pipe pipe) {
-      pipe = new Pipe("freq_" + field, pipe);
-      pipe = new Retain(pipe, new Fields(field));
-      pipe = new Rename(pipe, new Fields(field), new Fields(VALUE));
-      pipe = new CountBy(pipe, new Fields(VALUE), new Fields(FREQ));
-      pipe = new Each(pipe, new Insert(new Fields(FIELD), field), new Fields(FIELD, VALUE, FREQ));
-      return pipe;
-    }
-
-    @SuppressWarnings("rawtypes")
-    private class SummaryBuffer extends BaseOperation implements Buffer {
-
-      SummaryBuffer() {
-        super(2, new Fields(REPORT));
-      }
-
-      @Override
-      public void operate(FlowProcess flowProcess, BufferCall bufferCall) {
-        @SuppressWarnings("unchecked")
-        Iterator<TupleEntry> tuples = bufferCall.getArgumentsIterator();
-        FieldSummary fs = new FieldSummary();
-        fs.field = bufferCall.getGroup().getString(0);
-        while(tuples.hasNext()) {
-          TupleEntry tuple = tuples.next();
-          String value = tuple.getString(0);
-          Long frequency = tuple.getLong(1);
-          if(value == null || value.isEmpty()) {
-            fs.nulls += frequency;
-          } else {
-            fs.populated += frequency;
-            fs.summary.put(value, frequency);
+        if(summaryTypeTmp != null) {
+          if(summaryType == summaryTypeTmp) {
+            List<Field> list = summaryTypeToFields.get(summaryType);
+            if(list == null) {
+              list = new ArrayList<Field>();
+              summaryTypeToFields.put(summaryType, list);
+            }
+            list.add(field);
           }
         }
-        bufferCall.getOutputCollector().add(new Tuple(fs));
       }
-
     }
-
+    return summaryTypeToFields;
   }
 
+  private void collectElements(String schemaName, Map<SummaryType, List<Field>> summaryTypeToFields) {
+    for(SummaryType summaryType : summaryTypeToFields.keySet()) {
+      List<Field> fields = summaryTypeToFields.get(summaryType);
+      switch(summaryType) {
+      case COMPLETENESS:
+        collect(new CompletenessPlanElement(schemaName, fields));
+        break;
+      case AVERAGE:
+        collect(new AveragePlanElement(schemaName, fields));
+        break;
+      case MIN_MAX:
+        collect(new MinMaxPlanElement(schemaName, fields));
+        break;
+      case FREQUENCY:
+        collect(new FrequencyPlanElement(schemaName, fields));
+        break;
+      default:
+        break;
+      }
+    }
+  }
+
+  // TODO remove
+  private SummaryType cheat(Field field, SummaryType summaryTypeTmp) {
+    String name = field.getName();
+    if(summaryTypeTmp == null) {
+      if(name.equals("donor_id") || name.equals("donor_region_of_residence")) {
+        summaryTypeTmp = SummaryType.FREQUENCY;
+      } else if(name.equals("donor_age_at_diagnosis") || name.equals("donor_age_at_enrollment")
+          || name.equals("donor_age_at_last_followup")) {
+        summaryTypeTmp = SummaryType.AVERAGE;
+      } else if(name.equals("donor_interval_of_last_followup") || name.equals("donor_relapse_interval")) {
+        summaryTypeTmp = SummaryType.MIN_MAX;
+      }
+    }
+    return summaryTypeTmp;
+  }
 }
