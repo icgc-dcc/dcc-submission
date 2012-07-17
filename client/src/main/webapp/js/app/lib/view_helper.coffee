@@ -16,6 +16,7 @@ define [
 
   # Choose block by user login status
   Handlebars.registerHelper 'if_logged_in', (options) ->
+    console.log mediator.user
     if mediator.user
       options.fn(this)
     else
@@ -24,6 +25,12 @@ define [
   # Choose block by user login status
   Handlebars.registerHelper 'unless_complete', (options) ->
     if mediator.user
+      options.fn(this)
+    else
+      options.inverse(this)
+
+  Handlebars.registerHelper 'if_admin', (options) ->
+    if "admin" not in mediator.user.get "roles"
       options.fn(this)
     else
       options.inverse(this)
