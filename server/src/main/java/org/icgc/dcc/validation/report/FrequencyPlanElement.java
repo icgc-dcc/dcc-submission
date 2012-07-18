@@ -40,7 +40,7 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
-final class FrequencyPlanElement extends BaseReportingPlanElement {
+public final class FrequencyPlanElement extends BaseReportingPlanElement {
 
   private final String FREQ = "freq";
 
@@ -71,9 +71,9 @@ final class FrequencyPlanElement extends BaseReportingPlanElement {
   }
 
   @SuppressWarnings("rawtypes")
-  private class FrequencySummaryBuffer extends BaseOperation implements Buffer {
+  public static class FrequencySummaryBuffer extends BaseOperation implements Buffer {
 
-    FrequencySummaryBuffer() {
+    public FrequencySummaryBuffer() {
       super(2, REPORT_FIELDS);
     }
 

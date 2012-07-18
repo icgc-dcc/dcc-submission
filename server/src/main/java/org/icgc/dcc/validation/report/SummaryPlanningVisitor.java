@@ -44,6 +44,10 @@ public class SummaryPlanningVisitor extends ReportingFlowPlanningVisitor {
     collectElements(fileSchema.getName(), summaryTypeToFields);
   }
 
+  /**
+   * Builds a map that associates each {@code SummaryType} with a list of corresponding {@code Field} from the
+   * {@code FileSchema}
+   */
   private Map<SummaryType, List<Field>> buildSummaryTypeToFields(FileSchema fileSchema) {
     Map<SummaryType, List<Field>> summaryTypeToFields = new LinkedHashMap<SummaryType, List<Field>>();
     for(SummaryType summaryType : SummaryType.values()) {
@@ -68,6 +72,9 @@ public class SummaryPlanningVisitor extends ReportingFlowPlanningVisitor {
     return summaryTypeToFields;
   }
 
+  /**
+   * Collects element based on the {@code Field}'s {@code SummaryType}, so they can later be applied
+   */
   private void collectElements(String schemaName, Map<SummaryType, List<Field>> summaryTypeToFields) {
     for(SummaryType summaryType : summaryTypeToFields.keySet()) {
       List<Field> fields = summaryTypeToFields.get(summaryType);

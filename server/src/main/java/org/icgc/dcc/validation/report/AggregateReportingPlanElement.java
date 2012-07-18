@@ -46,7 +46,7 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
-abstract class AggregateReportingPlanElement extends BaseReportingPlanElement {
+public abstract class AggregateReportingPlanElement extends BaseReportingPlanElement {
 
   private static final String NULLS = "nulls";
 
@@ -136,7 +136,9 @@ abstract class AggregateReportingPlanElement extends BaseReportingPlanElement {
     }
 
     pipe = new Retain(pipe, fieldsOfInterest);
-    pipe = new Each(pipe, fieldsOfInterest, new AggregateSummaryFunction(), REPORT_FIELDS);
+    pipe =
+        new Each(pipe, fieldsOfInterest, new AggregateSummaryFunction(includeBoundaryRelated, includeAverageRelated),
+            REPORT_FIELDS);
 
     return pipe;
   }
@@ -146,7 +148,8 @@ abstract class AggregateReportingPlanElement extends BaseReportingPlanElement {
   }
 
   @SuppressWarnings("rawtypes")
-  private class FieldToValueFunction extends BaseOperation implements Function { // TODO: cascading built-in way?
+  public static final class FieldToValueFunction extends BaseOperation implements Function { // TODO: cascading built-in
+                                                                                             // way?
     FieldToValueFunction(int numArgs) {
       super(numArgs, new Fields(FIELD, VALUE));
     }
@@ -164,8 +167,8 @@ abstract class AggregateReportingPlanElement extends BaseReportingPlanElement {
   }
 
   @SuppressWarnings("rawtypes")
-  private class CompletenessBuffer extends BaseOperation implements Buffer {
-    private CompletenessBuffer() {
+  public static final class CompletenessBuffer extends BaseOperation implements Buffer {
+    public CompletenessBuffer() {
       super(1, new Fields(NULLS, POPULATED));
     }
 
@@ -192,7 +195,7 @@ abstract class AggregateReportingPlanElement extends BaseReportingPlanElement {
    * Computes average and standard deviation
    */
   @SuppressWarnings("rawtypes")
-  final class AverageRelatedBuffer extends BaseOperation implements Buffer {
+  public static final class AverageRelatedBuffer extends BaseOperation implements Buffer {
 
     AverageRelatedBuffer() {
       super(1, new Fields(AVG, STD_DEV));
@@ -212,7 +215,9 @@ abstract class AggregateReportingPlanElement extends BaseReportingPlanElement {
         }
       }
       if(length > 0) {
-        bufferCall.getOutputCollector().add(new Tuple(stats.getMean(), stats.getStandardDeviation()));
+        double mean = Double.valueOf(String.format("%.2f", stats.getMean()));
+        double standardDeviation = Double.valueOf(String.format("%.2f", stats.getStandardDeviation()));
+        bufferCall.getOutputCollector().add(new Tuple(mean, standardDeviation));
       } else {
         bufferCall.getOutputCollector().add(new Tuple(null, null));
       }
@@ -220,9 +225,15 @@ abstract class AggregateReportingPlanElement extends BaseReportingPlanElement {
   }
 
   @SuppressWarnings("rawtypes")
-  private class AggregateSummaryFunction extends BaseOperation implements Function {
-    AggregateSummaryFunction() {
+  public static final class AggregateSummaryFunction extends BaseOperation implements Function {
+    private final boolean includeBoundaryRelated;
+
+    private final boolean includeAverageRelated;
+
+    public AggregateSummaryFunction(boolean includeBoundaryRelated, boolean includeAverageRelated) {
       super((includeBoundaryRelated && includeAverageRelated ? 7 : (includeBoundaryRelated ? 5 : 3)), REPORT_FIELDS);
+      this.includeBoundaryRelated = includeBoundaryRelated;
+      this.includeAverageRelated = includeAverageRelated;
     }
 
     @Override

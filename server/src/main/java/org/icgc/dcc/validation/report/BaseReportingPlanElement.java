@@ -26,6 +26,7 @@ import org.icgc.dcc.validation.ReportingPlanElement;
 
 import cascading.tuple.Fields;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
 
 abstract class BaseReportingPlanElement implements ReportingPlanElement {
@@ -80,5 +81,10 @@ abstract class BaseReportingPlanElement implements ReportingPlanElement {
 
     public Map<String, Object> summary = Maps.newLinkedHashMap();
 
+    @Override
+    public String toString() { // for testing only for now
+      return Objects.toStringHelper(FieldSummary.class).add("field", field).add("populated", populated)
+          .add("nulls", nulls).add("summary", summary).toString();
+    }
   }
 }
