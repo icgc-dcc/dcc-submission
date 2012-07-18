@@ -19,6 +19,12 @@ define (require) ->
     
     initialize: ->
       console.debug "CompleteReleaseView#initialize"
+      
+      @model = new NextRelease()
+      @model.fetch()
+      console.log @model
+      @modelBind 'change', @render
+      
       @.$('.modal').modal "show": true
       
       @delegate 'click', '#complete-release-button', @completeRelease
