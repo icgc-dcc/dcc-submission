@@ -3,15 +3,20 @@ package org.icgc.dcc.release;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.icgc.dcc.core.model.BaseEntity;
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.dictionary.DictionaryService;
 import org.icgc.dcc.dictionary.model.Dictionary;
+import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.release.model.SubmissionState;
@@ -36,6 +41,8 @@ public class ReleaseServiceTest {
 
   private Release release;
 
+  private DccFileSystem fs;
+
   final private String testDbName = "testDb";
 
   @Before
@@ -47,6 +54,7 @@ public class ReleaseServiceTest {
       Morphia morphia = new Morphia();
       morphia.map(BaseEntity.class);
       datastore = morphia.createDatastore(mongo, testDbName);
+      fs = mock(DccFileSystem.class);
 
       // Clear out the test database before each test
       datastore.delete(datastore.createQuery(Dictionary.class));
@@ -84,7 +92,7 @@ public class ReleaseServiceTest {
       release.setDictionaryVersion(dictionary.getVersion());
 
       // Create the releaseService and populate it with the initial release
-      releaseService = new ReleaseService(morphia, datastore);
+      releaseService = new ReleaseService(morphia, datastore, fs);
       releaseService.createInitialRelease(release);
     } catch(UnknownHostException e) {
       e.printStackTrace();
@@ -111,6 +119,15 @@ public class ReleaseServiceTest {
     assertEquals(release.getId(), releaseService.getNextRelease().getRelease().getId());
     Release newRelease = addNewRelease("release2");
     assertEquals(newRelease.getId(), releaseService.getNextRelease().getRelease().getId());
+  }
+
+  @Test
+  public void test_createInitialRelease_isPersistedToFS() {
+    Set<String> projectKeys = new HashSet<String>();
+    projectKeys.add("p1");
+    projectKeys.add("p2");
+    projectKeys.add("p3");
+    verify(this.fs).createReleaseFilesystem(release, projectKeys);
   }
 
   @Test

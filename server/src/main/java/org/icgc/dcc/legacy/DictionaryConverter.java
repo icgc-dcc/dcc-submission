@@ -39,6 +39,7 @@ import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.dictionary.model.FileSchemaRole;
 import org.icgc.dcc.dictionary.model.Relation;
 import org.icgc.dcc.dictionary.model.Restriction;
+import org.icgc.dcc.dictionary.model.SummaryType;
 import org.icgc.dcc.dictionary.model.ValueType;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -221,6 +222,12 @@ public class DictionaryConverter {
     ValueType valueType = valueConverter.getMap().get(dataType);
     field.setValueType(valueType);
 
+    // set Summary Type according to some rules
+    field.setSummaryType(SummaryType.COMPLETENESS);
+    if(valueType == ValueType.DECIMAL || valueType == ValueType.INTEGER) {
+      field.setSummaryType(SummaryType.AVERAGE);
+    }
+
     List<Restriction> restrictions = new ArrayList<Restriction>();
 
     // add required restriction
@@ -254,6 +261,9 @@ public class DictionaryConverter {
       codeListName = codeListName.substring(0, codeListName.length() - 4);
       codeListRestriction.getConfig().append("name", codeListName);
       restrictions.add(codeListRestriction);
+
+      // set Summary Type to Frequency for codelist
+      field.setSummaryType(SummaryType.FREQUENCY);
     }
 
     field.setRestrictions(restrictions);

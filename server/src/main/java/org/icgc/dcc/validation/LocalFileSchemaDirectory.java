@@ -21,6 +21,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.util.regex.Pattern;
 
 import org.icgc.dcc.dictionary.model.FileSchema;
 
@@ -59,9 +60,10 @@ public class LocalFileSchemaDirectory implements FileSchemaDirectory {
 
       @Override
       public boolean accept(File pathname) {
-        return pathname.getName().contains(fileSchema.getName());
+        // return pathname.getName().contains(fileSchema.getName());
         // checkNotNull(fileSchema.getPattern(), "schema " + fileSchema.getName() + " has no pattern");
-        // return Pattern.matches(fileSchema.getPattern(), pathname.getName());
+        return pathname.getName().contains(fileSchema.getName())
+            && Pattern.matches(fileSchema.getPattern(), pathname.getName());
       }
     });
   }
