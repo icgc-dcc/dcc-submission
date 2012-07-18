@@ -18,10 +18,11 @@
 package org.icgc.dcc.dictionary.model;
 
 public enum SummaryType {
-  COMPLETENESS("completeness"), //
-  FREQUENCY("frequencies"), //
-  AVERAGE("averages"), //
-  MIN_MAX("minmax"), //
+
+  COMPLETENESS("completeness"), // completeness (nulls/populated counts)
+  MIN_MAX("minmax"), // same as completeness + min/max
+  AVERAGE("averages"), // same as min/max + avg/stddev
+  FREQUENCY("frequencies"), // same as completeness + frequencies
   ;
 
   private String description;
@@ -33,4 +34,5 @@ public enum SummaryType {
   public String getDescription() {
     return description;
   }
+
 }
