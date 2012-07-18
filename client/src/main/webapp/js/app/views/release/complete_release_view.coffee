@@ -30,7 +30,7 @@ define (require) ->
         success: (data) ->
           @.$('.modal').modal('hide')
           # publish completeRelease here
-          Chaplin.mediator.publish "completeRelease"
+          Chaplin.mediator.publish "completeRelease", data
           
         error: (model, error) ->
           err = error.statusText + error.responseText

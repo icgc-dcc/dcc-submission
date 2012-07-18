@@ -131,7 +131,16 @@ define (require) ->
           if typeof onDeferral is 'function'
             onDeferral.apply context
 
+    is_admin: ->
+      console.debug 'utils#is_admin'
+      "admin" in mediator.user.roles
     
+    is_released: (state)->
+      state is "COMPLETED"
+    
+    date: (date) ->
+      moment(date).format("YYYY-MM-DD")
+      
     sendAuthorization: (xhr) =>
       console.debug 'utils#sendAuthorization'
       @accessToken = localStorage.getItem 'accessToken'
