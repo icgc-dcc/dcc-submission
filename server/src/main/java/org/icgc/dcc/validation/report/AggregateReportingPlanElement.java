@@ -22,6 +22,7 @@ import static com.google.common.base.Preconditions.checkState;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.math.stat.descriptive.SummaryStatistics;
 import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.SummaryType;
 
@@ -31,7 +32,6 @@ import cascading.operation.Buffer;
 import cascading.operation.BufferCall;
 import cascading.operation.Function;
 import cascading.operation.FunctionCall;
-import cascading.operation.aggregator.Average;
 import cascading.operation.aggregator.Max;
 import cascading.operation.aggregator.Min;
 import cascading.pipe.CoGroup;
@@ -48,50 +48,23 @@ import cascading.tuple.TupleEntry;
 
 abstract class AggregateReportingPlanElement extends BaseReportingPlanElement {
 
-  private final String NULLS = "nulls";
+  private static final String NULLS = "nulls";
 
-  private final String POPULATED = "populated";
+  private static final String POPULATED = "populated";
 
-  private final String MIN = "min";
+  private static final String MIN = "min";
 
-  private final String MAX = "max";
+  private static final String MAX = "max";
 
-  private final String AVG = "avg";
+  private static final String AVG = "avg";
 
-  private final String STD_DEV = "stddev";
-
-  private final Fields FIELD_NULLS_POPULATED_FIELDS = new Fields(FIELD, NULLS, POPULATED);
-
-  @SuppressWarnings("unused")
-  private final Number DEFAULT_NUMBER = new Number() {
-    private static final short DEFAULT_VALUE = 0;
-
-    @Override
-    public long longValue() {
-      return DEFAULT_VALUE;
-    }
-
-    @Override
-    public int intValue() {
-      return DEFAULT_VALUE;
-    }
-
-    @Override
-    public float floatValue() {
-      return DEFAULT_VALUE;
-    }
-
-    @Override
-    public double doubleValue() {
-      return DEFAULT_VALUE;
-    }
-  };
+  private static final String STD_DEV = "stddev";
 
   private final boolean includeBoundaryRelated;
 
   private final boolean includeAverageRelated;
 
-  private final Fields averageFields;
+  private final Fields aggregateFields;
 
   public AggregateReportingPlanElement(String schemaName, boolean includeBoundaryRelated,
       boolean includeAverageRelated, SummaryType summaryType, List<Field> fields) {
@@ -99,7 +72,7 @@ abstract class AggregateReportingPlanElement extends BaseReportingPlanElement {
 
     this.includeBoundaryRelated = includeBoundaryRelated;
     this.includeAverageRelated = includeBoundaryRelated ? includeAverageRelated : false;
-    this.averageFields = buildFields(fields);
+    this.aggregateFields = buildFields(fields);
   }
 
   private Fields buildFields(List<Field> fields) {// TODO: better way?
@@ -112,40 +85,34 @@ abstract class AggregateReportingPlanElement extends BaseReportingPlanElement {
 
   @Override
   public Pipe report(Pipe pipe) {
-    pipe = new Pipe(summaryType.getDescription() + "_" + schemaName + "_" + "pipe", pipe);
-    pipe = new Each(pipe, averageFields, new FieldToValueFunction(averageFields.size()), FIELD_VALUE_FIELDS);
+    pipe = new Each(pipe, aggregateFields, new FieldToValueFunction(aggregateFields.size()), FIELD_VALUE_FIELDS);
 
-    // TODO: chain every instead of splitting
+    // TODO: chain every instead of splitting?
 
     Pipe completeness = new GroupBy(pipe, FIELD_FIELDS);
-    completeness = new Every(completeness, VALUE_FIELDS, new CompletenessBuffer(), FIELD_NULLS_POPULATED_FIELDS);
+    completeness = new Every(completeness, VALUE_FIELDS, new CompletenessBuffer(), new Fields(FIELD, NULLS, POPULATED));
 
     Pipe min = null;
     Pipe max = null;
-    Pipe avg = null;
-    Pipe stddev = null;
+    Pipe avgRelated = null;
     if(includeBoundaryRelated) {
-      min = new Pipe(buildPipeName(MIN), pipe);
+
+      // TODO: consider using apache commons' DescriptiveStatistics for min and max as well?
+      min = new Pipe(buildSubPipeName(MIN), pipe);
       min = new GroupBy(min, FIELD_FIELDS);
       min = new Every(min, VALUE_FIELDS, new Min(VALUE_FIELDS), FIELD_VALUE_FIELDS);
       min = new Rename(min, FIELD_VALUE_FIELDS, new Fields(renameField(MIN), MIN));
 
-      max = new Pipe(buildPipeName(MAX), pipe);
+      max = new Pipe(buildSubPipeName(MAX), pipe);
       max = new GroupBy(max, FIELD_FIELDS);
       max = new Every(max, VALUE_FIELDS, new Max(VALUE_FIELDS), FIELD_VALUE_FIELDS);
       max = new Rename(max, FIELD_VALUE_FIELDS, new Fields(renameField(MAX), MAX));
 
       if(includeAverageRelated) {
-        avg = new Pipe(buildPipeName(AVG), pipe);
-        avg = new GroupBy(avg, FIELD_FIELDS);
-        avg = new Every(avg, VALUE_FIELDS, new Average(VALUE_FIELDS), FIELD_VALUE_FIELDS);
-        avg = new Rename(avg, FIELD_VALUE_FIELDS, new Fields(renameField(AVG), AVG));
-
-        // TODO: actually do stddev...
-        stddev = new Pipe(buildPipeName(STD_DEV), pipe);
-        stddev = new GroupBy(stddev, FIELD_FIELDS);
-        stddev = new Every(stddev, VALUE_FIELDS, new Average(VALUE_FIELDS), FIELD_VALUE_FIELDS);
-        stddev = new Rename(stddev, FIELD_VALUE_FIELDS, new Fields(renameField(STD_DEV), STD_DEV));
+        avgRelated = new Pipe(buildSubPipeName(AVG), pipe);
+        avgRelated = new GroupBy(avgRelated, FIELD_FIELDS);
+        avgRelated = new Every(avgRelated, VALUE_FIELDS, new AverageRelatedBuffer(), new Fields(FIELD, AVG, STD_DEV));
+        avgRelated = new Rename(avgRelated, FIELD_FIELDS, new Fields(renameField(AVG)));
       }
     }
 
@@ -154,14 +121,13 @@ abstract class AggregateReportingPlanElement extends BaseReportingPlanElement {
       pipe = new CoGroup(completeness, FIELD_FIELDS, min, new Fields(renameField(MIN)), new InnerJoin());
       pipe = new CoGroup(pipe, FIELD_FIELDS, max, new Fields(renameField(MAX)), new InnerJoin());
       if(includeAverageRelated) {
-        pipe = new CoGroup(pipe, FIELD_FIELDS, avg, new Fields(renameField(AVG)), new InnerJoin());
-        pipe = new CoGroup(pipe, FIELD_FIELDS, stddev, new Fields(renameField(STD_DEV)), new InnerJoin());
+        pipe = new CoGroup(pipe, FIELD_FIELDS, avgRelated, new Fields(renameField(AVG)), new InnerJoin());
       }
     } else {
       pipe = completeness;
     }
 
-    Fields fieldsOfInterest = FIELD_NULLS_POPULATED_FIELDS;
+    Fields fieldsOfInterest = new Fields(FIELD, NULLS, POPULATED);
     if(includeBoundaryRelated) {
       fieldsOfInterest = fieldsOfInterest.append(new Fields(MIN, MAX));
       if(includeAverageRelated) {
@@ -170,7 +136,7 @@ abstract class AggregateReportingPlanElement extends BaseReportingPlanElement {
     }
 
     pipe = new Retain(pipe, fieldsOfInterest);
-    pipe = new Each(pipe, fieldsOfInterest, new AverageSummaryFunction(), REPORT_FIELDS);
+    pipe = new Each(pipe, fieldsOfInterest, new AggregateSummaryFunction(), REPORT_FIELDS);
 
     return pipe;
   }
@@ -192,9 +158,6 @@ abstract class AggregateReportingPlanElement extends BaseReportingPlanElement {
       checkState(numArgs != 0 && numArgs == fields.size());
       for(int i = 0; i < numArgs; i++) {
         Object object = tupleEntry.getObject(i);
-        if(null == object || (object instanceof String && ((String) object).isEmpty())) { // TODO: leave this?
-          object = 0;// TODO: use DEFAULT_NUMBER?
-        }
         functionCall.getOutputCollector().add(new Tuple(fields.get(i), object));
       }
     }
@@ -202,7 +165,7 @@ abstract class AggregateReportingPlanElement extends BaseReportingPlanElement {
 
   @SuppressWarnings("rawtypes")
   private class CompletenessBuffer extends BaseOperation implements Buffer {
-    CompletenessBuffer() {
+    private CompletenessBuffer() {
       super(1, new Fields(NULLS, POPULATED));
     }
 
@@ -225,9 +188,40 @@ abstract class AggregateReportingPlanElement extends BaseReportingPlanElement {
     }
   }
 
+  /**
+   * Computes average and standard deviation
+   */
   @SuppressWarnings("rawtypes")
-  private class AverageSummaryFunction extends BaseOperation implements Function {
-    AverageSummaryFunction() {
+  final class AverageRelatedBuffer extends BaseOperation implements Buffer {
+
+    AverageRelatedBuffer() {
+      super(1, new Fields(AVG, STD_DEV));
+    }
+
+    @Override
+    public void operate(FlowProcess flowProcess, BufferCall bufferCall) {
+      @SuppressWarnings("unchecked")
+      Iterator<TupleEntry> tuples = bufferCall.getArgumentsIterator();
+      int length = 0;
+      SummaryStatistics stats = new SummaryStatistics();
+      while(tuples.hasNext()) {
+        Double number = tuples.next().getDouble(0);
+        if(number != null && Double.isNaN(number) == false) {
+          stats.addValue(number);
+          length++;
+        }
+      }
+      if(length > 0) {
+        bufferCall.getOutputCollector().add(new Tuple(stats.getMean(), stats.getStandardDeviation()));
+      } else {
+        bufferCall.getOutputCollector().add(new Tuple(null, null));
+      }
+    }
+  }
+
+  @SuppressWarnings("rawtypes")
+  private class AggregateSummaryFunction extends BaseOperation implements Function {
+    AggregateSummaryFunction() {
       super((includeBoundaryRelated && includeAverageRelated ? 7 : (includeBoundaryRelated ? 5 : 3)), REPORT_FIELDS);
     }
 

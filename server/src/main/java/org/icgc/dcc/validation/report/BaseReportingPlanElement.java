@@ -66,11 +66,11 @@ abstract class BaseReportingPlanElement implements ReportingPlanElement {
     return String.format("%s%s", summaryType.getDescription(), fields);
   }
 
-  protected String buildPipeName(String prefix) {
+  protected String buildSubPipeName(String prefix) {
     return schemaName + "_" + prefix + "_" + "pipe";
   }
 
-  public static class FieldSummary {// TODO: use FieldReport instead
+  public static class FieldSummary {// TODO: use FieldReport instead?
 
     public String field;
 

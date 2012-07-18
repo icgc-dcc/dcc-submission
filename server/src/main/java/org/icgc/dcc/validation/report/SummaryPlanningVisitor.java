@@ -49,9 +49,6 @@ public class SummaryPlanningVisitor extends ReportingFlowPlanningVisitor {
     for(SummaryType summaryType : SummaryType.values()) {
       for(Field field : fileSchema.getFields()) {
         SummaryType summaryTypeTmp = field.getSummaryType();
-
-        summaryTypeTmp = cheat(field, summaryTypeTmp);
-
         if(summaryTypeTmp == null) {
           summaryTypeTmp = SummaryType.COMPLETENESS;// TODO: ok as default?
         }
@@ -91,21 +88,5 @@ public class SummaryPlanningVisitor extends ReportingFlowPlanningVisitor {
         break;
       }
     }
-  }
-
-  // TODO remove
-  private SummaryType cheat(Field field, SummaryType summaryTypeTmp) {
-    String name = field.getName();
-    if(summaryTypeTmp == null) {
-      if(name.equals("donor_id") || name.equals("donor_region_of_residence")) {
-        summaryTypeTmp = SummaryType.FREQUENCY;
-      } else if(name.equals("donor_age_at_diagnosis") || name.equals("donor_age_at_enrollment")
-          || name.equals("donor_age_at_last_followup")) {
-        summaryTypeTmp = SummaryType.AVERAGE;
-      } else if(name.equals("donor_interval_of_last_followup") || name.equals("donor_relapse_interval")) {
-        summaryTypeTmp = SummaryType.MIN_MAX;
-      }
-    }
-    return summaryTypeTmp;
   }
 }

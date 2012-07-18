@@ -62,7 +62,7 @@ final class FrequencyPlanElement extends BaseReportingPlanElement {
   }
 
   protected Pipe frequency(String field, Pipe pipe) {
-    pipe = new Pipe(buildPipeName(FREQ + "_" + field), pipe);
+    pipe = new Pipe(buildSubPipeName(FREQ + "_" + field), pipe);
     pipe = new Retain(pipe, new Fields(field));
     pipe = new Rename(pipe, new Fields(field), new Fields(VALUE));
     pipe = new CountBy(pipe, new Fields(VALUE), new Fields(FREQ));
