@@ -28,6 +28,7 @@ import org.glassfish.jersey.test.JerseyTest;
 import org.glassfish.jersey.test.external.ExternalTestContainerFactory;
 import org.glassfish.jersey.test.spi.TestContainerException;
 import org.glassfish.jersey.test.spi.TestContainerFactory;
+import org.icgc.dcc.Main;
 import org.icgc.dcc.web.ReleaseResource;
 import org.junit.Test;
 
@@ -35,13 +36,6 @@ import org.junit.Test;
  * 
  */
 public class IntegrationTest extends JerseyTest {
-
-  @Test
-  public void test() {
-    WebTarget target = this.target();
-    Response response = target.path("releases").request(MediaType.APPLICATION_JSON).get();
-    assertEquals(200, response.getStatus());
-  }
 
   @Override
   protected ResourceConfig configure() {
@@ -53,4 +47,16 @@ public class IntegrationTest extends JerseyTest {
     return new ExternalTestContainerFactory();
   }
 
+  @Test
+  public void test_release_resource() {
+    WebTarget target = this.target();
+    Response response = target.path("releases").request(MediaType.APPLICATION_JSON).get();
+    assertEquals(200, response.getStatus());
+  }
+
+  @Override
+  public void setUp() throws Exception {
+    // start the web server
+    new Main().main(null);
+  }
 }
