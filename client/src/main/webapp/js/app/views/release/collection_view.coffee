@@ -37,25 +37,23 @@ define (require) ->
             sTitle: "Release Date"
             mDataProp: "releaseDate"
             fnRender: (oObj, sVal) ->
-              if sVal then utils.date(sVal) else "<em>Unreleased</em>"
+              if sVal
+                utils.date(sVal)
+              else
+                if utils.is_admin
+                  """
+                    <button
+                      class="btn btn-mini btn-primary"
+                      id="complete-release-popup-button"
+                      data-toggle="modal"
+                      href="#complete-release-popup">
+                      Release Now
+                    </button>
+                  """
+                else
+                  "<em>Unreleased</em>"
           }
           { sTitle: "Projects", mDataProp: "submissions.length" }
-          {
-            sTitle: ""
-            mDataProp: null
-            bSortable: false
-            bVisable: utils.is_admin
-            fnRender: (oObj) ->
-              if not utils.is_released(oObj.aData.state)
-                """
-                  <a
-                    id="complete-release-popup-button"
-                    data-toggle="modal"
-                    href="#complete-release-popup">
-                    Complete
-                  </a>
-                """
-          }
         ]
       
       @.$('table').dataTable
