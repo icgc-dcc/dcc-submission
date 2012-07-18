@@ -18,5 +18,19 @@
 package org.icgc.dcc.dictionary.model;
 
 public enum SummaryType {
-  FREQUENCY
+  COMPLETENESS("completeness"), //
+  FREQUENCY("frequencies"), //
+  AVERAGE("averages"), //
+  MIN_MAX("minmax"), //
+  ;
+
+  private String description;
+
+  private SummaryType(String pluralName) {
+    this.description = pluralName;
+  }
+
+  public String getDescription() {
+    return description;
+  }
 }
