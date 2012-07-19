@@ -18,45 +18,69 @@
 package org.icgc.dcc.integration;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
+import java.util.List;
+
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientFactory;
+import javax.ws.rs.client.ClientRequestContext;
+import javax.ws.rs.client.ClientRequestFilter;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.GenericType;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
-import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.test.JerseyTest;
-import org.glassfish.jersey.test.external.ExternalTestContainerFactory;
-import org.glassfish.jersey.test.spi.TestContainerException;
-import org.glassfish.jersey.test.spi.TestContainerFactory;
-import org.icgc.dcc.Main;
-import org.icgc.dcc.web.ReleaseResource;
+import org.glassfish.jersey.internal.util.Base64;
+import org.icgc.dcc.release.model.Release;
 import org.junit.Test;
 
 /**
  * 
  */
-public class IntegrationTest extends JerseyTest {
+public class IntegrationTest {
+  private Client client;
 
-  @Override
-  protected ResourceConfig configure() {
-    return new ResourceConfig().addClasses(ReleaseResource.class);
-  }
+  private final String baseURI = "http://localhost:5380/ws/releases";
 
-  @Override
-  protected TestContainerFactory getTestContainerFactory() throws TestContainerException {
-    return new ExternalTestContainerFactory();
+  private WebTarget target;
+
+  public class DCCHttpBasicAuthFilter implements ClientRequestFilter {
+
+    private final String authentication;
+
+    public DCCHttpBasicAuthFilter(final String username, final String password) {
+      authentication = "X-DCC-Auth " + Base64.encodeAsString(username + ":" + password);
+    }
+
+    @Override
+    public void filter(ClientRequestContext requestContext) throws IOException {
+      if(!requestContext.getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
+        requestContext.getHeaders().add(HttpHeaders.AUTHORIZATION, authentication);
+      }
+    }
+
   }
 
   @Test
   public void test_release_resource() {
-    WebTarget target = this.target();
-    Response response = target.path("releases").request(MediaType.APPLICATION_JSON).get();
-    assertEquals(200, response.getStatus());
+    // start the web server
+    // new Main().main(null);
+    // create client for the server
+    this.client = ClientFactory.newClient();
+    this.target = this.client.target(baseURI);
+    this.target.configuration().register(new DCCHttpBasicAuthFilter("admin", "adminspasswd"));
+
+    // get release1
+    this.target = this.client.target(baseURI).path("/{name}");
+    Release release = this.target.pathParam("name", "release1").request(MediaType.APPLICATION_JSON).get(Release.class);
+    assertEquals("release1", release.getName());
+    // get release list request
+    GenericType<List<Release>> list = new GenericType<List<Release>>() {
+    };
+    List<Release> result = target.request(MediaType.APPLICATION_JSON).get(list);
+    assertTrue(!result.isEmpty());
   }
 
-  @Override
-  public void setUp() throws Exception {
-    // start the web server
-    new Main().main(null);
-  }
 }
