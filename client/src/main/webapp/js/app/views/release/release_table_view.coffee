@@ -1,12 +1,12 @@
 define (require) ->
   DataTableView = require 'views/base/data_table_view'
   CompactReleaseView = require 'views/release/compact_release_view'
-  template = require 'text!views/templates/release/collection.handlebars'
+  template = require 'text!views/templates/release/releases_table.handlebars'
   utils = require 'lib/utils'
   
   'use strict'
 
-  class ReleaseCollectionView extends DataTableView
+  class ReleaseTableView extends DataTableView
     template: template
     template = null
     autoRender: true
@@ -18,13 +18,13 @@ define (require) ->
     id: "releases"
     
     initialize: ->
-      console.debug "ReleasesCollectionView#initialize", @collection, @el
+      console.debug "ReleasesTableView#initialize", @collection, @el
       super
       
       @subscribeEvent "completeRelease", @update
     
     createDataTable: (collection) ->
-      console.debug "ReleasesCollectionView#createDataTable"
+      console.debug "ReleasesTableView#createDataTable"
       aoColumns = [
           {
             sTitle: "Name"
@@ -68,7 +68,3 @@ define (require) ->
         sAjaxDataProp: ""
         fnServerData: (sSource, aoData, fnCallback) ->
           fnCallback collection.toJSON()
-
-    #getView: (item) ->
-    #  #console.debug 'ReleaseCollectionView#getView', item
-    #  new CompactReleaseView model: item

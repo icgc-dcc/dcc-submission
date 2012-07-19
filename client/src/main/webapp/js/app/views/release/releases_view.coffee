@@ -1,6 +1,6 @@
 define (require) ->
   View = require 'views/base/view'
-  ReleaseCollectionView = require 'views/release/collection_view'
+  ReleaseTableView = require 'views/release/release_table_view'
   CompleteReleaseView = require 'views/release/complete_release_view'
   template = require 'text!views/templates/release/releases.handlebars'
  
@@ -30,8 +30,8 @@ define (require) ->
     render: ->
       super
       @subview(
-        'ReleasesCollection'
-        new ReleaseCollectionView {
+        'ReleasesTable'
+        new ReleaseTableView {
           @collection
           el: @.$("#releases-table")
         }
