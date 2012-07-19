@@ -9,10 +9,9 @@ define (require) ->
     urlPath: ->
       "releases/#{@release}"
     
-    initialize: (release) ->
-      console.debug 'Submissions#initialize', @
-      @release = release
+    initialize: (models, options)->
+      console.debug 'Submissions#initialize', @, models, options
+      @release = options.release
       
     parse: (response) ->
-      response = response.submissions
-      response
+      response.submissions
