@@ -25,7 +25,7 @@ define (require) ->
       @subview(
         'SubmissionsTable'
         new SubmissionTableView {
-          collection: @model.submissions
+          collection: @model.get "submissions"
           el: @.$("#submissions-table")
         }
       )

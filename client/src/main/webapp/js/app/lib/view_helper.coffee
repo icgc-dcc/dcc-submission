@@ -60,6 +60,7 @@ define [
 
   # Make a date out of epoc
   Handlebars.registerHelper 'submission_summary', (submissions) ->
+    console.log "submission_summary", submissions
     signed_off = 0
     valid = 0
     queued = 0
@@ -67,7 +68,9 @@ define [
     not_validated = 0
     
     for submission in submissions
-      switch submission.state
+      console.log "submission_summary", submissions, submission
+    
+      switch submission.get state
         when 'SIGNED_OFF' then signed_off++
         when 'VALID' then valid++
         when 'QUEUED' then queued++
