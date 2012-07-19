@@ -1,18 +1,19 @@
 <div class="row-fluid page-header">
-  <div>
+  <div class="pull-left">
     <h1>{{name}} <small>{{state}}</small></h1>
+  </div>
+  <div class="pull-right">
+    <button class="btn btn-primary">View Report</button>
+    <button id="complete-release-popup-button" class="btn btn-success">Complete</button>
   </div>
 </div>
 
 <div class="row-fluid">
   <div class="span6">
-      <ul class="nav nav-list span6">
+      <ul class="nav nav-list">
         <li class="nav-header">Submission Summary</li>
         {{submission_summary submissions}}
       </ul>
-      <div class="span6">
-        <button class="btn">Hi</button>
-      </div>
   </div>
 </div>
 

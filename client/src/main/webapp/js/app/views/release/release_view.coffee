@@ -1,5 +1,6 @@
 define (require) ->
   View = require 'views/base/view'
+  CompleteReleaseView = require 'views/release/complete_release_view'
   template = require 'text!views/templates/release/release.handlebars'
 
   'use strict'
@@ -18,3 +19,11 @@ define (require) ->
       console.debug 'ReleaseView#initialize', @model
       super
       @modelBind 'change', @render
+      
+      @delegate 'click', '#complete-release-popup-button', @completeReleasePopup
+    
+    completeReleasePopup: (e) ->
+      console.debug "ReleaseView#completeRelease", e
+      @subview('CompleteReleases'
+        new CompleteReleaseView()
+      ) unless @subview 'CompleteReleases'
