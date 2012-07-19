@@ -7,7 +7,11 @@ define (require) ->
   class Submissions extends Collection
     model: Submission
     urlPath: ->
-      "releases/"
+      "releases/#{@release}"
+    
+    initialize: (release) ->
+      console.debug 'Submissions#initialize', @
+      @release = release
       
     parse: (response) ->
       response = response.submissions
