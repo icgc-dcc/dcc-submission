@@ -10,5 +10,5 @@ define (require) ->
       "releases/"
     
     parse: (response) ->
-      response.submissions = new Submissions response.submissions
+      response.submissions = new Submissions @get("name"), response.submissions
       response
