@@ -26,33 +26,13 @@ define (require) ->
       console.debug "SubmissionsTableView#createDataTable"
       aoColumns = [
           {
-            sTitle: "Name"
-            mDataProp: "name"
+            sTitle: "Project Key"
+            mDataProp: "projectKey"
             fnRender: (oObj, sVal) ->
-              "<a href='/releases/#{sVal}'>#{sVal}</a>"
+              "<a href='/projects/#{sVal}'>#{sVal}</a>"
           }
           { sTitle: "State", mDataProp: "state" }
-          {
-            sTitle: "Release Date"
-            mDataProp: "releaseDate"
-            fnRender: (oObj, sVal) ->
-              if sVal
-                utils.date(sVal)
-              else
-                if utils.is_admin
-                  """
-                    <button
-                      class="btn btn-mini btn-primary"
-                      id="complete-release-popup-button"
-                      data-toggle="modal"
-                      href="#complete-release-popup">
-                      Release Now
-                    </button>
-                  """
-                else
-                  "<em>Unreleased</em>"
-          }
-          { sTitle: "Projects", mDataProp: "submissions.length" }
+          { sTitle: "Report", mDataProp: "report" }
         ]
       
       @.$('table').dataTable
