@@ -8,11 +8,6 @@ define (require) ->
     model: Release
     urlPath: ->
       "releases/"
-
-    initialize: ->
-      console.debug "Releases#initialize"
-      # subscribe to completeRelease
-      #@subscribeEvent "completeRelease", @fetch
     
     comparator: (release) ->
         -release.get('releaseDate')
