@@ -26,6 +26,7 @@ import javax.ws.rs.MessageProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientFactory;
 import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.InvocationException;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -107,6 +108,8 @@ public class IntegrationTest {
 
     clearFS();
 
+    test_feedDB();
+
     test_createInitialRelease();
 
     test_feedFileSystem();
@@ -123,6 +126,18 @@ public class IntegrationTest {
     File srcDir = new File("src/test/resources/integrationtest/fs/");
     File destDir = new File("/tmp/dcc_root_dir/");
     FileUtils.copyDirectory(srcDir, destDir);
+  }
+
+  private void test_feedDB() throws InvocationException, NullPointerException, IllegalArgumentException, IOException {
+    this.client.target(baseURI).path("/seed/projects").request(MediaType.APPLICATION_JSON)
+        .header("Authorization", AUTHORIZATION)
+        .post(Entity.entity(this.resourceToString("/integrationtest/projects.json"), MediaType.APPLICATION_JSON));
+    this.client.target(baseURI).path("/seed/dictionaries").request(MediaType.APPLICATION_JSON)
+        .header("Authorization", AUTHORIZATION)
+        .post(Entity.entity(this.resourceToString("/integrationtest/dictionaries.json"), MediaType.APPLICATION_JSON));
+    this.client.target(baseURI).path("/seed/codelists").request(MediaType.APPLICATION_JSON)
+        .header("Authorization", AUTHORIZATION)
+        .post(Entity.entity(this.resourceToString("/integrationtest/codelists.json"), MediaType.APPLICATION_JSON));
   }
 
   private void test_checkSubmissionsStates() throws IOException {
