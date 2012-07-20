@@ -19,6 +19,7 @@ package org.icgc.dcc.integration;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.File;
 import java.io.IOException;
 
 import javax.ws.rs.MessageProcessingException;
@@ -29,6 +30,7 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.io.FileUtils;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -88,6 +90,10 @@ public class IntegrationTest {
     Thread.sleep(1000);
   }
 
+  public void clearFS() throws IOException {
+    FileUtils.deleteDirectory(new File("/tmp/dcc_root_dir/"));
+  }
+
   @AfterClass
   static public void stopServer() {
     server.interrupt();
@@ -99,13 +105,24 @@ public class IntegrationTest {
 
     clearDB();
 
+    clearFS();
+
     test_createInitialRelease();
+
+    test_feedFileSystem();
 
     test_checkQueueIsEmpty();
 
     test_queueProjects();
 
     test_checkSubmissionsStates();
+  }
+
+  private void test_feedFileSystem() throws IOException {
+    // TODO ideally we should use a sftp client to upload data files
+    File srcDir = new File("src/test/resources/integrationtest/fs/");
+    File destDir = new File("/tmp/dcc_root_dir/");
+    FileUtils.copyDirectory(srcDir, destDir);
   }
 
   private void test_checkSubmissionsStates() throws IOException {
