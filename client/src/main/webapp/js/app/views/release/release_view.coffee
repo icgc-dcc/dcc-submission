@@ -1,6 +1,7 @@
 define (require) ->
   View = require 'views/base/view'
   CompleteReleaseView = require 'views/release/complete_release_view'
+  SubmissionTableView = require 'views/release/submission_table_view'
   template = require 'text!views/templates/release/release.handlebars'
 
   'use strict'
@@ -27,3 +28,13 @@ define (require) ->
       @subview('CompleteReleases'
         new CompleteReleaseView()
       ) unless @subview 'CompleteReleases'
+        
+    render: ->
+      super
+      @subview(
+        'SubmissionsTable'
+        new SubmissionTableView {
+          collection: @model.get "submissions"
+          el: @.$("#submissions-table")
+        }
+      )
