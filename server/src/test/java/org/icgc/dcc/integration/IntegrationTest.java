@@ -104,6 +104,24 @@ public class IntegrationTest {
     test_checkQueueIsEmpty();
 
     test_queueProjects();
+
+    test_checkSubmissionsStates();
+  }
+
+  private void test_checkSubmissionsStates() throws IOException {
+    // TODO check actual submissions state in response
+
+    Response response = sendGetRequest("/releases/release1");
+    assertEquals(200, response.getStatus());
+
+    response = sendGetRequest("/releases/release1/submissions/project1");
+    assertEquals(200, response.getStatus());
+
+    response = sendGetRequest("/releases/release1/submissions/project2");
+    assertEquals(200, response.getStatus());
+
+    response = sendGetRequest("/releases/release1/submissions/project2");
+    assertEquals(200, response.getStatus());
   }
 
   private void test_checkQueueIsEmpty() throws IOException {
