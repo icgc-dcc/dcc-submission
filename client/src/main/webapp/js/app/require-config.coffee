@@ -6,6 +6,8 @@ requirejs.config
   paths:
     jquery: '../vendor/jquery'
     jqSerializeObject: '../vendor/jquery.ba-serializeobject',
+    dataTables: '../vendor/jquery.dataTables.min',
+    DT_bootstrap: '../vendor/dataTables.bootstrap2',
     underscore: '../vendor/underscore'
     backbone: '../vendor/backbone'
     chaplin: '../vendor/chaplin'
@@ -26,6 +28,10 @@ requirejs.config
       deps: ['jquery']
     jqSerializeObject:
       deps: ['jquery']
+    dataTables:
+      deps: ['jquery']
+    DT_bootstrap:
+      deps: ['dataTables']
     
   # For easier development, disable browser caching
   # Of course, this should be removed in a production environment
@@ -38,6 +44,8 @@ define "base", [
   'bootstrap'
   'jqSerializeObject'
   'moment'
+  'dataTables'
+  'DT_bootstrap'
 ], ($) -> $
 
 # Bootstrap the application

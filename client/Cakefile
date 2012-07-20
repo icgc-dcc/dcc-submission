@@ -92,8 +92,8 @@ clean = (callback) ->
   launch "rm", ["-rf", "#{TARGET}"], callback
 
 copy = (callback) ->
-  launch "cp", ["-r", "#{SRC}/", "#{TARGET}/.."], callback
-    
+  launch "cp", ["-r", "#{SRC}", "#{TARGET}/.."], callback
+
 removeCoffee = (callback) ->
   exec "find #{TARGET}/js/app -name '*.coffee' -exec rm -rf {} \\;", -> callback?()
    
