@@ -18,69 +18,76 @@
 package org.icgc.dcc.integration;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.util.List;
 
+import javax.ws.rs.MessageProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientFactory;
-import javax.ws.rs.client.ClientRequestContext;
-import javax.ws.rs.client.ClientRequestFilter;
 import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.GenericType;
-import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.glassfish.jersey.internal.util.Base64;
+import org.icgc.dcc.Main;
 import org.icgc.dcc.release.model.Release;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
  * 
  */
 public class IntegrationTest {
+  static private Thread server;
+
   private Client client;
 
   private final String baseURI = "http://localhost:5380/ws/releases";
 
   private WebTarget target;
 
-  public class DCCHttpBasicAuthFilter implements ClientRequestFilter {
+  @BeforeClass
+  static public void startServer() throws InterruptedException {
+    server = new Thread(new Runnable() {
 
-    private final String authentication;
-
-    public DCCHttpBasicAuthFilter(final String username, final String password) {
-      authentication = "X-DCC-Auth " + Base64.encodeAsString(username + ":" + password);
-    }
-
-    @Override
-    public void filter(ClientRequestContext requestContext) throws IOException {
-      if(!requestContext.getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
-        requestContext.getHeaders().add(HttpHeaders.AUTHORIZATION, authentication);
+      @Override
+      public void run() {
+        try {
+          Main.main(null);
+        } catch(IOException e) {
+          System.err.println("Problem starting server");
+          e.printStackTrace();
+        }
       }
-    }
+    });
+    server.start();
+    Thread.sleep(5000);
+  }
 
+  @AfterClass
+  static public void stopServer() {
+    server.interrupt();
   }
 
   @Test
-  public void test_release_resource() {
-    // start the web server
-    // new Main().main(null);
+  public void test_release_resource() throws JsonParseException, JsonMappingException, MessageProcessingException,
+      IllegalStateException, IOException {
+
     // create client for the server
     this.client = ClientFactory.newClient();
     this.target = this.client.target(baseURI);
-    this.target.configuration().register(new DCCHttpBasicAuthFilter("admin", "adminspasswd"));
 
     // get release1
     this.target = this.client.target(baseURI).path("/{name}");
-    Release release = this.target.pathParam("name", "release1").request(MediaType.APPLICATION_JSON).get(Release.class);
+    Response response =
+        this.target.pathParam("name", "release1").request(MediaType.APPLICATION_JSON)
+            .header("Authorization", "X-DCC-Auth " + Base64.encodeAsString("admin:adminspasswd")).get();
+    Release release = new ObjectMapper().readValue(response.readEntity(String.class), Release.class);
     assertEquals("release1", release.getName());
-    // get release list request
-    GenericType<List<Release>> list = new GenericType<List<Release>>() {
-    };
-    List<Release> result = target.request(MediaType.APPLICATION_JSON).get(list);
-    assertTrue(!result.isEmpty());
   }
 
 }
