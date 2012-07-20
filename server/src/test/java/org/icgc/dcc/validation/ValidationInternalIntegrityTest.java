@@ -5,7 +5,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import junit.framework.Assert;
@@ -46,25 +46,31 @@ public class ValidationInternalIntegrityTest {
 
   @Before
   public void setUp() throws JsonProcessingException, IOException {
-    /*
-     * Set<RestrictionType> restrictionTypes = new HashSet<RestrictionType>(); restrictionTypes.add(new
-     * DiscreteValuesRestriction.Type()); restrictionTypes.add(new RangeFieldRestriction.Type());
-     * restrictionTypes.add(new RequiredRestriction.Type()); restrictionTypes.add(new CodeListRestriction.Type());
-     * 
-     * Planner planner = new DefaultPlanner(restrictionTypes);
-     */
     DccFileSystem dccFileSystem = mock(DccFileSystem.class);
     ProjectService projectService = mock(ProjectService.class);
 
-    CodeList codeList = mock(CodeList.class);
-    List<Term> termList = new ArrayList<Term>();
+    CodeList codeList1 = mock(CodeList.class);
+    CodeList codeList2 = mock(CodeList.class);
+    CodeList codeList3 = mock(CodeList.class);
+    CodeList codeList4 = mock(CodeList.class);
 
-    when(dictionaryService.getCodeList("dr__donor_sex")).thenReturn(codeList);
-    when(dictionaryService.getCodeList("dr__donor_vital_status")).thenReturn(codeList);
-    when(dictionaryService.getCodeList("dr__disease_status_last_followup")).thenReturn(codeList);
-    when(dictionaryService.getCodeList("dr__donor_relapse_type")).thenReturn(codeList);
+    List<Term> termList1 = Arrays.asList(new Term("1", "dummy", null), new Term("2", "dummy", null));
+    List<Term> termList2 = Arrays.asList(new Term("1", "dummy", null), new Term("2", "dummy", null));
+    List<Term> termList3 =
+        Arrays.asList(new Term("1", "dummy", null), new Term("2", "dummy", null), new Term("3", "dummy", null),
+            new Term("4", "dummy", null), new Term("5", "dummy", null));
+    List<Term> termList4 =
+        Arrays.asList(new Term("1", "dummy", null), new Term("2", "dummy", null), new Term("3", "dummy", null));
 
-    when(codeList.getTerms()).thenReturn(termList);
+    when(dictionaryService.getCodeList("dr__donor_sex")).thenReturn(codeList1);
+    when(dictionaryService.getCodeList("dr__donor_vital_status")).thenReturn(codeList2);
+    when(dictionaryService.getCodeList("dr__disease_status_last_followup")).thenReturn(codeList3);
+    when(dictionaryService.getCodeList("dr__donor_relapse_type")).thenReturn(codeList4);
+
+    when(codeList1.getTerms()).thenReturn(termList1);
+    when(codeList2.getTerms()).thenReturn(termList2);
+    when(codeList3.getTerms()).thenReturn(termList3);
+    when(codeList4.getTerms()).thenReturn(termList4);
 
     validationService = new ValidationService(dccFileSystem, projectService, planner);
     dictionary =
@@ -76,15 +82,20 @@ public class ValidationInternalIntegrityTest {
 
   @Test
   public void test_validate_valid() throws IOException {
-    validate(validationService, dictionary, "/integration/validation/error/codelist");
+    validate(validationService, dictionary, "/integration/validation/internal");
   }
 
   private void validate(ValidationService validationService, Dictionary dictionary, String relative) throws IOException {
     String rootDirString = this.getClass().getResource(relative).getFile();
-    String rootDirString2 = this.getClass().getResource(relative + "/" + ".validation").getFile();
+    String outputDirString = rootDirString + "/" + ".validation";
+    String errorFileString = outputDirString + "/" + "donor.internal#errors.json";
+    ;
+    File errorFile = new File(errorFileString);
+    errorFile.delete();
+    Assert.assertFalse(errorFileString, errorFile.exists());
 
     File rootDir = new File(rootDirString);
-    File outputDir = new File(rootDirString2);
+    File outputDir = new File(outputDirString);
 
     FileSchemaDirectory fileSchemaDirectory = new LocalFileSchemaDirectory(rootDir);
     CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir);
@@ -93,8 +104,8 @@ public class ValidationInternalIntegrityTest {
     Assert.assertEquals(1, cascade.getFlows().size());
     validationService.runCascade(cascade, null, null);
 
-    String name = rootDirString + "/" + ".validation" + "/" + "donor.internal#errors.json";
-    String content = FileUtils.readFileToString(new File(name));
-    Assert.assertTrue(content.isEmpty());
+    Assert.assertTrue(errorFileString, errorFile.exists());
+    String content = FileUtils.readFileToString(errorFile);
+    Assert.assertTrue(content, content.isEmpty());
   }
 }
