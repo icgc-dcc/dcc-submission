@@ -8,6 +8,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import junit.framework.Assert;
+
+import org.apache.commons.io.FileUtils;
 import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.core.ProjectService;
@@ -19,6 +22,7 @@ import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.filesystem.GuiceJUnitRunner;
 import org.icgc.dcc.filesystem.GuiceJUnitRunner.GuiceModules;
 import org.icgc.dcc.validation.service.ValidationService;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -31,13 +35,17 @@ import com.google.inject.Inject;
 public class ValidationInternalIntegrityTest {
 
   @Inject
-  private DictionaryService dictionaries;
+  private DictionaryService dictionaryService;
 
   @Inject
   private Planner planner;
 
-  @Test
-  public void test_validation() throws JsonProcessingException, IOException {
+  private ValidationService validationService;
+
+  private Dictionary dictionary;
+
+  @Before
+  public void setUp() throws JsonProcessingException, IOException {
     /*
      * Set<RestrictionType> restrictionTypes = new HashSet<RestrictionType>(); restrictionTypes.add(new
      * DiscreteValuesRestriction.Type()); restrictionTypes.add(new RangeFieldRestriction.Type());
@@ -51,27 +59,42 @@ public class ValidationInternalIntegrityTest {
     CodeList codeList = mock(CodeList.class);
     List<Term> termList = new ArrayList<Term>();
 
-    when(dictionaries.getCodeList("dr__donor_sex")).thenReturn(codeList);
-    when(dictionaries.getCodeList("dr__donor_vital_status")).thenReturn(codeList);
-    when(dictionaries.getCodeList("dr__disease_status_last_followup")).thenReturn(codeList);
-    when(dictionaries.getCodeList("dr__donor_relapse_type")).thenReturn(codeList);
+    when(dictionaryService.getCodeList("dr__donor_sex")).thenReturn(codeList);
+    when(dictionaryService.getCodeList("dr__donor_vital_status")).thenReturn(codeList);
+    when(dictionaryService.getCodeList("dr__disease_status_last_followup")).thenReturn(codeList);
+    when(dictionaryService.getCodeList("dr__donor_relapse_type")).thenReturn(codeList);
 
     when(codeList.getTerms()).thenReturn(termList);
 
-    ValidationService validationService = new ValidationService(dccFileSystem, projectService, planner, dictionaries);
-
-    Dictionary dictionary =
+    validationService = new ValidationService(dccFileSystem, projectService, planner);
+    dictionary =
         new ObjectMapper().reader(Dictionary.class).readValue(
-            new File("/home/anthony/git5/data-submission/server/src/main/resources/dictionary.json"));
-    // src/test/resources/ValidationInternalIntegrityTest/dictionary.json"));
+            new File(this.getClass().getResource("/dictionary.json").getFile()));
 
-    File rootDir = new File("/tmp/dcc_root_dir/release2/project2");
-    File outputDir = new File("/tmp/dcc_root_dir/release2/project2/.validation");
+    // TODO: rm ValidationInternalIntegrityTest dir
+  }
+
+  @Test
+  public void test_validate_valid() throws IOException {
+    validate(validationService, dictionary, "/integration/validation/error/codelist");
+  }
+
+  private void validate(ValidationService validationService, Dictionary dictionary, String relative) throws IOException {
+    String rootDirString = this.getClass().getResource(relative).getFile();
+    String rootDirString2 = this.getClass().getResource(relative + "/" + ".validation").getFile();
+
+    File rootDir = new File(rootDirString);
+    File outputDir = new File(rootDirString2);
 
     FileSchemaDirectory fileSchemaDirectory = new LocalFileSchemaDirectory(rootDir);
     CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir);
 
     Cascade cascade = validationService.planCascade(null, null, fileSchemaDirectory, cascadingStrategy, dictionary);
+    Assert.assertEquals(1, cascade.getFlows().size());
     validationService.runCascade(cascade, null, null);
+
+    String name = rootDirString + "/" + ".validation" + "/" + "donor.internal#errors.json";
+    String content = FileUtils.readFileToString(new File(name));
+    Assert.assertTrue(content.isEmpty());
   }
 }

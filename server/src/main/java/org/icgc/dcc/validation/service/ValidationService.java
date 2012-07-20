@@ -24,7 +24,6 @@ import java.util.List;
 
 import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.core.model.Project;
-import org.icgc.dcc.dictionary.DictionaryService;
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.filesystem.ReleaseFileSystem;
@@ -60,29 +59,23 @@ public class ValidationService {
 
   private final ProjectService projectService;
 
-  private final DictionaryService dictionaries;
-
   @Inject
-  public ValidationService(final DccFileSystem dccFileSystem, final ProjectService projectService,
-      final Planner planner, final DictionaryService dictionaries) {
+  public ValidationService(final DccFileSystem dccFileSystem, final ProjectService projectService, final Planner planner) {
     checkArgument(dccFileSystem != null);
     checkArgument(projectService != null);
     checkArgument(planner != null);
-    checkArgument(dictionaries != null);
 
     this.dccFileSystem = dccFileSystem;
     this.projectService = projectService;
     this.planner = planner;
-    this.dictionaries = dictionaries;
   }
 
-  public void validate(Release release, String projectKey) {
-    this.validate(release, projectKey, null); // won't change submission state afterwards if not callback
+  public void validate(Release release, Dictionary dictionary, String projectKey) {
+    this.validate(release, dictionary, projectKey, null); // won't change submission state afterwards if not callback
   }
 
-  public void validate(Release release, String projectKey, ValidationCallback validationCallback) {
+  public void validate(Release release, Dictionary dictionary, String projectKey, ValidationCallback validationCallback) {
     String dictionaryVersion = release.getDictionaryVersion();
-    Dictionary dictionary = this.dictionaries.getFromVersion(dictionaryVersion);
     if(dictionary != null) {
       ReleaseFileSystem releaseFilesystem = dccFileSystem.getReleaseFilesystem(release);
 
@@ -128,8 +121,9 @@ public class ValidationService {
   public void runCascade(Cascade cascade, ValidationCallback validationCallback, String projectKey) {
     int size = cascade.getFlows().size();
     if(size > 0) {
-      log.info("starting cascased with {} flows", size);
-      cascade.start();
+      log.info("starting cascade with {} flows", size);
+      cascade.complete();
+      log.info("completed cascade with {} flows", size);
     } else {
       log.info("no flows to run");
       if(validationCallback != null) {
