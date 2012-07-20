@@ -91,6 +91,10 @@ public class ValidationService {
 
       File rootDir = new File(submissionDirectory.getSubmissionDirPath());
       File outputDir = new File(submissionDirectory.getValidationDirPath());
+
+      log.info("rootDir = {} ", rootDir);
+      log.info("outputDir = {} ", outputDir);
+
       FileSchemaDirectory fileSchemaDirectory = new LocalFileSchemaDirectory(rootDir);
       CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir);
 

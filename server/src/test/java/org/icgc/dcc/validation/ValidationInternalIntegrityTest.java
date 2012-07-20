@@ -52,23 +52,21 @@ public class ValidationInternalIntegrityTest {
     List<Term> termList = new ArrayList<Term>();
 
     when(dictionaries.getCodeList("dr__donor_sex")).thenReturn(codeList);
+    when(dictionaries.getCodeList("dr__donor_vital_status")).thenReturn(codeList);
+    when(dictionaries.getCodeList("dr__disease_status_last_followup")).thenReturn(codeList);
+    when(dictionaries.getCodeList("dr__donor_relapse_type")).thenReturn(codeList);
+
     when(codeList.getTerms()).thenReturn(termList);
 
     ValidationService validationService = new ValidationService(dccFileSystem, projectService, planner, dictionaries);
 
     Dictionary dictionary =
-        new ObjectMapper()
-            .reader(Dictionary.class)
-            .readValue(
-                new File(
-                    "/Users/jguberman/Documents/workspace/data-submission/server/src/test/resources/ValidationInternalIntegrityTest/dictionary.json"));
+        new ObjectMapper().reader(Dictionary.class).readValue(
+            new File("/home/anthony/git5/data-submission/server/src/main/resources/dictionary.json"));
+    // src/test/resources/ValidationInternalIntegrityTest/dictionary.json"));
 
-    File rootDir =
-        new File(
-            "/Users/jguberman/Documents/workspace/data-submission/server/src/test/resources/ValidationInternalIntegrityTest");
-    File outputDir =
-        new File(
-            "/Users/jguberman/Documents/workspace/data-submission/server/src/test/resources/ValidationInternalIntegrityTest/Results");
+    File rootDir = new File("/tmp/dcc_root_dir/release2/project2");
+    File outputDir = new File("/tmp/dcc_root_dir/release2/project2/.validation");
 
     FileSchemaDirectory fileSchemaDirectory = new LocalFileSchemaDirectory(rootDir);
     CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir);
