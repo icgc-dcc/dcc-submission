@@ -24,6 +24,7 @@ import java.io.IOException;
 import javax.ws.rs.MessageProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientFactory;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -38,15 +39,20 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.google.common.base.Charsets;
+import com.google.common.io.Resources;
+
 /**
  * 
  */
 public class IntegrationTest {
   static private Thread server;
 
-  private Client client;
+  private Client client = ClientFactory.newClient();
 
-  private final String baseURI = "http://localhost:5380/ws/releases";
+  private final String baseURI = "http://localhost:5380/ws";
+
+  private final String AUTHORIZATION = "X-DCC-Auth " + Base64.encodeAsString("admin:adminspasswd");
 
   private WebTarget target;
 
@@ -68,26 +74,99 @@ public class IntegrationTest {
     Thread.sleep(5000);
   }
 
+  public void clearDB() throws IOException, InterruptedException {
+    this.client.target(baseURI).path("/seed/releases").queryParam("delete", "true").request(MediaType.APPLICATION_JSON)
+        .header("Authorization", AUTHORIZATION).post(Entity.entity("[]", MediaType.APPLICATION_JSON));
+    this.client.target(baseURI).path("/seed/projects").queryParam("delete", "true").request(MediaType.APPLICATION_JSON)
+        .header("Authorization", AUTHORIZATION).post(Entity.entity("[]", MediaType.APPLICATION_JSON));
+    this.client.target(baseURI).path("/seed/dictionaries").queryParam("delete", "true")
+        .request(MediaType.APPLICATION_JSON).header("Authorization", AUTHORIZATION)
+        .post(Entity.entity("[]", MediaType.APPLICATION_JSON));
+    this.client.target(baseURI).path("/seed/codelists").queryParam("delete", "true")
+        .request(MediaType.APPLICATION_JSON).header("Authorization", AUTHORIZATION)
+        .post(Entity.entity("[]", MediaType.APPLICATION_JSON));
+    Thread.sleep(1000);
+  }
+
   @AfterClass
   static public void stopServer() {
     server.interrupt();
   }
 
   @Test
-  public void test_release_resource() throws JsonParseException, JsonMappingException, MessageProcessingException,
-      IllegalStateException, IOException {
+  public void test_IntegrationTest() throws JsonParseException, JsonMappingException, MessageProcessingException,
+      IllegalStateException, IOException, InterruptedException {
 
+    clearDB();
+
+    test_createInitialRelease();
+
+    test_checkQueueIsEmpty();
+
+    test_queueProjects();
+  }
+
+  private void test_checkQueueIsEmpty() throws IOException {
+    Response response = sendGetRequest("/nextRelease/queue");
+    assertEquals(200, response.getStatus());
+    assertEquals("[]", response.readEntity(String.class));
+  }
+
+  private void test_createInitialRelease() throws IOException, JsonParseException, JsonMappingException {
+    Response response = sendPutRequest("/releases/release1", resourceToString("/integrationtest/initRelease.json"));
+    assertEquals(200, response.getStatus());
+    Release release = new ObjectMapper().readValue(response.readEntity(String.class), Release.class);
+    assertEquals("release1", release.getName());
+  }
+
+  private String resourceToString(String resourcePath) throws IOException {
+    return Resources.toString(this.getClass().getResource(resourcePath), Charsets.UTF_8);
+  }
+
+  private void test_queueProjects() throws IOException, JsonParseException, JsonMappingException {
+    Response response = sendPostRequest("/nextRelease/queue", "[\"project1\", \"project2\", \"project3\"]");
+    assertEquals(200, response.getStatus());
+  }
+
+  private Response sendPutRequest(String requestPath, String payload) throws IOException {
+
+    this.target = this.client.target(baseURI).path(requestPath);
+    Response response =
+        this.target.request(MediaType.APPLICATION_JSON).header("Authorization", AUTHORIZATION)
+            .put(Entity.entity(payload, MediaType.APPLICATION_JSON));
+    return response;
+  }
+
+  private Response sendGetRequest(String requestPath) throws IOException {
+    this.target = this.client.target(baseURI).path(requestPath);
+    Response response = this.target.request(MediaType.APPLICATION_JSON).header("Authorization", AUTHORIZATION).get();
+    return response;
+  }
+
+  private Response sendPostRequest(String requestPath, String payload) throws IOException {
+    this.target = this.client.target(baseURI).path(requestPath);
+    Response response =
+        this.target.request(MediaType.APPLICATION_JSON).header("Authorization", AUTHORIZATION)
+            .post(Entity.entity(payload, MediaType.APPLICATION_JSON));
+    return response;
+  }
+
+  private void originalTest() {
     // create client for the server
     this.client = ClientFactory.newClient();
-    this.target = this.client.target(baseURI);
 
     // get release1
     this.target = this.client.target(baseURI).path("/{name}");
     Response response =
         this.target.pathParam("name", "release1").request(MediaType.APPLICATION_JSON)
             .header("Authorization", "X-DCC-Auth " + Base64.encodeAsString("admin:adminspasswd")).get();
-    Release release = new ObjectMapper().readValue(response.readEntity(String.class), Release.class);
-    assertEquals("release1", release.getName());
+    Release release;
+    try {
+      release = new ObjectMapper().readValue(response.readEntity(String.class), Release.class);
+      assertEquals("release1", release.getName());
+    } catch(Exception e) {
+      e.printStackTrace();
+    }
   }
 
 }
