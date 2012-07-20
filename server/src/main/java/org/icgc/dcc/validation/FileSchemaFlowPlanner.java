@@ -18,13 +18,14 @@
 package org.icgc.dcc.validation;
 
 import org.icgc.dcc.dictionary.model.FileSchema;
+import org.icgc.dcc.validation.report.ReportCollector;
 
 import cascading.flow.Flow;
 
 /**
  * Plans a {@code Flow} for a particular {@code FileSchema}.
  */
-public interface FileSchemaFlowPlanner {
+public interface FileSchemaFlowPlanner extends ReportCollector {
 
   public String getName();
 

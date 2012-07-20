@@ -28,6 +28,8 @@ import org.icgc.dcc.validation.cascading.AddValidationFieldsFunction;
 import org.icgc.dcc.validation.cascading.RemoveEmptyLineFilter;
 import org.icgc.dcc.validation.cascading.RemoveHeaderFilter;
 import org.icgc.dcc.validation.cascading.StructralCheckFunction;
+import org.icgc.dcc.validation.report.Outcome;
+import org.icgc.dcc.validation.report.SchemaReport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -126,6 +128,12 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
     // parse "line" into the actual expected fields
     pipe = new Each(pipe, new Fields("line"), this.structralCheck, Fields.SWAP);
     return new Each(pipe, new AddValidationFieldsFunction(), Fields.ALL);
+  }
+
+  @Override
+  public Outcome collect(CascadingStrategy strategy, SchemaReport report) {
+    // TODO Auto-generated method stub
+    return null;
   }
 
 }
