@@ -22,7 +22,6 @@ define (require) ->
       
       @model = new NextRelease()
       @model.fetch()
-      console.log @model
       @modelBind 'change', @render
       
       @.$('.modal').modal "show": true
@@ -32,7 +31,7 @@ define (require) ->
     completeRelease: ->
       console.debug "ValidateSubmissionView#completeRelease"
       nextRelease = new NextRelease()
-      nextRelease.queue ["p1"],
+      nextRelease.queue  [@options.projectKey],
         success: (data) ->
           @.$('.modal').modal 'hide'
           Chaplin.mediator.publish "validateSubmission", data

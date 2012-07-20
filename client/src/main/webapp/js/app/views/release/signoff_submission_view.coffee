@@ -24,16 +24,14 @@ define (require) ->
       
       @delegate 'click', '#signoff-submission-button', @signOffSubmission
       
-    signOffSubmission: ->
-      console.debug "SignOffSubmissionView#signOffSubmission"
+    signOffSubmission: (e) ->
       nextRelease = new NextRelease()
-      nextRelease.signOff ["p1"],
+      nextRelease.signOff [@options.projectKey],
         success: (data) ->
           @.$('.modal').modal 'hide'
           Chaplin.mediator.publish "signOffSubmission", data
           
         error: (model, error) ->
-          console.log "here"
           err = error.statusText + error.responseText
           alert = @.$('.alert.alert-error')
           
