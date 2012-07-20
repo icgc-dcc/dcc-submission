@@ -10,5 +10,6 @@ define (require) ->
       "releases/"
     
     parse: (response) ->
-      response.submissions = new Submissions response.submissions, {"release": response.name}
+      if response?.submissions
+        response.submissions = new Submissions response.submissions, {"release": response.name}
       response

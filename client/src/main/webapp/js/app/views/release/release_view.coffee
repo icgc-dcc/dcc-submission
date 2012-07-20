@@ -19,7 +19,7 @@ define (require) ->
       console.debug 'ReleaseView#initialize', @model
       super
       @modelBind 'change', @render
-      
+        
     render: ->
       super
       @subview(

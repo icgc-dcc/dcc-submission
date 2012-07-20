@@ -13,3 +13,19 @@ define (require) ->
 
     initialize: ->
       console.debug? 'NextRelease#initialize', @
+
+    queue: (attributes, options)->
+      @urlPath = ->
+        "nextRelease/queue"
+      
+      @attributes = attributes
+      
+      @save(attributes, options)
+
+    signOff: (attributes, options)->
+      @urlPath = ->
+        "nextRelease/signed"
+      
+      @attributes = attributes
+      
+      @save(attributes, options)
