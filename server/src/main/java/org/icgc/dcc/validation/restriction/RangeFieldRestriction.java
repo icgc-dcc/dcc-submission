@@ -25,11 +25,11 @@ import com.mongodb.DBObject;
 
 public class RangeFieldRestriction implements InternalPlanElement {
 
-  private static final String NAME = "range";
+  public static final String NAME = "range";
 
-  private static final String MIN = "min";
+  public static final String MIN = "min";
 
-  private static final String MAX = "max";
+  public static final String MAX = "max";
 
   private final String field;
 
