@@ -31,7 +31,7 @@ requirejs.config
     dataTables:
       deps: ['jquery']
     DT_bootstrap:
-      deps: ['jquery']
+      deps: ['dataTables']
     
   # For easier development, disable browser caching
   # Of course, this should be removed in a production environment
