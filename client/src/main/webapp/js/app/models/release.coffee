@@ -1,5 +1,6 @@
 define (require) ->
-  Model = require 'models/base/model'	
+  Model = require 'models/base/model'
+  Submissions = require 'models/submissions'
 
   "use strict"
 
@@ -7,6 +8,8 @@ define (require) ->
     urlKey: "name"
     urlPath: ->
       "releases/"
-
-    initialize: ->
-      #console.debug? 'Release#show', @
+    
+    parse: (response) ->
+      if response?.submissions
+        response.submissions = new Submissions response.submissions, {"release": response.name}
+      response

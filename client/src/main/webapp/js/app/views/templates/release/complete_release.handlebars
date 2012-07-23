@@ -5,7 +5,9 @@
   <h3>Complete Release</h3>
 </div>
 <div class="modal-body">
-  <fieldset class="well form-inline">
+  <div class="alert alert-danger">Once you confirmed completing the current release <b>{{name}}</b>, there is no going back. It will be marked as COMPLETED and only submissions that are SIGNED OFF will be processed and included in this release. Please be certain.
+  </div>
+  <fieldset class="form-horizontal">
     <div class="control-group">
       <label class="control-label" for="nextRelease">Next Release Name</label>
       <div class="controls">
@@ -16,5 +18,5 @@
 </div>
 <div class="modal-footer">
   <a href="#" class="btn" data-dismiss="modal">Close</a>
-  <button type="submit" id="complete-release-button" href="#" class="btn btn-success">Complete Release</button>
+  <button type="submit" id="complete-release-button" href="#" class="btn btn-success"><i class="icon-ok icon-white"></i> Complete Release</button>
 </div>

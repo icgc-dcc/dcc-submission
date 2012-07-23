@@ -15,24 +15,39 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.dictionary.model;
+package org.icgc.dcc.validation.report;
 
-public enum SummaryType {
+import java.io.InputStream;
+import java.util.List;
 
-  COMPLETENESS("completeness"), // completeness (nulls/populated counts)
-  MIN_MAX("minmax"), // same as completeness + min/max
-  AVERAGE("averages"), // same as min/max + avg/stddev
-  FREQUENCY("frequencies"), // same as completeness + frequencies
-  ;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.icgc.dcc.validation.CascadingStrategy;
+import org.icgc.dcc.validation.FileSchemaFlowPlanner;
+import org.icgc.dcc.validation.PlanExecutionException;
 
-  private String description;
+/**
+ * 
+ */
+public class ErrorReportCollector implements ReportCollector {
 
-  private SummaryType(String pluralName) {
-    this.description = pluralName;
+  private final FileSchemaFlowPlanner planner;
+
+  public ErrorReportCollector(FileSchemaFlowPlanner planner) {
+    this.planner = planner;
   }
 
-  public String getDescription() {
-    return description;
+  @Override
+  public Outcome collect(CascadingStrategy strategy, SchemaReport report) {
+    try {
+      InputStream src = strategy.readReportTap(this.planner, report.getName());
+      ObjectMapper mapper = new ObjectMapper();
+      List<FieldReport> fieldReports =
+          mapper.readValue(src, mapper.getTypeFactory().constructCollectionType(List.class, FieldReport.class));
+      report.getFieldReports().addAll(fieldReports);
+      return fieldReports.isEmpty() ? Outcome.PASSED : Outcome.FAILED;
+    } catch(Exception e) {
+      throw new PlanExecutionException(e);
+    }
   }
 
 }

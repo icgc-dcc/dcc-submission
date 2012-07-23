@@ -1,12 +1,12 @@
 define (require) ->
   DataTableView = require 'views/base/data_table_view'
   CompactReleaseView = require 'views/release/compact_release_view'
-  template = require 'text!views/templates/release/collection.handlebars'
+  template = require 'text!views/templates/release/releases_table.handlebars'
   utils = require 'lib/utils'
   
   'use strict'
 
-  class ReleaseCollectionView extends DataTableView
+  class ReleaseTableView extends DataTableView
     template: template
     template = null
     autoRender: true
@@ -18,13 +18,13 @@ define (require) ->
     id: "releases"
     
     initialize: ->
-      console.debug "ReleasesCollectionView#initialize", @collection, @el
+      console.debug "ReleasesTableView#initialize", @collection, @el
       super
       
       @subscribeEvent "completeRelease", @update
     
     createDataTable: (collection) ->
-      console.debug "ReleasesCollectionView#createDataTable"
+      console.debug "ReleasesTableView#createDataTable"
       aoColumns = [
           {
             sTitle: "Name"
@@ -37,25 +37,23 @@ define (require) ->
             sTitle: "Release Date"
             mDataProp: "releaseDate"
             fnRender: (oObj, sVal) ->
-              if sVal then utils.date(sVal) else "<em>Unreleased</em>"
+              if sVal
+                utils.date(sVal)
+              else
+                if utils.is_admin
+                  """
+                    <button
+                      class="btn btn-mini btn-primary"
+                      id="complete-release-popup-button"
+                      data-toggle="modal"
+                      href="#complete-release-popup">
+                      Release Now
+                    </button>
+                  """
+                else
+                  "<em>Unreleased</em>"
           }
           { sTitle: "Projects", mDataProp: "submissions.length" }
-          {
-            sTitle: ""
-            mDataProp: null
-            bSortable: false
-            bVisable: utils.is_admin
-            fnRender: (oObj) ->
-              if not utils.is_released(oObj.aData.state)
-                """
-                  <a
-                    id="complete-release-popup-button"
-                    data-toggle="modal"
-                    href="#complete-release-popup">
-                    Complete
-                  </a>
-                """
-          }
         ]
       
       @.$('table').dataTable
@@ -70,7 +68,3 @@ define (require) ->
         sAjaxDataProp: ""
         fnServerData: (sSource, aoData, fnCallback) ->
           fnCallback collection.toJSON()
-
-    #getView: (item) ->
-    #  #console.debug 'ReleaseCollectionView#getView', item
-    #  new CompactReleaseView model: item

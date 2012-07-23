@@ -59,7 +59,7 @@ public class NextRelease extends BaseRelease {
     submission.setState(SubmissionState.SIGNED_OFF);
   }
 
-  public NextRelease release(Release nextRelease) throws IllegalReleaseStateException {
+  public NextRelease release(Release nextRelease) {
     checkArgument(nextRelease != null);
 
     // check for submission state to be signed off

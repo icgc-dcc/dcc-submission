@@ -15,24 +15,22 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.dictionary.model;
+package org.icgc.dcc.validation;
 
-public enum SummaryType {
-
-  COMPLETENESS("completeness"), // completeness (nulls/populated counts)
-  MIN_MAX("minmax"), // same as completeness + min/max
-  AVERAGE("averages"), // same as min/max + avg/stddev
-  FREQUENCY("frequencies"), // same as completeness + frequencies
-  ;
-
-  private String description;
-
-  private SummaryType(String pluralName) {
-    this.description = pluralName;
+public class PlanExecutionException extends RuntimeException {
+  public PlanExecutionException() {
+    super();
   }
 
-  public String getDescription() {
-    return description;
+  public PlanExecutionException(String message, Throwable cause) {
+    super(message, cause);
   }
 
+  public PlanExecutionException(String message) {
+    super(message);
+  }
+
+  public PlanExecutionException(Throwable cause) {
+    super(cause);
+  }
 }
