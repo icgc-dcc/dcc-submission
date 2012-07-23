@@ -23,6 +23,7 @@ import java.util.List;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.validation.CascadingStrategy;
 import org.icgc.dcc.validation.FileSchemaFlowPlanner;
+import org.icgc.dcc.validation.PlanExecutionException;
 
 /**
  * 
@@ -43,11 +44,10 @@ public class ErrorReportCollector implements ReportCollector {
       List<FieldReport> fieldReports =
           mapper.readValue(src, mapper.getTypeFactory().constructCollectionType(List.class, FieldReport.class));
       report.getFieldReports().addAll(fieldReports);
+      return fieldReports.isEmpty() ? Outcome.PASSED : Outcome.FAILED;
     } catch(Exception e) {
-      return Outcome.FAILED;
+      throw new PlanExecutionException(e);
     }
-
-    return Outcome.PASSED;
   }
 
 }
