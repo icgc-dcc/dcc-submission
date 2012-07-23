@@ -1,4 +1,16 @@
-<td>{{name}}</td>
-<td>{{projectKeys.length}}</td>
-<td>{{submissions.length}}</td>
-<td>{{state}}</td>
+<div class="row-fluid page-header">
+  <div>
+    <h1>{{name}} <small>{{state}}</small></h1>
+  </div>
+</div>
+
+<div class="row-fluid">
+  <div class="span6">
+      <ul class="nav nav-list">
+        <li class="nav-header">Submission Summary</li>
+        
+      </ul>
+  </div>
+</div>
+
+<div id="submissions-table" class="row-fluid"></div>

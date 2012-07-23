@@ -2,11 +2,11 @@ define (require) ->
   Chaplin = require 'chaplin'
   View = require 'views/base/view'
   NextRelease = require 'models/next_release'
-  template = require 'text!views/templates/release/complete_release.handlebars'
+  template = require 'text!views/templates/release/validate_submission.handlebars'
 
   'use strict'
 
-  class CompleteReleaseView extends View
+  class ValidateSubmissionView extends View
     template: template
     template = null
     
@@ -15,28 +15,26 @@ define (require) ->
     autoRender: true
     tagName: 'div'
     className: "modal fade"
-    id: 'complete-release-popup'
+    id: 'validate-submission-popup'
     
     initialize: ->
-      console.debug "CompleteReleaseView#initialize"
+      console.debug "ValidateSubmissionView#initialize"
       
       @model = new NextRelease()
       @model.fetch()
-      console.log @model
       @modelBind 'change', @render
       
       @.$('.modal').modal "show": true
       
-      @delegate 'click', '#complete-release-button', @completeRelease
+      @delegate 'click', '#validate-submission-button', @completeRelease
       
     completeRelease: ->
-      console.debug "CompleteReleaseView#completeRelease"
+      console.debug "ValidateSubmissionView#completeRelease"
       nextRelease = new NextRelease()
-      nextRelease.save {name: @.$('#nextRelease').val()}
+      nextRelease.queue  [@options.projectKey],
         success: (data) ->
-          @.$('.modal').modal('hide')
-          # publish completeRelease here
-          Chaplin.mediator.publish "completeRelease", data
+          @.$('.modal').modal 'hide'
+          Chaplin.mediator.publish "validateSubmission", data
           
         error: (model, error) ->
           err = error.statusText + error.responseText
