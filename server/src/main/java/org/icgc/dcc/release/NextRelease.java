@@ -68,12 +68,18 @@ public class NextRelease extends BaseRelease {
     }
 
     Release oldRelease = this.getRelease();
-    String oldDictionary = oldRelease.getDictionaryVersion();
-    if(oldDictionary == null) {
+    String oldDictionaryVersion = oldRelease.getDictionaryVersion();
+    String newDictionaryVersion = nextRelease.getDictionaryVersion();
+    if(oldDictionaryVersion == null) {
       throw new ReleaseException("Release must have associated dictionary before being completed");
     }
     if(this.datastore.createQuery(Release.class).filter("name", nextRelease.getName()).get() != null) {
       throw new ReleaseException("New release can not be the same as completed release");
+    }
+    if(newDictionaryVersion == null) {
+      nextRelease.setDictionaryVersion(oldRelease.getDictionaryVersion());
+    } else if(this.datastore.createQuery(Dictionary.class).filter("version", newDictionaryVersion).get() == null) {
+      throw new ReleaseException("Specified dictionary version not found in DB: " + newDictionaryVersion);
     }
 
     nextRelease.setState(ReleaseState.OPENED);
@@ -81,13 +87,10 @@ public class NextRelease extends BaseRelease {
     // dictionaries.getFromVersion(oldDictionary).close();
     UpdateOperations<Dictionary> closeDictionary =
         this.datastore.createUpdateOperations(Dictionary.class).set("state", DictionaryState.CLOSED);
-    Query<Dictionary> updateDictionary = this.datastore.createQuery(Dictionary.class).filter("version", oldDictionary);
+    Query<Dictionary> updateDictionary =
+        this.datastore.createQuery(Dictionary.class).filter("version", oldDictionaryVersion);
 
     this.datastore.update(updateDictionary, closeDictionary);
-
-    if(nextRelease.getDictionaryVersion() == null) {
-      nextRelease.setDictionaryVersion(oldRelease.getDictionaryVersion());
-    }
 
     // save the newly created release to mongoDB
     this.datastore.save(nextRelease);
