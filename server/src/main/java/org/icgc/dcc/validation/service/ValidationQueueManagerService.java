@@ -98,8 +98,18 @@ public class ValidationQueueManagerService extends AbstractService implements Va
             if(next.isPresent()) {
               log.info("next in queue {}", next);
               Release release = releaseService.getNextRelease().getRelease();
-              Dictionary dictionary = dictionaryService.getFromVersion(release.getDictionaryVersion());
-              validationService.validate(release, dictionary, next.get(), thisAsCallback);
+              if(release == null) {
+                throw new ValidationServiceException("cannot access the next release");
+              } else {
+                String dictionaryVersion = release.getDictionaryVersion();
+                Dictionary dictionary = dictionaryService.getFromVersion(dictionaryVersion);
+                if(dictionary == null) {
+                  throw new ValidationServiceException(String.format("no dictionary found with version %s",
+                      dictionaryVersion));
+                } else {
+                  validationService.validate(release, dictionary, next.get(), thisAsCallback);
+                }
+              }
             }
           }
         } catch(Exception e) { // exception thrown within the run method are not logged otherwise (NullPointerException

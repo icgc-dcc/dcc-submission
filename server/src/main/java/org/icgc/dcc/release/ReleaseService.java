@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.icgc.dcc.core.morphia.BaseMorphiaService;
+import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.release.model.QRelease;
 import org.icgc.dcc.release.model.Release;
@@ -40,6 +41,12 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   }
 
   public void createInitialRelease(Release initRelease) {
+    String dictionaryVersion = initRelease.getDictionaryVersion();
+    if(dictionaryVersion == null) {
+      throw new ReleaseException("Dictionary version must not be null!");
+    } else if(this.datastore().createQuery(Dictionary.class).filter("version", dictionaryVersion).get() == null) {
+      throw new ReleaseException("Specified dictionary version not found in DB: " + dictionaryVersion);
+    }
     datastore().save(initRelease);
     Set<String> projectKeys = new LinkedHashSet<String>();
     for(Submission submission : initRelease.getSubmissions()) {
