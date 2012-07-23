@@ -6,12 +6,13 @@ import java.util.List;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.validation.CascadingStrategy;
 import org.icgc.dcc.validation.FileSchemaFlowPlanner;
+import org.icgc.dcc.validation.PlanExecutionException;
 
-public class FrequencyReportCollector implements ReportCollector {
+public class SummaryReportCollector implements ReportCollector {
 
   private final FileSchemaFlowPlanner planner;
 
-  public FrequencyReportCollector(FileSchemaFlowPlanner planner) {
+  public SummaryReportCollector(FileSchemaFlowPlanner planner) {
     this.planner = planner;
   }
 
@@ -24,7 +25,7 @@ public class FrequencyReportCollector implements ReportCollector {
           mapper.readValue(src, mapper.getTypeFactory().constructCollectionType(List.class, FieldReport.class));
       report.getFieldReports().addAll(fieldReports);
     } catch(Exception e) {
-      return Outcome.FAILED;
+      throw new PlanExecutionException(e);
     }
 
     return Outcome.PASSED;
