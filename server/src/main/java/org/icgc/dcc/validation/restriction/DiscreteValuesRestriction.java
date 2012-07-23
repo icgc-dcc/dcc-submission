@@ -30,11 +30,11 @@ import com.google.common.collect.Iterables;
 
 public class DiscreteValuesRestriction implements InternalPlanElement {
 
-  private static final String NAME = "in";
+  public static final String NAME = "in";
 
-  private static final String DESCRIPTION = "list of allowable values (e.g.: 1,2,3)";
+  public static final String DESCRIPTION = "list of allowable values (e.g.: 1,2,3)";
 
-  private static final String PARAM = "values";
+  public static final String PARAM = "values";
 
   private final String field;
 

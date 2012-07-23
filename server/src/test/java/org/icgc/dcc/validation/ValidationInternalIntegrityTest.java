@@ -17,11 +17,20 @@ import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.dictionary.DictionaryService;
 import org.icgc.dcc.dictionary.model.CodeList;
 import org.icgc.dcc.dictionary.model.Dictionary;
+import org.icgc.dcc.dictionary.model.Field;
+import org.icgc.dcc.dictionary.model.FileSchema;
+import org.icgc.dcc.dictionary.model.Restriction;
 import org.icgc.dcc.dictionary.model.Term;
 import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.filesystem.GuiceJUnitRunner;
 import org.icgc.dcc.filesystem.GuiceJUnitRunner.GuiceModules;
+import org.icgc.dcc.validation.restriction.CodeListRestriction;
+import org.icgc.dcc.validation.restriction.DiscreteValuesRestriction;
+import org.icgc.dcc.validation.restriction.RangeFieldRestriction;
+import org.icgc.dcc.validation.restriction.RequiredRestriction;
 import org.icgc.dcc.validation.service.ValidationService;
+import org.icgc.dcc.validation.visitor.UniqueFieldsPlanningVisitor;
+import org.icgc.dcc.validation.visitor.ValueTypePlanningVisitor;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,6 +38,7 @@ import org.junit.runner.RunWith;
 import cascading.cascade.Cascade;
 
 import com.google.inject.Inject;
+import com.mongodb.BasicDBObject;
 
 @RunWith(GuiceJUnitRunner.class)
 @GuiceModules({ ValidationTestModule.class })
@@ -73,23 +83,92 @@ public class ValidationInternalIntegrityTest {
     when(codeList4.getTerms()).thenReturn(termList4);
 
     validationService = new ValidationService(dccFileSystem, projectService, planner);
-    dictionary =
-        new ObjectMapper().reader(Dictionary.class).readValue(
-            new File(this.getClass().getResource("/dictionary.json").getFile()));
-
-    // TODO: rm ValidationInternalIntegrityTest dir
+    resetDictionary();
   }
 
   @Test
   public void test_validate_valid() throws IOException {
-    validate(validationService, dictionary, "/integration/validation/internal");
+    String content = validate(validationService, dictionary, "/integration/validation/internal");
+    Assert.assertTrue(content, content.isEmpty());
   }
 
-  private void validate(ValidationService validationService, Dictionary dictionary, String relative) throws IOException {
+  @Test
+  public void test_validate_invalidValueType() throws IOException {
+    testErrorType(ValueTypePlanningVisitor.NAME);
+  }
+
+  @Test
+  public void test_validate_invalidCodeList() throws IOException {
+    testErrorType(CodeListRestriction.NAME);
+  }
+
+  @Test
+  public void test_validate_invalidRequired() throws IOException {
+    testErrorType(RequiredRestriction.NAME);
+  }
+
+  @Test
+  public void test_validate_invalidRange() throws IOException {
+    BasicDBObject rangeConfig = new BasicDBObject();
+    rangeConfig.put(RangeFieldRestriction.MIN, 0);
+    rangeConfig.put(RangeFieldRestriction.MAX, 200);
+
+    Restriction rangeRestriction = new Restriction(); // can't easily mock this because used by visitor as well
+    rangeRestriction.setType(RangeFieldRestriction.NAME);
+    rangeRestriction.setConfig(rangeConfig);
+
+    // add a range restriction (none set at the moment); TODO: remove if range restrictions are added in the future
+    FileSchema donor = getFileSchemaByName(dictionary, "donor");
+    Field age = getFieldByName(donor, "donor_age_at_diagnosis");
+    age.addRestriction(rangeRestriction);
+
+    testErrorType(RangeFieldRestriction.NAME);
+
+    resetDictionary();
+  }
+
+  @Test
+  public void test_validate_invalidDiscreteValues() throws IOException {
+
+    BasicDBObject inConfig = new BasicDBObject();
+    inConfig.put(DiscreteValuesRestriction.PARAM, "CX,GL,FM");
+
+    Restriction inRestriction = new Restriction();
+    inRestriction.setType(DiscreteValuesRestriction.NAME);
+    inRestriction.setConfig(inConfig);
+
+    FileSchema donor = getFileSchemaByName(dictionary, "donor");
+    Field region = getFieldByName(donor, "donor_region_of_residence");
+    region.addRestriction(inRestriction);
+
+    testErrorType(DiscreteValuesRestriction.NAME);
+
+    resetDictionary();
+  }
+
+  @Test
+  public void test_validate_invalidUniqueFieldsCombination() throws IOException {
+    FileSchema donor = getFileSchemaByName(dictionary, "donor");
+    donor.setUniqueFields(Arrays.asList("donor_sex", "donor_region_of_residence", "donor_vital_status"));
+
+    testErrorType(UniqueFieldsPlanningVisitor.NAME);
+
+    resetDictionary();
+  }
+
+  private void testErrorType(String errorType) throws IOException {
+    String content = validate(validationService, dictionary, "/integration/validation/internal/error/" + errorType);
+    String expected =
+        FileUtils.readFileToString(new File(this.getClass().getResource("/ref/" + errorType + ".json").getFile()));
+    Assert.assertEquals(content, expected.trim(), content.trim());
+  }
+
+  private String validate(ValidationService validationService, Dictionary dictionary, String relative)
+      throws IOException {
     String rootDirString = this.getClass().getResource(relative).getFile();
     String outputDirString = rootDirString + "/" + ".validation";
     String errorFileString = outputDirString + "/" + "donor.internal#errors.json";
-    ;
+
     File errorFile = new File(errorFileString);
     errorFile.delete();
     Assert.assertFalse(errorFileString, errorFile.exists());
@@ -105,7 +184,34 @@ public class ValidationInternalIntegrityTest {
     validationService.runCascade(cascade, null, null);
 
     Assert.assertTrue(errorFileString, errorFile.exists());
-    String content = FileUtils.readFileToString(errorFile);
-    Assert.assertTrue(content, content.isEmpty());
+    return FileUtils.readFileToString(errorFile);
+  }
+
+  private FileSchema getFileSchemaByName(Dictionary dictionary, String name) {
+    FileSchema fileSchema = null;
+    for(FileSchema fileSchemaTmp : dictionary.getFiles()) {
+      if(name.equals(fileSchemaTmp.getName())) {
+        fileSchema = fileSchemaTmp;
+        break;
+      }
+    }
+    return fileSchema;
+  }
+
+  private Field getFieldByName(FileSchema fileSchema, String name) {
+    Field field = null;
+    for(Field fieldTmp : fileSchema.getFields()) {
+      if(name.equals(fieldTmp.getName())) {
+        field = fieldTmp;
+        break;
+      }
+    }
+    return field;
+  }
+
+  private void resetDictionary() throws IOException, JsonProcessingException {
+    dictionary =
+        new ObjectMapper().reader(Dictionary.class).readValue(
+            new File(this.getClass().getResource("/dictionary.json").getFile()));
   }
 }

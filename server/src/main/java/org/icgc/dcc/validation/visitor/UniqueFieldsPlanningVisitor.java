@@ -44,7 +44,7 @@ import com.google.common.collect.ImmutableList;
  */
 public class UniqueFieldsPlanningVisitor extends InternalFlowPlanningVisitor {
 
-  private static final String NAME = "unique";
+  public static final String NAME = "uniqueFields";
 
   @Override
   public void visit(FileSchema fileSchema) {
