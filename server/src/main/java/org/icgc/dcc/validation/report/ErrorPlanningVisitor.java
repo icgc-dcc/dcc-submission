@@ -37,12 +37,18 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
   @Override
   public void visit(FileSchema fileSchema) {
     super.visit(fileSchema);
-    collect(new ErrorsPlanElement());
+    collect(new ErrorsPlanElement(fileSchema, this.getFlow()));
   }
 
   static class ErrorsPlanElement implements ReportingPlanElement {
 
-    public ErrorsPlanElement() {
+    private final FileSchema fileSchema;
+
+    private final FlowType flowType;
+
+    public ErrorsPlanElement(FileSchema fileSchema, FlowType flowType) {
+      this.fileSchema = fileSchema;
+      this.flowType = flowType;
     }
 
     @Override
@@ -58,6 +64,11 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
     @Override
     public Pipe report(Pipe pipe) {
       return new Retain(new Each(pipe, TupleStates.keepInvalidTuplesFilter()), ValidationFields.STATE_FIELD);
+    }
+
+    @Override
+    public ReportCollector getCollector() {
+      return new ErrorReportCollector(this.fileSchema, this.flowType);
     }
 
   }

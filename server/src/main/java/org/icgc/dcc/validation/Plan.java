@@ -17,10 +17,14 @@
  */
 package org.icgc.dcc.validation;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.icgc.dcc.dictionary.model.FileSchema;
+import org.icgc.dcc.validation.report.Outcome;
+import org.icgc.dcc.validation.report.SchemaReport;
+import org.icgc.dcc.validation.report.SubmissionReport;
 
 import cascading.cascade.Cascade;
 import cascading.cascade.CascadeConnector;
@@ -85,5 +89,20 @@ public class Plan {
       }
     }
     return new CascadeConnector().connect(cascade);
+  }
+
+  public Outcome collect(CascadingStrategy strategy, SubmissionReport report) {
+    Outcome result = Outcome.PASSED;
+    List<SchemaReport> schemaReports = new ArrayList<SchemaReport>();
+    for(FileSchemaFlowPlanner planner : Iterables.concat(internalPlanners.values(), externalPlanners.values())) {
+      SchemaReport schemaReport = new SchemaReport();
+      Outcome outcome = planner.collect(strategy, schemaReport);
+      if(outcome == Outcome.FAILED) {
+        result = Outcome.FAILED;
+      }
+      schemaReports.add(schemaReport);
+    }
+    report.setSchemaReports(schemaReports);
+    return result;
   }
 }

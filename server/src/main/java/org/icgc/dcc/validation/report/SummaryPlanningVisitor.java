@@ -41,7 +41,7 @@ public class SummaryPlanningVisitor extends ReportingFlowPlanningVisitor {
   public void visit(FileSchema fileSchema) {
     super.visit(fileSchema);
     Map<SummaryType, List<Field>> summaryTypeToFields = buildSummaryTypeToFields(fileSchema);
-    collectElements(fileSchema.getName(), summaryTypeToFields);
+    collectElements(fileSchema, summaryTypeToFields);
   }
 
   /**
@@ -75,21 +75,21 @@ public class SummaryPlanningVisitor extends ReportingFlowPlanningVisitor {
   /**
    * Collects element based on the {@code Field}'s {@code SummaryType}, so they can later be applied
    */
-  private void collectElements(String schemaName, Map<SummaryType, List<Field>> summaryTypeToFields) {
+  private void collectElements(FileSchema fileSchema, Map<SummaryType, List<Field>> summaryTypeToFields) {
     for(SummaryType summaryType : summaryTypeToFields.keySet()) {
       List<Field> fields = summaryTypeToFields.get(summaryType);
       switch(summaryType) {
       case COMPLETENESS:
-        collect(new CompletenessPlanElement(schemaName, fields));
+        collect(new CompletenessPlanElement(fileSchema, fields));
         break;
       case AVERAGE:
-        collect(new AveragePlanElement(schemaName, fields));
+        collect(new AveragePlanElement(fileSchema, fields));
         break;
       case MIN_MAX:
-        collect(new MinMaxPlanElement(schemaName, fields));
+        collect(new MinMaxPlanElement(fileSchema, fields));
         break;
       case FREQUENCY:
-        collect(new FrequencyPlanElement(schemaName, fields));
+        collect(new FrequencyPlanElement(fileSchema, fields));
         break;
       default:
         break;

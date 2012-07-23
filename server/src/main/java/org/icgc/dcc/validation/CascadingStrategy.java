@@ -44,7 +44,7 @@ public interface CascadingStrategy {
    * Used to read back a report that was produced during the execution of a Flow. This does not use a Tap so that it can
    * be executed outside of a Flow.
    */
-  public InputStream readReportTap(FileSchemaFlowPlanner planner, String reportName);
+  public InputStream readReportTap(FileSchema schema, FlowType type, String reportName);
 
   public Fields getFileHeader(FileSchema schema) throws IOException;
 

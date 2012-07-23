@@ -23,8 +23,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.icgc.dcc.dictionary.model.FileSchema;
-import org.icgc.dcc.validation.report.Outcome;
-import org.icgc.dcc.validation.report.SchemaReport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -111,12 +109,6 @@ class DefaultExternalFlowPlanner extends BaseFileSchemaFlowPlanner implements Ex
 
   private Pipe mergeJoinedTails() {
     return new Merge(joinedTails.toArray(new Pipe[] {}));
-  }
-
-  @Override
-  public Outcome collect(CascadingStrategy strategy, SchemaReport report) {
-    // TODO Auto-generated method stub
-    return null;
   }
 
 }

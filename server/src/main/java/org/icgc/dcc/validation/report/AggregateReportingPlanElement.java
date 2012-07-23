@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.apache.commons.math.stat.descriptive.SummaryStatistics;
 import org.icgc.dcc.dictionary.model.Field;
+import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.dictionary.model.SummaryType;
 
 import cascading.flow.FlowProcess;
@@ -66,9 +67,9 @@ public abstract class AggregateReportingPlanElement extends BaseReportingPlanEle
 
   private final Fields aggregateFields;
 
-  public AggregateReportingPlanElement(String schemaName, boolean includeBoundaryRelated,
+  public AggregateReportingPlanElement(FileSchema fileSchema, boolean includeBoundaryRelated,
       boolean includeAverageRelated, SummaryType summaryType, List<Field> fields) {
-    super(schemaName, fields, summaryType);
+    super(fileSchema, fields, summaryType);
 
     this.includeBoundaryRelated = includeBoundaryRelated;
     this.includeAverageRelated = includeBoundaryRelated ? includeAverageRelated : false;
@@ -259,20 +260,20 @@ public abstract class AggregateReportingPlanElement extends BaseReportingPlanEle
   }
 
   static final class CompletenessPlanElement extends AggregateReportingPlanElement {
-    public CompletenessPlanElement(String schemaName, List<Field> fields) {
-      super(schemaName, false, false, SummaryType.COMPLETENESS, fields);
+    public CompletenessPlanElement(FileSchema fileSchema, List<Field> fields) {
+      super(fileSchema, false, false, SummaryType.COMPLETENESS, fields);
     }
   }
 
   static final class MinMaxPlanElement extends AggregateReportingPlanElement {
-    public MinMaxPlanElement(String schemaName, List<Field> fields) {
-      super(schemaName, true, false, SummaryType.MIN_MAX, fields);
+    public MinMaxPlanElement(FileSchema fileSchema, List<Field> fields) {
+      super(fileSchema, true, false, SummaryType.MIN_MAX, fields);
     }
   }
 
   static final class AveragePlanElement extends AggregateReportingPlanElement {
-    public AveragePlanElement(String schemaName, List<Field> fields) {
-      super(schemaName, true, true, SummaryType.AVERAGE, fields);
+    public AveragePlanElement(FileSchema fileSchema, List<Field> fields) {
+      super(fileSchema, true, true, SummaryType.AVERAGE, fields);
     }
   }
 }

@@ -21,8 +21,9 @@ import java.io.InputStream;
 import java.util.List;
 
 import org.codehaus.jackson.map.ObjectMapper;
+import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.validation.CascadingStrategy;
-import org.icgc.dcc.validation.FileSchemaFlowPlanner;
+import org.icgc.dcc.validation.FlowType;
 import org.icgc.dcc.validation.PlanExecutionException;
 
 /**
@@ -30,16 +31,19 @@ import org.icgc.dcc.validation.PlanExecutionException;
  */
 public class ErrorReportCollector implements ReportCollector {
 
-  private final FileSchemaFlowPlanner planner;
+  private final FileSchema fileSchema;
 
-  public ErrorReportCollector(FileSchemaFlowPlanner planner) {
-    this.planner = planner;
+  private final FlowType flowType;
+
+  public ErrorReportCollector(FileSchema fileSchema, FlowType flowType) {
+    this.fileSchema = fileSchema;
+    this.flowType = flowType;
   }
 
   @Override
   public Outcome collect(CascadingStrategy strategy, SchemaReport report) {
     try {
-      InputStream src = strategy.readReportTap(this.planner, report.getName());
+      InputStream src = strategy.readReportTap(fileSchema, flowType, report.getName());
       ObjectMapper mapper = new ObjectMapper();
       List<FieldReport> fieldReports =
           mapper.readValue(src, mapper.getTypeFactory().constructCollectionType(List.class, FieldReport.class));

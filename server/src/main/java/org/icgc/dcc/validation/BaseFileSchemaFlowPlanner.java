@@ -18,6 +18,8 @@ package org.icgc.dcc.validation;
 import java.util.Map;
 
 import org.icgc.dcc.dictionary.model.FileSchema;
+import org.icgc.dcc.validation.report.Outcome;
+import org.icgc.dcc.validation.report.SchemaReport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +36,8 @@ public abstract class BaseFileSchemaFlowPlanner implements FileSchemaFlowPlanner
   private final FileSchema fileSchema;
 
   private final Map<String, Pipe> reports = Maps.newHashMap();
+
+  private ReportingPlanElement reportElement;
 
   protected BaseFileSchemaFlowPlanner(FileSchema fileSchema) {
     this.fileSchema = fileSchema;
@@ -59,6 +63,11 @@ public abstract class BaseFileSchemaFlowPlanner implements FileSchemaFlowPlanner
       def.addTailSink(p.getValue(), strategy.getReportTap(this, p.getKey()));
     }
     return strategy.getFlowConnector().connect(onConnect(def, strategy));
+  }
+
+  @Override
+  public Outcome collect(CascadingStrategy strategy, SchemaReport report) {
+    return reportElement.getCollector().collect(strategy, report);
   }
 
   protected abstract Pipe getTail();

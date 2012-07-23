@@ -87,7 +87,7 @@ public class HadoopCascadingStrategy implements CascadingStrategy {
   }
 
   @Override
-  public InputStream readReportTap(FileSchemaFlowPlanner planner, String reportName) {
+  public InputStream readReportTap(FileSchema schema, FlowType type, String reportName) {
     throw new UnsupportedOperationException("method not yet implemented");
   }
 

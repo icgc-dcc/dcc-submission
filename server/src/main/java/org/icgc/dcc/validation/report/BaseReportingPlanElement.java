@@ -21,7 +21,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.icgc.dcc.dictionary.model.Field;
+import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.dictionary.model.SummaryType;
+import org.icgc.dcc.validation.FlowType;
 import org.icgc.dcc.validation.ReportingPlanElement;
 
 import cascading.tuple.Fields;
@@ -45,14 +47,14 @@ abstract class BaseReportingPlanElement implements ReportingPlanElement {
 
   static final Fields REPORT_FIELDS = new Fields(REPORT);
 
-  protected final String schemaName;
+  protected final FileSchema fileSchema;
 
   protected final SummaryType summaryType;
 
   protected final List<Field> fields;
 
-  protected BaseReportingPlanElement(String schemaName, List<Field> fields, SummaryType summaryType) {
-    this.schemaName = schemaName;
+  protected BaseReportingPlanElement(FileSchema fileSchema, List<Field> fields, SummaryType summaryType) {
+    this.fileSchema = fileSchema;
     this.fields = fields;
     this.summaryType = summaryType;
   }
@@ -68,7 +70,7 @@ abstract class BaseReportingPlanElement implements ReportingPlanElement {
   }
 
   protected String buildSubPipeName(String prefix) {
-    return schemaName + "_" + prefix + "_" + "pipe";
+    return fileSchema.getName() + "_" + prefix + "_" + "pipe";
   }
 
   public static class FieldSummary {// TODO: use FieldReport instead?
@@ -86,5 +88,11 @@ abstract class BaseReportingPlanElement implements ReportingPlanElement {
       return Objects.toStringHelper(FieldSummary.class).add("field", field).add("populated", populated)
           .add("nulls", nulls).add("summary", summary).toString();
     }
+  }
+
+  @Override
+  public ReportCollector getCollector() {
+    // FlowType is always Internal for Summary
+    return new SummaryReportCollector(this.fileSchema, FlowType.INTERNAL);
   }
 }
