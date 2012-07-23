@@ -38,6 +38,9 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.glassfish.jersey.internal.util.Base64;
 import org.icgc.dcc.Main;
 import org.icgc.dcc.release.model.Release;
+import org.icgc.dcc.release.model.ReleaseState;
+import org.icgc.dcc.release.model.Submission;
+import org.icgc.dcc.release.model.SubmissionState;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -49,13 +52,18 @@ import com.google.common.io.Resources;
  * 
  */
 public class IntegrationTest {
+  /**
+   * 
+   */
+  private static final String DCC_ROOT_DIR = "/tmp/dcc_root_dir/";
+
   static private Thread server;
 
-  private Client client = ClientFactory.newClient();
+  private final Client client = ClientFactory.newClient();
 
-  private final String baseURI = "http://localhost:5380/ws";
+  private static final String BASEURI = "http://localhost:5380/ws";
 
-  private final String AUTHORIZATION = "X-DCC-Auth " + Base64.encodeAsString("admin:adminspasswd");
+  private static final String AUTHORIZATION = "X-DCC-Auth " + Base64.encodeAsString("admin:adminspasswd");
 
   private WebTarget target;
 
@@ -78,21 +86,21 @@ public class IntegrationTest {
   }
 
   public void clearDB() throws IOException, InterruptedException {
-    this.client.target(baseURI).path("/seed/releases").queryParam("delete", "true").request(MediaType.APPLICATION_JSON)
+    this.client.target(BASEURI).path("/seed/releases").queryParam("delete", "true").request(MediaType.APPLICATION_JSON)
         .header("Authorization", AUTHORIZATION).post(Entity.entity("[]", MediaType.APPLICATION_JSON));
-    this.client.target(baseURI).path("/seed/projects").queryParam("delete", "true").request(MediaType.APPLICATION_JSON)
+    this.client.target(BASEURI).path("/seed/projects").queryParam("delete", "true").request(MediaType.APPLICATION_JSON)
         .header("Authorization", AUTHORIZATION).post(Entity.entity("[]", MediaType.APPLICATION_JSON));
-    this.client.target(baseURI).path("/seed/dictionaries").queryParam("delete", "true")
+    this.client.target(BASEURI).path("/seed/dictionaries").queryParam("delete", "true")
         .request(MediaType.APPLICATION_JSON).header("Authorization", AUTHORIZATION)
         .post(Entity.entity("[]", MediaType.APPLICATION_JSON));
-    this.client.target(baseURI).path("/seed/codelists").queryParam("delete", "true")
+    this.client.target(BASEURI).path("/seed/codelists").queryParam("delete", "true")
         .request(MediaType.APPLICATION_JSON).header("Authorization", AUTHORIZATION)
         .post(Entity.entity("[]", MediaType.APPLICATION_JSON));
     Thread.sleep(1000);
   }
 
   public void clearFS() throws IOException {
-    FileUtils.deleteDirectory(new File("/tmp/dcc_root_dir/"));
+    FileUtils.deleteDirectory(new File(DCC_ROOT_DIR));
   }
 
   @AfterClass
@@ -119,41 +127,80 @@ public class IntegrationTest {
     test_queueProjects();
 
     test_checkSubmissionsStates();
+
+    test_checkReleaseState("release1", ReleaseState.OPENED);
+
+    test_releaseFirstRelease();
+
+    test_checkReleaseState("release1", ReleaseState.COMPLETED);
+
+    test_checkReleaseState("release2", ReleaseState.OPENED);
   }
 
   private void test_feedFileSystem() throws IOException {
     // TODO ideally we should use a sftp client to upload data files
     File srcDir = new File("src/test/resources/integrationtest/fs/");
-    File destDir = new File("/tmp/dcc_root_dir/");
+    File destDir = new File(DCC_ROOT_DIR);
     FileUtils.copyDirectory(srcDir, destDir);
   }
 
   private void test_feedDB() throws InvocationException, NullPointerException, IllegalArgumentException, IOException {
-    this.client.target(baseURI).path("/seed/projects").request(MediaType.APPLICATION_JSON)
+    this.client.target(BASEURI).path("/seed/projects").request(MediaType.APPLICATION_JSON)
         .header("Authorization", AUTHORIZATION)
         .post(Entity.entity(this.resourceToString("/integrationtest/projects.json"), MediaType.APPLICATION_JSON));
-    this.client.target(baseURI).path("/seed/dictionaries").request(MediaType.APPLICATION_JSON)
+    this.client.target(BASEURI).path("/seed/dictionaries").request(MediaType.APPLICATION_JSON)
         .header("Authorization", AUTHORIZATION)
         .post(Entity.entity(this.resourceToString("/integrationtest/dictionaries.json"), MediaType.APPLICATION_JSON));
-    this.client.target(baseURI).path("/seed/codelists").request(MediaType.APPLICATION_JSON)
+    this.client.target(BASEURI).path("/seed/codelists").request(MediaType.APPLICATION_JSON)
         .header("Authorization", AUTHORIZATION)
         .post(Entity.entity(this.resourceToString("/integrationtest/codelists.json"), MediaType.APPLICATION_JSON));
   }
 
-  private void test_checkSubmissionsStates() throws IOException {
-    // TODO check actual submissions state in response
-
+  private void test_checkSubmissionsStates() throws IOException, InterruptedException {
     Response response = sendGetRequest("/releases/release1");
     assertEquals(200, response.getStatus());
 
-    response = sendGetRequest("/releases/release1/submissions/project1");
-    assertEquals(200, response.getStatus());
+    Submission submission;
+    do {
+      response = sendGetRequest("/releases/release1/submissions/project1");
+      assertEquals(200, response.getStatus());
+      submission = new ObjectMapper().readValue(response.readEntity(String.class), Submission.class);
+      Thread.sleep(2000);
+    } while(submission.getState() == SubmissionState.QUEUED);
+    assertEquals(SubmissionState.VALID, submission.getState());
 
     response = sendGetRequest("/releases/release1/submissions/project2");
     assertEquals(200, response.getStatus());
 
-    response = sendGetRequest("/releases/release1/submissions/project2");
+    response = sendGetRequest("/releases/release1/submissions/project3");
     assertEquals(200, response.getStatus());
+  }
+
+  private void test_releaseFirstRelease() throws IOException {
+    // Expect 400 Bad Request because no projects are signed off
+    Response response = sendPostRequest("/nextRelease", resourceToString("/integrationtest/nextRelease.json"));
+    assertEquals(400, response.getStatus());
+
+    // Sign off on a project
+    response = sendPostRequest("/nextRelease/signed", "[\"project1\"]");
+    assertEquals(200, response.getStatus());
+
+    // Release again, expect 200 OK
+    response = sendPostRequest("/nextRelease", resourceToString("/integrationtest/nextRelease.json"));
+    assertEquals(200, response.getStatus());
+
+    // Release again, expect 400 Bad Request because of the duplicate release
+    response = sendPostRequest("/nextRelease", resourceToString("/integrationtest/nextRelease.json"));
+    assertEquals(400, response.getStatus());
+  }
+
+  private void test_checkReleaseState(String releaseName, ReleaseState expectedState) throws IOException,
+      InterruptedException {
+    Response response = sendGetRequest("/releases/" + releaseName);
+    assertEquals(200, response.getStatus());
+
+    Release release = new ObjectMapper().readValue(response.readEntity(String.class), Release.class);
+    assertEquals(expectedState, release.getState());
   }
 
   private void test_checkQueueIsEmpty() throws IOException {
@@ -180,7 +227,7 @@ public class IntegrationTest {
 
   private Response sendPutRequest(String requestPath, String payload) throws IOException {
 
-    this.target = this.client.target(baseURI).path(requestPath);
+    this.target = this.client.target(BASEURI).path(requestPath);
     Response response =
         this.target.request(MediaType.APPLICATION_JSON).header("Authorization", AUTHORIZATION)
             .put(Entity.entity(payload, MediaType.APPLICATION_JSON));
@@ -188,35 +235,16 @@ public class IntegrationTest {
   }
 
   private Response sendGetRequest(String requestPath) throws IOException {
-    this.target = this.client.target(baseURI).path(requestPath);
+    this.target = this.client.target(BASEURI).path(requestPath);
     Response response = this.target.request(MediaType.APPLICATION_JSON).header("Authorization", AUTHORIZATION).get();
     return response;
   }
 
   private Response sendPostRequest(String requestPath, String payload) throws IOException {
-    this.target = this.client.target(baseURI).path(requestPath);
+    this.target = this.client.target(BASEURI).path(requestPath);
     Response response =
         this.target.request(MediaType.APPLICATION_JSON).header("Authorization", AUTHORIZATION)
             .post(Entity.entity(payload, MediaType.APPLICATION_JSON));
     return response;
   }
-
-  private void originalTest() {
-    // create client for the server
-    this.client = ClientFactory.newClient();
-
-    // get release1
-    this.target = this.client.target(baseURI).path("/{name}");
-    Response response =
-        this.target.pathParam("name", "release1").request(MediaType.APPLICATION_JSON)
-            .header("Authorization", "X-DCC-Auth " + Base64.encodeAsString("admin:adminspasswd")).get();
-    Release release;
-    try {
-      release = new ObjectMapper().readValue(response.readEntity(String.class), Release.class);
-      assertEquals("release1", release.getName());
-    } catch(Exception e) {
-      e.printStackTrace();
-    }
-  }
-
 }
