@@ -1,0 +1,9 @@
+{
+  "offset" : 3,
+  "errors" : [ {
+    "code" : "UNIQUE_VALUE_ERROR",
+    "parameters" : [ [ "2", "GL", "1" ], [ "donor_sex", "donor_region_of_residence", "donor_vital_status" ], 2 ]
+  } ],
+  "valid" : false,
+  "invalid" : true
+}

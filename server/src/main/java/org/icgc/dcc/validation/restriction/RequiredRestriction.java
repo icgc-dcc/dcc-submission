@@ -21,7 +21,7 @@ import cascading.tuple.TupleEntry;
 
 public class RequiredRestriction implements InternalPlanElement {
 
-  private static final String NAME = "required";// TODO: create enum for valid Restriction types?
+  public static final String NAME = "required";// TODO: create enum for valid Restriction types?
 
   private final String field;
 

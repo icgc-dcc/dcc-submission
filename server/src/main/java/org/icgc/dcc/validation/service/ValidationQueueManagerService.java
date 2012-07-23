@@ -24,6 +24,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.icgc.dcc.dictionary.DictionaryService;
+import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.validation.ValidationCallback;
@@ -49,6 +51,8 @@ public class ValidationQueueManagerService extends AbstractService implements Va
 
   private final ReleaseService releaseService;
 
+  private final DictionaryService dictionaryService;
+
   private final ValidationService validationService;
 
   private final ValidationCallback thisAsCallback;
@@ -56,12 +60,15 @@ public class ValidationQueueManagerService extends AbstractService implements Va
   private ScheduledFuture<?> schedule;
 
   @Inject
-  public ValidationQueueManagerService(final ReleaseService releaseService, ValidationService validationService) {
+  public ValidationQueueManagerService(final ReleaseService releaseService, final DictionaryService dictionaryService,
+      ValidationService validationService) {
 
     checkArgument(releaseService != null);
+    checkArgument(dictionaryService != null);
     checkArgument(validationService != null);
 
     this.releaseService = releaseService;
+    this.dictionaryService = dictionaryService;
     this.validationService = validationService;
 
     this.thisAsCallback = this;
@@ -91,7 +98,8 @@ public class ValidationQueueManagerService extends AbstractService implements Va
             if(next.isPresent()) {
               log.info("next in queue {}", next);
               Release release = releaseService.getNextRelease().getRelease();
-              validationService.validate(release, next.get(), thisAsCallback);
+              Dictionary dictionary = dictionaryService.getFromVersion(release.getDictionaryVersion());
+              validationService.validate(release, dictionary, next.get(), thisAsCallback);
             }
           }
         } catch(Exception e) { // exception thrown within the run method are not logged otherwise (NullPointerException

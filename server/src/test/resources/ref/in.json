@@ -1,0 +1,18 @@
+{
+  "offset" : 2,
+  "errors" : [ {
+    "code" : "DISCRETE_VALUES_ERROR",
+    "parameters" : [ "GLL", "donor_region_of_residence", [ "CX", "GL", "FM" ] ]
+  } ],
+  "valid" : false,
+  "invalid" : true
+}{
+  "offset" : 3,
+  "errors" : [ {
+    "code" : "DISCRETE_VALUES_ERROR",
+    "parameters" : [ "FMM", "donor_region_of_residence", [ "CX", "GL", "FM" ] ]
+  } ],
+  "valid" : false,
+  "invalid" : true
+}
+
