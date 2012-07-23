@@ -100,7 +100,7 @@ public class ReleaseResource {
   }
 
   @GET
-  @Path("{name}/report/{projectKey}")
+  @Path("{name}/reports/{projectKey}")
   public Response getSubmissionReport(@PathParam("name") String name, @PathParam("projectKey") String projectKey) {
     Submission submission = this.releaseService.getSubmission(name, projectKey);
     if(submission == null) {

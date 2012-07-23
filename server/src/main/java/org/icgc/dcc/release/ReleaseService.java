@@ -15,6 +15,7 @@ import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.release.model.SubmissionState;
+import org.icgc.dcc.validation.report.SubmissionReport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -224,4 +225,14 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     }
   }
 
+  public void UpdateSubmissionReport(String releaseName, String projectKey, SubmissionReport report) {
+    Query<Release> updateQuery = datastore().createQuery(Release.class)//
+        .filter("name = ", releaseName)//
+        .filter("submissions.projectKey = ", projectKey);
+
+    UpdateOperations<Release> ops = datastore().createUpdateOperations(Release.class).disableValidation()//
+        .set("submissions.$.report", report);
+
+    datastore().update(updateQuery, ops);
+  }
 }
