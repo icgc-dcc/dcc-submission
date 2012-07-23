@@ -125,7 +125,7 @@ public class ValidationService {
     int size = cascade.getFlows().size();
     if(size > 0) {
       log.info("starting cascased with {} flows", size);
-      cascade.start();
+      cascade.complete();
     } else {
       log.info("no flows to run");
       if(validationCallback != null) {
