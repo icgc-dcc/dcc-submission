@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.validation.report;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -55,6 +57,10 @@ public class ErrorReportCollector implements ReportCollector {
       }
       report.setFieldReports(fieldReports);
       return fieldReports.isEmpty() ? Outcome.PASSED : Outcome.FAILED;
+    } catch(FileNotFoundException fnfe) {
+      return Outcome.PASSED;
+    } catch(IOException ioe) {
+      return Outcome.PASSED;
     } catch(Exception e) {
       throw new PlanExecutionException(e);
     }

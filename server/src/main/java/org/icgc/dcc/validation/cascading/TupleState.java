@@ -8,6 +8,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.icgc.dcc.validation.ValidationErrorCode;
 
 import com.google.common.base.Objects;
@@ -40,10 +41,12 @@ public class TupleState implements Serializable {
     return ensureErrors();
   }
 
+  @JsonIgnore
   public boolean isValid() {
     return errors == null || errors.size() == 0;
   }
 
+  @JsonIgnore
   public boolean isInvalid() {
     return isValid() == false;
   }

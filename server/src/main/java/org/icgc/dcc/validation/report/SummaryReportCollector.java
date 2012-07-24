@@ -34,7 +34,7 @@ public class SummaryReportCollector implements ReportCollector {
         fieldReports.add(FieldReport.convert(fieldSummary));
       }
 
-      report.getFieldReports().addAll(fieldReports);
+      report.setFieldReports(fieldReports);
     } catch(Exception e) {
       throw new PlanExecutionException(e);
     }
