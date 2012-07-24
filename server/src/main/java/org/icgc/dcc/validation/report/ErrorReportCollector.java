@@ -18,9 +18,10 @@
 package org.icgc.dcc.validation.report;
 
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.codehaus.jackson.map.ObjectMapper;
@@ -29,6 +30,9 @@ import org.icgc.dcc.validation.CascadingStrategy;
 import org.icgc.dcc.validation.FlowType;
 import org.icgc.dcc.validation.PlanExecutionException;
 import org.icgc.dcc.validation.cascading.TupleState;
+
+import com.google.common.base.Splitter;
+import com.google.common.io.CharStreams;
 
 /**
  * 
@@ -48,18 +52,27 @@ public class ErrorReportCollector implements ReportCollector {
   public Outcome collect(CascadingStrategy strategy, SchemaReport report) {
     try {
       InputStream src = strategy.readReportTap(fileSchema, flowType, report.getName());
-      ObjectMapper mapper = new ObjectMapper();
+      String ErrorFile = CharStreams.toString(new InputStreamReader(src, "UTF-8"));
+      if(ErrorFile.isEmpty()) {
+        return Outcome.PASSED;
+      }
+      ErrorFile = ErrorFile.substring(1, ErrorFile.length() - 1);
+      Iterable<String> errors = Splitter.on("}{").split(ErrorFile);
+      Iterator<String> errorsIterator = errors.iterator();
 
+      ObjectMapper mapper = new ObjectMapper();
       List<FieldReport> fieldReports = new ArrayList<FieldReport>();
-      while(src.available() > 0) {
-        TupleState tupleState = mapper.readValue(src, TupleState.class);
+
+      while(errorsIterator.hasNext()) {
+        String error = errorsIterator.next();
+        error = "{" + error + "}";
+        TupleState tupleState = mapper.readValue(error, TupleState.class);
         fieldReports.add(FieldReport.convert(tupleState));
       }
+
       report.setFieldReports(fieldReports);
       return fieldReports.isEmpty() ? Outcome.PASSED : Outcome.FAILED;
     } catch(FileNotFoundException fnfe) {
-      return Outcome.PASSED;
-    } catch(IOException ioe) {
       return Outcome.PASSED;
     } catch(Exception e) {
       throw new PlanExecutionException(e);
