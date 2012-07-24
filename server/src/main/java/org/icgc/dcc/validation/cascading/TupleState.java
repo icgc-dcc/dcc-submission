@@ -75,6 +75,11 @@ public class TupleState implements Serializable {
 
     private final Object[] parameters;
 
+    public TupleError() {
+      code = null;
+      parameters = null;
+    }
+
     private TupleError(ValidationErrorCode code, Object... parameters) {
       this.code = code;
       this.parameters = parameters;

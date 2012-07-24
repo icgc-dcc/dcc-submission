@@ -86,7 +86,8 @@ public class ValidationService {
   }
 
   public void validate(Release release, String projectKey) {
-    this.validate(release, projectKey, null); // won't change submission state afterwards if not callback
+    ReportCollector collector = new ReportCollector(release, projectKey, this.releaseService, this.dictionaries);
+    this.validate(release, projectKey, collector); // won't change submission state afterwards if not callback
   }
 
   public void validate(Release release, String projectKey, ValidationCallback validationCallback) {
@@ -108,13 +109,6 @@ public class ValidationService {
       runCascade(cascade, validationCallback, projectKey);
       log.info("validation finished for project {}", projectKey);
 
-      log.info("starting report collecting on project {}", projectKey);
-      Submission submission = this.releaseService.getSubmission(release.getName(), projectKey);
-      submission.setReport(new SubmissionReport());
-      this.plan.collect(cascadingStrategy, submission.getReport());
-      // persist the report to DB
-      this.releaseService.UpdateSubmissionReport(release.getName(), projectKey, submission.getReport());
-      log.info("report collecting finished on project {}", projectKey);
     } else {
       log.info("there is no dictionary with version {}", dictionaryVersion);
     }
@@ -148,6 +142,56 @@ public class ValidationService {
       if(validationCallback != null) {
         validationCallback.handleSuccessfulValidation(projectKey);
       }
+    }
+  }
+
+  public class ReportCollector implements ValidationCallback {
+
+    private final Release release;
+
+    private final ReleaseService releaseService;
+
+    private final DictionaryService dictionaries;
+
+    public ReportCollector(Release release, String projectKey, ReleaseService releaseService,
+        DictionaryService dictionaryService) {
+      this.release = release;
+      this.releaseService = releaseService;
+      this.dictionaries = dictionaryService;
+    }
+
+    @Override
+    public void handleSuccessfulValidation(String projectKey) {
+      log.info("starting report collecting on project {}", projectKey);
+
+      ReleaseFileSystem releaseFilesystem = dccFileSystem.getReleaseFilesystem(release);
+
+      Project project = projectService.getProject(projectKey);
+      SubmissionDirectory submissionDirectory = releaseFilesystem.getSubmissionDirectory(project);
+
+      File rootDir = new File(submissionDirectory.getSubmissionDirPath());
+      File outputDir = new File(submissionDirectory.getValidationDirPath());
+
+      FileSchemaDirectory fileSchemaDirectory = new LocalFileSchemaDirectory(rootDir);
+      String dictionaryVersion = release.getDictionaryVersion();
+      Dictionary dictionary = this.dictionaries.getFromVersion(dictionaryVersion);
+      Plan plan = planner.plan(fileSchemaDirectory, dictionary);
+
+      Submission submission = this.releaseService.getSubmission(release.getName(), projectKey);
+
+      CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir);
+
+      SubmissionReport report = new SubmissionReport();
+      plan.collect(cascadingStrategy, report);
+      submission.setReport(report);
+      // persist the report to DB
+      this.releaseService.UpdateSubmissionReport(release.getName(), projectKey, submission.getReport());
+      log.info("report collecting finished on project {}", projectKey);
+    }
+
+    @Override
+    public void handleFailedValidation(String projectKey) {
+
     }
   }
 }

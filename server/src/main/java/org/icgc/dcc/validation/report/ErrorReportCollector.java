@@ -18,6 +18,7 @@
 package org.icgc.dcc.validation.report;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.codehaus.jackson.map.ObjectMapper;
@@ -25,6 +26,7 @@ import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.validation.CascadingStrategy;
 import org.icgc.dcc.validation.FlowType;
 import org.icgc.dcc.validation.PlanExecutionException;
+import org.icgc.dcc.validation.cascading.TupleState;
 
 /**
  * 
@@ -45,9 +47,13 @@ public class ErrorReportCollector implements ReportCollector {
     try {
       InputStream src = strategy.readReportTap(fileSchema, flowType, report.getName());
       ObjectMapper mapper = new ObjectMapper();
-      List<FieldReport> fieldReports =
-          mapper.readValue(src, mapper.getTypeFactory().constructCollectionType(List.class, FieldReport.class));
-      report.getFieldReports().addAll(fieldReports);
+
+      List<FieldReport> fieldReports = new ArrayList<FieldReport>();
+      while(src.available() > 0) {
+        TupleState tupleState = mapper.readValue(src, TupleState.class);
+        fieldReports.add(FieldReport.convert(tupleState));
+      }
+      report.setFieldReports(fieldReports);
       return fieldReports.isEmpty() ? Outcome.PASSED : Outcome.FAILED;
     } catch(Exception e) {
       throw new PlanExecutionException(e);
