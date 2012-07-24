@@ -19,6 +19,8 @@ package org.icgc.dcc.validation;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -81,14 +83,15 @@ public class LocalCascadingStrategy implements CascadingStrategy {
   }
 
   @Override
-  public Tap<?, ?, ?> getReportTap(FileSchemaFlowPlanner schema, String reportName) {
-    File report = new File(output, String.format("%s#%s.json", schema.getName(), reportName));
+  public Tap<?, ?, ?> getReportTap(FileSchemaFlowPlanner planner, String reportName) {
+    File report = new File(output, String.format("%s#%s.json", planner.getName(), reportName));
     return new FileTap(new LocalJsonScheme(), report.getAbsolutePath());
   }
 
   @Override
-  public InputStream readReportTap(FileSchema schema, FlowType type, String reportName) {
-    throw new UnsupportedOperationException("method not yet implemented");
+  public InputStream readReportTap(FileSchema schema, FlowType type, String reportName) throws FileNotFoundException {
+    File report = new File(output, String.format("%s.%s#%s.json", schema.getName(), type.toString(), reportName));
+    return new FileInputStream(report);
   }
 
   private Tap<?, ?, ?> tap(File file) {

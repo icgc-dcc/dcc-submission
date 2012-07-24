@@ -96,6 +96,7 @@ public class Plan {
     List<SchemaReport> schemaReports = new ArrayList<SchemaReport>();
     for(FileSchemaFlowPlanner planner : Iterables.concat(internalPlanners.values(), externalPlanners.values())) {
       SchemaReport schemaReport = new SchemaReport();
+      schemaReport.setName(planner.getReportName());
       Outcome outcome = planner.collect(strategy, schemaReport);
       if(outcome == Outcome.FAILED) {
         result = Outcome.FAILED;

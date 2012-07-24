@@ -1,8 +1,10 @@
 package org.icgc.dcc.validation.report;
 
+import com.google.code.morphia.annotations.Embedded;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
+@Embedded
 public class FieldReport {
 
   protected String name;

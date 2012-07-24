@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.validation;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -44,7 +45,7 @@ public interface CascadingStrategy {
    * Used to read back a report that was produced during the execution of a Flow. This does not use a Tap so that it can
    * be executed outside of a Flow.
    */
-  public InputStream readReportTap(FileSchema schema, FlowType type, String reportName);
+  public InputStream readReportTap(FileSchema schema, FlowType type, String reportName) throws FileNotFoundException;
 
   public Fields getFileHeader(FileSchema schema) throws IOException;
 

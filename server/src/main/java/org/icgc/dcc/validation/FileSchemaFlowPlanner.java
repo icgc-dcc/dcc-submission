@@ -34,4 +34,6 @@ public interface FileSchemaFlowPlanner extends ReportCollector {
   public Flow<?> connect(CascadingStrategy cascadingStrategy);
 
   public void apply(ReportingPlanElement element);
+
+  public String getReportName();
 }

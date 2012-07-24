@@ -49,10 +49,16 @@ public abstract class BaseFileSchemaFlowPlanner implements FileSchemaFlowPlanner
   }
 
   @Override
+  public String getReportName() {
+    return reportElement.getName();
+  }
+
+  @Override
   public void apply(ReportingPlanElement element) {
     Pipe split = new Pipe(element.getName(), getTail());
     log.info("[{}] applying element [{}]", getName(), element.describe());
     reports.put(element.getName(), element.report(split));
+    this.reportElement = element;
   }
 
   @Override

@@ -2,6 +2,9 @@ package org.icgc.dcc.validation.report;
 
 import java.util.List;
 
+import com.google.code.morphia.annotations.Embedded;
+
+@Embedded
 public class SubmissionReport {
   protected List<SchemaReport> schemaReports;
 
