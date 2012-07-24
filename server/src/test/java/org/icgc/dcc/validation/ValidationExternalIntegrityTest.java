@@ -1,0 +1,139 @@
+/**
+ * Copyright 2012(c) The Ontario Institute for Cancer Research. All rights reserved.
+ *
+ * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
+ * You should have received a copy of the GNU General Public License along with 
+ * this program. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY 
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT 
+ * SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, 
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED 
+ * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; 
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER 
+ * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
+ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+package org.icgc.dcc.validation;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+
+import junit.framework.Assert;
+
+import org.apache.commons.io.FileUtils;
+import org.codehaus.jackson.JsonProcessingException;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.icgc.dcc.core.ProjectService;
+import org.icgc.dcc.dictionary.DictionaryService;
+import org.icgc.dcc.dictionary.model.CodeList;
+import org.icgc.dcc.dictionary.model.Dictionary;
+import org.icgc.dcc.dictionary.model.Term;
+import org.icgc.dcc.filesystem.DccFileSystem;
+import org.icgc.dcc.filesystem.GuiceJUnitRunner;
+import org.icgc.dcc.filesystem.GuiceJUnitRunner.GuiceModules;
+import org.icgc.dcc.validation.service.ValidationService;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import cascading.cascade.Cascade;
+
+import com.google.inject.Inject;
+
+@RunWith(GuiceJUnitRunner.class)
+@GuiceModules({ ValidationTestModule.class })
+public class ValidationExternalIntegrityTest {
+
+  @Inject
+  private DictionaryService dictionaryService;
+
+  @Inject
+  private Planner planner;
+
+  private ValidationService validationService;
+
+  private Dictionary dictionary;
+
+  @Before
+  public void setUp() throws JsonProcessingException, IOException {
+    DccFileSystem dccFileSystem = mock(DccFileSystem.class);
+    ProjectService projectService = mock(ProjectService.class);
+
+    CodeList codeList1 = mock(CodeList.class);
+    CodeList codeList2 = mock(CodeList.class);
+    CodeList codeList3 = mock(CodeList.class);
+    CodeList codeList4 = mock(CodeList.class);
+
+    List<Term> termList1 = Arrays.asList(new Term("1", "dummy", null), new Term("2", "dummy", null));
+    List<Term> termList2 = Arrays.asList(new Term("1", "dummy", null), new Term("2", "dummy", null));
+    List<Term> termList3 =
+        Arrays.asList(new Term("1", "dummy", null), new Term("2", "dummy", null), new Term("3", "dummy", null),
+            new Term("4", "dummy", null), new Term("5", "dummy", null));
+    List<Term> termList4 =
+        Arrays.asList(new Term("1", "dummy", null), new Term("2", "dummy", null), new Term("3", "dummy", null));
+
+    when(dictionaryService.getCodeList("dr__donor_sex")).thenReturn(codeList1);
+    when(dictionaryService.getCodeList("dr__donor_vital_status")).thenReturn(codeList2);
+    when(dictionaryService.getCodeList("dr__disease_status_last_followup")).thenReturn(codeList3);
+    when(dictionaryService.getCodeList("dr__donor_relapse_type")).thenReturn(codeList4);
+
+    when(dictionaryService.getCodeList("specimen__specimen_type")).thenReturn(codeList1);
+    when(dictionaryService.getCodeList("specimen__specimen_donor_treatment_type")).thenReturn(codeList1);
+    when(dictionaryService.getCodeList("specimen__specimen_processing")).thenReturn(codeList1);
+    when(dictionaryService.getCodeList("specimen__specimen_storage")).thenReturn(codeList1);
+    when(dictionaryService.getCodeList("specimen__tumour_confirmed")).thenReturn(codeList1);
+    when(dictionaryService.getCodeList("specimen__specimen_available")).thenReturn(codeList1);
+
+    when(codeList1.getTerms()).thenReturn(termList1);
+    when(codeList2.getTerms()).thenReturn(termList2);
+    when(codeList3.getTerms()).thenReturn(termList3);
+    when(codeList4.getTerms()).thenReturn(termList4);
+
+    validationService = new ValidationService(dccFileSystem, projectService, planner);
+
+    resetDictionary();
+  }
+
+  @Test
+  public void test_validate_valid() throws IOException {
+    String content = validate(validationService, dictionary, "/integration/validation/external");
+    Assert.assertTrue(content, content.isEmpty());
+  }
+
+  private String validate(ValidationService validationService, Dictionary dictionary, String relative)
+      throws IOException {
+    String rootDirString = this.getClass().getResource(relative).getFile();
+    String outputDirString = rootDirString + "/" + ".validation";
+    String errorFileString = outputDirString + "/" + "specimen.external#errors.json";
+
+    File errorFile = new File(errorFileString);
+    errorFile.delete();
+    Assert.assertFalse(errorFileString, errorFile.exists());
+
+    File rootDir = new File(rootDirString);
+    File outputDir = new File(outputDirString);
+
+    FileSchemaDirectory fileSchemaDirectory = new LocalFileSchemaDirectory(rootDir);
+    CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir);
+
+    Cascade cascade = validationService.planCascade(null, null, fileSchemaDirectory, cascadingStrategy, dictionary);
+    Assert.assertEquals(3, cascade.getFlows().size());
+    validationService.runCascade(cascade, null, null);
+
+    Assert.assertTrue(errorFileString, errorFile.exists());
+    return FileUtils.readFileToString(errorFile);
+  }
+
+  private void resetDictionary() throws IOException, JsonProcessingException {
+    dictionary =
+        new ObjectMapper().reader(Dictionary.class).readValue(
+            new File(this.getClass().getResource("/dictionary.json").getFile()));
+  }
+}
