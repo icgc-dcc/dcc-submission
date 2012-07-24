@@ -43,7 +43,6 @@ import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.filesystem.GuiceJUnitRunner;
 import org.icgc.dcc.filesystem.GuiceJUnitRunner.GuiceModules;
 import org.icgc.dcc.validation.service.ValidationService;
-import org.icgc.dcc.validation.visitor.RelationPlanningVisitor;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -148,7 +147,7 @@ public class ValidationExternalIntegrityTest {
     Relation relation = new Relation(Arrays.asList(fieldNames), "donor", Arrays.asList(fieldNames));
     specimen.setRelation(relation);
 
-    testErrorType(RelationPlanningVisitor.NAME + "_1");
+    testErrorType("fk_1");
 
     resetDictionary();
 
@@ -169,7 +168,7 @@ public class ValidationExternalIntegrityTest {
 
   @Test(expected = PlannerException.class)
   public void test_validate_missingFile() throws IOException {
-    testErrorType(RelationPlanningVisitor.NAME + "_2");
+    testErrorType("fk_2");
   }
 
   private void testErrorType(String errorType) throws IOException {
