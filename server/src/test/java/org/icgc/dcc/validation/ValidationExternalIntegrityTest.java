@@ -34,11 +34,16 @@ import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.dictionary.DictionaryService;
 import org.icgc.dcc.dictionary.model.CodeList;
 import org.icgc.dcc.dictionary.model.Dictionary;
+import org.icgc.dcc.dictionary.model.Field;
+import org.icgc.dcc.dictionary.model.FileSchema;
+import org.icgc.dcc.dictionary.model.Relation;
 import org.icgc.dcc.dictionary.model.Term;
+import org.icgc.dcc.dictionary.model.ValueType;
 import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.filesystem.GuiceJUnitRunner;
 import org.icgc.dcc.filesystem.GuiceJUnitRunner.GuiceModules;
 import org.icgc.dcc.validation.service.ValidationService;
+import org.icgc.dcc.validation.visitor.RelationPlanningVisitor;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -50,6 +55,8 @@ import com.google.inject.Inject;
 @RunWith(GuiceJUnitRunner.class)
 @GuiceModules({ ValidationTestModule.class })
 public class ValidationExternalIntegrityTest {
+
+  private static final String ROOTDIR = "/integration/validation/external";
 
   @Inject
   private DictionaryService dictionaryService;
@@ -103,14 +110,80 @@ public class ValidationExternalIntegrityTest {
 
   @Test
   public void test_validate_valid() throws IOException {
-    String content = validate(validationService, dictionary, "/integration/validation/external");
+    String content = validate(validationService, dictionary, ROOTDIR);
     Assert.assertTrue(content, content.isEmpty());
+
+    String donorTrim =
+        FileUtils.readFileToString(new File(this.getClass().getResource(ROOTDIR).getFile()
+            + "/.validation/donor#donor_id.tsv"));
+    String donorTrimExpected =
+        FileUtils.readFileToString(new File(this.getClass().getResource("/ref/fk_donor_trim.tsv").getFile()));
+    Assert.assertEquals("Incorrect donor ID trim list", donorTrimExpected.trim(), donorTrim.trim());
+
+    String specimenTrim =
+        FileUtils.readFileToString(new File(this.getClass().getResource(ROOTDIR).getFile()
+            + "/.validation/specimen#donor_id.tsv"));
+    String specimenTrimExpected =
+        FileUtils.readFileToString(new File(this.getClass().getResource("/ref/fk_specimen_trim.tsv").getFile()));
+    Assert.assertEquals("Incorrect specimen ID trim list", specimenTrimExpected.trim(), specimenTrim.trim());
+  }
+
+  @Test
+  public void test_validate_invalidCompositeKeys() throws IOException {
+    FileSchema donor = getFileSchemaByName(dictionary, "donor");
+    FileSchema specimen = getFileSchemaByName(dictionary, "specimen");
+
+    Field newFieldLeft = new Field();
+    Field newFieldRight = new Field();
+    newFieldLeft.setName("fakecolumn");
+    newFieldLeft.setValueType(ValueType.TEXT);
+
+    newFieldRight.setName("fakecolumn");
+    newFieldRight.setValueType(ValueType.TEXT);
+    donor.addField(newFieldLeft);
+    specimen.addField(newFieldRight);
+
+    String[] fieldNames = { "donor_id", "fakecolumn" };
+
+    Relation relation = new Relation(Arrays.asList(fieldNames), "donor", Arrays.asList(fieldNames));
+    specimen.setRelation(relation);
+
+    testErrorType(RelationPlanningVisitor.NAME + "_1");
+
+    resetDictionary();
+
+    String donorTrim =
+        FileUtils.readFileToString(new File(this.getClass().getResource(ROOTDIR).getFile()
+            + "/error/fk_1/.validation/donor#donor_id-fakecolumn.tsv"));
+    String donorTrimExpected =
+        FileUtils.readFileToString(new File(this.getClass().getResource("/ref/fk_1_donor_trim.tsv").getFile()));
+    Assert.assertEquals("Incorrect donor ID trim list", donorTrimExpected.trim(), donorTrim.trim());
+
+    String specimenTrim =
+        FileUtils.readFileToString(new File(this.getClass().getResource(ROOTDIR).getFile()
+            + "/error/fk_1/.validation/specimen#donor_id-fakecolumn.tsv"));
+    String specimenTrimExpected =
+        FileUtils.readFileToString(new File(this.getClass().getResource("/ref/fk_1_specimen_trim.tsv").getFile()));
+    Assert.assertEquals("Incorrect specimen ID trim list", specimenTrimExpected.trim(), specimenTrim.trim());
+  }
+
+  @Test(expected = PlannerException.class)
+  public void test_validate_missingFile() throws IOException {
+    testErrorType(RelationPlanningVisitor.NAME + "_2");
+  }
+
+  private void testErrorType(String errorType) throws IOException {
+    String content = validate(validationService, dictionary, ROOTDIR + "/error/" + errorType);
+    String expected =
+        FileUtils.readFileToString(new File(this.getClass().getResource("/ref/" + errorType + ".json").getFile()));
+    Assert.assertEquals(content, expected.trim(), content.trim());
   }
 
   private String validate(ValidationService validationService, Dictionary dictionary, String relative)
       throws IOException {
     String rootDirString = this.getClass().getResource(relative).getFile();
     String outputDirString = rootDirString + "/" + ".validation";
+    System.err.println(outputDirString);
     String errorFileString = outputDirString + "/" + "specimen.external#errors.json";
 
     File errorFile = new File(errorFileString);
@@ -135,5 +208,16 @@ public class ValidationExternalIntegrityTest {
     dictionary =
         new ObjectMapper().reader(Dictionary.class).readValue(
             new File(this.getClass().getResource("/dictionary.json").getFile()));
+  }
+
+  private FileSchema getFileSchemaByName(Dictionary dictionary, String name) {
+    FileSchema fileSchema = null;
+    for(FileSchema fileSchemaTmp : dictionary.getFiles()) {
+      if(name.equals(fileSchemaTmp.getName())) {
+        fileSchema = fileSchemaTmp;
+        break;
+      }
+    }
+    return fileSchema;
   }
 }
