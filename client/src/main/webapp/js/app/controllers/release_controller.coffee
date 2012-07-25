@@ -20,8 +20,10 @@ define (require) ->
   Chaplin = require 'chaplin'
   BaseController = require 'controllers/base/controller'
   Release = require 'models/release'
+  Submission = require 'models/submission'
   Releases = require 'models/releases'
   ReleaseView = require 'views/release/release_view'
+  SubmissionView = require 'views/release/submission_view'
   ReleasesView = require 'views/release/releases_view'
 
   'use strict'
@@ -33,14 +35,21 @@ define (require) ->
     historyURL: (params) ->
       ''
 
-    show: (params) ->
-      console.debug 'ReleaseController#show', params
-      @title = params.id
-      @model = new Release {name: params.name}
-      @view = new ReleaseView {@model}
-      @model.fetch()
-
     list: (params) ->
       console.debug 'ReleaseController#list', params
       @collection = new Releases()
       @view = new ReleasesView {@collection}
+      
+    show: (params) ->
+      console.debug 'ReleaseController#show', params
+      @title = params.release
+      @model = new Release {name: params.release}
+      @view = new ReleaseView {@model}
+      @model.fetch()
+      
+    submission: (params) ->
+      console.debug 'ReleaseController#submission', params
+      @title = "#{params.submission} - #{params.release}"
+      @model = new Submission {release: params.release, name: params.submission}
+      @view = new SubmissionView {@model}
+      @model.fetch()

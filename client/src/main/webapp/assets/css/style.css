@@ -27,6 +27,21 @@ body {
 
 .logged-out #content-container { opacity: 0; } 
 
+/* Status Text Colours */
+.signed, .signed_off {
+  color: #3A87AD;
+}
+.valid {
+  color: #468847;
+}
+.invalid {
+  color: #B94A48;
+}
+.queued {
+  color: #C09853;
+}
+
+
 .container-fluid {  padding: 0 }
 
 h1 {  font-size: 24px }

@@ -198,11 +198,11 @@ lint = (file, callback) ->
   if typeof file is 'function'
     callback = file
     file = 'src/'
-    app = spawn "node_modules/.bin/coffeelint", ["-r", file], { customFds: [0, 1, 2] }
+    app = spawn "node_modules/.bin/coffeelint", ["-f", "cslint-config.json", "-r", file], { customFds: [0, 1, 2] }
     callback()
   else
     #launch "node_modules/.bin/coffeelint", ["-r", file], callback
-    app = spawn "node_modules/.bin/coffeelint", ["-r", file]
+    app = spawn "node_modules/.bin/coffeelint", ["-f", "cslint-config.json", "-r", file]
     out = []
     app.stdout.on "data", (data) ->
       #if "#{data}".indexOf("Lint") isnt -1
