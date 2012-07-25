@@ -1,0 +1,23 @@
+{
+  "offset" : 2,
+  "errors" : [ {
+    "code" : "VALUE_TYPE_ERROR",
+    "parameters" : [ "abc", "donor_age_at_diagnosis", "INTEGER" ]
+  }, {
+    "code" : "MISSING_VALUE_ERROR",
+    "parameters" : [ null, "donor_age_at_diagnosis" ]
+  } ],
+  "valid" : false,
+  "invalid" : true
+}{
+  "offset" : 3,
+  "errors" : [ {
+    "code" : "VALUE_TYPE_ERROR",
+    "parameters" : [ "56.4", "donor_age_at_diagnosis", "INTEGER" ]
+  }, {
+    "code" : "MISSING_VALUE_ERROR",
+    "parameters" : [ null, "donor_age_at_diagnosis" ]
+  } ],
+  "valid" : false,
+  "invalid" : true
+}

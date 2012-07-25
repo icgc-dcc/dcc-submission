@@ -40,9 +40,9 @@ import cascading.tuple.TupleEntry;
  */
 public class ValueTypePlanningVisitor extends InternalFlowPlanningVisitor {
 
-  private static final String NAME = "valueType";
+  public static final String NAME = "valueType";
 
-  private static final String DISPLAY_NAME = "value type";
+  public static final String DISPLAY_NAME = "value type";
 
   @Override
   public void visit(Field field) {

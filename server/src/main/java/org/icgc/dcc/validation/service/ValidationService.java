@@ -87,7 +87,8 @@ public class ValidationService {
 
   public void validate(Release release, String projectKey) {
     ReportCollector collector = new ReportCollector(release, projectKey, this.releaseService, this.plan);
-    this.validate(release, projectKey, collector); // won't change submission state afterwards if not callback
+    this.validate(release, projectKey, collector); // won't change submission state afterwards if not
+                                                   // callback
   }
 
   public void validate(Release release, String projectKey, ValidationCallback validationCallback) {
@@ -101,6 +102,10 @@ public class ValidationService {
 
       File rootDir = new File(submissionDirectory.getSubmissionDirPath());
       File outputDir = new File(submissionDirectory.getValidationDirPath());
+
+      log.info("rootDir = {} ", rootDir);
+      log.info("outputDir = {} ", outputDir);
+
       FileSchemaDirectory fileSchemaDirectory = new LocalFileSchemaDirectory(rootDir);
       CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir);
 
@@ -115,7 +120,7 @@ public class ValidationService {
   }
 
   @SuppressWarnings("rawtypes")
-  private Cascade planCascade(ValidationCallback validationCallback, String projectKey,
+  public Cascade planCascade(ValidationCallback validationCallback, String projectKey,
       FileSchemaDirectory fileSchemaDirectory, CascadingStrategy cascadingStrategy, Dictionary dictionary) {
     this.plan = planner.plan(fileSchemaDirectory, dictionary);
     log.info("# internal flows: {}", Iterables.size(plan.getInternalFlows()));
@@ -135,11 +140,12 @@ public class ValidationService {
     return cascade;
   }
 
-  private void runCascade(Cascade cascade, ValidationCallback validationCallback, String projectKey) {
+  public void runCascade(Cascade cascade, ValidationCallback validationCallback, String projectKey) {
     int size = cascade.getFlows().size();
     if(size > 0) {
-      log.info("starting cascased with {} flows", size);
-      cascade.start();
+      log.info("starting cascade with {} flows", size);
+      cascade.complete();
+      log.info("completed cascade with {} flows", size);
     } else {
       log.info("no flows to run");
       if(validationCallback != null) {

@@ -19,16 +19,16 @@ package org.icgc.dcc.dictionary.model;
 
 public enum SummaryType {
 
-  COMPLETENESS("completeness"), // completeness (nulls/populated counts)
-  MIN_MAX("minmax"), // same as completeness + min/max
+  COMPLETENESS("completeness"), // TODO: to be removed soon
+  MIN_MAX("minmax"), // min/max
   AVERAGE("averages"), // same as min/max + avg/stddev
-  FREQUENCY("frequencies"), // same as completeness + frequencies
+  FREQUENCY("frequencies"), // frequencies
   ;
 
   private String description;
 
-  private SummaryType(String pluralName) {
-    this.description = pluralName;
+  private SummaryType(String description) {
+    this.description = description;
   }
 
   public String getDescription() {
