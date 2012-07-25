@@ -18,24 +18,17 @@ define (require) ->
     id: 'signoff-submission-popup'
     
     initialize: ->
-      console.debug "SignOffSubmissionView#initialize"
-      
-      @.$('.modal').modal "show": true
-      
+      console.debug "SignOffSubmissionView#initialize", @options.submission 
+      super
+         
       @delegate 'click', '#signoff-submission-button', @signOffSubmission
       
     signOffSubmission: (e) ->
+      console.debug "SignOffSubmissionView#completeRelease"
       nextRelease = new NextRelease()
-      nextRelease.signOff [@options.projectKey],
-        success: (data) ->
-          @.$('.modal').modal 'hide'
-          Chaplin.mediator.publish "signOffSubmission", data
-          
-        error: (model, error) ->
-          err = error.statusText + error.responseText
-          alert = @.$('.alert.alert-error')
-          
-          if alert.length
-            alert.text err
-          else
-            @.$('fieldset').before "<div class='alert alert-error'>#{err}</div>"
+      
+      @$el.modal 'hide'
+      @options.submission.set "state", "SIGNED OFF"
+      Chaplin.mediator.publish "validateSubmission"
+      
+      nextRelease.signOff [@options.submission.get "projectKey"]
