@@ -12,7 +12,5 @@ define (require) ->
     
     initialize: ->
       #console.debug "CompactReleaseView#initialize", @model
-      # this is needed because disposing of subviews breaks otherwise
-      # don't know why
-      @subviews = {}
+      super
       
