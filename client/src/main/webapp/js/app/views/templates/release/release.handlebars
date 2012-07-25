@@ -4,7 +4,9 @@
   </div>
   <div class="pull-right">
     <button class="btn btn-primary">View Report</button>
+    {{#if_opened state}}
     <button id="complete-release-popup-button" class="btn btn-success">Complete</button>
+    {{/if_opened}}
   </div>
 </div>
 
