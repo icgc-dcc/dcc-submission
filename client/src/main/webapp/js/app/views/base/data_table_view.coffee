@@ -12,13 +12,14 @@ define (require) ->
       @fetch()
       
     fetch: ->
+      #console.debug "DataTableView#fetch"
       @collection.fetch {
         success: (collection,response)=>
           @renderAsDataTable collection
       }
 
     update: ->
-      console.debug "DataTableView#update", @collection
+      #console.debug "DataTableView#update", @collection
       @renderAsDataTable @collection
       
     renderAsDataTable: (collection) ->
@@ -35,6 +36,6 @@ define (require) ->
       dt.fnAddData collection.toJSON()
       
     createDataTable: ->
-      throw new Error( 
+      throw new Error(
         "The DataTableView#createDataTable function must be overridden"
       )

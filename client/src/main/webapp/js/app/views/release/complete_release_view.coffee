@@ -12,28 +12,31 @@ define (require) ->
     
     container: '#content-container'
     containerMethod: 'append'
-    autoRender: true
+    autoRender: false
     tagName: 'div'
     className: "modal fade"
     id: 'complete-release-popup'
     
     initialize: ->
-      console.debug "CompleteReleaseView#initialize"
+      console.debug "CompleteReleaseView#initialize", @, @el
+      super
+      
       @model = new NextRelease()
       @model.fetch()
       @modelBind 'change', @render
       
-      @.$('.modal').modal "show": true
+      @$el.modal "show": true
       
       @delegate 'click', '#complete-release-button', @completeRelease
       
     completeRelease: ->
       console.debug "CompleteReleaseView#completeRelease"
+      
       nextRelease = new NextRelease()
+      
       nextRelease.save {name: @.$('#nextRelease').val()}
         success: (data) ->
           @.$('.modal').modal('hide')
-          # publish completeRelease here
           Chaplin.mediator.publish "completeRelease", data
           
         error: (model, error) ->
@@ -43,4 +46,5 @@ define (require) ->
           if alert.length
             alert.text(err)
           else
-            @.$('fieldset').before("<div class='alert alert-error'>#{err}</div>")
+            @.$('fieldset')
+              .before("<div class='alert alert-error'>#{err}</div>")

@@ -21,20 +21,27 @@ define (require) ->
       super
       @modelBind 'change', @render
       
+      @subscribeEvent "completeRelease", @fetch
       @delegate 'click', '#complete-release-popup-button', @completeReleasePopup
     
+    fetch: ->
+      @model.fetch()
+    
     completeReleasePopup: (e) ->
-      console.debug "ReleaseView#completeRelease", e
+      console.debug "ReleaseView#completeRelease"
       @subview('CompleteReleases'
-        new CompleteReleaseView()
-      ) unless @subview 'CompleteReleases'
-        
+        new CompleteReleaseView {
+          @model
+        }
+      )
+      
     render: ->
+      console.debug "ReleaseView#render"
       super
-      @subview(
-        'SubmissionsTable'
+      @subview('SubmissionsTable'
         new SubmissionTableView {
-          collection: @model.get "submissions"
+          @model
           el: @.$("#submissions-table")
         }
       )
+    
