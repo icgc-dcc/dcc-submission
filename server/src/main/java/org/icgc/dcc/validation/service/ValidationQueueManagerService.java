@@ -107,7 +107,7 @@ public class ValidationQueueManagerService extends AbstractService implements Va
                   throw new ValidationServiceException(String.format("no dictionary found with version %s",
                       dictionaryVersion));
                 } else {
-                  validationService.validate(release, dictionary, next.get(), thisAsCallback);
+                  validationService.validate(release, next.get(), thisAsCallback);
                 }
               }
             }
