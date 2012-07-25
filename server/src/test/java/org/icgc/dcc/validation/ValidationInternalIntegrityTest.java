@@ -24,6 +24,7 @@ import org.icgc.dcc.dictionary.model.Term;
 import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.filesystem.GuiceJUnitRunner;
 import org.icgc.dcc.filesystem.GuiceJUnitRunner.GuiceModules;
+import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.validation.restriction.CodeListRestriction;
 import org.icgc.dcc.validation.restriction.DiscreteValuesRestriction;
 import org.icgc.dcc.validation.restriction.RangeFieldRestriction;
@@ -54,6 +55,8 @@ public class ValidationInternalIntegrityTest {
 
   private Dictionary dictionary;
 
+  private ReleaseService releaseService;
+
   @Before
   public void setUp() throws JsonProcessingException, IOException {
     DccFileSystem dccFileSystem = mock(DccFileSystem.class);
@@ -82,7 +85,8 @@ public class ValidationInternalIntegrityTest {
     when(codeList3.getTerms()).thenReturn(termList3);
     when(codeList4.getTerms()).thenReturn(termList4);
 
-    validationService = new ValidationService(dccFileSystem, projectService, planner);
+    validationService =
+        new ValidationService(dccFileSystem, projectService, planner, dictionaryService, releaseService);
     resetDictionary();
   }
 
