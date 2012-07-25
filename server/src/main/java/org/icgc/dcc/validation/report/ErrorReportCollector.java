@@ -19,19 +19,15 @@ package org.icgc.dcc.validation.report;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
+import org.codehaus.jackson.map.MappingIterator;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.validation.CascadingStrategy;
 import org.icgc.dcc.validation.PlanExecutionException;
 import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.report.ErrorPlanningVisitor.ErrorsPlanElement;
-
-import com.google.common.base.Splitter;
-import com.google.common.io.CharStreams;
 
 /**
  * 
@@ -50,22 +46,13 @@ public class ErrorReportCollector implements ReportCollector {
       InputStream src =
           strategy.readReportTap(this.planElement.getFileSchema(), this.planElement.getFlowType(),
               this.planElement.getName());
-      String ErrorFile = CharStreams.toString(new InputStreamReader(src, "UTF-8"));
-      if(ErrorFile.isEmpty()) {
-        return Outcome.PASSED;
-      }
-      ErrorFile = ErrorFile.substring(1, ErrorFile.length() - 1);
-      Iterable<String> errors = Splitter.on("}{").split(ErrorFile);
-      Iterator<String> errorsIterator = errors.iterator();
 
       ObjectMapper mapper = new ObjectMapper();
       List<FieldReport> fieldReports = new ArrayList<FieldReport>();
 
-      while(errorsIterator.hasNext()) {
-        String error = errorsIterator.next();
-        error = "{" + error + "}";
-        TupleState tupleState = mapper.readValue(error, TupleState.class);
-        fieldReports.add(FieldReport.convert(tupleState));
+      MappingIterator<TupleState> tupleState = mapper.reader().withType(TupleState.class).readValues(src);
+      while(tupleState.hasNext()) {
+        fieldReports.add(FieldReport.convert(tupleState.next()));
       }
 
       report.setFieldReports(fieldReports);
