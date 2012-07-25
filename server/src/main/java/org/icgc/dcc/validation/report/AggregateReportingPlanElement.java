@@ -26,6 +26,7 @@ import org.apache.commons.math.stat.descriptive.SummaryStatistics;
 import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.dictionary.model.SummaryType;
+import org.icgc.dcc.validation.FlowType;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -263,17 +264,35 @@ public abstract class AggregateReportingPlanElement extends BaseReportingPlanEle
     public CompletenessPlanElement(FileSchema fileSchema, List<Field> fields) {
       super(fileSchema, false, false, SummaryType.COMPLETENESS, fields);
     }
+
+    @Override
+    public ReportCollector getCollector() {
+      // FlowType is always Internal for Summary
+      return new SummaryReportCollector(this.fileSchema, FlowType.INTERNAL);
+    }
   }
 
   static final class MinMaxPlanElement extends AggregateReportingPlanElement {
     public MinMaxPlanElement(FileSchema fileSchema, List<Field> fields) {
       super(fileSchema, true, false, SummaryType.MIN_MAX, fields);
     }
+
+    @Override
+    public ReportCollector getCollector() {
+      // FlowType is always Internal for Summary
+      return new SummaryReportCollector(this.fileSchema, FlowType.INTERNAL);
+    }
   }
 
   static final class AveragePlanElement extends AggregateReportingPlanElement {
     public AveragePlanElement(FileSchema fileSchema, List<Field> fields) {
       super(fileSchema, true, true, SummaryType.AVERAGE, fields);
+    }
+
+    @Override
+    public ReportCollector getCollector() {
+      // FlowType is always Internal for Summary
+      return new SummaryReportCollector(this.fileSchema, FlowType.INTERNAL);
     }
   }
 }

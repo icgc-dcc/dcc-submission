@@ -23,7 +23,6 @@ import java.util.Map;
 import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.dictionary.model.SummaryType;
-import org.icgc.dcc.validation.FlowType;
 import org.icgc.dcc.validation.ReportingPlanElement;
 
 import cascading.tuple.Fields;
@@ -88,11 +87,5 @@ abstract class BaseReportingPlanElement implements ReportingPlanElement {
       return Objects.toStringHelper(FieldSummary.class).add("field", field).add("populated", populated)
           .add("nulls", nulls).add("summary", summary).toString();
     }
-  }
-
-  @Override
-  public ReportCollector getCollector() {
-    // FlowType is always Internal for Summary
-    return new SummaryReportCollector(this.fileSchema, FlowType.INTERNAL);
   }
 }

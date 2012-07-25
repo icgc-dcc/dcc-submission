@@ -23,6 +23,7 @@ import java.util.List;
 import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.dictionary.model.SummaryType;
+import org.icgc.dcc.validation.FlowType;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -99,4 +100,9 @@ public final class FrequencyPlanElement extends BaseReportingPlanElement {
     }
   }
 
+  @Override
+  public ReportCollector getCollector() {
+    // FlowType is always Internal for Summary
+    return new SummaryReportCollector(this.fileSchema, FlowType.INTERNAL);
+  }
 }
