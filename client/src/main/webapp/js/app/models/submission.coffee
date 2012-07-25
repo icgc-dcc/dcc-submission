@@ -23,3 +23,9 @@ define (require) ->
 
   class Submission extends Model
     idAttribute: "projectKey"
+    
+    initialize: (attributes) ->
+      console.debug 'Submission#initialize', attributes
+      super
+      @urlPath = -> 
+        "releases/#{attributes.release}/submissions/#{attributes.name}"
