@@ -15,6 +15,8 @@ import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.QRelease;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.Submission;
+import org.icgc.dcc.validation.report.FieldReport;
+import org.icgc.dcc.validation.report.SchemaReport;
 import org.icgc.dcc.validation.report.SubmissionReport;
 
 import com.google.inject.Inject;
@@ -114,13 +116,35 @@ public class ReleaseResource {
   @Path("{name}/submissions/{projectKey}/report/{schema}")
   public Response getSchemaReport(@PathParam("name") String name, @PathParam("projectKey") String projectKey,
       @PathParam("schema") String schema) {
-    return Response.ok().build();
+    Submission submission = this.releaseService.getSubmission(name, projectKey);
+    if(submission == null) {
+      return Response.status(Status.NOT_FOUND).build();
+    }
+    SubmissionReport report = submission.getReport();
+    SchemaReport schemaReport = report.getSchemaReport(schema);
+    if(schemaReport == null) {
+      return Response.status(Status.NOT_FOUND).build();
+    }
+    return Response.ok(schemaReport).build();
   }
 
   @GET
   @Path("{name}/submissions/{projectKey}/report/{schema}/{field}")
   public Response getFieldReport(@PathParam("name") String name, @PathParam("projectKey") String projectKey,
       @PathParam("schema") String schema, @PathParam("field") String field) {
-    return Response.ok().build();
+    Submission submission = this.releaseService.getSubmission(name, projectKey);
+    if(submission == null) {
+      return Response.status(Status.NOT_FOUND).build();
+    }
+    SubmissionReport report = submission.getReport();
+    SchemaReport schemaReport = report.getSchemaReport(schema);
+    if(schemaReport == null) {
+      return Response.status(Status.NOT_FOUND).build();
+    }
+    FieldReport fieldReport = schemaReport.getFieldReport(field);
+    if(fieldReport == null) {
+      return Response.status(Status.NOT_FOUND).build();
+    }
+    return Response.ok(fieldReport).build();
   }
 }
