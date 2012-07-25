@@ -31,7 +31,7 @@ define (require) ->
 
     url: ->
       console.debug 'Collection#url'
-      @apiRoot + @urlPath()
+      @apiRoot + @urlPath() + "?preventCache="+new Date()
       
     sync: (method, model, options) ->
       console.debug 'Collection#sync', method, model, options
