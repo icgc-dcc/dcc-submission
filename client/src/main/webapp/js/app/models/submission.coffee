@@ -4,3 +4,4 @@ define (require) ->
   "use strict"
 
   class Submission extends Model
+    idAttribute: "projectKey"

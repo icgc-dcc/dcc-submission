@@ -1,5 +1,6 @@
 define (require) ->
   View = require 'views/base/view'
+  CompleteReleaseView = require 'views/release/complete_release_view'
   SubmissionTableView = require 'views/release/submission_table_view'
   template = require 'text!views/templates/release/release.handlebars'
 
@@ -18,14 +19,30 @@ define (require) ->
     initialize: ->
       console.debug 'ReleaseView#initialize', @model
       super
+      
       @modelBind 'change', @render
-        
+      
+      @subscribeEvent "completeRelease", @fetch
+      @delegate 'click', '#complete-release-popup-button', @completeReleasePopup
+    
+    fetch: ->
+      @model.fetch()
+    
+    completeReleasePopup: (e) ->
+      console.debug "ReleaseView#completeRelease"
+      @subview('CompleteReleases'
+        new CompleteReleaseView {
+          @model
+        }
+      )
+      
     render: ->
+      console.debug "ReleaseView#render"
       super
-      @subview(
-        'SubmissionsTable'
+      @subview('SubmissionsTable'
         new SubmissionTableView {
-          collection: @model.get "submissions"
+          @model
           el: @.$("#submissions-table")
         }
       )
+    

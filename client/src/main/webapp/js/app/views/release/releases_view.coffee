@@ -19,6 +19,7 @@ define (require) ->
     initialize: ->
       console.debug "ReleasesView#initialize", @collection
       super
+      
       @delegate 'click', '#complete-release-popup-button', @completeReleasePopup
 
     completeReleasePopup: (e) ->

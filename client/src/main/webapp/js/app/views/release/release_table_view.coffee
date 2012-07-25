@@ -20,8 +20,6 @@ define (require) ->
     initialize: ->
       console.debug "ReleasesTableView#initialize", @collection, @el
       super
-      
-      @subscribeEvent "completeRelease", @update
     
     createDataTable: (collection) ->
       console.debug "ReleasesTableView#createDataTable"

@@ -10,18 +10,15 @@ define (require) ->
   class SubmissionTableView extends DataTableView
     template: template
     template = null
+
     autoRender: true
     
-    container: '#submissions-table'
-    containerMethod: 'html'
-    tagName: 'table'
-    className: "submissions table table-striped"
-    id: "submissions"
-    
     initialize: ->
-      console.debug "SubmissionsTableView#initialize", @collection, @el
-      super
+      console.debug "SubmissionsTableView#initialize", @model, @el
+      @collection = @model.get "submissions"
       
+      super
+        
       @subscribeEvent "signOffSubmission", @update
       @subscribeEvent "validateSubmission", @update
       
@@ -30,18 +27,20 @@ define (require) ->
     
     signOffSubmissionPopup: (e) ->
       console.debug "ReleaseView#signOffSubmissionPopup", e
-      @subview('signOffSubmissionView'
-        new signOffSubmissionView {"projectKey": $(e.currentTarget).data('submission')}
-      ) unless @subview 'signOffSubmissionView'
-    
+      @subview("signOffSubmissionView"
+        new signOffSubmissionView
+          "submission": @collection.get $(e.currentTarget).data("submission")
+      )
+      
     validateSubmissionPopup: (e) ->
       console.debug "ReleaseView#validateSubmissionPopup", e
-      @subview('validateSubmissionView'
-        new validateSubmissionView {"projectKey": $(e.currentTarget).data('submission')}
-      ) unless @subview 'validateSubmissionView'
-    
+      @subview("validateSubmissionView"
+        new validateSubmissionView
+          "submission": @collection.get $(e.currentTarget).data("submission")
+      )
+      
     createDataTable: (collection) ->
-      console.debug "SubmissionsTableView#createDataTable"
+      console.debug "SubmissionsTableView#createDataTable", @.$('table')
       aoColumns = [
           {
             sTitle: "Project Key"
@@ -49,13 +48,13 @@ define (require) ->
             fnRender: (oObj, sVal) ->
               "<a href='/release/#{collection.release}/submissions/#{sVal}'>#{sVal}</a>"
           }
-          { 
+          {
             sTitle: "State"
             mDataProp: "state"
             fnRender: (oObj, sVal) ->
               sVal.replace '_', ' '
           }
-          { 
+          {
             sTitle: "Report"
             mDataProp: null
             bSortable: false
@@ -71,6 +70,7 @@ define (require) ->
             sTitle: ""
             mDataProp: null
             bSortable: false
+            bVisible: not utils.is_released(@model.get "state")
             fnRender: (oObj) ->
               switch oObj.aData.state
                 when "VALID"
@@ -91,7 +91,7 @@ define (require) ->
                        Validate
                     </a>
                  """
-                else ""  
+                else ""
           }
         ]
       

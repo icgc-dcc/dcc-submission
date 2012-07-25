@@ -21,16 +21,18 @@ define [
       options.fn(this)
     else
       options.inverse(this)
-  
-  # Choose block by user login status
-  Handlebars.registerHelper 'unless_complete', (options) ->
-    if mediator.user
+
+  Handlebars.registerHelper 'is_admin', (options) ->
+    "admin" in mediator.user.get "roles"
+
+  Handlebars.registerHelper 'if_admin', (options) ->
+    if is_admin
       options.fn(this)
     else
       options.inverse(this)
-
-  Handlebars.registerHelper 'if_admin', (options) ->
-    if "admin" in mediator.user.get "roles"
+  
+  Handlebars.registerHelper 'if_opened', (state, options) ->
+    if state is 'OPENED'
       options.fn(this)
     else
       options.inverse(this)
