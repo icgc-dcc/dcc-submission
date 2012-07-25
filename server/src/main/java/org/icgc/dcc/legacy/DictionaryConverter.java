@@ -223,7 +223,7 @@ public class DictionaryConverter {
     field.setValueType(valueType);
 
     // set Summary Type according to some rules
-    field.setSummaryType(SummaryType.COMPLETENESS);
+    field.setSummaryType(SummaryType.COMPLETENESS); //TODO: to be removed soon
     if(valueType == ValueType.DECIMAL || valueType == ValueType.INTEGER) {
       field.setSummaryType(SummaryType.AVERAGE);
     }

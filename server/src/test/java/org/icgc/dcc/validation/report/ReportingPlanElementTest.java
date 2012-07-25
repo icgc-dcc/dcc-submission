@@ -20,7 +20,6 @@ package org.icgc.dcc.validation.report;
 import java.util.Iterator;
 
 import org.icgc.dcc.validation.report.AggregateReportingPlanElement.AggregateSummaryFunction;
-import org.icgc.dcc.validation.report.AggregateReportingPlanElement.AverageRelatedBuffer;
 import org.icgc.dcc.validation.report.AggregateReportingPlanElement.CompletenessBuffer;
 import org.icgc.dcc.validation.report.AggregateReportingPlanElement.FieldToValueFunction;
 import org.icgc.dcc.validation.report.BaseReportingPlanElement.FieldSummary;
@@ -173,31 +172,6 @@ public class ReportingPlanElementTest extends CascadingTestCase {
 
     Iterator<Tuple> iterator = c.iterator();
     checkTuple(iterator, new Tuple(2, 3));
-
-    assertFalse(iterator.hasNext());
-  }
-
-  @Test
-  public void test_AverageRelatedBuffer_operate() {
-
-    Fields argumentFields = new Fields("value");
-    AverageRelatedBuffer buffer = new AverageRelatedBuffer();
-    Fields resultFields = new Fields("avg", "stddev");
-
-    // TODO: emulate grouping?
-    TupleEntry[] tuples = new TupleEntry[] {//
-        new TupleEntry(argumentFields, new Tuple(10)),//
-        new TupleEntry(argumentFields, new Tuple(8)),//
-        new TupleEntry(argumentFields, new Tuple(12)),//
-        new TupleEntry(argumentFields, new Tuple(7)),//
-        new TupleEntry(argumentFields, new Tuple(13)),//
-        };
-
-    TupleListCollector c = CascadingTestCase.invokeBuffer(buffer, tuples, resultFields);
-    assertEquals(1, c.size());
-
-    Iterator<Tuple> iterator = c.iterator();
-    checkTuple(iterator, new Tuple(10.0, 2.55));
 
     assertFalse(iterator.hasNext());
   }
