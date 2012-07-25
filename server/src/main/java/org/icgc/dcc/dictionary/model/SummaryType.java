@@ -19,7 +19,7 @@ package org.icgc.dcc.dictionary.model;
 
 public enum SummaryType {
 
-  COMPLETENESS("ignore"),//TODO: to be removed soon
+  COMPLETENESS("completeness"), // TODO: to be removed soon
   MIN_MAX("minmax"), // min/max
   AVERAGE("averages"), // same as min/max + avg/stddev
   FREQUENCY("frequencies"), // frequencies

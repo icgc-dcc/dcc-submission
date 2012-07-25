@@ -57,15 +57,13 @@ public class SummaryPlanningVisitor extends ReportingFlowPlanningVisitor {
           summaryTypeTmp = SummaryType.COMPLETENESS;// TODO: to be removed soon
         }
 
-        if(summaryTypeTmp != null) {
-          if(summaryType == summaryTypeTmp) {
-            List<Field> list = summaryTypeToFields.get(summaryType);
-            if(list == null) {
-              list = new ArrayList<Field>();
-              summaryTypeToFields.put(summaryType, list);
-            }
-            list.add(field);
+        if(summaryType == summaryTypeTmp) {
+          List<Field> list = summaryTypeToFields.get(summaryType);
+          if(list == null) {
+            list = new ArrayList<Field>();
+            summaryTypeToFields.put(summaryType, list);
           }
+          list.add(field);
         }
       }
     }
