@@ -66,9 +66,17 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
       return new Retain(new Each(pipe, TupleStates.keepInvalidTuplesFilter()), ValidationFields.STATE_FIELD);
     }
 
+    public FileSchema getFileSchema() {
+      return this.fileSchema;
+    }
+
+    public FlowType getFlowType() {
+      return this.flowType;
+    }
+
     @Override
     public ReportCollector getCollector() {
-      return new ErrorReportCollector(this.fileSchema, this.flowType);
+      return new ErrorReportCollector(this);
     }
 
   }

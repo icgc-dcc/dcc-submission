@@ -80,16 +80,16 @@ public class SummaryPlanningVisitor extends ReportingFlowPlanningVisitor {
       List<Field> fields = summaryTypeToFields.get(summaryType);
       switch(summaryType) {
       case COMPLETENESS:
-        collect(new CompletenessPlanElement(fileSchema, fields));
+        collect(new CompletenessPlanElement(fileSchema, fields, this.getFlow()));
         break;
       case AVERAGE:
-        collect(new AveragePlanElement(fileSchema, fields));
+        collect(new AveragePlanElement(fileSchema, fields, this.getFlow()));
         break;
       case MIN_MAX:
-        collect(new MinMaxPlanElement(fileSchema, fields));
+        collect(new MinMaxPlanElement(fileSchema, fields, this.getFlow()));
         break;
       case FREQUENCY:
-        collect(new FrequencyPlanElement(fileSchema, fields));
+        collect(new FrequencyPlanElement(fileSchema, fields, this.getFlow()));
         break;
       default:
         break;

@@ -95,13 +95,12 @@ public class Plan {
     Outcome result = Outcome.PASSED;
     List<SchemaReport> schemaReports = new ArrayList<SchemaReport>();
     for(FileSchemaFlowPlanner planner : Iterables.concat(internalPlanners.values(), externalPlanners.values())) {
-      SchemaReport schemaReport = new SchemaReport();
-      schemaReport.setName(planner.getReportName());
+      List<SchemaReport> schemaReport = new ArrayList<SchemaReport>();
       Outcome outcome = planner.collect(strategy, schemaReport);
       if(outcome == Outcome.FAILED) {
         result = Outcome.FAILED;
       }
-      schemaReports.add(schemaReport);
+      schemaReports.addAll(schemaReport);
     }
     report.setSchemaReports(schemaReports);
     return result;

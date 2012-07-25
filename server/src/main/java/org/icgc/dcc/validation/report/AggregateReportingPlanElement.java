@@ -69,8 +69,8 @@ public abstract class AggregateReportingPlanElement extends BaseReportingPlanEle
   private final Fields aggregateFields;
 
   public AggregateReportingPlanElement(FileSchema fileSchema, boolean includeBoundaryRelated,
-      boolean includeAverageRelated, SummaryType summaryType, List<Field> fields) {
-    super(fileSchema, fields, summaryType);
+      boolean includeAverageRelated, SummaryType summaryType, List<Field> fields, FlowType flowType) {
+    super(fileSchema, fields, summaryType, flowType);
 
     this.includeBoundaryRelated = includeBoundaryRelated;
     this.includeAverageRelated = includeBoundaryRelated ? includeAverageRelated : false;
@@ -261,38 +261,38 @@ public abstract class AggregateReportingPlanElement extends BaseReportingPlanEle
   }
 
   static final class CompletenessPlanElement extends AggregateReportingPlanElement {
-    public CompletenessPlanElement(FileSchema fileSchema, List<Field> fields) {
-      super(fileSchema, false, false, SummaryType.COMPLETENESS, fields);
+    public CompletenessPlanElement(FileSchema fileSchema, List<Field> fields, FlowType flowType) {
+      super(fileSchema, false, false, SummaryType.COMPLETENESS, fields, flowType);
     }
 
     @Override
     public ReportCollector getCollector() {
       // FlowType is always Internal for Summary
-      return new SummaryReportCollector(this.fileSchema, FlowType.INTERNAL);
+      return new SummaryReportCollector(this);
     }
   }
 
   static final class MinMaxPlanElement extends AggregateReportingPlanElement {
-    public MinMaxPlanElement(FileSchema fileSchema, List<Field> fields) {
-      super(fileSchema, true, false, SummaryType.MIN_MAX, fields);
+    public MinMaxPlanElement(FileSchema fileSchema, List<Field> fields, FlowType flowType) {
+      super(fileSchema, true, false, SummaryType.MIN_MAX, fields, flowType);
     }
 
     @Override
     public ReportCollector getCollector() {
       // FlowType is always Internal for Summary
-      return new SummaryReportCollector(this.fileSchema, FlowType.INTERNAL);
+      return new SummaryReportCollector(this);
     }
   }
 
   static final class AveragePlanElement extends AggregateReportingPlanElement {
-    public AveragePlanElement(FileSchema fileSchema, List<Field> fields) {
-      super(fileSchema, true, true, SummaryType.AVERAGE, fields);
+    public AveragePlanElement(FileSchema fileSchema, List<Field> fields, FlowType flowType) {
+      super(fileSchema, true, true, SummaryType.AVERAGE, fields, flowType);
     }
 
     @Override
     public ReportCollector getCollector() {
       // FlowType is always Internal for Summary
-      return new SummaryReportCollector(this.fileSchema, FlowType.INTERNAL);
+      return new SummaryReportCollector(this);
     }
   }
 }

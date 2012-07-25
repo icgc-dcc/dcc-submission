@@ -7,9 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.codehaus.jackson.map.ObjectMapper;
-import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.validation.CascadingStrategy;
-import org.icgc.dcc.validation.FlowType;
 import org.icgc.dcc.validation.PlanExecutionException;
 import org.icgc.dcc.validation.report.BaseReportingPlanElement.FieldSummary;
 
@@ -18,19 +16,17 @@ import com.google.common.io.CharStreams;
 
 public class SummaryReportCollector implements ReportCollector {
 
-  private final FileSchema fileSchema;
+  private final BaseReportingPlanElement planElement;
 
-  private final FlowType flowType;
-
-  public SummaryReportCollector(FileSchema fileSchema, FlowType flowType) {
-    this.fileSchema = fileSchema;
-    this.flowType = flowType;
+  public SummaryReportCollector(BaseReportingPlanElement planElement) {
+    this.planElement = planElement;
   }
 
   @Override
   public Outcome collect(CascadingStrategy strategy, SchemaReport report) {
     try {
-      InputStream src = strategy.readReportTap(fileSchema, flowType, report.getName());
+      InputStream src =
+          strategy.readReportTap(planElement.getFileSchema(), planElement.getFlowType(), this.planElement.getName());
       ObjectMapper mapper = new ObjectMapper();
       List<FieldReport> fieldReports = new ArrayList<FieldReport>();
 

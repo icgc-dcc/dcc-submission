@@ -23,6 +23,7 @@ import java.util.Map;
 import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.dictionary.model.SummaryType;
+import org.icgc.dcc.validation.FlowType;
 import org.icgc.dcc.validation.ReportingPlanElement;
 
 import cascading.tuple.Fields;
@@ -48,14 +49,18 @@ abstract class BaseReportingPlanElement implements ReportingPlanElement {
 
   protected final FileSchema fileSchema;
 
+  protected final FlowType flowType;
+
   protected final SummaryType summaryType;
 
   protected final List<Field> fields;
 
-  protected BaseReportingPlanElement(FileSchema fileSchema, List<Field> fields, SummaryType summaryType) {
+  protected BaseReportingPlanElement(FileSchema fileSchema, List<Field> fields, SummaryType summaryType,
+      FlowType flowType) {
     this.fileSchema = fileSchema;
     this.fields = fields;
     this.summaryType = summaryType;
+    this.flowType = flowType;
   }
 
   @Override
@@ -70,6 +75,14 @@ abstract class BaseReportingPlanElement implements ReportingPlanElement {
 
   protected String buildSubPipeName(String prefix) {
     return fileSchema.getName() + "_" + prefix + "_" + "pipe";
+  }
+
+  public FileSchema getFileSchema() {
+    return this.fileSchema;
+  }
+
+  public FlowType getFlowType() {
+    return this.flowType;
   }
 
   public static class FieldSummary {// TODO: use FieldReport instead?

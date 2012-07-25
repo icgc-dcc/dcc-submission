@@ -100,7 +100,7 @@ public class ReleaseResource {
   }
 
   @GET
-  @Path("{name}/reports/{projectKey}")
+  @Path("{name}/submissions/{projectKey}/report")
   public Response getSubmissionReport(@PathParam("name") String name, @PathParam("projectKey") String projectKey) {
     Submission submission = this.releaseService.getSubmission(name, projectKey);
     if(submission == null) {
@@ -108,5 +108,19 @@ public class ReleaseResource {
     }
     SubmissionReport report = submission.getReport();
     return Response.ok(report).build();
+  }
+
+  @GET
+  @Path("{name}/submissions/{projectKey}/report/{schema}")
+  public Response getSchemaReport(@PathParam("name") String name, @PathParam("projectKey") String projectKey,
+      @PathParam("schema") String schema) {
+    return Response.ok().build();
+  }
+
+  @GET
+  @Path("{name}/submissions/{projectKey}/report/{schema}/{field}")
+  public Response getFieldReport(@PathParam("name") String name, @PathParam("projectKey") String projectKey,
+      @PathParam("schema") String schema, @PathParam("field") String field) {
+    return Response.ok().build();
   }
 }

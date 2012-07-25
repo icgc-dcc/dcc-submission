@@ -17,15 +17,18 @@
  */
 package org.icgc.dcc.validation;
 
+import java.util.List;
+
 import org.icgc.dcc.dictionary.model.FileSchema;
-import org.icgc.dcc.validation.report.ReportCollector;
+import org.icgc.dcc.validation.report.Outcome;
+import org.icgc.dcc.validation.report.SchemaReport;
 
 import cascading.flow.Flow;
 
 /**
  * Plans a {@code Flow} for a particular {@code FileSchema}.
  */
-public interface FileSchemaFlowPlanner extends ReportCollector {
+public interface FileSchemaFlowPlanner {
 
   public String getName();
 
@@ -35,5 +38,5 @@ public interface FileSchemaFlowPlanner extends ReportCollector {
 
   public void apply(ReportingPlanElement element);
 
-  public String getReportName();
+  public Outcome collect(CascadingStrategy strategy, List<SchemaReport> reports);
 }

@@ -15,10 +15,12 @@
  */
 package org.icgc.dcc.validation;
 
+import java.util.List;
 import java.util.Map;
 
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.validation.report.Outcome;
+import org.icgc.dcc.validation.report.ReportCollector;
 import org.icgc.dcc.validation.report.SchemaReport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +39,7 @@ public abstract class BaseFileSchemaFlowPlanner implements FileSchemaFlowPlanner
 
   private final Map<String, Pipe> reports = Maps.newHashMap();
 
-  private ReportingPlanElement reportElement;
+  private final Map<String, ReportCollector> collectors = Maps.newHashMap();
 
   protected BaseFileSchemaFlowPlanner(FileSchema fileSchema) {
     this.fileSchema = fileSchema;
@@ -49,16 +51,11 @@ public abstract class BaseFileSchemaFlowPlanner implements FileSchemaFlowPlanner
   }
 
   @Override
-  public String getReportName() {
-    return reportElement.getName();
-  }
-
-  @Override
   public void apply(ReportingPlanElement element) {
     Pipe split = new Pipe(element.getName(), getTail());
     log.info("[{}] applying element [{}]", getName(), element.describe());
     reports.put(element.getName(), element.report(split));
-    this.reportElement = element;
+    this.collectors.put(element.getName(), element.getCollector());
   }
 
   @Override
@@ -72,8 +69,17 @@ public abstract class BaseFileSchemaFlowPlanner implements FileSchemaFlowPlanner
   }
 
   @Override
-  public Outcome collect(CascadingStrategy strategy, SchemaReport report) {
-    return reportElement.getCollector().collect(strategy, report);
+  public Outcome collect(CascadingStrategy strategy, List<SchemaReport> reports) {
+    Outcome result = Outcome.PASSED;
+    for(ReportCollector reportCollector : collectors.values()) {
+      SchemaReport report = new SchemaReport();
+      Outcome outcome = reportCollector.collect(strategy, report);
+      reports.add(report);
+      if(outcome == Outcome.FAILED) {
+        result = Outcome.FAILED;
+      }
+    }
+    return result;
   }
 
   protected abstract Pipe getTail();

@@ -46,8 +46,8 @@ public final class FrequencyPlanElement extends BaseReportingPlanElement {
 
   private final String FREQ = "freq";
 
-  public FrequencyPlanElement(FileSchema fileSchema, List<Field> fields) {
-    super(fileSchema, fields, SummaryType.FREQUENCY);
+  public FrequencyPlanElement(FileSchema fileSchema, List<Field> fields, FlowType flowType) {
+    super(fileSchema, fields, SummaryType.FREQUENCY, flowType);
   }
 
   @Override
@@ -102,7 +102,6 @@ public final class FrequencyPlanElement extends BaseReportingPlanElement {
 
   @Override
   public ReportCollector getCollector() {
-    // FlowType is always Internal for Summary
-    return new SummaryReportCollector(this.fileSchema, FlowType.INTERNAL);
+    return new SummaryReportCollector(this);
   }
 }
