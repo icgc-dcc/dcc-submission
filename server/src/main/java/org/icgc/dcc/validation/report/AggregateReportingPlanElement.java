@@ -295,4 +295,5 @@ public abstract class AggregateReportingPlanElement extends BaseReportingPlanEle
       return new SummaryReportCollector(this);
     }
   }
+
 }
