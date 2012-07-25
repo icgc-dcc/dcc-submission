@@ -49,7 +49,7 @@ define (require) ->
         base + encodeURIComponent(@get(@urlKey))
       else
         base
-      url
+      url + "?preventCache="+new Date()
     
     sync: (method, model, options) ->
       console.debug? 'Model#sync', method, model, options

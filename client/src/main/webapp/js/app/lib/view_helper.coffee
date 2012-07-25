@@ -56,17 +56,28 @@ define [
       options.inverse(this)
 
   # Return a Unreleased if no release date
-  Handlebars.registerHelper 'release_action', (state) ->
-    return false unless state is 'OPENED'
-    new Handlebars.SafeString """
-    <button
-      class="btn btn-primary btn-small"
-      id="complete-release-popup-button"
-      data-toggle="modal"
-      href="#complete-release-popup">
-      Complete
-    </button>
-    """
+  Handlebars.registerHelper 'submission_action', (state) ->
+    switch state
+      when "VALID"
+        new Handlebars.SafeString """
+        <button
+          class="btn btn-success"
+          id="signoff-submission-popup-button"
+          data-toggle="modal"
+          href="#signoff-submission-popup">
+          Sign Off
+        </button>
+        """
+      when "INVALID", "NOT_VALIDATED"
+        new Handlebars.SafeString """
+        <button
+          class="btn btn-success"
+          id="validate-submission-popup-button"
+          data-toggle="modal"
+          href="#validate-submission-popup">
+          Validate
+        </button>
+        """
 
   # Return a Unreleased if no release date
   Handlebars.registerHelper 'release_date', (date) ->
@@ -77,5 +88,14 @@ define [
   Handlebars.registerHelper 'date', (date) ->
     return false unless date
     new Handlebars.SafeString moment(date).format("YYYY-MM-DD")
+
+  Handlebars.registerHelper 'underscore2space', (string) ->
+    return false unless string
+    new Handlebars.SafeString string.replace "_", " "
+    
+  Handlebars.registerHelper 'lowercase', (string) ->
+    return false unless string
+    new Handlebars.SafeString string.toLowerCase()
+  
 
   null

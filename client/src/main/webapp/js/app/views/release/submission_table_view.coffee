@@ -64,7 +64,7 @@ define (require) ->
             sTitle: "Project Key"
             mDataProp: "projectKey"
             fnRender: (oObj, sVal) ->
-              "<a href='/release/#{collection.release}/submissions/#{sVal}'>#{sVal}</a>"
+              "<a href='/releases/#{collection.release}/submissions/#{sVal}'>#{sVal}</a>"
           }
           {
             sTitle: "State"
