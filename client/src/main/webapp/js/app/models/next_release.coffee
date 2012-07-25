@@ -10,11 +10,11 @@ define (require) ->
 
     defaults:
       "submissions": [
-        {"projectKey": "p1", "state": "SIGNED_OFF"}
-        {"projectKey": "p2", "state": "VALID"}
-        {"projectKey": "p3", "state": "QUEUED"}
-        {"projectKey": "p4", "state": "INVALID"}
-        {"projectKey": "p5", "state": "NOT_VALIDATED"}
+        {"projectKey": "project1", "state": "SIGNED_OFF"}
+        {"projectKey": "project2", "state": "VALID"}
+        {"projectKey": "project3", "state": "NOT_VALIDATED"}
+        {"projectKey": "project4", "state": "INVALID"}
+        {"projectKey": "project5", "state": "NOT_VALIDATED"}
       ]
 
     initialize: ->
