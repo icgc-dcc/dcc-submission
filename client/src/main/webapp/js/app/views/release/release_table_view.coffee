@@ -20,7 +20,9 @@ define (require) ->
     initialize: ->
       console.debug "ReleasesTableView#initialize", @collection, @el
       super
-    
+      
+      @subscribeEvent "completeRelease", @fetch
+         
     createDataTable: (collection) ->
       console.debug "ReleasesTableView#createDataTable"
       aoColumns = [
@@ -40,13 +42,12 @@ define (require) ->
               else
                 if utils.is_admin
                   """
-                    <button
-                      class="btn btn-mini btn-primary"
+                    <a
                       id="complete-release-popup-button"
                       data-toggle="modal"
                       href="#complete-release-popup">
                       Release Now
-                    </button>
+                    </a>
                   """
                 else
                   "<em>Unreleased</em>"
