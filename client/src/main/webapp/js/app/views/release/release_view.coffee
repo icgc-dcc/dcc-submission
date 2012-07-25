@@ -19,6 +19,7 @@ define (require) ->
     initialize: ->
       console.debug 'ReleaseView#initialize', @model
       super
+      
       @modelBind 'change', @render
       
       @subscribeEvent "completeRelease", @fetch
