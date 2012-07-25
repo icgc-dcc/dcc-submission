@@ -86,7 +86,7 @@ public class ValidationService {
   }
 
   public void validate(Release release, String projectKey) {
-    ReportCollector collector = new ReportCollector(release, projectKey, this.releaseService, this.dictionaries);
+    ReportCollector collector = new ReportCollector(release, projectKey, this.releaseService, this.plan);
     this.validate(release, projectKey, collector); // won't change submission state afterwards if not callback
   }
 
@@ -123,6 +123,9 @@ public class ValidationService {
 
     Cascade cascade = plan.connect(cascadingStrategy);
     if(validationCallback != null) {
+      if(validationCallback instanceof ReportCollector) {
+        ((ReportCollector) validationCallback).setPlan(this.plan);
+      }
       List<Flow> flows = cascade.getFlows();
       for(Flow flow : flows) {
         ValidationFlowListener listener = new ValidationFlowListener(validationCallback, flows, projectKey);
@@ -151,13 +154,16 @@ public class ValidationService {
 
     private final ReleaseService releaseService;
 
-    private final DictionaryService dictionaries;
+    private Plan plan;
 
-    public ReportCollector(Release release, String projectKey, ReleaseService releaseService,
-        DictionaryService dictionaryService) {
+    public ReportCollector(Release release, String projectKey, ReleaseService releaseService, Plan plan) {
       this.release = release;
       this.releaseService = releaseService;
-      this.dictionaries = dictionaryService;
+      this.plan = plan;
+    }
+
+    public void setPlan(Plan plan) {
+      this.plan = plan;
     }
 
     @Override
@@ -171,11 +177,6 @@ public class ValidationService {
 
       File rootDir = new File(submissionDirectory.getSubmissionDirPath());
       File outputDir = new File(submissionDirectory.getValidationDirPath());
-
-      FileSchemaDirectory fileSchemaDirectory = new LocalFileSchemaDirectory(rootDir);
-      String dictionaryVersion = release.getDictionaryVersion();
-      Dictionary dictionary = this.dictionaries.getFromVersion(dictionaryVersion);
-      Plan plan = planner.plan(fileSchemaDirectory, dictionary);
 
       Submission submission = this.releaseService.getSubmission(release.getName(), projectKey);
 
