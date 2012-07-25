@@ -1,6 +1,12 @@
 <div class="row-fluid page-header">
-  <div>
+  <div class="pull-left">
     <h1>{{name}} <small>{{state}}</small></h1>
+  </div>
+  <div class="pull-right">
+    <a href="releases/{{name}}/report" class="btn btn-primary">View Report</a>
+    {{#if_opened state}}
+    <button id="complete-release-popup-button" class="btn btn-success">Complete</button>
+    {{/if_opened}}
   </div>
 </div>
 

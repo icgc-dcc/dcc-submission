@@ -18,6 +18,7 @@
 package org.icgc.dcc.integration;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,9 +49,6 @@ import org.junit.Test;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 
-/**
- * 
- */
 public class IntegrationTest {
   /**
    * 
@@ -128,6 +126,10 @@ public class IntegrationTest {
 
     test_checkSubmissionsStates();
 
+    test_fileIsEmpty(DCC_ROOT_DIR + "release1/project1/.validation/donor.internal#errors.json");
+    test_fileIsEmpty(DCC_ROOT_DIR + "release1/project1/.validation/specimen.internal#errors.json");
+    test_fileIsEmpty(DCC_ROOT_DIR + "release1/project1/.validation/specimen.external#errors.json");
+
     test_checkReleaseState("release1", ReleaseState.OPENED);
 
     test_releaseFirstRelease();
@@ -148,9 +150,14 @@ public class IntegrationTest {
     this.client.target(BASEURI).path("/seed/projects").request(MediaType.APPLICATION_JSON)
         .header("Authorization", AUTHORIZATION)
         .post(Entity.entity(this.resourceToString("/integrationtest/projects.json"), MediaType.APPLICATION_JSON));
-    this.client.target(BASEURI).path("/seed/dictionaries").request(MediaType.APPLICATION_JSON)
+    this.client
+        .target(BASEURI)
+        .path("/seed/dictionaries")
+        .request(MediaType.APPLICATION_JSON)
         .header("Authorization", AUTHORIZATION)
-        .post(Entity.entity(this.resourceToString("/integrationtest/dictionaries.json"), MediaType.APPLICATION_JSON));
+        .post(
+            Entity.entity("[" + this.resourceToString("/integrationtest/dictionary.json") + "]",
+                MediaType.APPLICATION_JSON));
     this.client.target(BASEURI).path("/seed/codelists").request(MediaType.APPLICATION_JSON)
         .header("Authorization", AUTHORIZATION)
         .post(Entity.entity(this.resourceToString("/integrationtest/codelists.json"), MediaType.APPLICATION_JSON));
@@ -174,6 +181,12 @@ public class IntegrationTest {
 
     response = sendGetRequest("/releases/release1/submissions/project3");
     assertEquals(200, response.getStatus());
+  }
+
+  private void test_fileIsEmpty(String path) throws IOException {
+    File errorFile = new File(path);
+    assertTrue("Expected file does not exist: " + path, errorFile.exists());
+    assertTrue("Expected empty file: " + path, FileUtils.readFileToString(errorFile).isEmpty());
   }
 
   private void test_releaseFirstRelease() throws IOException {

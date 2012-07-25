@@ -1,3 +1,21 @@
+"""
+ * Copyright 2012(c) The Ontario Institute for Cancer Research. All rights reserved.
+ *
+ * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
+ * You should have received a copy of the GNU General Public License along with 
+ * this program. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY 
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT 
+ * SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, 
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED 
+ * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; 
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER 
+ * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
+ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+"""
+
 define (require) ->
   DataTableView = require 'views/base/data_table_view'
   signOffSubmissionView = require 'views/release/signoff_submission_view'
@@ -10,18 +28,15 @@ define (require) ->
   class SubmissionTableView extends DataTableView
     template: template
     template = null
+
     autoRender: true
     
-    container: '#submissions-table'
-    containerMethod: 'html'
-    tagName: 'table'
-    className: "submissions table table-striped"
-    id: "submissions"
-    
     initialize: ->
-      console.debug "SubmissionsTableView#initialize", @collection, @el
-      super
+      console.debug "SubmissionsTableView#initialize", @model, @el
+      @collection = @model.get "submissions"
       
+      super
+        
       @subscribeEvent "signOffSubmission", @update
       @subscribeEvent "validateSubmission", @update
       
@@ -30,18 +45,20 @@ define (require) ->
     
     signOffSubmissionPopup: (e) ->
       console.debug "ReleaseView#signOffSubmissionPopup", e
-      @subview('signOffSubmissionView'
-        new signOffSubmissionView {"projectKey": $(e.currentTarget).data('submission')}
-      ) unless @subview 'signOffSubmissionView'
-    
+      @subview("signOffSubmissionView"
+        new signOffSubmissionView
+          "submission": @collection.get $(e.currentTarget).data("submission")
+      )
+      
     validateSubmissionPopup: (e) ->
       console.debug "ReleaseView#validateSubmissionPopup", e
-      @subview('validateSubmissionView'
-        new validateSubmissionView {"projectKey": $(e.currentTarget).data('submission')}
-      ) unless @subview 'validateSubmissionView'
-    
+      @subview("validateSubmissionView"
+        new validateSubmissionView
+          "submission": @collection.get $(e.currentTarget).data("submission")
+      )
+      
     createDataTable: (collection) ->
-      console.debug "SubmissionsTableView#createDataTable"
+      console.debug "SubmissionsTableView#createDataTable", @.$('table')
       aoColumns = [
           {
             sTitle: "Project Key"
@@ -49,13 +66,13 @@ define (require) ->
             fnRender: (oObj, sVal) ->
               "<a href='/release/#{collection.release}/submissions/#{sVal}'>#{sVal}</a>"
           }
-          { 
+          {
             sTitle: "State"
             mDataProp: "state"
             fnRender: (oObj, sVal) ->
               sVal.replace '_', ' '
           }
-          { 
+          {
             sTitle: "Report"
             mDataProp: null
             bSortable: false
@@ -71,6 +88,7 @@ define (require) ->
             sTitle: ""
             mDataProp: null
             bSortable: false
+            bVisible: not utils.is_released(@model.get "state")
             fnRender: (oObj) ->
               switch oObj.aData.state
                 when "VALID"
@@ -91,7 +109,7 @@ define (require) ->
                        Validate
                     </a>
                  """
-                else ""  
+                else ""
           }
         ]
       
