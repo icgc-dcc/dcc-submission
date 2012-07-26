@@ -31,7 +31,6 @@ import org.icgc.dcc.filesystem.ReleaseFileSystem;
 import org.icgc.dcc.filesystem.SubmissionDirectory;
 import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.Release;
-import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.validation.CascadingStrategy;
 import org.icgc.dcc.validation.FileSchemaDirectory;
 import org.icgc.dcc.validation.LocalCascadingStrategy;
@@ -40,7 +39,6 @@ import org.icgc.dcc.validation.Plan;
 import org.icgc.dcc.validation.Planner;
 import org.icgc.dcc.validation.ValidationCallback;
 import org.icgc.dcc.validation.ValidationFlowListener;
-import org.icgc.dcc.validation.report.SubmissionReport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,9 +84,8 @@ public class ValidationService {
   }
 
   public void validate(Release release, String projectKey) {
-    ReportCollector collector = new ReportCollector(release, projectKey, this.releaseService, this.plan);
-    this.validate(release, projectKey, collector); // won't change submission state afterwards if not
-                                                   // callback
+    this.validate(release, projectKey, null); // won't change submission state afterwards if not
+                                              // callback
   }
 
   public void validate(Release release, String projectKey, ValidationCallback validationCallback) {
@@ -128,8 +125,8 @@ public class ValidationService {
 
     Cascade cascade = plan.connect(cascadingStrategy);
     if(validationCallback != null) {
-      if(validationCallback instanceof ReportCollector) {
-        ((ReportCollector) validationCallback).setPlan(this.plan);
+      if(validationCallback instanceof ValidationQueueManagerService) {
+        ((ValidationQueueManagerService) validationCallback).setPlan(this.plan);
       }
       List<Flow> flows = cascade.getFlows();
       for(Flow flow : flows) {
@@ -151,54 +148,6 @@ public class ValidationService {
       if(validationCallback != null) {
         validationCallback.handleSuccessfulValidation(projectKey);
       }
-    }
-  }
-
-  public class ReportCollector implements ValidationCallback {
-
-    private final Release release;
-
-    private final ReleaseService releaseService;
-
-    private Plan plan;
-
-    public ReportCollector(Release release, String projectKey, ReleaseService releaseService, Plan plan) {
-      this.release = release;
-      this.releaseService = releaseService;
-      this.plan = plan;
-    }
-
-    public void setPlan(Plan plan) {
-      this.plan = plan;
-    }
-
-    @Override
-    public void handleSuccessfulValidation(String projectKey) {
-      log.info("starting report collecting on project {}", projectKey);
-
-      ReleaseFileSystem releaseFilesystem = dccFileSystem.getReleaseFilesystem(release);
-
-      Project project = projectService.getProject(projectKey);
-      SubmissionDirectory submissionDirectory = releaseFilesystem.getSubmissionDirectory(project);
-
-      File rootDir = new File(submissionDirectory.getSubmissionDirPath());
-      File outputDir = new File(submissionDirectory.getValidationDirPath());
-
-      Submission submission = this.releaseService.getSubmission(release.getName(), projectKey);
-
-      CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir);
-
-      SubmissionReport report = new SubmissionReport();
-      plan.collect(cascadingStrategy, report);
-      submission.setReport(report);
-      // persist the report to DB
-      this.releaseService.UpdateSubmissionReport(release.getName(), projectKey, submission.getReport());
-      log.info("report collecting finished on project {}", projectKey);
-    }
-
-    @Override
-    public void handleFailedValidation(String projectKey) {
-
     }
   }
 }
