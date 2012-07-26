@@ -100,8 +100,4 @@ public final class FrequencyPlanElement extends BaseReportingPlanElement {
     }
   }
 
-  @Override
-  public ReportCollector getCollector() {
-    return new SummaryReportCollector(this);
-  }
 }
