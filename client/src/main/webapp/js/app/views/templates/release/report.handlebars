@@ -1,6 +1,9 @@
 <h3>Report</h3>
 {{#each schemaReports}}
+<h4>{{name}}</h4>
+<ul>
 {{#each fieldReports}}
-{{name}}
+<li>{{field_report this}}</li>
 {{/each}}
+</ul>
 {{/each}}
