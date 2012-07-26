@@ -61,6 +61,7 @@ public class ValidationInternalIntegrityTest {
   public void setUp() throws JsonProcessingException, IOException {
     DccFileSystem dccFileSystem = mock(DccFileSystem.class);
     ProjectService projectService = mock(ProjectService.class);
+    releaseService = mock(ReleaseService.class);
 
     CodeList codeList1 = mock(CodeList.class);
     CodeList codeList2 = mock(CodeList.class);
