@@ -69,8 +69,6 @@ public class ValidationService {
 
   private final ReleaseService releaseService;
 
-  private ReportCollector collector;
-
   @Inject
   public ValidationService(final DccFileSystem dccFileSystem, final ProjectService projectService,
       final Planner planner, final DictionaryService dictionaries, final ReleaseService releaseService) {
@@ -88,16 +86,14 @@ public class ValidationService {
   }
 
   public void validate(Release release, String projectKey) {
-    collector = new ReportCollector(release, projectKey, this.releaseService, this.plan);
+    ReportCollector collector = new ReportCollector(release, projectKey, this.releaseService, this.plan);
     this.validate(release, projectKey, collector); // won't change submission state afterwards if not
-    // callback
+                                                   // callback
   }
 
   public void validate(Release release, String projectKey, ValidationCallback validationCallback) {
     String dictionaryVersion = release.getDictionaryVersion();
     Dictionary dictionary = this.dictionaries.getFromVersion(dictionaryVersion);
-    collector = new ReportCollector(release, projectKey, this.releaseService, this.plan);
-
     if(dictionary != null) {
       ReleaseFileSystem releaseFilesystem = dccFileSystem.getReleaseFilesystem(release);
 
@@ -118,7 +114,6 @@ public class ValidationService {
       runCascade(cascade, validationCallback, projectKey);
       log.info("validation finished for project {}", projectKey);
 
-      collector.handleSuccessfulValidation(projectKey);
     } else {
       log.info("there is no dictionary with version {}", dictionaryVersion);
     }
@@ -133,8 +128,9 @@ public class ValidationService {
 
     Cascade cascade = plan.connect(cascadingStrategy);
     if(validationCallback != null) {
-      collector.setPlan(this.plan);
-
+      if(validationCallback instanceof ReportCollector) {
+        ((ReportCollector) validationCallback).setPlan(this.plan);
+      }
       List<Flow> flows = cascade.getFlows();
       for(Flow flow : flows) {
         ValidationFlowListener listener = new ValidationFlowListener(validationCallback, flows, projectKey);
