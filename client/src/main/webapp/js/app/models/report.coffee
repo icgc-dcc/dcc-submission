@@ -28,4 +28,4 @@ define (require) ->
       console.debug 'Report#initialize', @attributes
       super
       @urlPath = -> 
-        "releases/#{@attributes.release}/submissions/#{@attributes.submission}/"
+        "releases/#{@attributes.release}/submissions/#{@attributes.submission}/report"
