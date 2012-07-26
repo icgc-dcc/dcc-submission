@@ -68,11 +68,7 @@ public class FieldReport {
     fieldReport.setName(fieldSummary.field);
     fieldReport.setPopulated(fieldSummary.populated);
     fieldReport.setNulls(fieldSummary.nulls);
-    if(fieldSummary.nulls + fieldSummary.populated == 0) {
-      fieldReport.setCompleteness(0);
-    } else {
-      fieldReport.setCompleteness(fieldSummary.populated / (fieldSummary.nulls + fieldSummary.populated));
-    }
+    fieldReport.setCompleteness(fieldSummary.populated / (fieldSummary.nulls + fieldSummary.populated));
     BasicDBObject summary = new BasicDBObject();
     for(String key : fieldSummary.summary.keySet()) {
       summary.append(key, fieldSummary.summary.get(key));

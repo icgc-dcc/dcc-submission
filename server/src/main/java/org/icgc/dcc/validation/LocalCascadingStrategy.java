@@ -18,12 +18,11 @@
 package org.icgc.dcc.validation;
 
 import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.validation.cascading.LocalJsonScheme;
 import org.icgc.dcc.validation.cascading.ValidationFields;
@@ -36,24 +35,13 @@ import cascading.tap.Tap;
 import cascading.tap.local.FileTap;
 import cascading.tuple.Fields;
 
-import com.google.common.base.Charsets;
-import com.google.common.base.Joiner;
-import com.google.common.base.Splitter;
-import com.google.common.collect.Iterables;
-import com.google.common.io.Files;
-
 /**
  * 
  */
-public class LocalCascadingStrategy implements CascadingStrategy {
-
-  private final File source;
-
-  private final File output;
+public class LocalCascadingStrategy extends BaseCascadingStrategy {
 
   public LocalCascadingStrategy(File source, File output) {
-    this.source = source;
-    this.output = output;
+    super(localFileSystem(), new Path(source.getAbsolutePath()), new Path(output.getAbsolutePath()));
   }
 
   @Override
@@ -62,65 +50,31 @@ public class LocalCascadingStrategy implements CascadingStrategy {
   }
 
   @Override
-  public Tap<?, ?, ?> getSourceTap(FileSchema schema) {
-    return tapSource(file(schema));
+  public Tap<?, ?, ?> getReportTap(FileSchema schema, FlowType type, String reportName) {
+    return new FileTap(new LocalJsonScheme(), reportPath(schema, type, reportName).toUri().getPath());
   }
 
   @Override
-  public Tap<?, ?, ?> getInternalSinkTap(FileSchema schema) {
-    return tap(new File(output, schema.getName() + ".internal.tsv"));
+  protected Tap<?, ?, ?> tap(Path path) {
+    return new FileTap(new TextDelimited(true, "\t"), path.toUri().getPath());
   }
 
   @Override
-  public Tap<?, ?, ?> getExternalSinkTap(FileSchema schema) {
-    return tap(new File(output, schema.getName() + ".external.tsv"));
+  protected Tap<?, ?, ?> tap(Path path, Fields fields) {
+    return new FileTap(new TextDelimited(fields, true, "\t"), path.toUri().getPath());
   }
 
   @Override
-  public Tap<?, ?, ?> getTrimmedTap(Trim trim) {
-    File trimmed = new File(output, trim.getSchema() + "#" + Joiner.on("-").join(trim.getFields()) + ".tsv");
-    return new FileTap(new TextDelimited(new Fields(trim.getFields()), true, "\t"), trimmed.getAbsolutePath());
+  protected Tap<?, ?, ?> tapSource(Path path) {
+    return new FileTap(new TextLine(new Fields(ValidationFields.OFFSET_FIELD_NAME, "line")), path.toUri().getPath());
   }
 
-  @Override
-  public Tap<?, ?, ?> getReportTap(FileSchemaFlowPlanner planner, String reportName) {
-    File report = new File(output, String.format("%s#%s.json", planner.getName(), reportName));
-    return new FileTap(new LocalJsonScheme(), report.getAbsolutePath());
+  static FileSystem localFileSystem() {
+    try {
+      return FileSystem.getLocal(new Configuration());
+    } catch(IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
-  @Override
-  public InputStream readReportTap(FileSchema schema, FlowType type, String reportName) throws FileNotFoundException {
-    File report = new File(output, String.format("%s.%s#%s.json", schema.getName(), type.toString(), reportName));
-    return new FileInputStream(report);
-  }
-
-  private Tap<?, ?, ?> tap(File file) {
-    return new FileTap(new TextDelimited(true, "\t"), file.getAbsolutePath());
-  }
-
-  private Tap<?, ?, ?> tapSource(File file) {
-    return new FileTap(new TextLine(new Fields(ValidationFields.OFFSET_FIELD_NAME, "line")), file.getAbsolutePath());
-  }
-
-  private File file(final FileSchema schema) {
-    File[] files = source.listFiles(new FileFilter() {
-
-      @Override
-      public boolean accept(File pathname) {
-        return pathname.getName().contains(schema.getName());
-        // return Pattern.matches(fs.getPattern(), pathname.getName());
-      }
-    });
-    return files[0];
-  }
-
-  @Override
-  public Fields getFileHeader(FileSchema schema) throws IOException {
-
-    String firstLine = Files.readFirstLine(file(schema), Charsets.UTF_8);
-
-    Iterable<String> header = Splitter.on('\t').split(firstLine);
-
-    return new Fields(Iterables.toArray(header, String.class));
-  }
 }

@@ -80,7 +80,7 @@ define (require) ->
               switch oObj.aData.state
                 when "VALID", "SIGNED OFF"
                   """
-                    <a href='/release/#{collection.release}/submissions/#{oObj.aData.projectKey.replace(/<.*?>/g, '')}#report'>View</a>
+                    <a href='/releases/#{collection.release}/submissions/#{oObj.aData.projectKey.replace(/<.*?>/g, '')}#report'>View</a>
                   """
                 else ""
           }

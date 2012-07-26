@@ -37,6 +37,7 @@ define (require) ->
     
     initialize: ->
       console.debug "SignOffSubmissionView#initialize", @options.submission 
+      @model = @options.submission
       super
          
       @delegate 'click', '#signoff-submission-button', @signOffSubmission
@@ -46,7 +47,7 @@ define (require) ->
       nextRelease = new NextRelease()
       
       @$el.modal 'hide'
-      @options.submission.set "state", "SIGNED OFF"
+      @model.set "state", "SIGNED OFF"
       Chaplin.mediator.publish "validateSubmission"
       
       nextRelease.signOff [@options.submission.get "projectKey"]

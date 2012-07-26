@@ -15,6 +15,8 @@
  */
 package org.icgc.dcc.validation;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.util.List;
 import java.util.Map;
 
@@ -37,12 +39,22 @@ public abstract class BaseFileSchemaFlowPlanner implements FileSchemaFlowPlanner
 
   private final FileSchema fileSchema;
 
+  private final FlowType flowType;
+
   private final Map<String, Pipe> reports = Maps.newHashMap();
 
   private final Map<String, ReportCollector> collectors = Maps.newHashMap();
 
-  protected BaseFileSchemaFlowPlanner(FileSchema fileSchema) {
+  protected BaseFileSchemaFlowPlanner(FileSchema fileSchema, FlowType flowType) {
+    checkArgument(fileSchema != null);
+    checkArgument(flowType != null);
     this.fileSchema = fileSchema;
+    this.flowType = flowType;
+  }
+
+  @Override
+  public String getName() {
+    return getSchema().getName() + flowType.toString();
   }
 
   @Override
@@ -63,7 +75,7 @@ public abstract class BaseFileSchemaFlowPlanner implements FileSchemaFlowPlanner
     FlowDef def = new FlowDef().setName(getName());
 
     for(Map.Entry<String, Pipe> p : reports.entrySet()) {
-      def.addTailSink(p.getValue(), strategy.getReportTap(this, p.getKey()));
+      def.addTailSink(p.getValue(), strategy.getReportTap(getSchema(), flowType, p.getKey()));
     }
     return strategy.getFlowConnector().connect(onConnect(def, strategy));
   }
@@ -73,7 +85,6 @@ public abstract class BaseFileSchemaFlowPlanner implements FileSchemaFlowPlanner
     Outcome result = Outcome.PASSED;
     for(ReportCollector reportCollector : collectors.values()) {
       SchemaReport report = new SchemaReport();
-      report.setName(this.getSchema().getName());
       Outcome outcome = reportCollector.collect(strategy, report);
       reports.add(report);
       if(outcome == Outcome.FAILED) {

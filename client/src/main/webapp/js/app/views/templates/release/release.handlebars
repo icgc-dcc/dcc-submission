@@ -1,3 +1,7 @@
+{{#if next}}
+<div class="alert fade in"><button class="close" data-dismiss="alert">×</button>This release has been closed. The current open release is <a href="/releases/{{next}}">{{next}}</a>.</div>
+{{/if}}
+
 <div class="row-fluid page-header">
   <div class="pull-left">
     <h1>{{name}} <small>{{state}}</small></h1>
@@ -11,11 +15,9 @@
 </div>
 
 <div class="row-fluid">
-  <div class="span6">
-      <ul class="nav nav-list">
-        <li class="nav-header">Submission Summary</li>
-        
-      </ul>
+  <div class="span3">
+      <h3>Submissions Summary</h3>
+      {{release_summary submissions}}
   </div>
 </div>
 
