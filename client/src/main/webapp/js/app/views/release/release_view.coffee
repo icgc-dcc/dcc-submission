@@ -46,6 +46,7 @@ define (require) ->
     fetch: (data) ->
       console.debug 'ReleaseView#fetch', data
       @model.set "next", data.get "name"
+      console.debug 'ReleaseView#fetch', @model
       @model.fetch()
     
     completeReleasePopup: (e) ->
@@ -57,7 +58,7 @@ define (require) ->
       )
       
     render: ->
-      console.debug "ReleaseView#render"
+      console.debug "ReleaseView#render", @model
       super
       @subview('SubmissionsTable'
         new SubmissionTableView {
