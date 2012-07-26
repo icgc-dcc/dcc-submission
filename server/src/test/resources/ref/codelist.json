@@ -3,16 +3,12 @@
   "errors" : [ {
     "code" : "CODELIST_ERROR",
     "parameters" : [ "3", "donor_vital_status", "dr__donor_vital_status" ]
-  } ],
-  "valid" : false,
-  "invalid" : true
+  } ]
 }{
   "offset" : 3,
   "errors" : [ {
     "code" : "CODELIST_ERROR",
     "parameters" : [ "4", "donor_vital_status", "dr__donor_vital_status" ]
-  } ],
-  "valid" : false,
-  "invalid" : true
+  } ]
 }
 

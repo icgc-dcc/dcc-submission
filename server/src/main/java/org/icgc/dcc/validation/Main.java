@@ -4,8 +4,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import org.icgc.dcc.config.ConfigModule;
 import org.icgc.dcc.core.morphia.MorphiaModule;
-import org.icgc.dcc.dictionary.DictionaryService;
-import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.filesystem.FileSystemModule;
 import org.icgc.dcc.release.CompletedRelease;
 import org.icgc.dcc.release.NextRelease;
@@ -40,12 +38,10 @@ public class Main {
     log.info("projectKey = {} ", projectKey);
 
     ReleaseService releaseService = injector.getInstance(ReleaseService.class);
-    DictionaryService dictionaryService = injector.getInstance(DictionaryService.class);
     Release release = getRelease(releaseService, releaseName);
     if(null != release) {
-      Dictionary dictionary = dictionaryService.getFromVersion(release.getDictionaryVersion());
       ValidationService validationService = injector.getInstance(ValidationService.class);
-      validationService.validate(release, dictionary, projectKey);
+      validationService.validate(release, projectKey);
     } else {
       log.info("there is no next release at the moment");
     }

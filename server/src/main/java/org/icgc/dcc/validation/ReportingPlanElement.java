@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.validation;
 
+import org.icgc.dcc.validation.report.ReportCollector;
+
 import cascading.pipe.Pipe;
 
 public interface ReportingPlanElement extends PlanElement {
@@ -29,4 +31,5 @@ public interface ReportingPlanElement extends PlanElement {
    */
   public Pipe report(Pipe pipe);
 
+  public ReportCollector getCollector();
 }

@@ -42,6 +42,7 @@ import org.icgc.dcc.dictionary.model.ValueType;
 import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.filesystem.GuiceJUnitRunner;
 import org.icgc.dcc.filesystem.GuiceJUnitRunner.GuiceModules;
+import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.validation.service.ValidationService;
 import org.junit.Before;
 import org.junit.Test;
@@ -67,10 +68,13 @@ public class ValidationExternalIntegrityTest {
 
   private Dictionary dictionary;
 
+  private ReleaseService releaseService;
+
   @Before
   public void setUp() throws JsonProcessingException, IOException {
     DccFileSystem dccFileSystem = mock(DccFileSystem.class);
     ProjectService projectService = mock(ProjectService.class);
+    releaseService = mock(ReleaseService.class);
 
     CodeList codeList1 = mock(CodeList.class);
     CodeList codeList2 = mock(CodeList.class);
@@ -102,7 +106,8 @@ public class ValidationExternalIntegrityTest {
     when(codeList3.getTerms()).thenReturn(termList3);
     when(codeList4.getTerms()).thenReturn(termList4);
 
-    validationService = new ValidationService(dccFileSystem, projectService, planner);
+    validationService =
+        new ValidationService(dccFileSystem, projectService, planner, dictionaryService, releaseService);
 
     resetDictionary();
   }

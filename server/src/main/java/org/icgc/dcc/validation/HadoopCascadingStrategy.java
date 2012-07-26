@@ -19,6 +19,8 @@ package org.icgc.dcc.validation;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -87,8 +89,9 @@ public class HadoopCascadingStrategy implements CascadingStrategy {
   }
 
   @Override
-  public InputStream readReportTap(FileSchemaFlowPlanner planner, String reportName) {
-    throw new UnsupportedOperationException("method not yet implemented");
+  public InputStream readReportTap(FileSchema schema, FlowType type, String reportName) throws FileNotFoundException {
+    File report = new File(output, String.format("%s.%s#%s.json", schema.getName(), type.toString(), reportName));
+    return new FileInputStream(report);
   }
 
   private Tap<?, ?, ?> tap(File file) {
