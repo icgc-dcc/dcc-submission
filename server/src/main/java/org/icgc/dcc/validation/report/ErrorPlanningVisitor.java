@@ -18,9 +18,9 @@
 package org.icgc.dcc.validation.report;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.List;
 
 import org.codehaus.jackson.map.MappingIterator;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -31,12 +31,15 @@ import org.icgc.dcc.validation.PlanExecutionException;
 import org.icgc.dcc.validation.ReportingFlowPlanningVisitor;
 import org.icgc.dcc.validation.ReportingPlanElement;
 import org.icgc.dcc.validation.cascading.TupleState;
+import org.icgc.dcc.validation.cascading.TupleState.TupleError;
 import org.icgc.dcc.validation.cascading.TupleStates;
 import org.icgc.dcc.validation.cascading.ValidationFields;
 
 import cascading.pipe.Each;
 import cascading.pipe.Pipe;
 import cascading.pipe.assembly.Retain;
+
+import com.google.common.io.Closeables;
 
 public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
 
@@ -48,40 +51,6 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
   public void visit(FileSchema fileSchema) {
     super.visit(fileSchema);
     collect(new ErrorsPlanElement(fileSchema, this.getFlow()));
-  }
-
-  static class ErrorReportCollector implements ReportCollector {
-
-    private final ErrorsPlanElement planElement;
-
-    public ErrorReportCollector(ErrorsPlanElement planElement) {
-      this.planElement = planElement;
-    }
-
-    @Override
-    public Outcome collect(CascadingStrategy strategy, SchemaReport report) {
-      try {
-        InputStream src =
-            strategy.readReportTap(this.planElement.getFileSchema(), this.planElement.getFlowType(),
-                this.planElement.getName());
-
-        ObjectMapper mapper = new ObjectMapper();
-        List<FieldReport> fieldReports = new ArrayList<FieldReport>();
-
-        MappingIterator<TupleState> tupleState = mapper.reader().withType(TupleState.class).readValues(src);
-        while(tupleState.hasNext()) {
-          fieldReports.add(FieldReport.convert(tupleState.next()));
-        }
-
-        report.setFieldReports(fieldReports);
-        return fieldReports.isEmpty() ? Outcome.PASSED : Outcome.FAILED;
-      } catch(FileNotFoundException fnfe) {
-        return Outcome.PASSED;
-      } catch(Exception e) {
-        throw new PlanExecutionException(e);
-      }
-    }
-
   }
 
   static class ErrorsPlanElement implements ReportingPlanElement {
@@ -120,7 +89,49 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
 
     @Override
     public ReportCollector getCollector() {
-      return new ErrorReportCollector(this);
+      return new ErrorReportCollector();
+    }
+
+    class ErrorReportCollector implements ReportCollector {
+
+      public ErrorReportCollector() {
+      }
+
+      @Override
+      public Outcome collect(CascadingStrategy strategy, SchemaReport report) {
+        InputStream src = null;
+        try {
+          src = strategy.readReportTap(getFileSchema(), getFlowType(), getName());
+
+          ObjectMapper mapper = new ObjectMapper();
+          if(report.getErrors() == null) {
+            report.setErrors(new ArrayList<String>());
+          }
+
+          Outcome outcome = Outcome.PASSED;
+          MappingIterator<TupleState> tupleStates = mapper.reader().withType(TupleState.class).readValues(src);
+          while(tupleStates.hasNext()) {
+            TupleState tupleState = tupleStates.next();
+            if(tupleState.isInvalid()) {
+              outcome = Outcome.FAILED;
+              for(TupleError error : tupleState.getErrors()) {
+                report.errors.add(error.getMessage());
+              }
+            }
+            if(report.getErrors().size() >= 100) {
+              // Limit to 100 errors
+              break;
+            }
+          }
+          return outcome;
+        } catch(FileNotFoundException fnfe) {
+          return Outcome.PASSED;
+        } catch(IOException e) {
+          throw new PlanExecutionException(e);
+        } finally {
+          Closeables.closeQuietly(src);
+        }
+      }
     }
 
   }

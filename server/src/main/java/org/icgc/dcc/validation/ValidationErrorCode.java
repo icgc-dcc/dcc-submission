@@ -20,8 +20,12 @@ public enum ValidationErrorCode {
     this.message = message;
   }
 
+  public String format(Object[] parameters) {
+    return String.format(message, parameters);
+  }
+
   public static String format(TupleError error) {
     checkArgument(error != null);
-    return String.format(error.getCode().message, error.getParameters());
+    return error.getCode().format(error.getParameters());
   }
 }
