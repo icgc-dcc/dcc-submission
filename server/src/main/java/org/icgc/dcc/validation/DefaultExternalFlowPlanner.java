@@ -40,28 +40,15 @@ class DefaultExternalFlowPlanner extends BaseFileSchemaFlowPlanner implements Ex
 
   private final Plan plan;
 
-  private final FileSchema fileSchema;
-
   private final Map<Trim, Pipe> trimmedHeads = Maps.newHashMap();
 
   private final List<Pipe> joinedTails = Lists.newLinkedList();
 
   DefaultExternalFlowPlanner(Plan plan, FileSchema fileSchema) {
-    super(fileSchema);
+    super(fileSchema, FlowType.EXTERNAL);
     checkArgument(plan != null);
     checkArgument(fileSchema != null);
     this.plan = plan;
-    this.fileSchema = fileSchema;
-  }
-
-  @Override
-  public String getName() {
-    return getSchema().getName() + ".external";
-  }
-
-  @Override
-  public FileSchema getSchema() {
-    return fileSchema;
   }
 
   @Override

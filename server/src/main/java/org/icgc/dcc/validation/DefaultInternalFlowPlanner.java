@@ -44,8 +44,6 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
 
   private static final Logger log = LoggerFactory.getLogger(DefaultInternalFlowPlanner.class);
 
-  private final FileSchema fileSchema;
-
   private final Pipe head;
 
   private final Map<Trim, Pipe> trimmedTails = Maps.newHashMap();
@@ -55,23 +53,11 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
   private StructralCheckFunction structralCheck;
 
   DefaultInternalFlowPlanner(FileSchema fileSchema) {
-    super(fileSchema);
-    checkArgument(fileSchema != null);
-    this.fileSchema = fileSchema;
+    super(fileSchema, FlowType.INTERNAL);
     this.validTail = this.head = new Pipe(fileSchema.getName());
 
     // apply system pipe
     this.validTail = applySystemPipes(this.validTail);
-  }
-
-  @Override
-  public String getName() {
-    return getSchema().getName() + ".internal";
-  }
-
-  @Override
-  public FileSchema getSchema() {
-    return fileSchema;
   }
 
   @Override
@@ -85,7 +71,7 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
   public Trim addTrimmedOutput(String... fields) {
     checkArgument(fields != null);
     checkArgument(fields.length > 0);
-    Trim trim = new Trim(fileSchema.getName(), fields);
+    Trim trim = new Trim(getSchema().getName(), fields);
     if(trimmedTails.containsKey(trim) == false) {
       Pipe newHead = new Pipe(trim.getName(), validTail);
       Pipe tail = new Retain(newHead, new Fields(fields));
@@ -102,9 +88,9 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
 
   @Override
   protected FlowDef onConnect(FlowDef flowDef, CascadingStrategy strategy) {
-    Tap<?, ?, ?> source = strategy.getSourceTap(fileSchema);
+    Tap<?, ?, ?> source = strategy.getSourceTap(getSchema());
     try {
-      Fields header = strategy.getFileHeader(fileSchema);
+      Fields header = strategy.getFileHeader(getSchema());
       this.structralCheck.setFileHeader(header);
 
     } catch(IOException e) {
@@ -122,7 +108,7 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
   private Pipe applySystemPipes(Pipe pipe) {
     pipe = new Each(pipe, new RemoveEmptyLineFilter());
     pipe = new Each(pipe, new RemoveHeaderFilter());
-    this.structralCheck = new StructralCheckFunction(fileSchema);
+    this.structralCheck = new StructralCheckFunction(getSchema());
     // parse "line" into the actual expected fields
     pipe = new Each(pipe, new Fields("line"), this.structralCheck, Fields.SWAP);
     return new Each(pipe, new AddValidationFieldsFunction(), Fields.ALL);
