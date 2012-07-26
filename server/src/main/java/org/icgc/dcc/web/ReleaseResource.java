@@ -15,6 +15,9 @@ import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.QRelease;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.Submission;
+import org.icgc.dcc.validation.report.FieldReport;
+import org.icgc.dcc.validation.report.SchemaReport;
+import org.icgc.dcc.validation.report.SubmissionReport;
 
 import com.google.inject.Inject;
 
@@ -96,5 +99,52 @@ public class ReleaseResource {
       return Response.status(Status.NOT_FOUND).build();
     }
     return Response.ok(submission).build();
+  }
+
+  @GET
+  @Path("{name}/submissions/{projectKey}/report")
+  public Response getSubmissionReport(@PathParam("name") String name, @PathParam("projectKey") String projectKey) {
+    Submission submission = this.releaseService.getSubmission(name, projectKey);
+    if(submission == null) {
+      return Response.status(Status.NOT_FOUND).build();
+    }
+    SubmissionReport report = submission.getReport();
+    return Response.ok(report).build();
+  }
+
+  @GET
+  @Path("{name}/submissions/{projectKey}/report/{schema}")
+  public Response getSchemaReport(@PathParam("name") String name, @PathParam("projectKey") String projectKey,
+      @PathParam("schema") String schema) {
+    Submission submission = this.releaseService.getSubmission(name, projectKey);
+    if(submission == null) {
+      return Response.status(Status.NOT_FOUND).build();
+    }
+    SubmissionReport report = submission.getReport();
+    SchemaReport schemaReport = report.getSchemaReport(schema);
+    if(schemaReport == null) {
+      return Response.status(Status.NOT_FOUND).build();
+    }
+    return Response.ok(schemaReport).build();
+  }
+
+  @GET
+  @Path("{name}/submissions/{projectKey}/report/{schema}/{field}")
+  public Response getFieldReport(@PathParam("name") String name, @PathParam("projectKey") String projectKey,
+      @PathParam("schema") String schema, @PathParam("field") String field) {
+    Submission submission = this.releaseService.getSubmission(name, projectKey);
+    if(submission == null) {
+      return Response.status(Status.NOT_FOUND).build();
+    }
+    SubmissionReport report = submission.getReport();
+    SchemaReport schemaReport = report.getSchemaReport(schema);
+    if(schemaReport == null) {
+      return Response.status(Status.NOT_FOUND).build();
+    }
+    FieldReport fieldReport = schemaReport.getFieldReport(field);
+    if(fieldReport == null) {
+      return Response.status(Status.NOT_FOUND).build();
+    }
+    return Response.ok(fieldReport).build();
   }
 }

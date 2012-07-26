@@ -21,7 +21,9 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.icgc.dcc.dictionary.model.Field;
+import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.dictionary.model.SummaryType;
+import org.icgc.dcc.validation.FlowType;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -44,8 +46,8 @@ public final class FrequencyPlanElement extends BaseReportingPlanElement {
 
   private final String FREQ = "freq";
 
-  public FrequencyPlanElement(String schemaName, List<Field> fields) {
-    super(schemaName, fields, SummaryType.FREQUENCY);
+  public FrequencyPlanElement(FileSchema fileSchema, List<Field> fields, FlowType flowType) {
+    super(fileSchema, fields, SummaryType.FREQUENCY, flowType);
   }
 
   @Override
@@ -96,5 +98,10 @@ public final class FrequencyPlanElement extends BaseReportingPlanElement {
       }
       bufferCall.getOutputCollector().add(new Tuple(fs));
     }
+  }
+
+  @Override
+  public ReportCollector getCollector() {
+    return new SummaryReportCollector(this);
   }
 }
