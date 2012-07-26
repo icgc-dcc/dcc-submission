@@ -32,6 +32,9 @@ define [
   # Add application-specific Handlebars helpers
   # -------------------------------------------
 
+  Handlebars.registerHelper 'username', (options) ->
+    mediator.user
+
   # Choose block by user login status
   Handlebars.registerHelper 'if_logged_in', (options) ->
     console.log mediator.user
