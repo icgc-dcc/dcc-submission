@@ -1,3 +1,7 @@
+{{#if next}}
+<div class="alert fade in"><button class="close" data-dismiss="alert">×</button>This release has been closed. The current open release is <a href="/releases/{{next}}">{{next}}</a>.</div>
+{{/if}}
+
 <div class="row-fluid page-header">
   <div class="pull-left">
     <h1>{{name}} <small>{{state}}</small></h1>
