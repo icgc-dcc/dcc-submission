@@ -37,6 +37,7 @@ define (require) ->
     
     initialize: ->
       console.debug "ValidateSubmissionView#initialize", @options.submission
+      @model = @options.submission
       super
       
       @delegate 'click', '#validate-submission-button', @validateSubmission
@@ -46,7 +47,7 @@ define (require) ->
       nextRelease = new NextRelease()
       
       @$el.modal 'hide'
-      @options.submission.set "state", "QUEUED"
+      @model.set "state", "QUEUED"
       Chaplin.mediator.publish "validateSubmission"
       
       nextRelease.queue [@options.submission.get "projectKey"]    
