@@ -19,16 +19,27 @@ package org.icgc.dcc.validation.service;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.io.File;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.icgc.dcc.core.ProjectService;
+import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.dictionary.DictionaryService;
 import org.icgc.dcc.dictionary.model.Dictionary;
+import org.icgc.dcc.filesystem.DccFileSystem;
+import org.icgc.dcc.filesystem.ReleaseFileSystem;
+import org.icgc.dcc.filesystem.SubmissionDirectory;
 import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.Release;
+import org.icgc.dcc.release.model.Submission;
+import org.icgc.dcc.validation.CascadingStrategy;
+import org.icgc.dcc.validation.LocalCascadingStrategy;
+import org.icgc.dcc.validation.Plan;
 import org.icgc.dcc.validation.ValidationCallback;
+import org.icgc.dcc.validation.report.SubmissionReport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,13 +66,19 @@ public class ValidationQueueManagerService extends AbstractService implements Va
 
   private final ValidationService validationService;
 
+  private final DccFileSystem dccFileSystem;
+
+  private final ProjectService projectService;
+
   private final ValidationCallback thisAsCallback;
 
   private ScheduledFuture<?> schedule;
 
+  private Plan plan;
+
   @Inject
   public ValidationQueueManagerService(final ReleaseService releaseService, final DictionaryService dictionaryService,
-      ValidationService validationService) {
+      ValidationService validationService, final DccFileSystem dccFileSystem, final ProjectService projectService) {
 
     checkArgument(releaseService != null);
     checkArgument(dictionaryService != null);
@@ -70,6 +87,8 @@ public class ValidationQueueManagerService extends AbstractService implements Va
     this.releaseService = releaseService;
     this.dictionaryService = dictionaryService;
     this.validationService = validationService;
+    this.dccFileSystem = dccFileSystem;
+    this.projectService = projectService;
 
     this.thisAsCallback = this;
   }
@@ -137,6 +156,29 @@ public class ValidationQueueManagerService extends AbstractService implements Va
     checkArgument(projectKey != null);
     log.info("successful validation - about to dequeue project key {}", projectKey);
     dequeue(projectKey, true);
+
+    log.info("starting report collecting on project {}", projectKey);
+
+    Release release = releaseService.getNextRelease().getRelease();
+
+    ReleaseFileSystem releaseFilesystem = dccFileSystem.getReleaseFilesystem(release);
+
+    Project project = projectService.getProject(projectKey);
+    SubmissionDirectory submissionDirectory = releaseFilesystem.getSubmissionDirectory(project);
+
+    File rootDir = new File(submissionDirectory.getSubmissionDirPath());
+    File outputDir = new File(submissionDirectory.getValidationDirPath());
+
+    Submission submission = this.releaseService.getSubmission(release.getName(), projectKey);
+
+    CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir);
+
+    SubmissionReport report = new SubmissionReport();
+    plan.collect(cascadingStrategy, report);
+    submission.setReport(report);
+    // persist the report to DB
+    this.releaseService.UpdateSubmissionReport(release.getName(), projectKey, submission.getReport());
+    log.info("report collecting finished on project {}", projectKey);
   }
 
   @Override
@@ -151,5 +193,9 @@ public class ValidationQueueManagerService extends AbstractService implements Va
     if(dequeuedProjectKey.isPresent() == false) {
       log.warn("could not dequeue project {}, maybe the queue was emptied in the meantime?", projectKey);
     }
+  }
+
+  public void setPlan(Plan plan) {
+    this.plan = plan;
   }
 }
