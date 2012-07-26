@@ -2,6 +2,9 @@ package org.icgc.dcc.validation.report;
 
 import java.util.List;
 
+import com.google.code.morphia.annotations.Embedded;
+
+@Embedded
 public class SchemaReport {
 
   protected String name;
@@ -32,5 +35,14 @@ public class SchemaReport {
 
   public void setErrors(List<String> errors) {
     this.errors = errors;
+  }
+
+  public FieldReport getFieldReport(String field) {
+    for(FieldReport report : this.fieldReports) {
+      if(report.getName().equals(field)) {
+        return report;
+      }
+    }
+    return null;
   }
 }

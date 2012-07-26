@@ -19,6 +19,17 @@ package org.icgc.dcc.validation;
 
 public enum FlowType {
 
-  INTERNAL, EXTERNAL
+  INTERNAL("internal"), EXTERNAL("external");
+
+  private String type;
+
+  private FlowType(String type) {
+    this.type = type;
+  }
+
+  @Override
+  public String toString() {
+    return this.type;
+  }
 
 }

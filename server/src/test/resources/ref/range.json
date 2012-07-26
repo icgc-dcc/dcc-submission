@@ -3,15 +3,11 @@
   "errors" : [ {
     "code" : "OUT_OF_RANGE_ERROR",
     "parameters" : [ 205, "donor_age_at_diagnosis", 0, 200 ]
-  } ],
-  "valid" : false,
-  "invalid" : true
+  } ]
 }{
   "offset" : 2,
   "errors" : [ {
     "code" : "OUT_OF_RANGE_ERROR",
     "parameters" : [ 201, "donor_age_at_diagnosis", 0, 200 ]
-  } ],
-  "valid" : false,
-  "invalid" : true
+  } ]
 }

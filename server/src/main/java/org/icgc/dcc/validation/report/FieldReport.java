@@ -1,8 +1,16 @@
 package org.icgc.dcc.validation.report;
 
+import java.util.Arrays;
+
+import org.icgc.dcc.validation.cascading.TupleState;
+import org.icgc.dcc.validation.cascading.TupleState.TupleError;
+import org.icgc.dcc.validation.report.BaseReportingPlanElement.FieldSummary;
+
+import com.google.code.morphia.annotations.Embedded;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
+@Embedded
 public class FieldReport {
 
   protected String name;
@@ -55,4 +63,27 @@ public class FieldReport {
     this.summary = summary;
   }
 
+  public static FieldReport convert(FieldSummary fieldSummary) {
+    FieldReport fieldReport = new FieldReport();
+    fieldReport.setName(fieldSummary.field);
+    fieldReport.setPopulated(fieldSummary.populated);
+    fieldReport.setNulls(fieldSummary.nulls);
+    fieldReport.setCompleteness(fieldSummary.populated / (fieldSummary.nulls + fieldSummary.populated));
+    BasicDBObject summary = new BasicDBObject();
+    for(String key : fieldSummary.summary.keySet()) {
+      summary.append(key, fieldSummary.summary.get(key));
+    }
+    fieldReport.setSummary(summary);
+    return fieldReport;
+  }
+
+  public static FieldReport convert(TupleState tupleState) {
+    FieldReport fieldReport = new FieldReport();
+    BasicDBObject summary = new BasicDBObject();
+    for(TupleError tupleError : tupleState.getErrors()) {
+      summary.append(tupleError.getCode().toString(), Arrays.asList(tupleError.getParameters()));
+    }
+    fieldReport.setSummary(summary);
+    return fieldReport;
+  }
 }
