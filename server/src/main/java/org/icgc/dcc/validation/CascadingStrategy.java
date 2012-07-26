@@ -33,19 +33,19 @@ public interface CascadingStrategy {
 
   public Tap<?, ?, ?> getSourceTap(FileSchema schema);
 
-  public Tap<?, ?, ?> getInternalSinkTap(FileSchema schema);
+  public Tap<?, ?, ?> getFlowSinkTap(FileSchema schema, FlowType type);
 
   public Tap<?, ?, ?> getTrimmedTap(Trim trim);
 
-  public Tap<?, ?, ?> getExternalSinkTap(FileSchema schema);
-
-  public Tap<?, ?, ?> getReportTap(FileSchemaFlowPlanner planner, String reportName);
+  public Tap<?, ?, ?> getReportTap(FileSchema schema, FlowType type, String reportName);
 
   /**
    * Used to read back a report that was produced during the execution of a Flow. This does not use a Tap so that it can
    * be executed outside of a Flow.
+   * @throws IOException
    */
-  public InputStream readReportTap(FileSchema schema, FlowType type, String reportName) throws FileNotFoundException;
+  public InputStream readReportTap(FileSchema schema, FlowType type, String reportName) throws FileNotFoundException,
+      IOException;
 
   public Fields getFileHeader(FileSchema schema) throws IOException;
 
