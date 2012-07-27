@@ -45,9 +45,19 @@ public class MinMaxBy extends AggregateBy {
   public static class MinMaxPartial implements Functor {
     private static final long serialVersionUID = 1L;
 
+    private final Fields declaredFields;
+
+    public MinMaxPartial() {
+      this(MIN_MAX_FIELDS);
+    }
+
+    public MinMaxPartial(Fields declaredFields) {
+      this.declaredFields = declaredFields;
+    }
+
     @Override
     public Fields getDeclaredFields() {
-      return MIN_MAX_FIELDS;
+      return declaredFields;
     }
 
     @Override
@@ -133,6 +143,6 @@ public class MinMaxBy extends AggregateBy {
   }
 
   public MinMaxBy(Fields valueField, Fields minField) {
-    super(valueField, new MinMaxPartial(), new MinMaxFinal(minField));
+    super(valueField, new MinMaxPartial(minField), new MinMaxFinal(minField));
   }
 }

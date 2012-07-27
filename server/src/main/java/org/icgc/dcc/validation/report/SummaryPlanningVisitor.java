@@ -27,9 +27,6 @@ import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.dictionary.model.SummaryType;
 import org.icgc.dcc.validation.FlowType;
 import org.icgc.dcc.validation.ReportingFlowPlanningVisitor;
-import org.icgc.dcc.validation.report.AggregateReportingPlanElement.AveragePlanElement;
-import org.icgc.dcc.validation.report.AggregateReportingPlanElement.CompletenessPlanElement;
-import org.icgc.dcc.validation.report.AggregateReportingPlanElement.MinMaxPlanElement;
 
 public class SummaryPlanningVisitor extends ReportingFlowPlanningVisitor {
 
@@ -77,19 +74,17 @@ public class SummaryPlanningVisitor extends ReportingFlowPlanningVisitor {
     for(SummaryType summaryType : summaryTypeToFields.keySet()) {
       List<Field> fields = summaryTypeToFields.get(summaryType);
       switch(summaryType) {
-      case COMPLETENESS:
-        collect(new CompletenessPlanElement(fileSchema, fields, this.getFlow()));
-        break;
       case AVERAGE:
-        collect(new AveragePlanElement(fileSchema, fields, this.getFlow()));
+        collect(new SummaryPlanElement.AveragePlanElement(fileSchema, fields, this.getFlow()));
         break;
       case MIN_MAX:
-        collect(new MinMaxPlanElement(fileSchema, fields, this.getFlow()));
+        collect(new SummaryPlanElement.MinMaxPlanElement(fileSchema, fields, this.getFlow()));
         break;
       case FREQUENCY:
         collect(new FrequencyPlanElement(fileSchema, fields, this.getFlow()));
         break;
       default:
+        collect(new SummaryPlanElement.CompletenessPlanElement(fileSchema, fields, this.getFlow()));
         break;
       }
     }
