@@ -194,11 +194,11 @@ public class IntegrationTest {
     assertEquals(200, response.getStatus());
 
     // Release again, expect 200 OK
-    response = sendPostRequest("/nextRelease", resourceToString("/integrationtest/nextRelease.json"));
+    response = sendPostRequest("/nextRelease", "release2");
     assertEquals(200, response.getStatus());
 
     // Release again, expect 400 Bad Request because of the duplicate release
-    response = sendPostRequest("/nextRelease", resourceToString("/integrationtest/nextRelease.json"));
+    response = sendPostRequest("/nextRelease", "release2");
     assertEquals(400, response.getStatus());
   }
 
