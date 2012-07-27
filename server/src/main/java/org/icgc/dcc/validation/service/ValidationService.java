@@ -22,6 +22,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.io.File;
 import java.util.List;
 
+import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.dictionary.DictionaryService;
@@ -34,6 +35,7 @@ import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.validation.CascadingStrategy;
 import org.icgc.dcc.validation.FileSchemaDirectory;
+import org.icgc.dcc.validation.HadoopCascadingStrategy;
 import org.icgc.dcc.validation.LocalCascadingStrategy;
 import org.icgc.dcc.validation.LocalFileSchemaDirectory;
 import org.icgc.dcc.validation.Plan;
@@ -107,7 +109,8 @@ public class ValidationService {
       log.info("outputDir = {} ", outputDir);
 
       FileSchemaDirectory fileSchemaDirectory = new LocalFileSchemaDirectory(rootDir);
-      CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir);
+      CascadingStrategy cascadingStrategy =
+          new HadoopCascadingStrategy(null, new Path(rootDir.getAbsolutePath()), new Path(outputDir.getAbsolutePath()));
 
       log.info("starting validation on project {}", projectKey);
       Cascade cascade = planCascade(validationCallback, projectKey, fileSchemaDirectory, cascadingStrategy, dictionary);
