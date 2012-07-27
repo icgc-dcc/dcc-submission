@@ -150,14 +150,9 @@ public class IntegrationTest {
     this.client.target(BASEURI).path("/seed/projects").request(MediaType.APPLICATION_JSON)
         .header("Authorization", AUTHORIZATION)
         .post(Entity.entity(this.resourceToString("/integrationtest/projects.json"), MediaType.APPLICATION_JSON));
-    this.client
-        .target(BASEURI)
-        .path("/seed/dictionaries")
-        .request(MediaType.APPLICATION_JSON)
+    this.client.target(BASEURI).path("/seed/dictionaries").request(MediaType.APPLICATION_JSON)
         .header("Authorization", AUTHORIZATION)
-        .post(
-            Entity.entity("[" + this.resourceToString("/integrationtest/dictionary.json") + "]",
-                MediaType.APPLICATION_JSON));
+        .post(Entity.entity("[" + this.resourceToString("/dictionary.json") + "]", MediaType.APPLICATION_JSON));
     this.client.target(BASEURI).path("/seed/codelists").request(MediaType.APPLICATION_JSON)
         .header("Authorization", AUTHORIZATION)
         .post(Entity.entity(this.resourceToString("/integrationtest/codelists.json"), MediaType.APPLICATION_JSON));
