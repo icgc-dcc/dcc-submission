@@ -83,7 +83,7 @@ public class ValidationQueueManagerServiceTest {
   @Ignore
   @Test
   public void test_handleSuccessfulValidation_invalidProjectKey() {
-    validationQueueManagerService.handleSuccessfulValidation("project0");
+    validationQueueManagerService.handleSuccessfulValidation("project0", null);
   }
 
   @Test
