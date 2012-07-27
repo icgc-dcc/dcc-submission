@@ -21,7 +21,7 @@ package org.icgc.dcc.validation;
  * Callback interface for {@code ValidationQueueManagerService}
  */
 public interface ValidationCallback {
-  void handleSuccessfulValidation(String projectKey);
+  void handleSuccessfulValidation(String projectKey, Plan plan);
 
   void handleFailedValidation(String projectKey);
 }
