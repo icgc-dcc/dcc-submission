@@ -39,11 +39,13 @@ import cascading.tuple.io.TupleInputStream;
 import cascading.tuple.io.TupleOutputStream;
 
 import com.google.common.collect.Iterables;
+import com.mysema.util.FileUtils;
 
 /**
  * 
  */
 public class TupleStateSerializationTest extends CascadingTestCase {
+  File file;
 
   @Test
   public void test_tuple_state_serialization() throws IOException {
@@ -56,8 +58,6 @@ public class TupleStateSerializationTest extends CascadingTestCase {
         "1000=" + BooleanWritable.class.getName() + ",10001=" + Text.class.getName());
 
     TupleSerialization tupleSerialization = new TupleSerialization(jobConf);
-
-    File file = new File("src/test/resources/tupleState.test");
 
     // output tuple state serialization
     TupleOutputStream output =
@@ -88,6 +88,16 @@ public class TupleStateSerializationTest extends CascadingTestCase {
     TupleError[] resultErrors = Iterables.toArray(resultState.getErrors(), TupleError.class);
     // check TupleError list is serialized
     assertEquals(testErrors.length, resultErrors.length);
+  }
+
+  @Override
+  protected void setUp() throws Exception {
+    file = new File("src/test/resources/tupleState.test");
+  }
+
+  @Override
+  protected void tearDown() throws Exception {
+    FileUtils.delete(file);
   }
 
 }

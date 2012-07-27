@@ -59,8 +59,8 @@ public class NextRelease extends BaseRelease {
     submission.setState(SubmissionState.SIGNED_OFF);
   }
 
-  public NextRelease release(Release nextRelease) {
-    checkArgument(nextRelease != null);
+  public NextRelease release(String nextReleaseName) {
+    checkArgument(nextReleaseName != null);
 
     // check for submission state to be signed off
     if(!this.canRelease()) {
@@ -68,19 +68,17 @@ public class NextRelease extends BaseRelease {
     }
 
     Release oldRelease = this.getRelease();
+    Release nextRelease = new Release(nextReleaseName);
     String oldDictionaryVersion = oldRelease.getDictionaryVersion();
-    String newDictionaryVersion = nextRelease.getDictionaryVersion();
+    String newDictionaryVersion = oldDictionaryVersion;
     if(oldDictionaryVersion == null) {
       throw new ReleaseException("Release must have associated dictionary before being completed");
     }
     if(this.datastore.createQuery(Release.class).filter("name", nextRelease.getName()).get() != null) {
       throw new ReleaseException("New release can not be the same as completed release");
     }
-    if(newDictionaryVersion == null) {
-      nextRelease.setDictionaryVersion(oldRelease.getDictionaryVersion());
-    } else if(this.datastore.createQuery(Dictionary.class).filter("version", newDictionaryVersion).get() == null) {
-      throw new ReleaseException("Specified dictionary version not found in DB: " + newDictionaryVersion);
-    }
+
+    nextRelease.setDictionaryVersion(newDictionaryVersion);
 
     nextRelease.setState(ReleaseState.OPENED);
 
