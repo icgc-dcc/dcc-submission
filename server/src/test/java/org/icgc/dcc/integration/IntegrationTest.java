@@ -186,7 +186,7 @@ public class IntegrationTest {
 
   private void test_releaseFirstRelease() throws IOException {
     // Expect 400 Bad Request because no projects are signed off
-    Response response = sendPostRequest("/nextRelease", resourceToString("/integrationtest/nextRelease.json"));
+    Response response = sendPostRequest("/nextRelease", "release2");
     assertEquals(400, response.getStatus());
 
     // Sign off on a project
