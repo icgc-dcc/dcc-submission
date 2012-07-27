@@ -42,14 +42,17 @@ public class ValidationFlowListener implements FlowListener {
 
   private final ValidationCallback callback;
 
+  private final Plan plan;
+
   @SuppressWarnings("rawtypes")
-  public ValidationFlowListener(ValidationCallback callback, List<Flow> flows, String projectKey) {
+  public ValidationFlowListener(ValidationCallback callback, List<Flow> flows, String projectKey, Plan plan) {
     checkArgument(flows != null);
     checkArgument(projectKey != null);
 
     this.flows = flows;
     this.projectKey = projectKey;
     this.callback = callback; // allow callback to be null (when running validation independently)
+    this.plan = plan;
   }
 
   @Override
@@ -71,7 +74,7 @@ public class ValidationFlowListener implements FlowListener {
         + ", failedCascade = " + failedCascade);
     if(null != callback) {
       if(successfulCascade) {
-        callback.handleSuccessfulValidation(projectKey);
+        callback.handleSuccessfulValidation(projectKey, plan);
       } else if(failedCascade) {
         callback.handleFailedValidation(projectKey);
       } // else: other flows must still be running
