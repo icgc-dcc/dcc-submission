@@ -22,6 +22,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.io.File;
 import java.util.List;
 
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.core.model.Project;
@@ -71,20 +72,25 @@ public class ValidationService {
 
   private final ReleaseService releaseService;
 
+  private final FileSystem fileSystem;
+
   @Inject
   public ValidationService(final DccFileSystem dccFileSystem, final ProjectService projectService,
-      final Planner planner, final DictionaryService dictionaries, final ReleaseService releaseService) {
+      final Planner planner, final DictionaryService dictionaries, final ReleaseService releaseService,
+      final FileSystem fileSystem) {
     checkArgument(dccFileSystem != null);
     checkArgument(projectService != null);
     checkArgument(planner != null);
     checkArgument(dictionaries != null);
     checkArgument(releaseService != null);
+    checkArgument(fileSystem != null);
 
     this.dccFileSystem = dccFileSystem;
     this.projectService = projectService;
     this.planner = planner;
     this.dictionaries = dictionaries;
     this.releaseService = releaseService;
+    this.fileSystem = fileSystem;
   }
 
   public void validate(Release release, String projectKey) {
@@ -110,7 +116,8 @@ public class ValidationService {
 
       FileSchemaDirectory fileSchemaDirectory = new LocalFileSchemaDirectory(rootDir);
       CascadingStrategy cascadingStrategy =
-          new HadoopCascadingStrategy(null, new Path(rootDir.getAbsolutePath()), new Path(outputDir.getAbsolutePath()));
+          new HadoopCascadingStrategy(this.fileSystem, new Path(rootDir.getAbsolutePath()), new Path(
+              outputDir.getAbsolutePath()));
 
       log.info("starting validation on project {}", projectKey);
       Cascade cascade = planCascade(validationCallback, projectKey, fileSchemaDirectory, cascadingStrategy, dictionary);

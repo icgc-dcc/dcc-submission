@@ -15,6 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 package org.icgc.dcc.validation.cascading;
 
 import java.io.IOException;
@@ -33,18 +34,39 @@ import cascading.scheme.hadoop.TextLine;
 
 public class HadoopJsonScheme extends TextLine {
 
-  private final ObjectMapper mapper = new ObjectMapper(new JsonFactory().disable(Feature.AUTO_CLOSE_TARGET))
+  private transient ObjectMapper mapper = new ObjectMapper(new JsonFactory().disable(Feature.AUTO_CLOSE_TARGET))
       .disable(SerializationConfig.Feature.FAIL_ON_EMPTY_BEANS);
 
-  private final ObjectWriter writer = mapper.writerWithDefaultPrettyPrinter();
+  private transient ObjectWriter writer = mapper().writerWithDefaultPrettyPrinter();
 
   public HadoopJsonScheme() {
+
   }
 
   @Override
   public void sink(FlowProcess<JobConf> flowProcess, SinkCall<Object[], OutputCollector> sinkCall) throws IOException {
     Object report = sinkCall.getOutgoingEntry().getTuple().getObject(0);
     // it's ok to use NULL here so the collector does not write anything
-    sinkCall.getOutput().collect(null, writer.writeValueAsString(report));
+    sinkCall.getOutput().collect(null, writer().writeValueAsString(report));
+
   }
+
+  private final ObjectMapper mapper() {
+    if(mapper == null) {
+      mapper =
+          new ObjectMapper(new JsonFactory().disable(Feature.AUTO_CLOSE_TARGET))
+              .disable(SerializationConfig.Feature.FAIL_ON_EMPTY_BEANS);
+    }
+
+    return mapper;
+  }
+
+  private final ObjectWriter writer() {
+    if(writer == null) {
+      writer = mapper().writerWithDefaultPrettyPrinter();
+    }
+
+    return writer;
+  }
+
 }
