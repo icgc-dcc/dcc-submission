@@ -91,6 +91,11 @@ abstract class BaseReportingPlanElement implements ReportingPlanElement {
     return this.flowType;
   }
 
+  @Override
+  public ReportCollector getCollector() {
+    return new SummaryReportCollector();
+  }
+
   public static class FieldSummary {// TODO: use FieldReport instead?
 
     public String field;
@@ -110,17 +115,13 @@ abstract class BaseReportingPlanElement implements ReportingPlanElement {
 
   class SummaryReportCollector implements ReportCollector {
 
-    private final BaseReportingPlanElement planElement;
-
-    public SummaryReportCollector(BaseReportingPlanElement planElement) {
-      this.planElement = planElement;
+    public SummaryReportCollector() {
     }
 
     @Override
     public Outcome collect(CascadingStrategy strategy, SchemaReport report) {
       try {
-        InputStream src =
-            strategy.readReportTap(planElement.getFileSchema(), planElement.getFlowType(), this.planElement.getName());
+        InputStream src = strategy.readReportTap(getFileSchema(), getFlowType(), getName());
         ObjectMapper mapper = new ObjectMapper();
         List<FieldReport> fieldReports = new ArrayList<FieldReport>();
 

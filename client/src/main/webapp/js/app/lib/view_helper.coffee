@@ -32,6 +32,9 @@ define [
   # Add application-specific Handlebars helpers
   # -------------------------------------------
 
+  Handlebars.registerHelper 'username', (options) ->
+    mediator.user
+
   # Choose block by user login status
   Handlebars.registerHelper 'if_logged_in', (options) ->
     console.log mediator.user
@@ -97,5 +100,34 @@ define [
     return false unless string
     new Handlebars.SafeString string.toLowerCase()
   
+
+  Handlebars.registerHelper 'release_summary', (submissions) ->
+    console.log submissions
+    signed_off = 0
+    valid = 0
+    queued = 0
+    invalid = 0
+    not_validated = 0
+    
+    for submission in submissions.models
+      console.log submission
+      switch submission.get "state"
+        when 'SIGNED_OFF' then signed_off++
+        when 'VALID' then valid++
+        when 'QUEUED' then queued++
+        when 'INVALID' then invalid++
+        when 'NOT_VALIDATED' then not_validated++
+                
+    new Handlebars.SafeString """
+      <table class="table">
+        <tbody>
+        <tr><td>Signed Off</td><td>#{signed_off}</td></tr>
+        <tr><td>Valid</td><td>#{valid}</td></tr>
+        <tr><td>Queued</td><td>#{queued}</td></tr>
+        <tr><td>Invalid</td><td>#{invalid}</td></tr>
+        <tr><td>Not Validated</td><td>#{not_validated}</td></tr>
+        </tbody>
+      </table>
+    """
 
   null
