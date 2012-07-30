@@ -24,6 +24,7 @@ import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.dictionary.model.SummaryType;
 import org.icgc.dcc.validation.FlowType;
+import org.icgc.dcc.validation.cascading.CompletenessBy;
 import org.icgc.dcc.validation.cascading.MinMaxBy;
 
 import cascading.flow.FlowProcess;
@@ -49,9 +50,13 @@ public abstract class SummaryPlanElement extends BaseReportingPlanElement {
 
   private final static String STDDEV = "stddev";
 
-  private final static String MIN = "min";
+  protected static String fieldName(Field field, String summaryName) {
+    return fieldName(field.getName(), summaryName);
+  }
 
-  private final static String MAX = "max";
+  protected static String fieldName(String field, String summaryName) {
+    return String.format("%s#%s", field, summaryName);
+  }
 
   protected SummaryPlanElement(FileSchema fileSchema, SummaryType summaryType, List<Field> fields, FlowType flowType) {
     super(fileSchema, fields, summaryType, flowType);
@@ -78,24 +83,27 @@ public abstract class SummaryPlanElement extends BaseReportingPlanElement {
     return pipe;
   }
 
+  protected AggregateBy makeDeviation(Field field) {
+    return new DeviationBy(new Fields(field.getName()), field.getName(), new Fields(fieldName(field, AVG), fieldName(
+        field, STDDEV)));
+  }
+
   protected AggregateBy makeMinMax(Field field) {
-    return new MinMaxBy(new Fields(field.getName()), new Fields(fieldName(field, MIN), fieldName(field, MAX)));
+    return new MinMaxBy(new Fields(field.getName()), new Fields(fieldName(field, MinMaxBy.MIN), fieldName(field,
+        MinMaxBy.MAX)));
+  }
+
+  protected AggregateBy makeCompleteness(Field field) {
+    return new CompletenessBy(new Fields(field.getName()), new Fields(fieldName(field, CompletenessBy.NULLS),
+        fieldName(field, CompletenessBy.MISSING), fieldName(field, CompletenessBy.POPULATED)));
   }
 
   protected abstract Iterable<AggregateBy> collectAggregateBys(Field field);
 
-  protected abstract Iterable<String> summaryFields();
+  protected abstract Iterable<String> summaryFields2();
 
   protected Pipe average(String field, Pipe pipe) {
     return pipe;
-  }
-
-  protected String fieldName(Field field, String summaryName) {
-    return fieldName(field.getName(), summaryName);
-  }
-
-  protected String fieldName(String field, String summaryName) {
-    return String.format("%s#%s", field, summaryName);
   }
 
   @SuppressWarnings("rawtypes")
@@ -120,9 +128,11 @@ public abstract class SummaryPlanElement extends BaseReportingPlanElement {
       for(String field : fields) {
         FieldSummary fs = new FieldSummary();
         fs.field = field;
-        // TODO: collect completeness as well
+        fs.nulls = te.getInteger(fieldName(field, CompletenessBy.NULLS));
+        fs.missing = te.getInteger(fieldName(field, CompletenessBy.MISSING));
+        fs.populated = te.getInteger(fieldName(field, CompletenessBy.POPULATED));
         for(String summary : summaries) {
-          fs.summary.put(summary, te.getObject(String.format("%s#%s", field, summary)));
+          fs.summary.put(summary, te.getObject(fieldName(field, summary)));
         }
         functionCall.getOutputCollector().add(new Tuple(fs));
       }
@@ -137,12 +147,12 @@ public abstract class SummaryPlanElement extends BaseReportingPlanElement {
 
     @Override
     protected Iterable<AggregateBy> collectAggregateBys(Field field) {
-      return ImmutableList.of();
+      return ImmutableList.of(makeCompleteness(field));
     }
 
     @Override
     protected Iterable<String> summaryFields() {
-      return ImmutableList.of();
+      return ImmutableList.of(CompletenessBy.NULLS, CompletenessBy.MISSING, CompletenessBy.POPULATED);
     }
   }
 
@@ -154,15 +164,12 @@ public abstract class SummaryPlanElement extends BaseReportingPlanElement {
 
     @Override
     protected Iterable<AggregateBy> collectAggregateBys(Field field) {
-      return ImmutableList.of(//
-          new DeviationBy(new Fields(field.getName()), field.getName(), new Fields(fieldName(field, AVG), fieldName(
-              field, STDDEV))), //
-          makeMinMax(field));
+      return ImmutableList.of(makeDeviation(field), makeMinMax(field), makeCompleteness(field));
     }
 
     @Override
     protected Iterable<String> summaryFields() {
-      return ImmutableList.of(AVG, STDDEV, MIN, MAX);
+      return ImmutableList.of(AVG, STDDEV, MinMaxBy.MIN, MinMaxBy.MAX);
     }
   }
 
@@ -174,12 +181,12 @@ public abstract class SummaryPlanElement extends BaseReportingPlanElement {
 
     @Override
     protected Iterable<AggregateBy> collectAggregateBys(Field field) {
-      return ImmutableList.of(makeMinMax(field));
+      return ImmutableList.of(makeMinMax(field), makeCompleteness(field));
     }
 
     @Override
     protected Iterable<String> summaryFields() {
-      return ImmutableList.of(MIN, MAX);
+      return ImmutableList.of(MinMaxBy.MIN, MinMaxBy.MAX);
     }
   }
 

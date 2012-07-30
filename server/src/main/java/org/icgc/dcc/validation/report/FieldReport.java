@@ -13,9 +13,11 @@ public class FieldReport {
 
   protected double completeness;
 
-  protected long populated;
-
   protected long nulls;
+
+  protected long missing;
+
+  protected long populated;
 
   protected BasicDBObject summary;
 
@@ -51,6 +53,14 @@ public class FieldReport {
     this.nulls = nulls;
   }
 
+  public long getMissing() {
+    return missing;
+  }
+
+  public void setMissing(long missing) {
+    this.missing = missing;
+  }
+
   public DBObject getSummary() {
     return summary;
   }
@@ -62,9 +72,11 @@ public class FieldReport {
   public static FieldReport convert(FieldSummary fieldSummary) {
     FieldReport fieldReport = new FieldReport();
     fieldReport.setName(fieldSummary.field);
-    fieldReport.setPopulated(fieldSummary.populated);
     fieldReport.setNulls(fieldSummary.nulls);
-    fieldReport.setCompleteness(fieldSummary.populated / (fieldSummary.nulls + fieldSummary.populated));
+    fieldReport.setMissing(fieldSummary.missing);
+    fieldReport.setPopulated(fieldSummary.populated);
+    fieldReport.setCompleteness(100 * fieldSummary.populated
+        / (fieldSummary.nulls + fieldSummary.missing + fieldSummary.populated));
     BasicDBObject summary = new BasicDBObject();
     for(String key : fieldSummary.summary.keySet()) {
       summary.append(key, fieldSummary.summary.get(key));

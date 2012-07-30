@@ -17,6 +17,9 @@
  */
 package org.icgc.dcc.validation.cascading;
 
+import java.util.Arrays;
+import java.util.List;
+
 import cascading.flow.FlowProcess;
 import cascading.operation.Aggregator;
 import cascading.operation.AggregatorCall;
@@ -27,31 +30,40 @@ import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
 @SuppressWarnings("rawtypes")
-public class MinMaxBy extends AggregateBy {
+public class CompletenessBy extends AggregateBy {
   private static final long serialVersionUID = 1L;
+
+  // TODO: move elsewhere + get from dict (DCC-240)
+  public static final List<String> MISSING_CODES = Arrays.asList("-777", "-888", "-999");
 
   private static final int VALUE_OFFSET = 0;
 
-  private static final int MIN_OFFSET = 0;
+  private static final int NULLS_OFFSET = 0;
 
-  private static final int MAX_OFFSET = 1;
+  private static final int MISSING_OFFSET = 1;
 
-  public static final String MIN = "min";
+  private static final int POPULATED_OFFSET = 2;
 
-  public static final String MAX = "max";
+  public static final String COMPLETENESS = "completeness";
 
-  private static final Fields MIN_MAX_FIELDS = new Fields(MIN, MAX);
+  public static final String NULLS = "nulls";
 
-  public static class MinMaxPartial implements Functor {
+  public static final String MISSING = "missing";
+
+  public static final String POPULATED = "populated";
+
+  private static final Fields COMPLETENESS_FIELDS = new Fields(NULLS, MISSING, POPULATED);
+
+  public static class CompletenessPartial implements Functor {
     private static final long serialVersionUID = 1L;
 
     private final Fields declaredFields;
 
-    public MinMaxPartial() {
-      this(MIN_MAX_FIELDS);
+    public CompletenessPartial() {
+      this(COMPLETENESS_FIELDS);
     }
 
-    public MinMaxPartial(Fields declaredFields) {
+    public CompletenessPartial(Fields declaredFields) {
       this.declaredFields = declaredFields;
     }
 
@@ -68,42 +80,53 @@ public class MinMaxBy extends AggregateBy {
     @Override
     public Tuple aggregate(FlowProcess flowProcess, TupleEntry tupleEntry, Tuple tuple) {
       if(tuple == null) {
-        tuple = Tuple.size(MIN_MAX_FIELDS.size());
+        tuple = new Tuple(0, 0, 0);
       }
 
-      Object object = tupleEntry.getObject(VALUE_OFFSET);
-      if(object != null) {
-        double value = tupleEntry.getDouble(VALUE_OFFSET);
-        if(tuple.getObject(MIN_OFFSET) == null || value < tuple.getDouble(MIN_OFFSET)) {
-          tuple.set(MIN_OFFSET, value);
-        }
-        if(tuple.getObject(MAX_OFFSET) == null || value > tuple.getDouble(MAX_OFFSET)) {
-          tuple.set(MAX_OFFSET, value);
-        }
+      String value = tupleEntry.getString(VALUE_OFFSET);
+      if(value == null || value.isEmpty()) {
+        tuple.set(NULLS_OFFSET, tuple.getInteger(NULLS_OFFSET) + 1);
+      } else if(isMissingValue(value)) {
+        tuple.set(MISSING_OFFSET, tuple.getInteger(MISSING_OFFSET) + 1);
+      } else {
+        tuple.set(POPULATED_OFFSET, tuple.getInteger(POPULATED_OFFSET) + 1);
       }
 
       return tuple;
     }
 
+    public boolean isMissingValue(String value) {
+      for(String missingCode : MISSING_CODES) {
+        if(missingCode.equals(value)) {
+          return true;
+        }
+      }
+      return false;
+    }
   }
 
-  public static class MinMaxFinal extends BaseOperation<MinMaxFinal.Context> implements Aggregator<MinMaxFinal.Context> {
+  public static class CompletenessFinal extends BaseOperation<CompletenessFinal.Context> implements
+      Aggregator<CompletenessFinal.Context> {
     private static final long serialVersionUID = 1L;
 
     protected static class Context {
-      Double min;
 
-      Double max;
+      Integer nulls = 0;
+
+      Integer missing = 0;
+
+      Integer populated = 0;
 
       public Context reset() {
-        min = null;
-        max = null;
+        nulls = 0;
+        missing = 0;
+        populated = 0;
         return this;
       }
     }
 
-    public MinMaxFinal(Fields fieldDeclaration) {
-      super(MIN_MAX_FIELDS.size(), fieldDeclaration);
+    public CompletenessFinal(Fields fieldDeclaration) {
+      super(COMPLETENESS_FIELDS.size(), fieldDeclaration);
     }
 
     @Override
@@ -118,31 +141,20 @@ public class MinMaxBy extends AggregateBy {
     @Override
     public void aggregate(FlowProcess flowProcess, AggregatorCall<Context> aggregatorCall) {
       TupleEntry tupleEntry = aggregatorCall.getArguments();
-
       Context context = aggregatorCall.getContext();
-      if(tupleEntry.getObject(MIN_OFFSET) != null) {
-        double min = tupleEntry.getDouble(MIN_OFFSET);
-        if(context.min == null || min < context.min) {
-          context.min = min;
-        }
-      }
-      if(tupleEntry.getObject(MAX_OFFSET) != null) {
-        double max = tupleEntry.getDouble(MAX_OFFSET);
-        if(context.max == null || max > context.max) {
-          context.max = max;
-        }
-      }
-
+      context.nulls += tupleEntry.getInteger(NULLS_OFFSET);
+      context.missing += tupleEntry.getInteger(MISSING_OFFSET);
+      context.populated += tupleEntry.getInteger(POPULATED_OFFSET);
     }
 
     @Override
     public void complete(FlowProcess flowProcess, AggregatorCall<Context> aggregatorCall) {
       Context context = aggregatorCall.getContext();
-      aggregatorCall.getOutputCollector().add(new Tuple(context.min, context.max));
+      aggregatorCall.getOutputCollector().add(new Tuple(context.nulls, context.missing, context.populated));
     }
   }
 
-  public MinMaxBy(Fields valueField, Fields minMaxField) {
-    super(valueField, new MinMaxPartial(minMaxField), new MinMaxFinal(minMaxField));
+  public CompletenessBy(Fields valueField, Fields minField) {
+    super(valueField, new CompletenessPartial(minField), new CompletenessFinal(minField));
   }
 }
