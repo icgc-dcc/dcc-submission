@@ -74,8 +74,6 @@ public class ValidationQueueManagerService extends AbstractService implements Va
 
   private ScheduledFuture<?> schedule;
 
-  private Plan plan;
-
   @Inject
   public ValidationQueueManagerService(final ReleaseService releaseService, final DictionaryService dictionaryService,
       ValidationService validationService, final DccFileSystem dccFileSystem, final ProjectService projectService) {
@@ -152,7 +150,7 @@ public class ValidationQueueManagerService extends AbstractService implements Va
   }
 
   @Override
-  public void handleSuccessfulValidation(String projectKey) {
+  public void handleSuccessfulValidation(String projectKey, Plan plan) {
     checkArgument(projectKey != null);
     log.info("successful validation - about to dequeue project key {}", projectKey);
     dequeue(projectKey, true);
@@ -195,7 +193,4 @@ public class ValidationQueueManagerService extends AbstractService implements Va
     }
   }
 
-  public void setPlan(Plan plan) {
-    this.plan = plan;
-  }
 }

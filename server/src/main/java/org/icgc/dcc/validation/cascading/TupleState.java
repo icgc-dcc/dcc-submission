@@ -96,6 +96,11 @@ public class TupleState implements Serializable {
       return parameters;
     }
 
+    @JsonIgnore
+    public String getMessage() {
+      return code.format(getParameters());
+    }
+
     @Override
     public String toString() {
       return Objects.toStringHelper(TupleError.class).add("code", code).add("parameters", Arrays.toString(parameters))

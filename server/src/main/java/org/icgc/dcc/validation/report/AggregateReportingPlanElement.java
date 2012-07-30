@@ -126,6 +126,11 @@ public abstract class AggregateReportingPlanElement extends BaseReportingPlanEle
     return pipe;
   }
 
+  @Override
+  public ReportCollector getCollector() {
+    return new SummaryReportCollector();
+  }
+
   @SuppressWarnings("rawtypes")
   public static final class FieldToValueFunction extends BaseOperation implements Function { // TODO: cascading built-in
                                                                                              // way?
@@ -210,11 +215,6 @@ public abstract class AggregateReportingPlanElement extends BaseReportingPlanEle
       super(fileSchema, false, false, SummaryType.COMPLETENESS, fields, flowType);
     }
 
-    @Override
-    public ReportCollector getCollector() {
-      // FlowType is always Internal for Summary
-      return new SummaryReportCollector(this);
-    }
   }
 
   static final class MinMaxPlanElement extends AggregateReportingPlanElement {
@@ -222,22 +222,11 @@ public abstract class AggregateReportingPlanElement extends BaseReportingPlanEle
       super(fileSchema, true, false, SummaryType.MIN_MAX, fields, flowType);
     }
 
-    @Override
-    public ReportCollector getCollector() {
-      // FlowType is always Internal for Summary
-      return new SummaryReportCollector(this);
-    }
   }
 
   static final class AveragePlanElement extends AggregateReportingPlanElement {
     public AveragePlanElement(FileSchema fileSchema, List<Field> fields, FlowType flowType) {
       super(fileSchema, true, true, SummaryType.AVERAGE, fields, flowType);
-    }
-
-    @Override
-    public ReportCollector getCollector() {
-      // FlowType is always Internal for Summary
-      return new SummaryReportCollector(this);
     }
   }
 

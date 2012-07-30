@@ -125,12 +125,9 @@ public class ValidationService {
 
     Cascade cascade = plan.connect(cascadingStrategy);
     if(validationCallback != null) {
-      if(validationCallback instanceof ValidationQueueManagerService) {
-        ((ValidationQueueManagerService) validationCallback).setPlan(this.plan);
-      }
       List<Flow> flows = cascade.getFlows();
       for(Flow flow : flows) {
-        ValidationFlowListener listener = new ValidationFlowListener(validationCallback, flows, projectKey);
+        ValidationFlowListener listener = new ValidationFlowListener(validationCallback, flows, projectKey, this.plan);
         flow.addListener(listener);// TODO: once a cascade listener is available, use it instead
       }
     }
@@ -146,7 +143,7 @@ public class ValidationService {
     } else {
       log.info("no flows to run");
       if(validationCallback != null) {
-        validationCallback.handleSuccessfulValidation(projectKey);
+        validationCallback.handleSuccessfulValidation(projectKey, this.plan);
       }
     }
   }
