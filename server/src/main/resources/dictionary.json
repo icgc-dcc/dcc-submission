@@ -1,74 +1,12 @@
 {
-  "created" : 1343659697278,
-  "lastUpdate" : 1343659697278,
+  "created" : 1343675098234,
+  "lastUpdate" : 1343675098234,
   "version" : "0.6c",
   "state" : "OPENED",
   "files" : [ {
-    "name" : "biomarker",
+    "name" : "meth_s",
     "label" : null,
-    "pattern" : "^\\w+__\\d+__\\d+__biomarker__\\d+\\.txt$",
-    "role" : "SUBMISSION",
-    "uniqueFields" : [ ],
-    "fields" : [ {
-      "name" : "donor_id",
-      "label" : "Unique identifier for the donor; assigned by data provider. It must be coded, and correspond to a donor ID listed in the donor data file.",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "specimen_id",
-      "label" : "ID of the specimen on which biomarker ascertainment was performed, if applicable",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "biomarker_name",
-      "label" : "Biomarker name",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "biomarker_threshold",
-      "label" : "Threshold value for the biomarker for calling a result positive. Please include units.",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "biomarker_positive",
-      "label" : "Whether test is positive for named biomarker",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "dr_biomarkers__biomarker_positive"
-        }
-      } ]
-    } ],
-    "relation" : [ {
-      "fields" : [ "donor_id" ],
-      "other" : "donor",
-      "otherFields" : [ "donor_id" ]
-    } ]
-  }, {
-    "name" : "cnsm_m",
-    "label" : null,
-    "pattern" : "^cnsm__\\w+__\\d+__\\d+__m__\\d+__\\d+\\.txt$",
+    "pattern" : "^meth__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__s__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ ],
     "fields" : [ {
@@ -90,8 +28,8 @@
         "config" : null
       } ]
     }, {
-      "name" : "matched_sample_id",
-      "label" : "Unique identifier for the control matched to the tumour sample",
+      "name" : "methylated_fragment_id",
+      "label" : "Unique identifier for the methylation",
       "valueType" : "TEXT",
       "summaryType" : "COMPLETENESS",
       "restrictions" : [ {
@@ -99,86 +37,23 @@
         "config" : null
       } ]
     }, {
-      "name" : "assembly_version",
-      "label" : "Version of reference genome assembly",
+      "name" : "gene_affected",
+      "label" : "Gene(s) containing the methylation.  Use Ensembl gene id. Separate multiple genes with vertical bars in the form of geneA|geneB|geneC.  If no gene is affected, use -888 (not applicable).",
       "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
+      "summaryType" : "COMPLETENESS",
       "restrictions" : [ {
         "type" : "required",
         "config" : null
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "appendix_B10"
-        }
       } ]
     }, {
-      "name" : "platform",
-      "label" : "Platform or technology used in detecting the mutation/variation",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "appendix_B5"
-        }
-      } ]
-    }, {
-      "name" : "experimental_protocol",
-      "label" : "Name of experimental protocol and URL to written protocol",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
-    }, {
-      "name" : "base_calling_algorithm",
-      "label" : "Name of base calling algorithm and URL to written protocol",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
-    }, {
-      "name" : "alignment_algorithm",
-      "label" : "Name of alignment algorithm and URL to written protocol",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
-    }, {
-      "name" : "variation_calling_algorithm",
-      "label" : "Name of variation calling algorithm and URL to written protocol",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
-    }, {
-      "name" : "other_analysis_algorithm",
-      "label" : "Names of other analysis algorithms.  Separate multiple algorithms by commas.",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
-    }, {
-      "name" : "seq_coverage",
-      "label" : "Sequence coverage if analyzed by sequencing platforms",
-      "valueType" : "DECIMAL",
+      "name" : "gene_build_version",
+      "label" : "Version of Ensembl gene build used for annotation",
+      "valueType" : "INTEGER",
       "summaryType" : "AVERAGE",
-      "restrictions" : [ ]
-    }, {
-      "name" : "raw_data_repository",
-      "label" : "Public repository where raw data is submitted",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
       "restrictions" : [ {
-        "type" : "codelist",
-        "config" : {
-          "name" : "appendix_B12"
-        }
+        "type" : "required",
+        "config" : null
       } ]
-    }, {
-      "name" : "raw_data_accession",
-      "label" : "Accession and URL for referencing the raw data at the public repository",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
     }, {
       "name" : "note",
       "label" : "Optional field to leave notes",
@@ -187,14 +62,165 @@
       "restrictions" : [ ]
     } ],
     "relation" : [ {
-      "fields" : [ "analyzed_sample_id" ],
-      "other" : "sample",
-      "otherFields" : [ "analyzed_sample_id" ]
+      "fields" : [ "analysis_id", "analyzed_sample_id", "methylated_fragment_id" ],
+      "other" : "meth_p",
+      "otherFields" : [ "analysis_id", "analyzed_sample_id", "methylated_fragment_id" ]
+    }, {
+      "fields" : [ "gene_affected" ],
+      "other" : "gene_gene",
+      "otherFields" : [ "stable_id_1023" ]
     } ]
   }, {
-    "name" : "cnsm_p",
+    "name" : "surgery",
     "label" : null,
-    "pattern" : "^cnsm__\\w+__\\d+__\\d+__p__\\d+__\\d+\\.txt$",
+    "pattern" : "^\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__surgery__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
+    "role" : "SUBMISSION",
+    "uniqueFields" : [ ],
+    "fields" : [ {
+      "name" : "donor_id",
+      "label" : "Unique identifier for the donor; assigned by data provider. It must be coded, and correspond to a donor ID listed in the donor data file.",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "procedure_interval",
+      "label" : "Interval between primary diagnosis and procedure, in days",
+      "valueType" : "INTEGER",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "procedure_type",
+      "label" : "Controlled vocabulary description of the procedure type. Vocabulary can be extended by disease-specific projects. Prefix extensions with 3-digit center code, e.g. 008.1 Beijing Cancer Hospital, fine needle aspiration of primary",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      }, {
+        "type" : "codelist",
+        "config" : {
+          "name" : "dr_surgical_procedures__procedure_type"
+        }
+      } ]
+    }, {
+      "name" : "procedure_site",
+      "label" : "Anatomical site of the procedure. This must use a standard controlled vocabulary which should be reported in advance to the DCC.",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "resection_status",
+      "label" : "For resection procedures, an indication of the extent of residual disease.",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      }, {
+        "type" : "codelist",
+        "config" : {
+          "name" : "dr_surgical_procedures__resection_status"
+        }
+      } ]
+    }, {
+      "name" : "specimen_id",
+      "label" : "ID of ICGC specimen resulting from procedure. If present, must match specimen_id in specimen data file.",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    } ],
+    "relation" : [ {
+      "fields" : [ "donor_id" ],
+      "other" : "donor",
+      "otherFields" : [ "donor_id" ]
+    } ]
+  }, {
+    "name" : "therapy",
+    "label" : null,
+    "pattern" : "^\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__therapy__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
+    "role" : "SUBMISSION",
+    "uniqueFields" : [ ],
+    "fields" : [ {
+      "name" : "donor_id",
+      "label" : "Unique identifier for the donor; assigned by data provider. It must be coded, and correspond to a donor ID listed in the donor data file.",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "therapy_start_interval",
+      "label" : "Interval between primary diagnosis and initiation of therapy, in days",
+      "valueType" : "INTEGER",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "therapy_duration",
+      "label" : "Duration of therapy, in days",
+      "valueType" : "INTEGER",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "therapy_type",
+      "label" : "Name of therapy",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "therapy_response",
+      "label" : "What was the clinical effect of the therapy?",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      }, {
+        "type" : "codelist",
+        "config" : {
+          "name" : "dr_therapy__therapy_response"
+        }
+      } ]
+    }, {
+      "name" : "therapy_notes",
+      "label" : "Further description of therapy, such as dosing schedule.",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    } ],
+    "relation" : [ {
+      "fields" : [ "donor_id" ],
+      "other" : "donor",
+      "otherFields" : [ "donor_id" ]
+    } ]
+  }, {
+    "name" : "ssm_s",
+    "label" : null,
+    "pattern" : "^ssm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__s__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ ],
     "fields" : [ {
@@ -225,8 +251,8 @@
         "config" : null
       } ]
     }, {
-      "name" : "mutation_type",
-      "label" : "Type of mutation",
+      "name" : "consequence_type",
+      "label" : "Functional consequence of the SNP.",
       "valueType" : "TEXT",
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
@@ -235,109 +261,185 @@
       }, {
         "type" : "codelist",
         "config" : {
-          "name" : "cnsm_p__mutation_type"
+          "name" : "appendix_B7"
         }
       } ]
     }, {
-      "name" : "chromosome",
-      "label" : "Name of the chromosome containing the mutation/variation (#)",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "appendix_B6"
-        }
-      } ]
-    }, {
-      "name" : "chromosome_start",
-      "label" : "Start position of the mutation/variation on the chromosome",
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "chromosome_end",
-      "label" : "End position of the mutation/variation on the chromosome",
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "chromosome_start_range",
-      "label" : "Number of bases around chromosome_start that may contain the start position",
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ ]
-    }, {
-      "name" : "chromosome_end_range",
-      "label" : "Number of bases around chromosome_end that may contain the end position",
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ ]
-    }, {
-      "name" : "start_probe_id",
-      "label" : "Probe id containing the chromosome_start if array platform was used",
+      "name" : "aa_mutation",
+      "label" : "Changes at amino acid level. Indicate the reference aa, position and mutation aa.",
       "valueType" : "TEXT",
       "summaryType" : "COMPLETENESS",
       "restrictions" : [ ]
     }, {
-      "name" : "end_probe_id",
-      "label" : "Probe id containing the chromosome_end if array platform was used",
+      "name" : "cds_mutation",
+      "label" : "Changes in coding sequence.  Indicate position, reference base and mutation base.",
       "valueType" : "TEXT",
       "summaryType" : "COMPLETENESS",
       "restrictions" : [ ]
     }, {
-      "name" : "copy_number",
-      "label" : "DNA copy number estimated",
+      "name" : "protein_domain_affected",
+      "label" : "Protein domain containing the mutation/variation.  Use Pfam accession.",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    }, {
+      "name" : "gene_affected",
+      "label" : "Gene(s) containing the mutation/variation.",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    }, {
+      "name" : "transcript_affected",
+      "label" : "Transcript(s) containing the mutation/variation.  Use Ensembl transcript id.",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    }, {
+      "name" : "gene_build_version",
+      "label" : "Version of Ensembl gene build used for annotation",
+      "valueType" : "INTEGER",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "note",
+      "label" : "Optional field to leave notes",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    } ],
+    "relation" : [ {
+      "fields" : [ "analysis_id", "analyzed_sample_id", "mutation_id" ],
+      "other" : "ssm_p",
+      "otherFields" : [ "analysis_id", "analyzed_sample_id", "mutation_id" ]
+    }, {
+      "fields" : [ "transcript_affected" ],
+      "other" : "gene_transcript",
+      "otherFields" : [ "stable_id_1066" ]
+    } ]
+  }, {
+    "name" : "hsap_gene",
+    "label" : null,
+    "pattern" : null,
+    "role" : "SUBMISSION",
+    "uniqueFields" : [ ],
+    "fields" : [ {
+      "name" : "gene_id_1020_key",
+      "label" : null,
+      "valueType" : "INTEGER",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "stable_id_1023",
+      "label" : null,
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    } ],
+    "relation" : [ ]
+  }, {
+    "name" : "mirna_p",
+    "label" : null,
+    "pattern" : "^mirna__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__p__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
+    "role" : "SUBMISSION",
+    "uniqueFields" : [ ],
+    "fields" : [ {
+      "name" : "analysis_id",
+      "label" : "Unique identifier for the analysis performed for a particular group of samples",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "sample_id",
+      "label" : "Unique identifier for the sample being analyzed",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "mirna_seq",
+      "label" : "Sequence of the miRNA",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "normalized_read_count",
+      "label" : "Normalized count of sequencing reads if analyzed by sequencing platforms",
+      "valueType" : "DECIMAL",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "raw_read_count",
+      "label" : "Raw count of sequencing reads if analyzed by sequencing platforms",
+      "valueType" : "INTEGER",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "normalized_expression_level",
+      "label" : "Normalized value of expression level if analyzed by microarray platforms",
       "valueType" : "DECIMAL",
       "summaryType" : "AVERAGE",
       "restrictions" : [ ]
     }, {
-      "name" : "segment_mean",
-      "label" : "Mean LRR per segment",
+      "name" : "fold_change",
+      "label" : "Expressed fold change if differential expression is measured",
       "valueType" : "DECIMAL",
       "summaryType" : "AVERAGE",
       "restrictions" : [ ]
     }, {
-      "name" : "segment_median",
-      "label" : "Median LRR per segment",
-      "valueType" : "DECIMAL",
-      "summaryType" : "AVERAGE",
+      "name" : "reference_sample",
+      "label" : "ID of the reference sample if differential expression is measured",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
       "restrictions" : [ ]
     }, {
       "name" : "quality_score",
-      "label" : "Quality score for the mutation/variation call",
-      "valueType" : "DECIMAL",
+      "label" : "Quality score for the call",
+      "valueType" : "INTEGER",
       "summaryType" : "AVERAGE",
       "restrictions" : [ ]
     }, {
       "name" : "probability",
-      "label" : "Probability of the mutation/variation call",
+      "label" : "Probability of the call",
       "valueType" : "DECIMAL",
       "summaryType" : "AVERAGE",
       "restrictions" : [ ]
     }, {
       "name" : "is_annotated",
-      "label" : "Indicate if the mutation/variation is annotated in the Database of Genomic Variants",
+      "label" : "Indicate if the fragment is annotated",
       "valueType" : "TEXT",
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "codelist",
         "config" : {
-          "name" : "cnsm_p__is_annotated"
+          "name" : "mirna_p__is_annotated"
         }
       } ]
     }, {
       "name" : "validation_status",
-      "label" : "Indicate if the mutation/variation has been validated",
+      "label" : "Indicate if the fragment has been validated",
       "valueType" : "TEXT",
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
@@ -346,7 +448,7 @@
       }, {
         "type" : "codelist",
         "config" : {
-          "name" : "cnsm_p__validation_status"
+          "name" : "mirna_p__validation_status"
         }
       } ]
     }, {
@@ -368,14 +470,14 @@
       "restrictions" : [ ]
     } ],
     "relation" : [ {
-      "fields" : [ "analysis_id", "analyzed_sample_id" ],
-      "other" : "cnsm_m",
-      "otherFields" : [ "analysis_id", "analyzed_sample_id" ]
+      "fields" : [ "analysis_id", "sample_id" ],
+      "other" : "mirna_m",
+      "otherFields" : [ "analysis_id", "sample_id" ]
     } ]
   }, {
     "name" : "cnsm_s",
     "label" : null,
-    "pattern" : "^cnsm__\\w+__\\d+__\\d+__s__\\d+__\\d+\\.txt$",
+    "pattern" : "^cnsm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__s__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ ],
     "fields" : [ {
@@ -446,184 +548,9 @@
       "otherFields" : [ "stable_id_1066" ]
     } ]
   }, {
-    "name" : "donor",
-    "label" : null,
-    "pattern" : "^\\w+__\\d+__\\d+__donor__\\d+\\.txt$",
-    "role" : "SUBMISSION",
-    "uniqueFields" : [ ],
-    "fields" : [ {
-      "name" : "donor_id",
-      "label" : "Unique identifier for the donor; assigned by data provider. ",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "donor_sex",
-      "label" : "Donor biological sex. 'Other' has been removed from the controlled vocabulary due to identifiability concerns.",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "dr__donor_sex"
-        }
-      } ]
-    }, {
-      "name" : "donor_region_of_residence",
-      "label" : "Country, and optionally state or province code, but not city.",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "donor_vital_status",
-      "label" : "Donor's last known vital status",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "dr__donor_vital_status"
-        }
-      } ]
-    }, {
-      "name" : "disease_status_last_followup",
-      "label" : "Donor's last known disease status.",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "dr__disease_status_last_followup"
-        }
-      } ]
-    }, {
-      "name" : "donor_relapse_type",
-      "label" : "Type of relapse or progression (for liquid tumours), if applicable",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "dr__donor_relapse_type"
-        }
-      } ]
-    }, {
-      "name" : "donor_age_at_diagnosis",
-      "label" : "Age at primary diagnosis.",
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "donor_age_at_enrollment",
-      "label" : "Age at which first specimen was collected.",
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "donor_age_at_last_followup",
-      "label" : "Age at last followup",
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "donor_relapse_interval",
-      "label" : "If donor was clinically disease free following primary therapy and relapse or progression (for liquid tumours) occurred, length of disease free interval, in days.",
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "donor_diagnosis_icd10",
-      "label" : "ICD-10 diagnostic code",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "donor_tumour_staging_system_at_diagnosis",
-      "label" : "Clinical staging system used at time of diagnosis, if determined. Note that this is supplementary to specimen's pathological staging.",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "donor_tumour_stage_at_diagnosis",
-      "label" : "Stage at diagnosis using indicated staging system. Note that this is supplementary to specimen's pathological staging. ",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "donor_tumour_stage_at_diagnosis_supplemental",
-      "label" : "Optional additional staging provided as a comma-delimited list of 'staging system:stage'",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
-    }, {
-      "name" : "donor_survival_time",
-      "label" : "How long has donor survived since primary diagnosis, in days. If source data was collected in months, use a multiplier value of '30.44' to convert value to days when preparing submission.",
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "donor_interval_of_last_followup",
-      "label" : "Interval from primary diagnosis to last followup date. ICGC requests that patients be followed up every 6 months while alive.",
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "donor_notes",
-      "label" : "Free text notes concerning donor",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
-    } ],
-    "relation" : [ ]
-  }, {
     "name" : "exp_g",
     "label" : null,
-    "pattern" : "^exp__\\w+__\\d+__\\d+__g__\\d+__\\d+\\.txt$",
+    "pattern" : "^exp__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__g__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ ],
     "fields" : [ {
@@ -806,14 +733,383 @@
       "otherFields" : [ "stable_id_1023" ]
     } ]
   }, {
-    "name" : "exp_m",
+    "name" : "mirna_mirbase",
     "label" : null,
-    "pattern" : "^exp__\\w+__\\d+__\\d+__m__\\d+__\\d+\\.txt$",
+    "pattern" : null,
+    "role" : "SUBMISSION",
+    "uniqueFields" : [ ],
+    "fields" : [ {
+      "name" : "xref_mirbase_id",
+      "label" : null,
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "mirna_seq",
+      "label" : null,
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "transcript_id",
+      "label" : null,
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "overlap_type",
+      "label" : null,
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "number",
+      "label" : null,
+      "valueType" : "INTEGER",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "transcript_source",
+      "label" : null,
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "transcript_name",
+      "label" : null,
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "gene_stable_id",
+      "label" : null,
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "gene_symbol",
+      "label" : null,
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    } ],
+    "relation" : [ {
+      "fields" : [ "transcript_id" ],
+      "other" : "gene_transcript",
+      "otherFields" : [ "stable_id_1066" ]
+    } ]
+  }, {
+    "name" : "stsm_s",
+    "label" : null,
+    "pattern" : "^stsm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__s__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
+    "role" : "SUBMISSION",
+    "uniqueFields" : [ ],
+    "fields" : [ {
+      "name" : "gene_affected",
+      "label" : "Gene(s) affected by the breakpoints.  Use Ensembl gene id.  Separate multiple genes with vertical bars in the form of geneA|geneB|geneC. If both breakpoints affect genes, then use | to separate them.  If no gene is affected, use -888 (not applicable).",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    }, {
+      "name" : "transcript_affected",
+      "label" : "Transcript(s) affected by the breakpoints. Use Ensembl transcript id.  Separate multiple transcripts from the same gene with commas, and separate transcripts from different genes with vertical bars. eg. transcriptA1, transcriptA2|transcriptB1|transcriptC1",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    }, {
+      "name" : "analysis_id",
+      "label" : "Unique identfier for the analysis performed for a particular group of samples",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "analyzed_sample_id",
+      "label" : null,
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "sv_id",
+      "label" : "Unique variant id (institute wide). One id per single event",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "placement",
+      "label" : "Ordering of breakpoint pairs within a single structural change event",
+      "valueType" : "INTEGER",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "bkpt_from_context",
+      "label" : "Contextual description of the first break location (Exonic, Intronic, Intergenic)",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    }, {
+      "name" : "bkpt_to_context",
+      "label" : "Contextual description of the second break location (Exonic, Intronic, Intergenic)",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    }, {
+      "name" : "gene_build_version",
+      "label" : "Version of Ensembl gene build used for annotation",
+      "valueType" : "INTEGER",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "note",
+      "label" : "Optional field to leave notes",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    } ],
+    "relation" : [ {
+      "fields" : [ "analysis_id", "analyzed_sample_id", "sv_id", "placement" ],
+      "other" : "stsm_p",
+      "otherFields" : [ "analysis_id", "analyzed_sample_id", "sv_id", "placement" ]
+    }, {
+      "fields" : [ "transcript_affected_by_bkpt_from" ],
+      "other" : "gene_transcript",
+      "otherFields" : [ "stable_id_1066" ]
+    }, {
+      "fields" : [ "transcript_affected_by_bkpt_to" ],
+      "other" : "gene_transcript",
+      "otherFields" : [ "stable_id_1066" ]
+    } ]
+  }, {
+    "name" : "cnsm_p",
+    "label" : null,
+    "pattern" : "^cnsm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__p__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ ],
     "fields" : [ {
       "name" : "analysis_id",
       "label" : "Unique identfier for the analysis performed for a particular group of samples",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "analyzed_sample_id",
+      "label" : null,
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "mutation_id",
+      "label" : "Unique identifier for the mutation",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "mutation_type",
+      "label" : "Type of mutation",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      }, {
+        "type" : "codelist",
+        "config" : {
+          "name" : "cnsm_p__mutation_type"
+        }
+      } ]
+    }, {
+      "name" : "chromosome",
+      "label" : "Name of the chromosome containing the mutation/variation (#)",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      }, {
+        "type" : "codelist",
+        "config" : {
+          "name" : "appendix_B6"
+        }
+      } ]
+    }, {
+      "name" : "chromosome_start",
+      "label" : "Start position of the mutation/variation on the chromosome",
+      "valueType" : "INTEGER",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "chromosome_end",
+      "label" : "End position of the mutation/variation on the chromosome",
+      "valueType" : "INTEGER",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "chromosome_start_range",
+      "label" : "Number of bases around chromosome_start that may contain the start position",
+      "valueType" : "INTEGER",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ ]
+    }, {
+      "name" : "chromosome_end_range",
+      "label" : "Number of bases around chromosome_end that may contain the end position",
+      "valueType" : "INTEGER",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ ]
+    }, {
+      "name" : "start_probe_id",
+      "label" : "Probe id containing the chromosome_start if array platform was used",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    }, {
+      "name" : "end_probe_id",
+      "label" : "Probe id containing the chromosome_end if array platform was used",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    }, {
+      "name" : "copy_number",
+      "label" : "DNA copy number estimated",
+      "valueType" : "DECIMAL",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ ]
+    }, {
+      "name" : "segment_mean",
+      "label" : "Mean LRR per segment",
+      "valueType" : "DECIMAL",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ ]
+    }, {
+      "name" : "segment_median",
+      "label" : "Median LRR per segment",
+      "valueType" : "DECIMAL",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ ]
+    }, {
+      "name" : "quality_score",
+      "label" : "Quality score for the mutation/variation call",
+      "valueType" : "DECIMAL",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ ]
+    }, {
+      "name" : "probability",
+      "label" : "Probability of the mutation/variation call",
+      "valueType" : "DECIMAL",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ ]
+    }, {
+      "name" : "is_annotated",
+      "label" : "Indicate if the mutation/variation is annotated in the Database of Genomic Variants",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "codelist",
+        "config" : {
+          "name" : "cnsm_p__is_annotated"
+        }
+      } ]
+    }, {
+      "name" : "validation_status",
+      "label" : "Indicate if the mutation/variation has been validated",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      }, {
+        "type" : "codelist",
+        "config" : {
+          "name" : "cnsm_p__validation_status"
+        }
+      } ]
+    }, {
+      "name" : "validation_platform",
+      "label" : "Platform or technology used in validation",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "codelist",
+        "config" : {
+          "name" : "appendix_B5"
+        }
+      } ]
+    }, {
+      "name" : "note",
+      "label" : "Optional field to leave notes",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    } ],
+    "relation" : [ {
+      "fields" : [ "analysis_id", "analyzed_sample_id" ],
+      "other" : "cnsm_m",
+      "otherFields" : [ "analysis_id", "analyzed_sample_id" ]
+    } ]
+  }, {
+    "name" : "mirna_m",
+    "label" : null,
+    "pattern" : "^mirna__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__m__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
+    "role" : "SUBMISSION",
+    "uniqueFields" : [ ],
+    "fields" : [ {
+      "name" : "analysis_id",
+      "label" : "Unique identifier for the analysis performed for a particular group of samples",
       "valueType" : "TEXT",
       "summaryType" : "COMPLETENESS",
       "restrictions" : [ {
@@ -831,8 +1127,17 @@
       } ]
     }, {
       "name" : "assembly_version",
-      "label" : "Version of reference genome assembly",
+      "label" : "Version of reference genome assembly (#)",
       "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "gene_build_version",
+      "label" : "Version of Ensembl gene build used for annotation",
+      "valueType" : "INTEGER",
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
@@ -840,17 +1145,8 @@
       }, {
         "type" : "codelist",
         "config" : {
-          "name" : "appendix_B10"
+          "name" : "mirna_m__gene_build_version"
         }
-      } ]
-    }, {
-      "name" : "gene_build_version",
-      "label" : "Version of Ensembl gene build used for annotation",
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
       } ]
     }, {
       "name" : "platform",
@@ -941,14 +1237,14 @@
       "otherFields" : [ "analyzed_sample_id" ]
     } ]
   }, {
-    "name" : "exposure",
+    "name" : "donor",
     "label" : null,
-    "pattern" : "^\\w+__\\d+__\\d+__exposure__\\d+\\.txt$",
+    "pattern" : "^\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__donor__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ ],
     "fields" : [ {
       "name" : "donor_id",
-      "label" : "Unique identifier for the donor; assigned by data provider. It must be coded, and correspond to a donor ID listed in the donor data file.",
+      "label" : "Unique identifier for the donor; assigned by data provider. ",
       "valueType" : "TEXT",
       "summaryType" : "COMPLETENESS",
       "restrictions" : [ {
@@ -956,8 +1252,22 @@
         "config" : null
       } ]
     }, {
-      "name" : "exposure_type",
-      "label" : "Type of exposure. This is a controlled vocabulary term to be developed by the submitting group.",
+      "name" : "donor_sex",
+      "label" : "Donor biological sex. 'Other' has been removed from the controlled vocabulary due to identifiability concerns.",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      }, {
+        "type" : "codelist",
+        "config" : {
+          "name" : "dr__donor_sex"
+        }
+      } ]
+    }, {
+      "name" : "donor_region_of_residence",
+      "label" : "Country, and optionally state or province code, but not city.",
       "valueType" : "TEXT",
       "summaryType" : "COMPLETENESS",
       "restrictions" : [ {
@@ -965,8 +1275,50 @@
         "config" : null
       } ]
     }, {
-      "name" : "exposure_intensity",
-      "label" : "Extent of the exposure. This is a controlled vocabulary term to be developed by the submitting group. Units to be specified by submitting group.",
+      "name" : "donor_vital_status",
+      "label" : "Donor's last known vital status",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      }, {
+        "type" : "codelist",
+        "config" : {
+          "name" : "dr__donor_vital_status"
+        }
+      } ]
+    }, {
+      "name" : "disease_status_last_followup",
+      "label" : "Donor's last known disease status.",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      }, {
+        "type" : "codelist",
+        "config" : {
+          "name" : "dr__disease_status_last_followup"
+        }
+      } ]
+    }, {
+      "name" : "donor_relapse_type",
+      "label" : "Type of relapse or progression (for liquid tumours), if applicable",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      }, {
+        "type" : "codelist",
+        "config" : {
+          "name" : "dr__donor_relapse_type"
+        }
+      } ]
+    }, {
+      "name" : "donor_age_at_diagnosis",
+      "label" : "Age at primary diagnosis.",
       "valueType" : "INTEGER",
       "summaryType" : "AVERAGE",
       "restrictions" : [ {
@@ -974,8 +1326,118 @@
         "config" : null
       } ]
     }, {
-      "name" : "exposure_notes",
-      "label" : "Free text notes.",
+      "name" : "donor_age_at_enrollment",
+      "label" : "Age at which first specimen was collected.",
+      "valueType" : "INTEGER",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "donor_age_at_last_followup",
+      "label" : "Age at last followup",
+      "valueType" : "INTEGER",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "donor_relapse_interval",
+      "label" : "If donor was clinically disease free following primary therapy and relapse or progression (for liquid tumours) occurred, length of disease free interval, in days.",
+      "valueType" : "INTEGER",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "donor_diagnosis_icd10",
+      "label" : "ICD-10 diagnostic code",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "donor_tumour_staging_system_at_diagnosis",
+      "label" : "Clinical staging system used at time of diagnosis, if determined. Note that this is supplementary to specimen's pathological staging.",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "donor_tumour_stage_at_diagnosis",
+      "label" : "Stage at diagnosis using indicated staging system. Note that this is supplementary to specimen's pathological staging. ",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "donor_tumour_stage_at_diagnosis_supplemental",
+      "label" : "Optional additional staging provided as a comma-delimited list of 'staging system:stage'",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    }, {
+      "name" : "donor_survival_time",
+      "label" : "How long has donor survived since primary diagnosis, in days. If source data was collected in months, use a multiplier value of '30.44' to convert value to days when preparing submission.",
+      "valueType" : "INTEGER",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "donor_interval_of_last_followup",
+      "label" : "Interval from primary diagnosis to last followup date. ICGC requests that patients be followed up every 6 months while alive.",
+      "valueType" : "INTEGER",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "donor_notes",
+      "label" : "Free text notes concerning donor",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    } ],
+    "relation" : [ ]
+  }, {
+    "name" : "hsap_transcript",
+    "label" : null,
+    "pattern" : null,
+    "role" : "SUBMISSION",
+    "uniqueFields" : [ ],
+    "fields" : [ {
+      "name" : "gene_id_1020_key",
+      "label" : null,
+      "valueType" : "INTEGER",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "transcript_id_1064_key",
+      "label" : null,
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "stable_id_1066",
+      "label" : null,
       "valueType" : "TEXT",
       "summaryType" : "COMPLETENESS",
       "restrictions" : [ {
@@ -983,15 +1445,748 @@
         "config" : null
       } ]
     } ],
+    "relation" : [ ]
+  }, {
+    "name" : "sgv_p",
+    "label" : null,
+    "pattern" : "^sgv__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__p__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
+    "role" : "SUBMISSION",
+    "uniqueFields" : [ ],
+    "fields" : [ {
+      "name" : "analysis_id",
+      "label" : "Unique identfier for the analysis performed for a particular group of samples",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "control_sample_id",
+      "label" : "Unique identifier for the control sample",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "variation_id",
+      "label" : "Unique identifier for the variation",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "variation_type",
+      "label" : "Type of variation",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      }, {
+        "type" : "codelist",
+        "config" : {
+          "name" : "sgv_p__variation_type"
+        }
+      } ]
+    }, {
+      "name" : "chromosome",
+      "label" : "Name of the chromosome containing the mutation/variation",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      }, {
+        "type" : "codelist",
+        "config" : {
+          "name" : "appendix_B6"
+        }
+      } ]
+    }, {
+      "name" : "chromosome_start",
+      "label" : "Start position of the mutation/variation on the chromosome",
+      "valueType" : "INTEGER",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "chromosome_end",
+      "label" : "End position of the mutation/variation on the chromosome",
+      "valueType" : "INTEGER",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "chromosome_strand",
+      "label" : "Chromosome strand",
+      "valueType" : "INTEGER",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      }, {
+        "type" : "codelist",
+        "config" : {
+          "name" : "sgv_p__chromosome_strand"
+        }
+      } ]
+    }, {
+      "name" : "refsnp_allele",
+      "label" : "RefSNP alleles from dbSNP (use a dash for each missing base)",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "refsnp_strand",
+      "label" : "Strand of RefSNP allele",
+      "valueType" : "INTEGER",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "codelist",
+        "config" : {
+          "name" : "sgv_p__refsnp_strand"
+        }
+      } ]
+    }, {
+      "name" : "reference_genome_allele",
+      "label" : "Allele in the reference genome (use a dash for each missing base)",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "control_genotype",
+      "label" : "Genotype of the control sample (use a dash for each missing base)",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "tumour_genotype",
+      "label" : "Genotype of the tumour sample (use a dash for each missing base)",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "expressed_allele",
+      "label" : "For heterozygous SNPs, the dominant allele as revealed by RNA-seq, etc.",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    }, {
+      "name" : "quality_score",
+      "label" : "Average quality score for the mutation/variation call",
+      "valueType" : "INTEGER",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ ]
+    }, {
+      "name" : "probability",
+      "label" : "Probability of the mutation/variation call",
+      "valueType" : "DECIMAL",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ ]
+    }, {
+      "name" : "read_count",
+      "label" : "Average number of times the bases are covered by raw reads",
+      "valueType" : "DECIMAL",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ ]
+    }, {
+      "name" : "is_annotated",
+      "label" : "Indicate if the mutation/variation is annotated in dbSNP",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "codelist",
+        "config" : {
+          "name" : "sgv_p__is_annotated"
+        }
+      } ]
+    }, {
+      "name" : "validation_status",
+      "label" : "Indicate if the mutation/variation has been validated",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      }, {
+        "type" : "codelist",
+        "config" : {
+          "name" : "sgv_p__validation_status"
+        }
+      } ]
+    }, {
+      "name" : "validation_platform",
+      "label" : "Platform or technology used in validation",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "codelist",
+        "config" : {
+          "name" : "appendix_B5"
+        }
+      } ]
+    }, {
+      "name" : "xref_ensembl_var_id",
+      "label" : "Cross-reference: Ensembl Variation ID",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    }, {
+      "name" : "note",
+      "label" : "Optional field to leave notes",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    } ],
     "relation" : [ {
-      "fields" : [ "donor_id" ],
-      "other" : "donor",
-      "otherFields" : [ "donor_id" ]
+      "fields" : [ "analysis_id", "control_sample_id" ],
+      "other" : "sgv_m",
+      "otherFields" : [ "analysis_id", "control_sample_id" ]
+    } ]
+  }, {
+    "name" : "stsm_m",
+    "label" : null,
+    "pattern" : "^stsm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__m__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
+    "role" : "SUBMISSION",
+    "uniqueFields" : [ ],
+    "fields" : [ {
+      "name" : "analysis_id",
+      "label" : "Unique identfier for the analysis performed for a particular group of samples",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "analyzed_sample_id",
+      "label" : null,
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "matched_sample_id",
+      "label" : "Unique identifier for the control matched to the tumour sample",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "assembly_version",
+      "label" : "Version of reference genome assembly",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      }, {
+        "type" : "codelist",
+        "config" : {
+          "name" : "appendix_B10"
+        }
+      } ]
+    }, {
+      "name" : "platform",
+      "label" : "Platform or technology used in detecting the mutation/variation",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      }, {
+        "type" : "codelist",
+        "config" : {
+          "name" : "appendix_B5"
+        }
+      } ]
+    }, {
+      "name" : "experimental_protocol",
+      "label" : "Name of experimental protocol and URL to written protocol",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    }, {
+      "name" : "base_calling_algorithm",
+      "label" : "Name of base calling algorithm and URL to written protocol",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "alignment_algorithm",
+      "label" : "Name of alignment algorithm and URL to written protocol",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "variation_calling_algorithm",
+      "label" : "Name of variation calling algorithm and URL to written protocol",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "other_analysis_algorithm",
+      "label" : "Names of other analysis algorithms.  Separate multiple algorithms by commas.",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    }, {
+      "name" : "seq_coverage",
+      "label" : "Sequence coverage if analyzed by sequencing platforms",
+      "valueType" : "DECIMAL",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ ]
+    }, {
+      "name" : "raw_data_repository",
+      "label" : "Public repository where raw data is submitted",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "codelist",
+        "config" : {
+          "name" : "appendix_B12"
+        }
+      } ]
+    }, {
+      "name" : "raw_data_accession",
+      "label" : "Accession and URL for referencing the raw data at the public repository",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    }, {
+      "name" : "note",
+      "label" : "Optional field to leave notes",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    } ],
+    "relation" : [ {
+      "fields" : [ "analyzed_sample_id" ],
+      "other" : "sample",
+      "otherFields" : [ "analyzed_sample_id" ]
+    } ]
+  }, {
+    "name" : "stsm_p",
+    "label" : null,
+    "pattern" : "^stsm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__p__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
+    "role" : "SUBMISSION",
+    "uniqueFields" : [ ],
+    "fields" : [ {
+      "name" : "analysis_id",
+      "label" : "Unique identfier for the analysis performed for a particular group of samples",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "analyzed_sample_id",
+      "label" : null,
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "sv_id",
+      "label" : "Unique variant id (institute wide). One id per single event",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "placement",
+      "label" : "Ordering of breakpoint pairs within a single structural mutation/variation event",
+      "valueType" : "INTEGER",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "annotation",
+      "label" : "Annotation describing sequence mutation/variation based on breakpoint pairs",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "interpreted_annotation",
+      "label" : "HGVS nomenclature for description of sequence mutation/variation. E.g. chr3:g.1234567-2345678inv.",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    }, {
+      "name" : "variant_type",
+      "label" : "Type of mutation/variation",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      }, {
+        "type" : "codelist",
+        "config" : {
+          "name" : "appendix_B9"
+        }
+      } ]
+    }, {
+      "name" : "chr_from",
+      "label" : "Name of the donor chromosome containing the mutation/variation",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      }, {
+        "type" : "codelist",
+        "config" : {
+          "name" : "appendix_B6"
+        }
+      } ]
+    }, {
+      "name" : "chr_from_bkpt",
+      "label" : "Breakpoint position of the mutation/variation on the donor chromosome",
+      "valueType" : "INTEGER",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "chr_from_strand",
+      "label" : "Donor chromome strand",
+      "valueType" : "INTEGER",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      }, {
+        "type" : "codelist",
+        "config" : {
+          "name" : "stsm_p__chr_from_strand"
+        }
+      } ]
+    }, {
+      "name" : "chr_from_range",
+      "label" : "Number of bases around chr_from_bkpt that may contain the real breakpoint",
+      "valueType" : "INTEGER",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ ]
+    }, {
+      "name" : "chr_from_flanking_seq",
+      "label" : "Flanking sequences that are 200bp upstream and 200bp downstream to the chr_from_bkpt position.",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    }, {
+      "name" : "chr_to",
+      "label" : "Name of the acceptor chromosome containing the mutation/variation",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      }, {
+        "type" : "codelist",
+        "config" : {
+          "name" : "appendix_B6"
+        }
+      } ]
+    }, {
+      "name" : "chr_to_bkpt",
+      "label" : "Breakpoint position of the mutation/variation on the acceptor chromosome",
+      "valueType" : "INTEGER",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "chr_to_strand",
+      "label" : "Acceptor chromome strand",
+      "valueType" : "INTEGER",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      }, {
+        "type" : "codelist",
+        "config" : {
+          "name" : "stsm_p__chr_to_strand"
+        }
+      } ]
+    }, {
+      "name" : "chr_to_range",
+      "label" : "Number of bases around chr_to_bkpt that may contain the real breakpoint",
+      "valueType" : "INTEGER",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ ]
+    }, {
+      "name" : "chr_to_flanking_seq",
+      "label" : "Flanking sequences that are 200bp upstream and 200bp downstream to the chr_to_bkpt position.",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    }, {
+      "name" : "microhomology_sequence",
+      "label" : "If a microhomology is inserted, provide sequence",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    }, {
+      "name" : "non_templated_sequence",
+      "label" : "If non-templated DNA is inserted, provide sequence",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    }, {
+      "name" : "evidence",
+      "label" : "Evidence supporting a structural mutation/variation",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "codelist",
+        "config" : {
+          "name" : "stsm_p__evidence"
+        }
+      } ]
+    }, {
+      "name" : "quality_score",
+      "label" : "Quality score for the mutation/variation call",
+      "valueType" : "INTEGER",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ ]
+    }, {
+      "name" : "probability",
+      "label" : "Probability of the mutation/variation call",
+      "valueType" : "DECIMAL",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ ]
+    }, {
+      "name" : "zygosity",
+      "label" : "Zygosity",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "codelist",
+        "config" : {
+          "name" : "stsm_p__zygosity"
+        }
+      } ]
+    }, {
+      "name" : "validation_status",
+      "label" : "Indicate if the mutation/variation has been validated",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      }, {
+        "type" : "codelist",
+        "config" : {
+          "name" : "stsm_p__validation_status"
+        }
+      } ]
+    }, {
+      "name" : "validation_platform",
+      "label" : "Platform or technology used in validation",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "codelist",
+        "config" : {
+          "name" : "appendix_B5"
+        }
+      } ]
+    }, {
+      "name" : "db_xref",
+      "label" : "Value code of cross-reference database:ID of the mutation in the cross-reference database.  Separate multiple entries by commas.",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    }, {
+      "name" : "note",
+      "label" : "Optional field to leave notes",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    } ],
+    "relation" : [ {
+      "fields" : [ "analysis_id", "analyzed_sample_id" ],
+      "other" : "stsm_m",
+      "otherFields" : [ "analysis_id", "analyzed_sample_id" ]
+    } ]
+  }, {
+    "name" : "cnsm_m",
+    "label" : null,
+    "pattern" : "^cnsm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__m__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
+    "role" : "SUBMISSION",
+    "uniqueFields" : [ ],
+    "fields" : [ {
+      "name" : "analysis_id",
+      "label" : "Unique identfier for the analysis performed for a particular group of samples",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "analyzed_sample_id",
+      "label" : null,
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "matched_sample_id",
+      "label" : "Unique identifier for the control matched to the tumour sample",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "assembly_version",
+      "label" : "Version of reference genome assembly",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      }, {
+        "type" : "codelist",
+        "config" : {
+          "name" : "appendix_B10"
+        }
+      } ]
+    }, {
+      "name" : "platform",
+      "label" : "Platform or technology used in detecting the mutation/variation",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      }, {
+        "type" : "codelist",
+        "config" : {
+          "name" : "appendix_B5"
+        }
+      } ]
+    }, {
+      "name" : "experimental_protocol",
+      "label" : "Name of experimental protocol and URL to written protocol",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    }, {
+      "name" : "base_calling_algorithm",
+      "label" : "Name of base calling algorithm and URL to written protocol",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    }, {
+      "name" : "alignment_algorithm",
+      "label" : "Name of alignment algorithm and URL to written protocol",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    }, {
+      "name" : "variation_calling_algorithm",
+      "label" : "Name of variation calling algorithm and URL to written protocol",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    }, {
+      "name" : "other_analysis_algorithm",
+      "label" : "Names of other analysis algorithms.  Separate multiple algorithms by commas.",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    }, {
+      "name" : "seq_coverage",
+      "label" : "Sequence coverage if analyzed by sequencing platforms",
+      "valueType" : "DECIMAL",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ ]
+    }, {
+      "name" : "raw_data_repository",
+      "label" : "Public repository where raw data is submitted",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "codelist",
+        "config" : {
+          "name" : "appendix_B12"
+        }
+      } ]
+    }, {
+      "name" : "raw_data_accession",
+      "label" : "Accession and URL for referencing the raw data at the public repository",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    }, {
+      "name" : "note",
+      "label" : "Optional field to leave notes",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    } ],
+    "relation" : [ {
+      "fields" : [ "analyzed_sample_id" ],
+      "other" : "sample",
+      "otherFields" : [ "analyzed_sample_id" ]
     } ]
   }, {
     "name" : "family",
     "label" : null,
-    "pattern" : "^\\w+__\\d+__\\d+__family__\\d+\\.txt$",
+    "pattern" : "^\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__family__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ ],
     "fields" : [ {
@@ -1074,70 +2269,71 @@
       "otherFields" : [ "donor_id" ]
     } ]
   }, {
-    "name" : "hsap_gene",
+    "name" : "biomarker",
     "label" : null,
-    "pattern" : null,
+    "pattern" : "^\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__biomarker__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ ],
     "fields" : [ {
-      "name" : "gene_id_1020_key",
-      "label" : null,
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "stable_id_1023",
-      "label" : null,
+      "name" : "donor_id",
+      "label" : "Unique identifier for the donor; assigned by data provider. It must be coded, and correspond to a donor ID listed in the donor data file.",
       "valueType" : "TEXT",
       "summaryType" : "COMPLETENESS",
       "restrictions" : [ {
         "type" : "required",
         "config" : null
+      } ]
+    }, {
+      "name" : "specimen_id",
+      "label" : "ID of the specimen on which biomarker ascertainment was performed, if applicable",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "biomarker_name",
+      "label" : "Biomarker name",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "biomarker_threshold",
+      "label" : "Threshold value for the biomarker for calling a result positive. Please include units.",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "biomarker_positive",
+      "label" : "Whether test is positive for named biomarker",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      }, {
+        "type" : "codelist",
+        "config" : {
+          "name" : "dr_biomarkers__biomarker_positive"
+        }
       } ]
     } ],
-    "relation" : [ ]
-  }, {
-    "name" : "hsap_transcript",
-    "label" : null,
-    "pattern" : null,
-    "role" : "SUBMISSION",
-    "uniqueFields" : [ ],
-    "fields" : [ {
-      "name" : "gene_id_1020_key",
-      "label" : null,
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "transcript_id_1064_key",
-      "label" : null,
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "stable_id_1066",
-      "label" : null,
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    } ],
-    "relation" : [ ]
+    "relation" : [ {
+      "fields" : [ "donor_id" ],
+      "other" : "donor",
+      "otherFields" : [ "donor_id" ]
+    } ]
   }, {
     "name" : "jcn_m",
     "label" : null,
-    "pattern" : "^jcn__\\w+__\\d+__\\d+__m__\\d+__\\d+\\.txt$",
+    "pattern" : "^jcn__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__m__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ ],
     "fields" : [ {
@@ -1276,9 +2472,71 @@
       "otherFields" : [ "analyzed_sample_id" ]
     } ]
   }, {
+    "name" : "sample",
+    "label" : null,
+    "pattern" : "^\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__sample__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
+    "role" : "SUBMISSION",
+    "uniqueFields" : [ ],
+    "fields" : [ {
+      "name" : "analyzed_sample_id",
+      "label" : "Unique identifier for the sample assigned by data provider.",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "specimen_id",
+      "label" : "Unique identifier for the specimen assigned by data provider. The corresponding specimen idmust appear in the specimen data submission file.",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "analyzed_sample_type",
+      "label" : "Controlled vocabulary description of sample type.",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      }, {
+        "type" : "codelist",
+        "config" : {
+          "name" : "sp__analyzed_sample_type"
+        }
+      } ]
+    }, {
+      "name" : "analyzed_sample_type_other",
+      "label" : "Free text description of site of sample if 'other' was specified in sample_type field.",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    }, {
+      "name" : "analyzed_sample_interval",
+      "label" : "Interval from specimen acquisition to sample use in an analytic procedure (e.g. DNA extraction), in days",
+      "valueType" : "INTEGER",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ ]
+    }, {
+      "name" : "analyzed_sample_notes",
+      "label" : "Freetext notes about sample allowed",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    } ],
+    "relation" : [ {
+      "fields" : [ "specimen_id" ],
+      "other" : "specimen",
+      "otherFields" : [ "specimen_id" ]
+    } ]
+  }, {
     "name" : "jcn_p",
     "label" : null,
-    "pattern" : "^jcn__\\w+__\\d+__\\d+__p__\\d+__\\d+\\.txt$",
+    "pattern" : "^jcn__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__p__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ ],
     "fields" : [ {
@@ -1557,138 +2815,9 @@
       "otherFields" : [ "stable_id_1023" ]
     } ]
   }, {
-    "name" : "meth_m",
-    "label" : null,
-    "pattern" : "^meth__\\w+__\\d+__\\d+__m__\\d+__\\d+\\.txt$",
-    "role" : "SUBMISSION",
-    "uniqueFields" : [ ],
-    "fields" : [ {
-      "name" : "analysis_id",
-      "label" : "Unique identfier for the analysis performed for a particular group of samples",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "analyzed_sample_id",
-      "label" : null,
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "matched_sample_id",
-      "label" : "Unique identifier for the control matched to the tumour sample",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "assembly_version",
-      "label" : "Version of reference genome assembly",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "appendix_B10"
-        }
-      } ]
-    }, {
-      "name" : "platform",
-      "label" : "Platform or technology used in detecting the methylation",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "appendix_B5"
-        }
-      } ]
-    }, {
-      "name" : "experimental_protocol",
-      "label" : "Name of experimental protocol and URL to written protocol",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
-    }, {
-      "name" : "base_calling_algorithm",
-      "label" : "Name of base calling algorithm and URL to written protocol",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "alignment_algorithm",
-      "label" : "Name of alignment algorithm and URL to written protocol",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "variation_calling_algorithm",
-      "label" : "Name of variation calling algorithm and URL to written protocol",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "other_analysis_algorithm",
-      "label" : "Names of other analysis algorithms.  Separate multiple algorithms by commas.",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
-    }, {
-      "name" : "raw_data_repository",
-      "label" : "Public repository where raw data is submitted",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "codelist",
-        "config" : {
-          "name" : "appendix_B12"
-        }
-      } ]
-    }, {
-      "name" : "raw_data_accession",
-      "label" : "Accession and URL for referencing the raw data at the public repository",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
-    }, {
-      "name" : "note",
-      "label" : "Optional field to leave notes",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
-    } ],
-    "relation" : [ {
-      "fields" : [ "analyzed_sample_id" ],
-      "other" : "sample",
-      "otherFields" : [ "analyzed_sample_id" ]
-    } ]
-  }, {
     "name" : "meth_p",
     "label" : null,
-    "pattern" : "^meth__\\w+__\\d+__\\d+__p__\\d+__\\d+\\.txt$",
+    "pattern" : "^meth__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__p__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ ],
     "fields" : [ {
@@ -1817,14 +2946,14 @@
       "otherFields" : [ "analysis_id", "analyzed_sample_id" ]
     } ]
   }, {
-    "name" : "meth_s",
+    "name" : "exposure",
     "label" : null,
-    "pattern" : "^meth__\\w+__\\d+__\\d+__s__\\d+__\\d+\\.txt$",
+    "pattern" : "^\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__exposure__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ ],
     "fields" : [ {
-      "name" : "analysis_id",
-      "label" : "Unique identfier for the analysis performed for a particular group of samples",
+      "name" : "donor_id",
+      "label" : "Unique identifier for the donor; assigned by data provider. It must be coded, and correspond to a donor ID listed in the donor data file.",
       "valueType" : "TEXT",
       "summaryType" : "COMPLETENESS",
       "restrictions" : [ {
@@ -1832,8 +2961,8 @@
         "config" : null
       } ]
     }, {
-      "name" : "analyzed_sample_id",
-      "label" : null,
+      "name" : "exposure_type",
+      "label" : "Type of exposure. This is a controlled vocabulary term to be developed by the submitting group.",
       "valueType" : "TEXT",
       "summaryType" : "COMPLETENESS",
       "restrictions" : [ {
@@ -1841,26 +2970,8 @@
         "config" : null
       } ]
     }, {
-      "name" : "methylated_fragment_id",
-      "label" : "Unique identifier for the methylation",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "gene_affected",
-      "label" : "Gene(s) containing the methylation.  Use Ensembl gene id. Separate multiple genes with vertical bars in the form of geneA|geneB|geneC.  If no gene is affected, use -888 (not applicable).",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "gene_build_version",
-      "label" : "Version of Ensembl gene build used for annotation",
+      "name" : "exposure_intensity",
+      "label" : "Extent of the exposure. This is a controlled vocabulary term to be developed by the submitting group. Units to be specified by submitting group.",
       "valueType" : "INTEGER",
       "summaryType" : "AVERAGE",
       "restrictions" : [ {
@@ -1868,237 +2979,8 @@
         "config" : null
       } ]
     }, {
-      "name" : "note",
-      "label" : "Optional field to leave notes",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
-    } ],
-    "relation" : [ {
-      "fields" : [ "analysis_id", "analyzed_sample_id", "methylated_fragment_id" ],
-      "other" : "meth_p",
-      "otherFields" : [ "analysis_id", "analyzed_sample_id", "methylated_fragment_id" ]
-    }, {
-      "fields" : [ "gene_affected" ],
-      "other" : "gene_gene",
-      "otherFields" : [ "stable_id_1023" ]
-    } ]
-  }, {
-    "name" : "mirna_m",
-    "label" : null,
-    "pattern" : "^mirna__\\w+__\\d+__\\d+__m__\\d+__\\d+\\.txt$",
-    "role" : "SUBMISSION",
-    "uniqueFields" : [ ],
-    "fields" : [ {
-      "name" : "analysis_id",
-      "label" : "Unique identifier for the analysis performed for a particular group of samples",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "sample_id",
-      "label" : "Unique identifier for the sample being analyzed",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "assembly_version",
-      "label" : "Version of reference genome assembly (#)",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "gene_build_version",
-      "label" : "Version of Ensembl gene build used for annotation",
-      "valueType" : "INTEGER",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "mirna_m__gene_build_version"
-        }
-      } ]
-    }, {
-      "name" : "platform",
-      "label" : "Platform or technology used in detecting the expression",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "appendix_B5"
-        }
-      } ]
-    }, {
-      "name" : "experimental_protocol",
-      "label" : "Name of experimental protocol and URL to written protocol",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
-    }, {
-      "name" : "base_calling_algorithm",
-      "label" : "Name of base calling algorithm and URL to written protocol",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "alignment_algorithm",
-      "label" : "Name of alignment algorithm and URL to written protocol",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "normalization_algorithm",
-      "label" : "Name of normalization algorithm and URL to written protocol",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "other_analysis_algorithm",
-      "label" : "Names of other analysis algorithms.  Separate multiple algorithms by commas.",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
-    }, {
-      "name" : "seq_coverage",
-      "label" : "Sequence coverage if analyzed by sequencing platforms",
-      "valueType" : "DECIMAL",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ ]
-    }, {
-      "name" : "raw_data_repository",
-      "label" : "Public repository where raw data is submitted (#)",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "codelist",
-        "config" : {
-          "name" : "appendix_B12"
-        }
-      } ]
-    }, {
-      "name" : "raw_data_accession",
-      "label" : "Accession and URL for referencing the raw data at the public repository",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
-    }, {
-      "name" : "note",
-      "label" : "Optional field to leave notes",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
-    } ],
-    "relation" : [ {
-      "fields" : [ "sample_id" ],
-      "other" : "sample",
-      "otherFields" : [ "analyzed_sample_id" ]
-    } ]
-  }, {
-    "name" : "mirna_mirbase",
-    "label" : null,
-    "pattern" : null,
-    "role" : "SUBMISSION",
-    "uniqueFields" : [ ],
-    "fields" : [ {
-      "name" : "xref_mirbase_id",
-      "label" : null,
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "mirna_seq",
-      "label" : null,
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "transcript_id",
-      "label" : null,
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "overlap_type",
-      "label" : null,
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "number",
-      "label" : null,
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "transcript_source",
-      "label" : null,
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "transcript_name",
-      "label" : null,
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "gene_stable_id",
-      "label" : null,
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "gene_symbol",
-      "label" : null,
+      "name" : "exposure_notes",
+      "label" : "Free text notes.",
       "valueType" : "TEXT",
       "summaryType" : "COMPLETENESS",
       "restrictions" : [ {
@@ -2107,285 +2989,14 @@
       } ]
     } ],
     "relation" : [ {
-      "fields" : [ "transcript_id" ],
-      "other" : "gene_transcript",
-      "otherFields" : [ "stable_id_1066" ]
-    } ]
-  }, {
-    "name" : "mirna_p",
-    "label" : null,
-    "pattern" : "^mirna__\\w+__\\d+__\\d+__p__\\d+__\\d+\\.txt$",
-    "role" : "SUBMISSION",
-    "uniqueFields" : [ ],
-    "fields" : [ {
-      "name" : "analysis_id",
-      "label" : "Unique identifier for the analysis performed for a particular group of samples",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "sample_id",
-      "label" : "Unique identifier for the sample being analyzed",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "mirna_seq",
-      "label" : "Sequence of the miRNA",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "normalized_read_count",
-      "label" : "Normalized count of sequencing reads if analyzed by sequencing platforms",
-      "valueType" : "DECIMAL",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "raw_read_count",
-      "label" : "Raw count of sequencing reads if analyzed by sequencing platforms",
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "normalized_expression_level",
-      "label" : "Normalized value of expression level if analyzed by microarray platforms",
-      "valueType" : "DECIMAL",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ ]
-    }, {
-      "name" : "fold_change",
-      "label" : "Expressed fold change if differential expression is measured",
-      "valueType" : "DECIMAL",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ ]
-    }, {
-      "name" : "reference_sample",
-      "label" : "ID of the reference sample if differential expression is measured",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
-    }, {
-      "name" : "quality_score",
-      "label" : "Quality score for the call",
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ ]
-    }, {
-      "name" : "probability",
-      "label" : "Probability of the call",
-      "valueType" : "DECIMAL",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ ]
-    }, {
-      "name" : "is_annotated",
-      "label" : "Indicate if the fragment is annotated",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "codelist",
-        "config" : {
-          "name" : "mirna_p__is_annotated"
-        }
-      } ]
-    }, {
-      "name" : "validation_status",
-      "label" : "Indicate if the fragment has been validated",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "mirna_p__validation_status"
-        }
-      } ]
-    }, {
-      "name" : "validation_platform",
-      "label" : "Platform or technology used in validation",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "codelist",
-        "config" : {
-          "name" : "appendix_B5"
-        }
-      } ]
-    }, {
-      "name" : "note",
-      "label" : "Optional field to leave notes",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
-    } ],
-    "relation" : [ {
-      "fields" : [ "analysis_id", "sample_id" ],
-      "other" : "mirna_m",
-      "otherFields" : [ "analysis_id", "sample_id" ]
-    } ]
-  }, {
-    "name" : "mirna_s",
-    "label" : null,
-    "pattern" : "^mirna__\\w+__\\d+__\\d+__s__\\d+__\\d+\\.txt$",
-    "role" : "SUBMISSION",
-    "uniqueFields" : [ ],
-    "fields" : [ {
-      "name" : "mirna_seq",
-      "label" : "Sequence of the miRNA",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "chromosome",
-      "label" : "Name of the chromosome expressing the fragment (#)",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "appendix_B6"
-        }
-      } ]
-    }, {
-      "name" : "chromosome_start",
-      "label" : "Start position on the chromosome",
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "chromosome_end",
-      "label" : "End position on the chromosome",
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "chromosome_strand",
-      "label" : "Strand of the chromosome",
-      "valueType" : "INTEGER",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "codelist",
-        "config" : {
-          "name" : "mirna_s__chromosome_strand"
-        }
-      } ]
-    }, {
-      "name" : "xref_mirbase_id",
-      "label" : "Cross-reference to miRBase ID (e.g. has-let-7c) if available",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
-    }, {
-      "name" : "note",
-      "label" : "Optional field to leave notes",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
-    } ],
-    "relation" : [ {
-      "fields" : [ "mirna_seq" ],
-      "other" : "mirna_p",
-      "otherFields" : [ "mirna_seq" ]
-    }, {
-      "fields" : [ "xref_mirbase_id" ],
-      "other" : "mirna_mirbase",
-      "otherFields" : [ "xref_mirbase_id" ]
-    } ]
-  }, {
-    "name" : "sample",
-    "label" : null,
-    "pattern" : "^\\w+__\\d+__\\d+__sample__\\d+\\.txt$",
-    "role" : "SUBMISSION",
-    "uniqueFields" : [ ],
-    "fields" : [ {
-      "name" : "analyzed_sample_id",
-      "label" : "Unique identifier for the sample assigned by data provider.",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "specimen_id",
-      "label" : "Unique identifier for the specimen assigned by data provider. The corresponding specimen idmust appear in the specimen data submission file.",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "analyzed_sample_type",
-      "label" : "Controlled vocabulary description of sample type.",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "sp__analyzed_sample_type"
-        }
-      } ]
-    }, {
-      "name" : "analyzed_sample_type_other",
-      "label" : "Free text description of site of sample if 'other' was specified in sample_type field.",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
-    }, {
-      "name" : "analyzed_sample_interval",
-      "label" : "Interval from specimen acquisition to sample use in an analytic procedure (e.g. DNA extraction), in days",
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ ]
-    }, {
-      "name" : "analyzed_sample_notes",
-      "label" : "Freetext notes about sample allowed",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
-    } ],
-    "relation" : [ {
-      "fields" : [ "specimen_id" ],
-      "other" : "specimen",
-      "otherFields" : [ "specimen_id" ]
+      "fields" : [ "donor_id" ],
+      "other" : "donor",
+      "otherFields" : [ "donor_id" ]
     } ]
   }, {
     "name" : "sgv_m",
     "label" : null,
-    "pattern" : "^sgv__\\w+__\\d+__\\d+__m__\\d+__\\d+\\.txt$",
+    "pattern" : "^sgv__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__m__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ ],
     "fields" : [ {
@@ -2514,224 +3125,6 @@
     } ],
     "relation" : [ ]
   }, {
-    "name" : "sgv_p",
-    "label" : null,
-    "pattern" : "^sgv__\\w+__\\d+__\\d+__p__\\d+__\\d+\\.txt$",
-    "role" : "SUBMISSION",
-    "uniqueFields" : [ ],
-    "fields" : [ {
-      "name" : "analysis_id",
-      "label" : "Unique identfier for the analysis performed for a particular group of samples",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "control_sample_id",
-      "label" : "Unique identifier for the control sample",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "variation_id",
-      "label" : "Unique identifier for the variation",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "variation_type",
-      "label" : "Type of variation",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "sgv_p__variation_type"
-        }
-      } ]
-    }, {
-      "name" : "chromosome",
-      "label" : "Name of the chromosome containing the mutation/variation",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "appendix_B6"
-        }
-      } ]
-    }, {
-      "name" : "chromosome_start",
-      "label" : "Start position of the mutation/variation on the chromosome",
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "chromosome_end",
-      "label" : "End position of the mutation/variation on the chromosome",
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "chromosome_strand",
-      "label" : "Chromosome strand",
-      "valueType" : "INTEGER",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "sgv_p__chromosome_strand"
-        }
-      } ]
-    }, {
-      "name" : "refsnp_allele",
-      "label" : "RefSNP alleles from dbSNP (use a dash for each missing base)",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "refsnp_strand",
-      "label" : "Strand of RefSNP allele",
-      "valueType" : "INTEGER",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "codelist",
-        "config" : {
-          "name" : "sgv_p__refsnp_strand"
-        }
-      } ]
-    }, {
-      "name" : "reference_genome_allele",
-      "label" : "Allele in the reference genome (use a dash for each missing base)",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "control_genotype",
-      "label" : "Genotype of the control sample (use a dash for each missing base)",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "tumour_genotype",
-      "label" : "Genotype of the tumour sample (use a dash for each missing base)",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "expressed_allele",
-      "label" : "For heterozygous SNPs, the dominant allele as revealed by RNA-seq, etc.",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
-    }, {
-      "name" : "quality_score",
-      "label" : "Average quality score for the mutation/variation call",
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ ]
-    }, {
-      "name" : "probability",
-      "label" : "Probability of the mutation/variation call",
-      "valueType" : "DECIMAL",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ ]
-    }, {
-      "name" : "read_count",
-      "label" : "Average number of times the bases are covered by raw reads",
-      "valueType" : "DECIMAL",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ ]
-    }, {
-      "name" : "is_annotated",
-      "label" : "Indicate if the mutation/variation is annotated in dbSNP",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "codelist",
-        "config" : {
-          "name" : "sgv_p__is_annotated"
-        }
-      } ]
-    }, {
-      "name" : "validation_status",
-      "label" : "Indicate if the mutation/variation has been validated",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "sgv_p__validation_status"
-        }
-      } ]
-    }, {
-      "name" : "validation_platform",
-      "label" : "Platform or technology used in validation",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "codelist",
-        "config" : {
-          "name" : "appendix_B5"
-        }
-      } ]
-    }, {
-      "name" : "xref_ensembl_var_id",
-      "label" : "Cross-reference: Ensembl Variation ID",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
-    }, {
-      "name" : "note",
-      "label" : "Optional field to leave notes",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
-    } ],
-    "relation" : [ {
-      "fields" : [ "analysis_id", "control_sample_id" ],
-      "other" : "sgv_m",
-      "otherFields" : [ "analysis_id", "control_sample_id" ]
-    } ]
-  }, {
     "name" : "sgv_s",
     "label" : null,
     "pattern" : null,
@@ -2826,9 +3219,224 @@
     } ],
     "relation" : [ ]
   }, {
+    "name" : "mirna_s",
+    "label" : null,
+    "pattern" : "^mirna__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__s__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
+    "role" : "SUBMISSION",
+    "uniqueFields" : [ ],
+    "fields" : [ {
+      "name" : "mirna_seq",
+      "label" : "Sequence of the miRNA",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "chromosome",
+      "label" : "Name of the chromosome expressing the fragment (#)",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      }, {
+        "type" : "codelist",
+        "config" : {
+          "name" : "appendix_B6"
+        }
+      } ]
+    }, {
+      "name" : "chromosome_start",
+      "label" : "Start position on the chromosome",
+      "valueType" : "INTEGER",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "chromosome_end",
+      "label" : "End position on the chromosome",
+      "valueType" : "INTEGER",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "chromosome_strand",
+      "label" : "Strand of the chromosome",
+      "valueType" : "INTEGER",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "codelist",
+        "config" : {
+          "name" : "mirna_s__chromosome_strand"
+        }
+      } ]
+    }, {
+      "name" : "xref_mirbase_id",
+      "label" : "Cross-reference to miRBase ID (e.g. has-let-7c) if available",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    }, {
+      "name" : "note",
+      "label" : "Optional field to leave notes",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    } ],
+    "relation" : [ {
+      "fields" : [ "mirna_seq" ],
+      "other" : "mirna_p",
+      "otherFields" : [ "mirna_seq" ]
+    }, {
+      "fields" : [ "xref_mirbase_id" ],
+      "other" : "mirna_mirbase",
+      "otherFields" : [ "xref_mirbase_id" ]
+    } ]
+  }, {
+    "name" : "ssm_m",
+    "label" : null,
+    "pattern" : "^ssm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__m__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
+    "role" : "SUBMISSION",
+    "uniqueFields" : [ ],
+    "fields" : [ {
+      "name" : "analysis_id",
+      "label" : "Unique identfier for the analysis performed for a particular group of samples",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "analyzed_sample_id",
+      "label" : null,
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "matched_sample_id",
+      "label" : "Unique identifier for the control matched to the tumour sample",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "assembly_version",
+      "label" : "Version of reference genome assembly",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      }, {
+        "type" : "codelist",
+        "config" : {
+          "name" : "appendix_B10"
+        }
+      } ]
+    }, {
+      "name" : "platform",
+      "label" : "Platform or technology used in detecting the mutation/variation",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      }, {
+        "type" : "codelist",
+        "config" : {
+          "name" : "appendix_B5"
+        }
+      } ]
+    }, {
+      "name" : "experimental_protocol",
+      "label" : "Name of experimental protocol and URL to written protocol",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    }, {
+      "name" : "base_calling_algorithm",
+      "label" : "Name of base calling algorithm and URL to written protocol",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "alignment_algorithm",
+      "label" : "Name of alignment algorithm and URL to written protocol",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "variation_calling_algorithm",
+      "label" : "Name of variation calling algorithm and URL to written protocol",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "other_analysis_algorithm",
+      "label" : "Names of other analysis algorithms.  Separate multiple algorithms by commas.",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    }, {
+      "name" : "seq_coverage",
+      "label" : "Sequence coverage if analyzed by sequencing platforms",
+      "valueType" : "DECIMAL",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ ]
+    }, {
+      "name" : "raw_data_repository",
+      "label" : "Public repository where raw data is submitted (#)",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "codelist",
+        "config" : {
+          "name" : "appendix_B12"
+        }
+      } ]
+    }, {
+      "name" : "raw_data_accession",
+      "label" : "Accession and URL for referencing the raw data at the public repository",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    }, {
+      "name" : "note",
+      "label" : "Optional field to leave notes",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    } ],
+    "relation" : [ {
+      "fields" : [ "tumour_sample_id" ],
+      "other" : "sample",
+      "otherFields" : [ "analyzed_sample_id" ]
+    } ]
+  }, {
     "name" : "specimen",
     "label" : null,
-    "pattern" : "^\\w+__\\d+__\\d+__specimen__\\d+\\.txt$",
+    "pattern" : "^\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__specimen__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ ],
     "fields" : [ {
@@ -3078,144 +3686,9 @@
       "otherFields" : [ "donor_id" ]
     } ]
   }, {
-    "name" : "ssm_m",
-    "label" : null,
-    "pattern" : "^ssm__\\w+__\\d+__\\d+__m__\\d+__\\d+\\.txt$",
-    "role" : "SUBMISSION",
-    "uniqueFields" : [ ],
-    "fields" : [ {
-      "name" : "analysis_id",
-      "label" : "Unique identfier for the analysis performed for a particular group of samples",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "analyzed_sample_id",
-      "label" : null,
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "matched_sample_id",
-      "label" : "Unique identifier for the control matched to the tumour sample",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "assembly_version",
-      "label" : "Version of reference genome assembly",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "appendix_B10"
-        }
-      } ]
-    }, {
-      "name" : "platform",
-      "label" : "Platform or technology used in detecting the mutation/variation",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "appendix_B5"
-        }
-      } ]
-    }, {
-      "name" : "experimental_protocol",
-      "label" : "Name of experimental protocol and URL to written protocol",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
-    }, {
-      "name" : "base_calling_algorithm",
-      "label" : "Name of base calling algorithm and URL to written protocol",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "alignment_algorithm",
-      "label" : "Name of alignment algorithm and URL to written protocol",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "variation_calling_algorithm",
-      "label" : "Name of variation calling algorithm and URL to written protocol",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "other_analysis_algorithm",
-      "label" : "Names of other analysis algorithms.  Separate multiple algorithms by commas.",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
-    }, {
-      "name" : "seq_coverage",
-      "label" : "Sequence coverage if analyzed by sequencing platforms",
-      "valueType" : "DECIMAL",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ ]
-    }, {
-      "name" : "raw_data_repository",
-      "label" : "Public repository where raw data is submitted (#)",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "codelist",
-        "config" : {
-          "name" : "appendix_B12"
-        }
-      } ]
-    }, {
-      "name" : "raw_data_accession",
-      "label" : "Accession and URL for referencing the raw data at the public repository",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
-    }, {
-      "name" : "note",
-      "label" : "Optional field to leave notes",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
-    } ],
-    "relation" : [ {
-      "fields" : [ "tumour_sample_id" ],
-      "other" : "sample",
-      "otherFields" : [ "analyzed_sample_id" ]
-    } ]
-  }, {
     "name" : "ssm_p",
     "label" : null,
-    "pattern" : "^ssm__\\w+__\\d+__\\d+__p__\\d+__\\d+\\.txt$",
+    "pattern" : "^ssm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__p__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ ],
     "fields" : [ {
@@ -3440,111 +3913,9 @@
       "otherFields" : [ "analysis_id", "analyzed_sample_id" ]
     } ]
   }, {
-    "name" : "ssm_s",
+    "name" : "meth_m",
     "label" : null,
-    "pattern" : "^ssm__\\w+__\\d+__\\d+__s__\\d+__\\d+\\.txt$",
-    "role" : "SUBMISSION",
-    "uniqueFields" : [ ],
-    "fields" : [ {
-      "name" : "analysis_id",
-      "label" : "Unique identfier for the analysis performed for a particular group of samples",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "analyzed_sample_id",
-      "label" : null,
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "mutation_id",
-      "label" : "Unique identifier for the mutation",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "consequence_type",
-      "label" : "Functional consequence of the SNP.",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "appendix_B7"
-        }
-      } ]
-    }, {
-      "name" : "aa_mutation",
-      "label" : "Changes at amino acid level. Indicate the reference aa, position and mutation aa.",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
-    }, {
-      "name" : "cds_mutation",
-      "label" : "Changes in coding sequence.  Indicate position, reference base and mutation base.",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
-    }, {
-      "name" : "protein_domain_affected",
-      "label" : "Protein domain containing the mutation/variation.  Use Pfam accession.",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
-    }, {
-      "name" : "gene_affected",
-      "label" : "Gene(s) containing the mutation/variation.",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
-    }, {
-      "name" : "transcript_affected",
-      "label" : "Transcript(s) containing the mutation/variation.  Use Ensembl transcript id.",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
-    }, {
-      "name" : "gene_build_version",
-      "label" : "Version of Ensembl gene build used for annotation",
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "note",
-      "label" : "Optional field to leave notes",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
-    } ],
-    "relation" : [ {
-      "fields" : [ "analysis_id", "analyzed_sample_id", "mutation_id" ],
-      "other" : "ssm_p",
-      "otherFields" : [ "analysis_id", "analyzed_sample_id", "mutation_id" ]
-    }, {
-      "fields" : [ "transcript_affected" ],
-      "other" : "gene_transcript",
-      "otherFields" : [ "stable_id_1066" ]
-    } ]
-  }, {
-    "name" : "stsm_m",
-    "label" : null,
-    "pattern" : "^stsm__\\w+__\\d+__\\d+__m__\\d+__\\d+\\.txt$",
+    "pattern" : "^meth__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__m__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ ],
     "fields" : [ {
@@ -3590,7 +3961,7 @@
       } ]
     }, {
       "name" : "platform",
-      "label" : "Platform or technology used in detecting the mutation/variation",
+      "label" : "Platform or technology used in detecting the methylation",
       "valueType" : "TEXT",
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
@@ -3642,12 +4013,6 @@
       "summaryType" : "COMPLETENESS",
       "restrictions" : [ ]
     }, {
-      "name" : "seq_coverage",
-      "label" : "Sequence coverage if analyzed by sequencing platforms",
-      "valueType" : "DECIMAL",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ ]
-    }, {
       "name" : "raw_data_repository",
       "label" : "Public repository where raw data is submitted",
       "valueType" : "TEXT",
@@ -3677,9 +4042,9 @@
       "otherFields" : [ "analyzed_sample_id" ]
     } ]
   }, {
-    "name" : "stsm_p",
+    "name" : "exp_m",
     "label" : null,
-    "pattern" : "^stsm__\\w+__\\d+__\\d+__p__\\d+__\\d+\\.txt$",
+    "pattern" : "^exp__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__m__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ ],
     "fields" : [ {
@@ -3692,8 +4057,8 @@
         "config" : null
       } ]
     }, {
-      "name" : "analyzed_sample_id",
-      "label" : null,
+      "name" : "sample_id",
+      "label" : "Unique identifier for the sample being analyzed",
       "valueType" : "TEXT",
       "summaryType" : "COMPLETENESS",
       "restrictions" : [ {
@@ -3701,41 +4066,8 @@
         "config" : null
       } ]
     }, {
-      "name" : "sv_id",
-      "label" : "Unique variant id (institute wide). One id per single event",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "placement",
-      "label" : "Ordering of breakpoint pairs within a single structural mutation/variation event",
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "annotation",
-      "label" : "Annotation describing sequence mutation/variation based on breakpoint pairs",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "interpreted_annotation",
-      "label" : "HGVS nomenclature for description of sequence mutation/variation. E.g. chr3:g.1234567-2345678inv.",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
-    }, {
-      "name" : "variant_type",
-      "label" : "Type of mutation/variation",
+      "name" : "assembly_version",
+      "label" : "Version of reference genome assembly",
       "valueType" : "TEXT",
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
@@ -3744,262 +4076,9 @@
       }, {
         "type" : "codelist",
         "config" : {
-          "name" : "appendix_B9"
+          "name" : "appendix_B10"
         }
       } ]
-    }, {
-      "name" : "chr_from",
-      "label" : "Name of the donor chromosome containing the mutation/variation",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "appendix_B6"
-        }
-      } ]
-    }, {
-      "name" : "chr_from_bkpt",
-      "label" : "Breakpoint position of the mutation/variation on the donor chromosome",
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "chr_from_strand",
-      "label" : "Donor chromome strand",
-      "valueType" : "INTEGER",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "stsm_p__chr_from_strand"
-        }
-      } ]
-    }, {
-      "name" : "chr_from_range",
-      "label" : "Number of bases around chr_from_bkpt that may contain the real breakpoint",
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ ]
-    }, {
-      "name" : "chr_from_flanking_seq",
-      "label" : "Flanking sequences that are 200bp upstream and 200bp downstream to the chr_from_bkpt position.",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
-    }, {
-      "name" : "chr_to",
-      "label" : "Name of the acceptor chromosome containing the mutation/variation",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "appendix_B6"
-        }
-      } ]
-    }, {
-      "name" : "chr_to_bkpt",
-      "label" : "Breakpoint position of the mutation/variation on the acceptor chromosome",
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "chr_to_strand",
-      "label" : "Acceptor chromome strand",
-      "valueType" : "INTEGER",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "stsm_p__chr_to_strand"
-        }
-      } ]
-    }, {
-      "name" : "chr_to_range",
-      "label" : "Number of bases around chr_to_bkpt that may contain the real breakpoint",
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ ]
-    }, {
-      "name" : "chr_to_flanking_seq",
-      "label" : "Flanking sequences that are 200bp upstream and 200bp downstream to the chr_to_bkpt position.",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
-    }, {
-      "name" : "microhomology_sequence",
-      "label" : "If a microhomology is inserted, provide sequence",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
-    }, {
-      "name" : "non_templated_sequence",
-      "label" : "If non-templated DNA is inserted, provide sequence",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
-    }, {
-      "name" : "evidence",
-      "label" : "Evidence supporting a structural mutation/variation",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "codelist",
-        "config" : {
-          "name" : "stsm_p__evidence"
-        }
-      } ]
-    }, {
-      "name" : "quality_score",
-      "label" : "Quality score for the mutation/variation call",
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ ]
-    }, {
-      "name" : "probability",
-      "label" : "Probability of the mutation/variation call",
-      "valueType" : "DECIMAL",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ ]
-    }, {
-      "name" : "zygosity",
-      "label" : "Zygosity",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "codelist",
-        "config" : {
-          "name" : "stsm_p__zygosity"
-        }
-      } ]
-    }, {
-      "name" : "validation_status",
-      "label" : "Indicate if the mutation/variation has been validated",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "stsm_p__validation_status"
-        }
-      } ]
-    }, {
-      "name" : "validation_platform",
-      "label" : "Platform or technology used in validation",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "codelist",
-        "config" : {
-          "name" : "appendix_B5"
-        }
-      } ]
-    }, {
-      "name" : "db_xref",
-      "label" : "Value code of cross-reference database:ID of the mutation in the cross-reference database.  Separate multiple entries by commas.",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
-    }, {
-      "name" : "note",
-      "label" : "Optional field to leave notes",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
-    } ],
-    "relation" : [ {
-      "fields" : [ "analysis_id", "analyzed_sample_id" ],
-      "other" : "stsm_m",
-      "otherFields" : [ "analysis_id", "analyzed_sample_id" ]
-    } ]
-  }, {
-    "name" : "stsm_s",
-    "label" : null,
-    "pattern" : "^stsm__\\w+__\\d+__\\d+__s__\\d+__\\d+\\.txt$",
-    "role" : "SUBMISSION",
-    "uniqueFields" : [ ],
-    "fields" : [ {
-      "name" : "gene_affected",
-      "label" : "Gene(s) affected by the breakpoints.  Use Ensembl gene id.  Separate multiple genes with vertical bars in the form of geneA|geneB|geneC. If both breakpoints affect genes, then use | to separate them.  If no gene is affected, use -888 (not applicable).",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
-    }, {
-      "name" : "transcript_affected",
-      "label" : "Transcript(s) affected by the breakpoints. Use Ensembl transcript id.  Separate multiple transcripts from the same gene with commas, and separate transcripts from different genes with vertical bars. eg. transcriptA1, transcriptA2|transcriptB1|transcriptC1",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
-    }, {
-      "name" : "analysis_id",
-      "label" : "Unique identfier for the analysis performed for a particular group of samples",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "analyzed_sample_id",
-      "label" : null,
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "sv_id",
-      "label" : "Unique variant id (institute wide). One id per single event",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "placement",
-      "label" : "Ordering of breakpoint pairs within a single structural change event",
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "bkpt_from_context",
-      "label" : "Contextual description of the first break location (Exonic, Intronic, Intergenic)",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
-    }, {
-      "name" : "bkpt_to_context",
-      "label" : "Contextual description of the second break location (Exonic, Intronic, Intergenic)",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ ]
     }, {
       "name" : "gene_build_version",
       "label" : "Version of Ensembl gene build used for annotation",
@@ -4010,6 +4089,82 @@
         "config" : null
       } ]
     }, {
+      "name" : "platform",
+      "label" : "Platform or technology used in detecting the expression",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      }, {
+        "type" : "codelist",
+        "config" : {
+          "name" : "appendix_B5"
+        }
+      } ]
+    }, {
+      "name" : "experimental_protocol",
+      "label" : "Name of experimental protocol and URL to written protocol",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    }, {
+      "name" : "base_calling_algorithm",
+      "label" : "Name of base calling algorithm and URL to written protocol",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "alignment_algorithm",
+      "label" : "Name of alignment algorithm and URL to written protocol",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "normalization_algorithm",
+      "label" : "Name of normalization algorithm and URL to written protocol",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "other_analysis_algorithm",
+      "label" : "Names of other analysis algorithms.  Separate multiple algorithms by commas.",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    }, {
+      "name" : "seq_coverage",
+      "label" : "Sequence coverage if analyzed by sequencing platforms",
+      "valueType" : "DECIMAL",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ ]
+    }, {
+      "name" : "raw_data_repository",
+      "label" : "Public repository where raw data is submitted (#)",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "codelist",
+        "config" : {
+          "name" : "appendix_B12"
+        }
+      } ]
+    }, {
+      "name" : "raw_data_accession",
+      "label" : "Accession and URL for referencing the raw data at the public repository",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    }, {
       "name" : "note",
       "label" : "Optional field to leave notes",
       "valueType" : "TEXT",
@@ -4017,164 +4172,9 @@
       "restrictions" : [ ]
     } ],
     "relation" : [ {
-      "fields" : [ "analysis_id", "analyzed_sample_id", "sv_id", "placement" ],
-      "other" : "stsm_p",
-      "otherFields" : [ "analysis_id", "analyzed_sample_id", "sv_id", "placement" ]
-    }, {
-      "fields" : [ "transcript_affected_by_bkpt_from" ],
-      "other" : "gene_transcript",
-      "otherFields" : [ "stable_id_1066" ]
-    }, {
-      "fields" : [ "transcript_affected_by_bkpt_to" ],
-      "other" : "gene_transcript",
-      "otherFields" : [ "stable_id_1066" ]
-    } ]
-  }, {
-    "name" : "surgery",
-    "label" : null,
-    "pattern" : "^\\w+__\\d+__\\d+__surgery__\\d+\\.txt$",
-    "role" : "SUBMISSION",
-    "uniqueFields" : [ ],
-    "fields" : [ {
-      "name" : "donor_id",
-      "label" : "Unique identifier for the donor; assigned by data provider. It must be coded, and correspond to a donor ID listed in the donor data file.",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "procedure_interval",
-      "label" : "Interval between primary diagnosis and procedure, in days",
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "procedure_type",
-      "label" : "Controlled vocabulary description of the procedure type. Vocabulary can be extended by disease-specific projects. Prefix extensions with 3-digit center code, e.g. 008.1 Beijing Cancer Hospital, fine needle aspiration of primary",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "dr_surgical_procedures__procedure_type"
-        }
-      } ]
-    }, {
-      "name" : "procedure_site",
-      "label" : "Anatomical site of the procedure. This must use a standard controlled vocabulary which should be reported in advance to the DCC.",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "resection_status",
-      "label" : "For resection procedures, an indication of the extent of residual disease.",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "dr_surgical_procedures__resection_status"
-        }
-      } ]
-    }, {
-      "name" : "specimen_id",
-      "label" : "ID of ICGC specimen resulting from procedure. If present, must match specimen_id in specimen data file.",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    } ],
-    "relation" : [ {
-      "fields" : [ "donor_id" ],
-      "other" : "donor",
-      "otherFields" : [ "donor_id" ]
-    } ]
-  }, {
-    "name" : "therapy",
-    "label" : null,
-    "pattern" : "^\\w+__\\d+__\\d+__therapy__\\d+\\.txt$",
-    "role" : "SUBMISSION",
-    "uniqueFields" : [ ],
-    "fields" : [ {
-      "name" : "donor_id",
-      "label" : "Unique identifier for the donor; assigned by data provider. It must be coded, and correspond to a donor ID listed in the donor data file.",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "therapy_start_interval",
-      "label" : "Interval between primary diagnosis and initiation of therapy, in days",
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "therapy_duration",
-      "label" : "Duration of therapy, in days",
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "therapy_type",
-      "label" : "Name of therapy",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "therapy_response",
-      "label" : "What was the clinical effect of the therapy?",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "dr_therapy__therapy_response"
-        }
-      } ]
-    }, {
-      "name" : "therapy_notes",
-      "label" : "Further description of therapy, such as dosing schedule.",
-      "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    } ],
-    "relation" : [ {
-      "fields" : [ "donor_id" ],
-      "other" : "donor",
-      "otherFields" : [ "donor_id" ]
+      "fields" : [ "sample_id" ],
+      "other" : "sample",
+      "otherFields" : [ "analyzed_sample_id" ]
     } ]
   } ]
 }
