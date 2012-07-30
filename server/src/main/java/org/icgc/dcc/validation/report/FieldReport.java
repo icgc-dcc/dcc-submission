@@ -1,9 +1,5 @@
 package org.icgc.dcc.validation.report;
 
-import java.util.Arrays;
-
-import org.icgc.dcc.validation.cascading.TupleState;
-import org.icgc.dcc.validation.cascading.TupleState.TupleError;
 import org.icgc.dcc.validation.report.BaseReportingPlanElement.FieldSummary;
 
 import com.google.code.morphia.annotations.Embedded;
@@ -68,22 +64,14 @@ public class FieldReport {
     fieldReport.setName(fieldSummary.field);
     fieldReport.setPopulated(fieldSummary.populated);
     fieldReport.setNulls(fieldSummary.nulls);
-    fieldReport.setCompleteness(fieldSummary.populated / (fieldSummary.nulls + fieldSummary.populated));
+    fieldReport.setCompleteness(100 * fieldSummary.populated / (fieldSummary.nulls + fieldSummary.populated));
     BasicDBObject summary = new BasicDBObject();
     for(String key : fieldSummary.summary.keySet()) {
       summary.append(key, fieldSummary.summary.get(key));
     }
-    fieldReport.setSummary(summary);
-    return fieldReport;
-  }
-
-  public static FieldReport convert(TupleState tupleState) {
-    FieldReport fieldReport = new FieldReport();
-    BasicDBObject summary = new BasicDBObject();
-    for(TupleError tupleError : tupleState.getErrors()) {
-      summary.append(tupleError.getCode().toString(), Arrays.asList(tupleError.getParameters()));
+    if(!summary.isEmpty()) {
+      fieldReport.setSummary(summary);
     }
-    fieldReport.setSummary(summary);
     return fieldReport;
   }
 }
