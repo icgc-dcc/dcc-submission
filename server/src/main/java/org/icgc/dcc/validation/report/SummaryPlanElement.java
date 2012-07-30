@@ -46,10 +46,6 @@ import com.google.common.collect.Lists;
 
 public abstract class SummaryPlanElement extends BaseReportingPlanElement {
 
-  private final static String AVG = "avg";
-
-  private final static String STDDEV = "stddev";
-
   protected static String fieldName(Field field, String summaryName) {
     return fieldName(field.getName(), summaryName);
   }
@@ -82,8 +78,8 @@ public abstract class SummaryPlanElement extends BaseReportingPlanElement {
   }
 
   protected AggregateBy makeDeviation(Field field) {
-    return new DeviationBy(new Fields(field.getName()), field.getName(), new Fields(fieldName(field, AVG), fieldName(
-        field, STDDEV)));
+    return new DeviationBy(new Fields(field.getName()), field.getName(), new Fields(fieldName(field, DeviationBy.AVG),
+        fieldName(field, DeviationBy.STDDEV)));
   }
 
   protected AggregateBy makeMinMax(Field field) {
@@ -154,23 +150,6 @@ public abstract class SummaryPlanElement extends BaseReportingPlanElement {
     }
   }
 
-  static class AveragePlanElement extends SummaryPlanElement {
-
-    protected AveragePlanElement(FileSchema fileSchema, List<Field> fields, FlowType flowType) {
-      super(fileSchema, SummaryType.AVERAGE, fields, flowType);
-    }
-
-    @Override
-    protected Iterable<AggregateBy> collectAggregateBys(Field field) {
-      return ImmutableList.of(makeDeviation(field), makeMinMax(field), makeCompleteness(field));
-    }
-
-    @Override
-    protected Iterable<String> summaryFields() {
-      return ImmutableList.of(AVG, STDDEV, MinMaxBy.MIN, MinMaxBy.MAX);
-    }
-  }
-
   static class MinMaxPlanElement extends SummaryPlanElement {
 
     protected MinMaxPlanElement(FileSchema fileSchema, List<Field> fields, FlowType flowType) {
@@ -188,4 +167,20 @@ public abstract class SummaryPlanElement extends BaseReportingPlanElement {
     }
   }
 
+  static class AveragePlanElement extends SummaryPlanElement {
+
+    protected AveragePlanElement(FileSchema fileSchema, List<Field> fields, FlowType flowType) {
+      super(fileSchema, SummaryType.AVERAGE, fields, flowType);
+    }
+
+    @Override
+    protected Iterable<AggregateBy> collectAggregateBys(Field field) {
+      return ImmutableList.of(makeDeviation(field), makeMinMax(field), makeCompleteness(field));
+    }
+
+    @Override
+    protected Iterable<String> summaryFields() {
+      return ImmutableList.of(MinMaxBy.MIN, MinMaxBy.MAX, DeviationBy.AVG, DeviationBy.STDDEV);
+    }
+  }
 }

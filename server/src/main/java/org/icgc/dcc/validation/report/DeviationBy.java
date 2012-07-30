@@ -29,7 +29,9 @@ import cascading.tuple.TupleEntry;
 public class DeviationBy extends AggregateBy {
   private static final long serialVersionUID = 1L;
 
-  private static final Fields BIND_FIELDS = new Fields("sum", "sumOfSquare", "count");
+  public final static String AVG = "avg";
+
+  public final static String STDDEV = "stddev";
 
   /**
    * Class DeviationPartials is a {@link cascading.pipe.assembly.AggregateBy.Functor} that is used to square, count and
