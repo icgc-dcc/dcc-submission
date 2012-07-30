@@ -66,8 +66,6 @@ public abstract class SummaryPlanElement extends BaseReportingPlanElement {
   public Pipe report(Pipe pipe) {
     ArrayList<AggregateBy> summaries = new ArrayList<AggregateBy>();
     for(Field field : fields) {
-      // TODO: Add completeness
-      // summaries.add(new CompletenessBy(...));
       Iterables.addAll(summaries, collectAggregateBys(field));
     }
 
@@ -100,7 +98,7 @@ public abstract class SummaryPlanElement extends BaseReportingPlanElement {
 
   protected abstract Iterable<AggregateBy> collectAggregateBys(Field field);
 
-  protected abstract Iterable<String> summaryFields2();
+  protected abstract Iterable<String> summaryFields();
 
   protected Pipe average(String field, Pipe pipe) {
     return pipe;
@@ -111,15 +109,15 @@ public abstract class SummaryPlanElement extends BaseReportingPlanElement {
 
     private final List<String> fields;
 
-    private final List<String> summaries;
+    private final List<String> summaryFields;
 
-    public SummaryFunction(List<Field> fields, Iterable<String> summaries) {
+    public SummaryFunction(List<Field> fields, Iterable<String> summaryFields) {
       super(REPORT_FIELDS);
       this.fields = Lists.newArrayListWithCapacity(fields.size());
       for(Field f : fields) {
         this.fields.add(f.getName());
       }
-      this.summaries = ImmutableList.copyOf(summaries);
+      this.summaryFields = ImmutableList.copyOf(summaryFields);
     }
 
     @Override
@@ -131,8 +129,8 @@ public abstract class SummaryPlanElement extends BaseReportingPlanElement {
         fs.nulls = te.getInteger(fieldName(field, CompletenessBy.NULLS));
         fs.missing = te.getInteger(fieldName(field, CompletenessBy.MISSING));
         fs.populated = te.getInteger(fieldName(field, CompletenessBy.POPULATED));
-        for(String summary : summaries) {
-          fs.summary.put(summary, te.getObject(fieldName(field, summary)));
+        for(String summaryField : summaryFields) {
+          fs.summary.put(summaryField, te.getObject(fieldName(field, summaryField)));
         }
         functionCall.getOutputCollector().add(new Tuple(fs));
       }
@@ -152,7 +150,7 @@ public abstract class SummaryPlanElement extends BaseReportingPlanElement {
 
     @Override
     protected Iterable<String> summaryFields() {
-      return ImmutableList.of(CompletenessBy.NULLS, CompletenessBy.MISSING, CompletenessBy.POPULATED);
+      return ImmutableList.of();
     }
   }
 
