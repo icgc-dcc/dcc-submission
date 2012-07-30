@@ -75,7 +75,7 @@ public class NextRelease extends BaseRelease {
       throw new ReleaseException("Release must have associated dictionary before being completed");
     }
     if(this.datastore.createQuery(Release.class).filter("name", nextRelease.getName()).get() != null) {
-      throw new ReleaseException("New release can not be the same as completed release");
+      throw new ReleaseException("New release name can not be the same as completed release");
     }
 
     nextRelease.setDictionaryVersion(newDictionaryVersion);

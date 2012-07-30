@@ -34,7 +34,7 @@ public class ReleaseExceptionMapper implements ExceptionMapper<ReleaseException>
   @Override
   public Response toResponse(ReleaseException exception) {
     log.error("an error occured", exception); // temporarily until DCC-205 is done (so we at least get the stacktrace)
-    return Response.status(Status.BAD_REQUEST).build();
+    return Response.status(Status.BAD_REQUEST).entity(exception.getMessage()).build();
   }
 
 }

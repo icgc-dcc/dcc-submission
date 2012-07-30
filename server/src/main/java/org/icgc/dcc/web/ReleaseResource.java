@@ -39,7 +39,7 @@ public class ReleaseResource {
   public Response getReleaseByName(@PathParam("name") String name) {
     Release release = releaseService.where(QRelease.release.name.eq(name)).singleResult();
     if(release == null) {
-      return Response.status(Status.NOT_FOUND).build();
+      return Response.status(Status.NOT_FOUND).entity("No release found named " + name).build();
     }
     return ResponseTimestamper.ok(release).build();
   }
@@ -66,7 +66,8 @@ public class ReleaseResource {
       }
       return ResponseTimestamper.ok(release).build();
     } else {
-      return Response.status(Status.BAD_REQUEST).build();
+      return Response.status(Status.BAD_REQUEST).entity("Problem updating release. Contact the server administrator.")
+          .build();
     }
   }
 
@@ -96,7 +97,8 @@ public class ReleaseResource {
   public Response getSubmission(@PathParam("name") String name, @PathParam("projectKey") String projectKey) {
     Submission submission = this.releaseService.getSubmission(name, projectKey);
     if(submission == null) {
-      return Response.status(Status.NOT_FOUND).build();
+      return Response.status(Status.NOT_FOUND)
+          .entity(String.format("No submission found in release %s for project %s", name, projectKey)).build();
     }
     return Response.ok(submission).build();
   }
@@ -106,7 +108,8 @@ public class ReleaseResource {
   public Response getSubmissionReport(@PathParam("name") String name, @PathParam("projectKey") String projectKey) {
     Submission submission = this.releaseService.getSubmission(name, projectKey);
     if(submission == null) {
-      return Response.status(Status.NOT_FOUND).build();
+      return Response.status(Status.NOT_FOUND)
+          .entity(String.format("No submission found in release %s for project %s", name, projectKey)).build();
     }
     SubmissionReport report = submission.getReport();
     return Response.ok(report).build();
@@ -118,12 +121,17 @@ public class ReleaseResource {
       @PathParam("schema") String schema) {
     Submission submission = this.releaseService.getSubmission(name, projectKey);
     if(submission == null) {
-      return Response.status(Status.NOT_FOUND).build();
+      return Response.status(Status.NOT_FOUND)
+          .entity(String.format("No submission found in release %s for project %s", name, projectKey)).build();
     }
     SubmissionReport report = submission.getReport();
+    if(report == null) {
+      return Response.status(Status.NOT_FOUND)
+          .entity(String.format("No report found in release %s for project %s", name, projectKey)).build();
+    }
     SchemaReport schemaReport = report.getSchemaReport(schema);
     if(schemaReport == null) {
-      return Response.status(Status.NOT_FOUND).build();
+      return Response.status(Status.NOT_FOUND).entity("No report found for schema " + schema).build();
     }
     return Response.ok(schemaReport).build();
   }
@@ -134,16 +142,21 @@ public class ReleaseResource {
       @PathParam("schema") String schema, @PathParam("field") String field) {
     Submission submission = this.releaseService.getSubmission(name, projectKey);
     if(submission == null) {
-      return Response.status(Status.NOT_FOUND).build();
+      return Response.status(Status.NOT_FOUND)
+          .entity(String.format("No submission found in release %s for project %s", name, projectKey)).build();
     }
     SubmissionReport report = submission.getReport();
+    if(report == null) {
+      return Response.status(Status.NOT_FOUND)
+          .entity(String.format("No report found in release %s for project %s", name, projectKey)).build();
+    }
     SchemaReport schemaReport = report.getSchemaReport(schema);
     if(schemaReport == null) {
-      return Response.status(Status.NOT_FOUND).build();
+      return Response.status(Status.NOT_FOUND).entity("No report found for schema " + schema).build();
     }
     FieldReport fieldReport = schemaReport.getFieldReport(field);
     if(fieldReport == null) {
-      return Response.status(Status.NOT_FOUND).build();
+      return Response.status(Status.NOT_FOUND).entity("No report found for field " + field).build();
     }
     return Response.ok(fieldReport).build();
   }

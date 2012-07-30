@@ -55,7 +55,8 @@ public class NextReleaseResource {
       this.releaseService.queue(projectKeys);
       return Response.ok().build();
     } else {
-      return Response.status(Status.BAD_REQUEST).build();
+      return Response.status(Status.BAD_REQUEST).entity("At least one of the specified project keys was not found.")
+          .build();
     }
   }
 
@@ -84,7 +85,8 @@ public class NextReleaseResource {
       this.releaseService.signOff(projectKeys);
       return Response.ok().build();
     } else {
-      return Response.status(Status.BAD_REQUEST).build();
+      return Response.status(Status.BAD_REQUEST).entity("At least one of the specified project keys was not found.")
+          .build();
     }
   }
 }

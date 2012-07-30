@@ -35,7 +35,7 @@ public class ProjectResource {
   public Response getProjects() {
     List<Project> projectlist = projects.getProjects();
     if(projectlist == null) {
-      return Response.status(Status.NOT_FOUND).build();
+      return Response.status(Status.NOT_FOUND).entity("No projects found").build();
     }
     return Response.ok(projectlist).build();
   }
@@ -46,10 +46,10 @@ public class ProjectResource {
     checkArgument(project != null);
     try {
       this.projects.addProject(project);
-      return Response.created(UriBuilder.fromResource(ProjectResource.class).path(project.getKey()).build())
-          .build();
+      return Response.created(UriBuilder.fromResource(ProjectResource.class).path(project.getKey()).build()).build();
     } catch(DuplicateKey e) {
-      return Response.status(Status.BAD_REQUEST).build();
+      return Response.status(Status.BAD_REQUEST)
+          .entity("Problem adding new project. Contact the server administrator.").build();
     }
   }
 
@@ -58,7 +58,7 @@ public class ProjectResource {
   public Response getIt(@PathParam("projectKey") String projectKey) {
     Project project = projects.where(QProject.project.key.eq(projectKey)).uniqueResult();
     if(project == null) {
-      return Response.status(Status.NOT_FOUND).build();
+      return Response.status(Status.NOT_FOUND).entity("No project found with key " + projectKey).build();
     }
     return ResponseTimestamper.ok(project).build();
   }
@@ -85,7 +85,7 @@ public class ProjectResource {
   public Response getReleases(@PathParam("projectKey") String projectKey) {
     Project project = projects.where(QProject.project.key.eq(projectKey)).uniqueResult();
     if(project == null) {
-      return Response.status(Status.NOT_FOUND).build();
+      return Response.status(Status.NOT_FOUND).entity("No project found with key " + projectKey).build();
     }
     return Response.ok(projects.getReleases(project)).build();
   }
