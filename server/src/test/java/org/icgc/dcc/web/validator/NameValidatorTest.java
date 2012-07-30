@@ -29,15 +29,16 @@ public class NameValidatorTest {
 
   @Test
   public void test_name_validation() {
-    NameValidator validator = new NameValidator();
 
-    assertTrue(validator.validate("abc123"));
+    assertTrue(NameValidator.validate("abc123"));
 
-    assertTrue(validator.validate("abc_123_p9k"));
+    assertTrue(NameValidator.validate("abc_123_p9k"));
 
-    assertFalse(validator.validate("!@#123"));
+    assertFalse(NameValidator.validate("!@#123"));
 
-    assertTrue(validator.validate("ABC"));
+    assertTrue(NameValidator.validate("ABCabc123"));
+
+    assertFalse(NameValidator.validate("a2"));
   }
 
 }
