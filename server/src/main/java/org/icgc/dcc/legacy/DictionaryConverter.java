@@ -125,7 +125,7 @@ public class DictionaryConverter {
 
       if(this.dictionary.hasFileSchema(rightTable)) {
         FileSchema leftFileSchema = this.dictionary.fileSchema(rightTable).get();
-        leftFileSchema.setRelation(new Relation(rightKeys, leftTable, leftKeys));
+        leftFileSchema.addRelation(new Relation(rightKeys, leftTable, leftKeys));
       }
     }
   }
@@ -223,7 +223,7 @@ public class DictionaryConverter {
     field.setValueType(valueType);
 
     // set Summary Type according to some rules
-    field.setSummaryType(SummaryType.COMPLETENESS); //TODO: to be removed soon
+    field.setSummaryType(SummaryType.COMPLETENESS); // TODO: to be removed soon
     if(valueType == ValueType.DECIMAL || valueType == ValueType.INTEGER) {
       field.setSummaryType(SummaryType.AVERAGE);
     }
