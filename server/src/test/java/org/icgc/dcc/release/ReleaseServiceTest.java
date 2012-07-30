@@ -118,7 +118,7 @@ public class ReleaseServiceTest {
   public void test_getNextRelease_isCorrectRelease() {
     assertEquals(release.getId(), releaseService.getNextRelease().getRelease().getId());
     Release newRelease = addNewRelease("release2");
-    assertEquals(newRelease.getId(), releaseService.getNextRelease().getRelease().getId());
+    assertEquals(newRelease.getName(), releaseService.getNextRelease().getRelease().getName());
   }
 
   @Test
@@ -189,7 +189,7 @@ public class ReleaseServiceTest {
     projectKeys.add("p1");
     releaseService.signOff(projectKeys);
 
-    releaseService.getNextRelease().release(newRelease);
+    releaseService.getNextRelease().release(newRelease.getName());
     return newRelease;
   }
 }

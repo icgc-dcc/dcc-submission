@@ -13,7 +13,6 @@ import javax.ws.rs.core.Response.Status;
 
 import org.icgc.dcc.release.NextRelease;
 import org.icgc.dcc.release.ReleaseService;
-import org.icgc.dcc.release.model.Release;
 
 import com.google.inject.Inject;
 
@@ -30,11 +29,11 @@ public class NextReleaseResource {
   }
 
   @POST
-  public Response release(Release nextRelease, @Context Request req) {
+  public Response release(String nextReleaseName, @Context Request req) {
     NextRelease oldRelease = releaseService.getNextRelease();
     // Check the timestamp of the oldRelease, since that is the object being updated
     ResponseTimestamper.evaluate(req, oldRelease.getRelease());
-    NextRelease newRelease = oldRelease.release(nextRelease);
+    NextRelease newRelease = oldRelease.release(nextReleaseName);
 
     return ResponseTimestamper.ok(newRelease.getRelease()).build();
   }
