@@ -103,6 +103,8 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
         try {
           src = strategy.readReportTap(getFileSchema(), getFlowType(), getName());
 
+          report.setName(getFileSchema() + "#" + getFlowType() + "#" + getName());
+
           ObjectMapper mapper = new ObjectMapper();
           if(report.getErrors() == null) {
             report.setErrors(new ArrayList<String>());

@@ -85,7 +85,6 @@ public abstract class BaseFileSchemaFlowPlanner implements FileSchemaFlowPlanner
     Outcome result = Outcome.PASSED;
     for(ReportCollector reportCollector : collectors.values()) {
       SchemaReport report = new SchemaReport();
-      report.setName(this.fileSchema.getName());
       Outcome outcome = reportCollector.collect(strategy, report);
       reports.add(report);
       if(outcome == Outcome.FAILED) {

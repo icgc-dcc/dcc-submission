@@ -122,6 +122,9 @@ abstract class BaseReportingPlanElement implements ReportingPlanElement {
     public Outcome collect(CascadingStrategy strategy, SchemaReport report) {
       try {
         InputStream src = strategy.readReportTap(getFileSchema(), getFlowType(), getName());
+
+        report.setName(getFileSchema() + "#" + getFlowType() + "#" + getName());
+
         ObjectMapper mapper = new ObjectMapper();
         List<FieldReport> fieldReports = new ArrayList<FieldReport>();
 
