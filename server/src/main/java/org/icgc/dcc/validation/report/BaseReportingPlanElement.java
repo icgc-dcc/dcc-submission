@@ -31,10 +31,13 @@ import org.icgc.dcc.validation.CascadingStrategy;
 import org.icgc.dcc.validation.FlowType;
 import org.icgc.dcc.validation.PlanExecutionException;
 import org.icgc.dcc.validation.ReportingPlanElement;
+import org.icgc.dcc.validation.cascading.CompletenessBy;
 
 import cascading.tuple.Fields;
 
+import com.google.common.base.Function;
 import com.google.common.base.Objects;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 
 abstract class BaseReportingPlanElement implements ReportingPlanElement {
@@ -71,12 +74,17 @@ abstract class BaseReportingPlanElement implements ReportingPlanElement {
 
   @Override
   public String getName() {
-    return this.summaryType.getDescription();
+    return this.summaryType != null ? this.summaryType.getDescription() : CompletenessBy.COMPLETENESS;
   }
 
   @Override
   public String describe() {
-    return String.format("%s%s", summaryType.getDescription(), fields);
+    return String.format("%s-%s", this.getName(), Iterables.transform(fields, new Function<Field, String>() {
+      @Override
+      public String apply(Field input) {
+        return input.getName();
+      }
+    }));
   }
 
   protected String buildSubPipeName(String prefix) {
@@ -100,16 +108,18 @@ abstract class BaseReportingPlanElement implements ReportingPlanElement {
 
     public String field;
 
-    public long populated;
-
     public long nulls;
+
+    public long missing;
+
+    public long populated;
 
     public Map<String, Object> summary = Maps.newLinkedHashMap();
 
     @Override
     public String toString() { // for testing only for now
-      return Objects.toStringHelper(FieldSummary.class).add("field", field).add("populated", populated)
-          .add("nulls", nulls).add("summary", summary).toString();
+      return Objects.toStringHelper(FieldSummary.class).add("field", field).add("nulls", nulls).add("missing", missing)
+          .add("populated", populated).add("summary", summary).toString();
     }
   }
 
