@@ -123,7 +123,7 @@ abstract class BaseReportingPlanElement implements ReportingPlanElement {
       try {
         InputStream src = strategy.readReportTap(getFileSchema(), getFlowType(), getName());
 
-        report.setName(getFileSchema() + "#" + getFlowType() + "#" + getName());
+        report.setName(getFileSchema().getName() + "#" + getFlowType() + "#" + getName());
 
         ObjectMapper mapper = new ObjectMapper();
         List<FieldReport> fieldReports = new ArrayList<FieldReport>();
