@@ -45,8 +45,10 @@ public class UserResource {
   @GET
   public Response getRoles(@Context HttpHeaders headers) {
     String username = passwordAuthenticator.getCurrentUser();
-    User user = users.getUser(username);
-
+    User user = users.getUser("admin");
+    System.out.println("!!!!!!!!!!!!!!");
+    System.out.println(user);
+    System.out.println("!!!!!!!!!!!!!!");
     if(user != null) {
       return Response.ok(user).build();
     }
