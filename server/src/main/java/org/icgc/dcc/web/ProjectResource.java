@@ -48,7 +48,8 @@ public class ProjectResource {
       this.projects.addProject(project);
       return Response.created(UriBuilder.fromResource(ProjectResource.class).path(project.getKey()).build()).build();
     } catch(DuplicateKey e) {
-      return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage("AddProjectError")).build();
+      return Response.status(Status.BAD_REQUEST)
+          .entity(new ServerErrorResponseMessage("ProjectExists", project.getKey())).build();
     }
   }
 
