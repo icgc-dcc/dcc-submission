@@ -84,7 +84,7 @@ public class NextReleaseResource {
       this.releaseService.signOff(projectKeys);
       return Response.ok().build();
     } else {
-      return Response.status(Status.BAD_REQUEST).entity("ProjectKeyNotFound").build();
+      return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage("ProjectKeyNotFound")).build();
     }
   }
 }
