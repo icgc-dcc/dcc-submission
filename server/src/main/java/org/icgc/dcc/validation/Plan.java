@@ -18,6 +18,7 @@
 package org.icgc.dcc.validation;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -93,16 +94,27 @@ public class Plan {
 
   public Outcome collect(CascadingStrategy strategy, SubmissionReport report) {
     Outcome result = Outcome.PASSED;
-    List<SchemaReport> schemaReports = new ArrayList<SchemaReport>();
+    Map<String, SchemaReport> schemaReports = new HashMap<String, SchemaReport>();
     for(FileSchemaFlowPlanner planner : Iterables.concat(internalPlanners.values(), externalPlanners.values())) {
-      List<SchemaReport> schemaReport = new ArrayList<SchemaReport>();
+      SchemaReport schemaReport = new SchemaReport();
       Outcome outcome = planner.collect(strategy, schemaReport);
       if(outcome == Outcome.FAILED) {
         result = Outcome.FAILED;
       }
-      schemaReports.addAll(schemaReport);
+      if(!schemaReports.containsKey(schemaReport.getName())) {
+        schemaReports.put(schemaReport.getName(), schemaReport);
+      } else {
+        // combine internal and external plans into one
+        SchemaReport sreport = schemaReports.get(schemaReport.getName());
+
+        if(schemaReport.getFieldReports() != null) {
+          sreport.getFieldReports().addAll(schemaReport.getFieldReports());
+        }
+        sreport.getErrors().addAll(schemaReport.getErrors());
+      }
     }
-    report.setSchemaReports(schemaReports);
+
+    report.setSchemaReports(new ArrayList<SchemaReport>(schemaReports.values()));
     return result;
   }
 }

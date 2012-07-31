@@ -18,7 +18,6 @@ import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
 import com.google.code.morphia.query.Query;
 import com.google.code.morphia.query.UpdateOperations;
-import com.google.common.collect.Iterables;
 import com.google.inject.Inject;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
 
@@ -77,16 +76,19 @@ public class ProjectService extends BaseMorphiaService<Project> {
   }
 
   public Project getProject(final String projectKey) {
-    Project project = Iterables.find(this.getProjects(), new com.google.common.base.Predicate<Project>() {
-      @Override
-      public boolean apply(Project input) {
-        return input.getKey().equals(projectKey);
-      }
-    }, null);
+    Project project = this.datastore().createQuery(Project.class).filter("key =", projectKey).get();
     if(project == null) {
       throw new ProjectServiceException("No project found with key " + projectKey);
     }
     return project;
+  }
+
+  public List<Project> getProjects(List<String> projectKeys) {
+    List<Project> projects = this.datastore().createQuery(Project.class).filter("key in", projectKeys).asList();
+    if(projects == null) {
+      throw new ProjectServiceException("No projects found within the key list");
+    }
+    return projects;
   }
 
   private void saveProject(Project project) {

@@ -247,4 +247,9 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
     datastore().update(updateQuery, ops);
   }
+
+  public Release getRelease(String releaseName) {
+    Release release = where(QRelease.release.name.eq(releaseName)).singleResult();
+    return release;
+  }
 }
