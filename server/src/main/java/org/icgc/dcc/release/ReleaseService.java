@@ -253,7 +253,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     datastore().update(updateQuery, ops);
   }
 
-  public List<SubmissionFile> getSubmissionFiles(String releaseName, String projectKey) {
+  public List<SubmissionFile> getSubmissionFiles(String releaseName, String projectKey) throws IOException {
     Release release = this.where(QRelease.release.name.eq(releaseName)).singleResult();
     if(release == null) {
       throw new ReleaseException("No such release");
@@ -261,12 +261,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
     List<SubmissionFile> submissionFileList = new ArrayList<SubmissionFile>();
     for(Path path : HadoopUtils.lsFile(this.fs.getFileSystem(), this.fs.buildProjectStringPath(release, projectKey))) {
-      try {
-        submissionFileList.add(new SubmissionFile(path, fs.getFileSystem()));
-      } catch(IOException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
-      }
+      submissionFileList.add(new SubmissionFile(path, fs.getFileSystem()));
     }
     return submissionFileList;
   }
