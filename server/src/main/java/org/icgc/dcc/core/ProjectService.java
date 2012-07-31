@@ -12,6 +12,7 @@ import org.icgc.dcc.release.model.QRelease;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.release.model.SubmissionState;
+import org.icgc.dcc.web.validator.NameValidator;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
@@ -52,6 +53,10 @@ public class ProjectService extends BaseMorphiaService<Project> {
 
   @SuppressWarnings("all")
   public void addProject(Project project) {
+    // check for project key
+    if(!NameValidator.validate(project.getKey())) {
+      throw new ProjectServiceException("Project key " + project.getKey() + " is not valid");
+    }
     Release release = releaseService.getNextRelease().getRelease();
     Submission submission = new Submission();
     submission.setProjectKey(project.getKey());
@@ -84,7 +89,7 @@ public class ProjectService extends BaseMorphiaService<Project> {
     return project;
   }
 
-  public void saveProject(Project project) {
+  private void saveProject(Project project) {
     this.datastore().save(project);
   }
 }

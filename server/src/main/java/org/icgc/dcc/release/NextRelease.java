@@ -13,6 +13,7 @@ import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.release.model.SubmissionState;
+import org.icgc.dcc.web.validator.NameValidator;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.query.Query;
@@ -61,6 +62,11 @@ public class NextRelease extends BaseRelease {
 
   public NextRelease release(String nextReleaseName) {
     checkArgument(nextReleaseName != null);
+
+    // check for next release name
+    if(!NameValidator.validate(nextReleaseName)) {
+      throw new ReleaseException("Next Release name " + nextReleaseName + " is not valid");
+    }
 
     // check for submission state to be signed off
     if(!this.canRelease()) {
