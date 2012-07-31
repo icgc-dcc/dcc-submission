@@ -117,7 +117,7 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
             if(tupleState.isInvalid()) {
               outcome = Outcome.FAILED;
               for(TupleError error : tupleState.getErrors()) {
-                report.errors.add(error.getMessage());
+                report.errors.add(error.toString());
               }
             }
             if(report.getErrors().size() >= 100) {
