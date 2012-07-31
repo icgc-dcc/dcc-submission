@@ -57,6 +57,9 @@ public class ProjectService extends BaseMorphiaService<Project> {
     if(!NameValidator.validate(project.getKey())) {
       throw new ProjectServiceException("Project key " + project.getKey() + " is not valid");
     }
+
+    this.saveProject(project);
+
     Release release = releaseService.getNextRelease().getRelease();
     Submission submission = new Submission();
     submission.setProjectKey(project.getKey());
@@ -68,8 +71,6 @@ public class ProjectService extends BaseMorphiaService<Project> {
         .filter("name = ", release.getName());
     UpdateOperations<Release> ops = datastore().createUpdateOperations(Release.class).add("submissions", submission);
     datastore().update(updateQuery, ops);
-
-    this.saveProject(project);
   }
 
   public List<Project> getProjects() {
