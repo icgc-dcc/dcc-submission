@@ -13,6 +13,7 @@ import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.release.model.SubmissionState;
+import org.icgc.dcc.web.validator.InvalidNameException;
 import org.icgc.dcc.web.validator.NameValidator;
 
 import com.google.code.morphia.Datastore;
@@ -65,7 +66,7 @@ public class NextRelease extends BaseRelease {
 
     // check for next release name
     if(!NameValidator.validate(nextReleaseName)) {
-      throw new ReleaseException("Next Release name " + nextReleaseName + " is not valid");
+      throw new InvalidNameException(nextReleaseName);
     }
 
     // check for submission state to be signed off
