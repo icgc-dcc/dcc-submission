@@ -207,7 +207,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     List<Submission> submissions = this.getNextRelease().getRelease().getSubmissions();
     for(Submission submission : submissions) {
       if(state.equals(submission.getState())) {
-        submission.getProjectKey();
+        projectKeys.add(submission.getProjectKey());
       }
     }
     return projectKeys;
