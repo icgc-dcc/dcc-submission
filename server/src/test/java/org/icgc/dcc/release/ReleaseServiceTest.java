@@ -12,6 +12,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import junit.framework.Assert;
+
 import org.icgc.dcc.core.model.BaseEntity;
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.dictionary.DictionaryService;
@@ -92,7 +94,7 @@ public class ReleaseServiceTest {
       release.setDictionaryVersion(dictionary.getVersion());
 
       // Create the releaseService and populate it with the initial release
-      releaseService = new ReleaseService(morphia, datastore, fs);
+      releaseService = new ReleaseService(morphia, datastore, fs, dictionaryService);
       releaseService.createInitialRelease(release);
     } catch(UnknownHostException e) {
       e.printStackTrace();
@@ -119,6 +121,16 @@ public class ReleaseServiceTest {
     assertEquals(release.getId(), releaseService.getNextRelease().getRelease().getId());
     Release newRelease = addNewRelease("release2");
     assertEquals(newRelease.getName(), releaseService.getNextRelease().getRelease().getName());
+  }
+
+  @Test
+  public void test_getFromName_exists() {
+    Assert.assertNotNull(releaseService.getFromName("release1"));
+  }
+
+  @Test
+  public void test_getFromName_notExists() {
+    Assert.assertNull(releaseService.getFromName("dummy"));
   }
 
   @Test

@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.icgc.dcc.core.morphia.BaseMorphiaService;
+import org.icgc.dcc.dictionary.DictionaryService;
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.release.model.QRelease;
@@ -35,11 +36,16 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
   private final DccFileSystem fs;
 
+  private final DictionaryService dictionaryService;
+
   @Inject
-  public ReleaseService(Morphia morphia, Datastore datastore, DccFileSystem fs) {
+  public ReleaseService(Morphia morphia, Datastore datastore, DccFileSystem fs, DictionaryService dictionaryService) {
     super(morphia, datastore, QRelease.release);
     this.fs = fs;
     registerModelClasses(Release.class);
+
+    checkArgument(dictionaryService != null);
+    this.dictionaryService = dictionaryService;
   }
 
   public void createInitialRelease(Release initRelease) {
@@ -66,10 +72,16 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     return this.query().where(QRelease.release.state.eq(ReleaseState.OPENED)).singleResult() != null;
   }
 
+  public Release getFromName(String releaseName) {
+    return this.query().where(QRelease.release.name.eq(releaseName)).uniqueResult();
+  }
+
   public NextRelease getNextRelease() throws IllegalReleaseStateException {
     Release nextRelease = this.query().where(QRelease.release.state.eq(ReleaseState.OPENED)).singleResult();
-    if(nextRelease == null) throw new IllegalStateException("no next release");
-    return new NextRelease(nextRelease, datastore(), this.fs);
+    if(nextRelease == null) {
+      throw new IllegalStateException("no next release");
+    }
+    return new NextRelease(nextRelease, datastore(), this.fs, this, dictionaryService);
   }
 
   public List<HasRelease> list() {

@@ -45,26 +45,16 @@ public class ReleaseResource {
   }
 
   @PUT
-  @Path("{name}")
-  public Response updateRelease(@PathParam("name") String name, Release release, @Context Request req) {
+  public Response initialize(Release release, @Context Request req) {
     if(release != null) {
       ResponseTimestamper.evaluate(req, release);
 
       if(this.releaseService.list().isEmpty()) {
         this.releaseService.createInitialRelease(release);
+        return ResponseTimestamper.ok(release).build();
       } else {
-        // for now nothing is allowed to change
-        /*
-         * UpdateOperations<Release> ops =
-         * this.releaseService.getDatastore().createUpdateOperations(Release.class).set("state", release.getState());
-         * 
-         * Query<Release> updateQuery =
-         * this.releaseService.getDatastore().createQuery(Release.class).field("name").equal(name);
-         * 
-         * this.releaseService.getDatastore().update(updateQuery, ops);
-         */
+        return Response.status(Status.BAD_REQUEST).build();
       }
-      return ResponseTimestamper.ok(release).build();
     } else {
       return Response.status(Status.BAD_REQUEST).build();
     }

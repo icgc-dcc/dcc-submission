@@ -18,6 +18,7 @@
 package org.icgc.dcc.integration;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -116,7 +117,7 @@ public class IntegrationTest {
 
     test_feedDB();
 
-    test_createInitialRelease();
+    test_createInitialRelease("/integrationtest/initRelease.json");
 
     test_feedFileSystem();
 
@@ -137,6 +138,10 @@ public class IntegrationTest {
     test_checkReleaseState("release1", ReleaseState.COMPLETED);
 
     test_checkReleaseState("release2", ReleaseState.OPENED);
+
+    test_updateReleaseName("/integrationtest/updatedRelease.json");
+
+    test_checkReleaseName("RELEASE2");
   }
 
   private void test_feedFileSystem() throws IOException {
@@ -211,14 +216,23 @@ public class IntegrationTest {
     assertEquals(expectedState, release.getState());
   }
 
+  private void test_checkReleaseName(String releaseName) throws IOException, InterruptedException {
+    Response response = sendGetRequest("/releases/" + releaseName);
+    assertEquals(200, response.getStatus());
+
+    Release release = new ObjectMapper().readValue(response.readEntity(String.class), Release.class);
+    assertNotNull(release);
+  }
+
   private void test_checkQueueIsEmpty() throws IOException {
     Response response = sendGetRequest("/nextRelease/queue");
     assertEquals(200, response.getStatus());
     assertEquals("[]", response.readEntity(String.class));
   }
 
-  private void test_createInitialRelease() throws IOException, JsonParseException, JsonMappingException {
-    Response response = sendPutRequest("/releases/release1", resourceToString("/integrationtest/initRelease.json"));
+  private void test_createInitialRelease(String initReleaseRelPath) throws IOException, JsonParseException,
+      JsonMappingException {
+    Response response = sendPutRequest("/releases", resourceToString(initReleaseRelPath));
     assertEquals(200, response.getStatus());
     Release release = new ObjectMapper().readValue(response.readEntity(String.class), Release.class);
     assertEquals("release1", release.getName());
@@ -231,6 +245,14 @@ public class IntegrationTest {
   private void test_queueProjects() throws IOException, JsonParseException, JsonMappingException {
     Response response = sendPostRequest("/nextRelease/queue", "[\"project1\", \"project2\", \"project3\"]");
     assertEquals(200, response.getStatus());
+  }
+
+  private void test_updateReleaseName(String updatedReleaseRelPath) throws IOException, JsonParseException,
+      JsonMappingException {
+    Response response = sendPutRequest("/nextRelease/update", resourceToString(updatedReleaseRelPath));
+    assertEquals(200, response.getStatus());
+    Release release = new ObjectMapper().readValue(response.readEntity(String.class), Release.class);
+    assertEquals("RELEASE2", release.getName());
   }
 
   private Response sendPutRequest(String requestPath, String payload) throws IOException {

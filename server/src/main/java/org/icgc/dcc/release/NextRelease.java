@@ -1,11 +1,13 @@
 package org.icgc.dcc.release;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.icgc.dcc.dictionary.DictionaryService;
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.DictionaryState;
 import org.icgc.dcc.filesystem.DccFileSystem;
@@ -26,15 +28,26 @@ public class NextRelease extends BaseRelease {
 
   private final DccFileSystem fs;
 
-  public NextRelease(Release release, Datastore datastore, DccFileSystem fs) throws IllegalReleaseStateException {
+  private final ReleaseService releaseService;
+
+  private final DictionaryService dictionaryService;
+
+  public NextRelease(Release release, Datastore datastore, DccFileSystem fs, ReleaseService releaseService,
+      DictionaryService dictionaryService) throws IllegalReleaseStateException {
     super(release);
     if(release.getState() != ReleaseState.OPENED) {
       throw new IllegalReleaseStateException(release, ReleaseState.OPENED);
     }
+
     checkArgument(datastore != null);
     checkArgument(fs != null);
+    checkArgument(releaseService != null);
+    checkArgument(dictionaryService != null);
+
     this.datastore = datastore;
     this.fs = fs;
+    this.releaseService = releaseService;
+    this.dictionaryService = dictionaryService;
   }
 
   public List<String> getQueued() {
@@ -114,7 +127,7 @@ public class NextRelease extends BaseRelease {
 
     this.datastore.update(oldRelease, ops);
 
-    return new NextRelease(nextRelease, this.datastore, this.fs);
+    return new NextRelease(nextRelease, this.datastore, this.fs, releaseService, dictionaryService);
   }
 
   public boolean canRelease() {
@@ -126,5 +139,47 @@ public class NextRelease extends BaseRelease {
     }
 
     return false;
+  }
+
+  /**
+   * Does not allow to update submissions, {@code ProjectService.addProject()} must be used instead
+   */
+  public NextRelease update(Release updatedRelease) {
+    checkArgument(updatedRelease != null);
+
+    String updatedReleaseName = updatedRelease.getName();
+    String updatedDictionaryVersion = updatedRelease.getDictionaryVersion();
+    if(!NameValidator.validate(updatedReleaseName)) {
+      throw new ReleaseException("Updated release name " + updatedReleaseName + " is not valid");
+    }
+
+    if(releaseService.getFromName(updatedReleaseName) != null) {
+      throw new ReleaseException("New release name " + updatedReleaseName + " conflicts with an existing release");
+    }
+
+    if(updatedDictionaryVersion == null) {
+      throw new ReleaseException("Release must have associated dictionary before being updated");
+    }
+
+    if(dictionaryService.getFromVersion(updatedDictionaryVersion) == null) {
+      throw new ReleaseException("Release must point to an existing dictionary, no match for "
+          + updatedDictionaryVersion);
+    }
+
+    Release oldRelease = this.getRelease();
+    String oldReleaseName = oldRelease.getName();
+    checkState(oldRelease.getState() == ReleaseState.OPENED);
+
+    // only TWO parameters can be updated for now
+    oldRelease.setName(updatedReleaseName);
+    oldRelease.setDictionaryVersion(updatedDictionaryVersion);
+
+    Query<Release> query = this.datastore.createQuery(Release.class).filter("name", oldReleaseName);
+    UpdateOperations<Release> op =
+        this.datastore.createUpdateOperations(Release.class).set("name", updatedReleaseName)
+            .set("dictionaryVersion", updatedDictionaryVersion);
+    this.datastore.update(query, op);
+
+    return new NextRelease(oldRelease, this.datastore, this.fs, releaseService, dictionaryService);
   }
 }

@@ -10,6 +10,9 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.List;
 
+import junit.framework.Assert;
+
+import org.icgc.dcc.dictionary.DictionaryService;
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.DictionaryState;
 import org.icgc.dcc.filesystem.DccFileSystem;
@@ -29,63 +32,73 @@ public class NextReleaseTest {
 
   private NextRelease nextRelease;
 
-  private Release release;
+  private Release mockRelease;
 
   private Dictionary dictionary;
 
-  private Datastore ds;
+  private Datastore mockDatastore;
 
-  private Query<Release> query;
+  private Query<Release> mockReleaseQuery;
 
   private Query<Dictionary> queryDict;
 
-  private UpdateOperations<Release> updates;
+  private UpdateOperations<Release> mockReleaseUpdates;
 
   private UpdateOperations<Dictionary> updatesDict;
 
   private DccFileSystem fs;
+
+  private ReleaseService mockReleaseService;
+
+  private DictionaryService mockDictionaryService;
 
   private static final String NEXT_RELEASE_NAME = "release2";
 
   @SuppressWarnings("unchecked")
   @Before
   public void setUp() {
-    release = mock(Release.class);
-    updates = mock(UpdateOperations.class);
+    mockRelease = mock(Release.class);
+    mockReleaseUpdates = mock(UpdateOperations.class);
     updatesDict = mock(UpdateOperations.class);
     fs = mock(DccFileSystem.class);
+    mockReleaseService = mock(ReleaseService.class);
+    mockDictionaryService = mock(DictionaryService.class);
 
-    when(release.getState()).thenReturn(ReleaseState.OPENED);
+    when(mockRelease.getState()).thenReturn(ReleaseState.OPENED);
     List<Submission> submissions = new ArrayList<Submission>();
     Submission s = new Submission();
     s.setState(SubmissionState.SIGNED_OFF);
     submissions.add(s);
-    when(release.getSubmissions()).thenReturn(submissions);
+    when(mockRelease.getSubmissions()).thenReturn(submissions);
+    when(mockRelease.getName()).thenReturn("my_release_name");
 
-    ds = mock(Datastore.class);
+    mockDatastore = mock(Datastore.class);
 
-    nextRelease = new NextRelease(release, ds, fs);
+    when(mockDatastore.createUpdateOperations(Release.class)).thenReturn(mockReleaseUpdates);
+    when(mockDatastore.createUpdateOperations(Dictionary.class)).thenReturn(updatesDict);
 
-    when(ds.createUpdateOperations(Release.class)).thenReturn(updates);
-    when(ds.createUpdateOperations(Dictionary.class)).thenReturn(updatesDict);
+    when(mockReleaseUpdates.disableValidation()).thenReturn(mockReleaseUpdates);
+    when(mockReleaseUpdates.set(anyString(), anyString())).thenReturn(mockReleaseUpdates);
 
-    when(updates.disableValidation()).thenReturn(updates);
-
-    query = mock(Query.class);
+    mockReleaseQuery = mock(Query.class);
     queryDict = mock(Query.class);
-    when(ds.createQuery(Release.class)).thenReturn(query);
-    when(ds.createQuery(Dictionary.class)).thenReturn(queryDict);
+    when(mockDatastore.createQuery(Release.class)).thenReturn(mockReleaseQuery);
+    when(mockDatastore.createQuery(Dictionary.class)).thenReturn(queryDict);
 
-    when(query.filter(anyString(), any())).thenReturn(query);
+    when(mockReleaseQuery.filter(anyString(), any())).thenReturn(mockReleaseQuery);
     when(queryDict.filter(anyString(), any())).thenReturn(queryDict);
 
+    when(mockReleaseService.getFromName("not_existing_release")).thenReturn(null);
+    when(mockDictionaryService.getFromVersion("existing_dictionary")).thenReturn(mock(Dictionary.class));
+
+    nextRelease = new NextRelease(mockRelease, mockDatastore, fs, mockReleaseService, mockDictionaryService);
   }
 
   @Test(expected = IllegalReleaseStateException.class)
   public void test_NextRelease_throwsWhenBadReleaseState() {
-    when(release.getState()).thenReturn(ReleaseState.COMPLETED);
+    when(mockRelease.getState()).thenReturn(ReleaseState.COMPLETED);
 
-    new NextRelease(release, ds, fs);
+    new NextRelease(mockRelease, mockDatastore, fs, mockReleaseService, mockDictionaryService);
   }
 
   @Test
@@ -103,7 +116,7 @@ public class NextReleaseTest {
 
     nextRelease.signOff(submission);
 
-    verify(ds).update(query, updates);
+    verify(mockDatastore).update(mockReleaseQuery, mockReleaseUpdates);
   }
 
   @Test
@@ -112,7 +125,7 @@ public class NextReleaseTest {
 
     nextRelease.release(NEXT_RELEASE_NAME);
 
-    verify(release).setState(ReleaseState.COMPLETED);
+    verify(mockRelease).setState(ReleaseState.COMPLETED);
   }
 
   @Test
@@ -130,11 +143,11 @@ public class NextReleaseTest {
 
     NextRelease newRelease = nextRelease.release(NEXT_RELEASE_NAME);
 
-    verify(ds).createUpdateOperations(Release.class);
-    verify(updates).set("state", ReleaseState.COMPLETED);
-    verify(updates).set("releaseDate", release.getReleaseDate());
-    verify(ds).update(release, updates);
-    verify(ds).save(newRelease.getRelease());
+    verify(mockDatastore).createUpdateOperations(Release.class);
+    verify(mockReleaseUpdates).set("state", ReleaseState.COMPLETED);
+    verify(mockReleaseUpdates).set("releaseDate", mockRelease.getReleaseDate());
+    verify(mockDatastore).update(mockRelease, mockReleaseUpdates);
+    verify(mockDatastore).save(newRelease.getRelease());
   }
 
   @Test
@@ -160,7 +173,7 @@ public class NextReleaseTest {
   public void test_release_dictionaryClosed() {
     releaseSetUp();
 
-    assertTrue(release.getDictionaryVersion().equals(dictionary.getVersion()));
+    assertTrue(mockRelease.getDictionaryVersion().equals(dictionary.getVersion()));
     assertTrue(dictionary.getState() == DictionaryState.OPENED);
 
     nextRelease.release(NEXT_RELEASE_NAME);
@@ -171,7 +184,7 @@ public class NextReleaseTest {
 
   @Test(expected = ReleaseException.class)
   public void test_release_throwsMissingDictionaryException() {
-    assertTrue(release.getDictionaryVersion() == null);
+    assertTrue(mockRelease.getDictionaryVersion() == null);
 
     nextRelease.release("Release2");
   }
@@ -182,7 +195,7 @@ public class NextReleaseTest {
     // TODO reinstate once NextRelease is fixed to make mocking easier
     releaseSetUp();
 
-    nextRelease.release(release.getName());
+    nextRelease.release(mockRelease.getName());
   }
 
   @Ignore
@@ -191,19 +204,55 @@ public class NextReleaseTest {
     // TODO Create tests once the validation is implemented
   }
 
+  @Test
+  public void test_update_valid() {
+    Release mockUpdatedRelease = mock(Release.class);
+    when(mockUpdatedRelease.getName()).thenReturn("not_existing_release");
+    when(mockUpdatedRelease.getDictionaryVersion()).thenReturn("existing_dictionary");
+
+    NextRelease updatedNextRelease = nextRelease.update(mockUpdatedRelease);
+    Assert.assertNotNull(updatedNextRelease);
+    Assert.assertEquals(mockRelease, updatedNextRelease.getRelease());
+
+    verify(mockRelease).setName("not_existing_release");
+    verify(mockRelease).setDictionaryVersion("existing_dictionary");
+    verify(mockDatastore).createQuery(Release.class);
+    verify(mockReleaseQuery).filter("name", "my_release_name");
+    verify(mockDatastore).createUpdateOperations(Release.class);
+    verify(mockReleaseUpdates).set("name", "not_existing_release");
+    verify(mockReleaseUpdates).set("dictionaryVersion", "existing_dictionary");
+    verify(mockDatastore).update(mockReleaseQuery, mockReleaseUpdates);
+  }
+
+  @Test(expected = ReleaseException.class)
+  public void test_update_invalidName() {
+    Release mockUpdatedRelease = mock(Release.class);
+    when(mockUpdatedRelease.getName()).thenReturn("existing_release");
+    when(mockReleaseService.getFromName("existing_release")).thenReturn(mock(Release.class));
+    nextRelease.update(mockUpdatedRelease);
+  }
+
+  @Test(expected = ReleaseException.class)
+  public void test_update_invalidDictionaryVersion() {
+    Release mockUpdatedRelease = mock(Release.class);
+    when(mockUpdatedRelease.getName()).thenReturn("unexisting_dictionary");
+    when(mockDictionaryService.getFromVersion("unexisting_dictionary")).thenReturn(null);
+    nextRelease.update(mockUpdatedRelease);
+  }
+
   private void releaseSetUp() {
     dictionary = mock(Dictionary.class);
     when(dictionary.getState()).thenReturn(DictionaryState.OPENED);
     when(dictionary.getVersion()).thenReturn("0.6c");
-    when(release.getDictionaryVersion()).thenReturn("0.6c");
+    when(mockRelease.getDictionaryVersion()).thenReturn("0.6c");
 
-    when(updates.set("state", ReleaseState.COMPLETED)).thenReturn(updates);
-    when(updates.set("releaseDate", release.getReleaseDate())).thenReturn(updates);
+    when(mockReleaseUpdates.set("state", ReleaseState.COMPLETED)).thenReturn(mockReleaseUpdates);
+    when(mockReleaseUpdates.set("releaseDate", mockRelease.getReleaseDate())).thenReturn(mockReleaseUpdates);
   }
 
   private Submission signOffSetUp() {
     Submission submission = mock(Submission.class);
-    when(updates.set("submissions.$.state", SubmissionState.SIGNED_OFF)).thenReturn(updates);
+    when(mockReleaseUpdates.set("submissions.$.state", SubmissionState.SIGNED_OFF)).thenReturn(mockReleaseUpdates);
     return submission;
   }
 }
