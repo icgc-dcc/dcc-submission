@@ -30,8 +30,7 @@ public class DictionaryResource {
   public Response addDictionary(Dictionary d) {
     checkArgument(d != null);
     if(this.dictionaries.list().isEmpty() == false) {
-      return Response.status(Status.BAD_REQUEST)
-          .entity("Only the initial dictionary may be added using the webservice").build();
+      return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage("NotInitialDictionary")).build();
     }
     this.dictionaries.add(d);
 
@@ -42,7 +41,7 @@ public class DictionaryResource {
   public Response getDictionaries() {
     List<Dictionary> dictionaries = this.dictionaries.list();
     if(dictionaries == null) {
-      return Response.status(Status.NOT_FOUND).entity("No dictionaries found.").build();
+      return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoDictionaries")).build();
     }
     return Response.ok(dictionaries).build();
   }
@@ -52,7 +51,7 @@ public class DictionaryResource {
   public Response getDictionary(@PathParam("version") String version) {
     Dictionary d = this.dictionaries.getFromVersion(version);
     if(d == null) {
-      return Response.status(Status.NOT_FOUND).entity("No dictionary found with version " + version).build();
+      return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoSuchVersion", version)).build();
     }
     return ResponseTimestamper.ok(d).build();
   }
@@ -62,16 +61,14 @@ public class DictionaryResource {
   public Response updateDictionary(@PathParam("version") String version, Dictionary newDictionary, @Context Request req) {
     Dictionary oldDictionary = this.dictionaries.getFromVersion(version);
     if(oldDictionary == null) {
-      return Response.status(Status.NOT_FOUND).entity("No dictionary found with version " + version).build();
+      return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoSuchVersion", version)).build();
     } else if(oldDictionary.getState() != DictionaryState.OPENED) {
-      return Response.status(Status.BAD_REQUEST)
-          .entity("The requested dictionary is not open; only open dictionaries may be updated").build();
+      return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage("DictionaryNotOpen", version))
+          .build();
     } else if(newDictionary.getVersion().equals(version) == false) {
-      return Response
-          .status(Status.BAD_REQUEST)
-          .entity(
-              String.format("The requested dictionary version %s does not match the submitted version %s.", version,
-                  newDictionary.getVersion())).build();
+      return Response.status(Status.BAD_REQUEST)
+          .entity(new ServerErrorResponseMessage("DictionaryVersionMismatch", version, newDictionary.getVersion()))
+          .build();
     }
     ResponseTimestamper.evaluate(req, oldDictionary);
     this.dictionaries.update(newDictionary);
