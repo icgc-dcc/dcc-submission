@@ -13,6 +13,7 @@ import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.release.model.SubmissionState;
+import org.icgc.dcc.web.validator.InvalidNameException;
 import org.icgc.dcc.web.validator.NameValidator;
 
 import com.google.code.morphia.Datastore;
@@ -67,12 +68,12 @@ public class NextRelease extends BaseRelease {
 
     // check for next release name
     if(!NameValidator.validate(nextReleaseName)) {
-      throw new ReleaseException("Next Release name " + nextReleaseName + " is not valid");
+      throw new InvalidNameException(nextReleaseName);
     }
 
     // check for submission state to be signed off
     if(!this.canRelease()) {
-      throw new ReleaseException("Release must have at least one submission that is signed off");
+      throw new ReleaseException("NoneSignedOff");
     }
 
     Release oldRelease = this.getRelease();
@@ -80,10 +81,10 @@ public class NextRelease extends BaseRelease {
     String oldDictionaryVersion = oldRelease.getDictionaryVersion();
     String newDictionaryVersion = oldDictionaryVersion;
     if(oldDictionaryVersion == null) {
-      throw new ReleaseException("Release must have associated dictionary before being completed");
+      throw new ReleaseException("ReleaseMissingDictionary");
     }
     if(this.datastore.createQuery(Release.class).filter("name", nextRelease.getName()).get() != null) {
-      throw new ReleaseException("New release can not be the same as completed release");
+      throw new ReleaseException("InvalidReleaseName");
     }
 
     nextRelease.setDictionaryVersion(newDictionaryVersion);

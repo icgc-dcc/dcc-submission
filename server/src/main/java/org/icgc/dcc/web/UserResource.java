@@ -50,7 +50,8 @@ public class UserResource {
     if(user != null) {
       return Response.ok(user).build();
     }
-    return Response.status(Status.INTERNAL_SERVER_ERROR).build();
+    return Response.status(Status.INTERNAL_SERVER_ERROR).entity(new ServerErrorResponseMessage("NoSuchUser", username))
+        .build();
   }
 
 }

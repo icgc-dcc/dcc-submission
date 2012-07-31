@@ -18,6 +18,7 @@
 package org.icgc.dcc.validation;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -60,12 +61,9 @@ public class LocalFileSchemaDirectory implements FileSchemaDirectory {
 
       @Override
       public boolean accept(File pathname) {
-        // return pathname.getName().contains(fileSchema.getName());
-        // checkNotNull(fileSchema.getPattern(), "schema " + fileSchema.getName() + " has no pattern");
-        return pathname.getName().contains(fileSchema.getName())
-            && Pattern.matches(fileSchema.getPattern(), pathname.getName());
+        checkNotNull(fileSchema.getPattern(), "schema " + fileSchema.getName() + " has no pattern");
+        return Pattern.matches(fileSchema.getPattern(), pathname.getName());
       }
     });
   }
-
 }

@@ -19,6 +19,7 @@ import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.release.model.SubmissionState;
 import org.icgc.dcc.validation.report.SubmissionReport;
+import org.icgc.dcc.web.validator.InvalidNameException;
 import org.icgc.dcc.web.validator.NameValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +50,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   public void createInitialRelease(Release initRelease) {
     // check for init release name
     if(!NameValidator.validate(initRelease.getName())) {
-      throw new ReleaseException("release name " + initRelease.getName() + " is not valid");
+      throw new InvalidNameException(initRelease.getName());
     }
     String dictionaryVersion = initRelease.getDictionaryVersion();
     if(dictionaryVersion == null) {
@@ -321,7 +322,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     List<Submission> submissions = this.getNextRelease().getRelease().getSubmissions();
     for(Submission submission : submissions) {
       if(state.equals(submission.getState())) {
-        submission.getProjectKey();
+        projectKeys.add(submission.getProjectKey());
       }
     }
     return projectKeys;
