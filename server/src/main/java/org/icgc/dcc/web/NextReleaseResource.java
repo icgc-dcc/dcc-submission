@@ -55,7 +55,7 @@ public class NextReleaseResource {
       this.releaseService.queue(projectKeys);
       return Response.ok().build();
     } else {
-      return Response.status(Status.BAD_REQUEST).build();
+      return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage("ProjectKeyNotFound")).build();
     }
   }
 
@@ -84,7 +84,7 @@ public class NextReleaseResource {
       this.releaseService.signOff(projectKeys);
       return Response.ok().build();
     } else {
-      return Response.status(Status.BAD_REQUEST).build();
+      return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage("ProjectKeyNotFound")).build();
     }
   }
 }
