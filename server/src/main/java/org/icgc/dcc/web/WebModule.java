@@ -3,6 +3,7 @@ package org.icgc.dcc.web;
 import org.glassfish.jersey.media.json.JsonJacksonModule;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.icgc.dcc.http.jersey.BasicHttpAuthenticationRequestFilter;
+import org.icgc.dcc.web.mapper.InvalidNameExceptionMapper;
 import org.icgc.dcc.web.mapper.UnsatisfiedPrecondtionExceptionMapper;
 
 import com.google.inject.AbstractModule;
@@ -32,6 +33,7 @@ public class WebModule extends AbstractModule {
       config.addClasses(BasicHttpAuthenticationRequestFilter.class);
       config.addClasses(UnsatisfiedPrecondtionExceptionMapper.class);
       config.addClasses(ReleaseExceptionMapper.class);
+      config.addClasses(InvalidNameExceptionMapper.class);
       config.addClasses(UserResource.class);
       config.addClasses(SeedResource.class); // TODO be sure to remove this from production environment
     }

@@ -12,6 +12,7 @@ import org.icgc.dcc.release.model.QRelease;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.release.model.SubmissionState;
+import org.icgc.dcc.web.validator.InvalidNameException;
 import org.icgc.dcc.web.validator.NameValidator;
 
 import com.google.code.morphia.Datastore;
@@ -55,7 +56,7 @@ public class ProjectService extends BaseMorphiaService<Project> {
   public void addProject(Project project) {
     // check for project key
     if(!NameValidator.validate(project.getKey())) {
-      throw new ProjectServiceException("Project key " + project.getKey() + " is not valid");
+      throw new InvalidNameException(project.getKey());
     }
 
     this.saveProject(project);
