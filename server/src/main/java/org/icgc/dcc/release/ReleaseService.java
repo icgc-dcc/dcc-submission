@@ -2,15 +2,19 @@ package org.icgc.dcc.release;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.morphia.BaseMorphiaService;
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.filesystem.DccFileSystem;
+import org.icgc.dcc.filesystem.SubmissionFile;
+import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
 import org.icgc.dcc.release.model.QRelease;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
@@ -247,5 +251,23 @@ public class ReleaseService extends BaseMorphiaService<Release> {
         .set("submissions.$.report", report);
 
     datastore().update(updateQuery, ops);
+  }
+
+  public List<SubmissionFile> getSubmissionFiles(String releaseName, String projectKey) {
+    Release release = this.where(QRelease.release.name.eq(releaseName)).singleResult();
+    if(release == null) {
+      throw new ReleaseException("No such release");
+    }
+
+    List<SubmissionFile> submissionFileList = new ArrayList<SubmissionFile>();
+    for(Path path : HadoopUtils.lsFile(this.fs.getFileSystem(), this.fs.buildProjectStringPath(release, projectKey))) {
+      try {
+        submissionFileList.add(new SubmissionFile(path, fs.getFileSystem()));
+      } catch(IOException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+    }
+    return submissionFileList;
   }
 }

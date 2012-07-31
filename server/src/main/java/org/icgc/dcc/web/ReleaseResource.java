@@ -162,4 +162,11 @@ public class ReleaseResource {
     }
     return Response.ok(fieldReport).build();
   }
+
+  @GET
+  @Path("{name}/submissions/{projectKey}/files")
+  public Response getSubmissionFileList(@PathParam("name") String releaseName,
+      @PathParam("projectKey") String projectKey) {
+    return Response.ok(this.releaseService.getSubmissionFiles(releaseName, projectKey)).build();
+  }
 }
