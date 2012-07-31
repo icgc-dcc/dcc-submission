@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -94,7 +95,7 @@ public class ReleaseServiceTest {
       release.setDictionaryVersion(dictionary.getVersion());
 
       // Create the releaseService and populate it with the initial release
-      releaseService = new ReleaseService(morphia, datastore, fs, dictionaryService);
+      releaseService = new ReleaseService(morphia, datastore, fs);
       releaseService.createInitialRelease(release);
     } catch(UnknownHostException e) {
       e.printStackTrace();
@@ -192,6 +193,18 @@ public class ReleaseServiceTest {
     // System.out.println(release.getProjectKeys());
     // System.out.println(releaseService.getQueued());
     // releaseService.queue(release.getProjectKeys());
+  }
+
+  // @Test
+  public void test_update_valid() {
+    Release mockUpdatedRelease = mock(Release.class);
+    when(mockUpdatedRelease.getName()).thenReturn("not_existing_release");
+    when(mockUpdatedRelease.getDictionaryVersion()).thenReturn("existing_dictionary");
+
+    Release updatedRelease = releaseService.update(mockUpdatedRelease);
+    Assert.assertNotNull(updatedRelease);
+    Assert.assertEquals("not_existing_release", updatedRelease.getName());
+    Assert.assertEquals("existing_dictionary", updatedRelease.getDictionaryVersion());
   }
 
   private Release addNewRelease(String name) {

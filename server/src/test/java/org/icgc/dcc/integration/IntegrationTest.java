@@ -23,6 +23,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.ws.rs.MessageProcessingException;
 import javax.ws.rs.client.Client;
@@ -48,6 +50,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableList;
 import com.google.common.io.Resources;
 
 public class IntegrationTest {
@@ -141,7 +144,7 @@ public class IntegrationTest {
 
     test_updateReleaseName("/integrationtest/updatedRelease.json");
 
-    test_checkReleaseName("RELEASE2");
+    test_checkRelease("RELEASE2", "0.6d", Arrays.<SubmissionState> asList());// SubmissionState.NOT_VALIDATEDs
   }
 
   private void test_feedFileSystem() throws IOException {
@@ -158,6 +161,14 @@ public class IntegrationTest {
     this.client.target(BASEURI).path("/seed/dictionaries").request(MediaType.APPLICATION_JSON)
         .header("Authorization", AUTHORIZATION)
         .post(Entity.entity("[" + this.resourceToString("/dictionary.json") + "]", MediaType.APPLICATION_JSON));
+    this.client
+        .target(BASEURI)
+        .path("/seed/dictionaries")
+        .request(MediaType.APPLICATION_JSON)
+        .header("Authorization", AUTHORIZATION)
+        .post(
+            Entity.entity("[" + this.resourceToString("/integrationtest/secondDictionary.json") + "]",
+                MediaType.APPLICATION_JSON));
     this.client.target(BASEURI).path("/seed/codelists").request(MediaType.APPLICATION_JSON)
         .header("Authorization", AUTHORIZATION)
         .post(Entity.entity(this.resourceToString("/integrationtest/codelists.json"), MediaType.APPLICATION_JSON));
@@ -216,12 +227,20 @@ public class IntegrationTest {
     assertEquals(expectedState, release.getState());
   }
 
-  private void test_checkReleaseName(String releaseName) throws IOException, InterruptedException {
+  private void test_checkRelease(String releaseName, String dictionaryVersion, List<SubmissionState> states)
+      throws IOException, JsonParseException, JsonMappingException {
     Response response = sendGetRequest("/releases/" + releaseName);
     assertEquals(200, response.getStatus());
 
     Release release = new ObjectMapper().readValue(response.readEntity(String.class), Release.class);
     assertNotNull(release);
+    assertEquals(dictionaryVersion, release.getDictionaryVersion());
+    assertEquals(ImmutableList.<String> of(), release.getQueue());
+    assertEquals(states.size(), release.getSubmissions().size());
+    int i = 0;
+    for(Submission submission : release.getSubmissions()) {
+      assertEquals(states.get(i++), submission.getState());
+    }
   }
 
   private void test_checkQueueIsEmpty() throws IOException {

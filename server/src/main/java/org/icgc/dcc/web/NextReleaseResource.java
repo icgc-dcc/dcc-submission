@@ -99,8 +99,8 @@ public class NextReleaseResource {
       if(this.releaseService.list().isEmpty()) {
         return Response.status(Status.BAD_REQUEST).build();
       } else {
-        NextRelease updatedNextRelease = releaseService.getNextRelease().update(release);
-        return ResponseTimestamper.ok(updatedNextRelease.getRelease()).build();
+        Release updatedRelease = releaseService.update(release);
+        return ResponseTimestamper.ok(updatedRelease).build();
       }
     } else {
       return Response.status(Status.BAD_REQUEST).build();
