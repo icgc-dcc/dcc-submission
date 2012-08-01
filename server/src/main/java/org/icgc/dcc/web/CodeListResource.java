@@ -46,7 +46,7 @@ public class CodeListResource {
   public Response getCodeLists() {
     List<CodeList> codeLists = this.dictionaries.listCodeList();
     if(codeLists == null) {
-      return Response.status(Status.NOT_FOUND).build();
+      return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoCodeLists")).build();
     }
     return Response.ok(codeLists).build();
   }
@@ -64,7 +64,7 @@ public class CodeListResource {
     checkArgument(name != null);
     CodeList c = this.dictionaries.getCodeList(name);
     if(c == null) {
-      return Response.status(Status.NOT_FOUND).build();
+      return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoSuchCodeList", name)).build();
     }
     return ResponseTimestamper.ok(c).build();
   }
@@ -77,9 +77,10 @@ public class CodeListResource {
 
     CodeList oldCodeList = this.dictionaries.getCodeList(name);
     if(oldCodeList == null) {
-      return Response.status(Status.NOT_FOUND).build();
+      return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoSuchCodeList", name)).build();
     } else if(newCodeList.getName().equals(name) == false) {
-      return Response.status(Status.BAD_REQUEST).build();
+      return Response.status(Status.BAD_REQUEST)
+          .entity(new ServerErrorResponseMessage("CodeListNameMismatch", newCodeList.getName(), name)).build();
     }
     ResponseTimestamper.evaluate(req, oldCodeList);
     this.dictionaries.updateCodeList(newCodeList);
@@ -94,7 +95,7 @@ public class CodeListResource {
     checkArgument(terms != null);
     CodeList c = this.dictionaries.getCodeList(name);
     if(c == null) {
-      return Response.status(Status.NOT_FOUND).build();
+      return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoSuchCodeList", name)).build();
     }
     ResponseTimestamper.evaluate(req, c);
 
@@ -102,7 +103,8 @@ public class CodeListResource {
     // the list and then have it fail part way through
     for(Term term : terms) {
       if(c.containsTerm(term)) {
-        return Response.status(Status.BAD_REQUEST).build();
+        return Response.status(Status.BAD_REQUEST)
+            .entity(new ServerErrorResponseMessage("TermAlreadyExists", term.getCode())).build();
       }
     }
     for(Term term : terms) {

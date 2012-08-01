@@ -29,7 +29,9 @@ import cascading.tuple.TupleEntry;
 public class DeviationBy extends AggregateBy {
   private static final long serialVersionUID = 1L;
 
-  private static final Fields BIND_FIELDS = new Fields("sum", "sumOfSquare", "count");
+  public final static String AVG = "avg";
+
+  public final static String STDDEV = "stddev";
 
   /**
    * Class DeviationPartials is a {@link cascading.pipe.assembly.AggregateBy.Functor} that is used to square, count and
@@ -40,16 +42,22 @@ public class DeviationBy extends AggregateBy {
   public static class DeviationPartials implements Functor {
     private static final long serialVersionUID = 1L;
 
+    private final Fields declaredFields;
+
     /**
      * Constructor DeviationPartials creates a new DeviationPartials instance.
      */
     public DeviationPartials() {
+      this("");
+    }
 
+    public DeviationPartials(String prefix) {
+      declaredFields = new Fields(prefix + "sum", prefix + "sumOfSquare", prefix + "count");
     }
 
     @Override
     public Fields getDeclaredFields() {
-      return BIND_FIELDS;
+      return declaredFields;
     }
 
     @Override
@@ -137,8 +145,13 @@ public class DeviationBy extends AggregateBy {
   }
 
   /**
-   * Use this constructor when used with a {@link cascading.pipe.assembly.AggregateBy} instance.
+   * Use this constructor when used with a {@link cascading.pipe.assembly.AggregateBy} instance. {@code prefix} is used
+   * to make the intermediate fields unique when using multiple {@code DeviationBy} in the same {@code AggregateBy}.
    */
+  public DeviationBy(Fields valueField, String prefix, Fields averageAndDeviationFields) {
+    super(valueField, new DeviationPartials(prefix), new DeviationFinal(averageAndDeviationFields));
+  }
+
   public DeviationBy(Fields valueField, Fields averageAndDeviationFields) {
     super(valueField, new DeviationPartials(), new DeviationFinal(averageAndDeviationFields));
   }
