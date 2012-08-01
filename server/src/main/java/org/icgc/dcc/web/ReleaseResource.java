@@ -43,7 +43,7 @@ public class ReleaseResource {
     if(release == null) {
       return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoSuchRelease", name)).build();
     }
-    return Response.ok(release).build();
+    return ResponseTimestamper.ok(release).build();
   }
 
   @PUT

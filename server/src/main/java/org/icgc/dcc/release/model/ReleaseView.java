@@ -18,7 +18,6 @@
 package org.icgc.dcc.release.model;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.icgc.dcc.core.model.Project;
@@ -27,28 +26,23 @@ import org.icgc.dcc.release.ReleaseException;
 /**
  * 
  */
-public class ReleaseView {
+public class ReleaseView extends Release {
 
-  protected String name;
+  protected List<DetailedSubmission> detailedSubmissions = new ArrayList<DetailedSubmission>();
 
-  protected ReleaseState state;
-
-  protected List<DetailedSubmission> submissions = new ArrayList<DetailedSubmission>();
-
-  protected List<String> queue = new ArrayList<String>();
-
-  protected Date releaseDate;
-
-  protected String dictionaryVersion;
+  public ReleaseView() {
+    super();
+  }
 
   public ReleaseView(Release release) {
+    super();
     this.name = release.name;
     this.state = release.state;
     this.queue = release.getQueue();
     this.releaseDate = release.releaseDate;
     this.dictionaryVersion = release.dictionaryVersion;
     for(Submission submission : release.getSubmissions()) {
-      this.submissions.add(new DetailedSubmission(submission));
+      this.detailedSubmissions.add(new DetailedSubmission(submission));
     }
   }
 
@@ -59,17 +53,26 @@ public class ReleaseView {
   }
 
   public DetailedSubmission getDetailedSubmission(String projectKey) {
-    for(DetailedSubmission submission : submissions) {
+    for(DetailedSubmission submission : detailedSubmissions) {
       if(submission.getProjectKey().equals(projectKey)) return submission;
     }
     throw new ReleaseException(String.format("there is no project \"%s\" associated with release \"%s\"", projectKey,
         this.name));
   }
 
-  class DetailedSubmission extends Submission {
+  public List<DetailedSubmission> getDetailedSubmissions() {
+    return detailedSubmissions;
+  }
+
+  public static class DetailedSubmission extends Submission {
     private String projectName;
 
+    public DetailedSubmission() {
+      super();
+    }
+
     public DetailedSubmission(Submission submission) {
+      super();
       this.projectKey = submission.projectKey;
       this.state = submission.state;
       this.report = submission.report;
@@ -83,4 +86,5 @@ public class ReleaseView {
       this.projectName = projectName;
     }
   }
+
 }
