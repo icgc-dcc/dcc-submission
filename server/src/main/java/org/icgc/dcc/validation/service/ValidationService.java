@@ -20,7 +20,6 @@ package org.icgc.dcc.validation.service;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.File;
-import java.util.List;
 
 import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.core.model.Project;
@@ -29,7 +28,6 @@ import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.filesystem.ReleaseFileSystem;
 import org.icgc.dcc.filesystem.SubmissionDirectory;
-import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.validation.CascadingStrategy;
 import org.icgc.dcc.validation.FileSchemaDirectory;
@@ -38,12 +36,10 @@ import org.icgc.dcc.validation.LocalFileSchemaDirectory;
 import org.icgc.dcc.validation.Plan;
 import org.icgc.dcc.validation.Planner;
 import org.icgc.dcc.validation.ValidationCallback;
-import org.icgc.dcc.validation.ValidationFlowListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cascading.cascade.Cascade;
-import cascading.flow.Flow;
 
 import com.google.common.collect.Iterables;
 import com.google.inject.Inject;
@@ -65,22 +61,18 @@ public class ValidationService {
 
   private final DictionaryService dictionaries;
 
-  private final ReleaseService releaseService;
-
   @Inject
   public ValidationService(final DccFileSystem dccFileSystem, final ProjectService projectService,
-      final Planner planner, final DictionaryService dictionaries, final ReleaseService releaseService) {
+      final Planner planner, final DictionaryService dictionaries) {
     checkArgument(dccFileSystem != null);
     checkArgument(projectService != null);
     checkArgument(planner != null);
     checkArgument(dictionaries != null);
-    checkArgument(releaseService != null);
 
     this.dccFileSystem = dccFileSystem;
     this.projectService = projectService;
     this.planner = planner;
     this.dictionaries = dictionaries;
-    this.releaseService = releaseService;
   }
 
   public void validate(Release release, String projectKey) {
@@ -124,13 +116,11 @@ public class ValidationService {
     log.info("# external flows: {}", Iterables.size(plan.getExternalFlows()));
 
     Cascade cascade = plan.connect(cascadingStrategy);
-    if(validationCallback != null) {
-      List<Flow> flows = cascade.getFlows();
-      for(Flow flow : flows) {
-        ValidationFlowListener listener = new ValidationFlowListener(validationCallback, flows, projectKey, this.plan);
-        flow.addListener(listener);// TODO: once a cascade listener is available, use it instead
-      }
-    }
+    /*
+     * if(validationCallback != null) { List<Flow> flows = cascade.getFlows(); for(Flow flow : flows) {
+     * ValidationFlowListener listener = new ValidationFlowListener(validationCallback, flows, projectKey, this.plan);
+     * flow.addListener(listener);// TODO: once a cascade listener is available, use it instead } }
+     */
     return cascade;
   }
 
@@ -140,6 +130,11 @@ public class ValidationService {
       log.info("starting cascade with {} flows", size);
       cascade.complete();
       log.info("completed cascade with {} flows", size);
+      if(cascade.getCascadeStats().isSuccessful()) {
+        validationCallback.handleSuccessfulValidation(projectKey, this.plan);
+      } else {
+        validationCallback.handleFailedValidation(projectKey);
+      }
     } else {
       log.info("no flows to run");
       if(validationCallback != null) {

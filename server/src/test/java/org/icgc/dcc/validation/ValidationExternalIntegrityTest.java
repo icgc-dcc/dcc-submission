@@ -106,8 +106,7 @@ public class ValidationExternalIntegrityTest {
     when(codeList3.getTerms()).thenReturn(termList3);
     when(codeList4.getTerms()).thenReturn(termList4);
 
-    validationService =
-        new ValidationService(dccFileSystem, projectService, planner, dictionaryService, releaseService);
+    validationService = new ValidationService(dccFileSystem, projectService, planner, dictionaryService);
 
     resetDictionary();
   }
