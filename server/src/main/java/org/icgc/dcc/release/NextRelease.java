@@ -32,8 +32,10 @@ public class NextRelease extends BaseRelease {
     if(release.getState() != ReleaseState.OPENED) {
       throw new IllegalReleaseStateException(release, ReleaseState.OPENED);
     }
+
     checkArgument(datastore != null);
     checkArgument(fs != null);
+
     this.datastore = datastore;
     this.fs = fs;
   }
