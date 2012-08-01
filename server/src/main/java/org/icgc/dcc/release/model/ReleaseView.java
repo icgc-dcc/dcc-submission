@@ -34,7 +34,7 @@ public class ReleaseView extends Release {
     super();
   }
 
-  public ReleaseView(Release release) {
+  public ReleaseView(Release release, List<Project> projects) {
     super();
     this.name = release.name;
     this.state = release.state;
@@ -44,9 +44,6 @@ public class ReleaseView extends Release {
     for(Submission submission : release.getSubmissions()) {
       this.detailedSubmissions.add(new DetailedSubmission(submission));
     }
-  }
-
-  public void updateProjects(List<Project> projects) {
     for(Project project : projects) {
       this.getDetailedSubmission(project.getKey()).setProjectName(project.getName());
     }
