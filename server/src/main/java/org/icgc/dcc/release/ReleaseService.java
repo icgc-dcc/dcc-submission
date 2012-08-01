@@ -78,7 +78,14 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   }
 
   public Release getFromName(String releaseName) {
-    return this.query().where(QRelease.release.name.eq(releaseName)).uniqueResult();
+    Release release = this.query().where(QRelease.release.name.eq(releaseName)).uniqueResult();
+    // populate project name for submissions
+    List<Project> projects = this.getProjects(release);
+    for(Project project : projects) {
+      release.getSubmission(project.getKey()).setProjectName(project.getName());
+    }
+
+    return release;
   }
 
   public NextRelease getNextRelease() throws IllegalReleaseStateException {
