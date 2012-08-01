@@ -7,9 +7,9 @@ import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.core.model.QProject;
 import org.icgc.dcc.core.morphia.BaseMorphiaService;
 import org.icgc.dcc.filesystem.DccFileSystem;
-import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.QRelease;
 import org.icgc.dcc.release.model.Release;
+import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.release.model.SubmissionState;
 import org.icgc.dcc.web.validator.InvalidNameException;
@@ -26,14 +26,11 @@ public class ProjectService extends BaseMorphiaService<Project> {
 
   private final DccFileSystem fs;
 
-  private final ReleaseService releaseService;
-
   @Inject
-  public ProjectService(Morphia morphia, Datastore datastore, DccFileSystem fs, ReleaseService releaseService) {
+  public ProjectService(Morphia morphia, Datastore datastore, DccFileSystem fs) {
     super(morphia, datastore, QProject.project);
     super.registerModelClasses(Project.class);
     this.fs = fs;
-    this.releaseService = releaseService;
   }
 
   public List<Release> getReleases(Project project) {
@@ -60,7 +57,8 @@ public class ProjectService extends BaseMorphiaService<Project> {
 
     this.saveProject(project);
 
-    Release release = releaseService.getNextRelease().getRelease();
+    MorphiaQuery<Release> releaseQuery = new MorphiaQuery<Release>(morphia(), datastore(), QRelease.release);
+    Release release = releaseQuery.where(QRelease.release.state.eq(ReleaseState.OPENED)).singleResult();
     Submission submission = new Submission();
     submission.setProjectKey(project.getKey());
     submission.setState(SubmissionState.NOT_VALIDATED);
@@ -78,7 +76,8 @@ public class ProjectService extends BaseMorphiaService<Project> {
   }
 
   public Project getProject(final String projectKey) {
-    Project project = this.datastore().createQuery(Project.class).filter("key =", projectKey).get();
+    Project project = this.query().where(QProject.project.key.eq(projectKey)).singleResult();
+
     if(project == null) {
       throw new ProjectServiceException("No project found with key " + projectKey);
     }
@@ -86,7 +85,7 @@ public class ProjectService extends BaseMorphiaService<Project> {
   }
 
   public List<Project> getProjects(List<String> projectKeys) {
-    List<Project> projects = this.datastore().createQuery(Project.class).filter("key in", projectKeys).asList();
+    List<Project> projects = this.query().where(QProject.project.key.in(projectKeys)).list();
     if(projects == null) {
       throw new ProjectServiceException("No projects found within the key list");
     }

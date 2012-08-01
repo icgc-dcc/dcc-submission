@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.core.model.Project;
+import org.icgc.dcc.core.model.QProject;
 import org.icgc.dcc.core.morphia.BaseMorphiaService;
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.QDictionary;
@@ -20,6 +22,7 @@ import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
 import org.icgc.dcc.release.model.QRelease;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
+import org.icgc.dcc.release.model.ReleaseView;
 import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.release.model.SubmissionState;
 import org.icgc.dcc.validation.report.SubmissionReport;
@@ -76,7 +79,18 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   }
 
   public Release getFromName(String releaseName) {
-    return this.query().where(QRelease.release.name.eq(releaseName)).uniqueResult();
+    Release release = this.query().where(QRelease.release.name.eq(releaseName)).uniqueResult();
+
+    return release;
+  }
+
+  public ReleaseView getReleaseView(String releaseName) {
+    Release release = this.query().where(QRelease.release.name.eq(releaseName)).uniqueResult();
+
+    // populate project name for submissions
+    List<Project> projects = this.getProjects(release);
+    ReleaseView releaseView = new ReleaseView(release, projects);
+    return releaseView;
   }
 
   public NextRelease getNextRelease() throws IllegalReleaseStateException {
@@ -115,6 +129,10 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     Release release = this.where(QRelease.release.name.eq(releaseName)).uniqueResult();
     checkArgument(release != null);
 
+    return this.getSubmission(release, projectKey);
+  }
+
+  private Submission getSubmission(Release release, String projectKey) {
     Submission result = null;
     for(Submission submission : release.getSubmissions()) {
       if(submission.getProjectKey().equals(projectKey)) {
@@ -125,7 +143,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
     if(result == null) {
       throw new ReleaseException(String.format("there is no project \"%s\" associated with release \"%s\"", projectKey,
-          releaseName));
+          release.getName()));
     }
 
     return result;
@@ -326,6 +344,15 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     datastore().update(updateQuery, ops);
   }
 
+  public List<Project> getProjects(Release release) {
+    List<String> projectKeys = new ArrayList<String>();
+    for(Submission submission : release.getSubmissions()) {
+      projectKeys.add(submission.getProjectKey());
+    }
+    MorphiaQuery<Project> query = new MorphiaQuery<Project>(morphia(), datastore(), QProject.project);
+    return query.where(QProject.project.key.in(projectKeys)).list();
+  }
+
   public List<SubmissionFile> getSubmissionFiles(String releaseName, String projectKey) throws IOException {
     Release release = this.where(QRelease.release.name.eq(releaseName)).singleResult();
     if(release == null) {
@@ -355,4 +382,5 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     return new MorphiaQuery<Dictionary>(morphia(), datastore(), QDictionary.dictionary).where(
         QDictionary.dictionary.version.eq(version)).singleResult();
   }
+
 }
