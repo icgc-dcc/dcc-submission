@@ -36,4 +36,5 @@ public class Submission {
   public void setProjectKey(String projectKey) {
     this.projectKey = projectKey;
   }
+
 }

@@ -7,9 +7,9 @@ import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.core.model.QProject;
 import org.icgc.dcc.core.morphia.BaseMorphiaService;
 import org.icgc.dcc.filesystem.DccFileSystem;
-import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.QRelease;
 import org.icgc.dcc.release.model.Release;
+import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.release.model.SubmissionState;
 import org.icgc.dcc.web.validator.InvalidNameException;
@@ -19,7 +19,6 @@ import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
 import com.google.code.morphia.query.Query;
 import com.google.code.morphia.query.UpdateOperations;
-import com.google.common.collect.Iterables;
 import com.google.inject.Inject;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
 
@@ -27,14 +26,11 @@ public class ProjectService extends BaseMorphiaService<Project> {
 
   private final DccFileSystem fs;
 
-  private final ReleaseService releaseService;
-
   @Inject
-  public ProjectService(Morphia morphia, Datastore datastore, DccFileSystem fs, ReleaseService releaseService) {
+  public ProjectService(Morphia morphia, Datastore datastore, DccFileSystem fs) {
     super(morphia, datastore, QProject.project);
     super.registerModelClasses(Project.class);
     this.fs = fs;
-    this.releaseService = releaseService;
   }
 
   public List<Release> getReleases(Project project) {
@@ -61,7 +57,8 @@ public class ProjectService extends BaseMorphiaService<Project> {
 
     this.saveProject(project);
 
-    Release release = releaseService.getNextRelease().getRelease();
+    MorphiaQuery<Release> releaseQuery = new MorphiaQuery<Release>(morphia(), datastore(), QRelease.release);
+    Release release = releaseQuery.where(QRelease.release.state.eq(ReleaseState.OPENED)).singleResult();
     Submission submission = new Submission();
     submission.setProjectKey(project.getKey());
     submission.setState(SubmissionState.NOT_VALIDATED);
@@ -79,16 +76,15 @@ public class ProjectService extends BaseMorphiaService<Project> {
   }
 
   public Project getProject(final String projectKey) {
-    Project project = Iterables.find(this.getProjects(), new com.google.common.base.Predicate<Project>() {
-      @Override
-      public boolean apply(Project input) {
-        return input.getKey().equals(projectKey);
-      }
-    }, null);
+    Project project = this.query().where(QProject.project.key.eq(projectKey)).singleResult();
     if(project == null) {
       throw new ProjectServiceException("No project found with key " + projectKey);
     }
     return project;
+  }
+
+  public List<Project> getProjects(final List<String> projectKeys) {
+    return this.query().where(QProject.project.key.in(projectKeys)).list();
   }
 
   private void saveProject(Project project) {

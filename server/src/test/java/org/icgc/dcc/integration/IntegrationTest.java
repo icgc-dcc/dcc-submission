@@ -43,6 +43,7 @@ import org.glassfish.jersey.internal.util.Base64;
 import org.icgc.dcc.Main;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
+import org.icgc.dcc.release.model.ReleaseView;
 import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.release.model.SubmissionState;
 import org.junit.AfterClass;
@@ -223,7 +224,9 @@ public class IntegrationTest {
     Response response = sendGetRequest("/releases/" + releaseName);
     assertEquals(200, response.getStatus());
 
-    Release release = new ObjectMapper().readValue(response.readEntity(String.class), Release.class);
+    String responseMsg = response.readEntity(String.class);
+
+    ReleaseView release = new ObjectMapper().readValue(responseMsg, ReleaseView.class);
     assertEquals(expectedState, release.getState());
   }
 
@@ -232,7 +235,7 @@ public class IntegrationTest {
     Response response = sendGetRequest("/releases/" + releaseName);
     assertEquals(200, response.getStatus());
 
-    Release release = new ObjectMapper().readValue(response.readEntity(String.class), Release.class);
+    ReleaseView release = new ObjectMapper().readValue(response.readEntity(String.class), ReleaseView.class);
     assertNotNull(release);
     assertEquals(dictionaryVersion, release.getDictionaryVersion());
     assertEquals(ImmutableList.<String> of(), release.getQueue());

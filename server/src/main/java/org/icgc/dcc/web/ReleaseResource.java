@@ -14,8 +14,8 @@ import javax.ws.rs.core.Response.Status;
 
 import org.icgc.dcc.filesystem.SubmissionFile;
 import org.icgc.dcc.release.ReleaseService;
-import org.icgc.dcc.release.model.QRelease;
 import org.icgc.dcc.release.model.Release;
+import org.icgc.dcc.release.model.ReleaseView;
 import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.validation.report.FieldReport;
 import org.icgc.dcc.validation.report.SchemaReport;
@@ -39,7 +39,7 @@ public class ReleaseResource {
   @GET
   @Path("{name}")
   public Response getReleaseByName(@PathParam("name") String name) {
-    Release release = releaseService.where(QRelease.release.name.eq(name)).singleResult();
+    ReleaseView release = releaseService.getReleaseView(name);
     if(release == null) {
       return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoSuchRelease", name)).build();
     }
