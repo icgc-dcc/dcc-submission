@@ -13,6 +13,7 @@ import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.core.morphia.BaseMorphiaService;
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.filesystem.DccFileSystem;
+import org.icgc.dcc.release.model.DetailedSubmission;
 import org.icgc.dcc.release.model.QRelease;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
@@ -106,6 +107,10 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     Release release = this.where(QRelease.release.name.eq(releaseName)).uniqueResult();
     checkArgument(release != null);
 
+    return this.getSubmission(release, projectKey);
+  }
+
+  private Submission getSubmission(Release release, String projectKey) {
     Submission result = null;
     for(Submission submission : release.getSubmissions()) {
       if(submission.getProjectKey().equals(projectKey)) {
@@ -116,10 +121,23 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
     if(result == null) {
       throw new ReleaseException(String.format("there is no project \"%s\" associated with release \"%s\"", projectKey,
-          releaseName));
+          release.getName()));
     }
 
     return result;
+  }
+
+  public List<DetailedSubmission> getDetailedSubmission(String releaseName) {
+    List<DetailedSubmission> submissions = new ArrayList<DetailedSubmission>();
+    Release release = this.where(QRelease.release.name.eq(releaseName)).uniqueResult();
+    List<Project> projects = this.getProjects(release);
+    for(Project project : projects) {
+      DetailedSubmission detailedSubmission = new DetailedSubmission();
+      detailedSubmission.submission = this.getSubmission(release, project.getKey());
+      detailedSubmission.project = project;
+      submissions.add(detailedSubmission);
+    }
+    return submissions;
   }
 
   public List<String> getSignedOff() {
@@ -261,4 +279,5 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     }
     return this.projectService.getProjects(projectKeys);
   }
+
 }
