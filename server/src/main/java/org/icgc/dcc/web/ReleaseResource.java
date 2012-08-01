@@ -1,5 +1,6 @@
 package org.icgc.dcc.web;
 
+import java.io.IOException;
 import java.util.List;
 
 import javax.ws.rs.GET;
@@ -11,6 +12,7 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.icgc.dcc.filesystem.SubmissionFile;
 import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.QRelease;
 import org.icgc.dcc.release.model.Release;
@@ -151,5 +153,25 @@ public class ReleaseResource {
           .build();
     }
     return Response.ok(fieldReport).build();
+  }
+
+  @GET
+  @Path("{name}/submissions/{projectKey}/files")
+  public Response getSubmissionFileList(@PathParam("name") String releaseName,
+      @PathParam("projectKey") String projectKey) {
+    Submission submission = this.releaseService.getSubmission(releaseName, projectKey);
+    if(submission == null) {
+      return Response.status(Status.NOT_FOUND)
+          .entity(new ServerErrorResponseMessage("NoSuchSubmission", releaseName, projectKey)).build();
+    }
+
+    try {
+      List<SubmissionFile> submissionFiles = this.releaseService.getSubmissionFiles(releaseName, projectKey);
+      return Response.ok(submissionFiles).build();
+    } catch(IOException e) {
+      return Response.status(Status.INTERNAL_SERVER_ERROR).entity(new ServerErrorResponseMessage("FileSystemError"))
+          .build();
+    }
+
   }
 }
