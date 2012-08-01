@@ -8,8 +8,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.core.model.Project;
+import org.icgc.dcc.core.model.QProject;
 import org.icgc.dcc.core.morphia.BaseMorphiaService;
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.filesystem.DccFileSystem;
@@ -32,6 +32,7 @@ import com.google.code.morphia.query.UpdateOperations;
 import com.google.common.base.Optional;
 import com.google.inject.Inject;
 import com.mysema.query.mongodb.MongodbQuery;
+import com.mysema.query.mongodb.morphia.MorphiaQuery;
 
 public class ReleaseService extends BaseMorphiaService<Release> {
 
@@ -39,14 +40,11 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
   private final DccFileSystem fs;
 
-  private final ProjectService projectService;
-
   @Inject
-  public ReleaseService(Morphia morphia, Datastore datastore, DccFileSystem fs, ProjectService projectService) {
+  public ReleaseService(Morphia morphia, Datastore datastore, DccFileSystem fs) {
     super(morphia, datastore, QRelease.release);
     this.fs = fs;
     registerModelClasses(Release.class);
-    this.projectService = projectService;
   }
 
   public void createInitialRelease(Release initRelease) {
@@ -277,7 +275,8 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     for(Submission submission : release.getSubmissions()) {
       projectKeys.add(submission.getProjectKey());
     }
-    return this.projectService.getProjects(projectKeys);
+    MorphiaQuery<Project> query = new MorphiaQuery<Project>(morphia(), datastore(), QProject.project);
+    return query.where(QProject.project.key.in(projectKeys)).list();
   }
 
 }
