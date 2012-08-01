@@ -78,7 +78,7 @@ public class ProjectService extends BaseMorphiaService<Project> {
     return this.query().list();
   }
 
-  public Project getProject(final String projectKey) {
+  public Project getProject(final String projectKey) { // TODO: use where() instead?
     Project project = Iterables.find(this.getProjects(), new com.google.common.base.Predicate<Project>() {
       @Override
       public boolean apply(Project input) {

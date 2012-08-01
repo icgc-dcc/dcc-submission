@@ -83,4 +83,8 @@ public class SubmissionDirectory {
   public String getValidationDirPath() {
     return dccFileSystem.buildValidationDirStringPath(release, project.getKey());
   }
+
+  public String getDataFilePath(String filename) {
+    return dccFileSystem.buildFileStringPath(release, project.getKey(), filename);
+  }
 }
