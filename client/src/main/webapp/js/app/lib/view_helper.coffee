@@ -130,18 +130,4 @@ define [
       </table>
     """
 
-  Handlebars.registerHelper 'field_report', (fieldReport) ->
-    out = [Handlebars.helpers.sub_field_report.call(this, key, value) for key, value of fieldReport]
-    
-    new Handlebars.SafeString out
-  
-  Handlebars.registerHelper 'sub_field_report', (key, value) ->
-    
-    if typeof value is 'object'
-      "#{key}: #{value}<br>"
-    else
-      "#{key}: #{value}<br>"
-    
-  
-  
   null
