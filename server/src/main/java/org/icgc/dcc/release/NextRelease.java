@@ -2,9 +2,7 @@ package org.icgc.dcc.release;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.DictionaryState;
@@ -20,6 +18,7 @@ import com.google.code.morphia.Datastore;
 import com.google.code.morphia.query.Query;
 import com.google.code.morphia.query.UpdateOperations;
 import com.google.common.base.Optional;
+import com.google.common.collect.Sets;
 
 public class NextRelease extends BaseRelease {
 
@@ -88,8 +87,13 @@ public class NextRelease extends BaseRelease {
     }
 
     nextRelease.setDictionaryVersion(newDictionaryVersion);
-
     nextRelease.setState(ReleaseState.OPENED);
+    Iterable<String> oldProjectKeys = oldRelease.getProjectKeys();
+    if(oldProjectKeys != null) {
+      for(String projectKey : oldProjectKeys) {
+        nextRelease.addSubmission(new Submission(projectKey));
+      }
+    }
 
     // dictionaries.getFromVersion(oldDictionary).close();
     UpdateOperations<Dictionary> closeDictionary =
@@ -101,12 +105,9 @@ public class NextRelease extends BaseRelease {
 
     // save the newly created release to mongoDB
     this.datastore.save(nextRelease);
-
-    Set<String> projectKeys = new HashSet<String>();
-    for(Submission submission : nextRelease.getSubmissions()) {
-      projectKeys.add(submission.getProjectKey());
+    if(oldProjectKeys != null) {
+      this.fs.createReleaseFilesystem(nextRelease, Sets.newLinkedHashSet(oldProjectKeys));
     }
-    this.fs.createReleaseFilesystem(nextRelease, projectKeys);
 
     oldRelease.setState(ReleaseState.COMPLETED);
     oldRelease.setReleaseDate();

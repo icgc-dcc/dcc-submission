@@ -144,7 +144,8 @@ public class IntegrationTest {
 
     test_updateReleaseName("/integrationtest/updatedRelease.json");
 
-    test_checkRelease("RELEASE2", "0.6d", Arrays.<SubmissionState> asList());// SubmissionState.NOT_VALIDATEDs
+    test_checkRelease("RELEASE2", "0.6d", Arrays.<SubmissionState> asList(SubmissionState.NOT_VALIDATED,
+        SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED));
   }
 
   private void test_feedFileSystem() throws IOException {
