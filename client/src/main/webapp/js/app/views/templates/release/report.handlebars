@@ -1,9 +1,10 @@
-<h3>Report</h3>
 {{#each schemaReports}}
-<h4>{{name}}</h4>
-<ul>
-{{#each fieldReports}}
-<li>{{field_report this}}</li>
-{{/each}}
-</ul>
+  <h3 class="{{errors}}">{{name}}</h3>
+  {{#each fieldReports}}
+    <div class="well well-small">
+    {{field_report this}}
+    <dt>Summary</dt>
+    {{field_report summary}}
+    </div>
+  {{/each}}
 {{/each}}
