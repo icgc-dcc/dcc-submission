@@ -175,7 +175,7 @@ public class ValidationQueueManagerService extends AbstractService implements Va
     plan.collect(cascadingStrategy, report);
     submission.setReport(report);
     // persist the report to DB
-    this.releaseService.UpdateSubmissionReport(release.getName(), projectKey, submission.getReport());
+    this.releaseService.updateSubmissionReport(release.getName(), projectKey, submission.getReport());
     log.info("report collecting finished on project {}", projectKey);
   }
 

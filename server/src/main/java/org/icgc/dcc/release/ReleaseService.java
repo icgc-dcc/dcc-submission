@@ -1,6 +1,7 @@
 package org.icgc.dcc.release;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,6 +11,7 @@ import java.util.Set;
 
 import org.icgc.dcc.core.morphia.BaseMorphiaService;
 import org.icgc.dcc.dictionary.model.Dictionary;
+import org.icgc.dcc.dictionary.model.QDictionary;
 import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.release.model.QRelease;
 import org.icgc.dcc.release.model.Release;
@@ -27,8 +29,10 @@ import com.google.code.morphia.Morphia;
 import com.google.code.morphia.query.Query;
 import com.google.code.morphia.query.UpdateOperations;
 import com.google.common.base.Optional;
+import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.mysema.query.mongodb.MongodbQuery;
+import com.mysema.query.mongodb.morphia.MorphiaQuery;
 
 public class ReleaseService extends BaseMorphiaService<Release> {
 
@@ -67,9 +71,15 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     return this.query().where(QRelease.release.state.eq(ReleaseState.OPENED)).singleResult() != null;
   }
 
+  public Release getFromName(String releaseName) {
+    return this.query().where(QRelease.release.name.eq(releaseName)).uniqueResult();
+  }
+
   public NextRelease getNextRelease() throws IllegalReleaseStateException {
     Release nextRelease = this.query().where(QRelease.release.state.eq(ReleaseState.OPENED)).singleResult();
-    if(nextRelease == null) throw new IllegalStateException("no next release");
+    if(nextRelease == null) {
+      throw new IllegalStateException("no next release");
+    }
     return new NextRelease(nextRelease, datastore(), this.fs);
   }
 
@@ -196,11 +206,115 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     return dequeued;
   }
 
+  /**
+   * Does not allow to update submissions, {@code ProjectService.addProject()} must be used instead
+   */
+  public Release update(Release updatedRelease) { // This method is not included in NextRelease because of its
+                                                  // dependence on methods from NextRelease (we may reconsider in the
+                                                  // future) - see comments in DCC-245
+    checkArgument(updatedRelease != null);
+
+    String updatedName = updatedRelease.getName();
+    String updatedDictionaryVersion = updatedRelease.getDictionaryVersion();
+
+    Release oldRelease = getNextRelease().getRelease();
+    String oldName = oldRelease.getName();
+    String oldDictionaryVersion = oldRelease.getDictionaryVersion();
+    checkState(oldRelease.getState() == ReleaseState.OPENED);
+
+    boolean sameName = oldName.equals(updatedName);
+    boolean sameDictionary = oldDictionaryVersion.equals(updatedDictionaryVersion);
+
+    if(!NameValidator.validate(updatedName)) {
+      throw new ReleaseException("Updated release name " + updatedName + " is not valid");
+    }
+
+    if(sameName == false && getFromName(updatedName) != null) {
+      throw new ReleaseException("New release name " + updatedName + " conflicts with an existing release");
+    }
+
+    if(updatedDictionaryVersion == null) {
+      throw new ReleaseException("Release must have associated dictionary before being updated");
+    }
+
+    if(sameDictionary == false && getDictionaryFromVersion(updatedDictionaryVersion) == null) {
+      throw new ReleaseException("Release must point to an existing dictionary, no match for "
+          + updatedDictionaryVersion);
+    }
+
+    // only TWO parameters can be updated for now (though updating the dictionary resets all the submission states)
+    oldRelease.setName(updatedName);
+    oldRelease.setDictionaryVersion(updatedDictionaryVersion);
+    ArrayList<String> oldProjectKeys = Lists.newArrayList(oldRelease.getProjectKeys());
+    if(sameDictionary == false) {
+      oldRelease.emptyQueue();
+      updateSubmisions(oldProjectKeys, SubmissionState.NOT_VALIDATED);
+    }
+
+    Query<Release> updateQuery = datastore().createQuery(Release.class)//
+        .filter("name = ", oldName);
+    UpdateOperations<Release> ops =
+        datastore().createUpdateOperations(Release.class).set("name", updatedName)
+            .set("dictionaryVersion", updatedDictionaryVersion);
+    datastore().update(updateQuery, ops);
+    if(sameDictionary == false) {
+      dbUpdateSubmissions(updatedName, oldRelease.getQueue(), oldProjectKeys, SubmissionState.NOT_VALIDATED);
+    }
+
+    return oldRelease;
+  }
+
+  // TODO: should also take care of updating the queue, as the two should always go together
   private void updateSubmisions(List<String> projectKeys, final SubmissionState state) {
     final String releaseName = getNextRelease().getRelease().getName();
     for(String projectKey : projectKeys) {
       getSubmission(releaseName, projectKey).setState(state);
     }
+  }
+
+  /**
+   * Updates the queue then the submissions states accordingly
+   * <p>
+   * Always update queue and submission states together (else state may be inconsistent)
+   * <p>
+   * TODO: should probably revisit all this as it is not very clean
+   */
+  private void dbUpdateSubmissions(String currentReleaseName, List<String> queue, List<String> projectKeys,
+      SubmissionState newState) {
+    checkArgument(currentReleaseName != null);
+    checkArgument(queue != null);
+
+    Query<Release> updateQuery = datastore().createQuery(Release.class)//
+        .filter("name = ", currentReleaseName);
+    UpdateOperations<Release> ops = datastore().createUpdateOperations(Release.class).disableValidation()//
+        .set("queue", queue);
+    datastore().update(updateQuery, ops);
+
+    for(String projectKey : projectKeys) {
+      updateSubmission(currentReleaseName, newState, projectKey);
+    }
+  }
+
+  private void updateSubmission(String currentReleaseName, SubmissionState newState, String projectKey) {
+    Query<Release> updateQuery;
+    UpdateOperations<Release> ops;
+    updateQuery = datastore().createQuery(Release.class)//
+        .filter("name = ", currentReleaseName)//
+        .filter("submissions.projectKey = ", projectKey);
+    ops = datastore().createUpdateOperations(Release.class).disableValidation()//
+        .set("submissions.$.state", newState);
+    datastore().update(updateQuery, ops);
+  }
+
+  public void updateSubmissionReport(String releaseName, String projectKey, SubmissionReport report) {
+    Query<Release> updateQuery = datastore().createQuery(Release.class)//
+        .filter("name = ", releaseName)//
+        .filter("submissions.projectKey = ", projectKey);
+
+    UpdateOperations<Release> ops = datastore().createUpdateOperations(Release.class).disableValidation()//
+        .set("submissions.$.report", report);
+
+    datastore().update(updateQuery, ops);
   }
 
   private List<String> getSubmission(final SubmissionState state) {
@@ -214,38 +328,9 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     return projectKeys;
   }
 
-  /**
-   * Updates the queue then the submissions states accordingly
-   */
-  private void dbUpdateSubmissions(String releaseName, List<String> queue, List<String> projectKeys,
-      SubmissionState newState) {
-    checkArgument(releaseName != null);
-    checkArgument(queue != null);
-
-    Query<Release> updateQuery = datastore().createQuery(Release.class)//
-        .filter("name = ", releaseName);
-    UpdateOperations<Release> ops = datastore().createUpdateOperations(Release.class).disableValidation()//
-        .set("queue", queue);
-    datastore().update(updateQuery, ops);
-
-    for(String queued : projectKeys) {
-      updateQuery = datastore().createQuery(Release.class)//
-          .filter("name = ", releaseName)//
-          .filter("submissions.projectKey = ", queued);
-      ops = datastore().createUpdateOperations(Release.class).disableValidation()//
-          .set("submissions.$.state", newState);
-      datastore().update(updateQuery, ops);
-    }
-  }
-
-  public void UpdateSubmissionReport(String releaseName, String projectKey, SubmissionReport report) {
-    Query<Release> updateQuery = datastore().createQuery(Release.class)//
-        .filter("name = ", releaseName)//
-        .filter("submissions.projectKey = ", projectKey);
-
-    UpdateOperations<Release> ops = datastore().createUpdateOperations(Release.class).disableValidation()//
-        .set("submissions.$.report", report);
-
-    datastore().update(updateQuery, ops);
+  private Dictionary getDictionaryFromVersion(String version) { // also found in DictionaryService - see comments in
+                                                                // DCC-245
+    return new MorphiaQuery<Dictionary>(morphia(), datastore(), QDictionary.dictionary).where(
+        QDictionary.dictionary.version.eq(version)).singleResult();
   }
 }
