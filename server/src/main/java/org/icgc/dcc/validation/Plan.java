@@ -114,6 +114,9 @@ public class Plan {
       }
     }
 
+    // remove empty report
+    schemaReports.remove(null);
+
     report.setSchemaReports(new ArrayList<SchemaReport>(schemaReports.values()));
     return result;
   }
