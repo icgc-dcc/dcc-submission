@@ -5,12 +5,15 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import junit.framework.Assert;
 
 import org.icgc.dcc.core.model.BaseEntity;
 import org.icgc.dcc.core.model.Project;
@@ -122,6 +125,16 @@ public class ReleaseServiceTest {
   }
 
   @Test
+  public void test_getFromName_exists() {
+    Assert.assertNotNull(releaseService.getFromName("release1"));
+  }
+
+  @Test
+  public void test_getFromName_notExists() {
+    Assert.assertNull(releaseService.getFromName("dummy"));
+  }
+
+  @Test
   public void test_createInitialRelease_isPersistedToFS() {
     Set<String> projectKeys = new HashSet<String>();
     projectKeys.add("p1");
@@ -180,6 +193,18 @@ public class ReleaseServiceTest {
     // System.out.println(release.getProjectKeys());
     // System.out.println(releaseService.getQueued());
     // releaseService.queue(release.getProjectKeys());
+  }
+
+  // @Test
+  public void test_update_valid() {
+    Release mockUpdatedRelease = mock(Release.class);
+    when(mockUpdatedRelease.getName()).thenReturn("not_existing_release");
+    when(mockUpdatedRelease.getDictionaryVersion()).thenReturn("existing_dictionary");
+
+    Release updatedRelease = releaseService.update(mockUpdatedRelease);
+    Assert.assertNotNull(updatedRelease);
+    Assert.assertEquals("not_existing_release", updatedRelease.getName());
+    Assert.assertEquals("existing_dictionary", updatedRelease.getDictionaryVersion());
   }
 
   private Release addNewRelease(String name) {
