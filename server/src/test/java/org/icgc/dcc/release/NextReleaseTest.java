@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.icgc.dcc.dictionary.DictionaryService;
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.DictionaryState;
 import org.icgc.dcc.filesystem.DccFileSystem;
@@ -45,6 +46,10 @@ public class NextReleaseTest {
 
   private DccFileSystem fs;
 
+  private ReleaseService mockReleaseService;
+
+  private DictionaryService mockDictionaryService;
+
   private static final String NEXT_RELEASE_NAME = "release2";
 
   @SuppressWarnings("unchecked")
@@ -54,6 +59,8 @@ public class NextReleaseTest {
     updates = mock(UpdateOperations.class);
     updatesDict = mock(UpdateOperations.class);
     fs = mock(DccFileSystem.class);
+    mockReleaseService = mock(ReleaseService.class);
+    mockDictionaryService = mock(DictionaryService.class);
 
     when(release.getState()).thenReturn(ReleaseState.OPENED);
     List<Submission> submissions = new ArrayList<Submission>();
@@ -61,15 +68,15 @@ public class NextReleaseTest {
     s.setState(SubmissionState.SIGNED_OFF);
     submissions.add(s);
     when(release.getSubmissions()).thenReturn(submissions);
+    when(release.getName()).thenReturn("my_release_name");
 
     ds = mock(Datastore.class);
-
-    nextRelease = new NextRelease(release, ds, fs);
 
     when(ds.createUpdateOperations(Release.class)).thenReturn(updates);
     when(ds.createUpdateOperations(Dictionary.class)).thenReturn(updatesDict);
 
     when(updates.disableValidation()).thenReturn(updates);
+    when(updates.set(anyString(), anyString())).thenReturn(updates);
 
     query = mock(Query.class);
     queryDict = mock(Query.class);
@@ -79,6 +86,10 @@ public class NextReleaseTest {
     when(query.filter(anyString(), any())).thenReturn(query);
     when(queryDict.filter(anyString(), any())).thenReturn(queryDict);
 
+    when(mockReleaseService.getFromName("not_existing_release")).thenReturn(null);
+    when(mockDictionaryService.getFromVersion("existing_dictionary")).thenReturn(mock(Dictionary.class));
+
+    nextRelease = new NextRelease(release, ds, fs);
   }
 
   @Test(expected = IllegalReleaseStateException.class)

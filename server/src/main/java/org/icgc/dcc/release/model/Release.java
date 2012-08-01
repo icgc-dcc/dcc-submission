@@ -7,11 +7,13 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.icgc.dcc.core.model.BaseEntity;
 import org.icgc.dcc.core.model.HasName;
 import org.icgc.dcc.release.ReleaseException;
 
 import com.google.code.morphia.annotations.Entity;
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
@@ -61,6 +63,16 @@ public class Release extends BaseEntity implements HasName {
 
   public List<Submission> getSubmissions() {
     return submissions;
+  }
+
+  @JsonIgnore
+  public Iterable<String> getProjectKeys() {
+    return Iterables.transform(getSubmissions(), new Function<Submission, String>() {
+      @Override
+      public String apply(Submission input) {
+        return input.getProjectKey();
+      }
+    });
   }
 
   public Submission getSubmission(final String projectKey) {
