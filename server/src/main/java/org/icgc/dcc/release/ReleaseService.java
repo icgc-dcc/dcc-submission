@@ -22,6 +22,7 @@ import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
 import org.icgc.dcc.release.model.QRelease;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
+import org.icgc.dcc.release.model.ReleaseView;
 import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.release.model.SubmissionState;
 import org.icgc.dcc.validation.report.SubmissionReport;
@@ -79,13 +80,17 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
   public Release getFromName(String releaseName) {
     Release release = this.query().where(QRelease.release.name.eq(releaseName)).uniqueResult();
-    // populate project name for submissions
-    List<Project> projects = this.getProjects(release);
-    for(Project project : projects) {
-      release.getSubmission(project.getKey()).setProjectName(project.getName());
-    }
 
     return release;
+  }
+
+  public ReleaseView getReleaseView(String releaseName) {
+    Release release = this.query().where(QRelease.release.name.eq(releaseName)).uniqueResult();
+    ReleaseView releaseView = new ReleaseView(release);
+    // populate project name for submissions
+    List<Project> projects = this.getProjects(release);
+    releaseView.updateProjects(projects);
+    return releaseView;
   }
 
   public NextRelease getNextRelease() throws IllegalReleaseStateException {
