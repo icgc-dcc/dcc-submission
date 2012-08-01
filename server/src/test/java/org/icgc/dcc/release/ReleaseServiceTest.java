@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.core.model.BaseEntity;
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.dictionary.DictionaryService;
@@ -43,6 +44,8 @@ public class ReleaseServiceTest {
 
   private DccFileSystem fs;
 
+  private ProjectService projectService;
+
   final private String testDbName = "testDb";
 
   @Before
@@ -55,6 +58,7 @@ public class ReleaseServiceTest {
       morphia.map(BaseEntity.class);
       datastore = morphia.createDatastore(mongo, testDbName);
       fs = mock(DccFileSystem.class);
+      projectService = mock(ProjectService.class);
 
       // Clear out the test database before each test
       datastore.delete(datastore.createQuery(Dictionary.class));
@@ -92,7 +96,7 @@ public class ReleaseServiceTest {
       release.setDictionaryVersion(dictionary.getVersion());
 
       // Create the releaseService and populate it with the initial release
-      releaseService = new ReleaseService(morphia, datastore, fs);
+      releaseService = new ReleaseService(morphia, datastore, fs, projectService);
       releaseService.createInitialRelease(release);
     } catch(UnknownHostException e) {
       e.printStackTrace();

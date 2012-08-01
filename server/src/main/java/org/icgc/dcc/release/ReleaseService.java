@@ -8,6 +8,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.icgc.dcc.core.ProjectService;
+import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.core.morphia.BaseMorphiaService;
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.filesystem.DccFileSystem;
@@ -36,11 +38,14 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
   private final DccFileSystem fs;
 
+  private final ProjectService projectService;
+
   @Inject
-  public ReleaseService(Morphia morphia, Datastore datastore, DccFileSystem fs) {
+  public ReleaseService(Morphia morphia, Datastore datastore, DccFileSystem fs, ProjectService projectService) {
     super(morphia, datastore, QRelease.release);
     this.fs = fs;
     registerModelClasses(Release.class);
+    this.projectService = projectService;
   }
 
   public void createInitialRelease(Release initRelease) {
@@ -247,5 +252,13 @@ public class ReleaseService extends BaseMorphiaService<Release> {
         .set("submissions.$.report", report);
 
     datastore().update(updateQuery, ops);
+  }
+
+  public List<Project> getProjects(Release release) {
+    List<String> projectKeys = new ArrayList<String>();
+    for(Submission submission : release.getSubmissions()) {
+      projectKeys.add(submission.getProjectKey());
+    }
+    return this.projectService.getProjects(projectKeys);
   }
 }
