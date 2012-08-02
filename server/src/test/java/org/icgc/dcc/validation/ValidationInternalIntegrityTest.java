@@ -24,7 +24,6 @@ import org.icgc.dcc.dictionary.model.Term;
 import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.filesystem.GuiceJUnitRunner;
 import org.icgc.dcc.filesystem.GuiceJUnitRunner.GuiceModules;
-import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.validation.restriction.CodeListRestriction;
 import org.icgc.dcc.validation.restriction.DiscreteValuesRestriction;
 import org.icgc.dcc.validation.restriction.RangeFieldRestriction;
@@ -35,8 +34,6 @@ import org.icgc.dcc.validation.visitor.ValueTypePlanningVisitor;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import cascading.cascade.Cascade;
 
 import com.google.inject.Inject;
 import com.mongodb.BasicDBObject;
@@ -55,13 +52,10 @@ public class ValidationInternalIntegrityTest {
 
   private Dictionary dictionary;
 
-  private ReleaseService releaseService;
-
   @Before
   public void setUp() throws JsonProcessingException, IOException {
     DccFileSystem dccFileSystem = mock(DccFileSystem.class);
     ProjectService projectService = mock(ProjectService.class);
-    releaseService = mock(ReleaseService.class);
 
     CodeList codeList1 = mock(CodeList.class);
     CodeList codeList2 = mock(CodeList.class);
@@ -86,8 +80,7 @@ public class ValidationInternalIntegrityTest {
     when(codeList3.getTerms()).thenReturn(termList3);
     when(codeList4.getTerms()).thenReturn(termList4);
 
-    validationService =
-        new ValidationService(dccFileSystem, projectService, planner, dictionaryService, releaseService);
+    validationService = new ValidationService(dccFileSystem, projectService, planner, dictionaryService);
     resetDictionary();
   }
 
@@ -184,9 +177,9 @@ public class ValidationInternalIntegrityTest {
     FileSchemaDirectory fileSchemaDirectory = new LocalFileSchemaDirectory(rootDir);
     CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir);
 
-    Cascade cascade = validationService.planCascade(null, null, fileSchemaDirectory, cascadingStrategy, dictionary);
-    Assert.assertEquals(1, cascade.getFlows().size());
-    validationService.runCascade(cascade, null, null);
+    Plan plan = validationService.planCascade(null, fileSchemaDirectory, cascadingStrategy, dictionary);
+    Assert.assertEquals(1, plan.getCascade().getFlows().size());
+    validationService.runCascade(plan.getCascade(), null);
 
     Assert.assertTrue(errorFileString, errorFile.exists());
     return FileUtils.readFileToString(errorFile);

@@ -43,6 +43,8 @@ public class Plan {
 
   private final Map<String, ExternalFlowPlanner> externalPlanners = Maps.newHashMap();
 
+  private Cascade cascade;
+
   public void include(FileSchema fileSchema, InternalFlowPlanner internal, ExternalFlowPlanner external) {
     this.plannedSchema.add(fileSchema);
     this.internalPlanners.put(fileSchema.getName(), internal);
@@ -80,7 +82,7 @@ public class Plan {
     }
   }
 
-  public Cascade connect(CascadingStrategy cascadingStrategy) {
+  public void connect(CascadingStrategy cascadingStrategy) {
     CascadeDef cascade = new CascadeDef();
     for(FileSchemaFlowPlanner planner : Iterables.concat(internalPlanners.values(), externalPlanners.values())) {
       Flow<?> flow = planner.connect(cascadingStrategy);
@@ -88,7 +90,11 @@ public class Plan {
         cascade.addFlow(flow);
       }
     }
-    return new CascadeConnector().connect(cascade);
+    this.cascade = new CascadeConnector().connect(cascade);
+  }
+
+  public Cascade getCascade() {
+    return this.cascade;
   }
 
   public Outcome collect(CascadingStrategy strategy, SubmissionReport report) {

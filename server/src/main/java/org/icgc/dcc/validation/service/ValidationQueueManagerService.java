@@ -70,8 +70,6 @@ public class ValidationQueueManagerService extends AbstractService implements Va
 
   private final ProjectService projectService;
 
-  private final ValidationCallback thisAsCallback;
-
   private ScheduledFuture<?> schedule;
 
   @Inject
@@ -87,8 +85,6 @@ public class ValidationQueueManagerService extends AbstractService implements Va
     this.validationService = validationService;
     this.dccFileSystem = dccFileSystem;
     this.projectService = projectService;
-
-    this.thisAsCallback = this;
   }
 
   @Override
@@ -124,7 +120,13 @@ public class ValidationQueueManagerService extends AbstractService implements Va
                   throw new ValidationServiceException(String.format("no dictionary found with version %s",
                       dictionaryVersion));
                 } else {
-                  validationService.validate(release, next.get(), thisAsCallback);
+                  String projectKey = next.get();
+                  Plan plan = validationService.validate(release, projectKey);
+                  if(plan.getCascade().getCascadeStats().isSuccessful()) {
+                    handleSuccessfulValidation(projectKey, plan);
+                  } else {
+                    handleFailedValidation(projectKey);
+                  }
                 }
               }
             }
