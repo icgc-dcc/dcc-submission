@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.validation;
 
-import java.util.List;
-
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.validation.report.Outcome;
 import org.icgc.dcc.validation.report.SchemaReport;
@@ -38,5 +36,5 @@ public interface FileSchemaFlowPlanner {
 
   public void apply(ReportingPlanElement element);
 
-  public Outcome collect(CascadingStrategy strategy, List<SchemaReport> reports);
+  public Outcome collect(CascadingStrategy strategy, SchemaReport report);
 }

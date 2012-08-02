@@ -9,6 +9,8 @@ public class Submission {
 
   protected String projectKey;
 
+  protected String projectName;
+
   protected SubmissionState state;
 
   protected SubmissionReport report;
@@ -46,5 +48,4 @@ public class Submission {
   public void setProjectKey(String projectKey) {
     this.projectKey = projectKey;
   }
-
 }

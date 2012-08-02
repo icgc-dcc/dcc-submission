@@ -149,6 +149,11 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     return result;
   }
 
+  public Release getRelease(String releaseName) {
+    Release release = this.where(QRelease.release.name.eq(releaseName)).uniqueResult();
+    return release;
+  }
+
   public List<String> getSignedOff() {
     return this.getSubmission(SubmissionState.SIGNED_OFF);
   }
