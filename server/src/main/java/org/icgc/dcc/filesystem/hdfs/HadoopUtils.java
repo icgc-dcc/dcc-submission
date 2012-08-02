@@ -80,6 +80,20 @@ public class HadoopUtils {
     }
   }
 
+  public static void mv(FileSystem fileSystem, String origin, String destination) {
+    boolean rename;
+    try {
+      Path originPath = new Path(origin);
+      Path destinationPath = new Path(destination);
+      rename = fileSystem.rename(originPath, destinationPath);
+    } catch(IOException e) {
+      throw new HdfsException(e);
+    }
+    if(!rename) {
+      throw new HdfsException(String.format("could not rename %s to %s", origin, destination));
+    }
+  }
+
   public static boolean checkExistence(FileSystem fileSystem, String stringPath) {
     Path path = new Path(stringPath);
     boolean exists;
