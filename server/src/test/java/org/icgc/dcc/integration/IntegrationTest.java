@@ -123,6 +123,9 @@ public class IntegrationTest {
 
     test_createInitialRelease("/integrationtest/initRelease.json");
 
+    test_checkRelease("release1", "0.6c", ReleaseState.OPENED, Arrays.<SubmissionState> asList(
+        SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED));
+
     test_feedFileSystem();
 
     test_checkQueueIsEmpty();
@@ -139,14 +142,18 @@ public class IntegrationTest {
 
     test_releaseFirstRelease();
 
-    test_checkReleaseState("release1", ReleaseState.COMPLETED);
+    test_checkRelease("release1", "0.6c", ReleaseState.COMPLETED, Arrays.<SubmissionState> asList(
+        SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED));
 
-    test_checkReleaseState("release2", ReleaseState.OPENED);
+    // test_checkReleaseState("release1", ReleaseState.COMPLETED);
 
-    test_updateReleaseName("/integrationtest/updatedRelease.json");
+    test_checkRelease("release2", "0.6c", ReleaseState.OPENED, Arrays.<SubmissionState> asList(
+        SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED));
 
-    test_checkRelease("RELEASE2", "0.6d", Arrays.<SubmissionState> asList(SubmissionState.NOT_VALIDATED,
-        SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED));
+    test_updateRelease("/integrationtest/updatedRelease.json");
+
+    test_checkRelease("RELEASE2", "0.6d", ReleaseState.OPENED, Arrays.<SubmissionState> asList(
+        SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED));
   }
 
   private void test_feedFileSystem() throws IOException {
@@ -231,8 +238,8 @@ public class IntegrationTest {
     assertEquals(expectedState, release.getState());
   }
 
-  private void test_checkRelease(String releaseName, String dictionaryVersion, List<SubmissionState> states)
-      throws IOException, JsonParseException, JsonMappingException {
+  private void test_checkRelease(String releaseName, String dictionaryVersion, ReleaseState state,
+      List<SubmissionState> states) throws IOException, JsonParseException, JsonMappingException {
     Response response = sendGetRequest("/releases/" + releaseName);
     assertEquals(200, response.getStatus());
 
@@ -240,6 +247,7 @@ public class IntegrationTest {
     assertNotNull(release);
     assertEquals(dictionaryVersion, release.getDictionaryVersion());
     assertEquals(ImmutableList.<String> of(), release.getQueue());
+    assertEquals(state, release.getState());
     assertEquals(states.size(), release.getSubmissions().size());
     int i = 0;
     for(Submission submission : release.getSubmissions()) {
@@ -270,7 +278,7 @@ public class IntegrationTest {
     assertEquals(200, response.getStatus());
   }
 
-  private void test_updateReleaseName(String updatedReleaseRelPath) throws IOException, JsonParseException,
+  private void test_updateRelease(String updatedReleaseRelPath) throws IOException, JsonParseException,
       JsonMappingException {
     Response response = sendPutRequest("/nextRelease/update", resourceToString(updatedReleaseRelPath));
     assertEquals(200, response.getStatus());
