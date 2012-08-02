@@ -3,11 +3,14 @@ package org.icgc.dcc.filesystem;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.List;
+
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.Submission;
+import org.mortbay.log.Log;
 
 public class ReleaseFileSystem {
 
@@ -48,6 +51,19 @@ public class ReleaseFileSystem {
     boolean exists = HadoopUtils.checkExistence(dccFileSystem.getFileSystem(), projectStringPath);
     if(exists == false) {
       throw new DccFileSystemException("Release directory " + projectStringPath + " does not exist");
+    }
+  }
+
+  public void moveFrom(ReleaseFileSystem previous, List<Project> projects) {
+    for(Project project : projects) {
+      SubmissionDirectory previousSubmissionDirectory = previous.getSubmissionDirectory(project);
+      SubmissionDirectory newSubmissionDirectory = getSubmissionDirectory(project);
+      for(String filename : previousSubmissionDirectory.listFile()) {
+        String origin = previousSubmissionDirectory.getDataFilePath(filename);
+        String destination = newSubmissionDirectory.getDataFilePath(filename);
+        Log.info("moving {} to {} ", origin, destination);
+        HadoopUtils.mv(this.dccFileSystem.getFileSystem(), origin, destination);
+      }
     }
   }
 
