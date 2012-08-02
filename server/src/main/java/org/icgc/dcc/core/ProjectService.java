@@ -77,14 +77,19 @@ public class ProjectService extends BaseMorphiaService<Project> {
 
   public Project getProject(final String projectKey) {
     Project project = this.query().where(QProject.project.key.eq(projectKey)).singleResult();
+
     if(project == null) {
       throw new ProjectServiceException("No project found with key " + projectKey);
     }
     return project;
   }
 
-  public List<Project> getProjects(final List<String> projectKeys) {
-    return this.query().where(QProject.project.key.in(projectKeys)).list();
+  public List<Project> getProjects(List<String> projectKeys) {
+    List<Project> projects = this.query().where(QProject.project.key.in(projectKeys)).list();
+    if(projects == null) {
+      throw new ProjectServiceException("No projects found within the key list");
+    }
+    return projects;
   }
 
   private void saveProject(Project project) {

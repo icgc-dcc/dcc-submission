@@ -17,6 +17,7 @@
 """
 
 define (require) -> 
+  Chaplin = require 'chaplin'
   View = require 'views/base/view'
   template = require 'text!views/templates/navigation.handlebars'
   
@@ -32,7 +33,16 @@ define (require) ->
       console.debug 'NavigationView#initialize', @model
       super
       @modelBind 'change', @render
+      
+      @subscribeEvent 'login', @setUsername
+      
       @subscribeEvent 'navigation:change', (attributes) =>
         console.debug 'NavigationView#initialize#change', attributes
         @model.clear(silent: yes)
         @model.set attributes
+        
+    
+    setUsername: (user)->
+      console.debug 'NavigationView#@setUsername', @model
+      
+      @model.set 'username', user.get('name')

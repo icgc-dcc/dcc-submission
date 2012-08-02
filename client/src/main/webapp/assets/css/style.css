@@ -25,7 +25,9 @@ body {
   font-family: 'Ubuntu','Helvetica Neue',Helvetica,Arial,sans-serif;
 }
 
-.logged-out #content-container { opacity: 0; } 
+.logged-out #content-container { opacity: 0;} 
+
+.navbar .nav > li > a {text-shadow: none;  padding: 0}
 
 /* Status Text Colours */
 .signed, .signed_off {

@@ -73,10 +73,12 @@ public class FieldReport {
     FieldReport fieldReport = new FieldReport();
     fieldReport.setName(fieldSummary.field);
     fieldReport.setNulls(fieldSummary.nulls);
+
     fieldReport.setMissing(fieldSummary.missing);
     fieldReport.setPopulated(fieldSummary.populated);
     fieldReport.setCompleteness(100 * fieldSummary.populated
         / (fieldSummary.nulls + fieldSummary.missing + fieldSummary.populated));
+
     BasicDBObject summary = new BasicDBObject();
     for(String key : fieldSummary.summary.keySet()) {
       summary.append(key, fieldSummary.summary.get(key));

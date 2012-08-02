@@ -98,7 +98,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     if(nextRelease == null) {
       throw new IllegalStateException("no next release");
     }
-    return new NextRelease(nextRelease, datastore(), this.fs);
+    return new NextRelease(nextRelease, morphia(), datastore(), this.fs);
   }
 
   public List<HasRelease> list() {
@@ -147,6 +147,11 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     }
 
     return result;
+  }
+
+  public Release getRelease(String releaseName) {
+    Release release = this.where(QRelease.release.name.eq(releaseName)).uniqueResult();
+    return release;
   }
 
   public List<String> getSignedOff() {
