@@ -1,6 +1,6 @@
 {
-  "created" : 1343931378409,
-  "lastUpdate" : 1343931378409,
+  "created" : 1343932967032,
+  "lastUpdate" : 1343932967032,
   "version" : "0.6c",
   "state" : "OPENED",
   "files" : [ {
@@ -798,7 +798,7 @@
     } ],
     "relation" : [ {
       "fields" : [ "transcript_id" ],
-      "other" : "gene_transcript",
+      "other" : "hsap_transcript",
       "otherFields" : [ "stable_id_1066" ]
     } ]
   }, {
@@ -1092,7 +1092,7 @@
       "otherFields" : [ "analysis_id", "analyzed_sample_id", "methylated_fragment_id" ]
     }, {
       "fields" : [ "gene_affected" ],
-      "other" : "gene_gene",
+      "other" : "hsap_gene",
       "otherFields" : [ "stable_id_1023" ]
     } ]
   }, {
@@ -1435,7 +1435,7 @@
       "otherFields" : [ "analysis_id", "sample_id" ]
     }, {
       "fields" : [ "gene_stable_id" ],
-      "other" : "gene_gene",
+      "other" : "hsap_gene",
       "otherFields" : [ "stable_id_1023" ]
     } ]
   }, {
@@ -2229,11 +2229,11 @@
       "otherFields" : [ "analysis_id", "analyzed_sample_id", "sv_id", "placement" ]
     }, {
       "fields" : [ "transcript_affected_by_bkpt_from" ],
-      "other" : "gene_transcript",
+      "other" : "hsap_transcript",
       "otherFields" : [ "stable_id_1066" ]
     }, {
       "fields" : [ "transcript_affected_by_bkpt_to" ],
-      "other" : "gene_transcript",
+      "other" : "hsap_transcript",
       "otherFields" : [ "stable_id_1066" ]
     } ]
   }, {
@@ -2733,7 +2733,7 @@
       "otherFields" : [ "analysis_id", "analyzed_sample_id", "mutation_id" ]
     }, {
       "fields" : [ "transcript_affected" ],
-      "other" : "gene_transcript",
+      "other" : "hsap_transcript",
       "otherFields" : [ "stable_id_1066" ]
     } ]
   }, {
@@ -3012,7 +3012,7 @@
       "otherFields" : [ "analysis_id", "analyzed_sample_id", "mutation_id" ]
     }, {
       "fields" : [ "transcript_affected" ],
-      "other" : "gene_transcript",
+      "other" : "hsap_transcript",
       "otherFields" : [ "stable_id_1066" ]
     } ]
   }, {
@@ -6519,7 +6519,7 @@
       "otherFields" : [ "analysis_id", "sample_id" ]
     }, {
       "fields" : [ "gene_stable_id" ],
-      "other" : "gene_gene",
+      "other" : "hsap_gene",
       "otherFields" : [ "stable_id_1023" ]
     } ]
   } ]
