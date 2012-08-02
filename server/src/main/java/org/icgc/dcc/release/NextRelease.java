@@ -141,10 +141,13 @@ public class NextRelease extends BaseRelease {
     List<Project> projectsToMove = new ArrayList<Project>();
     for(Submission submission : oldRelease.getSubmissions()) {
       if(submission.getState() != SubmissionState.SIGNED_OFF) {
-        projectsToMove.add(getProjectFromKey(submission.getProjectKey()));
+        Project project = getProjectFromKey(submission.getProjectKey());
+        projectsToMove.add(project);
       }
     }
-    newReleaseFilesystem.moveFrom(oldReleaseFilesystem, ImmutableList.<Project> copyOf(projectsToMove));
+    if(projectsToMove.isEmpty() == false) {
+      newReleaseFilesystem.moveFrom(oldReleaseFilesystem, ImmutableList.<Project> copyOf(projectsToMove));
+    }
   }
 
   private Project getProjectFromKey(final String projectKey) {
