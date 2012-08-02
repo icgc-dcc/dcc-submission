@@ -28,7 +28,7 @@ import org.icgc.dcc.release.ReleaseException;
  */
 public class ReleaseView extends Release {
 
-  protected List<DetailedSubmission> detailedSubmissions = new ArrayList<DetailedSubmission>();
+  protected List<DetailedSubmission> submissions = new ArrayList<DetailedSubmission>();
 
   public ReleaseView() {
     super();
@@ -42,7 +42,7 @@ public class ReleaseView extends Release {
     this.releaseDate = release.releaseDate;
     this.dictionaryVersion = release.dictionaryVersion;
     for(Submission submission : release.getSubmissions()) {
-      this.detailedSubmissions.add(new DetailedSubmission(submission));
+      this.submissions.add(new DetailedSubmission(submission));
     }
     for(Project project : projects) {
       this.getDetailedSubmission(project.getKey()).setProjectName(project.getName());
@@ -50,15 +50,17 @@ public class ReleaseView extends Release {
   }
 
   public DetailedSubmission getDetailedSubmission(String projectKey) {
-    for(DetailedSubmission submission : detailedSubmissions) {
-      if(submission.getProjectKey().equals(projectKey)) return submission;
+    for(DetailedSubmission submission : submissions) {
+      if(submission.getProjectKey().equals(projectKey)) {
+        return submission;
+      }
     }
     throw new ReleaseException(String.format("there is no project \"%s\" associated with release \"%s\"", projectKey,
         this.name));
   }
 
   public List<DetailedSubmission> getDetailedSubmissions() {
-    return detailedSubmissions;
+    return submissions;
   }
 
   public static class DetailedSubmission extends Submission {
