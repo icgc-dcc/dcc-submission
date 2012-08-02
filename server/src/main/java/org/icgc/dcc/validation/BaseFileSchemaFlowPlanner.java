@@ -17,7 +17,6 @@ package org.icgc.dcc.validation;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import java.util.List;
 import java.util.Map;
 
 import org.icgc.dcc.dictionary.model.FileSchema;
@@ -81,13 +80,10 @@ public abstract class BaseFileSchemaFlowPlanner implements FileSchemaFlowPlanner
   }
 
   @Override
-  public Outcome collect(CascadingStrategy strategy, List<SchemaReport> reports) {
+  public Outcome collect(CascadingStrategy strategy, SchemaReport report) {
     Outcome result = Outcome.PASSED;
     for(ReportCollector reportCollector : collectors.values()) {
-      SchemaReport report = new SchemaReport();
-      report.setName(this.fileSchema.getName());
       Outcome outcome = reportCollector.collect(strategy, report);
-      reports.add(report);
       if(outcome == Outcome.FAILED) {
         result = Outcome.FAILED;
       }
