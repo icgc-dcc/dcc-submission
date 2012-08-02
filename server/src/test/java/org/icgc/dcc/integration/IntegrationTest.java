@@ -138,14 +138,10 @@ public class IntegrationTest {
     test_fileIsEmpty(DCC_ROOT_DIR + "release1/project1/.validation/specimen.internal#errors.json");
     test_fileIsEmpty(DCC_ROOT_DIR + "release1/project1/.validation/specimen.external#errors.json");
 
-    test_checkReleaseState("release1", ReleaseState.OPENED);
-
     test_releaseFirstRelease();
 
-    test_checkRelease("release1", "0.6c", ReleaseState.COMPLETED, Arrays.<SubmissionState> asList(
-        SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED));
-
-    // test_checkReleaseState("release1", ReleaseState.COMPLETED);
+    test_checkRelease("release1", "0.6c", ReleaseState.COMPLETED,
+        Arrays.<SubmissionState> asList(SubmissionState.SIGNED_OFF, SubmissionState.INVALID, SubmissionState.INVALID));
 
     test_checkRelease("release2", "0.6c", ReleaseState.OPENED, Arrays.<SubmissionState> asList(
         SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED));
@@ -225,17 +221,6 @@ public class IntegrationTest {
     // Release again, expect 400 Bad Request because of the duplicate release
     response = sendPostRequest("/nextRelease", "release2");
     assertEquals(400, response.getStatus());
-  }
-
-  private void test_checkReleaseState(String releaseName, ReleaseState expectedState) throws IOException,
-      InterruptedException {
-    Response response = sendGetRequest("/releases/" + releaseName);
-    assertEquals(200, response.getStatus());
-
-    String responseMsg = response.readEntity(String.class);
-
-    ReleaseView release = new ObjectMapper().readValue(responseMsg, ReleaseView.class);
-    assertEquals(expectedState, release.getState());
   }
 
   private void test_checkRelease(String releaseName, String dictionaryVersion, ReleaseState state,
