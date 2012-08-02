@@ -21,8 +21,10 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -76,22 +78,32 @@ public class DictionaryConverter {
       dictionary = new Dictionary(DICTIONARY_VERSION);
     }
     File tsvFolder = new File(folder);
-    File[] tsvFiles = tsvFolder.listFiles(new FilenameFilter() {
-
+    FilenameFilter tsvFilter = new FilenameFilter() {
       @Override
       public boolean accept(File dir, String name) {
         return name.endsWith(".tsv");
       }
+    };
 
-    });
+    File[] tsvFiles = tsvFolder.listFiles(tsvFilter);
 
-    List<FileSchema> fileSchemas = new ArrayList<FileSchema>();
+    Map<String, FileSchema> fileSchemas = new HashMap<String, FileSchema>();
 
     for(File tsvFile : tsvFiles) {
-      fileSchemas.add(this.readFileSchema(tsvFile));
+
+      fileSchemas.put(tsvFile.getName(), this.readFileSchema(tsvFile, FileSchemaRole.SUBMISSION));
     }
 
-    dictionary.setFiles(fileSchemas);
+    // Read System FileSchema gene, transcript, mirna_base, Override the previous ones
+    File systemFolder = new File("src/main/resources/SystemFiles");
+
+    tsvFiles = systemFolder.listFiles(tsvFilter);
+
+    for(File tsvFile : tsvFiles) {
+      fileSchemas.put(tsvFile.getName(), this.readFileSchema(tsvFile, FileSchemaRole.SYSTEM));
+    }
+
+    dictionary.setFiles(new ArrayList<FileSchema>(fileSchemas.values()));
 
     this.readFilePattern("src/test/resources/converter/file_to_pattern.tsv");
 
@@ -181,7 +193,7 @@ public class DictionaryConverter {
     }
   }
 
-  private FileSchema readFileSchema(File tsvFile) throws IOException {
+  private FileSchema readFileSchema(File tsvFile, FileSchemaRole role) throws IOException {
     String FileSchemaName = FilenameUtils.removeExtension(tsvFile.getName());
     FileSchema fileSchema = new FileSchema(FileSchemaName);
 
@@ -205,7 +217,7 @@ public class DictionaryConverter {
     }
     fileSchema.setFields(fields);
 
-    fileSchema.setRole(FileSchemaRole.SUBMISSION);
+    fileSchema.setRole(role);
 
     return fileSchema;
   }
