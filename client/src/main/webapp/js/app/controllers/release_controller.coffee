@@ -33,7 +33,7 @@ define (require) ->
     title: 'Releases'
 
     historyURL: (params) ->
-      ''
+      'releases'
 
     list: (params) ->
       console.debug 'ReleaseController#list', params
