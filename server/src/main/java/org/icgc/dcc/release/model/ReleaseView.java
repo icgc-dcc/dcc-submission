@@ -18,6 +18,7 @@
 package org.icgc.dcc.release.model;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.icgc.dcc.core.model.Project;
@@ -26,16 +27,26 @@ import org.icgc.dcc.release.ReleaseException;
 /**
  * 
  */
-public class ReleaseView extends Release {
+public class ReleaseView {
+
+  protected String name;
+
+  protected ReleaseState state;
 
   protected List<DetailedSubmission> submissions = new ArrayList<DetailedSubmission>();
 
+  protected List<String> queue = new ArrayList<String>();
+
+  protected Date releaseDate;
+
+  protected String dictionaryVersion;
+
   public ReleaseView() {
-    super();
+
   }
 
   public ReleaseView(Release release, List<Project> projects) {
-    super();
+
     this.name = release.name;
     this.state = release.state;
     this.queue = release.getQueue();
@@ -59,11 +70,31 @@ public class ReleaseView extends Release {
         this.name));
   }
 
-  public List<DetailedSubmission> getDetailedSubmissions() {
+  public String getName() {
+    return name;
+  }
+
+  public ReleaseState getState() {
+    return state;
+  }
+
+  public List<DetailedSubmission> getSubmissions() {
     return submissions;
   }
 
-  public static class DetailedSubmission extends Submission {
+  public List<String> getQueue() {
+    return queue;
+  }
+
+  public Date getReleaseDate() {
+    return releaseDate;
+  }
+
+  public String getDictionaryVersion() {
+    return dictionaryVersion;
+  }
+
+  static class DetailedSubmission extends Submission {
     private String projectName;
 
     public DetailedSubmission() {
@@ -85,5 +116,4 @@ public class ReleaseView extends Release {
       this.projectName = projectName;
     }
   }
-
 }
