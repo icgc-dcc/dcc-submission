@@ -14,6 +14,7 @@ import javax.ws.rs.core.Response.Status;
 
 import org.icgc.dcc.filesystem.SubmissionFile;
 import org.icgc.dcc.release.ReleaseService;
+import org.icgc.dcc.release.model.DetailedSubmission;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseView;
 import org.icgc.dcc.release.model.Submission;
@@ -88,7 +89,7 @@ public class ReleaseResource {
   @GET
   @Path("{name}/submissions/{projectKey}")
   public Response getSubmission(@PathParam("name") String name, @PathParam("projectKey") String projectKey) {
-    Submission submission = this.releaseService.getSubmission(name, projectKey);
+    DetailedSubmission submission = this.releaseService.getDetailedSubmission(name, projectKey);
     if(submission == null) {
       return Response.status(Status.NOT_FOUND)
           .entity(new ServerErrorResponseMessage("NoSuchSubmission", name, projectKey)).build();

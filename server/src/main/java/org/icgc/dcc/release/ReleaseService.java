@@ -19,6 +19,7 @@ import org.icgc.dcc.dictionary.model.QDictionary;
 import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.filesystem.SubmissionFile;
 import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
+import org.icgc.dcc.release.model.DetailedSubmission;
 import org.icgc.dcc.release.model.QRelease;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
@@ -130,6 +131,12 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     checkArgument(release != null);
 
     return this.getSubmission(release, projectKey);
+  }
+
+  public DetailedSubmission getDetailedSubmission(String releaseName, String projectKey) {
+    DetailedSubmission detailedSubmission = new DetailedSubmission(this.getSubmission(releaseName, projectKey));
+    detailedSubmission.setProjectName(this.getProject(projectKey).getName());
+    return detailedSubmission;
   }
 
   private Submission getSubmission(Release release, String projectKey) {
@@ -344,13 +351,18 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     datastore().update(updateQuery, ops);
   }
 
-  public List<Project> getProjects(Release release) {
+  private List<Project> getProjects(Release release) {
     List<String> projectKeys = new ArrayList<String>();
     for(Submission submission : release.getSubmissions()) {
       projectKeys.add(submission.getProjectKey());
     }
     MorphiaQuery<Project> query = new MorphiaQuery<Project>(morphia(), datastore(), QProject.project);
     return query.where(QProject.project.key.in(projectKeys)).list();
+  }
+
+  private Project getProject(String projectKey) {
+    MorphiaQuery<Project> query = new MorphiaQuery<Project>(morphia(), datastore(), QProject.project);
+    return query.where(QProject.project.key.eq(projectKey)).uniqueResult();
   }
 
   public List<SubmissionFile> getSubmissionFiles(String releaseName, String projectKey) throws IOException {
