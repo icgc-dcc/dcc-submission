@@ -3,6 +3,7 @@ package org.icgc.dcc.core;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.core.model.QProject;
 import org.icgc.dcc.core.morphia.BaseMorphiaService;
@@ -73,6 +74,16 @@ public class ProjectService extends BaseMorphiaService<Project> {
 
   public List<Project> getProjects() {
     return this.query().list();
+  }
+
+  public List<Project> getProjects(Subject user) {
+    List<Project> filteredProjects = new ArrayList<Project>();
+    for(Project project : this.getProjects()) {
+      if(user.isPermitted("project:" + project.getKey())) {
+        filteredProjects.add(project);
+      }
+    }
+    return filteredProjects;
   }
 
   public Project getProject(final String projectKey) {

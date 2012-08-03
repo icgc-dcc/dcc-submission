@@ -52,11 +52,10 @@ public class ReleaseView {
     this.queue = release.getQueue();
     this.releaseDate = release.releaseDate;
     this.dictionaryVersion = release.dictionaryVersion;
-    for(Submission submission : release.getSubmissions()) {
-      this.submissions.add(new DetailedSubmission(submission));
-    }
     for(Project project : projects) {
-      this.getDetailedSubmission(project.getKey()).setProjectName(project.getName());
+      DetailedSubmission detailedSubmission = new DetailedSubmission(release.getSubmission(project.getKey()));
+      detailedSubmission.setProjectName(project.getName());
+      this.submissions.add(detailedSubmission);
     }
   }
 

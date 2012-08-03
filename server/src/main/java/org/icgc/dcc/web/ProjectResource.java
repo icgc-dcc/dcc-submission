@@ -16,6 +16,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
 
+import org.apache.shiro.SecurityUtils;
 import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.core.model.QProject;
@@ -33,7 +34,7 @@ public class ProjectResource {
 
   @GET
   public Response getProjects() {
-    List<Project> projectlist = projects.getProjects();
+    List<Project> projectlist = projects.getProjects(SecurityUtils.getSubject());
     if(projectlist == null) {
       return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoProjects")).build();
     }
@@ -56,6 +57,9 @@ public class ProjectResource {
   @GET
   @Path("{projectKey}")
   public Response getIt(@PathParam("projectKey") String projectKey) {
+    if(SecurityUtils.getSubject().isPermitted("project:" + projectKey) == false) {
+      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
+    }
     Project project = projects.where(QProject.project.key.eq(projectKey)).uniqueResult();
     if(project == null) {
       return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoSuchProject", projectKey))
@@ -68,7 +72,9 @@ public class ProjectResource {
   @Path("{projectKey}")
   public Response updateProject(@PathParam("projectKey") String projectKey, Project project, @Context Request req) {
     checkArgument(project != null);
-
+    if(SecurityUtils.getSubject().isPermitted("project:" + projectKey) == false) {
+      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
+    }
     ResponseTimestamper.evaluate(req, project);
 
     // update project use morphia query
@@ -84,6 +90,9 @@ public class ProjectResource {
   @GET
   @Path("{projectKey}/releases")
   public Response getReleases(@PathParam("projectKey") String projectKey) {
+    if(SecurityUtils.getSubject().isPermitted("project:" + projectKey) == false) {
+      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
+    }
     Project project = projects.where(QProject.project.key.eq(projectKey)).uniqueResult();
     if(project == null) {
       return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoSuchProject", projectKey))
