@@ -28,6 +28,7 @@ import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.icgc.dcc.dictionary.model.FileSchema;
+import org.icgc.dcc.dictionary.model.FileSchemaRole;
 
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
@@ -47,6 +48,8 @@ public abstract class BaseCascadingStrategy implements CascadingStrategy {
 
   private final Path output;
 
+  private static final Path system = new Path("src/main/resources/SystemFiles");
+
   protected BaseCascadingStrategy(FileSystem fileSystem, Path input, Path output) {
     this.fileSystem = fileSystem;
     this.input = input;
@@ -56,7 +59,13 @@ public abstract class BaseCascadingStrategy implements CascadingStrategy {
   @Override
   public Tap<?, ?, ?> getSourceTap(FileSchema schema) {
     try {
-      return tapSource(path(schema));
+      if(schema.getRole() == FileSchemaRole.SUBMISSION) {
+        return tapSource(path(schema));
+      } else if(schema.getRole() == FileSchemaRole.SYSTEM) {
+        return tapSource(systemPath(schema));
+      } else {
+        throw new RuntimeException("undefined File Schema Role " + schema.getRole());
+      }
     } catch(IOException e) {
       throw new RuntimeException(e);
     }
@@ -119,5 +128,21 @@ public abstract class BaseCascadingStrategy implements CascadingStrategy {
       }
     }
     throw new FileNotFoundException("no file for schema " + schema.getName());
+  }
+
+  private Path systemPath(final FileSchema schema) throws FileNotFoundException, IOException {
+
+    RemoteIterator<LocatedFileStatus> files = fileSystem.listFiles(system, false);
+    while(files.hasNext()) {
+      LocatedFileStatus file = files.next();
+      if(file.isFile()) {
+        Path path = file.getPath();
+        if(Pattern.matches(schema.getPattern(), path.getName())) {
+          return path;
+        }
+      }
+    }
+    throw new FileNotFoundException("no file for schema " + schema.getName());
+
   }
 }

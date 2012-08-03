@@ -213,7 +213,36 @@ public class DictionaryConverter {
     List<Field> fields = new ArrayList<Field>();
     while(lineIterator.hasNext()) {
       Field field = this.readField(lineIterator.next(), fileSchema);
+      // hardcode special case for stsm_s gene_affected and transcript_affected
+      if(FileSchemaName.equals("stsm_s") && field.getName().equals("gene_affected")) {
+        Field field_from = new Field(field);
+        Field field_to = new Field(field);
+        field_from.setName("gene_affected_by_bkpt_from");
+        field_to.setName("gene_affected_by_bkpt_to");
+
+        fields.add(field_from);
+        fields.add(field_to);
+      } else if(FileSchemaName.equals("stsm_s") && field.getName().equals("transcript_affected")) {
+        Field field_from = new Field(field);
+        Field field_to = new Field(field);
+        field_from.setName("transcript_affected_by_bkpt_from");
+        field_to.setName("transcript_affected_by_bkpt_to");
+        fields.add(field_from);
+        fields.add(field_to);
+      }
       fields.add(field);
+    }
+
+    // special case for mirna_m, stsm_m, cnsm_m, jcn_m, sgv_m, ssm_m, meth_m, exp_m, add missing donor_id
+    if(FileSchemaName.equals("mirna_m") || FileSchemaName.equals("stsm_m") || FileSchemaName.equals("cnsm_m")
+        || FileSchemaName.equals("jcn_m") || FileSchemaName.equals("sgv_m") || FileSchemaName.equals("ssm_m")
+        || FileSchemaName.equals("meth_m") || FileSchemaName.equals("exp_m")) {
+      if(!this.containField(fields, "donor_id")) {
+        Field donorIDField = new Field();
+        donorIDField.setName("donor_id");
+        donorIDField.setValueType(ValueType.TEXT);
+        fields.add(donorIDField);
+      }
     }
     fileSchema.setFields(fields);
 
@@ -285,5 +314,14 @@ public class DictionaryConverter {
 
   private Iterable<String> readTSVHeader(String line) {
     return Splitter.on('\t').trimResults().omitEmptyStrings().split(line);
+  }
+
+  private boolean containField(List<Field> fields, String fieldName) {
+    for(Field field : fields) {
+      if(field.getName().equals(fieldName)) {
+        return true;
+      }
+    }
+    return false;
   }
 }

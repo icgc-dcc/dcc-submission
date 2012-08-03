@@ -1,6 +1,6 @@
 {
-  "created" : 1343932967032,
-  "lastUpdate" : 1343932967032,
+  "created" : 1344005703573,
+  "lastUpdate" : 1344005703573,
   "version" : "0.6c",
   "state" : "OPENED",
   "files" : [ {
@@ -131,6 +131,12 @@
       "label" : "Optional field to leave notes",
       "valueType" : "TEXT",
       "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    }, {
+      "name" : "donor_id",
+      "label" : "Unique identifier for the donor",
+      "valueType" : "TEXT",
+      "summaryType" : null,
       "restrictions" : [ ]
     } ],
     "relation" : [ {
@@ -1567,6 +1573,12 @@
       "valueType" : "TEXT",
       "summaryType" : "COMPLETENESS",
       "restrictions" : [ ]
+    }, {
+      "name" : "donor_id",
+      "label" : "Unique identifier for the donor",
+      "valueType" : "TEXT",
+      "summaryType" : null,
+      "restrictions" : [ ]
     } ],
     "relation" : [ {
       "fields" : [ "analyzed_sample_id" ],
@@ -1701,6 +1713,12 @@
       "label" : "Optional field to leave notes",
       "valueType" : "TEXT",
       "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    }, {
+      "name" : "donor_id",
+      "label" : "Unique identifier for the donor",
+      "valueType" : "TEXT",
+      "summaryType" : null,
       "restrictions" : [ ]
     } ],
     "relation" : [ ]
@@ -2148,8 +2166,32 @@
     "role" : "SUBMISSION",
     "uniqueFields" : [ ],
     "fields" : [ {
+      "name" : "gene_affected_by_bkpt_from",
+      "label" : null,
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    }, {
+      "name" : "gene_affected_by_bkpt_to",
+      "label" : null,
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    }, {
       "name" : "gene_affected",
       "label" : "Gene(s) affected by the breakpoints.  Use Ensembl gene id.  Separate multiple genes with vertical bars in the form of geneA|geneB|geneC. If both breakpoints affect genes, then use | to separate them.  If no gene is affected, use -888 (not applicable).",
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    }, {
+      "name" : "transcript_affected_by_bkpt_from",
+      "label" : null,
+      "valueType" : "TEXT",
+      "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    }, {
+      "name" : "transcript_affected_by_bkpt_to",
+      "label" : null,
       "valueType" : "TEXT",
       "summaryType" : "COMPLETENESS",
       "restrictions" : [ ]
@@ -2371,6 +2413,12 @@
       "valueType" : "TEXT",
       "summaryType" : "COMPLETENESS",
       "restrictions" : [ ]
+    }, {
+      "name" : "donor_id",
+      "label" : "Unique identifier for the donor",
+      "valueType" : "TEXT",
+      "summaryType" : null,
+      "restrictions" : [ ]
     } ],
     "relation" : [ {
       "fields" : [ "sample_id" ],
@@ -2496,6 +2544,12 @@
       "label" : "Optional field to leave notes",
       "valueType" : "TEXT",
       "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    }, {
+      "name" : "donor_id",
+      "label" : "Unique identifier for the donor",
+      "valueType" : "TEXT",
+      "summaryType" : null,
       "restrictions" : [ ]
     } ],
     "relation" : [ {
@@ -2865,6 +2919,12 @@
       "valueType" : "TEXT",
       "summaryType" : "COMPLETENESS",
       "restrictions" : [ ]
+    }, {
+      "name" : "donor_id",
+      "label" : "Unique identifier for the donor",
+      "valueType" : "TEXT",
+      "summaryType" : null,
+      "restrictions" : [ ]
     } ],
     "relation" : [ {
       "fields" : [ "sample_id" ],
@@ -3143,6 +3203,12 @@
       "label" : "Optional field to leave notes",
       "valueType" : "TEXT",
       "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    }, {
+      "name" : "donor_id",
+      "label" : "Unique identifier for the donor",
+      "valueType" : "TEXT",
+      "summaryType" : null,
       "restrictions" : [ ]
     } ],
     "relation" : [ {
@@ -3582,6 +3648,12 @@
       "label" : "Optional field to leave notes",
       "valueType" : "TEXT",
       "summaryType" : "COMPLETENESS",
+      "restrictions" : [ ]
+    }, {
+      "name" : "donor_id",
+      "label" : "Unique identifier for the donor",
+      "valueType" : "TEXT",
+      "summaryType" : null,
       "restrictions" : [ ]
     } ],
     "relation" : [ {
