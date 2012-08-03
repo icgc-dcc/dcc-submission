@@ -32,6 +32,7 @@ import org.icgc.dcc.validation.FlowType;
 import org.icgc.dcc.validation.PlanExecutionException;
 import org.icgc.dcc.validation.ReportingPlanElement;
 import org.icgc.dcc.validation.cascading.CompletenessBy;
+import org.icgc.dcc.validation.cascading.TupleState.TupleError;
 
 import cascading.tuple.Fields;
 
@@ -101,7 +102,7 @@ abstract class BaseReportingPlanElement implements ReportingPlanElement {
 
   @Override
   public ReportCollector getCollector() {
-    return new SummaryReportCollector();
+    return new SummaryReportCollector(this.fileSchema);
   }
 
   public static class FieldSummary {// TODO: use FieldReport instead?
@@ -125,7 +126,10 @@ abstract class BaseReportingPlanElement implements ReportingPlanElement {
 
   class SummaryReportCollector implements ReportCollector {
 
-    public SummaryReportCollector() {
+    private final FileSchema fileSchema;
+
+    public SummaryReportCollector(FileSchema fileSchema) {
+      this.fileSchema = fileSchema;
     }
 
     @Override
@@ -137,14 +141,18 @@ abstract class BaseReportingPlanElement implements ReportingPlanElement {
 
         ObjectMapper mapper = new ObjectMapper();
         if(report.getErrors() == null) {
-          report.setErrors(new ArrayList<String>());
+          report.setErrors(new ArrayList<TupleError>());
         }
         if(report.getFieldReports() == null) {
           report.setFieldReports(new ArrayList<FieldReport>());
         }
         MappingIterator<FieldSummary> fieldSummary = mapper.reader().withType(FieldSummary.class).readValues(src);
         while(fieldSummary.hasNext()) {
-          report.getFieldReports().add(FieldReport.convert(fieldSummary.next()));
+          FieldReport freport = FieldReport.convert(fieldSummary.next());
+          Field field = this.fileSchema.field(freport.getName()).get();
+          freport.setLabel(field.getLabel());
+          freport.setType(field.getSummaryType());
+          report.getFieldReports().add(freport);
         }
 
       } catch(Exception e) {
