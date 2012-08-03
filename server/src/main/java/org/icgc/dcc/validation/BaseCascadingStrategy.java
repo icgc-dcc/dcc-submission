@@ -89,7 +89,14 @@ public abstract class BaseCascadingStrategy implements CascadingStrategy {
 
   @Override
   public Fields getFileHeader(FileSchema schema) throws IOException {
-    Path path = path(schema);
+    Path path;
+    if(schema.getRole() == FileSchemaRole.SUBMISSION) {
+      path = this.path(schema);
+    } else if(schema.getRole() == FileSchemaRole.SYSTEM) {
+      path = this.systemPath(schema);
+    } else {
+      throw new RuntimeException("File Schema role is not defined");
+    }
     InputStreamReader isr = null;
     try {
       isr = new InputStreamReader(fileSystem.open(path), Charsets.UTF_8);
