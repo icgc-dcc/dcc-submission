@@ -149,7 +149,7 @@ public class IntegrationTest {
 
     test_updateRelease("/integrationtest/updatedRelease.json");
 
-    test_checkRelease("RELEASE2", "0.6d", ReleaseState.OPENED, Arrays.<SubmissionState> asList(
+    test_checkRelease("release2", "0.6d", ReleaseState.OPENED, Arrays.<SubmissionState> asList(
         SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED));
   }
 
@@ -279,7 +279,7 @@ public class IntegrationTest {
     Response response = sendPutRequest("/nextRelease/update", resourceToString(updatedReleaseRelPath));
     assertEquals(200, response.getStatus());
     Release release = new ObjectMapper().readValue(response.readEntity(String.class), Release.class);
-    assertEquals("RELEASE2", release.getName());
+    assertEquals("release2", release.getName());
   }
 
   private Response sendPutRequest(String requestPath, String payload) throws IOException {
