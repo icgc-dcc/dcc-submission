@@ -1,5 +1,6 @@
 package org.icgc.dcc.validation.report;
 
+import org.icgc.dcc.dictionary.model.SummaryType;
 import org.icgc.dcc.validation.report.BaseReportingPlanElement.FieldSummary;
 
 import com.google.code.morphia.annotations.Embedded;
@@ -20,6 +21,10 @@ public class FieldReport {
   protected long populated;
 
   protected BasicDBObject summary;
+
+  protected String label;
+
+  protected SummaryType type;
 
   public String getName() {
     return name;
@@ -85,6 +90,22 @@ public class FieldReport {
     }
     fieldReport.setSummary(summary);
     return fieldReport;
+  }
+
+  public String getLabel() {
+    return label;
+  }
+
+  public void setLabel(String label) {
+    this.label = label;
+  }
+
+  public SummaryType getType() {
+    return type;
+  }
+
+  public void setType(SummaryType type) {
+    this.type = type;
   }
 
 }

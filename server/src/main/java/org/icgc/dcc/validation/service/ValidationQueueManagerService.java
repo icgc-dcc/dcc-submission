@@ -39,6 +39,7 @@ import org.icgc.dcc.validation.CascadingStrategy;
 import org.icgc.dcc.validation.LocalCascadingStrategy;
 import org.icgc.dcc.validation.Plan;
 import org.icgc.dcc.validation.ValidationCallback;
+import org.icgc.dcc.validation.report.Outcome;
 import org.icgc.dcc.validation.report.SubmissionReport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -154,8 +155,6 @@ public class ValidationQueueManagerService extends AbstractService implements Va
   @Override
   public void handleSuccessfulValidation(String projectKey, Plan plan) {
     checkArgument(projectKey != null);
-    log.info("successful validation - about to dequeue project key {}", projectKey);
-    dequeue(projectKey, true);
 
     log.info("starting report collecting on project {}", projectKey);
 
@@ -174,11 +173,15 @@ public class ValidationQueueManagerService extends AbstractService implements Va
     CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir);
 
     SubmissionReport report = new SubmissionReport();
-    plan.collect(cascadingStrategy, report);
+    Outcome outcome = plan.collect(cascadingStrategy, report);
     submission.setReport(report);
+
     // persist the report to DB
     this.releaseService.updateSubmissionReport(release.getName(), projectKey, submission.getReport());
     log.info("report collecting finished on project {}", projectKey);
+
+    log.info("successful validation - about to dequeue project key {}", projectKey);
+    dequeue(projectKey, outcome == Outcome.PASSED);
   }
 
   @Override
