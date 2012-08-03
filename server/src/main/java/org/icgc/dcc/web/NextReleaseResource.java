@@ -5,6 +5,7 @@ import java.util.List;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Request;
@@ -13,6 +14,7 @@ import javax.ws.rs.core.Response.Status;
 
 import org.icgc.dcc.release.NextRelease;
 import org.icgc.dcc.release.ReleaseService;
+import org.icgc.dcc.release.model.Release;
 
 import com.google.inject.Inject;
 
@@ -55,7 +57,7 @@ public class NextReleaseResource {
       this.releaseService.queue(projectKeys);
       return Response.ok().build();
     } else {
-      return Response.status(Status.BAD_REQUEST).build();
+      return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage("ProjectKeyNotFound")).build();
     }
   }
 
@@ -83,6 +85,23 @@ public class NextReleaseResource {
     if(this.releaseService.hasProjectKey(projectKeys)) {
       this.releaseService.signOff(projectKeys);
       return Response.ok().build();
+    } else {
+      return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage("ProjectKeyNotFound")).build();
+    }
+  }
+
+  @PUT
+  @Path("update")
+  public Response update(Release release, @Context Request req) {
+    if(release != null) {
+      ResponseTimestamper.evaluate(req, release);
+
+      if(this.releaseService.list().isEmpty()) {
+        return Response.status(Status.BAD_REQUEST).build();
+      } else {
+        Release updatedRelease = releaseService.update(release);
+        return ResponseTimestamper.ok(updatedRelease).build();
+      }
     } else {
       return Response.status(Status.BAD_REQUEST).build();
     }

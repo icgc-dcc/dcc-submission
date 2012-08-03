@@ -76,12 +76,18 @@ define (require) ->
       @.$('table').dataTable
         sDom:
           "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>"
-        sPaginationType: "bootstrap"
+        bPaginate: false
         oLanguage:
           "sLengthMenu": "_MENU_ releases per page"
         aaSorting: [[ 2, "desc" ]]
         aoColumns: aoColumns
         sAjaxSource: ""
         sAjaxDataProp: ""
+        fnRowCallback: (nRow, aData, iDisplayIndex, iDisplayIndexFull) ->
+          cell = $('td:nth-child(2)', nRow)
+          switch aData.state
+            when "OPENED"
+              cell.css 'color', '#468847'
+              
         fnServerData: (sSource, aoData, fnCallback) ->
           fnCallback collection.toJSON()

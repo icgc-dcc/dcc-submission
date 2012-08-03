@@ -18,10 +18,13 @@
 package org.icgc.dcc.integration;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.ws.rs.MessageProcessingException;
 import javax.ws.rs.client.Client;
@@ -38,8 +41,10 @@ import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.glassfish.jersey.internal.util.Base64;
 import org.icgc.dcc.Main;
+import org.icgc.dcc.release.model.DetailedSubmission;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
+import org.icgc.dcc.release.model.ReleaseView;
 import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.release.model.SubmissionState;
 import org.junit.AfterClass;
@@ -47,6 +52,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableList;
 import com.google.common.io.Resources;
 
 public class IntegrationTest {
@@ -116,7 +122,10 @@ public class IntegrationTest {
 
     test_feedDB();
 
-    test_createInitialRelease();
+    test_createInitialRelease("/integrationtest/initRelease.json");
+
+    test_checkRelease("release1", "0.6c", ReleaseState.OPENED, Arrays.<SubmissionState> asList(
+        SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED));
 
     test_feedFileSystem();
 
@@ -130,13 +139,18 @@ public class IntegrationTest {
     test_fileIsEmpty(DCC_ROOT_DIR + "release1/project1/.validation/specimen.internal#errors.json");
     test_fileIsEmpty(DCC_ROOT_DIR + "release1/project1/.validation/specimen.external#errors.json");
 
-    test_checkReleaseState("release1", ReleaseState.OPENED);
-
     test_releaseFirstRelease();
 
-    test_checkReleaseState("release1", ReleaseState.COMPLETED);
+    test_checkRelease("release1", "0.6c", ReleaseState.COMPLETED,
+        Arrays.<SubmissionState> asList(SubmissionState.SIGNED_OFF, SubmissionState.INVALID, SubmissionState.INVALID));
 
-    test_checkReleaseState("release2", ReleaseState.OPENED);
+    test_checkRelease("release2", "0.6c", ReleaseState.OPENED, Arrays.<SubmissionState> asList(
+        SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED));
+
+    test_updateRelease("/integrationtest/updatedRelease.json");
+
+    test_checkRelease("release2", "0.6d", ReleaseState.OPENED, Arrays.<SubmissionState> asList(
+        SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED));
   }
 
   private void test_feedFileSystem() throws IOException {
@@ -153,6 +167,14 @@ public class IntegrationTest {
     this.client.target(BASEURI).path("/seed/dictionaries").request(MediaType.APPLICATION_JSON)
         .header("Authorization", AUTHORIZATION)
         .post(Entity.entity("[" + this.resourceToString("/dictionary.json") + "]", MediaType.APPLICATION_JSON));
+    this.client
+        .target(BASEURI)
+        .path("/seed/dictionaries")
+        .request(MediaType.APPLICATION_JSON)
+        .header("Authorization", AUTHORIZATION)
+        .post(
+            Entity.entity("[" + this.resourceToString("/integrationtest/secondDictionary.json") + "]",
+                MediaType.APPLICATION_JSON));
     this.client.target(BASEURI).path("/seed/codelists").request(MediaType.APPLICATION_JSON)
         .header("Authorization", AUTHORIZATION)
         .post(Entity.entity(this.resourceToString("/integrationtest/codelists.json"), MediaType.APPLICATION_JSON));
@@ -166,16 +188,26 @@ public class IntegrationTest {
     do {
       response = sendGetRequest("/releases/release1/submissions/project1");
       assertEquals(200, response.getStatus());
-      submission = new ObjectMapper().readValue(response.readEntity(String.class), Submission.class);
+      submission = new ObjectMapper().readValue(response.readEntity(String.class), DetailedSubmission.class);
       Thread.sleep(2000);
     } while(submission.getState() == SubmissionState.QUEUED);
     assertEquals(SubmissionState.VALID, submission.getState());
 
-    response = sendGetRequest("/releases/release1/submissions/project2");
-    assertEquals(200, response.getStatus());
+    do {
+      response = sendGetRequest("/releases/release1/submissions/project2");
+      assertEquals(200, response.getStatus());
+      submission = new ObjectMapper().readValue(response.readEntity(String.class), DetailedSubmission.class);
+      Thread.sleep(2000);
+    } while(submission.getState() == SubmissionState.QUEUED);
+    assertEquals(SubmissionState.INVALID, submission.getState());
 
-    response = sendGetRequest("/releases/release1/submissions/project3");
-    assertEquals(200, response.getStatus());
+    do {
+      response = sendGetRequest("/releases/release1/submissions/project3");
+      assertEquals(200, response.getStatus());
+      submission = new ObjectMapper().readValue(response.readEntity(String.class), DetailedSubmission.class);
+      Thread.sleep(2000);
+    } while(submission.getState() == SubmissionState.QUEUED);
+    assertEquals(SubmissionState.INVALID, submission.getState());
   }
 
   private void test_fileIsEmpty(String path) throws IOException {
@@ -202,13 +234,21 @@ public class IntegrationTest {
     assertEquals(400, response.getStatus());
   }
 
-  private void test_checkReleaseState(String releaseName, ReleaseState expectedState) throws IOException,
-      InterruptedException {
+  private void test_checkRelease(String releaseName, String dictionaryVersion, ReleaseState state,
+      List<SubmissionState> states) throws IOException, JsonParseException, JsonMappingException {
     Response response = sendGetRequest("/releases/" + releaseName);
     assertEquals(200, response.getStatus());
 
-    Release release = new ObjectMapper().readValue(response.readEntity(String.class), Release.class);
-    assertEquals(expectedState, release.getState());
+    ReleaseView release = new ObjectMapper().readValue(response.readEntity(String.class), ReleaseView.class);
+    assertNotNull(release);
+    assertEquals(dictionaryVersion, release.getDictionaryVersion());
+    assertEquals(ImmutableList.<String> of(), release.getQueue());
+    assertEquals(state, release.getState());
+    assertEquals(states.size(), release.getSubmissions().size());
+    int i = 0;
+    for(DetailedSubmission submission : release.getSubmissions()) {
+      assertEquals(states.get(i++), submission.getState());
+    }
   }
 
   private void test_checkQueueIsEmpty() throws IOException {
@@ -217,8 +257,9 @@ public class IntegrationTest {
     assertEquals("[]", response.readEntity(String.class));
   }
 
-  private void test_createInitialRelease() throws IOException, JsonParseException, JsonMappingException {
-    Response response = sendPutRequest("/releases/release1", resourceToString("/integrationtest/initRelease.json"));
+  private void test_createInitialRelease(String initReleaseRelPath) throws IOException, JsonParseException,
+      JsonMappingException {
+    Response response = sendPutRequest("/releases", resourceToString(initReleaseRelPath));
     assertEquals(200, response.getStatus());
     Release release = new ObjectMapper().readValue(response.readEntity(String.class), Release.class);
     assertEquals("release1", release.getName());
@@ -231,6 +272,14 @@ public class IntegrationTest {
   private void test_queueProjects() throws IOException, JsonParseException, JsonMappingException {
     Response response = sendPostRequest("/nextRelease/queue", "[\"project1\", \"project2\", \"project3\"]");
     assertEquals(200, response.getStatus());
+  }
+
+  private void test_updateRelease(String updatedReleaseRelPath) throws IOException, JsonParseException,
+      JsonMappingException {
+    Response response = sendPutRequest("/nextRelease/update", resourceToString(updatedReleaseRelPath));
+    assertEquals(200, response.getStatus());
+    Release release = new ObjectMapper().readValue(response.readEntity(String.class), Release.class);
+    assertEquals("release2", release.getName());
   }
 
   private Response sendPutRequest(String requestPath, String payload) throws IOException {

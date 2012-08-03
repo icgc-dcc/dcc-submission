@@ -42,13 +42,10 @@ import org.icgc.dcc.dictionary.model.ValueType;
 import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.filesystem.GuiceJUnitRunner;
 import org.icgc.dcc.filesystem.GuiceJUnitRunner.GuiceModules;
-import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.validation.service.ValidationService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import cascading.cascade.Cascade;
 
 import com.google.inject.Inject;
 
@@ -68,13 +65,10 @@ public class ValidationExternalIntegrityTest {
 
   private Dictionary dictionary;
 
-  private ReleaseService releaseService;
-
   @Before
   public void setUp() throws JsonProcessingException, IOException {
     DccFileSystem dccFileSystem = mock(DccFileSystem.class);
     ProjectService projectService = mock(ProjectService.class);
-    releaseService = mock(ReleaseService.class);
 
     CodeList codeList1 = mock(CodeList.class);
     CodeList codeList2 = mock(CodeList.class);
@@ -106,8 +100,7 @@ public class ValidationExternalIntegrityTest {
     when(codeList3.getTerms()).thenReturn(termList3);
     when(codeList4.getTerms()).thenReturn(termList4);
 
-    validationService =
-        new ValidationService(dccFileSystem, projectService, planner, dictionaryService, releaseService);
+    validationService = new ValidationService(dccFileSystem, projectService, planner, dictionaryService);
 
     resetDictionary();
   }
@@ -149,8 +142,9 @@ public class ValidationExternalIntegrityTest {
 
     String[] fieldNames = { "donor_id", "fakecolumn" };
 
+    specimen.getRelation().clear();
     Relation relation = new Relation(Arrays.asList(fieldNames), "donor", Arrays.asList(fieldNames));
-    specimen.setRelation(relation);
+    specimen.addRelation(relation);
 
     testErrorType("fk_1");
 
@@ -200,9 +194,9 @@ public class ValidationExternalIntegrityTest {
     FileSchemaDirectory fileSchemaDirectory = new LocalFileSchemaDirectory(rootDir);
     CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir);
 
-    Cascade cascade = validationService.planCascade(null, null, fileSchemaDirectory, cascadingStrategy, dictionary);
-    Assert.assertEquals(3, cascade.getFlows().size());
-    validationService.runCascade(cascade, null, null);
+    Plan plan = validationService.planCascade(null, fileSchemaDirectory, cascadingStrategy, dictionary);
+    Assert.assertEquals(3, plan.getCascade().getFlows().size());
+    validationService.runCascade(plan.getCascade(), null);
 
     Assert.assertTrue(errorFileString, errorFile.exists());
     return FileUtils.readFileToString(errorFile);

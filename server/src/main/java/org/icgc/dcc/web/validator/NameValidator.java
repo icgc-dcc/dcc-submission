@@ -15,26 +15,22 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.validation;
+package org.icgc.dcc.web.validator;
 
-import org.icgc.dcc.dictionary.model.FileSchema;
-import org.icgc.dcc.validation.report.Outcome;
-import org.icgc.dcc.validation.report.SchemaReport;
-
-import cascading.flow.Flow;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
- * Plans a {@code Flow} for a particular {@code FileSchema}.
+ * 
  */
-public interface FileSchemaFlowPlanner {
+public class NameValidator {
 
-  public String getName();
+  private final static String NAME_PATTERN = "^[\\w]{3,}$";
 
-  public FileSchema getSchema();
+  public static boolean validate(String name) {
+    Pattern pattern = Pattern.compile(NAME_PATTERN);
+    Matcher matcher = pattern.matcher(name);
 
-  public Flow<?> connect(CascadingStrategy cascadingStrategy);
-
-  public void apply(ReportingPlanElement element);
-
-  public Outcome collect(CascadingStrategy strategy, SchemaReport report);
+    return matcher.matches();
+  }
 }

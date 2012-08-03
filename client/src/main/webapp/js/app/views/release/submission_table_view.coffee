@@ -116,7 +116,7 @@ define (require) ->
       @.$('table').dataTable
         sDom:
           "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>"
-        sPaginationType: "bootstrap"
+        bPaginate: false
         oLanguage:
           "sLengthMenu": "_MENU_ submissions per page"
         aaSorting: [[ 2, "desc" ]]

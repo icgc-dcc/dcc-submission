@@ -32,9 +32,6 @@ define [
   # Add application-specific Handlebars helpers
   # -------------------------------------------
 
-  Handlebars.registerHelper 'username', (options) ->
-    mediator.user
-
   # Choose block by user login status
   Handlebars.registerHelper 'if_logged_in', (options) ->
     console.log mediator.user
@@ -57,6 +54,13 @@ define [
       options.fn(this)
     else
       options.inverse(this)
+
+  Handlebars.registerHelper 'if_completed', (state, options) ->
+    if state is 'COMPLETED'
+      options.fn(this)
+    else
+      options.inverse(this)
+
 
   # Return a Unreleased if no release date
   Handlebars.registerHelper 'submission_action', (state) ->
@@ -119,15 +123,11 @@ define [
         when 'NOT_VALIDATED' then not_validated++
                 
     new Handlebars.SafeString """
-      <table class="table">
-        <tbody>
-        <tr><td>Signed Off</td><td>#{signed_off}</td></tr>
-        <tr><td>Valid</td><td>#{valid}</td></tr>
-        <tr><td>Queued</td><td>#{queued}</td></tr>
-        <tr><td>Invalid</td><td>#{invalid}</td></tr>
-        <tr><td>Not Validated</td><td>#{not_validated}</td></tr>
-        </tbody>
-      </table>
+      <li>Signed Off: #{signed_off}</li>
+      <li>Valid: #{valid}</li>
+      <li>Queued: #{queued}</li>
+      <li>Invalid: #{invalid}</li>
+      <li>Not Validated: #{not_validated}</li>
     """
 
   null

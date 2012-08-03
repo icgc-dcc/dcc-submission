@@ -9,9 +9,21 @@ public class Submission {
 
   protected String projectKey;
 
+  protected String projectName;
+
   protected SubmissionState state;
 
   protected SubmissionReport report;
+
+  public Submission() {
+    super();
+  }
+
+  public Submission(String projectKey) {
+    super();
+    this.projectKey = projectKey;
+    this.state = SubmissionState.NOT_VALIDATED;
+  }
 
   public SubmissionReport getReport() {
     return report;

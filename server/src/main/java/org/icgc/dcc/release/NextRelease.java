@@ -2,37 +2,52 @@ package org.icgc.dcc.release;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
+import org.icgc.dcc.core.model.Project;
+import org.icgc.dcc.core.model.QProject;
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.DictionaryState;
 import org.icgc.dcc.filesystem.DccFileSystem;
+import org.icgc.dcc.filesystem.ReleaseFileSystem;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.release.model.SubmissionState;
+import org.icgc.dcc.web.validator.InvalidNameException;
+import org.icgc.dcc.web.validator.NameValidator;
 
 import com.google.code.morphia.Datastore;
+import com.google.code.morphia.Morphia;
 import com.google.code.morphia.query.Query;
 import com.google.code.morphia.query.UpdateOperations;
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Sets;
+import com.mysema.query.mongodb.morphia.MorphiaQuery;
 
 public class NextRelease extends BaseRelease {
 
   private final Datastore datastore;
 
+  private final Morphia morphia;
+
   private final DccFileSystem fs;
 
-  public NextRelease(Release release, Datastore datastore, DccFileSystem fs) throws IllegalReleaseStateException {
+  public NextRelease(Release release, Morphia morphia, Datastore datastore, DccFileSystem fs)
+      throws IllegalReleaseStateException {
     super(release);
     if(release.getState() != ReleaseState.OPENED) {
       throw new IllegalReleaseStateException(release, ReleaseState.OPENED);
     }
+
     checkArgument(datastore != null);
+    checkArgument(morphia != null);
     checkArgument(fs != null);
+
     this.datastore = datastore;
+    this.morphia = morphia;
     this.fs = fs;
   }
 
@@ -62,9 +77,14 @@ public class NextRelease extends BaseRelease {
   public NextRelease release(String nextReleaseName) {
     checkArgument(nextReleaseName != null);
 
+    // check for next release name
+    if(!NameValidator.validate(nextReleaseName)) {
+      throw new InvalidNameException(nextReleaseName);
+    }
+
     // check for submission state to be signed off
     if(!this.canRelease()) {
-      throw new ReleaseException("Release must have at least one submission that is signed off");
+      throw new ReleaseException("NoneSignedOff");
     }
 
     Release oldRelease = this.getRelease();
@@ -72,15 +92,21 @@ public class NextRelease extends BaseRelease {
     String oldDictionaryVersion = oldRelease.getDictionaryVersion();
     String newDictionaryVersion = oldDictionaryVersion;
     if(oldDictionaryVersion == null) {
-      throw new ReleaseException("Release must have associated dictionary before being completed");
+      throw new ReleaseException("ReleaseMissingDictionary");
     }
     if(this.datastore.createQuery(Release.class).filter("name", nextRelease.getName()).get() != null) {
-      throw new ReleaseException("New release can not be the same as completed release");
+      throw new ReleaseException("InvalidReleaseName");
+    }
+    Iterable<String> oldProjectKeys = oldRelease.getProjectKeys();
+    if(oldProjectKeys == null) {
+      throw new ReleaseException("InvalidReleaseState");
     }
 
     nextRelease.setDictionaryVersion(newDictionaryVersion);
-
     nextRelease.setState(ReleaseState.OPENED);
+    for(String projectKey : oldProjectKeys) {
+      nextRelease.addSubmission(new Submission(projectKey));
+    }
 
     // dictionaries.getFromVersion(oldDictionary).close();
     UpdateOperations<Dictionary> closeDictionary =
@@ -93,11 +119,7 @@ public class NextRelease extends BaseRelease {
     // save the newly created release to mongoDB
     this.datastore.save(nextRelease);
 
-    Set<String> projectKeys = new HashSet<String>();
-    for(Submission submission : nextRelease.getSubmissions()) {
-      projectKeys.add(submission.getProjectKey());
-    }
-    this.fs.createReleaseFilesystem(nextRelease, projectKeys);
+    setupFileSystem(oldRelease, nextRelease, oldProjectKeys);
 
     oldRelease.setState(ReleaseState.COMPLETED);
     oldRelease.setReleaseDate();
@@ -108,7 +130,29 @@ public class NextRelease extends BaseRelease {
 
     this.datastore.update(oldRelease, ops);
 
-    return new NextRelease(nextRelease, this.datastore, this.fs);
+    return new NextRelease(nextRelease, morphia, datastore, fs);
+  }
+
+  private void setupFileSystem(Release oldRelease, Release nextRelease, Iterable<String> oldProjectKeys) {
+    fs.createReleaseFilesystem(nextRelease, Sets.newLinkedHashSet(oldProjectKeys));
+    ReleaseFileSystem newReleaseFilesystem = fs.getReleaseFilesystem(nextRelease);
+    ReleaseFileSystem oldReleaseFilesystem = fs.getReleaseFilesystem(oldRelease);
+
+    List<Project> projectsToMove = new ArrayList<Project>();
+    for(Submission submission : oldRelease.getSubmissions()) {
+      if(submission.getState() != SubmissionState.SIGNED_OFF) {
+        Project project = getProjectFromKey(submission.getProjectKey());
+        projectsToMove.add(project);
+      }
+    }
+    if(projectsToMove.isEmpty() == false) {
+      newReleaseFilesystem.moveFrom(oldReleaseFilesystem, ImmutableList.<Project> copyOf(projectsToMove));
+    }
+  }
+
+  private Project getProjectFromKey(final String projectKey) {
+    return new MorphiaQuery<Project>(morphia, datastore, QProject.project).where(QProject.project.key.eq(projectKey))
+        .singleResult();
   }
 
   public boolean canRelease() {

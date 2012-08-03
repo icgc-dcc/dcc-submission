@@ -47,12 +47,13 @@ public class FileSchema implements DictionaryElement {
 
   private List<Field> fields;
 
-  private Relation relation;
+  private List<Relation> relations;
 
   public FileSchema() {
     super();
     this.uniqueFields = new ArrayList<String>();
     this.fields = new ArrayList<Field>();
+    this.relations = new ArrayList<Relation>();
   }
 
   public FileSchema(String name) {
@@ -60,6 +61,7 @@ public class FileSchema implements DictionaryElement {
     this.name = name;
     this.uniqueFields = new ArrayList<String>();
     this.fields = new ArrayList<Field>();
+    this.relations = new ArrayList<Relation>();
   }
 
   @Override
@@ -68,7 +70,7 @@ public class FileSchema implements DictionaryElement {
     for(Field field : fields) {
       field.accept(dictionaryVisitor);
     }
-    if(relation != null) {
+    for(Relation relation : relations) {
       relation.accept(dictionaryVisitor);
     }
   }
@@ -154,12 +156,15 @@ public class FileSchema implements DictionaryElement {
     return false;
   }
 
-  public Relation getRelation() {
-    return relation;
+  public List<Relation> getRelation() {
+    return relations;
   }
 
-  public void setRelation(Relation relation) {
-    this.relation = relation;
+  public void setRelation(List<Relation> relations) {
+    this.relations = relations;
   }
 
+  public boolean addRelation(Relation relation) {
+    return this.relations.add(relation);
+  }
 }

@@ -8,11 +8,14 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import org.icgc.dcc.dictionary.DictionaryService;
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.DictionaryState;
 import org.icgc.dcc.filesystem.DccFileSystem;
+import org.icgc.dcc.filesystem.ReleaseFileSystem;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.Submission;
@@ -22,6 +25,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.code.morphia.Datastore;
+import com.google.code.morphia.Morphia;
 import com.google.code.morphia.query.Query;
 import com.google.code.morphia.query.UpdateOperations;
 
@@ -35,6 +39,8 @@ public class NextReleaseTest {
 
   private Datastore ds;
 
+  private Morphia mockMorphia;
+
   private Query<Release> query;
 
   private Query<Dictionary> queryDict;
@@ -45,6 +51,12 @@ public class NextReleaseTest {
 
   private DccFileSystem fs;
 
+  private ReleaseFileSystem mockReleaseFileSystem;
+
+  private ReleaseService mockReleaseService;
+
+  private DictionaryService mockDictionaryService;
+
   private static final String NEXT_RELEASE_NAME = "release2";
 
   @SuppressWarnings("unchecked")
@@ -54,6 +66,11 @@ public class NextReleaseTest {
     updates = mock(UpdateOperations.class);
     updatesDict = mock(UpdateOperations.class);
     fs = mock(DccFileSystem.class);
+    mockReleaseFileSystem = mock(ReleaseFileSystem.class);
+    mockReleaseService = mock(ReleaseService.class);
+    mockDictionaryService = mock(DictionaryService.class);
+
+    when(fs.getReleaseFilesystem(any(Release.class))).thenReturn(mockReleaseFileSystem);
 
     when(release.getState()).thenReturn(ReleaseState.OPENED);
     List<Submission> submissions = new ArrayList<Submission>();
@@ -61,15 +78,18 @@ public class NextReleaseTest {
     s.setState(SubmissionState.SIGNED_OFF);
     submissions.add(s);
     when(release.getSubmissions()).thenReturn(submissions);
+    when(release.getName()).thenReturn("my_release_name");
+    when(release.getProjectKeys()).thenReturn(Arrays.asList("proj1"));
+    when(release.getSubmissions()).thenReturn(submissions);
 
     ds = mock(Datastore.class);
-
-    nextRelease = new NextRelease(release, ds, fs);
+    mockMorphia = mock(Morphia.class);
 
     when(ds.createUpdateOperations(Release.class)).thenReturn(updates);
     when(ds.createUpdateOperations(Dictionary.class)).thenReturn(updatesDict);
 
     when(updates.disableValidation()).thenReturn(updates);
+    when(updates.set(anyString(), anyString())).thenReturn(updates);
 
     query = mock(Query.class);
     queryDict = mock(Query.class);
@@ -79,13 +99,17 @@ public class NextReleaseTest {
     when(query.filter(anyString(), any())).thenReturn(query);
     when(queryDict.filter(anyString(), any())).thenReturn(queryDict);
 
+    when(mockReleaseService.getFromName("not_existing_release")).thenReturn(null);
+    when(mockDictionaryService.getFromVersion("existing_dictionary")).thenReturn(mock(Dictionary.class));
+
+    nextRelease = new NextRelease(release, mockMorphia, ds, fs);
   }
 
   @Test(expected = IllegalReleaseStateException.class)
   public void test_NextRelease_throwsWhenBadReleaseState() {
     when(release.getState()).thenReturn(ReleaseState.COMPLETED);
 
-    new NextRelease(release, ds, fs);
+    new NextRelease(release, mockMorphia, ds, fs);
   }
 
   @Test

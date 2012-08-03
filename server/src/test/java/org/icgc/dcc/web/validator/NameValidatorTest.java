@@ -15,26 +15,30 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.validation;
+package org.icgc.dcc.web.validator;
 
-import org.icgc.dcc.dictionary.model.FileSchema;
-import org.icgc.dcc.validation.report.Outcome;
-import org.icgc.dcc.validation.report.SchemaReport;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-import cascading.flow.Flow;
+import org.junit.Test;
 
 /**
- * Plans a {@code Flow} for a particular {@code FileSchema}.
+ * 
  */
-public interface FileSchemaFlowPlanner {
+public class NameValidatorTest {
 
-  public String getName();
+  @Test
+  public void test_name_validation() {
 
-  public FileSchema getSchema();
+    assertTrue(NameValidator.validate("abc123"));
 
-  public Flow<?> connect(CascadingStrategy cascadingStrategy);
+    assertTrue(NameValidator.validate("abc_123_p9k"));
 
-  public void apply(ReportingPlanElement element);
+    assertFalse(NameValidator.validate("!@#123"));
 
-  public Outcome collect(CascadingStrategy strategy, SchemaReport report);
+    assertTrue(NameValidator.validate("ABCabc123"));
+
+    assertFalse(NameValidator.validate("a2"));
+  }
+
 }

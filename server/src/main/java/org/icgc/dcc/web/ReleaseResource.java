@@ -1,5 +1,6 @@
 package org.icgc.dcc.web;
 
+import java.io.IOException;
 import java.util.List;
 
 import javax.ws.rs.GET;
@@ -11,9 +12,11 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.icgc.dcc.filesystem.SubmissionFile;
 import org.icgc.dcc.release.ReleaseService;
-import org.icgc.dcc.release.model.QRelease;
+import org.icgc.dcc.release.model.DetailedSubmission;
 import org.icgc.dcc.release.model.Release;
+import org.icgc.dcc.release.model.ReleaseView;
 import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.validation.report.FieldReport;
 import org.icgc.dcc.validation.report.SchemaReport;
@@ -37,36 +40,28 @@ public class ReleaseResource {
   @GET
   @Path("{name}")
   public Response getReleaseByName(@PathParam("name") String name) {
-    Release release = releaseService.where(QRelease.release.name.eq(name)).singleResult();
+
+    ReleaseView release = releaseService.getReleaseView(name);
+
     if(release == null) {
-      return Response.status(Status.NOT_FOUND).build();
+      return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoSuchRelease", name)).build();
     }
-    return ResponseTimestamper.ok(release).build();
+    return Response.ok(release).build();
   }
 
   @PUT
-  @Path("{name}")
-  public Response updateRelease(@PathParam("name") String name, Release release, @Context Request req) {
+  public Response initialize(Release release, @Context Request req) {
     if(release != null) {
       ResponseTimestamper.evaluate(req, release);
 
       if(this.releaseService.list().isEmpty()) {
         this.releaseService.createInitialRelease(release);
+        return ResponseTimestamper.ok(release).build();
       } else {
-        // for now nothing is allowed to change
-        /*
-         * UpdateOperations<Release> ops =
-         * this.releaseService.getDatastore().createUpdateOperations(Release.class).set("state", release.getState());
-         * 
-         * Query<Release> updateQuery =
-         * this.releaseService.getDatastore().createQuery(Release.class).field("name").equal(name);
-         * 
-         * this.releaseService.getDatastore().update(updateQuery, ops);
-         */
+        return Response.status(Status.BAD_REQUEST).build();
       }
-      return ResponseTimestamper.ok(release).build();
     } else {
-      return Response.status(Status.BAD_REQUEST).build();
+      return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage("ReleaseUpdateError")).build();
     }
   }
 
@@ -94,9 +89,10 @@ public class ReleaseResource {
   @GET
   @Path("{name}/submissions/{projectKey}")
   public Response getSubmission(@PathParam("name") String name, @PathParam("projectKey") String projectKey) {
-    Submission submission = this.releaseService.getSubmission(name, projectKey);
+    DetailedSubmission submission = this.releaseService.getDetailedSubmission(name, projectKey);
     if(submission == null) {
-      return Response.status(Status.NOT_FOUND).build();
+      return Response.status(Status.NOT_FOUND)
+          .entity(new ServerErrorResponseMessage("NoSuchSubmission", name, projectKey)).build();
     }
     return Response.ok(submission).build();
   }
@@ -106,7 +102,8 @@ public class ReleaseResource {
   public Response getSubmissionReport(@PathParam("name") String name, @PathParam("projectKey") String projectKey) {
     Submission submission = this.releaseService.getSubmission(name, projectKey);
     if(submission == null) {
-      return Response.status(Status.NOT_FOUND).build();
+      return Response.status(Status.NOT_FOUND)
+          .entity(new ServerErrorResponseMessage("NoSuchSubmission", name, projectKey)).build();
     }
     SubmissionReport report = submission.getReport();
     return Response.ok(report).build();
@@ -118,12 +115,18 @@ public class ReleaseResource {
       @PathParam("schema") String schema) {
     Submission submission = this.releaseService.getSubmission(name, projectKey);
     if(submission == null) {
-      return Response.status(Status.NOT_FOUND).build();
+      return Response.status(Status.NOT_FOUND)
+          .entity(new ServerErrorResponseMessage("NoSuchSubmission", name, projectKey)).build();
     }
     SubmissionReport report = submission.getReport();
+    if(report == null) {
+      return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoSuchReport", name, projectKey))
+          .build();
+    }
     SchemaReport schemaReport = report.getSchemaReport(schema);
     if(schemaReport == null) {
-      return Response.status(Status.NOT_FOUND).build();
+      return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoSuchReportInSchema", schema))
+          .build();
     }
     return Response.ok(schemaReport).build();
   }
@@ -134,17 +137,44 @@ public class ReleaseResource {
       @PathParam("schema") String schema, @PathParam("field") String field) {
     Submission submission = this.releaseService.getSubmission(name, projectKey);
     if(submission == null) {
-      return Response.status(Status.NOT_FOUND).build();
+      return Response.status(Status.NOT_FOUND)
+          .entity(new ServerErrorResponseMessage("NoSuchSubmission", name, projectKey)).build();
     }
     SubmissionReport report = submission.getReport();
+    if(report == null) {
+      return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoSuchReport", name, projectKey))
+          .build();
+    }
     SchemaReport schemaReport = report.getSchemaReport(schema);
     if(schemaReport == null) {
-      return Response.status(Status.NOT_FOUND).build();
+      return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoSuchReportInSchema", schema))
+          .build();
     }
     FieldReport fieldReport = schemaReport.getFieldReport(field);
     if(fieldReport == null) {
-      return Response.status(Status.NOT_FOUND).build();
+      return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoReportForField", field))
+          .build();
     }
     return Response.ok(fieldReport).build();
+  }
+
+  @GET
+  @Path("{name}/submissions/{projectKey}/files")
+  public Response getSubmissionFileList(@PathParam("name") String releaseName,
+      @PathParam("projectKey") String projectKey) {
+    Submission submission = this.releaseService.getSubmission(releaseName, projectKey);
+    if(submission == null) {
+      return Response.status(Status.NOT_FOUND)
+          .entity(new ServerErrorResponseMessage("NoSuchSubmission", releaseName, projectKey)).build();
+    }
+
+    try {
+      List<SubmissionFile> submissionFiles = this.releaseService.getSubmissionFiles(releaseName, projectKey);
+      return Response.ok(submissionFiles).build();
+    } catch(IOException e) {
+      return Response.status(Status.INTERNAL_SERVER_ERROR).entity(new ServerErrorResponseMessage("FileSystemError"))
+          .build();
+    }
+
   }
 }

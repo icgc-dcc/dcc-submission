@@ -23,18 +23,13 @@ import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
 import org.icgc.dcc.release.ReleaseException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Provider
 public class ReleaseExceptionMapper implements ExceptionMapper<ReleaseException> {
 
-  private static final Logger log = LoggerFactory.getLogger(ReleaseExceptionMapper.class);
-
   @Override
   public Response toResponse(ReleaseException exception) {
-    log.error("an error occured", exception); // temporarily until DCC-205 is done (so we at least get the stacktrace)
-    return Response.status(Status.BAD_REQUEST).build();
+    return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage(exception.getMessage())).build();
   }
 
 }
