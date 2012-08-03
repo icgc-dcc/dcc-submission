@@ -41,7 +41,7 @@ public class RealmProvider implements Provider<Collection<Realm>> {
 
     DccDbRealm dccDbRealm = new DccDbRealm(users, projects);
     // TODO investigate caching particulars
-    // dccDbRealm.setAuthorizationCachingEnabled(false);
+    dccDbRealm.setAuthorizationCachingEnabled(false);
     realms.add(dccDbRealm);
 
     return realms;

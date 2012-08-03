@@ -39,9 +39,8 @@ public class DccDbRealm extends AuthorizingRealm {
     SimpleAuthorizationInfo sai = new SimpleAuthorizationInfo(new HashSet<String>(user.getRoles()));
     Set<String> stringPermissions = new HashSet<String>();
     for(Project project : projects.getProjects()) {
-      if(project.getUsers().contains(user.getName())
-          || CollectionUtils.containsAny(project.getGroups(), user.getRoles())) {
-        stringPermissions.add("project:" + project.getKey());
+      if(project.hasUser(user.getName()) || CollectionUtils.containsAny(project.getGroups(), user.getRoles())) {
+        stringPermissions.add(AuthorizationPrivileges.projectViewPrivilege(project.getKey()));
       }
     }
     sai.addStringPermissions(stringPermissions);

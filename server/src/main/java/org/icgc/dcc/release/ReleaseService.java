@@ -26,6 +26,7 @@ import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.ReleaseView;
 import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.release.model.SubmissionState;
+import org.icgc.dcc.shiro.AuthorizationPrivileges;
 import org.icgc.dcc.validation.report.SubmissionReport;
 import org.icgc.dcc.web.validator.InvalidNameException;
 import org.icgc.dcc.web.validator.NameValidator;
@@ -348,7 +349,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   public List<Project> getProjects(Release release, Subject user) {
     List<String> projectKeys = new ArrayList<String>();
     for(Submission submission : release.getSubmissions()) {
-      if(user.isPermitted("project:" + submission.getProjectKey())) {
+      if(user.isPermitted(AuthorizationPrivileges.projectViewPrivilege(submission.getProjectKey()))) {
         projectKeys.add(submission.getProjectKey());
       }
     }

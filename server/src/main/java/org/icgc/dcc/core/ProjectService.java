@@ -13,6 +13,7 @@ import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.release.model.SubmissionState;
+import org.icgc.dcc.shiro.AuthorizationPrivileges;
 import org.icgc.dcc.web.validator.InvalidNameException;
 import org.icgc.dcc.web.validator.NameValidator;
 
@@ -79,7 +80,7 @@ public class ProjectService extends BaseMorphiaService<Project> {
   public List<Project> getProjects(Subject user) {
     List<Project> filteredProjects = new ArrayList<Project>();
     for(Project project : this.getProjects()) {
-      if(user.isPermitted("project:" + project.getKey())) {
+      if(user.isPermitted(AuthorizationPrivileges.projectViewPrivilege(project.getKey()))) {
         filteredProjects.add(project);
       }
     }

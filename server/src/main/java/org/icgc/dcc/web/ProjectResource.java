@@ -20,6 +20,7 @@ import org.apache.shiro.SecurityUtils;
 import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.core.model.QProject;
+import org.icgc.dcc.shiro.AuthorizationPrivileges;
 
 import com.google.code.morphia.query.Query;
 import com.google.code.morphia.query.UpdateOperations;
@@ -57,7 +58,7 @@ public class ProjectResource {
   @GET
   @Path("{projectKey}")
   public Response getIt(@PathParam("projectKey") String projectKey) {
-    if(SecurityUtils.getSubject().isPermitted("project:" + projectKey) == false) {
+    if(SecurityUtils.getSubject().isPermitted(AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
       return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
     }
     Project project = projects.where(QProject.project.key.eq(projectKey)).uniqueResult();
@@ -71,8 +72,7 @@ public class ProjectResource {
   @PUT
   @Path("{projectKey}")
   public Response updateProject(@PathParam("projectKey") String projectKey, Project project, @Context Request req) {
-    checkArgument(project != null);
-    if(SecurityUtils.getSubject().isPermitted("project:" + projectKey) == false) {
+    if(SecurityUtils.getSubject().isPermitted(AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
       return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
     }
     ResponseTimestamper.evaluate(req, project);
@@ -90,7 +90,7 @@ public class ProjectResource {
   @GET
   @Path("{projectKey}/releases")
   public Response getReleases(@PathParam("projectKey") String projectKey) {
-    if(SecurityUtils.getSubject().isPermitted("project:" + projectKey) == false) {
+    if(SecurityUtils.getSubject().isPermitted(AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
       return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
     }
     Project project = projects.where(QProject.project.key.eq(projectKey)).uniqueResult();
