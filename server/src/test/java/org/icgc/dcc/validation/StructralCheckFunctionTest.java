@@ -19,6 +19,7 @@ package org.icgc.dcc.validation;
 
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 
 import junit.framework.Assert;
 
@@ -35,42 +36,136 @@ public class StructralCheckFunctionTest {
 
   private final Fields LINE_FIELDS = new Fields("line");
 
+  private final List<String> DICTIONARY_FIELD_NAMES = Arrays.asList("col1", "col2", "col3", "col4");
+
+  private final Fields VALID_HEADER = new Fields("col1", "col3", "col2", "col4"); // intentionally in disorder
+
+  private final Fields EXTRA_HEADER_FIELDS = new Fields("col1", "col3", "col5", "col2", "col4", "col6");
+
+  private final Fields MISSING_HEADER_FIELDS = new Fields("col1", "col4");
+
+  private final TupleEntry[] VALID_DATA_TUPLES = new TupleEntry[] {//
+      new TupleEntry(LINE_FIELDS, new Tuple("v.1.1\tv.1.3\tv.1.2\tv.1.4")),//
+      new TupleEntry(LINE_FIELDS, new Tuple("v.2.1\tv.2.3\tv.2.2\tv.2.4")),//
+      };
+
+  private final TupleEntry[] MISSING_DATA_TUPLES = new TupleEntry[] {//
+      new TupleEntry(LINE_FIELDS, new Tuple("v.1.1\tv.1.4")),//
+      new TupleEntry(LINE_FIELDS, new Tuple("v.2.1\tv.2.4")),//
+      };
+
+  private final TupleEntry[] EXTRA_DATA_TUPLES = new TupleEntry[] {//
+      new TupleEntry(LINE_FIELDS, new Tuple("v.1.1\tv.1.3\tv.1.2\tv.1.5\tv.1.4\tv.1.6")),//
+      new TupleEntry(LINE_FIELDS, new Tuple("v.2.1\tv.2.3\tv.2.2\tv.2.5\tv.2.4\tv.2.6")),//
+      };
+
+  private final Fields RESULT_FIELDS = new Fields("col1", "col2", "col3", "col4"); // intentionally in order (although
+                                                                                   // it does not have to be)
+
   @Test
   public void test_operate_valid() {
+    StructralCheckFunction function = new StructralCheckFunction(DICTIONARY_FIELD_NAMES);
 
-    StructralCheckFunction function = new StructralCheckFunction(Arrays.asList("col1", "col2", "col3", "col4"));
+    function.handleFileHeader(VALID_HEADER);
+    TupleEntry[] tuples = VALID_DATA_TUPLES;
 
-    function.handleFileHeader(new Fields("col1", "col3", "col2", "col4"));
-    TupleEntry[] tuples = new TupleEntry[] {//
-        new TupleEntry(LINE_FIELDS, new Tuple("v.1.1\tv.1.3\tv.1.2\tv.1.4")),//
-        new TupleEntry(LINE_FIELDS, new Tuple("v.2.1\tv.2.3\tv.2.2\tv.2.4")),//
-        };
-
-    Fields resultFields = new Fields("col1", "col3", "col2", "col4");
-    Iterator<TupleEntry> iterator = callFunction(function, tuples, resultFields);
-
-    checkTupleEntry(iterator, new TupleEntry(resultFields, new Tuple("v.1.1", "v.1.3", "v.1.2", "v.1.4")));
-    checkTupleEntry(iterator, new TupleEntry(resultFields, new Tuple("v.2.1", "v.2.3", "v.2.2", "v.2.4")));
-
+    Iterator<TupleEntry> iterator = callFunction(function, tuples, RESULT_FIELDS);
+    checkTupleEntry(iterator, new TupleEntry(RESULT_FIELDS, new Tuple("v.1.1", "v.1.2", "v.1.3", "v.1.4")));
+    checkTupleEntry(iterator, new TupleEntry(RESULT_FIELDS, new Tuple("v.2.1", "v.2.2", "v.2.3", "v.2.4")));
     Assert.assertFalse(iterator.hasNext());
   }
 
   @Test
   public void test_operate_missingColumns() {
-    StructralCheckFunction function = new StructralCheckFunction(Arrays.asList("col1", "col2", "col3", "col4"));
+    StructralCheckFunction function = new StructralCheckFunction(DICTIONARY_FIELD_NAMES);
 
-    function.handleFileHeader(new Fields("col1", "col4"));
+    function.handleFileHeader(MISSING_HEADER_FIELDS);
+    TupleEntry[] tuples = MISSING_DATA_TUPLES;
+
+    Iterator<TupleEntry> iterator = callFunction(function, tuples, RESULT_FIELDS);
+    checkTupleEntry(iterator, new TupleEntry(RESULT_FIELDS, new Tuple("v.1.1", null, null, "v.1.4")));
+    checkTupleEntry(iterator, new TupleEntry(RESULT_FIELDS, new Tuple("v.2.1", null, null, "v.2.4")));
+    Assert.assertFalse(iterator.hasNext());
+  }
+
+  @Test
+  public void test_operate_extraColumns() {
+    StructralCheckFunction function = new StructralCheckFunction(DICTIONARY_FIELD_NAMES);
+
+    function.handleFileHeader(EXTRA_HEADER_FIELDS);
+    TupleEntry[] tuples = EXTRA_DATA_TUPLES;
+
+    Iterator<TupleEntry> iterator = callFunction(function, tuples, RESULT_FIELDS);
+    checkTupleEntry(iterator, new TupleEntry(RESULT_FIELDS, new Tuple("v.1.1", "v.1.2", "v.1.3", "v.1.5")));
+    checkTupleEntry(iterator, new TupleEntry(RESULT_FIELDS, new Tuple("v.2.1", "v.2.2", "v.2.3", "v.2.5")));
+    Assert.assertFalse(iterator.hasNext());
+  }
+
+  @Test
+  public void test_operate_missingHeaders() {
+    StructralCheckFunction function = new StructralCheckFunction(DICTIONARY_FIELD_NAMES);
+
+    function.handleFileHeader(MISSING_HEADER_FIELDS);
+    TupleEntry[] tuples = VALID_DATA_TUPLES;
+
+    Iterator<TupleEntry> iterator = callFunction(function, tuples, RESULT_FIELDS);
+    checkTupleEntry(iterator, new TupleEntry(RESULT_FIELDS, new Tuple("v.1.1", "v.1.2", "v.1.4", "v.1.3")));
+    checkTupleEntry(iterator, new TupleEntry(RESULT_FIELDS, new Tuple("v.2.1", "v.2.2", "v.2.4", "v.2.3")));
+    Assert.assertFalse(iterator.hasNext());
+  }
+
+  @Test
+  public void test_operate_extraHeaders() {
+    StructralCheckFunction function = new StructralCheckFunction(DICTIONARY_FIELD_NAMES);
+
+    function.handleFileHeader(EXTRA_HEADER_FIELDS);
+    TupleEntry[] tuples = VALID_DATA_TUPLES;
+
+    Iterator<TupleEntry> iterator = callFunction(function, tuples, RESULT_FIELDS);
+    checkTupleEntry(iterator, new TupleEntry(RESULT_FIELDS, new Tuple("v.1.1", "v.1.2", "v.1.3", "v.1.4")));
+    checkTupleEntry(iterator, new TupleEntry(RESULT_FIELDS, new Tuple("v.2.1", "v.2.2", "v.2.3", "v.2.4")));
+    Assert.assertFalse(iterator.hasNext());
+  }
+
+  @Test
+  public void test_operate_missingData() {
+    StructralCheckFunction function = new StructralCheckFunction(DICTIONARY_FIELD_NAMES);
+
+    function.handleFileHeader(VALID_HEADER);
+    TupleEntry[] tuples = MISSING_DATA_TUPLES;
+
+    Iterator<TupleEntry> iterator = callFunction(function, tuples, RESULT_FIELDS);
+    checkTupleEntry(iterator, new TupleEntry(RESULT_FIELDS, new Tuple("v.1.1", null, "v.1.4", null)));
+    checkTupleEntry(iterator, new TupleEntry(RESULT_FIELDS, new Tuple("v.2.1", null, "v.2.4", null)));
+    Assert.assertFalse(iterator.hasNext());
+  }
+
+  @Test
+  public void test_operate_extraData() {
+    StructralCheckFunction function = new StructralCheckFunction(DICTIONARY_FIELD_NAMES);
+
+    function.handleFileHeader(VALID_HEADER);
+    TupleEntry[] tuples = EXTRA_DATA_TUPLES;
+
+    Iterator<TupleEntry> iterator = callFunction(function, tuples, RESULT_FIELDS);
+    checkTupleEntry(iterator, new TupleEntry(RESULT_FIELDS, new Tuple("v.1.1", "v.1.2", "v.1.3", "v.1.5")));
+    checkTupleEntry(iterator, new TupleEntry(RESULT_FIELDS, new Tuple("v.2.1", "v.2.2", "v.2.3", "v.2.5")));
+    Assert.assertFalse(iterator.hasNext());
+  }
+
+  @Test
+  public void test_operate_chaos() { // missing and extra headers, missing and extra data!
+    StructralCheckFunction function = new StructralCheckFunction(DICTIONARY_FIELD_NAMES);
+
+    function.handleFileHeader(new Fields("col1", "col5", "col4", "col6"));
     TupleEntry[] tuples = new TupleEntry[] {//
         new TupleEntry(LINE_FIELDS, new Tuple("v.1.1\tv.1.4")),//
-        new TupleEntry(LINE_FIELDS, new Tuple("v.2.1\tv.2.4")),//
+        new TupleEntry(LINE_FIELDS, new Tuple("v.2.1\tv.2.3\tv.2.2\tv.2.5\tv.2.4\tv.2.6")),//
         };
 
-    Fields resultFields = new Fields("col1", "col4", "col2", "col3");
-    Iterator<TupleEntry> iterator = callFunction(function, tuples, resultFields);
-
-    checkTupleEntry(iterator, new TupleEntry(resultFields, new Tuple("v.1.1", "v.1.4", null, null)));
-    checkTupleEntry(iterator, new TupleEntry(resultFields, new Tuple("v.2.1", "v.2.4", null, null)));
-
+    Iterator<TupleEntry> iterator = callFunction(function, tuples, RESULT_FIELDS);
+    checkTupleEntry(iterator, new TupleEntry(RESULT_FIELDS, new Tuple("v.1.1", null, null, "v.1.4")));
+    checkTupleEntry(iterator, new TupleEntry(RESULT_FIELDS, new Tuple("v.2.1", "v.2.2", "v.2.5", "v.2.3")));
     Assert.assertFalse(iterator.hasNext());
   }
 
