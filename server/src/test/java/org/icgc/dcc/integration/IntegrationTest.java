@@ -192,11 +192,21 @@ public class IntegrationTest {
     } while(submission.getState() == SubmissionState.QUEUED);
     assertEquals(SubmissionState.VALID, submission.getState());
 
-    response = sendGetRequest("/releases/release1/submissions/project2");
-    assertEquals(200, response.getStatus());
+    do {
+      response = sendGetRequest("/releases/release1/submissions/project2");
+      assertEquals(200, response.getStatus());
+      submission = new ObjectMapper().readValue(response.readEntity(String.class), Submission.class);
+      Thread.sleep(2000);
+    } while(submission.getState() == SubmissionState.QUEUED);
+    assertEquals(SubmissionState.INVALID, submission.getState());
 
-    response = sendGetRequest("/releases/release1/submissions/project3");
-    assertEquals(200, response.getStatus());
+    do {
+      response = sendGetRequest("/releases/release1/submissions/project3");
+      assertEquals(200, response.getStatus());
+      submission = new ObjectMapper().readValue(response.readEntity(String.class), Submission.class);
+      Thread.sleep(2000);
+    } while(submission.getState() == SubmissionState.QUEUED);
+    assertEquals(SubmissionState.INVALID, submission.getState());
   }
 
   private void test_fileIsEmpty(String path) throws IOException {
