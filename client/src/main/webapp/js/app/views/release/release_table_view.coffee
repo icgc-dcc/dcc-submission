@@ -83,5 +83,11 @@ define (require) ->
         aoColumns: aoColumns
         sAjaxSource: ""
         sAjaxDataProp: ""
+        fnRowCallback: (nRow, aData, iDisplayIndex, iDisplayIndexFull) ->
+          cell = $('td:nth-child(2)', nRow)
+          switch aData.state
+            when "OPENED"
+              cell.css 'color', '#468847'
+              
         fnServerData: (sSource, aoData, fnCallback) ->
           fnCallback collection.toJSON()
