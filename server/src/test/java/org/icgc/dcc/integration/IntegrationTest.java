@@ -188,7 +188,7 @@ public class IntegrationTest {
     do {
       response = sendGetRequest("/releases/release1/submissions/project1");
       assertEquals(200, response.getStatus());
-      submission = new ObjectMapper().readValue(response.readEntity(String.class), Submission.class);
+      submission = new ObjectMapper().readValue(response.readEntity(String.class), DetailedSubmission.class);
       Thread.sleep(2000);
     } while(submission.getState() == SubmissionState.QUEUED);
     assertEquals(SubmissionState.VALID, submission.getState());
@@ -196,7 +196,7 @@ public class IntegrationTest {
     do {
       response = sendGetRequest("/releases/release1/submissions/project2");
       assertEquals(200, response.getStatus());
-      submission = new ObjectMapper().readValue(response.readEntity(String.class), Submission.class);
+      submission = new ObjectMapper().readValue(response.readEntity(String.class), DetailedSubmission.class);
       Thread.sleep(2000);
     } while(submission.getState() == SubmissionState.QUEUED);
     assertEquals(SubmissionState.INVALID, submission.getState());
@@ -204,7 +204,7 @@ public class IntegrationTest {
     do {
       response = sendGetRequest("/releases/release1/submissions/project3");
       assertEquals(200, response.getStatus());
-      submission = new ObjectMapper().readValue(response.readEntity(String.class), Submission.class);
+      submission = new ObjectMapper().readValue(response.readEntity(String.class), DetailedSubmission.class);
       Thread.sleep(2000);
     } while(submission.getState() == SubmissionState.QUEUED);
     assertEquals(SubmissionState.INVALID, submission.getState());
