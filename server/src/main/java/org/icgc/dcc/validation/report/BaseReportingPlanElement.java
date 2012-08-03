@@ -102,7 +102,7 @@ abstract class BaseReportingPlanElement implements ReportingPlanElement {
 
   @Override
   public ReportCollector getCollector() {
-    return new SummaryReportCollector();
+    return new SummaryReportCollector(this.fileSchema);
   }
 
   public static class FieldSummary {// TODO: use FieldReport instead?
@@ -126,7 +126,10 @@ abstract class BaseReportingPlanElement implements ReportingPlanElement {
 
   class SummaryReportCollector implements ReportCollector {
 
-    public SummaryReportCollector() {
+    private final FileSchema fileSchema;
+
+    public SummaryReportCollector(FileSchema fileSchema) {
+      this.fileSchema = fileSchema;
     }
 
     @Override
@@ -145,7 +148,11 @@ abstract class BaseReportingPlanElement implements ReportingPlanElement {
         }
         MappingIterator<FieldSummary> fieldSummary = mapper.reader().withType(FieldSummary.class).readValues(src);
         while(fieldSummary.hasNext()) {
-          report.getFieldReports().add(FieldReport.convert(fieldSummary.next()));
+          FieldReport freport = FieldReport.convert(fieldSummary.next());
+          Field field = this.fileSchema.field(freport.getName()).get();
+          freport.setLabel(field.getLabel());
+          freport.setType(field.getSummaryType());
+          report.getFieldReports().add(freport);
         }
 
       } catch(Exception e) {
