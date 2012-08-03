@@ -25,5 +25,9 @@ define (require) ->
 
     logout: ->
       localStorage.clear()
-      Chaplin.mediator.publish '!logout'
-      #@redirectTo 'release', 'list'
+      Chaplin.mediator.publish '!logout' 
+      # I would rather use a Chaplin or Backbone method 
+      # here, but this is the only way I can get the url
+      # to change without a refresh
+      window.location = '/releases/'
+      

@@ -39,11 +39,13 @@ public class ReleaseResource {
   @GET
   @Path("{name}")
   public Response getReleaseByName(@PathParam("name") String name) {
+
     ReleaseView release = releaseService.getReleaseView(name);
+
     if(release == null) {
       return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoSuchRelease", name)).build();
     }
-    return ResponseTimestamper.ok(release).build();
+    return Response.ok(release).build();
   }
 
   @PUT
