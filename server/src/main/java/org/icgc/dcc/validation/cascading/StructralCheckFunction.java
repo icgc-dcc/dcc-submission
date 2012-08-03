@@ -35,8 +35,9 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 
 /**
- * 
+ * Checks structural aspects of an input data file (header, format, ...)
  */
+@SuppressWarnings("rawtypes")
 public class StructralCheckFunction extends BaseOperation implements Function {
 
   private Fields fileHeader;
@@ -50,7 +51,6 @@ public class StructralCheckFunction extends BaseOperation implements Function {
       fieldNames.add(field.getName());
     }
     this.fieldDeclaration = new Fields(fieldNames.toArray(new String[fields.size()]));
-
   }
 
   @Override
@@ -62,16 +62,23 @@ public class StructralCheckFunction extends BaseOperation implements Function {
     Iterable<String> splitter = Splitter.on('\t').split(line);
     List<String> values = Lists.newArrayList(splitter);
 
-    Fields missingFields = fieldDeclaration.subtract(fileHeader);
-    Fields resultFields = this.fileHeader.append(missingFields);
+    Fields extraFields = fileHeader.subtract(fieldDeclaration);
+    Fields resultFields = fileHeader.subtract(extraFields);
+    Fields missingFields = fieldDeclaration.subtract(resultFields);
+    resultFields = resultFields.append(missingFields);
+
+    // remove extra columns
+    for(int i = 0; i < extraFields.size(); i++) {
+      int pos = fileHeader.getPos(extraFields.get(i));
+      values.remove(pos);
+    }
 
     // add null value to all missing fields
     for(int i = 0; i < missingFields.size(); i++) {
       values.add(null);
     }
 
-    TupleEntry tupleEntry = new TupleEntry(resultFields, new Tuple(values.toArray(new String[values.size()])));
-
+    TupleEntry tupleEntry = new TupleEntry(resultFields, new Tuple(values.toArray()));
     functionCall.getOutputCollector().add(tupleEntry);
   }
 
