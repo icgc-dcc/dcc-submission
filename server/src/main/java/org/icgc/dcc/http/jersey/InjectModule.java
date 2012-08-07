@@ -1,14 +1,18 @@
 package org.icgc.dcc.http.jersey;
 
+import java.lang.reflect.Type;
+
+import javax.inject.Singleton;
+
+import org.glassfish.hk2.api.Injectee;
+import org.glassfish.hk2.api.InjectionResolver;
+import org.glassfish.hk2.api.ServiceHandle;
+import org.glassfish.jersey.internal.inject.AbstractBinder;
+import org.glassfish.jersey.server.ResourceConfig;
+
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
-import com.sun.hk2.component.InjectionResolver;
-import org.glassfish.jersey.server.ResourceConfig;
-import org.jvnet.hk2.component.Inhabitant;
-
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Type;
 
 /**
  * Used to register an {@code InjectionResolver} that will resolve Guice's {@code Inject} annotation.
@@ -21,35 +25,50 @@ public class InjectModule extends AbstractModule {
     bind(GuiceModule.class).asEagerSingleton();
   }
 
-  public static class GuiceInjectResolver extends InjectionResolver<Inject> {
+  @Singleton
+  public static class GuiceInjectResolver implements InjectionResolver<Inject> {
 
     private final Injector injector;
 
     @Inject
     public GuiceInjectResolver(Injector injector) {
-      super(Inject.class);
       this.injector = injector;
     }
 
     @Override
-    public <V> V getValue(Object component, Inhabitant<?> onBehalfOf, AnnotatedElement annotated, Type genericType, Class<V> type) throws org.jvnet.hk2.component.ComponentException {
-      return injector.getInstance(type);
+    public boolean isConstructorParameterIndicator() {
+      return true;
     }
+
+    @Override
+    public boolean isMethodParameterIndicator() {
+      return false;
+    }
+
+    @Override
+    public Object resolve(Injectee injectee, ServiceHandle<?> root) {
+      Type type = injectee.getRequiredType();
+      if(type instanceof Class) {
+        return injector.getInstance((Class) type);
+      }
+      throw new IllegalStateException("don't know how to inject type " + type);
+    }
+
   }
 
-  public static final class GuiceModule extends org.glassfish.jersey.internal.inject.AbstractModule {
+  public static final class GuiceModule extends AbstractBinder {
 
     private final GuiceInjectResolver guiceResolver;
 
     @Inject
     public GuiceModule(GuiceInjectResolver guiceResolver, ResourceConfig config) {
       this.guiceResolver = guiceResolver;
-      config.addModules(this);
+      config.addBinders(this);
     }
 
     @Override
     protected void configure() {
-      bind(InjectionResolver.class).toInstance(guiceResolver);
+      bind(guiceResolver).to(InjectionResolver.class);
     }
   }
 
