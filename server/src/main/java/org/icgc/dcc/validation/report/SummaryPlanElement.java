@@ -44,7 +44,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
-public abstract class SummaryPlanElement extends BaseReportingPlanElement {
+public abstract class SummaryPlanElement extends BaseStatsReportingPlanElement {
 
   protected static String fieldName(Field field, String summaryName) {
     return fieldName(field.getName(), summaryName);

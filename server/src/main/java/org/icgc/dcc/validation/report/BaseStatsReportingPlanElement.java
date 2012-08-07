@@ -41,7 +41,7 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 
-abstract class BaseReportingPlanElement implements ReportingPlanElement {
+abstract class BaseStatsReportingPlanElement implements ReportingPlanElement {
 
   static final String FIELD = "field";
 
@@ -65,12 +65,17 @@ abstract class BaseReportingPlanElement implements ReportingPlanElement {
 
   protected final List<Field> fields;
 
-  protected BaseReportingPlanElement(FileSchema fileSchema, List<Field> fields, SummaryType summaryType,
+  protected BaseStatsReportingPlanElement(FileSchema fileSchema, List<Field> fields, SummaryType summaryType,
       FlowType flowType) {
     this.fileSchema = fileSchema;
     this.fields = fields;
     this.summaryType = summaryType;
     this.flowType = flowType;
+  }
+
+  @Override
+  public boolean isErrorReporting() {
+    return false;
   }
 
   @Override

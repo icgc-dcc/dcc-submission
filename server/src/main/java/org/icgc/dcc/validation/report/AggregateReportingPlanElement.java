@@ -47,7 +47,7 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
-public abstract class AggregateReportingPlanElement extends BaseReportingPlanElement {
+public abstract class AggregateReportingPlanElement extends BaseStatsReportingPlanElement {
 
   private static final String NULLS = "nulls";
 

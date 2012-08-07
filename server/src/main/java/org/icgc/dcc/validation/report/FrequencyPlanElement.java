@@ -42,7 +42,7 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
-public final class FrequencyPlanElement extends BaseReportingPlanElement {
+public final class FrequencyPlanElement extends BaseStatsReportingPlanElement {
 
   private final String FREQ = "freq";
 

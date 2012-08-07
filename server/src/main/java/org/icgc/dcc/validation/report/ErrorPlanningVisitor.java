@@ -65,6 +65,11 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
     }
 
     @Override
+    public boolean isErrorReporting() {
+      return true;
+    }
+
+    @Override
     public String getName() {
       return "errors";
     }
@@ -138,7 +143,6 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
         }
       }
     }
-
   }
 
 }

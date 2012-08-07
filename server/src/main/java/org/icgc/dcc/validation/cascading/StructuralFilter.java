@@ -19,22 +19,21 @@ package org.icgc.dcc.validation.cascading;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
-import cascading.operation.Function;
-import cascading.operation.FunctionCall;
-import cascading.tuple.Tuple;
+import cascading.operation.Filter;
+import cascading.operation.FilterCall;
 
 @SuppressWarnings("rawtypes")
-public final class AddValidationFieldsFunction extends BaseOperation implements Function {
+public class StructuralFilter extends BaseOperation implements Filter {
 
-  public AddValidationFieldsFunction() {
-    super(0, ValidationFields.STATE_FIELD);
+  private final boolean keepValid;
+
+  public StructuralFilter(boolean keepValid) {
+    this.keepValid = keepValid;
   }
 
   @Override
-  public void operate(FlowProcess process, FunctionCall functionCall) {
-    TupleState tupleState = new TupleState();
-    tupleState.setOffset(functionCall.getArguments().getInteger(ValidationFields.OFFSET_FIELD_NAME));
-    functionCall.getOutputCollector().add(new Tuple(tupleState));
+  public boolean isRemove(FlowProcess flowProcess, FilterCall filterCall) {
+    TupleState state = ValidationFields.state(filterCall.getArguments());
+    return keepValid ? state.isInvalid() : state.isValid();
   }
-
 }

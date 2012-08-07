@@ -22,7 +22,7 @@ import java.util.Iterator;
 import org.icgc.dcc.validation.report.AggregateReportingPlanElement.AggregateSummaryFunction;
 import org.icgc.dcc.validation.report.AggregateReportingPlanElement.CompletenessBuffer;
 import org.icgc.dcc.validation.report.AggregateReportingPlanElement.FieldToValueFunction;
-import org.icgc.dcc.validation.report.BaseReportingPlanElement.FieldSummary;
+import org.icgc.dcc.validation.report.BaseStatsReportingPlanElement.FieldSummary;
 import org.icgc.dcc.validation.report.FrequencyPlanElement.FrequencySummaryBuffer;
 import org.junit.Test;
 

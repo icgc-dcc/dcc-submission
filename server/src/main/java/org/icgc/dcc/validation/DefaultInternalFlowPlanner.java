@@ -18,16 +18,18 @@
 package org.icgc.dcc.validation;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 
 import org.icgc.dcc.dictionary.model.FileSchema;
-import org.icgc.dcc.validation.cascading.AddValidationFieldsFunction;
 import org.icgc.dcc.validation.cascading.RemoveEmptyLineFilter;
 import org.icgc.dcc.validation.cascading.RemoveHeaderFilter;
 import org.icgc.dcc.validation.cascading.StructralCheckFunction;
+import org.icgc.dcc.validation.cascading.StructuralFilter;
+import org.icgc.dcc.validation.cascading.ValidationFields;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,18 +48,20 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
 
   private final Pipe head;
 
-  private final Map<Trim, Pipe> trimmedTails = Maps.newHashMap();
-
   private Pipe validTail;
+
+  private Pipe invalidTail;
+
+  private final Map<Trim, Pipe> trimmedTails = Maps.newHashMap();
 
   private StructralCheckFunction structralCheck;
 
   DefaultInternalFlowPlanner(FileSchema fileSchema) {
     super(fileSchema, FlowType.INTERNAL);
-    this.validTail = this.head = new Pipe(fileSchema.getName());
+    this.head = new Pipe(fileSchema.getName());
 
     // apply system pipe
-    this.validTail = applySystemPipes(this.validTail);
+    applySystemPipes(this.head);
   }
 
   @Override
@@ -82,16 +86,22 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
   }
 
   @Override
-  protected Pipe getTail() {
+  protected Pipe getValidTail() {
     return validTail;
   }
 
   @Override
+  protected Pipe getInvalidTail() {
+    return invalidTail;
+  }
+
+  @Override
   protected FlowDef onConnect(FlowDef flowDef, CascadingStrategy strategy) {
+    checkState(structralCheck != null);
     Tap<?, ?, ?> source = strategy.getSourceTap(getSchema());
     try {
       Fields header = strategy.getFileHeader(getSchema());
-      this.structralCheck.handleFileHeader(header);
+      structralCheck.processFileHeader(header);
 
     } catch(IOException e) {
       e.printStackTrace();
@@ -105,13 +115,13 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
     return flowDef;
   }
 
-  private Pipe applySystemPipes(Pipe pipe) {
+  private void applySystemPipes(Pipe pipe) {
     pipe = new Each(pipe, new RemoveEmptyLineFilter());
     pipe = new Each(pipe, new RemoveHeaderFilter());
-    this.structralCheck = new StructralCheckFunction(getSchema().getFieldNames());
-    // parse "line" into the actual expected fields
-    pipe = new Each(pipe, new Fields("line"), this.structralCheck, Fields.SWAP);
-    return new Each(pipe, new AddValidationFieldsFunction(), Fields.ALL);
+    structralCheck = new StructralCheckFunction(getSchema().getFieldNames());
+    Fields fields = new Fields(ValidationFields.OFFSET_FIELD_NAME, StructralCheckFunction.LINE_FIELD_NAME);
+    pipe = new Each(pipe, fields, structralCheck, Fields.SWAP); // parse "line" into the actual expected fields
+    this.validTail = new Each(pipe, new StructuralFilter(true));
+    this.invalidTail = new Each(pipe, new StructuralFilter(false));
   }
-
 }
