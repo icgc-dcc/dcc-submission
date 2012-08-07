@@ -13,6 +13,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriBuilder;
 
 import org.icgc.dcc.dictionary.DictionaryService;
@@ -29,8 +30,9 @@ public class DictionaryResource {
   private DictionaryService dictionaries;
 
   @POST
-  public Response addDictionary(Dictionary d, @Context ShiroSecurityContext securityContext) {
-    if(securityContext.getSubject().isPermitted(AuthorizationPrivileges.DICTIONARY_MODIFY.toString()) == false) {
+  public Response addDictionary(Dictionary d, @Context SecurityContext securityContext) {
+    if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
+        AuthorizationPrivileges.DICTIONARY_MODIFY.toString()) == false) {
       return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
     }
     checkArgument(d != null);
@@ -64,8 +66,9 @@ public class DictionaryResource {
   @PUT
   @Path("{version}")
   public Response updateDictionary(@PathParam("version") String version, Dictionary newDictionary,
-      @Context Request req, @Context ShiroSecurityContext securityContext) {
-    if(securityContext.getSubject().isPermitted(AuthorizationPrivileges.DICTIONARY_MODIFY.toString()) == false) {
+      @Context Request req, @Context SecurityContext securityContext) {
+    if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
+        AuthorizationPrivileges.DICTIONARY_MODIFY.toString()) == false) {
       return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
     }
     Dictionary oldDictionary = this.dictionaries.getFromVersion(version);

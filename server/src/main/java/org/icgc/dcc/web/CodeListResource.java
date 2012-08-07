@@ -30,6 +30,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.SecurityContext;
 
 import org.icgc.dcc.dictionary.DictionaryService;
 import org.icgc.dcc.dictionary.model.CodeList;
@@ -54,8 +55,9 @@ public class CodeListResource {
   }
 
   @POST
-  public Response createCodeList(String name, @Context ShiroSecurityContext securityContext) {
-    if(securityContext.getSubject().isPermitted(AuthorizationPrivileges.CODELIST_MODIFY.toString()) == false) {
+  public Response createCodeList(String name, @Context SecurityContext securityContext) {
+    if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
+        AuthorizationPrivileges.CODELIST_MODIFY.toString()) == false) {
       return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
     }
     checkArgument(name != null);
@@ -77,8 +79,9 @@ public class CodeListResource {
   @PUT
   @Path("{name}")
   public Response updateCodeList(@PathParam("name") String name, CodeList newCodeList, @Context Request req,
-      @Context ShiroSecurityContext securityContext) {
-    if(securityContext.getSubject().isPermitted(AuthorizationPrivileges.CODELIST_MODIFY.toString()) == false) {
+      @Context SecurityContext securityContext) {
+    if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
+        AuthorizationPrivileges.CODELIST_MODIFY.toString()) == false) {
       return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
     }
     checkArgument(name != null);
@@ -100,8 +103,9 @@ public class CodeListResource {
   @POST
   @Path("{name}/terms")
   public Response addTerms(@PathParam("name") String name, List<Term> terms, @Context Request req,
-      @Context ShiroSecurityContext securityContext) {
-    if(securityContext.getSubject().isPermitted(AuthorizationPrivileges.CODELIST_MODIFY.toString()) == false) {
+      @Context SecurityContext securityContext) {
+    if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
+        AuthorizationPrivileges.CODELIST_MODIFY.toString()) == false) {
       return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
     }
     checkArgument(name != null);
