@@ -12,11 +12,11 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.apache.shiro.SecurityUtils;
 import org.icgc.dcc.release.NextRelease;
 import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.shiro.AuthorizationPrivileges;
+import org.icgc.dcc.shiro.ShiroSecurityContext;
 
 import com.google.inject.Inject;
 
@@ -33,8 +33,8 @@ public class NextReleaseResource {
   }
 
   @POST
-  public Response release(String nextReleaseName, @Context Request req) {
-    if(SecurityUtils.getSubject().isPermitted(AuthorizationPrivileges.RELEASE_CLOSE.toString()) == false) {
+  public Response release(String nextReleaseName, @Context Request req, @Context ShiroSecurityContext securityContext) {
+    if(securityContext.getSubject().isPermitted(AuthorizationPrivileges.RELEASE_CLOSE.toString()) == false) {
       return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
     }
     NextRelease oldRelease = releaseService.getNextRelease();
@@ -55,9 +55,9 @@ public class NextReleaseResource {
 
   @POST
   @Path("queue")
-  public Response queue(List<String> projectKeys, @Context Request req) {
+  public Response queue(List<String> projectKeys, @Context Request req, @Context ShiroSecurityContext securityContext) {
     for(String projectKey : projectKeys) {
-      if(SecurityUtils.getSubject().isPermitted(AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
+      if(securityContext.getSubject().isPermitted(AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
         return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
       }
     }
@@ -73,8 +73,8 @@ public class NextReleaseResource {
 
   @DELETE
   @Path("queue")
-  public Response removeAllQueued() {
-    if(SecurityUtils.getSubject().isPermitted(AuthorizationPrivileges.QUEUE_DELETE.toString()) == false) {
+  public Response removeAllQueued(@Context ShiroSecurityContext securityContext) {
+    if(securityContext.getSubject().isPermitted(AuthorizationPrivileges.QUEUE_DELETE.toString()) == false) {
       return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
     }
     this.releaseService.deleteQueuedRequest();
@@ -92,8 +92,8 @@ public class NextReleaseResource {
 
   @POST
   @Path("signed")
-  public Response signOff(List<String> projectKeys, @Context Request req) {
-    if(SecurityUtils.getSubject().isPermitted(AuthorizationPrivileges.RELEASE_SIGNOFF.toString()) == false) {
+  public Response signOff(List<String> projectKeys, @Context Request req, @Context ShiroSecurityContext securityContext) {
+    if(securityContext.getSubject().isPermitted(AuthorizationPrivileges.RELEASE_SIGNOFF.toString()) == false) {
       return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
     }
     ResponseTimestamper.evaluate(req, this.releaseService.getNextRelease().getRelease());
@@ -108,8 +108,8 @@ public class NextReleaseResource {
 
   @PUT
   @Path("update")
-  public Response update(Release release, @Context Request req) {
-    if(SecurityUtils.getSubject().isPermitted(AuthorizationPrivileges.RELEASE_MODIFY.toString()) == false) {
+  public Response update(Release release, @Context Request req, @Context ShiroSecurityContext securityContext) {
+    if(securityContext.getSubject().isPermitted(AuthorizationPrivileges.RELEASE_MODIFY.toString()) == false) {
       return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
     }
     if(release != null) {

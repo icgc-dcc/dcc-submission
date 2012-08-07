@@ -12,7 +12,6 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.apache.shiro.SecurityUtils;
 import org.icgc.dcc.filesystem.SubmissionFile;
 import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.DetailedSubmission;
@@ -20,6 +19,7 @@ import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseView;
 import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.shiro.AuthorizationPrivileges;
+import org.icgc.dcc.shiro.ShiroSecurityContext;
 import org.icgc.dcc.validation.report.FieldReport;
 import org.icgc.dcc.validation.report.SchemaReport;
 import org.icgc.dcc.validation.report.SubmissionReport;
@@ -41,8 +41,8 @@ public class ReleaseResource {
 
   @GET
   @Path("{name}")
-  public Response getReleaseByName(@PathParam("name") String name) {
-    ReleaseView release = releaseService.getReleaseView(name, SecurityUtils.getSubject());
+  public Response getReleaseByName(@PathParam("name") String name, @Context ShiroSecurityContext securityContext) {
+    ReleaseView release = releaseService.getReleaseView(name, securityContext.getSubject());
 
     if(release == null) {
       return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoSuchRelease", name)).build();
@@ -89,8 +89,9 @@ public class ReleaseResource {
 
   @GET
   @Path("{name}/submissions/{projectKey}")
-  public Response getSubmission(@PathParam("name") String name, @PathParam("projectKey") String projectKey) {
-    if(SecurityUtils.getSubject().isPermitted(AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
+  public Response getSubmission(@PathParam("name") String name, @PathParam("projectKey") String projectKey,
+      @Context ShiroSecurityContext securityContext) {
+    if(securityContext.getSubject().isPermitted(AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
       return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
     }
     DetailedSubmission submission = this.releaseService.getDetailedSubmission(name, projectKey);
@@ -104,8 +105,9 @@ public class ReleaseResource {
 
   @GET
   @Path("{name}/submissions/{projectKey}/report")
-  public Response getSubmissionReport(@PathParam("name") String name, @PathParam("projectKey") String projectKey) {
-    if(SecurityUtils.getSubject().isPermitted(AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
+  public Response getSubmissionReport(@PathParam("name") String name, @PathParam("projectKey") String projectKey,
+      @Context ShiroSecurityContext securityContext) {
+    if(securityContext.getSubject().isPermitted(AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
       return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
     }
     Submission submission = this.releaseService.getSubmission(name, projectKey);
@@ -120,8 +122,8 @@ public class ReleaseResource {
   @GET
   @Path("{name}/submissions/{projectKey}/report/{schema}")
   public Response getSchemaReport(@PathParam("name") String name, @PathParam("projectKey") String projectKey,
-      @PathParam("schema") String schema) {
-    if(SecurityUtils.getSubject().isPermitted(AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
+      @PathParam("schema") String schema, @Context ShiroSecurityContext securityContext) {
+    if(securityContext.getSubject().isPermitted(AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
       return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
     }
     Submission submission = this.releaseService.getSubmission(name, projectKey);
@@ -145,8 +147,9 @@ public class ReleaseResource {
   @GET
   @Path("{name}/submissions/{projectKey}/report/{schema}/{field}")
   public Response getFieldReport(@PathParam("name") String name, @PathParam("projectKey") String projectKey,
-      @PathParam("schema") String schema, @PathParam("field") String field) {
-    if(SecurityUtils.getSubject().isPermitted(AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
+      @PathParam("schema") String schema, @PathParam("field") String field,
+      @Context ShiroSecurityContext securityContext) {
+    if(securityContext.getSubject().isPermitted(AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
       return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
     }
     Submission submission = this.releaseService.getSubmission(name, projectKey);
@@ -175,8 +178,8 @@ public class ReleaseResource {
   @GET
   @Path("{name}/submissions/{projectKey}/files")
   public Response getSubmissionFileList(@PathParam("name") String releaseName,
-      @PathParam("projectKey") String projectKey) {
-    if(SecurityUtils.getSubject().isPermitted(AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
+      @PathParam("projectKey") String projectKey, @Context ShiroSecurityContext securityContext) {
+    if(securityContext.getSubject().isPermitted(AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
       return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
     }
     Submission submission = this.releaseService.getSubmission(releaseName, projectKey);
