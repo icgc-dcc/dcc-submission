@@ -15,21 +15,23 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.security;
+package org.icgc.dcc.shiro;
 
-import org.apache.shiro.subject.Subject;
+public enum AuthorizationPrivileges {
+  PROJECT("project"), RELEASE_VIEW("release:view"), RELEASE_CLOSE("release:close"), RELEASE_MODIFY("release:modify"), RELEASE_SIGNOFF("release:signoff"), CODELIST_MODIFY("codelist:modify"), DICTIONARY_MODIFY("dictionary:modify"), QUEUE_DELETE("queue:delete");
 
-/**
- * Contract for authenticating a user based on username-password tokens.
- */
-public interface UsernamePasswordAuthenticator {
+  private final String prefix;
 
-  /**
-   * 
-   * @return true when authentication succeeds, false otherwise.
-   */
-  public Subject authenticate(String username, char[] password, String host);
+  AuthorizationPrivileges(String prefix) {
+    this.prefix = prefix;
+  }
 
-  public String getCurrentUser();
+  public static String projectViewPrivilege(String projectKey) {
+    return PROJECT.prefix + ":" + projectKey + ":view";
+  }
 
+  @Override
+  public String toString() {
+    return this.prefix;
+  }
 }
