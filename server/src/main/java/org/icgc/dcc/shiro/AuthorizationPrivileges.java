@@ -27,7 +27,7 @@ public enum AuthorizationPrivileges {
   }
 
   public static String projectViewPrivilege(String projectKey) {
-    return PROJECT.prefix + projectKey + ":view";
+    return PROJECT.prefix + ":" + projectKey + ":view";
   }
 
   @Override
