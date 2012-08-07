@@ -26,7 +26,6 @@ import org.icgc.dcc.dictionary.model.FileSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cascading.flow.Flow;
 import cascading.flow.FlowDef;
 import cascading.pipe.Merge;
 import cascading.pipe.Pipe;
@@ -62,14 +61,6 @@ class DefaultExternalFlowPlanner extends BaseFileSchemaFlowPlanner implements Ex
     Pipe rhs = getTrimmedHead(trimRhs);
 
     joinedTails.add(element.join(lhs, rhs));
-  }
-
-  @Override
-  public Flow<?> connect(CascadingStrategy strategy) {
-    if(joinedTails.size() > 0) {
-      return super.connect(strategy);
-    }
-    return null;
   }
 
   @Override

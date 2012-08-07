@@ -76,7 +76,14 @@ public abstract class BaseFileSchemaFlowPlanner implements FileSchemaFlowPlanner
     for(Map.Entry<String, Pipe> p : reports.entrySet()) {
       def.addTailSink(p.getValue(), strategy.getReportTap(getSchema(), flowType, p.getKey()));
     }
-    return strategy.getFlowConnector().connect(onConnect(def, strategy));
+
+    onConnect(def, strategy);
+
+    // Make a flow only if there's something to do
+    if(def.getSinks().size() > 0 && def.getSources().size() > 0) {
+      return strategy.getFlowConnector().connect(def);
+    }
+    return null;
   }
 
   @Override
