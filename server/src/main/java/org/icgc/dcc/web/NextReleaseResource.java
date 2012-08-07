@@ -11,10 +11,13 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.SecurityContext;
 
 import org.icgc.dcc.release.NextRelease;
 import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.Release;
+import org.icgc.dcc.shiro.AuthorizationPrivileges;
+import org.icgc.dcc.shiro.ShiroSecurityContext;
 
 import com.google.inject.Inject;
 
@@ -31,7 +34,11 @@ public class NextReleaseResource {
   }
 
   @POST
-  public Response release(String nextReleaseName, @Context Request req) {
+  public Response release(String nextReleaseName, @Context Request req, @Context SecurityContext securityContext) {
+    if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
+        AuthorizationPrivileges.RELEASE_CLOSE.toString()) == false) {
+      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
+    }
     NextRelease oldRelease = releaseService.getNextRelease();
     // Check the timestamp of the oldRelease, since that is the object being updated
     ResponseTimestamper.evaluate(req, oldRelease.getRelease());
@@ -50,7 +57,13 @@ public class NextReleaseResource {
 
   @POST
   @Path("queue")
-  public Response queue(List<String> projectKeys, @Context Request req) {
+  public Response queue(List<String> projectKeys, @Context Request req, @Context SecurityContext securityContext) {
+    for(String projectKey : projectKeys) {
+      if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
+          AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
+        return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
+      }
+    }
     ResponseTimestamper.evaluate(req, this.releaseService.getNextRelease().getRelease());
 
     if(this.releaseService.hasProjectKey(projectKeys)) {
@@ -63,7 +76,11 @@ public class NextReleaseResource {
 
   @DELETE
   @Path("queue")
-  public Response removeAllQueued() {
+  public Response removeAllQueued(@Context SecurityContext securityContext) {
+    if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
+        AuthorizationPrivileges.QUEUE_DELETE.toString()) == false) {
+      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
+    }
     this.releaseService.deleteQueuedRequest();
 
     return Response.ok().build();
@@ -79,7 +96,11 @@ public class NextReleaseResource {
 
   @POST
   @Path("signed")
-  public Response signOff(List<String> projectKeys, @Context Request req) {
+  public Response signOff(List<String> projectKeys, @Context Request req, @Context SecurityContext securityContext) {
+    if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
+        AuthorizationPrivileges.RELEASE_SIGNOFF.toString()) == false) {
+      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
+    }
     ResponseTimestamper.evaluate(req, this.releaseService.getNextRelease().getRelease());
 
     if(this.releaseService.hasProjectKey(projectKeys)) {
@@ -92,7 +113,11 @@ public class NextReleaseResource {
 
   @PUT
   @Path("update")
-  public Response update(Release release, @Context Request req) {
+  public Response update(Release release, @Context Request req, @Context SecurityContext securityContext) {
+    if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
+        AuthorizationPrivileges.RELEASE_MODIFY.toString()) == false) {
+      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
+    }
     if(release != null) {
       ResponseTimestamper.evaluate(req, release);
 

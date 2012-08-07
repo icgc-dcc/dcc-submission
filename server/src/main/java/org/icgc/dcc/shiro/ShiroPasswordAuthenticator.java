@@ -49,7 +49,7 @@ public class ShiroPasswordAuthenticator implements UsernamePasswordAuthenticator
   private static final Logger log = LoggerFactory.getLogger(BasicHttpAuthenticationRequestFilter.class);
 
   @Override
-  public boolean authenticate(final String username, final char[] password, final String host) {
+  public Subject authenticate(final String username, final char[] password, final String host) {
     // build token from credentials
     UsernamePasswordToken token = new UsernamePasswordToken(username, password, false, host);
 
@@ -77,8 +77,10 @@ public class ShiroPasswordAuthenticator implements UsernamePasswordAuthenticator
       // say who they are:
       // print their identifying principal (in this case, a username):
       log.info("User [" + currentUser.getPrincipal() + "] logged in successfully.");
+      return currentUser;
     }
-    return currentUser.isAuthenticated();
+
+    return null;
   }
 
   @Override

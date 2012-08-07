@@ -66,7 +66,7 @@ public class SftpServerService extends AbstractService {
 
       @Override
       public boolean authenticate(String username, String password, ServerSession session) {
-        return passwordAuthenticator.authenticate(username, password.toCharArray(), null);
+        return passwordAuthenticator.authenticate(username, password.toCharArray(), null) != null;
       }
     });
 

@@ -30,10 +30,13 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.SecurityContext;
 
 import org.icgc.dcc.dictionary.DictionaryService;
 import org.icgc.dcc.dictionary.model.CodeList;
 import org.icgc.dcc.dictionary.model.Term;
+import org.icgc.dcc.shiro.AuthorizationPrivileges;
+import org.icgc.dcc.shiro.ShiroSecurityContext;
 
 import com.google.inject.Inject;
 
@@ -52,7 +55,11 @@ public class CodeListResource {
   }
 
   @POST
-  public Response createCodeList(String name) {
+  public Response createCodeList(String name, @Context SecurityContext securityContext) {
+    if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
+        AuthorizationPrivileges.CODELIST_MODIFY.toString()) == false) {
+      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
+    }
     checkArgument(name != null);
     CodeList c = this.dictionaries.createCodeList(name);
     return ResponseTimestamper.ok(c).build();
@@ -71,7 +78,12 @@ public class CodeListResource {
 
   @PUT
   @Path("{name}")
-  public Response updateCodeList(@PathParam("name") String name, CodeList newCodeList, @Context Request req) {
+  public Response updateCodeList(@PathParam("name") String name, CodeList newCodeList, @Context Request req,
+      @Context SecurityContext securityContext) {
+    if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
+        AuthorizationPrivileges.CODELIST_MODIFY.toString()) == false) {
+      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
+    }
     checkArgument(name != null);
     checkArgument(newCodeList != null);
 
@@ -90,7 +102,12 @@ public class CodeListResource {
 
   @POST
   @Path("{name}/terms")
-  public Response addTerms(@PathParam("name") String name, List<Term> terms, @Context Request req) {
+  public Response addTerms(@PathParam("name") String name, List<Term> terms, @Context Request req,
+      @Context SecurityContext securityContext) {
+    if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
+        AuthorizationPrivileges.CODELIST_MODIFY.toString()) == false) {
+      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
+    }
     checkArgument(name != null);
     checkArgument(terms != null);
     CodeList c = this.dictionaries.getCodeList(name);

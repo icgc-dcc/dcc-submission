@@ -18,24 +18,12 @@
 
 define (require) ->
   Model = require 'models/base/model'
-  Report = require 'models/report'
 
   "use strict"
 
-  class Submission extends Model
-    idAttribute: "projectKey"
-    
-    initialize: ->
-      console.debug 'Submission#initialize', @, @attributes
-      super
-    
-      @urlPath = ->
-        "releases/#{@attributes.release}/submissions/#{@attributes.name}"
-    
+  class SchemaReport extends Model
 
-    parse: (response) ->
-      console.debug 'Submission#parse', @, response
-      if response?.report
-        response.report = new Report _.extend(response.report,
-          {"release": 'release1', "projectKey": response.projectKey})
-      response
+    initialize: ->
+      #console.debug 'SchemaReport#initialize', @, @attributes
+      super
+

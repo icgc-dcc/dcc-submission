@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.security;
 
+import org.apache.shiro.subject.Subject;
+
 /**
  * Contract for authenticating a user based on username-password tokens.
  */
@@ -26,7 +28,7 @@ public interface UsernamePasswordAuthenticator {
    * 
    * @return true when authentication succeeds, false otherwise.
    */
-  public boolean authenticate(String username, char[] password, String host);
+  public Subject authenticate(String username, char[] password, String host);
 
   public String getCurrentUser();
 
