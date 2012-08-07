@@ -65,9 +65,10 @@ define (require) ->
       console.debug "ReleaseView#render", @model
       super
       
-      @subview('Report'
-        new ReportTableView {
-          model: @model.get "report"
-          el: @.$("#report-container")
-        }
-      )
+      if @model.get "report"
+        @subview('Report'
+          new ReportTableView {
+            model: @model.get "report"
+            el: @.$("#report-container")
+          }
+        )
