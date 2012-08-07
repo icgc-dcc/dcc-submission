@@ -19,7 +19,9 @@ package org.icgc.dcc.release.model;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.release.ReleaseException;
@@ -41,6 +43,8 @@ public class ReleaseView {
 
   protected String dictionaryVersion;
 
+  protected Map<SubmissionState, Integer> summary = new EnumMap<SubmissionState, Integer>(SubmissionState.class);
+
   public ReleaseView() {
 
   }
@@ -52,10 +56,18 @@ public class ReleaseView {
     this.queue = release.getQueue();
     this.releaseDate = release.releaseDate;
     this.dictionaryVersion = release.dictionaryVersion;
+    for(Submission submission : release.getSubmissions()) {
+      this.submissions.add(new DetailedSubmission(submission));
+
+      Integer stateCount = this.summary.get(submission.getState());
+      if(stateCount == null) {
+        stateCount = 0;
+      }
+      stateCount++;
+      this.summary.put(submission.getState(), stateCount);
+    }
     for(Project project : projects) {
-      DetailedSubmission detailedSubmission = new DetailedSubmission(release.getSubmission(project.getKey()));
-      detailedSubmission.setProjectName(project.getName());
-      this.submissions.add(detailedSubmission);
+      this.getDetailedSubmission(project.getKey()).setProjectName(project.getName());
     }
   }
 
@@ -93,26 +105,7 @@ public class ReleaseView {
     return dictionaryVersion;
   }
 
-  static class DetailedSubmission extends Submission {
-    private String projectName;
-
-    public DetailedSubmission() {
-      super();
-    }
-
-    public DetailedSubmission(Submission submission) {
-      super();
-      this.projectKey = submission.projectKey;
-      this.state = submission.state;
-      this.report = submission.report;
-    }
-
-    public String getProjectName() {
-      return projectName;
-    }
-
-    public void setProjectName(String projectName) {
-      this.projectName = projectName;
-    }
+  public Map<SubmissionState, Integer> getSummary() {
+    return summary;
   }
 }

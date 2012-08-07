@@ -33,7 +33,7 @@ body {
 .signed, .signed_off {
   color: #3A87AD;
 }
-.valid {
+.valid, .opened {
   color: #468847;
 }
 .invalid {
