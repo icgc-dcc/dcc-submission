@@ -35,30 +35,57 @@ define (require) ->
       
       @anOpen = []
       @delegate 'click', '.control', @rowDetails
+      @delegate 'click', '.summary', @rowSummary
     
     rowDetails: (e) ->
-      console.debug "ReportTableView#rowDetails", e, @anOpen
+      #console.debug "ReportTableView#rowDetails", e, @anOpen
       control = e.target
       nTr = control.parentNode.parentNode
       dT = @.$('table').dataTable()
       
+      data = dT.fnGetData nTr
+      if data.errors
+        style = 'alert-danger'
+      else
+        style = 'alert-info'
+
       if nTr in @anOpen
         @anOpen = _.without @anOpen, nTr
         dT.fnClose(nTr)
-        $(control).find('i')
-                  .removeClass('icon-chevron-down')
-                  .addClass('icon-chevron-right')
-        $(nTr).removeClass 'well'
+        $(nTr).removeClass style
       else
         @anOpen.push nTr
-        data = dT.fnGetData nTr
+        $(nTr).addClass style
+        dT.fnOpen(nTr, @formatDetails(data), "details #{style}")
+
+    rowSummary: (e) ->
+      console.debug "ReportTableView#rowSummary", e, @anOpen
+      control = e.target
+      console.log control
+      nTr = control.parentNode.parentNode
+      console.log nTr
+      dT = @.$(nTr.parentNode.parentNode).dataTable()
+      console.log dT
+      
+      data = dT.fnGetData nTr
+      style = 'alert-info'
+
+      if nTr in @anOpen
+        @anOpen = _.without @anOpen, nTr
+        dT.fnClose(nTr)
+        $(nTr).removeClass style
+      else
+        @anOpen.push nTr
+        $(nTr).addClass style
+        dT.fnOpen(nTr, @summaryDetails(data), "summary_details well")
+
+    summaryDetails: (data) ->
+      console.debug "ReportTableView#summaryDetails", data
+      sOut = "<dt>#{data.type}</dt>"
+      for key, value of data.summary
+        sOut += "<dd><strong>#{key}:</strong>#{value}<br></dd>"
         
-        $(control).find('i')
-                  .removeClass('icon-chevron-right')
-                  .addClass('icon-chevron-down')
-        $(nTr).addClass 'well'
-        
-        dT.fnOpen(nTr, @formatDetails(data), 'details well')
+      sOut
 
     formatDetails: (data) ->
       console.debug "ReportTableView#formatDetails", data
@@ -67,50 +94,55 @@ define (require) ->
       sErr = ''
       
       if data.errors
-        sOut += '<ol style="color:#B94A48">'
-        for error in data.errors
-          sOut += "<li>" + error + "</li>"
-        sOut += "</ol>"
-        sOut
-      else if data.fieldReports  
         sOut += """
-          <table class='table table-stripedd'>
+          <table class='table table-striped'>
           <thead>
             <tr>
-            <th>Name</th>
-            <th>Completeness</th>
-            <th>Populated</th>
-            <th>Nulls</th>
-            <th>Summary</th>
+            <th style="text-align:center"></th>
             </tr>
           </thead>
           <tbody>
-          """
-
-        for report in data.fieldReports
-          sOut += """        
-            <tr>
-            <td>#{report.name}</td>
-            <td>#{report.completeness}</td>
-            <td>#{report.populated}</td>
-            <td>#{report.nulls}</td>
-            <td>
-          """
-          for key, value of report.summary
-            sOut += "<dd>#{key}: #{value}</dt>"
-            
-
-        sOut += """
-          </td>
-          </tr>
-          </tbody>
-          </table>
-          """
+        """
+        for error in data.errors
+          sOut += "<tr><td>"
+          switch error['code']
+            when "MISSING_VALUE_ERROR"
+              sOut += "Value missing for column #{error['parameters'][1]}"
+            when "CODELIST_ERROR"
+              sOut += "CodeList error #{error['parameters'][0]} #{error['parameters'][1]} #{error['parameters'][2]}"
+          sOut += "</td></tr>"
+        sOut += "</tbody></table>"
+        
         $(sOut).dataTable
           bPaginate: false
-    
-      
-              
+        
+      else if data.fieldReports
+        sOut += "<table class='sub_report table table-striped'></table>"
+        
+        $(sOut).dataTable
+          bPaginate: false
+          aaData: data.fieldReports
+          aoColumns: [
+            { sTitle: "Name", mDataProp: "name"}
+            { sTitle: "Completeness<br>(%)", mDataProp: "completeness"}
+            { sTitle: "Populated<br>(# rows)", mDataProp: "populated"}
+            { sTitle: "Missing<br>(# rows)", mDataProp: "missing"}
+            { sTitle: "Nulls<br>(# rows)", mDataProp: "nulls"}
+            {
+              sTitle: "Summary"
+              mDataProp: "summary"
+              bSortable: false
+              bUseRendered: false
+              fnRender: (oObj, sVal) ->
+                if not $.isEmptyObject sVal
+                  "<span class='summary'>Show</span></td>"
+                else
+                  ""
+            }
+          ]
+          aaSorting: [[ 1, "asc" ]]
+          
+
     createDataTable: (collection) ->
       console.debug "ReportTableView#createDataTable", @.$('table')
       aoColumns = [
@@ -119,7 +151,7 @@ define (require) ->
             mDataProp: "name"
             fnRender: (oObj, sVal) ->
               """
-                <a href="#" class="control">#{sVal}</a>
+                <span class="signed control">#{sVal}</span>
               """
           }
           {
@@ -153,4 +185,4 @@ define (require) ->
         fnServerData: (sSource, aoData, fnCallback) ->
           fnCallback collection.toJSON()
           
-      #@.$('table.report').removeClass('table')
+      @.$('table.report').removeClass('table')
