@@ -33,7 +33,7 @@ body {
 .signed, .signed_off {
   color: #3A87AD;
 }
-.valid {
+.valid, .opened {
   color: #468847;
 }
 .invalid {
@@ -43,6 +43,33 @@ body {
   color: #C09853;
 }
 
+.report>tbody>tr>td {
+  font-size: 16px;
+  font-weight: bold;
+}
+.report td.details{
+  font-size: 14px;
+  font-weight:normal;
+}
+
+.sub_report th,
+.sub_report td {
+  text-align: center;
+}
+.sub_report th:first-child,
+.sub_report td:first-child {
+  text-align: left;
+}
+
+.sub_report .summary_details {
+  padding-left: 20px;
+}
+
+.control:hover,
+.summary:hover {
+  cursor: pointer;
+  text-decoration: underline;
+}
 
 .container-fluid {  padding: 0 }
 

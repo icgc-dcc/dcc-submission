@@ -3,8 +3,19 @@
 {{/if}}
 
 <div class="row-fluid page-header">
+  <ul class="breadcrumb">
+    <li>
+      <a href="/releases">Releases</a> <span class="divider">/</span>
+    </li>
+  </ul>
+
   <div class="pull-left">
-    <h1>{{name}} <small>{{state}}</small></h1>
+    <h1><small>RELEASE</small> {{name}}<br>
+    <small class="{{lowercase state}}">{{state}}</small>
+    {{#if_completed state}}
+    <small> on {{date releaseDate}}</small>
+    {{/if_completed}}
+    </h1>
   </div>
   <div class="pull-right">
     <a href="releases/{{name}}/report" class="btn btn-primary">View Report</a>
@@ -13,12 +24,51 @@
     {{/if_opened}}
   </div>
 </div>
-
 <div class="row-fluid">
-  <div class="span3">
-      <h3>Submissions Summary</h3>
-      {{release_summary submissions}}
+  <div class="span6">
+    <ul class="nav nav-list">
+      <li class="nav-header">Submission Summary</li>
+      <table class="table">
+        <tbody>
+        {{#if summary.SIGNED_OFF}}
+        <tr class="signed">
+          <td>Signed Off</td>
+          <td>{{summary.SIGNED_OFF}}</td>
+        </tr>
+        {{/if}}
+        {{#if summary.VALID}}
+        <tr class="valid">
+          <td>Valid</td>
+          <td>{{summary.VALID}}</td>
+        </tr>
+        {{/if}}
+        {{#if summary.QUEUED}}
+        <tr class="queued">
+          <td>Queued</td>
+          <td>{{summary.QUEUED}}</td>
+        </tr>
+        {{/if}}
+        {{#if summary.INVALID}}
+        <tr class="invalid">
+          <td>Invalid</td>
+          <td>{{summary.INVALID}}</td>
+        </tr>
+        {{/if}}
+        {{#if summary.NOT_VALIDATED}}
+        <tr>
+          <td>Not Validated</td>
+          <td>{{summary.NOT_VALIDATED}}</td>
+        </tr>
+        {{/if}}
+        </tbody>
+      </table>
+    </ul>
   </div>
 </div>
 
-<div id="submissions-table" class="row-fluid"></div>
+<ul class="nav nav-tabs">
+  <li class="active"><a href="#files" data-toggle="tab">Submissions</a></li>
+</ul>
+<div class="tab-content">
+  <div id="submissions-table" class="row-fluid"></div>
+</div>

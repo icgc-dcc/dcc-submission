@@ -1,4 +1,4 @@
-"""
+/**
  * Copyright 2012(c) The Ontario Institute for Cancer Research. All rights reserved.
  *
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
@@ -14,46 +14,24 @@
  * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER 
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-"""
+ */
+package org.icgc.dcc.shiro;
 
-define (require) ->
-  Backbone = require 'backbone'
-  Chaplin = require 'chaplin'
-  utils = require 'lib/utils'
-  
-  "use strict"
+public enum AuthorizationPrivileges {
+  PROJECT("project"), RELEASE_VIEW("release:view"), RELEASE_CLOSE("release:close"), RELEASE_MODIFY("release:modify"), RELEASE_SIGNOFF("release:signoff"), CODELIST_MODIFY("codelist:modify"), DICTIONARY_MODIFY("dictionary:modify"), QUEUE_DELETE("queue:delete");
 
-  class Model extends Chaplin.Model
-    # Place your application-specific model features here
-    apiRoot: "http://localhost:3001/ws/"
-    urlKey: "_id"
+  private final String prefix;
 
-    urlPath: ->
-      console.debug? 'Model#urlPath'
-      ''
+  AuthorizationPrivileges(String prefix) {
+    this.prefix = prefix;
+  }
 
-    urlRoot: ->
-      console.debug? 'Model#urlRoot'
-      urlPath = @urlPath()
-      if urlPath
-        @apiRoot + urlPath
-      else if @collection
-        @collection.url()
-      else
-        throw new Error('Model must redefine urlPath')
+  public static String projectViewPrivilege(String projectKey) {
+    return PROJECT.prefix + ":" + projectKey + ":view";
+  }
 
-    url: ->
-      console.debug? 'Model#url'
-      base = @urlRoot()
-      url = if @get(@urlKey)?
-        base + encodeURIComponent(@get(@urlKey))
-      else
-        base
-      url + "?preventCache="+ (new Date()).getTime()
-    
-    sync: (method, model, options) ->
-      console.debug? 'Model#sync', method, model, options
-      
-      options.beforeSend = utils.sendAuthorization
-
-      Backbone.sync(method, model, options)
+  @Override
+  public String toString() {
+    return this.prefix;
+  }
+}

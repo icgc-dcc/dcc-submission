@@ -1,8 +1,30 @@
 <div class="row-fluid page-header">
+  <ul class="breadcrumb">
+    <li>
+      <a href="/releases">Releases</a> <span class="divider">/</span>
+    </li>
+    <li>
+      <a href="/releases/{{release}}">{{release}}</a> <span class="divider">/</span>
+    </li>
+  </ul>
   <div class="pull-left">
-    <h1>{{release}} / {{projectKey}} <small class="{{lowercase state}}">{{underscore2space state}}</small></h1>
+    <h1><small>SUBMISSION</small> {{projectName}}<br>
+      <small class="{{lowercase state}}">{{underscore2space state}}</small>
+    </h1>
   </div>
   <div class="pull-right">
     {{submission_action state}}
+  </div>
+</div>
+<ul class="nav nav-tabs">
+  <li class="active"><a href="#files" data-toggle="tab">Files</a></li>
+  {{#if report}}
+  <li><a href="#report" data-toggle="tab">Report</a></li>
+  {{/if}}
+</ul>
+<div class="tab-content">
+  <div class="tab-pane active" id="files">Files</div>
+  <div class="tab-pane" id="report">
+    <div id="report-container"></div>
   </div>
 </div>

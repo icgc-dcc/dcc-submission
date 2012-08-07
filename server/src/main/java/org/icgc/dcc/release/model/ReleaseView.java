@@ -19,7 +19,9 @@ package org.icgc.dcc.release.model;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.release.ReleaseException;
@@ -41,6 +43,8 @@ public class ReleaseView {
 
   protected String dictionaryVersion;
 
+  protected Map<SubmissionState, Integer> summary = new EnumMap<SubmissionState, Integer>(SubmissionState.class);
+
   public ReleaseView() {
 
   }
@@ -52,11 +56,17 @@ public class ReleaseView {
     this.queue = release.getQueue();
     this.releaseDate = release.releaseDate;
     this.dictionaryVersion = release.dictionaryVersion;
-    for(Submission submission : release.getSubmissions()) {
-      this.submissions.add(new DetailedSubmission(submission));
-    }
     for(Project project : projects) {
-      this.getDetailedSubmission(project.getKey()).setProjectName(project.getName());
+      DetailedSubmission submission = new DetailedSubmission(release.getSubmission(project.getKey()));
+      submission.setProjectName(project.getName());
+      this.submissions.add(submission);
+
+      Integer stateCount = this.summary.get(submission.getState());
+      if(stateCount == null) {
+        stateCount = 0;
+      }
+      stateCount++;
+      this.summary.put(submission.getState(), stateCount);
     }
   }
 
@@ -92,5 +102,9 @@ public class ReleaseView {
 
   public String getDictionaryVersion() {
     return dictionaryVersion;
+  }
+
+  public Map<SubmissionState, Integer> getSummary() {
+    return summary;
   }
 }

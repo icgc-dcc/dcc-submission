@@ -18,8 +18,9 @@
 
 define (require) ->
   View = require 'views/base/view'
-  signOffSubmissionView = require 'views/release/signoff_submission_view'
-  validateSubmissionView = require 'views/release/validate_submission_view'
+  ReportTableView = require 'views/release/report_table_view'
+  SignOffSubmissionView = require 'views/release/signoff_submission_view'
+  ValidateSubmissionView = require 'views/release/validate_submission_view'
   template = require 'text!views/templates/release/submission.handlebars'
 
   'use strict'
@@ -49,19 +50,25 @@ define (require) ->
     signOffSubmissionPopup: (e) ->
       console.debug "SubmissionView#signOffSubmissionPopup", e
       @subview("signOffSubmissionView"
-        new signOffSubmissionView
+        new SignOffSubmissionView
           "submission": @model
       )
       
     validateSubmissionPopup: (e) ->
       console.debug "SubmissionView#validateSubmissionPopup", e
       @subview("validateSubmissionView"
-        new validateSubmissionView
+        new ValidateSubmissionView
           "submission": @model
       )
       
     render: ->
-      console.debug "ReleaseView#render"
+      console.debug "ReleaseView#render", @model
       super
-
-    
+      
+      if @model.get "report"
+        @subview('Report'
+          new ReportTableView {
+            model: @model.get "report"
+            el: @.$("#report-container")
+          }
+        )

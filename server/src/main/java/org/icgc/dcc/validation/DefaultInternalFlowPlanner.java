@@ -91,7 +91,7 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
     Tap<?, ?, ?> source = strategy.getSourceTap(getSchema());
     try {
       Fields header = strategy.getFileHeader(getSchema());
-      this.structralCheck.setFileHeader(header);
+      this.structralCheck.handleFileHeader(header);
 
     } catch(IOException e) {
       e.printStackTrace();
@@ -108,7 +108,7 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
   private Pipe applySystemPipes(Pipe pipe) {
     pipe = new Each(pipe, new RemoveEmptyLineFilter());
     pipe = new Each(pipe, new RemoveHeaderFilter());
-    this.structralCheck = new StructralCheckFunction(getSchema());
+    this.structralCheck = new StructralCheckFunction(getSchema().getFieldNames());
     // parse "line" into the actual expected fields
     pipe = new Each(pipe, new Fields("line"), this.structralCheck, Fields.SWAP);
     return new Each(pipe, new AddValidationFieldsFunction(), Fields.ALL);

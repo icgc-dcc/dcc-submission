@@ -17,11 +17,12 @@
  */
 package org.icgc.dcc.validation.cascading;
 
-import java.util.ArrayList;
-import java.util.List;
+import static com.google.common.base.Preconditions.checkState;
 
-import org.icgc.dcc.dictionary.model.Field;
-import org.icgc.dcc.dictionary.model.FileSchema;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -32,29 +33,44 @@ import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
 import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 /**
- * 
+ * Checks structural aspects of an input data file (header, format, ...)
  */
+@SuppressWarnings("rawtypes")
 public class StructralCheckFunction extends BaseOperation implements Function {
 
   private Fields fileHeader;
 
-  public StructralCheckFunction(FileSchema fileSchema) {
-    super(1);
+  private Fields resultFields;
 
-    List<Field> fields = fileSchema.getFields();
-    List<String> fieldNames = new ArrayList<String>();
-    for(Field field : fields) {
-      fieldNames.add(field.getName());
-    }
-    this.fieldDeclaration = new Fields(fieldNames.toArray(new String[fields.size()]));
+  private Fields extraFields;
 
+  private Fields missingFields;
+
+  public StructralCheckFunction(Iterable<String> fieldNames) {
+    super(1, new Fields(Iterables.toArray(fieldNames, String.class)));
+  }
+
+  public void handleFileHeader(Fields header) {
+    this.fileHeader = header;
+
+    Fields fields = Fields.merge(fileHeader, fieldDeclaration);
+    extraFields = fields.subtract(fieldDeclaration);
+    resultFields = fileHeader.subtract(extraFields);
+    missingFields = fieldDeclaration.subtract(resultFields);
+    resultFields = resultFields.append(missingFields);
+    checkState(buildSortedList(fieldDeclaration).equals(buildSortedList(resultFields))); // worth checking; order may
+                                                                                         // differ
   }
 
   @Override
   public void operate(FlowProcess flowProcess, FunctionCall functionCall) {
+    checkState(resultFields != null);
+
     TupleEntry arguments = functionCall.getArguments();
 
     // parse line into tuple values
@@ -62,20 +78,25 @@ public class StructralCheckFunction extends BaseOperation implements Function {
     Iterable<String> splitter = Splitter.on('\t').split(line);
     List<String> values = Lists.newArrayList(splitter);
 
-    Fields missingFields = fieldDeclaration.subtract(fileHeader);
-    Fields resultFields = this.fileHeader.append(missingFields);
-
-    // add null value to all missing fields
-    for(int i = 0; i < missingFields.size(); i++) {
-      values.add(null);
+    int size = fieldDeclaration.size();
+    int dataSize = values.size();
+    if(dataSize > size) {
+      values = values.subList(0, size);
+    } else if(dataSize < size) {
+      values.addAll(Arrays.asList(new String[size - dataSize]));
     }
 
-    TupleEntry tupleEntry = new TupleEntry(resultFields, new Tuple(values.toArray(new String[values.size()])));
-
+    TupleEntry tupleEntry = new TupleEntry(resultFields, new Tuple(values.toArray()));
     functionCall.getOutputCollector().add(tupleEntry);
   }
 
-  public void setFileHeader(Fields header) {
-    this.fileHeader = header;
+  @SuppressWarnings("unchecked")
+  private List<Comparable> buildSortedList(Fields fields) {
+    List<Comparable> l = new ArrayList<Comparable>();
+    for(int i = 0; i < fields.size(); i++) {
+      l.add(fields.get(i));
+    }
+    Collections.sort(l);
+    return ImmutableList.<Comparable> copyOf(l);
   }
 }

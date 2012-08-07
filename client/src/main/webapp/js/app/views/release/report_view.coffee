@@ -17,25 +17,22 @@
 """
 
 define (require) ->
-  Model = require 'models/base/model'
+  View = require 'views/base/view'
   Report = require 'models/report'
+  template = require 'text!views/templates/release/report.handlebars'
 
-  "use strict"
+  'use strict'
 
-  class Submission extends Model
-    idAttribute: "projectKey"
+  class ReportView extends View
+    template: template
+    template = null
+    
+    autoRender: false
     
     initialize: ->
-      console.debug 'Submission#initialize', @, @attributes
+      console.debug "ReportView#initialize", @, @options
       super
-    
-      @urlPath = ->
-        "releases/#{@attributes.release}/submissions/#{@attributes.name}"
-    
-
-    parse: (response) ->
-      console.debug 'Submission#parse', @, response
-      if response?.report
-        response.report = new Report _.extend(response.report,
-          {"release": 'release1', "projectKey": response.projectKey})
-      response
+      
+      @model = new Report {release: @options.release, submission: @options.submission}
+      @modelBind 'change', @render
+      @model.fetch()
