@@ -20,6 +20,7 @@ package org.icgc.dcc.dictionary.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.icgc.dcc.dictionary.visitor.DictionaryElement;
 import org.icgc.dcc.dictionary.visitor.DictionaryVisitor;
 
@@ -166,5 +167,15 @@ public class FileSchema implements DictionaryElement {
 
   public boolean addRelation(Relation relation) {
     return this.relations.add(relation);
+  }
+
+  @JsonIgnore
+  public Iterable<String> getFieldNames() {
+    return Iterables.transform(getFields(), new Function<Field, String>() {
+      @Override
+      public String apply(Field input) {
+        return input.getName();
+      }
+    });
   }
 }
