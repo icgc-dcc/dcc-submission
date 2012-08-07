@@ -41,6 +41,7 @@ import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.glassfish.jersey.internal.util.Base64;
 import org.icgc.dcc.Main;
+import org.icgc.dcc.release.model.DetailedSubmission;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.ReleaseView;
@@ -148,7 +149,7 @@ public class IntegrationTest {
 
     test_updateRelease("/integrationtest/updatedRelease.json");
 
-    test_checkRelease("RELEASE2", "0.6d", ReleaseState.OPENED, Arrays.<SubmissionState> asList(
+    test_checkRelease("release2", "0.6d", ReleaseState.OPENED, Arrays.<SubmissionState> asList(
         SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED));
   }
 
@@ -187,16 +188,26 @@ public class IntegrationTest {
     do {
       response = sendGetRequest("/releases/release1/submissions/project1");
       assertEquals(200, response.getStatus());
-      submission = new ObjectMapper().readValue(response.readEntity(String.class), Submission.class);
+      submission = new ObjectMapper().readValue(response.readEntity(String.class), DetailedSubmission.class);
       Thread.sleep(2000);
     } while(submission.getState() == SubmissionState.QUEUED);
     assertEquals(SubmissionState.VALID, submission.getState());
 
-    response = sendGetRequest("/releases/release1/submissions/project2");
-    assertEquals(200, response.getStatus());
+    do {
+      response = sendGetRequest("/releases/release1/submissions/project2");
+      assertEquals(200, response.getStatus());
+      submission = new ObjectMapper().readValue(response.readEntity(String.class), DetailedSubmission.class);
+      Thread.sleep(2000);
+    } while(submission.getState() == SubmissionState.QUEUED);
+    assertEquals(SubmissionState.INVALID, submission.getState());
 
-    response = sendGetRequest("/releases/release1/submissions/project3");
-    assertEquals(200, response.getStatus());
+    do {
+      response = sendGetRequest("/releases/release1/submissions/project3");
+      assertEquals(200, response.getStatus());
+      submission = new ObjectMapper().readValue(response.readEntity(String.class), DetailedSubmission.class);
+      Thread.sleep(2000);
+    } while(submission.getState() == SubmissionState.QUEUED);
+    assertEquals(SubmissionState.INVALID, submission.getState());
   }
 
   private void test_fileIsEmpty(String path) throws IOException {
@@ -235,7 +246,7 @@ public class IntegrationTest {
     assertEquals(state, release.getState());
     assertEquals(states.size(), release.getSubmissions().size());
     int i = 0;
-    for(Submission submission : release.getSubmissions()) {
+    for(DetailedSubmission submission : release.getSubmissions()) {
       assertEquals(states.get(i++), submission.getState());
     }
   }
@@ -268,7 +279,7 @@ public class IntegrationTest {
     Response response = sendPutRequest("/nextRelease/update", resourceToString(updatedReleaseRelPath));
     assertEquals(200, response.getStatus());
     Release release = new ObjectMapper().readValue(response.readEntity(String.class), Release.class);
-    assertEquals("RELEASE2", release.getName());
+    assertEquals("release2", release.getName());
   }
 
   private Response sendPutRequest(String requestPath, String payload) throws IOException {

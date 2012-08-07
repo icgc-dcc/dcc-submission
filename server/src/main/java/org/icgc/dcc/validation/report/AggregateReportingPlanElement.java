@@ -128,7 +128,7 @@ public abstract class AggregateReportingPlanElement extends BaseReportingPlanEle
 
   @Override
   public ReportCollector getCollector() {
-    return new SummaryReportCollector();
+    return new SummaryReportCollector(this.getFileSchema());
   }
 
   @SuppressWarnings("rawtypes")

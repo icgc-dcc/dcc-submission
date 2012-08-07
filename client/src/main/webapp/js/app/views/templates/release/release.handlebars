@@ -4,7 +4,7 @@
 
 <div class="row-fluid page-header">
   <div class="pull-left">
-    <h1>{{name}} <small>{{state}}</small></h1>
+    <h1>{{name}}</h1>
   </div>
   <div class="pull-right">
     <a href="releases/{{name}}/report" class="btn btn-primary">View Report</a>
@@ -13,12 +13,21 @@
     {{/if_opened}}
   </div>
 </div>
-
 <div class="row-fluid">
-  <div class="span3">
-      <h3>Submissions Summary</h3>
-      {{release_summary submissions}}
+  <div class="span6 well well-small">
+      <ul class="nav nav-list">
+        <li>State: <strong class="{{lowercase state}}">{{state}}</strong></li>
+        {{#if_completed state}}
+        <li>Released: {{date releaseDate}}</li>
+        {{/if_completed}}
+        <li class="nav-header">Summary</li>
+        {{release_summary submissions}}
+      </ul>
   </div>
 </div>
-
-<div id="submissions-table" class="row-fluid"></div>
+<ul class="nav nav-tabs">
+  <li class="active"><a href="#files" data-toggle="tab">Submissions</a></li>
+</ul>
+<div class="tab-content">
+  <div id="submissions-table" class="row-fluid"></div>
+</div>
