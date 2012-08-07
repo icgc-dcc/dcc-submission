@@ -53,7 +53,7 @@ public abstract class BaseFileSchemaFlowPlanner implements FileSchemaFlowPlanner
 
   @Override
   public String getName() {
-    return getSchema().getName() + flowType.toString();
+    return getSchema().getName() + "." + flowType.toString();
   }
 
   @Override
