@@ -178,7 +178,7 @@ public class ValidationInternalIntegrityTest {
     CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir);
 
     Plan plan = validationService.planCascade(null, fileSchemaDirectory, cascadingStrategy, dictionary);
-    Assert.assertEquals(5, plan.getCascade().getFlows().size());
+    Assert.assertEquals(3, plan.getCascade().getFlows().size());
     validationService.runCascade(plan.getCascade(), null);
 
     Assert.assertTrue(errorFileString, errorFile.exists());
