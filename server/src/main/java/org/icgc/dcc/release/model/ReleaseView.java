@@ -56,8 +56,10 @@ public class ReleaseView {
     this.queue = release.getQueue();
     this.releaseDate = release.releaseDate;
     this.dictionaryVersion = release.dictionaryVersion;
-    for(Submission submission : release.getSubmissions()) {
-      this.submissions.add(new DetailedSubmission(submission));
+    for(Project project : projects) {
+      DetailedSubmission submission = new DetailedSubmission(release.getSubmission(project.getKey()));
+      submission.setProjectName(project.getName());
+      this.submissions.add(submission);
 
       Integer stateCount = this.summary.get(submission.getState());
       if(stateCount == null) {
@@ -65,9 +67,6 @@ public class ReleaseView {
       }
       stateCount++;
       this.summary.put(submission.getState(), stateCount);
-    }
-    for(Project project : projects) {
-      this.getDetailedSubmission(project.getKey()).setProjectName(project.getName());
     }
   }
 

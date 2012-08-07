@@ -12,7 +12,9 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
 
 import org.apache.shiro.codec.Base64;
+import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.security.UsernamePasswordAuthenticator;
+import org.icgc.dcc.shiro.ShiroSecurityContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,10 +51,8 @@ public class BasicHttpAuthenticationRequestFilter implements ContainerRequestFil
   public void filter(ContainerRequestContext containerRequestContext) throws IOException {
 
     MultivaluedMap<String, String> headers = containerRequestContext.getHeaders();
-
     String authorizationHeader = headers.getFirst(HttpHeaders.AUTHORIZATION);
     log.debug("authorizationHeader = " + authorizationHeader);
-
     if(authorizationHeader == null || authorizationHeader.isEmpty()) {
       Response response = createUnauthorizedResponse();
       containerRequestContext.abortWith(response);
@@ -81,10 +81,13 @@ public class BasicHttpAuthenticationRequestFilter implements ContainerRequestFil
           String password = decoded[1];
           log.info("password decoded (" + password.length() + " characters long)");
 
-          if(this.passwordAuthenticator.authenticate(username, password.toCharArray(), "") == false) {
+          Subject currentUser = this.passwordAuthenticator.authenticate(username, password.toCharArray(), "");
+          if(currentUser == null) {
             Response response = createUnauthorizedResponse();
             containerRequestContext.abortWith(response);
           }
+          containerRequestContext.setSecurityContext(new ShiroSecurityContext(currentUser, containerRequestContext
+              .getSecurityContext().isSecure()));
         }
       }
     }

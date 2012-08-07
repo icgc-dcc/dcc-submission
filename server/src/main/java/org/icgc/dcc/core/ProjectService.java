@@ -3,6 +3,7 @@ package org.icgc.dcc.core;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.core.model.QProject;
 import org.icgc.dcc.core.morphia.BaseMorphiaService;
@@ -12,6 +13,7 @@ import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.release.model.SubmissionState;
+import org.icgc.dcc.shiro.AuthorizationPrivileges;
 import org.icgc.dcc.web.validator.InvalidNameException;
 import org.icgc.dcc.web.validator.NameValidator;
 
@@ -73,6 +75,16 @@ public class ProjectService extends BaseMorphiaService<Project> {
 
   public List<Project> getProjects() {
     return this.query().list();
+  }
+
+  public List<Project> getProjects(Subject user) {
+    List<Project> filteredProjects = new ArrayList<Project>();
+    for(Project project : this.getProjects()) {
+      if(user.isPermitted(AuthorizationPrivileges.projectViewPrivilege(project.getKey()))) {
+        filteredProjects.add(project);
+      }
+    }
+    return filteredProjects;
   }
 
   public Project getProject(final String projectKey) {
