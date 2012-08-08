@@ -34,7 +34,7 @@ public class NextReleaseResource {
   }
 
   @POST
-  public Response release(String nextReleaseName, @Context Request req, @Context SecurityContext securityContext) {
+  public Response release(Release nextRelease, @Context Request req, @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.RELEASE_CLOSE.toString()) == false) {
       return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
@@ -42,7 +42,7 @@ public class NextReleaseResource {
     NextRelease oldRelease = releaseService.getNextRelease();
     // Check the timestamp of the oldRelease, since that is the object being updated
     ResponseTimestamper.evaluate(req, oldRelease.getRelease());
-    NextRelease newRelease = oldRelease.release(nextReleaseName);
+    NextRelease newRelease = oldRelease.release(nextRelease.getName());
 
     return ResponseTimestamper.ok(newRelease.getRelease()).build();
   }
