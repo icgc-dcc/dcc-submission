@@ -60,6 +60,7 @@ public abstract class SummaryPlanElement extends BaseStatsReportingPlanElement {
 
   @Override
   public Pipe report(Pipe pipe) {
+    pipe = super.report(pipe); // filters out structurally invalid tuples
     ArrayList<AggregateBy> summaries = new ArrayList<AggregateBy>();
     for(Field field : fields) {
       Iterables.addAll(summaries, collectAggregateBys(field));

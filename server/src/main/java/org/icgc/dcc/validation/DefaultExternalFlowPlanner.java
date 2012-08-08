@@ -81,12 +81,12 @@ class DefaultExternalFlowPlanner extends BaseFileSchemaFlowPlanner implements Ex
   }
 
   @Override
-  protected Pipe getValidTail() {
+  protected Pipe getStructurallyValidTail() {
     return mergeJoinedTails();
   }
 
   @Override
-  protected Pipe getInvalidTail() {
+  protected Pipe getStructurallyInvalidTail() {
     throw new IllegalStateException("method should not be used in the context of external validation");
   }
 

@@ -32,6 +32,4 @@ public interface ReportingPlanElement extends PlanElement {
   public Pipe report(Pipe pipe);
 
   public ReportCollector getCollector();
-
-  public boolean isErrorReporting();
 }

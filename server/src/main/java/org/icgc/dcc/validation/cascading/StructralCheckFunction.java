@@ -53,33 +53,32 @@ public class StructralCheckFunction extends BaseOperation implements Function {
 
   private final Fields dictionaryFields;
 
-  private Fields adjustedFields;
-
   private List<Integer> unknownHeaderIndices;
 
   public StructralCheckFunction(Iterable<String> fieldNames) {
-    super(1, new ValidationFields(Iterables.toArray(fieldNames, String.class)));
+    super(1);
     dictionaryFields = new Fields(Iterables.toArray(fieldNames, String.class));
   }
 
+  @SuppressWarnings("unchecked")
   public void processFileHeader(Fields headerFields) {
     headerSize = headerFields.size();
 
     Fields mergedFields = Fields.merge(headerFields, dictionaryFields);
     Fields extraFields = mergedFields.subtract(dictionaryFields);
-    adjustedFields = headerFields.subtract(extraFields); // existing valid fields first
+    Fields adjustedFields = headerFields.subtract(extraFields); // existing valid fields first
     Fields missingFields = dictionaryFields.subtract(adjustedFields);
     adjustedFields = adjustedFields.append(missingFields); // then missing fields to be emulated
     checkState(FieldsUtils.buildSortedList(dictionaryFields)//
         .equals(FieldsUtils.buildSortedList(adjustedFields))); // worth checking; order may differ but nothing else
-    adjustedFields = adjustedFields.append(ValidationFields.STATE_FIELD); // lastly state
+    fieldDeclaration = adjustedFields.append(ValidationFields.STATE_FIELD); // lastly state
 
     unknownHeaderIndices = FieldsUtils.indicesOf(headerFields, extraFields);
   }
 
   @Override
   public void operate(FlowProcess flowProcess, FunctionCall functionCall) {
-    checkState(adjustedFields != null);
+    checkState(fieldDeclaration != null);
     checkState(headerSize != null);
 
     TupleEntry arguments = functionCall.getArguments();
@@ -91,9 +90,11 @@ public class StructralCheckFunction extends BaseOperation implements Function {
     String line = arguments.getString(StructralCheckFunction.LINE_FIELD_NAME);
     List<String> values = Lists.newArrayList(Splitter.on(FIELD_SEPARATOR).split(line));
     List<String> adjustedValues = adjustValues(values, tupleState);
+    List<Object> tupleValues = Lists.<Object> newArrayList(adjustedValues);
+    tupleValues.add(tupleState); // lastly state
+    checkState(fieldDeclaration.size() == tupleValues.size());
 
-    Tuple tuple = buildTuple(adjustedValues, tupleState);
-    functionCall.getOutputCollector().add(new TupleEntry(adjustedFields, tuple));
+    functionCall.getOutputCollector().add(new Tuple(tupleValues.toArray()));
   }
 
   private List<String> adjustValues(List<String> values, TupleState tupleState) {
@@ -135,17 +136,5 @@ public class StructralCheckFunction extends BaseOperation implements Function {
       adjustedValues.addAll(Arrays.asList(new String[size - adjustedDataSize]));
     }
     return adjustedValues;
-  }
-
-  private Tuple buildTuple(List<String> stringValues, TupleState tupleState) {
-    List<Object> values =
-        Lists.newArrayList(Iterables.transform(stringValues, new com.google.common.base.Function<String, Object>() {
-          @Override
-          public Object apply(String input) {
-            return input;
-          }
-        }));
-    values.add(tupleState); // lastly state
-    return new Tuple(values.toArray());
   }
 }

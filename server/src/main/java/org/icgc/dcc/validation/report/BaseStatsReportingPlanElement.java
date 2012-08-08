@@ -33,7 +33,10 @@ import org.icgc.dcc.validation.PlanExecutionException;
 import org.icgc.dcc.validation.ReportingPlanElement;
 import org.icgc.dcc.validation.cascading.CompletenessBy;
 import org.icgc.dcc.validation.cascading.TupleState.TupleError;
+import org.icgc.dcc.validation.cascading.TupleStates;
 
+import cascading.pipe.Each;
+import cascading.pipe.Pipe;
 import cascading.tuple.Fields;
 
 import com.google.common.base.Function;
@@ -74,8 +77,8 @@ abstract class BaseStatsReportingPlanElement implements ReportingPlanElement {
   }
 
   @Override
-  public boolean isErrorReporting() {
-    return false;
+  public Pipe report(Pipe pipe) {
+    return new Each(pipe, TupleStates.keepStructurallyValidTuplesFilter());
   }
 
   @Override

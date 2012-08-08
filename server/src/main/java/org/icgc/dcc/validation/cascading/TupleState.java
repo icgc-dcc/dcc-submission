@@ -24,8 +24,10 @@ public class TupleState implements Serializable {
 
   private List<TupleError> errors;
 
-  public TupleState() {
+  private boolean structurallyValid; // to save time on filtering
 
+  public TupleState() {
+    structurallyValid = true;
   }
 
   public void setOffset(int offset) {
@@ -35,6 +37,9 @@ public class TupleState implements Serializable {
   public void reportError(ValidationErrorCode code, @Nullable Object... parameters) {
     checkArgument(code != null);
     ensureErrors().add(new TupleError(code, parameters));
+    if(code == ValidationErrorCode.STRUCTURALLY_INVALID_ROW_ERROR) {
+      structurallyValid = false;
+    }
   }
 
   public Iterable<TupleError> getErrors() {
@@ -49,6 +54,11 @@ public class TupleState implements Serializable {
   @JsonIgnore
   public boolean isInvalid() {
     return isValid() == false;
+  }
+
+  @JsonIgnore
+  public boolean isStructurallyValid() {
+    return structurallyValid;
   }
 
   public int getOffset() {

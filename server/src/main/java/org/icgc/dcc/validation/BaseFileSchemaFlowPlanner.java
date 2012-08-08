@@ -28,7 +28,6 @@ import org.slf4j.LoggerFactory;
 
 import cascading.flow.Flow;
 import cascading.flow.FlowDef;
-import cascading.pipe.Merge;
 import cascading.pipe.Pipe;
 
 import com.google.common.collect.Maps;
@@ -63,15 +62,15 @@ public abstract class BaseFileSchemaFlowPlanner implements FileSchemaFlowPlanner
   }
 
   @Override
-  public void apply(ReportingPlanElement element) {
-    Pipe pipe = new Pipe(element.getName(), getValidTail());
-    if(flowType == FlowType.INTERNAL && element.isErrorReporting()) {
-      Pipe invalid = new Pipe(element.getName() + "_invalid", getInvalidTail());
-      pipe = new Merge(pipe, invalid);
-    }
+  public final void apply(ReportingPlanElement element) {
+    Pipe pipe = getTail(element.getName());
     log.info("[{}] applying element [{}]", getName(), element.describe());
     reports.put(element.getName(), element.report(pipe));
     this.collectors.put(element.getName(), element.getCollector());
+  }
+
+  protected Pipe getTail(String basename) {
+    return getStructurallyValidTail(); // overwritten in the case of the internal version
   }
 
   @Override
@@ -96,9 +95,9 @@ public abstract class BaseFileSchemaFlowPlanner implements FileSchemaFlowPlanner
     return result;
   }
 
-  protected abstract Pipe getValidTail();
+  protected abstract Pipe getStructurallyValidTail();
 
-  protected abstract Pipe getInvalidTail();
+  protected abstract Pipe getStructurallyInvalidTail();
 
   protected abstract FlowDef onConnect(FlowDef flowDef, CascadingStrategy strategy);
 }

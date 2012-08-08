@@ -28,13 +28,14 @@ import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.validation.cascading.RemoveEmptyLineFilter;
 import org.icgc.dcc.validation.cascading.RemoveHeaderFilter;
 import org.icgc.dcc.validation.cascading.StructralCheckFunction;
-import org.icgc.dcc.validation.cascading.StructuralFilter;
+import org.icgc.dcc.validation.cascading.TupleStates;
 import org.icgc.dcc.validation.cascading.ValidationFields;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cascading.flow.FlowDef;
 import cascading.pipe.Each;
+import cascading.pipe.Merge;
 import cascading.pipe.Pipe;
 import cascading.pipe.assembly.Retain;
 import cascading.tap.Tap;
@@ -48,9 +49,9 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
 
   private final Pipe head;
 
-  private Pipe validTail;
+  private Pipe structurallyValidTail;
 
-  private Pipe invalidTail;
+  private Pipe structurallyInvalidTail;
 
   private final Map<Trim, Pipe> trimmedTails = Maps.newHashMap();
 
@@ -68,7 +69,7 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
   public void apply(InternalPlanElement element) {
     checkArgument(element != null);
     log.info("[{}] applying element [{}]", getName(), element.describe());
-    validTail = element.extend(validTail);
+    structurallyValidTail = element.extend(structurallyValidTail);
   }
 
   @Override
@@ -77,7 +78,7 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
     checkArgument(fields.length > 0);
     Trim trim = new Trim(getSchema().getName(), fields);
     if(trimmedTails.containsKey(trim) == false) {
-      Pipe newHead = new Pipe(trim.getName(), validTail);
+      Pipe newHead = new Pipe(trim.getName(), structurallyValidTail);
       Pipe tail = new Retain(newHead, new Fields(fields));
       log.info("[{}] planned trimmed output with {}", getName(), Arrays.toString(trim.getFields()));
       trimmedTails.put(trim, tail);
@@ -86,13 +87,20 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
   }
 
   @Override
-  protected Pipe getValidTail() {
-    return validTail;
+  protected Pipe getTail(String basename) {
+    Pipe valid = new Pipe(basename + "_valid", structurallyValidTail);
+    Pipe invalid = new Pipe(basename + "_invalid", structurallyInvalidTail);
+    return new Merge(valid, invalid);
   }
 
   @Override
-  protected Pipe getInvalidTail() {
-    return invalidTail;
+  protected Pipe getStructurallyValidTail() {
+    return structurallyValidTail;
+  }
+
+  @Override
+  protected Pipe getStructurallyInvalidTail() {
+    return structurallyInvalidTail;
   }
 
   @Override
@@ -121,7 +129,7 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
     structralCheck = new StructralCheckFunction(getSchema().getFieldNames());
     Fields fields = new Fields(ValidationFields.OFFSET_FIELD_NAME, StructralCheckFunction.LINE_FIELD_NAME);
     pipe = new Each(pipe, fields, structralCheck, Fields.SWAP); // parse "line" into the actual expected fields
-    this.validTail = new Each(pipe, new StructuralFilter(true));
-    this.invalidTail = new Each(pipe, new StructuralFilter(false));
+    this.structurallyValidTail = new Each(pipe, TupleStates.keepStructurallyValidTuplesFilter());
+    this.structurallyInvalidTail = new Each(pipe, TupleStates.keepStructurallyInvalidTuplesFilter());
   }
 }

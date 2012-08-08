@@ -52,6 +52,8 @@ public final class FrequencyPlanElement extends BaseStatsReportingPlanElement {
 
   @Override
   public Pipe report(Pipe pipe) {
+    pipe = super.report(pipe); // filters out structurally invalid tuples
+
     Pipe[] freqs = new Pipe[fields.size()];
     int i = 0;
     for(Field field : fields) {
