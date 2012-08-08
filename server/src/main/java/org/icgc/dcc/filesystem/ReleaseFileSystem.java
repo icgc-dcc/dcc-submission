@@ -64,6 +64,9 @@ public class ReleaseFileSystem {
         Log.info("moving {} to {} ", origin, destination);
         HadoopUtils.mv(this.dccFileSystem.getFileSystem(), origin, destination);
       }
+      // move .validation folder over
+      HadoopUtils.mv(this.dccFileSystem.getFileSystem(), previousSubmissionDirectory.getValidationDirPath(),
+          newSubmissionDirectory.getValidationDirPath());
     }
   }
 

@@ -115,6 +115,7 @@ public class NextRelease extends BaseRelease {
         newSubmission.setState(SubmissionState.NOT_VALIDATED);
       } else {
         newSubmission.setState(submission.getState());
+        newSubmission.setReport(submission.getReport());
       }
       nextRelease.addSubmission(newSubmission);
     }
