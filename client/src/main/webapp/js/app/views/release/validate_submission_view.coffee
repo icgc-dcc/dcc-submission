@@ -36,8 +36,9 @@ define (require) ->
     id: 'validate-submission-popup'
     
     initialize: ->
-      console.debug "ValidateSubmissionView#initialize", @options.submission
+      console.debug "ValidateSubmissionView#initialize", @options, @options.submission
       @model = @options.submission
+      @model.set "queue", @options.release.get("queue").length
       super
       
       @delegate 'click', '#validate-submission-button', @validateSubmission
