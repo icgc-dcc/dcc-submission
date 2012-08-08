@@ -130,9 +130,9 @@ public class NextRelease extends BaseRelease {
     oldRelease.setState(ReleaseState.COMPLETED);
     oldRelease.setReleaseDate();
     // Non-SignedOff are removed from the old Release Object
-    for(Submission submission : oldRelease.getSubmissions()) {
-      if(submission.getState() != SubmissionState.SIGNED_OFF) {
-        oldRelease.getSubmissions().remove(submission);
+    for(int i = oldRelease.getSubmissions().size() - 1; i >= 0; i--) {
+      if(oldRelease.getSubmissions().get(i).getState() != SubmissionState.SIGNED_OFF) {
+        oldRelease.getSubmissions().remove(i);
       }
     }
     // update the newly changed status to mongoDB
