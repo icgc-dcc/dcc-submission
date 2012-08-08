@@ -68,7 +68,7 @@ define (require) ->
       console.log dT
       
       data = dT.fnGetData nTr
-      style = 'alert-info'
+      style = 'signed'
 
       if nTr in @anOpen
         @anOpen = _.without @anOpen, nTr
@@ -83,7 +83,8 @@ define (require) ->
       console.debug "ReportTableView#summaryDetails", data
       sOut = "<dt>#{data.type}</dt>"
       for key, value of data.summary
-        sOut += "<dd><strong>#{key}:</strong>#{value}<br></dd>"
+        value = if key is 'stddev' then Number(value).toFixed(2) else value
+        sOut += "<dd><strong>#{key}: </strong>#{value}<br></dd>"
         
       sOut
 
@@ -135,7 +136,7 @@ define (require) ->
               bUseRendered: false
               fnRender: (oObj, sVal) ->
                 if not $.isEmptyObject sVal
-                  "<span class='summary'>Show</span></td>"
+                  "<span class='summary signed'>show</span></td>"
                 else
                   ""
             }
