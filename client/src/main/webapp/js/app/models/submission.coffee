@@ -18,24 +18,28 @@
 
 define (require) ->
   Model = require 'models/base/model'
+  SubmissionFiles = require 'models/submission_files'
   Report = require 'models/report'
 
   "use strict"
 
   class Submission extends Model
     idAttribute: "projectKey"
-    
+
     initialize: ->
       console.debug 'Submission#initialize', @, @attributes
       super
-    
+
       @urlPath = ->
         "releases/#{@attributes.release}/submissions/#{@attributes.name}"
-    
 
     parse: (response) ->
       console.debug 'Submission#parse', @, response
       if response?.report
         response.report = new Report _.extend(response.report,
-          {"release": 'release1', "projectKey": response.projectKey})
+          {"release": @attributes?.release, "projectKey": response.projectKey})
+      response.files = new SubmissionFiles {}, {
+                            "release": @attributes?.release
+                            "projectKey": response.projectKey
+                          }
       response

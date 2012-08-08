@@ -19,6 +19,7 @@
 define (require) ->
   View = require 'views/base/view'
   ReportTableView = require 'views/release/report_table_view'
+  SubmissionFilesTableView = require 'views/release/submission_files_table_view'
   SignOffSubmissionView = require 'views/release/signoff_submission_view'
   ValidateSubmissionView = require 'views/release/validate_submission_view'
   template = require 'text!views/templates/release/submission.handlebars'
@@ -72,3 +73,10 @@ define (require) ->
             el: @.$("#report-container")
           }
         )
+      
+      @subview('Files'
+        new SubmissionFilesTableView {
+          @model
+          el: @.$("#files-container")
+        }
+      )
