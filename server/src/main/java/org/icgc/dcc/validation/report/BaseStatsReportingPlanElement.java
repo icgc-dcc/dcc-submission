@@ -76,8 +76,7 @@ abstract class BaseStatsReportingPlanElement implements ReportingPlanElement {
     this.flowType = flowType;
   }
 
-  @Override
-  public Pipe report(Pipe pipe) {
+  public Pipe keepStructurallyValidTuples(Pipe pipe) {
     return new Each(pipe, TupleStates.keepStructurallyValidTuplesFilter());
   }
 
