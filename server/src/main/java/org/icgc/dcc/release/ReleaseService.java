@@ -342,6 +342,10 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     datastore().update(updateQuery, ops);
   }
 
+  public void updateSubmission(String currentReleaseName, Submission submission) {
+    this.updateSubmission(currentReleaseName, submission.getState(), submission.getProjectKey());
+  }
+
   public void updateSubmissionReport(String releaseName, String projectKey, SubmissionReport report) {
     Query<Release> updateQuery = datastore().createQuery(Release.class)//
         .filter("name = ", releaseName)//
