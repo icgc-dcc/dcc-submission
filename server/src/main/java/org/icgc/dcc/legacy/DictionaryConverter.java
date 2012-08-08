@@ -21,8 +21,10 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -76,22 +78,32 @@ public class DictionaryConverter {
       dictionary = new Dictionary(DICTIONARY_VERSION);
     }
     File tsvFolder = new File(folder);
-    File[] tsvFiles = tsvFolder.listFiles(new FilenameFilter() {
-
+    FilenameFilter tsvFilter = new FilenameFilter() {
       @Override
       public boolean accept(File dir, String name) {
         return name.endsWith(".tsv");
       }
+    };
 
-    });
+    File[] tsvFiles = tsvFolder.listFiles(tsvFilter);
 
-    List<FileSchema> fileSchemas = new ArrayList<FileSchema>();
+    Map<String, FileSchema> fileSchemas = new HashMap<String, FileSchema>();
 
     for(File tsvFile : tsvFiles) {
-      fileSchemas.add(this.readFileSchema(tsvFile));
+
+      fileSchemas.put(tsvFile.getName(), this.readFileSchema(tsvFile, FileSchemaRole.SUBMISSION));
     }
 
-    dictionary.setFiles(fileSchemas);
+    // Read System FileSchema gene, transcript, mirna_base, Override the previous ones
+    File systemFolder = new File("src/main/resources/SystemFiles");
+
+    tsvFiles = systemFolder.listFiles(tsvFilter);
+
+    for(File tsvFile : tsvFiles) {
+      fileSchemas.put(tsvFile.getName(), this.readFileSchema(tsvFile, FileSchemaRole.SYSTEM));
+    }
+
+    dictionary.setFiles(new ArrayList<FileSchema>(fileSchemas.values()));
 
     this.readFilePattern("src/test/resources/converter/file_to_pattern.tsv");
 
@@ -181,7 +193,7 @@ public class DictionaryConverter {
     }
   }
 
-  private FileSchema readFileSchema(File tsvFile) throws IOException {
+  private FileSchema readFileSchema(File tsvFile, FileSchemaRole role) throws IOException {
     String FileSchemaName = FilenameUtils.removeExtension(tsvFile.getName());
     FileSchema fileSchema = new FileSchema(FileSchemaName);
 
@@ -201,11 +213,40 @@ public class DictionaryConverter {
     List<Field> fields = new ArrayList<Field>();
     while(lineIterator.hasNext()) {
       Field field = this.readField(lineIterator.next(), fileSchema);
+      // hardcode special case for stsm_s gene_affected and transcript_affected
+      if(FileSchemaName.equals("stsm_s") && field.getName().equals("gene_affected")) {
+        Field field_from = new Field(field);
+        Field field_to = new Field(field);
+        field_from.setName("gene_affected_by_bkpt_from");
+        field_to.setName("gene_affected_by_bkpt_to");
+
+        fields.add(field_from);
+        fields.add(field_to);
+      } else if(FileSchemaName.equals("stsm_s") && field.getName().equals("transcript_affected")) {
+        Field field_from = new Field(field);
+        Field field_to = new Field(field);
+        field_from.setName("transcript_affected_by_bkpt_from");
+        field_to.setName("transcript_affected_by_bkpt_to");
+        fields.add(field_from);
+        fields.add(field_to);
+      }
       fields.add(field);
+    }
+
+    // special case for mirna_m, stsm_m, cnsm_m, jcn_m, sgv_m, ssm_m, meth_m, exp_m, add missing donor_id
+    if(FileSchemaName.equals("mirna_m") || FileSchemaName.equals("stsm_m") || FileSchemaName.equals("cnsm_m")
+        || FileSchemaName.equals("jcn_m") || FileSchemaName.equals("sgv_m") || FileSchemaName.equals("ssm_m")
+        || FileSchemaName.equals("meth_m") || FileSchemaName.equals("exp_m")) {
+      if(!this.containField(fields, "donor_id")) {
+        Field donorIDField = new Field();
+        donorIDField.setName("donor_id");
+        donorIDField.setValueType(ValueType.TEXT);
+        fields.add(donorIDField);
+      }
     }
     fileSchema.setFields(fields);
 
-    fileSchema.setRole(FileSchemaRole.SUBMISSION);
+    fileSchema.setRole(role);
 
     return fileSchema;
   }
@@ -272,5 +313,14 @@ public class DictionaryConverter {
 
   private Iterable<String> readTSVHeader(String line) {
     return Splitter.on('\t').trimResults().omitEmptyStrings().split(line);
+  }
+
+  private boolean containField(List<Field> fields, String fieldName) {
+    for(Field field : fields) {
+      if(field.getName().equals(fieldName)) {
+        return true;
+      }
+    }
+    return false;
   }
 }

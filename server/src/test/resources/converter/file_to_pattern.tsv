@@ -41,3 +41,6 @@ meth_s	^meth__\p{Lower}\p{Lower}__\d\d__\d\d\d__s__\d+__(19|20)\d\d(0[1-9]|1[012
 mirna_m	^mirna__\p{Lower}\p{Lower}__\d\d__\d\d\d__m__\d+__(19|20)\d\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\.txt$
 mirna_p	^mirna__\p{Lower}\p{Lower}__\d\d__\d\d\d__p__\d+__(19|20)\d\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\.txt$
 mirna_s	^mirna__\p{Lower}\p{Lower}__\d\d__\d\d\d__s__\d+__(19|20)\d\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\.txt$
+hsap_gene	^hsapiens_gene_ensembl__gene__main.txt$
+hsap_transcript	^hsapiens_gene_ensembl__transcript__main.txt$
+mirna_mirbase	^mirna_mirbase.txt$

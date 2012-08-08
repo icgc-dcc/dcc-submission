@@ -116,7 +116,11 @@ public class Plan {
         if(schemaReport.getFieldReports() != null) {
           sreport.getFieldReports().addAll(schemaReport.getFieldReports());
         }
-        sreport.getErrors().addAll(schemaReport.getErrors());
+        if(sreport.getErrors() != null) {
+          sreport.getErrors().addAll(schemaReport.getErrors());
+        } else if(schemaReport.getErrors() != null) {
+          sreport.setErrors(schemaReport.getErrors());
+        }
       }
     }
 
