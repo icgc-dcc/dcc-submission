@@ -343,6 +343,9 @@
         </executions>
         <configuration>
           <mainClass>org.icgc.dcc.Main</mainClass>
+          <arguments>
+            <argument>-Xms2g -Xmx2g</argument>
+          </arguments>
         </configuration>
       </plugin>
       <plugin>

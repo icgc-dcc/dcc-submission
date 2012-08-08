@@ -1,6 +1,6 @@
 {
-  "created" : 1344373474257,
-  "lastUpdate" : 1344373474257,
+  "created" : 1344439181284,
+  "lastUpdate" : 1344439181284,
   "version" : "0.6c",
   "state" : "OPENED",
   "files" : [ {
@@ -13,7 +13,7 @@
       "name" : "analysis_id",
       "label" : "Unique identfier for the analysis performed for a particular group of samples",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -22,7 +22,7 @@
       "name" : "analyzed_sample_id",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -31,7 +31,7 @@
       "name" : "matched_sample_id",
       "label" : "Unique identifier for the control matched to the tumour sample",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -68,13 +68,13 @@
       "name" : "experimental_protocol",
       "label" : "Name of experimental protocol and URL to written protocol",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "base_calling_algorithm",
       "label" : "Name of base calling algorithm and URL to written protocol",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -83,7 +83,7 @@
       "name" : "alignment_algorithm",
       "label" : "Name of alignment algorithm and URL to written protocol",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -92,7 +92,7 @@
       "name" : "variation_calling_algorithm",
       "label" : "Name of variation calling algorithm and URL to written protocol",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -101,7 +101,7 @@
       "name" : "other_analysis_algorithm",
       "label" : "Names of other analysis algorithms.  Separate multiple algorithms by commas.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "seq_coverage",
@@ -124,13 +124,13 @@
       "name" : "raw_data_accession",
       "label" : "Accession and URL for referencing the raw data at the public repository",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "note",
       "label" : "Optional field to leave notes",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "donor_id",
@@ -154,7 +154,7 @@
       "name" : "mirna_seq",
       "label" : "Sequence of the miRNA",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -206,13 +206,13 @@
       "name" : "xref_mirbase_id",
       "label" : "Cross-reference to miRBase ID (e.g. has-let-7c) if available",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "note",
       "label" : "Optional field to leave notes",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     } ],
     "relation" : [ {
@@ -234,7 +234,7 @@
       "name" : "donor_id",
       "label" : "Unique identifier for the donor; assigned by data provider. It must be coded, and correspond to a donor ID listed in the donor data file.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -266,7 +266,7 @@
       "name" : "procedure_site",
       "label" : "Anatomical site of the procedure. This must use a standard controlled vocabulary which should be reported in advance to the DCC.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -289,7 +289,7 @@
       "name" : "specimen_id",
       "label" : "ID of ICGC specimen resulting from procedure. If present, must match specimen_id in specimen data file.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -310,7 +310,7 @@
       "name" : "donor_id",
       "label" : "Unique identifier for the donor; assigned by data provider. ",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -333,7 +333,7 @@
       "name" : "donor_region_of_residence",
       "label" : "Country, and optionally state or province code, but not city.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -420,7 +420,7 @@
       "name" : "donor_diagnosis_icd10",
       "label" : "ICD-10 diagnostic code",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -429,7 +429,7 @@
       "name" : "donor_tumour_staging_system_at_diagnosis",
       "label" : "Clinical staging system used at time of diagnosis, if determined. Note that this is supplementary to specimen's pathological staging.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -438,7 +438,7 @@
       "name" : "donor_tumour_stage_at_diagnosis",
       "label" : "Stage at diagnosis using indicated staging system. Note that this is supplementary to specimen's pathological staging. ",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -447,7 +447,7 @@
       "name" : "donor_tumour_stage_at_diagnosis_supplemental",
       "label" : "Optional additional staging provided as a comma-delimited list of 'staging system:stage'",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "donor_survival_time",
@@ -471,7 +471,7 @@
       "name" : "donor_notes",
       "label" : "Free text notes concerning donor",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     } ],
     "relation" : [ ]
@@ -485,7 +485,7 @@
       "name" : "analysis_id",
       "label" : "Unique identfier for the analysis performed for a particular group of samples",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -494,7 +494,7 @@
       "name" : "control_sample_id",
       "label" : "Unique identifier for the control sample",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -503,7 +503,7 @@
       "name" : "variation_id",
       "label" : "Unique identifier for the variation",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -572,7 +572,7 @@
       "name" : "refsnp_allele",
       "label" : "RefSNP alleles from dbSNP (use a dash for each missing base)",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -592,7 +592,7 @@
       "name" : "reference_genome_allele",
       "label" : "Allele in the reference genome (use a dash for each missing base)",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -601,7 +601,7 @@
       "name" : "control_genotype",
       "label" : "Genotype of the control sample (use a dash for each missing base)",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -610,7 +610,7 @@
       "name" : "tumour_genotype",
       "label" : "Genotype of the tumour sample (use a dash for each missing base)",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -619,7 +619,7 @@
       "name" : "expressed_allele",
       "label" : "For heterozygous SNPs, the dominant allele as revealed by RNA-seq, etc.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "quality_score",
@@ -679,13 +679,13 @@
       "name" : "xref_ensembl_var_id",
       "label" : "Cross-reference: Ensembl Variation ID",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "note",
       "label" : "Optional field to leave notes",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     } ],
     "relation" : [ {
@@ -703,7 +703,7 @@
       "name" : "donor_id",
       "label" : "Unique identifier for the donor; assigned by data provider. It must be coded, and correspond to a donor ID listed in the donor data file.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -712,7 +712,7 @@
       "name" : "exposure_type",
       "label" : "Type of exposure. This is a controlled vocabulary term to be developed by the submitting group.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -730,7 +730,7 @@
       "name" : "exposure_notes",
       "label" : "Free text notes.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -751,55 +751,55 @@
       "name" : "xref_mirbase_id",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "mirna_seq",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "transcript_id",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "overlap_type",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "number",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "transcript_source",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "transcript_name",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "gene_stable_id",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "gene_symbol",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     } ],
     "relation" : [ {
@@ -817,7 +817,7 @@
       "name" : "analysis_id",
       "label" : "Unique identfier for the analysis performed for a particular group of samples",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -826,7 +826,7 @@
       "name" : "analyzed_sample_id",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -835,7 +835,7 @@
       "name" : "mutation_id",
       "label" : "Unique identifier for the mutation",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -904,7 +904,7 @@
       "name" : "refsnp_allele",
       "label" : "RefSNP alleles from dbSNP (use a dash for each missing base)",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -924,7 +924,7 @@
       "name" : "reference_genome_allele",
       "label" : "Allele in the reference genome (use a dash for each missing base)",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -933,7 +933,7 @@
       "name" : "control_genotype",
       "label" : "Genotype of the control sample (use a dash for each missing base)",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -942,7 +942,7 @@
       "name" : "tumour_genotype",
       "label" : "Genotype of the tumour sample (use a dash for each missing base)",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -951,7 +951,7 @@
       "name" : "mutation",
       "label" : "Mutation, e.g. C > G",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -960,7 +960,7 @@
       "name" : "expressed_allele",
       "label" : "For heterozygous SNPs, the dominant allele as revealed by RNA-seq, etc.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "quality_score",
@@ -1020,13 +1020,13 @@
       "name" : "xref_ensembl_var_id",
       "label" : "Cross-reference: Ensembl Variation ID",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "note",
       "label" : "Optional field to leave notes",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     } ],
     "relation" : [ {
@@ -1044,7 +1044,7 @@
       "name" : "analysis_id",
       "label" : "Unique identfier for the analysis performed for a particular group of samples",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -1053,7 +1053,7 @@
       "name" : "analyzed_sample_id",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -1062,7 +1062,7 @@
       "name" : "methylated_fragment_id",
       "label" : "Unique identifier for the methylation",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -1071,7 +1071,7 @@
       "name" : "gene_affected",
       "label" : "Gene(s) containing the methylation.  Use Ensembl gene id. Separate multiple genes with vertical bars in the form of geneA|geneB|geneC.  If no gene is affected, use -888 (not applicable).",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -1089,7 +1089,7 @@
       "name" : "note",
       "label" : "Optional field to leave notes",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     } ],
     "relation" : [ {
@@ -1111,7 +1111,7 @@
       "name" : "analyzed_sample_id",
       "label" : "Unique identifier for the sample assigned by data provider.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -1120,7 +1120,7 @@
       "name" : "specimen_id",
       "label" : "Unique identifier for the specimen assigned by data provider. The corresponding specimen idmust appear in the specimen data submission file.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -1143,7 +1143,7 @@
       "name" : "analyzed_sample_type_other",
       "label" : "Free text description of site of sample if 'other' was specified in sample_type field.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "analyzed_sample_interval",
@@ -1155,7 +1155,7 @@
       "name" : "analyzed_sample_notes",
       "label" : "Freetext notes about sample allowed",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     } ],
     "relation" : [ {
@@ -1173,7 +1173,7 @@
       "name" : "analysis_id",
       "label" : "Unique identfier for the analysis performed for a particular group of samples",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -1182,7 +1182,7 @@
       "name" : "sample_id",
       "label" : "Unique identifier for the sample being analyzed",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -1191,7 +1191,7 @@
       "name" : "junction_id",
       "label" : "For known exons, use exonID1_exonID2 where exonID1 and exonID2 are Ensembl IDs of the 5' and 3' exons, respectively.  For novel or putative exons, use assemblyBuild_exon1chr_exon1end_exon2chr_exon2start where assemblyBuild is hg18 or hg19; exon1chr and exone2chr are the chromosomes of the 5' and 3' exons, respectively; exon1end is the end position of the 5'exon; exon2start is the start position of the 3'exon.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -1200,7 +1200,7 @@
       "name" : "gene_stable_id",
       "label" : "Stable ID of the gene containing the 5' exon at the junction.  For annotated gene, use Ensembl gene ID.  For putative and novel gene, use assemblyBuild_chr_start_end where assemblyBuild can be hg18 or hg19.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -1255,7 +1255,7 @@
       "name" : "second_gene_stable_id",
       "label" : "In the case of a fusion gene, provide the Stable ID of the gene containing the 3' exon at the junction.  For annotated genes, use Ensembl gene ID.  For putative and novel genes, use assemblyBuild_chr_start_end where assemblyBuild can be hg18 or hg19.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "exon1_chromosome",
@@ -1369,7 +1369,7 @@
       "name" : "junction_seq",
       "label" : "Provide junction sequence if either is_fusion_gene or is_novel_splice_form is true",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "junction_type",
@@ -1432,7 +1432,7 @@
       "name" : "note",
       "label" : "Optional field to leave notes",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     } ],
     "relation" : [ {
@@ -1454,7 +1454,7 @@
       "name" : "analysis_id",
       "label" : "Unique identfier for the analysis performed for a particular group of samples",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -1463,7 +1463,7 @@
       "name" : "analyzed_sample_id",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -1472,7 +1472,7 @@
       "name" : "matched_sample_id",
       "label" : "Unique identifier for the control matched to the tumour sample",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -1509,13 +1509,13 @@
       "name" : "experimental_protocol",
       "label" : "Name of experimental protocol and URL to written protocol",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "base_calling_algorithm",
       "label" : "Name of base calling algorithm and URL to written protocol",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -1524,7 +1524,7 @@
       "name" : "alignment_algorithm",
       "label" : "Name of alignment algorithm and URL to written protocol",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -1533,7 +1533,7 @@
       "name" : "variation_calling_algorithm",
       "label" : "Name of variation calling algorithm and URL to written protocol",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -1542,7 +1542,7 @@
       "name" : "other_analysis_algorithm",
       "label" : "Names of other analysis algorithms.  Separate multiple algorithms by commas.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "seq_coverage",
@@ -1565,13 +1565,13 @@
       "name" : "raw_data_accession",
       "label" : "Accession and URL for referencing the raw data at the public repository",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "note",
       "label" : "Optional field to leave notes",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "donor_id",
@@ -1595,7 +1595,7 @@
       "name" : "analysis_id",
       "label" : "Unique identfier for the analysis performed for a particular group of samples",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -1604,7 +1604,7 @@
       "name" : "control_sample_id",
       "label" : "Unique identifier for the control sample donated by the donor",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -1613,7 +1613,7 @@
       "name" : "matched_sample_id",
       "label" : "Unique identifier for the tumour matched to the control sample",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -1650,13 +1650,13 @@
       "name" : "experimental_protocol",
       "label" : "Name of experimental protocol and URL to written protocol",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "base_calling_algorithm",
       "label" : "Name of base calling algorithm and URL to written protocol",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -1665,7 +1665,7 @@
       "name" : "alignment_algorithm",
       "label" : "Name of alignment algorithm and URL to written protocol",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -1674,7 +1674,7 @@
       "name" : "variation_calling_algorithm",
       "label" : "Name of variation calling algorithm and URL to written protocol",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -1683,7 +1683,7 @@
       "name" : "other_analysis_algorithm",
       "label" : "Names of other analysis algorithms.  Separate multiple algorithms by commas.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "seq_coverage",
@@ -1706,13 +1706,13 @@
       "name" : "raw_data_accession",
       "label" : "Accession and URL for referencing the raw data at the public repository",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "note",
       "label" : "Optional field to leave notes",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "donor_id",
@@ -1732,7 +1732,7 @@
       "name" : "analysis_id",
       "label" : "Unique identfier for the analysis performed for a particular group of samples",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -1741,7 +1741,7 @@
       "name" : "control_sample_id",
       "label" : "Unique identifier for the control sample",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -1750,7 +1750,7 @@
       "name" : "variation_id",
       "label" : "Unique identifier for the variation",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -1773,31 +1773,31 @@
       "name" : "aa_variation",
       "label" : "Changes at amino acid level. Indicate the reference aa, position and variation aa.  If multiple transcripts are involved, separate multiple aa variation by commas.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "cds_variation",
       "label" : "Changes in coding sequence.  Indicate position, reference base and variation base.  If multiple transcripts are involved, separate multiple cds variation by commas.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "protein_domain_affected",
       "label" : "Protein domain containing the mutation/variation.  Use Pfam accession.  If multiple transcripts are involved, separate multiple domains by commas.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "gene_affected",
       "label" : "Gene(s) containing the mutation/variation.  Use Ensembl gene id. Separate multiple genes with vertical bars in the form of geneA|geneB|geneC.  If no gene is affected, use -888 (not applicable).",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "transcript_affected",
       "label" : "Transcript(s) containing the mutation/variation.  Use Ensembl transcript id. Separate multiple transcripts from the same gene with commas, and separate transcripts from different genes with vertical bars. eg. transcriptA1, transcriptA2|transcriptB1|transcriptC1,transcriptC2,transcriptC3.  If no transcript is affected, use -888 (not applicable).",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "gene_build_version",
@@ -1812,7 +1812,7 @@
       "name" : "note",
       "label" : "Optional field to leave notes",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     } ],
     "relation" : [ ]
@@ -1826,7 +1826,7 @@
       "name" : "analysis_id",
       "label" : "Unique identfier for the analysis performed for a particular group of samples",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -1835,7 +1835,7 @@
       "name" : "analyzed_sample_id",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -1844,7 +1844,7 @@
       "name" : "sv_id",
       "label" : "Unique variant id (institute wide). One id per single event",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -1862,7 +1862,7 @@
       "name" : "annotation",
       "label" : "Annotation describing sequence mutation/variation based on breakpoint pairs",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -1871,7 +1871,7 @@
       "name" : "interpreted_annotation",
       "label" : "HGVS nomenclature for description of sequence mutation/variation. E.g. chr3:g.1234567-2345678inv.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "variant_type",
@@ -1934,7 +1934,7 @@
       "name" : "chr_from_flanking_seq",
       "label" : "Flanking sequences that are 200bp upstream and 200bp downstream to the chr_from_bkpt position.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "chr_to",
@@ -1983,19 +1983,19 @@
       "name" : "chr_to_flanking_seq",
       "label" : "Flanking sequences that are 200bp upstream and 200bp downstream to the chr_to_bkpt position.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "microhomology_sequence",
       "label" : "If a microhomology is inserted, provide sequence",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "non_templated_sequence",
       "label" : "If non-templated DNA is inserted, provide sequence",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "evidence",
@@ -2060,13 +2060,13 @@
       "name" : "db_xref",
       "label" : "Value code of cross-reference database:ID of the mutation in the cross-reference database.  Separate multiple entries by commas.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "note",
       "label" : "Optional field to leave notes",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     } ],
     "relation" : [ {
@@ -2084,7 +2084,7 @@
       "name" : "donor_id",
       "label" : "Unique identifier for the donor; assigned by data provider. It must be coded, and correspond to a donor ID listed in the donor data file.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -2107,7 +2107,7 @@
       "name" : "relationship_type_other",
       "label" : "If 'other' answered in previous column, specify the relationship type here",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -2139,7 +2139,7 @@
       "name" : "relationship_disease_icd10",
       "label" : "ICD-10 code for the relative's disease",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -2148,7 +2148,7 @@
       "name" : "relationship_disease",
       "label" : "Disease name",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -2169,43 +2169,43 @@
       "name" : "gene_affected_by_bkpt_from",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "gene_affected_by_bkpt_to",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "gene_affected",
       "label" : "Gene(s) affected by the breakpoints.  Use Ensembl gene id.  Separate multiple genes with vertical bars in the form of geneA|geneB|geneC. If both breakpoints affect genes, then use | to separate them.  If no gene is affected, use -888 (not applicable).",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "transcript_affected_by_bkpt_from",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "transcript_affected_by_bkpt_to",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "transcript_affected",
       "label" : "Transcript(s) affected by the breakpoints. Use Ensembl transcript id.  Separate multiple transcripts from the same gene with commas, and separate transcripts from different genes with vertical bars. eg. transcriptA1, transcriptA2|transcriptB1|transcriptC1",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "analysis_id",
       "label" : "Unique identfier for the analysis performed for a particular group of samples",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -2214,7 +2214,7 @@
       "name" : "analyzed_sample_id",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -2223,7 +2223,7 @@
       "name" : "sv_id",
       "label" : "Unique variant id (institute wide). One id per single event",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -2241,13 +2241,13 @@
       "name" : "bkpt_from_context",
       "label" : "Contextual description of the first break location (Exonic, Intronic, Intergenic)",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "bkpt_to_context",
       "label" : "Contextual description of the second break location (Exonic, Intronic, Intergenic)",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "gene_build_version",
@@ -2262,7 +2262,7 @@
       "name" : "note",
       "label" : "Optional field to leave notes",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     } ],
     "relation" : [ {
@@ -2288,7 +2288,7 @@
       "name" : "analysis_id",
       "label" : "Unique identfier for the analysis performed for a particular group of samples",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -2297,7 +2297,7 @@
       "name" : "sample_id",
       "label" : "Unique identifier for the sample being analyzed",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -2343,13 +2343,13 @@
       "name" : "experimental_protocol",
       "label" : "Name of experimental protocol and URL to written protocol",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "base_calling_algorithm",
       "label" : "Name of base calling algorithm and URL to written protocol",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -2358,7 +2358,7 @@
       "name" : "alignment_algorithm",
       "label" : "Name of alignment algorithm and URL to written protocol",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -2367,7 +2367,7 @@
       "name" : "normalization_algorithm",
       "label" : "Name of normalization algorithm and URL to written protocol",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -2376,7 +2376,7 @@
       "name" : "other_analysis_algorithm",
       "label" : "Names of other analysis algorithms.  Separate multiple algorithms by commas.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "seq_coverage",
@@ -2402,7 +2402,7 @@
       "name" : "raw_data_accession",
       "label" : "Accession and URL for referencing the raw data at the public repository",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -2411,7 +2411,7 @@
       "name" : "note",
       "label" : "Optional field to leave notes",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "donor_id",
@@ -2435,7 +2435,7 @@
       "name" : "analysis_id",
       "label" : "Unique identfier for the analysis performed for a particular group of samples",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -2444,7 +2444,7 @@
       "name" : "analyzed_sample_id",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -2453,7 +2453,7 @@
       "name" : "matched_sample_id",
       "label" : "Unique identifier for the control matched to the tumour sample",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -2490,31 +2490,31 @@
       "name" : "experimental_protocol",
       "label" : "Name of experimental protocol and URL to written protocol",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "base_calling_algorithm",
       "label" : "Name of base calling algorithm and URL to written protocol",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "alignment_algorithm",
       "label" : "Name of alignment algorithm and URL to written protocol",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "variation_calling_algorithm",
       "label" : "Name of variation calling algorithm and URL to written protocol",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "other_analysis_algorithm",
       "label" : "Names of other analysis algorithms.  Separate multiple algorithms by commas.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "seq_coverage",
@@ -2537,13 +2537,13 @@
       "name" : "raw_data_accession",
       "label" : "Accession and URL for referencing the raw data at the public repository",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "note",
       "label" : "Optional field to leave notes",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "donor_id",
@@ -2567,7 +2567,7 @@
       "name" : "analysis_id",
       "label" : "Unique identfier for the analysis performed for a particular group of samples",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -2576,7 +2576,7 @@
       "name" : "analyzed_sample_id",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -2585,7 +2585,7 @@
       "name" : "methylated_fragment_id",
       "label" : "Unique identifier for the methylated fragment",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -2680,7 +2680,7 @@
       "name" : "note",
       "label" : "Optional field to leave notes",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     } ],
     "relation" : [ {
@@ -2698,7 +2698,7 @@
       "name" : "analysis_id",
       "label" : "Unique identfier for the analysis performed for a particular group of samples",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -2707,7 +2707,7 @@
       "name" : "analyzed_sample_id",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -2716,7 +2716,7 @@
       "name" : "mutation_id",
       "label" : "Unique identifier for the mutation",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -2739,31 +2739,31 @@
       "name" : "aa_mutation",
       "label" : "Changes at amino acid level. Indicate the reference aa, position and mutation aa.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "cds_mutation",
       "label" : "Changes in coding sequence.  Indicate position, reference base and mutation base.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "protein_domain_affected",
       "label" : "Protein domain containing the mutation/variation.  Use Pfam accession.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "gene_affected",
       "label" : "Gene(s) containing the mutation/variation.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "transcript_affected",
       "label" : "Transcript(s) containing the mutation/variation.  Use Ensembl transcript id.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "gene_build_version",
@@ -2778,7 +2778,7 @@
       "name" : "note",
       "label" : "Optional field to leave notes",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     } ],
     "relation" : [ {
@@ -2800,7 +2800,7 @@
       "name" : "analysis_id",
       "label" : "Unique identfier for the analysis performed for a particular group of samples",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -2809,7 +2809,7 @@
       "name" : "sample_id",
       "label" : "Unique identifier for the sample being analyzed",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -2855,13 +2855,13 @@
       "name" : "experimental_protocol",
       "label" : "Name of experimental protocol and URL to written protocol",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "base_calling_algorithm",
       "label" : "Name of base calling algorithm and URL to written protocol",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -2870,7 +2870,7 @@
       "name" : "alignment_algorithm",
       "label" : "Name of alignment algorithm and URL to written protocol",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -2879,7 +2879,7 @@
       "name" : "normalization_algorithm",
       "label" : "Name of normalization algorithm and URL to written protocol",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -2888,7 +2888,7 @@
       "name" : "other_analysis_algorithm",
       "label" : "Names of other analysis algorithms.  Separate multiple algorithms by commas.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "seq_coverage",
@@ -2911,13 +2911,13 @@
       "name" : "raw_data_accession",
       "label" : "Accession and URL for referencing the raw data at the public repository",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "note",
       "label" : "Optional field to leave notes",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "donor_id",
@@ -2941,7 +2941,7 @@
       "name" : "donor_id",
       "label" : "Unique identifier for the donor; assigned by data provider. It must be coded, and correspond to a donor ID listed in the donor data file.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -2968,7 +2968,7 @@
       "name" : "therapy_type",
       "label" : "Name of therapy",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -2991,7 +2991,7 @@
       "name" : "therapy_notes",
       "label" : "Further description of therapy, such as dosing schedule.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -3012,7 +3012,7 @@
       "name" : "analysis_id",
       "label" : "Unique identfier for the analysis performed for a particular group of samples",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -3021,7 +3021,7 @@
       "name" : "analyzed_sample_id",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -3030,7 +3030,7 @@
       "name" : "mutation_id",
       "label" : "Unique identifier for the mutation",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -3039,7 +3039,7 @@
       "name" : "gene_affected",
       "label" : "Gene(s) containing the mutation/variation.  Use Ensembl gene id. Separate multiple genes with vertical bars in the form of geneA|geneB|geneC.  If no gene is affected, use -888 (not applicable).",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -3048,7 +3048,7 @@
       "name" : "transcript_affected",
       "label" : "Transcript(s) containing the mutation/variation.  Use Ensembl transcript id. Separate multiple transcripts from the same gene with commas, and separate transcripts from different genes with vertical bars. eg. transcriptA1, transcriptA2|transcriptB1|transcriptC1,transcriptC2,transcriptC3.  If no transcript is affected, use -888 (not applicable).",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "gene_build_version",
@@ -3063,7 +3063,7 @@
       "name" : "note",
       "label" : "Optional field to leave notes",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     } ],
     "relation" : [ {
@@ -3085,7 +3085,7 @@
       "name" : "analysis_id",
       "label" : "Unique identifier for the analysis performed for a particular group of samples",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -3094,7 +3094,7 @@
       "name" : "sample_id",
       "label" : "Unique identifier for the sample being analyzed",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -3103,7 +3103,7 @@
       "name" : "assembly_version",
       "label" : "Version of reference genome assembly (#)",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -3140,13 +3140,13 @@
       "name" : "experimental_protocol",
       "label" : "Name of experimental protocol and URL to written protocol",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "base_calling_algorithm",
       "label" : "Name of base calling algorithm and URL to written protocol",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -3155,7 +3155,7 @@
       "name" : "alignment_algorithm",
       "label" : "Name of alignment algorithm and URL to written protocol",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -3164,7 +3164,7 @@
       "name" : "normalization_algorithm",
       "label" : "Name of normalization algorithm and URL to written protocol",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -3173,7 +3173,7 @@
       "name" : "other_analysis_algorithm",
       "label" : "Names of other analysis algorithms.  Separate multiple algorithms by commas.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "seq_coverage",
@@ -3196,13 +3196,13 @@
       "name" : "raw_data_accession",
       "label" : "Accession and URL for referencing the raw data at the public repository",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "note",
       "label" : "Optional field to leave notes",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "donor_id",
@@ -3226,7 +3226,7 @@
       "name" : "analysis_id",
       "label" : "Unique identfier for the analysis performed for a particular group of samples",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -3235,7 +3235,7 @@
       "name" : "analyzed_sample_id",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -3244,7 +3244,7 @@
       "name" : "mutation_id",
       "label" : "Unique identifier for the mutation",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -3311,13 +3311,13 @@
       "name" : "start_probe_id",
       "label" : "Probe id containing the chromosome_start if array platform was used",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "end_probe_id",
       "label" : "Probe id containing the chromosome_end if array platform was used",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "copy_number",
@@ -3389,7 +3389,7 @@
       "name" : "note",
       "label" : "Optional field to leave notes",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     } ],
     "relation" : [ {
@@ -3407,7 +3407,7 @@
       "name" : "analysis_id",
       "label" : "Unique identifier for the analysis performed for a particular group of samples",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -3416,7 +3416,7 @@
       "name" : "sample_id",
       "label" : "Unique identifier for the sample being analyzed",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -3425,7 +3425,7 @@
       "name" : "mirna_seq",
       "label" : "Sequence of the miRNA",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -3464,7 +3464,7 @@
       "name" : "reference_sample",
       "label" : "ID of the reference sample if differential expression is measured",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "quality_score",
@@ -3518,7 +3518,7 @@
       "name" : "note",
       "label" : "Optional field to leave notes",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     } ],
     "relation" : [ {
@@ -3536,7 +3536,7 @@
       "name" : "analysis_id",
       "label" : "Unique identfier for the analysis performed for a particular group of samples",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -3545,7 +3545,7 @@
       "name" : "analyzed_sample_id",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -3554,7 +3554,7 @@
       "name" : "matched_sample_id",
       "label" : "Unique identifier for the control matched to the tumour sample",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -3591,13 +3591,13 @@
       "name" : "experimental_protocol",
       "label" : "Name of experimental protocol and URL to written protocol",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "base_calling_algorithm",
       "label" : "Name of base calling algorithm and URL to written protocol",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -3606,7 +3606,7 @@
       "name" : "alignment_algorithm",
       "label" : "Name of alignment algorithm and URL to written protocol",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -3615,7 +3615,7 @@
       "name" : "variation_calling_algorithm",
       "label" : "Name of variation calling algorithm and URL to written protocol",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -3624,7 +3624,7 @@
       "name" : "other_analysis_algorithm",
       "label" : "Names of other analysis algorithms.  Separate multiple algorithms by commas.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "raw_data_repository",
@@ -3641,13 +3641,13 @@
       "name" : "raw_data_accession",
       "label" : "Accession and URL for referencing the raw data at the public repository",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "note",
       "label" : "Optional field to leave notes",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "donor_id",
@@ -3671,7 +3671,7 @@
       "name" : "donor_id",
       "label" : "Unique identifier for the donor; assigned by data provider. It must be coded, and correspond to a donor ID listed in the donor data file.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -3680,7 +3680,7 @@
       "name" : "specimen_id",
       "label" : "Unique identifier for the specimen assigned by data provider.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -3703,7 +3703,7 @@
       "name" : "specimen_type_other",
       "label" : "Free text description of site of specimen if 'normal control (other)' or 'tumour (other)' was specified in specimen_type field.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -3735,7 +3735,7 @@
       "name" : "specimen_donor_treatment_type_other",
       "label" : "If 'other' therapy indicated in previous column, describe it here. eg: molecular",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -3758,7 +3758,7 @@
       "name" : "specimen_processing_other",
       "label" : "If 'other' specified for specimen_processing, may indicate technique here.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -3781,7 +3781,7 @@
       "name" : "specimen_storage_other",
       "label" : "If 'other' specified for specimen_storage, may indicate technique here.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -3804,7 +3804,7 @@
       "name" : "specimen_biobank",
       "label" : "If the specimen was obtained from a biobank, provide the biobank name here",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -3813,7 +3813,7 @@
       "name" : "specimen_biobank_id",
       "label" : "If the specimen was obtained from a biobank, provide the biobank accession number here.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -3836,7 +3836,7 @@
       "name" : "tumour_histological_type",
       "label" : "'WHO International Histological Classification of Tumours' code",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -3845,7 +3845,7 @@
       "name" : "tumour_grading_system",
       "label" : "Name of tumour grading system",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -3854,7 +3854,7 @@
       "name" : "tumour_grade",
       "label" : "Tumour grade using indicated grading system",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -3863,7 +3863,7 @@
       "name" : "tumour_grade_supplemental",
       "label" : "Optional additional grading provided as a comma-delimited list of 'grading system:grade'",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -3872,7 +3872,7 @@
       "name" : "tumour_stage_system",
       "label" : "Name of tumour staging system used ",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -3881,7 +3881,7 @@
       "name" : "tumour_stage",
       "label" : "Pathological tumour stage value using indicated staging system",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -3890,13 +3890,13 @@
       "name" : "tumour_stage_supplemental",
       "label" : "Optional additional staging provided as a comma-delimited list of 'staging system:stage'",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "digital_image_of_stained_section",
       "label" : "Linkout(s) to digital image of a stained section, demonstrating a representative section of tumour",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -3905,7 +3905,7 @@
       "name" : "specimen_notes",
       "label" : "Free text notes allowed",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     } ],
     "relation" : [ {
@@ -3923,7 +3923,7 @@
       "name" : "donor_id",
       "label" : "Unique identifier for the donor; assigned by data provider. It must be coded, and correspond to a donor ID listed in the donor data file.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -3932,7 +3932,7 @@
       "name" : "specimen_id",
       "label" : "ID of the specimen on which biomarker ascertainment was performed, if applicable",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -3941,7 +3941,7 @@
       "name" : "biomarker_name",
       "label" : "Biomarker name",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -3950,7 +3950,7 @@
       "name" : "biomarker_threshold",
       "label" : "Threshold value for the biomarker for calling a result positive. Please include units.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -3985,961 +3985,961 @@
       "name" : "status_1020",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "source_1020",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "gene_id_1020_key",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "seq_region_start_1020",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "description_1020",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "modified_date_1020",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "db_display_name_1018",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "stable_id_1023",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "value_1022",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "seq_region_strand_1020",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "version_1020",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "display_label_1074",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "display_xref_id_1020",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "created_date_1020",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "seq_region_end_1020",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "seq_region_id_1020",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "biotype_1020",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "analysis_id_1020",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "canonical_annotation_1020",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "name_1059",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "is_current_1020",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "band_1027",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "splicing_event_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_Clone_based_ensembl_gene_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_Clone_based_vega_gene_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_DBASS3_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_DBASS5_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_ENS_LRG_gene_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_Ens_Hs_gene_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_EntrezGene_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_HGNC_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_LRG_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_MIM_GENE_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_MIM_MORBID_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_OTTG_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_PUBMED_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_RFAM_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_RefSeq_genomic_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_UniGene_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_Uniprot_genename_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_Vega_gene_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_WikiGene_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_miRBase_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_miRBase_gene_name_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_rnor_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_trub_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_csav_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_mmul_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_etel_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_gacu_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_olat_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_cfam_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_ggal_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_oana_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_mdom_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_tbel_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_eeur_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_stri_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_sara_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_mmus_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_mmur_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_pabe_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_ecab_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_tnig_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_fcat_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_opri_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_cpor_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_chof_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_pcap_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_ttru_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_tsyr_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_dord_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_vpac_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_pvam_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_dnov_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_tgut_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_meug_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_sscr_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_lafr_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_dmel_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_ocun_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_amel_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_drer_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_acar_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_mgal_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_cele_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_nleu_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_xtro_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_cjac_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_mluc_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_pmar_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_shar_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_btau_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_ggor_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_ogar_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_ptro_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_gmor_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_scer_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_cint_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_lcha_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "paralog_hsap_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_rnor_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_trub_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_csav_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_mmul_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_etel_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_gacu_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_olat_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_cfam_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_ggal_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_oana_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_mdom_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_tbel_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_eeur_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_stri_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_sara_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_mmus_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_mmur_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_pabe_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_ecab_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_tnig_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_fcat_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_opri_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_cpor_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_chof_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_pcap_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_ttru_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_tsyr_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_dord_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_vpac_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_pvam_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_dnov_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_tgut_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_meug_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_sscr_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_lafr_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_dmel_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_ocun_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_amel_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_drer_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_acar_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_mgal_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_cele_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_nleu_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_xtro_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_cjac_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_mluc_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_pmar_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_shar_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_btau_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_ggor_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_ogar_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_ptro_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_gmor_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_scer_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_cint_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_lcha_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "transcript_count",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "stable_id_408",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "description_408",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     } ],
     "relation" : [ ]
@@ -4953,1459 +4953,1459 @@
       "name" : "inter_paralog_ptro_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_sara_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_ocun_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_etel_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_Clone_based_ensembl_gene_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_OTTG_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_csav_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_rnor_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "description_1020",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_eeur_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_cjac_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "seq_region_id_1064",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_WikiGene_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_tnig_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_mgal_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_ENS_LRG_gene_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_lafr_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_shar_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_acar_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_PUBMED_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_btau_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_ogar_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "is_current_1020",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_oana_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "db_display_name_1018_r1",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "status_1020",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_ggor_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "source_1020",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_cfam_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "display_label_1074_r1",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_meug_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_scer_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_olat_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_stri_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_olat_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "display_xref_id_1020",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "seq_region_end_1020",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_stri_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_ecab_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_cfam_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_cele_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "analysis_id_1020",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_mluc_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_pvam_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "seq_region_start_1064",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_MIM_GENE_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_MIM_MORBID_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_fcat_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_btau_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_xtro_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "gene_id_1020_key",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_tbel_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "created_date_1064",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_pcap_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "canonical_translation_id_1064",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_scer_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "modified_date_1064",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_UniGene_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_ptro_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_RefSeq_genomic_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_vpac_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_ogar_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_DBASS3_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "stable_id_1066",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_opri_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "biotype_1064",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_dord_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "version_1064",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_cint_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_pmar_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_lcha_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "db_display_name_1018",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_mmul_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_mmus_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "seq_region_strand_1020",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_vpac_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_meug_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_ggor_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_cint_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_acar_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_lcha_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_HGNC_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_ggal_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_eeur_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_Ens_Hs_gene_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_mmur_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_etel_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_sscr_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_opri_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "transcript_id_1064_key",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_pcap_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_LRG_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "is_current_1064",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_nleu_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_mmur_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_sara_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_chof_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_csav_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "description_1064",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_amel_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_gmor_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_fcat_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "version_1020",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_dnov_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_mmul_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_ggal_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_mdom_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "seq_region_id_1020",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_lafr_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_mgal_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_dmel_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_tsyr_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_dmel_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_drer_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_xtro_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_nleu_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "analysis_id_1064",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_ocun_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_mmus_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_tgut_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "seq_region_start_1020",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "stable_id_1023",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_cele_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "seq_region_end_1064",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_miRBase_gene_name_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_pabe_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_gacu_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "status_1064",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_cpor_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_oana_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "canonical_annotation_1020",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "display_xref_id_1064",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_Uniprot_genename_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "name_1059",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_mdom_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_DBASS5_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_Vega_gene_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_miRBase_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "paralog_hsap_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_gacu_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "modified_date_1020",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_EntrezGene_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_trub_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "value_1022",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_ttru_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_gmor_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_amel_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "biotype_1020",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_mluc_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_drer_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_pmar_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_tgut_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_dnov_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_pabe_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_pvam_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_dord_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_rnor_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_trub_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_shar_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_cpor_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_ecab_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "splicing_event_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_tbel_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "seq_region_strand_1064",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_chof_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_tsyr_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "homolog_cjac_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "display_label_1074",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_RFAM_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "created_date_1020",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_sscr_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_ttru_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_Clone_based_vega_gene_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_tnig_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "band_1027",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "transcript_count",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "mart_transcript_variation_som_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "exon_transcript_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "exp_atlas_celltype_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "exp_atlas_diseasestate_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "exp_atlas_organismpart_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_CCDS_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_Clone_based_ensembl_transcript_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_Clone_based_vega_transcript_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_ENS_LRG_transcript_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_Ens_Hs_transcript_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_HGNC_1_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_HGNC_transcript_name_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_OTTT_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_RFAM_transcript_name_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_RefSeq_mRNA_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_RefSeq_mRNA_predicted_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_RefSeq_ncRNA_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_RefSeq_ncRNA_predicted_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_UCSC_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_Vega_transcript_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_miRBase_transcript_name_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_shares_CDS_and_UTR_with_OTTT_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_shares_CDS_with_ENST_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "ox_shares_CDS_with_OTTT_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "mart_transcript_variation_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "splicing_event_feature_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "exp_est_AnatomicalSystem_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "exp_est_AssociatedWith_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "exp_est_CellType_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "exp_est_DevelopmentStage_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "exp_est_ExperimentalTechnique_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "exp_est_MicroarrayPlatform_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "exp_est_Pathology_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "exp_est_Pooling_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "exp_est_TissuePreparation_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "exp_est_Treatment_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "eFG_AFFY_HC_G110_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "eFG_AFFY_HG_Focus_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "eFG_AFFY_HG_U133A_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "eFG_AFFY_HG_U133A_2_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "eFG_AFFY_HG_U133B_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "eFG_AFFY_HG_U133_Plus_2_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "eFG_AFFY_HG_U95A_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "eFG_AFFY_HG_U95Av2_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "eFG_AFFY_HG_U95B_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "eFG_AFFY_HG_U95C_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "eFG_AFFY_HG_U95D_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "eFG_AFFY_HG_U95E_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "eFG_AFFY_HuEx_1_0_st_v2_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "eFG_AFFY_HuGeneFL_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "eFG_AFFY_HuGene_1_0_st_v1_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "eFG_AFFY_U133_X3P_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "eFG_AGILENT_CGH_44b_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "eFG_AGILENT_SurePrint_G3_GE_8x60k_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "eFG_AGILENT_WholeGenome_4x44k_v1_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "eFG_AGILENT_WholeGenome_4x44k_v2_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "eFG_CODELINK_CODELINK_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "eFG_ILLUMINA_HumanHT_12_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "eFG_ILLUMINA_HumanWG_6_V1_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "eFG_ILLUMINA_HumanWG_6_V2_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "eFG_ILLUMINA_HumanWG_6_V3_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "eFG_PHALANX_OneArray_bool",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "translation_count",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "stable_id_408",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "description_408",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "cdna_coding_start",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "cdna_coding_end",
       "label" : null,
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     } ],
     "relation" : [ ]
@@ -6419,7 +6419,7 @@
       "name" : "analysis_id",
       "label" : "Unique identfier for the analysis performed for a particular group of samples",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -6428,7 +6428,7 @@
       "name" : "sample_id",
       "label" : "Unique identifier for the sample being analyzed",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -6437,7 +6437,7 @@
       "name" : "gene_stable_id",
       "label" : "For annotated gene, use Ensembl gene ID.  Otherwise, use assemblyBuild_chr_start_end where assemblyBuild is hg18 or hg19.",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
         "config" : null
@@ -6522,7 +6522,7 @@
       "name" : "reference_sample",
       "label" : "ID of the reference sample if differential expression is measured",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "quality_score",
@@ -6576,13 +6576,13 @@
       "name" : "probeset_id",
       "label" : "ID of the probeset used in microarray",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     }, {
       "name" : "note",
       "label" : "Optional field to leave notes",
       "valueType" : "TEXT",
-      "summaryType" : "COMPLETENESS",
+      "summaryType" : null,
       "restrictions" : [ ]
     } ],
     "relation" : [ {
