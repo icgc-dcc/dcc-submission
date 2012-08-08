@@ -24,21 +24,42 @@ import cascading.operation.FilterCall;
 
 public final class TupleStates {
 
+  @SuppressWarnings("rawtypes")
   private static class TupleStateFilter extends BaseOperation implements Filter {
 
-    static final TupleStateFilter validFilter = new TupleStateFilter(true);
+    enum State {
+      VALID, INVALID, STRUCTURALLY_VALID, STRUCTURALLY_INVALID
+    };
 
-    static final TupleStateFilter invalidFilter = new TupleStateFilter(false);
+    static final TupleStateFilter validFilter = new TupleStateFilter(State.VALID);
 
-    private final boolean valid;
+    static final TupleStateFilter invalidFilter = new TupleStateFilter(State.INVALID);
 
-    private TupleStateFilter(boolean valid) {
-      this.valid = valid;
+    static final TupleStateFilter structurallyValidFilter = new TupleStateFilter(State.STRUCTURALLY_VALID);
+
+    static final TupleStateFilter structurallyInvalidFilter = new TupleStateFilter(State.STRUCTURALLY_INVALID);
+
+    private final State state;
+
+    private TupleStateFilter(State state) {
+      this.state = state;
     }
 
     @Override
     public boolean isRemove(FlowProcess flowProcess, FilterCall filterCall) {
-      return ValidationFields.state(filterCall.getArguments()).isValid() != valid;
+      TupleState tupleState = ValidationFields.state(filterCall.getArguments());
+      switch(state) {
+      case VALID:
+        return tupleState.isInvalid();
+      case INVALID:
+        return tupleState.isValid();
+      case STRUCTURALLY_VALID:
+        return tupleState.isStructurallyValid() == false;
+      case STRUCTURALLY_INVALID:
+        return tupleState.isStructurallyValid();
+      default:
+        throw new IllegalStateException();
+      }
     }
 
   }
@@ -49,6 +70,7 @@ public final class TupleStates {
    * 
    * @return a {@code Filter} instance usable to keep valid tuples only
    */
+  @SuppressWarnings("rawtypes")
   public static Filter keepValidTuplesFilter() {
     return TupleStateFilter.validFilter;
   }
@@ -59,8 +81,32 @@ public final class TupleStates {
    * 
    * @return a {@code Filter} instance usable to keep {@code invalid} tuples only
    */
+  @SuppressWarnings("rawtypes")
   public static Filter keepInvalidTuplesFilter() {
     return TupleStateFilter.invalidFilter;
   }
 
+  /**
+   * Returns a {@code Filter} that will only keep {@code structurally valid} tuples based on its {@code TupleState} (if
+   * it DOESN'T contain {@code ValidationErrorCode#STRUCTURALLY_INVALID_ROW_ERROR}). Note that the
+   * {@code ValidationFields#STATE_FIELD} must be one of the operation's arguments.
+   * 
+   * @return a {@code Filter} instance usable to keep {@code structurally valid} tuples only
+   */
+  @SuppressWarnings("rawtypes")
+  public static Filter keepStructurallyValidTuplesFilter() {
+    return TupleStateFilter.structurallyValidFilter;
+  }
+
+  /**
+   * Returns a {@code Filter} that will only keep {@code structurally invalid} tuples based on its {@code TupleState}
+   * (if it DOES contain {@code ValidationErrorCode#STRUCTURALLY_INVALID_ROW_ERROR}). Note that the
+   * {@code ValidationFields#STATE_FIELD} must be one of the operation's arguments.
+   * 
+   * @return a {@code Filter} instance usable to keep {@code structurally valid} tuples only
+   */
+  @SuppressWarnings("rawtypes")
+  public static Filter keepStructurallyInvalidTuplesFilter() {
+    return TupleStateFilter.structurallyInvalidFilter;
+  }
 }

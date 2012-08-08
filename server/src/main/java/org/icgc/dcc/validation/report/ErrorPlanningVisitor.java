@@ -138,7 +138,6 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
         }
       }
     }
-
   }
 
 }

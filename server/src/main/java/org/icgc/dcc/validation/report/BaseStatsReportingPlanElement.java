@@ -33,7 +33,10 @@ import org.icgc.dcc.validation.PlanExecutionException;
 import org.icgc.dcc.validation.ReportingPlanElement;
 import org.icgc.dcc.validation.cascading.CompletenessBy;
 import org.icgc.dcc.validation.cascading.TupleState.TupleError;
+import org.icgc.dcc.validation.cascading.TupleStates;
 
+import cascading.pipe.Each;
+import cascading.pipe.Pipe;
 import cascading.tuple.Fields;
 
 import com.google.common.base.Function;
@@ -41,7 +44,7 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 
-abstract class BaseReportingPlanElement implements ReportingPlanElement {
+abstract class BaseStatsReportingPlanElement implements ReportingPlanElement {
 
   static final String FIELD = "field";
 
@@ -65,12 +68,16 @@ abstract class BaseReportingPlanElement implements ReportingPlanElement {
 
   protected final List<Field> fields;
 
-  protected BaseReportingPlanElement(FileSchema fileSchema, List<Field> fields, SummaryType summaryType,
+  protected BaseStatsReportingPlanElement(FileSchema fileSchema, List<Field> fields, SummaryType summaryType,
       FlowType flowType) {
     this.fileSchema = fileSchema;
     this.fields = fields;
     this.summaryType = summaryType;
     this.flowType = flowType;
+  }
+
+  public Pipe keepStructurallyValidTuples(Pipe pipe) {
+    return new Each(pipe, TupleStates.keepStructurallyValidTuplesFilter());
   }
 
   @Override
