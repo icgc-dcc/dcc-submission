@@ -112,7 +112,7 @@ public class NextRelease extends BaseRelease {
     for(Submission submission : oldRelease.getSubmissions()) {
       Submission newSubmission = new Submission(submission.getProjectKey());
       if(submission.getState() == SubmissionState.SIGNED_OFF) {
-        newSubmission.setState(SubmissionState.VALID);
+        newSubmission.setState(SubmissionState.NOT_VALIDATED);
       } else {
         newSubmission.setState(submission.getState());
       }

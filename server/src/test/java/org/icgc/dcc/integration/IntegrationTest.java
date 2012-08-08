@@ -144,8 +144,8 @@ public class IntegrationTest {
     test_checkRelease("release1", "0.6c", ReleaseState.COMPLETED,
         Arrays.<SubmissionState> asList(SubmissionState.SIGNED_OFF));
 
-    test_checkRelease("release2", "0.6c", ReleaseState.OPENED,
-        Arrays.<SubmissionState> asList(SubmissionState.VALID, SubmissionState.INVALID, SubmissionState.INVALID));
+    test_checkRelease("release2", "0.6c", ReleaseState.OPENED, Arrays.<SubmissionState> asList(
+        SubmissionState.NOT_VALIDATED, SubmissionState.INVALID, SubmissionState.INVALID));
 
     test_updateRelease("/integrationtest/updatedRelease.json");
 
