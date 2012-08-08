@@ -73,6 +73,12 @@ define (require) ->
               sVal.replace '_', ' '
           }
           {
+            sTitle: "Last Updated"
+            mDataProp: "lastUpdated"
+            fnRender: (oObj, sVal) ->
+              utils.date sVal
+          }
+          {
             sTitle: "Report"
             mDataProp: null
             bSortable: false

@@ -1,7 +1,7 @@
 package org.icgc.dcc.validation.report;
 
 import org.icgc.dcc.dictionary.model.SummaryType;
-import org.icgc.dcc.validation.report.BaseReportingPlanElement.FieldSummary;
+import org.icgc.dcc.validation.report.BaseStatsReportingPlanElement.FieldSummary;
 
 import com.google.code.morphia.annotations.Embedded;
 import com.mongodb.BasicDBObject;

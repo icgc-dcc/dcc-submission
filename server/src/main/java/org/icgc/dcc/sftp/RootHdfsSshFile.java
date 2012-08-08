@@ -29,6 +29,7 @@ import org.icgc.dcc.filesystem.DccFileSystemException;
 import org.icgc.dcc.filesystem.ReleaseFileSystem;
 import org.icgc.dcc.filesystem.SubmissionDirectory;
 import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
+import org.icgc.dcc.release.ReleaseService;
 import org.mortbay.log.Log;
 
 /**
@@ -38,12 +39,15 @@ class RootHdfsSshFile extends HdfsSshFile {
 
   private final ReleaseFileSystem rfs;
 
+  private final ReleaseService releases;
+
   private final ProjectService projects;
 
-  public RootHdfsSshFile(ReleaseFileSystem rfs, ProjectService projects) {
+  public RootHdfsSshFile(ReleaseFileSystem rfs, ProjectService projects, ReleaseService releases) {
     super(rfs);
     this.rfs = rfs;
     this.projects = projects;
+    this.releases = releases;
   }
 
   @Override
@@ -128,5 +132,10 @@ class RootHdfsSshFile extends HdfsSshFile {
   @Override
   public void truncate() throws IOException {
 
+  }
+
+  public void notifyModified(SubmissionDirectory submissionDirectory) {
+    submissionDirectory.notifyModified();
+    this.releases.updateSubmission(this.rfs.getRelease().getName(), submissionDirectory.getSubmission());
   }
 }

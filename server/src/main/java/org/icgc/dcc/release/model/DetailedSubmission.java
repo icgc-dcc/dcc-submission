@@ -12,6 +12,7 @@ public class DetailedSubmission extends Submission {
     this.projectKey = submission.projectKey;
     this.state = submission.state;
     this.report = submission.report;
+    this.lastUpdated = submission.lastUpdated;
   }
 
   public String getProjectName() {
