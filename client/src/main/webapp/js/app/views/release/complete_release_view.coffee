@@ -46,6 +46,15 @@ define (require) ->
       @$el.modal "show": true
       
       @delegate 'click', '#complete-release-button', @completeRelease
+    
+    errors: (err) ->
+      switch err.code
+        when "InvalidName"
+          alert "in"
+          "A release name must only use letters[a-z], numbers(0-9), underscores(_) and dashes(-)"
+        when "NoneSignedOff"
+          "The release needs at least one SIGNED OFF submission before it can be COMPLETED."
+        
       
     completeRelease: ->
       console.debug "CompleteReleaseView#completeRelease"
@@ -57,12 +66,12 @@ define (require) ->
           @.$('.modal').modal('hide')
           Chaplin.mediator.publish "completeRelease", data
           
-        error: (model, error) ->
-          err = error.statusText + error.responseText
+        error: (model, error) =>
+          err = error.responseText
           alert = @.$('.alert.alert-error')
           
           if alert.length
-            alert.text(err)
+            alert.text(@errors(err))
           else
-            @.$('fieldset')
-              .before("<div class='alert alert-error'>#{err}</div>")
+            @.$('.alert')
+              .before("<div class='alert alert-error'>#{@errors(err)}</div>")
