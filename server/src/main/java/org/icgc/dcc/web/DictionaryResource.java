@@ -13,11 +13,14 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriBuilder;
 
 import org.icgc.dcc.dictionary.DictionaryService;
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.DictionaryState;
+import org.icgc.dcc.shiro.AuthorizationPrivileges;
+import org.icgc.dcc.shiro.ShiroSecurityContext;
 
 import com.google.inject.Inject;
 
@@ -27,7 +30,11 @@ public class DictionaryResource {
   private DictionaryService dictionaries;
 
   @POST
-  public Response addDictionary(Dictionary d) {
+  public Response addDictionary(Dictionary d, @Context SecurityContext securityContext) {
+    if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
+        AuthorizationPrivileges.DICTIONARY_MODIFY.toString()) == false) {
+      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
+    }
     checkArgument(d != null);
     if(this.dictionaries.list().isEmpty() == false) {
       return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage("NotInitialDictionary")).build();
@@ -58,7 +65,12 @@ public class DictionaryResource {
 
   @PUT
   @Path("{version}")
-  public Response updateDictionary(@PathParam("version") String version, Dictionary newDictionary, @Context Request req) {
+  public Response updateDictionary(@PathParam("version") String version, Dictionary newDictionary,
+      @Context Request req, @Context SecurityContext securityContext) {
+    if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
+        AuthorizationPrivileges.DICTIONARY_MODIFY.toString()) == false) {
+      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
+    }
     Dictionary oldDictionary = this.dictionaries.getFromVersion(version);
     if(oldDictionary == null) {
       return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoSuchVersion", version)).build();

@@ -34,6 +34,7 @@ import org.icgc.dcc.filesystem.ReleaseFileSystem;
 import org.icgc.dcc.filesystem.SubmissionDirectory;
 import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.Release;
+import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.validation.CascadingStrategy;
 import org.icgc.dcc.validation.LocalCascadingStrategy;
@@ -123,10 +124,14 @@ public class ValidationQueueManagerService extends AbstractService implements Va
                 } else {
                   String projectKey = next.get();
                   Plan plan = validationService.validate(release, projectKey);
-                  if(plan.getCascade().getCascadeStats().isSuccessful()) {
-                    handleSuccessfulValidation(projectKey, plan);
+                  if(release.getState() == ReleaseState.OPENED) {
+                    if(plan.getCascade().getCascadeStats().isSuccessful()) {
+                      handleSuccessfulValidation(projectKey, plan);
+                    } else {
+                      handleFailedValidation(projectKey);
+                    }
                   } else {
-                    handleFailedValidation(projectKey);
+                    log.info("Release was closed during validation; states not changed");
                   }
                 }
               }

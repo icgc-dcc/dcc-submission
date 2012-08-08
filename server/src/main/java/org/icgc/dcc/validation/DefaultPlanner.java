@@ -19,6 +19,7 @@ package org.icgc.dcc.validation;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.io.File;
 import java.util.List;
 import java.util.Set;
 
@@ -61,9 +62,11 @@ public class DefaultPlanner implements Planner {
     checkArgument(directory != null);
     checkArgument(dictionary != null);
 
+    LocalFileSchemaDirectory systemDirectory = new LocalFileSchemaDirectory(new File("src/main/resources/SystemFiles"));
+
     Plan plan = new Plan();
     for(FileSchema fileSchema : dictionary.getFiles()) {
-      if(directory.hasFile(fileSchema)) {
+      if(directory.hasFile(fileSchema) || systemDirectory.hasFile(fileSchema)) {
         plan.include(fileSchema, new DefaultInternalFlowPlanner(fileSchema), new DefaultExternalFlowPlanner(plan,
             fileSchema));
       }

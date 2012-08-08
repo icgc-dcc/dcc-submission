@@ -50,10 +50,6 @@ public class SummaryPlanningVisitor extends ReportingFlowPlanningVisitor {
     for(SummaryType summaryType : SummaryType.values()) {
       for(Field field : fileSchema.getFields()) {
         SummaryType summaryTypeTmp = field.getSummaryType();
-        if(summaryTypeTmp == null) {
-          summaryTypeTmp = SummaryType.COMPLETENESS;// TODO: to be removed soon
-        }
-
         if(summaryType == summaryTypeTmp) {
           List<Field> list = summaryTypeToFields.get(summaryType);
           if(list == null) {

@@ -78,16 +78,21 @@ public class NextRelease extends BaseRelease {
     checkArgument(nextReleaseName != null);
 
     // check for next release name
-    if(!NameValidator.validate(nextReleaseName)) {
+    if(NameValidator.validate(nextReleaseName) == false) {
       throw new InvalidNameException(nextReleaseName);
     }
 
     // check for submission state to be signed off
-    if(!this.canRelease()) {
+    if(this.canRelease() == false) {
       throw new ReleaseException("NoneSignedOff");
     }
 
     Release oldRelease = this.getRelease();
+
+    if(oldRelease.getQueue().isEmpty() == false) {
+      throw new ReleaseException("QueueNotEmpty");
+    }
+
     Release nextRelease = new Release(nextReleaseName);
     String oldDictionaryVersion = oldRelease.getDictionaryVersion();
     String newDictionaryVersion = oldDictionaryVersion;

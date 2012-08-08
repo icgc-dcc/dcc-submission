@@ -46,6 +46,15 @@ public class Field implements DictionaryElement {
     this.restrictions = new ArrayList<Restriction>();
   }
 
+  public Field(Field field) {
+    super();
+    this.name = field.getName();
+    this.label = field.getLabel();
+    this.valueType = field.getValueType();
+    this.summaryType = field.getSummaryType();
+    this.restrictions = field.getRestrictions();
+  }
+
   @Override
   public void accept(DictionaryVisitor dictionaryVisitor) {
     dictionaryVisitor.visit(this);

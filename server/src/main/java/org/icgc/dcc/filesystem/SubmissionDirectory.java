@@ -87,4 +87,8 @@ public class SubmissionDirectory {
   public String getDataFilePath(String filename) {
     return dccFileSystem.buildFileStringPath(release, project.getKey(), filename);
   }
+
+  public Submission getSubmission() {
+    return this.submission;
+  }
 }
