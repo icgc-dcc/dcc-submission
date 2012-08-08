@@ -17,29 +17,19 @@
 """
 
 define (require) ->
-  Model = require 'models/base/model'
-  SubmissionFiles = require 'models/submission_files'
-  Report = require 'models/report'
+  Collection = require 'models/base/collection'
+  SubmissionFile = require 'models/submission_file'
 
   "use strict"
 
-  class Submission extends Model
-    idAttribute: "projectKey"
-
-    initialize: ->
-      console.debug 'Submission#initialize', @, @attributes
+  class SubmissionFiles extends Collection
+    model: SubmissionFile
+    
+    urlPath: ->
+      "releases/#{@release}/submissions/#{@projectKey}/files"
+    
+    initialize: (models, options)->
+      console.debug 'SubmissionFiles#initialize', @, models, options
       super
-
-      @urlPath = ->
-        "releases/#{@attributes.release}/submissions/#{@attributes.name}"
-
-    parse: (response) ->
-      console.debug 'Submission#parse', @, response
-      if response?.report
-        response.report = new Report _.extend(response.report,
-          {"release": @attributes?.release, "projectKey": response.projectKey})
-      response.files = new SubmissionFiles {}, {
-                            "release": @attributes?.release
-                            "projectKey": response.projectKey
-                          }
-      response
+      @release = options.release
+      @projectKey = options.projectKey

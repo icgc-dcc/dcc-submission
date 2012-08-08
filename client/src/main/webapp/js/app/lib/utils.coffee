@@ -159,6 +159,21 @@ define (require) ->
     date: (date) ->
       moment(date).format("YYYY-MM-DD")
       
+    fileSize: (fs) ->
+      sizes = ['B', 'KB', 'MB', 'GB', 'TB']
+      posttxt = 0
+      bytes = fs * 1
+      precision = 2
+
+      if bytes <= 1024
+        precision = 0
+
+      while bytes >= 1024
+        posttxt++
+        bytes = bytes / 1024
+
+      Number(bytes).toFixed(precision) + " " + sizes[posttxt]
+      
     sendAuthorization: (xhr) =>
       console.debug 'utils#sendAuthorization'
       @accessToken = localStorage.getItem 'accessToken'
