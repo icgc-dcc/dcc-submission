@@ -11,16 +11,13 @@ import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
  * For serializing file data through the REST interface
  */
 public class SubmissionFile {
-  public final String name;
+  public String name;
 
-  public final Date lastUpdate;
+  public Date lastUpdate;
 
-  public final long size;
+  public long size;
 
-  public SubmissionFile(String name, Date lastUpdate, long size) {
-    this.name = name;
-    this.lastUpdate = lastUpdate;
-    this.size = size;
+  public SubmissionFile() {
   }
 
   public SubmissionFile(Path path, FileSystem fs) {
