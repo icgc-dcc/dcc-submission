@@ -123,7 +123,8 @@ public abstract class BaseCascadingStrategy implements CascadingStrategy {
 
   protected abstract Tap<?, ?, ?> tapSource(Path path);
 
-  private Path path(final FileSchema schema) throws FileNotFoundException, IOException {
+  @Override
+  public Path path(final FileSchema schema) throws FileNotFoundException, IOException {
     RemoteIterator<LocatedFileStatus> files = fileSystem.listFiles(input, false);
     while(files.hasNext()) {
       LocatedFileStatus file = files.next();
