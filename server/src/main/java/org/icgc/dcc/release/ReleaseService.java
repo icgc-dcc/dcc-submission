@@ -3,11 +3,13 @@ package org.icgc.dcc.release;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
-import java.io.IOException;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.hadoop.fs.Path;
@@ -39,7 +41,10 @@ import com.google.code.morphia.Morphia;
 import com.google.code.morphia.query.Query;
 import com.google.code.morphia.query.UpdateOperations;
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.mysema.query.mongodb.MongodbQuery;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
@@ -92,7 +97,10 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
     // populate project name for submissions
     List<Project> projects = this.getProjects(release, user);
-    ReleaseView releaseView = new ReleaseView(release, projects);
+    List<Entry<String, String>> projectEntries = buildProjectEntries(projects);
+    Map<String, List<SubmissionFile>> submissionFilesMap = buildSubmissionFilesMap(releaseName, release);
+    ReleaseView releaseView = new ReleaseView(release, projectEntries, submissionFilesMap);
+
     return releaseView;
   }
 
@@ -138,6 +146,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   public DetailedSubmission getDetailedSubmission(String releaseName, String projectKey) {
     DetailedSubmission detailedSubmission = new DetailedSubmission(this.getSubmission(releaseName, projectKey));
     detailedSubmission.setProjectName(this.getProject(projectKey).getName());
+    detailedSubmission.setSubmissionFiles(getSubmissionFiles(releaseName, projectKey));
     return detailedSubmission;
   }
 
@@ -373,7 +382,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     return query.where(QProject.project.key.eq(projectKey)).uniqueResult();
   }
 
-  public List<SubmissionFile> getSubmissionFiles(String releaseName, String projectKey) throws IOException {
+  public List<SubmissionFile> getSubmissionFiles(String releaseName, String projectKey) {
     Release release = this.where(QRelease.release.name.eq(releaseName)).singleResult();
     if(release == null) {
       throw new ReleaseException("No such release");
@@ -401,6 +410,22 @@ public class ReleaseService extends BaseMorphiaService<Release> {
                                                                 // DCC-245
     return new MorphiaQuery<Dictionary>(morphia(), datastore(), QDictionary.dictionary).where(
         QDictionary.dictionary.version.eq(version)).singleResult();
+  }
+
+  private List<Entry<String, String>> buildProjectEntries(List<Project> projects) {
+    List<Entry<String, String>> projectEntries = new ArrayList<Map.Entry<String, String>>();
+    for(Project project : projects) {
+      projectEntries.add(new SimpleEntry<String, String>(project.getKey(), project.getName()));
+    }
+    return ImmutableList.<Entry<String, String>> copyOf(projectEntries);
+  }
+
+  private Map<String, List<SubmissionFile>> buildSubmissionFilesMap(String releaseName, Release release) {
+    Map<String, List<SubmissionFile>> submissionFilesMap = Maps.<String, List<SubmissionFile>> newLinkedHashMap();
+    for(String projectKey : release.getProjectKeys()) {
+      submissionFilesMap.put(projectKey, getSubmissionFiles(releaseName, projectKey));
+    }
+    return ImmutableMap.<String, List<SubmissionFile>> copyOf(submissionFilesMap);
   }
 
 }

@@ -1,6 +1,5 @@
 package org.icgc.dcc.web;
 
-import java.io.IOException;
 import java.util.List;
 
 import javax.ws.rs.GET;
@@ -193,13 +192,7 @@ public class ReleaseResource {
           .entity(new ServerErrorResponseMessage("NoSuchSubmission", releaseName, projectKey)).build();
     }
 
-    try {
-      List<SubmissionFile> submissionFiles = this.releaseService.getSubmissionFiles(releaseName, projectKey);
-      return Response.ok(submissionFiles).build();
-    } catch(IOException e) {
-      return Response.status(Status.INTERNAL_SERVER_ERROR).entity(new ServerErrorResponseMessage("FileSystemError"))
-          .build();
-    }
-
+    List<SubmissionFile> submissionFiles = this.releaseService.getSubmissionFiles(releaseName, projectKey);
+    return Response.ok(submissionFiles).build();
   }
 }

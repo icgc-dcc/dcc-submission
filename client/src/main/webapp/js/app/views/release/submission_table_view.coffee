@@ -55,6 +55,7 @@ define (require) ->
       @subview("validateSubmissionView"
         new validateSubmissionView
           "submission": @collection.get $(e.currentTarget).data("submission")
+          "release": @model
       )
       
     createDataTable: (collection) ->
@@ -69,12 +70,14 @@ define (require) ->
           {
             sTitle: "State"
             mDataProp: "state"
+            sWidth: "125"
             fnRender: (oObj, sVal) ->
               sVal.replace '_', ' '
           }
           {
             sTitle: "Last Updated"
             mDataProp: "lastUpdated"
+            sWidth: "125"
             fnRender: (oObj, sVal) ->
               utils.date sVal
           }
