@@ -70,12 +70,14 @@ define (require) ->
           {
             sTitle: "State"
             mDataProp: "state"
+            sWidth: "125"
             fnRender: (oObj, sVal) ->
               sVal.replace '_', ' '
           }
           {
             sTitle: "Last Updated"
             mDataProp: "lastUpdated"
+            sWidth: "125"
             fnRender: (oObj, sVal) ->
               utils.date sVal
           }
