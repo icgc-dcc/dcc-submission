@@ -31,7 +31,6 @@ import org.icgc.dcc.validation.PlanExecutionException;
 import org.icgc.dcc.validation.ReportingFlowPlanningVisitor;
 import org.icgc.dcc.validation.ReportingPlanElement;
 import org.icgc.dcc.validation.cascading.TupleState;
-import org.icgc.dcc.validation.cascading.TupleState.TupleError;
 import org.icgc.dcc.validation.cascading.TupleStates;
 import org.icgc.dcc.validation.cascading.ValidationFields;
 
@@ -107,7 +106,7 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
 
           ObjectMapper mapper = new ObjectMapper();
           if(report.getErrors() == null) {
-            report.setErrors(new ArrayList<TupleError>());
+            report.setErrors(new ArrayList<TupleState>());
           }
           if(report.getFieldReports() == null) {
             report.setFieldReports(new ArrayList<FieldReport>());
@@ -119,9 +118,7 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
             TupleState tupleState = tupleStates.next();
             if(tupleState.isInvalid()) {
               outcome = Outcome.FAILED;
-              for(TupleError error : tupleState.getErrors()) {
-                report.errors.add(error);
-              }
+              report.errors.add(tupleState);
             }
             if(report.getErrors().size() >= 100) {
               // Limit to 100 errors
