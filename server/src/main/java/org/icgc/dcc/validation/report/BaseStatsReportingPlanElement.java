@@ -144,9 +144,7 @@ abstract class BaseStatsReportingPlanElement implements ReportingPlanElement {
       try {
         InputStream src = strategy.readReportTap(getFileSchema(), getFlowType(), getName());
 
-        report.setName(getFileSchema().getName());
-
-        report.setFileName(strategy.path(getFileSchema()).getName());
+        report.setName(strategy.path(getFileSchema()).getName());
 
         ObjectMapper mapper = new ObjectMapper();
         if(report.getErrors() == null) {
