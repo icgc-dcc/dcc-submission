@@ -41,24 +41,40 @@ import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.glassfish.jersey.internal.util.Base64;
 import org.icgc.dcc.Main;
+import org.icgc.dcc.config.ConfigModule;
+import org.icgc.dcc.core.CoreModule;
+import org.icgc.dcc.core.morphia.MorphiaModule;
+import org.icgc.dcc.filesystem.FileSystemModule;
+import org.icgc.dcc.filesystem.GuiceJUnitRunner;
+import org.icgc.dcc.filesystem.GuiceJUnitRunner.GuiceModules;
+import org.icgc.dcc.http.HttpModule;
+import org.icgc.dcc.http.jersey.JerseyModule;
 import org.icgc.dcc.release.model.DetailedSubmission;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.ReleaseView;
 import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.release.model.SubmissionState;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
+import com.google.code.morphia.Datastore;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Resources;
+import com.google.inject.Inject;
 
+@RunWith(GuiceJUnitRunner.class)
+@GuiceModules({ ConfigModule.class, CoreModule.class,//
+HttpModule.class, JerseyModule.class,// TODO: find out why those two seem necessary
+MorphiaModule.class, FileSystemModule.class })
 public class IntegrationTest {
-  /**
-   * 
-   */
+
+  @Inject
+  private Datastore datastore;
+
   private static final String DCC_ROOT_DIR = "/tmp/dcc_root_dir/";
 
   static private Thread server;
@@ -71,10 +87,12 @@ public class IntegrationTest {
 
   private WebTarget target;
 
-  @BeforeClass
-  static public void startServer() throws InterruptedException {
-    server = new Thread(new Runnable() {
+  @Before
+  public void startServer() throws InterruptedException, IOException {
+    clearFS();
+    clearDB();
 
+    server = new Thread(new Runnable() {
       @Override
       public void run() {
         try {
@@ -89,37 +107,23 @@ public class IntegrationTest {
     Thread.sleep(5000);
   }
 
-  public void clearDB() throws IOException, InterruptedException {
-    this.client.target(BASEURI).path("/seed/releases").queryParam("delete", "true").request(MediaType.APPLICATION_JSON)
-        .header("Authorization", AUTHORIZATION).post(Entity.entity("[]", MediaType.APPLICATION_JSON));
-    this.client.target(BASEURI).path("/seed/projects").queryParam("delete", "true").request(MediaType.APPLICATION_JSON)
-        .header("Authorization", AUTHORIZATION).post(Entity.entity("[]", MediaType.APPLICATION_JSON));
-    this.client.target(BASEURI).path("/seed/dictionaries").queryParam("delete", "true")
-        .request(MediaType.APPLICATION_JSON).header("Authorization", AUTHORIZATION)
-        .post(Entity.entity("[]", MediaType.APPLICATION_JSON));
-    this.client.target(BASEURI).path("/seed/codelists").queryParam("delete", "true")
-        .request(MediaType.APPLICATION_JSON).header("Authorization", AUTHORIZATION)
-        .post(Entity.entity("[]", MediaType.APPLICATION_JSON));
+  private void clearDB() throws IOException, InterruptedException {
+    datastore.getDB().dropDatabase();
     Thread.sleep(1000);
   }
 
-  public void clearFS() throws IOException {
+  private void clearFS() throws IOException {
     FileUtils.deleteDirectory(new File(DCC_ROOT_DIR));
   }
 
-  @AfterClass
-  static public void stopServer() {
+  @After
+  public void stopServer() {
     server.interrupt();
   }
 
   @Test
   public void test_IntegrationTest() throws JsonParseException, JsonMappingException, MessageProcessingException,
       IllegalStateException, IOException, InterruptedException {
-
-    clearDB();
-
-    clearFS();
-
     test_feedDB();
 
     test_createInitialRelease("/integrationtest/initRelease.json");
