@@ -55,6 +55,7 @@ define (require) ->
       @subview("validateSubmissionView"
         new validateSubmissionView
           "submission": @collection.get $(e.currentTarget).data("submission")
+          "release": @model
       )
       
     createDataTable: (collection) ->
