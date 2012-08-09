@@ -62,11 +62,15 @@ public abstract class BaseFileSchemaFlowPlanner implements FileSchemaFlowPlanner
   }
 
   @Override
-  public void apply(ReportingPlanElement element) {
-    Pipe split = new Pipe(element.getName(), getTail());
+  public final void apply(ReportingPlanElement element) {
+    Pipe pipe = getTail(element.getName());
     log.info("[{}] applying element [{}]", getName(), element.describe());
-    reports.put(element.getName(), element.report(split));
+    reports.put(element.getName(), element.report(pipe));
     this.collectors.put(element.getName(), element.getCollector());
+  }
+
+  protected Pipe getTail(String basename) {
+    return getStructurallyValidTail(); // overwritten in the case of the internal version
   }
 
   @Override
@@ -98,7 +102,9 @@ public abstract class BaseFileSchemaFlowPlanner implements FileSchemaFlowPlanner
     return result;
   }
 
-  protected abstract Pipe getTail();
+  protected abstract Pipe getStructurallyValidTail();
+
+  protected abstract Pipe getStructurallyInvalidTail();
 
   protected abstract FlowDef onConnect(FlowDef flowDef, CascadingStrategy strategy);
 }

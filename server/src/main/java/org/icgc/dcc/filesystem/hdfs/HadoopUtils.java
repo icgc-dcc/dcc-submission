@@ -158,4 +158,14 @@ public class HadoopUtils {
     }
     return filenameList;
   }
+
+  public static FileStatus getFileStatus(FileSystem fileSystem, Path path) {
+    FileStatus fileStatus = null;
+    try {
+      fileStatus = fileSystem.getFileStatus(path);
+    } catch(IOException e) {
+      throw new HdfsException(e);
+    }
+    return fileStatus;
+  }
 }

@@ -109,8 +109,15 @@ public class NextRelease extends BaseRelease {
 
     nextRelease.setDictionaryVersion(newDictionaryVersion);
     nextRelease.setState(ReleaseState.OPENED);
-    for(String projectKey : oldProjectKeys) {
-      nextRelease.addSubmission(new Submission(projectKey));
+    for(Submission submission : oldRelease.getSubmissions()) {
+      Submission newSubmission = new Submission(submission.getProjectKey());
+      if(submission.getState() == SubmissionState.SIGNED_OFF) {
+        newSubmission.setState(SubmissionState.NOT_VALIDATED);
+      } else {
+        newSubmission.setState(submission.getState());
+        newSubmission.setReport(submission.getReport());
+      }
+      nextRelease.addSubmission(newSubmission);
     }
 
     // dictionaries.getFromVersion(oldDictionary).close();
@@ -128,10 +135,16 @@ public class NextRelease extends BaseRelease {
 
     oldRelease.setState(ReleaseState.COMPLETED);
     oldRelease.setReleaseDate();
+    // Non-SignedOff are removed from the old Release Object
+    for(int i = oldRelease.getSubmissions().size() - 1; i >= 0; i--) {
+      if(oldRelease.getSubmissions().get(i).getState() != SubmissionState.SIGNED_OFF) {
+        oldRelease.getSubmissions().remove(i);
+      }
+    }
     // update the newly changed status to mongoDB
     UpdateOperations<Release> ops =
         this.datastore.createUpdateOperations(Release.class).set("state", ReleaseState.COMPLETED)
-            .set("releaseDate", oldRelease.getReleaseDate());
+            .set("releaseDate", oldRelease.getReleaseDate()).set("submissions", oldRelease.getSubmissions());
 
     this.datastore.update(oldRelease, ops);
 

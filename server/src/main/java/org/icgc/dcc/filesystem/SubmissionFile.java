@@ -1,24 +1,30 @@
 package org.icgc.dcc.filesystem;
 
-import java.io.IOException;
 import java.util.Date;
 
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
 
-/*
+/**
  * For serializing file data through the REST interface
  */
 public class SubmissionFile {
-  public final String name;
+  public String name;
 
-  public final Date lastUpdate;
+  public Date lastUpdate;
 
-  public final long size;
+  public long size;
 
-  public SubmissionFile(Path path, FileSystem fs) throws IOException {
+  public SubmissionFile() {
+  }
+
+  public SubmissionFile(Path path, FileSystem fs) {
     this.name = path.getName();
-    this.lastUpdate = new Date(fs.getFileStatus(path).getModificationTime());
-    this.size = fs.getFileStatus(path).getLen();
+
+    FileStatus fileStatus = HadoopUtils.getFileStatus(fs, path);
+    this.lastUpdate = new Date(fileStatus.getModificationTime());
+    this.size = fileStatus.getLen();
   }
 }

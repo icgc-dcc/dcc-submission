@@ -22,8 +22,9 @@ import java.util.Date;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
-import org.icgc.dcc.core.model.Project;
+import org.icgc.dcc.filesystem.SubmissionFile;
 import org.icgc.dcc.release.ReleaseException;
 
 /**
@@ -49,16 +50,21 @@ public class ReleaseView {
 
   }
 
-  public ReleaseView(Release release, List<Project> projects) {
+  public ReleaseView(Release release, List<Entry<String, String>> projectEntries,
+      Map<String, List<SubmissionFile>> submissionFilesMap) {
 
     this.name = release.name;
     this.state = release.state;
     this.queue = release.getQueue();
     this.releaseDate = release.releaseDate;
     this.dictionaryVersion = release.dictionaryVersion;
-    for(Project project : projects) {
-      DetailedSubmission submission = new DetailedSubmission(release.getSubmission(project.getKey()));
-      submission.setProjectName(project.getName());
+    for(Entry<String, String> projectEntry : projectEntries) {
+      String projectKey = projectEntry.getKey();
+      String projectName = projectEntry.getValue();
+
+      DetailedSubmission submission = new DetailedSubmission(release.getSubmission(projectKey));
+      submission.setProjectName(projectName);
+      submission.setSubmissionFiles(submissionFilesMap.get(projectKey));
       this.submissions.add(submission);
 
       Integer stateCount = this.summary.get(submission.getState());

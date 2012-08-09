@@ -18,7 +18,6 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.core.model.User;
-import org.icgc.dcc.dictionary.DictionaryService;
 import org.icgc.dcc.dictionary.model.CodeList;
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.filesystem.DccFileSystem;
@@ -35,9 +34,6 @@ public class SeedResource {
 
   @Inject
   private Datastore datastore;
-
-  @Inject
-  private DictionaryService dictionaryService;
 
   @Inject
   private DccFileSystem dccfs;

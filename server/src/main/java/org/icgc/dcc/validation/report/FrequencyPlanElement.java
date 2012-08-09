@@ -42,7 +42,7 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
-public final class FrequencyPlanElement extends BaseReportingPlanElement {
+public final class FrequencyPlanElement extends BaseStatsReportingPlanElement {
 
   private final String FREQ = "freq";
 
@@ -52,6 +52,8 @@ public final class FrequencyPlanElement extends BaseReportingPlanElement {
 
   @Override
   public Pipe report(Pipe pipe) {
+    pipe = keepStructurallyValidTuples(pipe);
+
     Pipe[] freqs = new Pipe[fields.size()];
     int i = 0;
     for(Field field : fields) {
