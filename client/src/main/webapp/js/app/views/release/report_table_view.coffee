@@ -51,32 +51,29 @@ define (require) ->
 
       if nTr in @anOpen
         @anOpen = _.without @anOpen, nTr
+        $(control).text 'show'
         dT.fnClose(nTr)
-        $(nTr).removeClass style
       else
         @anOpen.push nTr
-        $(nTr).addClass style
+        $(control).text 'hide'
         dT.fnOpen(nTr, @formatDetails(data), "details #{style}")
 
     rowSummary: (e) ->
       console.debug "ReportTableView#rowSummary", e, @anOpen
       control = e.target
-      console.log control
       nTr = control.parentNode.parentNode
-      console.log nTr
       dT = @.$(nTr.parentNode.parentNode).dataTable()
-      console.log dT
       
       data = dT.fnGetData nTr
       style = 'signed'
 
       if nTr in @anOpen
         @anOpen = _.without @anOpen, nTr
+        $(control).text 'show'
         dT.fnClose(nTr)
-        $(nTr).removeClass style
       else
         @anOpen.push nTr
-        $(nTr).addClass style
+        $(control).text 'hide'
         dT.fnOpen(nTr, @summaryDetails(data), "summary_details well")
 
     summaryDetails: (data) ->
@@ -111,6 +108,8 @@ define (require) ->
               sOut += "Value missing for column #{error['parameters'][1]}"
             when "CODELIST_ERROR"
               sOut += "CodeList error #{error['parameters'][0]} #{error['parameters'][1]} #{error['parameters'][2]}"
+            when "MISSING_RELATION_ERROR"
+              sOut += "Missing Relation error #{error['parameters'][0]} #{error['parameters'][1]} #{error['parameters'][2]}"
           sOut += "</td></tr>"
         sOut += "</tbody></table>"
         
@@ -148,41 +147,33 @@ define (require) ->
       console.debug "ReportTableView#createDataTable", @.$('table')
       aoColumns = [
           {
-            sTitle: "Filename"
+            bSortable: false
             mDataProp: "name"
             fnRender: (oObj, sVal) ->
+              out = sVal
+              if oObj.aData.errors
+                out += " <span class='invalid'>(#{oObj.aData.errors.length} errors)</span>" 
+              
               """
-                <span class="signed control">#{sVal}</span>
+                #{out}
               """
           }
           {
-            mDataProp: "errors"
+            mDataProp: null
             bSortable: false
-            sWidth: "200px"
-            bUseRendered: false
-            fnRender: (oObj, sVal) ->
-              if sVal
-                "#{sVal.length} errors"
-              else ""
+            sWidth: "100px"
+            sDefaultContent: "<span class='signed control'>show</span>"
           }
         ]
       
       @.$('table.report').dataTable
         sDom:
-          "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>"
-        #sPaginationType: "bootstrap"
+          "<'row-fluid'<'span6'l>HHH<'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>"
         bPaginate: false
-        oLanguage:
-          "sLengthMenu": "_MENU_ Schema Reports per page"
         aaSorting: [[ 1, "asc" ]]
         aoColumns: aoColumns
         sAjaxSource: ""
         sAjaxDataProp: ""
-        
-        fnRowCallback: (nRow, aData, iDisplayIndex, iDisplayIndexFull) ->
-          if aData.errors
-            $(nRow).css 'color', '#B94A48'
-        
         fnServerData: (sSource, aoData, fnCallback) ->
           fnCallback collection.toJSON()
           

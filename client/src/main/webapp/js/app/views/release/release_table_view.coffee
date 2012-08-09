@@ -70,7 +70,7 @@ define (require) ->
                 else
                   "<em>Unreleased</em>"
           }
-          { sTitle: "Projects", mDataProp: "submissions.length" }
+          { sTitle: "Studies", mDataProp: "submissions.length" }
         ]
       
       @.$('table').dataTable

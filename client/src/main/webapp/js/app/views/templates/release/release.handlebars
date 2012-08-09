@@ -18,7 +18,6 @@
     </h1>
   </div>
   <div class="pull-right">
-    <a href="releases/{{name}}/report" class="btn btn-primary">View Report</a>
     {{#if_opened state}}
     <button id="complete-release-popup-button" class="btn btn-success">Complete</button>
     {{/if_opened}}
@@ -32,31 +31,31 @@
         <tbody>
         {{#if summary.SIGNED_OFF}}
         <tr class="signed">
-          <td>Signed Off</td>
+          <td width="200">Signed Off</td>
           <td>{{summary.SIGNED_OFF}}</td>
         </tr>
         {{/if}}
         {{#if summary.VALID}}
         <tr class="valid">
-          <td>Valid</td>
+          <td width="200">Valid</td>
           <td>{{summary.VALID}}</td>
         </tr>
         {{/if}}
         {{#if summary.QUEUED}}
         <tr class="queued">
-          <td>Queued</td>
+          <td width="200">Queued</td>
           <td>{{summary.QUEUED}}</td>
         </tr>
         {{/if}}
         {{#if summary.INVALID}}
         <tr class="invalid">
-          <td>Invalid</td>
+          <td width="200">Invalid</td>
           <td>{{summary.INVALID}}</td>
         </tr>
         {{/if}}
         {{#if summary.NOT_VALIDATED}}
         <tr>
-          <td>Not Validated</td>
+          <td width="200">Not Validated</td>
           <td>{{summary.NOT_VALIDATED}}</td>
         </tr>
         {{/if}}
