@@ -50,7 +50,6 @@ define (require) ->
     errors: (err) ->
       switch err.code
         when "InvalidName"
-          alert "in"
           "A release name must only use letters[a-z], numbers(0-9), underscores(_) and dashes(-)"
         when "NoneSignedOff"
           "The release needs at least one SIGNED OFF submission before it can be COMPLETED."
@@ -67,7 +66,7 @@ define (require) ->
           Chaplin.mediator.publish "completeRelease", data
           
         error: (model, error) =>
-          err = error.responseText
+          err = $.parseJSON error.responseText
           alert = @.$('.alert.alert-error')
           
           if alert.length
