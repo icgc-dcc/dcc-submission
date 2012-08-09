@@ -15,6 +15,8 @@ public class SchemaReport {
 
   protected List<TupleError> errors;
 
+  protected String fileName;
+
   public String getName() {
     return name;
   }
@@ -46,5 +48,13 @@ public class SchemaReport {
       }
     }
     return null;
+  }
+
+  public String getFileName() {
+    return fileName;
+  }
+
+  public void setFileName(String fileName) {
+    this.fileName = fileName;
   }
 }

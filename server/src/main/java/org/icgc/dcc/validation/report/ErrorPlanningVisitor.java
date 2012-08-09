@@ -105,6 +105,8 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
 
           report.setName(getFileSchema().getName());
 
+          report.setFileName(strategy.path(getFileSchema()).getName());
+
           ObjectMapper mapper = new ObjectMapper();
           if(report.getErrors() == null) {
             report.setErrors(new ArrayList<TupleError>());

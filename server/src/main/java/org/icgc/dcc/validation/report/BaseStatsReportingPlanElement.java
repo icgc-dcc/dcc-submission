@@ -146,6 +146,8 @@ abstract class BaseStatsReportingPlanElement implements ReportingPlanElement {
 
         report.setName(getFileSchema().getName());
 
+        report.setFileName(strategy.path(getFileSchema()).getName());
+
         ObjectMapper mapper = new ObjectMapper();
         if(report.getErrors() == null) {
           report.setErrors(new ArrayList<TupleError>());

@@ -21,6 +21,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.dictionary.model.FileSchema;
 
 import cascading.flow.FlowConnector;
@@ -49,4 +50,5 @@ public interface CascadingStrategy {
 
   public Fields getFileHeader(FileSchema schema) throws IOException;
 
+  public Path path(final FileSchema schema) throws FileNotFoundException, IOException;
 }
