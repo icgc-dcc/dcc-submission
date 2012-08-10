@@ -65,9 +65,11 @@ public class DeviationBy extends AggregateBy {
       if(context == null) {
         context = Tuple.size(3);
       }
-      context.set(0, context.getDouble(0) + args.getDouble(0));
-      context.set(1, context.getDouble(1) + Math.pow(args.getDouble(0), 2));
-      context.set(2, context.getLong(2) + 1);
+      if(args.getObject(0) != null) {
+        context.set(0, context.getDouble(0) + args.getDouble(0));
+        context.set(1, context.getDouble(1) + Math.pow(args.getDouble(0), 2));
+        context.set(2, context.getLong(2) + 1);
+      }
       return context;
     }
 
