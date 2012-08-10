@@ -47,6 +47,8 @@ public class StructralCheckFunction extends BaseOperation implements Function {
 
   public static final char FIELD_SEPARATOR = '\t';
 
+  public static final List<String> MISSING_CODES = Arrays.asList("-777", "-888", "-999");
+
   private static boolean REPORT_WARNINGS = false; // see DCC-270
 
   private Integer headerSize;
@@ -103,6 +105,7 @@ public class StructralCheckFunction extends BaseOperation implements Function {
     if(headerSize == dataSize) {
       adjustedValues = filterUnknownColumns(values); // existing valid fields first
       adjustedValues = padMissingColumns(adjustedValues); // then missing fields to be emulated
+      adjustedValues = convertMissingCodes(adjustedValues, tupleState);
       if(REPORT_WARNINGS && unknownHeaderIndices.isEmpty() == false) {
         tupleState.reportError(ValidationErrorCode.UNKNOWN_COLUMNS_WARNING, unknownHeaderIndices);
       }
@@ -111,6 +114,20 @@ public class StructralCheckFunction extends BaseOperation implements Function {
                                                                            // of fields in headers for later merge in
                                                                            // error reporting
       tupleState.reportError(ValidationErrorCode.STRUCTURALLY_INVALID_ROW_ERROR, dataSize, headerSize);
+    }
+    return adjustedValues;
+  }
+
+  private List<String> convertMissingCodes(List<String> values, TupleState tupleState) {
+    List<String> adjustedValues = new ArrayList<String>(values.size());
+    for(int i = 0; i < values.size(); i++) {
+      String value = values.get(i);
+      if(MISSING_CODES.contains(value)) {
+        adjustedValues.add(null);
+        tupleState.addMissingField((String) this.getFieldDeclaration().get(i));
+      } else {
+        adjustedValues.add(value);
+      }
     }
     return adjustedValues;
   }

@@ -26,6 +26,7 @@ import org.icgc.dcc.dictionary.model.SummaryType;
 import org.icgc.dcc.validation.FlowType;
 import org.icgc.dcc.validation.cascading.CompletenessBy;
 import org.icgc.dcc.validation.cascading.MinMaxBy;
+import org.icgc.dcc.validation.cascading.ValidationFields;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -90,8 +91,9 @@ public abstract class SummaryPlanElement extends BaseStatsReportingPlanElement {
   }
 
   protected AggregateBy makeCompleteness(Field field) {
-    return new CompletenessBy(new Fields(field.getName()), new Fields(fieldName(field, CompletenessBy.NULLS),
-        fieldName(field, CompletenessBy.MISSING), fieldName(field, CompletenessBy.POPULATED)));
+    return new CompletenessBy(new Fields(field.getName(), ValidationFields.STATE_FIELD_NAME), new Fields(fieldName(
+        field, CompletenessBy.NULLS), fieldName(field, CompletenessBy.MISSING), fieldName(field,
+        CompletenessBy.POPULATED)));
   }
 
   protected abstract Iterable<AggregateBy> collectAggregateBys(Field field);

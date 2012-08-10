@@ -17,9 +17,6 @@
  */
 package org.icgc.dcc.validation.cascading;
 
-import java.util.Arrays;
-import java.util.List;
-
 import cascading.flow.FlowProcess;
 import cascading.operation.Aggregator;
 import cascading.operation.AggregatorCall;
@@ -32,9 +29,6 @@ import cascading.tuple.TupleEntry;
 @SuppressWarnings("rawtypes")
 public class CompletenessBy extends AggregateBy {
   private static final long serialVersionUID = 1L;
-
-  // TODO: move elsewhere + get from dict (DCC-240)
-  public static final List<String> MISSING_CODES = Arrays.asList("-777", "-888", "-999");
 
   private static final int VALUE_OFFSET = 0;
 
@@ -84,10 +78,10 @@ public class CompletenessBy extends AggregateBy {
       }
 
       String value = tupleEntry.getString(VALUE_OFFSET);
-      if(value == null || value.isEmpty()) {
-        tuple.set(NULLS_OFFSET, tuple.getInteger(NULLS_OFFSET) + 1);
-      } else if(isMissingValue(value)) {
+      if(isMissingValue(tupleEntry)) {
         tuple.set(MISSING_OFFSET, tuple.getInteger(MISSING_OFFSET) + 1);
+      } else if(value == null || value.isEmpty()) {
+        tuple.set(NULLS_OFFSET, tuple.getInteger(NULLS_OFFSET) + 1);
       } else {
         tuple.set(POPULATED_OFFSET, tuple.getInteger(POPULATED_OFFSET) + 1);
       }
@@ -95,13 +89,8 @@ public class CompletenessBy extends AggregateBy {
       return tuple;
     }
 
-    public boolean isMissingValue(String value) {
-      for(String missingCode : MISSING_CODES) {
-        if(missingCode.equals(value)) {
-          return true;
-        }
-      }
-      return false;
+    public boolean isMissingValue(TupleEntry tupleEntry) {
+      return ValidationFields.state(tupleEntry).isFieldMissing((String) tupleEntry.getFields().get(VALUE_OFFSET));
     }
   }
 
@@ -154,7 +143,7 @@ public class CompletenessBy extends AggregateBy {
     }
   }
 
-  public CompletenessBy(Fields valueField, Fields minField) {
-    super(valueField, new CompletenessPartial(minField), new CompletenessFinal(minField));
+  public CompletenessBy(Fields valueField, Fields resultFields) {
+    super(valueField, new CompletenessPartial(resultFields), new CompletenessFinal(resultFields));
   }
 }
