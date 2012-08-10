@@ -51,11 +51,11 @@ define (require) ->
 
       if nTr in @anOpen
         @anOpen = _.without @anOpen, nTr
-        $(control).text 'show'
+        $(control).text 'view report'
         dT.fnClose(nTr)
       else
         @anOpen.push nTr
-        $(control).text 'hide'
+        $(control).text 'hide report'
         dT.fnOpen(nTr, @formatDetails(data), "details #{style}")
 
     rowSummary: (e) ->
@@ -90,27 +90,29 @@ define (require) ->
       
       sOut = ''
       sErr = ''
-      
+      console.log data.errors
       if data.errors
         sOut += """
           <table class='table table-striped'>
           <thead>
             <tr>
-            <th style="text-align:center"></th>
+            <th>Offset</th>
+            <th>Error Type</th>
+            <th>Parameters</th>
             </tr>
           </thead>
           <tbody>
         """
-        for error in data.errors
-          sOut += "<tr><td>"
-          switch error['code']
-            when "MISSING_VALUE_ERROR"
-              sOut += "Value missing for column #{error['parameters'][1]}"
-            when "CODELIST_ERROR"
-              sOut += "CodeList error #{error['parameters'][0]} #{error['parameters'][1]} #{error['parameters'][2]}"
-            when "MISSING_RELATION_ERROR"
-              sOut += "Missing Relation error #{error['parameters'][0]} #{error['parameters'][1]} #{error['parameters'][2]}"
-          sOut += "</td></tr>"
+        
+        for errorObj in data.errors
+          for error in errorObj.errors
+            sOut += "<tr>"
+            sOut += """
+              <td>#{errorObj.offset}</td>
+              <td>#{error.code}</td>
+              <td>#{error.parameters}</td>
+            """
+            sOut += "</tr>"
         sOut += "</tbody></table>"
         
         $(sOut).dataTable
@@ -120,7 +122,9 @@ define (require) ->
         sOut += "<table class='sub_report table table-striped'></table>"
         
         $(sOut).dataTable
-          bPaginate: false
+          sDom:
+            "<'row-fluid'<'span6'l>HHH<'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>"
+          sPagination: 'bootstrap'
           aaData: data.fieldReports
           aoColumns: [
             { sTitle: "Name", mDataProp: "name"}
@@ -135,7 +139,7 @@ define (require) ->
               bUseRendered: false
               fnRender: (oObj, sVal) ->
                 if not $.isEmptyObject sVal
-                  "<span class='summary signed'>show</span></td>"
+                  "<span class='summary link'>show</span></td>"
                 else
                   ""
             }
@@ -150,9 +154,12 @@ define (require) ->
             bSortable: false
             mDataProp: "name"
             fnRender: (oObj, sVal) ->
-              out = sVal
+              out = "<i class='icon-file'></i> #{sVal}"
               if oObj.aData.errors
-                out += " <span class='invalid'>(#{oObj.aData.errors.length} errors)</span>" 
+                errors = 0
+                for es in oObj.aData.errors
+                  errors += es.errors.length
+                out += " <span class='invalid'>(#{errors} errors)</span>" 
               
               """
                 #{out}
@@ -162,7 +169,7 @@ define (require) ->
             mDataProp: null
             bSortable: false
             sWidth: "100px"
-            sDefaultContent: "<span class='signed control'>show</span>"
+            sDefaultContent: "<span class='link control'>view report</span>"
           }
         ]
       
@@ -177,4 +184,4 @@ define (require) ->
         fnServerData: (sSource, aoData, fnCallback) ->
           fnCallback collection.toJSON()
           
-      @.$('table.report').removeClass('table')
+      #@.$('table.report').removeClass('table')

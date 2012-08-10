@@ -32,7 +32,7 @@ import org.icgc.dcc.validation.FlowType;
 import org.icgc.dcc.validation.PlanExecutionException;
 import org.icgc.dcc.validation.ReportingPlanElement;
 import org.icgc.dcc.validation.cascading.CompletenessBy;
-import org.icgc.dcc.validation.cascading.TupleState.TupleError;
+import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.cascading.TupleStates;
 
 import cascading.pipe.Each;
@@ -148,7 +148,7 @@ abstract class BaseStatsReportingPlanElement implements ReportingPlanElement {
 
         ObjectMapper mapper = new ObjectMapper();
         if(report.getErrors() == null) {
-          report.setErrors(new ArrayList<TupleError>());
+          report.setErrors(new ArrayList<TupleState>());
         }
         if(report.getFieldReports() == null) {
           report.setFieldReports(new ArrayList<FieldReport>());
