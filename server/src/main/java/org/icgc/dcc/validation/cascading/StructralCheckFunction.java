@@ -57,6 +57,8 @@ public class StructralCheckFunction extends BaseOperation implements Function {
 
   private List<Integer> unknownHeaderIndices;
 
+  private Fields adjustedFields;
+
   public StructralCheckFunction(Iterable<String> fieldNames) {
     super(1);
     dictionaryFields = new Fields(Iterables.toArray(fieldNames, String.class));
@@ -68,7 +70,7 @@ public class StructralCheckFunction extends BaseOperation implements Function {
 
     Fields mergedFields = Fields.merge(headerFields, dictionaryFields);
     Fields extraFields = mergedFields.subtract(dictionaryFields);
-    Fields adjustedFields = headerFields.subtract(extraFields); // existing valid fields first
+    adjustedFields = headerFields.subtract(extraFields); // existing valid fields first
     Fields missingFields = dictionaryFields.subtract(adjustedFields);
     adjustedFields = adjustedFields.append(missingFields); // then missing fields to be emulated
     checkState(FieldsUtils.buildSortedList(dictionaryFields)//
@@ -105,7 +107,7 @@ public class StructralCheckFunction extends BaseOperation implements Function {
     if(headerSize == dataSize) {
       adjustedValues = filterUnknownColumns(values); // existing valid fields first
       adjustedValues = padMissingColumns(adjustedValues); // then missing fields to be emulated
-      adjustedValues = convertMissingCodes(adjustedValues);
+      adjustedValues = convertMissingCodes(adjustedValues, tupleState);
       if(REPORT_WARNINGS && unknownHeaderIndices.isEmpty() == false) {
         tupleState.reportError(ValidationErrorCode.UNKNOWN_COLUMNS_WARNING, unknownHeaderIndices);
       }
@@ -118,12 +120,13 @@ public class StructralCheckFunction extends BaseOperation implements Function {
     return adjustedValues;
   }
 
-  private List<String> convertMissingCodes(List<String> values) {
+  private List<String> convertMissingCodes(List<String> values, TupleState tupleState) {
     List<String> adjustedValues = new ArrayList<String>(values.size());
     for(int i = 0; i < values.size(); i++) {
       String value = values.get(i);
       if(MISSING_CODES.contains(value)) {
         adjustedValues.add(null);
+        tupleState.addMissingField(adjustedFields.get(i));
       } else {
         adjustedValues.add(value);
       }
