@@ -29,8 +29,7 @@ public class TupleState implements Serializable {
 
   private boolean structurallyValid; // to save time on filtering
 
-  @SuppressWarnings("rawtypes")
-  private final Set<Comparable> missingFieldNames = new HashSet<Comparable>();
+  private final Set<String> missingFieldNames = new HashSet<String>();
 
   public TupleState() {
     structurallyValid = true;
@@ -77,12 +76,12 @@ public class TupleState implements Serializable {
         .add("valid", isValid()).add("errors", errors).toString();
   }
 
-  public void addMissingField(@SuppressWarnings("rawtypes") Comparable comparable) {
-    this.missingFieldNames.add(comparable);
+  public void addMissingField(String fieldName) {
+    this.missingFieldNames.add(fieldName);
   }
 
   @JsonIgnore
-  public boolean isFieldMissing(@SuppressWarnings("rawtypes") Comparable fieldName) {
+  public boolean isFieldMissing(String fieldName) {
     return this.missingFieldNames.contains(fieldName);
   }
 

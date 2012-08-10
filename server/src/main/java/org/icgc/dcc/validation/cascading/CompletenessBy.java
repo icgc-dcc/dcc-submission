@@ -90,7 +90,7 @@ public class CompletenessBy extends AggregateBy {
     }
 
     public boolean isMissingValue(TupleEntry tupleEntry) {
-      return ValidationFields.state(tupleEntry).isFieldMissing(tupleEntry.getFields().get(VALUE_OFFSET));
+      return ValidationFields.state(tupleEntry).isFieldMissing((String) tupleEntry.getFields().get(VALUE_OFFSET));
     }
   }
 

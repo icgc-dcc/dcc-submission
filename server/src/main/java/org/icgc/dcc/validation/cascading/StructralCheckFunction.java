@@ -57,8 +57,6 @@ public class StructralCheckFunction extends BaseOperation implements Function {
 
   private List<Integer> unknownHeaderIndices;
 
-  private Fields adjustedFields;
-
   public StructralCheckFunction(Iterable<String> fieldNames) {
     super(1);
     dictionaryFields = new Fields(Iterables.toArray(fieldNames, String.class));
@@ -70,7 +68,7 @@ public class StructralCheckFunction extends BaseOperation implements Function {
 
     Fields mergedFields = Fields.merge(headerFields, dictionaryFields);
     Fields extraFields = mergedFields.subtract(dictionaryFields);
-    adjustedFields = headerFields.subtract(extraFields); // existing valid fields first
+    Fields adjustedFields = headerFields.subtract(extraFields); // existing valid fields first
     Fields missingFields = dictionaryFields.subtract(adjustedFields);
     adjustedFields = adjustedFields.append(missingFields); // then missing fields to be emulated
     checkState(FieldsUtils.buildSortedList(dictionaryFields)//
@@ -126,7 +124,7 @@ public class StructralCheckFunction extends BaseOperation implements Function {
       String value = values.get(i);
       if(MISSING_CODES.contains(value)) {
         adjustedValues.add(null);
-        tupleState.addMissingField(adjustedFields.get(i));
+        tupleState.addMissingField((String) this.getFieldDeclaration().get(i));
       } else {
         adjustedValues.add(value);
       }

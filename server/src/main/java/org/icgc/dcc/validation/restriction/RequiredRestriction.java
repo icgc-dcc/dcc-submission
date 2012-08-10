@@ -82,7 +82,7 @@ public class RequiredRestriction implements InternalPlanElement {
       TupleEntry tupleEntry = functionCall.getArguments();
       String value = tupleEntry.getString(0);
 
-      if(ValidationFields.state(tupleEntry).isFieldMissing(tupleEntry.getFields().get(0)) == false
+      if(ValidationFields.state(tupleEntry).isFieldMissing((String) tupleEntry.getFields().get(0)) == false
           && (value == null || value.isEmpty())) {
         Object fieldName = tupleEntry.getFields().get(0);
         ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.MISSING_VALUE_ERROR, value, fieldName);
