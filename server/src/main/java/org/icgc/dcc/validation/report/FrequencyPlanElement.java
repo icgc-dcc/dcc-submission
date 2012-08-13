@@ -24,6 +24,7 @@ import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.dictionary.model.SummaryType;
 import org.icgc.dcc.validation.FlowType;
+import org.icgc.dcc.validation.cascading.ValidationFields;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -92,7 +93,11 @@ public final class FrequencyPlanElement extends BaseStatsReportingPlanElement {
         String value = tuple.getString(0);
         Long frequency = tuple.getLong(1);
         if(value == null || value.isEmpty()) {
-          fs.nulls += frequency;
+          if(ValidationFields.state(tuple).isFieldMissing((String) tuple.getFields().get(0))) {
+            fs.missing += frequency;
+          } else {
+            fs.nulls += frequency;
+          }
         } else {
           fs.populated += frequency;
           fs.summary.put(value, frequency);
