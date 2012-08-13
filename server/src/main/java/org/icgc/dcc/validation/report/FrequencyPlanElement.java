@@ -92,12 +92,14 @@ public final class FrequencyPlanElement extends BaseStatsReportingPlanElement {
         TupleEntry tuple = tuples.next();
         String value = tuple.getString(0);
         Long frequency = tuple.getLong(1);
-        if(value == null || value.isEmpty()) {
+        if(value == null) {
           if(ValidationFields.state(tuple).isFieldMissing((String) tuple.getFields().get(0))) {
             fs.missing += frequency;
           } else {
             fs.nulls += frequency;
           }
+        } else if(value.isEmpty()) {
+          fs.nulls += frequency;
         } else {
           fs.populated += frequency;
           fs.summary.put(value, frequency);
