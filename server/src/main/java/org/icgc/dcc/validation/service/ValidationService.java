@@ -52,8 +52,6 @@ public class ValidationService {
 
   private final Planner planner;
 
-  private Plan plan;
-
   private final DccFileSystem dccFileSystem;
 
   private final ProjectService projectService;
@@ -92,16 +90,16 @@ public class ValidationService {
     CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir);
 
     log.info("starting validation on project {}", projectKey);
-    planCascade(projectKey, fileSchemaDirectory, cascadingStrategy, dictionary);
-    runCascade(this.plan.getCascade(), projectKey);
+    Plan plan = planCascade(projectKey, fileSchemaDirectory, cascadingStrategy, dictionary);
+    runCascade(plan.getCascade(), projectKey);
     log.info("validation finished for project {}", projectKey);
 
-    return this.plan;
+    return plan;
   }
 
   public Plan planCascade(String projectKey, FileSchemaDirectory fileSchemaDirectory,
       CascadingStrategy cascadingStrategy, Dictionary dictionary) {
-    this.plan = planner.plan(fileSchemaDirectory, dictionary);
+    Plan plan = planner.plan(fileSchemaDirectory, dictionary);
     log.info("# internal flows: {}", Iterables.size(plan.getInternalFlows()));
     log.info("# external flows: {}", Iterables.size(plan.getExternalFlows()));
 
