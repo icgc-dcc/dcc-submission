@@ -31,6 +31,7 @@ import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.release.NextRelease;
 import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.Release;
+import org.icgc.dcc.validation.factory.LocalCascadingStrategyFactory;
 import org.icgc.dcc.validation.service.ValidationQueueManagerService;
 import org.icgc.dcc.validation.service.ValidationService;
 import org.junit.Before;
@@ -77,7 +78,7 @@ public class ValidationQueueManagerServiceTest {
 
     validationQueueManagerService =
         new ValidationQueueManagerService(mockReleaseService, mockDictionaryService, mockValidationService,
-            mockDccFileSystem, mockProjectService);
+            mockDccFileSystem, mockProjectService, new LocalCascadingStrategyFactory());
   }
 
   @Ignore

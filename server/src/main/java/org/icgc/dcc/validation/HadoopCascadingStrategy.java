@@ -28,13 +28,13 @@ import cascading.flow.hadoop.HadoopFlowConnector;
 import cascading.scheme.hadoop.TextDelimited;
 import cascading.scheme.hadoop.TextLine;
 import cascading.tap.Tap;
-import cascading.tap.hadoop.Lfs;
+import cascading.tap.hadoop.Hfs;
 import cascading.tuple.Fields;
 
 public class HadoopCascadingStrategy extends BaseCascadingStrategy {
 
-  public HadoopCascadingStrategy(FileSystem fileSystem, Path source, Path output) {
-    super(fileSystem, source, output);
+  public HadoopCascadingStrategy(FileSystem fileSystem, Path source, Path output, Path system) {
+    super(fileSystem, source, output, system);
   }
 
   @Override
@@ -45,21 +45,21 @@ public class HadoopCascadingStrategy extends BaseCascadingStrategy {
   @Override
   public Tap<?, ?, ?> getReportTap(FileSchema schema, FlowType type, String reportName) {
     Path path = reportPath(schema, type, reportName);
-    return new Lfs(new HadoopJsonScheme(), path.toUri().getPath());
+    return new Hfs(new HadoopJsonScheme(), path.toUri().getPath());
   }
 
   @Override
   protected Tap<?, ?, ?> tap(Path path) {
-    return new Lfs(new TextDelimited(true, "\t"), path.toUri().getPath());
+    return new Hfs(new TextDelimited(true, "\t"), path.toUri().getPath());
   }
 
   @Override
   protected Tap<?, ?, ?> tap(Path path, Fields fields) {
-    return new Lfs(new TextDelimited(fields, true, "\t"), path.toUri().getPath());
+    return new Hfs(new TextDelimited(fields, true, "\t"), path.toUri().getPath());
   }
 
   @Override
   protected Tap<?, ?, ?> tapSource(Path path) {
-    return new Lfs(new TextLine(new Fields(ValidationFields.OFFSET_FIELD_NAME, "line")), path.toUri().getPath());
+    return new Hfs(new TextLine(new Fields(ValidationFields.OFFSET_FIELD_NAME, "line")), path.toUri().getPath());
   }
 }
