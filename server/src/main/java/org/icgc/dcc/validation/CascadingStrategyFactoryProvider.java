@@ -11,38 +11,33 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
-import com.typesafe.config.Config;
 
 public class CascadingStrategyFactoryProvider implements Provider<CascadingStrategyFactory> {
 
   private static final Logger log = LoggerFactory.getLogger(CascadingStrategyFactoryProvider.class);
-
-  private final Config config;
 
   private final FileSystem fs;
 
   static final String FS_URL = "fs.url";
 
   @Inject
-  CascadingStrategyFactoryProvider(Config config, FileSystem fs) {
-    checkArgument(config != null);
+  CascadingStrategyFactoryProvider(FileSystem fs) {
     checkArgument(fs != null);
-    this.config = config;
     this.fs = fs;
   }
 
   @Override
   public CascadingStrategyFactory get() {
-    String fsUrl = this.config.getString(FS_URL);
+    String fsUrl = fs.getScheme();
 
-    if(fsUrl.startsWith("file://")) {
+    if(fsUrl.equals("file")) {
       log.info("System configured for local filesystem");
       return new LocalCascadingStrategyFactory();
-    } else if(fsUrl.startsWith("hdfs://")) {
+    } else if(fsUrl.equals("hdfs")) {
       log.info("System configured for Hadoop filesystem");
       return new HadoopCascadingStrategyFactory(fs);
     } else {
-      throw new RuntimeException("Unknown URI type: " + fsUrl + ". Expected file:// or hdfs://");
+      throw new RuntimeException("Unknown file system type: " + fsUrl + ". Expected file or hdfs");
     }
   }
 
