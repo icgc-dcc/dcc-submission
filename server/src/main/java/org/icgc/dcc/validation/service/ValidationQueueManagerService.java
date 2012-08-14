@@ -177,10 +177,11 @@ public class ValidationQueueManagerService extends AbstractService implements Va
 
     Path rootDir = new Path(submissionDirectory.getSubmissionDirPath());
     Path outputDir = new Path(submissionDirectory.getValidationDirPath());
+    Path systemDir = new Path("/tmp/dcc_root_dir/SystemFiles/");
 
     Submission submission = this.releaseService.getSubmission(release.getName(), projectKey);
 
-    CascadingStrategy cascadingStrategy = cascadingStrategyFactory.get(rootDir, outputDir);
+    CascadingStrategy cascadingStrategy = cascadingStrategyFactory.get(rootDir, outputDir, systemDir);
 
     SubmissionReport report = new SubmissionReport();
     Outcome outcome = plan.collect(cascadingStrategy, report);
