@@ -19,8 +19,7 @@ package org.icgc.dcc.validation.service;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import java.io.File;
-
+import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.dictionary.DictionaryService;
@@ -30,9 +29,9 @@ import org.icgc.dcc.filesystem.ReleaseFileSystem;
 import org.icgc.dcc.filesystem.SubmissionDirectory;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.validation.CascadingStrategy;
-import org.icgc.dcc.validation.LocalCascadingStrategy;
 import org.icgc.dcc.validation.Plan;
 import org.icgc.dcc.validation.Planner;
+import org.icgc.dcc.validation.factory.CascadingStrategyFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,18 +55,23 @@ public class ValidationService {
 
   private final DictionaryService dictionaries;
 
+  private final CascadingStrategyFactory cascadingStrategyFactory;
+
   @Inject
   public ValidationService(final DccFileSystem dccFileSystem, final ProjectService projectService,
-      final Planner planner, final DictionaryService dictionaries) {
+      final Planner planner, final DictionaryService dictionaries,
+      final CascadingStrategyFactory cascadingStrategyFactory) {
     checkArgument(dccFileSystem != null);
     checkArgument(projectService != null);
     checkArgument(planner != null);
     checkArgument(dictionaries != null);
+    checkArgument(cascadingStrategyFactory != null);
 
     this.dccFileSystem = dccFileSystem;
     this.projectService = projectService;
     this.planner = planner;
     this.dictionaries = dictionaries;
+    this.cascadingStrategyFactory = cascadingStrategyFactory;
   }
 
   public Plan validate(Release release, String projectKey) {
@@ -78,13 +82,14 @@ public class ValidationService {
     Project project = projectService.getProject(projectKey);
     SubmissionDirectory submissionDirectory = releaseFilesystem.getSubmissionDirectory(project);
 
-    File rootDir = new File(submissionDirectory.getSubmissionDirPath());
-    File outputDir = new File(submissionDirectory.getValidationDirPath());
+    Path rootDir = new Path(submissionDirectory.getSubmissionDirPath());
+    Path outputDir = new Path(submissionDirectory.getValidationDirPath());
 
     log.info("rootDir = {} ", rootDir);
     log.info("outputDir = {} ", outputDir);
 
-    CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir);
+    CascadingStrategy cascadingStrategy =
+        cascadingStrategyFactory.get(dccFileSystem.getFileSystem(), rootDir, outputDir);
 
     log.info("starting validation on project {}", projectKey);
     Plan plan = planCascade(projectKey, cascadingStrategy, dictionary);

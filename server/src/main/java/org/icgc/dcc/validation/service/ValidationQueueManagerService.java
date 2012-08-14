@@ -19,12 +19,12 @@ package org.icgc.dcc.validation.service;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import java.io.File;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.dictionary.DictionaryService;
@@ -37,9 +37,9 @@ import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.validation.CascadingStrategy;
-import org.icgc.dcc.validation.LocalCascadingStrategy;
 import org.icgc.dcc.validation.Plan;
 import org.icgc.dcc.validation.ValidationCallback;
+import org.icgc.dcc.validation.factory.CascadingStrategyFactory;
 import org.icgc.dcc.validation.report.Outcome;
 import org.icgc.dcc.validation.report.SubmissionReport;
 import org.slf4j.Logger;
@@ -72,21 +72,26 @@ public class ValidationQueueManagerService extends AbstractService implements Va
 
   private final ProjectService projectService;
 
+  private final CascadingStrategyFactory cascadingStrategyFactory;
+
   private ScheduledFuture<?> schedule;
 
   @Inject
   public ValidationQueueManagerService(final ReleaseService releaseService, final DictionaryService dictionaryService,
-      ValidationService validationService, final DccFileSystem dccFileSystem, final ProjectService projectService) {
+      ValidationService validationService, final DccFileSystem dccFileSystem, final ProjectService projectService,
+      final CascadingStrategyFactory cascadingStrategyFactory) {
 
     checkArgument(releaseService != null);
     checkArgument(dictionaryService != null);
     checkArgument(validationService != null);
+    checkArgument(cascadingStrategyFactory != null);
 
     this.releaseService = releaseService;
     this.dictionaryService = dictionaryService;
     this.validationService = validationService;
     this.dccFileSystem = dccFileSystem;
     this.projectService = projectService;
+    this.cascadingStrategyFactory = cascadingStrategyFactory;
   }
 
   @Override
@@ -170,12 +175,13 @@ public class ValidationQueueManagerService extends AbstractService implements Va
     Project project = projectService.getProject(projectKey);
     SubmissionDirectory submissionDirectory = releaseFilesystem.getSubmissionDirectory(project);
 
-    File rootDir = new File(submissionDirectory.getSubmissionDirPath());
-    File outputDir = new File(submissionDirectory.getValidationDirPath());
+    Path rootDir = new Path(submissionDirectory.getSubmissionDirPath());
+    Path outputDir = new Path(submissionDirectory.getValidationDirPath());
 
     Submission submission = this.releaseService.getSubmission(release.getName(), projectKey);
 
-    CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir);
+    CascadingStrategy cascadingStrategy =
+        cascadingStrategyFactory.get(dccFileSystem.getFileSystem(), rootDir, outputDir);
 
     SubmissionReport report = new SubmissionReport();
     Outcome outcome = plan.collect(cascadingStrategy, report);

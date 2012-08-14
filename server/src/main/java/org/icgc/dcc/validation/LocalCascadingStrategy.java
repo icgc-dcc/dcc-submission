@@ -47,9 +47,9 @@ public class LocalCascadingStrategy extends BaseCascadingStrategy {
 
   private final FileSchemaDirectory fileSchemaDirectory;
 
-  public LocalCascadingStrategy(File source, File output) {
-    super(localFileSystem(), new Path(source.getAbsolutePath()), new Path(output.getAbsolutePath()));
-    this.fileSchemaDirectory = new LocalFileSchemaDirectory(source);
+  public LocalCascadingStrategy(Path source, Path output) {
+    super(localFileSystem(), source, output);
+    this.fileSchemaDirectory = new LocalFileSchemaDirectory(new File(source.toString()));
   }
 
   @Override

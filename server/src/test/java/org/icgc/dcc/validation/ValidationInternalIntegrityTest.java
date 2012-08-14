@@ -11,6 +11,7 @@ import java.util.List;
 import junit.framework.Assert;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.hadoop.fs.Path;
 import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.core.ProjectService;
@@ -24,6 +25,7 @@ import org.icgc.dcc.dictionary.model.Term;
 import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.filesystem.GuiceJUnitRunner;
 import org.icgc.dcc.filesystem.GuiceJUnitRunner.GuiceModules;
+import org.icgc.dcc.validation.factory.LocalCascadingStrategyFactory;
 import org.icgc.dcc.validation.restriction.CodeListRestriction;
 import org.icgc.dcc.validation.restriction.DiscreteValuesRestriction;
 import org.icgc.dcc.validation.restriction.RangeFieldRestriction;
@@ -80,7 +82,9 @@ public class ValidationInternalIntegrityTest {
     when(codeList3.getTerms()).thenReturn(termList3);
     when(codeList4.getTerms()).thenReturn(termList4);
 
-    validationService = new ValidationService(dccFileSystem, projectService, planner, dictionaryService);
+    validationService =
+        new ValidationService(dccFileSystem, projectService, planner, dictionaryService,
+            new LocalCascadingStrategyFactory());
     resetDictionary();
   }
 
@@ -171,8 +175,8 @@ public class ValidationInternalIntegrityTest {
     errorFile.delete();
     Assert.assertFalse(errorFileString, errorFile.exists());
 
-    File rootDir = new File(rootDirString);
-    File outputDir = new File(outputDirString);
+    Path rootDir = new Path(rootDirString);
+    Path outputDir = new Path(outputDirString);
 
     CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir);
 
