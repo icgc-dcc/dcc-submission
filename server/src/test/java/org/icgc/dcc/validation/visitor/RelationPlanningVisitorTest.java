@@ -47,7 +47,8 @@ public class RelationPlanningVisitorTest extends CascadingTestCase {
   @Test
   public void test_operate_valid() {
 
-    NoNullBuffer buffer = new NoNullBuffer(lhsFields, rhs, rhsFields);
+    NoNullBuffer buffer =
+        new NoNullBuffer(rhs, lhsFields, rhsFields, lhsFields, rhsFields, new String[] {}, new String[] {});
 
     TupleEntry[] tuples =
         new TupleEntry[] { new TupleEntry(new Fields(ObjectArrays.concat(lhsFields, rhsFields, String.class)),
@@ -57,12 +58,13 @@ public class RelationPlanningVisitorTest extends CascadingTestCase {
 
     Fields resultField = new Fields("_state");
     TupleListCollector c = CascadingTestCase.invokeBuffer(buffer, tuples, resultField);
-    assertEquals(c.size(), 0);
+    assertEquals(0, c.size());
   }
 
   @Test
   public void test_operate_invalid() {
-    NoNullBuffer buffer = new NoNullBuffer(lhsFields, rhs, rhsFields);
+    NoNullBuffer buffer =
+        new NoNullBuffer(rhs, lhsFields, rhsFields, lhsFields, rhsFields, new String[] {}, new String[] {});
 
     TupleEntry[] tuples = new TupleEntry[] {//
         new TupleEntry(inputFields,//
@@ -71,13 +73,14 @@ public class RelationPlanningVisitorTest extends CascadingTestCase {
 
     Fields resultField = new Fields("_state");
     TupleListCollector c = CascadingTestCase.invokeBuffer(buffer, tuples, resultField);
-    assertEquals(c.size(), 1);
+    assertEquals(1, c.size());
     assertTrue(ValidationFields.state(c.entryIterator().next()).isInvalid());
   }
 
   @Test
   public void test_operate_mix() {
-    NoNullBuffer buffer = new NoNullBuffer(lhsFields, rhs, rhsFields);
+    NoNullBuffer buffer =
+        new NoNullBuffer(rhs, lhsFields, rhsFields, lhsFields, rhsFields, new String[] {}, new String[] {});
 
     TupleEntry[] tuples = new TupleEntry[] {//
         new TupleEntry(inputFields, new Tuple(//
@@ -95,10 +98,12 @@ public class RelationPlanningVisitorTest extends CascadingTestCase {
 
     Fields resultField = new Fields("_state");
     TupleListCollector c = CascadingTestCase.invokeBuffer(buffer, tuples, resultField);
-    assertEquals(c.size(), 2);
+    assertEquals(2, c.size());
 
     Iterator<TupleEntry> entryIterator = c.entryIterator();
     assertTrue(ValidationFields.state(entryIterator.next()).isInvalid());
     assertTrue(ValidationFields.state(entryIterator.next()).isInvalid());
   }
+
+  // TODO: add test for conditional FK
 }

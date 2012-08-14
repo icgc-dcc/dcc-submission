@@ -17,19 +17,20 @@
  */
 package org.icgc.dcc.validation.visitor;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
-
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.dictionary.model.Relation;
 import org.icgc.dcc.validation.ExternalFlowPlanningVisitor;
 import org.icgc.dcc.validation.ExternalPlanElement;
+import org.icgc.dcc.validation.PlannerException;
 import org.icgc.dcc.validation.ValidationErrorCode;
+import org.icgc.dcc.validation.cascading.TupleEntryUtils;
 import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.cascading.ValidationFields;
 
@@ -59,23 +60,27 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
 
   static class RelationPlanElement implements ExternalPlanElement {
 
+    private final String lfs;
+
     private final String[] lhsFields;
 
     private final String rhs;
 
     private final String[] rhsFields;
 
+    private final List<Integer> optionals;
+
     private RelationPlanElement(FileSchema fileSchema, Relation relation) {
+      this.lfs = fileSchema.getName();
       this.lhsFields = relation.getFields().toArray(new String[] {});
       this.rhs = relation.getOther();
       this.rhsFields = relation.getOtherFields().toArray(new String[] {});
-      checkArgument(this.lhsFields.length == this.rhsFields.length, this.lhsFields.length + " != "
-          + this.rhsFields.length);
+      this.optionals = relation.getOptionals();
     }
 
     @Override
     public String describe() {
-      return String.format("%s[%s->%s:%s]", NAME, Arrays.toString(lhsFields), rhs, Arrays.toString(rhsFields));
+      return String.format("%s[%s:%s->%s:%s]", NAME, lfs, Arrays.toString(lhsFields), rhs, Arrays.toString(rhsFields));
     }
 
     @Override
@@ -95,11 +100,41 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
 
     @Override
     public Pipe join(Pipe lhsPipe, Pipe rhsPipe) {
-      String[] renamed = rename();
-      Fields merged = Fields.merge(new Fields(lhsFields), new Fields(renamed));
-      Pipe pipe = new CoGroup(lhsPipe, new Fields(lhsFields), rhsPipe, new Fields(rhsFields), merged, new LeftJoin());
-      pipe = new Every(pipe, merged, new NoNullBuffer(lhsFields, rhs, rhsFields), Fields.RESULTS);
+      String[] renamedRhsFields = rename();
+      String[] requiredLhsFields = extractRequiredFields(lhsFields);
+      String[] requiredRhsFields = extractRequiredFields(rhsFields);
+      String[] optionalLhsFields = extractOptionalFields(lhsFields);
+      String[] requiredRhsRenamedFields = extractRequiredFields(renamedRhsFields);
+      String[] optionalRhsRenamedFields = extractOptionalFields(renamedRhsFields);
+      Fields merged = Fields.merge(new Fields(lhsFields), new Fields(renamedRhsFields));
+      Pipe pipe =
+          new CoGroup(lhsPipe, new Fields(requiredLhsFields), rhsPipe, new Fields(requiredRhsFields), merged,
+              new LeftJoin());
+      NoNullBuffer noNullBuffer =
+          new NoNullBuffer(rhs, lhsFields, rhsFields, requiredLhsFields, requiredRhsRenamedFields, optionalLhsFields,
+              optionalRhsRenamedFields);
+      pipe = new Every(pipe, merged, noNullBuffer, Fields.RESULTS);
       return pipe;
+    }
+
+    private String[] extractOptionalFields(String[] fields) {
+      return extractFields(true, fields);
+    }
+
+    private String[] extractRequiredFields(String[] fields) {
+      return extractFields(false, fields);
+    }
+
+    private String[] extractFields(boolean keepOptional, String[] fields) {
+      int size = keepOptional ? optionals.size() : fields.length - optionals.size();
+      String[] requiredFields = new String[size];
+      int j = 0;
+      for(int i = 0; i < fields.length; i++) {
+        if(optionals.contains(i) == keepOptional) {
+          requiredFields[j++] = fields[i];
+        }
+      }
+      return requiredFields;
     }
 
     private String[] rename() {
@@ -113,54 +148,109 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
     @SuppressWarnings("rawtypes")
     static class NoNullBuffer extends BaseOperation implements Buffer {
 
-      private final String[] lhsFields;
-
       private final String rhs;
+
+      private final String[] lhsFields;
 
       private final String[] rhsFields;
 
-      private final int size;
+      private final String[] requiredLhsFields;
 
-      NoNullBuffer(String[] lhsFields, String rhs, String[] rhsFields) {
-        super(2, new Fields(ValidationFields.STATE_FIELD_NAME));
-        this.lhsFields = lhsFields;
+      private final String[] requiredRhsFields;
+
+      private final String[] optionalLhsFields;
+
+      private final String[] optionalRhsFields;
+
+      private final int optionalSize;
+
+      private final boolean conditional;
+
+      NoNullBuffer(String rhs, String[] lhsFields, String[] rhsFields, String[] requiredLhsFields,
+          String[] requiredRhsFields, String[] optionalLhsFields, String[] optionalRhsFields) {
+        super(lhsFields.length + rhsFields.length, new Fields(ValidationFields.STATE_FIELD_NAME));
         this.rhs = rhs;
+        this.lhsFields = lhsFields;
         this.rhsFields = rhsFields;
-        checkArgument(this.lhsFields.length == this.rhsFields.length, this.lhsFields.length + " != "
-            + this.rhsFields.length);
-        this.size = this.lhsFields.length;
+        this.requiredLhsFields = requiredLhsFields;
+        this.requiredRhsFields = requiredRhsFields;
+        this.optionalLhsFields = optionalLhsFields;
+        this.optionalRhsFields = optionalRhsFields;
+        this.optionalSize = optionalLhsFields.length;
+        this.conditional = optionalSize > 0;
       }
 
       @Override
       @SuppressWarnings("unchecked")
       public void operate(FlowProcess flowProcess, BufferCall bufferCall) {
         Iterator<TupleEntry> iter = bufferCall.getArgumentsIterator();
+
+        // potential memory issue discussed in DCC-300
+        Set<List<Object>> lhsList = null;
+        Set<List<Object>> rhsList = null;
+        List<Object> requiredLhsObjects = null;
+        if(conditional) {
+          lhsList = new HashSet<List<Object>>();
+          rhsList = new HashSet<List<Object>>();
+          requiredLhsObjects = TupleEntryUtils.getObjects(bufferCall.getGroup(), requiredLhsFields);
+        }
+
         while(iter.hasNext()) {
           TupleEntry tupleEntry = iter.next();
-          if(tupleEntry.getObject(size) == null) {
-            checkState(checkRemainingRightFields(tupleEntry));
-            List<String> unmatchedValues = new ArrayList<String>();
-            for(int i = 0; i < size; i++) {
-              unmatchedValues.add(tupleEntry.getString(i));
-            }
-            TupleState tupleState = new TupleState();
-            tupleState.reportError(ValidationErrorCode.MISSING_RELATION_ERROR, unmatchedValues,
-                Arrays.asList(lhsFields), rhs, Arrays.asList(rhsFields));
+
+          if(TupleEntryUtils.hasValues(tupleEntry, requiredRhsFields) == false) {
+            TupleState tupleState = new TupleState(); // not reporting offset for relations (see DCC-300)
+            reportRelationError(tupleState, TupleEntryUtils.getObjects(tupleEntry, lhsFields));
             bufferCall.getOutputCollector().add(new Tuple(tupleState));
+          } else if(conditional) {
+            if(TupleEntryUtils.hasValues(tupleEntry, optionalLhsFields)) {
+              lhsList.add(TupleEntryUtils.getObjects(tupleEntry, optionalLhsFields));
+            }
+            if(TupleEntryUtils.hasValues(tupleEntry, optionalRhsFields)) {
+              rhsList.add(TupleEntryUtils.getObjects(tupleEntry, optionalRhsFields));
+            }
+          }
+        }
+
+        if(conditional) {
+          for(List<Object> optionalLhsObjects : lhsList) {
+            if(rhsList.contains(optionalLhsObjects) == false) {
+              List<Object> offendingLhsObjects =
+                  rebuildLhsObjects(requiredLhsFields, optionalLhsFields, requiredLhsObjects, optionalLhsObjects);
+              TupleState tupleState = new TupleState(); // not reporting offset for relations (see DCC-300)
+              reportRelationError(tupleState, offendingLhsObjects);
+              bufferCall.getOutputCollector().add(new Tuple(tupleState));
+            }
           }
         }
       }
 
-      /**
-       * Checks that the remaining fields are also null (at this stage they should be design)
+      private void reportRelationError(TupleState tupleState, List<Object> offendingLhsObjects) {
+        tupleState.reportError(ValidationErrorCode.MISSING_RELATION_ERROR, offendingLhsObjects,
+            Arrays.asList(lhsFields), rhs, Arrays.asList(rhsFields));
+      }
+
+      /*
+       * So as to avoid storing it all in memory (memory/computing tradeoff)
        */
-      private boolean checkRemainingRightFields(TupleEntry tupleEntry) {
-        for(int i = size + 1; i < size + size; i++) {
-          if(tupleEntry.getString(i) != null) {
-            return false;
+      private List<Object> rebuildLhsObjects(String[] requiredLhsFields, String[] optionalLhsFields,
+          List<Object> requiredLhsObjects, List<Object> optionalLhsObjects) {
+
+        List<String> disorderedLhsFields = new ArrayList<String>(Arrays.asList(requiredLhsFields));
+        disorderedLhsFields.addAll(Arrays.asList(optionalLhsFields));
+
+        List<Object> disorderedLhsObjects = new ArrayList<Object>(requiredLhsObjects);
+        disorderedLhsObjects.addAll(optionalLhsObjects);
+
+        List<Object> lhsObjects = new ArrayList<Object>();
+        for(String lhsField : lhsFields) {
+          int index = disorderedLhsFields.indexOf(lhsField);
+          if(index == -1) { // necessarily exists by design but just in case
+            throw new PlannerException(String.format("%s is not part of %s", lhsField, disorderedLhsFields));
           }
+          lhsObjects.add(disorderedLhsObjects.get(index));
         }
-        return true;
+        return lhsObjects;
       }
     }
   }

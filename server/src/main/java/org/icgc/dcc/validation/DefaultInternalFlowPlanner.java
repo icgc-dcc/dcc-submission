@@ -127,8 +127,9 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
     pipe = new Each(pipe, new RemoveEmptyLineFilter());
     pipe = new Each(pipe, new RemoveHeaderFilter());
     structralCheck = new StructralCheckFunction(getSchema().getFieldNames());
-    Fields fields = new Fields(ValidationFields.OFFSET_FIELD_NAME, StructralCheckFunction.LINE_FIELD_NAME);
-    pipe = new Each(pipe, fields, structralCheck, Fields.SWAP); // parse "line" into the actual expected fields
+    pipe =
+        new Each(pipe, new Fields(ValidationFields.OFFSET_FIELD_NAME, StructralCheckFunction.LINE_FIELD_NAME),
+            structralCheck, Fields.SWAP); // parse "line" into the actual expected fields
     this.structurallyValidTail = new Each(pipe, TupleStates.keepStructurallyValidTuplesFilter());
     this.structurallyInvalidTail = new Each(pipe, TupleStates.keepStructurallyInvalidTuplesFilter());
   }
