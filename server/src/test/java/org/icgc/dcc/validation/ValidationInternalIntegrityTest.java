@@ -173,7 +173,7 @@ public class ValidationInternalIntegrityTest {
 
     File rootDir = new File(rootDirString);
     File outputDir = new File(outputDirString);
-    File systemDir = new File("SystemFiles");
+    File systemDir = new File("src/test/resources/integrationtest/fs/SystemFiles");
 
     FileSchemaDirectory fileSchemaDirectory = new LocalFileSchemaDirectory(rootDir);
     FileSchemaDirectory systemDirectory = new LocalFileSchemaDirectory(systemDir);

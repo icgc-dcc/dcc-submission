@@ -162,7 +162,7 @@ public class IntegrationTest {
     File srcDir = new File("src/test/resources/integrationtest/fs/");
     File destDir = new File(DCC_ROOT_DIR);
     FileUtils.copyDirectory(srcDir, destDir);
-    srcDir = new File("SystemFiles");
+    srcDir = new File("src/test/resources/integrationtest/fs/SystemFiles");
     destDir = new File(DCC_ROOT_DIR + "/SystemFiles");
     FileUtils.copyDirectory(srcDir, destDir);
   }
