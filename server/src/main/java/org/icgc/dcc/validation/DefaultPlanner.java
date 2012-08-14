@@ -62,7 +62,8 @@ public class DefaultPlanner implements Planner {
     checkArgument(directory != null);
     checkArgument(dictionary != null);
 
-    LocalFileSchemaDirectory systemDirectory = new LocalFileSchemaDirectory(new File("src/main/resources/SystemFiles"));
+    FileSchemaDirectory systemDirectory =
+        LocalCascadingStrategy.getLocalFileSchemaDirectory(new File("src/main/resources/SystemFiles"));
 
     Plan plan = new Plan();
     for(FileSchema fileSchema : dictionary.getFiles()) {

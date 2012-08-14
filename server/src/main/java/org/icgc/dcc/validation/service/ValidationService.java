@@ -30,9 +30,7 @@ import org.icgc.dcc.filesystem.ReleaseFileSystem;
 import org.icgc.dcc.filesystem.SubmissionDirectory;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.validation.CascadingStrategy;
-import org.icgc.dcc.validation.FileSchemaDirectory;
 import org.icgc.dcc.validation.LocalCascadingStrategy;
-import org.icgc.dcc.validation.LocalFileSchemaDirectory;
 import org.icgc.dcc.validation.Plan;
 import org.icgc.dcc.validation.Planner;
 import org.slf4j.Logger;
@@ -86,20 +84,18 @@ public class ValidationService {
     log.info("rootDir = {} ", rootDir);
     log.info("outputDir = {} ", outputDir);
 
-    FileSchemaDirectory fileSchemaDirectory = new LocalFileSchemaDirectory(rootDir);
     CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir);
 
     log.info("starting validation on project {}", projectKey);
-    Plan plan = planCascade(projectKey, fileSchemaDirectory, cascadingStrategy, dictionary);
+    Plan plan = planCascade(projectKey, cascadingStrategy, dictionary);
     runCascade(plan.getCascade(), projectKey);
     log.info("validation finished for project {}", projectKey);
 
     return plan;
   }
 
-  public Plan planCascade(String projectKey, FileSchemaDirectory fileSchemaDirectory,
-      CascadingStrategy cascadingStrategy, Dictionary dictionary) {
-    Plan plan = planner.plan(fileSchemaDirectory, dictionary);
+  public Plan planCascade(String projectKey, CascadingStrategy cascadingStrategy, Dictionary dictionary) {
+    Plan plan = planner.plan(cascadingStrategy.getFileSchemaDirectory(), dictionary);
     log.info("# internal flows: {}", Iterables.size(plan.getInternalFlows()));
     log.info("# external flows: {}", Iterables.size(plan.getExternalFlows()));
 

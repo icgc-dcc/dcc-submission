@@ -17,9 +17,15 @@
  */
 package org.icgc.dcc.validation;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import java.util.List;
+import java.util.regex.Pattern;
+
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.dictionary.model.FileSchema;
+import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
 import org.icgc.dcc.validation.cascading.HadoopJsonScheme;
 import org.icgc.dcc.validation.cascading.ValidationFields;
 
@@ -33,8 +39,11 @@ import cascading.tuple.Fields;
 
 public class HadoopCascadingStrategy extends BaseCascadingStrategy {
 
+  private final HadoopFileSchemaDirectory fileSchemaDirectory;
+
   public HadoopCascadingStrategy(FileSystem fileSystem, Path source, Path output) {
     super(fileSystem, source, output);
+    this.fileSchemaDirectory = new HadoopFileSchemaDirectory(fileSystem, source);
   }
 
   @Override
@@ -61,5 +70,49 @@ public class HadoopCascadingStrategy extends BaseCascadingStrategy {
   @Override
   protected Tap<?, ?, ?> tapSource(Path path) {
     return new Hfs(new TextLine(new Fields(ValidationFields.OFFSET_FIELD_NAME, "line")), path.toUri().getPath());
+  }
+
+  @Override
+  public FileSchemaDirectory getFileSchemaDirectory() {
+    return this.fileSchemaDirectory;
+  }
+
+  private static class HadoopFileSchemaDirectory implements FileSchemaDirectory {
+
+    private final Path directory;
+
+    private final FileSystem fs;
+
+    public HadoopFileSchemaDirectory(FileSystem fs, Path source) {
+      checkArgument(source != null);
+      checkArgument(fs != null);
+      this.directory = source;
+      this.fs = fs;
+    }
+
+    @Override
+    public String getFile(FileSchema fileSchema) {
+      List<Path> paths = matches(fileSchema);
+      if(paths == null || paths.size() == 0) {
+        throw new IllegalArgumentException();
+      }
+      if(paths.size() > 1) {
+        throw new IllegalStateException();
+      }
+      return paths.get(0).toString();
+    }
+
+    @Override
+    public boolean hasFile(final FileSchema fileSchema) {
+      List<Path> paths = matches(fileSchema);
+      return paths != null && paths.size() > 0;
+    }
+
+    private List<Path> matches(final FileSchema fileSchema) {
+      if(fileSchema.getPattern() == null) {
+        return null;
+      }
+      return HadoopUtils.lsFile(fs, directory.toString(), Pattern.compile(fileSchema.getPattern()));
+    }
   }
 }
