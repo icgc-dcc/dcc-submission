@@ -7,8 +7,17 @@ import org.icgc.dcc.validation.HadoopCascadingStrategy;
 
 public class HadoopCascadingStrategyFactory implements CascadingStrategyFactory {
 
+  private final FileSystem fileSystem;
+
+  /**
+   * @param fs
+   */
+  public HadoopCascadingStrategyFactory(FileSystem fs) {
+    this.fileSystem = fs;
+  }
+
   @Override
-  public CascadingStrategy get(FileSystem fileSystem, Path input, Path output) {
+  public CascadingStrategy get(Path input, Path output) {
     return new HadoopCascadingStrategy(fileSystem, input, output);
   }
 

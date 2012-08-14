@@ -88,8 +88,7 @@ public class ValidationService {
     log.info("rootDir = {} ", rootDir);
     log.info("outputDir = {} ", outputDir);
 
-    CascadingStrategy cascadingStrategy =
-        cascadingStrategyFactory.get(dccFileSystem.getFileSystem(), rootDir, outputDir);
+    CascadingStrategy cascadingStrategy = cascadingStrategyFactory.get(rootDir, outputDir);
 
     log.info("starting validation on project {}", projectKey);
     Plan plan = planCascade(projectKey, cascadingStrategy, dictionary);

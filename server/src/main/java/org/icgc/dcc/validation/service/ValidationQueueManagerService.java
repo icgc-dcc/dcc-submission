@@ -180,8 +180,7 @@ public class ValidationQueueManagerService extends AbstractService implements Va
 
     Submission submission = this.releaseService.getSubmission(release.getName(), projectKey);
 
-    CascadingStrategy cascadingStrategy =
-        cascadingStrategyFactory.get(dccFileSystem.getFileSystem(), rootDir, outputDir);
+    CascadingStrategy cascadingStrategy = cascadingStrategyFactory.get(rootDir, outputDir);
 
     SubmissionReport report = new SubmissionReport();
     Outcome outcome = plan.collect(cascadingStrategy, report);
