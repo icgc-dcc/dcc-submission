@@ -18,8 +18,6 @@ public class CascadingStrategyFactoryProvider implements Provider<CascadingStrat
 
   private final FileSystem fs;
 
-  static final String FS_URL = "fs.url";
-
   @Inject
   CascadingStrategyFactoryProvider(FileSystem fs) {
     checkArgument(fs != null);
