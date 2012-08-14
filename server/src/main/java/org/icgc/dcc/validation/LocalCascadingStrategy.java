@@ -17,13 +17,7 @@
  */
 package org.icgc.dcc.validation;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
-import java.util.regex.Pattern;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -49,7 +43,7 @@ public class LocalCascadingStrategy extends BaseCascadingStrategy {
 
   public LocalCascadingStrategy(Path source, Path output) {
     super(localFileSystem(), source, output);
-    this.fileSchemaDirectory = new LocalFileSchemaDirectory(new File(source.toString()));
+    this.fileSchemaDirectory = new FileSchemaDirectory(localFileSystem(), source);
   }
 
   @Override
@@ -77,58 +71,11 @@ public class LocalCascadingStrategy extends BaseCascadingStrategy {
     return new FileTap(new TextLine(new Fields(ValidationFields.OFFSET_FIELD_NAME, "line")), path.toUri().getPath());
   }
 
-  // TODO remove this once a better way of accessing the system files in DefaultPlanner is created
-  static LocalFileSchemaDirectory getLocalFileSchemaDirectory(File directory) {
-    return new LocalFileSchemaDirectory(directory);
-  }
-
   static FileSystem localFileSystem() {
     try {
       return FileSystem.getLocal(new Configuration());
     } catch(IOException e) {
       throw new RuntimeException(e);
-    }
-  }
-
-  private static class LocalFileSchemaDirectory implements FileSchemaDirectory {
-
-    private final File directory;
-
-    public LocalFileSchemaDirectory(File directory) {
-      checkArgument(directory != null);
-      this.directory = directory;
-    }
-
-    @Override
-    public String getFile(FileSchema fileSchema) {
-      File[] files = matches(fileSchema);
-      if(files == null || files.length == 0) {
-        throw new IllegalArgumentException();
-      }
-      if(files.length > 1) {
-        throw new IllegalStateException();
-      }
-      return files[0].getAbsolutePath();
-    }
-
-    @Override
-    public boolean hasFile(final FileSchema fileSchema) {
-      File[] files = matches(fileSchema);
-      return files != null && files.length > 0;
-    }
-
-    private File[] matches(final FileSchema fileSchema) {
-      if(fileSchema.getPattern() == null) {
-        return null;
-      }
-      return directory.listFiles(new FileFilter() {
-
-        @Override
-        public boolean accept(File pathname) {
-          checkNotNull(fileSchema.getPattern(), "schema " + fileSchema.getName() + " has no pattern");
-          return Pattern.matches(fileSchema.getPattern(), pathname.getName());
-        }
-      });
     }
   }
 
