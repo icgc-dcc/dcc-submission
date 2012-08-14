@@ -33,11 +33,8 @@ import cascading.tuple.Fields;
 
 public class HadoopCascadingStrategy extends BaseCascadingStrategy {
 
-  private final FileSchemaDirectory fileSchemaDirectory;
-
   public HadoopCascadingStrategy(FileSystem fileSystem, Path source, Path output) {
     super(fileSystem, source, output);
-    this.fileSchemaDirectory = new FileSchemaDirectory(fileSystem, source);
   }
 
   @Override
@@ -64,10 +61,5 @@ public class HadoopCascadingStrategy extends BaseCascadingStrategy {
   @Override
   protected Tap<?, ?, ?> tapSource(Path path) {
     return new Hfs(new TextLine(new Fields(ValidationFields.OFFSET_FIELD_NAME, "line")), path.toUri().getPath());
-  }
-
-  @Override
-  public FileSchemaDirectory getFileSchemaDirectory() {
-    return this.fileSchemaDirectory;
   }
 }

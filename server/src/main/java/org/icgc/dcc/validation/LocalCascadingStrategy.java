@@ -39,11 +39,8 @@ import cascading.tuple.Fields;
  */
 public class LocalCascadingStrategy extends BaseCascadingStrategy {
 
-  private final FileSchemaDirectory fileSchemaDirectory;
-
   public LocalCascadingStrategy(Path source, Path output) {
     super(localFileSystem(), source, output);
-    this.fileSchemaDirectory = new FileSchemaDirectory(localFileSystem(), source);
   }
 
   @Override
@@ -77,10 +74,5 @@ public class LocalCascadingStrategy extends BaseCascadingStrategy {
     } catch(IOException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  @Override
-  public FileSchemaDirectory getFileSchemaDirectory() {
-    return this.fileSchemaDirectory;
   }
 }

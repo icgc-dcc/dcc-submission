@@ -48,12 +48,15 @@ public abstract class BaseCascadingStrategy implements CascadingStrategy {
 
   private final Path output;
 
+  private final FileSchemaDirectory fileSchemaDirectory;
+
   private static final Path system = new Path("src/main/resources/SystemFiles");
 
   protected BaseCascadingStrategy(FileSystem fileSystem, Path input, Path output) {
     this.fileSystem = fileSystem;
     this.input = input;
     this.output = output;
+    this.fileSchemaDirectory = new FileSchemaDirectory(fileSystem, input);
   }
 
   @Override
@@ -152,5 +155,10 @@ public abstract class BaseCascadingStrategy implements CascadingStrategy {
     }
     throw new FileNotFoundException("no file for schema " + schema.getName());
 
+  }
+
+  @Override
+  public FileSchemaDirectory getFileSchemaDirectory() {
+    return this.fileSchemaDirectory;
   }
 }
