@@ -15,42 +15,20 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.validation;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+package org.icgc.dcc.validation.factory;
 
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.dictionary.model.FileSchema;
+import org.icgc.dcc.validation.CascadingStrategy;
+import org.icgc.dcc.validation.LocalCascadingStrategy;
 
-import cascading.flow.FlowConnector;
-import cascading.tap.Tap;
-import cascading.tuple.Fields;
+/**
+ * 
+ */
+public class LocalCascadingStrategyFactory implements CascadingStrategyFactory {
 
-public interface CascadingStrategy {
+  @Override
+  public CascadingStrategy get(Path input, Path output) {
+    return new LocalCascadingStrategy(input, output);
+  }
 
-  public FlowConnector getFlowConnector();
-
-  public Tap<?, ?, ?> getSourceTap(FileSchema schema);
-
-  public Tap<?, ?, ?> getFlowSinkTap(FileSchema schema, FlowType type);
-
-  public Tap<?, ?, ?> getTrimmedTap(Trim trim);
-
-  public Tap<?, ?, ?> getReportTap(FileSchema schema, FlowType type, String reportName);
-
-  /**
-   * Used to read back a report that was produced during the execution of a Flow. This does not use a Tap so that it can
-   * be executed outside of a Flow.
-   * @throws IOException
-   */
-  public InputStream readReportTap(FileSchema schema, FlowType type, String reportName) throws FileNotFoundException,
-      IOException;
-
-  public Fields getFileHeader(FileSchema schema) throws IOException;
-
-  public Path path(final FileSchema schema) throws FileNotFoundException, IOException;
-
-  public FileSchemaDirectory getFileSchemaDirectory();
 }

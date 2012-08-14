@@ -19,10 +19,13 @@ package org.icgc.dcc.validation;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.validation.report.ErrorPlanningVisitor;
@@ -62,7 +65,13 @@ public class DefaultPlanner implements Planner {
     checkArgument(directory != null);
     checkArgument(dictionary != null);
 
-    LocalFileSchemaDirectory systemDirectory = new LocalFileSchemaDirectory(new File("src/main/resources/SystemFiles"));
+    FileSystem localFS;
+    try {
+      localFS = FileSystem.getLocal(new Configuration());
+    } catch(IOException e) {
+      throw new RuntimeException(e);
+    }
+    FileSchemaDirectory systemDirectory = new FileSchemaDirectory(localFS, new Path("src/main/resources/SystemFiles"));
 
     Plan plan = new Plan();
     for(FileSchema fileSchema : dictionary.getFiles()) {

@@ -28,6 +28,7 @@ import java.util.List;
 import junit.framework.Assert;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.hadoop.fs.Path;
 import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.core.ProjectService;
@@ -42,6 +43,7 @@ import org.icgc.dcc.dictionary.model.ValueType;
 import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.filesystem.GuiceJUnitRunner;
 import org.icgc.dcc.filesystem.GuiceJUnitRunner.GuiceModules;
+import org.icgc.dcc.validation.factory.LocalCascadingStrategyFactory;
 import org.icgc.dcc.validation.service.ValidationService;
 import org.junit.Before;
 import org.junit.Test;
@@ -100,7 +102,9 @@ public class ValidationExternalIntegrityTest {
     when(codeList3.getTerms()).thenReturn(termList3);
     when(codeList4.getTerms()).thenReturn(termList4);
 
-    validationService = new ValidationService(dccFileSystem, projectService, planner, dictionaryService);
+    validationService =
+        new ValidationService(dccFileSystem, projectService, planner, dictionaryService,
+            new LocalCascadingStrategyFactory());
 
     resetDictionary();
   }
@@ -188,13 +192,12 @@ public class ValidationExternalIntegrityTest {
     errorFile.delete();
     Assert.assertFalse(errorFileString, errorFile.exists());
 
-    File rootDir = new File(rootDirString);
-    File outputDir = new File(outputDirString);
+    Path rootDir = new Path(rootDirString);
+    Path outputDir = new Path(outputDirString);
 
-    FileSchemaDirectory fileSchemaDirectory = new LocalFileSchemaDirectory(rootDir);
     CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir);
 
-    Plan plan = validationService.planCascade(null, fileSchemaDirectory, cascadingStrategy, dictionary);
+    Plan plan = validationService.planCascade(null, cascadingStrategy, dictionary);
     Assert.assertEquals(5, plan.getCascade().getFlows().size());
     validationService.runCascade(plan.getCascade(), null);
 
