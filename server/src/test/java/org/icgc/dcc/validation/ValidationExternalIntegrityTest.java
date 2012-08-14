@@ -190,11 +190,14 @@ public class ValidationExternalIntegrityTest {
 
     File rootDir = new File(rootDirString);
     File outputDir = new File(outputDirString);
+    File systemDir = new File("SystemFiles");
 
     FileSchemaDirectory fileSchemaDirectory = new LocalFileSchemaDirectory(rootDir);
+    FileSchemaDirectory systemDirectory = new LocalFileSchemaDirectory(systemDir);
     CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir);
 
-    Plan plan = validationService.planCascade(null, fileSchemaDirectory, cascadingStrategy, dictionary);
+    Plan plan =
+        validationService.planCascade(null, fileSchemaDirectory, cascadingStrategy, dictionary, systemDirectory);
     Assert.assertEquals(5, plan.getCascade().getFlows().size());
     validationService.runCascade(plan.getCascade(), null);
 

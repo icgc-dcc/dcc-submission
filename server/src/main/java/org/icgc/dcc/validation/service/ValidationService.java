@@ -82,15 +82,17 @@ public class ValidationService {
 
     File rootDir = new File(submissionDirectory.getSubmissionDirPath());
     File outputDir = new File(submissionDirectory.getValidationDirPath());
+    File systemDir = new File(releaseFilesystem.getDccFileSystem().getRootStringPath() + "/SystemFiles");
 
     log.info("rootDir = {} ", rootDir);
     log.info("outputDir = {} ", outputDir);
 
     FileSchemaDirectory fileSchemaDirectory = new LocalFileSchemaDirectory(rootDir);
+    FileSchemaDirectory systemDirectory = new LocalFileSchemaDirectory(systemDir);
     CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir);
 
     log.info("starting validation on project {}", projectKey);
-    Plan plan = planCascade(projectKey, fileSchemaDirectory, cascadingStrategy, dictionary);
+    Plan plan = planCascade(projectKey, fileSchemaDirectory, cascadingStrategy, dictionary, systemDirectory);
     runCascade(plan.getCascade(), projectKey);
     log.info("validation finished for project {}", projectKey);
 
@@ -98,8 +100,8 @@ public class ValidationService {
   }
 
   public Plan planCascade(String projectKey, FileSchemaDirectory fileSchemaDirectory,
-      CascadingStrategy cascadingStrategy, Dictionary dictionary) {
-    Plan plan = planner.plan(fileSchemaDirectory, dictionary);
+      CascadingStrategy cascadingStrategy, Dictionary dictionary, FileSchemaDirectory systemDirectory) {
+    Plan plan = planner.plan(fileSchemaDirectory, dictionary, systemDirectory);
     log.info("# internal flows: {}", Iterables.size(plan.getInternalFlows()));
     log.info("# external flows: {}", Iterables.size(plan.getExternalFlows()));
 

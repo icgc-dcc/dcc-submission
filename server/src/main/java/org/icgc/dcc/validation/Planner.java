@@ -21,6 +21,7 @@ import org.icgc.dcc.dictionary.model.Dictionary;
 
 public interface Planner {
 
-  public Plan plan(FileSchemaDirectory directory, Dictionary dictionary) throws PlannerException;
+  public Plan plan(FileSchemaDirectory directory, Dictionary dictionary, FileSchemaDirectory systemDirectory)
+      throws PlannerException;
 
 }

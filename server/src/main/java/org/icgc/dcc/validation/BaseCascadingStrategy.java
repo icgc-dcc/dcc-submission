@@ -48,8 +48,6 @@ public abstract class BaseCascadingStrategy implements CascadingStrategy {
 
   private final Path output;
 
-  private static final Path system = new Path("src/main/resources/SystemFiles");
-
   protected BaseCascadingStrategy(FileSystem fileSystem, Path input, Path output) {
     this.fileSystem = fileSystem;
     this.input = input;
@@ -139,6 +137,8 @@ public abstract class BaseCascadingStrategy implements CascadingStrategy {
   }
 
   private Path systemPath(final FileSchema schema) throws FileNotFoundException, IOException {
+
+    Path system = new Path("/tmp/dcc_root_dir/SystemFiles");
 
     RemoteIterator<LocatedFileStatus> files = fileSystem.listFiles(system, false);
     while(files.hasNext()) {
