@@ -82,13 +82,9 @@ public class HadoopUtils {
   }
 
   public static void createSymlink(FileSystem fileSystem, Path origin, Path destination) {
-    HadoopUtils.mkdirs(fileSystem, destination.toString());
+
     try {
-      List<Path> files = HadoopUtils.lsFile(fileSystem, origin.toString());
-      for(Path file : files) {
-        FileContext.getFileContext(fileSystem.getUri()).createSymlink(file, new Path(destination, file.getName()),
-            false);
-      }
+      FileContext.getFileContext(fileSystem.getUri()).createSymlink(origin, destination, false);
     } catch(IOException e) {
       throw new HdfsException(e);
     }
