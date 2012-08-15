@@ -46,6 +46,12 @@ public class Plan {
 
   private Cascade cascade;
 
+  private final CascadingStrategy cascadingStrategy;
+
+  public Plan(CascadingStrategy cascadingStrategy) {
+    this.cascadingStrategy = cascadingStrategy;
+  }
+
   public void include(FileSchema fileSchema, InternalFlowPlanner internal, ExternalFlowPlanner external) {
     this.plannedSchema.add(fileSchema);
     this.internalPlanners.put(fileSchema.getName(), internal);
@@ -98,12 +104,12 @@ public class Plan {
     return this.cascade;
   }
 
-  public Outcome collect(CascadingStrategy strategy, SubmissionReport report) {
+  public Outcome collect(SubmissionReport report) {
     Outcome result = Outcome.PASSED;
     Map<String, SchemaReport> schemaReports = new HashMap<String, SchemaReport>();
     for(FileSchemaFlowPlanner planner : Iterables.concat(internalPlanners.values(), externalPlanners.values())) {
       SchemaReport schemaReport = new SchemaReport();
-      Outcome outcome = planner.collect(strategy, schemaReport);
+      Outcome outcome = planner.collect(cascadingStrategy, schemaReport);
       if(outcome == Outcome.FAILED) {
         result = Outcome.FAILED;
       }

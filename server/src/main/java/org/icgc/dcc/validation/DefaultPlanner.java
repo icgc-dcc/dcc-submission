@@ -61,8 +61,8 @@ public class DefaultPlanner implements Planner {
   }
 
   @Override
-  public Plan plan(FileSchemaDirectory directory, Dictionary dictionary) {
-    checkArgument(directory != null);
+  public Plan plan(CascadingStrategy strategy, Dictionary dictionary) {
+    checkArgument(strategy != null);
     checkArgument(dictionary != null);
 
     FileSystem localFS;
@@ -73,9 +73,9 @@ public class DefaultPlanner implements Planner {
     }
     FileSchemaDirectory systemDirectory = new FileSchemaDirectory(localFS, new Path("src/main/resources/SystemFiles"));
 
-    Plan plan = new Plan();
+    Plan plan = new Plan(strategy);
     for(FileSchema fileSchema : dictionary.getFiles()) {
-      if(directory.hasFile(fileSchema) || systemDirectory.hasFile(fileSchema)) {
+      if(strategy.getFileSchemaDirectory().hasFile(fileSchema) || systemDirectory.hasFile(fileSchema)) {
         plan.include(fileSchema, new DefaultInternalFlowPlanner(fileSchema), new DefaultExternalFlowPlanner(plan,
             fileSchema));
       }
