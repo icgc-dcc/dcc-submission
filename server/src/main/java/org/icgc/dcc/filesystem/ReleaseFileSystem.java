@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.List;
 
+import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
 import org.icgc.dcc.release.model.Release;
@@ -88,5 +89,9 @@ public class ReleaseFileSystem {
 
   private boolean hasPrivileges(Project project) {
     return isApplication() || project.hasUser(username);
+  }
+
+  public Path getSystemDirectory() {
+    return new Path(this.dccFileSystem.getRootStringPath() + "/SystemFiles/");
   }
 }
