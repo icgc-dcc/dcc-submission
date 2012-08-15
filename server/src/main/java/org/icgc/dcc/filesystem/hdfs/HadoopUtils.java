@@ -86,7 +86,7 @@ public class HadoopUtils {
       Path originPath = new Path(origin);
       Path destinationPath = new Path(destination);
 
-      FileContext.getFileContext().createSymlink(originPath, destinationPath, false);
+      FileContext.getFileContext(fileSystem.getUri()).createSymlink(originPath, destinationPath, false);
     } catch(IOException e) {
       throw new HdfsException(e);
     }
