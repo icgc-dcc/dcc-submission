@@ -147,8 +147,6 @@ public abstract class BaseCascadingStrategy implements CascadingStrategy {
 
   private Path systemPath(final FileSchema schema) throws FileNotFoundException, IOException {
 
-    Path system = new Path("/tmp/dcc_root_dir/SystemFiles");
-
     RemoteIterator<LocatedFileStatus> files = fileSystem.listFiles(system, false);
     while(files.hasNext()) {
       LocatedFileStatus file = files.next();

@@ -84,7 +84,7 @@ public class ValidationService {
 
     Path rootDir = new Path(submissionDirectory.getSubmissionDirPath());
     Path outputDir = new Path(submissionDirectory.getValidationDirPath());
-    Path systemDir = new Path(releaseFilesystem.getDccFileSystem().getRootStringPath() + "/SystemFiles");
+    Path systemDir = releaseFilesystem.getSystemDirectory();
 
     log.info("rootDir = {} ", rootDir);
     log.info("outputDir = {} ", outputDir);
