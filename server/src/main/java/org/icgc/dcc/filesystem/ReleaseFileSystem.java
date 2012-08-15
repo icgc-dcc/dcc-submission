@@ -91,7 +91,11 @@ public class ReleaseFileSystem {
     return isApplication() || project.hasUser(username);
   }
 
+  public Path getReleaseDirectory() {
+    return new Path(this.dccFileSystem.getRootStringPath() + "/" + this.release.getName());
+  }
+
   public Path getSystemDirectory() {
-    return new Path(this.dccFileSystem.getRootStringPath() + "/SystemFiles/");
+    return new Path(this.getReleaseDirectory(), "SystemFiles");
   }
 }
