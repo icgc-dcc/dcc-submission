@@ -24,19 +24,14 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.ProjectService;
-import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.dictionary.DictionaryService;
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.filesystem.DccFileSystem;
-import org.icgc.dcc.filesystem.ReleaseFileSystem;
-import org.icgc.dcc.filesystem.SubmissionDirectory;
 import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.Submission;
-import org.icgc.dcc.validation.CascadingStrategy;
 import org.icgc.dcc.validation.Plan;
 import org.icgc.dcc.validation.ValidationCallback;
 import org.icgc.dcc.validation.factory.CascadingStrategyFactory;
@@ -170,6 +165,7 @@ public class ValidationQueueManagerService extends AbstractService implements Va
 
     Release release = releaseService.getNextRelease().getRelease();
 
+
     ReleaseFileSystem releaseFilesystem = dccFileSystem.getReleaseFilesystem(release);
 
     Project project = projectService.getProject(projectKey);
@@ -184,7 +180,7 @@ public class ValidationQueueManagerService extends AbstractService implements Va
     CascadingStrategy cascadingStrategy = cascadingStrategyFactory.get(rootDir, outputDir, systemDir);
 
     SubmissionReport report = new SubmissionReport();
-    Outcome outcome = plan.collect(cascadingStrategy, report);
+    Outcome outcome = plan.collect(report);
     submission.setReport(report);
 
     // persist the report to DB
