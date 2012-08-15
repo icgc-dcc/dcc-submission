@@ -22,7 +22,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 
 import org.icgc.dcc.core.UserService;
 import org.icgc.dcc.core.model.User;
@@ -47,10 +46,12 @@ public class UserResource {
     String username = passwordAuthenticator.getCurrentUser();
     User user = users.getUser(username);
 
-    if(user != null) {
-      return Response.ok(user).build();
+    if(user == null) {
+      user = new User();
+      user.setUsername(username);
+      users.saveUser(user);
     }
-    return Response.status(Status.INTERNAL_SERVER_ERROR).build();
+    return Response.ok(user).build();
   }
 
 }

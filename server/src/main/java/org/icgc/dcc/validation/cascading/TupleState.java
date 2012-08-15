@@ -4,7 +4,9 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -18,14 +20,19 @@ import com.google.common.collect.Lists;
  * Each {@code Tuple} should have one field that holds an instance of this class. It is used to track the state
  * (valid/invalid and corresponding reasons) of the whole {@code Tuple}.
  */
+
 public class TupleState implements Serializable {
 
   private int offset;
 
   private List<TupleError> errors;
 
-  public TupleState() {
+  private boolean structurallyValid; // to save time on filtering
 
+  private final Set<String> missingFieldNames = new HashSet<String>();
+
+  public TupleState() {
+    structurallyValid = true;
   }
 
   public void setOffset(int offset) {
@@ -35,6 +42,9 @@ public class TupleState implements Serializable {
   public void reportError(ValidationErrorCode code, @Nullable Object... parameters) {
     checkArgument(code != null);
     ensureErrors().add(new TupleError(code, parameters));
+    if(code == ValidationErrorCode.STRUCTURALLY_INVALID_ROW_ERROR) {
+      structurallyValid = false;
+    }
   }
 
   public Iterable<TupleError> getErrors() {
@@ -51,6 +61,11 @@ public class TupleState implements Serializable {
     return isValid() == false;
   }
 
+  @JsonIgnore
+  public boolean isStructurallyValid() {
+    return structurallyValid;
+  }
+
   public int getOffset() {
     return offset;
   }
@@ -59,6 +74,15 @@ public class TupleState implements Serializable {
   public String toString() {
     return Objects.toStringHelper(TupleState.class).add(ValidationFields.OFFSET_FIELD_NAME, offset)
         .add("valid", isValid()).add("errors", errors).toString();
+  }
+
+  public void addMissingField(String fieldName) {
+    this.missingFieldNames.add(fieldName);
+  }
+
+  @JsonIgnore
+  public boolean isFieldMissing(String fieldName) {
+    return this.missingFieldNames.contains(fieldName);
   }
 
   /**

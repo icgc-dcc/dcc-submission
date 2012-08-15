@@ -3,21 +3,24 @@ package org.icgc.dcc.core;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.core.model.QProject;
 import org.icgc.dcc.core.morphia.BaseMorphiaService;
 import org.icgc.dcc.filesystem.DccFileSystem;
-import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.QRelease;
 import org.icgc.dcc.release.model.Release;
+import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.release.model.SubmissionState;
+import org.icgc.dcc.shiro.AuthorizationPrivileges;
+import org.icgc.dcc.web.validator.InvalidNameException;
+import org.icgc.dcc.web.validator.NameValidator;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
 import com.google.code.morphia.query.Query;
 import com.google.code.morphia.query.UpdateOperations;
-import com.google.common.collect.Iterables;
 import com.google.inject.Inject;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
 
@@ -25,14 +28,11 @@ public class ProjectService extends BaseMorphiaService<Project> {
 
   private final DccFileSystem fs;
 
-  private final ReleaseService releaseService;
-
   @Inject
-  public ProjectService(Morphia morphia, Datastore datastore, DccFileSystem fs, ReleaseService releaseService) {
+  public ProjectService(Morphia morphia, Datastore datastore, DccFileSystem fs) {
     super(morphia, datastore, QProject.project);
     super.registerModelClasses(Project.class);
     this.fs = fs;
-    this.releaseService = releaseService;
   }
 
   public List<Release> getReleases(Project project) {
@@ -52,7 +52,15 @@ public class ProjectService extends BaseMorphiaService<Project> {
 
   @SuppressWarnings("all")
   public void addProject(Project project) {
-    Release release = releaseService.getNextRelease().getRelease();
+    // check for project key
+    if(!NameValidator.validate(project.getKey())) {
+      throw new InvalidNameException(project.getKey());
+    }
+
+    this.saveProject(project);
+
+    MorphiaQuery<Release> releaseQuery = new MorphiaQuery<Release>(morphia(), datastore(), QRelease.release);
+    Release release = releaseQuery.where(QRelease.release.state.eq(ReleaseState.OPENED)).singleResult();
     Submission submission = new Submission();
     submission.setProjectKey(project.getKey());
     submission.setState(SubmissionState.NOT_VALIDATED);
@@ -63,28 +71,40 @@ public class ProjectService extends BaseMorphiaService<Project> {
         .filter("name = ", release.getName());
     UpdateOperations<Release> ops = datastore().createUpdateOperations(Release.class).add("submissions", submission);
     datastore().update(updateQuery, ops);
-
-    this.saveProject(project);
   }
 
   public List<Project> getProjects() {
     return this.query().list();
   }
 
-  public Project getProject(final String projectKey) {
-    Project project = Iterables.find(this.getProjects(), new com.google.common.base.Predicate<Project>() {
-      @Override
-      public boolean apply(Project input) {
-        return input.getKey().equals(projectKey);
+  public List<Project> getProjects(Subject user) {
+    List<Project> filteredProjects = new ArrayList<Project>();
+    for(Project project : this.getProjects()) {
+      if(user.isPermitted(AuthorizationPrivileges.projectViewPrivilege(project.getKey()))) {
+        filteredProjects.add(project);
       }
-    }, null);
+    }
+    return filteredProjects;
+  }
+
+  public Project getProject(final String projectKey) {
+    Project project = this.query().where(QProject.project.key.eq(projectKey)).singleResult();
+
     if(project == null) {
       throw new ProjectServiceException("No project found with key " + projectKey);
     }
     return project;
   }
 
-  public void saveProject(Project project) {
+  public List<Project> getProjects(List<String> projectKeys) {
+    List<Project> projects = this.query().where(QProject.project.key.in(projectKeys)).list();
+    if(projects == null) {
+      throw new ProjectServiceException("No projects found within the key list");
+    }
+    return projects;
+  }
+
+  private void saveProject(Project project) {
     this.datastore().save(project);
   }
 }

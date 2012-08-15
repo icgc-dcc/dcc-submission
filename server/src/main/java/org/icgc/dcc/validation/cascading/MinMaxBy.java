@@ -30,24 +30,34 @@ import cascading.tuple.TupleEntry;
 public class MinMaxBy extends AggregateBy {
   private static final long serialVersionUID = 1L;
 
-  private static final String MIN = "min";
-
-  private static final String MAX = "max";
-
   private static final int VALUE_OFFSET = 0;
 
   private static final int MIN_OFFSET = 0;
 
   private static final int MAX_OFFSET = 1;
 
+  public static final String MIN = "min";
+
+  public static final String MAX = "max";
+
   private static final Fields MIN_MAX_FIELDS = new Fields(MIN, MAX);
 
   public static class MinMaxPartial implements Functor {
     private static final long serialVersionUID = 1L;
 
+    private final Fields declaredFields;
+
+    public MinMaxPartial() {
+      this(MIN_MAX_FIELDS);
+    }
+
+    public MinMaxPartial(Fields declaredFields) {
+      this.declaredFields = declaredFields;
+    }
+
     @Override
     public Fields getDeclaredFields() {
-      return MIN_MAX_FIELDS;
+      return declaredFields;
     }
 
     @Override
@@ -132,7 +142,7 @@ public class MinMaxBy extends AggregateBy {
     }
   }
 
-  public MinMaxBy(Fields valueField, Fields minField) {
-    super(valueField, new MinMaxPartial(), new MinMaxFinal(minField));
+  public MinMaxBy(Fields valueField, Fields minMaxField) {
+    super(valueField, new MinMaxPartial(minMaxField), new MinMaxFinal(minMaxField));
   }
 }

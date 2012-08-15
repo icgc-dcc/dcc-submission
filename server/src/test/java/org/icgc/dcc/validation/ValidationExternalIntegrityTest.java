@@ -28,6 +28,7 @@ import java.util.List;
 import junit.framework.Assert;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.hadoop.fs.Path;
 import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.core.ProjectService;
@@ -42,13 +43,11 @@ import org.icgc.dcc.dictionary.model.ValueType;
 import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.filesystem.GuiceJUnitRunner;
 import org.icgc.dcc.filesystem.GuiceJUnitRunner.GuiceModules;
-import org.icgc.dcc.release.ReleaseService;
+import org.icgc.dcc.validation.factory.LocalCascadingStrategyFactory;
 import org.icgc.dcc.validation.service.ValidationService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import cascading.cascade.Cascade;
 
 import com.google.inject.Inject;
 
@@ -68,13 +67,10 @@ public class ValidationExternalIntegrityTest {
 
   private Dictionary dictionary;
 
-  private ReleaseService releaseService;
-
   @Before
   public void setUp() throws JsonProcessingException, IOException {
     DccFileSystem dccFileSystem = mock(DccFileSystem.class);
     ProjectService projectService = mock(ProjectService.class);
-    releaseService = mock(ReleaseService.class);
 
     CodeList codeList1 = mock(CodeList.class);
     CodeList codeList2 = mock(CodeList.class);
@@ -107,7 +103,8 @@ public class ValidationExternalIntegrityTest {
     when(codeList4.getTerms()).thenReturn(termList4);
 
     validationService =
-        new ValidationService(dccFileSystem, projectService, planner, dictionaryService, releaseService);
+        new ValidationService(dccFileSystem, projectService, planner, dictionaryService,
+            new LocalCascadingStrategyFactory());
 
     resetDictionary();
   }
@@ -149,8 +146,9 @@ public class ValidationExternalIntegrityTest {
 
     String[] fieldNames = { "donor_id", "fakecolumn" };
 
+    specimen.getRelation().clear();
     Relation relation = new Relation(Arrays.asList(fieldNames), "donor", Arrays.asList(fieldNames));
-    specimen.setRelation(relation);
+    specimen.addRelation(relation);
 
     testErrorType("fk_1");
 
@@ -194,15 +192,16 @@ public class ValidationExternalIntegrityTest {
     errorFile.delete();
     Assert.assertFalse(errorFileString, errorFile.exists());
 
-    File rootDir = new File(rootDirString);
-    File outputDir = new File(outputDirString);
+    Path rootDir = new Path(rootDirString);
+    Path outputDir = new Path(outputDirString);
+    Path systemDir = new Path("src/test/resources/integrationtest/fs/SystemFiles");
 
-    FileSchemaDirectory fileSchemaDirectory = new LocalFileSchemaDirectory(rootDir);
-    CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir);
+    CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir, systemDir);
 
-    Cascade cascade = validationService.planCascade(null, null, fileSchemaDirectory, cascadingStrategy, dictionary);
-    Assert.assertEquals(3, cascade.getFlows().size());
-    validationService.runCascade(cascade, null, null);
+    Plan plan = validationService.planCascade(null, cascadingStrategy, dictionary);
+
+    Assert.assertEquals(5, plan.getCascade().getFlows().size());
+    validationService.runCascade(plan.getCascade(), null);
 
     Assert.assertTrue(errorFileString, errorFile.exists());
     return FileUtils.readFileToString(errorFile);

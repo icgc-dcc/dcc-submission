@@ -40,7 +40,7 @@
     </dependency>
     <dependency>
       <groupId>org.glassfish.jersey.media</groupId>
-      <artifactId>jersey-media-json</artifactId>
+      <artifactId>jersey-media-json-jackson</artifactId>
       <version>${jersey.version}</version>
     </dependency>
     <dependency>
@@ -343,6 +343,9 @@
         </executions>
         <configuration>
           <mainClass>org.icgc.dcc.Main</mainClass>
+          <arguments>
+            <argument>-Xms2g -Xmx2g</argument>
+          </arguments>
         </configuration>
       </plugin>
       <plugin>
@@ -350,7 +353,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>2.12</version>
         <configuration>
-          <groups>unit,mongodb</groups>
+          <argLine>-Xms256m -Xmx256m</argLine>
         </configuration>
       </plugin>
     </plugins>
@@ -388,7 +391,7 @@
     <logback.version>1.0.3</logback.version>
     <querydsl.version>2.6.0</querydsl.version>
     <morphia.version>0.99.1-DCC</morphia.version>
-    <jersey.version>2.0-m05</jersey.version>
+    <jersey.version>2.0-m05-2</jersey.version>
     <shiro.version>1.2.0</shiro.version>
     <mina.version>0.6.0</mina.version>
     <cascading.version>2.0.1</cascading.version>

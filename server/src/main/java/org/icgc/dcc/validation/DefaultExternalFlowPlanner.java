@@ -26,7 +26,6 @@ import org.icgc.dcc.dictionary.model.FileSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cascading.flow.Flow;
 import cascading.flow.FlowDef;
 import cascading.pipe.Merge;
 import cascading.pipe.Pipe;
@@ -65,14 +64,6 @@ class DefaultExternalFlowPlanner extends BaseFileSchemaFlowPlanner implements Ex
   }
 
   @Override
-  public Flow<?> connect(CascadingStrategy strategy) {
-    if(joinedTails.size() > 0) {
-      return super.connect(strategy);
-    }
-    return null;
-  }
-
-  @Override
   protected FlowDef onConnect(FlowDef flowDef, CascadingStrategy strategy) {
     for(Trim trim : trimmedHeads.keySet()) {
       flowDef.addSource(trim.getName(), strategy.getTrimmedTap(trim));
@@ -81,8 +72,13 @@ class DefaultExternalFlowPlanner extends BaseFileSchemaFlowPlanner implements Ex
   }
 
   @Override
-  protected Pipe getTail() {
+  protected Pipe getStructurallyValidTail() {
     return mergeJoinedTails();
+  }
+
+  @Override
+  protected Pipe getStructurallyInvalidTail() {
+    throw new IllegalStateException("method should not be used in the context of external validation");
   }
 
   private Pipe getTrimmedHead(Trim trim) {

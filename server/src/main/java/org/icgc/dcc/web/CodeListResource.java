@@ -30,10 +30,13 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.SecurityContext;
 
 import org.icgc.dcc.dictionary.DictionaryService;
 import org.icgc.dcc.dictionary.model.CodeList;
 import org.icgc.dcc.dictionary.model.Term;
+import org.icgc.dcc.shiro.AuthorizationPrivileges;
+import org.icgc.dcc.shiro.ShiroSecurityContext;
 
 import com.google.inject.Inject;
 
@@ -46,13 +49,17 @@ public class CodeListResource {
   public Response getCodeLists() {
     List<CodeList> codeLists = this.dictionaries.listCodeList();
     if(codeLists == null) {
-      return Response.status(Status.NOT_FOUND).build();
+      return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoCodeLists")).build();
     }
     return Response.ok(codeLists).build();
   }
 
   @POST
-  public Response createCodeList(String name) {
+  public Response createCodeList(String name, @Context SecurityContext securityContext) {
+    if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
+        AuthorizationPrivileges.CODELIST_MODIFY.toString()) == false) {
+      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
+    }
     checkArgument(name != null);
     CodeList c = this.dictionaries.createCodeList(name);
     return ResponseTimestamper.ok(c).build();
@@ -64,22 +71,28 @@ public class CodeListResource {
     checkArgument(name != null);
     CodeList c = this.dictionaries.getCodeList(name);
     if(c == null) {
-      return Response.status(Status.NOT_FOUND).build();
+      return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoSuchCodeList", name)).build();
     }
     return ResponseTimestamper.ok(c).build();
   }
 
   @PUT
   @Path("{name}")
-  public Response updateCodeList(@PathParam("name") String name, CodeList newCodeList, @Context Request req) {
+  public Response updateCodeList(@PathParam("name") String name, CodeList newCodeList, @Context Request req,
+      @Context SecurityContext securityContext) {
+    if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
+        AuthorizationPrivileges.CODELIST_MODIFY.toString()) == false) {
+      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
+    }
     checkArgument(name != null);
     checkArgument(newCodeList != null);
 
     CodeList oldCodeList = this.dictionaries.getCodeList(name);
     if(oldCodeList == null) {
-      return Response.status(Status.NOT_FOUND).build();
+      return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoSuchCodeList", name)).build();
     } else if(newCodeList.getName().equals(name) == false) {
-      return Response.status(Status.BAD_REQUEST).build();
+      return Response.status(Status.BAD_REQUEST)
+          .entity(new ServerErrorResponseMessage("CodeListNameMismatch", newCodeList.getName(), name)).build();
     }
     ResponseTimestamper.evaluate(req, oldCodeList);
     this.dictionaries.updateCodeList(newCodeList);
@@ -89,12 +102,17 @@ public class CodeListResource {
 
   @POST
   @Path("{name}/terms")
-  public Response addTerms(@PathParam("name") String name, List<Term> terms, @Context Request req) {
+  public Response addTerms(@PathParam("name") String name, List<Term> terms, @Context Request req,
+      @Context SecurityContext securityContext) {
+    if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
+        AuthorizationPrivileges.CODELIST_MODIFY.toString()) == false) {
+      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
+    }
     checkArgument(name != null);
     checkArgument(terms != null);
     CodeList c = this.dictionaries.getCodeList(name);
     if(c == null) {
-      return Response.status(Status.NOT_FOUND).build();
+      return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoSuchCodeList", name)).build();
     }
     ResponseTimestamper.evaluate(req, c);
 
@@ -102,7 +120,8 @@ public class CodeListResource {
     // the list and then have it fail part way through
     for(Term term : terms) {
       if(c.containsTerm(term)) {
-        return Response.status(Status.BAD_REQUEST).build();
+        return Response.status(Status.BAD_REQUEST)
+            .entity(new ServerErrorResponseMessage("TermAlreadyExists", term.getCode())).build();
       }
     }
     for(Term term : terms) {

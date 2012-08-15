@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.validation;
 
+import org.icgc.dcc.dictionary.model.FileSchemaRole;
+
 public class ReportingFlowPlanningVisitor extends PlanningVisitor<ReportingPlanElement> {
 
   public ReportingFlowPlanningVisitor(FlowType type) {
@@ -28,7 +30,9 @@ public class ReportingFlowPlanningVisitor extends PlanningVisitor<ReportingPlanE
     for(FileSchemaFlowPlanner planner : plan.getFlows(getFlow())) {
       planner.getSchema().accept(this);
       for(ReportingPlanElement e : getElements()) {
-        planner.apply(e);
+        if(planner.getSchema().getRole() == FileSchemaRole.SUBMISSION) {
+          planner.apply(e);
+        }
       }
     }
   }

@@ -28,6 +28,7 @@ import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.icgc.dcc.dictionary.model.FileSchema;
+import org.icgc.dcc.dictionary.model.FileSchemaRole;
 
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
@@ -47,16 +48,31 @@ public abstract class BaseCascadingStrategy implements CascadingStrategy {
 
   private final Path output;
 
-  protected BaseCascadingStrategy(FileSystem fileSystem, Path input, Path output) {
+  private final Path system;
+
+  private final FileSchemaDirectory fileSchemaDirectory;
+
+  private final FileSchemaDirectory systemDirectory;
+
+  protected BaseCascadingStrategy(FileSystem fileSystem, Path input, Path output, Path system) {
     this.fileSystem = fileSystem;
     this.input = input;
     this.output = output;
+    this.system = system;
+    this.fileSchemaDirectory = new FileSchemaDirectory(fileSystem, input);
+    this.systemDirectory = new FileSchemaDirectory(fileSystem, system);
   }
 
   @Override
   public Tap<?, ?, ?> getSourceTap(FileSchema schema) {
     try {
-      return tapSource(path(schema));
+      if(schema.getRole() == FileSchemaRole.SUBMISSION) {
+        return tapSource(path(schema));
+      } else if(schema.getRole() == FileSchemaRole.SYSTEM) {
+        return tapSource(systemPath(schema));
+      } else {
+        throw new RuntimeException("undefined File Schema Role " + schema.getRole());
+      }
     } catch(IOException e) {
       throw new RuntimeException(e);
     }
@@ -80,7 +96,14 @@ public abstract class BaseCascadingStrategy implements CascadingStrategy {
 
   @Override
   public Fields getFileHeader(FileSchema schema) throws IOException {
-    Path path = path(schema);
+    Path path;
+    if(schema.getRole() == FileSchemaRole.SUBMISSION) {
+      path = this.path(schema);
+    } else if(schema.getRole() == FileSchemaRole.SYSTEM) {
+      path = this.systemPath(schema);
+    } else {
+      throw new RuntimeException("File Schema role is not defined");
+    }
     InputStreamReader isr = null;
     try {
       isr = new InputStreamReader(fileSystem.open(path), Charsets.UTF_8);
@@ -107,7 +130,8 @@ public abstract class BaseCascadingStrategy implements CascadingStrategy {
 
   protected abstract Tap<?, ?, ?> tapSource(Path path);
 
-  private Path path(final FileSchema schema) throws FileNotFoundException, IOException {
+  @Override
+  public Path path(final FileSchema schema) throws FileNotFoundException, IOException {
     RemoteIterator<LocatedFileStatus> files = fileSystem.listFiles(input, false);
     while(files.hasNext()) {
       LocatedFileStatus file = files.next();
@@ -119,5 +143,31 @@ public abstract class BaseCascadingStrategy implements CascadingStrategy {
       }
     }
     throw new FileNotFoundException("no file for schema " + schema.getName());
+  }
+
+  private Path systemPath(final FileSchema schema) throws FileNotFoundException, IOException {
+
+    RemoteIterator<LocatedFileStatus> files = fileSystem.listFiles(system, false);
+    while(files.hasNext()) {
+      LocatedFileStatus file = files.next();
+      if(file.isFile()) {
+        Path path = file.getPath();
+        if(Pattern.matches(schema.getPattern(), path.getName())) {
+          return path;
+        }
+      }
+    }
+    throw new FileNotFoundException("no file for schema " + schema.getName());
+
+  }
+
+  @Override
+  public FileSchemaDirectory getFileSchemaDirectory() {
+    return this.fileSchemaDirectory;
+  }
+
+  @Override
+  public FileSchemaDirectory getSystemDirectory() {
+    return this.systemDirectory;
   }
 }

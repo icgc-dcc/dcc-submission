@@ -28,7 +28,12 @@ import org.icgc.dcc.dictionary.DictionaryService;
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.Release;
+import org.icgc.dcc.release.model.ReleaseState;
+import org.icgc.dcc.release.model.Submission;
+import org.icgc.dcc.validation.Plan;
 import org.icgc.dcc.validation.ValidationCallback;
+import org.icgc.dcc.validation.report.Outcome;
+import org.icgc.dcc.validation.report.SubmissionReport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,8 +60,6 @@ public class ValidationQueueManagerService extends AbstractService implements Va
 
   private final ValidationService validationService;
 
-  private final ValidationCallback thisAsCallback;
-
   private ScheduledFuture<?> schedule;
 
   @Inject
@@ -70,8 +73,6 @@ public class ValidationQueueManagerService extends AbstractService implements Va
     this.releaseService = releaseService;
     this.dictionaryService = dictionaryService;
     this.validationService = validationService;
-
-    this.thisAsCallback = this;
   }
 
   @Override
@@ -107,7 +108,17 @@ public class ValidationQueueManagerService extends AbstractService implements Va
                   throw new ValidationServiceException(String.format("no dictionary found with version %s",
                       dictionaryVersion));
                 } else {
-                  validationService.validate(release, next.get(), thisAsCallback);
+                  String projectKey = next.get();
+                  Plan plan = validationService.validate(release, projectKey);
+                  if(release.getState() == ReleaseState.OPENED) {
+                    if(plan.getCascade().getCascadeStats().isSuccessful()) {
+                      handleSuccessfulValidation(projectKey, plan);
+                    } else {
+                      handleFailedValidation(projectKey);
+                    }
+                  } else {
+                    log.info("Release was closed during validation; states not changed");
+                  }
                 }
               }
             }
@@ -133,10 +144,25 @@ public class ValidationQueueManagerService extends AbstractService implements Va
   }
 
   @Override
-  public void handleSuccessfulValidation(String projectKey) {
+  public void handleSuccessfulValidation(String projectKey, Plan plan) {
     checkArgument(projectKey != null);
+
+    log.info("starting report collecting on project {}", projectKey);
+
+    Release release = releaseService.getNextRelease().getRelease();
+
+    Submission submission = this.releaseService.getSubmission(release.getName(), projectKey);
+
+    SubmissionReport report = new SubmissionReport();
+    Outcome outcome = plan.collect(report);
+    submission.setReport(report);
+
+    // persist the report to DB
+    this.releaseService.updateSubmissionReport(release.getName(), projectKey, submission.getReport());
+    log.info("report collecting finished on project {}", projectKey);
+
     log.info("successful validation - about to dequeue project key {}", projectKey);
-    dequeue(projectKey, true);
+    dequeue(projectKey, outcome == Outcome.PASSED);
   }
 
   @Override
@@ -152,4 +178,5 @@ public class ValidationQueueManagerService extends AbstractService implements Va
       log.warn("could not dequeue project {}, maybe the queue was emptied in the meantime?", projectKey);
     }
   }
+
 }

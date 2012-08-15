@@ -1,5 +1,7 @@
 package org.icgc.dcc.release.model;
 
+import java.util.Date;
+
 import org.icgc.dcc.validation.report.SubmissionReport;
 
 import com.google.code.morphia.annotations.Embedded;
@@ -9,9 +11,31 @@ public class Submission {
 
   protected String projectKey;
 
+  protected String projectName;
+
+  protected Date lastUpdated;
+
   protected SubmissionState state;
 
   protected SubmissionReport report;
+
+  public Submission() {
+    super();
+  }
+
+  public Submission(String projectKey) {
+    super();
+    this.projectKey = projectKey;
+    this.state = SubmissionState.NOT_VALIDATED;
+    this.lastUpdated = new Date();
+  }
+
+  /**
+   * @return the lastUpdated
+   */
+  public Date getLastUpdated() {
+    return lastUpdated;
+  }
 
   public SubmissionReport getReport() {
     return report;
@@ -26,6 +50,7 @@ public class Submission {
   }
 
   public void setState(SubmissionState state) {
+    this.lastUpdated = new Date();
     this.state = state;
   }
 

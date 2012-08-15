@@ -24,6 +24,7 @@ import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.dictionary.model.SummaryType;
 import org.icgc.dcc.validation.FlowType;
+import org.icgc.dcc.validation.cascading.ValidationFields;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -42,7 +43,7 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
-public final class FrequencyPlanElement extends BaseReportingPlanElement {
+public final class FrequencyPlanElement extends BaseStatsReportingPlanElement {
 
   private final String FREQ = "freq";
 
@@ -52,6 +53,8 @@ public final class FrequencyPlanElement extends BaseReportingPlanElement {
 
   @Override
   public Pipe report(Pipe pipe) {
+    pipe = keepStructurallyValidTuples(pipe);
+
     Pipe[] freqs = new Pipe[fields.size()];
     int i = 0;
     for(Field field : fields) {
@@ -89,7 +92,13 @@ public final class FrequencyPlanElement extends BaseReportingPlanElement {
         TupleEntry tuple = tuples.next();
         String value = tuple.getString(0);
         Long frequency = tuple.getLong(1);
-        if(value == null || value.isEmpty()) {
+        if(value == null) {
+          if(ValidationFields.state(tuple).isFieldMissing((String) tuple.getFields().get(0))) {
+            fs.missing += frequency;
+          } else {
+            fs.nulls += frequency;
+          }
+        } else if(value.isEmpty()) {
           fs.nulls += frequency;
         } else {
           fs.populated += frequency;

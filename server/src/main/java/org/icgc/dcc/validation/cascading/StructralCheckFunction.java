@@ -17,11 +17,13 @@
  */
 package org.icgc.dcc.validation.cascading;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-import org.icgc.dcc.dictionary.model.Field;
-import org.icgc.dcc.dictionary.model.FileSchema;
+import org.icgc.dcc.validation.ValidationErrorCode;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -32,50 +34,124 @@ import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
 import com.google.common.base.Splitter;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 /**
- * 
+ * Checks structural aspects of an input data file (header, format, ...)
  */
+@SuppressWarnings("rawtypes")
 public class StructralCheckFunction extends BaseOperation implements Function {
 
-  private Fields fileHeader;
+  public static final String LINE_FIELD_NAME = "line";
 
-  public StructralCheckFunction(FileSchema fileSchema) {
+  public static final char FIELD_SEPARATOR = '\t';
+
+  public static final List<String> MISSING_CODES = Arrays.asList("-777", "-888", "-999");
+
+  private static boolean REPORT_WARNINGS = false; // see DCC-270
+
+  private Integer headerSize;
+
+  private final Fields dictionaryFields;
+
+  private List<Integer> unknownHeaderIndices;
+
+  public StructralCheckFunction(Iterable<String> fieldNames) {
     super(1);
+    dictionaryFields = new Fields(Iterables.toArray(fieldNames, String.class));
+  }
 
-    List<Field> fields = fileSchema.getFields();
-    List<String> fieldNames = new ArrayList<String>();
-    for(Field field : fields) {
-      fieldNames.add(field.getName());
-    }
-    this.fieldDeclaration = new Fields(fieldNames.toArray(new String[fields.size()]));
+  @SuppressWarnings("unchecked")
+  public void processFileHeader(Fields headerFields) {
+    headerSize = headerFields.size();
 
+    Fields mergedFields = Fields.merge(headerFields, dictionaryFields);
+    Fields extraFields = mergedFields.subtract(dictionaryFields);
+    Fields adjustedFields = headerFields.subtract(extraFields); // existing valid fields first
+    Fields missingFields = dictionaryFields.subtract(adjustedFields);
+    adjustedFields = adjustedFields.append(missingFields); // then missing fields to be emulated
+    checkState(FieldsUtils.buildSortedList(dictionaryFields)//
+        .equals(FieldsUtils.buildSortedList(adjustedFields))); // worth checking; order may differ but nothing else
+    fieldDeclaration = adjustedFields.append(ValidationFields.STATE_FIELD); // lastly state
+
+    unknownHeaderIndices = FieldsUtils.indicesOf(headerFields, extraFields);
   }
 
   @Override
   public void operate(FlowProcess flowProcess, FunctionCall functionCall) {
+    checkState(fieldDeclaration != null);
+    checkState(headerSize != null);
+
     TupleEntry arguments = functionCall.getArguments();
 
-    // parse line into tuple values
-    String line = arguments.getString(0);
-    Iterable<String> splitter = Splitter.on('\t').split(line);
-    List<String> values = Lists.newArrayList(splitter);
+    TupleState tupleState = new TupleState();
+    int offset = functionCall.getArguments().getInteger(ValidationFields.OFFSET_FIELD_NAME);
+    tupleState.setOffset(offset);
 
-    Fields missingFields = fieldDeclaration.subtract(fileHeader);
-    Fields resultFields = this.fileHeader.append(missingFields);
+    String line = arguments.getString(StructralCheckFunction.LINE_FIELD_NAME);
+    List<String> values = Lists.newArrayList(Splitter.on(FIELD_SEPARATOR).split(line));
+    List<String> adjustedValues = adjustValues(values, tupleState);
+    List<Object> tupleValues = Lists.<Object> newArrayList(adjustedValues);
+    tupleValues.add(tupleState); // lastly state
+    checkState(fieldDeclaration.size() == tupleValues.size());
 
-    // add null value to all missing fields
-    for(int i = 0; i < missingFields.size(); i++) {
-      values.add(null);
-    }
-
-    TupleEntry tupleEntry = new TupleEntry(resultFields, new Tuple(values.toArray(new String[values.size()])));
-
-    functionCall.getOutputCollector().add(tupleEntry);
+    functionCall.getOutputCollector().add(new Tuple(tupleValues.toArray()));
   }
 
-  public void setFileHeader(Fields header) {
-    this.fileHeader = header;
+  private List<String> adjustValues(List<String> values, TupleState tupleState) {
+    List<String> adjustedValues = null;
+    int dataSize = values.size();
+    if(headerSize == dataSize) {
+      adjustedValues = filterUnknownColumns(values); // existing valid fields first
+      adjustedValues = padMissingColumns(adjustedValues); // then missing fields to be emulated
+      adjustedValues = convertMissingCodes(adjustedValues, tupleState);
+      if(REPORT_WARNINGS && unknownHeaderIndices.isEmpty() == false) {
+        tupleState.reportError(ValidationErrorCode.UNKNOWN_COLUMNS_WARNING, unknownHeaderIndices);
+      }
+    } else {
+      adjustedValues = Arrays.asList(new String[dictionaryFields.size()]); // can discard values but must match number
+                                                                           // of fields in headers for later merge in
+                                                                           // error reporting
+      tupleState.reportError(ValidationErrorCode.STRUCTURALLY_INVALID_ROW_ERROR, dataSize, headerSize);
+    }
+    return adjustedValues;
+  }
+
+  private List<String> convertMissingCodes(List<String> values, TupleState tupleState) {
+    List<String> adjustedValues = new ArrayList<String>(values.size());
+    for(int i = 0; i < values.size(); i++) {
+      String value = values.get(i);
+      if(MISSING_CODES.contains(value)) {
+        adjustedValues.add(null);
+        tupleState.addMissingField((String) this.getFieldDeclaration().get(i));
+      } else {
+        adjustedValues.add(value);
+      }
+    }
+    return adjustedValues;
+  }
+
+  /*
+   * ignore columns corresponding to unknown headers (TODO: see DCC-270 to improve on this)
+   */
+  private List<String> filterUnknownColumns(List<String> values) {
+    List<String> adjustedValues = new ArrayList<String>();
+    for(int i = 0; i < values.size(); i++) {
+      if(unknownHeaderIndices.contains(i) == false) {
+        adjustedValues.add(values.get(i));
+      }
+    }
+    return adjustedValues;
+  }
+
+  private List<String> padMissingColumns(List<String> adjustedValues) {
+    int adjustedDataSize = adjustedValues.size();
+    int size = dictionaryFields.size();
+    checkState(adjustedDataSize <= size); // by design (since we discarded unknown columns)
+    if(adjustedDataSize < size) { // padding with nulls
+      adjustedValues.addAll(Arrays.asList(new String[size - adjustedDataSize]));
+    }
+    return adjustedValues;
   }
 }

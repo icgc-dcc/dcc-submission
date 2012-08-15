@@ -12,7 +12,9 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 
+import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.security.UsernamePasswordAuthenticator;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,6 +48,8 @@ public class BasicHttpAuthenticationRequestFilterTest {
     this.mockHeaders = mock(MultivaluedMap.class);
     this.mockContext = mock(ContainerRequestContext.class);
     this.usernamePasswordAuthenticator = mock(UsernamePasswordAuthenticator.class);
+    Subject mockSubject = mock(Subject.class);
+    SecurityContext mockSecurityContext = mock(SecurityContext.class);
 
     this.basicHttpAuthenticationRequestFilter =
         new BasicHttpAuthenticationRequestFilter(this.usernamePasswordAuthenticator);
@@ -53,8 +57,10 @@ public class BasicHttpAuthenticationRequestFilterTest {
     // Create some behaviour
     when(this.mockContext.getRequest()).thenReturn(this.mockRequest);
     when(this.mockContext.getHeaders()).thenReturn(this.mockHeaders);
+    when(this.mockContext.getSecurityContext()).thenReturn(mockSecurityContext);
 
-    when(this.usernamePasswordAuthenticator.authenticate("brett", "brettspasswd".toCharArray(), "")).thenReturn(true);
+    when(this.usernamePasswordAuthenticator.authenticate("brett", "brettspasswd".toCharArray(), "")).thenReturn(
+        mockSubject);
   }
 
   @Test

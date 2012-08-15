@@ -15,26 +15,22 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.validation.cascading;
+package org.icgc.dcc.web.validator;
 
-import cascading.flow.FlowProcess;
-import cascading.operation.BaseOperation;
-import cascading.operation.Function;
-import cascading.operation.FunctionCall;
-import cascading.tuple.Tuple;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-@SuppressWarnings("rawtypes")
-public final class AddValidationFieldsFunction extends BaseOperation implements Function {
+/**
+ * 
+ */
+public class NameValidator {
 
-  public AddValidationFieldsFunction() {
-    super(0, ValidationFields.STATE_FIELD);
+  private final static String NAME_PATTERN = "^[\\w]{3,}$";
+
+  public static boolean validate(String name) {
+    Pattern pattern = Pattern.compile(NAME_PATTERN);
+    Matcher matcher = pattern.matcher(name);
+
+    return matcher.matches();
   }
-
-  @Override
-  public void operate(FlowProcess process, FunctionCall functionCall) {
-    TupleState tupleState = new TupleState();
-    tupleState.setOffset(functionCall.getArguments().getInteger(ValidationFields.OFFSET_FIELD_NAME));
-    functionCall.getOutputCollector().add(new Tuple(tupleState));
-  }
-
 }

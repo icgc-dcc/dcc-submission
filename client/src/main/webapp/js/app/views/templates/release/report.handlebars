@@ -1,0 +1,10 @@
+{{#each schemaReports}}
+  <h3 class="{{errors}}">{{name}}</h3>
+  {{#each fieldReports}}
+    <div class="well well-small">
+    {{field_report this}}
+    <dt>Summary</dt>
+    {{field_report summary}}
+    </div>
+  {{/each}}
+{{/each}}

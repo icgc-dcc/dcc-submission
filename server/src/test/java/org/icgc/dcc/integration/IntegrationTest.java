@@ -18,10 +18,13 @@
 package org.icgc.dcc.integration;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.ws.rs.MessageProcessingException;
 import javax.ws.rs.client.Client;
@@ -38,21 +41,40 @@ import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.glassfish.jersey.internal.util.Base64;
 import org.icgc.dcc.Main;
+import org.icgc.dcc.config.ConfigModule;
+import org.icgc.dcc.core.CoreModule;
+import org.icgc.dcc.core.morphia.MorphiaModule;
+import org.icgc.dcc.filesystem.FileSystemModule;
+import org.icgc.dcc.filesystem.GuiceJUnitRunner;
+import org.icgc.dcc.filesystem.GuiceJUnitRunner.GuiceModules;
+import org.icgc.dcc.http.HttpModule;
+import org.icgc.dcc.http.jersey.JerseyModule;
+import org.icgc.dcc.release.model.DetailedSubmission;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
+import org.icgc.dcc.release.model.ReleaseView;
 import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.release.model.SubmissionState;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
+import com.google.code.morphia.Datastore;
 import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableList;
 import com.google.common.io.Resources;
+import com.google.inject.Inject;
 
+@RunWith(GuiceJUnitRunner.class)
+@GuiceModules({ ConfigModule.class, CoreModule.class,//
+HttpModule.class, JerseyModule.class,// TODO: find out why those two seem necessary
+MorphiaModule.class, FileSystemModule.class })
 public class IntegrationTest {
-  /**
-   * 
-   */
+
+  @Inject
+  private Datastore datastore;
+
   private static final String DCC_ROOT_DIR = "/tmp/dcc_root_dir/";
 
   static private Thread server;
@@ -65,10 +87,12 @@ public class IntegrationTest {
 
   private WebTarget target;
 
-  @BeforeClass
-  static public void startServer() throws InterruptedException {
-    server = new Thread(new Runnable() {
+  @Before
+  public void startServer() throws InterruptedException, IOException {
+    clearFS();
+    clearDB();
 
+    server = new Thread(new Runnable() {
       @Override
       public void run() {
         try {
@@ -83,40 +107,29 @@ public class IntegrationTest {
     Thread.sleep(5000);
   }
 
-  public void clearDB() throws IOException, InterruptedException {
-    this.client.target(BASEURI).path("/seed/releases").queryParam("delete", "true").request(MediaType.APPLICATION_JSON)
-        .header("Authorization", AUTHORIZATION).post(Entity.entity("[]", MediaType.APPLICATION_JSON));
-    this.client.target(BASEURI).path("/seed/projects").queryParam("delete", "true").request(MediaType.APPLICATION_JSON)
-        .header("Authorization", AUTHORIZATION).post(Entity.entity("[]", MediaType.APPLICATION_JSON));
-    this.client.target(BASEURI).path("/seed/dictionaries").queryParam("delete", "true")
-        .request(MediaType.APPLICATION_JSON).header("Authorization", AUTHORIZATION)
-        .post(Entity.entity("[]", MediaType.APPLICATION_JSON));
-    this.client.target(BASEURI).path("/seed/codelists").queryParam("delete", "true")
-        .request(MediaType.APPLICATION_JSON).header("Authorization", AUTHORIZATION)
-        .post(Entity.entity("[]", MediaType.APPLICATION_JSON));
+  private void clearDB() throws IOException, InterruptedException {
+    datastore.getDB().dropDatabase();
     Thread.sleep(1000);
   }
 
-  public void clearFS() throws IOException {
+  private void clearFS() throws IOException {
     FileUtils.deleteDirectory(new File(DCC_ROOT_DIR));
   }
 
-  @AfterClass
-  static public void stopServer() {
+  @After
+  public void stopServer() {
     server.interrupt();
   }
 
   @Test
   public void test_IntegrationTest() throws JsonParseException, JsonMappingException, MessageProcessingException,
       IllegalStateException, IOException, InterruptedException {
-
-    clearDB();
-
-    clearFS();
-
     test_feedDB();
 
-    test_createInitialRelease();
+    test_createInitialRelease("/integrationtest/initRelease.json");
+
+    test_checkRelease("release1", "0.6c", ReleaseState.OPENED, Arrays.<SubmissionState> asList(
+        SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED));
 
     test_feedFileSystem();
 
@@ -130,13 +143,18 @@ public class IntegrationTest {
     test_fileIsEmpty(DCC_ROOT_DIR + "release1/project1/.validation/specimen.internal#errors.json");
     test_fileIsEmpty(DCC_ROOT_DIR + "release1/project1/.validation/specimen.external#errors.json");
 
-    test_checkReleaseState("release1", ReleaseState.OPENED);
-
     test_releaseFirstRelease();
 
-    test_checkReleaseState("release1", ReleaseState.COMPLETED);
+    test_checkRelease("release1", "0.6c", ReleaseState.COMPLETED,
+        Arrays.<SubmissionState> asList(SubmissionState.SIGNED_OFF));
 
-    test_checkReleaseState("release2", ReleaseState.OPENED);
+    test_checkRelease("release2", "0.6c", ReleaseState.OPENED, Arrays.<SubmissionState> asList(
+        SubmissionState.NOT_VALIDATED, SubmissionState.INVALID, SubmissionState.INVALID));
+
+    test_updateRelease("/integrationtest/updatedRelease.json");
+
+    test_checkRelease("release2", "0.6d", ReleaseState.OPENED, Arrays.<SubmissionState> asList(
+        SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED));
   }
 
   private void test_feedFileSystem() throws IOException {
@@ -144,19 +162,26 @@ public class IntegrationTest {
     File srcDir = new File("src/test/resources/integrationtest/fs/");
     File destDir = new File(DCC_ROOT_DIR);
     FileUtils.copyDirectory(srcDir, destDir);
+
+    srcDir = new File("src/test/resources/integrationtest/fs/SystemFiles");
+    destDir = new File(DCC_ROOT_DIR + "/release1/SystemFiles");
+    FileUtils.copyDirectory(srcDir, destDir);
   }
 
   private void test_feedDB() throws InvocationException, NullPointerException, IllegalArgumentException, IOException {
     this.client.target(BASEURI).path("/seed/projects").request(MediaType.APPLICATION_JSON)
         .header("Authorization", AUTHORIZATION)
         .post(Entity.entity(this.resourceToString("/integrationtest/projects.json"), MediaType.APPLICATION_JSON));
+    this.client.target(BASEURI).path("/seed/dictionaries").request(MediaType.APPLICATION_JSON)
+        .header("Authorization", AUTHORIZATION)
+        .post(Entity.entity("[" + this.resourceToString("/dictionary.json") + "]", MediaType.APPLICATION_JSON));
     this.client
         .target(BASEURI)
         .path("/seed/dictionaries")
         .request(MediaType.APPLICATION_JSON)
         .header("Authorization", AUTHORIZATION)
         .post(
-            Entity.entity("[" + this.resourceToString("/integrationtest/dictionary.json") + "]",
+            Entity.entity("[" + this.resourceToString("/integrationtest/secondDictionary.json") + "]",
                 MediaType.APPLICATION_JSON));
     this.client.target(BASEURI).path("/seed/codelists").request(MediaType.APPLICATION_JSON)
         .header("Authorization", AUTHORIZATION)
@@ -171,16 +196,26 @@ public class IntegrationTest {
     do {
       response = sendGetRequest("/releases/release1/submissions/project1");
       assertEquals(200, response.getStatus());
-      submission = new ObjectMapper().readValue(response.readEntity(String.class), Submission.class);
+      submission = new ObjectMapper().readValue(response.readEntity(String.class), DetailedSubmission.class);
       Thread.sleep(2000);
     } while(submission.getState() == SubmissionState.QUEUED);
     assertEquals(SubmissionState.VALID, submission.getState());
 
-    response = sendGetRequest("/releases/release1/submissions/project2");
-    assertEquals(200, response.getStatus());
+    do {
+      response = sendGetRequest("/releases/release1/submissions/project2");
+      assertEquals(200, response.getStatus());
+      submission = new ObjectMapper().readValue(response.readEntity(String.class), DetailedSubmission.class);
+      Thread.sleep(2000);
+    } while(submission.getState() == SubmissionState.QUEUED);
+    assertEquals(SubmissionState.INVALID, submission.getState());
 
-    response = sendGetRequest("/releases/release1/submissions/project3");
-    assertEquals(200, response.getStatus());
+    do {
+      response = sendGetRequest("/releases/release1/submissions/project3");
+      assertEquals(200, response.getStatus());
+      submission = new ObjectMapper().readValue(response.readEntity(String.class), DetailedSubmission.class);
+      Thread.sleep(2000);
+    } while(submission.getState() == SubmissionState.QUEUED);
+    assertEquals(SubmissionState.INVALID, submission.getState());
   }
 
   private void test_fileIsEmpty(String path) throws IOException {
@@ -191,7 +226,7 @@ public class IntegrationTest {
 
   private void test_releaseFirstRelease() throws IOException {
     // Expect 400 Bad Request because no projects are signed off
-    Response response = sendPostRequest("/nextRelease", resourceToString("/integrationtest/nextRelease.json"));
+    Response response = sendPostRequest("/nextRelease", "{\"name\": \"release2\"}");
     assertEquals(400, response.getStatus());
 
     // Sign off on a project
@@ -199,21 +234,29 @@ public class IntegrationTest {
     assertEquals(200, response.getStatus());
 
     // Release again, expect 200 OK
-    response = sendPostRequest("/nextRelease", resourceToString("/integrationtest/nextRelease.json"));
+    response = sendPostRequest("/nextRelease", "{\"name\": \"release2\"}");
     assertEquals(200, response.getStatus());
 
     // Release again, expect 400 Bad Request because of the duplicate release
-    response = sendPostRequest("/nextRelease", resourceToString("/integrationtest/nextRelease.json"));
+    response = sendPostRequest("/nextRelease", "{\"name\": \"release2\"}");
     assertEquals(400, response.getStatus());
   }
 
-  private void test_checkReleaseState(String releaseName, ReleaseState expectedState) throws IOException,
-      InterruptedException {
+  private void test_checkRelease(String releaseName, String dictionaryVersion, ReleaseState state,
+      List<SubmissionState> states) throws IOException, JsonParseException, JsonMappingException {
     Response response = sendGetRequest("/releases/" + releaseName);
     assertEquals(200, response.getStatus());
 
-    Release release = new ObjectMapper().readValue(response.readEntity(String.class), Release.class);
-    assertEquals(expectedState, release.getState());
+    ReleaseView release = new ObjectMapper().readValue(response.readEntity(String.class), ReleaseView.class);
+    assertNotNull(release);
+    assertEquals(dictionaryVersion, release.getDictionaryVersion());
+    assertEquals(ImmutableList.<String> of(), release.getQueue());
+    assertEquals(state, release.getState());
+    assertEquals(states.size(), release.getSubmissions().size());
+    int i = 0;
+    for(DetailedSubmission submission : release.getSubmissions()) {
+      assertEquals(states.get(i++), submission.getState());
+    }
   }
 
   private void test_checkQueueIsEmpty() throws IOException {
@@ -222,8 +265,9 @@ public class IntegrationTest {
     assertEquals("[]", response.readEntity(String.class));
   }
 
-  private void test_createInitialRelease() throws IOException, JsonParseException, JsonMappingException {
-    Response response = sendPutRequest("/releases/release1", resourceToString("/integrationtest/initRelease.json"));
+  private void test_createInitialRelease(String initReleaseRelPath) throws IOException, JsonParseException,
+      JsonMappingException {
+    Response response = sendPutRequest("/releases", resourceToString(initReleaseRelPath));
     assertEquals(200, response.getStatus());
     Release release = new ObjectMapper().readValue(response.readEntity(String.class), Release.class);
     assertEquals("release1", release.getName());
@@ -236,6 +280,14 @@ public class IntegrationTest {
   private void test_queueProjects() throws IOException, JsonParseException, JsonMappingException {
     Response response = sendPostRequest("/nextRelease/queue", "[\"project1\", \"project2\", \"project3\"]");
     assertEquals(200, response.getStatus());
+  }
+
+  private void test_updateRelease(String updatedReleaseRelPath) throws IOException, JsonParseException,
+      JsonMappingException {
+    Response response = sendPutRequest("/nextRelease/update", resourceToString(updatedReleaseRelPath));
+    assertEquals(200, response.getStatus());
+    Release release = new ObjectMapper().readValue(response.readEntity(String.class), Release.class);
+    assertEquals("release2", release.getName());
   }
 
   private Response sendPutRequest(String requestPath, String payload) throws IOException {

@@ -1,10 +1,7 @@
 package org.icgc.dcc.validation.report;
 
-import java.util.Arrays;
-
-import org.icgc.dcc.validation.cascading.TupleState;
-import org.icgc.dcc.validation.cascading.TupleState.TupleError;
-import org.icgc.dcc.validation.report.BaseReportingPlanElement.FieldSummary;
+import org.icgc.dcc.dictionary.model.SummaryType;
+import org.icgc.dcc.validation.report.BaseStatsReportingPlanElement.FieldSummary;
 
 import com.google.code.morphia.annotations.Embedded;
 import com.mongodb.BasicDBObject;
@@ -17,11 +14,17 @@ public class FieldReport {
 
   protected double completeness;
 
-  protected long populated;
-
   protected long nulls;
 
+  protected long missing;
+
+  protected long populated;
+
   protected BasicDBObject summary;
+
+  protected String label;
+
+  protected SummaryType type;
 
   public String getName() {
     return name;
@@ -55,6 +58,14 @@ public class FieldReport {
     this.nulls = nulls;
   }
 
+  public long getMissing() {
+    return missing;
+  }
+
+  public void setMissing(long missing) {
+    this.missing = missing;
+  }
+
   public DBObject getSummary() {
     return summary;
   }
@@ -66,9 +77,13 @@ public class FieldReport {
   public static FieldReport convert(FieldSummary fieldSummary) {
     FieldReport fieldReport = new FieldReport();
     fieldReport.setName(fieldSummary.field);
-    fieldReport.setPopulated(fieldSummary.populated);
     fieldReport.setNulls(fieldSummary.nulls);
-    fieldReport.setCompleteness(fieldSummary.populated / (fieldSummary.nulls + fieldSummary.populated));
+
+    fieldReport.setMissing(fieldSummary.missing);
+    fieldReport.setPopulated(fieldSummary.populated);
+    fieldReport.setCompleteness(100 * fieldSummary.populated
+        / (fieldSummary.nulls + fieldSummary.missing + fieldSummary.populated));
+
     BasicDBObject summary = new BasicDBObject();
     for(String key : fieldSummary.summary.keySet()) {
       summary.append(key, fieldSummary.summary.get(key));
@@ -77,13 +92,20 @@ public class FieldReport {
     return fieldReport;
   }
 
-  public static FieldReport convert(TupleState tupleState) {
-    FieldReport fieldReport = new FieldReport();
-    BasicDBObject summary = new BasicDBObject();
-    for(TupleError tupleError : tupleState.getErrors()) {
-      summary.append(tupleError.getCode().toString(), Arrays.asList(tupleError.getParameters()));
-    }
-    fieldReport.setSummary(summary);
-    return fieldReport;
+  public String getLabel() {
+    return label;
   }
+
+  public void setLabel(String label) {
+    this.label = label;
+  }
+
+  public SummaryType getType() {
+    return type;
+  }
+
+  public void setType(SummaryType type) {
+    this.type = type;
+  }
+
 }

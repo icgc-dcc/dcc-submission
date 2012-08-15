@@ -31,13 +31,20 @@ import org.icgc.dcc.validation.CascadingStrategy;
 import org.icgc.dcc.validation.FlowType;
 import org.icgc.dcc.validation.PlanExecutionException;
 import org.icgc.dcc.validation.ReportingPlanElement;
+import org.icgc.dcc.validation.cascading.CompletenessBy;
+import org.icgc.dcc.validation.cascading.TupleState;
+import org.icgc.dcc.validation.cascading.TupleStates;
 
+import cascading.pipe.Each;
+import cascading.pipe.Pipe;
 import cascading.tuple.Fields;
 
+import com.google.common.base.Function;
 import com.google.common.base.Objects;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 
-abstract class BaseReportingPlanElement implements ReportingPlanElement {
+abstract class BaseStatsReportingPlanElement implements ReportingPlanElement {
 
   static final String FIELD = "field";
 
@@ -61,7 +68,7 @@ abstract class BaseReportingPlanElement implements ReportingPlanElement {
 
   protected final List<Field> fields;
 
-  protected BaseReportingPlanElement(FileSchema fileSchema, List<Field> fields, SummaryType summaryType,
+  protected BaseStatsReportingPlanElement(FileSchema fileSchema, List<Field> fields, SummaryType summaryType,
       FlowType flowType) {
     this.fileSchema = fileSchema;
     this.fields = fields;
@@ -69,14 +76,23 @@ abstract class BaseReportingPlanElement implements ReportingPlanElement {
     this.flowType = flowType;
   }
 
+  public Pipe keepStructurallyValidTuples(Pipe pipe) {
+    return new Each(pipe, TupleStates.keepStructurallyValidTuplesFilter());
+  }
+
   @Override
   public String getName() {
-    return this.summaryType.getDescription();
+    return this.summaryType != null ? this.summaryType.getDescription() : CompletenessBy.COMPLETENESS;
   }
 
   @Override
   public String describe() {
-    return String.format("%s%s", summaryType.getDescription(), fields);
+    return String.format("%s-%s", this.getName(), Iterables.transform(fields, new Function<Field, String>() {
+      @Override
+      public String apply(Field input) {
+        return input.getName();
+      }
+    }));
   }
 
   protected String buildSubPipeName(String prefix) {
@@ -93,44 +109,59 @@ abstract class BaseReportingPlanElement implements ReportingPlanElement {
 
   @Override
   public ReportCollector getCollector() {
-    return new SummaryReportCollector();
+    return new SummaryReportCollector(this.fileSchema);
   }
 
   public static class FieldSummary {// TODO: use FieldReport instead?
 
     public String field;
 
-    public long populated;
-
     public long nulls;
+
+    public long missing;
+
+    public long populated;
 
     public Map<String, Object> summary = Maps.newLinkedHashMap();
 
     @Override
     public String toString() { // for testing only for now
-      return Objects.toStringHelper(FieldSummary.class).add("field", field).add("populated", populated)
-          .add("nulls", nulls).add("summary", summary).toString();
+      return Objects.toStringHelper(FieldSummary.class).add("field", field).add("nulls", nulls).add("missing", missing)
+          .add("populated", populated).add("summary", summary).toString();
     }
   }
 
   class SummaryReportCollector implements ReportCollector {
 
-    public SummaryReportCollector() {
+    private final FileSchema fileSchema;
+
+    public SummaryReportCollector(FileSchema fileSchema) {
+      this.fileSchema = fileSchema;
     }
 
     @Override
     public Outcome collect(CascadingStrategy strategy, SchemaReport report) {
       try {
         InputStream src = strategy.readReportTap(getFileSchema(), getFlowType(), getName());
-        ObjectMapper mapper = new ObjectMapper();
-        List<FieldReport> fieldReports = new ArrayList<FieldReport>();
 
+        report.setName(strategy.path(getFileSchema()).getName());
+
+        ObjectMapper mapper = new ObjectMapper();
+        if(report.getErrors() == null) {
+          report.setErrors(new ArrayList<TupleState>());
+        }
+        if(report.getFieldReports() == null) {
+          report.setFieldReports(new ArrayList<FieldReport>());
+        }
         MappingIterator<FieldSummary> fieldSummary = mapper.reader().withType(FieldSummary.class).readValues(src);
         while(fieldSummary.hasNext()) {
-          fieldReports.add(FieldReport.convert(fieldSummary.next()));
+          FieldReport freport = FieldReport.convert(fieldSummary.next());
+          Field field = this.fileSchema.field(freport.getName()).get();
+          freport.setLabel(field.getLabel());
+          freport.setType(field.getSummaryType());
+          report.getFieldReports().add(freport);
         }
 
-        report.setFieldReports(fieldReports);
       } catch(Exception e) {
         throw new PlanExecutionException(e);
       }

@@ -57,13 +57,16 @@ public class DefaultPlanner implements Planner {
   }
 
   @Override
-  public Plan plan(FileSchemaDirectory directory, Dictionary dictionary) {
-    checkArgument(directory != null);
+  public Plan plan(CascadingStrategy strategy, Dictionary dictionary) {
+    checkArgument(strategy != null);
     checkArgument(dictionary != null);
 
-    Plan plan = new Plan();
+    FileSchemaDirectory systemDirectory = strategy.getSystemDirectory();
+
+    Plan plan = new Plan(strategy);
+
     for(FileSchema fileSchema : dictionary.getFiles()) {
-      if(directory.hasFile(fileSchema)) {
+      if(strategy.getFileSchemaDirectory().hasFile(fileSchema) || systemDirectory.hasFile(fileSchema)) {
         plan.include(fileSchema, new DefaultInternalFlowPlanner(fileSchema), new DefaultExternalFlowPlanner(plan,
             fileSchema));
       }

@@ -132,6 +132,6 @@ class DirectoryHdfsSshFile extends HdfsSshFile {
   }
 
   protected void notifyModified() {
-    this.directory.notifyModified();
+    this.root.notifyModified(this.directory);
   }
 }

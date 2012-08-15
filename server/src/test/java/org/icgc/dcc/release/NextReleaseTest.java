@@ -8,11 +8,14 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import org.icgc.dcc.dictionary.DictionaryService;
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.DictionaryState;
 import org.icgc.dcc.filesystem.DccFileSystem;
+import org.icgc.dcc.filesystem.ReleaseFileSystem;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.Submission;
@@ -22,6 +25,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.code.morphia.Datastore;
+import com.google.code.morphia.Morphia;
 import com.google.code.morphia.query.Query;
 import com.google.code.morphia.query.UpdateOperations;
 
@@ -31,11 +35,11 @@ public class NextReleaseTest {
 
   private Release release;
 
-  private Release release2;
-
   private Dictionary dictionary;
 
   private Datastore ds;
+
+  private Morphia mockMorphia;
 
   private Query<Release> query;
 
@@ -47,6 +51,14 @@ public class NextReleaseTest {
 
   private DccFileSystem fs;
 
+  private ReleaseFileSystem mockReleaseFileSystem;
+
+  private ReleaseService mockReleaseService;
+
+  private DictionaryService mockDictionaryService;
+
+  private static final String NEXT_RELEASE_NAME = "release2";
+
   @SuppressWarnings("unchecked")
   @Before
   public void setUp() {
@@ -54,6 +66,11 @@ public class NextReleaseTest {
     updates = mock(UpdateOperations.class);
     updatesDict = mock(UpdateOperations.class);
     fs = mock(DccFileSystem.class);
+    mockReleaseFileSystem = mock(ReleaseFileSystem.class);
+    mockReleaseService = mock(ReleaseService.class);
+    mockDictionaryService = mock(DictionaryService.class);
+
+    when(fs.getReleaseFilesystem(any(Release.class))).thenReturn(mockReleaseFileSystem);
 
     when(release.getState()).thenReturn(ReleaseState.OPENED);
     List<Submission> submissions = new ArrayList<Submission>();
@@ -61,15 +78,18 @@ public class NextReleaseTest {
     s.setState(SubmissionState.SIGNED_OFF);
     submissions.add(s);
     when(release.getSubmissions()).thenReturn(submissions);
+    when(release.getName()).thenReturn("my_release_name");
+    when(release.getProjectKeys()).thenReturn(Arrays.asList("proj1"));
+    when(release.getSubmissions()).thenReturn(submissions);
 
     ds = mock(Datastore.class);
-
-    nextRelease = new NextRelease(release, ds, fs);
+    mockMorphia = mock(Morphia.class);
 
     when(ds.createUpdateOperations(Release.class)).thenReturn(updates);
     when(ds.createUpdateOperations(Dictionary.class)).thenReturn(updatesDict);
 
     when(updates.disableValidation()).thenReturn(updates);
+    when(updates.set(anyString(), anyString())).thenReturn(updates);
 
     query = mock(Query.class);
     queryDict = mock(Query.class);
@@ -79,13 +99,17 @@ public class NextReleaseTest {
     when(query.filter(anyString(), any())).thenReturn(query);
     when(queryDict.filter(anyString(), any())).thenReturn(queryDict);
 
+    when(mockReleaseService.getFromName("not_existing_release")).thenReturn(null);
+    when(mockDictionaryService.getFromVersion("existing_dictionary")).thenReturn(mock(Dictionary.class));
+
+    nextRelease = new NextRelease(release, mockMorphia, ds, fs);
   }
 
   @Test(expected = IllegalReleaseStateException.class)
   public void test_NextRelease_throwsWhenBadReleaseState() {
     when(release.getState()).thenReturn(ReleaseState.COMPLETED);
 
-    new NextRelease(release, ds, fs);
+    new NextRelease(release, mockMorphia, ds, fs);
   }
 
   @Test
@@ -110,7 +134,7 @@ public class NextReleaseTest {
   public void test_release_setPreviousStateToCompleted() {
     releaseSetUp();
 
-    nextRelease.release(release2);
+    nextRelease.release(NEXT_RELEASE_NAME);
 
     verify(release).setState(ReleaseState.COMPLETED);
   }
@@ -119,42 +143,41 @@ public class NextReleaseTest {
   public void test_release_setNewStateToOpened() {
     releaseSetUp();
 
-    nextRelease.release(release2);
+    NextRelease newRelease = nextRelease.release(NEXT_RELEASE_NAME);
 
-    verify(release2).setState(ReleaseState.OPENED);
+    assertTrue(newRelease.getRelease().getState() == ReleaseState.OPENED);
   }
 
   @Test
   public void test_release_datastoreUpdated() {
     releaseSetUp();
 
-    nextRelease.release(release2);
+    NextRelease newRelease = nextRelease.release(NEXT_RELEASE_NAME);
 
     verify(ds).createUpdateOperations(Release.class);
     verify(updates).set("state", ReleaseState.COMPLETED);
     verify(updates).set("releaseDate", release.getReleaseDate());
     verify(ds).update(release, updates);
-    verify(ds).save(release2);
+    verify(ds).save(newRelease.getRelease());
   }
 
   @Test
   public void test_release_correctReturnValue() {
     releaseSetUp();
 
-    NextRelease newRelease = nextRelease.release(release2);
+    NextRelease newRelease = nextRelease.release(NEXT_RELEASE_NAME);
 
-    assertTrue(newRelease.getRelease().equals(release2));
+    assertTrue(newRelease.getRelease().getName().equals(NEXT_RELEASE_NAME));
+    assertTrue(newRelease.getRelease().getDictionaryVersion().equals("0.6c"));
   }
 
   @Test
   public void test_release_newDictionarySet() {
     releaseSetUp();
 
-    assertTrue(release2.getDictionaryVersion() == null);
+    NextRelease newRelease = nextRelease.release(NEXT_RELEASE_NAME);
 
-    nextRelease.release(release2);
-
-    verify(release2).setDictionaryVersion(dictionary.getVersion());
+    assertTrue(newRelease.getRelease().getDictionaryVersion().equals("0.6c"));
   }
 
   @Test
@@ -164,7 +187,7 @@ public class NextReleaseTest {
     assertTrue(release.getDictionaryVersion().equals(dictionary.getVersion()));
     assertTrue(dictionary.getState() == DictionaryState.OPENED);
 
-    nextRelease.release(release2);
+    nextRelease.release(NEXT_RELEASE_NAME);
 
     // TODO reinstate this test once NextRelease is rewritten to use services
     // verify(dictionary).close();
@@ -174,7 +197,7 @@ public class NextReleaseTest {
   public void test_release_throwsMissingDictionaryException() {
     assertTrue(release.getDictionaryVersion() == null);
 
-    nextRelease.release(release);
+    nextRelease.release("Release2");
   }
 
   @Ignore
@@ -183,7 +206,7 @@ public class NextReleaseTest {
     // TODO reinstate once NextRelease is fixed to make mocking easier
     releaseSetUp();
 
-    nextRelease.release(release);
+    nextRelease.release(release.getName());
   }
 
   @Ignore
@@ -195,12 +218,9 @@ public class NextReleaseTest {
   private void releaseSetUp() {
     dictionary = mock(Dictionary.class);
     when(dictionary.getState()).thenReturn(DictionaryState.OPENED);
-    when(dictionary.getVersion()).thenReturn("xxx");
-    when(release.getDictionaryVersion()).thenReturn("xxx");
+    when(dictionary.getVersion()).thenReturn("0.6c");
+    when(release.getDictionaryVersion()).thenReturn("0.6c");
 
-    release2 = mock(Release.class);
-    when(release2.getState()).thenReturn(ReleaseState.OPENED);
-    when(release2.getDictionaryVersion()).thenReturn(null);
     when(updates.set("state", ReleaseState.COMPLETED)).thenReturn(updates);
     when(updates.set("releaseDate", release.getReleaseDate())).thenReturn(updates);
   }

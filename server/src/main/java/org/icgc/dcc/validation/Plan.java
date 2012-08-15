@@ -18,6 +18,7 @@
 package org.icgc.dcc.validation;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -42,6 +43,14 @@ public class Plan {
   private final Map<String, InternalFlowPlanner> internalPlanners = Maps.newHashMap();
 
   private final Map<String, ExternalFlowPlanner> externalPlanners = Maps.newHashMap();
+
+  private Cascade cascade;
+
+  private final CascadingStrategy cascadingStrategy;
+
+  public Plan(CascadingStrategy cascadingStrategy) {
+    this.cascadingStrategy = cascadingStrategy;
+  }
 
   public void include(FileSchema fileSchema, InternalFlowPlanner internal, ExternalFlowPlanner external) {
     this.plannedSchema.add(fileSchema);
@@ -80,7 +89,7 @@ public class Plan {
     }
   }
 
-  public Cascade connect(CascadingStrategy cascadingStrategy) {
+  public void connect(CascadingStrategy cascadingStrategy) {
     CascadeDef cascade = new CascadeDef();
     for(FileSchemaFlowPlanner planner : Iterables.concat(internalPlanners.values(), externalPlanners.values())) {
       Flow<?> flow = planner.connect(cascadingStrategy);
@@ -88,21 +97,43 @@ public class Plan {
         cascade.addFlow(flow);
       }
     }
-    return new CascadeConnector().connect(cascade);
+    this.cascade = new CascadeConnector().connect(cascade);
   }
 
-  public Outcome collect(CascadingStrategy strategy, SubmissionReport report) {
+  public Cascade getCascade() {
+    return this.cascade;
+  }
+
+  public Outcome collect(SubmissionReport report) {
     Outcome result = Outcome.PASSED;
-    List<SchemaReport> schemaReports = new ArrayList<SchemaReport>();
+    Map<String, SchemaReport> schemaReports = new HashMap<String, SchemaReport>();
     for(FileSchemaFlowPlanner planner : Iterables.concat(internalPlanners.values(), externalPlanners.values())) {
-      List<SchemaReport> schemaReport = new ArrayList<SchemaReport>();
-      Outcome outcome = planner.collect(strategy, schemaReport);
+      SchemaReport schemaReport = new SchemaReport();
+      Outcome outcome = planner.collect(cascadingStrategy, schemaReport);
       if(outcome == Outcome.FAILED) {
         result = Outcome.FAILED;
       }
-      schemaReports.addAll(schemaReport);
+      if(!schemaReports.containsKey(schemaReport.getName())) {
+        schemaReports.put(schemaReport.getName(), schemaReport);
+      } else {
+        // combine internal and external plans into one
+        SchemaReport sreport = schemaReports.get(schemaReport.getName());
+
+        if(schemaReport.getFieldReports() != null) {
+          sreport.getFieldReports().addAll(schemaReport.getFieldReports());
+        }
+        if(sreport.getErrors() != null) {
+          sreport.getErrors().addAll(schemaReport.getErrors());
+        } else if(schemaReport.getErrors() != null) {
+          sreport.setErrors(schemaReport.getErrors());
+        }
+      }
     }
-    report.setSchemaReports(schemaReports);
+
+    // remove empty report
+    schemaReports.remove(null);
+
+    report.setSchemaReports(new ArrayList<SchemaReport>(schemaReports.values()));
     return result;
   }
 }

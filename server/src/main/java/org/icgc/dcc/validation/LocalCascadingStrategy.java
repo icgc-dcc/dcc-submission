@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.validation;
 
-import java.io.File;
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
@@ -40,8 +39,8 @@ import cascading.tuple.Fields;
  */
 public class LocalCascadingStrategy extends BaseCascadingStrategy {
 
-  public LocalCascadingStrategy(File source, File output) {
-    super(localFileSystem(), new Path(source.getAbsolutePath()), new Path(output.getAbsolutePath()));
+  public LocalCascadingStrategy(Path source, Path output, Path system) {
+    super(localFileSystem(), source, output, system);
   }
 
   @Override
@@ -76,5 +75,4 @@ public class LocalCascadingStrategy extends BaseCascadingStrategy {
       throw new RuntimeException(e);
     }
   }
-
 }

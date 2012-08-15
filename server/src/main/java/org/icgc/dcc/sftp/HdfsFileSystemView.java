@@ -66,7 +66,7 @@ public class HdfsFileSystemView implements FileSystemView {
     User currentUser = this.userService.getUser(this.passwordAuthenticator.getCurrentUser());
     ReleaseFileSystem rfs =
         this.dccFileSystem.getReleaseFilesystem(this.releaseService.getNextRelease().getRelease(), currentUser);
-    RootHdfsSshFile root = new RootHdfsSshFile(rfs, this.projectService);
+    RootHdfsSshFile root = new RootHdfsSshFile(rfs, this.projectService, this.releaseService);
 
     switch(filePath.depth()) {
     case 0:

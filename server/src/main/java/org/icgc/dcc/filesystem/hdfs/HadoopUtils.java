@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FileContext;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -80,6 +81,29 @@ public class HadoopUtils {
     }
   }
 
+  public static void createSymlink(FileSystem fileSystem, Path origin, Path destination) {
+
+    try {
+      FileContext.getFileContext(fileSystem.getUri()).createSymlink(origin, destination, false);
+    } catch(IOException e) {
+      throw new HdfsException(e);
+    }
+  }
+
+  public static void mv(FileSystem fileSystem, String origin, String destination) {
+    boolean rename;
+    try {
+      Path originPath = new Path(origin);
+      Path destinationPath = new Path(destination);
+      rename = fileSystem.rename(originPath, destinationPath);
+    } catch(IOException e) {
+      throw new HdfsException(e);
+    }
+    if(!rename) {
+      throw new HdfsException(String.format("could not rename %s to %s", origin, destination));
+    }
+  }
+
   public static boolean checkExistence(FileSystem fileSystem, String stringPath) {
     Path path = new Path(stringPath);
     boolean exists;
@@ -143,5 +167,15 @@ public class HadoopUtils {
       filenameList.add(path.getName());
     }
     return filenameList;
+  }
+
+  public static FileStatus getFileStatus(FileSystem fileSystem, Path path) {
+    FileStatus fileStatus = null;
+    try {
+      fileStatus = fileSystem.getFileStatus(path);
+    } catch(IOException e) {
+      throw new HdfsException(e);
+    }
+    return fileStatus;
   }
 }

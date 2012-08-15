@@ -14,11 +14,14 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriBuilder;
 
 import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.core.model.QProject;
+import org.icgc.dcc.shiro.AuthorizationPrivileges;
+import org.icgc.dcc.shiro.ShiroSecurityContext;
 
 import com.google.code.morphia.query.Query;
 import com.google.code.morphia.query.UpdateOperations;
@@ -32,10 +35,10 @@ public class ProjectResource {
   private ProjectService projects;
 
   @GET
-  public Response getProjects() {
-    List<Project> projectlist = projects.getProjects();
+  public Response getProjects(@Context SecurityContext securityContext) {
+    List<Project> projectlist = projects.getProjects(((ShiroSecurityContext) securityContext).getSubject());
     if(projectlist == null) {
-      return Response.status(Status.NOT_FOUND).build();
+      return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoProjects")).build();
     }
     return Response.ok(projectlist).build();
   }
@@ -46,28 +49,36 @@ public class ProjectResource {
     checkArgument(project != null);
     try {
       this.projects.addProject(project);
-      return Response.created(UriBuilder.fromResource(ProjectResource.class).path(project.getKey()).build())
-          .build();
+      return Response.created(UriBuilder.fromResource(ProjectResource.class).path(project.getKey()).build()).build();
     } catch(DuplicateKey e) {
-      return Response.status(Status.BAD_REQUEST).build();
+      return Response.status(Status.BAD_REQUEST)
+          .entity(new ServerErrorResponseMessage("ProjectExists", project.getKey())).build();
     }
   }
 
   @GET
   @Path("{projectKey}")
-  public Response getIt(@PathParam("projectKey") String projectKey) {
+  public Response getIt(@PathParam("projectKey") String projectKey, @Context SecurityContext securityContext) {
+    if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
+        AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
+      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
+    }
     Project project = projects.where(QProject.project.key.eq(projectKey)).uniqueResult();
     if(project == null) {
-      return Response.status(Status.NOT_FOUND).build();
+      return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoSuchProject", projectKey))
+          .build();
     }
     return ResponseTimestamper.ok(project).build();
   }
 
   @PUT
   @Path("{projectKey}")
-  public Response updateProject(@PathParam("projectKey") String projectKey, Project project, @Context Request req) {
-    checkArgument(project != null);
-
+  public Response updateProject(@PathParam("projectKey") String projectKey, Project project, @Context Request req,
+      @Context SecurityContext securityContext) {
+    if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
+        AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
+      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
+    }
     ResponseTimestamper.evaluate(req, project);
 
     // update project use morphia query
@@ -82,10 +93,15 @@ public class ProjectResource {
 
   @GET
   @Path("{projectKey}/releases")
-  public Response getReleases(@PathParam("projectKey") String projectKey) {
+  public Response getReleases(@PathParam("projectKey") String projectKey, @Context SecurityContext securityContext) {
+    if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
+        AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
+      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
+    }
     Project project = projects.where(QProject.project.key.eq(projectKey)).uniqueResult();
     if(project == null) {
-      return Response.status(Status.NOT_FOUND).build();
+      return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoSuchProject", projectKey))
+          .build();
     }
     return Response.ok(projects.getReleases(project)).build();
   }

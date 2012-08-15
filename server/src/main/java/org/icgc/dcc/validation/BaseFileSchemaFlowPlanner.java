@@ -17,7 +17,6 @@ package org.icgc.dcc.validation;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import java.util.List;
 import java.util.Map;
 
 import org.icgc.dcc.dictionary.model.FileSchema;
@@ -54,7 +53,7 @@ public abstract class BaseFileSchemaFlowPlanner implements FileSchemaFlowPlanner
 
   @Override
   public String getName() {
-    return getSchema().getName() + flowType.toString();
+    return getSchema().getName() + "." + flowType.toString();
   }
 
   @Override
@@ -63,11 +62,15 @@ public abstract class BaseFileSchemaFlowPlanner implements FileSchemaFlowPlanner
   }
 
   @Override
-  public void apply(ReportingPlanElement element) {
-    Pipe split = new Pipe(element.getName(), getTail());
+  public final void apply(ReportingPlanElement element) {
+    Pipe pipe = getTail(element.getName());
     log.info("[{}] applying element [{}]", getName(), element.describe());
-    reports.put(element.getName(), element.report(split));
+    reports.put(element.getName(), element.report(pipe));
     this.collectors.put(element.getName(), element.getCollector());
+  }
+
+  protected Pipe getTail(String basename) {
+    return getStructurallyValidTail(); // overwritten in the case of the internal version
   }
 
   @Override
@@ -77,16 +80,21 @@ public abstract class BaseFileSchemaFlowPlanner implements FileSchemaFlowPlanner
     for(Map.Entry<String, Pipe> p : reports.entrySet()) {
       def.addTailSink(p.getValue(), strategy.getReportTap(getSchema(), flowType, p.getKey()));
     }
-    return strategy.getFlowConnector().connect(onConnect(def, strategy));
+
+    onConnect(def, strategy);
+
+    // Make a flow only if there's something to do
+    if(def.getSinks().size() > 0 && def.getSources().size() > 0) {
+      return strategy.getFlowConnector().connect(def);
+    }
+    return null;
   }
 
   @Override
-  public Outcome collect(CascadingStrategy strategy, List<SchemaReport> reports) {
+  public Outcome collect(CascadingStrategy strategy, SchemaReport report) {
     Outcome result = Outcome.PASSED;
     for(ReportCollector reportCollector : collectors.values()) {
-      SchemaReport report = new SchemaReport();
       Outcome outcome = reportCollector.collect(strategy, report);
-      reports.add(report);
       if(outcome == Outcome.FAILED) {
         result = Outcome.FAILED;
       }
@@ -94,7 +102,9 @@ public abstract class BaseFileSchemaFlowPlanner implements FileSchemaFlowPlanner
     return result;
   }
 
-  protected abstract Pipe getTail();
+  protected abstract Pipe getStructurallyValidTail();
+
+  protected abstract Pipe getStructurallyInvalidTail();
 
   protected abstract FlowDef onConnect(FlowDef flowDef, CascadingStrategy strategy);
 }
