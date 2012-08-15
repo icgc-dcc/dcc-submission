@@ -71,7 +71,7 @@ public class ReleaseFileSystem {
     }
 
     // also move System Files from previous releases
-    HadoopUtils.cp(this.dccFileSystem.getFileSystem(), previous.getSystemDirectory().toString(), this
+    HadoopUtils.createSymlink(this.dccFileSystem.getFileSystem(), previous.getSystemDirectory().toString(), this
         .getSystemDirectory().toString());
   }
 

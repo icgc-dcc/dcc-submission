@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FileContext;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -80,11 +81,12 @@ public class HadoopUtils {
     }
   }
 
-  public static void cp(FileSystem fileSystem, String origin, String destination) {
+  public static void createSymlink(FileSystem fileSystem, String origin, String destination) {
     try {
       Path originPath = new Path(origin);
       Path destinationPath = new Path(destination);
-      fileSystem.copyToLocalFile(originPath, destinationPath);
+
+      FileContext.getFileContext().createSymlink(originPath, destinationPath, false);
     } catch(IOException e) {
       throw new HdfsException(e);
     }
