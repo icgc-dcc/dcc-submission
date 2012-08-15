@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FileContext;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -77,6 +78,15 @@ public class HadoopUtils {
     }
     if(!delete) {
       throw new HdfsException("could not remove " + stringPath);
+    }
+  }
+
+  public static void createSymlink(FileSystem fileSystem, Path origin, Path destination) {
+
+    try {
+      FileContext.getFileContext(fileSystem.getUri()).createSymlink(origin, destination, false);
+    } catch(IOException e) {
+      throw new HdfsException(e);
     }
   }
 

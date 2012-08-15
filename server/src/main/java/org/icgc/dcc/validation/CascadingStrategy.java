@@ -53,4 +53,6 @@ public interface CascadingStrategy {
   public Path path(final FileSchema schema) throws FileNotFoundException, IOException;
 
   public FileSchemaDirectory getFileSchemaDirectory();
+
+  public FileSchemaDirectory getSystemDirectory();
 }

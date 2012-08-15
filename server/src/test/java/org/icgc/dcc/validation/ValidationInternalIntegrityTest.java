@@ -177,10 +177,12 @@ public class ValidationInternalIntegrityTest {
 
     Path rootDir = new Path(rootDirString);
     Path outputDir = new Path(outputDirString);
+    Path systemDir = new Path("src/test/resources/integrationtest/fs/SystemFiles");
 
-    CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir);
+    CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir, systemDir);
 
     Plan plan = validationService.planCascade(null, cascadingStrategy, dictionary);
+
     Assert.assertEquals(3, plan.getCascade().getFlows().size());
     validationService.runCascade(plan.getCascade(), null);
 
