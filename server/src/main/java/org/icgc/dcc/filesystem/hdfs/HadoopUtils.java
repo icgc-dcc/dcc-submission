@@ -80,6 +80,16 @@ public class HadoopUtils {
     }
   }
 
+  public static void cp(FileSystem fileSystem, String origin, String destination) {
+    try {
+      Path originPath = new Path(origin);
+      Path destinationPath = new Path(destination);
+      fileSystem.copyToLocalFile(originPath, destinationPath);
+    } catch(IOException e) {
+      throw new HdfsException(e);
+    }
+  }
+
   public static void mv(FileSystem fileSystem, String origin, String destination) {
     boolean rename;
     try {

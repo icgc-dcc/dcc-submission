@@ -69,6 +69,10 @@ public class ReleaseFileSystem {
       HadoopUtils.mv(this.dccFileSystem.getFileSystem(), previousSubmissionDirectory.getValidationDirPath(),
           newSubmissionDirectory.getValidationDirPath());
     }
+
+    // also move System Files from previous releases
+    HadoopUtils.cp(this.dccFileSystem.getFileSystem(), previous.getSystemDirectory().toString(), this
+        .getSystemDirectory().toString());
   }
 
   public boolean isReadOnly() {
@@ -83,6 +87,14 @@ public class ReleaseFileSystem {
     return release;
   }
 
+  public Path getReleaseDirectory() {
+    return new Path(this.dccFileSystem.getRootStringPath(), this.release.getName());
+  }
+
+  public Path getSystemDirectory() {
+    return new Path(this.getReleaseDirectory(), "SystemFiles");
+  }
+
   private boolean isApplication() {
     return username == null;
   }
@@ -91,11 +103,4 @@ public class ReleaseFileSystem {
     return isApplication() || project.hasUser(username);
   }
 
-  public Path getReleaseDirectory() {
-    return new Path(this.dccFileSystem.getRootStringPath() + "/" + this.release.getName());
-  }
-
-  public Path getSystemDirectory() {
-    return new Path(this.getReleaseDirectory(), "SystemFiles");
-  }
 }
