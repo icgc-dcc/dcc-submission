@@ -71,8 +71,8 @@ public class ReleaseFileSystem {
     }
 
     // also move System Files from previous releases
-    HadoopUtils.createSymlink(this.dccFileSystem.getFileSystem(), previous.getSystemDirectory().toString(), this
-        .getSystemDirectory().toString());
+    HadoopUtils.createSymlink(this.dccFileSystem.getFileSystem(), previous.getSystemDirectory(),
+        this.getSystemDirectory());
   }
 
   public boolean isReadOnly() {
