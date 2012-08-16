@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.icgc.dcc.dictionary.model.FileSchema;
+import org.icgc.dcc.dictionary.model.FileSchemaRole;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,6 +54,13 @@ class DefaultExternalFlowPlanner extends BaseFileSchemaFlowPlanner implements Ex
   @Override
   public void apply(ExternalPlanElement element) {
     checkArgument(element != null);
+
+    if(getSchema().getRole() == FileSchemaRole.SYSTEM
+        && plan.getFileSchema(element.rhs()).getRole() == FileSchemaRole.SYSTEM) {
+      log.info("[{}] skipping element [{}]: relation between system files", getName(), element.describe());
+      return;
+    }
+
     log.info("[{}] applying element [{}]", getName(), element.describe());
     Trim trimLhs = plan.getInternalFlow(getSchema().getName()).addTrimmedOutput(element.lhsFields());
     Trim trimRhs = plan.getInternalFlow(element.rhs()).addTrimmedOutput(element.rhsFields());
