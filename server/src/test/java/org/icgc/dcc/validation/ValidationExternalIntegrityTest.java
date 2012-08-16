@@ -169,7 +169,7 @@ public class ValidationExternalIntegrityTest {
     Assert.assertEquals("Incorrect specimen ID trim list", specimenTrimExpected.trim(), specimenTrim.trim());
   }
 
-  @Test(expected = PlanningException.class)
+  @Test(expected = FatalPlanningException.class)
   public void test_validate_missingFile() throws IOException {
     testErrorType("fk_2");
   }
