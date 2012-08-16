@@ -116,14 +116,14 @@ public class ValidationExternalIntegrityTest {
 
     String donorTrim =
         FileUtils.readFileToString(new File(this.getClass().getResource(ROOTDIR).getFile()
-            + "/.validation/donor#donor_id.tsv"));
+            + "/.validation/donor#donor_id-offset.tsv"));
     String donorTrimExpected =
         FileUtils.readFileToString(new File(this.getClass().getResource("/ref/fk_donor_trim.tsv").getFile()));
     Assert.assertEquals("Incorrect donor ID trim list", donorTrimExpected.trim(), donorTrim.trim());
 
     String specimenTrim =
         FileUtils.readFileToString(new File(this.getClass().getResource(ROOTDIR).getFile()
-            + "/.validation/specimen#donor_id.tsv"));
+            + "/.validation/specimen#donor_id-offset.tsv"));
     String specimenTrimExpected =
         FileUtils.readFileToString(new File(this.getClass().getResource("/ref/fk_specimen_trim.tsv").getFile()));
     Assert.assertEquals("Incorrect specimen ID trim list", specimenTrimExpected.trim(), specimenTrim.trim());
@@ -156,14 +156,14 @@ public class ValidationExternalIntegrityTest {
 
     String donorTrim =
         FileUtils.readFileToString(new File(this.getClass().getResource(ROOTDIR).getFile()
-            + "/error/fk_1/.validation/donor#donor_id-fakecolumn.tsv"));
+            + "/error/fk_1/.validation/donor#donor_id-fakecolumn-offset.tsv"));
     String donorTrimExpected =
         FileUtils.readFileToString(new File(this.getClass().getResource("/ref/fk_1_donor_trim.tsv").getFile()));
     Assert.assertEquals("Incorrect donor ID trim list", donorTrimExpected.trim(), donorTrim.trim());
 
     String specimenTrim =
         FileUtils.readFileToString(new File(this.getClass().getResource(ROOTDIR).getFile()
-            + "/error/fk_1/.validation/specimen#donor_id-fakecolumn.tsv"));
+            + "/error/fk_1/.validation/specimen#donor_id-fakecolumn-offset.tsv"));
     String specimenTrimExpected =
         FileUtils.readFileToString(new File(this.getClass().getResource("/ref/fk_1_specimen_trim.tsv").getFile()));
     Assert.assertEquals("Incorrect specimen ID trim list", specimenTrimExpected.trim(), specimenTrim.trim());
