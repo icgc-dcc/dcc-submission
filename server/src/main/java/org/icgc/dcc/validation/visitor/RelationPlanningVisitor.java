@@ -111,7 +111,7 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
       String[] requiredRhsRenamedFields = extractRequiredFields(renamedRhsFields);
       String[] optionalRhsRenamedFields = extractOptionalFields(renamedRhsFields);
 
-      rhsPipe = new Discard(rhsPipe, ValidationFields.STATE_FIELD);
+      rhsPipe = new Discard(rhsPipe, new Fields(ValidationFields.OFFSET_FIELD_NAME));
       rhsPipe = new Rename(rhsPipe, new Fields(rhsFields), new Fields(renamedRhsFields));
       Pipe pipe =
           new CoGroup(lhsPipe, new Fields(requiredLhsFields), rhsPipe, new Fields(requiredRhsRenamedFields),
@@ -221,11 +221,8 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
         while(iter.hasNext()) {
           TupleEntry entry = iter.next();
 
-          /*
-           * The offset was passed (integer instead of full blown TupleState) from internal flow in order to access the
-           * offset
-           */
-          int lhsOffset = entry.getInteger(ValidationFields.STATE_FIELD_NAME);
+          // The offset was passed from internal flow in order to access the offset
+          int lhsOffset = entry.getInteger(ValidationFields.OFFSET_FIELD_NAME);
 
           if(TuplesUtils.hasValues(entry, requiredRhsFields) == false) {
             TupleState state = new TupleState(lhsOffset);

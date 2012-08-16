@@ -40,7 +40,7 @@ public class RelationPlanningVisitorTest extends CascadingTestCase {
 
   private final String rhs = "referenced";
 
-  private final String[] lhsFields = { "_state", "fk1", "fk2", "fk3" };
+  private final String[] lhsFields = { "offset", "fk1", "fk2", "fk3" };
 
   private final String[] rhsFields = { "pk1", "pk2", "pk3" };
 

@@ -84,12 +84,16 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
   public Trim addTrimmedOutput(String... fields) {
     checkArgument(fields != null);
     checkArgument(fields.length > 0);
-    String[] trimFields = // must pass state in order to obtain offset of referencing side
-        ObjectArrays.concat(fields, ValidationFields.STATE_FIELD_NAME);
+
+    String[] trimFields = // in order to obtain offset of referencing side
+        ObjectArrays.concat(fields, ValidationFields.OFFSET_FIELD_NAME);
+
     Trim trim = new Trim(getSchema().getName(), trimFields);
     if(trimmedTails.containsKey(trim) == false) {
+      String[] preTrimFields = ObjectArrays.concat(fields, ValidationFields.STATE_FIELD_NAME);
+
       Pipe newHead = new Pipe(trim.getName(), structurallyValidTail);
-      Pipe tail = new Retain(newHead, new Fields(trimFields));
+      Pipe tail = new Retain(newHead, new Fields(preTrimFields));
       tail = new Each(tail, ValidationFields.STATE_FIELD, new OffsetFunction(), Fields.SWAP);
 
       log.info("[{}] planned trimmed output with {}", getName(), Arrays.toString(trim.getFields()));
@@ -150,7 +154,7 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
   static class OffsetFunction extends BaseOperation implements Function {
 
     public OffsetFunction() {
-      super(1, new Fields("_state"));
+      super(1, new Fields(ValidationFields.OFFSET_FIELD_NAME));
     }
 
     @Override
