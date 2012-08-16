@@ -18,6 +18,7 @@
 package org.icgc.dcc.validation;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -105,18 +106,33 @@ public class Plan {
 
   public Outcome collect(SubmissionReport report) {
     Outcome result = Outcome.PASSED;
-    Map<String, SchemaReport> schemaReports = Maps.newHashMap();
+    Map<String, SchemaReport> schemaReports = new HashMap<String, SchemaReport>();
     for(FileSchemaFlowPlanner planner : Iterables.concat(internalPlanners.values(), externalPlanners.values())) {
-      SchemaReport schemaReport = schemaReports.get(planner.getSchema().getName());
-      if(schemaReport == null) {
-        schemaReport = new SchemaReport();
-        schemaReports.put(planner.getSchema().getName(), schemaReport);
-      }
+      SchemaReport schemaReport = new SchemaReport();
       Outcome outcome = planner.collect(cascadingStrategy, schemaReport);
       if(outcome == Outcome.FAILED) {
         result = Outcome.FAILED;
       }
+      if(!schemaReports.containsKey(schemaReport.getName())) {
+        schemaReports.put(schemaReport.getName(), schemaReport);
+      } else {
+        // combine internal and external plans into one
+        SchemaReport sreport = schemaReports.get(schemaReport.getName());
+
+        if(schemaReport.getFieldReports() != null) {
+          sreport.getFieldReports().addAll(schemaReport.getFieldReports());
+        }
+        if(sreport.getErrors() != null) {
+          sreport.getErrors().addAll(schemaReport.getErrors());
+        } else if(schemaReport.getErrors() != null) {
+          sreport.setErrors(schemaReport.getErrors());
+        }
+      }
     }
+
+    // remove empty report
+    schemaReports.remove(null);
+
     report.setSchemaReports(new ArrayList<SchemaReport>(schemaReports.values()));
     return result;
   }
