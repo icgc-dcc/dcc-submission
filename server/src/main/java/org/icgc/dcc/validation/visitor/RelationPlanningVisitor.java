@@ -239,13 +239,13 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
           }
         }
 
-        /*
-         * To keep track of reported errors (because there can be several specimen_id from the rhs) and we cannot use a
-         * set for lhsOptionalTuples
-         */
-        Set<Integer> reported = new HashSet<Integer>();
-
         if(conditional) {
+          /*
+           * To keep track of reported errors (because there can be several specimen_id from the rhs) and we cannot use
+           * a set for lhsOptionalTuples
+           */
+          Set<Integer> reported = new HashSet<Integer>();
+
           for(Entry<Tuple, Integer> lhsTupleToOffset : lhsOptionalTuples) {
             Tuple lhsOptionalTuple = lhsTupleToOffset.getKey();
             if(contains(rhsOptionalTuples, lhsOptionalTuple) == false) {
