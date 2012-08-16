@@ -27,8 +27,8 @@ import org.icgc.dcc.validation.LocalCascadingStrategy;
 public class LocalCascadingStrategyFactory implements CascadingStrategyFactory {
 
   @Override
-  public CascadingStrategy get(Path input, Path output) {
-    return new LocalCascadingStrategy(input, output);
+  public CascadingStrategy get(Path input, Path output, Path system) {
+    return new LocalCascadingStrategy(input, output, system);
   }
 
 }
