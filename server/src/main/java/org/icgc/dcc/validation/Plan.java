@@ -59,7 +59,7 @@ public class Plan {
 
   public InternalFlowPlanner getInternalFlow(String schema) {
     InternalFlowPlanner schemaPlan = internalPlanners.get(schema);
-    if(schemaPlan == null) throw new PlanningException(schema, "no plan available for schema [" + schema + "]");
+    if(schemaPlan == null) throw new PlanningException(schema, ValidationErrorCode.MISSING_SCHEMA_ERROR, schema);
     return schemaPlan;
   }
 
@@ -69,7 +69,7 @@ public class Plan {
 
   public ExternalFlowPlanner getExternalFlow(String schema) {
     ExternalFlowPlanner schemaPlan = externalPlanners.get(schema);
-    if(schemaPlan == null) throw new PlanningException(schema, "no plan available for schema [" + schema + "]");
+    if(schemaPlan == null) throw new PlanningException(schema, ValidationErrorCode.MISSING_SCHEMA_ERROR, schema);
     return schemaPlan;
   }
 

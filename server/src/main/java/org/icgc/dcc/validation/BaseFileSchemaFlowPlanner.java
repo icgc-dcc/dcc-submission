@@ -42,7 +42,7 @@ public abstract class BaseFileSchemaFlowPlanner implements FileSchemaFlowPlanner
 
   private final Map<String, Pipe> reports = Maps.newHashMap();
 
-  private final Map<String, ReportCollector> collectors = Maps.newHashMap();
+  protected final Map<String, ReportCollector> collectors = Maps.newHashMap();
 
   protected BaseFileSchemaFlowPlanner(FileSchema fileSchema, FlowType flowType) {
     checkArgument(fileSchema != null);

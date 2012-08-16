@@ -57,6 +57,9 @@ public class FileSchemaDirectory {
 
   public boolean hasFile(final FileSchema fileSchema) {
     List<Path> paths = matches(fileSchema);
+    if(paths != null && paths.size() > 1) {
+      throw new PlanningException(fileSchema.getName(), ValidationErrorCode.TOO_MANY_FILES_ERROR, paths.toString());
+    }
     return paths != null && paths.size() > 0;
   }
 

@@ -53,14 +53,19 @@ class DefaultExternalFlowPlanner extends BaseFileSchemaFlowPlanner implements Ex
   @Override
   public void apply(ExternalPlanElement element) {
     checkArgument(element != null);
-    log.info("[{}] applying element [{}]", getName(), element.describe());
-    Trim trimLhs = plan.getInternalFlow(getSchema().getName()).addTrimmedOutput(element.lhsFields());
-    Trim trimRhs = plan.getInternalFlow(element.rhs()).addTrimmedOutput(element.rhsFields());
+    try {
+      log.info("[{}] applying element [{}]", getName(), element.describe());
+      Trim trimLhs = plan.getInternalFlow(getSchema().getName()).addTrimmedOutput(element.lhsFields());
+      Trim trimRhs = plan.getInternalFlow(element.rhs()).addTrimmedOutput(element.rhsFields());
 
-    Pipe lhs = getTrimmedHead(trimLhs);
-    Pipe rhs = getTrimmedHead(trimRhs);
+      Pipe lhs = getTrimmedHead(trimLhs);
+      Pipe rhs = getTrimmedHead(trimRhs);
 
-    joinedTails.add(element.join(lhs, rhs));
+      joinedTails.add(element.join(lhs, rhs));
+    } catch(PlanningException e) {
+      throw new PlanningException(getSchema().getName(), ValidationErrorCode.INVALID_RELATION_ERROR, getSchema()
+          .getName(), element.rhs());
+    }
   }
 
   @Override

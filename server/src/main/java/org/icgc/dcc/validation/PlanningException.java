@@ -17,22 +17,43 @@
  */
 package org.icgc.dcc.validation;
 
-public class PlannerException extends RuntimeException {
+import org.icgc.dcc.validation.cascading.TupleState;
 
-  public PlannerException() {
+public class PlanningException extends RuntimeException {
+
+  private String schemaName;
+
+  private TupleState tupleState;
+
+  public PlanningException() {
     super();
   }
 
-  public PlannerException(String message, Throwable cause) {
+  public PlanningException(String message, Throwable cause) {
     super(message, cause);
   }
 
-  public PlannerException(String message) {
+  public PlanningException(String message) {
     super(message);
   }
 
-  public PlannerException(Throwable cause) {
+  public PlanningException(Throwable cause) {
     super(cause);
   }
 
+  public PlanningException(String schemaName, ValidationErrorCode errorCode, Object... parameters) {
+    super();
+    this.schemaName = schemaName;
+    this.tupleState = new TupleState();
+    tupleState.reportError(errorCode, parameters);
+    tupleState.setOffset(-1);
+  }
+
+  public String getSchemaName() {
+    return this.schemaName;
+  }
+
+  public TupleState getTupleState() {
+    return this.tupleState;
+  }
 }

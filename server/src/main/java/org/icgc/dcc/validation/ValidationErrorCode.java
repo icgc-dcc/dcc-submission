@@ -14,7 +14,10 @@ public enum ValidationErrorCode {
   NOT_A_NUMBER_ERROR("%s is not a number for field %s. Expected a number"), //
   MISSING_VALUE_ERROR("value missing for required field: %s"), //
   CODELIST_ERROR("invalid value %s for field %s. Expected code or value from CodeList %s"), //
-  DISCRETE_VALUES_ERROR("invalid value %s for field %s. Expected one of the following values: %s");
+  DISCRETE_VALUES_ERROR("invalid value %s for field %s. Expected one of the following values: %s"), //
+  TOO_MANY_FILES_ERROR("more than one file matches the schema pattern"), //
+  INVALID_RELATION_ERROR("a required schema for this relation was not found"), //
+  MISSING_SCHEMA_ERROR("no valid schema found");
 
   private final String message;
 
