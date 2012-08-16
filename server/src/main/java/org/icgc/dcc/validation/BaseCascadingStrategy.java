@@ -29,6 +29,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.dictionary.model.FileSchemaRole;
+import org.mortbay.log.Log;
 
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
@@ -106,6 +107,7 @@ public abstract class BaseCascadingStrategy implements CascadingStrategy {
     }
     InputStreamReader isr = null;
     try {
+      Log.info(path.toString());
       isr = new InputStreamReader(fileSystem.open(path), Charsets.UTF_8);
       LineReader lineReader = new LineReader(isr);
       String firstLine = lineReader.readLine();

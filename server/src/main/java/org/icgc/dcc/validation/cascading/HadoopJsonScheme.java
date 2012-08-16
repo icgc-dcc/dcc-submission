@@ -35,9 +35,9 @@ import cascading.scheme.hadoop.TextLine;
 public class HadoopJsonScheme extends TextLine {
 
   private transient ObjectMapper mapper = new ObjectMapper(new JsonFactory().disable(Feature.AUTO_CLOSE_TARGET))
-      .disable(SerializationConfig.Feature.FAIL_ON_EMPTY_BEANS);
+      .configure(SerializationConfig.Feature.FAIL_ON_EMPTY_BEANS, false);
 
-  private transient ObjectWriter writer = mapper().writerWithDefaultPrettyPrinter();
+  private transient ObjectWriter writer = mapper().defaultPrettyPrintingWriter();
 
   public HadoopJsonScheme() {
 
