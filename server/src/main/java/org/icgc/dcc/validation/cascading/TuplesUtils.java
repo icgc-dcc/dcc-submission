@@ -20,34 +20,26 @@ package org.icgc.dcc.validation.cascading;
 import java.util.ArrayList;
 import java.util.List;
 
+import cascading.tuple.Fields;
+import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
 /**
- * Offers various utils methods to handle {@code TupleEntry} (at least until we find cleaner cascading ways to do the
- * same, or that they offer more utils themselves)
+ * Offers various utils methods to handle {@code TupleEntry} and {@code Tuple} (at least until we find cleaner cascading
+ * ways to do the same, or that they offer more utils themselves)
  */
-public class TupleEntryUtils {
+public class TuplesUtils {
 
-  public static List<Object> getObjects(TupleEntry entry, String[] fields) {
-    return getObjects(true, entry, fields);
+  public static boolean hasValues(TupleEntry tupleEntry, String[] fields) {
+    Tuple tuple = tupleEntry.selectTuple(new Fields(fields));
+    return tuple.equals(Tuple.size(tuple.size())) == false;
   }
 
-  public static List<Object> getNonNullObjects(TupleEntry entry, String[] fields) {
-    return getObjects(false, entry, fields);
-  }
-
-  private static List<Object> getObjects(boolean all, TupleEntry entry, String[] fields) {
-    List<Object> objects = new ArrayList<Object>();
-    for(String field : fields) {
-      Object object = entry.getObject(field);
-      if(all || object != null) {
-        objects.add(object);
-      }
+  public static List<Object> getobjects(Tuple tuple) {
+    List<Object> l = new ArrayList<Object>();
+    for(int i = 0; i < tuple.size(); i++) {
+      l.add(tuple.getObject(i));
     }
-    return objects;
-  }
-
-  public static boolean hasValues(TupleEntry entry, String[] fields) {
-    return getNonNullObjects(entry, fields).isEmpty() == false;
+    return l;
   }
 }

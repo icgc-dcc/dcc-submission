@@ -36,9 +36,11 @@ import com.google.common.collect.ObjectArrays;
  */
 public class RelationPlanningVisitorTest extends CascadingTestCase {
 
-  private final String[] lhsFields = { "fk1", "fk2", "fk3" };
+  private final String lhs = "referencing";
 
-  private final String rhs = "fileName";
+  private final String rhs = "referenced";
+
+  private final String[] lhsFields = { "_state", "fk1", "fk2", "fk3" };
 
   private final String[] rhsFields = { "pk1", "pk2", "pk3" };
 
@@ -48,12 +50,11 @@ public class RelationPlanningVisitorTest extends CascadingTestCase {
   public void test_operate_valid() {
 
     NoNullBuffer buffer =
-        new NoNullBuffer(rhs, lhsFields, rhsFields, lhsFields, rhsFields, new String[] {}, new String[] {});
+        new NoNullBuffer(lhs, rhs, lhsFields, rhsFields, lhsFields, rhsFields, new String[] {}, new String[] {});
 
     TupleEntry[] tuples =
         new TupleEntry[] { new TupleEntry(new Fields(ObjectArrays.concat(lhsFields, rhsFields, String.class)),
-            new Tuple(//
-                "value1", "value2", "value3",//
+            new Tuple("0", "value1", "value2", "value3",//
                 "value1", "value2", "value3")) };
 
     Fields resultField = new Fields("_state");
@@ -64,11 +65,11 @@ public class RelationPlanningVisitorTest extends CascadingTestCase {
   @Test
   public void test_operate_invalid() {
     NoNullBuffer buffer =
-        new NoNullBuffer(rhs, lhsFields, rhsFields, lhsFields, rhsFields, new String[] {}, new String[] {});
+        new NoNullBuffer(lhs, rhs, lhsFields, rhsFields, lhsFields, rhsFields, new String[] {}, new String[] {});
 
     TupleEntry[] tuples = new TupleEntry[] {//
         new TupleEntry(inputFields,//
-            new Tuple("value21", "value22", "value23",//
+            new Tuple("0", "value21", "value22", "value23",//
                 null, null, null)) };
 
     Fields resultField = new Fields("_state");
@@ -80,20 +81,20 @@ public class RelationPlanningVisitorTest extends CascadingTestCase {
   @Test
   public void test_operate_mix() {
     NoNullBuffer buffer =
-        new NoNullBuffer(rhs, lhsFields, rhsFields, lhsFields, rhsFields, new String[] {}, new String[] {});
+        new NoNullBuffer(lhs, rhs, lhsFields, rhsFields, lhsFields, rhsFields, new String[] {}, new String[] {});
 
     TupleEntry[] tuples = new TupleEntry[] {//
         new TupleEntry(inputFields, new Tuple(//
-            "value1", "value2", "value3",//
+            "0", "value1", "value2", "value3",//
             "value1", "value2", "value3")),//
         new TupleEntry(inputFields, new Tuple(//
-            "value21", "value22", "value23",//
+            "0", "value21", "value22", "value23",//
             null, null, null)),//
         new TupleEntry(inputFields, new Tuple(//
-            "value11", "value12", "value13",//
+            "0", "value11", "value12", "value13",//
             "value11", "value12", "value13")),//
         new TupleEntry(inputFields, new Tuple(//
-            "value41", "value42", "value43",//
+            "0", "value41", "value42", "value43",//
             null, null, null)), };
 
     Fields resultField = new Fields("_state");

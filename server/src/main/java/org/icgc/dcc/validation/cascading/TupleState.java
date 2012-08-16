@@ -23,7 +23,7 @@ import com.google.common.collect.Lists;
 
 public class TupleState implements Serializable {
 
-  private int offset;
+  private final int offset;
 
   private List<TupleError> errors;
 
@@ -32,10 +32,11 @@ public class TupleState implements Serializable {
   private final Set<String> missingFieldNames = new HashSet<String>();
 
   public TupleState() {
-    structurallyValid = true;
+    this(-1);
   }
 
-  public void setOffset(int offset) {
+  public TupleState(int offset) {
+    this.structurallyValid = true;
     this.offset = offset;
   }
 
