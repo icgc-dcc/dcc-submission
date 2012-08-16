@@ -17,8 +17,8 @@ public class HadoopCascadingStrategyFactory implements CascadingStrategyFactory 
   }
 
   @Override
-  public CascadingStrategy get(Path input, Path output) {
-    return new HadoopCascadingStrategy(fileSystem, input, output);
+  public CascadingStrategy get(Path input, Path output, Path system) {
+    return new HadoopCascadingStrategy(fileSystem, input, output, system);
   }
 
 }

@@ -19,15 +19,11 @@ package org.icgc.dcc.validation;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.validation.cascading.TupleState;
@@ -70,15 +66,10 @@ public class DefaultPlanner implements Planner {
     checkArgument(strategy != null);
     checkArgument(dictionary != null);
 
-    FileSystem localFS;
-    try {
-      localFS = FileSystem.getLocal(new Configuration());
-    } catch(IOException e) {
-      throw new RuntimeException(e);
-    }
-    FileSchemaDirectory systemDirectory = new FileSchemaDirectory(localFS, new Path("src/main/resources/SystemFiles"));
+    FileSchemaDirectory systemDirectory = strategy.getSystemDirectory();
 
     Plan plan = new Plan(strategy);
+
     for(FileSchema fileSchema : dictionary.getFiles()) {
       try {
         if(strategy.getFileSchemaDirectory().hasFile(fileSchema) || systemDirectory.hasFile(fileSchema)) {

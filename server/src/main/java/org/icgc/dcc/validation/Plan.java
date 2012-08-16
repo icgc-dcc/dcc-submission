@@ -136,4 +136,13 @@ public class Plan {
     report.setSchemaReports(new ArrayList<SchemaReport>(schemaReports.values()));
     return result;
   }
+
+  public FileSchema getFileSchema(String name) {
+    for(FileSchema schema : plannedSchema) {
+      if(schema.getName().equals(name)) {
+        return schema;
+      }
+    }
+    return null;
+  }
 }

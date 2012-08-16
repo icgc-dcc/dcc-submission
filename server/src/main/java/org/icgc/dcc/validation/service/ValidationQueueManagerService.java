@@ -28,10 +28,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.dictionary.DictionaryService;
 import org.icgc.dcc.dictionary.model.Dictionary;
-import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
@@ -40,7 +38,6 @@ import org.icgc.dcc.validation.FatalPlanningException;
 import org.icgc.dcc.validation.Plan;
 import org.icgc.dcc.validation.ValidationCallback;
 import org.icgc.dcc.validation.cascading.TupleState;
-import org.icgc.dcc.validation.factory.CascadingStrategyFactory;
 import org.icgc.dcc.validation.report.Outcome;
 import org.icgc.dcc.validation.report.SchemaReport;
 import org.icgc.dcc.validation.report.SubmissionReport;
@@ -70,30 +67,19 @@ public class ValidationQueueManagerService extends AbstractService implements Va
 
   private final ValidationService validationService;
 
-  private final DccFileSystem dccFileSystem;
-
-  private final ProjectService projectService;
-
-  private final CascadingStrategyFactory cascadingStrategyFactory;
-
   private ScheduledFuture<?> schedule;
 
   @Inject
   public ValidationQueueManagerService(final ReleaseService releaseService, final DictionaryService dictionaryService,
-      ValidationService validationService, final DccFileSystem dccFileSystem, final ProjectService projectService,
-      final CascadingStrategyFactory cascadingStrategyFactory) {
+      ValidationService validationService) {
 
     checkArgument(releaseService != null);
     checkArgument(dictionaryService != null);
     checkArgument(validationService != null);
-    checkArgument(cascadingStrategyFactory != null);
 
     this.releaseService = releaseService;
     this.dictionaryService = dictionaryService;
     this.validationService = validationService;
-    this.dccFileSystem = dccFileSystem;
-    this.projectService = projectService;
-    this.cascadingStrategyFactory = cascadingStrategyFactory;
   }
 
   @Override
