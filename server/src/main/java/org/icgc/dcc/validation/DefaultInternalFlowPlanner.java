@@ -28,20 +28,28 @@ import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.validation.cascading.RemoveEmptyLineFilter;
 import org.icgc.dcc.validation.cascading.RemoveHeaderFilter;
 import org.icgc.dcc.validation.cascading.StructralCheckFunction;
+import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.cascading.TupleStates;
 import org.icgc.dcc.validation.cascading.ValidationFields;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cascading.flow.FlowDef;
+import cascading.flow.FlowProcess;
+import cascading.operation.BaseOperation;
+import cascading.operation.Function;
+import cascading.operation.FunctionCall;
 import cascading.pipe.Each;
 import cascading.pipe.Merge;
 import cascading.pipe.Pipe;
 import cascading.pipe.assembly.Retain;
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
+import cascading.tuple.Tuple;
+import cascading.tuple.TupleEntry;
 
 import com.google.common.collect.Maps;
+import com.google.common.collect.ObjectArrays;
 
 class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements InternalFlowPlanner {
 
@@ -76,10 +84,18 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
   public Trim addTrimmedOutput(String... fields) {
     checkArgument(fields != null);
     checkArgument(fields.length > 0);
-    Trim trim = new Trim(getSchema().getName(), fields);
+
+    String[] trimFields = // in order to obtain offset of referencing side
+        ObjectArrays.concat(fields, ValidationFields.OFFSET_FIELD_NAME);
+
+    Trim trim = new Trim(getSchema().getName(), trimFields);
     if(trimmedTails.containsKey(trim) == false) {
+      String[] preTrimFields = ObjectArrays.concat(fields, ValidationFields.STATE_FIELD_NAME);
+
       Pipe newHead = new Pipe(trim.getName(), structurallyValidTail);
-      Pipe tail = new Retain(newHead, new Fields(fields));
+      Pipe tail = new Retain(newHead, new Fields(preTrimFields));
+      tail = new Each(tail, ValidationFields.STATE_FIELD, new OffsetFunction(), Fields.SWAP);
+
       log.info("[{}] planned trimmed output with {}", getName(), Arrays.toString(trim.getFields()));
       trimmedTails.put(trim, tail);
     }
@@ -127,9 +143,25 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
     pipe = new Each(pipe, new RemoveEmptyLineFilter());
     pipe = new Each(pipe, new RemoveHeaderFilter());
     structralCheck = new StructralCheckFunction(getSchema().getFieldNames());
-    Fields fields = new Fields(ValidationFields.OFFSET_FIELD_NAME, StructralCheckFunction.LINE_FIELD_NAME);
-    pipe = new Each(pipe, fields, structralCheck, Fields.SWAP); // parse "line" into the actual expected fields
+    pipe =
+        new Each(pipe, new Fields(ValidationFields.OFFSET_FIELD_NAME, StructralCheckFunction.LINE_FIELD_NAME),
+            structralCheck, Fields.SWAP); // parse "line" into the actual expected fields
     this.structurallyValidTail = new Each(pipe, TupleStates.keepStructurallyValidTuplesFilter());
     this.structurallyInvalidTail = new Each(pipe, TupleStates.keepStructurallyInvalidTuplesFilter());
+  }
+
+  @SuppressWarnings("rawtypes")
+  static class OffsetFunction extends BaseOperation implements Function {
+
+    public OffsetFunction() {
+      super(1, new Fields(ValidationFields.OFFSET_FIELD_NAME));
+    }
+
+    @Override
+    public void operate(FlowProcess flowProcess, FunctionCall functionCall) {
+      TupleEntry entry = functionCall.getArguments();
+      TupleState state = ValidationFields.state(entry);
+      functionCall.getOutputCollector().add(new Tuple(state.getOffset()));
+    }
   }
 }

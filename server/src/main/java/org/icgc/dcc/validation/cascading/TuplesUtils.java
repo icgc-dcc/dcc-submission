@@ -15,12 +15,31 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.validation;
+package org.icgc.dcc.validation.cascading;
 
-import org.icgc.dcc.dictionary.model.Dictionary;
+import java.util.ArrayList;
+import java.util.List;
 
-public interface Planner {
+import cascading.tuple.Fields;
+import cascading.tuple.Tuple;
+import cascading.tuple.TupleEntry;
 
-  public Plan plan(CascadingStrategy strategy, Dictionary dictionary) throws PlanningException;
+/**
+ * Offers various utils methods to handle {@code TupleEntry} and {@code Tuple} (at least until we find cleaner cascading
+ * ways to do the same, or that they offer more utils themselves)
+ */
+public class TuplesUtils {
 
+  public static boolean hasValues(TupleEntry tupleEntry, String[] fields) {
+    Tuple tuple = tupleEntry.selectTuple(new Fields(fields));
+    return tuple.equals(Tuple.size(tuple.size())) == false;
+  }
+
+  public static List<Object> getobjects(Tuple tuple) {
+    List<Object> l = new ArrayList<Object>();
+    for(int i = 0; i < tuple.size(); i++) {
+      l.add(tuple.getObject(i));
+    }
+    return l;
+  }
 }

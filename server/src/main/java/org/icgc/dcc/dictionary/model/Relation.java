@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.dictionary.model;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,6 +26,7 @@ import org.icgc.dcc.dictionary.visitor.DictionaryElement;
 import org.icgc.dcc.dictionary.visitor.DictionaryVisitor;
 
 import com.google.code.morphia.annotations.Embedded;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 @Embedded
@@ -35,15 +38,33 @@ public class Relation implements DictionaryElement {
 
   private final List<String> otherFields;
 
+  private final List<Integer> optionals;
+
   public Relation() {
     fields = new ArrayList<String>();
     otherFields = new ArrayList<String>();
+    optionals = new ArrayList<Integer>();
   }
 
   public Relation(Iterable<String> leftFields, String right, Iterable<String> rightFields) {
-    fields = Lists.newArrayList(leftFields);
+    this(leftFields, right, rightFields, ImmutableList.<Integer> of());
+  }
+
+  public Relation(Iterable<String> leftFields, String right, Iterable<String> rightFields, Iterable<Integer> optionals) {
+    this.fields = Lists.newArrayList(leftFields);
     this.other = right;
-    otherFields = Lists.newArrayList(rightFields);
+    this.otherFields = Lists.newArrayList(rightFields);
+    this.optionals = Lists.newArrayList(optionals);
+
+    checkArgument(this.fields != null);
+    checkArgument(this.other != null);
+    checkArgument(this.otherFields != null);
+    checkArgument(this.optionals != null);
+
+    checkArgument(this.fields.isEmpty() == false, this.fields.size());
+    checkArgument(this.fields.size() == this.otherFields.size());
+    checkArgument(this.fields.size() > this.optionals.size(), this.fields.size() + ", " + this.optionals.size());
+    // TODO: further check on optionals (no repetition, valid indices, ...) - will create separate ticket for it
   }
 
   @Override
@@ -65,6 +86,10 @@ public class Relation implements DictionaryElement {
 
   public List<String> getOtherFields() {
     return otherFields;
+  }
+
+  public List<Integer> getOptionals() {
+    return optionals;
   }
 
 }

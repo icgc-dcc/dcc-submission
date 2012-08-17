@@ -27,7 +27,8 @@ import cascading.tuple.Fields;
 import com.google.common.collect.ImmutableList;
 
 /**
- * Offers various utils methods to handle Fields
+ * Offers various utils methods to handle {@code Fields} (at least until we find cleaner cascading ways to do the same,
+ * or that they offer more utils themselves)
  */
 public class FieldsUtils {
 

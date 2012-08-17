@@ -17,13 +17,15 @@
  */
 package org.icgc.dcc.validation.visitor;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
-
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.dictionary.model.Relation;
@@ -31,6 +33,7 @@ import org.icgc.dcc.validation.ExternalFlowPlanningVisitor;
 import org.icgc.dcc.validation.ExternalPlanElement;
 import org.icgc.dcc.validation.ValidationErrorCode;
 import org.icgc.dcc.validation.cascading.TupleState;
+import org.icgc.dcc.validation.cascading.TuplesUtils;
 import org.icgc.dcc.validation.cascading.ValidationFields;
 
 import cascading.flow.FlowProcess;
@@ -40,6 +43,8 @@ import cascading.operation.BufferCall;
 import cascading.pipe.CoGroup;
 import cascading.pipe.Every;
 import cascading.pipe.Pipe;
+import cascading.pipe.assembly.Discard;
+import cascading.pipe.assembly.Rename;
 import cascading.pipe.joiner.LeftJoin;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
@@ -59,23 +64,27 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
 
   static class RelationPlanElement implements ExternalPlanElement {
 
+    private final String lhs;
+
     private final String[] lhsFields;
 
     private final String rhs;
 
     private final String[] rhsFields;
 
+    private final List<Integer> optionals;
+
     private RelationPlanElement(FileSchema fileSchema, Relation relation) {
+      this.lhs = fileSchema.getName();
       this.lhsFields = relation.getFields().toArray(new String[] {});
       this.rhs = relation.getOther();
       this.rhsFields = relation.getOtherFields().toArray(new String[] {});
-      checkArgument(this.lhsFields.length == this.rhsFields.length, this.lhsFields.length + " != "
-          + this.rhsFields.length);
+      this.optionals = relation.getOptionals();
     }
 
     @Override
     public String describe() {
-      return String.format("%s[%s->%s:%s]", NAME, Arrays.toString(lhsFields), rhs, Arrays.toString(rhsFields));
+      return String.format("%s[%s:%s->%s:%s]", NAME, lhs, Arrays.toString(lhsFields), rhs, Arrays.toString(rhsFields));
     }
 
     @Override
@@ -95,11 +104,42 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
 
     @Override
     public Pipe join(Pipe lhsPipe, Pipe rhsPipe) {
-      String[] renamed = rename();
-      Fields merged = Fields.merge(new Fields(lhsFields), new Fields(renamed));
-      Pipe pipe = new CoGroup(lhsPipe, new Fields(lhsFields), rhsPipe, new Fields(rhsFields), merged, new LeftJoin());
-      pipe = new Every(pipe, merged, new NoNullBuffer(lhsFields, rhs, rhsFields), Fields.RESULTS);
-      return pipe;
+      String[] requiredLhsFields = extractRequiredFields(lhsFields);
+      String[] optionalLhsFields = extractOptionalFields(lhsFields);
+
+      String[] renamedRhsFields = rename();
+      String[] requiredRhsRenamedFields = extractRequiredFields(renamedRhsFields);
+      String[] optionalRhsRenamedFields = extractOptionalFields(renamedRhsFields);
+
+      rhsPipe = new Discard(rhsPipe, new Fields(ValidationFields.OFFSET_FIELD_NAME));
+      rhsPipe = new Rename(rhsPipe, new Fields(rhsFields), new Fields(renamedRhsFields));
+      Pipe pipe =
+          new CoGroup(lhsPipe, new Fields(requiredLhsFields), rhsPipe, new Fields(requiredRhsRenamedFields),
+              new LeftJoin());
+      NoNullBuffer noNullBuffer =
+          new NoNullBuffer(lhs, rhs, lhsFields, rhsFields, requiredLhsFields, requiredRhsRenamedFields,
+              optionalLhsFields, optionalRhsRenamedFields);
+      return new Every(pipe, Fields.ALL, noNullBuffer, Fields.RESULTS);
+    }
+
+    private String[] extractOptionalFields(String[] fields) {
+      return extractFields(true, fields);
+    }
+
+    private String[] extractRequiredFields(String[] fields) {
+      return extractFields(false, fields);
+    }
+
+    private String[] extractFields(boolean keepOptional, String[] fields) {
+      int size = keepOptional ? optionals.size() : fields.length - optionals.size();
+      String[] requiredFields = new String[size];
+      int j = 0;
+      for(int i = 0; i < fields.length; i++) {
+        if(optionals.contains(i) == keepOptional) {
+          requiredFields[j++] = fields[i];
+        }
+      }
+      return requiredFields;
     }
 
     private String[] rename() {
@@ -113,54 +153,138 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
     @SuppressWarnings("rawtypes")
     static class NoNullBuffer extends BaseOperation implements Buffer {
 
-      private final String[] lhsFields;
+      @SuppressWarnings("unused")
+      private final String lhs; // extremely useful for debugging...
 
       private final String rhs;
 
+      private final String[] lhsFields;
+
       private final String[] rhsFields;
 
-      private final int size;
+      private final String[] requiredLhsFields;
 
-      NoNullBuffer(String[] lhsFields, String rhs, String[] rhsFields) {
-        super(2, new Fields(ValidationFields.STATE_FIELD_NAME));
-        this.lhsFields = lhsFields;
+      private final String[] requiredRhsFields;
+
+      private final String[] optionalLhsFields;
+
+      private final String[] optionalRhsFields;
+
+      private final int optionalSize;
+
+      private final boolean conditional;
+
+      private final Comparator[] tupleComparators;
+
+      NoNullBuffer(String lhs, String rhs, String[] lhsFields, String[] rhsFields, String[] requiredLhsFields,
+          String[] requiredRhsFields, String[] optionalLhsFields, String[] optionalRhsFields) {
+        super(lhsFields.length + rhsFields.length, new Fields(ValidationFields.STATE_FIELD_NAME));
+        this.lhs = lhs;
         this.rhs = rhs;
+        this.lhsFields = lhsFields;
         this.rhsFields = rhsFields;
-        checkArgument(this.lhsFields.length == this.rhsFields.length, this.lhsFields.length + " != "
-            + this.rhsFields.length);
-        this.size = this.lhsFields.length;
+        this.requiredLhsFields = requiredLhsFields;
+        this.requiredRhsFields = requiredRhsFields;
+        this.optionalLhsFields = optionalLhsFields;
+        this.optionalRhsFields = optionalRhsFields;
+        this.optionalSize = optionalLhsFields.length;
+        this.conditional = optionalSize > 0;
+
+        Comparator comparator = new Comparator() { // allows one side to be null
+              @Override
+              public int compare(Object object1, Object object2) {
+                return object1 == null || object2 == null ? 0 : ((String) object1).compareTo(((String) object2));
+              }
+            };
+        this.tupleComparators = new Comparator[optionalSize];
+        for(int i = 0; i < optionalRhsFields.length; i++) {
+          this.tupleComparators[i] = comparator; // we can reuse the same for all fields
+        }
       }
 
       @Override
       @SuppressWarnings("unchecked")
       public void operate(FlowProcess flowProcess, BufferCall bufferCall) {
         Iterator<TupleEntry> iter = bufferCall.getArgumentsIterator();
+        TupleEntry group = bufferCall.getGroup();
+
+        // potential memory issue discussed in DCC-300
+        List<Entry<Tuple, Integer>> lhsOptionalTuples = null;
+        List<Tuple> rhsOptionalTuples = null;
+        Tuple requiredLhsTuple = null;
+        if(conditional) {
+          lhsOptionalTuples = new ArrayList<Entry<Tuple, Integer>>();
+          rhsOptionalTuples = new ArrayList<Tuple>();
+          requiredLhsTuple = group.selectTuple(new Fields(requiredLhsFields));
+        }
+
         while(iter.hasNext()) {
-          TupleEntry tupleEntry = iter.next();
-          if(tupleEntry.getObject(size) == null) {
-            checkState(checkRemainingRightFields(tupleEntry));
-            List<String> unmatchedValues = new ArrayList<String>();
-            for(int i = 0; i < size; i++) {
-              unmatchedValues.add(tupleEntry.getString(i));
+          TupleEntry entry = iter.next();
+
+          // The offset was passed from internal flow in order to access the offset
+          int lhsOffset = entry.getInteger(ValidationFields.OFFSET_FIELD_NAME);
+
+          if(TuplesUtils.hasValues(entry, requiredRhsFields) == false) {
+            TupleState state = new TupleState(lhsOffset);
+            reportRelationError(state, entry.selectTuple(new Fields(lhsFields)));
+            bufferCall.getOutputCollector().add(new Tuple(state));
+          } else if(conditional) {
+            if(TuplesUtils.hasValues(entry, optionalLhsFields)) {
+              Tuple lhsOptionalTuple = entry.selectTuple(new Fields(optionalLhsFields));
+              lhsOptionalTuples.add(new SimpleEntry<Tuple, Integer>(lhsOptionalTuple, lhsOffset));
             }
-            TupleState tupleState = new TupleState();
-            tupleState.reportError(ValidationErrorCode.MISSING_RELATION_ERROR, unmatchedValues,
-                Arrays.asList(lhsFields), rhs, Arrays.asList(rhsFields));
-            bufferCall.getOutputCollector().add(new Tuple(tupleState));
+            if(TuplesUtils.hasValues(entry, optionalRhsFields)) {
+              rhsOptionalTuples.add(entry.selectTuple(new Fields(optionalRhsFields)));
+            }
+          }
+        }
+
+        if(conditional) {
+          /*
+           * To keep track of reported errors (because there can be several specimen_id from the rhs) and we cannot use
+           * a set for lhsOptionalTuples
+           */
+          Set<Integer> reported = new HashSet<Integer>();
+
+          for(Entry<Tuple, Integer> lhsTupleToOffset : lhsOptionalTuples) {
+            Tuple lhsOptionalTuple = lhsTupleToOffset.getKey();
+            if(contains(rhsOptionalTuples, lhsOptionalTuple) == false) {
+              int lhsOffset = lhsTupleToOffset.getValue();
+              TupleState tupleState = new TupleState(lhsOffset);
+              if(reported.contains(lhsOffset) == false) {
+                Tuple offendingLhsTuple = // so as to avoid storing it all in memory (memory/computing tradeoff)
+                    rebuildLhsTuple(requiredLhsFields, optionalLhsFields, requiredLhsTuple, lhsOptionalTuple);
+                reportRelationError(tupleState, offendingLhsTuple);
+
+                bufferCall.getOutputCollector().add(new Tuple(tupleState));
+                reported.add(lhsOffset);
+              }
+            }
           }
         }
       }
 
-      /**
-       * Checks that the remaining fields are also null (at this stage they should be design)
-       */
-      private boolean checkRemainingRightFields(TupleEntry tupleEntry) {
-        for(int i = size + 1; i < size + size; i++) {
-          if(tupleEntry.getString(i) != null) {
-            return false;
+      private boolean contains(List<Tuple> tuples, Tuple tuple) {
+        for(Tuple tupleTmp : tuples) {
+          if(tupleTmp.compareTo(this.tupleComparators, tuple) == 0) {
+            return true;
           }
         }
-        return true;
+        return false;
+      }
+
+      private Tuple rebuildLhsTuple(String[] requiredLhsFields, String[] optionalLhsFields, Tuple requiredLhsObjects,
+          Tuple optionalLhsObjects) {
+        List<String> list = new ArrayList<String>(Arrays.asList(requiredLhsFields));
+        list.addAll(Arrays.asList(optionalLhsFields));
+        String[] disorderedLhsFields = list.toArray(new String[] {});
+        Tuple disorderedLhsObjects = requiredLhsObjects.append(optionalLhsObjects);
+        return new TupleEntry(new Fields(disorderedLhsFields), disorderedLhsObjects).selectTuple(new Fields(lhsFields));
+      }
+
+      private void reportRelationError(TupleState tupleState, Tuple offendingLhsTuple) {
+        tupleState.reportError(ValidationErrorCode.MISSING_RELATION_ERROR, TuplesUtils.getobjects(offendingLhsTuple),
+            Arrays.asList(lhsFields), rhs, Arrays.asList(rhsFields));
       }
     }
   }

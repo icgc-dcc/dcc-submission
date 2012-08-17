@@ -54,21 +54,27 @@ class DefaultExternalFlowPlanner extends BaseFileSchemaFlowPlanner implements Ex
   @Override
   public void apply(ExternalPlanElement element) {
     checkArgument(element != null);
+    try {
+      InternalFlowPlanner lhsInternalFlow = plan.getInternalFlow(getSchema().getName());
+      InternalFlowPlanner rhsInternalFlow = plan.getInternalFlow(element.rhs());
 
-    if(getSchema().getRole() == FileSchemaRole.SYSTEM
-        && plan.getFileSchema(element.rhs()).getRole() == FileSchemaRole.SYSTEM) {
-      log.info("[{}] skipping element [{}]: relation between system files", getName(), element.describe());
-      return;
+      if(getSchema().getRole() == FileSchemaRole.SYSTEM
+          && plan.getFileSchema(element.rhs()).getRole() == FileSchemaRole.SYSTEM) {
+        log.info("[{}] skipping element [{}]: relation between system files", getName(), element.describe());
+        return;
+      }
+      log.info("[{}] applying element [{}]", getName(), element.describe());
+      Trim trimLhs = lhsInternalFlow.addTrimmedOutput(element.lhsFields());
+      Trim trimRhs = rhsInternalFlow.addTrimmedOutput(element.rhsFields());
+
+      Pipe lhs = getTrimmedHead(trimLhs);
+      Pipe rhs = getTrimmedHead(trimRhs);
+
+      joinedTails.add(element.join(lhs, rhs));
+    } catch(PlanningException e) {
+      throw new PlanningException(getSchema().getName(), ValidationErrorCode.INVALID_RELATION_ERROR, getSchema()
+          .getName(), element.rhs());
     }
-
-    log.info("[{}] applying element [{}]", getName(), element.describe());
-    Trim trimLhs = plan.getInternalFlow(getSchema().getName()).addTrimmedOutput(element.lhsFields());
-    Trim trimRhs = plan.getInternalFlow(element.rhs()).addTrimmedOutput(element.rhsFields());
-
-    Pipe lhs = getTrimmedHead(trimLhs);
-    Pipe rhs = getTrimmedHead(trimRhs);
-
-    joinedTails.add(element.join(lhs, rhs));
   }
 
   @Override
