@@ -157,23 +157,27 @@ public class ValidationQueueManagerService extends AbstractService implements Va
   @Override
   public void handleSuccessfulValidation(String projectKey, Plan plan) {
     checkArgument(projectKey != null);
+    SubmissionReport report = new SubmissionReport();
+    Outcome outcome = plan.collect(report);
 
+    setSubmissionReport(projectKey, report);
+
+    log.info("successful validation - about to dequeue project key {}", projectKey);
+    dequeue(projectKey, outcome == Outcome.PASSED);
+  }
+
+  private void setSubmissionReport(String projectKey, SubmissionReport report) {
     log.info("starting report collecting on project {}", projectKey);
 
     Release release = releaseService.getNextRelease().getRelease();
 
     Submission submission = this.releaseService.getSubmission(release.getName(), projectKey);
 
-    SubmissionReport report = new SubmissionReport();
-    Outcome outcome = plan.collect(report);
     submission.setReport(report);
 
     // persist the report to DB
     this.releaseService.updateSubmissionReport(release.getName(), projectKey, submission.getReport());
     log.info("report collecting finished on project {}", projectKey);
-
-    log.info("successful validation - about to dequeue project key {}", projectKey);
-    dequeue(projectKey, outcome == Outcome.PASSED);
   }
 
   @Override
@@ -186,12 +190,6 @@ public class ValidationQueueManagerService extends AbstractService implements Va
   public void handleFailedValidation(String projectKey, Map<String, TupleState> errors) {
     checkArgument(projectKey != null);
 
-    log.info("starting report collecting on project {}", projectKey);
-
-    Release release = releaseService.getNextRelease().getRelease();
-
-    Submission submission = this.releaseService.getSubmission(release.getName(), projectKey);
-
     SubmissionReport report = new SubmissionReport();
     List<SchemaReport> schemaReports = new ArrayList<SchemaReport>();
     for(String schema : errors.keySet()) {
@@ -202,11 +200,8 @@ public class ValidationQueueManagerService extends AbstractService implements Va
       schemaReports.add(schemaReport);
     }
     report.setSchemaReports(schemaReports);
-    submission.setReport(report);
 
-    // persist the report to DB
-    this.releaseService.updateSubmissionReport(release.getName(), projectKey, submission.getReport());
-    log.info("report collecting finished on project {}", projectKey);
+    setSubmissionReport(projectKey, report);
 
     log.info("failed validation - about to dequeue project key {}", projectKey);
     dequeue(projectKey, false);
