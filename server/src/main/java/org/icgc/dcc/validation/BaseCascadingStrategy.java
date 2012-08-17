@@ -48,15 +48,19 @@ public abstract class BaseCascadingStrategy implements CascadingStrategy {
 
   private final Path output;
 
+  private final Path system;
+
   private final FileSchemaDirectory fileSchemaDirectory;
 
-  private static final Path system = new Path("src/main/resources/SystemFiles");
+  private final FileSchemaDirectory systemDirectory;
 
-  protected BaseCascadingStrategy(FileSystem fileSystem, Path input, Path output) {
+  protected BaseCascadingStrategy(FileSystem fileSystem, Path input, Path output, Path system) {
     this.fileSystem = fileSystem;
     this.input = input;
     this.output = output;
+    this.system = system;
     this.fileSchemaDirectory = new FileSchemaDirectory(fileSystem, input);
+    this.systemDirectory = new FileSchemaDirectory(fileSystem, system);
   }
 
   @Override
@@ -160,5 +164,10 @@ public abstract class BaseCascadingStrategy implements CascadingStrategy {
   @Override
   public FileSchemaDirectory getFileSchemaDirectory() {
     return this.fileSchemaDirectory;
+  }
+
+  @Override
+  public FileSchemaDirectory getSystemDirectory() {
+    return this.systemDirectory;
   }
 }

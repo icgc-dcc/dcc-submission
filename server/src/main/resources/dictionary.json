@@ -1,6 +1,6 @@
 {
-  "created" : 1344439181284,
-  "lastUpdate" : 1344439181284,
+  "created" : 1344895532044,
+  "lastUpdate" : 1344895532044,
   "version" : "0.6c",
   "state" : "OPENED",
   "files" : [ {
@@ -142,7 +142,8 @@
     "relation" : [ {
       "fields" : [ "tumour_sample_id" ],
       "other" : "sample",
-      "otherFields" : [ "analyzed_sample_id" ]
+      "otherFields" : [ "analyzed_sample_id" ],
+      "optionals" : [ ]
     } ]
   }, {
     "name" : "mirna_s",
@@ -218,11 +219,13 @@
     "relation" : [ {
       "fields" : [ "mirna_seq" ],
       "other" : "mirna_p",
-      "otherFields" : [ "mirna_seq" ]
+      "otherFields" : [ "mirna_seq" ],
+      "optionals" : [ ]
     }, {
       "fields" : [ "xref_mirbase_id" ],
       "other" : "mirna_mirbase",
-      "otherFields" : [ "xref_mirbase_id" ]
+      "otherFields" : [ "xref_mirbase_id" ],
+      "optionals" : [ ]
     } ]
   }, {
     "name" : "surgery",
@@ -296,9 +299,10 @@
       } ]
     } ],
     "relation" : [ {
-      "fields" : [ "donor_id" ],
-      "other" : "donor",
-      "otherFields" : [ "donor_id" ]
+      "fields" : [ "donor_id", "specimen_id" ],
+      "other" : "specimen",
+      "otherFields" : [ "donor_id", "specimen_id" ],
+      "optionals" : [ 1 ]
     } ]
   }, {
     "name" : "donor",
@@ -691,7 +695,8 @@
     "relation" : [ {
       "fields" : [ "analysis_id", "control_sample_id" ],
       "other" : "sgv_m",
-      "otherFields" : [ "analysis_id", "control_sample_id" ]
+      "otherFields" : [ "analysis_id", "control_sample_id" ],
+      "optionals" : [ ]
     } ]
   }, {
     "name" : "exposure",
@@ -739,7 +744,8 @@
     "relation" : [ {
       "fields" : [ "donor_id" ],
       "other" : "donor",
-      "otherFields" : [ "donor_id" ]
+      "otherFields" : [ "donor_id" ],
+      "optionals" : [ ]
     } ]
   }, {
     "name" : "mirna_mirbase",
@@ -805,7 +811,8 @@
     "relation" : [ {
       "fields" : [ "transcript_id" ],
       "other" : "hsap_transcript",
-      "otherFields" : [ "stable_id_1066" ]
+      "otherFields" : [ "stable_id_1066" ],
+      "optionals" : [ ]
     } ]
   }, {
     "name" : "ssm_p",
@@ -1032,7 +1039,8 @@
     "relation" : [ {
       "fields" : [ "analysis_id", "analyzed_sample_id" ],
       "other" : "ssm_m",
-      "otherFields" : [ "analysis_id", "analyzed_sample_id" ]
+      "otherFields" : [ "analysis_id", "analyzed_sample_id" ],
+      "optionals" : [ ]
     } ]
   }, {
     "name" : "meth_s",
@@ -1095,11 +1103,13 @@
     "relation" : [ {
       "fields" : [ "analysis_id", "analyzed_sample_id", "methylated_fragment_id" ],
       "other" : "meth_p",
-      "otherFields" : [ "analysis_id", "analyzed_sample_id", "methylated_fragment_id" ]
+      "otherFields" : [ "analysis_id", "analyzed_sample_id", "methylated_fragment_id" ],
+      "optionals" : [ ]
     }, {
       "fields" : [ "gene_affected" ],
       "other" : "hsap_gene",
-      "otherFields" : [ "stable_id_1023" ]
+      "otherFields" : [ "stable_id_1023" ],
+      "optionals" : [ ]
     } ]
   }, {
     "name" : "sample",
@@ -1161,7 +1171,8 @@
     "relation" : [ {
       "fields" : [ "specimen_id" ],
       "other" : "specimen",
-      "otherFields" : [ "specimen_id" ]
+      "otherFields" : [ "specimen_id" ],
+      "optionals" : [ ]
     } ]
   }, {
     "name" : "jcn_p",
@@ -1438,11 +1449,13 @@
     "relation" : [ {
       "fields" : [ "analysis_id", "sample_id" ],
       "other" : "jcn_m",
-      "otherFields" : [ "analysis_id", "sample_id" ]
+      "otherFields" : [ "analysis_id", "sample_id" ],
+      "optionals" : [ ]
     }, {
       "fields" : [ "gene_stable_id" ],
       "other" : "hsap_gene",
-      "otherFields" : [ "stable_id_1023" ]
+      "otherFields" : [ "stable_id_1023" ],
+      "optionals" : [ ]
     } ]
   }, {
     "name" : "stsm_m",
@@ -1583,7 +1596,8 @@
     "relation" : [ {
       "fields" : [ "analyzed_sample_id" ],
       "other" : "sample",
-      "otherFields" : [ "analyzed_sample_id" ]
+      "otherFields" : [ "analyzed_sample_id" ],
+      "optionals" : [ ]
     } ]
   }, {
     "name" : "sgv_m",
@@ -2072,7 +2086,8 @@
     "relation" : [ {
       "fields" : [ "analysis_id", "analyzed_sample_id" ],
       "other" : "stsm_m",
-      "otherFields" : [ "analysis_id", "analyzed_sample_id" ]
+      "otherFields" : [ "analysis_id", "analyzed_sample_id" ],
+      "optionals" : [ ]
     } ]
   }, {
     "name" : "family",
@@ -2157,7 +2172,141 @@
     "relation" : [ {
       "fields" : [ "donor_id" ],
       "other" : "donor",
-      "otherFields" : [ "donor_id" ]
+      "otherFields" : [ "donor_id" ],
+      "optionals" : [ ]
+    } ]
+  }, {
+    "name" : "cnsm_m",
+    "label" : null,
+    "pattern" : "^cnsm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__m__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
+    "role" : "SUBMISSION",
+    "uniqueFields" : [ ],
+    "fields" : [ {
+      "name" : "analysis_id",
+      "label" : "Unique identfier for the analysis performed for a particular group of samples",
+      "valueType" : "TEXT",
+      "summaryType" : null,
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "analyzed_sample_id",
+      "label" : null,
+      "valueType" : "TEXT",
+      "summaryType" : null,
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "matched_sample_id",
+      "label" : "Unique identifier for the control matched to the tumour sample",
+      "valueType" : "TEXT",
+      "summaryType" : null,
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      } ]
+    }, {
+      "name" : "assembly_version",
+      "label" : "Version of reference genome assembly",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      }, {
+        "type" : "codelist",
+        "config" : {
+          "name" : "appendix_B10"
+        }
+      } ]
+    }, {
+      "name" : "platform",
+      "label" : "Platform or technology used in detecting the mutation/variation",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : null
+      }, {
+        "type" : "codelist",
+        "config" : {
+          "name" : "appendix_B5"
+        }
+      } ]
+    }, {
+      "name" : "experimental_protocol",
+      "label" : "Name of experimental protocol and URL to written protocol",
+      "valueType" : "TEXT",
+      "summaryType" : null,
+      "restrictions" : [ ]
+    }, {
+      "name" : "base_calling_algorithm",
+      "label" : "Name of base calling algorithm and URL to written protocol",
+      "valueType" : "TEXT",
+      "summaryType" : null,
+      "restrictions" : [ ]
+    }, {
+      "name" : "alignment_algorithm",
+      "label" : "Name of alignment algorithm and URL to written protocol",
+      "valueType" : "TEXT",
+      "summaryType" : null,
+      "restrictions" : [ ]
+    }, {
+      "name" : "variation_calling_algorithm",
+      "label" : "Name of variation calling algorithm and URL to written protocol",
+      "valueType" : "TEXT",
+      "summaryType" : null,
+      "restrictions" : [ ]
+    }, {
+      "name" : "other_analysis_algorithm",
+      "label" : "Names of other analysis algorithms.  Separate multiple algorithms by commas.",
+      "valueType" : "TEXT",
+      "summaryType" : null,
+      "restrictions" : [ ]
+    }, {
+      "name" : "seq_coverage",
+      "label" : "Sequence coverage if analyzed by sequencing platforms",
+      "valueType" : "DECIMAL",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ ]
+    }, {
+      "name" : "raw_data_repository",
+      "label" : "Public repository where raw data is submitted",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "codelist",
+        "config" : {
+          "name" : "appendix_B12"
+        }
+      } ]
+    }, {
+      "name" : "raw_data_accession",
+      "label" : "Accession and URL for referencing the raw data at the public repository",
+      "valueType" : "TEXT",
+      "summaryType" : null,
+      "restrictions" : [ ]
+    }, {
+      "name" : "note",
+      "label" : "Optional field to leave notes",
+      "valueType" : "TEXT",
+      "summaryType" : null,
+      "restrictions" : [ ]
+    }, {
+      "name" : "donor_id",
+      "label" : "Unique identifier for the donor",
+      "valueType" : "TEXT",
+      "summaryType" : null,
+      "restrictions" : [ ]
+    } ],
+    "relation" : [ {
+      "fields" : [ "analyzed_sample_id" ],
+      "other" : "sample",
+      "otherFields" : [ "analyzed_sample_id" ],
+      "optionals" : [ ]
     } ]
   }, {
     "name" : "stsm_s",
@@ -2268,15 +2417,18 @@
     "relation" : [ {
       "fields" : [ "analysis_id", "analyzed_sample_id", "sv_id", "placement" ],
       "other" : "stsm_p",
-      "otherFields" : [ "analysis_id", "analyzed_sample_id", "sv_id", "placement" ]
+      "otherFields" : [ "analysis_id", "analyzed_sample_id", "sv_id", "placement" ],
+      "optionals" : [ ]
     }, {
       "fields" : [ "transcript_affected_by_bkpt_from" ],
       "other" : "hsap_transcript",
-      "otherFields" : [ "stable_id_1066" ]
+      "otherFields" : [ "stable_id_1066" ],
+      "optionals" : [ ]
     }, {
       "fields" : [ "transcript_affected_by_bkpt_to" ],
       "other" : "hsap_transcript",
-      "otherFields" : [ "stable_id_1066" ]
+      "otherFields" : [ "stable_id_1066" ],
+      "optionals" : [ ]
     } ]
   }, {
     "name" : "jcn_m",
@@ -2423,139 +2575,8 @@
     "relation" : [ {
       "fields" : [ "sample_id" ],
       "other" : "sample",
-      "otherFields" : [ "analyzed_sample_id" ]
-    } ]
-  }, {
-    "name" : "cnsm_m",
-    "label" : null,
-    "pattern" : "^cnsm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__m__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
-    "role" : "SUBMISSION",
-    "uniqueFields" : [ ],
-    "fields" : [ {
-      "name" : "analysis_id",
-      "label" : "Unique identfier for the analysis performed for a particular group of samples",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "analyzed_sample_id",
-      "label" : null,
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "matched_sample_id",
-      "label" : "Unique identifier for the control matched to the tumour sample",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "assembly_version",
-      "label" : "Version of reference genome assembly",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "appendix_B10"
-        }
-      } ]
-    }, {
-      "name" : "platform",
-      "label" : "Platform or technology used in detecting the mutation/variation",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "appendix_B5"
-        }
-      } ]
-    }, {
-      "name" : "experimental_protocol",
-      "label" : "Name of experimental protocol and URL to written protocol",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ ]
-    }, {
-      "name" : "base_calling_algorithm",
-      "label" : "Name of base calling algorithm and URL to written protocol",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ ]
-    }, {
-      "name" : "alignment_algorithm",
-      "label" : "Name of alignment algorithm and URL to written protocol",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ ]
-    }, {
-      "name" : "variation_calling_algorithm",
-      "label" : "Name of variation calling algorithm and URL to written protocol",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ ]
-    }, {
-      "name" : "other_analysis_algorithm",
-      "label" : "Names of other analysis algorithms.  Separate multiple algorithms by commas.",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ ]
-    }, {
-      "name" : "seq_coverage",
-      "label" : "Sequence coverage if analyzed by sequencing platforms",
-      "valueType" : "DECIMAL",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ ]
-    }, {
-      "name" : "raw_data_repository",
-      "label" : "Public repository where raw data is submitted",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "codelist",
-        "config" : {
-          "name" : "appendix_B12"
-        }
-      } ]
-    }, {
-      "name" : "raw_data_accession",
-      "label" : "Accession and URL for referencing the raw data at the public repository",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ ]
-    }, {
-      "name" : "note",
-      "label" : "Optional field to leave notes",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ ]
-    }, {
-      "name" : "donor_id",
-      "label" : "Unique identifier for the donor",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ ]
-    } ],
-    "relation" : [ {
-      "fields" : [ "analyzed_sample_id" ],
-      "other" : "sample",
-      "otherFields" : [ "analyzed_sample_id" ]
+      "otherFields" : [ "analyzed_sample_id" ],
+      "optionals" : [ ]
     } ]
   }, {
     "name" : "meth_p",
@@ -2686,7 +2707,8 @@
     "relation" : [ {
       "fields" : [ "analysis_id", "analyzed_sample_id" ],
       "other" : "meth_m",
-      "otherFields" : [ "analysis_id", "analyzed_sample_id" ]
+      "otherFields" : [ "analysis_id", "analyzed_sample_id" ],
+      "optionals" : [ ]
     } ]
   }, {
     "name" : "ssm_s",
@@ -2784,11 +2806,13 @@
     "relation" : [ {
       "fields" : [ "analysis_id", "analyzed_sample_id", "mutation_id" ],
       "other" : "ssm_p",
-      "otherFields" : [ "analysis_id", "analyzed_sample_id", "mutation_id" ]
+      "otherFields" : [ "analysis_id", "analyzed_sample_id", "mutation_id" ],
+      "optionals" : [ ]
     }, {
       "fields" : [ "transcript_affected" ],
       "other" : "hsap_transcript",
-      "otherFields" : [ "stable_id_1066" ]
+      "otherFields" : [ "stable_id_1066" ],
+      "optionals" : [ ]
     } ]
   }, {
     "name" : "exp_m",
@@ -2929,7 +2953,8 @@
     "relation" : [ {
       "fields" : [ "sample_id" ],
       "other" : "sample",
-      "otherFields" : [ "analyzed_sample_id" ]
+      "otherFields" : [ "analyzed_sample_id" ],
+      "optionals" : [ ]
     } ]
   }, {
     "name" : "therapy",
@@ -3000,7 +3025,8 @@
     "relation" : [ {
       "fields" : [ "donor_id" ],
       "other" : "donor",
-      "otherFields" : [ "donor_id" ]
+      "otherFields" : [ "donor_id" ],
+      "optionals" : [ ]
     } ]
   }, {
     "name" : "cnsm_s",
@@ -3069,11 +3095,13 @@
     "relation" : [ {
       "fields" : [ "analysis_id", "analyzed_sample_id", "mutation_id" ],
       "other" : "cnsm_p",
-      "otherFields" : [ "analysis_id", "analyzed_sample_id", "mutation_id" ]
+      "otherFields" : [ "analysis_id", "analyzed_sample_id", "mutation_id" ],
+      "optionals" : [ ]
     }, {
       "fields" : [ "transcript_affected" ],
       "other" : "hsap_transcript",
-      "otherFields" : [ "stable_id_1066" ]
+      "otherFields" : [ "stable_id_1066" ],
+      "optionals" : [ ]
     } ]
   }, {
     "name" : "mirna_m",
@@ -3214,7 +3242,8 @@
     "relation" : [ {
       "fields" : [ "sample_id" ],
       "other" : "sample",
-      "otherFields" : [ "analyzed_sample_id" ]
+      "otherFields" : [ "analyzed_sample_id" ],
+      "optionals" : [ ]
     } ]
   }, {
     "name" : "cnsm_p",
@@ -3395,7 +3424,8 @@
     "relation" : [ {
       "fields" : [ "analysis_id", "analyzed_sample_id" ],
       "other" : "cnsm_m",
-      "otherFields" : [ "analysis_id", "analyzed_sample_id" ]
+      "otherFields" : [ "analysis_id", "analyzed_sample_id" ],
+      "optionals" : [ ]
     } ]
   }, {
     "name" : "mirna_p",
@@ -3524,7 +3554,8 @@
     "relation" : [ {
       "fields" : [ "analysis_id", "sample_id" ],
       "other" : "mirna_m",
-      "otherFields" : [ "analysis_id", "sample_id" ]
+      "otherFields" : [ "analysis_id", "sample_id" ],
+      "optionals" : [ ]
     } ]
   }, {
     "name" : "meth_m",
@@ -3659,7 +3690,8 @@
     "relation" : [ {
       "fields" : [ "analyzed_sample_id" ],
       "other" : "sample",
-      "otherFields" : [ "analyzed_sample_id" ]
+      "otherFields" : [ "analyzed_sample_id" ],
+      "optionals" : [ ]
     } ]
   }, {
     "name" : "specimen",
@@ -3911,7 +3943,8 @@
     "relation" : [ {
       "fields" : [ "donor_id" ],
       "other" : "donor",
-      "otherFields" : [ "donor_id" ]
+      "otherFields" : [ "donor_id" ],
+      "optionals" : [ ]
     } ]
   }, {
     "name" : "biomarker",
@@ -3971,9 +4004,10 @@
       } ]
     } ],
     "relation" : [ {
-      "fields" : [ "donor_id" ],
-      "other" : "donor",
-      "otherFields" : [ "donor_id" ]
+      "fields" : [ "donor_id", "specimen_id" ],
+      "other" : "specimen",
+      "otherFields" : [ "donor_id", "specimen_id" ],
+      "optionals" : [ 1 ]
     } ]
   }, {
     "name" : "hsap_gene",
@@ -6588,11 +6622,13 @@
     "relation" : [ {
       "fields" : [ "analysis_id", "sample_id" ],
       "other" : "exp_m",
-      "otherFields" : [ "analysis_id", "sample_id" ]
+      "otherFields" : [ "analysis_id", "sample_id" ],
+      "optionals" : [ ]
     }, {
       "fields" : [ "gene_stable_id" ],
       "other" : "hsap_gene",
-      "otherFields" : [ "stable_id_1023" ]
+      "otherFields" : [ "stable_id_1023" ],
+      "optionals" : [ ]
     } ]
   } ]
 }

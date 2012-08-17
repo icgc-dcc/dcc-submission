@@ -84,14 +84,16 @@ public class ValidationService {
 
     Path rootDir = new Path(submissionDirectory.getSubmissionDirPath());
     Path outputDir = new Path(submissionDirectory.getValidationDirPath());
+    Path systemDir = releaseFilesystem.getSystemDirectory();
 
     log.info("rootDir = {} ", rootDir);
     log.info("outputDir = {} ", outputDir);
 
-    CascadingStrategy cascadingStrategy = cascadingStrategyFactory.get(rootDir, outputDir);
+    CascadingStrategy cascadingStrategy = cascadingStrategyFactory.get(rootDir, outputDir, systemDir);
 
     log.info("starting validation on project {}", projectKey);
     Plan plan = planCascade(projectKey, cascadingStrategy, dictionary);
+
     runCascade(plan.getCascade(), projectKey);
     log.info("validation finished for project {}", projectKey);
 
@@ -99,7 +101,9 @@ public class ValidationService {
   }
 
   public Plan planCascade(String projectKey, CascadingStrategy cascadingStrategy, Dictionary dictionary) {
+
     Plan plan = planner.plan(cascadingStrategy, dictionary);
+
     log.info("# internal flows: {}", Iterables.size(plan.getInternalFlows()));
     log.info("# external flows: {}", Iterables.size(plan.getExternalFlows()));
 

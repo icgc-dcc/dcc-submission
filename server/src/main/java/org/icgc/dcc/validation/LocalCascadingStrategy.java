@@ -39,8 +39,8 @@ import cascading.tuple.Fields;
  */
 public class LocalCascadingStrategy extends BaseCascadingStrategy {
 
-  public LocalCascadingStrategy(Path source, Path output) {
-    super(localFileSystem(), source, output);
+  public LocalCascadingStrategy(Path source, Path output, Path system) {
+    super(localFileSystem(), source, output, system);
   }
 
   @Override

@@ -19,15 +19,14 @@ package org.icgc.dcc.validation;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import java.io.IOException;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.FileSchema;
+import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.report.ErrorPlanningVisitor;
 import org.icgc.dcc.validation.report.SummaryPlanningVisitor;
 import org.icgc.dcc.validation.visitor.ExternalRestrictionPlanningVisitor;
@@ -42,6 +41,8 @@ import com.google.inject.Inject;
 public class DefaultPlanner implements Planner {
 
   private final List<? extends PlanningVisitor<?>> planningVisitors;
+
+  private final Map<String, TupleState> errors = new LinkedHashMap<String, TupleState>();
 
   @Inject
   public DefaultPlanner(Set<RestrictionType> restrictionTypes) {
@@ -65,23 +66,30 @@ public class DefaultPlanner implements Planner {
     checkArgument(strategy != null);
     checkArgument(dictionary != null);
 
-    FileSystem localFS;
-    try {
-      localFS = FileSystem.getLocal(new Configuration());
-    } catch(IOException e) {
-      throw new RuntimeException(e);
-    }
-    FileSchemaDirectory systemDirectory = new FileSchemaDirectory(localFS, new Path("src/main/resources/SystemFiles"));
+    FileSchemaDirectory systemDirectory = strategy.getSystemDirectory();
 
     Plan plan = new Plan(strategy);
+
     for(FileSchema fileSchema : dictionary.getFiles()) {
-      if(strategy.getFileSchemaDirectory().hasFile(fileSchema) || systemDirectory.hasFile(fileSchema)) {
-        plan.include(fileSchema, new DefaultInternalFlowPlanner(fileSchema), new DefaultExternalFlowPlanner(plan,
-            fileSchema));
+      try {
+        if(strategy.getFileSchemaDirectory().hasFile(fileSchema) || systemDirectory.hasFile(fileSchema)) {
+          plan.include(fileSchema, new DefaultInternalFlowPlanner(fileSchema), new DefaultExternalFlowPlanner(plan,
+              fileSchema));
+        }
+      } catch(PlanningException e) {
+        this.errors.put(e.getSchemaName(), e.getTupleState());
       }
     }
     for(PlanningVisitor<?> visitor : planningVisitors) {
-      visitor.apply(plan);
+      try {
+        visitor.apply(plan);
+      } catch(PlanningException e) {
+        this.errors.put(e.getSchemaName(), e.getTupleState());
+      }
+    }
+
+    if(errors.size() > 0) {
+      throw new FatalPlanningException(errors);
     }
     return plan;
   }

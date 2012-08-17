@@ -98,7 +98,7 @@ public class DictionaryConverter {
     }
 
     // Read System FileSchema gene, transcript, mirna_base, Override the previous ones
-    File systemFolder = new File("src/main/resources/SystemFiles");
+    File systemFolder = new File("src/test/resources/integrationtest/fs/SystemFiles");
 
     tsvFiles = systemFolder.listFiles(tsvFilter);
 

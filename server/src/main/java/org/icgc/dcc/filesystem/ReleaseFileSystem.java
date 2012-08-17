@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.List;
 
+import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
 import org.icgc.dcc.release.model.Release;
@@ -68,6 +69,16 @@ public class ReleaseFileSystem {
       HadoopUtils.mv(this.dccFileSystem.getFileSystem(), previousSubmissionDirectory.getValidationDirPath(),
           newSubmissionDirectory.getValidationDirPath());
     }
+
+    // also move System Files from previous releases
+    Path origin = previous.getSystemDirectory();
+    Path destination = this.getSystemDirectory();
+    HadoopUtils.mkdirs(this.dccFileSystem.getFileSystem(), destination.toString());
+
+    List<Path> files = HadoopUtils.lsFile(this.dccFileSystem.getFileSystem(), origin.toString());
+    for(Path file : files) {
+      HadoopUtils.createSymlink(this.dccFileSystem.getFileSystem(), file, new Path(destination, file.getName()));
+    }
   }
 
   public boolean isReadOnly() {
@@ -82,6 +93,14 @@ public class ReleaseFileSystem {
     return release;
   }
 
+  public Path getReleaseDirectory() {
+    return new Path(this.dccFileSystem.getRootStringPath(), this.release.getName());
+  }
+
+  public Path getSystemDirectory() {
+    return new Path(this.getReleaseDirectory(), "SystemFiles");
+  }
+
   private boolean isApplication() {
     return username == null;
   }
@@ -89,4 +108,5 @@ public class ReleaseFileSystem {
   private boolean hasPrivileges(Project project) {
     return isApplication() || project.hasUser(username);
   }
+
 }

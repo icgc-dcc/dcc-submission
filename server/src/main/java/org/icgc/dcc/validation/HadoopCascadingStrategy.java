@@ -33,8 +33,8 @@ import cascading.tuple.Fields;
 
 public class HadoopCascadingStrategy extends BaseCascadingStrategy {
 
-  public HadoopCascadingStrategy(FileSystem fileSystem, Path source, Path output) {
-    super(fileSystem, source, output);
+  public HadoopCascadingStrategy(FileSystem fileSystem, Path source, Path output, Path system) {
+    super(fileSystem, source, output, system);
   }
 
   @Override

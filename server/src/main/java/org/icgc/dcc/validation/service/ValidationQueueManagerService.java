@@ -19,23 +19,27 @@ package org.icgc.dcc.validation.service;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.dictionary.DictionaryService;
 import org.icgc.dcc.dictionary.model.Dictionary;
-import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.Submission;
+import org.icgc.dcc.validation.FatalPlanningException;
 import org.icgc.dcc.validation.Plan;
 import org.icgc.dcc.validation.ValidationCallback;
-import org.icgc.dcc.validation.factory.CascadingStrategyFactory;
+import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.report.Outcome;
+import org.icgc.dcc.validation.report.SchemaReport;
 import org.icgc.dcc.validation.report.SubmissionReport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,30 +67,19 @@ public class ValidationQueueManagerService extends AbstractService implements Va
 
   private final ValidationService validationService;
 
-  private final DccFileSystem dccFileSystem;
-
-  private final ProjectService projectService;
-
-  private final CascadingStrategyFactory cascadingStrategyFactory;
-
   private ScheduledFuture<?> schedule;
 
   @Inject
   public ValidationQueueManagerService(final ReleaseService releaseService, final DictionaryService dictionaryService,
-      ValidationService validationService, final DccFileSystem dccFileSystem, final ProjectService projectService,
-      final CascadingStrategyFactory cascadingStrategyFactory) {
+      ValidationService validationService) {
 
     checkArgument(releaseService != null);
     checkArgument(dictionaryService != null);
     checkArgument(validationService != null);
-    checkArgument(cascadingStrategyFactory != null);
 
     this.releaseService = releaseService;
     this.dictionaryService = dictionaryService;
     this.validationService = validationService;
-    this.dccFileSystem = dccFileSystem;
-    this.projectService = projectService;
-    this.cascadingStrategyFactory = cascadingStrategyFactory;
   }
 
   @Override
@@ -137,6 +130,10 @@ public class ValidationQueueManagerService extends AbstractService implements Va
               }
             }
           }
+        } catch(FatalPlanningException e) {
+          if(next.isPresent()) {
+            handleFailedValidation(next.get(), e.getErrors());
+          }
         } catch(Exception e) { // exception thrown within the run method are not logged otherwise (NullPointerException
                                // for instance)
           log.error("an error occured while processing the validation queue", e);
@@ -160,28 +157,52 @@ public class ValidationQueueManagerService extends AbstractService implements Va
   @Override
   public void handleSuccessfulValidation(String projectKey, Plan plan) {
     checkArgument(projectKey != null);
+    SubmissionReport report = new SubmissionReport();
+    Outcome outcome = plan.collect(report);
 
+    setSubmissionReport(projectKey, report);
+
+    log.info("successful validation - about to dequeue project key {}", projectKey);
+    dequeue(projectKey, outcome == Outcome.PASSED);
+  }
+
+  private void setSubmissionReport(String projectKey, SubmissionReport report) {
     log.info("starting report collecting on project {}", projectKey);
 
     Release release = releaseService.getNextRelease().getRelease();
 
     Submission submission = this.releaseService.getSubmission(release.getName(), projectKey);
 
-    SubmissionReport report = new SubmissionReport();
-    Outcome outcome = plan.collect(report);
     submission.setReport(report);
 
     // persist the report to DB
     this.releaseService.updateSubmissionReport(release.getName(), projectKey, submission.getReport());
     log.info("report collecting finished on project {}", projectKey);
-
-    log.info("successful validation - about to dequeue project key {}", projectKey);
-    dequeue(projectKey, outcome == Outcome.PASSED);
   }
 
   @Override
   public void handleFailedValidation(String projectKey) {
     checkArgument(projectKey != null);
+    log.info("failed validation - about to dequeue project key {}", projectKey);
+    dequeue(projectKey, false);
+  }
+
+  public void handleFailedValidation(String projectKey, Map<String, TupleState> errors) {
+    checkArgument(projectKey != null);
+
+    SubmissionReport report = new SubmissionReport();
+    List<SchemaReport> schemaReports = new ArrayList<SchemaReport>();
+    for(String schema : errors.keySet()) {
+      SchemaReport schemaReport = new SchemaReport();
+
+      schemaReport.setErrors(Arrays.asList(errors.get(schema)));
+      schemaReport.setName(schema);
+      schemaReports.add(schemaReport);
+    }
+    report.setSchemaReports(schemaReports);
+
+    setSubmissionReport(projectKey, report);
+
     log.info("failed validation - about to dequeue project key {}", projectKey);
     dequeue(projectKey, false);
   }
