@@ -21,7 +21,7 @@ import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.ValueType;
 import org.icgc.dcc.validation.InternalFlowPlanningVisitor;
 import org.icgc.dcc.validation.InternalPlanElement;
-import org.icgc.dcc.validation.PlannerException;
+import org.icgc.dcc.validation.PlanningException;
 import org.icgc.dcc.validation.ValidationErrorCode;
 import org.icgc.dcc.validation.cascading.ValidationFields;
 
@@ -103,7 +103,7 @@ public class ValueTypePlanningVisitor extends InternalFlowPlanningVisitor {
         }
         switch(type) {
         case DATETIME:
-          throw new PlannerException(DISPLAY_NAME + " " + ValueType.DATETIME + " is not supported at the moment");
+          throw new PlanningException(DISPLAY_NAME + " " + ValueType.DATETIME + " is not supported at the moment");
         case DECIMAL:
           Double doubleValue = Double.valueOf(value);
           if(doubleValue == Double.POSITIVE_INFINITY || doubleValue == Double.NEGATIVE_INFINITY) {
@@ -113,9 +113,9 @@ public class ValueTypePlanningVisitor extends InternalFlowPlanningVisitor {
         case INTEGER:
           return Long.valueOf(value);
         case TEXT:
-          throw new PlannerException(DISPLAY_NAME + " " + ValueType.TEXT + " should not be validated");
+          throw new PlanningException(DISPLAY_NAME + " " + ValueType.TEXT + " should not be validated");
         default:
-          throw new PlannerException("unknown " + type + " " + DISPLAY_NAME);
+          throw new PlanningException("unknown " + type + " " + DISPLAY_NAME);
         }
       }
     }
