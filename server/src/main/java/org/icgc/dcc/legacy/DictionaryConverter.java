@@ -134,12 +134,13 @@ public class DictionaryConverter {
       String leftTable = valueIterator.next();
       String leftKey = valueIterator.next();
       Iterable<String> leftKeys = Splitter.on(',').trimResults().omitEmptyStrings().split(leftKey);
-      Cardinality leftCardinality = Cardinality.valueOf(valueIterator.next());
+      Cardinality leftCardinality = getCardinality(valueIterator.next());
+      // TODO: if cardinality is one then add unique constraint (see comment about it on DCC-226)
 
       String rightTable = valueIterator.next();
       String rightKey = valueIterator.next();
       Iterable<String> rightKeys = Splitter.on(',').trimResults().omitEmptyStrings().split(rightKey);
-      Cardinality rightCardinality = Cardinality.valueOf(valueIterator.next());
+      Cardinality rightCardinality = getCardinality(valueIterator.next());
 
       String optional = valueIterator.next();
       Iterable<Integer> optionals =
@@ -157,6 +158,17 @@ public class DictionaryConverter {
             optionals));
       }
     }
+  }
+
+  private Cardinality getCardinality(String cardinalityString) {
+    if("1".equals(cardinalityString)) {
+      return Cardinality.ONE;
+    } else if("1..n".equals(cardinalityString)) {
+      return Cardinality.ONE_OR_MORE;
+    } else if("0..n".equals(cardinalityString)) {
+      return Cardinality.ZERO_OR_MORE;
+    }
+    return null;
   }
 
   private void readFilePattern(String tsvFile) throws IOException {
