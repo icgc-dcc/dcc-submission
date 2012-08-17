@@ -51,7 +51,9 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import com.google.common.base.Charsets;
+import com.google.common.base.Function;
 import com.google.common.base.Splitter;
+import com.google.common.collect.Iterables;
 import com.google.common.io.Files;
 import com.mongodb.BasicDBObject;
 
@@ -126,7 +128,7 @@ public class DictionaryConverter {
     while(lineIterator.hasNext()) {
       String line = lineIterator.next();
 
-      Iterable<String> values = Splitter.on('\t').trimResults().omitEmptyStrings().split(line);
+      Iterable<String> values = Splitter.on('\t').trimResults().split(line);
       Iterator<String> valueIterator = values.iterator();
 
       String leftTable = valueIterator.next();
@@ -139,9 +141,20 @@ public class DictionaryConverter {
       Iterable<String> rightKeys = Splitter.on(',').trimResults().omitEmptyStrings().split(rightKey);
       Cardinality rightCardinality = Cardinality.valueOf(valueIterator.next());
 
+      String optional = valueIterator.next();
+      Iterable<Integer> optionals =
+          Iterables.transform(Splitter.on(',').trimResults().omitEmptyStrings().split(optional),
+              new Function<String, Integer>() {
+                @Override
+                public Integer apply(String input) {
+                  return Integer.valueOf(input);
+                }
+              });
+
       if(this.dictionary.hasFileSchema(leftTable)) {
         FileSchema leftFileSchema = this.dictionary.fileSchema(leftTable).get();
-        leftFileSchema.addRelation(new Relation(leftKeys, leftCardinality, rightTable, rightKeys, rightCardinality));
+        leftFileSchema.addRelation(new Relation(leftKeys, leftCardinality, rightTable, rightKeys, rightCardinality,
+            optionals));
       }
     }
   }

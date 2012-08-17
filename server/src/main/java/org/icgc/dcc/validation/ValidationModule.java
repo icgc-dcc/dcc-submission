@@ -18,6 +18,7 @@
 package org.icgc.dcc.validation;
 
 import org.icgc.dcc.core.AbstractDccModule;
+import org.icgc.dcc.validation.factory.CascadingStrategyFactory;
 import org.icgc.dcc.validation.restriction.CodeListRestriction;
 import org.icgc.dcc.validation.restriction.DiscreteValuesRestriction;
 import org.icgc.dcc.validation.restriction.RangeFieldRestriction;
