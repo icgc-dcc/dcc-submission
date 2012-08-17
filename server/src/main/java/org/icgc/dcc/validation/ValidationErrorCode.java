@@ -6,7 +6,7 @@ import org.icgc.dcc.validation.cascading.TupleState.TupleError;
 
 public enum ValidationErrorCode {
   UNKNOWN_COLUMNS_WARNING("value for unknown column: %s"), //
-  STRUCTURALLY_INVALID_ROW_ERROR("structurally invalid row: %s columns against %s declared in the header (row will be ignored by the rest of validation)"), //
+  STRUCTURALLY_INVALID_ROW_ERROR("structurally invalid row: %s columns against %s declared in the header (row will be ignored by the rest of validation)", true), //
   MISSING_RELATION_ERROR("invalid value(s) (%s) for field(s) %s. Expected to match value(s) in: %s.%s"), //
   UNIQUE_VALUE_ERROR("invalid set of values (%s) for fields %s. Expected to be unique"), //
   VALUE_TYPE_ERROR("invalid value (%s) for field %s. Expected type is: %s"), //
@@ -21,12 +21,23 @@ public enum ValidationErrorCode {
 
   private final String message;
 
+  private final boolean structural;
+
   ValidationErrorCode(String message) {
+    this(message, false);
+  }
+
+  ValidationErrorCode(String message, boolean structural) {
     this.message = message;
+    this.structural = structural;
   }
 
   public String format(Object[] parameters) {
     return String.format(message, parameters);
+  }
+
+  public boolean isStructural() {
+    return structural;
   }
 
   public static String format(TupleError error) {

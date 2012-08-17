@@ -43,9 +43,7 @@ public class TupleState implements Serializable {
   public void reportError(ValidationErrorCode code, @Nullable Object... parameters) {
     checkArgument(code != null);
     ensureErrors().add(new TupleError(code, parameters));
-    if(code == ValidationErrorCode.STRUCTURALLY_INVALID_ROW_ERROR) {
-      structurallyValid = false;
-    }
+    structurallyValid = code.isStructural() == false;
   }
 
   public Iterable<TupleError> getErrors() {
