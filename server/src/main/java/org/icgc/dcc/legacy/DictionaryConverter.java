@@ -35,6 +35,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.icgc.dcc.dictionary.model.Cardinality;
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.FileSchema;
@@ -131,13 +132,16 @@ public class DictionaryConverter {
       String leftTable = valueIterator.next();
       String leftKey = valueIterator.next();
       Iterable<String> leftKeys = Splitter.on(',').trimResults().omitEmptyStrings().split(leftKey);
+      Cardinality leftCardinality = Cardinality.valueOf(valueIterator.next());
+
       String rightTable = valueIterator.next();
       String rightKey = valueIterator.next();
       Iterable<String> rightKeys = Splitter.on(',').trimResults().omitEmptyStrings().split(rightKey);
+      Cardinality rightCardinality = Cardinality.valueOf(valueIterator.next());
 
-      if(this.dictionary.hasFileSchema(rightTable)) {
-        FileSchema leftFileSchema = this.dictionary.fileSchema(rightTable).get();
-        leftFileSchema.addRelation(new Relation(rightKeys, leftTable, leftKeys));
+      if(this.dictionary.hasFileSchema(leftTable)) {
+        FileSchema leftFileSchema = this.dictionary.fileSchema(leftTable).get();
+        leftFileSchema.addRelation(new Relation(leftKeys, leftCardinality, rightTable, rightKeys, rightCardinality));
       }
     }
   }

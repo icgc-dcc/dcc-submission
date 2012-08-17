@@ -31,19 +31,29 @@ public class Relation implements DictionaryElement {
 
   private final List<String> fields;
 
-  private String other;
+  private final Cardinality cardinality;
+
+  private final String other;
 
   private final List<String> otherFields;
+
+  private final Cardinality otherCardinality;
 
   public Relation() {
     fields = new ArrayList<String>();
     otherFields = new ArrayList<String>();
+    cardinality = null;
+    other = null;
+    otherCardinality = null;
   }
 
-  public Relation(Iterable<String> leftFields, String right, Iterable<String> rightFields) {
-    fields = Lists.newArrayList(leftFields);
+  public Relation(Iterable<String> leftFields, Cardinality lhsCardinality, String right, Iterable<String> rightFields,
+      Cardinality rhsCardinality) {
+    this.fields = Lists.newArrayList(leftFields);
+    this.cardinality = lhsCardinality;
     this.other = right;
-    otherFields = Lists.newArrayList(rightFields);
+    this.otherFields = Lists.newArrayList(rightFields);
+    this.otherCardinality = rhsCardinality;
   }
 
   @Override
@@ -59,12 +69,15 @@ public class Relation implements DictionaryElement {
     return other;
   }
 
-  public void setOther(String other) {
-    this.other = other;
-  }
-
   public List<String> getOtherFields() {
     return otherFields;
   }
 
+  public Cardinality getLhsCardinality() {
+    return cardinality;
+  }
+
+  public Cardinality getRhsCardinality() {
+    return otherCardinality;
+  }
 }
