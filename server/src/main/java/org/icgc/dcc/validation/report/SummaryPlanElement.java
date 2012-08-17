@@ -72,10 +72,10 @@ public abstract class SummaryPlanElement extends BaseStatsReportingPlanElement {
     // instances see all values.
     // Alternatively, we could set a random number to each row and group on this, each group would then produce
     // intermediate result (sum, count for average) and another pipe could then process this smaller set as done here.
-    Fields contantField = new Fields("__constant__");
-    pipe = new Each(pipe, new Insert(contantField, "1"), Fields.ALL);
-    pipe = new AggregateBy(pipe, contantField, Iterables.toArray(summaries, AggregateBy.class));
-    pipe = new Discard(pipe, contantField);
+    Fields constantField = new Fields("__constant__");
+    pipe = new Each(pipe, new Insert(constantField, "1"), Fields.ALL);
+    pipe = new AggregateBy(pipe, constantField, Iterables.toArray(summaries, AggregateBy.class));
+    pipe = new Discard(pipe, constantField);
     pipe = new Each(pipe, new SummaryFunction(fields, summaryFields()), REPORT_FIELDS);
     return pipe;
   }
