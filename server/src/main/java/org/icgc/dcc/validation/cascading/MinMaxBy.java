@@ -142,7 +142,7 @@ public class MinMaxBy extends AggregateBy {
     }
   }
 
-  public MinMaxBy(Fields valueField, Fields minMaxField) {
-    super(valueField, new MinMaxPartial(minMaxField), new MinMaxFinal(minMaxField));
+  public MinMaxBy(Fields valueField, Fields minMaxFields) {
+    super(valueField, new MinMaxPartial(minMaxFields), new MinMaxFinal(minMaxFields));
   }
 }

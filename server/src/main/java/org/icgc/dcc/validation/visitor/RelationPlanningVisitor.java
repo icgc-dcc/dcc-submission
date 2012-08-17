@@ -283,7 +283,7 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
       }
 
       private void reportRelationError(TupleState tupleState, Tuple offendingLhsTuple) {
-        tupleState.reportError(ValidationErrorCode.MISSING_RELATION_ERROR, TuplesUtils.getobjects(offendingLhsTuple),
+        tupleState.reportError(ValidationErrorCode.MISSING_RELATION_ERROR, TuplesUtils.getObjects(offendingLhsTuple),
             Arrays.asList(lhsFields), rhs, Arrays.asList(rhsFields));
       }
     }
