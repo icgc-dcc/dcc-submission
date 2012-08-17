@@ -46,7 +46,6 @@ public class PlanningException extends RuntimeException {
     this.schemaName = schemaName;
     this.tupleState = new TupleState();
     tupleState.reportError(errorCode, parameters);
-    tupleState.setOffset(-1);
   }
 
   public String getSchemaName() {
