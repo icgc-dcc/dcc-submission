@@ -44,17 +44,6 @@ public class FileSchemaDirectory {
     this.fs = fs;
   }
 
-  public String getFile(FileSchema fileSchema) {
-    List<Path> paths = matches(fileSchema);
-    if(paths == null || paths.size() == 0) {
-      throw new IllegalArgumentException();
-    }
-    if(paths.size() > 1) {
-      throw new IllegalStateException();
-    }
-    return paths.get(0).toString();
-  }
-
   public boolean hasFile(final FileSchema fileSchema) {
     List<Path> paths = matches(fileSchema);
     if(paths != null && paths.size() > 1) {
