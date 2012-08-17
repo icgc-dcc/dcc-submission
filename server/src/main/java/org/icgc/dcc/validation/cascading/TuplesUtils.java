@@ -35,11 +35,11 @@ public class TuplesUtils {
     return tuple.equals(Tuple.size(tuple.size())) == false;
   }
 
-  public static List<Object> getobjects(Tuple tuple) {
-    List<Object> l = new ArrayList<Object>();
+  public static List<Object> getObjects(Tuple tuple) {
+    List<Object> objects = new ArrayList<Object>();
     for(int i = 0; i < tuple.size(); i++) {
-      l.add(tuple.getObject(i));
+      objects.add(tuple.getObject(i));
     }
-    return l;
+    return objects;
   }
 }

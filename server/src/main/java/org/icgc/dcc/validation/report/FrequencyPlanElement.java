@@ -24,12 +24,15 @@ import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.dictionary.model.SummaryType;
 import org.icgc.dcc.validation.FlowType;
+import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.cascading.ValidationFields;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
 import cascading.operation.Buffer;
 import cascading.operation.BufferCall;
+import cascading.operation.Function;
+import cascading.operation.FunctionCall;
 import cascading.operation.Insert;
 import cascading.pipe.Each;
 import cascading.pipe.Every;
@@ -45,7 +48,9 @@ import cascading.tuple.TupleEntry;
 
 public final class FrequencyPlanElement extends BaseStatsReportingPlanElement {
 
-  private final String FREQ = "freq";
+  private static final String FREQ = "freq";
+
+  private static final String MISSING_FLAG = "missing?";
 
   public FrequencyPlanElement(FileSchema fileSchema, List<Field> fields, FlowType flowType) {
     super(fileSchema, fields, SummaryType.FREQUENCY, flowType);
@@ -53,6 +58,7 @@ public final class FrequencyPlanElement extends BaseStatsReportingPlanElement {
 
   @Override
   public Pipe report(Pipe pipe) {
+
     pipe = keepStructurallyValidTuples(pipe);
 
     Pipe[] freqs = new Pipe[fields.size()];
@@ -62,24 +68,43 @@ public final class FrequencyPlanElement extends BaseStatsReportingPlanElement {
     }
     pipe = new Merge(freqs);
     pipe = new GroupBy(pipe, new Fields(FIELD));
-    pipe = new Every(pipe, new Fields(VALUE, FREQ), new FrequencySummaryBuffer(), REPORT_FIELDS);
+    pipe = new Every(pipe, new Fields(VALUE, FREQ, MISSING_FLAG), new FrequencySummaryBuffer(), REPORT_FIELDS);
     return pipe;
   }
 
   protected Pipe frequency(String field, Pipe pipe) {
     pipe = new Pipe(buildSubPipeName(FREQ + "_" + field), pipe);
-    pipe = new Retain(pipe, new Fields(field));
+    pipe = new Retain(pipe, new Fields(field).append(ValidationFields.STATE_FIELD));
+    pipe = new Each(pipe, ValidationFields.STATE_FIELD, new MissingFlaggerFunction(field), Fields.SWAP);
     pipe = new Rename(pipe, new Fields(field), new Fields(VALUE));
-    pipe = new CountBy(pipe, new Fields(VALUE), new Fields(FREQ));
-    pipe = new Each(pipe, new Insert(new Fields(FIELD), field), new Fields(FIELD, VALUE, FREQ));
+    pipe = new CountBy(pipe, new Fields(VALUE, MISSING_FLAG), new Fields(FREQ));
+    pipe = new Each(pipe, new Insert(new Fields(FIELD), field), new Fields(FIELD, VALUE, MISSING_FLAG, FREQ));
     return pipe;
+  }
+
+  @SuppressWarnings("rawtypes")
+  static class MissingFlaggerFunction extends BaseOperation implements Function {
+
+    private final String fieldName;
+
+    public MissingFlaggerFunction(String fieldName) {
+      super(1, new Fields(MISSING_FLAG));
+      this.fieldName = fieldName;
+    }
+
+    @Override
+    public void operate(FlowProcess flowProcess, FunctionCall functionCall) {
+      TupleEntry entry = functionCall.getArguments();
+      TupleState state = ValidationFields.state(entry);
+      functionCall.getOutputCollector().add(new Tuple(state.isFieldMissing(fieldName)));
+    }
   }
 
   @SuppressWarnings("rawtypes")
   public static class FrequencySummaryBuffer extends BaseOperation implements Buffer {
 
     public FrequencySummaryBuffer() {
-      super(2, REPORT_FIELDS);
+      super(3, REPORT_FIELDS);
     }
 
     @Override
@@ -93,7 +118,7 @@ public final class FrequencyPlanElement extends BaseStatsReportingPlanElement {
         String value = tuple.getString(0);
         Long frequency = tuple.getLong(1);
         if(value == null) {
-          if(ValidationFields.state(tuple).isFieldMissing((String) tuple.getFields().get(0))) {
+          if(tuple.getBoolean(MISSING_FLAG)) {
             fs.missing += frequency;
           } else {
             fs.nulls += frequency;
@@ -108,5 +133,4 @@ public final class FrequencyPlanElement extends BaseStatsReportingPlanElement {
       bufferCall.getOutputCollector().add(new Tuple(fs));
     }
   }
-
 }
