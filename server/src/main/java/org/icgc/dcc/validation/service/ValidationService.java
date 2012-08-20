@@ -73,7 +73,6 @@ public class ValidationService {
     this.planner = planner;
     this.dictionaries = dictionaries;
     this.cascadingStrategyFactory = cascadingStrategyFactory;
-
   }
 
   public Plan validate(Release release, String projectKey) {
