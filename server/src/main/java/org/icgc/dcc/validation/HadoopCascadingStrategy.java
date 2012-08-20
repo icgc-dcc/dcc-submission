@@ -17,10 +17,13 @@
  */
 package org.icgc.dcc.validation;
 
+import java.util.Map;
+
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.validation.cascading.HadoopJsonScheme;
+import org.icgc.dcc.validation.cascading.TupleStateSerialization;
 import org.icgc.dcc.validation.cascading.ValidationFields;
 
 import cascading.flow.FlowConnector;
@@ -30,6 +33,9 @@ import cascading.scheme.hadoop.TextLine;
 import cascading.tap.Tap;
 import cascading.tap.hadoop.Hfs;
 import cascading.tuple.Fields;
+import cascading.tuple.hadoop.TupleSerializationProps;
+
+import com.google.common.collect.Maps;
 
 public class HadoopCascadingStrategy extends BaseCascadingStrategy {
 
@@ -39,7 +45,9 @@ public class HadoopCascadingStrategy extends BaseCascadingStrategy {
 
   @Override
   public FlowConnector getFlowConnector() {
-    return new HadoopFlowConnector();
+    Map<Object, Object> properties = Maps.newHashMap();
+    TupleSerializationProps.addSerialization(properties, TupleStateSerialization.class.getName());
+    return new HadoopFlowConnector(properties);
   }
 
   @Override
