@@ -23,7 +23,7 @@ import com.google.common.collect.Lists;
 
 public class TupleState implements Serializable {
 
-  private final int offset;
+  private final long offset;
 
   private List<TupleError> errors;
 
@@ -67,7 +67,7 @@ public class TupleState implements Serializable {
     return structurallyValid;
   }
 
-  public int getOffset() {
+  public long getOffset() {
     return offset;
   }
 
