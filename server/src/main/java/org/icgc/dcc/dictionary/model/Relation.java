@@ -87,6 +87,10 @@ public class Relation implements DictionaryElement {
     return fields;
   }
 
+  public Cardinality getCardinality() {
+    return cardinality;
+  }
+
   public String getOther() {
     return other;
   }
@@ -95,11 +99,7 @@ public class Relation implements DictionaryElement {
     return otherFields;
   }
 
-  public Cardinality getLhsCardinality() {
-    return cardinality;
-  }
-
-  public Cardinality getRhsCardinality() {
+  public Cardinality getOtherCardinality() {
     return otherCardinality;
   }
 
