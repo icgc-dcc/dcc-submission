@@ -186,6 +186,15 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     release.removeFromQueue(projectKeys);
 
     this.dbUpdateSubmissions(release.getName(), release.getQueue(), projectKeys, newState);
+
+    // remove .validation folder form the Submission folder
+    List<Project> projects = Lists.newArrayList();
+    for(String projectKey : projectKeys) {
+      Project project = this.getNextRelease().getProjectFromKey(projectKey);
+      projects.add(project);
+    }
+    this.fs.getReleaseFilesystem(release).removeValidation(projects);
+
   }
 
   public void deleteQueuedRequest() {
