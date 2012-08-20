@@ -4,6 +4,8 @@ specimen	specimen_id	sample	specimen_id		left	left
 donor	donor_id	exposure	donor_id		left	left
 donor	donor_id	family	donor_id		left	left
 donor	donor_id	therapy	donor_id		left	left
+donor	donor_id	biomarker	donor_id		left	left
+donor	donor_id	surgery	donor_id		left	left
 specimen	donor_id,specimen_id	biomarker	donor_id,specimen_id	1	left	left
 specimen	donor_id,specimen_id	surgery	donor_id,specimen_id	1	left	left
 ssm_m	analysis_id,analyzed_sample_id	ssm_p	analysis_id,analyzed_sample_id		none	inner

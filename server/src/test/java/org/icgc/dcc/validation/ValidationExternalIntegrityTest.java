@@ -46,6 +46,7 @@ import org.icgc.dcc.filesystem.GuiceJUnitRunner.GuiceModules;
 import org.icgc.dcc.validation.factory.LocalCascadingStrategyFactory;
 import org.icgc.dcc.validation.service.ValidationService;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -129,6 +130,7 @@ public class ValidationExternalIntegrityTest {
     Assert.assertEquals("Incorrect specimen ID trim list", specimenTrimExpected.trim(), specimenTrim.trim());
   }
 
+  @Ignore
   @Test
   public void test_validate_invalidCompositeKeys() throws IOException {
     FileSchema donor = getFileSchemaByName(dictionary, "donor");
