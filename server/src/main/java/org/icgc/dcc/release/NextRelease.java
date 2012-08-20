@@ -74,6 +74,17 @@ public class NextRelease extends BaseRelease {
     submission.setState(SubmissionState.SIGNED_OFF);
   }
 
+  public boolean canRelease() {
+    Release nextRelease = this.getRelease();
+    for(Submission submission : nextRelease.getSubmissions()) {
+      if(submission.getState() == SubmissionState.SIGNED_OFF) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   public NextRelease release(String nextReleaseName) {
     checkArgument(nextReleaseName != null);
 
@@ -168,19 +179,8 @@ public class NextRelease extends BaseRelease {
     }
   }
 
-  public Project getProjectFromKey(final String projectKey) {
+  private Project getProjectFromKey(final String projectKey) {
     return new MorphiaQuery<Project>(morphia, datastore, QProject.project).where(QProject.project.key.eq(projectKey))
         .singleResult();
-  }
-
-  public boolean canRelease() {
-    Release nextRelease = this.getRelease();
-    for(Submission submission : nextRelease.getSubmissions()) {
-      if(submission.getState() == SubmissionState.SIGNED_OFF) {
-        return true;
-      }
-    }
-
-    return false;
   }
 }
