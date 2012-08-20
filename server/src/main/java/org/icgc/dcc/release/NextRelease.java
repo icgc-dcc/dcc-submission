@@ -168,7 +168,7 @@ public class NextRelease extends BaseRelease {
     }
   }
 
-  private Project getProjectFromKey(final String projectKey) {
+  public Project getProjectFromKey(final String projectKey) {
     return new MorphiaQuery<Project>(morphia, datastore, QProject.project).where(QProject.project.key.eq(projectKey))
         .singleResult();
   }
