@@ -81,14 +81,6 @@ public class ReleaseFileSystem {
     }
   }
 
-  public void removeValidation(List<Project> projects) {
-    for(Project project : projects) {
-      SubmissionDirectory submissionDirectory = getSubmissionDirectory(project);
-      // remove .validation folder
-      HadoopUtils.rmr(this.dccFileSystem.getFileSystem(), submissionDirectory.getValidationDirPath());
-    }
-  }
-
   public boolean isReadOnly() {
     return ReleaseState.COMPLETED == release.getState();
   }

@@ -20,6 +20,8 @@ import org.icgc.dcc.core.morphia.BaseMorphiaService;
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.QDictionary;
 import org.icgc.dcc.filesystem.DccFileSystem;
+import org.icgc.dcc.filesystem.ReleaseFileSystem;
+import org.icgc.dcc.filesystem.SubmissionDirectory;
 import org.icgc.dcc.filesystem.SubmissionFile;
 import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
 import org.icgc.dcc.release.model.DetailedSubmission;
@@ -188,12 +190,12 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     this.dbUpdateSubmissions(release.getName(), release.getQueue(), projectKeys, newState);
 
     // remove .validation folder form the Submission folder
-    List<Project> projects = Lists.newArrayList();
-    for(String projectKey : projectKeys) {
-      Project project = this.getNextRelease().getProjectFromKey(projectKey);
-      projects.add(project);
+    ReleaseFileSystem releaseFS = this.fs.getReleaseFilesystem(release);
+    List<Project> projects = this.getProjects(projectKeys);
+    for(Project project : projects) {
+      SubmissionDirectory submissionDirectory = releaseFS.getSubmissionDirectory(project);
+      submissionDirectory.removeSubmissionDir();
     }
-    this.fs.getReleaseFilesystem(release).removeValidation(projects);
 
   }
 
@@ -382,6 +384,10 @@ public class ReleaseService extends BaseMorphiaService<Release> {
         projectKeys.add(submission.getProjectKey());
       }
     }
+    return this.getProjects(projectKeys);
+  }
+
+  private List<Project> getProjects(List<String> projectKeys) {
     MorphiaQuery<Project> query = new MorphiaQuery<Project>(morphia(), datastore(), QProject.project);
     return query.where(QProject.project.key.in(projectKeys)).list();
   }
