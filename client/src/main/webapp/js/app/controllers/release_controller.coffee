@@ -39,6 +39,7 @@ define (require) ->
       console.debug 'ReleaseController#list', params
       @collection = new Releases()
       @view = new ReleasesView {@collection}
+      @collection.fetch()
       
     show: (params) ->
       console.debug 'ReleaseController#show', params

@@ -19,6 +19,7 @@
 define (require) ->
   Chaplin = require 'chaplin'
   View = require 'views/base/view'
+  Release = require 'models/release'
   NextRelease = require 'models/next_release'
   template = require 'text!views/templates/release/complete_release.handlebars'
 
@@ -30,20 +31,16 @@ define (require) ->
     
     container: '#content-container'
     containerMethod: 'append'
-    autoRender: false
+    autoRender: true
     tagName: 'div'
     className: "modal fade"
     id: 'complete-release-popup'
     
     initialize: ->
-      console.debug "CompleteReleaseView#initialize", @, @el
+      console.debug "CompleteReleaseView#initialize", @options, @, @el
       super
       
-      @model = new NextRelease()
-      @model.fetch()
-      @modelBind 'change', @render
-      
-      @$el.modal "show": true
+      @model = new Release(@options)
       
       @delegate 'click', '#complete-release-button', @completeRelease
     

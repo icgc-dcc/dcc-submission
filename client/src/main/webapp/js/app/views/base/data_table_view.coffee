@@ -27,31 +27,17 @@ define (require) ->
     initialize: ->
       # console.debug "DataTableView#initialize", @collection, @el
       super
-      @fetch()
+      @renderDataTable()
       
-    fetch: ->
-      #console.debug "DataTableView#fetch"
-      @collection.fetch {
-        success: (collection,response)=>
-          @renderAsDataTable collection
-      }
-
-    update: ->
-      #console.debug "DataTableView#update", @collection
-      @renderAsDataTable @collection
-      
-    renderAsDataTable: (collection) ->
-      # console.debug "DataTableView#renderAsDataTable"
-      if @.$('table.dataTable').length
-        @updateDataTable collection
-      else
-        @createDataTable collection
+    renderDataTable: ->
+      @createDataTable()
+      @updateDataTable()
     
-    updateDataTable: (collection) ->
+    updateDataTable: ->
       #console.debug "DataTableView#updateDataTable"
-      dt = @.$('table').dataTable()
+      dt = @$el.dataTable()
       dt.fnClearTable()
-      dt.fnAddData collection.toJSON()
+      dt.fnAddData @collection.toJSON()
       
     createDataTable: ->
       throw new Error(

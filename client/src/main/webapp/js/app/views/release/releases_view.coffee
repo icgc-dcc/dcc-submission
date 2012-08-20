@@ -30,7 +30,7 @@ define (require) ->
     
     container: '#content-container'
     containerMethod: 'html'
-    autoRender: true
+    autoRender: false
     tagName: 'div'
     id: 'releases-view'
     
@@ -38,13 +38,16 @@ define (require) ->
       console.debug "ReleasesView#initialize", @collection
       super
       
+      @modelBind 'reset', @render
+      
       @delegate 'click', '#complete-release-popup-button', @completeReleasePopup
 
     completeReleasePopup: (e) ->
       console.debug "ReleaseView#completeRelease", e
       @subview('CompleteReleases'
-        new CompleteReleaseView()
-      ) unless @subview 'CompleteReleases'
+        new CompleteReleaseView 
+          'name': $(e.currentTarget).data('release-name')
+      )
       
     render: ->
       super
