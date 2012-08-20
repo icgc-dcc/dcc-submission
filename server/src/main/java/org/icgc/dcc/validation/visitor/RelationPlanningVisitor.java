@@ -37,6 +37,8 @@ import org.icgc.dcc.validation.ValidationErrorCode;
 import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.cascading.TuplesUtils;
 import org.icgc.dcc.validation.cascading.ValidationFields;
+import org.icgc.dcc.validation.visitor.RelationPlanningVisitor.RelationPlanElement.NoNullBufferBase.ConditionalNoNullBuffer;
+import org.icgc.dcc.validation.visitor.RelationPlanningVisitor.RelationPlanElement.NoNullBufferBase.NoNullBuffer;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -118,19 +120,12 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
       Pipe pipe =
           new CoGroup(lhsPipe, new Fields(requiredLhsFields), rhsPipe, new Fields(requiredRhsRenamedFields),
               new LeftJoin());
-
-      Every every;
-      if(optionals.isEmpty()) {
-        NoNullBuffer noNullBuffer = new NoNullBuffer(lhs, rhs, lhsFields, rhsFields, requiredRhsRenamedFields);
-        every = new Every(pipe, Fields.ALL, noNullBuffer, Fields.RESULTS);
-      } else {
-        NoNullBuffer2 noNullBuffer2 =
-            new NoNullBuffer2(lhs, rhs, lhsFields, rhsFields, requiredLhsFields, requiredRhsRenamedFields,
-                optionalLhsFields, optionalRhsRenamedFields);
-        every = new Every(pipe, Fields.ALL, noNullBuffer2, Fields.RESULTS);
-      }
-
-      return every;
+      NoNullBufferBase noNullBufferBase =
+          optionals.isEmpty() ? //
+          new NoNullBuffer(lhs, rhs, lhsFields, rhsFields, renamedRhsFields) : //
+          new ConditionalNoNullBuffer(lhs, rhs, lhsFields, rhsFields, requiredLhsFields, requiredRhsRenamedFields,
+              optionalLhsFields, optionalRhsRenamedFields);
+      return new Every(pipe, Fields.ALL, noNullBufferBase, Fields.RESULTS);
     }
 
     private String[] extractOptionalFields(String[] fields) {
@@ -162,181 +157,162 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
     }
 
     @SuppressWarnings("rawtypes")
-    static class NoNullBuffer extends BaseOperation implements Buffer {
+    static abstract class NoNullBufferBase extends BaseOperation implements Buffer {
 
-      @SuppressWarnings("unused")
-      private final String lhs; // extremely useful for debugging...
+      protected final String lhs; // extremely useful for debugging...
 
-      private final String rhs;
+      protected final String rhs;
 
-      private final String[] lhsFields;
+      protected final String[] lhsFields;
 
-      private final String[] rhsFields;
+      protected final String[] rhsFields;
 
-      private final String[] requiredRhsRenamedFields;
-
-      NoNullBuffer(String lhs, String rhs, String[] lhsFields, String[] rhsFields, String[] requiredRhsRenamedFields) {
+      NoNullBufferBase(String lhs, String rhs, String[] lhsFields, String[] rhsFields) {
         super(lhsFields.length + rhsFields.length, new Fields(ValidationFields.STATE_FIELD_NAME));
         this.lhs = lhs;
         this.rhs = rhs;
         this.lhsFields = lhsFields;
         this.rhsFields = rhsFields;
-        this.requiredRhsRenamedFields = requiredRhsRenamedFields;
-      }
-
-      @Override
-      @SuppressWarnings("unchecked")
-      public void operate(FlowProcess flowProcess, BufferCall bufferCall) {
-        Iterator<TupleEntry> iter = bufferCall.getArgumentsIterator();
-        while(iter.hasNext()) {
-          TupleEntry entry = iter.next();
-
-          if(TuplesUtils.hasValues(entry, requiredRhsRenamedFields) == false) {
-            TupleState state = new TupleState(getLhsOffset(entry));
-            reportRelationError(state, entry.selectTuple(new Fields(lhsFields)));
-            bufferCall.getOutputCollector().add(new Tuple(state));
-          }
-        }
       }
 
       /*
        * The offset was passed from internal flow in order to access the offset
        */
-      private int getLhsOffset(TupleEntry entry) {
+      protected int getLhsOffset(TupleEntry entry) {
         return entry.getInteger(ValidationFields.OFFSET_FIELD_NAME);
       }
 
-      private void reportRelationError(TupleState tupleState, Tuple offendingLhsTuple) {
+      protected void reportRelationError(TupleState tupleState, Tuple offendingLhsTuple) {
         tupleState.reportError(ValidationErrorCode.MISSING_RELATION_ERROR, TuplesUtils.getObjects(offendingLhsTuple),
-            Arrays.asList(lhsFields), rhs, Arrays.asList(rhsFields), false);
+            Arrays.asList(lhsFields), rhs, Arrays.asList(rhsFields));
       }
-    }
 
-    @SuppressWarnings("rawtypes")
-    static class NoNullBuffer2 extends BaseOperation implements Buffer {
+      static final class NoNullBuffer extends NoNullBufferBase {
 
-      @SuppressWarnings("unused")
-      private final String lhs; // extremely useful for debugging...
+        private final String[] renamedRhsFields;
 
-      private final String rhs;
+        NoNullBuffer(String lhs, String rhs, String[] lhsFields, String[] rhsFields, String[] renamedRhsFields) {
+          super(lhs, rhs, lhsFields, rhsFields);
+          this.renamedRhsFields = renamedRhsFields;
+        }
 
-      private final String[] lhsFields;
+        @Override
+        @SuppressWarnings("unchecked")
+        public void operate(FlowProcess flowProcess, BufferCall bufferCall) {
+          Iterator<TupleEntry> iter = bufferCall.getArgumentsIterator();
+          while(iter.hasNext()) {
+            TupleEntry entry = iter.next();
 
-      private final String[] rhsFields;
+            if(TuplesUtils.hasValues(entry, renamedRhsFields) == false) {
+              TupleState state = new TupleState(getLhsOffset(entry));
+              reportRelationError(state, entry.selectTuple(new Fields(lhsFields)));
+              bufferCall.getOutputCollector().add(new Tuple(state));
+            }
+          }
+        }
+      }
 
-      private final String[] requiredLhsFields;
+      static final class ConditionalNoNullBuffer extends NoNullBufferBase {
 
-      @SuppressWarnings("unused")
-      private final String[] requiredRhsFields; // extremely useful for debugging...
+        private final String[] requiredLhsFields;
 
-      private final String[] optionalLhsFields;
+        private final String[] requiredRhsFields;
 
-      private final String[] optionalRhsFields;
+        private final String[] optionalLhsFields;
 
-      private final int optionalSize;
+        private final String[] optionalRhsFields;
 
-      private final Comparator[] tupleComparators;
+        private final int optionalSize;
 
-      NoNullBuffer2(String lhs, String rhs, String[] lhsFields, String[] rhsFields, String[] requiredLhsFields,
-          String[] requiredRhsFields, String[] optionalLhsFields, String[] optionalRhsFields) {
-        super(lhsFields.length + rhsFields.length, new Fields(ValidationFields.STATE_FIELD_NAME));
-        this.lhs = lhs;
-        this.rhs = rhs;
-        this.lhsFields = lhsFields;
-        this.rhsFields = rhsFields;
-        this.requiredLhsFields = requiredLhsFields;
-        this.requiredRhsFields = requiredRhsFields;
-        this.optionalLhsFields = optionalLhsFields;
-        this.optionalRhsFields = optionalRhsFields;
-        this.optionalSize = optionalLhsFields.length;
-        checkArgument(optionalSize > 0);
+        private final Comparator[] tupleComparators;
 
-        Comparator comparator = new Comparator() { // allows one side to be null
-              @Override
-              public int compare(Object object1, Object object2) {
-                return object1 == null || object2 == null ? 0 : ((String) object1).compareTo(((String) object2));
+        ConditionalNoNullBuffer(String lhs, String rhs, String[] lhsFields, String[] rhsFields,
+            String[] requiredLhsFields, String[] requiredRhsFields, String[] optionalLhsFields,
+            String[] optionalRhsFields) {
+          super(lhs, rhs, lhsFields, rhsFields);
+          this.requiredLhsFields = requiredLhsFields;
+          this.requiredRhsFields = requiredRhsFields;
+          this.optionalLhsFields = optionalLhsFields;
+          this.optionalRhsFields = optionalRhsFields;
+          this.optionalSize = optionalLhsFields.length;
+          checkArgument(optionalSize > 0);
+
+          Comparator comparator = new Comparator() { // allows one side to be null
+                @Override
+                public int compare(Object object1, Object object2) {
+                  return object1 == null || object2 == null ? 0 : ((String) object1).compareTo(((String) object2));
+                }
+              };
+          this.tupleComparators = new Comparator[optionalSize];
+          for(int i = 0; i < optionalRhsFields.length; i++) {
+            this.tupleComparators[i] = comparator; // we can reuse the same for all fields
+          }
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public void operate(FlowProcess flowProcess, BufferCall bufferCall) {
+          Iterator<TupleEntry> iter = bufferCall.getArgumentsIterator();
+          TupleEntry group = bufferCall.getGroup();
+
+          // potential memory issue discussed in DCC-300
+          List<Entry<Tuple, Integer>> lhsOptionalTuples = new ArrayList<Entry<Tuple, Integer>>();
+          List<Tuple> rhsOptionalTuples = new ArrayList<Tuple>();
+          Tuple requiredLhsTuple = group.selectTuple(new Fields(requiredLhsFields));
+
+          while(iter.hasNext()) {
+            TupleEntry entry = iter.next();
+            if(TuplesUtils.hasValues(entry, requiredRhsFields)) {
+              if(TuplesUtils.hasValues(entry, optionalLhsFields)) {
+                Tuple lhsOptionalTuple = entry.selectTuple(new Fields(optionalLhsFields));
+                lhsOptionalTuples.add(new SimpleEntry<Tuple, Integer>(lhsOptionalTuple, getLhsOffset(entry)));
               }
-            };
-        this.tupleComparators = new Comparator[optionalSize];
-        for(int i = 0; i < optionalRhsFields.length; i++) {
-          this.tupleComparators[i] = comparator; // we can reuse the same for all fields
-        }
-      }
-
-      @Override
-      @SuppressWarnings("unchecked")
-      public void operate(FlowProcess flowProcess, BufferCall bufferCall) {
-        Iterator<TupleEntry> iter = bufferCall.getArgumentsIterator();
-        TupleEntry group = bufferCall.getGroup();
-
-        // potential memory issue discussed in DCC-300
-        List<Entry<Tuple, Integer>> lhsOptionalTuples = new ArrayList<Entry<Tuple, Integer>>();
-        List<Tuple> rhsOptionalTuples = new ArrayList<Tuple>();
-        Tuple requiredLhsTuple = group.selectTuple(new Fields(requiredLhsFields));
-
-        while(iter.hasNext()) {
-          TupleEntry entry = iter.next();
-          if(TuplesUtils.hasValues(entry, requiredRhsFields)) {
-            if(TuplesUtils.hasValues(entry, optionalLhsFields)) {
-              Tuple lhsOptionalTuple = entry.selectTuple(new Fields(optionalLhsFields));
-              lhsOptionalTuples.add(new SimpleEntry<Tuple, Integer>(lhsOptionalTuple, getLhsOffset(entry)));
+              if(TuplesUtils.hasValues(entry, optionalRhsFields)) {
+                rhsOptionalTuples.add(entry.selectTuple(new Fields(optionalRhsFields)));
+              }
             }
-            if(TuplesUtils.hasValues(entry, optionalRhsFields)) {
-              rhsOptionalTuples.add(entry.selectTuple(new Fields(optionalRhsFields)));
+          }
+
+          /*
+           * To keep track of reported errors (because there can be several specimen_id from the rhs) and we cannot use
+           * a set for lhsOptionalTuples
+           */
+          Set<Integer> reported = new HashSet<Integer>();
+          for(Entry<Tuple, Integer> lhsTupleToOffset : lhsOptionalTuples) {
+            Tuple lhsOptionalTuple = lhsTupleToOffset.getKey();
+            if(contains(rhsOptionalTuples, lhsOptionalTuple) == false) {
+              int lhsOffset = lhsTupleToOffset.getValue();
+              TupleState tupleState = new TupleState(lhsOffset);
+              if(reported.contains(lhsOffset) == false) {
+                Tuple offendingLhsTuple = // so as to avoid storing it all in memory (memory/computing tradeoff)
+                    rebuildLhsTuple(requiredLhsFields, optionalLhsFields, requiredLhsTuple, lhsOptionalTuple);
+                reportRelationError(tupleState, offendingLhsTuple);
+
+                bufferCall.getOutputCollector().add(new Tuple(tupleState));
+                reported.add(lhsOffset);
+              }
             }
           }
         }
 
-        /*
-         * To keep track of reported errors (because there can be several specimen_id from the rhs) and we cannot use a
-         * set for lhsOptionalTuples
-         */
-        Set<Integer> reported = new HashSet<Integer>();
-        for(Entry<Tuple, Integer> lhsTupleToOffset : lhsOptionalTuples) {
-          Tuple lhsOptionalTuple = lhsTupleToOffset.getKey();
-          if(contains(rhsOptionalTuples, lhsOptionalTuple) == false) {
-            int lhsOffset = lhsTupleToOffset.getValue();
-            TupleState tupleState = new TupleState(lhsOffset);
-            if(reported.contains(lhsOffset) == false) {
-              Tuple offendingLhsTuple = // so as to avoid storing it all in memory (memory/computing tradeoff)
-                  rebuildLhsTuple(requiredLhsFields, optionalLhsFields, requiredLhsTuple, lhsOptionalTuple);
-              reportRelationError(tupleState, offendingLhsTuple);
-
-              bufferCall.getOutputCollector().add(new Tuple(tupleState));
-              reported.add(lhsOffset);
+        private boolean contains(List<Tuple> tuples, Tuple tuple) {
+          for(Tuple tupleTmp : tuples) {
+            if(tupleTmp.compareTo(this.tupleComparators, tuple) == 0) {
+              return true;
             }
           }
+          return false;
         }
-      }
 
-      /*
-       * The offset was passed from internal flow in order to access the offset
-       */
-      private int getLhsOffset(TupleEntry entry) {
-        return entry.getInteger(ValidationFields.OFFSET_FIELD_NAME);
-      }
-
-      private boolean contains(List<Tuple> tuples, Tuple tuple) {
-        for(Tuple tupleTmp : tuples) {
-          if(tupleTmp.compareTo(this.tupleComparators, tuple) == 0) {
-            return true;
-          }
+        private Tuple rebuildLhsTuple(String[] requiredLhsFields, String[] optionalLhsFields, Tuple requiredLhsObjects,
+            Tuple optionalLhsObjects) {
+          List<String> list = new ArrayList<String>(Arrays.asList(requiredLhsFields));
+          list.addAll(Arrays.asList(optionalLhsFields));
+          String[] disorderedLhsFields = list.toArray(new String[] {});
+          Tuple disorderedLhsObjects = requiredLhsObjects.append(optionalLhsObjects);
+          return new TupleEntry(new Fields(disorderedLhsFields), disorderedLhsObjects)
+              .selectTuple(new Fields(lhsFields));
         }
-        return false;
-      }
-
-      private Tuple rebuildLhsTuple(String[] requiredLhsFields, String[] optionalLhsFields, Tuple requiredLhsObjects,
-          Tuple optionalLhsObjects) {
-        List<String> list = new ArrayList<String>(Arrays.asList(requiredLhsFields));
-        list.addAll(Arrays.asList(optionalLhsFields));
-        String[] disorderedLhsFields = list.toArray(new String[] {});
-        Tuple disorderedLhsObjects = requiredLhsObjects.append(optionalLhsObjects);
-        return new TupleEntry(new Fields(disorderedLhsFields), disorderedLhsObjects).selectTuple(new Fields(lhsFields));
-      }
-
-      private void reportRelationError(TupleState tupleState, Tuple offendingLhsTuple) {
-        tupleState.reportError(ValidationErrorCode.MISSING_RELATION_ERROR, TuplesUtils.getObjects(offendingLhsTuple),
-            Arrays.asList(lhsFields), rhs, Arrays.asList(rhsFields), true);
       }
     }
   }
