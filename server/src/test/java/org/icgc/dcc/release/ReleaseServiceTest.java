@@ -3,6 +3,7 @@ package org.icgc.dcc.release;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -20,6 +21,7 @@ import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.dictionary.DictionaryService;
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.filesystem.DccFileSystem;
+import org.icgc.dcc.filesystem.ReleaseFileSystem;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.release.model.SubmissionState;
@@ -46,6 +48,8 @@ public class ReleaseServiceTest {
 
   private DccFileSystem fs;
 
+  private ReleaseFileSystem mockReleaseFileSystem;
+
   final private String testDbName = "testDb";
 
   @Before
@@ -58,6 +62,9 @@ public class ReleaseServiceTest {
       morphia.map(BaseEntity.class);
       datastore = morphia.createDatastore(mongo, testDbName);
       fs = mock(DccFileSystem.class);
+      mockReleaseFileSystem = mock(ReleaseFileSystem.class);
+
+      when(fs.getReleaseFilesystem(any(Release.class))).thenReturn(mockReleaseFileSystem);
 
       // Clear out the test database before each test
       datastore.delete(datastore.createQuery(Dictionary.class));
