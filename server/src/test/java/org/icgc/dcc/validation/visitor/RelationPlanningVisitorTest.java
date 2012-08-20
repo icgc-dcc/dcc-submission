@@ -20,7 +20,8 @@ package org.icgc.dcc.validation.visitor;
 import java.util.Iterator;
 
 import org.icgc.dcc.validation.cascading.ValidationFields;
-import org.icgc.dcc.validation.visitor.RelationPlanningVisitor.RelationPlanElement.NoNullBuffer;
+import org.icgc.dcc.validation.visitor.RelationPlanningVisitor.RelationPlanElement.NoNullBufferBase;
+import org.icgc.dcc.validation.visitor.RelationPlanningVisitor.RelationPlanElement.NoNullBufferBase.NoNullBuffer;
 import org.junit.Test;
 
 import cascading.CascadingTestCase;
@@ -49,8 +50,7 @@ public class RelationPlanningVisitorTest extends CascadingTestCase {
   @Test
   public void test_operate_valid() {
 
-    NoNullBuffer buffer =
-        new NoNullBuffer(lhs, rhs, lhsFields, rhsFields, lhsFields, rhsFields, new String[] {}, new String[] {});
+    NoNullBufferBase buffer = new NoNullBuffer(lhs, rhs, lhsFields, rhsFields, rhsFields);
 
     TupleEntry[] tuples =
         new TupleEntry[] { new TupleEntry(new Fields(ObjectArrays.concat(lhsFields, rhsFields, String.class)),
@@ -64,8 +64,7 @@ public class RelationPlanningVisitorTest extends CascadingTestCase {
 
   @Test
   public void test_operate_invalid() {
-    NoNullBuffer buffer =
-        new NoNullBuffer(lhs, rhs, lhsFields, rhsFields, lhsFields, rhsFields, new String[] {}, new String[] {});
+    NoNullBufferBase buffer = new NoNullBuffer(lhs, rhs, lhsFields, rhsFields, rhsFields);
 
     TupleEntry[] tuples = new TupleEntry[] {//
         new TupleEntry(inputFields,//
@@ -80,8 +79,7 @@ public class RelationPlanningVisitorTest extends CascadingTestCase {
 
   @Test
   public void test_operate_mix() {
-    NoNullBuffer buffer =
-        new NoNullBuffer(lhs, rhs, lhsFields, rhsFields, lhsFields, rhsFields, new String[] {}, new String[] {});
+    NoNullBufferBase buffer = new NoNullBuffer(lhs, rhs, lhsFields, rhsFields, rhsFields);
 
     TupleEntry[] tuples = new TupleEntry[] {//
         new TupleEntry(inputFields, new Tuple(//

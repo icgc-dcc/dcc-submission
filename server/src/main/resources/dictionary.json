@@ -1,6 +1,6 @@
 {
-  "created" : 1344895532044,
-  "lastUpdate" : 1344895532044,
+  "created" : 1345485637036,
+  "lastUpdate" : 1345485637036,
   "version" : "0.6c",
   "state" : "OPENED",
   "files" : [ {
@@ -299,6 +299,11 @@
       } ]
     } ],
     "relation" : [ {
+      "fields" : [ "donor_id" ],
+      "other" : "donor",
+      "otherFields" : [ "donor_id" ],
+      "optionals" : [ ]
+    }, {
       "fields" : [ "donor_id", "specimen_id" ],
       "other" : "specimen",
       "otherFields" : [ "donor_id", "specimen_id" ],
@@ -4004,6 +4009,11 @@
       } ]
     } ],
     "relation" : [ {
+      "fields" : [ "donor_id" ],
+      "other" : "donor",
+      "otherFields" : [ "donor_id" ],
+      "optionals" : [ ]
+    }, {
       "fields" : [ "donor_id", "specimen_id" ],
       "other" : "specimen",
       "otherFields" : [ "donor_id", "specimen_id" ],
