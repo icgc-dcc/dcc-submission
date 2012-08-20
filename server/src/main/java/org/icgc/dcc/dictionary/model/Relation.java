@@ -34,26 +34,37 @@ public class Relation implements DictionaryElement {
 
   private final List<String> fields;
 
-  private String other;
+  private final Cardinality cardinality;
+
+  private final String other;
 
   private final List<String> otherFields;
+
+  private final Cardinality otherCardinality;
 
   private final List<Integer> optionals;
 
   public Relation() {
     fields = new ArrayList<String>();
     otherFields = new ArrayList<String>();
+    cardinality = null;
+    other = null;
+    otherCardinality = null;
     optionals = new ArrayList<Integer>();
   }
 
-  public Relation(Iterable<String> leftFields, String right, Iterable<String> rightFields) {
-    this(leftFields, right, rightFields, ImmutableList.<Integer> of());
+  public Relation(Iterable<String> leftFields, Cardinality lhsCardinality, String right, Iterable<String> rightFields,
+      Cardinality rhsCardinality) {
+    this(leftFields, lhsCardinality, right, rightFields, rhsCardinality, ImmutableList.<Integer> of());
   }
 
-  public Relation(Iterable<String> leftFields, String right, Iterable<String> rightFields, Iterable<Integer> optionals) {
+  public Relation(Iterable<String> leftFields, Cardinality lhsCardinality, String right, Iterable<String> rightFields,
+      Cardinality rhsCardinality, Iterable<Integer> optionals) {
     this.fields = Lists.newArrayList(leftFields);
+    this.cardinality = lhsCardinality;
     this.other = right;
     this.otherFields = Lists.newArrayList(rightFields);
+    this.otherCardinality = rhsCardinality;
     this.optionals = Lists.newArrayList(optionals);
 
     checkArgument(this.fields != null);
@@ -76,20 +87,23 @@ public class Relation implements DictionaryElement {
     return fields;
   }
 
-  public String getOther() {
-    return other;
+  public Cardinality getCardinality() {
+    return cardinality;
   }
 
-  public void setOther(String other) {
-    this.other = other;
+  public String getOther() {
+    return other;
   }
 
   public List<String> getOtherFields() {
     return otherFields;
   }
 
+  public Cardinality getOtherCardinality() {
+    return otherCardinality;
+  }
+
   public List<Integer> getOptionals() {
     return optionals;
   }
-
 }

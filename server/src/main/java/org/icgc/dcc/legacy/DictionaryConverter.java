@@ -35,6 +35,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.icgc.dcc.dictionary.model.Cardinality;
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.FileSchema;
@@ -133,9 +134,13 @@ public class DictionaryConverter {
       String leftTable = valueIterator.next();
       String leftKey = valueIterator.next();
       Iterable<String> leftKeys = Splitter.on(',').trimResults().omitEmptyStrings().split(leftKey);
+      Cardinality leftCardinality = getCardinality(valueIterator.next());
+      // TODO: if cardinality is one then add unique constraint (see comment about it on DCC-226)
+
       String rightTable = valueIterator.next();
       String rightKey = valueIterator.next();
       Iterable<String> rightKeys = Splitter.on(',').trimResults().omitEmptyStrings().split(rightKey);
+      Cardinality rightCardinality = getCardinality(valueIterator.next());
 
       String optional = valueIterator.next();
       Iterable<Integer> optionals =
@@ -147,11 +152,23 @@ public class DictionaryConverter {
                 }
               });
 
-      if(this.dictionary.hasFileSchema(rightTable)) {
-        FileSchema leftFileSchema = this.dictionary.fileSchema(rightTable).get();
-        leftFileSchema.addRelation(new Relation(rightKeys, leftTable, leftKeys, optionals));
+      if(this.dictionary.hasFileSchema(leftTable)) {
+        FileSchema leftFileSchema = this.dictionary.fileSchema(leftTable).get();
+        leftFileSchema.addRelation(new Relation(leftKeys, leftCardinality, rightTable, rightKeys, rightCardinality,
+            optionals));
       }
     }
+  }
+
+  private Cardinality getCardinality(String cardinalityString) {
+    if("1".equals(cardinalityString)) {
+      return Cardinality.ONE;
+    } else if("1..n".equals(cardinalityString)) {
+      return Cardinality.ONE_OR_MORE;
+    } else if("0..n".equals(cardinalityString)) {
+      return Cardinality.ZERO_OR_MORE;
+    }
+    return null;
   }
 
   private void readFilePattern(String tsvFile) throws IOException {
