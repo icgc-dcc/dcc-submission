@@ -33,6 +33,7 @@ import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.dictionary.DictionaryService;
+import org.icgc.dcc.dictionary.model.Cardinality;
 import org.icgc.dcc.dictionary.model.CodeList;
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.Field;
@@ -147,7 +148,9 @@ public class ValidationExternalIntegrityTest {
     String[] fieldNames = { "donor_id", "fakecolumn" };
 
     specimen.getRelation().clear();
-    Relation relation = new Relation(Arrays.asList(fieldNames), "donor", Arrays.asList(fieldNames));
+    Relation relation =
+        new Relation(Arrays.asList(fieldNames), Cardinality.ZERO_OR_MORE, "donor", Arrays.asList(fieldNames),
+            Cardinality.ONE_OR_MORE);
     specimen.addRelation(relation);
 
     testErrorType("fk_1");

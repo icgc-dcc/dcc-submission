@@ -61,6 +61,7 @@ public class ValidationService {
   public ValidationService(final DccFileSystem dccFileSystem, final ProjectService projectService,
       final Planner planner, final DictionaryService dictionaries,
       final CascadingStrategyFactory cascadingStrategyFactory) {
+
     checkArgument(dccFileSystem != null);
     checkArgument(projectService != null);
     checkArgument(planner != null);

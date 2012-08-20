@@ -91,7 +91,7 @@ public class UniqueFieldsPlanningVisitor extends InternalFlowPlanningVisitor {
         if(i.hasNext()) {
           TupleEntry firstTuple = i.next();
           bufferCall.getOutputCollector().add(firstTuple.getTupleCopy());
-          int firstOffset = ValidationFields.state(firstTuple).getOffset();
+          long firstOffset = ValidationFields.state(firstTuple).getOffset();
 
           while(i.hasNext()) {
             TupleEntry tupleEntry = i.next();
