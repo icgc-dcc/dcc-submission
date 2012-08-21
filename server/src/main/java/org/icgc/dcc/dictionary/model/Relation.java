@@ -71,6 +71,18 @@ public class Relation implements DictionaryElement {
     checkArgument(this.fields.size() == this.otherFields.size());
     checkArgument(this.fields.size() > this.optionals.size(), this.fields.size() + ", " + this.optionals.size());
     // TODO: further check on optionals (no repetition, valid indices, ...) - will create separate ticket for it
+
+    if(this.optionals.isEmpty() == false && lhsCardinality == Cardinality.ONE_OR_MORE) { // see comment DCC-289: only
+                                                                                         // allowing one or the other
+      throw new DataModelException(String.format(
+          "invalid relation \"%s\" specified: cannot specify both optional fields (%s) and a cardinality of %s",
+          describe(), this.optionals, Cardinality.ONE_OR_MORE));
+    }
+  }
+
+  public String describe() {
+    return String.format("?.%s (cardinality: %s) --> %s.%s [optionals: %s]", fields, cardinality, other, otherFields,
+        optionals);
   }
 
   @Override

@@ -23,6 +23,7 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import junit.framework.Assert;
@@ -50,6 +51,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
 import com.google.inject.Inject;
 
 @RunWith(GuiceJUnitRunner.class)
@@ -115,18 +118,12 @@ public class ValidationExternalIntegrityTest {
     String content = validate(validationService, dictionary, ROOTDIR);
     Assert.assertTrue(content, content.isEmpty());
 
-    String donorTrim =
-        FileUtils.readFileToString(new File(this.getClass().getResource(ROOTDIR).getFile()
-            + "/.validation/donor#donor_id-offset.tsv"));
-    String donorTrimExpected =
-        FileUtils.readFileToString(new File(this.getClass().getResource("/ref/fk_donor_trim.tsv").getFile()));
+    String donorTrim = getUnsortedFileContent(ROOTDIR, "/.validation/donor#donor_id-offset.tsv");
+    String donorTrimExpected = getUnsortedFileContent("/ref/fk_donor_trim.tsv");
     Assert.assertEquals("Incorrect donor ID trim list", donorTrimExpected.trim(), donorTrim.trim());
 
-    String specimenTrim =
-        FileUtils.readFileToString(new File(this.getClass().getResource(ROOTDIR).getFile()
-            + "/.validation/specimen#donor_id-offset.tsv"));
-    String specimenTrimExpected =
-        FileUtils.readFileToString(new File(this.getClass().getResource("/ref/fk_specimen_trim.tsv").getFile()));
+    String specimenTrim = getUnsortedFileContent(ROOTDIR, "/.validation/specimen#donor_id-offset.tsv");
+    String specimenTrimExpected = getUnsortedFileContent("/ref/fk_specimen_trim.tsv");
     Assert.assertEquals("Incorrect specimen ID trim list", specimenTrimExpected.trim(), specimenTrim.trim());
   }
 
@@ -156,19 +153,25 @@ public class ValidationExternalIntegrityTest {
 
     resetDictionary();
 
-    String donorTrim =
-        FileUtils.readFileToString(new File(this.getClass().getResource(ROOTDIR).getFile()
-            + "/error/fk_1/.validation/donor#donor_id-fakecolumn-offset.tsv"));
-    String donorTrimExpected =
-        FileUtils.readFileToString(new File(this.getClass().getResource("/ref/fk_1_donor_trim.tsv").getFile()));
+    String donorTrim = getUnsortedFileContent(ROOTDIR, "/error/fk_1/.validation/donor#donor_id-fakecolumn-offset.tsv");
+    String donorTrimExpected = getUnsortedFileContent("/ref/fk_1_donor_trim.tsv");
     Assert.assertEquals("Incorrect donor ID trim list", donorTrimExpected.trim(), donorTrim.trim());
 
     String specimenTrim =
-        FileUtils.readFileToString(new File(this.getClass().getResource(ROOTDIR).getFile()
-            + "/error/fk_1/.validation/specimen#donor_id-fakecolumn-offset.tsv"));
-    String specimenTrimExpected =
-        FileUtils.readFileToString(new File(this.getClass().getResource("/ref/fk_1_specimen_trim.tsv").getFile()));
+        getUnsortedFileContent(ROOTDIR, "/error/fk_1/.validation/specimen#donor_id-fakecolumn-offset.tsv");
+    String specimenTrimExpected = getUnsortedFileContent("/ref/fk_1_specimen_trim.tsv");
     Assert.assertEquals("Incorrect specimen ID trim list", specimenTrimExpected.trim(), specimenTrim.trim());
+  }
+
+  private String getUnsortedFileContent(String resourcePath) throws IOException {
+    return getUnsortedFileContent(resourcePath, "");
+  }
+
+  private String getUnsortedFileContent(String resourcePath, String append) throws IOException {
+    List<String> lines =
+        Files.readLines(new File(this.getClass().getResource(resourcePath).getFile() + append), Charsets.UTF_8);
+    Collections.sort(lines);
+    return lines.toString();
   }
 
   @Test(expected = FatalPlanningException.class)

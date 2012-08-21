@@ -50,7 +50,7 @@ public class RelationPlanningVisitorTest extends CascadingTestCase {
   @Test
   public void test_operate_valid() {
 
-    NoNullBufferBase buffer = new NoNullBuffer(lhs, rhs, lhsFields, rhsFields, rhsFields);
+    NoNullBufferBase buffer = new NoNullBuffer(lhs, rhs, lhsFields, rhsFields, rhsFields, false);
 
     TupleEntry[] tuples =
         new TupleEntry[] { new TupleEntry(new Fields(ObjectArrays.concat(lhsFields, rhsFields, String.class)),
@@ -64,7 +64,7 @@ public class RelationPlanningVisitorTest extends CascadingTestCase {
 
   @Test
   public void test_operate_invalid() {
-    NoNullBufferBase buffer = new NoNullBuffer(lhs, rhs, lhsFields, rhsFields, rhsFields);
+    NoNullBufferBase buffer = new NoNullBuffer(lhs, rhs, lhsFields, rhsFields, rhsFields, false);
 
     TupleEntry[] tuples = new TupleEntry[] {//
         new TupleEntry(inputFields,//
@@ -79,7 +79,7 @@ public class RelationPlanningVisitorTest extends CascadingTestCase {
 
   @Test
   public void test_operate_mix() {
-    NoNullBufferBase buffer = new NoNullBuffer(lhs, rhs, lhsFields, rhsFields, rhsFields);
+    NoNullBufferBase buffer = new NoNullBuffer(lhs, rhs, lhsFields, rhsFields, rhsFields, false);
 
     TupleEntry[] tuples = new TupleEntry[] {//
         new TupleEntry(inputFields, new Tuple(//

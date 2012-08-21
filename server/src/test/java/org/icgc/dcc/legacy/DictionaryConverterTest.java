@@ -30,6 +30,7 @@ import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
+import org.mortbay.log.Log;
 import org.xml.sax.SAXException;
 
 import com.google.common.base.Charsets;
@@ -57,6 +58,8 @@ public class DictionaryConverterTest {
   public void test_dictionaryConverter_compareJSON() throws IOException, XPathExpressionException,
       ParserConfigurationException, SAXException {
 
+    String currentDictionary = Files.toString(new File(CURRENT_DICTIONARY), Charsets.UTF_8);
+
     DictionaryConverter dc = new DictionaryConverter();
     dc.readDictionary(CONVERSION_INPUT_FOLDER);
     dc.saveToJSON(TEMPORARY_DICTIONARY);
@@ -75,15 +78,16 @@ public class DictionaryConverterTest {
     assertEquals(refTree.get("state"), testTree.get("state"));
 
     this.test_compare_fileSchema(refTree.get("files"), testTree.get("files"));
-    updateFilesInProject(CURRENT_DICTIONARY, TEMPORARY_DICTIONARY, SECOND_DICTIONARY);
-  }
 
-  private void updateFilesInProject(String currentDictionary, String temporaryDictionary, String destination)
-      throws IOException {
-    Files.move(new File(temporaryDictionary), new File(currentDictionary));
-    String content = Files.toString(new File(currentDictionary), Charsets.UTF_8);
-    content = updateSecondDictionaryContent(content);
-    Files.write(content.getBytes(), new File(destination));
+    String regeneratedDictionary = Files.toString(new File(TEMPORARY_DICTIONARY), Charsets.UTF_8);
+    boolean significantlyChanged = hasSignificantlyChanged(currentDictionary, regeneratedDictionary);
+    if(significantlyChanged) { // only replace if has changed (else will have to recommit it everytime tests run)
+      Log.info("replacing dictionary");
+      updateFilesInProject(CURRENT_DICTIONARY, TEMPORARY_DICTIONARY, SECOND_DICTIONARY);
+    } else {
+      Log.info("preserving dictionary");
+      new File(TEMPORARY_DICTIONARY).delete();
+    }
   }
 
   private String updateSecondDictionaryContent(String content) {
@@ -160,5 +164,21 @@ public class DictionaryConverterTest {
       }
     }
     return null;
+  }
+
+  private boolean hasSignificantlyChanged(String currentDictionary, String regeneratedDictionary) {
+    currentDictionary =
+        currentDictionary.replaceAll("\"created\" : \\d+,", "").replaceAll("\"lastUpdate\" : \\d+,", "");
+    regeneratedDictionary =
+        regeneratedDictionary.replaceAll("\"created\" : \\d+,", "").replaceAll("\"lastUpdate\" : \\d+,", "");
+    return currentDictionary.equals(regeneratedDictionary) == false;
+  }
+
+  private void updateFilesInProject(String currentDictionary, String temporaryDictionary, String destination)
+      throws IOException {
+    Files.move(new File(temporaryDictionary), new File(currentDictionary));
+    String content = Files.toString(new File(currentDictionary), Charsets.UTF_8);
+    content = updateSecondDictionaryContent(content);
+    Files.write(content.getBytes(), new File(destination));
   }
 }

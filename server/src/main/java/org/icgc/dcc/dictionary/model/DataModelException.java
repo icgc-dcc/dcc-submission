@@ -17,6 +17,17 @@
  */
 package org.icgc.dcc.dictionary.model;
 
-public enum Cardinality {
-  ZERO_OR_MORE, ONE_OR_MORE,
+public class DataModelException extends RuntimeException {
+
+  public DataModelException(Exception e) {
+    super(e);
+  }
+
+  public DataModelException(String message) {
+    super(message);
+  }
+
+  public DataModelException(String message, Exception e) {
+    super(message, e);
+  }
 }

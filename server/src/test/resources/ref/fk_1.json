@@ -1,20 +1,20 @@
 {
   "offset" : 1,
   "errors" : [ {
-    "code" : "MISSING_RELATION_ERROR",
-    "parameters" : [ [ "DN_Y20_0000", "x" ], [ "donor_id", "fakecolumn" ], "donor", [ "donor_id", "fakecolumn" ] ]
+    "code" : "RELATION_ERROR",
+    "parameters" : [ [ "DN_Y20_0000", "x" ], "specimen", [ "donor_id", "fakecolumn" ], "donor", [ "donor_id", "fakecolumn" ] ]
   } ]
 }{
   "offset" : 2,
   "errors" : [ {
-    "code" : "MISSING_RELATION_ERROR",
-    "parameters" : [ [ "DN_Y20_00001", "y" ], [ "donor_id", "fakecolumn" ], "donor", [ "donor_id", "fakecolumn" ] ]
+    "code" : "RELATION_ERROR",
+    "parameters" : [ [ "DN_Y20_00001", "y" ], "specimen", [ "donor_id", "fakecolumn" ], "donor", [ "donor_id", "fakecolumn" ] ]
   } ]
 }{
   "offset" : 3,
   "errors" : [ {
-    "code" : "MISSING_RELATION_ERROR",
-    "parameters" : [ [ "DN_Y20_0003", "y" ], [ "donor_id", "fakecolumn" ], "donor", [ "donor_id", "fakecolumn" ] ]
+    "code" : "RELATION_ERROR",
+    "parameters" : [ [ "DN_Y20_0003", "y" ], "specimen", [ "donor_id", "fakecolumn" ], "donor", [ "donor_id", "fakecolumn" ] ]
   } ]
 }
 
