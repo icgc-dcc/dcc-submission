@@ -175,14 +175,13 @@ public class IntegrationTest {
     this.client.target(BASEURI).path("/seed/dictionaries").request(MediaType.APPLICATION_JSON)
         .header("Authorization", AUTHORIZATION)
         .post(Entity.entity("[" + this.resourceToString("/dictionary.json") + "]", MediaType.APPLICATION_JSON));
-    this.client
-        .target(BASEURI)
-        .path("/seed/dictionaries")
-        .request(MediaType.APPLICATION_JSON)
+    String secondDictionaryPath = "/integrationtest/secondDictionary.json"; // careful, also updated by converter, do
+                                                                            // not edit manually, update via
+                                                                            // DictionaryConverterTest.updateSecondDictionaryContent()
+                                                                            // instead
+    this.client.target(BASEURI).path("/seed/dictionaries").request(MediaType.APPLICATION_JSON)
         .header("Authorization", AUTHORIZATION)
-        .post(
-            Entity.entity("[" + this.resourceToString("/integrationtest/secondDictionary.json") + "]",
-                MediaType.APPLICATION_JSON));
+        .post(Entity.entity("[" + this.resourceToString(secondDictionaryPath) + "]", MediaType.APPLICATION_JSON));
     this.client.target(BASEURI).path("/seed/codelists").request(MediaType.APPLICATION_JSON)
         .header("Authorization", AUTHORIZATION)
         .post(Entity.entity(this.resourceToString("/integrationtest/codelists.json"), MediaType.APPLICATION_JSON));

@@ -149,8 +149,7 @@ public class ValidationExternalIntegrityTest {
 
     specimen.getRelation().clear();
     Relation relation =
-        new Relation(Arrays.asList(fieldNames), Cardinality.ZERO_OR_MORE, "donor", Arrays.asList(fieldNames),
-            Cardinality.ONE_OR_MORE);
+        new Relation(Arrays.asList(fieldNames), "donor", Arrays.asList(fieldNames), Cardinality.ZERO_OR_MORE);
     specimen.addRelation(relation);
 
     testErrorType("fk_1");
