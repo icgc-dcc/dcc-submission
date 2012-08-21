@@ -167,7 +167,8 @@ public class DictionaryConverter {
           Collections.sort(uniqueFieldsTmp);
           schemaToUniqueFields.put(rightTable, uniqueFieldsTmp);
         } else if(uniqueFields.equals(uniqueFieldsTmp) == false) {
-          throw new ConverterException(String.format("%s, %s, %s", rightTable, uniqueFieldsTmp, uniqueFields));
+          throw new ConverterException(String.format("schema %s already defines %s as unique fields, %s differs",
+              rightTable, uniqueFieldsTmp, uniqueFields));
         }
       }
 
