@@ -26,11 +26,14 @@ define (require) ->
   class ReleaseTableView extends DataTableView
     template: template
     template = null
+    
     autoRender: true
     
     initialize: ->
       console.debug "ReleasesTableView#initialize", @collection, @el
       super
+
+      @modelBind 'reset', @updateDataTable
 
       @delegate 'click', '#complete-release-popup-button', @completeReleasePopup
 

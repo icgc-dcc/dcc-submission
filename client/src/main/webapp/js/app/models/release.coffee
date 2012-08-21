@@ -26,6 +26,8 @@ define (require) ->
     urlKey: "name"
     urlPath: ->
       "releases/"
+    defaults:
+      'submissions': new Submissions([], {"release": null})
     
     parse: (response) ->
       if response?.submissions

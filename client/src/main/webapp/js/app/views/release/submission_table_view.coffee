@@ -35,12 +35,15 @@ define (require) ->
       @collection = @model.get "submissions"
       
       super
-        
-      #@subscribeEvent "signOffSubmission", @update
-      #@subscribeEvent "validateSubmission", @update
+      
+      @modelBind 'change', @update
       
       @delegate 'click', '#signoff-submission-popup-button', @signOffSubmissionPopup
       @delegate 'click', '#validate-submission-popup-button', @validateSubmissionPopup
+    
+    update: ->
+      @collection = @model.get "submissions"
+      @updateDataTable()
     
     signOffSubmissionPopup: (e) ->
       console.debug "ReleaseView#signOffSubmissionPopup", e
@@ -69,14 +72,12 @@ define (require) ->
           {
             sTitle: "State"
             mDataProp: "state"
-            sWidth: "125"
             fnRender: (oObj, sVal) ->
               sVal.replace '_', ' '
           }
           {
             sTitle: "Last Updated"
             mDataProp: "lastUpdated"
-            sWidth: "125"
             fnRender: (oObj, sVal) ->
               utils.date sVal
           }
@@ -96,6 +97,7 @@ define (require) ->
             sTitle: ""
             mDataProp: null
             bSortable: false
+            sWidth: "75px"
             bVisible: not utils.is_released(@model.get "state")
             fnRender: (oObj) ->
               switch oObj.aData.state

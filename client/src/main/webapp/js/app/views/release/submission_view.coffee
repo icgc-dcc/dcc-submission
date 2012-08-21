@@ -18,6 +18,7 @@
 
 define (require) ->
   View = require 'views/base/view'
+  SubmissionHeaderView = require 'views/release/submission_header_view'
   ReportTableView = require 'views/release/report_table_view'
   SubmissionFilesTableView = require 'views/release/submission_files_table_view'
   SignOffSubmissionView = require 'views/release/signoff_submission_view'
@@ -32,7 +33,7 @@ define (require) ->
     
     container: '#content-container'
     containerMethod: 'html'
-    autoRender: false
+    autoRender: true
     tagName: 'div'
     id: 'submission-view'
     
@@ -40,10 +41,8 @@ define (require) ->
       console.debug 'SubmissionView#initialize', @model
       super
       
-      @modelBind 'change', @render
-      
-      @subscribeEvent "signOffSubmission", @render
-      @subscribeEvent "validateSubmission", @render
+      #@subscribeEvent "signOffSubmission", @render
+      #@subscribeEvent "validateSubmission", @render
       
       @delegate 'click', '#signoff-submission-popup-button', @signOffSubmissionPopup
       @delegate 'click', '#validate-submission-popup-button', @validateSubmissionPopup
@@ -66,11 +65,17 @@ define (require) ->
       console.debug "SubmissionView#render", @model
       super
       
-      if @model.get "report"
-        @subview('Report'
-          new ReportTableView {
-            model: @model.get "report"
-            el: @.$("#report-container")
-          }
-        )
+      @subview('SubmissionHeader'
+        new SubmissionHeaderView {
+          @model
+          el: @.$("#submission-header-container")
+        }
+      )
+      
+      @subview('Report'
+        new ReportTableView {
+          @model
+          el: @.$("#report-container")
+        }
+      )
 

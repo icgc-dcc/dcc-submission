@@ -18,6 +18,8 @@
 
 define (require) ->
   View = require 'views/base/view'
+  ReleaseHeaderView = require 'views/release/release_header_view'
+  SubmissionSummaryView = require 'views/release/submission_summary_view'
   CompleteReleaseView = require 'views/release/complete_release_view'
   SubmissionTableView = require 'views/release/submission_table_view'
   template = require 'text!views/templates/release/release.handlebars'
@@ -30,7 +32,7 @@ define (require) ->
     
     container: '#content-container'
     containerMethod: 'html'
-    autoRender: false
+    autoRender: true
     tagName: 'div'
     id: 'release-view'
     
@@ -38,10 +40,12 @@ define (require) ->
       console.debug 'ReleaseView#initialize', @model
       super
       
-      @modelBind 'change', @render
-      
       @subscribeEvent "completeRelease", @fetch
       @delegate 'click', '#complete-release-popup-button', @completeReleasePopup
+    
+    update: ->
+      console.log @model
+      @subview('SubmissionsTable').updateDataTable @model.get 'submissions'
     
     fetch: (data) ->
       console.debug 'ReleaseView#fetch', data
@@ -60,6 +64,21 @@ define (require) ->
     render: ->
       console.debug "ReleaseView#render", @model
       super
+      
+      @subview('ReleaseHeader'
+        new ReleaseHeaderView {
+          @model
+          el: @.$("#release-header-container")
+        }
+      )
+      
+      @subview('SubmissionSummary'
+        new SubmissionSummaryView {
+          @model
+          el: @.$("#submission-summary-container")
+        }
+      )
+      
       @subview('SubmissionsTable'
         new SubmissionTableView {
           @model

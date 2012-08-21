@@ -29,16 +29,14 @@ define (require) ->
     
     container: '#content-container'
     containerMethod: 'html'
-    autoRender: false
+    autoRender: true
     tagName: 'div'
     id: 'releases-view'
     
     initialize: ->
       console.debug "ReleasesView#initialize", @collection
       super
-      
-      @modelBind 'reset', @render
-            
+
     render: ->
       super
       @subview(

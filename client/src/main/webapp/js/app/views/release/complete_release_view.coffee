@@ -33,7 +33,7 @@ define (require) ->
     containerMethod: 'append'
     autoRender: true
     tagName: 'div'
-    className: "modal fade"
+    className: "modal hide fade"
     id: 'complete-release-popup'
     
     initialize: ->

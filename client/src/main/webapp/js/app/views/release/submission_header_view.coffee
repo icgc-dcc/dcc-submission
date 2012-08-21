@@ -17,39 +17,18 @@
 """
 
 define (require) ->
-  Model = require 'models/base/model'
-  SubmissionFiles = require 'models/submission_files'
-  Report = require 'models/report'
+  View = require 'views/base/view'
+  template = require 'text!views/templates/release/submission_header.handlebars'
 
-  "use strict"
+  'use strict'
 
-  class Submission extends Model
-    idAttribute: "projectKey"
-    defaults:
-      'report': new Report()
-
+  class SubmissionHeaderView extends View
+    template: template
+    template = null
+    
+    autoRender: true
+    
     initialize: ->
-      console.debug 'Submission#initialize', @, @attributes
       super
-
-      @urlPath = ->
-        "releases/#{@attributes.release}/submissions/#{@attributes.name}"
-
-    parse: (response) ->
-      console.debug 'Submission#parse', @, response
-      
-      data = {
-        'schemaReports': response.submissionFiles
-      }
-      
-      if response.report
-        for file in data.schemaReports
-          for report in response.report.schemaReports
-            if report.name is file.name
-              _.extend(file, report)
-              break
-
-      response.report = new Report _.extend(data,
-        {"release": @attributes?.release, "projectKey": response.projectKey})
-
-      response
+        
+      @modelBind 'change', @render

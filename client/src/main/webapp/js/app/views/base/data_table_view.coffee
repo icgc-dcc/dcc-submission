@@ -27,14 +27,10 @@ define (require) ->
     initialize: ->
       # console.debug "DataTableView#initialize", @collection, @el
       super
-      @renderDataTable()
-      
-    renderDataTable: ->
       @createDataTable()
-      @updateDataTable()
     
     updateDataTable: ->
-      #console.debug "DataTableView#updateDataTable"
+      console.debug "DataTableView#updateDataTable"
       dt = @$el.dataTable()
       dt.fnClearTable()
       dt.fnAddData @collection.toJSON()

@@ -30,13 +30,22 @@ define (require) ->
     
     initialize: ->
       console.debug "ReportTableView#initialize", @model, @el
-      @collection = @model.get "schemaReports"
+      @report = @model.get "report"
+      @collection = @report.get "schemaReports"
 
       super
+      
+      @modelBind 'change', @update
       
       @anOpen = []
       @delegate 'click', '.control', @rowDetails
       @delegate 'click', '.summary', @rowSummary
+    
+    update: ->
+      console.debug "ReportTableView#update", @model
+      @report = @model.get "report"
+      @collection = @report.get "schemaReports"
+      @updateDataTable()
     
     rowDetails: (e) ->
       #console.debug "ReportTableView#rowDetails", e, @anOpen
@@ -91,7 +100,7 @@ define (require) ->
       
       sOut = ''
       sErr = ''
-      console.log data.errors
+      
       if data.errors
         sOut += """
           <table class='table table-striped'>
@@ -194,8 +203,8 @@ define (require) ->
             sDefaultContent: "<span class='link control'>view</span>"
           }
         ]
-      console.log @model.get 'report'
-      if @model.get 'report'
+      
+      if true# @model.get 'report'
         aoColumns = aoColumns.concat reportCols
       
       @$el.dataTable
@@ -208,4 +217,3 @@ define (require) ->
         sAjaxDataProp: ""
         fnServerData: (sSource, aoData, fnCallback) =>
           fnCallback @collection.toJSON()
-          
