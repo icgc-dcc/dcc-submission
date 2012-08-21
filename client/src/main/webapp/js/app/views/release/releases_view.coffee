@@ -19,7 +19,6 @@
 define (require) ->
   View = require 'views/base/view'
   ReleaseTableView = require 'views/release/release_table_view'
-  CompleteReleaseView = require 'views/release/complete_release_view'
   template = require 'text!views/templates/release/releases.handlebars'
  
   'use strict'
@@ -39,16 +38,7 @@ define (require) ->
       super
       
       @modelBind 'reset', @render
-      
-      @delegate 'click', '#complete-release-popup-button', @completeReleasePopup
-
-    completeReleasePopup: (e) ->
-      console.debug "ReleaseView#completeRelease", e
-      @subview('CompleteReleases'
-        new CompleteReleaseView 
-          'name': $(e.currentTarget).data('release-name')
-      )
-      
+            
     render: ->
       super
       @subview(

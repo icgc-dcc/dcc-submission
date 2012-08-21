@@ -18,7 +18,7 @@
 
 define (require) ->
   DataTableView = require 'views/base/data_table_view'
-  CompactReleaseView = require 'views/release/compact_release_view'
+  CompleteReleaseView = require 'views/release/complete_release_view'
   utils = require 'lib/utils'
   
   'use strict'
@@ -28,16 +28,19 @@ define (require) ->
     template = null
     autoRender: true
     
-    container: '#releases-table'
-    containerMethod: 'html'
-    tagName: 'table'
-    className: "releases table table-striped"
-    id: "releases"
-    
     initialize: ->
       console.debug "ReleasesTableView#initialize", @collection, @el
       super
-         
+
+      @delegate 'click', '#complete-release-popup-button', @completeReleasePopup
+
+    completeReleasePopup: (e) ->
+      console.debug "ReleaseView#completeRelease", e
+      @subview('CompleteReleases'
+        new CompleteReleaseView 
+          'name': $(e.currentTarget).data('release-name')
+      )
+    
     createDataTable: ->
       console.debug "ReleasesTableView#createDataTable"
       aoColumns = [
