@@ -129,6 +129,10 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
 
     } catch(IOException e) {
       e.printStackTrace();
+    } catch(IllegalArgumentException e) {
+      if(e.getMessage().contains("duplicate field name found")) {
+        throw new PlanningException(getSchema().getName(), ValidationErrorCode.DUPLICATE_HEADER_ERROR);
+      }
     }
 
     flowDef.addSource(head, source);

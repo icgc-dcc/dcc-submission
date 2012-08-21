@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.icgc.dcc.dictionary.model.FileSchema;
+import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.report.Outcome;
 import org.icgc.dcc.validation.report.SchemaReport;
 import org.icgc.dcc.validation.report.SubmissionReport;
@@ -45,6 +46,8 @@ public class Plan {
   private final Map<String, ExternalFlowPlanner> externalPlanners = Maps.newHashMap();
 
   private Cascade cascade;
+
+  private final Map<String, TupleState> errors = Maps.newLinkedHashMap();
 
   private final CascadingStrategy cascadingStrategy;
 
@@ -92,11 +95,19 @@ public class Plan {
   public void connect(CascadingStrategy cascadingStrategy) {
     CascadeDef cascade = new CascadeDef();
     for(FileSchemaFlowPlanner planner : Iterables.concat(internalPlanners.values(), externalPlanners.values())) {
-      Flow<?> flow = planner.connect(cascadingStrategy);
-      if(flow != null) {
-        cascade.addFlow(flow);
+      try {
+        Flow<?> flow = planner.connect(cascadingStrategy);
+        if(flow != null) {
+          cascade.addFlow(flow);
+        }
+      } catch(PlanningException e) {
+        this.errors.put(e.getSchemaName(), e.getTupleState());
       }
     }
+    if(errors.size() > 0) {
+      throw new FatalPlanningException(errors);
+    }
+
     this.cascade = new CascadeConnector().connect(cascade);
   }
 
