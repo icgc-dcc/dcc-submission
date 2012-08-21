@@ -35,11 +35,22 @@ define (require) ->
 
     parse: (response) ->
       console.debug 'Submission#parse', @, response
-      if response?.report
-        response.report = new Report _.extend(response.report,
-          {"release": @attributes?.release, "projectKey": response.projectKey})
-      response.files = new SubmissionFiles {}, {
-                            "release": @attributes?.release
-                            "projectKey": response.projectKey
-                          }
+      
+      data = {
+        'schemaReports': response.submissionFiles
+      }
+      
+      if response.report
+        data.report = true
+        for file in data.schemaReports
+          console.log "file", file
+          for report in response.report.schemaReports
+            console.log "report:", report
+            if report.name is file.name
+              _.extend(file, report) 
+              break
+
+      response.report = new Report _.extend(data,
+        {"release": @attributes?.release, "projectKey": response.projectKey})
+
       response

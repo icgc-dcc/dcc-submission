@@ -63,7 +63,7 @@ define (require) ->
       )
       
     render: ->
-      console.debug "ReleaseView#render", @model
+      console.debug "SubmissionView#render", @model
       super
       
       if @model.get "report"
@@ -73,10 +73,4 @@ define (require) ->
             el: @.$("#report-container")
           }
         )
-      
-      @subview('Files'
-        new SubmissionFilesTableView {
-          @model
-          el: @.$("#files-container")
-        }
-      )
+

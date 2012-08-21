@@ -20,7 +20,6 @@ define (require) ->
   DataTableView = require 'views/base/data_table_view'
   signOffSubmissionView = require 'views/release/signoff_submission_view'
   validateSubmissionView = require 'views/release/validate_submission_view'
-  template = require 'text!views/templates/release/submissions_table.handlebars'
   utils = require 'lib/utils'
   
   'use strict'
@@ -37,8 +36,8 @@ define (require) ->
       
       super
         
-      @subscribeEvent "signOffSubmission", @update
-      @subscribeEvent "validateSubmission", @update
+      #@subscribeEvent "signOffSubmission", @update
+      #@subscribeEvent "validateSubmission", @update
       
       @delegate 'click', '#signoff-submission-popup-button', @signOffSubmissionPopup
       @delegate 'click', '#validate-submission-popup-button', @validateSubmissionPopup
@@ -58,14 +57,14 @@ define (require) ->
           "release": @model
       )
       
-    createDataTable: (collection) ->
-      console.debug "SubmissionsTableView#createDataTable", @.$('table')
+    createDataTable: ->
+      console.debug "SubmissionsTableView#createDataTable", @$el, @collection
       aoColumns = [
           {
             sTitle: "Project Key"
             mDataProp: "projectKey"
-            fnRender: (oObj, sVal) ->
-              "<a href='/releases/#{collection.release}/submissions/#{sVal}'>#{sVal}</a>"
+            fnRender: (oObj, sVal) =>
+              "<a href='/releases/#{@collection.release}/submissions/#{sVal}'>#{sVal}</a>"
           }
           {
             sTitle: "State"
@@ -85,11 +84,11 @@ define (require) ->
             sTitle: "Report"
             mDataProp: null
             bSortable: false
-            fnRender: (oObj) ->
+            fnRender: (oObj) =>
               switch oObj.aData.state
                 when "VALID", "SIGNED OFF", "INVALID"
                   """
-                    <a href='/releases/#{collection.release}/submissions/#{oObj.aData.projectKey.replace(/<.*?>/g, '')}#report'>View</a>
+                    <a href='/releases/#{@collection.release}/submissions/#{oObj.aData.projectKey.replace(/<.*?>/g, '')}#report'>View</a>
                   """
                 else ""
           }
@@ -122,7 +121,7 @@ define (require) ->
           }
         ]
       
-      @.$('table').dataTable
+      @$el.dataTable
         sDom:
           "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>"
         bPaginate: false
@@ -144,5 +143,5 @@ define (require) ->
             when "INVALID"
               cell.css 'color', '#B94A48'
               
-        fnServerData: (sSource, aoData, fnCallback) ->
-          fnCallback collection.toJSON()
+        fnServerData: (sSource, aoData, fnCallback) =>
+          fnCallback @collection.toJSON()

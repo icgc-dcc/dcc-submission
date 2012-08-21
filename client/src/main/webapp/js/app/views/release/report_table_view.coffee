@@ -18,8 +18,8 @@
 
 define (require) ->
   DataTableView = require 'views/base/data_table_view'
-  template = require 'text!views/templates/release/report_table.handlebars'
-  
+  utils = require 'lib/utils'
+
   'use strict'
 
   class ReportTableView extends DataTableView
@@ -30,7 +30,8 @@ define (require) ->
     
     initialize: ->
       console.debug "ReportTableView#initialize", @model, @el
-      @collection = @model.get "schemaReports"    
+      @collection = @model.get "schemaReports"
+
       super
       
       @anOpen = []
@@ -41,7 +42,7 @@ define (require) ->
       #console.debug "ReportTableView#rowDetails", e, @anOpen
       control = e.target
       nTr = control.parentNode.parentNode
-      dT = @.$('table').dataTable()
+      dT = @$el.dataTable()
       
       data = dT.fnGetData nTr
       if data.errors
@@ -51,11 +52,11 @@ define (require) ->
 
       if nTr in @anOpen
         @anOpen = _.without @anOpen, nTr
-        $(control).text 'view report'
+        $(control).text 'view'
         dT.fnClose(nTr)
       else
         @anOpen.push nTr
-        $(control).text 'hide report'
+        $(control).text 'hide'
         dT.fnOpen(nTr, @formatDetails(data), "details #{style}")
 
     rowSummary: (e) ->
@@ -123,7 +124,7 @@ define (require) ->
         
         $(sOut).dataTable
           sDom:
-            "<'row-fluid'<'span6'l>HHH<'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>"
+            "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>"
           sPagination: 'bootstrap'
           aaData: data.fieldReports
           aoColumns: [
@@ -147,41 +148,64 @@ define (require) ->
           aaSorting: [[ 1, "asc" ]]
           
 
-    createDataTable: (collection) ->
-      console.debug "ReportTableView#createDataTable", @.$('table')
+    createDataTable: ->
+      console.debug "ReportTableView#createDataTable", @$el
       aoColumns = [
           {
+            sTitle: "File"
             bSortable: false
+            bUseRendered: false
             mDataProp: "name"
+          }
+          {
+            sTitle: "Last Updated"
+            mDataProp: "lastUpdate"
+            sType: "date"
             fnRender: (oObj, sVal) ->
-              out = "<i class='icon-file'></i> #{sVal}"
+              utils.date sVal
+          }
+          {
+            sTitle: "Size"
+            mDataProp: "size"
+            bUseRendered: false
+            fnRender: (oObj, Sval) ->
+              utils.fileSize Sval
+          }
+        ]
+        
+        reportCols = [
+          {
+            sTitle: "Status"
+            mDataProp: null
+            bSortable: true
+            fnRender: (oObj, Sval)->
               if oObj.aData.errors
                 errors = 0
                 for es in oObj.aData.errors
                   errors += es.errors.length
-                out += " <span class='invalid'>(#{errors} errors)</span>" 
-              
-              """
-                #{out}
-              """
+                "<span class='invalid'>#{errors} ERRORS</span>"
+              else
+                "<span class='valid'>VALID</span>"
           }
           {
+            sTitle: "Report"
             mDataProp: null
             bSortable: false
-            sWidth: "100px"
-            sDefaultContent: "<span class='link control'>view report</span>"
+            sDefaultContent: "<span class='link control'>view</span>"
           }
         ]
+      console.log @model.get 'report'
+      if @model.get 'report'
+        aoColumns = aoColumns.concat reportCols
       
-      @.$('table.report').dataTable
+      @$el.dataTable
         sDom:
-          "<'row-fluid'<'span6'l>HHH<'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>"
+          "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>"
         bPaginate: false
         aaSorting: [[ 1, "asc" ]]
         aoColumns: aoColumns
         sAjaxSource: ""
         sAjaxDataProp: ""
-        fnServerData: (sSource, aoData, fnCallback) ->
-          fnCallback collection.toJSON()
+        fnServerData: (sSource, aoData, fnCallback) =>
+          fnCallback @collection.toJSON()
           
-      #@.$('table.report').removeClass('table')
