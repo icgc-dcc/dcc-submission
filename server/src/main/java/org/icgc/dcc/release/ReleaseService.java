@@ -97,6 +97,9 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   public ReleaseView getReleaseView(String releaseName, Subject user) {
     Release release = this.query().where(QRelease.release.name.eq(releaseName)).uniqueResult();
 
+    if(release == null) {
+      return null;
+    }
     // populate project name for submissions
     List<Project> projects = this.getProjects(release, user);
     List<Entry<String, String>> projectEntries = buildProjectEntries(projects);
