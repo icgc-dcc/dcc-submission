@@ -88,7 +88,7 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
     String[] trimFields = // in order to obtain offset of referencing side
         ObjectArrays.concat(fields, ValidationFields.OFFSET_FIELD_NAME);
 
-    Trim trim = new Trim(getSchema().getName(), trimFields);
+    Trim trim = new Trim(getSchema(), trimFields);
     if(trimmedTails.containsKey(trim) == false) {
       String[] preTrimFields = ObjectArrays.concat(fields, ValidationFields.STATE_FIELD_NAME);
 

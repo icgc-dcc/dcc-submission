@@ -19,6 +19,8 @@ package org.icgc.dcc.validation;
 
 import java.util.Arrays;
 
+import org.icgc.dcc.dictionary.model.FileSchema;
+
 import com.google.common.base.Joiner;
 
 /**
@@ -26,16 +28,16 @@ import com.google.common.base.Joiner;
  */
 public class Trim {
 
-  private final String schema;
+  private final FileSchema schema;
 
   private final String[] fields;
 
-  public Trim(String schema, String... fields) {
+  public Trim(FileSchema schema, String... fields) {
     this.schema = schema;
     this.fields = fields;
   }
 
-  public String getSchema() {
+  public FileSchema getSchema() {
     return schema;
   }
 
@@ -44,7 +46,11 @@ public class Trim {
   }
 
   public String getName() {
-    return schema + ":" + Joiner.on('-').join(fields);
+    return schema.getName() + ":" + Joiner.on('-').join(fields);
+  }
+
+  public String getPath() {
+    return schema.getName() + "#" + Joiner.on("-").join(fields);
   }
 
   @Override
