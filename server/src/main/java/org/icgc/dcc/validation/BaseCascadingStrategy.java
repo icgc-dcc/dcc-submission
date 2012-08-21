@@ -29,12 +29,12 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.dictionary.model.FileSchemaRole;
+import org.icgc.dcc.filesystem.DccFileSystem;
 
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
 
 import com.google.common.base.Charsets;
-import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 import com.google.common.io.Closeables;
@@ -117,7 +117,13 @@ public abstract class BaseCascadingStrategy implements CascadingStrategy {
   }
 
   protected Path trimmedPath(Trim trim) {
-    return new Path(output, trim.getSchema() + "#" + Joiner.on("-").join(trim.getFields()) + ".tsv");
+    if(trim.getSchema().getRole() == FileSchemaRole.SUBMISSION) {
+      return new Path(output, trim.getPath() + ".tsv");
+    } else if(trim.getSchema().getRole() == FileSchemaRole.SYSTEM) {
+      return new Path(new Path(system, DccFileSystem.VALIDATION_DIRNAME), trim.getPath() + ".tsv");
+    } else {
+      throw new RuntimeException("undefined File Schema Role " + trim.getSchema().getRole());
+    }
   }
 
   protected Path reportPath(FileSchema schema, FlowType type, String reportName) {
