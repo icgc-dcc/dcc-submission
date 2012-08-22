@@ -5752,7 +5752,7 @@
       "restrictions" : [ ]
     } ],
     "relation" : [ {
-      "fields" : [ "tumour_sample_id" ],
+      "fields" : [ "analyzed_sample_id" ],
       "cardinality" : "ZERO_OR_MORE",
       "other" : "sample",
       "otherFields" : [ "analyzed_sample_id" ],
