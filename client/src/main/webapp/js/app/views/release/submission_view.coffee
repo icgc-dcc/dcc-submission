@@ -41,7 +41,7 @@ define (require) ->
       console.debug 'SubmissionView#initialize', @model
       super
       
-      #@subscribeEvent "signOffSubmission", @render
+      @subscribeEvent "signOffSubmission", -> @model.fetch()
       @subscribeEvent "validateSubmission", -> @model.fetch()
       
       @delegate 'click', '#signoff-submission-popup-button', @signOffSubmissionPopup
