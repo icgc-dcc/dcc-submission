@@ -33,7 +33,7 @@ define (require) ->
     title: 'Releases'
 
     historyURL: (params) ->
-      'releases'
+      if params.release then "releases/#{params.release}" else "releases"
 
     list: (params) ->
       console.debug 'ReleaseController#list', params
@@ -46,11 +46,16 @@ define (require) ->
       @title = params.release
       @model = new Release {name: params.release}
       @view = new ReleaseView {@model}
-      @model.fetch()
-      
+      @model.fetch
+        error: ->
+          Chaplin.mediator.publish '!startupController', 'release', 'list'
+
     submission: (params) ->
       console.debug 'ReleaseController#submission', params
       @title = "#{params.submission} - #{params.release}"
       @model = new Submission {release: params.release, name: params.submission}
       @view = new SubmissionView {@model}
-      @model.fetch()
+      @model.fetch
+        error: ->
+          Chaplin.mediator.publish '!startupController', 'release', 'show'
+            release: params.release
