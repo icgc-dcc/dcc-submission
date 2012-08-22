@@ -21,8 +21,10 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -35,6 +37,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.SerializationConfig;
 import org.icgc.dcc.dictionary.model.Cardinality;
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.Field;
@@ -44,6 +47,8 @@ import org.icgc.dcc.dictionary.model.Relation;
 import org.icgc.dcc.dictionary.model.Restriction;
 import org.icgc.dcc.dictionary.model.SummaryType;
 import org.icgc.dcc.dictionary.model.ValueType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -54,6 +59,7 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.io.Files;
 import com.mongodb.BasicDBObject;
 
@@ -61,6 +67,8 @@ import com.mongodb.BasicDBObject;
  * 
  */
 public class DictionaryConverter {
+
+  private static final Logger log = LoggerFactory.getLogger(DictionaryConverter.class);
 
   private static String DICTIONARY_VERSION = "0.6c";
 
@@ -71,7 +79,7 @@ public class DictionaryConverter {
   public void saveToJSON(String fileName) throws JsonGenerationException, JsonMappingException, IOException {
     ObjectMapper mapper = new ObjectMapper();
     mapper.writerWithDefaultPrettyPrinter().writeValue(new File(fileName), dictionary);
-
+    mapper.enable(SerializationConfig.Feature.SORT_PROPERTIES_ALPHABETICALLY);
     mapper.readValue(new File(fileName), Dictionary.class);
   }
 
@@ -93,8 +101,7 @@ public class DictionaryConverter {
     Map<String, FileSchema> fileSchemas = new HashMap<String, FileSchema>();
 
     for(File tsvFile : tsvFiles) {
-
-      fileSchemas.put(tsvFile.getName(), this.readFileSchema(tsvFile, FileSchemaRole.SUBMISSION));
+      fileSchemas.put(extractFileSchemaName(tsvFile), this.readFileSchema(tsvFile, FileSchemaRole.SUBMISSION));
     }
 
     // Read System FileSchema gene, transcript, mirna_base, Override the previous ones
@@ -103,21 +110,33 @@ public class DictionaryConverter {
     tsvFiles = systemFolder.listFiles(tsvFilter);
 
     for(File tsvFile : tsvFiles) {
-      fileSchemas.put(tsvFile.getName(), this.readFileSchema(tsvFile, FileSchemaRole.SYSTEM));
+      fileSchemas.put(extractFileSchemaName(tsvFile), this.readFileSchema(tsvFile, FileSchemaRole.SYSTEM));
     }
 
     dictionary.setFiles(new ArrayList<FileSchema>(fileSchemas.values()));
 
     this.readFilePattern("src/test/resources/converter/file_to_pattern.tsv");
 
-    this.readRelations("src/test/resources/converter/icgc_relations.txt");
+    Map<String, List<String>> schemaToUniqueFields =
+        this.readRelations("src/test/resources/converter/icgc_relations.txt");
+    log.info("schemaToUniqueFields = \n" + buildDebugString(schemaToUniqueFields));
+
+    for(String fileSchemaName : schemaToUniqueFields.keySet()) {
+      FileSchema fileSchema = fileSchemas.get(fileSchemaName);
+      fileSchema.setUniqueFields(schemaToUniqueFields.get(fileSchemaName));
+    }
 
     this.readXMLinfo("src/test/resources/converter/icgc.0.7.xml");
 
     return dictionary;
   }
 
-  private void readRelations(String tsvFile) throws IOException {
+  private String extractFileSchemaName(File tsvFile) {
+    return FilenameUtils.getBaseName(tsvFile.getName());
+  }
+
+  private Map<String, List<String>> readRelations(String tsvFile) throws IOException {
+    Map<String, List<String>> schemaToUniqueFields = new LinkedHashMap<String, List<String>>();
     String relationsText = Files.toString(new File(tsvFile), Charsets.UTF_8);
 
     Iterable<String> lines = Splitter.on('\n').trimResults().omitEmptyStrings().split(relationsText);
@@ -134,13 +153,24 @@ public class DictionaryConverter {
       String leftTable = valueIterator.next();
       String leftKey = valueIterator.next();
       Iterable<String> leftKeys = Splitter.on(',').trimResults().omitEmptyStrings().split(leftKey);
-      Cardinality leftCardinality = getCardinality(valueIterator.next());
-      // TODO: if cardinality is one then add unique constraint (see comment about it on DCC-226)
 
       String rightTable = valueIterator.next();
       String rightKey = valueIterator.next();
       Iterable<String> rightKeys = Splitter.on(',').trimResults().omitEmptyStrings().split(rightKey);
-      Cardinality rightCardinality = getCardinality(valueIterator.next());
+
+      Cardinality leftCardinality = getCardinality(valueIterator.next());
+      boolean rightUniqueness = Boolean.valueOf(valueIterator.next());
+      if(rightUniqueness) {
+        List<String> uniqueFields = schemaToUniqueFields.get(rightTable);
+        List<String> uniqueFieldsTmp = Lists.newArrayList(rightKeys);
+        if(uniqueFields == null) {
+          Collections.sort(uniqueFieldsTmp);
+          schemaToUniqueFields.put(rightTable, uniqueFieldsTmp);
+        } else if(uniqueFields.equals(uniqueFieldsTmp) == false) {
+          throw new ConverterException(String.format("schema %s already defines %s as unique fields, %s differs",
+              rightTable, uniqueFieldsTmp, uniqueFields));
+        }
+      }
 
       String optional = valueIterator.next();
       Iterable<Integer> optionals =
@@ -154,21 +184,28 @@ public class DictionaryConverter {
 
       if(this.dictionary.hasFileSchema(leftTable)) {
         FileSchema leftFileSchema = this.dictionary.fileSchema(leftTable).get();
-        leftFileSchema.addRelation(new Relation(leftKeys, leftCardinality, rightTable, rightKeys, rightCardinality,
-            optionals));
+        leftFileSchema.addRelation(new Relation(leftKeys, rightTable, rightKeys, leftCardinality, optionals));
       }
     }
+
+    return schemaToUniqueFields;
   }
 
   private Cardinality getCardinality(String cardinalityString) {
-    if("1".equals(cardinalityString)) {
-      return Cardinality.ONE;
-    } else if("1..n".equals(cardinalityString)) {
+    if("1..n".equals(cardinalityString)) {
       return Cardinality.ONE_OR_MORE;
     } else if("0..n".equals(cardinalityString)) {
       return Cardinality.ZERO_OR_MORE;
     }
     return null;
+  }
+
+  private String buildDebugString(Map<String, List<String>> schemaToUniqueFields) {
+    StringBuffer sb = new StringBuffer();
+    for(String fileSchema : schemaToUniqueFields.keySet()) {
+      sb.append("\t" + fileSchema + " -> " + schemaToUniqueFields.get(fileSchema) + "\n");
+    }
+    return sb.toString();
   }
 
   private void readFilePattern(String tsvFile) throws IOException {
@@ -223,7 +260,7 @@ public class DictionaryConverter {
   }
 
   private FileSchema readFileSchema(File tsvFile, FileSchemaRole role) throws IOException {
-    String FileSchemaName = FilenameUtils.removeExtension(tsvFile.getName());
+    String FileSchemaName = FilenameUtils.removeExtension(extractFileSchemaName(tsvFile));
     FileSchema fileSchema = new FileSchema(FileSchemaName);
 
     String fileSchemaText = Files.toString(tsvFile, Charsets.UTF_8);

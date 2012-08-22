@@ -15,8 +15,19 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.dictionary.model;
+package org.icgc.dcc.legacy;
 
-public enum Cardinality {
-  ZERO_OR_MORE, ONE_OR_MORE,
+public class ConverterException extends RuntimeException {
+
+  public ConverterException(Exception e) {
+    super(e);
+  }
+
+  public ConverterException(String message) {
+    super(message);
+  }
+
+  public ConverterException(String message, Exception e) {
+    super(message, e);
+  }
 }

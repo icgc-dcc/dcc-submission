@@ -18,6 +18,7 @@
 package org.icgc.dcc.validation.visitor;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.icgc.dcc.dictionary.model.Cardinality;
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.dictionary.model.Relation;
 import org.icgc.dcc.validation.ExternalFlowPlanningVisitor;
@@ -49,7 +51,9 @@ import cascading.pipe.Every;
 import cascading.pipe.Pipe;
 import cascading.pipe.assembly.Discard;
 import cascading.pipe.assembly.Rename;
+import cascading.pipe.joiner.Joiner;
 import cascading.pipe.joiner.LeftJoin;
+import cascading.pipe.joiner.OuterJoin;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
@@ -76,6 +80,8 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
 
     private final String[] rhsFields;
 
+    protected final Cardinality cardinality;
+
     private final List<Integer> optionals;
 
     private RelationPlanElement(FileSchema fileSchema, Relation relation) {
@@ -83,12 +89,14 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
       this.lhsFields = relation.getFields().toArray(new String[] {});
       this.rhs = relation.getOther();
       this.rhsFields = relation.getOtherFields().toArray(new String[] {});
+      this.cardinality = relation.getCardinality();
       this.optionals = relation.getOptionals();
     }
 
     @Override
     public String describe() {
-      return String.format("%s[%s:%s->%s:%s]", NAME, lhs, Arrays.toString(lhsFields), rhs, Arrays.toString(rhsFields));
+      return String.format("%s[%s:%s(%s)->%s:%s [%s]]", NAME, lhs, Arrays.toString(lhsFields), cardinality, rhs,
+          Arrays.toString(rhsFields), optionals);
     }
 
     @Override
@@ -115,16 +123,19 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
       String[] requiredRhsRenamedFields = extractRequiredFields(renamedRhsFields);
       String[] optionalRhsRenamedFields = extractOptionalFields(renamedRhsFields);
 
+      boolean twoWays = cardinality == Cardinality.ONE_OR_MORE;
+      boolean conditional = optionals.isEmpty() == false;
+      checkState(conditional == false || twoWays == false, describe()); // by design, see DCC-289#3
+
       rhsPipe = new Discard(rhsPipe, new Fields(ValidationFields.OFFSET_FIELD_NAME));
       rhsPipe = new Rename(rhsPipe, new Fields(rhsFields), new Fields(renamedRhsFields));
+      Joiner joiner = twoWays ? new OuterJoin() : new LeftJoin();
       Pipe pipe =
-          new CoGroup(lhsPipe, new Fields(requiredLhsFields), rhsPipe, new Fields(requiredRhsRenamedFields),
-              new LeftJoin());
-      NoNullBufferBase noNullBufferBase =
-          optionals.isEmpty() ? //
-          new NoNullBuffer(lhs, rhs, lhsFields, rhsFields, renamedRhsFields) : //
-          new ConditionalNoNullBuffer(lhs, rhs, lhsFields, rhsFields, requiredLhsFields, requiredRhsRenamedFields,
-              optionalLhsFields, optionalRhsRenamedFields);
+          new CoGroup(lhsPipe, new Fields(requiredLhsFields), rhsPipe, new Fields(requiredRhsRenamedFields), joiner);
+      NoNullBufferBase noNullBufferBase = //
+          conditional ? new ConditionalNoNullBuffer(lhs, rhs, lhsFields, rhsFields, requiredLhsFields,
+              requiredRhsRenamedFields, optionalLhsFields, optionalRhsRenamedFields) : //
+          new NoNullBuffer(lhs, rhs, lhsFields, rhsFields, renamedRhsFields, twoWays);
       return new Every(pipe, Fields.ALL, noNullBufferBase, Fields.RESULTS);
     }
 
@@ -159,7 +170,7 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
     @SuppressWarnings("rawtypes")
     static abstract class NoNullBufferBase extends BaseOperation implements Buffer {
 
-      protected final String lhs; // extremely useful for debugging...
+      protected final String lhs;
 
       protected final String rhs;
 
@@ -169,6 +180,10 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
 
       NoNullBufferBase(String lhs, String rhs, String[] lhsFields, String[] rhsFields) {
         super(lhsFields.length + rhsFields.length, new Fields(ValidationFields.STATE_FIELD_NAME));
+        checkArgument(lhs != null && lhs.isEmpty() == false);
+        checkArgument(rhs != null && rhs.isEmpty() == false);
+        checkArgument(lhsFields != null && lhsFields.length > 0);
+        checkArgument(rhsFields != null && rhsFields.length > 0);
         this.lhs = lhs;
         this.rhs = rhs;
         this.lhsFields = lhsFields;
@@ -183,17 +198,24 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
       }
 
       protected void reportRelationError(TupleState tupleState, Tuple offendingLhsTuple) {
-        tupleState.reportError(ValidationErrorCode.MISSING_RELATION_ERROR, TuplesUtils.getObjects(offendingLhsTuple),
+        tupleState.reportError(ValidationErrorCode.RELATION_ERROR, TuplesUtils.getObjects(offendingLhsTuple), lhs,
             Arrays.asList(lhsFields), rhs, Arrays.asList(rhsFields));
       }
 
       static final class NoNullBuffer extends NoNullBufferBase {
 
+        private final int CONVENTION_PARENT_OFFSET = -1; // see DCC-289#2
+
         private final String[] renamedRhsFields;
 
-        NoNullBuffer(String lhs, String rhs, String[] lhsFields, String[] rhsFields, String[] renamedRhsFields) {
+        protected final boolean twoWays;
+
+        NoNullBuffer(String lhs, String rhs, String[] lhsFields, String[] rhsFields, String[] renamedRhsFields,
+            boolean twoWays) {
           super(lhs, rhs, lhsFields, rhsFields);
+          checkArgument(renamedRhsFields != null && renamedRhsFields.length > 0);
           this.renamedRhsFields = renamedRhsFields;
+          this.twoWays = twoWays;
         }
 
         @Override
@@ -207,6 +229,14 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
               TupleState state = new TupleState(getLhsOffset(entry));
               reportRelationError(state, entry.selectTuple(new Fields(lhsFields)));
               bufferCall.getOutputCollector().add(new Tuple(state));
+            } else if(twoWays) {
+              if(TuplesUtils.hasValues(entry, lhsFields) == false) {
+                Tuple offendingRhsTuple = entry.selectTuple(new Fields(renamedRhsFields));
+                TupleState state = new TupleState(CONVENTION_PARENT_OFFSET);
+                state.reportError(ValidationErrorCode.RELATION_PARENT_ERROR, lhs, Arrays.asList(lhsFields),
+                    TuplesUtils.getObjects(offendingRhsTuple), rhs, Arrays.asList(rhsFields));
+                bufferCall.getOutputCollector().add(new Tuple(state));
+              }
             }
           }
         }
@@ -230,6 +260,10 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
             String[] requiredLhsFields, String[] requiredRhsFields, String[] optionalLhsFields,
             String[] optionalRhsFields) {
           super(lhs, rhs, lhsFields, rhsFields);
+          checkArgument(requiredLhsFields != null && requiredLhsFields.length > 0);
+          checkArgument(requiredRhsFields != null && requiredRhsFields.length > 0);
+          checkArgument(optionalLhsFields != null && optionalLhsFields.length > 0);
+          checkArgument(optionalRhsFields != null && optionalRhsFields.length > 0);
           this.requiredLhsFields = requiredLhsFields;
           this.requiredRhsFields = requiredRhsFields;
           this.optionalLhsFields = optionalLhsFields;
