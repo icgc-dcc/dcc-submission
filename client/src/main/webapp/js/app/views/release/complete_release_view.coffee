@@ -55,11 +55,11 @@ define (require) ->
     completeRelease: ->
       console.debug "CompleteReleaseView#completeRelease"
       
-      nextRelease = new NextRelease()
+      nextRelease = new NextRelease {name: @.$('#nextRelease').val()}
       
-      nextRelease.save {name: @.$('#nextRelease').val()}
-        success: (data) ->
-          @.$('.modal').modal('hide')
+      nextRelease.save {},
+        success: (data) =>
+          @$el.modal('hide')
           Chaplin.mediator.publish "completeRelease", data
           
         error: (model, error) =>

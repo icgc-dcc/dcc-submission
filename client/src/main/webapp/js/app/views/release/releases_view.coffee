@@ -37,6 +37,8 @@ define (require) ->
       console.debug "ReleasesView#initialize", @collection
       super
 
+      @subscribeEvent 'completeRelease', -> @collection.fetch()
+
     render: ->
       super
       @subview(
