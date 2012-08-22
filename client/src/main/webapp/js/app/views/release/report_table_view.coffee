@@ -141,7 +141,7 @@ define (require) ->
           sPagination: 'bootstrap'
           aaData: data.fieldReports
           aoColumns: [
-            { sTitle: "Name", mDataProp: "name"}
+            { sTitle: "Field Name", mDataProp: "name"}
             { sTitle: "Completeness<br>(%)", mDataProp: "completeness"}
             { sTitle: "Populated<br>(# rows)", mDataProp: "populated"}
             { sTitle: "Missing<br>(# rows)", mDataProp: "missing"}
