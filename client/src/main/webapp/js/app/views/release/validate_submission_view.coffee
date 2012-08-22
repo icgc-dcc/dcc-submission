@@ -36,19 +36,18 @@ define (require) ->
     id: 'validate-submission-popup'
     
     initialize: ->
-      console.debug "ValidateSubmissionView#initialize", @options, @options.submission
+      console.debug "ValidateSubmissionView#initialize", @options
       @model = @options.submission
-      @model.set "queue", @options.release.get("queue").length
       super
       
       @delegate 'click', '#validate-submission-button', @validateSubmission
       
     validateSubmission: (e) ->
-      console.debug "ValidateSubmissionView#completeRelease"
+      console.debug "ValidateSubmissionView#completeRelease", @model
       nextRelease = new NextRelease()
       
-      @$el.modal 'hide'
-      @model.set "state", "QUEUED"
-      Chaplin.mediator.publish "validateSubmission"
+      nextRelease.queue [@options.submission.get "projectKey"],
+        success: =>
+          @$el.modal 'hide'
+          Chaplin.mediator.publish "validateSubmission"
       
-      nextRelease.queue [@options.submission.get "projectKey"]    

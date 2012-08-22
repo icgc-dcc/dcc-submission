@@ -54,10 +54,12 @@ define (require) ->
       
     validateSubmissionPopup: (e) ->
       console.debug "ReleaseView#validateSubmissionPopup", e
+      submission = @collection.get $(e.currentTarget).data("submission")
+      submission.set 'queue', @model.get("queue").length
+      
       @subview("validateSubmissionView"
         new validateSubmissionView
-          "submission": @collection.get $(e.currentTarget).data("submission")
-          "release": @model
+          "submission": submission
       )
       
     createDataTable: ->

@@ -44,6 +44,8 @@ define (require) ->
         @model.set "next", data.get "name"
         @model.fetch()
 
+      @subscribeEvent "validateSubmission", -> @model.fetch()
+
       @delegate 'click', '#complete-release-popup-button', @completeReleasePopup
 
     completeReleasePopup: (e) ->
