@@ -40,8 +40,6 @@ public class Relation implements DictionaryElement {
 
   private final List<String> otherFields;
 
-  private final Cardinality otherCardinality;
-
   private final List<Integer> optionals;
 
   public Relation() {
@@ -49,22 +47,19 @@ public class Relation implements DictionaryElement {
     otherFields = new ArrayList<String>();
     cardinality = null;
     other = null;
-    otherCardinality = null;
     optionals = new ArrayList<Integer>();
   }
 
-  public Relation(Iterable<String> leftFields, Cardinality lhsCardinality, String right, Iterable<String> rightFields,
-      Cardinality rhsCardinality) {
-    this(leftFields, lhsCardinality, right, rightFields, rhsCardinality, ImmutableList.<Integer> of());
+  public Relation(Iterable<String> leftFields, String right, Iterable<String> rightFields, Cardinality lhsCardinality) {
+    this(leftFields, right, rightFields, lhsCardinality, ImmutableList.<Integer> of());
   }
 
-  public Relation(Iterable<String> leftFields, Cardinality lhsCardinality, String right, Iterable<String> rightFields,
-      Cardinality rhsCardinality, Iterable<Integer> optionals) {
+  public Relation(Iterable<String> leftFields, String right, Iterable<String> rightFields, Cardinality lhsCardinality,
+      Iterable<Integer> optionals) {
     this.fields = Lists.newArrayList(leftFields);
     this.cardinality = lhsCardinality;
     this.other = right;
     this.otherFields = Lists.newArrayList(rightFields);
-    this.otherCardinality = rhsCardinality;
     this.optionals = Lists.newArrayList(optionals);
 
     checkArgument(this.fields != null);
@@ -76,6 +71,18 @@ public class Relation implements DictionaryElement {
     checkArgument(this.fields.size() == this.otherFields.size());
     checkArgument(this.fields.size() > this.optionals.size(), this.fields.size() + ", " + this.optionals.size());
     // TODO: further check on optionals (no repetition, valid indices, ...) - will create separate ticket for it
+
+    if(this.optionals.isEmpty() == false && lhsCardinality == Cardinality.ONE_OR_MORE) { // see comment DCC-289: only
+                                                                                         // allowing one or the other
+      throw new DataModelException(String.format(
+          "invalid relation \"%s\" specified: cannot specify both optional fields (%s) and a cardinality of %s",
+          describe(), this.optionals, Cardinality.ONE_OR_MORE));
+    }
+  }
+
+  public String describe() {
+    return String.format("?.%s (cardinality: %s) --> %s.%s [optionals: %s]", fields, cardinality, other, otherFields,
+        optionals);
   }
 
   @Override
@@ -97,10 +104,6 @@ public class Relation implements DictionaryElement {
 
   public List<String> getOtherFields() {
     return otherFields;
-  }
-
-  public Cardinality getOtherCardinality() {
-    return otherCardinality;
   }
 
   public List<Integer> getOptionals() {

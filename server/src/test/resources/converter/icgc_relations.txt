@@ -1,40 +1,39 @@
-LeftTable	LeftKey (FK)	LeftCardinality	RightTable	RightKey (PK, with one exception for mirna_p table)	RightCardinality	optionals	JoinType (unused for now)
-specimen	donor_id	1..n	donor	donor_id	1		right
-sample	specimen_id	1..n	specimen	specimen_id	1		right
-exposure	donor_id	0..n	donor	donor_id	1		right
-family	donor_id	0..n	donor	donor_id	1		right
-therapy	donor_id	0..n	donor	donor_id	1		right
-biomarker	donor_id	0..n	donor	donor_id	1		right
-surgery	donor_id	0..n	donor	donor_id	1		right
-biomarker	donor_id,specimen_id	0..n	specimen	donor_id,specimen_id	1	1	right
-surgery	donor_id,specimen_id	0..n	specimen	donor_id,specimen_id	1	1	right
-ssm_p	analysis_id,analyzed_sample_id	1..n	ssm_m	analysis_id,analyzed_sample_id	1		inner
-ssm_s	analysis_id,analyzed_sample_id,mutation_id	0..n	ssm_p	analysis_id,analyzed_sample_id,mutation_id	1		right
-ssm_m	matched_sample_id	0..n	sample	analyzed_sample_id	1		inner
-ssm_s	transcript_affected	0..n	hsap_transcript	stable_id_1066	0..1		inner
-sgv_p	analysis_id,control_sample_id	1..n	sgv_m	analysis_id,control_sample_id	1		inner
-cnsm_p	analysis_id,analyzed_sample_id	1..n	cnsm_m	analysis_id,analyzed_sample_id	1		inner
-cnsm_s	analysis_id,analyzed_sample_id,mutation_id	0..n	cnsm_p	analysis_id,analyzed_sample_id,mutation_id	1		right
-cnsm_m	analyzed_sample_id	0..n	sample	analyzed_sample_id	1		inner
-cnsm_s	transcript_affected	0..n	hsap_transcript	stable_id_1066	0..1		inner
-stsm_p	analysis_id,analyzed_sample_id	1..n	stsm_m	analysis_id,analyzed_sample_id	1		inner
-stsm_s	analysis_id,analyzed_sample_id,sv_id,placement	0..n	stsm_p	analysis_id,analyzed_sample_id,sv_id,placement	1		right
-stsm_m	analyzed_sample_id	0..n	sample	analyzed_sample_id	1		inner
-stsm_s	transcript_affected_by_bkpt_from	0..n	hsap_transcript	stable_id_1066	0..1		inner
-stsm_s	transcript_affected_by_bkpt_to	0..n	hsap_transcript	stable_id_1066	0..1		inner
-exp_g	analysis_id,sample_id	1..n	exp_m	analysis_id,sample_id	1		inner
-exp_m	sample_id	0..n	sample	analyzed_sample_id	1		inner
-exp_g	gene_stable_id	0..n	hsap_gene	stable_id_1023	0..1		inner
-meth_p	analysis_id,analyzed_sample_id	1..n	meth_m	analysis_id,analyzed_sample_id	1		inner
-meth_s	analysis_id,analyzed_sample_id,methylated_fragment_id	0..n	meth_p	analysis_id,analyzed_sample_id,methylated_fragment_id	1		right
-meth_m	analyzed_sample_id	0..n	sample	analyzed_sample_id	1		inner
-meth_s	gene_affected	0..n	hsap_gene	stable_id_1023	0..1		inner
-mirna_p	analysis_id,sample_id	1..n	mirna_m	analysis_id,sample_id	1		inner
-mirna_s	mirna_seq	0..n	mirna_p	mirna_seq	1		right
-mirna_s	xref_mirbase_id	0..n	mirna_mirbase	xref_mirbase_id	1		inner
-mirna_m	sample_id	0..n	sample	analyzed_sample_id	1		inner
-mirna_mirbase	transcript_id	0..n	hsap_transcript	stable_id_1066	0..1		inner
-jcn_p	analysis_id,sample_id	1..n	jcn_m	analysis_id,sample_id	1		inner
-jcn_m	sample_id	0..n	sample	analyzed_sample_id	1		inner
-jcn_p	gene_stable_id	0..n	hsap_gene	stable_id_1023	0..1		inner
-
+LeftTable	LeftKey (FK)	RightTable	RightKey (PK, with one exception for mirna_p table)	LeftCardinality	RightUniqueness	optionals	JoinType (unused for now)
+specimen	donor_id	donor	donor_id	1..n	TRUE		right
+sample	specimen_id	specimen	specimen_id	1..n	TRUE		right
+exposure	donor_id	donor	donor_id	0..n	TRUE		right
+family	donor_id	donor	donor_id	0..n	TRUE		right
+therapy	donor_id	donor	donor_id	0..n	TRUE		right
+biomarker	donor_id	donor	donor_id	0..n	TRUE		right
+surgery	donor_id	donor	donor_id	0..n	TRUE		right
+biomarker	donor_id,specimen_id	specimen	donor_id,specimen_id	0..n	FALSE	1	right
+surgery	donor_id,specimen_id	specimen	donor_id,specimen_id	0..n	FALSE	1	right
+ssm_p	analysis_id,analyzed_sample_id	ssm_m	analysis_id,analyzed_sample_id	1..n	TRUE		inner
+ssm_s	analysis_id,analyzed_sample_id,mutation_id	ssm_p	analysis_id,analyzed_sample_id,mutation_id	0..n	TRUE		right
+ssm_m	matched_sample_id	sample	analyzed_sample_id	0..n	TRUE		inner
+ssm_s	transcript_affected	hsap_transcript	stable_id_1066	0..n	FALSE		inner
+sgv_p	analysis_id,control_sample_id	sgv_m	analysis_id,control_sample_id	1..n	TRUE		inner
+cnsm_p	analysis_id,analyzed_sample_id	cnsm_m	analysis_id,analyzed_sample_id	1..n	TRUE		inner
+cnsm_s	analysis_id,analyzed_sample_id,mutation_id	cnsm_p	analysis_id,analyzed_sample_id,mutation_id	0..n	TRUE		right
+cnsm_m	analyzed_sample_id	sample	analyzed_sample_id	0..n	TRUE		inner
+cnsm_s	transcript_affected	hsap_transcript	stable_id_1066	0..n	FALSE		inner
+stsm_p	analysis_id,analyzed_sample_id	stsm_m	analysis_id,analyzed_sample_id	1..n	TRUE		inner
+stsm_s	analysis_id,analyzed_sample_id,sv_id,placement	stsm_p	analysis_id,analyzed_sample_id,sv_id,placement	0..n	TRUE		right
+stsm_m	analyzed_sample_id	sample	analyzed_sample_id	0..n	TRUE		inner
+stsm_s	transcript_affected_by_bkpt_from	hsap_transcript	stable_id_1066	0..n	FALSE		inner
+stsm_s	transcript_affected_by_bkpt_to	hsap_transcript	stable_id_1066	0..n	FALSE		inner
+exp_g	analysis_id,sample_id	exp_m	analysis_id,sample_id	1..n	TRUE		inner
+exp_m	sample_id	sample	analyzed_sample_id	0..n	TRUE		inner
+exp_g	gene_stable_id	hsap_gene	stable_id_1023	0..n	FALSE		inner
+meth_p	analysis_id,analyzed_sample_id	meth_m	analysis_id,analyzed_sample_id	1..n	TRUE		inner
+meth_s	analysis_id,analyzed_sample_id,methylated_fragment_id	meth_p	analysis_id,analyzed_sample_id,methylated_fragment_id	0..n	TRUE		right
+meth_m	analyzed_sample_id	sample	analyzed_sample_id	0..n	TRUE		inner
+meth_s	gene_affected	hsap_gene	stable_id_1023	0..n	FALSE		inner
+mirna_p	analysis_id,sample_id	mirna_m	analysis_id,sample_id	1..n	TRUE		inner
+mirna_s	mirna_seq	mirna_p	mirna_seq	0..n	TRUE		right
+mirna_s	xref_mirbase_id	mirna_mirbase	xref_mirbase_id	0..n	FALSE		inner
+mirna_m	sample_id	sample	analyzed_sample_id	0..n	TRUE		inner
+mirna_mirbase	transcript_id	hsap_transcript	stable_id_1066	0..n	FALSE		inner
+jcn_p	analysis_id,sample_id	jcn_m	analysis_id,sample_id	1..n	TRUE		inner
+jcn_m	sample_id	sample	analyzed_sample_id	0..n	TRUE		inner
+jcn_p	gene_stable_id	hsap_gene	stable_id_1023	0..n	FALSE		inner
