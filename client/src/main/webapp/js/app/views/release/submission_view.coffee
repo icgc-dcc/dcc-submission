@@ -23,6 +23,7 @@ define (require) ->
   SubmissionFilesTableView = require 'views/release/submission_files_table_view'
   SignOffSubmissionView = require 'views/release/signoff_submission_view'
   ValidateSubmissionView = require 'views/release/validate_submission_view'
+  utils = require 'lib/utils'
   template = require 'text!views/templates/release/submission.handlebars'
 
   'use strict'
@@ -47,6 +48,8 @@ define (require) ->
       @delegate 'click', '#signoff-submission-popup-button', @signOffSubmissionPopup
       @delegate 'click', '#validate-submission-popup-button', @validateSubmissionPopup
     
+      utils.polling @model, 60000
+      
     signOffSubmissionPopup: (e) ->
       console.debug "SubmissionView#signOffSubmissionPopup", e
       @subview("signOffSubmissionView"

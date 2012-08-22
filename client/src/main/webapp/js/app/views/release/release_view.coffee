@@ -22,6 +22,7 @@ define (require) ->
   SubmissionSummaryView = require 'views/release/submission_summary_view'
   CompleteReleaseView = require 'views/release/complete_release_view'
   SubmissionTableView = require 'views/release/submission_table_view'
+  utils = require 'lib/utils'
   template = require 'text!views/templates/release/release.handlebars'
 
   'use strict'
@@ -48,6 +49,8 @@ define (require) ->
       @subscribeEvent "signOffSubmission", -> @model.fetch()
 
       @delegate 'click', '#complete-release-popup-button', @completeReleasePopup
+
+      utils.polling @model, 60000
 
     completeReleasePopup: (e) ->
       console.debug "ReleaseView#completeRelease", e
