@@ -42,7 +42,7 @@ define (require) ->
       super
       
       #@subscribeEvent "signOffSubmission", @render
-      #@subscribeEvent "validateSubmission", @render
+      @subscribeEvent "validateSubmission", -> @model.fetch()
       
       @delegate 'click', '#signoff-submission-popup-button', @signOffSubmissionPopup
       @delegate 'click', '#validate-submission-popup-button', @validateSubmissionPopup

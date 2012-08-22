@@ -38,7 +38,15 @@ define (require) ->
     initialize: ->
       console.debug "ValidateSubmissionView#initialize", @options
       @model = @options.submission
+      
+      release = new NextRelease()
+      release.fetch
+        success: (data) =>
+          @model.set 'queue', data.get('queue').length
+      
       super
+      
+      @modelBind 'change', @render
       
       @delegate 'click', '#validate-submission-button', @validateSubmission
       
