@@ -47,8 +47,6 @@ public class Plan {
 
   private Cascade cascade;
 
-  private final Map<String, TupleState> errors = Maps.newLinkedHashMap();
-
   private final CascadingStrategy cascadingStrategy;
 
   public Plan(CascadingStrategy cascadingStrategy) {
@@ -94,6 +92,7 @@ public class Plan {
 
   public void connect(CascadingStrategy cascadingStrategy) {
     CascadeDef cascade = new CascadeDef();
+    Map<String, TupleState> errors = Maps.newLinkedHashMap();
     for(FileSchemaFlowPlanner planner : Iterables.concat(internalPlanners.values(), externalPlanners.values())) {
       try {
         Flow<?> flow = planner.connect(cascadingStrategy);
@@ -101,7 +100,7 @@ public class Plan {
           cascade.addFlow(flow);
         }
       } catch(PlanningException e) {
-        this.errors.put(e.getSchemaName(), e.getTupleState());
+        errors.put(e.getSchemaName(), e.getTupleState());
       }
     }
     if(errors.size() > 0) {
