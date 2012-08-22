@@ -38,7 +38,7 @@ define (require) ->
       @delegate 'click', '#complete-release-popup-button', @completeReleasePopup
 
     completeReleasePopup: (e) ->
-      console.debug "ReleaseView#completeRelease", e
+      console.debug "ReleaseTableView#completeRelease", e
       @subview('CompleteReleases'
         new CompleteReleaseView 
           'name': $(e.currentTarget).data('release-name')

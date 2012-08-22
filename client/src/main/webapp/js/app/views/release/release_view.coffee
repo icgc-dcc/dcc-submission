@@ -29,60 +29,52 @@ define (require) ->
   class ReleaseView extends View
     template: template
     template = null
-    
+
     container: '#content-container'
     containerMethod: 'html'
     autoRender: true
     tagName: 'div'
     id: 'release-view'
-    
+
     initialize: ->
       console.debug 'ReleaseView#initialize', @model
       super
-      
-      @subscribeEvent "completeRelease", @fetch
+
+      @subscribeEvent "completeRelease", (data) ->
+        @model.set "next", data.get "name"
+        @model.fetch()
+
       @delegate 'click', '#complete-release-popup-button', @completeReleasePopup
-    
-    update: ->
-      console.log @model
-      @subview('SubmissionsTable').updateDataTable @model.get 'submissions'
-    
-    fetch: (data) ->
-      console.debug 'ReleaseView#fetch', data
-      @model.set "next", data.get "name"
-      console.debug 'ReleaseView#fetch', @model
-      @model.fetch()
-    
+
     completeReleasePopup: (e) ->
-      console.debug "ReleaseView#completeRelease"
+      console.debug "ReleaseView#completeRelease", e
       @subview('CompleteReleases'
-        new CompleteReleaseView {
-          @model
-        }
+        new CompleteReleaseView
+          'name': @model.get 'name'
+          'show': true
       )
-      
+
     render: ->
       console.debug "ReleaseView#render", @model
       super
-      
+
       @subview('ReleaseHeader'
         new ReleaseHeaderView {
           @model
           el: @.$("#release-header-container")
         }
       )
-      
+
       @subview('SubmissionSummary'
         new SubmissionSummaryView {
           @model
           el: @.$("#submission-summary-container")
         }
       )
-      
+
       @subview('SubmissionsTable'
         new SubmissionTableView {
           @model
           el: @.$("#submissions-table")
         }
       )
-    
