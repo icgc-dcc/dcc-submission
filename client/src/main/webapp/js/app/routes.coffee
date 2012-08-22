@@ -30,6 +30,7 @@ define ->
     match 'releases/:release/', 'release#show'
     match 'releases/:release/submissions/:submission', 'release#submission'
     match 'releases/:release/submissions/:submission/', 'release#submission'
+    match '*anything', 'errors#notFound'
     
     # Logout
     match 'logout', 'auth#logout'
