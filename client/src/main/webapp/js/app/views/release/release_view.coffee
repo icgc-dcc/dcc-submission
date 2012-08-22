@@ -45,6 +45,7 @@ define (require) ->
         @model.fetch()
 
       @subscribeEvent "validateSubmission", -> @model.fetch()
+      @subscribeEvent "signOffSubmission", -> @model.fetch()
 
       @delegate 'click', '#complete-release-popup-button', @completeReleasePopup
 
