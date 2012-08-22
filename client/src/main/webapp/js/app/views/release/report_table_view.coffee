@@ -88,9 +88,13 @@ define (require) ->
 
     summaryDetails: (data) ->
       console.debug "ReportTableView#summaryDetails", data
-      sOut = "<dt>#{data.type}</dt>"
+      type = switch data.type
+        when "AVERAGE" then "Summary Statistics"
+        when "FREQUENCY" then "Value Frequencies"
+        
+      sOut = "<dt>#{type}</dt>"
       for key, value of data.summary
-        value = if key is 'stddev' then Number(value).toFixed(2) else value
+        value = if key in ['stddev','avg'] then Number(value).toFixed(2) else value
         sOut += "<dd><strong>#{key}: </strong>#{value}<br></dd>"
         
       sOut
