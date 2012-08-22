@@ -123,7 +123,11 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     MongodbQuery<Release> query = this.query();
 
     for(Release release : query.list()) {
-      list.add(new BaseRelease(release));
+      if(release.getState() == ReleaseState.OPENED) {
+        list.add(new NextRelease(release, morphia(), datastore(), fs));
+      } else {
+        list.add(new CompletedRelease(release, morphia(), datastore(), fs));
+      }
     }
 
     return list;
@@ -135,10 +139,20 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     MongodbQuery<Release> query = this.where(QRelease.release.state.eq(ReleaseState.COMPLETED));
 
     for(Release release : query.list()) {
-      completedReleases.add(new CompletedRelease(release));
+      completedReleases.add(new CompletedRelease(release, morphia(), datastore(), fs));
     }
 
     return completedReleases;
+  }
+
+  public CompletedRelease getCompletedRelease(String releaseName) throws IllegalReleaseStateException {
+    MongodbQuery<Release> query =
+        this.where(QRelease.release.state.eq(ReleaseState.COMPLETED).and(QRelease.release.name.eq(releaseName)));
+    Release release = query.uniqueResult();
+    if(release == null) {
+      throw new IllegalArgumentException("release " + releaseName + " is not complete");
+    }
+    return new CompletedRelease(release, morphia(), datastore(), fs);
   }
 
   public Submission getSubmission(String releaseName, String projectKey) {
@@ -156,20 +170,14 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   }
 
   private Submission getSubmission(Release release, String projectKey) {
-    Submission result = null;
     for(Submission submission : release.getSubmissions()) {
       if(submission.getProjectKey().equals(projectKey)) {
-        result = submission;
-        break;
+        return submission;
       }
     }
 
-    if(result == null) {
-      throw new ReleaseException(String.format("there is no project \"%s\" associated with release \"%s\"", projectKey,
-          release.getName()));
-    }
-
-    return result;
+    throw new ReleaseException(String.format("there is no project \"%s\" associated with release \"%s\"", projectKey,
+        release.getName()));
   }
 
   public Release getRelease(String releaseName) {

@@ -4,11 +4,13 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.icgc.dcc.release.CompletedRelease;
-import org.icgc.dcc.release.IllegalReleaseStateException;
+import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
 import org.junit.Test;
+
+import com.google.code.morphia.Datastore;
+import com.google.code.morphia.Morphia;
 
 public class CompletedReleaseTest {
 
@@ -18,7 +20,7 @@ public class CompletedReleaseTest {
     when(mockRelease.getState()).thenReturn(ReleaseState.OPENED);
 
     try {
-      new CompletedRelease(mockRelease);
+      new CompletedRelease(mockRelease, mock(Morphia.class), mock(Datastore.class), mock(DccFileSystem.class));
       fail("Exception expected but none thrown");
     } catch(IllegalReleaseStateException e) {
 
@@ -30,7 +32,7 @@ public class CompletedReleaseTest {
     Release mockRelease = mock(Release.class);
     when(mockRelease.getState()).thenReturn(ReleaseState.COMPLETED);
 
-    new CompletedRelease(mockRelease);
+    new CompletedRelease(mockRelease, mock(Morphia.class), mock(Datastore.class), mock(DccFileSystem.class));
   }
 
 }
