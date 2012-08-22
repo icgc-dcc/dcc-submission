@@ -99,6 +99,35 @@ define (require) ->
         
       sOut
 
+    formatError: (error) ->
+      switch error.code
+        when "MISSING_VALUE_ERROR"
+          """
+            <td>Value Missing</td>
+            <td>#{error.parameters[1]}</td>
+          """
+        when "MISSING_RELATION_ERROR"
+          """
+            <td>Relation Missing</td>
+            <td>
+              <dt>Field?: #{error.parameters[0]}</dt>
+              <dd><strong>Something?</strong>: #{error.parameters[1]}</dd>
+              <dd><strong>Something?</strong>: #{error.parameters[2]}</dd>
+              <dd><strong>Something?</strong>: #{error.parameters[3]}</dd>
+            </td>
+          """
+        when "STRUCTURALLY_INVALID_ROW_ERROR"
+          """
+            <td>Structurally Invalid Row</td>
+            <td>
+              <dt>Columns?</dt>
+                <dd>#{error.parameters[0]}</dd>
+                <dd>#{error.parameters[1]}</dd>
+            </td>
+          """
+        else
+          "<td>#{error.code}</td><td>#{error.parameters}</td>"
+
     formatDetails: (data) ->
       console.debug "ReportTableView#formatDetails", data
       
@@ -121,11 +150,8 @@ define (require) ->
         for errorObj in data.errors
           for error in errorObj.errors
             sOut += "<tr>"
-            sOut += """
-              <td>#{errorObj.offset}</td>
-              <td>#{error.code}</td>
-              <td>#{error.parameters}</td>
-            """
+            sOut += "<td>#{errorObj.offset}</td>"
+            sOut += @formatError(error)
             sOut += "</tr>"
         sOut += "</tbody></table>"
         
@@ -136,9 +162,7 @@ define (require) ->
         sOut += "<table class='sub_report table table-striped'></table>"
         
         $(sOut).dataTable
-          sDom:
-            "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>"
-          sPagination: 'bootstrap'
+          bPaginate: false
           aaData: data.fieldReports
           aoColumns: [
             { sTitle: "Field Name", mDataProp: "name"}
