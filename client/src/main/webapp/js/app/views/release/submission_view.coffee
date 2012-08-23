@@ -48,8 +48,6 @@ define (require) ->
       @delegate 'click', '#signoff-submission-popup-button', @signOffSubmissionPopup
       @delegate 'click', '#validate-submission-popup-button', @validateSubmissionPopup
     
-      utils.polling @model, 60000
-      
     signOffSubmissionPopup: (e) ->
       console.debug "SubmissionView#signOffSubmissionPopup", e
       @subview("signOffSubmissionView"
