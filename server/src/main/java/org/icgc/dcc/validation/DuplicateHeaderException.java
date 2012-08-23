@@ -17,18 +17,23 @@
  */
 package org.icgc.dcc.validation;
 
+import java.util.List;
+
+import com.google.common.collect.Lists;
+
 /**
  * 
  */
 public class DuplicateHeaderException extends RuntimeException {
-  private final String duplicateHeader;
+  private final List<String> duplicateHeaders = Lists.newArrayList();
 
-  DuplicateHeaderException(String duplicateHeader) {
+  DuplicateHeaderException(List<String> duplicateHeader) {
     super();
-    this.duplicateHeader = duplicateHeader;
+    this.duplicateHeaders.addAll(duplicateHeader);
   }
 
-  public String getDuplicateHeader() {
-    return this.duplicateHeader;
+  public String[] getDuplicateHeader() {
+    String[] result = new String[this.duplicateHeaders.size()];
+    return this.duplicateHeaders.toArray(result);
   }
 }
