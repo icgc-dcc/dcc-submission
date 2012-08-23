@@ -21,7 +21,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -187,12 +186,10 @@ public abstract class BaseCascadingStrategy implements CascadingStrategy {
   }
 
   private List<String> checkDuplicateHeader(Iterable<String> header) {
-    Iterator<String> iterator = header.iterator();
     Set<String> headerSet = Sets.newHashSet();
     List<String> dupHeaders = Lists.newArrayList();
 
-    while(iterator.hasNext()) {
-      String strHeader = iterator.next();
+    for(String strHeader : header) {
       if(!headerSet.add(strHeader)) {
         dupHeaders.add(strHeader);
       }
