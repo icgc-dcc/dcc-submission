@@ -10,7 +10,7 @@ biomarker	donor_id,specimen_id	specimen	donor_id,specimen_id	0..n	FALSE	1	right
 surgery	donor_id,specimen_id	specimen	donor_id,specimen_id	0..n	FALSE	1	right
 ssm_p	analysis_id,analyzed_sample_id	ssm_m	analysis_id,analyzed_sample_id	1..n	TRUE		inner
 ssm_s	analysis_id,analyzed_sample_id,mutation_id	ssm_p	analysis_id,analyzed_sample_id,mutation_id	0..n	TRUE		right
-ssm_m	tumour_sample_id	sample	analyzed_sample_id	0..n	TRUE		inner
+ssm_m	analyzed_sample_id	sample	analyzed_sample_id	0..n	TRUE		inner
 ssm_s	transcript_affected	hsap_transcript	stable_id_1066	0..n	FALSE		inner
 sgv_p	analysis_id,control_sample_id	sgv_m	analysis_id,control_sample_id	1..n	TRUE		inner
 cnsm_p	analysis_id,analyzed_sample_id	cnsm_m	analysis_id,analyzed_sample_id	1..n	TRUE		inner

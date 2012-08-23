@@ -128,7 +128,10 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
       structralCheck.processFileHeader(header);
 
     } catch(IOException e) {
-      e.printStackTrace();
+      throw new PlanningException("Error processing file header");
+    } catch(DuplicateHeaderException e) {
+      throw new PlanningException(getSchema().getName(), ValidationErrorCode.DUPLICATE_HEADER_ERROR,
+          e.getDuplicateHeader());
     }
 
     flowDef.addSource(head, source);
