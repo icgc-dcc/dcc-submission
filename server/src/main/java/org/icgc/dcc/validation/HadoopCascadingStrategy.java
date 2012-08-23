@@ -17,8 +17,13 @@
  */
 package org.icgc.dcc.validation;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.dictionary.model.FileSchema;
@@ -36,6 +41,8 @@ import cascading.tuple.Fields;
 import cascading.tuple.hadoop.TupleSerializationProps;
 
 import com.google.common.collect.Maps;
+import com.google.common.io.ByteStreams;
+import com.google.common.io.InputSupplier;
 
 public class HadoopCascadingStrategy extends BaseCascadingStrategy {
 
@@ -57,6 +64,28 @@ public class HadoopCascadingStrategy extends BaseCascadingStrategy {
   public Tap<?, ?, ?> getReportTap(FileSchema schema, FlowType type, String reportName) {
     Path path = reportPath(schema, type, reportName);
     return new Hfs(new HadoopJsonScheme(), path.toUri().getPath());
+  }
+
+  @Override
+  public InputStream readReportTap(FileSchema schema, FlowType type, String reportName) throws IOException {
+    Path reportPath = reportPath(schema, type, reportName);
+
+    List<InputSupplier<InputStream>> inputSuppliers = new ArrayList<InputSupplier<InputStream>>();
+    for(FileStatus fileStatus : fileSystem.listStatus(reportPath)) {
+      Path filePath = fileStatus.getPath();
+      if(fileStatus.isFile() && filePath.getName().startsWith("part-")) {
+        final InputStream inputStream = fileSystem.open(filePath);
+        InputSupplier<InputStream> inputSupplier = new InputSupplier<InputStream>() {
+          @Override
+          public InputStream getInput() throws IOException {
+            return inputStream;
+          }
+        };
+        inputSuppliers.add(inputSupplier);
+      }
+    }
+
+    return ByteStreams.join(inputSuppliers).getInput();
   }
 
   @Override
