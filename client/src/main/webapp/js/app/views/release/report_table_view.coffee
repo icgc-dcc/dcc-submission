@@ -104,29 +104,81 @@ define (require) ->
         when "MISSING_VALUE_ERROR"
           """
             <td>Value Missing</td>
-            <td>#{error.parameters[1]}</td>
+            <td>value missing for required field: <strong>#{error.parameters[1]}</strong></td>
           """
-        when "MISSING_RELATION_ERROR"
+        when "RELATION_ERROR"
           """
-            <td>Relation Missing</td>
-            <td>
-              <dt>Field?: #{error.parameters[0]}</dt>
-              <dd><strong>Something?</strong>: #{error.parameters[1]}</dd>
-              <dd><strong>Something?</strong>: #{error.parameters[2]}</dd>
-              <dd><strong>Something?</strong>: #{error.parameters[3]}</dd>
-            </td>
+            <td>Relation Error</td>
+            <td>invalid value(s) (<strong>#{error.parameters[0]}</strong>) for field(s) <strong>#{error.parameters[1]}.#{error.parameters[2]}</strong>. Expected to match value(s) in: <strong>#{error.parameters[3]}.#{error.parameters[4]}</strong></td>
           """
+        when "RELATION_PARENT_ERROR"
+          """
+            <td>Relation Parent Error</td>
+            <td>no corresponding values in <strong>#{error.parameters[0]}.#{error.parameters[1]}</strong> for value(s) <strong>#{error.parameters[2]}</strong> in <strong>#{error.parameters[3]}.#{error.parameters[4]}</strong></td>
+          """
+          
         when "STRUCTURALLY_INVALID_ROW_ERROR"
           """
             <td>Structurally Invalid Row</td>
-            <td>
-              <dt>Columns?</dt>
-                <dd>#{error.parameters[0]}</dd>
-                <dd>#{error.parameters[1]}</dd>
-            </td>
+            <td>structurally invalid row: <strong>#{error.parameters[0]}</strong> columns against <strong>#{error.parameters[1]}</strong> declared in the header (row will be ignored by the rest of validation)"</td>
+          """
+        when "UNIQUE_VALUE_ERROR"
+          """
+            <td>Unique Value Error</td>
+            <td>invalid set of values (<strong>#{error.parameters[0]}</strong>) for fields <strong>#{error.parameters[1]}</strong>. Expected to be unique</td>
+          """
+        when "UNKNOWN_COLUMNS_WARNING"
+          """
+            <td>Unkown Column</td>
+            <td>value for unknown column: <strong>#{error.parameters[0]}</strong></td>
+          """
+        when "VALUE_TYPE_ERROR"
+          """
+            <td>Value Type Error</td>
+            <td>invalid value <strong>#{error.parameters[0]}</strong> for field <strong>#{error.parameters[1]}</strong>. Expected type is: <strong>#{error.parameters[2]}</strong></td>
+          """
+        when "OUT_OF_RANGE_ERROR"
+          """
+            <td>Out of Range</td>
+            <td>number <strong>#{error.parameters[0]}</strong> is out of range for field <strong>#{error.parameters[1]}</strong>. Expected value between <strong>#{error.parameters[2]}</strong> and <strong>#{error.parameters[3]}</strong></td>
+          """
+        when "NOT_A_NUMBER_ERROR"
+          """
+            <td>Not a Number</td>
+            <td><strong>#{error.parameters[0]}</strong> is not a number for field <strong>#{error.parameters[1]}</strong>. Expected a number</td>
+          """
+        when "MISSING_VALUE_ERROR"
+          """
+            <td>Missing Value</td>
+            <td>value missing for required field: <strong>#{error.parameters[0]}</strong></td>
+          """
+        when "CODELIST_ERROR"
+          """
+            <td>Codelist Error</td>
+            <td>invalid value <strong>#{error.parameters[0]}</strong> for field <strong>#{error.parameters[1]}</strong>. Expected code or value from CodeList <strong>#{error.parameters[2]}</strong></td>
+          """
+        when "DISCRETE_VALUES_ERROR"
+          """
+            <td>Discrete Values Error</td>
+            <td>invalid value <strong>#{error.parameters[0]}</strong> for field <strong>#{error.parameters[1]}</strong>. Expected one of the following values: <strong>#{error.parameters[2]}</strong></td>
+          """
+        when "TOO_MANY_FILES_ERROR"
+          """
+            <td>Too many files</td>
+            <td>more than one file matches the schema pattern</td>
+          """
+        when "INVALID_RELATION_ERROR"
+          """
+            <td>Invalid Relation</td>
+            <td>a required schema for this relation was not found</td>
+          """
+        when "MISSING_SCHEMA_ERROR"
+          """
+            <td>Missing Schema</td>
+            <td>no valid schema found</td>
           """
         else
-          "<td>#{error.code}</td><td>#{error.parameters}</td>"
+          "<td><strong>#{error.code}</strong></td><td><strong>#{error.parameters}</strong></td>"
 
     formatDetails: (data) ->
       console.debug "ReportTableView#formatDetails", data
