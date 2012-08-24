@@ -66,6 +66,9 @@ public class HadoopCascadingStrategy extends BaseCascadingStrategy {
   @Override
   public InputStream readReportTap(FileSchema schema, FlowType type, String reportName) throws IOException {
     Path reportPath = reportPath(schema, type, reportName);
+    if(fileSystem.isFile(reportPath)) {
+      return fileSystem.open(reportPath);
+    }
 
     List<InputSupplier<InputStream>> inputSuppliers = new ArrayList<InputSupplier<InputStream>>();
     for(FileStatus fileStatus : fileSystem.listStatus(reportPath)) {
