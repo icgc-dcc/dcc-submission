@@ -18,7 +18,8 @@ public enum ValidationErrorCode {
   DISCRETE_VALUES_ERROR("invalid value %s for field %s. Expected one of the following values: %s"), //
   TOO_MANY_FILES_ERROR("more than one file matches the schema pattern"), //
   INVALID_RELATION_ERROR("a required schema for this relation was not found"), //
-  MISSING_SCHEMA_ERROR("no valid schema found");
+  MISSING_SCHEMA_ERROR("no valid schema found"), //
+  DUPLICATE_HEADER_ERROR("duplicate header found: %s");
 
   private final String message;
 

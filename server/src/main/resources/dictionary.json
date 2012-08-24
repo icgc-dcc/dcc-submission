@@ -1,6 +1,11 @@
 {
+<<<<<<< HEAD
   "created" : 1345722855480,
   "lastUpdate" : 1345722855480,
+=======
+  "created" : 1345742256474,
+  "lastUpdate" : 1345742256474,
+>>>>>>> develop
   "version" : "0.6c",
   "state" : "OPENED",
   "files" : [ {

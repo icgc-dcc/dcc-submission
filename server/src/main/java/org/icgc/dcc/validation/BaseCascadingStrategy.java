@@ -21,6 +21,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.hadoop.conf.Configuration;
@@ -38,6 +40,8 @@ import cascading.tuple.Fields;
 import com.google.common.base.Charsets;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.common.io.Closeables;
 import com.google.common.io.LineReader;
 
@@ -111,6 +115,10 @@ public abstract class BaseCascadingStrategy implements CascadingStrategy {
       LineReader lineReader = new LineReader(isr);
       String firstLine = lineReader.readLine();
       Iterable<String> header = Splitter.on('\t').split(firstLine);
+      List<String> dupHeader = this.checkDuplicateHeader(header);
+      if(!dupHeader.isEmpty()) {
+        throw new DuplicateHeaderException(dupHeader);
+      }
       return new Fields(Iterables.toArray(header, String.class));
     } finally {
       Closeables.closeQuietly(isr);
@@ -176,5 +184,17 @@ public abstract class BaseCascadingStrategy implements CascadingStrategy {
   @Override
   public FileSchemaDirectory getSystemDirectory() {
     return this.systemDirectory;
+  }
+
+  private List<String> checkDuplicateHeader(Iterable<String> header) {
+    Set<String> headerSet = Sets.newHashSet();
+    List<String> dupHeaders = Lists.newArrayList();
+
+    for(String strHeader : header) {
+      if(!headerSet.add(strHeader)) {
+        dupHeaders.add(strHeader);
+      }
+    }
+    return dupHeaders;
   }
 }
