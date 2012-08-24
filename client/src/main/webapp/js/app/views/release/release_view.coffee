@@ -18,8 +18,11 @@
 
 define (require) ->
   View = require 'views/base/view'
+  ReleaseHeaderView = require 'views/release/release_header_view'
+  SubmissionSummaryView = require 'views/release/submission_summary_view'
   CompleteReleaseView = require 'views/release/complete_release_view'
   SubmissionTableView = require 'views/release/submission_table_view'
+  utils = require 'lib/utils'
   template = require 'text!views/templates/release/release.handlebars'
 
   'use strict'
@@ -27,43 +30,57 @@ define (require) ->
   class ReleaseView extends View
     template: template
     template = null
-    
+
     container: '#content-container'
     containerMethod: 'html'
-    autoRender: false
+    autoRender: true
     tagName: 'div'
     id: 'release-view'
-    
+
     initialize: ->
       console.debug 'ReleaseView#initialize', @model
       super
-      
-      @modelBind 'change', @render
-      
-      @subscribeEvent "completeRelease", @fetch
+
+      @subscribeEvent "completeRelease", (data) ->
+        @model.set "next", data.get "name"
+        @model.fetch()
+
+      @subscribeEvent "validateSubmission", -> @model.fetch()
+      @subscribeEvent "signOffSubmission", -> @model.fetch()
+
       @delegate 'click', '#complete-release-popup-button', @completeReleasePopup
-    
-    fetch: (data) ->
-      console.debug 'ReleaseView#fetch', data
-      @model.set "next", data.get "name"
-      console.debug 'ReleaseView#fetch', @model
-      @model.fetch()
-    
+
+      utils.polling @model, 60000
+
     completeReleasePopup: (e) ->
-      console.debug "ReleaseView#completeRelease"
+      console.debug "ReleaseView#completeRelease", e
       @subview('CompleteReleases'
-        new CompleteReleaseView {
-          @model
-        }
+        new CompleteReleaseView
+          'name': @model.get 'name'
+          'show': true
       )
-      
+
     render: ->
       console.debug "ReleaseView#render", @model
       super
+
+      @subview('ReleaseHeader'
+        new ReleaseHeaderView {
+          @model
+          el: @.$("#release-header-container")
+        }
+      )
+
+      @subview('SubmissionSummary'
+        new SubmissionSummaryView {
+          @model
+          el: @.$("#submission-summary-container")
+        }
+      )
+
       @subview('SubmissionsTable'
         new SubmissionTableView {
           @model
           el: @.$("#submissions-table")
         }
       )
-    

@@ -25,7 +25,7 @@ define (require) ->
   class Report extends Model
 
     initialize: ->
-      console.debug 'Report#initialize', @, @attributes.schemaReports
+      #console?.debug 'Report#initialize', @, @attributes.schemaReports
       super
       @set 'schemaReports', new SchemaReports @attributes.schemaReports,
         {release: @attributes.release, projectKey: @attributes.projectKey}
@@ -34,7 +34,7 @@ define (require) ->
         "releases/#{@attributes.release}/submissions/#{@attributes.submission}/report"
     
     parse: (response) ->
-      console.debug 'Report#parse', response
+      #console?.debug 'Report#parse', response
       if response?.schemaReports
         response.schemaReports = new SchemaReports response.schemaReports, {release: response.release, projectKey: response.projectKey}
       response

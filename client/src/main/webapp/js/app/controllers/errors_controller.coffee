@@ -16,20 +16,13 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-define (require) ->
-  Model = require 'models/base/model'
-  Submissions = require 'models/submissions'
-
-  "use strict"
-
-  class Release extends Model
-    urlKey: "name"
-    urlPath: ->
-      "releases/"
-    defaults:
-      'submissions': new Submissions([], {"release": null})
+define (require) -> 
+  Controller = require 'controllers/base/controller'
+  notFoundView = require 'views/errors/not_found_view'
+  
+  class ErrorController extends Controller
     
-    parse: (response) ->
-      if response?.submissions
-        response.submissions = new Submissions response.submissions, {"release": response.name}
-      response
+    notFound: (params) ->
+      console.debug 'ErrorController#notFound', params
+      @title = '404 - Request Not Found'
+      @view = new notFoundView()

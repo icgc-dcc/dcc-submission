@@ -16,24 +16,19 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-define ->
+define (require) ->
+  View = require 'views/base/view'
+  template = require 'text!views/templates/release/release_header.handlebars'
+
   'use strict'
 
-  # The routes for the application. This module returns a function.
-  # `match` is match method of the Router
-  (match) ->
-
-    # Releases
-    match 'releases', 'release#list'
-    match 'releases/', 'release#list'
-    match 'releases/:release', 'release#show'
-    match 'releases/:release/', 'release#show'
-    match 'releases/:release/submissions/:submission', 'release#submission'
-    match 'releases/:release/submissions/:submission/', 'release#submission'
+  class ReleaseHeaderView extends View
+    template: template
+    template = null
     
-    # Logout
-    match 'logout', 'auth#logout'
-    match 'logout/', 'auth#logout'
-
-    match '*anything', 'errors#notFound'
+    autoRender: true
     
+    initialize: ->
+      super
+        
+      @modelBind 'change', @render

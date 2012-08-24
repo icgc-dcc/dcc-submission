@@ -180,4 +180,9 @@ define (require) ->
 
       xhr.setRequestHeader 'Authorization', "X-DCC-Auth  #{@accessToken}"
 
+    polling: (model, timing) ->
+      setInterval( =>
+        model.fetch()
+      , timing)
+
   utils

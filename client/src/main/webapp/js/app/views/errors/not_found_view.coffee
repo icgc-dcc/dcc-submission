@@ -18,44 +18,36 @@
 
 define (require) ->
   Chaplin = require 'chaplin'
+  Model = require 'models/base/model'
   View = require 'views/base/view'
-  NextRelease = require 'models/next_release'
-  template = require 'text!views/templates/release/validate_submission.handlebars'
+  template = require 'text!views/templates/errors/not_found.handlebars'
 
   'use strict'
 
-  class ValidateSubmissionView extends View
+  class NotFoundView extends View
     template: template
     template = null
     
     container: '#content-container'
-    containerMethod: 'append'
-    autoRender: true
+    containerMethod: 'html'
+    autoRender: false
     tagName: 'div'
-    className: "modal fade"
-    id: 'validate-submission-popup'
+    id: 'not-found-view'
+    
+    autoRender: true
     
     initialize: ->
-      console.debug "ValidateSubmissionView#initialize", @options
-      @model = @options.submission
-      
-      release = new NextRelease()
-      release.fetch
-        success: (data) =>
-          @model.set 'queue', data.get('queue').length
-      
+      #console.debug "CompactReleaseView#initialize", @model
+      @model = new Model {sec: 5}
       super
       
       @modelBind 'change', @render
       
-      @delegate 'click', '#validate-submission-button', @validateSubmission
-      
-    validateSubmission: (e) ->
-      console.debug "ValidateSubmissionView#completeRelease", @model
-      nextRelease = new NextRelease()
-      
-      nextRelease.queue [@options.submission.get "projectKey"],
-        success: =>
-          @$el.modal 'hide'
-          Chaplin.mediator.publish "validateSubmission"
-      
+      i = setInterval =>
+        if @model.get('sec') > 0 
+          @model.set 'sec', @model.get('sec') - 1
+        else
+          clearInterval(i)
+          Chaplin.mediator.publish '!startupController', 'release', 'list'
+          
+      , 1000
