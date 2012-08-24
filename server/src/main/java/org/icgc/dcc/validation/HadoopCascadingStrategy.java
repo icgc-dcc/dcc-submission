@@ -53,9 +53,6 @@ public class HadoopCascadingStrategy extends BaseCascadingStrategy {
   @Override
   public FlowConnector getFlowConnector() {
     Map<Object, Object> properties = Maps.newHashMap();
-    // TODO these should not be hardcoded
-    properties.put("fs.default.name", "hdfs://hboot1.res.oicr.on.ca:8020");
-    properties.put("mapred.job.tracker", "hboot1.res.oicr.on.ca:8021");
     TupleSerializationProps.addSerialization(properties, TupleStateSerialization.class.getName());
     return new HadoopFlowConnector(properties);
   }
