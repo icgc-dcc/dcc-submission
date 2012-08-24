@@ -18,7 +18,6 @@
 
 define (require) ->
   DataTableView = require 'views/base/data_table_view'
-  template = require 'text!views/templates/release/submissions_table.handlebars'
   utils = require 'lib/utils'
   
   'use strict'
@@ -31,12 +30,12 @@ define (require) ->
     
     initialize: ->
       console.debug "SubmissionFilesTableView#initialize", @model, @el
-      @collection = @model.get "files"
-      
+      @collection = @model.get "submissionFiles"
+      console.log "!~!~~!~!~!~~!", @collection
       super
       
-    createDataTable: (collection) ->
-      console.debug "SubmissionFilesTableView#createDataTable", @.$('table')
+    createDataTable: ->
+      console.debug "SubmissionFilesTableView#createDataTable", @$el
       aoColumns = [
           {
             sTitle: "File"
@@ -63,7 +62,7 @@ define (require) ->
           }
         ]
       
-      @.$('table').dataTable
+      @$el.dataTable
         sDom:
           "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>"
         bPaginate: false
@@ -73,5 +72,5 @@ define (require) ->
         aoColumns: aoColumns
         sAjaxSource: ""
         sAjaxDataProp: ""
-        fnServerData: (sSource, aoData, fnCallback) ->
-          fnCallback collection.toJSON()
+        fnServerData: (sSource, aoData, fnCallback) =>
+          fnCallback @collection.toJSON()

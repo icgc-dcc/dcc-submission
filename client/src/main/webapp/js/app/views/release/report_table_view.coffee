@@ -18,8 +18,8 @@
 
 define (require) ->
   DataTableView = require 'views/base/data_table_view'
-  template = require 'text!views/templates/release/report_table.handlebars'
-  
+  utils = require 'lib/utils'
+
   'use strict'
 
   class ReportTableView extends DataTableView
@@ -30,18 +30,28 @@ define (require) ->
     
     initialize: ->
       console.debug "ReportTableView#initialize", @model, @el
-      @collection = @model.get "schemaReports"    
+      @report = @model.get "report"
+      @collection = @report.get "schemaReports"
+
       super
+      
+      @modelBind 'change', @update
       
       @anOpen = []
       @delegate 'click', '.control', @rowDetails
       @delegate 'click', '.summary', @rowSummary
     
+    update: ->
+      console.debug "ReportTableView#update", @model
+      @report = @model.get "report"
+      @collection = @report.get "schemaReports"
+      @updateDataTable()
+    
     rowDetails: (e) ->
       #console.debug "ReportTableView#rowDetails", e, @anOpen
       control = e.target
       nTr = control.parentNode.parentNode
-      dT = @.$('table').dataTable()
+      dT = @$el.dataTable()
       
       data = dT.fnGetData nTr
       if data.errors
@@ -51,11 +61,11 @@ define (require) ->
 
       if nTr in @anOpen
         @anOpen = _.without @anOpen, nTr
-        $(control).text 'view report'
+        $(control).text 'view'
         dT.fnClose(nTr)
       else
         @anOpen.push nTr
-        $(control).text 'hide report'
+        $(control).text 'hide'
         dT.fnOpen(nTr, @formatDetails(data), "details #{style}")
 
     rowSummary: (e) ->
@@ -78,19 +88,104 @@ define (require) ->
 
     summaryDetails: (data) ->
       console.debug "ReportTableView#summaryDetails", data
-      sOut = "<dt>#{data.type}</dt>"
+      type = switch data.type
+        when "AVERAGE" then "Summary Statistics"
+        when "FREQUENCY" then "Value Frequencies"
+        
+      sOut = "<dt>#{type}</dt>"
       for key, value of data.summary
-        value = if key is 'stddev' then Number(value).toFixed(2) else value
+        value = if key in ['stddev','avg'] then Number(value).toFixed(2) else value
         sOut += "<dd><strong>#{key}: </strong>#{value}<br></dd>"
         
       sOut
+
+    formatError: (error) ->
+      switch error.code
+        when "MISSING_VALUE_ERROR"
+          """
+            <td>Value Missing</td>
+            <td>value missing for required field: <strong>#{error.parameters[1]}</strong></td>
+          """
+        when "RELATION_ERROR"
+          """
+            <td>Relation Error</td>
+            <td>invalid value(s) (<strong>#{error.parameters[0]}</strong>) for field(s) <strong>#{error.parameters[1]}.#{error.parameters[2]}</strong>. Expected to match value(s) in: <strong>#{error.parameters[3]}.#{error.parameters[4]}</strong></td>
+          """
+        when "RELATION_PARENT_ERROR"
+          """
+            <td>Relation Parent Error</td>
+            <td>no corresponding values in <strong>#{error.parameters[0]}.#{error.parameters[1]}</strong> for value(s) <strong>#{error.parameters[2]}</strong> in <strong>#{error.parameters[3]}.#{error.parameters[4]}</strong></td>
+          """
+          
+        when "STRUCTURALLY_INVALID_ROW_ERROR"
+          """
+            <td>Structurally Invalid Row</td>
+            <td>structurally invalid row: <strong>#{error.parameters[0]}</strong> columns against <strong>#{error.parameters[1]}</strong> declared in the header (row will be ignored by the rest of validation)"</td>
+          """
+        when "UNIQUE_VALUE_ERROR"
+          """
+            <td>Unique Value Error</td>
+            <td>invalid set of values (<strong>#{error.parameters[0]}</strong>) for fields <strong>#{error.parameters[1]}</strong>. Expected to be unique</td>
+          """
+        when "UNKNOWN_COLUMNS_WARNING"
+          """
+            <td>Unkown Column</td>
+            <td>value for unknown column: <strong>#{error.parameters[0]}</strong></td>
+          """
+        when "VALUE_TYPE_ERROR"
+          """
+            <td>Value Type Error</td>
+            <td>invalid value <strong>#{error.parameters[0]}</strong> for field <strong>#{error.parameters[1]}</strong>. Expected type is: <strong>#{error.parameters[2]}</strong></td>
+          """
+        when "OUT_OF_RANGE_ERROR"
+          """
+            <td>Out of Range</td>
+            <td>number <strong>#{error.parameters[0]}</strong> is out of range for field <strong>#{error.parameters[1]}</strong>. Expected value between <strong>#{error.parameters[2]}</strong> and <strong>#{error.parameters[3]}</strong></td>
+          """
+        when "NOT_A_NUMBER_ERROR"
+          """
+            <td>Not a Number</td>
+            <td><strong>#{error.parameters[0]}</strong> is not a number for field <strong>#{error.parameters[1]}</strong>. Expected a number</td>
+          """
+        when "MISSING_VALUE_ERROR"
+          """
+            <td>Missing Value</td>
+            <td>value missing for required field: <strong>#{error.parameters[0]}</strong></td>
+          """
+        when "CODELIST_ERROR"
+          """
+            <td>Codelist Error</td>
+            <td>invalid value <strong>#{error.parameters[0]}</strong> for field <strong>#{error.parameters[1]}</strong>. Expected code or value from CodeList <strong>#{error.parameters[2]}</strong></td>
+          """
+        when "DISCRETE_VALUES_ERROR"
+          """
+            <td>Discrete Values Error</td>
+            <td>invalid value <strong>#{error.parameters[0]}</strong> for field <strong>#{error.parameters[1]}</strong>. Expected one of the following values: <strong>#{error.parameters[2]}</strong></td>
+          """
+        when "TOO_MANY_FILES_ERROR"
+          """
+            <td>Too many files</td>
+            <td>more than one file matches the schema pattern</td>
+          """
+        when "INVALID_RELATION_ERROR"
+          """
+            <td>Invalid Relation</td>
+            <td>a required schema for this relation was not found</td>
+          """
+        when "MISSING_SCHEMA_ERROR"
+          """
+            <td>Missing Schema</td>
+            <td>no valid schema found</td>
+          """
+        else
+          "<td><strong>#{error.code}</strong></td><td><strong>#{error.parameters}</strong></td>"
 
     formatDetails: (data) ->
       console.debug "ReportTableView#formatDetails", data
       
       sOut = ''
       sErr = ''
-      console.log data.errors
+      
       if data.errors
         sOut += """
           <table class='table table-striped'>
@@ -107,11 +202,8 @@ define (require) ->
         for errorObj in data.errors
           for error in errorObj.errors
             sOut += "<tr>"
-            sOut += """
-              <td>#{errorObj.offset}</td>
-              <td>#{error.code}</td>
-              <td>#{error.parameters}</td>
-            """
+            sOut += "<td>#{errorObj.offset}</td>"
+            sOut += @formatError(error)
             sOut += "</tr>"
         sOut += "</tbody></table>"
         
@@ -122,12 +214,10 @@ define (require) ->
         sOut += "<table class='sub_report table table-striped'></table>"
         
         $(sOut).dataTable
-          sDom:
-            "<'row-fluid'<'span6'l>HHH<'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>"
-          sPagination: 'bootstrap'
+          bPaginate: false
           aaData: data.fieldReports
           aoColumns: [
-            { sTitle: "Name", mDataProp: "name"}
+            { sTitle: "Field Name", mDataProp: "name"}
             { sTitle: "Completeness<br>(%)", mDataProp: "completeness"}
             { sTitle: "Populated<br>(# rows)", mDataProp: "populated"}
             { sTitle: "Missing<br>(# rows)", mDataProp: "missing"}
@@ -147,41 +237,63 @@ define (require) ->
           aaSorting: [[ 1, "asc" ]]
           
 
-    createDataTable: (collection) ->
-      console.debug "ReportTableView#createDataTable", @.$('table')
+    createDataTable: ->
+      console.debug "ReportTableView#createDataTable", @$el
       aoColumns = [
           {
+            sTitle: "File"
             bSortable: false
+            bUseRendered: false
             mDataProp: "name"
+          }
+          {
+            sTitle: "Last Updated"
+            mDataProp: "lastUpdate"
+            sType: "date"
             fnRender: (oObj, sVal) ->
-              out = "<i class='icon-file'></i> #{sVal}"
+              utils.date sVal
+          }
+          {
+            sTitle: "Size"
+            mDataProp: "size"
+            bUseRendered: false
+            fnRender: (oObj, Sval) ->
+              utils.fileSize Sval
+          }
+        ]
+        
+        reportCols = [
+          {
+            sTitle: "Status"
+            mDataProp: null
+            bSortable: true
+            fnRender: (oObj, Sval)->
               if oObj.aData.errors
                 errors = 0
                 for es in oObj.aData.errors
                   errors += es.errors.length
-                out += " <span class='invalid'>(#{errors} errors)</span>" 
-              
-              """
-                #{out}
-              """
+                "<span class='invalid'>#{errors} ERRORS</span>"
+              else
+                "<span class='valid'>VALID</span>"
           }
           {
+            sTitle: "Report"
             mDataProp: null
             bSortable: false
-            sWidth: "100px"
-            sDefaultContent: "<span class='link control'>view report</span>"
+            sDefaultContent: "<span class='link control'>view</span>"
           }
         ]
       
-      @.$('table.report').dataTable
+      if true# @model.get 'report'
+        aoColumns = aoColumns.concat reportCols
+      
+      @$el.dataTable
         sDom:
-          "<'row-fluid'<'span6'l>HHH<'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>"
+          "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>"
         bPaginate: false
         aaSorting: [[ 1, "asc" ]]
         aoColumns: aoColumns
         sAjaxSource: ""
         sAjaxDataProp: ""
-        fnServerData: (sSource, aoData, fnCallback) ->
-          fnCallback collection.toJSON()
-          
-      #@.$('table.report').removeClass('table')
+        fnServerData: (sSource, aoData, fnCallback) =>
+          fnCallback @collection.toJSON()

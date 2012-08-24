@@ -28,7 +28,7 @@ define (require) ->
       "releases/#{@release}"
     
     initialize: (models, options)->
-      console.debug 'Submissions#initialize', @, models, options
+      #console?.debug 'Submissions#initialize', @, models, options
       @release = options.release
       
     parse: (response) ->

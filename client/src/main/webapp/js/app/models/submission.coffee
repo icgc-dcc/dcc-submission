@@ -25,6 +25,8 @@ define (require) ->
 
   class Submission extends Model
     idAttribute: "projectKey"
+    defaults:
+      'report': new Report()
 
     initialize: ->
       console.debug 'Submission#initialize', @, @attributes
@@ -35,11 +37,19 @@ define (require) ->
 
     parse: (response) ->
       console.debug 'Submission#parse', @, response
-      if response?.report
-        response.report = new Report _.extend(response.report,
-          {"release": @attributes?.release, "projectKey": response.projectKey})
-      response.files = new SubmissionFiles {}, {
-                            "release": @attributes?.release
-                            "projectKey": response.projectKey
-                          }
+      
+      data = {
+        'schemaReports': response.submissionFiles
+      }
+      
+      if response.report
+        for file in data.schemaReports
+          for report in response.report.schemaReports
+            if report.name is file.name
+              _.extend(file, report)
+              break
+
+      response.report = new Report _.extend(data,
+        {"release": @attributes?.release, "projectKey": response.projectKey})
+
       response

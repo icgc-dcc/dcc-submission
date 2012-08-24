@@ -46,8 +46,8 @@ define (require) ->
       console.debug "SignOffSubmissionView#completeRelease"
       nextRelease = new NextRelease()
       
-      @$el.modal 'hide'
-      @model.set "state", "SIGNED OFF"
-      Chaplin.mediator.publish "validateSubmission"
+      nextRelease.signOff [@model.get "projectKey"],
+        success: =>
+          @$el.modal 'hide'
+          Chaplin.mediator.publish "signOffSubmission"
       
-      nextRelease.signOff [@options.submission.get "projectKey"]

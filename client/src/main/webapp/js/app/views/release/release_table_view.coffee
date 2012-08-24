@@ -18,8 +18,7 @@
 
 define (require) ->
   DataTableView = require 'views/base/data_table_view'
-  CompactReleaseView = require 'views/release/compact_release_view'
-  template = require 'text!views/templates/release/releases_table.handlebars'
+  CompleteReleaseView = require 'views/release/complete_release_view'
   utils = require 'lib/utils'
   
   'use strict'
@@ -27,26 +26,31 @@ define (require) ->
   class ReleaseTableView extends DataTableView
     template: template
     template = null
-    autoRender: true
     
-    container: '#releases-table'
-    containerMethod: 'html'
-    tagName: 'table'
-    className: "releases table table-striped"
-    id: "releases"
+    autoRender: true
     
     initialize: ->
       console.debug "ReleasesTableView#initialize", @collection, @el
       super
-      
-      @subscribeEvent "completeRelease", @fetch
-         
-    createDataTable: (collection) ->
+
+      @modelBind 'reset', @updateDataTable
+
+      @delegate 'click', '#complete-release-popup-button', @completeReleasePopup
+
+    completeReleasePopup: (e) ->
+      console.debug "ReleaseTableView#completeRelease", e
+      @subview('CompleteReleases'
+        new CompleteReleaseView 
+          'name': $(e.currentTarget).data('release-name')
+      )
+    
+    createDataTable: ->
       console.debug "ReleasesTableView#createDataTable"
       aoColumns = [
           {
             sTitle: "Name"
             mDataProp: "name"
+            bUseRendered: false
             fnRender: (oObj, sVal) ->
               "<a href='/releases/#{sVal}'>#{sVal}</a>"
           }
@@ -63,6 +67,7 @@ define (require) ->
                     <a
                       id="complete-release-popup-button"
                       data-toggle="modal"
+                      data-release-name="#{oObj.aData.name}"
                       href="#complete-release-popup">
                       Release Now
                     </a>
@@ -73,7 +78,7 @@ define (require) ->
           { sTitle: "Studies", mDataProp: "submissions.length" }
         ]
       
-      @.$('table').dataTable
+      @$el.dataTable
         sDom:
           "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>"
         bPaginate: false
@@ -88,6 +93,6 @@ define (require) ->
           switch aData.state
             when "OPENED"
               cell.css 'color', '#468847'
-              
-        fnServerData: (sSource, aoData, fnCallback) ->
-          fnCallback collection.toJSON()
+
+        fnServerData: (sSource, aoData, fnCallback) =>
+          fnCallback @collection.toJSON()

@@ -19,7 +19,6 @@
 define (require) ->
   View = require 'views/base/view'
   ReleaseTableView = require 'views/release/release_table_view'
-  CompleteReleaseView = require 'views/release/complete_release_view'
   template = require 'text!views/templates/release/releases.handlebars'
  
   'use strict'
@@ -37,15 +36,9 @@ define (require) ->
     initialize: ->
       console.debug "ReleasesView#initialize", @collection
       super
-      
-      @delegate 'click', '#complete-release-popup-button', @completeReleasePopup
 
-    completeReleasePopup: (e) ->
-      console.debug "ReleaseView#completeRelease", e
-      @subview('CompleteReleases'
-        new CompleteReleaseView()
-      ) unless @subview 'CompleteReleases'
-      
+      @subscribeEvent 'completeRelease', -> @collection.fetch()
+
     render: ->
       super
       @subview(
