@@ -72,13 +72,12 @@ public class HadoopCascadingStrategy extends BaseCascadingStrategy {
 
     List<InputSupplier<InputStream>> inputSuppliers = new ArrayList<InputSupplier<InputStream>>();
     for(FileStatus fileStatus : fileSystem.listStatus(reportPath)) {
-      Path filePath = fileStatus.getPath();
+      final Path filePath = fileStatus.getPath();
       if(fileStatus.isFile() && filePath.getName().startsWith("part-")) {
-        final InputStream inputStream = fileSystem.open(filePath);
         InputSupplier<InputStream> inputSupplier = new InputSupplier<InputStream>() {
           @Override
           public InputStream getInput() throws IOException {
-            return inputStream;
+            return fileSystem.open(filePath);
           }
         };
         inputSuppliers.add(inputSupplier);
