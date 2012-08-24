@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
@@ -46,7 +47,7 @@ import com.google.common.io.LineReader;
 
 public abstract class BaseCascadingStrategy implements CascadingStrategy {
 
-  private final FileSystem fileSystem;
+  protected final FileSystem fileSystem;
 
   private final Path input;
 
