@@ -36,6 +36,7 @@ import cascading.flow.hadoop.HadoopFlowConnector;
 import cascading.scheme.hadoop.TextDelimited;
 import cascading.scheme.hadoop.TextLine;
 import cascading.tap.Tap;
+import cascading.tap.hadoop.Dfs;
 import cascading.tap.hadoop.Hfs;
 import cascading.tuple.Fields;
 import cascading.tuple.hadoop.TupleSerializationProps;
@@ -89,7 +90,7 @@ public class HadoopCascadingStrategy extends BaseCascadingStrategy {
 
   @Override
   protected Tap<?, ?, ?> tap(Path path) {
-    return new Hfs(new TextDelimited(true, "\t"), path.toUri().getPath());
+    return new Dfs(new TextDelimited(true, "\t"), path.toUri().getPath());
   }
 
   @Override

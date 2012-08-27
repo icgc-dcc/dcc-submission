@@ -15,24 +15,16 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.dictionary.model;
+package org.icgc.dcc.data.schema;
 
-import java.util.Date;
+public interface SchemaVisitor {
 
-/**
- * Possible (data) types for a {@code Field}
- */
-public enum ValueType {
+  public void visit(RecordSchema record);
 
-  TEXT(String.class), INTEGER(Long.class), DATETIME(Date.class), DECIMAL(Double.class);
+  public void visit(UnionSchema union);
 
-  private final Class<?> javaType;
+  public void visit(ArraySchema arrray);
 
-  private ValueType(Class<?> javaType) {
-    this.javaType = javaType;
-  }
+  public void visit(ValueSchema value);
 
-  public Class getJavaType() {
-    return javaType;
-  }
 }

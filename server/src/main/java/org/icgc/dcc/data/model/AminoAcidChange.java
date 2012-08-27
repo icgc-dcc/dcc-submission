@@ -15,24 +15,15 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.dictionary.model;
+package org.icgc.dcc.data.model;
 
-import java.util.Date;
 
-/**
- * Possible (data) types for a {@code Field}
- */
-public enum ValueType {
+public class AminoAcidChange extends AffectsGene {
 
-  TEXT(String.class), INTEGER(Long.class), DATETIME(Date.class), DECIMAL(Double.class);
+  public String type;
 
-  private final Class<?> javaType;
+  public String aaChange;
 
-  private ValueType(Class<?> javaType) {
-    this.javaType = javaType;
-  }
+  public String cdsMutation;
 
-  public Class getJavaType() {
-    return javaType;
-  }
 }

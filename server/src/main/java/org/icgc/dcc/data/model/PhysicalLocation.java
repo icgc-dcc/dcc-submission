@@ -15,24 +15,21 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.dictionary.model;
+package org.icgc.dcc.data.model;
 
-import java.util.Date;
+import com.google.code.morphia.annotations.Embedded;
 
-/**
- * Possible (data) types for a {@code Field}
- */
-public enum ValueType {
+@Embedded
+public class PhysicalLocation {
 
-  TEXT(String.class), INTEGER(Long.class), DATETIME(Date.class), DECIMAL(Double.class);
+  public String genome;
 
-  private final Class<?> javaType;
+  public String chromosome;
 
-  private ValueType(Class<?> javaType) {
-    this.javaType = javaType;
-  }
+  public Strand strand;
 
-  public Class getJavaType() {
-    return javaType;
-  }
+  public long start;
+
+  public long end;
+
 }

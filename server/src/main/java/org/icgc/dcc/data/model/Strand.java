@@ -15,61 +15,34 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.validation;
-
-import java.util.Arrays;
-
-import org.icgc.dcc.dictionary.model.FileSchema;
-
-import com.google.common.base.Joiner;
+package org.icgc.dcc.data.model;
 
 /**
- * Holds a reference to trimmed content. Used to plan outputs from the internal flow and inputs for the external flow.
+ * 
  */
-public class Trim {
+public enum Strand {
 
-  private final FileSchema schema;
+  PLUS("+", 1), MINUS("-", -1);
 
-  private final String[] fields;
+  private char symbol;
 
-  public Trim(FileSchema schema, String... fields) {
-    this.schema = schema;
-    this.fields = fields;
+  private int value;
+
+  private Strand(String symbol, int value) {
+    this.symbol = symbol.charAt(0);
+    this.value = value;
   }
 
-  public FileSchema getSchema() {
-    return schema;
-  }
-
-  public String[] getFields() {
-    return fields;
-  }
-
-  public String getName() {
-    return schema.getName() + "#" + Joiner.on('-').join(fields);
-  }
-
-  @Override
-  public String toString() {
-    return getName();
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if(obj == null) {
-      return false;
+  public static Strand parse(String value) {
+    for(Strand s : Strand.values()) {
+      if(value.charAt(0) == s.symbol) return s;
+      try {
+        if(Integer.parseInt(value) == s.value) return s;
+      } catch(NumberFormatException e) {
+        // ignore
+      }
     }
-    if(obj instanceof Trim == false) {
-      return super.equals(obj);
-    }
-    Trim rhs = (Trim) obj;
-    return this.schema.equals(rhs.schema) && Arrays.equals(fields, rhs.fields);
+    throw new IllegalArgumentException(value);
   }
 
-  @Override
-  public int hashCode() {
-    int hashCode = schema.hashCode();
-    hashCode += 37 * Arrays.hashCode(fields);
-    return hashCode;
-  }
 }

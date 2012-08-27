@@ -1,0 +1,33 @@
+{
+   "name" : "exp",
+   "type" : "record",
+   "fileSchema" : "exp_g",
+   "metadataSchema":"exp_m",
+   "collection":"Observation",
+   "fields" : [
+     { "name" : "type", "type" : "text", "fileSchemaField" : "type" },
+     { "name" : "platform", "type" : "text", "fileSchema":"exp_m", "fileSchemaField" : "platform" },
+     { "name" : "experimentalProtocol", "type":"text", "fileSchema":"exp_m", "fileSchemaField": "experimental_protocol"},
+     { "name" : "baseCallingAlgorithm", "type":"text", "fileSchema":"exp_m", "fileSchemaField": "base_calling_algorithm"},
+     { "name" : "alignmentAlgorithm", "type":"text", "fileSchema":"exp_m", "fileSchemaField": "alignment_algorithm"},
+     { "name" : "normalizationAlgorithm", "type":"text", "fileSchema":"exp_m", "fileSchemaField": "normalization_algorithm"},
+     { "name" : "samples", "type" : "array", "items":{"type":"text", "fileSchema":"exp_m", "fileSchemaField" : "sample_id"}},
+
+     { "name" : "donorId", "type":"text", "fileSchemaField": "donor_id"},
+     { "name" : "normalized_expression_level", "type":"decimal", "fileSchemaField": "normalized_expression_level"},
+     { "name" : "validation_status", "type":"integer", "fileSchemaField": "validation_status"},
+
+     { "name" : "location", "type" : "record",
+        "fields" : [
+          { "name" : "chromosome", "type" : "text", "fileSchema":"exp_g", "fileSchemaField":"gene_chromosome"},
+          { "name" : "start", "type" : "integer", "fileSchema":"exp_g", "fileSchemaField":"gene_start"},
+          { "name" : "end", "type" : "integer", "fileSchema":"exp_g", "fileSchemaField":"gene_end"}
+        ]
+     },
+     { "name" : "affectedGenes", "type" : "record",  
+       "fields" : [
+         { "name" : "geneId", "type" : "text", "fileSchema":"exp_g", "fileSchemaField":"gene_stable_id"}
+       ]
+     }
+  ]
+}

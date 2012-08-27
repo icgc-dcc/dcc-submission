@@ -15,24 +15,24 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.dictionary.model;
+package org.icgc.dcc.data.index.model;
 
-import java.util.Date;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.icgc.dcc.data.model.Gene;
+import org.icgc.dcc.data.model.Observation;
 
-/**
- * Possible (data) types for a {@code Field}
- */
-public enum ValueType {
+import com.google.common.collect.ImmutableList;
 
-  TEXT(String.class), INTEGER(Long.class), DATETIME(Date.class), DECIMAL(Double.class);
+public class GeneObservation extends Gene {
 
-  private final Class<?> javaType;
+  private static final ObjectMapper mapper = new ObjectMapper();
 
-  private ValueType(Class<?> javaType) {
-    this.javaType = javaType;
+  public Iterable<Observation> observations;
+
+  public static GeneObservation indexed(Gene gene, Iterable<Observation> obs) {
+    GeneObservation d = mapper.convertValue(gene, GeneObservation.class);
+    d.observations = ImmutableList.copyOf(obs);
+    return d;
   }
 
-  public Class getJavaType() {
-    return javaType;
-  }
 }

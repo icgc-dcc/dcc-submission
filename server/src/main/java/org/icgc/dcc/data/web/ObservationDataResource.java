@@ -15,61 +15,36 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.validation;
+package org.icgc.dcc.data.web;
 
-import java.util.Arrays;
+import java.util.Iterator;
 
-import org.icgc.dcc.dictionary.model.FileSchema;
+import javax.ws.rs.Path;
 
-import com.google.common.base.Joiner;
+import org.icgc.dcc.data.schema.SchemaRegistry;
 
-/**
- * Holds a reference to trimmed content. Used to plan outputs from the internal flow and inputs for the external flow.
- */
-public class Trim {
+import com.google.common.collect.ImmutableList;
+import com.google.inject.Inject;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 
-  private final FileSchema schema;
+@Path("/data/observations")
+public class ObservationDataResource extends SchemaDataResource {
 
-  private final String[] fields;
-
-  public Trim(FileSchema schema, String... fields) {
-    this.schema = schema;
-    this.fields = fields;
-  }
-
-  public FileSchema getSchema() {
-    return schema;
-  }
-
-  public String[] getFields() {
-    return fields;
-  }
-
-  public String getName() {
-    return schema.getName() + "#" + Joiner.on('-').join(fields);
+  @Inject
+  public ObservationDataResource(SchemaRegistry registry) {
+    super(registry.getSchema("ssm"));
   }
 
   @Override
-  public String toString() {
-    return getName();
+  protected DBObject index(DBObject donor) {
+    donor.put("observations", ImmutableList.copyOf(donorObservations(donor.get("_id"))));
+    return donor;
   }
 
-  @Override
-  public boolean equals(Object obj) {
-    if(obj == null) {
-      return false;
-    }
-    if(obj instanceof Trim == false) {
-      return super.equals(obj);
-    }
-    Trim rhs = (Trim) obj;
-    return this.schema.equals(rhs.schema) && Arrays.equals(fields, rhs.fields);
-  }
-
-  @Override
-  public int hashCode() {
-    int hashCode = schema.hashCode();
-    hashCode += 37 * Arrays.hashCode(fields);
-    return hashCode;
+  private Iterator<DBObject> donorObservations(Object donorId) {
+    BasicDBObject query = new BasicDBObject();
+    query.put("donorId", donorId);
+    return collection().find(query).iterator();
   }
 }

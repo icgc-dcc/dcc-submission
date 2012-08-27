@@ -6,6 +6,7 @@ import org.icgc.dcc.config.ConfigModule;
 import org.icgc.dcc.core.CoreModule;
 import org.icgc.dcc.core.DccRuntime;
 import org.icgc.dcc.core.morphia.MorphiaModule;
+import org.icgc.dcc.data.DataModule;
 import org.icgc.dcc.dictionary.DictionaryModule;
 import org.icgc.dcc.filesystem.FileSystemModule;
 import org.icgc.dcc.http.HttpModule;
@@ -34,7 +35,7 @@ public class Main {
         , new DictionaryModule()//
         , new ReleaseModule()//
         , new ValidationModule()//
-        );
+        , new DataModule());
 
     injector.getInstance(DccRuntime.class).start();
     System.in.read();
