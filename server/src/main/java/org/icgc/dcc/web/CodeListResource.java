@@ -21,13 +21,11 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.List;
 
-import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
@@ -57,16 +55,12 @@ public class CodeListResource {
   }
 
   @POST
-  public Response addCodeLists(List<CodeList> codeLists, @Context SecurityContext securityContext,
-      @DefaultValue("false") @QueryParam("delete") boolean delete) {
+  public Response addCodeLists(List<CodeList> codeLists, @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.CODELIST_MODIFY.toString()) == false) {
       return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
     }
     checkArgument(codeLists != null);
-    if(delete) {
-      this.dictionaries.removeAllCodeList();
-    }
     this.dictionaries.addCodeList(codeLists);
     return Response.status(Status.CREATED).build();
   }
