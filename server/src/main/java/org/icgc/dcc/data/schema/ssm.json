@@ -6,12 +6,14 @@
    "collection":"Observation",
    "fields":[
      { "name" : "type", "type" : "text", "fileSchemaField" : "type" },
+     { "name" : "className", "type" : "text", "fileSchemaField" : "className" },
+     { "name" : "donorId", "type":"text", "fileSchemaField": "donor_id"},
+     
      { "name" : "platform", "type" : "text", "fileSchema":"ssm_m", "fileSchemaField" : "platform" },
      { "name" : "samples", "type" : "array", "items":{"type":"text", "fileSchema":"ssm_m", "fileSchemaField" : "analyzed_sample_id,matched_sample_id"}},
      { "name" : "experimentalProtocol", "type":"text", "fileSchema":"ssm_m", "fileSchemaField": "experimental_protocol"},
      { "name" : "baseCallingAlgorithm", "type":"text", "fileSchema":"ssm_m", "fileSchemaField": "base_calling_algorithm"},
      { "name" : "alignmentAlgorithm", "type":"text", "fileSchema":"ssm_m", "fileSchemaField": "alignment_algorithm"},
-     { "name" : "donorId", "type":"text", "fileSchemaField": "donor_id"},
 
      { "name" : "referenceGenomeAllele", "type":"text", "fileSchemaField": "reference_genome_allele"},
      { "name" : "controlGenotype", "type":"text", "fileSchemaField": "control_genotype"},

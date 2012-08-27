@@ -21,6 +21,8 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.icgc.dcc.core.AbstractDccModule;
 import org.icgc.dcc.data.schema.SchemaRegistry;
 import org.icgc.dcc.data.web.DonorDataResource;
+import org.icgc.dcc.data.web.DonorsResource;
+import org.icgc.dcc.data.web.GenesResource;
 
 import com.google.inject.Inject;
 
@@ -43,6 +45,8 @@ public class DataModule extends AbstractDccModule {
     @Inject
     public RootResources(ResourceConfig config) {
       config.addClasses(DonorDataResource.class);
+      config.addClasses(DonorsResource.class);
+      config.addClasses(GenesResource.class);
     }
   }
 

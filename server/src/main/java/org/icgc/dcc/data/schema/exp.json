@@ -6,6 +6,9 @@
    "collection":"Observation",
    "fields" : [
      { "name" : "type", "type" : "text", "fileSchemaField" : "type" },
+     { "name" : "className", "type" : "text", "fileSchemaField" : "className" },
+     { "name" : "donorId", "type":"text", "fileSchemaField": "donor_id"},
+
      { "name" : "platform", "type" : "text", "fileSchema":"exp_m", "fileSchemaField" : "platform" },
      { "name" : "experimentalProtocol", "type":"text", "fileSchema":"exp_m", "fileSchemaField": "experimental_protocol"},
      { "name" : "baseCallingAlgorithm", "type":"text", "fileSchema":"exp_m", "fileSchemaField": "base_calling_algorithm"},
@@ -13,7 +16,6 @@
      { "name" : "normalizationAlgorithm", "type":"text", "fileSchema":"exp_m", "fileSchemaField": "normalization_algorithm"},
      { "name" : "samples", "type" : "array", "items":{"type":"text", "fileSchema":"exp_m", "fileSchemaField" : "sample_id"}},
 
-     { "name" : "donorId", "type":"text", "fileSchemaField": "donor_id"},
      { "name" : "normalized_expression_level", "type":"decimal", "fileSchemaField": "normalized_expression_level"},
      { "name" : "validation_status", "type":"integer", "fileSchemaField": "validation_status"},
 

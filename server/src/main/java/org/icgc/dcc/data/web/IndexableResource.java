@@ -53,24 +53,24 @@ public abstract class IndexableResource<T extends HasKey> {
 
   @Path("/{key}/index")
   @GET
-  public Object indexedDonor(@PathParam("key") String key) {
+  public Object indexed(@PathParam("key") String key) {
     return indexed(fromKey(key));
   }
 
   @Path("/_index")
   @GET
-  public Response indexableGenes(final @QueryParam("index") String index, final @QueryParam("type") String type,
+  public Response indexable(final @QueryParam("index") String index, final @QueryParam("type") String type,
       final @QueryParam("limit") Integer limit, final @QueryParam("offset") @DefaultValue("0") Integer offset) {
 
-    Iterator<T> genes = all();
-    int skipped = Iterators.skip(genes, offset);
+    Iterator<T> indexables = all();
+    int skipped = Iterators.skip(indexables, offset);
     if(skipped < offset) {
       return Response.noContent().build();
     }
     if(limit != null) {
-      genes = Iterators.limit(genes, limit);
+      indexables = Iterators.limit(indexables, limit);
     }
-    final Iterator<T> iter = genes;
+    final Iterator<T> iter = indexables;
     StreamingOutput output = new StreamingOutput() {
 
       @Override
@@ -79,11 +79,11 @@ public abstract class IndexableResource<T extends HasKey> {
         IndexCommand command = new IndexCommand();
         command.index = new IndexDetails(index, type);
         while(iter.hasNext()) {
-          T gene = iter.next();
-          command.index._id = gene.getKey();
+          T indexable = iter.next();
+          command.index._id = indexable.getKey();
           mapper.writeValue(output, command);
           output.write((byte) '\n');
-          mapper.writeValue(output, indexed(gene));
+          mapper.writeValue(output, indexed(indexable));
           output.write((byte) '\n');
         }
 
