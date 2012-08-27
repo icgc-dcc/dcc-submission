@@ -116,6 +116,14 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
     return this.queryCodeList().list();
   }
 
+  public void addCodeList(List<CodeList> codeLists) {
+    this.datastore().save(codeLists);
+  }
+
+  public void removeAllCodeList() {
+    this.datastore().getCollection(CodeList.class).drop();
+  }
+
   public CodeList getCodeList(String name) {
     checkArgument(name != null);
     return this.queryCodeList().where(QCodeList.codeList.name.eq(name)).singleResult();
