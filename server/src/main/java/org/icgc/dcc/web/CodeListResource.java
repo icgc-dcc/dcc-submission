@@ -68,7 +68,7 @@ public class CodeListResource {
       this.dictionaries.removeAllCodeList();
     }
     this.dictionaries.addCodeList(codeLists);
-    return Response.ok(this.dictionaries.listCodeList()).build();
+    return Response.status(Status.CREATED).build();
   }
 
   @POST
