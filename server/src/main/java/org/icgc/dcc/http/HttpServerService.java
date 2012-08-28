@@ -10,6 +10,7 @@ import javax.inject.Inject;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.http.server.NetworkListener;
 import org.glassfish.grizzly.http.server.ServerConfiguration;
+import org.glassfish.grizzly.http.server.StaticHttpHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,8 +52,9 @@ public class HttpServerService extends AbstractService {
     }
 
     // TODO: add a Handler for static files. This is tied to the way we package and deploy the app.
-    // serverConfig.addHttpHandler(new
-    // StaticHttpHandler(ImmutableSet.copyOf(config.getStringList("http.resources"))),"/");
+    serverConfig
+    // .addHttpHandler(new StaticHttpHandler(ImmutableSet.copyOf(config.getStringList("http.resources"))), "/");
+        .addHttpHandler(new StaticHttpHandler("../client/target/main/webapp/"), "/");
 
     try {
       server.start();
