@@ -8,7 +8,7 @@
      { "name" : "type", "type" : "text", "fileSchemaField" : "type" },
      { "name" : "className", "type" : "text", "fileSchemaField" : "className" },
      { "name" : "donorId", "type":"text", "fileSchemaField": "donor_id"},
-     
+
      { "name" : "platform", "type" : "text", "fileSchema":"ssm_m", "fileSchemaField" : "platform" },
      { "name" : "samples", "type" : "array", "items":{"type":"text", "fileSchema":"ssm_m", "fileSchemaField" : "analyzed_sample_id,matched_sample_id"}},
      { "name" : "experimentalProtocol", "type":"text", "fileSchema":"ssm_m", "fileSchemaField": "experimental_protocol"},
