@@ -7,8 +7,11 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.http.server.NetworkListener;
+import org.glassfish.grizzly.http.server.Request;
+import org.glassfish.grizzly.http.server.Response;
 import org.glassfish.grizzly.http.server.ServerConfiguration;
 import org.glassfish.grizzly.http.server.StaticHttpHandler;
 import org.slf4j.Logger;
@@ -55,6 +58,14 @@ public class HttpServerService extends AbstractService {
     serverConfig
     // .addHttpHandler(new StaticHttpHandler(ImmutableSet.copyOf(config.getStringList("http.resources"))), "/");
         .addHttpHandler(new StaticHttpHandler("../client/target/main/webapp/"), "/");
+
+    // Redirect back to "/" and appends the request url after the hash(#), which the client can then parse
+    serverConfig.addHttpHandler(new HttpHandler() {
+      @Override
+      public void service(Request request, Response response) throws Exception {
+        response.sendRedirect("/#" + request.getDecodedRequestURI());
+      }
+    }, "/releases");
 
     try {
       server.start();
