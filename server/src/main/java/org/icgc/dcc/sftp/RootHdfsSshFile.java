@@ -102,7 +102,8 @@ class RootHdfsSshFile extends HdfsSshFile {
     for(Path path : pathList) {
       try {
         // if it is System File directory and admin user, add to file list
-        if(this.rfs.getSystemDirectory() == path) {
+        // TODO: hardcode admin for now, wait for DCC-268 to do proper checking
+        if(this.rfs.getSystemDirectory().getName().equals(path.getName()) && this.rfs.getUserName().equals("admin")) {
           sshFileList.add(new SystemFileHdfsSshFile(this, path.getName()));
         } else {
           sshFileList.add(new SubmissionDirectoryHdfsSshFile(this, path.getName()));
@@ -128,7 +129,8 @@ class RootHdfsSshFile extends HdfsSshFile {
     case 1:
       return new SubmissionDirectoryHdfsSshFile(this, filePath.getName());
     case 2:
-      SubmissionDirectoryHdfsSshFile parentDir = new SubmissionDirectoryHdfsSshFile(this, filePath.getParent().getName());
+      SubmissionDirectoryHdfsSshFile parentDir =
+          new SubmissionDirectoryHdfsSshFile(this, filePath.getParent().getName());
       return new FileHdfsSshFile(parentDir, filePath.getName());
     }
     throw new DccFileSystemException("Invalid file path: " + this.getAbsolutePath() + filePath.toString());

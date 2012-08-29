@@ -101,6 +101,10 @@ public class ReleaseFileSystem {
     return new Path(this.getReleaseDirectory(), "SystemFiles");
   }
 
+  public String getUserName() {
+    return this.username;
+  }
+
   private boolean isApplication() {
     return username == null;
   }
