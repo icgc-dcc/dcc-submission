@@ -101,8 +101,9 @@ public class ReleaseFileSystem {
     return new Path(this.getReleaseDirectory(), "SystemFiles");
   }
 
-  public String getUserName() {
-    return this.username;
+  public Boolean isSystemDirectory(Path path) {
+    // TODO: hardcode admin for now, wait for DCC-268 to do proper checking
+    return this.getSystemDirectory().getName().equals(path.getName()) && this.username.equals("admin");
   }
 
   private boolean isApplication() {

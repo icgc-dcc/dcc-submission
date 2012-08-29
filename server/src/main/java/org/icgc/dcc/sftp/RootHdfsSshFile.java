@@ -102,8 +102,7 @@ class RootHdfsSshFile extends HdfsSshFile {
     for(Path path : pathList) {
       try {
         // if it is System File directory and admin user, add to file list
-        // TODO: hardcode admin for now, wait for DCC-268 to do proper checking
-        if(this.rfs.getSystemDirectory().getName().equals(path.getName()) && this.rfs.getUserName().equals("admin")) {
+        if(this.rfs.isSystemDirectory(path)) {
           sshFileList.add(new SystemFileHdfsSshFile(this, path.getName()));
         } else {
           sshFileList.add(new SubmissionDirectoryHdfsSshFile(this, path.getName()));
