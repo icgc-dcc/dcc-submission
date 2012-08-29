@@ -53,7 +53,9 @@ define (require) ->
       switch err.code
         when "InvalidName"
           "A release name must only use letters[a-z], numbers(0-9), underscores(_) and dashes(-)"
-        when "NoneSignedOff"
+        when "DuplicateReleaseName"
+          "That release name has already been used."
+        when "SignedOffSubmissionRequired"
           "The release needs at least one SIGNED OFF submission before it can be COMPLETED."
         
       
