@@ -37,7 +37,7 @@ public class SchemaRegistry {
     Schema.Parser p = new Schema.Parser();
 
     for(String schemaName : ImmutableList.of("donor.json", "ssm.json")) {
-      Schema schema = p.parse(Resources.getResource(SchemaRegistry.class, schemaName).openStream());
+      Schema schema = p.parse(Resources.getResource("data-schema/" + schemaName).openStream());
       schemas.put(schema.getName().toLowerCase(), schema);
     }
 
