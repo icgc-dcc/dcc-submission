@@ -65,6 +65,7 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Resources;
 import com.google.inject.Inject;
+import com.typesafe.config.ConfigFactory;
 
 @RunWith(GuiceJUnitRunner.class)
 @GuiceModules({ ConfigModule.class, CoreModule.class,//
@@ -75,7 +76,7 @@ public class IntegrationTest {
   @Inject
   private Datastore datastore;
 
-  private static final String DCC_ROOT_DIR = "/tmp/dcc_root_dir/";
+  private static final String DCC_ROOT_DIR = ConfigFactory.load().getString("fs.root");
 
   static private Thread server;
 
