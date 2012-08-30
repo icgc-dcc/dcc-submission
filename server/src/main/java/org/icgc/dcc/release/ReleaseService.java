@@ -6,11 +6,9 @@ import static com.google.common.base.Preconditions.checkState;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.shiro.subject.Subject;
@@ -75,13 +73,10 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     } else if(this.datastore().createQuery(Dictionary.class).filter("version", dictionaryVersion).get() == null) {
       throw new ReleaseException("Specified dictionary version not found in DB: " + dictionaryVersion);
     }
-    datastore().save(initRelease);
-    Set<String> projectKeys = new LinkedHashSet<String>();
-    for(Submission submission : initRelease.getSubmissions()) {
-      projectKeys.add(submission.getProjectKey());
-    }
-
-    this.fs.createReleaseFilesystem(initRelease, projectKeys);
+    // Just use name and dictionaryVersion from incoming json
+    Release nextRelease = new Release(initRelease.getName());
+    nextRelease.setDictionaryVersion(dictionaryVersion);
+    datastore().save(nextRelease);
   }
 
   public boolean hasNextRelease() {
@@ -133,18 +128,6 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     return list;
   }
 
-  public List<CompletedRelease> getCompletedReleases() throws IllegalReleaseStateException {
-    List<CompletedRelease> completedReleases = new ArrayList<CompletedRelease>();
-
-    MongodbQuery<Release> query = this.where(QRelease.release.state.eq(ReleaseState.COMPLETED));
-
-    for(Release release : query.list()) {
-      completedReleases.add(new CompletedRelease(release, morphia(), datastore(), fs));
-    }
-
-    return completedReleases;
-  }
-
   public CompletedRelease getCompletedRelease(String releaseName) throws IllegalReleaseStateException {
     MongodbQuery<Release> query =
         this.where(QRelease.release.state.eq(ReleaseState.COMPLETED).and(QRelease.release.name.eq(releaseName)));
@@ -167,6 +150,18 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     detailedSubmission.setProjectName(this.getProject(projectKey).getName());
     detailedSubmission.setSubmissionFiles(getSubmissionFiles(releaseName, projectKey));
     return detailedSubmission;
+  }
+
+  public List<CompletedRelease> getCompletedReleases() throws IllegalReleaseStateException {
+    List<CompletedRelease> completedReleases = new ArrayList<CompletedRelease>();
+  
+    MongodbQuery<Release> query = this.where(QRelease.release.state.eq(ReleaseState.COMPLETED));
+  
+    for(Release release : query.list()) {
+      completedReleases.add(new CompletedRelease(release, morphia(), datastore(), fs));
+    }
+  
+    return completedReleases;
   }
 
   private Submission getSubmission(Release release, String projectKey) {
