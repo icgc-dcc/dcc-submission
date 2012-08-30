@@ -81,7 +81,7 @@ public class NextRelease extends BaseRelease {
 
     // check for submission state to be signed off
     if(this.canRelease() == false) {
-      throw new ReleaseException("NoneSignedOff");
+      throw new ReleaseException("SignedOffSubmissionRequired");
     }
 
     Release oldRelease = this.getRelease();
@@ -97,7 +97,7 @@ public class NextRelease extends BaseRelease {
       throw new ReleaseException("ReleaseMissingDictionary");
     }
     if(datastore().createQuery(Release.class).filter("name", nextRelease.getName()).get() != null) {
-      throw new ReleaseException("InvalidReleaseName");
+      throw new ReleaseException("DuplicateReleaseName");
     }
     Iterable<String> oldProjectKeys = oldRelease.getProjectKeys();
     if(oldProjectKeys == null) {

@@ -128,6 +128,10 @@ public class IntegrationTest {
 
     test_createInitialRelease("/integrationtest/initRelease.json");
 
+    test_checkRelease("release1", "0.6c", ReleaseState.OPENED, Arrays.<SubmissionState> asList());
+
+    test_addProjects();
+
     test_checkRelease("release1", "0.6c", ReleaseState.OPENED, Arrays.<SubmissionState> asList(
         SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED));
 
@@ -157,6 +161,21 @@ public class IntegrationTest {
         SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED));
   }
 
+  private void test_addProjects() throws IOException {
+    Response response1 =
+        sendPostRequest("/projects",
+            "{\"name\":\"Project One\",\"key\":\"project1\",\"users\":[\"admin\"],\"groups\":[\"admin\"]}");
+    assertEquals(201, response1.getStatus());
+    Response response2 =
+        sendPostRequest("/projects",
+            "{\"name\":\"Project Two\",\"key\":\"project2\",\"users\":[\"admin\", \"brett\"],\"groups\":[\"admin\"]}");
+    assertEquals(201, response2.getStatus());
+    Response response3 =
+        sendPostRequest("/projects",
+            "{\"name\":\"Project Three\",\"key\":\"project3\",\"users\":[\"admin\"],\"groups\":[\"admin\"]}");
+    assertEquals(201, response3.getStatus());
+  }
+
   private void test_feedFileSystem() throws IOException {
     // TODO ideally we should use a sftp client to upload data files
     File srcDir = new File("src/test/resources/integrationtest/fs/");
@@ -169,9 +188,6 @@ public class IntegrationTest {
   }
 
   private void test_feedDB() throws InvocationException, NullPointerException, IllegalArgumentException, IOException {
-    this.client.target(BASEURI).path("/seed/projects").request(MediaType.APPLICATION_JSON)
-        .header("Authorization", AUTHORIZATION)
-        .post(Entity.entity(this.resourceToString("/integrationtest/projects.json"), MediaType.APPLICATION_JSON));
     this.client.target(BASEURI).path("/seed/dictionaries").request(MediaType.APPLICATION_JSON)
         .header("Authorization", AUTHORIZATION)
         .post(Entity.entity("[" + this.resourceToString("/dictionary.json") + "]", MediaType.APPLICATION_JSON));
