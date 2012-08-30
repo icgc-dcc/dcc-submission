@@ -15,24 +15,37 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.dictionary.model;
+package org.icgc.dcc.data.schema;
 
-import java.util.Date;
+import static com.google.common.base.Preconditions.checkArgument;
 
-/**
- * Possible (data) types for a {@code Field}
- */
-public enum ValueType {
+import java.io.IOException;
+import java.util.Map;
 
-  TEXT(String.class), INTEGER(Long.class), DATETIME(Date.class), DECIMAL(Double.class);
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.JsonProcessingException;
 
-  private final Class<?> javaType;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Maps;
+import com.google.common.io.Resources;
 
-  private ValueType(Class<?> javaType) {
-    this.javaType = javaType;
+public class SchemaRegistry {
+
+  private final Map<String, Schema> schemas = Maps.newHashMap();
+
+  public SchemaRegistry() throws JsonParseException, JsonProcessingException, IOException {
+    Schema.Parser p = new Schema.Parser();
+
+    for(String schemaName : ImmutableList.of("donor.json", "ssm.json")) {
+      Schema schema = p.parse(Resources.getResource("data-schema/" + schemaName).openStream());
+      schemas.put(schema.getName().toLowerCase(), schema);
+    }
+
   }
 
-  public Class getJavaType() {
-    return javaType;
+  public Schema getSchema(String name) {
+    checkArgument(name != null);
+    return schemas.get(name.toLowerCase());
   }
+
 }

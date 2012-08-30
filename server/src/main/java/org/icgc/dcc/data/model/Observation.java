@@ -15,24 +15,31 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.dictionary.model;
+package org.icgc.dcc.data.model;
 
-import java.util.Date;
+import java.util.List;
 
-/**
- * Possible (data) types for a {@code Field}
- */
-public enum ValueType {
+import org.icgc.dcc.core.model.BaseEntity;
 
-  TEXT(String.class), INTEGER(Long.class), DATETIME(Date.class), DECIMAL(Double.class);
+import com.google.code.morphia.annotations.Entity;
+import com.google.code.morphia.annotations.Indexed;
 
-  private final Class<?> javaType;
+@Entity("Observation")
+public abstract class Observation extends BaseEntity {
 
-  private ValueType(Class<?> javaType) {
-    this.javaType = javaType;
-  }
+  @Indexed
+  public String donorId;
 
-  public Class getJavaType() {
-    return javaType;
-  }
+  public String type;
+
+  public List<String> samples;
+
+  public PhysicalLocation location;
+
+  public String variationId;
+
+  public List<AffectsGene> affectedGenes;
+
+  public Donor donor;
+
 }

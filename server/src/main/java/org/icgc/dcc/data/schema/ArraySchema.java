@@ -15,61 +15,53 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.validation;
+package org.icgc.dcc.data.schema;
 
-import java.util.Arrays;
+import java.io.IOException;
 
-import org.icgc.dcc.dictionary.model.FileSchema;
+import org.codehaus.jackson.JsonGenerator;
+import org.codehaus.jackson.JsonNode;
 
-import com.google.common.base.Joiner;
+public class ArraySchema extends BaseSchema {
 
-/**
- * Holds a reference to trimmed content. Used to plan outputs from the internal flow and inputs for the external flow.
- */
-public class Trim {
+  private static final String ITEMS = "items";
 
-  private final FileSchema schema;
+  private Schema items;
 
-  private final String[] fields;
-
-  public Trim(FileSchema schema, String... fields) {
-    this.schema = schema;
-    this.fields = fields;
+  public ArraySchema(String name) {
+    super(name, Type.ARRAY);
   }
 
-  public FileSchema getSchema() {
-    return schema;
-  }
-
-  public String[] getFields() {
-    return fields;
-  }
-
-  public String getName() {
-    return schema.getName() + "#" + Joiner.on('-').join(fields);
+  public Schema getItems() {
+    return items;
   }
 
   @Override
-  public String toString() {
-    return getName();
+  public void accept(SchemaVisitor visitor) {
+    visitor.visit(this);
+    items.accept(visitor);
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if(obj == null) {
-      return false;
+  public ArraySchema asArray() {
+    return this;
+  }
+
+  @Override
+  protected void fromJson(Parser parser, JsonNode node) {
+    JsonNode itemsNode = node.get(ITEMS);
+    if(itemsNode == null || itemsNode.isObject() == false) {
+      throw new RuntimeException("invalid schema. items is not a schema.");
     }
-    if(obj instanceof Trim == false) {
-      return super.equals(obj);
-    }
-    Trim rhs = (Trim) obj;
-    return this.schema.equals(rhs.schema) && Arrays.equals(fields, rhs.fields);
+    this.items = parser.parseSchemaNode(node.get(ITEMS));
   }
 
   @Override
-  public int hashCode() {
-    int hashCode = schema.hashCode();
-    hashCode += 37 * Arrays.hashCode(fields);
-    return hashCode;
+  protected void toJson(JsonGenerator generator) throws IOException {
+    super.toJson(generator);
+    generator.writeFieldName(ITEMS);
+    ((BaseSchema) items).toJson(generator);
+    generator.writeEndObject();
   }
+
 }

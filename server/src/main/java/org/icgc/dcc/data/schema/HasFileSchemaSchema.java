@@ -15,61 +15,43 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.validation;
+package org.icgc.dcc.data.schema;
 
-import java.util.Arrays;
+import java.io.IOException;
 
-import org.icgc.dcc.dictionary.model.FileSchema;
-
-import com.google.common.base.Joiner;
+import org.codehaus.jackson.JsonGenerator;
+import org.codehaus.jackson.JsonNode;
 
 /**
- * Holds a reference to trimmed content. Used to plan outputs from the internal flow and inputs for the external flow.
+ * A {@code Schema} that refers to a {@code FileSchema} for scoping field references.
  */
-public class Trim {
+public abstract class HasFileSchemaSchema extends BaseSchema {
 
-  private final FileSchema schema;
+  private static final String FILESCHEMA = "fileSchema";
 
-  private final String[] fields;
+  private String fileSchema;
 
-  public Trim(FileSchema schema, String... fields) {
-    this.schema = schema;
-    this.fields = fields;
+  protected HasFileSchemaSchema(String name, Type type) {
+    super(name, type);
   }
 
-  public FileSchema getSchema() {
-    return schema;
-  }
-
-  public String[] getFields() {
-    return fields;
-  }
-
-  public String getName() {
-    return schema.getName() + "#" + Joiner.on('-').join(fields);
+  public String getFileSchema() {
+    return fileSchema;
   }
 
   @Override
-  public String toString() {
-    return getName();
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if(obj == null) {
-      return false;
+  protected void fromJson(Parser parser, JsonNode node) {
+    JsonNode fileSchemaNode = node.get(FILESCHEMA);
+    if(fileSchemaNode != null) {
+      fileSchema = fileSchemaNode.getTextValue();
     }
-    if(obj instanceof Trim == false) {
-      return super.equals(obj);
-    }
-    Trim rhs = (Trim) obj;
-    return this.schema.equals(rhs.schema) && Arrays.equals(fields, rhs.fields);
   }
 
   @Override
-  public int hashCode() {
-    int hashCode = schema.hashCode();
-    hashCode += 37 * Arrays.hashCode(fields);
-    return hashCode;
+  protected void toJson(JsonGenerator generator) throws IOException {
+    super.toJson(generator);
+    if(fileSchema != null) {
+      generator.writeStringField(FILESCHEMA, fileSchema);
+    }
   }
 }

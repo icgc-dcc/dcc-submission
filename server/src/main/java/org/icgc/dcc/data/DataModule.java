@@ -15,61 +15,39 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.validation;
+package org.icgc.dcc.data;
 
-import java.util.Arrays;
+import org.glassfish.jersey.server.ResourceConfig;
+import org.icgc.dcc.core.AbstractDccModule;
+import org.icgc.dcc.data.schema.SchemaRegistry;
+import org.icgc.dcc.data.web.DonorDataResource;
+import org.icgc.dcc.data.web.DonorsResource;
+import org.icgc.dcc.data.web.GenesResource;
 
-import org.icgc.dcc.dictionary.model.FileSchema;
-
-import com.google.common.base.Joiner;
+import com.google.inject.Inject;
 
 /**
- * Holds a reference to trimmed content. Used to plan outputs from the internal flow and inputs for the external flow.
+ * 
  */
-public class Trim {
-
-  private final FileSchema schema;
-
-  private final String[] fields;
-
-  public Trim(FileSchema schema, String... fields) {
-    this.schema = schema;
-    this.fields = fields;
-  }
-
-  public FileSchema getSchema() {
-    return schema;
-  }
-
-  public String[] getFields() {
-    return fields;
-  }
-
-  public String getName() {
-    return schema.getName() + "#" + Joiner.on('-').join(fields);
-  }
+public class DataModule extends AbstractDccModule {
 
   @Override
-  public String toString() {
-    return getName();
+  protected void configure() {
+    bind(SchemaRegistry.class).asEagerSingleton();
+    bind(RootResources.class).asEagerSingleton();
   }
 
-  @Override
-  public boolean equals(Object obj) {
-    if(obj == null) {
-      return false;
+  /**
+   * Used to register resources in {@code Jersey}. This is required because {@code Jersey} cannot use Guice to discover
+   * resources.
+   */
+  public static class RootResources {
+    @Inject
+    public RootResources(ResourceConfig config) {
+      config.addClasses(DonorDataResource.class);
+      config.addClasses(DonorsResource.class);
+      config.addClasses(GenesResource.class);
     }
-    if(obj instanceof Trim == false) {
-      return super.equals(obj);
-    }
-    Trim rhs = (Trim) obj;
-    return this.schema.equals(rhs.schema) && Arrays.equals(fields, rhs.fields);
   }
 
-  @Override
-  public int hashCode() {
-    int hashCode = schema.hashCode();
-    hashCode += 37 * Arrays.hashCode(fields);
-    return hashCode;
-  }
 }
