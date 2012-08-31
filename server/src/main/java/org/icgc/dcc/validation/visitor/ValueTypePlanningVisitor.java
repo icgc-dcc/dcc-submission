@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.validation.visitor;
 
+import java.util.Map;
+
 import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.ValueType;
 import org.icgc.dcc.validation.InternalFlowPlanningVisitor;
@@ -78,6 +80,8 @@ public class ValueTypePlanningVisitor extends InternalFlowPlanningVisitor {
 
       protected final ValueType type;
 
+      private Map<String, Object> params;
+
       public ValueTypeFunction(ValueType type) {
         super(2, Fields.ARGS);
         this.type = type;
@@ -92,7 +96,10 @@ public class ValueTypePlanningVisitor extends InternalFlowPlanningVisitor {
           parsedValue = parse(value);
         } catch(IllegalArgumentException e) {
           Object fieldName = arguments.getFields().get(0);
-          ValidationFields.state(arguments).reportError(ValidationErrorCode.VALUE_TYPE_ERROR, value, fieldName, type);
+          this.params.put("columnName", fieldName);
+          this.params.put("value", value);
+          this.params.put("expectedType", type);
+          ValidationFields.state(arguments).reportError(ValidationErrorCode.VALUE_TYPE_ERROR, this.params);
         }
         functionCall.getOutputCollector().add(new Tuple(parsedValue, ValidationFields.state(arguments)));
       }

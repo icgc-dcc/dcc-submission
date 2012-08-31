@@ -27,6 +27,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -177,6 +178,8 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
 
     protected final String[] rhsFields;
 
+    private Map<String, Object> params;
+
     NoNullBufferBase(String lhs, String rhs, String[] lhsFields, String[] rhsFields) {
       super(lhsFields.length + rhsFields.length, new Fields(ValidationFields.STATE_FIELD_NAME));
       checkArgument(lhs != null && lhs.isEmpty() == false);
@@ -197,8 +200,10 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
     }
 
     protected void reportRelationError(TupleState tupleState, Tuple offendingLhsTuple) {
-      tupleState.reportError(ValidationErrorCode.RELATION_ERROR, TuplesUtils.getObjects(offendingLhsTuple), lhs,
-          Arrays.asList(lhsFields), rhs, Arrays.asList(rhsFields));
+      this.params.put("value", TuplesUtils.getObjects(offendingLhsTuple));
+      this.params.put("columnName", Arrays.asList(lhsFields));
+      this.params.put("relationColumn", rhs + Arrays.asList(rhsFields));
+      tupleState.reportError(ValidationErrorCode.RELATION_ERROR, this.params);
     }
   }
 
@@ -315,6 +320,8 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
 
     protected final boolean twoWays;
 
+    private Map<String, Object> params;
+
     NoNullBuffer(String lhs, String rhs, String[] lhsFields, String[] rhsFields, String[] renamedRhsFields,
         boolean twoWays) {
       super(lhs, rhs, lhsFields, rhsFields);
@@ -338,8 +345,12 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
           if(TuplesUtils.hasValues(entry, lhsFields) == false) {
             Tuple offendingRhsTuple = entry.selectTuple(new Fields(renamedRhsFields));
             TupleState state = new TupleState(CONVENTION_PARENT_OFFSET);
-            state.reportError(ValidationErrorCode.RELATION_PARENT_ERROR, lhs, Arrays.asList(lhsFields),
-                TuplesUtils.getObjects(offendingRhsTuple), rhs, Arrays.asList(rhsFields));
+
+            this.params.put("value", TuplesUtils.getObjects(offendingRhsTuple));
+            this.params.put("columnName", Arrays.asList(lhsFields));
+            this.params.put("relationColumn", rhs + Arrays.asList(rhsFields));
+
+            state.reportError(ValidationErrorCode.RELATION_PARENT_ERROR, params);
             bufferCall.getOutputCollector().add(new Tuple(state));
           }
         }

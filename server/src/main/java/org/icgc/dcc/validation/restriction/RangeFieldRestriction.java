@@ -1,5 +1,7 @@
 package org.icgc.dcc.validation.restriction;
 
+import java.util.Map;
+
 import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.Restriction;
 import org.icgc.dcc.validation.FlowType;
@@ -96,6 +98,8 @@ public class RangeFieldRestriction implements InternalPlanElement {
 
     private final Number max;
 
+    private Map<String, Object> params;
+
     protected RangeFunction(Number min, Number max) {
       super(2, Fields.ARGS);
       this.min = min;
@@ -112,12 +116,18 @@ public class RangeFieldRestriction implements InternalPlanElement {
       if(value instanceof Number) {
         Number num = (Number) value;
         if(num.longValue() < this.min.longValue() || num.longValue() > this.max.longValue()) {
-          ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.OUT_OF_RANGE_ERROR, num.longValue(),
-              fieldName, this.min.longValue(), this.max.longValue());
+
+          this.params.put("value", num.longValue());
+          this.params.put("columnName", fieldName);
+          this.params.put("minRange", this.min.longValue());
+          this.params.put("maxRange", this.max.longValue());
+
+          ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.OUT_OF_RANGE_ERROR, params);
         }
       } else if(value != null) {
-        ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.NOT_A_NUMBER_ERROR, value.toString(),
-            fieldName);
+        this.params.put("value", value.toString());
+        this.params.put("columnName", fieldName);
+        ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.NOT_A_NUMBER_ERROR, params);
       }
       functionCall.getOutputCollector().add(tupleEntry.getTupleCopy());
     }

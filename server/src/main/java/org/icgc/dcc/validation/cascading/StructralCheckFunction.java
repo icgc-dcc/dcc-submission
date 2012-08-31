@@ -22,6 +22,7 @@ import static com.google.common.base.Preconditions.checkState;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.icgc.dcc.validation.ValidationErrorCode;
 
@@ -56,6 +57,8 @@ public class StructralCheckFunction extends BaseOperation implements Function {
   private final Fields dictionaryFields;
 
   private List<Integer> unknownHeaderIndices;
+
+  private Map<String, Object> params;
 
   public StructralCheckFunction(Iterable<String> fieldNames) {
     super(1);
@@ -106,13 +109,16 @@ public class StructralCheckFunction extends BaseOperation implements Function {
       adjustedValues = padMissingColumns(adjustedValues); // then missing fields to be emulated
       adjustedValues = convertMissingCodes(adjustedValues, tupleState);
       if(REPORT_WARNINGS && unknownHeaderIndices.isEmpty() == false) {
-        tupleState.reportError(ValidationErrorCode.UNKNOWN_COLUMNS_WARNING, unknownHeaderIndices);
+        this.params.put("unknownColumns", unknownHeaderIndices);
+        tupleState.reportError(ValidationErrorCode.UNKNOWN_COLUMNS_WARNING, this.params);
       }
     } else {
       adjustedValues = Arrays.asList(new String[dictionaryFields.size()]); // can discard values but must match number
                                                                            // of fields in headers for later merge in
                                                                            // error reporting
-      tupleState.reportError(ValidationErrorCode.STRUCTURALLY_INVALID_ROW_ERROR, dataSize, headerSize);
+      this.params.put("foundNumColumns", dataSize);
+      this.params.put("actualNumColumns", headerSize);
+      tupleState.reportError(ValidationErrorCode.STRUCTURALLY_INVALID_ROW_ERROR, this.params);
     }
     return adjustedValues;
   }

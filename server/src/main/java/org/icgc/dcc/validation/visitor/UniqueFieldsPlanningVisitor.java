@@ -20,6 +20,7 @@ package org.icgc.dcc.validation.visitor;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.validation.InternalFlowPlanningVisitor;
@@ -79,6 +80,8 @@ public class UniqueFieldsPlanningVisitor extends InternalFlowPlanningVisitor {
     static class CountBuffer extends BaseOperation implements Buffer {
       private final List<String> fields;
 
+      private Map<String, Object> params;
+
       CountBuffer(List<String> fields) {
         super(Fields.ARGS);
         this.fields = ImmutableList.copyOf(fields);
@@ -96,8 +99,13 @@ public class UniqueFieldsPlanningVisitor extends InternalFlowPlanningVisitor {
           while(i.hasNext()) {
             TupleEntry tupleEntry = i.next();
             List<String> values = fetchValues(tupleEntry);
-            ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.UNIQUE_VALUE_ERROR, values, fields,
-                firstOffset);
+
+            this.params.put("value", values);
+            this.params.put("columnName", fields);
+            this.params.put("firstOffset", firstOffset); // this isn't used in the error message - represents the first
+                                                         // time a unique value appears in the file.
+
+            ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.UNIQUE_VALUE_ERROR, this.params);
             bufferCall.getOutputCollector().add(tupleEntry.getTupleCopy());
           }
         }

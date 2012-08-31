@@ -1,5 +1,7 @@
 package org.icgc.dcc.validation.restriction;
 
+import java.util.Map;
+
 import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.Restriction;
 import org.icgc.dcc.validation.FlowType;
@@ -77,6 +79,8 @@ public class RequiredRestriction implements InternalPlanElement {
       super(2, Fields.ARGS);
     }
 
+    private Map<String, Object> params;
+
     @Override
     public void operate(FlowProcess flowProcess, FunctionCall functionCall) {
       TupleEntry tupleEntry = functionCall.getArguments();
@@ -85,7 +89,11 @@ public class RequiredRestriction implements InternalPlanElement {
       if(ValidationFields.state(tupleEntry).isFieldMissing((String) tupleEntry.getFields().get(0)) == false
           && (value == null || value.isEmpty())) {
         Object fieldName = tupleEntry.getFields().get(0);
-        ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.MISSING_VALUE_ERROR, value, fieldName);
+
+        this.params.put("value", value);
+        this.params.put("columnName", fieldName);
+
+        ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.MISSING_VALUE_ERROR, this.params);
       }
       functionCall.getOutputCollector().add(tupleEntry.getTupleCopy());
     }

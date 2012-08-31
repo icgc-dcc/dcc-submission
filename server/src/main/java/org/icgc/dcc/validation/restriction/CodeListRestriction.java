@@ -18,6 +18,7 @@
 package org.icgc.dcc.validation.restriction;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.icgc.dcc.dictionary.DictionaryService;
@@ -138,6 +139,8 @@ public class CodeListRestriction implements InternalPlanElement {
 
     private final Set<String> values;
 
+    private Map<String, Object> params;
+
     protected InCodeListFunction(String codeListName, Set<String> codes, Set<String> values) {
       super(2, Fields.ARGS);
       this.codeListName = codeListName;
@@ -152,8 +155,12 @@ public class CodeListRestriction implements InternalPlanElement {
       String value = object == null ? null : object.toString();
       if(value != null && codes.contains(value) == false && values.contains(value) == false) {
         Object fieldName = tupleEntry.getFields().get(0);
-        ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.CODELIST_ERROR, value, fieldName,
-            codeListName);
+
+        this.params.put("value", value);
+        this.params.put("columnName", fieldName);
+        this.params.put("expectedValues", codeListName);
+
+        ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.CODELIST_ERROR, this.params);
       }
       functionCall.getOutputCollector().add(tupleEntry.getTupleCopy());
     }

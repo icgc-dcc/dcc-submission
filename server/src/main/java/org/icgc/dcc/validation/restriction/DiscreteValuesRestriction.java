@@ -1,6 +1,7 @@
 package org.icgc.dcc.validation.restriction;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Set;
 
 import org.icgc.dcc.dictionary.model.Field;
@@ -94,6 +95,8 @@ public class DiscreteValuesRestriction implements InternalPlanElement {
 
     private final Set<String> values;
 
+    private Map<String, Object> params;
+
     protected InValuesFunction(String[] values) {
       super(2, Fields.ARGS);
       this.values = ImmutableSet.copyOf(values);
@@ -105,8 +108,12 @@ public class DiscreteValuesRestriction implements InternalPlanElement {
       String value = tupleEntry.getString(0);
       if(value != null && values.contains(value) == false) {
         Object fieldName = tupleEntry.getFields().get(0);
-        ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.DISCRETE_VALUES_ERROR, value, fieldName,
-            values);
+
+        this.params.put("value", value);
+        this.params.put("columnName", fieldName);
+        this.params.put("expectedValues", values);
+
+        ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.DISCRETE_VALUES_ERROR, this.params);
       }
       functionCall.getOutputCollector().add(tupleEntry.getTupleCopy());
     }

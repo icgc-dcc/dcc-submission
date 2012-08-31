@@ -6,9 +6,8 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-
-import javax.annotation.Nullable;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.icgc.dcc.validation.ValidationErrorCode;
@@ -40,7 +39,7 @@ public class TupleState implements Serializable {
     this.offset = offset;
   }
 
-  public void reportError(ValidationErrorCode code, @Nullable Object... parameters) {
+  public void reportError(ValidationErrorCode code, Map<String, ?> parameters) {
     checkArgument(code != null);
     ensureErrors().add(new TupleError(code, parameters));
     structurallyValid = code.isStructural() == false;
