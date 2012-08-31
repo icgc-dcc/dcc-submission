@@ -144,9 +144,9 @@ public class IntegrationTest {
 
     test_checkSubmissionsStates();
 
-    test_fileIsEmpty(DCC_ROOT_DIR + "release1/project1/.validation/donor.internal#errors.json");
-    test_fileIsEmpty(DCC_ROOT_DIR + "release1/project1/.validation/specimen.internal#errors.json");
-    test_fileIsEmpty(DCC_ROOT_DIR + "release1/project1/.validation/specimen.external#errors.json");
+    test_fileIsEmpty(DCC_ROOT_DIR, "release1/project1/.validation/donor.internal#errors.json");
+    test_fileIsEmpty(DCC_ROOT_DIR, "release1/project1/.validation/specimen.internal#errors.json");
+    test_fileIsEmpty(DCC_ROOT_DIR, "release1/project1/.validation/specimen.external#errors.json");
 
     test_releaseFirstRelease();
 
@@ -234,8 +234,8 @@ public class IntegrationTest {
     assertEquals(SubmissionState.INVALID, submission.getState());
   }
 
-  private void test_fileIsEmpty(String path) throws IOException {
-    File errorFile = new File(path);
+  private void test_fileIsEmpty(String dir, String path) throws IOException {
+    File errorFile = new File(dir, path);
     assertTrue("Expected file does not exist: " + path, errorFile.exists());
     assertTrue("Expected empty file: " + path, FileUtils.readFileToString(errorFile).isEmpty());
   }
