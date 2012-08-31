@@ -47,7 +47,7 @@ public class StructralCheckFunction extends BaseOperation implements Function {
 
   public static final char FIELD_SEPARATOR = '\t';
 
-  public static final List<String> MISSING_CODES = Arrays.asList("-777", "-888", "-999");
+  public static final List<String> MISSING_CODES = Arrays.asList("-777", "-888", "-999"); // TODO: move elsewhere?
 
   private static boolean REPORT_WARNINGS = false; // see DCC-270
 
