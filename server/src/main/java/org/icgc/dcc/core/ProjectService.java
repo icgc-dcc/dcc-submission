@@ -23,6 +23,7 @@ import com.google.code.morphia.Morphia;
 import com.google.code.morphia.query.Query;
 import com.google.code.morphia.query.UpdateOperations;
 import com.google.inject.Inject;
+import com.mysema.query.mongodb.MongodbQuery;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
 
 public class ProjectService extends BaseMorphiaService<Project> {
@@ -93,7 +94,7 @@ public class ProjectService extends BaseMorphiaService<Project> {
   }
 
   public Project getProject(final String projectKey) {
-    Project project = this.query().where(QProject.project.key.eq(projectKey)).singleResult();
+    Project project = this.getProjectQuery(projectKey).singleResult();
 
     if(project == null) {
       throw new ProjectServiceException("No project found with key " + projectKey);
@@ -102,7 +103,7 @@ public class ProjectService extends BaseMorphiaService<Project> {
   }
 
   public boolean hasProject(final String projectKey) {
-    Project project = this.query().where(QProject.project.key.eq(projectKey)).singleResult();
+    Project project = this.getProjectQuery(projectKey).singleResult();
 
     return project != null;
   }
@@ -117,5 +118,9 @@ public class ProjectService extends BaseMorphiaService<Project> {
 
   private void saveProject(Project project) {
     this.datastore().save(project);
+  }
+
+  private MongodbQuery<Project> getProjectQuery(final String projectKey) {
+    return this.query().where(QProject.project.key.eq(projectKey));
   }
 }
