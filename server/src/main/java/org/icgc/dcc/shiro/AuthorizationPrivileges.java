@@ -30,8 +30,7 @@ public enum AuthorizationPrivileges {
     return PROJECT.prefix + ":" + projectKey + ":view";
   }
 
-  @Override
-  public String toString() {
+  public String getPrefix() {
     return this.prefix;
   }
 }
