@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
+import com.typesafe.config.Config;
 
 public class CascadingStrategyFactoryProvider implements Provider<CascadingStrategyFactory> {
 
@@ -18,10 +19,14 @@ public class CascadingStrategyFactoryProvider implements Provider<CascadingStrat
 
   private final FileSystem fs;
 
+  private final Config config;
+
   @Inject
-  CascadingStrategyFactoryProvider(FileSystem fs) {
+  CascadingStrategyFactoryProvider(Config config, FileSystem fs) {
     checkArgument(fs != null);
+    checkArgument(config != null);
     this.fs = fs;
+    this.config = config;
   }
 
   @Override
@@ -33,7 +38,7 @@ public class CascadingStrategyFactoryProvider implements Provider<CascadingStrat
       return new LocalCascadingStrategyFactory();
     } else if(fsUrl.equals("hdfs")) {
       log.info("System configured for Hadoop filesystem");
-      return new HadoopCascadingStrategyFactory(fs);
+      return new HadoopCascadingStrategyFactory(config.getConfig("hadoop"), fs);
     } else {
       throw new RuntimeException("Unknown file system type: " + fsUrl + ". Expected file or hdfs");
     }

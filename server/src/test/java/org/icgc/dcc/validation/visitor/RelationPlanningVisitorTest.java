@@ -20,8 +20,8 @@ package org.icgc.dcc.validation.visitor;
 import java.util.Iterator;
 
 import org.icgc.dcc.validation.cascading.ValidationFields;
-import org.icgc.dcc.validation.visitor.RelationPlanningVisitor.RelationPlanElement.NoNullBufferBase;
-import org.icgc.dcc.validation.visitor.RelationPlanningVisitor.RelationPlanElement.NoNullBufferBase.NoNullBuffer;
+import org.icgc.dcc.validation.visitor.RelationPlanningVisitor.NoNullBuffer;
+import org.icgc.dcc.validation.visitor.RelationPlanningVisitor.NoNullBufferBase;
 import org.junit.Test;
 
 import cascading.CascadingTestCase;
