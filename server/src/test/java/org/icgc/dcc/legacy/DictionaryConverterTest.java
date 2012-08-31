@@ -30,7 +30,8 @@ import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
-import org.mortbay.log.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import com.google.common.base.Charsets;
@@ -41,13 +42,15 @@ import com.google.common.io.Files;
  */
 public class DictionaryConverterTest {
 
+  private static final Logger log = LoggerFactory.getLogger(DictionaryConverterTest.class);
+
   private static final String CONVERSION_INPUT_FOLDER = "src/test/resources/converter/source/";
 
   private static final String CURRENT_DICTIONARY = "src/main/resources/dictionary.json";
 
-  private static final String TEMPORARY_DICTIONARY = CURRENT_DICTIONARY + ".tmp";
+  private static final String NEW_DICTIONARY = "target/dictionary.json";
 
-  private static final String SECOND_DICTIONARY = "src/test/resources/integrationtest/secondDictionary.json";
+  private static final String SECOND_DICTIONARY = "target/secondDictionary.json";
 
   @Before
   public void setUp() {
@@ -62,9 +65,9 @@ public class DictionaryConverterTest {
 
     DictionaryConverter dc = new DictionaryConverter();
     dc.readDictionary(CONVERSION_INPUT_FOLDER);
-    dc.saveToJSON(TEMPORARY_DICTIONARY);
+    dc.saveToJSON(NEW_DICTIONARY);
 
-    File testFile = new File(TEMPORARY_DICTIONARY);
+    File testFile = new File(NEW_DICTIONARY);
     File refFile = new File(CURRENT_DICTIONARY);
 
     ObjectMapper mapper = new ObjectMapper();
@@ -79,14 +82,16 @@ public class DictionaryConverterTest {
 
     this.test_compare_fileSchema(refTree.get("files"), testTree.get("files"));
 
-    String regeneratedDictionary = Files.toString(new File(TEMPORARY_DICTIONARY), Charsets.UTF_8);
+    String regeneratedDictionary = Files.toString(new File(NEW_DICTIONARY), Charsets.UTF_8);
     boolean significantlyChanged = hasSignificantlyChanged(currentDictionary, regeneratedDictionary);
     if(significantlyChanged) { // only replace if has changed (else will have to recommit it everytime tests run)
-      Log.info("replacing dictionary");
-      updateFilesInProject(CURRENT_DICTIONARY, TEMPORARY_DICTIONARY, SECOND_DICTIONARY);
+      log.info("==================================");
+      log.info("dictionary has changed, you may consider updating {} with {}", CURRENT_DICTIONARY, NEW_DICTIONARY);
+      log.info("==================================");
+      makeSecondaryDictionary(NEW_DICTIONARY, SECOND_DICTIONARY);
     } else {
-      Log.info("preserving dictionary");
-      new File(TEMPORARY_DICTIONARY).delete();
+      log.info("preserving dictionary");
+      new File(NEW_DICTIONARY).delete();
     }
   }
 
@@ -174,10 +179,8 @@ public class DictionaryConverterTest {
     return currentDictionary.equals(regeneratedDictionary) == false;
   }
 
-  private void updateFilesInProject(String currentDictionary, String temporaryDictionary, String destination)
-      throws IOException {
-    Files.move(new File(temporaryDictionary), new File(currentDictionary));
-    String content = Files.toString(new File(currentDictionary), Charsets.UTF_8);
+  private void makeSecondaryDictionary(String temporaryDictionary, String destination) throws IOException {
+    String content = Files.toString(new File(temporaryDictionary), Charsets.UTF_8);
     content = updateSecondDictionaryContent(content);
     Files.write(content.getBytes(), new File(destination));
   }
