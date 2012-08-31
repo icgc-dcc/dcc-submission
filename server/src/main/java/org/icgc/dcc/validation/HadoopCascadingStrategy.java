@@ -33,6 +33,7 @@ import org.icgc.dcc.validation.cascading.ValidationFields;
 
 import cascading.flow.FlowConnector;
 import cascading.flow.hadoop.HadoopFlowConnector;
+import cascading.property.AppProps;
 import cascading.scheme.hadoop.TextDelimited;
 import cascading.scheme.hadoop.TextLine;
 import cascading.tap.Tap;
@@ -44,17 +45,26 @@ import cascading.tuple.hadoop.TupleSerializationProps;
 import com.google.common.collect.Maps;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.InputSupplier;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigValue;
 
 public class HadoopCascadingStrategy extends BaseCascadingStrategy {
 
-  public HadoopCascadingStrategy(FileSystem fileSystem, Path source, Path output, Path system) {
+  private final Config hadoopConfig;
+
+  public HadoopCascadingStrategy(Config hadoopConfig, FileSystem fileSystem, Path source, Path output, Path system) {
     super(fileSystem, source, output, system);
+    this.hadoopConfig = hadoopConfig;
   }
 
   @Override
   public FlowConnector getFlowConnector() {
     Map<Object, Object> properties = Maps.newHashMap();
     TupleSerializationProps.addSerialization(properties, TupleStateSerialization.class.getName());
+    for(Map.Entry<String, ConfigValue> configEntry : hadoopConfig.entrySet()) {
+      properties.put(configEntry.getKey(), configEntry.getValue().unwrapped());
+    }
+    AppProps.setApplicationJarClass(properties, org.icgc.dcc.Main.class);
     return new HadoopFlowConnector(properties);
   }
 
