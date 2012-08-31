@@ -106,7 +106,7 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
 
           ObjectMapper mapper = new ObjectMapper();
           if(report.getErrors() == null) {
-            report.setErrors(new ArrayList<TupleState>());
+            report.setErrors(new ArrayList<ValidationErrorReport>());
           }
           if(report.getFieldReports() == null) {
             report.setFieldReports(new ArrayList<FieldReport>());
@@ -118,7 +118,8 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
             TupleState tupleState = tupleStates.next();
             if(tupleState.isInvalid()) {
               outcome = Outcome.FAILED;
-              report.errors.add(tupleState);
+              ValidationErrorReport aggregatedErrorReport = new ValidationErrorReport(tupleState);
+              report.errors.add(aggregatedErrorReport);
             }
             if(report.getErrors().size() >= 100) {
               // Limit to 100 errors

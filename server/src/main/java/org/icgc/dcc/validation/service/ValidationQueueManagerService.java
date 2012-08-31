@@ -41,6 +41,7 @@ import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.report.Outcome;
 import org.icgc.dcc.validation.report.SchemaReport;
 import org.icgc.dcc.validation.report.SubmissionReport;
+import org.icgc.dcc.validation.report.ValidationErrorReport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -194,8 +195,8 @@ public class ValidationQueueManagerService extends AbstractService implements Va
     List<SchemaReport> schemaReports = new ArrayList<SchemaReport>();
     for(String schema : errors.keySet()) {
       SchemaReport schemaReport = new SchemaReport();
-
-      schemaReport.setErrors(Arrays.asList(errors.get(schema)));
+      ValidationErrorReport errReport = new ValidationErrorReport(errors.get(schema));
+      schemaReport.setErrors(Arrays.asList(errReport));
       schemaReport.setName(schema);
       schemaReports.add(schemaReport);
     }
