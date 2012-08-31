@@ -20,6 +20,7 @@ package org.icgc.dcc.validation;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.apache.hadoop.fs.FileSystem;
@@ -37,6 +38,8 @@ public class FileSchemaDirectory {
 
   private final FileSystem fs;
 
+  private Map<String, String> params;
+
   public FileSchemaDirectory(FileSystem fs, Path source) {
     checkArgument(source != null);
     checkArgument(fs != null);
@@ -47,7 +50,8 @@ public class FileSchemaDirectory {
   public boolean hasFile(final FileSchema fileSchema) {
     List<Path> paths = matches(fileSchema);
     if(paths != null && paths.size() > 1) {
-      throw new PlanningException(fileSchema.getName(), ValidationErrorCode.TOO_MANY_FILES_ERROR, paths.toString());
+      this.params.put("value", paths.toString());
+      throw new PlanningException(fileSchema.getName(), ValidationErrorCode.TOO_MANY_FILES_ERROR, this.params);
     }
     return paths != null && paths.size() > 0;
   }

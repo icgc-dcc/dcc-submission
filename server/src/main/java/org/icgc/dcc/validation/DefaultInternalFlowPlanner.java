@@ -65,6 +65,8 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
 
   private StructralCheckFunction structralCheck;
 
+  private Map<String, String[]> params;
+
   DefaultInternalFlowPlanner(FileSchema fileSchema) {
     super(fileSchema, FlowType.INTERNAL);
     this.head = new Pipe(fileSchema.getName());
@@ -130,8 +132,8 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
     } catch(IOException e) {
       throw new PlanningException("Error processing file header");
     } catch(DuplicateHeaderException e) {
-      throw new PlanningException(getSchema().getName(), ValidationErrorCode.DUPLICATE_HEADER_ERROR,
-          e.getDuplicateHeader());
+      this.params.put("columnName", e.getDuplicateHeader());
+      throw new PlanningException(getSchema().getName(), ValidationErrorCode.DUPLICATE_HEADER_ERROR, this.params);
     }
 
     flowDef.addSource(head, source);

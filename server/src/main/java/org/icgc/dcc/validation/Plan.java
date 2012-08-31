@@ -49,6 +49,8 @@ public class Plan {
 
   private final CascadingStrategy cascadingStrategy;
 
+  private Map<String, String> params;
+
   public Plan(CascadingStrategy cascadingStrategy) {
     this.cascadingStrategy = cascadingStrategy;
   }
@@ -62,7 +64,8 @@ public class Plan {
   public InternalFlowPlanner getInternalFlow(String schema) {
     InternalFlowPlanner schemaPlan = internalPlanners.get(schema);
     if(schemaPlan == null) {
-      throw new PlanningException(schema, ValidationErrorCode.MISSING_SCHEMA_ERROR, schema);
+      this.params.put("schema", schema);
+      throw new PlanningException(schema, ValidationErrorCode.MISSING_SCHEMA_ERROR, this.params);
     }
     return schemaPlan;
   }
@@ -74,7 +77,8 @@ public class Plan {
   public ExternalFlowPlanner getExternalFlow(String schema) {
     ExternalFlowPlanner schemaPlan = externalPlanners.get(schema);
     if(schemaPlan == null) {
-      throw new PlanningException(schema, ValidationErrorCode.MISSING_SCHEMA_ERROR, schema);
+      this.params.put("schema", schema);
+      throw new PlanningException(schema, ValidationErrorCode.MISSING_SCHEMA_ERROR, this.params);
     }
     return schemaPlan;
   }

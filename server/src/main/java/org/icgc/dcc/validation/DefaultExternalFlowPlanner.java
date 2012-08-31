@@ -44,6 +44,8 @@ class DefaultExternalFlowPlanner extends BaseFileSchemaFlowPlanner implements Ex
 
   private final List<Pipe> joinedTails = Lists.newLinkedList();
 
+  private Map<String, Object> params;
+
   DefaultExternalFlowPlanner(Plan plan, FileSchema fileSchema) {
     super(fileSchema, FlowType.EXTERNAL);
     checkArgument(plan != null);
@@ -72,8 +74,11 @@ class DefaultExternalFlowPlanner extends BaseFileSchemaFlowPlanner implements Ex
 
       joinedTails.add(element.join(lhs, rhs));
     } catch(PlanningException e) {
-      throw new PlanningException(getSchema().getName(), ValidationErrorCode.INVALID_RELATION_ERROR, getSchema()
-          .getName(), element.rhs());
+
+      this.params.put("schema", getSchema().getName());
+      this.params.put("relation", element.rhs());
+
+      throw new PlanningException(getSchema().getName(), ValidationErrorCode.INVALID_RELATION_ERROR, this.params);
     }
   }
 
