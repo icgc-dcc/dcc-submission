@@ -1,5 +1,7 @@
 package org.icgc.dcc.mongodb.hadoop;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import java.io.IOException;
 
 import org.apache.hadoop.mapred.FileInputFormat;
@@ -26,6 +28,8 @@ public final class MongoSourceTap extends SourceTap<JobConf, RecordReader<BSONWr
 
   public MongoSourceTap(MongoSourceScheme mongoScheme, MongoURI collectionUri) {
     super(mongoScheme);
+    checkState(collectionUri.getCollection() != null,
+        "mongodb URI should refer to a collection: mongodb://hostname/db.collection");
     this.collectionUri = collectionUri.toString();
     this.uri = collectionUri;
   }
