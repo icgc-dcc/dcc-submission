@@ -65,6 +65,7 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Resources;
 import com.google.inject.Inject;
+import com.typesafe.config.ConfigFactory;
 
 @RunWith(GuiceJUnitRunner.class)
 @GuiceModules({ ConfigModule.class, CoreModule.class,//
@@ -75,7 +76,7 @@ public class IntegrationTest {
   @Inject
   private Datastore datastore;
 
-  private static final String DCC_ROOT_DIR = "/tmp/dcc_root_dir/";
+  private static final String DCC_ROOT_DIR = ConfigFactory.load().getString("fs.root");
 
   static private Thread server;
 
@@ -128,6 +129,10 @@ public class IntegrationTest {
 
     test_createInitialRelease("/integrationtest/initRelease.json");
 
+    test_checkRelease("release1", "0.6c", ReleaseState.OPENED, Arrays.<SubmissionState> asList());
+
+    test_addProjects();
+
     test_checkRelease("release1", "0.6c", ReleaseState.OPENED, Arrays.<SubmissionState> asList(
         SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED));
 
@@ -139,9 +144,9 @@ public class IntegrationTest {
 
     test_checkSubmissionsStates();
 
-    test_fileIsEmpty(DCC_ROOT_DIR + "release1/project1/.validation/donor.internal#errors.json");
-    test_fileIsEmpty(DCC_ROOT_DIR + "release1/project1/.validation/specimen.internal#errors.json");
-    test_fileIsEmpty(DCC_ROOT_DIR + "release1/project1/.validation/specimen.external#errors.json");
+    test_fileIsEmpty(DCC_ROOT_DIR, "release1/project1/.validation/donor.internal#errors.json");
+    test_fileIsEmpty(DCC_ROOT_DIR, "release1/project1/.validation/specimen.internal#errors.json");
+    test_fileIsEmpty(DCC_ROOT_DIR, "release1/project1/.validation/specimen.external#errors.json");
 
     test_releaseFirstRelease();
 
@@ -157,6 +162,21 @@ public class IntegrationTest {
         SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED));
   }
 
+  private void test_addProjects() throws IOException {
+    Response response1 =
+        sendPostRequest("/projects",
+            "{\"name\":\"Project One\",\"key\":\"project1\",\"users\":[\"admin\"],\"groups\":[\"admin\"]}");
+    assertEquals(201, response1.getStatus());
+    Response response2 =
+        sendPostRequest("/projects",
+            "{\"name\":\"Project Two\",\"key\":\"project2\",\"users\":[\"admin\", \"brett\"],\"groups\":[\"admin\"]}");
+    assertEquals(201, response2.getStatus());
+    Response response3 =
+        sendPostRequest("/projects",
+            "{\"name\":\"Project Three\",\"key\":\"project3\",\"users\":[\"admin\"],\"groups\":[\"admin\"]}");
+    assertEquals(201, response3.getStatus());
+  }
+
   private void test_feedFileSystem() throws IOException {
     // TODO ideally we should use a sftp client to upload data files
     File srcDir = new File("src/test/resources/integrationtest/fs/");
@@ -169,9 +189,6 @@ public class IntegrationTest {
   }
 
   private void test_feedDB() throws InvocationException, NullPointerException, IllegalArgumentException, IOException {
-    this.client.target(BASEURI).path("/seed/projects").request(MediaType.APPLICATION_JSON)
-        .header("Authorization", AUTHORIZATION)
-        .post(Entity.entity(this.resourceToString("/integrationtest/projects.json"), MediaType.APPLICATION_JSON));
     this.client.target(BASEURI).path("/seed/dictionaries").request(MediaType.APPLICATION_JSON)
         .header("Authorization", AUTHORIZATION)
         .post(Entity.entity("[" + this.resourceToString("/dictionary.json") + "]", MediaType.APPLICATION_JSON));
@@ -217,8 +234,8 @@ public class IntegrationTest {
     assertEquals(SubmissionState.INVALID, submission.getState());
   }
 
-  private void test_fileIsEmpty(String path) throws IOException {
-    File errorFile = new File(path);
+  private void test_fileIsEmpty(String dir, String path) throws IOException {
+    File errorFile = new File(dir, path);
     assertTrue("Expected file does not exist: " + path, errorFile.exists());
     assertTrue("Expected empty file: " + path, FileUtils.readFileToString(errorFile).isEmpty());
   }

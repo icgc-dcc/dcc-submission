@@ -137,6 +137,11 @@
       </exclusions>
     </dependency>
     <dependency>
+      <groupId>org.mongodb</groupId>
+      <artifactId>mongo-hadoop-core</artifactId>
+      <version>1.1.0-93d3667</version>
+    </dependency>
+    <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
       <version>${logback.version}</version>
@@ -197,11 +202,11 @@
       </exclusions>
     </dependency>
     <dependency>
-		<groupId>org.apache.hadoop</groupId>
-		<artifactId>hadoop-hdfs</artifactId>	
-		<version>${hadoop-cdh.version}</version>
-		<scope>runtime</scope>
-	</dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-hdfs</artifactId>
+      <version>${hadoop-cdh.version}</version>
+      <scope>runtime</scope>
+    </dependency>
     <!-- Test Dependencies -->
     <dependency>
       <groupId>junit</groupId>
@@ -305,27 +310,27 @@
         <artifactId>maven-shade-plugin</artifactId>
         <version>1.7.1</version>
         <configuration>
-            <artifactSet>
-                <excludes>
-                  <exclude>com.sun.jersey:*</exclude>
-                </excludes>
-            </artifactSet>
-            <filters>
-                <filter>
-                    <artifact>*:*</artifact>
-                    <excludes>
-                        <exclude>META-INF/*.SF</exclude>
-                        <exclude>META-INF/*.RSA</exclude>
-                        <exclude>META-INF/*.INF</exclude>
-                    </excludes>
-                </filter>
-            </filters>
-            <transformers>
-                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
-                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                  <mainClass>org.icgc.dcc.Main</mainClass>
-                </transformer>
-            </transformers>
+          <artifactSet>
+            <excludes>
+              <exclude>com.sun.jersey:*</exclude>
+            </excludes>
+          </artifactSet>
+          <filters>
+            <filter>
+              <artifact>*:*</artifact>
+              <excludes>
+                <exclude>META-INF/*.SF</exclude>
+                <exclude>META-INF/*.RSA</exclude>
+                <exclude>META-INF/*.INF</exclude>
+              </excludes>
+            </filter>
+          </filters>
+          <transformers>
+            <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+            <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+              <mainClass>org.icgc.dcc.Main</mainClass>
+            </transformer>
+          </transformers>
         </configuration>
         <executions>
           <execution>
