@@ -129,7 +129,7 @@ public class HadoopUtils {
     List<Path> ls = new ArrayList<Path>();
     for(FileStatus fileStatus : listStatus) {
       String filename = fileStatus.getPath().getName();
-      if(((fileStatus.isFile() && file) || (fileStatus.isSymlink() && filename.equals("SystemFiles")) //
+      if(((fileStatus.isFile() && file) || (fileStatus.isSymlink() && path.getName().equals("SystemFiles")) //
       || (fileStatus.isDirectory() && dir)) && (null == pattern || pattern.matcher(filename).matches())) {
         ls.add(fileStatus.getPath());
       }
