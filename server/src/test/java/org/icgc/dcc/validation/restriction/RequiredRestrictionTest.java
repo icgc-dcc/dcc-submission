@@ -60,7 +60,7 @@ public class RequiredRestrictionTest extends CascadingTestCase {
   }
 
   private TupleState test_SpecifiedFunction(Object tupleValue) {
-    SpecifiedFunction function = new SpecifiedFunction();
+    SpecifiedFunction function = new SpecifiedFunction(true);
 
     Fields incoming = new Fields("field", "_state");
     TupleEntry[] tuples = new TupleEntry[] { new TupleEntry(incoming, new Tuple(tupleValue, new TupleState())) };

@@ -19,7 +19,8 @@ public enum ValidationErrorCode {
   TOO_MANY_FILES_ERROR("more than one file matches the schema pattern"), //
   INVALID_RELATION_ERROR("a required schema for this relation was not found"), //
   MISSING_SCHEMA_ERROR("no valid schema found"), //
-  DUPLICATE_HEADER_ERROR("duplicate header found: %s");
+  DUPLICATE_HEADER_ERROR("duplicate header found: %s"), //
+  MISSING_CODE_REQUIRED_ERROR("required field has a missing code: %s");
 
   private final String message;
 

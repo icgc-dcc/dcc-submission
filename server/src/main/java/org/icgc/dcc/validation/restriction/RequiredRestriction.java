@@ -25,6 +25,8 @@ public class RequiredRestriction implements InternalPlanElement {
 
   private final String field;
 
+  private boolean acceptMissingCode;
+
   protected RequiredRestriction(String field) {
     this.field = field;
   }
@@ -36,7 +38,8 @@ public class RequiredRestriction implements InternalPlanElement {
 
   @Override
   public Pipe extend(Pipe pipe) {
-    return new Each(pipe, new ValidationFields(field), new SpecifiedFunction(), Fields.REPLACE);
+    return new Each(pipe, new ValidationFields(field), new SpecifiedFunction(this.isAcceptMissingCode()),
+        Fields.REPLACE);
   }
 
   public static class Type implements RestrictionType {
@@ -72,9 +75,11 @@ public class RequiredRestriction implements InternalPlanElement {
 
   @SuppressWarnings("rawtypes")
   public static class SpecifiedFunction extends BaseOperation implements Function {
+    private final boolean acceptMissingCode;
 
-    protected SpecifiedFunction() {
+    protected SpecifiedFunction(boolean acceptMissingCode) {
       super(2, Fields.ARGS);
+      this.acceptMissingCode = acceptMissingCode;
     }
 
     @Override
@@ -86,9 +91,22 @@ public class RequiredRestriction implements InternalPlanElement {
           && (value == null || value.isEmpty())) {
         Object fieldName = tupleEntry.getFields().get(0);
         ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.MISSING_VALUE_ERROR, value, fieldName);
+      } else if(ValidationFields.state(tupleEntry).isFieldMissing((String) tupleEntry.getFields().get(0))
+          && !acceptMissingCode) {
+        Object fieldName = tupleEntry.getFields().get(0);
+        ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.MISSING_CODE_REQUIRED_ERROR, value,
+            fieldName);
       }
       functionCall.getOutputCollector().add(tupleEntry.getTupleCopy());
     }
 
+  }
+
+  public boolean isAcceptMissingCode() {
+    return acceptMissingCode;
+  }
+
+  public void setAcceptMissingCode(boolean acceptMissingCode) {
+    this.acceptMissingCode = acceptMissingCode;
   }
 }
