@@ -36,7 +36,7 @@ public class RequiredRestrictionTest extends CascadingTestCase {
 
   @Test
   public void test_requiredRestriction_describe() {
-    RequiredRestriction restriction = new RequiredRestriction("field");
+    RequiredRestriction restriction = new RequiredRestriction("field", true);
 
     assertEquals("required[field]", restriction.describe());
   }

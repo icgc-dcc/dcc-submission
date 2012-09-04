@@ -25,10 +25,11 @@ public class RequiredRestriction implements InternalPlanElement {
 
   private final String field;
 
-  private boolean acceptMissingCode = true;
+  private final boolean acceptMissingCode;
 
-  protected RequiredRestriction(String field) {
+  protected RequiredRestriction(String field, boolean acceptMissingCode) {
     this.field = field;
+    this.acceptMissingCode = acceptMissingCode;
   }
 
   @Override
@@ -68,7 +69,12 @@ public class RequiredRestriction implements InternalPlanElement {
 
     @Override
     public PlanElement build(Field field, Restriction restriction) {
-      return new RequiredRestriction(field.getName());
+      if(restriction.getConfig() == null || restriction.getConfig().get("acceptMissingCode") == null) {
+        return new RequiredRestriction(field.getName(), true);
+      }
+      Object acceptMissingCode = restriction.getConfig().get("acceptMissingCode");
+      return new RequiredRestriction(field.getName(), Boolean.parseBoolean((String) acceptMissingCode));
+
     }
 
   }
@@ -104,9 +110,5 @@ public class RequiredRestriction implements InternalPlanElement {
 
   public boolean isAcceptMissingCode() {
     return acceptMissingCode;
-  }
-
-  public void setAcceptMissingCode(boolean acceptMissingCode) {
-    this.acceptMissingCode = acceptMissingCode;
   }
 }
