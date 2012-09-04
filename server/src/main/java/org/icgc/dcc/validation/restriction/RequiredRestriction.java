@@ -25,7 +25,7 @@ public class RequiredRestriction implements InternalPlanElement {
 
   private final String field;
 
-  private boolean acceptMissingCode;
+  private boolean acceptMissingCode = true;
 
   protected RequiredRestriction(String field) {
     this.field = field;
