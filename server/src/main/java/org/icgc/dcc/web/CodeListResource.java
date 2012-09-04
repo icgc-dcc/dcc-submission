@@ -55,6 +55,17 @@ public class CodeListResource {
   }
 
   @POST
+  public Response addCodeLists(List<CodeList> codeLists, @Context SecurityContext securityContext) {
+    if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
+        AuthorizationPrivileges.CODELIST_MODIFY.toString()) == false) {
+      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
+    }
+    checkArgument(codeLists != null);
+    this.dictionaries.addCodeList(codeLists);
+    return Response.status(Status.CREATED).build();
+  }
+
+  @POST
   public Response createCodeList(String name, @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.CODELIST_MODIFY.toString()) == false) {
