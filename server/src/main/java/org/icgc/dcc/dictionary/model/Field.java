@@ -24,6 +24,9 @@ import org.icgc.dcc.dictionary.visitor.DictionaryElement;
 import org.icgc.dcc.dictionary.visitor.DictionaryVisitor;
 
 import com.google.code.morphia.annotations.Embedded;
+import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 
 /**
  * Describes a field that has {@code Restriction}s and that is part of a {@code FileSchema}
@@ -97,32 +100,26 @@ public class Field implements DictionaryElement {
   }
 
   public void addRestriction(Restriction restriction) {
-    if(this.hasRestriction(restriction.getType())) {
+    if(this.getRestriction(restriction.getType()).isPresent()) {
       throw new DuplicateRestrictionFoundException("Duplicate Restriction found with type: " + restriction.getType());
     }
     this.restrictions.add(restriction);
   }
 
-  public boolean hasRestriction(String type) {
-    for(Restriction restriction : this.restrictions) {
-      if(restriction.getType().equals(type)) {
-        return true;
+  public Optional<Restriction> getRestriction(final String type) {
+    return Iterables.tryFind(this.restrictions, new Predicate<Restriction>() {
+
+      @Override
+      public boolean apply(Restriction input) {
+        return input.getType().equals(type);
       }
-    }
-    return false;
+    });
   }
 
-  public Restriction getRestriction(String type) {
-    for(Restriction restriction : this.restrictions) {
-      if(restriction.getType().equals(type)) {
-        return restriction;
-      }
+  public void removeRestriction(String type) {
+    if(this.getRestriction(type).isPresent()) {
+      this.restrictions.remove(this.getRestriction(type).get());
     }
-    throw new NoRestrictionFoundException("No Restriction found with type: " + type);
-  }
-
-  public void removeRestriction(Restriction restriction) {
-    this.restrictions.remove(restriction);
   }
 
   public SummaryType getSummaryType() {

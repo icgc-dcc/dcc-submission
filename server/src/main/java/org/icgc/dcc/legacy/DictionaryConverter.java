@@ -43,7 +43,6 @@ import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.dictionary.model.FileSchemaRole;
-import org.icgc.dcc.dictionary.model.NoRestrictionFoundException;
 import org.icgc.dcc.dictionary.model.Relation;
 import org.icgc.dcc.dictionary.model.Restriction;
 import org.icgc.dcc.dictionary.model.SummaryType;
@@ -193,12 +192,10 @@ public class DictionaryConverter {
       FileSchema leftFileSchema = this.dictionary.fileSchema(leftTable).get();
       for(String key : leftKeys) {
         Field leftField = leftFileSchema.field(key).get();
-        try {
-          // remove any existing required restrictions
-          leftField.removeRestriction(leftField.getRestriction(RequiredRestriction.NAME));
-        } catch(NoRestrictionFoundException e) {
 
-        }
+        // remove any existing required restrictions
+        leftField.removeRestriction(RequiredRestriction.NAME);
+
         Restriction requiredRestriction = new Restriction();
         requiredRestriction.setType(RequiredRestriction.NAME);
         BasicDBObject parameter = new BasicDBObject();
@@ -209,12 +206,10 @@ public class DictionaryConverter {
       FileSchema rightFileSchema = this.dictionary.fileSchema(rightTable).get();
       for(String key : rightKeys) {
         Field rightField = rightFileSchema.field(key).get();
-        try {
-          // remove any existing required restrictions
-          rightField.removeRestriction(rightField.getRestriction(RequiredRestriction.NAME));
-        } catch(NoRestrictionFoundException e) {
 
-        }
+        // remove any existing required restrictions
+        rightField.removeRestriction(RequiredRestriction.NAME);
+
         Restriction requiredRestriction = new Restriction();
         requiredRestriction.setType(RequiredRestriction.NAME);
         BasicDBObject parameter = new BasicDBObject();
