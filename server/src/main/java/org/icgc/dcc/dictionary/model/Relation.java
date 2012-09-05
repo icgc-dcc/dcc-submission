@@ -21,6 +21,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.icgc.dcc.dictionary.visitor.DictionaryElement;
 import org.icgc.dcc.dictionary.visitor.DictionaryVisitor;
@@ -28,6 +29,7 @@ import org.icgc.dcc.dictionary.visitor.DictionaryVisitor;
 import com.google.code.morphia.annotations.Embedded;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 @Embedded
 public class Relation implements DictionaryElement {
@@ -70,7 +72,10 @@ public class Relation implements DictionaryElement {
     checkArgument(this.fields.isEmpty() == false, this.fields.size());
     checkArgument(this.fields.size() == this.otherFields.size());
     checkArgument(this.fields.size() > this.optionals.size(), this.fields.size() + ", " + this.optionals.size());
-    // TODO: further check on optionals (no repetition, valid indices, ...) - will create separate ticket for it
+
+    if(this.isOptionalValid() == false) {
+      throw new DataModelException(String.format("options fields (%s) in relation are not valid", this.optionals));
+    }
 
     if(this.optionals.isEmpty() == false && lhsCardinality == Cardinality.ONE_OR_MORE) { // see comment DCC-289: only
                                                                                          // allowing one or the other
@@ -108,5 +113,28 @@ public class Relation implements DictionaryElement {
 
   public List<Integer> getOptionals() {
     return optionals;
+  }
+
+  private boolean isOptionalValid() {
+    // optionals should be strictly less than fields
+    if(this.optionals.size() >= this.fields.size()) {
+      return false;
+    }
+
+    Map<Integer, Integer> map = Maps.newHashMap();
+    for(Integer optional : this.optionals) {
+      // check for valid indices
+      if(optional.intValue() < 0 || optional.intValue() >= this.fields.size()) {
+        return false;
+      }
+      // check for repetition
+      if(map.containsKey(optional)) {
+        return false;
+      } else {
+        map.put(optional, optional);
+      }
+    }
+
+    return true;
   }
 }
