@@ -1,6 +1,6 @@
 LeftTable	LeftKey (FK)	RightTable	RightKey (PK, with one exception for mirna_p table)	LeftCardinality	RightUniqueness	optionals	JoinType (unused for now)
-specimen	donor_id	donor	donor_id	1..n	TRUE		right
-sample	specimen_id	specimen	specimen_id	1..n	TRUE		right
+specimen	donor_id	donor	donor_id	1..n	TRUE		inner
+sample	specimen_id	specimen	specimen_id	1..n	TRUE		inner
 exposure	donor_id	donor	donor_id	0..n	TRUE		right
 family	donor_id	donor	donor_id	0..n	TRUE		right
 therapy	donor_id	donor	donor_id	0..n	TRUE		right
