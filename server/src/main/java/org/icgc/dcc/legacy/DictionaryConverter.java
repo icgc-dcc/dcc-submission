@@ -197,7 +197,7 @@ public class DictionaryConverter {
           // remove any existing required restrictions
           leftField.removeRestriction(leftField.getRestriction(RequiredRestriction.NAME));
         } catch(NoRestrictionFoundException e) {
-          e.printStackTrace();
+
         }
         Restriction requiredRestriction = new Restriction();
         requiredRestriction.setType(RequiredRestriction.NAME);
@@ -213,7 +213,7 @@ public class DictionaryConverter {
           // remove any existing required restrictions
           rightField.removeRestriction(rightField.getRestriction(RequiredRestriction.NAME));
         } catch(NoRestrictionFoundException e) {
-          e.printStackTrace();
+
         }
         Restriction requiredRestriction = new Restriction();
         requiredRestriction.setType(RequiredRestriction.NAME);

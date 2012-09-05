@@ -104,7 +104,7 @@ public class Field implements DictionaryElement {
     Restriction result = null;
     for(Restriction restriction : this.restrictions) {
       if(restriction.getType().equals(type)) {
-        if(result != null) {
+        if(result == null) {
           result = restriction;
         } else {
           throw new DuplicateRestrictionFoundException("Duplicate Restriction found with type: " + type);
