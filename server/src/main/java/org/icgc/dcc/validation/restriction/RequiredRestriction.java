@@ -100,15 +100,14 @@ public class RequiredRestriction implements InternalPlanElement {
       } else if(ValidationFields.state(tupleEntry).isFieldMissing((String) tupleEntry.getFields().get(0))
           && !acceptMissingCode) {
         Object fieldName = tupleEntry.getFields().get(0);
-        ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.MISSING_CODE_REQUIRED_ERROR, value,
-            fieldName);
+        ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.MISSING_VALUE_ERROR, value, fieldName);
       }
       functionCall.getOutputCollector().add(tupleEntry.getTupleCopy());
     }
 
   }
 
-  public boolean isAcceptMissingCode() {
+  private boolean isAcceptMissingCode() {
     return acceptMissingCode;
   }
 }
