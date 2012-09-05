@@ -47,6 +47,7 @@ import org.icgc.dcc.dictionary.model.Relation;
 import org.icgc.dcc.dictionary.model.Restriction;
 import org.icgc.dcc.dictionary.model.SummaryType;
 import org.icgc.dcc.dictionary.model.ValueType;
+import org.icgc.dcc.validation.restriction.RequiredRestriction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -192,11 +193,11 @@ public class DictionaryConverter {
       for(String key : leftKeys) {
         Field leftField = leftFileSchema.field(key).get();
         // remove any existing required restrictions
-        leftField.removeRestriction("required");
+        leftField.removeRestriction(RequiredRestriction.NAME);
         Restriction requiredRestriction = new Restriction();
-        requiredRestriction.setType("required");
+        requiredRestriction.setType(RequiredRestriction.NAME);
         BasicDBObject parameter = new BasicDBObject();
-        parameter.append("acceptMissingCode", false);
+        parameter.append(RequiredRestriction.ACCEPT_MISSING_CODE, false);
         requiredRestriction.setConfig(parameter);
         leftField.addRestriction(requiredRestriction);
       }
@@ -204,11 +205,11 @@ public class DictionaryConverter {
       for(String key : rightKeys) {
         Field rightField = rightFileSchema.field(key).get();
         // remove any existing required restrictions
-        rightField.removeRestriction("required");
+        rightField.removeRestriction(RequiredRestriction.NAME);
         Restriction requiredRestriction = new Restriction();
-        requiredRestriction.setType("required");
+        requiredRestriction.setType(RequiredRestriction.NAME);
         BasicDBObject parameter = new BasicDBObject();
-        parameter.append("acceptMissingCode", false);
+        parameter.append(RequiredRestriction.ACCEPT_MISSING_CODE, false);
         requiredRestriction.setConfig(parameter);
         rightField.addRestriction(requiredRestriction);
       }

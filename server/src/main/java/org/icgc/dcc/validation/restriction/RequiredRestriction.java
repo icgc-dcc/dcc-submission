@@ -23,6 +23,8 @@ public class RequiredRestriction implements InternalPlanElement {
 
   public static final String NAME = "required";// TODO: create enum for valid Restriction types?
 
+  public static final String ACCEPT_MISSING_CODE = "acceptMissingCode";
+
   private final String field;
 
   private final boolean acceptMissingCode;
@@ -69,11 +71,11 @@ public class RequiredRestriction implements InternalPlanElement {
 
     @Override
     public PlanElement build(Field field, Restriction restriction) {
-      if(restriction.getConfig() == null || restriction.getConfig().get("acceptMissingCode") == null) {
+      if(restriction.getConfig() == null || restriction.getConfig().get(ACCEPT_MISSING_CODE) == null) {
         return new RequiredRestriction(field.getName(), true);
       }
-      Object acceptMissingCode = restriction.getConfig().get("acceptMissingCode");
-      return new RequiredRestriction(field.getName(), Boolean.parseBoolean((String) acceptMissingCode));
+      Boolean acceptMissingCode = (Boolean) restriction.getConfig().get(ACCEPT_MISSING_CODE);
+      return new RequiredRestriction(field.getName(), acceptMissingCode);
 
     }
 
@@ -93,12 +95,12 @@ public class RequiredRestriction implements InternalPlanElement {
       TupleEntry tupleEntry = functionCall.getArguments();
       String value = tupleEntry.getString(0);
 
-      if(ValidationFields.state(tupleEntry).isFieldMissing((String) tupleEntry.getFields().get(0)) == false
-          && (value == null || value.isEmpty())) {
+      boolean isFieldMissing =
+          ValidationFields.state(tupleEntry).isFieldMissing((String) tupleEntry.getFields().get(0));
+      if(isFieldMissing == false && (value == null || value.isEmpty())) {
         Object fieldName = tupleEntry.getFields().get(0);
         ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.MISSING_VALUE_ERROR, value, fieldName);
-      } else if(ValidationFields.state(tupleEntry).isFieldMissing((String) tupleEntry.getFields().get(0))
-          && !acceptMissingCode) {
+      } else if(isFieldMissing == true && !acceptMissingCode) {
         Object fieldName = tupleEntry.getFields().get(0);
         ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.MISSING_VALUE_ERROR, value, fieldName);
       }
