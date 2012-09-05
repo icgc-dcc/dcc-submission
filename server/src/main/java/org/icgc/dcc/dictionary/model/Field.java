@@ -107,4 +107,12 @@ public class Field implements DictionaryElement {
   public void setSummaryType(SummaryType summaryType) {
     this.summaryType = summaryType;
   }
+
+  public void removeRestriction(String type) {
+    for(int i = this.restrictions.size() - 1; i >= 0; i--) {
+      if(restrictions.get(i).getType().equals(type)) {
+        this.restrictions.remove(i);
+      }
+    }
+  }
 }
