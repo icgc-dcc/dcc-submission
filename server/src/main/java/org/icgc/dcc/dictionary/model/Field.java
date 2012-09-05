@@ -100,6 +100,28 @@ public class Field implements DictionaryElement {
     this.restrictions.add(restriction);
   }
 
+  public Restriction getRestriction(String type) {
+    Restriction result = null;
+    for(Restriction restriction : this.restrictions) {
+      if(restriction.getType().equals(type)) {
+        if(result != null) {
+          result = restriction;
+        } else {
+          throw new DuplicateRestrictionFoundException("Duplicate Restriction found with type: " + type);
+        }
+      }
+    }
+    if(result == null) {
+      throw new NoRestrictionFoundException("No Restriction found with type: " + type);
+    } else {
+      return result;
+    }
+  }
+
+  public void removeRestriction(Restriction restriction) {
+    this.restrictions.remove(restriction);
+  }
+
   public SummaryType getSummaryType() {
     return summaryType;
   }
@@ -108,11 +130,4 @@ public class Field implements DictionaryElement {
     this.summaryType = summaryType;
   }
 
-  public void removeRestriction(String type) {
-    for(int i = this.restrictions.size() - 1; i >= 0; i--) {
-      if(restrictions.get(i).getType().equals(type)) {
-        this.restrictions.remove(i);
-      }
-    }
-  }
 }
