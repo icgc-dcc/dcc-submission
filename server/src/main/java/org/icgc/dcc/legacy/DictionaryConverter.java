@@ -194,7 +194,7 @@ public class DictionaryConverter {
         Field leftField = leftFileSchema.field(key).get();
 
         // remove any existing required restrictions
-        leftField.removeRestriction(RequiredRestriction.NAME);
+        leftField.removeRestriction(leftField.getRestriction(RequiredRestriction.NAME).get());
 
         Restriction requiredRestriction = new Restriction();
         requiredRestriction.setType(RequiredRestriction.NAME);
@@ -208,7 +208,7 @@ public class DictionaryConverter {
         Field rightField = rightFileSchema.field(key).get();
 
         // remove any existing required restrictions
-        rightField.removeRestriction(RequiredRestriction.NAME);
+        rightField.removeRestriction(rightField.getRestriction(RequiredRestriction.NAME).get());
 
         Restriction requiredRestriction = new Restriction();
         requiredRestriction.setType(RequiredRestriction.NAME);

@@ -116,10 +116,8 @@ public class Field implements DictionaryElement {
     });
   }
 
-  public void removeRestriction(String type) {
-    if(this.getRestriction(type).isPresent()) {
-      this.restrictions.remove(this.getRestriction(type).get());
-    }
+  public boolean removeRestriction(Restriction restriction) {
+    return this.restrictions.remove(restriction);
   }
 
   public SummaryType getSummaryType() {
