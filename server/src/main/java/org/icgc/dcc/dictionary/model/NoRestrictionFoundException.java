@@ -20,7 +20,7 @@ package org.icgc.dcc.dictionary.model;
 /**
  * 
  */
-public class NoRestrictionFoundException extends RuntimeException {
+public class NoRestrictionFoundException extends DataModelException {
 
   public NoRestrictionFoundException(String msg) {
     super(msg);

@@ -20,7 +20,7 @@ package org.icgc.dcc.dictionary.model;
 /**
  * 
  */
-public class DuplicateRestrictionFoundException extends RuntimeException {
+public class DuplicateRestrictionFoundException extends DataModelException {
 
   DuplicateRestrictionFoundException(String msg) {
     super(msg);

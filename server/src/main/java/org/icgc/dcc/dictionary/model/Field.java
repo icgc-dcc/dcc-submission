@@ -97,25 +97,28 @@ public class Field implements DictionaryElement {
   }
 
   public void addRestriction(Restriction restriction) {
+    if(this.hasRestriction(restriction.getType())) {
+      throw new DuplicateRestrictionFoundException("Duplicate Restriction found with type: " + restriction.getType());
+    }
     this.restrictions.add(restriction);
   }
 
-  public Restriction getRestriction(String type) {
-    Restriction result = null;
+  public boolean hasRestriction(String type) {
     for(Restriction restriction : this.restrictions) {
       if(restriction.getType().equals(type)) {
-        if(result == null) {
-          result = restriction;
-        } else {
-          throw new DuplicateRestrictionFoundException("Duplicate Restriction found with type: " + type);
-        }
+        return true;
       }
     }
-    if(result == null) {
-      throw new NoRestrictionFoundException("No Restriction found with type: " + type);
-    } else {
-      return result;
+    return false;
+  }
+
+  public Restriction getRestriction(String type) {
+    for(Restriction restriction : this.restrictions) {
+      if(restriction.getType().equals(type)) {
+        return restriction;
+      }
     }
+    throw new NoRestrictionFoundException("No Restriction found with type: " + type);
   }
 
   public void removeRestriction(Restriction restriction) {
