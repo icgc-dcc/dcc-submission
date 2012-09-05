@@ -29,9 +29,9 @@ import org.icgc.dcc.filesystem.DccFileSystemException;
  */
 class FileHdfsSshFile extends HdfsSshFile {
 
-  private final DirectoryHdfsSshFile directory;
+  private final BaseDirectoryHdfsSshFile directory;
 
-  FileHdfsSshFile(DirectoryHdfsSshFile directory, String fileName) {
+  FileHdfsSshFile(BaseDirectoryHdfsSshFile directory, String fileName) {
     super(new Path(directory.path, fileName), directory.fs);
     this.directory = directory;
   }
