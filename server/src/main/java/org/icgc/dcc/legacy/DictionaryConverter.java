@@ -367,7 +367,10 @@ public class DictionaryConverter {
     String required = iterator.next();
     if(Boolean.parseBoolean(required)) {
       Restriction requiredRestriction = new Restriction();
-      requiredRestriction.setType("required");
+      requiredRestriction.setType(RequiredRestriction.NAME);
+      BasicDBObject parameter = new BasicDBObject();
+      parameter.append(RequiredRestriction.ACCEPT_MISSING_CODE, true);
+      requiredRestriction.setConfig(parameter);
       restrictions.add(requiredRestriction);
     }
 

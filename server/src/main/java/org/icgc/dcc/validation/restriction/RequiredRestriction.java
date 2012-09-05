@@ -45,6 +45,10 @@ public class RequiredRestriction implements InternalPlanElement {
         Fields.REPLACE);
   }
 
+  private boolean isAcceptMissingCode() {
+    return acceptMissingCode;
+  }
+
   public static class Type implements RestrictionType {
 
     private final RestrictionTypeSchema schema = new RestrictionTypeSchema();
@@ -107,9 +111,5 @@ public class RequiredRestriction implements InternalPlanElement {
       functionCall.getOutputCollector().add(tupleEntry.getTupleCopy());
     }
 
-  }
-
-  private boolean isAcceptMissingCode() {
-    return acceptMissingCode;
   }
 }
