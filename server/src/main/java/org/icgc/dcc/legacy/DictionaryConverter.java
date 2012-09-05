@@ -191,6 +191,8 @@ public class DictionaryConverter {
       FileSchema leftFileSchema = this.dictionary.fileSchema(leftTable).get();
       for(String key : leftKeys) {
         Field leftField = leftFileSchema.field(key).get();
+        // remove any existing required restrictions
+        leftField.removeRestriction("required");
         Restriction requiredRestriction = new Restriction();
         requiredRestriction.setType("required");
         BasicDBObject parameter = new BasicDBObject();
@@ -201,6 +203,8 @@ public class DictionaryConverter {
       FileSchema rightFileSchema = this.dictionary.fileSchema(rightTable).get();
       for(String key : rightKeys) {
         Field rightField = rightFileSchema.field(key).get();
+        // remove any existing required restrictions
+        rightField.removeRestriction("required");
         Restriction requiredRestriction = new Restriction();
         requiredRestriction.setType("required");
         BasicDBObject parameter = new BasicDBObject();
