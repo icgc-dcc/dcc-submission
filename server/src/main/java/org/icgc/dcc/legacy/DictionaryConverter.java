@@ -47,6 +47,7 @@ import org.icgc.dcc.dictionary.model.Relation;
 import org.icgc.dcc.dictionary.model.Restriction;
 import org.icgc.dcc.dictionary.model.SummaryType;
 import org.icgc.dcc.dictionary.model.ValueType;
+import org.icgc.dcc.validation.restriction.RequiredRestriction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -57,6 +58,7 @@ import org.xml.sax.SAXException;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
+import com.google.common.base.Optional;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -191,24 +193,31 @@ public class DictionaryConverter {
       FileSchema leftFileSchema = this.dictionary.fileSchema(leftTable).get();
       for(String key : leftKeys) {
         Field leftField = leftFileSchema.field(key).get();
-        // remove any existing required restrictions
-        leftField.removeRestriction("required");
+        Optional<Restriction> leftRestriction = leftField.getRestriction(RequiredRestriction.NAME);
+        if(leftRestriction.isPresent()) {
+          // remove any existing required restrictions
+          leftField.removeRestriction(leftRestriction.get());
+        }
         Restriction requiredRestriction = new Restriction();
-        requiredRestriction.setType("required");
+        requiredRestriction.setType(RequiredRestriction.NAME);
         BasicDBObject parameter = new BasicDBObject();
-        parameter.append("acceptMissingCode", false);
+        parameter.append(RequiredRestriction.ACCEPT_MISSING_CODE, false);
         requiredRestriction.setConfig(parameter);
         leftField.addRestriction(requiredRestriction);
       }
       FileSchema rightFileSchema = this.dictionary.fileSchema(rightTable).get();
       for(String key : rightKeys) {
         Field rightField = rightFileSchema.field(key).get();
-        // remove any existing required restrictions
-        rightField.removeRestriction("required");
+
+        Optional<Restriction> rightRestriction = rightField.getRestriction(RequiredRestriction.NAME);
+        if(rightRestriction.isPresent()) {
+          // remove any existing required restrictions
+          rightField.removeRestriction(rightRestriction.get());
+        }
         Restriction requiredRestriction = new Restriction();
-        requiredRestriction.setType("required");
+        requiredRestriction.setType(RequiredRestriction.NAME);
         BasicDBObject parameter = new BasicDBObject();
-        parameter.append("acceptMissingCode", false);
+        parameter.append(RequiredRestriction.ACCEPT_MISSING_CODE, false);
         requiredRestriction.setConfig(parameter);
         rightField.addRestriction(requiredRestriction);
       }
@@ -366,7 +375,10 @@ public class DictionaryConverter {
     String required = iterator.next();
     if(Boolean.parseBoolean(required)) {
       Restriction requiredRestriction = new Restriction();
-      requiredRestriction.setType("required");
+      requiredRestriction.setType(RequiredRestriction.NAME);
+      BasicDBObject parameter = new BasicDBObject();
+      parameter.append(RequiredRestriction.ACCEPT_MISSING_CODE, true);
+      requiredRestriction.setConfig(parameter);
       restrictions.add(requiredRestriction);
     }
 

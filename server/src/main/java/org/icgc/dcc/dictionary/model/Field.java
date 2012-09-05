@@ -24,6 +24,9 @@ import org.icgc.dcc.dictionary.visitor.DictionaryElement;
 import org.icgc.dcc.dictionary.visitor.DictionaryVisitor;
 
 import com.google.code.morphia.annotations.Embedded;
+import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 
 /**
  * Describes a field that has {@code Restriction}s and that is part of a {@code FileSchema}
@@ -97,7 +100,24 @@ public class Field implements DictionaryElement {
   }
 
   public void addRestriction(Restriction restriction) {
+    if(this.getRestriction(restriction.getType()).isPresent()) {
+      throw new DuplicateRestrictionFoundException("Duplicate Restriction found with type: " + restriction.getType());
+    }
     this.restrictions.add(restriction);
+  }
+
+  public Optional<Restriction> getRestriction(final String type) {
+    return Iterables.tryFind(this.restrictions, new Predicate<Restriction>() {
+
+      @Override
+      public boolean apply(Restriction input) {
+        return input.getType().equals(type);
+      }
+    });
+  }
+
+  public boolean removeRestriction(Restriction restriction) {
+    return this.restrictions.remove(restriction);
   }
 
   public SummaryType getSummaryType() {
@@ -108,11 +128,4 @@ public class Field implements DictionaryElement {
     this.summaryType = summaryType;
   }
 
-  public void removeRestriction(String type) {
-    for(int i = this.restrictions.size() - 1; i >= 0; i--) {
-      if(restrictions.get(i).getType().equals(type)) {
-        this.restrictions.remove(i);
-      }
-    }
-  }
 }
