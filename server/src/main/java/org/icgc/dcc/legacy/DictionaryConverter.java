@@ -186,6 +186,32 @@ public class DictionaryConverter {
         FileSchema leftFileSchema = this.dictionary.fileSchema(leftTable).get();
         leftFileSchema.addRelation(new Relation(leftKeys, rightTable, rightKeys, leftCardinality, optionals));
       }
+
+      // mark relation fields to be required
+      FileSchema leftFileSchema = this.dictionary.fileSchema(leftTable).get();
+      for(String key : leftKeys) {
+        Field leftField = leftFileSchema.field(key).get();
+        // remove any existing required restrictions
+        leftField.removeRestriction("required");
+        Restriction requiredRestriction = new Restriction();
+        requiredRestriction.setType("required");
+        BasicDBObject parameter = new BasicDBObject();
+        parameter.append("acceptMissingCode", false);
+        requiredRestriction.setConfig(parameter);
+        leftField.addRestriction(requiredRestriction);
+      }
+      FileSchema rightFileSchema = this.dictionary.fileSchema(rightTable).get();
+      for(String key : rightKeys) {
+        Field rightField = rightFileSchema.field(key).get();
+        // remove any existing required restrictions
+        rightField.removeRestriction("required");
+        Restriction requiredRestriction = new Restriction();
+        requiredRestriction.setType("required");
+        BasicDBObject parameter = new BasicDBObject();
+        parameter.append("acceptMissingCode", false);
+        requiredRestriction.setConfig(parameter);
+        rightField.addRestriction(requiredRestriction);
+      }
     }
 
     return schemaToUniqueFields;
