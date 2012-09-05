@@ -74,6 +74,7 @@ public class SubmissionDirectory {
 
   public void notifyModified() {
     this.submission.setState(SubmissionState.NOT_VALIDATED);
+    this.submission.setReport(null);
   }
 
   public String getSubmissionDirPath() {

@@ -143,5 +143,7 @@ class RootHdfsSshFile extends HdfsSshFile {
   public void notifyModified(SubmissionDirectory submissionDirectory) {
     submissionDirectory.notifyModified();
     this.releases.updateSubmission(this.rfs.getRelease().getName(), submissionDirectory.getSubmission());
+    this.releases.updateSubmissionReport(this.rfs.getRelease().getName(), submissionDirectory.getSubmission()
+        .getProjectKey(), submissionDirectory.getSubmission().getReport());
   }
 }
