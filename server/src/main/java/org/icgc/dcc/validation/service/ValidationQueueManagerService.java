@@ -19,14 +19,24 @@ package org.icgc.dcc.validation.service;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 
 import org.icgc.dcc.dictionary.DictionaryService;
 import org.icgc.dcc.dictionary.model.Dictionary;
@@ -162,7 +172,30 @@ public class ValidationQueueManagerService extends AbstractService implements Va
 
     setSubmissionReport(projectKey, report);
 
-    log.info("successful validation - about to dequeue project key {}", projectKey);
+    log.info("Successful validation - about to dequeue project key {}", projectKey);
+
+    Properties props = new Properties();
+    props.put("mail.smtp.host", "smtp.oicr.on.ca");
+    Session session = Session.getDefaultInstance(props, null);
+
+    String msgBody = "Test Email";
+
+    try {
+      Message msg = new MimeMessage(session);
+      msg.setFrom(new InternetAddress("dcc-validator@oicr.on.ca", "DCC Validator"));
+      msg.addRecipient(Message.RecipientType.TO, new InternetAddress("shane.wilson@oicr.on.ca", "Shane Wilson"));
+      msg.setSubject("Your Example.com account has been activated");
+      msg.setText(msgBody);
+      Transport.send(msg);
+
+    } catch(AddressException e) {
+      log.error("an error occured while emailing: ", e);
+    } catch(MessagingException e) {
+      log.error("an error occured while emailing: ", e);
+    } catch(UnsupportedEncodingException e) {
+      log.error("an error occured while emailing: ", e);
+    }
+
     dequeue(projectKey, outcome == Outcome.PASSED);
   }
 
