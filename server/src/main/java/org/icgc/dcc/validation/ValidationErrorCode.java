@@ -2,6 +2,8 @@ package org.icgc.dcc.validation;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.Map;
+
 import org.icgc.dcc.validation.cascading.TupleState.TupleError;
 
 public enum ValidationErrorCode {
@@ -34,7 +36,7 @@ public enum ValidationErrorCode {
     this.structural = structural;
   }
 
-  public String format(Object[] parameters) {
+  public String format(Map<String, ? extends Object> parameters) {
     return String.format(message, parameters);
   }
 

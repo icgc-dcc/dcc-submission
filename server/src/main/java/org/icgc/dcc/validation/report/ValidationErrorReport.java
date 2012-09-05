@@ -18,11 +18,12 @@
 package org.icgc.dcc.validation.report;
 
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import org.icgc.dcc.validation.ValidationErrorCode;
 import org.icgc.dcc.validation.cascading.TupleState;
-
-import com.mongodb.DBObject;
+import org.icgc.dcc.validation.cascading.TupleState.TupleError;
 
 /**
  * 
@@ -36,17 +37,29 @@ public class ValidationErrorReport {
    * @param tupleState
    */
   public ValidationErrorReport(TupleState tupleState) {
-    // TODO Auto-generated constructor stub
     Iterator<TupleState.TupleError> errors = tupleState.getErrors().iterator();
     if(errors.hasNext()) {
       TupleState.TupleError error = errors.next();
       this.setErrorType(error.getCode());
       this.setDescription(error.getMessage());
     }
+  }
 
+  /**
+   * @param error
+   */
+  public ValidationErrorReport(TupleError error) {
+    this.setErrorType(error.getCode());
+    this.setDescription(error.getMessage());
+
+    // this.columns.add(error.getParameters()[0]);
   }
 
   public ValidationErrorCode errorType;
+
+  public String description;
+
+  public List<Map<String, ? extends Object>> columns;
 
   /**
    * @return the errorType
@@ -79,18 +92,14 @@ public class ValidationErrorReport {
   /**
    * @return the columns
    */
-  public DBObject getColumns() {
+  public List<Map<String, ? extends Object>> getColumns() {
     return columns;
   }
 
   /**
    * @param columns the columns to set
    */
-  public void setColumns(DBObject columns) {
+  public void setColumns(List<Map<String, ? extends Object>> columns) {
     this.columns = columns;
   }
-
-  public String description;
-
-  public DBObject columns;
 }

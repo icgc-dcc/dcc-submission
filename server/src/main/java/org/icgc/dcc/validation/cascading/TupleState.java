@@ -3,7 +3,6 @@ package org.icgc.dcc.validation.cascading;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +38,7 @@ public class TupleState implements Serializable {
     this.offset = offset;
   }
 
-  public void reportError(ValidationErrorCode code, Map<String, ?> parameters) {
+  public void reportError(ValidationErrorCode code, Map<String, ? extends Object> parameters) {
     checkArgument(code != null);
     ensureErrors().add(new TupleError(code, parameters));
     structurallyValid = code.isStructural() == false;
@@ -98,14 +97,14 @@ public class TupleState implements Serializable {
 
     private final ValidationErrorCode code;
 
-    private final Object[] parameters;
+    private final Map<String, ? extends Object> parameters;
 
     public TupleError() {
       code = null;
       parameters = null;
     }
 
-    private TupleError(ValidationErrorCode code, Object... parameters) {
+    private TupleError(ValidationErrorCode code, Map<String, ? extends Object> parameters) {
       this.code = code;
       this.parameters = parameters;
     }
@@ -114,7 +113,7 @@ public class TupleState implements Serializable {
       return code;
     }
 
-    public Object[] getParameters() {
+    public Map<String, ? extends Object> getParameters() {
       return parameters;
     }
 
@@ -123,11 +122,10 @@ public class TupleState implements Serializable {
       return code.format(getParameters());
     }
 
-    @Override
-    public String toString() {
-      return Objects.toStringHelper(TupleError.class).add("code", code).add("parameters", Arrays.toString(parameters))
-          .toString();
-    }
+    // @Override
+    // public String toString() {
+    // return Objects.toStringHelper(TupleError.class).add("code", code).add("parameters", parameters).toString();
+    // }
 
   }
 
