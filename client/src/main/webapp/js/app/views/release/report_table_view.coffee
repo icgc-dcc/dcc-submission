@@ -200,10 +200,10 @@ define (require) ->
         """
         
         for errorObj in data.errors
-          for error in errorObj.errors
+          for error in errorObj.columns
             sOut += "<tr>"
-            sOut += "<td>#{errorObj.offset}</td>"
-            sOut += @formatError(error)
+            sOut += "<td>what here</td>"
+            sOut += "<td>what here</td><td>what here</td>"
             sOut += "</tr>"
         sOut += "</tbody></table>"
         
@@ -270,9 +270,10 @@ define (require) ->
             fnRender: (oObj, Sval)->
               if oObj.aData.errors
                 errors = 0
-                for es in oObj.aData.errors
-                  errors += es.errors.length
-                "<span class='invalid'>#{errors} ERRORS</span>"
+                #for es in oObj.aData.errors
+                #  console.log es
+                #  errors += es.errors.length
+                "<span class='invalid'>INVALID</span>"
               else
                 "<span class='valid'>VALID</span>"
           }
