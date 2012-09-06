@@ -21,6 +21,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -58,11 +59,13 @@ public class StructralCheckFunction extends BaseOperation implements Function {
 
   private List<Integer> unknownHeaderIndices;
 
-  private Map<String, Object> params;
+  private final Map<String, Object> params;
 
   public StructralCheckFunction(Iterable<String> fieldNames) {
     super(1);
     dictionaryFields = new Fields(Iterables.toArray(fieldNames, String.class));
+
+    this.params = new LinkedHashMap<String, Object>();
   }
 
   @SuppressWarnings("unchecked")
@@ -116,6 +119,7 @@ public class StructralCheckFunction extends BaseOperation implements Function {
       adjustedValues = Arrays.asList(new String[dictionaryFields.size()]); // can discard values but must match number
                                                                            // of fields in headers for later merge in
                                                                            // error reporting
+      this.params.put("columnName", "FileLevelError");
       this.params.put("foundNumColumns", dataSize);
       this.params.put("actualNumColumns", headerSize);
       tupleState.reportError(ValidationErrorCode.STRUCTURALLY_INVALID_ROW_ERROR, this.params);

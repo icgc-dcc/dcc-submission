@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.validation.restriction;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -139,13 +140,14 @@ public class CodeListRestriction implements InternalPlanElement {
 
     private final Set<String> values;
 
-    private Map<String, Object> params;
+    private final Map<String, Object> params;
 
     protected InCodeListFunction(String codeListName, Set<String> codes, Set<String> values) {
       super(2, Fields.ARGS);
       this.codeListName = codeListName;
       this.codes = codes;
       this.values = values;
+      this.params = new LinkedHashMap<String, Object>();
     }
 
     @Override

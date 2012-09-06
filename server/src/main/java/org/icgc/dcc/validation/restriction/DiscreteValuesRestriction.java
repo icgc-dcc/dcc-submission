@@ -1,6 +1,7 @@
 package org.icgc.dcc.validation.restriction;
 
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -95,11 +96,12 @@ public class DiscreteValuesRestriction implements InternalPlanElement {
 
     private final Set<String> values;
 
-    private Map<String, Object> params;
+    private final Map<String, Object> params;
 
     protected InValuesFunction(String[] values) {
       super(2, Fields.ARGS);
       this.values = ImmutableSet.copyOf(values);
+      this.params = new LinkedHashMap<String, Object>();
     }
 
     @Override

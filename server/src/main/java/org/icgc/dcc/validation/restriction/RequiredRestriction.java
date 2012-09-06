@@ -1,5 +1,6 @@
 package org.icgc.dcc.validation.restriction;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.icgc.dcc.dictionary.model.Field;
@@ -75,11 +76,13 @@ public class RequiredRestriction implements InternalPlanElement {
   @SuppressWarnings("rawtypes")
   public static class SpecifiedFunction extends BaseOperation implements Function {
 
+    private final Map<String, Object> params;
+
     protected SpecifiedFunction() {
       super(2, Fields.ARGS);
-    }
 
-    private Map<String, Object> params;
+      this.params = new LinkedHashMap<String, Object>();
+    }
 
     @Override
     public void operate(FlowProcess flowProcess, FunctionCall functionCall) {

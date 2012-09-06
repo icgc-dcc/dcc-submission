@@ -1,5 +1,6 @@
 package org.icgc.dcc.validation.restriction;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.icgc.dcc.dictionary.model.Field;
@@ -98,12 +99,13 @@ public class RangeFieldRestriction implements InternalPlanElement {
 
     private final Number max;
 
-    private Map<String, Object> params;
+    private final Map<String, Object> params;
 
     protected RangeFunction(Number min, Number max) {
       super(2, Fields.ARGS);
       this.min = min;
       this.max = max;
+      this.params = new LinkedHashMap<String, Object>();
     }
 
     @Override
