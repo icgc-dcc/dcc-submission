@@ -31,6 +31,7 @@ import org.icgc.dcc.filesystem.SubmissionDirectory;
 import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
 import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.Submission;
+import org.icgc.dcc.release.model.SubmissionState;
 import org.mortbay.log.Log;
 
 /**
@@ -142,10 +143,10 @@ class RootHdfsSshFile extends HdfsSshFile {
   }
 
   public void notifyModified(SubmissionDirectory submissionDirectory) {
-    submissionDirectory.notifyModified();
     String releaseName = this.rfs.getRelease().getName();
     Submission submission = submissionDirectory.getSubmission();
+    submission.setState(SubmissionState.NOT_VALIDATED);
     this.releases.updateSubmission(releaseName, submission);
-    this.releases.updateSubmissionReport(releaseName, submission.getProjectKey(), submission.getReport());
+    this.releases.updateSubmissionReport(releaseName, submission.getProjectKey(), null);
   }
 }
