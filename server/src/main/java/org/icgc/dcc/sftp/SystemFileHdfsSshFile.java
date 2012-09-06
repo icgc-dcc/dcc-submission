@@ -28,7 +28,6 @@ public class SystemFileHdfsSshFile extends BaseDirectoryHdfsSshFile {
 
   @Override
   public void notifyModified() {
-    // TODO clear out all report and set all project to be not validated
-
+    this.getParentFile().systemFilesNotifyModified();
   }
 }

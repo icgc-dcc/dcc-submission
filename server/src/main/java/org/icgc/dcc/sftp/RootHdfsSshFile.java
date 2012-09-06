@@ -145,6 +145,19 @@ class RootHdfsSshFile extends HdfsSshFile {
   public void notifyModified(SubmissionDirectory submissionDirectory) {
     String releaseName = this.rfs.getRelease().getName();
     Submission submission = submissionDirectory.getSubmission();
+    this.resetSubmission(releaseName, submission);
+  }
+
+  public void systemFilesNotifyModified() {
+    String releaseName = this.rfs.getRelease().getName();
+
+    // TODO: not very effiecient now, need to combine the query into one
+    for(Submission submission : this.rfs.getRelease().getSubmissions()) {
+      this.resetSubmission(releaseName, submission);
+    }
+  }
+
+  private void resetSubmission(String releaseName, Submission submission) {
     submission.setState(SubmissionState.NOT_VALIDATED);
     submission.setReport(null);
     this.releases.updateSubmission(releaseName, submission);

@@ -79,10 +79,11 @@ public class HdfsFileSystemView implements FileSystemView {
       }
     case 2:
       BaseDirectoryHdfsSshFile parentDir;
-      if(rfs.isSystemDirectory(filePath)) {
-        parentDir = new SystemFileHdfsSshFile(root, filePath.getParent().getName());
+      Path parentDirPath = filePath.getParent();
+      if(rfs.isSystemDirectory(parentDirPath)) {
+        parentDir = new SystemFileHdfsSshFile(root, parentDirPath.getName());
       } else {
-        parentDir = new SubmissionDirectoryHdfsSshFile(root, filePath.getParent().getName());
+        parentDir = new SubmissionDirectoryHdfsSshFile(root, parentDirPath.getName());
       }
       return new FileHdfsSshFile(parentDir, filePath.getName());
     default:
