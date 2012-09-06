@@ -73,12 +73,13 @@ public class Relation implements DictionaryElement {
     checkArgument(this.fields.size() == this.otherFields.size());
     checkArgument(this.fields.size() > this.optionals.size(), this.fields.size() + ", " + this.optionals.size());
 
-    if(this.isOptionalValid() == false) {
-      throw new DataModelException(String.format("optionals (%s) in relation are not valid", this.optionals));
+    if(this.isFieldsValid()) {
+      throw new DataModelException(String.format("fields in relation \"%s\" are not valid", this.describe()));
     }
 
-    if(this.isFieldValid(leftFields, rightFields)) {
-      throw new DataModelException("fields in relation are not valid");
+    if(this.isOptionalValid() == false) {
+      throw new DataModelException(String.format("optionals (%s) in relation \"%s\" are not valid", this.optionals,
+          this.describe()));
     }
 
     if(this.optionals.isEmpty() == false && lhsCardinality == Cardinality.ONE_OR_MORE) { // see comment DCC-289: only
@@ -121,7 +122,7 @@ public class Relation implements DictionaryElement {
 
   private boolean isOptionalValid() {
     // optionals should be strictly less than fields
-    if(this.optionals.size() >= this.fields.size()) {
+    if(this.optionals.size() >= this.fields.size() || this.optionals.size() >= this.otherFields.size()) {
       return false;
     }
 
@@ -140,7 +141,22 @@ public class Relation implements DictionaryElement {
     return true;
   }
 
-  private boolean isFieldValid(Iterable<String> lfields, Iterable<String> rfields) {
+  private boolean isFieldsValid() {
+
+    Set<String> set = Sets.newHashSet();
+    for(String field : this.fields) {
+      // check for repetition
+      if(!set.add(field)) {
+        return false;
+      }
+    }
+    set.clear();
+    for(String field : this.otherFields) {
+      // check for repetition
+      if(!set.add(field)) {
+        return false;
+      }
+    }
     return true;
   }
 }
