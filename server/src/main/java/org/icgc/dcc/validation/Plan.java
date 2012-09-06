@@ -49,7 +49,7 @@ public class Plan {
 
   private final CascadingStrategy cascadingStrategy;
 
-  private Map<String, String> params;
+  private Map<String, Object> params;
 
   public Plan(CascadingStrategy cascadingStrategy) {
     this.cascadingStrategy = cascadingStrategy;

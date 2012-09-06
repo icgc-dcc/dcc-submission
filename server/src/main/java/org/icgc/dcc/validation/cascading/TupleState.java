@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -38,7 +39,7 @@ public class TupleState implements Serializable {
     this.offset = offset;
   }
 
-  public void reportError(ValidationErrorCode code, Map<String, ? extends Object> parameters) {
+  public void reportError(ValidationErrorCode code, Map<String, Object> parameters) {
     checkArgument(code != null);
     ensureErrors().add(new TupleError(code, parameters));
     structurallyValid = code.isStructural() == false;
@@ -97,14 +98,14 @@ public class TupleState implements Serializable {
 
     private final ValidationErrorCode code;
 
-    private final Map<String, ? extends Object> parameters;
+    private final Map<String, Object> parameters;
 
     public TupleError() {
       code = null;
-      parameters = null;
+      parameters = new LinkedHashMap<String, Object>();
     }
 
-    private TupleError(ValidationErrorCode code, Map<String, ? extends Object> parameters) {
+    private TupleError(ValidationErrorCode code, Map<String, Object> parameters) {
       this.code = code;
       this.parameters = parameters;
     }
@@ -113,19 +114,20 @@ public class TupleState implements Serializable {
       return code;
     }
 
-    public Map<String, ? extends Object> getParameters() {
+    public Map<String, Object> getParameters() {
       return parameters;
     }
 
     @JsonIgnore
     public String getMessage() {
-      return code.format(getParameters());
+      return "description message";// code.format(getParameters());
     }
 
-    // @Override
-    // public String toString() {
-    // return Objects.toStringHelper(TupleError.class).add("code", code).add("parameters", parameters).toString();
-    // }
+    @Override
+    public String toString() {
+      return "BLAH"; // return Objects.toStringHelper(TupleError.class).add("code", code).add("parameters",
+                     // parameters).toString();
+    }
 
   }
 

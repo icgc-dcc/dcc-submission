@@ -38,7 +38,7 @@ public class FileSchemaDirectory {
 
   private final FileSystem fs;
 
-  private Map<String, String> params;
+  private Map<String, Object> params;
 
   public FileSchemaDirectory(FileSystem fs, Path source) {
     checkArgument(source != null);

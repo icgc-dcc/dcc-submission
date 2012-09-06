@@ -65,7 +65,7 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
 
   private StructralCheckFunction structralCheck;
 
-  private Map<String, String[]> params;
+  private Map<String, Object> params;
 
   DefaultInternalFlowPlanner(FileSchema fileSchema) {
     super(fileSchema, FlowType.INTERNAL);
