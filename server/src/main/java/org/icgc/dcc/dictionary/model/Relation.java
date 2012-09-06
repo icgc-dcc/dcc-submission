@@ -21,7 +21,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 import org.icgc.dcc.dictionary.visitor.DictionaryElement;
 import org.icgc.dcc.dictionary.visitor.DictionaryVisitor;
@@ -29,7 +29,7 @@ import org.icgc.dcc.dictionary.visitor.DictionaryVisitor;
 import com.google.code.morphia.annotations.Embedded;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 @Embedded
 public class Relation implements DictionaryElement {
@@ -74,7 +74,11 @@ public class Relation implements DictionaryElement {
     checkArgument(this.fields.size() > this.optionals.size(), this.fields.size() + ", " + this.optionals.size());
 
     if(this.isOptionalValid() == false) {
-      throw new DataModelException(String.format("options fields (%s) in relation are not valid", this.optionals));
+      throw new DataModelException(String.format("optionals (%s) in relation are not valid", this.optionals));
+    }
+
+    if(this.isFieldValid(leftFields, rightFields)) {
+      throw new DataModelException("fields in relation are not valid");
     }
 
     if(this.optionals.isEmpty() == false && lhsCardinality == Cardinality.ONE_OR_MORE) { // see comment DCC-289: only
@@ -121,20 +125,22 @@ public class Relation implements DictionaryElement {
       return false;
     }
 
-    Map<Integer, Integer> map = Maps.newHashMap();
+    Set<Integer> set = Sets.newHashSet();
     for(Integer optional : this.optionals) {
       // check for valid indices
       if(optional.intValue() < 0 || optional.intValue() >= this.fields.size()) {
         return false;
       }
       // check for repetition
-      if(map.containsKey(optional)) {
+      if(!set.add(optional)) {
         return false;
-      } else {
-        map.put(optional, optional);
       }
     }
 
+    return true;
+  }
+
+  private boolean isFieldValid(Iterable<String> lfields, Iterable<String> rfields) {
     return true;
   }
 }
