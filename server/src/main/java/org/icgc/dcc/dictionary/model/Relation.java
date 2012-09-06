@@ -73,7 +73,7 @@ public class Relation implements DictionaryElement {
     checkArgument(this.fields.size() == this.otherFields.size());
     checkArgument(this.fields.size() > this.optionals.size(), this.fields.size() + ", " + this.optionals.size());
 
-    if(this.isFieldsValid()) {
+    if(this.isFieldsValid() == false) {
       throw new DataModelException(String.format("fields in relation \"%s\" are not valid", this.describe()));
     }
 
