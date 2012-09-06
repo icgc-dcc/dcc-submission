@@ -34,6 +34,7 @@ import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.Submission;
+import org.icgc.dcc.release.model.SubmissionState;
 import org.icgc.dcc.validation.FatalPlanningException;
 import org.icgc.dcc.validation.Plan;
 import org.icgc.dcc.validation.ValidationCallback;
@@ -180,9 +181,23 @@ public class ValidationQueueManagerService extends AbstractService implements Va
     log.info("report collecting finished on project {}", projectKey);
   }
 
+  private void setSubmissionState(String projectKey, SubmissionState state) {
+    Release release = releaseService.getNextRelease().getRelease();
+
+    Submission submission = this.releaseService.getSubmission(release.getName(), projectKey);
+
+    submission.setState(state);
+
+    // persist the submission state to DB
+    this.releaseService.updateSubmission(release.getName(), submission);
+  }
+
   @Override
   public void handleFailedValidation(String projectKey) {
     checkArgument(projectKey != null);
+
+    setSubmissionState(projectKey, SubmissionState.ERROR);
+
     log.info("failed validation - about to dequeue project key {}", projectKey);
     dequeue(projectKey, false);
   }
@@ -202,6 +217,7 @@ public class ValidationQueueManagerService extends AbstractService implements Va
     report.setSchemaReports(schemaReports);
 
     setSubmissionReport(projectKey, report);
+    setSubmissionState(projectKey, SubmissionState.ERROR);
 
     log.info("failed validation - about to dequeue project key {}", projectKey);
     dequeue(projectKey, false);
