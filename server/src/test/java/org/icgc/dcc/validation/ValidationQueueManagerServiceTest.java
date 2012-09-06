@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.validation;
 
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -34,8 +32,6 @@ import org.icgc.dcc.validation.service.ValidationService;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-
-import com.google.common.base.Optional;
 
 public class ValidationQueueManagerServiceTest {
 
@@ -65,7 +61,6 @@ public class ValidationQueueManagerServiceTest {
     when(mockNextRelease.getQueued()).thenReturn(Arrays.asList("project1", "project2", "project3"))
         .thenReturn(Arrays.asList("project2", "project3")).thenReturn(Arrays.asList("project3"))
         .thenReturn(new ArrayList<String>());
-    when(mockReleaseService.dequeue(anyString(), anyBoolean())).thenReturn(Optional.<String> of("project1"));
 
     validationQueueManagerService =
         new ValidationQueueManagerService(mockReleaseService, mockDictionaryService, mockValidationService);

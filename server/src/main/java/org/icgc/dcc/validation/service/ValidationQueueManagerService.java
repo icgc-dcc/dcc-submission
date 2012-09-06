@@ -139,7 +139,7 @@ public class ValidationQueueManagerService extends AbstractService implements Va
                                // for instance)
           log.error("an error occured while processing the validation queue", e);
           if(next.isPresent()) {
-            dequeue(next.get(), false);
+            dequeue(next.get(), SubmissionState.INVALID);
           }
         }
       }
@@ -164,7 +164,11 @@ public class ValidationQueueManagerService extends AbstractService implements Va
     setSubmissionReport(projectKey, report);
 
     log.info("successful validation - about to dequeue project key {}", projectKey);
-    dequeue(projectKey, outcome == Outcome.PASSED);
+    if(outcome == Outcome.PASSED) {
+      dequeue(projectKey, SubmissionState.VALID);
+    } else {
+      dequeue(projectKey, SubmissionState.INVALID);
+    }
   }
 
   private void setSubmissionReport(String projectKey, SubmissionReport report) {
@@ -181,25 +185,11 @@ public class ValidationQueueManagerService extends AbstractService implements Va
     log.info("report collecting finished on project {}", projectKey);
   }
 
-  private void setSubmissionState(String projectKey, SubmissionState state) {
-    Release release = releaseService.getNextRelease().getRelease();
-
-    Submission submission = this.releaseService.getSubmission(release.getName(), projectKey);
-
-    submission.setState(state);
-
-    // persist the submission state to DB
-    this.releaseService.updateSubmission(release.getName(), submission);
-  }
-
   @Override
   public void handleFailedValidation(String projectKey) {
     checkArgument(projectKey != null);
-
-    setSubmissionState(projectKey, SubmissionState.ERROR);
-
     log.info("failed validation - about to dequeue project key {}", projectKey);
-    dequeue(projectKey, false);
+    dequeue(projectKey, SubmissionState.ERROR);
   }
 
   public void handleFailedValidation(String projectKey, Map<String, TupleState> errors) {
@@ -217,14 +207,13 @@ public class ValidationQueueManagerService extends AbstractService implements Va
     report.setSchemaReports(schemaReports);
 
     setSubmissionReport(projectKey, report);
-    setSubmissionState(projectKey, SubmissionState.ERROR);
 
     log.info("failed validation - about to dequeue project key {}", projectKey);
-    dequeue(projectKey, false);
+    dequeue(projectKey, SubmissionState.ERROR);
   }
 
-  private void dequeue(String projectKey, boolean valid) {
-    Optional<String> dequeuedProjectKey = releaseService.dequeue(projectKey, valid);
+  private void dequeue(String projectKey, SubmissionState state) {
+    Optional<String> dequeuedProjectKey = releaseService.dequeue(projectKey, state);
     if(dequeuedProjectKey.isPresent() == false) {
       log.warn("could not dequeue project {}, maybe the queue was emptied in the meantime?", projectKey);
     }
