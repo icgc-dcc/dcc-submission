@@ -18,17 +18,24 @@
 package org.icgc.dcc.validation.report;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import org.icgc.dcc.validation.ValidationErrorCode;
 import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.cascading.TupleState.TupleError;
 
+import com.mongodb.BasicDBList;
+
 /**
  * 
  */
 public class ValidationErrorReport {
+
+  private ValidationErrorCode errorType;
+
+  private String description;
+
+  private BasicDBList columns;
 
   public ValidationErrorReport() {
   }
@@ -42,6 +49,7 @@ public class ValidationErrorReport {
       TupleState.TupleError error = errors.next();
       this.setErrorType(error.getCode());
       this.setDescription(error.getMessage());
+      this.addColumn(error.getParameters());
     }
   }
 
@@ -49,17 +57,11 @@ public class ValidationErrorReport {
    * @param error
    */
   public ValidationErrorReport(TupleError error) {
+    this.columns = new BasicDBList();
     this.setErrorType(error.getCode());
     this.setDescription(error.getMessage());
-
-    // this.columns.add(error.getParameters()[0]);
+    this.addColumn(error.getParameters());
   }
-
-  public ValidationErrorCode errorType;
-
-  public String description;
-
-  public List<Map<String, ? extends Object>> columns;
 
   /**
    * @return the errorType
@@ -92,14 +94,15 @@ public class ValidationErrorReport {
   /**
    * @return the columns
    */
-  public List<Map<String, ? extends Object>> getColumns() {
+  public BasicDBList getColumns() {
     return columns;
   }
 
   /**
    * @param columns the columns to set
    */
-  public void setColumns(List<Map<String, ? extends Object>> columns) {
-    this.columns = columns;
+  public void addColumn(Map<String, Object> column) {
+    column.put("count", 1);
+    this.columns.add(column);
   }
 }
