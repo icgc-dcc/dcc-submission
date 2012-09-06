@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.codehaus.jackson.map.MappingIterator;
@@ -43,6 +44,7 @@ import cascading.pipe.Pipe;
 import cascading.pipe.assembly.Retain;
 
 import com.google.common.io.Closeables;
+import com.mongodb.BasicDBList;
 
 public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
 
@@ -130,24 +132,54 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
             TupleState tupleState = tupleStates.next();
             if(tupleState.isInvalid()) {
               outcome = Outcome.FAILED;
-              // ValidationErrorReport aggregatedErrorReport = new ValidationErrorReport(tupleState);
-              // report.errors.add(aggregatedErrorReport);
-
               // Loop thought the errors
               Iterator<TupleState.TupleError> errors = tupleState.getErrors().iterator();
               while(errors.hasNext()) {
                 TupleState.TupleError error = errors.next();
-                System.out.println("errorMap: " + errorMap);
                 // check if errorMap[error.getCode()] exists
                 if(errorMap.containsKey(error.getCode()) == false) {
                   // if it does NOT - create it as a new ValidationErrorReport
+                  System.out.println("Key does not exist: " + error.getCode());
                   ValidationErrorReport errorReport = new ValidationErrorReport(error);
                   errorMap.put(error.getCode(), errorReport);
                 } else {
-                  // if it does
+                  System.out.println("Key already exists: " + error.getCode());
+                  // if it does already exist
+                  ValidationErrorReport errorReport = errorMap.get(error.getCode());
                   // check if the columnName is already there
-                  // if it is NOT push params to columns list
-                  // if it is - update it by pushing offset/vals and count++
+                  BasicDBList columnsDB = errorReport.getColumns();
+                  List<Map<String, Object>> columns = new ArrayList<Map<String, Object>>();
+                  for(Object column : columnsDB) {
+                    columns.add(((Map<String, Object>) column));
+                  }
+
+                  System.out.println("Columns for " + error.getCode() + ": " + columns);
+
+                  String errorColumnName = error.getParameters().get("columnName").toString();
+                  System.out.println("Error Column Name: " + errorColumnName);
+                  boolean columnExists = false;
+                  Map<String, Object> column = null;
+
+                  for(Map<String, Object> c : columns) {
+                    String cName = c.get("columnName").toString();
+                    if(cName.equals(errorColumnName)) {
+                      columnExists = true;
+                      column = c;
+                      break;
+                    }
+                  }
+
+                  if(columnExists == false) {
+                    System.out.println("Column does not exists: " + errorColumnName);
+                    // if it is NOT push params to columns list
+                    errorReport.addColumn(error.getParameters());
+                    errorMap.put(error.getCode(), errorReport);
+                  } else {
+                    System.out.println("Column already exists: " + errorColumnName);
+                    // if it is - update it by pushing offset/vals and count++
+                    errorReport.updateColumn(column, error, (int) tupleState.getOffset());
+                    // errorMap.put(error.getCode(), errorReport);
+                  }
                 }
               }
             }
