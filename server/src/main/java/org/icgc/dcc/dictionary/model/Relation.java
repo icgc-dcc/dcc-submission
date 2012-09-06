@@ -120,7 +120,7 @@ public class Relation implements DictionaryElement {
     return optionals;
   }
 
-  private boolean isOptionalValid() {
+  private final boolean isOptionalValid() {
     // optionals should be strictly less than fields
     if(this.optionals.size() >= this.fields.size() || this.optionals.size() >= this.otherFields.size()) {
       return false;
@@ -141,7 +141,7 @@ public class Relation implements DictionaryElement {
     return true;
   }
 
-  private boolean isFieldsValid() {
+  private final boolean isFieldsValid() {
 
     Set<String> leftset = Sets.newHashSet(this.fields);
     if(leftset.size() != this.fields.size()) {
