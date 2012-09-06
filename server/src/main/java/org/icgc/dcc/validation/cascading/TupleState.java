@@ -41,6 +41,7 @@ public class TupleState implements Serializable {
 
   public void reportError(ValidationErrorCode code, Map<String, Object> parameters) {
     checkArgument(code != null);
+    parameters.put("line", this.getOffset());
     ensureErrors().add(new TupleError(code, parameters));
     structurallyValid = code.isStructural() == false;
   }
