@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.sftp;
 
-
 /**
  * 
  */
@@ -25,5 +24,11 @@ public class SystemFileHdfsSshFile extends BaseDirectoryHdfsSshFile {
 
   public SystemFileHdfsSshFile(RootHdfsSshFile root, String directoryName) {
     super(root, directoryName);
+  }
+
+  @Override
+  public void notifyModified() {
+    // TODO clear out all report and set all project to be not validated
+
   }
 }

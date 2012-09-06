@@ -148,6 +148,6 @@ class RootHdfsSshFile extends HdfsSshFile {
     submission.setState(SubmissionState.NOT_VALIDATED);
     submission.setReport(null);
     this.releases.updateSubmission(releaseName, submission);
-    this.releases.updateSubmissionReport(releaseName, submission.getProjectKey(), null);
+    this.releases.removeSubmissionReport(releaseName, submission.getProjectKey());
   }
 }
