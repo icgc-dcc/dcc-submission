@@ -146,6 +146,7 @@ class RootHdfsSshFile extends HdfsSshFile {
     String releaseName = this.rfs.getRelease().getName();
     Submission submission = submissionDirectory.getSubmission();
     submission.setState(SubmissionState.NOT_VALIDATED);
+    submission.setReport(null);
     this.releases.updateSubmission(releaseName, submission);
     this.releases.updateSubmissionReport(releaseName, submission.getProjectKey(), null);
   }
