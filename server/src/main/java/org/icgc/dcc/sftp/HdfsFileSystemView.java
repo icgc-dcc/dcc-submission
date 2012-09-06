@@ -72,10 +72,10 @@ public class HdfsFileSystemView implements FileSystemView {
     case 0:
       return root;
     case 1:
-      return new BaseDirectoryHdfsSshFile(root, filePath.getName());
+      return this.getHdfsSshFile(rfs, root, filePath);
     case 2:
-      BaseDirectoryHdfsSshFile parentDir = new BaseDirectoryHdfsSshFile(root, filePath.getParent().getName());
-      return new FileHdfsSshFile(parentDir, filePath.getName());
+      Path parentDirPath = filePath.getParent();
+      return new FileHdfsSshFile(this.getHdfsSshFile(rfs, root, parentDirPath), filePath.getName());
     default:
       throw new DccFileSystemException("Invalid file path: " + file);
     }
@@ -102,5 +102,15 @@ public class HdfsFileSystemView implements FileSystemView {
     file = (file.isEmpty() || file.equals(".")) ? "/" : file;
     Path filePath = new Path(file);
     return filePath;
+  }
+
+  private BaseDirectoryHdfsSshFile getHdfsSshFile(ReleaseFileSystem rfs, RootHdfsSshFile root, Path path) {
+    BaseDirectoryHdfsSshFile result;
+    if(rfs.isSystemDirectory(path)) {
+      result = new SystemFileHdfsSshFile(root, path.getName());
+    } else {
+      result = new SubmissionDirectoryHdfsSshFile(root, path.getName());
+    }
+    return result;
   }
 }

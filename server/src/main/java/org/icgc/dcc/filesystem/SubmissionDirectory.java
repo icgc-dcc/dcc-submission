@@ -72,10 +72,6 @@ public class SubmissionDirectory {
     return this.project.getKey();
   }
 
-  public void notifyModified() {
-    this.submission.setState(SubmissionState.NOT_VALIDATED);
-  }
-
   public String getSubmissionDirPath() {
     return dccFileSystem.buildProjectStringPath(release, project.getKey());
   }
