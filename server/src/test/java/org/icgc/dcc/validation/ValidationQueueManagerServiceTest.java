@@ -77,6 +77,7 @@ public class ValidationQueueManagerServiceTest {
     validationQueueManagerService.handleSuccessfulValidation("project0", null);
   }
 
+  @Ignore
   @Test
   public void test_handleFailedValidation_invalidProjectKey() {
     validationQueueManagerService.handleFailedValidation("project0");
