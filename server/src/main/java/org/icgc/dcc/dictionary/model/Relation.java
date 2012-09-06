@@ -126,14 +126,14 @@ public class Relation implements DictionaryElement {
       return false;
     }
 
-    Set<Integer> set = Sets.newHashSet();
+    // check for repetition
+    Set<Integer> set = Sets.newHashSet(this.optionals);
+    if(set.size() != this.optionals.size()) {
+      return false;
+    }
+    // check for valid indices
     for(Integer optional : this.optionals) {
-      // check for valid indices
       if(optional.intValue() < 0 || optional.intValue() >= this.fields.size()) {
-        return false;
-      }
-      // check for repetition
-      if(!set.add(optional)) {
         return false;
       }
     }
@@ -143,19 +143,14 @@ public class Relation implements DictionaryElement {
 
   private boolean isFieldsValid() {
 
-    Set<String> set = Sets.newHashSet();
-    for(String field : this.fields) {
-      // check for repetition
-      if(!set.add(field)) {
-        return false;
-      }
+    Set<String> leftset = Sets.newHashSet(this.fields);
+    if(leftset.size() != this.fields.size()) {
+      return false;
     }
-    set.clear();
-    for(String field : this.otherFields) {
-      // check for repetition
-      if(!set.add(field)) {
-        return false;
-      }
+
+    Set<String> rightset = Sets.newHashSet(this.otherFields);
+    if(rightset.size() != this.otherFields.size()) {
+      return false;
     }
     return true;
   }
