@@ -19,6 +19,7 @@ package org.icgc.dcc.validation.visitor;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -80,11 +81,13 @@ public class UniqueFieldsPlanningVisitor extends InternalFlowPlanningVisitor {
     static class CountBuffer extends BaseOperation implements Buffer {
       private final List<String> fields;
 
-      private Map<String, Object> params;
+      private final Map<String, Object> params;
 
       CountBuffer(List<String> fields) {
         super(Fields.ARGS);
         this.fields = ImmutableList.copyOf(fields);
+
+        this.params = new LinkedHashMap<String, Object>();
       }
 
       @Override

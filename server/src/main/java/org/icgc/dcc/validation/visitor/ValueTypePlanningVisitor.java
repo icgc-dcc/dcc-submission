@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.validation.visitor;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.icgc.dcc.dictionary.model.Field;
@@ -80,11 +81,12 @@ public class ValueTypePlanningVisitor extends InternalFlowPlanningVisitor {
 
       protected final ValueType type;
 
-      private Map<String, Object> params;
+      private final Map<String, Object> params;
 
       public ValueTypeFunction(ValueType type) {
         super(2, Fields.ARGS);
         this.type = type;
+        this.params = new LinkedHashMap<String, Object>();
       }
 
       @Override
