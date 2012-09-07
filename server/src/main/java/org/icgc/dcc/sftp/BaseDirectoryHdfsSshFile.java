@@ -31,7 +31,7 @@ import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
 /**
  * 
  */
-public class BaseDirectoryHdfsSshFile extends HdfsSshFile {
+public abstract class BaseDirectoryHdfsSshFile extends HdfsSshFile {
 
   private final RootHdfsSshFile root;
 
@@ -125,6 +125,5 @@ public class BaseDirectoryHdfsSshFile extends HdfsSshFile {
     return false;
   }
 
-  public void notifyModified() {
-  }
+  public abstract void notifyModified();
 }

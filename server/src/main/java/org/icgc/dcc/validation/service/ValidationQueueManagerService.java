@@ -34,6 +34,7 @@ import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.Submission;
+import org.icgc.dcc.release.model.SubmissionState;
 import org.icgc.dcc.validation.FatalPlanningException;
 import org.icgc.dcc.validation.Plan;
 import org.icgc.dcc.validation.ValidationCallback;
@@ -138,7 +139,7 @@ public class ValidationQueueManagerService extends AbstractService implements Va
                                // for instance)
           log.error("an error occured while processing the validation queue", e);
           if(next.isPresent()) {
-            dequeue(next.get(), false);
+            dequeue(next.get(), SubmissionState.INVALID);
           }
         }
       }
@@ -163,7 +164,11 @@ public class ValidationQueueManagerService extends AbstractService implements Va
     setSubmissionReport(projectKey, report);
 
     log.info("successful validation - about to dequeue project key {}", projectKey);
-    dequeue(projectKey, outcome == Outcome.PASSED);
+    if(outcome == Outcome.PASSED) {
+      dequeue(projectKey, SubmissionState.VALID);
+    } else {
+      dequeue(projectKey, SubmissionState.INVALID);
+    }
   }
 
   private void setSubmissionReport(String projectKey, SubmissionReport report) {
@@ -184,7 +189,7 @@ public class ValidationQueueManagerService extends AbstractService implements Va
   public void handleFailedValidation(String projectKey) {
     checkArgument(projectKey != null);
     log.info("failed validation - about to dequeue project key {}", projectKey);
-    dequeue(projectKey, false);
+    dequeue(projectKey, SubmissionState.ERROR);
   }
 
   public void handleFailedValidation(String projectKey, Map<String, TupleState> errors) {
@@ -204,11 +209,11 @@ public class ValidationQueueManagerService extends AbstractService implements Va
     setSubmissionReport(projectKey, report);
 
     log.info("failed validation - about to dequeue project key {}", projectKey);
-    dequeue(projectKey, false);
+    dequeue(projectKey, SubmissionState.ERROR);
   }
 
-  private void dequeue(String projectKey, boolean valid) {
-    Optional<String> dequeuedProjectKey = releaseService.dequeue(projectKey, valid);
+  private void dequeue(String projectKey, SubmissionState state) {
+    Optional<String> dequeuedProjectKey = releaseService.dequeue(projectKey, state);
     if(dequeuedProjectKey.isPresent() == false) {
       log.warn("could not dequeue project {}, maybe the queue was emptied in the meantime?", projectKey);
     }
