@@ -140,14 +140,11 @@ public class CodeListRestriction implements InternalPlanElement {
 
     private final Set<String> values;
 
-    private final Map<String, Object> params;
-
     protected InCodeListFunction(String codeListName, Set<String> codes, Set<String> values) {
       super(2, Fields.ARGS);
       this.codeListName = codeListName;
       this.codes = codes;
       this.values = values;
-      this.params = new LinkedHashMap<String, Object>();
     }
 
     @Override
@@ -158,11 +155,12 @@ public class CodeListRestriction implements InternalPlanElement {
       if(value != null && codes.contains(value) == false && values.contains(value) == false) {
         Object fieldName = tupleEntry.getFields().get(0);
 
-        this.params.put("value", value);
-        this.params.put("columnName", fieldName);
-        this.params.put("expectedValues", codeListName);
+        Map<String, Object> params = new LinkedHashMap<String, Object>();
+        params.put("value", value);
+        params.put("columnName", fieldName);
+        params.put("expectedValues", codeListName);
 
-        ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.CODELIST_ERROR, this.params);
+        ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.CODELIST_ERROR, params);
       }
       functionCall.getOutputCollector().add(tupleEntry.getTupleCopy());
     }

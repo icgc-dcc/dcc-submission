@@ -59,13 +59,9 @@ public class StructralCheckFunction extends BaseOperation implements Function {
 
   private List<Integer> unknownHeaderIndices;
 
-  private final Map<String, Object> params;
-
   public StructralCheckFunction(Iterable<String> fieldNames) {
     super(1);
     dictionaryFields = new Fields(Iterables.toArray(fieldNames, String.class));
-
-    this.params = new LinkedHashMap<String, Object>();
   }
 
   @SuppressWarnings("unchecked")
@@ -112,18 +108,20 @@ public class StructralCheckFunction extends BaseOperation implements Function {
       adjustedValues = padMissingColumns(adjustedValues); // then missing fields to be emulated
       adjustedValues = convertMissingCodes(adjustedValues, tupleState);
       if(REPORT_WARNINGS && unknownHeaderIndices.isEmpty() == false) {
-        this.params.put("columnName", "FileLevelError");
-        this.params.put("unknownColumns", unknownHeaderIndices);
-        tupleState.reportError(ValidationErrorCode.UNKNOWN_COLUMNS_WARNING, this.params);
+        Map<String, Object> params = new LinkedHashMap<String, Object>();
+        params.put("columnName", "FileLevelError");
+        params.put("unknownColumns", unknownHeaderIndices);
+        tupleState.reportError(ValidationErrorCode.UNKNOWN_COLUMNS_WARNING, params);
       }
     } else {
       adjustedValues = Arrays.asList(new String[dictionaryFields.size()]); // can discard values but must match number
                                                                            // of fields in headers for later merge in
                                                                            // error reporting
-      this.params.put("columnName", "FileLevelError");
-      this.params.put("actualNumColumns", headerSize);
-      this.params.put("value", dataSize);
-      tupleState.reportError(ValidationErrorCode.STRUCTURALLY_INVALID_ROW_ERROR, this.params);
+      Map<String, Object> params = new LinkedHashMap<String, Object>();
+      params.put("columnName", "FileLevelError");
+      params.put("actualNumColumns", headerSize);
+      params.put("value", dataSize);
+      tupleState.reportError(ValidationErrorCode.STRUCTURALLY_INVALID_ROW_ERROR, params);
     }
     return adjustedValues;
   }

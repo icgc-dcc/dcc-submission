@@ -19,6 +19,7 @@ package org.icgc.dcc.validation;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -43,8 +44,6 @@ class DefaultExternalFlowPlanner extends BaseFileSchemaFlowPlanner implements Ex
   private final Map<Trim, Pipe> trimmedHeads = Maps.newHashMap();
 
   private final List<Pipe> joinedTails = Lists.newLinkedList();
-
-  private Map<String, Object> params;
 
   DefaultExternalFlowPlanner(Plan plan, FileSchema fileSchema) {
     super(fileSchema, FlowType.EXTERNAL);
@@ -74,11 +73,12 @@ class DefaultExternalFlowPlanner extends BaseFileSchemaFlowPlanner implements Ex
 
       joinedTails.add(element.join(lhs, rhs));
     } catch(PlanningException e) {
+      Map<String, Object> params = new LinkedHashMap<String, Object>();
 
-      this.params.put("schema", getSchema().getName());
-      this.params.put("relation", element.rhs());
+      params.put("schema", getSchema().getName());
+      params.put("relation", element.rhs());
 
-      throw new PlanningException(getSchema().getName(), ValidationErrorCode.INVALID_RELATION_ERROR, this.params);
+      throw new PlanningException(getSchema().getName(), ValidationErrorCode.INVALID_RELATION_ERROR, params);
     }
   }
 

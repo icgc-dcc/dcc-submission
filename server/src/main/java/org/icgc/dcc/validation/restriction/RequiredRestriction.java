@@ -76,12 +76,8 @@ public class RequiredRestriction implements InternalPlanElement {
   @SuppressWarnings("rawtypes")
   public static class SpecifiedFunction extends BaseOperation implements Function {
 
-    private final Map<String, Object> params;
-
     protected SpecifiedFunction() {
       super(2, Fields.ARGS);
-
-      this.params = new LinkedHashMap<String, Object>();
     }
 
     @Override
@@ -93,10 +89,11 @@ public class RequiredRestriction implements InternalPlanElement {
           && (value == null || value.isEmpty())) {
         Object fieldName = tupleEntry.getFields().get(0);
 
-        this.params.put("value", value);
-        this.params.put("columnName", fieldName);
+        Map<String, Object> params = new LinkedHashMap<String, Object>();
+        params.put("value", value);
+        params.put("columnName", fieldName);
 
-        ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.MISSING_VALUE_ERROR, this.params);
+        ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.MISSING_VALUE_ERROR, params);
       }
       functionCall.getOutputCollector().add(tupleEntry.getTupleCopy());
     }

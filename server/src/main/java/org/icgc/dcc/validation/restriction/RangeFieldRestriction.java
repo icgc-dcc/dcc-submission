@@ -99,13 +99,10 @@ public class RangeFieldRestriction implements InternalPlanElement {
 
     private final Number max;
 
-    private final Map<String, Object> params;
-
     protected RangeFunction(Number min, Number max) {
       super(2, Fields.ARGS);
       this.min = min;
       this.max = max;
-      this.params = new LinkedHashMap<String, Object>();
     }
 
     @Override
@@ -119,16 +116,19 @@ public class RangeFieldRestriction implements InternalPlanElement {
         Number num = (Number) value;
         if(num.longValue() < this.min.longValue() || num.longValue() > this.max.longValue()) {
 
-          this.params.put("value", num.longValue());
-          this.params.put("columnName", fieldName);
-          this.params.put("minRange", this.min.longValue());
-          this.params.put("maxRange", this.max.longValue());
+          Map<String, Object> params = new LinkedHashMap<String, Object>();
+          params.put("value", num.longValue());
+          params.put("columnName", fieldName);
+          params.put("minRange", this.min.longValue());
+          params.put("maxRange", this.max.longValue());
 
           ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.OUT_OF_RANGE_ERROR, params);
         }
       } else if(value != null) {
-        this.params.put("value", value.toString());
-        this.params.put("columnName", fieldName);
+
+        Map<String, Object> params = new LinkedHashMap<String, Object>();
+        params.put("value", value.toString());
+        params.put("columnName", fieldName);
         ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.NOT_A_NUMBER_ERROR, params);
       }
       functionCall.getOutputCollector().add(tupleEntry.getTupleCopy());

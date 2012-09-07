@@ -19,6 +19,7 @@ package org.icgc.dcc.validation;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -49,8 +50,6 @@ public class Plan {
 
   private final CascadingStrategy cascadingStrategy;
 
-  private Map<String, Object> params;
-
   public Plan(CascadingStrategy cascadingStrategy) {
     this.cascadingStrategy = cascadingStrategy;
   }
@@ -64,8 +63,9 @@ public class Plan {
   public InternalFlowPlanner getInternalFlow(String schema) {
     InternalFlowPlanner schemaPlan = internalPlanners.get(schema);
     if(schemaPlan == null) {
-      this.params.put("schema", schema);
-      throw new PlanningException(schema, ValidationErrorCode.MISSING_SCHEMA_ERROR, this.params);
+      Map<String, Object> params = new LinkedHashMap<String, Object>();
+      params.put("schema", schema);
+      throw new PlanningException(schema, ValidationErrorCode.MISSING_SCHEMA_ERROR, params);
     }
     return schemaPlan;
   }
@@ -77,8 +77,9 @@ public class Plan {
   public ExternalFlowPlanner getExternalFlow(String schema) {
     ExternalFlowPlanner schemaPlan = externalPlanners.get(schema);
     if(schemaPlan == null) {
-      this.params.put("schema", schema);
-      throw new PlanningException(schema, ValidationErrorCode.MISSING_SCHEMA_ERROR, this.params);
+      Map<String, Object> params = new LinkedHashMap<String, Object>();
+      params.put("schema", schema);
+      throw new PlanningException(schema, ValidationErrorCode.MISSING_SCHEMA_ERROR, params);
     }
     return schemaPlan;
   }

@@ -81,12 +81,9 @@ public class ValueTypePlanningVisitor extends InternalFlowPlanningVisitor {
 
       protected final ValueType type;
 
-      private final Map<String, Object> params;
-
       public ValueTypeFunction(ValueType type) {
         super(2, Fields.ARGS);
         this.type = type;
-        this.params = new LinkedHashMap<String, Object>();
       }
 
       @Override
@@ -98,10 +95,12 @@ public class ValueTypePlanningVisitor extends InternalFlowPlanningVisitor {
           parsedValue = parse(value);
         } catch(IllegalArgumentException e) {
           Object fieldName = arguments.getFields().get(0);
-          this.params.put("columnName", fieldName);
-          this.params.put("value", value);
-          this.params.put("expectedType", type);
-          ValidationFields.state(arguments).reportError(ValidationErrorCode.VALUE_TYPE_ERROR, this.params);
+
+          Map<String, Object> params = new LinkedHashMap<String, Object>();
+          params.put("columnName", fieldName);
+          params.put("value", value);
+          params.put("expectedType", type);
+          ValidationFields.state(arguments).reportError(ValidationErrorCode.VALUE_TYPE_ERROR, params);
         }
         functionCall.getOutputCollector().add(new Tuple(parsedValue, ValidationFields.state(arguments)));
       }

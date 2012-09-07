@@ -81,13 +81,9 @@ public class UniqueFieldsPlanningVisitor extends InternalFlowPlanningVisitor {
     static class CountBuffer extends BaseOperation implements Buffer {
       private final List<String> fields;
 
-      private final Map<String, Object> params;
-
       CountBuffer(List<String> fields) {
         super(Fields.ARGS);
         this.fields = ImmutableList.copyOf(fields);
-
-        this.params = new LinkedHashMap<String, Object>();
       }
 
       @Override
@@ -103,12 +99,13 @@ public class UniqueFieldsPlanningVisitor extends InternalFlowPlanningVisitor {
             TupleEntry tupleEntry = i.next();
             List<String> values = fetchValues(tupleEntry);
 
-            this.params.put("value", values);
-            this.params.put("columnName", fields);
-            this.params.put("firstOffset", firstOffset); // this isn't used in the error message - represents the first
-                                                         // time a unique value appears in the file.
+            Map<String, Object> params = new LinkedHashMap<String, Object>();
+            params.put("value", values);
+            params.put("columnName", fields);
+            params.put("firstOffset", firstOffset); // this isn't used in the error message - represents the first
+                                                    // time a unique value appears in the file.
 
-            ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.UNIQUE_VALUE_ERROR, this.params);
+            ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.UNIQUE_VALUE_ERROR, params);
             bufferCall.getOutputCollector().add(tupleEntry.getTupleCopy());
           }
         }

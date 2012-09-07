@@ -96,12 +96,9 @@ public class DiscreteValuesRestriction implements InternalPlanElement {
 
     private final Set<String> values;
 
-    private final Map<String, Object> params;
-
     protected InValuesFunction(String[] values) {
       super(2, Fields.ARGS);
       this.values = ImmutableSet.copyOf(values);
-      this.params = new LinkedHashMap<String, Object>();
     }
 
     @Override
@@ -111,11 +108,12 @@ public class DiscreteValuesRestriction implements InternalPlanElement {
       if(value != null && values.contains(value) == false) {
         Object fieldName = tupleEntry.getFields().get(0);
 
-        this.params.put("value", value);
-        this.params.put("columnName", fieldName);
-        this.params.put("expectedValues", values);
+        Map<String, Object> params = new LinkedHashMap<String, Object>();
+        params.put("value", value);
+        params.put("columnName", fieldName);
+        params.put("expectedValues", values);
 
-        ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.DISCRETE_VALUES_ERROR, this.params);
+        ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.DISCRETE_VALUES_ERROR, params);
       }
       functionCall.getOutputCollector().add(tupleEntry.getTupleCopy());
     }

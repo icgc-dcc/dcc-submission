@@ -179,8 +179,6 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
 
     protected final String[] rhsFields;
 
-    private final Map<String, Object> params;
-
     NoNullBufferBase(String lhs, String rhs, String[] lhsFields, String[] rhsFields) {
       super(lhsFields.length + rhsFields.length, new Fields(ValidationFields.STATE_FIELD_NAME));
       checkArgument(lhs != null && lhs.isEmpty() == false);
@@ -191,7 +189,6 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
       this.rhs = rhs;
       this.lhsFields = lhsFields;
       this.rhsFields = rhsFields;
-      this.params = new LinkedHashMap<String, Object>();
     }
 
     /*
@@ -202,10 +199,11 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
     }
 
     protected void reportRelationError(TupleState tupleState, Tuple offendingLhsTuple) {
-      this.params.put("value", TuplesUtils.getObjects(offendingLhsTuple));
-      this.params.put("columnName", lhs + Arrays.asList(lhsFields) + ":" + rhs + Arrays.asList(rhsFields));
-      // this.params.put("relationColumn", rhs + Arrays.asList(rhsFields));
-      tupleState.reportError(ValidationErrorCode.RELATION_ERROR, this.params);
+      Map<String, Object> params = new LinkedHashMap<String, Object>();
+      params.put("value", TuplesUtils.getObjects(offendingLhsTuple));
+      params.put("columnName", lhs + Arrays.asList(lhsFields) + ":" + rhs + Arrays.asList(rhsFields));
+      // params.put("relationColumn", rhs + Arrays.asList(rhsFields));
+      tupleState.reportError(ValidationErrorCode.RELATION_ERROR, params);
     }
   }
 
@@ -322,15 +320,12 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
 
     protected final boolean twoWays;
 
-    private final Map<String, Object> params;
-
     NoNullBuffer(String lhs, String rhs, String[] lhsFields, String[] rhsFields, String[] renamedRhsFields,
         boolean twoWays) {
       super(lhs, rhs, lhsFields, rhsFields);
       checkArgument(renamedRhsFields != null && renamedRhsFields.length > 0);
       this.renamedRhsFields = renamedRhsFields;
       this.twoWays = twoWays;
-      this.params = new LinkedHashMap<String, Object>();
     }
 
     @Override
@@ -349,9 +344,10 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
             Tuple offendingRhsTuple = entry.selectTuple(new Fields(renamedRhsFields));
             TupleState state = new TupleState(CONVENTION_PARENT_OFFSET);
 
-            this.params.put("value", TuplesUtils.getObjects(offendingRhsTuple));
-            this.params.put("columnName", lhs + Arrays.asList(lhsFields) + ":" + rhs + Arrays.asList(rhsFields));
-            // this.params.put("relationColumn", rhs + Arrays.asList(rhsFields));
+            Map<String, Object> params = new LinkedHashMap<String, Object>();
+            params.put("value", TuplesUtils.getObjects(offendingRhsTuple));
+            params.put("columnName", lhs + Arrays.asList(lhsFields) + ":" + rhs + Arrays.asList(rhsFields));
+            // params.put("relationColumn", rhs + Arrays.asList(rhsFields));
 
             state.reportError(ValidationErrorCode.RELATION_PARENT_ERROR, params);
             bufferCall.getOutputCollector().add(new Tuple(state));
