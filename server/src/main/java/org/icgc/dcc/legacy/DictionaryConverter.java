@@ -189,37 +189,49 @@ public class DictionaryConverter {
         leftFileSchema.addRelation(new Relation(leftKeys, rightTable, rightKeys, leftCardinality, optionals));
       }
 
-      // mark relation fields to be required
-      FileSchema leftFileSchema = this.dictionary.fileSchema(leftTable).get();
-      for(String key : leftKeys) {
-        Field leftField = leftFileSchema.field(key).get();
-        Optional<Restriction> leftRestriction = leftField.getRestriction(RequiredRestriction.NAME);
-        if(leftRestriction.isPresent()) {
-          // remove any existing required restrictions
-          leftField.removeRestriction(leftRestriction.get());
+      // exceptions for making relation fields required
+      if(!rightTable.equals("hsap_gene") && !rightTable.equals("hsap_transcript")) {
+        // mark relation fields to be required
+        FileSchema leftFileSchema = this.dictionary.fileSchema(leftTable).get();
+        // calculate optional keys
+        List<String> optionalKeys = Lists.newArrayList();
+        for(Integer optionalIndex : optionals) {
+          optionalKeys.add(Iterables.toArray(leftKeys, String.class)[optionalIndex.intValue()]);
         }
-        Restriction requiredRestriction = new Restriction();
-        requiredRestriction.setType(RequiredRestriction.NAME);
-        BasicDBObject parameter = new BasicDBObject();
-        parameter.append(RequiredRestriction.ACCEPT_MISSING_CODE, false);
-        requiredRestriction.setConfig(parameter);
-        leftField.addRestriction(requiredRestriction);
-      }
-      FileSchema rightFileSchema = this.dictionary.fileSchema(rightTable).get();
-      for(String key : rightKeys) {
-        Field rightField = rightFileSchema.field(key).get();
+        for(String key : leftKeys) {
+          // skip required restriction for all optional keys
+          if(optionalKeys.contains(key)) {
+            continue;
+          }
+          Field leftField = leftFileSchema.field(key).get();
+          Optional<Restriction> leftRestriction = leftField.getRestriction(RequiredRestriction.NAME);
+          if(leftRestriction.isPresent()) {
+            // remove any existing required restrictions
+            leftField.removeRestriction(leftRestriction.get());
+          }
+          Restriction requiredRestriction = new Restriction();
+          requiredRestriction.setType(RequiredRestriction.NAME);
+          BasicDBObject parameter = new BasicDBObject();
+          parameter.append(RequiredRestriction.ACCEPT_MISSING_CODE, false);
+          requiredRestriction.setConfig(parameter);
+          leftField.addRestriction(requiredRestriction);
+        }
+        FileSchema rightFileSchema = this.dictionary.fileSchema(rightTable).get();
+        for(String key : rightKeys) {
+          Field rightField = rightFileSchema.field(key).get();
 
-        Optional<Restriction> rightRestriction = rightField.getRestriction(RequiredRestriction.NAME);
-        if(rightRestriction.isPresent()) {
-          // remove any existing required restrictions
-          rightField.removeRestriction(rightRestriction.get());
+          Optional<Restriction> rightRestriction = rightField.getRestriction(RequiredRestriction.NAME);
+          if(rightRestriction.isPresent()) {
+            // remove any existing required restrictions
+            rightField.removeRestriction(rightRestriction.get());
+          }
+          Restriction requiredRestriction = new Restriction();
+          requiredRestriction.setType(RequiredRestriction.NAME);
+          BasicDBObject parameter = new BasicDBObject();
+          parameter.append(RequiredRestriction.ACCEPT_MISSING_CODE, false);
+          requiredRestriction.setConfig(parameter);
+          rightField.addRestriction(requiredRestriction);
         }
-        Restriction requiredRestriction = new Restriction();
-        requiredRestriction.setType(RequiredRestriction.NAME);
-        BasicDBObject parameter = new BasicDBObject();
-        parameter.append(RequiredRestriction.ACCEPT_MISSING_CODE, false);
-        requiredRestriction.setConfig(parameter);
-        rightField.addRestriction(requiredRestriction);
       }
     }
 
