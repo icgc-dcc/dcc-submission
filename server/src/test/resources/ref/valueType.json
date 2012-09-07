@@ -2,18 +2,36 @@
   "offset" : 2,
   "errors" : [ {
     "code" : "VALUE_TYPE_ERROR",
-    "parameters" : [ "abc", "donor_age_at_diagnosis", "INTEGER" ]
+    "parameters" : {
+      "columnName" : "donor_age_at_diagnosis",
+      "value" : "abc",
+      "expectedType" : "INTEGER",
+      "line" : 2
+    }
   }, {
     "code" : "MISSING_VALUE_ERROR",
-    "parameters" : [ null, "donor_age_at_diagnosis" ]
+    "parameters" : {
+      "value" : null,
+      "columnName" : "donor_age_at_diagnosis",
+      "line" : 2
+    }
   } ]
 }{
   "offset" : 3,
   "errors" : [ {
     "code" : "VALUE_TYPE_ERROR",
-    "parameters" : [ "56.4", "donor_age_at_diagnosis", "INTEGER" ]
+    "parameters" : {
+      "columnName" : "donor_age_at_diagnosis",
+      "value" : "56.4",
+      "expectedType" : "INTEGER",
+      "line" : 3
+    }
   }, {
     "code" : "MISSING_VALUE_ERROR",
-    "parameters" : [ null, "donor_age_at_diagnosis" ]
+    "parameters" : {
+      "value" : null,
+      "columnName" : "donor_age_at_diagnosis",
+      "line" : 3
+    }
   } ]
 }
