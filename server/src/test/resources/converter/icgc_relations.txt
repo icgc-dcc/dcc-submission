@@ -36,7 +36,7 @@ meth_m	analyzed_sample_id	sample	analyzed_sample_id	0..n	TRUE		inner
 meth_m	matched_sample_id	sample	analyzed_sample_id	0..n	TRUE		inner
 meth_s	gene_affected	hsap_gene	stable_id_1023	0..n	FALSE		inner
 mirna_p	analysis_id,sample_id	mirna_m	analysis_id,sample_id	1..n	TRUE		inner
-mirna_s	mirna_seq	mirna_p	mirna_seq	0..n	TRUE		right
+mirna_s	mirna_seq	mirna_p	mirna_seq	0..n	FALSE		right
 mirna_s	xref_mirbase_id	mirna_mirbase	xref_mirbase_id	0..n	FALSE		inner
 mirna_m	sample_id	sample	analyzed_sample_id	0..n	TRUE		inner
 mirna_mirbase	transcript_id	hsap_transcript	stable_id_1066	0..n	FALSE		inner
