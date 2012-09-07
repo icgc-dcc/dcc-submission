@@ -1,6 +1,6 @@
 {
-  "created" : 1346869208624,
-  "lastUpdate" : 1346869208624,
+  "created" : 1347047187528,
+  "lastUpdate" : 1347047187528,
   "version" : "0.6c",
   "state" : "OPENED",
   "files" : [ {
@@ -225,7 +225,7 @@
     "label" : null,
     "pattern" : "^mirna__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__p__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
     "role" : "SUBMISSION",
-    "uniqueFields" : [ "mirna_seq" ],
+    "uniqueFields" : [ ],
     "fields" : [ {
       "name" : "analysis_id",
       "label" : "Unique identifier for the analysis performed for a particular group of samples",
@@ -1834,7 +1834,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : true
+          "acceptMissingCode" : false
         }
       } ]
     }, {
@@ -1952,6 +1952,12 @@
     } ],
     "relation" : [ {
       "fields" : [ "analyzed_sample_id" ],
+      "cardinality" : "ZERO_OR_MORE",
+      "other" : "sample",
+      "otherFields" : [ "analyzed_sample_id" ],
+      "optionals" : [ ]
+    }, {
+      "fields" : [ "matched_sample_id" ],
       "cardinality" : "ZERO_OR_MORE",
       "other" : "sample",
       "otherFields" : [ "analyzed_sample_id" ],
@@ -4876,7 +4882,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : true
+          "acceptMissingCode" : false
         }
       } ]
     }, {
@@ -4992,7 +4998,19 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ ]
+    "relation" : [ {
+      "fields" : [ "control_sample_id" ],
+      "cardinality" : "ZERO_OR_MORE",
+      "other" : "sample",
+      "otherFields" : [ "analyzed_sample_id" ],
+      "optionals" : [ ]
+    }, {
+      "fields" : [ "matched_sample_id" ],
+      "cardinality" : "ZERO_OR_MORE",
+      "other" : "sample",
+      "otherFields" : [ "analyzed_sample_id" ],
+      "optionals" : [ ]
+    } ]
   }, {
     "name" : "sgv_p",
     "label" : null,
@@ -5275,7 +5293,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : true
+          "acceptMissingCode" : false
         }
       } ]
     }, {
@@ -5378,6 +5396,12 @@
     } ],
     "relation" : [ {
       "fields" : [ "analyzed_sample_id" ],
+      "cardinality" : "ZERO_OR_MORE",
+      "other" : "sample",
+      "otherFields" : [ "analyzed_sample_id" ],
+      "optionals" : [ ]
+    }, {
+      "fields" : [ "matched_sample_id" ],
       "cardinality" : "ZERO_OR_MORE",
       "other" : "sample",
       "otherFields" : [ "analyzed_sample_id" ],
@@ -6069,7 +6093,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : true
+          "acceptMissingCode" : false
         }
       } ]
     }, {
@@ -6187,6 +6211,12 @@
     } ],
     "relation" : [ {
       "fields" : [ "analyzed_sample_id" ],
+      "cardinality" : "ZERO_OR_MORE",
+      "other" : "sample",
+      "otherFields" : [ "analyzed_sample_id" ],
+      "optionals" : [ ]
+    }, {
+      "fields" : [ "matched_sample_id" ],
       "cardinality" : "ZERO_OR_MORE",
       "other" : "sample",
       "otherFields" : [ "analyzed_sample_id" ],
@@ -7105,7 +7135,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : true
+          "acceptMissingCode" : false
         }
       } ]
     }, {
@@ -7217,6 +7247,12 @@
     } ],
     "relation" : [ {
       "fields" : [ "analyzed_sample_id" ],
+      "cardinality" : "ZERO_OR_MORE",
+      "other" : "sample",
+      "otherFields" : [ "analyzed_sample_id" ],
+      "optionals" : [ ]
+    }, {
+      "fields" : [ "matched_sample_id" ],
       "cardinality" : "ZERO_OR_MORE",
       "other" : "sample",
       "otherFields" : [ "analyzed_sample_id" ],
