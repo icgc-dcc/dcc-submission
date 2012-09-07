@@ -249,10 +249,10 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     return false;
   }
 
-  public Optional<String> dequeue(String projectKey, boolean valid) {
+  public Optional<String> dequeue(String projectKey, SubmissionState state) {
     log.info("dequeuing: {}", projectKey);
 
-    SubmissionState newState = valid ? SubmissionState.VALID : SubmissionState.INVALID;
+    SubmissionState newState = state;
     Release release = this.getNextRelease().getRelease();
 
     Optional<String> dequeued = release.nextInQueue();
