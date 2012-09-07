@@ -192,10 +192,10 @@ define (require) ->
         e = ''
         e += "<strong>#{error.lines[i]}</strong>"
         if error.values[i]
-          e += ": #{JSON.stringify(error.values[i])}"
+          e += ": #{error.values[i]}"
         errors.push e
         
-      out.push(errors.join ",")
+      out.push(errors.join ", ")
       out.join ""
       
     formatDetails: (data) ->
