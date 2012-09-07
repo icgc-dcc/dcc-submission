@@ -50,6 +50,7 @@ public class FileSchemaDirectory {
     List<Path> paths = matches(fileSchema);
     if(paths != null && paths.size() > 1) {
       Map<String, Object> params = new LinkedHashMap<String, Object>();
+      params.put("columnName", "FileLevelError");
       params.put("value", paths.toString());
       throw new PlanningException(fileSchema.getName(), ValidationErrorCode.TOO_MANY_FILES_ERROR, params);
     }
