@@ -126,12 +126,14 @@ public class ValidationErrorReport {
   public void updateColumn(Map<String, Object> column, TupleError error, int line) {
     column.put("count", Integer.valueOf((((Integer) column.get("count")) + 1)));
 
-    List<Integer> lines = (List<Integer>) column.get("lines");
-    lines.add(line);
-    column.put("lines", lines);
+    if(error != null) {
+      List<Integer> lines = (List<Integer>) column.get("lines");
+      lines.add(line);
+      column.put("lines", lines);
 
-    List<Object> values = (List<Object>) column.get("values");
-    values.add(error.getParameters().get("value"));
-    column.put("values", values);
+      List<Object> values = (List<Object>) column.get("values");
+      values.add(error.getParameters().get("value"));
+      column.put("values", values);
+    }
   }
 }
