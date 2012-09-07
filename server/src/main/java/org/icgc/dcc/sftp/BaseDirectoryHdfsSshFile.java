@@ -26,26 +26,28 @@ import java.util.List;
 import org.apache.hadoop.fs.Path;
 import org.apache.sshd.server.SshFile;
 import org.icgc.dcc.filesystem.DccFileSystemException;
-import org.icgc.dcc.filesystem.SubmissionDirectory;
 import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
 
-class DirectoryHdfsSshFile extends HdfsSshFile {
-
-  private final SubmissionDirectory directory;
+/**
+ * 
+ */
+public abstract class BaseDirectoryHdfsSshFile extends HdfsSshFile {
 
   private final RootHdfsSshFile root;
 
-  public DirectoryHdfsSshFile(RootHdfsSshFile root, String directoryName) {
+  private final String directoryName;
+
+  protected BaseDirectoryHdfsSshFile(RootHdfsSshFile root, String directoryName) {
     super(new Path(root.path, directoryName.isEmpty() ? "/" : directoryName), root.fs);
     checkNotNull(root);
     checkNotNull(directoryName);
     this.root = root;
-    this.directory = root.getSubmissionDirectory(directoryName);
+    this.directoryName = directoryName;
   }
 
   @Override
   public String getAbsolutePath() {
-    return SEPARATOR + directory.getProjectKey();
+    return SEPARATOR + directoryName;
   }
 
   @Override
@@ -64,26 +66,8 @@ class DirectoryHdfsSshFile extends HdfsSshFile {
   }
 
   @Override
-  public boolean isWritable() {
-    if(directory.isReadOnly()) {
-      return false;
-    }
-    return super.isWritable();
-  }
-
-  @Override
-  public SshFile getParentFile() {
+  public RootHdfsSshFile getParentFile() {
     return root;
-  }
-
-  @Override
-  public boolean mkdir() {
-    try {
-      return create();
-    } catch(IOException e) {
-      log.error("File system error", e);
-    }
-    return false;
   }
 
   @Override
@@ -98,16 +82,6 @@ class DirectoryHdfsSshFile extends HdfsSshFile {
   @Override
   public void truncate() throws IOException {
     create();
-  }
-
-  @Override
-  public boolean move(SshFile destination) {
-    try {
-      return this.fs.rename(path, new Path(destination.getAbsolutePath()));
-    } catch(IOException e) {
-      log.error("File system error", e);
-    }
-    return false;
   }
 
   @Override
@@ -131,7 +105,25 @@ class DirectoryHdfsSshFile extends HdfsSshFile {
     throw new DccFileSystemException("Invalid file path: " + this.getAbsolutePath() + filePath.toString());
   }
 
-  protected void notifyModified() {
-    this.root.notifyModified(this.directory);
+  @Override
+  public boolean mkdir() {
+    try {
+      return create();
+    } catch(IOException e) {
+      log.error("File system error", e);
+    }
+    return false;
   }
+
+  @Override
+  public boolean move(SshFile destination) {
+    try {
+      return this.fs.rename(path, new Path(destination.getAbsolutePath()));
+    } catch(IOException e) {
+      log.error("File system error", e);
+    }
+    return false;
+  }
+
+  public abstract void notifyModified();
 }

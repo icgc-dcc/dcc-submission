@@ -15,22 +15,19 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.shiro;
+package org.icgc.dcc.sftp;
 
-public enum AuthorizationPrivileges {
-  PROJECT("project"), RELEASE_VIEW("release:view"), RELEASE_CLOSE("release:close"), RELEASE_MODIFY("release:modify"), RELEASE_SIGNOFF("release:signoff"), CODELIST_MODIFY("codelist:modify"), DICTIONARY_MODIFY("dictionary:modify"), QUEUE_DELETE("queue:delete");
+/**
+ * 
+ */
+public class SystemFileHdfsSshFile extends BaseDirectoryHdfsSshFile {
 
-  private final String prefix;
-
-  AuthorizationPrivileges(String prefix) {
-    this.prefix = prefix;
+  public SystemFileHdfsSshFile(RootHdfsSshFile root, String directoryName) {
+    super(root, directoryName);
   }
 
-  public static String projectViewPrivilege(String projectKey) {
-    return PROJECT.prefix + ":" + projectKey + ":view";
-  }
-
-  public String getPrefix() {
-    return this.prefix;
+  @Override
+  public void notifyModified() {
+    this.getParentFile().systemFilesNotifyModified();
   }
 }

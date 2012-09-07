@@ -15,22 +15,24 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.shiro;
+package org.icgc.dcc.web.mapper;
 
-public enum AuthorizationPrivileges {
-  PROJECT("project"), RELEASE_VIEW("release:view"), RELEASE_CLOSE("release:close"), RELEASE_MODIFY("release:modify"), RELEASE_SIGNOFF("release:signoff"), CODELIST_MODIFY("codelist:modify"), DICTIONARY_MODIFY("dictionary:modify"), QUEUE_DELETE("queue:delete");
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.ext.ExceptionMapper;
 
-  private final String prefix;
+import org.icgc.dcc.web.ServerErrorResponseMessage;
+import org.icgc.dcc.web.validator.DuplicateNameException;
 
-  AuthorizationPrivileges(String prefix) {
-    this.prefix = prefix;
+/**
+ * 
+ */
+public class DuplicateNameExceptionMapper implements ExceptionMapper<DuplicateNameException> {
+
+  @Override
+  public Response toResponse(DuplicateNameException exception) {
+    return Response.status(Status.BAD_REQUEST)
+        .entity(new ServerErrorResponseMessage("DuplicateName", exception.getMessage())).build();
   }
 
-  public static String projectViewPrivilege(String projectKey) {
-    return PROJECT.prefix + ":" + projectKey + ":view";
-  }
-
-  public String getPrefix() {
-    return this.prefix;
-  }
 }

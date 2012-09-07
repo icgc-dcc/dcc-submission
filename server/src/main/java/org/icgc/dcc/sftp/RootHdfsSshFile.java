@@ -30,6 +30,8 @@ import org.icgc.dcc.filesystem.ReleaseFileSystem;
 import org.icgc.dcc.filesystem.SubmissionDirectory;
 import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
 import org.icgc.dcc.release.ReleaseService;
+import org.icgc.dcc.release.model.Submission;
+import org.icgc.dcc.release.model.SubmissionState;
 import org.mortbay.log.Log;
 
 /**
@@ -101,7 +103,12 @@ class RootHdfsSshFile extends HdfsSshFile {
     List<SshFile> sshFileList = new ArrayList<SshFile>();
     for(Path path : pathList) {
       try {
-        sshFileList.add(new DirectoryHdfsSshFile(this, path.getName()));
+        // if it is System File directory and admin user, add to file list
+        if(this.rfs.isSystemDirectory(path)) {
+          sshFileList.add(new SystemFileHdfsSshFile(this, path.getName()));
+        } else {
+          sshFileList.add(new SubmissionDirectoryHdfsSshFile(this, path.getName()));
+        }
       } catch(DccFileSystemException e) {
         Log.info("Directory skipped due to insufficient permissions: " + path.getName());
       } catch(ProjectServiceException e) {
@@ -121,9 +128,10 @@ class RootHdfsSshFile extends HdfsSshFile {
     case 0:
       return this;
     case 1:
-      return new DirectoryHdfsSshFile(this, filePath.getName());
+      return new SubmissionDirectoryHdfsSshFile(this, filePath.getName());
     case 2:
-      DirectoryHdfsSshFile parentDir = new DirectoryHdfsSshFile(this, filePath.getParent().getName());
+      SubmissionDirectoryHdfsSshFile parentDir =
+          new SubmissionDirectoryHdfsSshFile(this, filePath.getParent().getName());
       return new FileHdfsSshFile(parentDir, filePath.getName());
     }
     throw new DccFileSystemException("Invalid file path: " + this.getAbsolutePath() + filePath.toString());
@@ -135,7 +143,24 @@ class RootHdfsSshFile extends HdfsSshFile {
   }
 
   public void notifyModified(SubmissionDirectory submissionDirectory) {
-    submissionDirectory.notifyModified();
-    this.releases.updateSubmission(this.rfs.getRelease().getName(), submissionDirectory.getSubmission());
+    String releaseName = this.rfs.getRelease().getName();
+    Submission submission = submissionDirectory.getSubmission();
+    this.resetSubmission(releaseName, submission);
+  }
+
+  public void systemFilesNotifyModified() {
+    String releaseName = this.rfs.getRelease().getName();
+
+    // TODO: not very effiecient now, need to combine the query into one
+    for(Submission submission : this.rfs.getRelease().getSubmissions()) {
+      this.resetSubmission(releaseName, submission);
+    }
+  }
+
+  private void resetSubmission(String releaseName, Submission submission) {
+    submission.setState(SubmissionState.NOT_VALIDATED);
+    submission.setReport(null);
+    this.releases.updateSubmission(releaseName, submission);
+    this.releases.removeSubmissionReport(releaseName, submission.getProjectKey());
   }
 }
