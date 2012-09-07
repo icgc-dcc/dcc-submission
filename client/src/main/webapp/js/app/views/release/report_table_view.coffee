@@ -180,6 +180,24 @@ define (require) ->
         else
           "<td><strong>#{error.code}</strong></td><td><strong>#{error.parameters}</strong></td>"
 
+    formatParams: (error) ->
+      console.debug "ReportTableView#formatParams", error
+      out = []
+      errors = []
+      
+      for key, value of error when key not in ["lines", "values", "count", "errorType", "columnName"]
+        out.push "<strong>#{key}</strong>: #{value}<br>"
+        
+      for i in [0 .. error.lines.length - 1]
+        e = ''
+        e += "<strong>#{error.lines[i]}</strong>"
+        if error.values[i]
+          e += ": #{JSON.stringify(error.values[i])}"
+        errors.push e
+        
+      out.push(errors.join ",")
+      out.join ""
+      
     formatDetails: (data) ->
       console.debug "ReportTableView#formatDetails", data
       
@@ -191,8 +209,9 @@ define (require) ->
           <table class='table table-striped'>
           <thead>
             <tr>
-            <th>Offset</th>
             <th>Error Type</th>
+            <th>Column Name</th>
+            <th>Count</th>
             <th>Parameters</th>
             </tr>
           </thead>
@@ -200,10 +219,12 @@ define (require) ->
         """
         
         for errorObj in data.errors
+          console.log errorObj
           for error in errorObj.columns
+            console.log errorObj, error
             sOut += "<tr>"
-            sOut += "<td>what here</td>"
-            sOut += "<td>what here</td><td>what here</td>"
+            sOut += "<td>#{errorObj.errorType}</td><td>#{error.columnName}</td>"
+            sOut += "<td>#{error.count}</td><td>#{@formatParams error}</td>"
             sOut += "</tr>"
         sOut += "</tbody></table>"
         
