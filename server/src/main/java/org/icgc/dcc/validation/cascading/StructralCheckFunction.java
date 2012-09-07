@@ -112,6 +112,7 @@ public class StructralCheckFunction extends BaseOperation implements Function {
       adjustedValues = padMissingColumns(adjustedValues); // then missing fields to be emulated
       adjustedValues = convertMissingCodes(adjustedValues, tupleState);
       if(REPORT_WARNINGS && unknownHeaderIndices.isEmpty() == false) {
+        this.params.put("columnName", "FileLevelError");
         this.params.put("unknownColumns", unknownHeaderIndices);
         tupleState.reportError(ValidationErrorCode.UNKNOWN_COLUMNS_WARNING, this.params);
       }
@@ -120,8 +121,8 @@ public class StructralCheckFunction extends BaseOperation implements Function {
                                                                            // of fields in headers for later merge in
                                                                            // error reporting
       this.params.put("columnName", "FileLevelError");
-      this.params.put("foundNumColumns", dataSize);
       this.params.put("actualNumColumns", headerSize);
+      this.params.put("value", dataSize);
       tupleState.reportError(ValidationErrorCode.STRUCTURALLY_INVALID_ROW_ERROR, this.params);
     }
     return adjustedValues;
