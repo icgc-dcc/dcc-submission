@@ -15,19 +15,14 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.sftp;
+package org.icgc.dcc.dictionary.model;
 
 /**
  * 
  */
-public class SystemFileHdfsSshFile extends BaseDirectoryHdfsSshFile {
+public class DuplicateRestrictionFoundException extends DataModelException {
 
-  public SystemFileHdfsSshFile(RootHdfsSshFile root, String directoryName) {
-    super(root, directoryName);
-  }
-
-  @Override
-  public void notifyModified() {
-    this.getParentFile().systemFilesNotifyModified();
+  DuplicateRestrictionFoundException(String msg) {
+    super(msg);
   }
 }
