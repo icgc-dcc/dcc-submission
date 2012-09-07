@@ -107,9 +107,6 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
 
       @Override
       public Outcome collect(CascadingStrategy strategy, SchemaReport report) {
-
-        System.out.println("report: " + report);
-
         InputStream src = null;
         try {
           src = strategy.readReportTap(getFileSchema(), getFlowType(), getName());
@@ -124,8 +121,6 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
             report.setFieldReports(new ArrayList<FieldReport>());
           }
 
-          System.out.println("report name: " + report.getName());
-
           Outcome outcome = Outcome.PASSED;
           MappingIterator<TupleState> tupleStates = mapper.reader().withType(TupleState.class).readValues(src);
           while(tupleStates.hasNext()) {
@@ -139,11 +134,9 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
                 // check if errorMap[error.getCode()] exists
                 if(errorMap.containsKey(error.getCode()) == false) {
                   // if it does NOT - create it as a new ValidationErrorReport
-                  System.out.println("Key does not exist: " + error.getCode());
                   ValidationErrorReport errorReport = new ValidationErrorReport(error);
                   errorMap.put(error.getCode(), errorReport);
                 } else {
-                  System.out.println("Key already exists: " + error.getCode());
                   // if it does already exist
                   ValidationErrorReport errorReport = errorMap.get(error.getCode());
                   // check if the columnName is already there
@@ -153,10 +146,7 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
                     columns.add(((Map<String, Object>) column));
                   }
 
-                  System.out.println("Columns for " + error.getCode() + ": " + columns);
-
                   String errorColumnName = error.getParameters().get("columnName").toString();
-                  System.out.println("Error Column Name: " + errorColumnName);
                   boolean columnExists = false;
                   Map<String, Object> column = null;
 
@@ -170,22 +160,21 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
                   }
 
                   if(columnExists == false) {
-                    System.out.println("Column does not exists: " + errorColumnName);
                     // if it is NOT push params to columns list
                     errorReport.addColumn(error.getParameters());
                     errorMap.put(error.getCode(), errorReport);
                   } else {
-                    System.out.println("Column already exists: " + errorColumnName);
                     // if it is - update it by pushing offset/vals and count++
-                    errorReport.updateColumn(column, error, (int) tupleState.getOffset());
-                    // errorMap.put(error.getCode(), errorReport);
+                    // TODO This looks like a lot of converting
+                    // Only show the first 50 line/value pairs, but count everything
+                    if(Integer.valueOf(column.get("count").toString()) < 50) {
+                      errorReport.updateColumn(column, error, (int) tupleState.getOffset());
+                    } else {
+                      errorReport.updateColumn(column, null, (int) tupleState.getOffset());
+                    }
                   }
                 }
               }
-            }
-            if(report.getErrors().size() >= 100) {
-              // Limit to 100 errors
-              break;
             }
           }
           if(errorMap.isEmpty() == false) {
@@ -193,7 +182,6 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
               report.errors.add(e);
             }
           }
-          System.out.println("report errors: " + report.getErrors());
           return outcome;
         } catch(FileNotFoundException fnfe) {
           return Outcome.PASSED;
