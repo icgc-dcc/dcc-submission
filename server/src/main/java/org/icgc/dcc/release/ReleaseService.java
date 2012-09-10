@@ -154,13 +154,13 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
   public List<CompletedRelease> getCompletedReleases() throws IllegalReleaseStateException {
     List<CompletedRelease> completedReleases = new ArrayList<CompletedRelease>();
-  
+
     MongodbQuery<Release> query = this.where(QRelease.release.state.eq(ReleaseState.COMPLETED));
-  
+
     for(Release release : query.list()) {
       completedReleases.add(new CompletedRelease(release, morphia(), datastore(), fs));
     }
-  
+
     return completedReleases;
   }
 
@@ -249,10 +249,10 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     return false;
   }
 
-  public Optional<String> dequeue(String projectKey, boolean valid) {
+  public Optional<String> dequeue(String projectKey, SubmissionState state) {
     log.info("dequeuing: {}", projectKey);
 
-    SubmissionState newState = valid ? SubmissionState.VALID : SubmissionState.INVALID;
+    SubmissionState newState = state;
     Release release = this.getNextRelease().getRelease();
 
     Optional<String> dequeued = release.nextInQueue();
@@ -379,6 +379,17 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
     UpdateOperations<Release> ops = datastore().createUpdateOperations(Release.class).disableValidation()//
         .set("submissions.$.report", report);
+
+    datastore().update(updateQuery, ops);
+  }
+
+  public void removeSubmissionReport(String releaseName, String projectKey) {
+    Query<Release> updateQuery = datastore().createQuery(Release.class)//
+        .filter("name = ", releaseName)//
+        .filter("submissions.projectKey = ", projectKey);
+
+    UpdateOperations<Release> ops =
+        datastore().createUpdateOperations(Release.class).disableValidation().unset("submissions.$.report");
 
     datastore().update(updateQuery, ops);
   }

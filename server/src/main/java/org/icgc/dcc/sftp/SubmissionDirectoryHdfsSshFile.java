@@ -15,22 +15,34 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.shiro;
+package org.icgc.dcc.sftp;
 
-public enum AuthorizationPrivileges {
-  PROJECT("project"), RELEASE_VIEW("release:view"), RELEASE_CLOSE("release:close"), RELEASE_MODIFY("release:modify"), RELEASE_SIGNOFF("release:signoff"), CODELIST_MODIFY("codelist:modify"), DICTIONARY_MODIFY("dictionary:modify"), QUEUE_DELETE("queue:delete");
+import org.icgc.dcc.filesystem.SubmissionDirectory;
 
-  private final String prefix;
+class SubmissionDirectoryHdfsSshFile extends BaseDirectoryHdfsSshFile {
 
-  AuthorizationPrivileges(String prefix) {
-    this.prefix = prefix;
+  private final SubmissionDirectory directory;
+
+  public SubmissionDirectoryHdfsSshFile(RootHdfsSshFile root, String directoryName) {
+    super(root, directoryName);
+    this.directory = root.getSubmissionDirectory(directoryName);
   }
 
-  public static String projectViewPrivilege(String projectKey) {
-    return PROJECT.prefix + ":" + projectKey + ":view";
+  @Override
+  public String getAbsolutePath() {
+    return SEPARATOR + directory.getProjectKey();
   }
 
-  public String getPrefix() {
-    return this.prefix;
+  @Override
+  public boolean isWritable() {
+    if(directory.isReadOnly()) {
+      return false;
+    }
+    return super.isWritable();
+  }
+
+  @Override
+  public void notifyModified() {
+    this.getParentFile().notifyModified(this.directory);
   }
 }

@@ -14,6 +14,7 @@ import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.release.model.SubmissionState;
 import org.icgc.dcc.shiro.AuthorizationPrivileges;
+import org.icgc.dcc.web.validator.DuplicateNameException;
 import org.icgc.dcc.web.validator.InvalidNameException;
 import org.icgc.dcc.web.validator.NameValidator;
 
@@ -22,6 +23,7 @@ import com.google.code.morphia.Morphia;
 import com.google.code.morphia.query.Query;
 import com.google.code.morphia.query.UpdateOperations;
 import com.google.inject.Inject;
+import com.mysema.query.mongodb.MongodbQuery;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
 
 public class ProjectService extends BaseMorphiaService<Project> {
@@ -56,6 +58,10 @@ public class ProjectService extends BaseMorphiaService<Project> {
     if(!NameValidator.validate(project.getKey())) {
       throw new InvalidNameException(project.getKey());
     }
+    // check for duplicate project key
+    if(this.hasProject(project.getKey())) {
+      throw new DuplicateNameException(project.getKey());
+    }
 
     this.saveProject(project);
 
@@ -88,12 +94,18 @@ public class ProjectService extends BaseMorphiaService<Project> {
   }
 
   public Project getProject(final String projectKey) {
-    Project project = this.query().where(QProject.project.key.eq(projectKey)).singleResult();
+    Project project = this.getProjectQuery(projectKey).singleResult();
 
     if(project == null) {
       throw new ProjectServiceException("No project found with key " + projectKey);
     }
     return project;
+  }
+
+  public boolean hasProject(final String projectKey) {
+    Project project = this.getProjectQuery(projectKey).singleResult();
+
+    return project != null;
   }
 
   public List<Project> getProjects(List<String> projectKeys) {
@@ -106,5 +118,9 @@ public class ProjectService extends BaseMorphiaService<Project> {
 
   private void saveProject(Project project) {
     this.datastore().save(project);
+  }
+
+  private MongodbQuery<Project> getProjectQuery(final String projectKey) {
+    return this.query().where(QProject.project.key.eq(projectKey));
   }
 }

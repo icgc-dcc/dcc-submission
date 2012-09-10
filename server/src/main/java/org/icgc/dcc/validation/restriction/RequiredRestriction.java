@@ -26,10 +26,15 @@ public class RequiredRestriction implements InternalPlanElement {
 
   public static final String NAME = "required";// TODO: create enum for valid Restriction types?
 
+  public static final String ACCEPT_MISSING_CODE = "acceptMissingCode";
+
   private final String field;
 
-  protected RequiredRestriction(String field) {
+  private final boolean acceptMissingCode;
+
+  protected RequiredRestriction(String field, boolean acceptMissingCode) {
     this.field = field;
+    this.acceptMissingCode = acceptMissingCode;
   }
 
   @Override
@@ -39,7 +44,12 @@ public class RequiredRestriction implements InternalPlanElement {
 
   @Override
   public Pipe extend(Pipe pipe) {
-    return new Each(pipe, new ValidationFields(field), new SpecifiedFunction(), Fields.REPLACE);
+    return new Each(pipe, new ValidationFields(field), new SpecifiedFunction(this.isAcceptMissingCode()),
+        Fields.REPLACE);
+  }
+
+  private boolean isAcceptMissingCode() {
+    return acceptMissingCode;
   }
 
   public static class Type implements RestrictionType {
@@ -68,16 +78,23 @@ public class RequiredRestriction implements InternalPlanElement {
 
     @Override
     public PlanElement build(Field field, Restriction restriction) {
-      return new RequiredRestriction(field.getName());
+      if(restriction.getConfig() == null || restriction.getConfig().get(ACCEPT_MISSING_CODE) == null) {
+        return new RequiredRestriction(field.getName(), true);
+      }
+      Boolean acceptMissingCode = (Boolean) restriction.getConfig().get(ACCEPT_MISSING_CODE);
+      return new RequiredRestriction(field.getName(), acceptMissingCode);
+
     }
 
   }
 
   @SuppressWarnings("rawtypes")
   public static class SpecifiedFunction extends BaseOperation implements Function {
+    private final boolean acceptMissingCode;
 
-    protected SpecifiedFunction() {
+    protected SpecifiedFunction(boolean acceptMissingCode) {
       super(2, Fields.ARGS);
+      this.acceptMissingCode = acceptMissingCode;
     }
 
     @Override
@@ -85,8 +102,12 @@ public class RequiredRestriction implements InternalPlanElement {
       TupleEntry tupleEntry = functionCall.getArguments();
       String value = tupleEntry.getString(0);
 
-      if(ValidationFields.state(tupleEntry).isFieldMissing((String) tupleEntry.getFields().get(0)) == false
-          && (value == null || value.isEmpty())) {
+      boolean isFieldMissing =
+          ValidationFields.state(tupleEntry).isFieldMissing((String) tupleEntry.getFields().get(0));
+      if(isFieldMissing == false && (value == null || value.isEmpty())) {
+        Object fieldName = tupleEntry.getFields().get(0);
+        ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.MISSING_VALUE_ERROR, value, fieldName);
+      } else if(isFieldMissing == true && !acceptMissingCode) {
         Object fieldName = tupleEntry.getFields().get(0);
 
         Map<String, Object> params = new LinkedHashMap<String, Object>();
