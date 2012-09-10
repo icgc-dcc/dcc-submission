@@ -1,6 +1,6 @@
 {
-  "created" : 1347054748735,
-  "lastUpdate" : 1347054748735,
+  "created" : 1347290930244,
+  "lastUpdate" : 1347290930244,
   "version" : "0.6c",
   "state" : "OPENED",
   "files" : [ {
@@ -17,7 +17,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -75,7 +75,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -86,7 +86,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -234,7 +234,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -245,7 +245,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -256,7 +256,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -377,7 +377,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -388,7 +388,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -399,7 +399,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -447,7 +447,12 @@
       "label" : "Transcript(s) containing the mutation/variation.  Use Ensembl transcript id.",
       "valueType" : "TEXT",
       "summaryType" : null,
-      "restrictions" : [ ]
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : {
+          "acceptMissingCode" : false
+        }
+      } ]
     }, {
       "name" : "gene_build_version",
       "label" : "Version of Ensembl gene build used for annotation",
@@ -493,7 +498,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -589,7 +594,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -649,7 +654,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -686,7 +691,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -891,7 +896,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -992,7 +997,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -1003,7 +1008,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -1305,19 +1310,34 @@
       "label" : null,
       "valueType" : "TEXT",
       "summaryType" : null,
-      "restrictions" : [ ]
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : {
+          "acceptMissingCode" : false
+        }
+      } ]
     }, {
       "name" : "transcript_affected_by_bkpt_to",
       "label" : null,
       "valueType" : "TEXT",
       "summaryType" : null,
-      "restrictions" : [ ]
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : {
+          "acceptMissingCode" : false
+        }
+      } ]
     }, {
       "name" : "transcript_affected",
       "label" : "Transcript(s) affected by the breakpoints. Use Ensembl transcript id.  Separate multiple transcripts from the same gene with commas, and separate transcripts from different genes with vertical bars. eg. transcriptA1, transcriptA2|transcriptB1|transcriptC1",
       "valueType" : "TEXT",
       "summaryType" : null,
-      "restrictions" : [ ]
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : {
+          "acceptMissingCode" : false
+        }
+      } ]
     }, {
       "name" : "analysis_id",
       "label" : "Unique identfier for the analysis performed for a particular group of samples",
@@ -1326,7 +1346,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -1337,7 +1357,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -1348,7 +1368,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -1359,7 +1379,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -1425,7 +1445,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -1436,7 +1456,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -1447,7 +1467,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -1458,7 +1478,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -1711,7 +1731,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -1722,7 +1742,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -1733,7 +1753,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -1744,7 +1764,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : true
+          "acceptMissingCode" : false
         }
       } ]
     }, {
@@ -1792,7 +1812,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -1803,7 +1823,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -1814,7 +1834,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -1957,7 +1977,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -1968,7 +1988,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -2402,7 +2422,12 @@
       "label" : null,
       "valueType" : "TEXT",
       "summaryType" : null,
-      "restrictions" : [ ]
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : {
+          "acceptMissingCode" : false
+        }
+      } ]
     }, {
       "name" : "inter_paralog_opri_bool",
       "label" : null,
@@ -3493,7 +3518,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -3507,7 +3532,12 @@
       "label" : null,
       "valueType" : "TEXT",
       "summaryType" : null,
-      "restrictions" : [ ]
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : {
+          "acceptMissingCode" : false
+        }
+      } ]
     }, {
       "name" : "overlap_type",
       "label" : null,
@@ -3605,7 +3635,12 @@
       "label" : null,
       "valueType" : "TEXT",
       "summaryType" : null,
-      "restrictions" : [ ]
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : {
+          "acceptMissingCode" : false
+        }
+      } ]
     }, {
       "name" : "value_1022",
       "label" : null,
@@ -4534,7 +4569,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -4545,7 +4580,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -4556,7 +4591,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -4575,7 +4610,12 @@
       "label" : "Transcript(s) containing the mutation/variation.  Use Ensembl transcript id. Separate multiple transcripts from the same gene with commas, and separate transcripts from different genes with vertical bars. eg. transcriptA1, transcriptA2|transcriptB1|transcriptC1,transcriptC2,transcriptC3.  If no transcript is affected, use -888 (not applicable).",
       "valueType" : "TEXT",
       "summaryType" : null,
-      "restrictions" : [ ]
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : {
+          "acceptMissingCode" : false
+        }
+      } ]
     }, {
       "name" : "gene_build_version",
       "label" : "Version of Ensembl gene build used for annotation",
@@ -4621,7 +4661,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -4632,7 +4672,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -4643,7 +4683,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -4820,7 +4860,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -4831,7 +4871,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -4842,7 +4882,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -4985,7 +5025,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -4996,7 +5036,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -5231,7 +5271,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -5242,7 +5282,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -5253,7 +5293,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -5485,7 +5525,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -5496,7 +5536,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -5507,7 +5547,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -5742,7 +5782,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -5753,7 +5793,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -5764,7 +5804,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : true
+          "acceptMissingCode" : false
         }
       } ]
     }, {
@@ -5951,7 +5991,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -6031,7 +6071,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -6042,7 +6082,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -6053,7 +6093,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -6196,7 +6236,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -6207,7 +6247,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -6229,7 +6269,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : true
+          "acceptMissingCode" : false
         }
       } ]
     }, {
@@ -6513,7 +6553,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -6524,7 +6564,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -6535,7 +6575,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -6660,7 +6700,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -6671,7 +6711,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -6819,7 +6859,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -6904,7 +6944,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -6915,7 +6955,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -7073,7 +7113,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -7084,7 +7124,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -7095,7 +7135,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
