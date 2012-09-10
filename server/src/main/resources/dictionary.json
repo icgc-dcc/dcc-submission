@@ -1,6 +1,6 @@
 {
-  "created" : 1347047187528,
-  "lastUpdate" : 1347047187528,
+  "created" : 1347304331746,
+  "lastUpdate" : 1347304331746,
   "version" : "0.6c",
   "state" : "OPENED",
   "files" : [ {
@@ -450,7 +450,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -563,7 +563,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     } ],
@@ -1313,7 +1313,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -1324,7 +1324,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -1335,7 +1335,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -1764,7 +1764,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -2425,7 +2425,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -3535,7 +3535,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -3638,7 +3638,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -4613,7 +4613,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -5804,7 +5804,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -6002,7 +6002,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
@@ -6269,7 +6269,7 @@
       "restrictions" : [ {
         "type" : "required",
         "config" : {
-          "acceptMissingCode" : false
+          "acceptMissingCode" : true
         }
       } ]
     }, {
