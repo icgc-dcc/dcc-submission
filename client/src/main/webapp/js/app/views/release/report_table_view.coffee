@@ -26,7 +26,7 @@ define (require) ->
     template: template
     template = null
 
-    autoRender: true
+    autoRender: false
     
     initialize: ->
       console.debug "ReportTableView#initialize", @model, @el
@@ -258,6 +258,13 @@ define (require) ->
           aaSorting: [[ 1, "asc" ]]
           
 
+    updateDataTable: ->
+      if @model.get('report').get('schemaReports').length
+        dt = @$el.dataTable()
+        dt.fnSetColumnVis( 3, true )
+        dt.fnSetColumnVis( 4, true )
+      super
+
     createDataTable: ->
       console.debug "ReportTableView#createDataTable", @$el
       aoColumns = [
@@ -281,13 +288,11 @@ define (require) ->
             fnRender: (oObj, Sval) ->
               utils.fileSize Sval
           }
-        ]
-        
-        reportCols = [
           {
             sTitle: "Status"
             mDataProp: null
             bSortable: true
+            bVisible: false
             fnRender: (oObj, Sval)->
               if oObj.aData.errors
                 errors = 0
@@ -302,13 +307,11 @@ define (require) ->
             sTitle: "Report"
             mDataProp: null
             bSortable: false
+            bVisible: false
             sDefaultContent: "<span class='link control'>view</span>"
           }
         ]
-      
-      if true# @model.get 'report'
-        aoColumns = aoColumns.concat reportCols
-      
+
       @$el.dataTable
         sDom:
           "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>"
