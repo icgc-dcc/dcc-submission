@@ -207,7 +207,7 @@ public class DictionaryConverter {
         requiredRestriction.setType(RequiredRestriction.NAME);
         BasicDBObject parameter = new BasicDBObject();
         // exceptions for making required field accept missing code
-        if(!rightTable.equals("hsap_gene") && !rightTable.equals("hsap_transcript")) {
+        if(rightTable.equals("hsap_gene") || rightTable.equals("hsap_transcript")) {
           parameter.append(RequiredRestriction.ACCEPT_MISSING_CODE, true);
         } else if(optionalKeys.contains(key)) {
           parameter.append(RequiredRestriction.ACCEPT_MISSING_CODE, true);
@@ -230,7 +230,7 @@ public class DictionaryConverter {
         requiredRestriction.setType(RequiredRestriction.NAME);
         BasicDBObject parameter = new BasicDBObject();
         // exceptions for making required field accept missing code
-        if(!rightTable.equals("hsap_gene") && !rightTable.equals("hsap_transcript")) {
+        if(rightTable.equals("hsap_gene") || rightTable.equals("hsap_transcript")) {
           parameter.append(RequiredRestriction.ACCEPT_MISSING_CODE, true);
         } else {
           parameter.append(RequiredRestriction.ACCEPT_MISSING_CODE, false);
