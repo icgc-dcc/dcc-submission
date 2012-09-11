@@ -94,7 +94,7 @@ public class ValidationErrorReport {
     this.columns.add(column);
   }
 
-  public void updateColumn(String columnName, TupleError error, int line) {
+  public void updateColumn(String columnName, TupleError error, Long line) {
     ColumnErrorReport column = this.getColumnByName(columnName);
     column.incCount();
 
@@ -105,7 +105,7 @@ public class ValidationErrorReport {
     }
   }
 
-  public void updateReport(TupleError error, Map<ValidationErrorCode, ValidationErrorReport> errorMap, int line) {
+  public void updateReport(TupleError error, Map<ValidationErrorCode, ValidationErrorReport> errorMap, Long line) {
     String columnName = error.getParameters().get(COLUMN_NAME).toString();
     if(this.hasColumn(columnName) == true) {
       this.updateColumn(columnName, error, line);
@@ -126,9 +126,9 @@ public class ValidationErrorReport {
   private static class ColumnErrorReport {
     private String columnName;
 
-    private int count;
+    private Long count;
 
-    private List<Integer> lines;
+    private List<Long> lines;
 
     private List<Object> values;
 
@@ -138,12 +138,12 @@ public class ValidationErrorReport {
     }
 
     public ColumnErrorReport(Map<String, Object> params) {
-      this.lines = new LinkedList<Integer>();
+      this.lines = new LinkedList<Long>();
       this.values = new LinkedList<Object>();
 
       this.setColumnName(params.get(COLUMN_NAME).toString());
-      this.setCount(1);
-      this.lines.add((Integer) params.get(LINE));
+      this.setCount(1L);
+      this.lines.add((Long) params.get(LINE));
       this.values.add(params.get(VALUE));
 
       params.remove(LINE);
@@ -156,7 +156,7 @@ public class ValidationErrorReport {
       this.setCount(this.getCount() + 1);
     }
 
-    public int getCount() {
+    public Long getCount() {
       return this.count;
     }
 
@@ -178,12 +178,12 @@ public class ValidationErrorReport {
       this.setValues(values);
     }
 
-    public List<Integer> getLines() {
+    public List<Long> getLines() {
       return this.lines;
     }
 
-    public void addLine(int line) {
-      List<Integer> lines = this.getLines();
+    public void addLine(Long line) {
+      List<Long> lines = this.getLines();
       lines.add(line);
       this.setLines(lines);
     }
@@ -192,11 +192,11 @@ public class ValidationErrorReport {
       this.values = values;
     }
 
-    private void setLines(List<Integer> lines) {
+    private void setLines(List<Long> lines) {
       this.lines = lines;
     }
 
-    private void setCount(int c) {
+    private void setCount(Long c) {
       this.count = c;
     }
 
