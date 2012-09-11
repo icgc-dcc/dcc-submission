@@ -185,7 +185,7 @@ define (require) ->
       out = []
       errors = []
       
-      for key, value of error when key not in ["lines", "values", "count", "errorType", "columnName"]
+      for key, value of error.parameters
         out.push "<strong>#{key}</strong>: #{value}<br>"
         
       for i in [0 .. error.lines.length - 1]
