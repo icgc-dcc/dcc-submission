@@ -143,7 +143,7 @@ public class ValidationErrorReport {
 
       this.setColumnName(params.get(COLUMN_NAME).toString());
       this.setCount(1L);
-      this.lines.add((Long) params.get(LINE));
+      this.lines.add(Long.valueOf(params.get(LINE).toString()));
       this.values.add(params.get(VALUE));
 
       params.remove(LINE);
