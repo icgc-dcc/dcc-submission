@@ -61,8 +61,6 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
 
     private final FlowType flowType;
 
-    private static final String COLUMN_NAME = "columnName";
-
     public ErrorsPlanElement(FileSchema fileSchema, FlowType flowType) {
       this.fileSchema = fileSchema;
       this.flowType = flowType;
@@ -126,26 +124,12 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
             TupleState tupleState = tupleStates.next();
             if(tupleState.isInvalid()) {
               outcome = Outcome.FAILED;
-              // Loop thought the errors
               for(TupleState.TupleError error : tupleState.getErrors()) {
-                // check if errorMap[error.getCode()] exists
-                if(errorMap.containsKey(error.getCode()) == false) {
-                  // if it does NOT - create it as a new ValidationErrorReport
-                  ValidationErrorReport errorReport = new ValidationErrorReport(error);
-                  errorMap.put(error.getCode(), errorReport);
-                } else {
-                  // if it does already exist get it using the Error Type
+                if(errorMap.containsKey(error.getCode()) == true) {
                   ValidationErrorReport errorReport = errorMap.get(error.getCode());
-                  // check if the columnName is already there
-                  String columnName = error.getParameters().get(COLUMN_NAME).toString();
-                  if(errorReport.hasColumn(columnName) == false) {
-                    // if it is NOT there - add new column to columns list
-                    errorReport.addColumn(error.getParameters());
-                    errorMap.put(error.getCode(), errorReport);
-                  } else {
-                    // if it is - update it by pushing offset/vals and count++
-                    errorReport.updateColumn(columnName, error, (int) tupleState.getOffset());
-                  }
+                  errorReport.updateReport(error, errorMap, (int) tupleState.getOffset());
+                } else {
+                  errorMap.put(error.getCode(), new ValidationErrorReport(error));
                 }
               }
             }

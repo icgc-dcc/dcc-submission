@@ -26,9 +26,6 @@ import org.icgc.dcc.validation.ValidationErrorCode;
 import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.cascading.TupleState.TupleError;
 
-/**
- * 
- */
 public class ValidationErrorReport {
 
   private ValidationErrorCode errorType;
@@ -48,9 +45,6 @@ public class ValidationErrorReport {
   public ValidationErrorReport() {
   }
 
-  /**
-   * @param tupleState
-   */
   public ValidationErrorReport(TupleState tupleState) {
     Iterator<TupleState.TupleError> errors = tupleState.getErrors().iterator();
     if(errors.hasNext()) {
@@ -61,9 +55,6 @@ public class ValidationErrorReport {
     }
   }
 
-  /**
-   * @param error
-   */
   public ValidationErrorReport(TupleError error) {
     this.columns = new LinkedList<ColumnErrorReport>();
     this.setErrorType(error.getCode());
@@ -71,44 +62,33 @@ public class ValidationErrorReport {
     this.addColumn(error.getParameters());
   }
 
-  /**
-   * @return the errorType
-   */
   public ValidationErrorCode getErrorType() {
     return errorType;
   }
 
-  /**
-   * @param errorType the errorType to set
-   */
-  public void setErrorType(ValidationErrorCode errorType) {
-    this.errorType = errorType;
-  }
-
-  /**
-   * @return the description
-   */
   public String getDescription() {
     return description;
   }
 
-  /**
-   * @param description the description to set
-   */
-  public void setDescription(String description) {
-    this.description = description;
-  }
-
-  /**
-   * @return the columns
-   */
   public List<ColumnErrorReport> getColumns() {
     return columns;
   }
 
-  /**
-   * @param columns the columns to set
-   */
+  public boolean hasColumn(String columnName) {
+    return this.getColumnByName(columnName) != null ? true : false;
+  }
+
+  public ColumnErrorReport getColumnByName(String columnName) {
+    ColumnErrorReport column = null;
+    for(ColumnErrorReport c : this.getColumns()) {
+      if(c.getColumnName().equals(columnName)) {
+        column = c;
+        break;
+      }
+    }
+    return column;
+  }
+
   public void addColumn(Map<String, Object> parameters) {
     ColumnErrorReport column = new ColumnErrorReport(parameters);
     this.columns.add(column);
@@ -125,21 +105,22 @@ public class ValidationErrorReport {
     }
   }
 
-  public ColumnErrorReport getColumnByName(String columnName) {
-    ColumnErrorReport column = null;
-
-    for(ColumnErrorReport c : this.getColumns()) {
-      if(c.getColumnName().equals(columnName)) {
-        column = c;
-        break;
-      }
+  public void updateReport(TupleError error, Map<ValidationErrorCode, ValidationErrorReport> errorMap, int line) {
+    String columnName = error.getParameters().get(COLUMN_NAME).toString();
+    if(this.hasColumn(columnName) == true) {
+      this.updateColumn(columnName, error, line);
+    } else {
+      this.addColumn(error.getParameters());
+      errorMap.put(error.getCode(), this);
     }
-
-    return column;
   }
 
-  public boolean hasColumn(String columnName) {
-    return this.getColumnByName(columnName) != null ? true : false;
+  private void setDescription(String description) {
+    this.description = description;
+  }
+
+  private void setErrorType(ValidationErrorCode errorType) {
+    this.errorType = errorType;
   }
 
   private static class ColumnErrorReport {
@@ -226,6 +207,5 @@ public class ValidationErrorReport {
     private void setParameters(Map<String, Object> params) {
       this.parameters = params;
     }
-
   }
 }
