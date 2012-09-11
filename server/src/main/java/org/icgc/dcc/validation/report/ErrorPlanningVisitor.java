@@ -22,8 +22,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import org.codehaus.jackson.map.MappingIterator;
@@ -44,7 +42,6 @@ import cascading.pipe.Pipe;
 import cascading.pipe.assembly.Retain;
 
 import com.google.common.io.Closeables;
-import com.mongodb.BasicDBList;
 
 public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
 
@@ -63,6 +60,8 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
     private final FileSchema fileSchema;
 
     private final FlowType flowType;
+
+    private static final String COLUMN_NAME = "columnName";
 
     public ErrorsPlanElement(FileSchema fileSchema, FlowType flowType) {
       this.fileSchema = fileSchema;
@@ -128,50 +127,24 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
             if(tupleState.isInvalid()) {
               outcome = Outcome.FAILED;
               // Loop thought the errors
-              Iterator<TupleState.TupleError> errors = tupleState.getErrors().iterator();
-              while(errors.hasNext()) {
-                TupleState.TupleError error = errors.next();
+              for(TupleState.TupleError error : tupleState.getErrors()) {
                 // check if errorMap[error.getCode()] exists
                 if(errorMap.containsKey(error.getCode()) == false) {
                   // if it does NOT - create it as a new ValidationErrorReport
                   ValidationErrorReport errorReport = new ValidationErrorReport(error);
                   errorMap.put(error.getCode(), errorReport);
                 } else {
-                  // if it does already exist
+                  // if it does already exist get it using the Error Type
                   ValidationErrorReport errorReport = errorMap.get(error.getCode());
                   // check if the columnName is already there
-                  BasicDBList columnsDB = errorReport.getColumns();
-                  List<Map<String, Object>> columns = new ArrayList<Map<String, Object>>();
-                  for(Object column : columnsDB) {
-                    columns.add(((Map<String, Object>) column));
-                  }
-
-                  String errorColumnName = error.getParameters().get("columnName").toString();
-                  boolean columnExists = false;
-                  Map<String, Object> column = null;
-
-                  for(Map<String, Object> c : columns) {
-                    String cName = c.get("columnName").toString();
-                    if(cName.equals(errorColumnName)) {
-                      columnExists = true;
-                      column = c;
-                      break;
-                    }
-                  }
-
-                  if(columnExists == false) {
-                    // if it is NOT push params to columns list
+                  String columnName = error.getParameters().get(COLUMN_NAME).toString();
+                  if(errorReport.hasColumn(columnName) == false) {
+                    // if it is NOT there - add new column to columns list
                     errorReport.addColumn(error.getParameters());
                     errorMap.put(error.getCode(), errorReport);
                   } else {
                     // if it is - update it by pushing offset/vals and count++
-                    // TODO This looks like a lot of converting
-                    // Only show the first 50 line/value pairs, but count everything
-                    if(Integer.valueOf(column.get("count").toString()) < 50) {
-                      errorReport.updateColumn(column, error, (int) tupleState.getOffset());
-                    } else {
-                      errorReport.updateColumn(column, null, (int) tupleState.getOffset());
-                    }
+                    errorReport.updateColumn(columnName, error, (int) tupleState.getOffset());
                   }
                 }
               }
