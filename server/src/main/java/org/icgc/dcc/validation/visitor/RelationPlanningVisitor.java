@@ -202,7 +202,6 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
       Map<String, Object> params = new LinkedHashMap<String, Object>();
       params.put("value", TuplesUtils.getObjects(offendingLhsTuple));
       params.put("columnName", lhs + Arrays.asList(lhsFields) + ":" + rhs + Arrays.asList(rhsFields));
-      // params.put("relationColumn", rhs + Arrays.asList(rhsFields));
       tupleState.reportError(ValidationErrorCode.RELATION_ERROR, params);
     }
   }
@@ -347,7 +346,6 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
             Map<String, Object> params = new LinkedHashMap<String, Object>();
             params.put("value", TuplesUtils.getObjects(offendingRhsTuple));
             params.put("columnName", lhs + Arrays.asList(lhsFields) + ":" + rhs + Arrays.asList(rhsFields));
-            // params.put("relationColumn", rhs + Arrays.asList(rhsFields));
 
             state.reportError(ValidationErrorCode.RELATION_PARENT_ERROR, params);
             bufferCall.getOutputCollector().add(new Tuple(state));

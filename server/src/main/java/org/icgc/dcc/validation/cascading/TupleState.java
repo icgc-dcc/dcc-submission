@@ -121,13 +121,12 @@ public class TupleState implements Serializable {
 
     @JsonIgnore
     public String getMessage() {
-      return "description message";// code.format(getParameters());
+      return ""; // code.format(getParameters()); - doesn't work with Map
     }
 
     @Override
     public String toString() {
-      return "BLAH"; // return Objects.toStringHelper(TupleError.class).add("code", code).add("parameters",
-                     // parameters).toString();
+      return Objects.toStringHelper(TupleError.class).add("code", code).add("parameters", parameters).toString();
     }
 
   }
