@@ -19,9 +19,7 @@ package org.icgc.dcc.validation;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.apache.hadoop.fs.FileSystem;
@@ -49,10 +47,8 @@ public class FileSchemaDirectory {
   public boolean hasFile(final FileSchema fileSchema) {
     List<Path> paths = matches(fileSchema);
     if(paths != null && paths.size() > 1) {
-      Map<String, Object> params = new LinkedHashMap<String, Object>();
-      params.put("columnName", "FileLevelError");
-      params.put("value", paths.toString());
-      throw new PlanningException(fileSchema.getName(), ValidationErrorCode.TOO_MANY_FILES_ERROR, params);
+      throw new PlanningException(fileSchema.getName(), ValidationErrorCode.TOO_MANY_FILES_ERROR, "FileLevelError",
+          paths.toString());
     }
     return paths != null && paths.size() > 0;
   }

@@ -17,9 +17,6 @@
  */
 package org.icgc.dcc.validation.visitor;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.ValueType;
 import org.icgc.dcc.validation.InternalFlowPlanningVisitor;
@@ -96,11 +93,8 @@ public class ValueTypePlanningVisitor extends InternalFlowPlanningVisitor {
         } catch(IllegalArgumentException e) {
           Object fieldName = arguments.getFields().get(0);
 
-          Map<String, Object> params = new LinkedHashMap<String, Object>();
-          params.put("columnName", fieldName);
-          params.put("value", value);
-          params.put("expectedType", type);
-          ValidationFields.state(arguments).reportError(ValidationErrorCode.VALUE_TYPE_ERROR, params);
+          ValidationFields.state(arguments).reportError(ValidationErrorCode.VALUE_TYPE_ERROR, fieldName.toString(),
+              value, type);
         }
         functionCall.getOutputCollector().add(new Tuple(parsedValue, ValidationFields.state(arguments)));
       }

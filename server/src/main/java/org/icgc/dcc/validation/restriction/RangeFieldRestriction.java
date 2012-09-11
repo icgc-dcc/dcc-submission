@@ -1,8 +1,5 @@
 package org.icgc.dcc.validation.restriction;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.Restriction;
 import org.icgc.dcc.validation.FlowType;
@@ -116,20 +113,12 @@ public class RangeFieldRestriction implements InternalPlanElement {
         Number num = (Number) value;
         if(num.longValue() < this.min.longValue() || num.longValue() > this.max.longValue()) {
 
-          Map<String, Object> params = new LinkedHashMap<String, Object>();
-          params.put("value", num.longValue());
-          params.put("columnName", fieldName);
-          params.put("minRange", this.min.longValue());
-          params.put("maxRange", this.max.longValue());
-
-          ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.OUT_OF_RANGE_ERROR, params);
+          ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.OUT_OF_RANGE_ERROR, fieldName.toString(),
+              num.longValue(), min.longValue(), max.longValue());
         }
       } else if(value != null) {
-
-        Map<String, Object> params = new LinkedHashMap<String, Object>();
-        params.put("value", value.toString());
-        params.put("columnName", fieldName);
-        ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.NOT_A_NUMBER_ERROR, params);
+        ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.NOT_A_NUMBER_ERROR, fieldName.toString(),
+            value.toString());
       }
       functionCall.getOutputCollector().add(tupleEntry.getTupleCopy());
     }

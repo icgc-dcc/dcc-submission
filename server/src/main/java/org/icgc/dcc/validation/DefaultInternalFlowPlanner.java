@@ -22,7 +22,6 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.icgc.dcc.dictionary.model.FileSchema;
@@ -131,9 +130,8 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
     } catch(IOException e) {
       throw new PlanningException("Error processing file header");
     } catch(DuplicateHeaderException e) {
-      Map<String, Object> params = new LinkedHashMap<String, Object>();
-      params.put("columnName", e.getDuplicateHeader());
-      throw new PlanningException(getSchema().getName(), ValidationErrorCode.DUPLICATE_HEADER_ERROR, params);
+      throw new PlanningException(getSchema().getName(), ValidationErrorCode.DUPLICATE_HEADER_ERROR, e
+          .getDuplicateHeader().toString(), null);
     }
 
     flowDef.addSource(head, source);

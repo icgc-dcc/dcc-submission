@@ -1,8 +1,5 @@
 package org.icgc.dcc.validation.restriction;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.Restriction;
 import org.icgc.dcc.validation.FlowType;
@@ -104,22 +101,15 @@ public class RequiredRestriction implements InternalPlanElement {
 
       boolean isFieldMissing =
           ValidationFields.state(tupleEntry).isFieldMissing((String) tupleEntry.getFields().get(0));
+      // TODO The IF conditions seem to lead to the same thing
       if(isFieldMissing == false && (value == null || value.isEmpty())) {
         Object fieldName = tupleEntry.getFields().get(0);
-
-        Map<String, Object> params = new LinkedHashMap<String, Object>();
-        params.put("value", value);
-        params.put("columnName", fieldName);
-
-        ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.MISSING_VALUE_ERROR, params);
+        ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.MISSING_VALUE_ERROR, fieldName.toString(),
+            value);
       } else if(isFieldMissing == true && !acceptMissingCode) {
         Object fieldName = tupleEntry.getFields().get(0);
-
-        Map<String, Object> params = new LinkedHashMap<String, Object>();
-        params.put("value", value);
-        params.put("columnName", fieldName);
-
-        ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.MISSING_VALUE_ERROR, params);
+        ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.MISSING_VALUE_ERROR, fieldName.toString(),
+            value);
       }
       functionCall.getOutputCollector().add(tupleEntry.getTupleCopy());
     }

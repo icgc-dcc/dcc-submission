@@ -26,9 +26,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -199,10 +197,9 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
     }
 
     protected void reportRelationError(TupleState tupleState, Tuple offendingLhsTuple) {
-      Map<String, Object> params = new LinkedHashMap<String, Object>();
-      params.put("value", TuplesUtils.getObjects(offendingLhsTuple));
-      params.put("columnName", lhs + Arrays.asList(lhsFields) + ":" + rhs + Arrays.asList(rhsFields));
-      tupleState.reportError(ValidationErrorCode.RELATION_ERROR, params);
+      String columnName = lhs + Arrays.asList(lhsFields) + ":" + rhs + Arrays.asList(rhsFields);
+      List<Object> value = TuplesUtils.getObjects(offendingLhsTuple);
+      tupleState.reportError(ValidationErrorCode.RELATION_ERROR, columnName, value);
     }
   }
 
@@ -343,11 +340,10 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
             Tuple offendingRhsTuple = entry.selectTuple(new Fields(renamedRhsFields));
             TupleState state = new TupleState(CONVENTION_PARENT_OFFSET);
 
-            Map<String, Object> params = new LinkedHashMap<String, Object>();
-            params.put("value", TuplesUtils.getObjects(offendingRhsTuple));
-            params.put("columnName", lhs + Arrays.asList(lhsFields) + ":" + rhs + Arrays.asList(rhsFields));
+            String columnName = lhs + Arrays.asList(lhsFields) + ":" + rhs + Arrays.asList(rhsFields);
+            List<Object> value = TuplesUtils.getObjects(offendingRhsTuple);
 
-            state.reportError(ValidationErrorCode.RELATION_PARENT_ERROR, params);
+            state.reportError(ValidationErrorCode.RELATION_PARENT_ERROR, columnName, value);
             bufferCall.getOutputCollector().add(new Tuple(state));
           }
         }

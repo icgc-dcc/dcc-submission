@@ -19,9 +19,7 @@ package org.icgc.dcc.validation.visitor;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.validation.InternalFlowPlanningVisitor;
@@ -99,13 +97,8 @@ public class UniqueFieldsPlanningVisitor extends InternalFlowPlanningVisitor {
             TupleEntry tupleEntry = i.next();
             List<String> values = fetchValues(tupleEntry);
 
-            Map<String, Object> params = new LinkedHashMap<String, Object>();
-            params.put("value", values);
-            params.put("columnName", fields);
-            params.put("firstOffset", firstOffset); // this isn't used in the error message - represents the first
-                                                    // time a unique value appears in the file.
-
-            ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.UNIQUE_VALUE_ERROR, params);
+            ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.UNIQUE_VALUE_ERROR, fields.toString(),
+                values, firstOffset);
             bufferCall.getOutputCollector().add(tupleEntry.getTupleCopy());
           }
         }

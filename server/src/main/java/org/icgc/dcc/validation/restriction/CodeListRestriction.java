@@ -17,9 +17,7 @@
  */
 package org.icgc.dcc.validation.restriction;
 
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.icgc.dcc.dictionary.DictionaryService;
@@ -154,13 +152,8 @@ public class CodeListRestriction implements InternalPlanElement {
       String value = object == null ? null : object.toString();
       if(value != null && codes.contains(value) == false && values.contains(value) == false) {
         Object fieldName = tupleEntry.getFields().get(0);
-
-        Map<String, Object> params = new LinkedHashMap<String, Object>();
-        params.put("value", value);
-        params.put("columnName", fieldName);
-        params.put("expectedValues", codeListName);
-
-        ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.CODELIST_ERROR, params);
+        ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.CODELIST_ERROR, fieldName.toString(), value,
+            codeListName);
       }
       functionCall.getOutputCollector().add(tupleEntry.getTupleCopy());
     }

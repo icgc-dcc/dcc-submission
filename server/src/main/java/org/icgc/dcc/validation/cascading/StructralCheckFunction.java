@@ -108,10 +108,7 @@ public class StructralCheckFunction extends BaseOperation implements Function {
       adjustedValues = padMissingColumns(adjustedValues); // then missing fields to be emulated
       adjustedValues = convertMissingCodes(adjustedValues, tupleState);
       if(REPORT_WARNINGS && unknownHeaderIndices.isEmpty() == false) {
-        Map<String, Object> params = new LinkedHashMap<String, Object>();
-        params.put("columnName", "FileLevelError");
-        params.put("unknownColumns", unknownHeaderIndices);
-        tupleState.reportError(ValidationErrorCode.UNKNOWN_COLUMNS_WARNING, params);
+        tupleState.reportError(ValidationErrorCode.UNKNOWN_COLUMNS_WARNING, "FileLevelError", unknownHeaderIndices);
       }
     } else {
       adjustedValues = Arrays.asList(new String[dictionaryFields.size()]); // can discard values but must match number
@@ -121,7 +118,8 @@ public class StructralCheckFunction extends BaseOperation implements Function {
       params.put("columnName", "FileLevelError");
       params.put("actualNumColumns", headerSize);
       params.put("value", dataSize);
-      tupleState.reportError(ValidationErrorCode.STRUCTURALLY_INVALID_ROW_ERROR, params);
+      tupleState
+          .reportError(ValidationErrorCode.STRUCTURALLY_INVALID_ROW_ERROR, "FileLevelError", dataSize, headerSize);
     }
     return adjustedValues;
   }
