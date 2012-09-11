@@ -17,16 +17,14 @@
  */
 package org.icgc.dcc.validation.report;
 
-import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import org.icgc.dcc.validation.ValidationErrorCode;
 import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.cascading.TupleState.TupleError;
-
-import com.mongodb.BasicDBList;
 
 /**
  * 
@@ -37,7 +35,15 @@ public class ValidationErrorReport {
 
   private String description;
 
-  private BasicDBList columns;
+  private List<ColumnErrorReport> columns;
+
+  private static final int MAX_ERROR_COUNT = 50;
+
+  private static final String LINE = "line";
+
+  private static final String COLUMN_NAME = "columnName";
+
+  private static final String VALUE = "value";
 
   public ValidationErrorReport() {
   }
@@ -59,7 +65,7 @@ public class ValidationErrorReport {
    * @param error
    */
   public ValidationErrorReport(TupleError error) {
-    this.columns = new BasicDBList();
+    this.columns = new LinkedList<ColumnErrorReport>();
     this.setErrorType(error.getCode());
     this.setDescription(error.getMessage());
     this.addColumn(error.getParameters());
@@ -96,44 +102,130 @@ public class ValidationErrorReport {
   /**
    * @return the columns
    */
-  public BasicDBList getColumns() {
+  public List<ColumnErrorReport> getColumns() {
     return columns;
   }
 
   /**
    * @param columns the columns to set
    */
-  public void addColumn(Map<String, Object> column) {
-    column.put("count", 1);
-    List<Integer> lines = new ArrayList<Integer>();
-    lines.add((Integer) column.get("line"));
-    column.put("lines", lines);
-    column.remove("line");
-
-    List<Object> values = new ArrayList<Object>();
-    values.add(column.get("value"));
-    column.put("values", values);
-    column.remove("value");
-
+  public void addColumn(Map<String, Object> parameters) {
+    ColumnErrorReport column = new ColumnErrorReport(parameters);
     this.columns.add(column);
   }
 
-  /**
-   * @param column
-   * @param error
-   * @param l
-   */
-  public void updateColumn(Map<String, Object> column, TupleError error, int line) {
-    column.put("count", Integer.valueOf((((Integer) column.get("count")) + 1)));
+  public void updateColumn(String columnName, TupleError error, int line) {
+    ColumnErrorReport column = this.getColumnByName(columnName);
+    column.incCount();
 
-    if(error != null) {
-      List<Integer> lines = (List<Integer>) column.get("lines");
-      lines.add(line);
-      column.put("lines", lines);
-
-      List<Object> values = (List<Object>) column.get("values");
-      values.add(error.getParameters().get("value"));
-      column.put("values", values);
+    // Append line/value to lines/values
+    if(column.getCount() < MAX_ERROR_COUNT) {
+      column.addLine(line);
+      column.addValue(error.getParameters().get(VALUE));
     }
+  }
+
+  public ColumnErrorReport getColumnByName(String columnName) {
+    ColumnErrorReport column = null;
+
+    for(ColumnErrorReport c : this.getColumns()) {
+      if(c.getColumnName().equals(columnName)) {
+        column = c;
+        break;
+      }
+    }
+
+    return column;
+  }
+
+  public boolean hasColumn(String columnName) {
+    return this.getColumnByName(columnName) != null ? true : false;
+  }
+
+  private static class ColumnErrorReport {
+    private String columnName;
+
+    private int count;
+
+    private List<Integer> lines;
+
+    private List<Object> values;
+
+    private Map<String, Object> parameters;
+
+    public ColumnErrorReport() {
+    }
+
+    public ColumnErrorReport(Map<String, Object> params) {
+      this.lines = new LinkedList<Integer>();
+      this.values = new LinkedList<Object>();
+
+      this.setColumnName(params.get(COLUMN_NAME).toString());
+      this.setCount(1);
+      this.lines.add((Integer) params.get(LINE));
+      this.values.add(params.get(VALUE));
+
+      params.remove(LINE);
+      params.remove(VALUE);
+      params.remove(COLUMN_NAME);
+      this.setParameters(params);
+    }
+
+    public void incCount() {
+      this.setCount(this.getCount() + 1);
+    }
+
+    public int getCount() {
+      return this.count;
+    }
+
+    public Map<String, Object> getParameters() {
+      return this.parameters;
+    }
+
+    public String getColumnName() {
+      return this.columnName;
+    }
+
+    public List<Object> getValues() {
+      return this.values;
+    }
+
+    public void addValue(Object value) {
+      List<Object> values = this.getValues();
+      values.add(value);
+      this.setValues(values);
+    }
+
+    public List<Integer> getLines() {
+      return this.lines;
+    }
+
+    public void addLine(int line) {
+      List<Integer> lines = this.getLines();
+      lines.add(line);
+      this.setLines(lines);
+    }
+
+    private void setValues(List<Object> values) {
+      this.values = values;
+    }
+
+    private void setLines(List<Integer> lines) {
+      this.lines = lines;
+    }
+
+    private void setCount(int c) {
+      this.count = c;
+    }
+
+    private void setColumnName(String columnName) {
+      this.columnName = columnName;
+    }
+
+    private void setParameters(Map<String, Object> params) {
+      this.parameters = params;
+    }
+
   }
 }
