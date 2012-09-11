@@ -3,10 +3,10 @@
   "errors" : [ {
     "code" : "DISCRETE_VALUES_ERROR",
     "parameters" : {
-      "value" : "GLL",
       "columnName" : "donor_region_of_residence",
-      "expectedValues" : [ "CX", "GL", "FM" ],
-      "line" : 2
+      "value" : "GLL",
+      "line" : 2,
+      "expectedValue" : [ "CX", "GL", "FM" ]
     }
   } ]
 }{
@@ -14,10 +14,10 @@
   "errors" : [ {
     "code" : "DISCRETE_VALUES_ERROR",
     "parameters" : {
-      "value" : "FMM",
       "columnName" : "donor_region_of_residence",
-      "expectedValues" : [ "CX", "GL", "FM" ],
-      "line" : 3
+      "value" : "FMM",
+      "line" : 3,
+      "expectedValue" : [ "CX", "GL", "FM" ]
     }
   } ]
 }

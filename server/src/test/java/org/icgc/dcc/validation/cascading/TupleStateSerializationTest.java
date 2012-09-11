@@ -21,8 +21,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.Text;
@@ -66,8 +64,7 @@ public class TupleStateSerializationTest extends CascadingTestCase {
         new HadoopTupleOutputStream(new FileOutputStream(file, false), tupleSerialization.getElementWriter());
 
     TupleState testState = new TupleState(1);
-    Map<String, Object> parameters = new LinkedHashMap<String, Object>();
-    testState.reportError(ValidationErrorCode.OUT_OF_RANGE_ERROR, parameters);
+    testState.reportError(ValidationErrorCode.OUT_OF_RANGE_ERROR, "string", 4L, 1L, 10L);
 
     Tuple outputTuple = new Tuple(testState);
     output.writeTuple(outputTuple);

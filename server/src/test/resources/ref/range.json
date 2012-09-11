@@ -3,11 +3,11 @@
   "errors" : [ {
     "code" : "OUT_OF_RANGE_ERROR",
     "parameters" : {
-      "value" : 205,
       "columnName" : "donor_age_at_diagnosis",
+      "value" : 205,
+      "line" : 1,
       "minRange" : 0,
-      "maxRange" : 200,
-      "line" : 1
+      "maxRange" : 200
     }
   } ]
 }{
@@ -15,11 +15,11 @@
   "errors" : [ {
     "code" : "OUT_OF_RANGE_ERROR",
     "parameters" : {
-      "value" : 201,
       "columnName" : "donor_age_at_diagnosis",
+      "value" : 201,
+      "line" : 2,
       "minRange" : 0,
-      "maxRange" : 200,
-      "line" : 2
+      "maxRange" : 200
     }
   } ]
 }

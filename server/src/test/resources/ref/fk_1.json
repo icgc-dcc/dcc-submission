@@ -3,8 +3,8 @@
   "errors" : [ {
     "code" : "RELATION_ERROR",
     "parameters" : {
-      "value" : [ "DN_Y20_0000", "x" ],
       "columnName" : "specimen[donor_id, fakecolumn]:donor[donor_id, fakecolumn]",
+      "value" : [ "DN_Y20_0000", "x" ],
       "line" : 1
     }
   } ]
@@ -13,8 +13,8 @@
   "errors" : [ {
     "code" : "RELATION_ERROR",
     "parameters" : {
-      "value" : [ "DN_Y20_00001", "y" ],
       "columnName" : "specimen[donor_id, fakecolumn]:donor[donor_id, fakecolumn]",
+      "value" : [ "DN_Y20_00001", "y" ],
       "line" : 2
     }
   } ]
@@ -23,8 +23,8 @@
   "errors" : [ {
     "code" : "RELATION_ERROR",
     "parameters" : {
-      "value" : [ "DN_Y20_0003", "y" ],
       "columnName" : "specimen[donor_id, fakecolumn]:donor[donor_id, fakecolumn]",
+      "value" : [ "DN_Y20_0003", "y" ],
       "line" : 3
     }
   } ]

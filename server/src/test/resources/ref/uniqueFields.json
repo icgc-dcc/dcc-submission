@@ -3,10 +3,10 @@
   "errors" : [ {
     "code" : "UNIQUE_VALUE_ERROR",
     "parameters" : {
+      "columnName" : "[donor_sex, donor_region_of_residence, donor_vital_status]",
       "value" : [ "2", "GL", "1" ],
-      "columnName" : [ "donor_sex", "donor_region_of_residence", "donor_vital_status" ],
-      "firstOffset" : 2,
-      "line" : 3
+      "line" : 3,
+      "firstOffset" : 2
     }
   } ]
 }

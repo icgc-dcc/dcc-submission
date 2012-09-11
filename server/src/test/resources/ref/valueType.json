@@ -5,14 +5,14 @@
     "parameters" : {
       "columnName" : "donor_age_at_diagnosis",
       "value" : "abc",
-      "expectedType" : "INTEGER",
-      "line" : 2
+      "line" : 2,
+      "expectedType" : "INTEGER"
     }
   }, {
     "code" : "MISSING_VALUE_ERROR",
     "parameters" : {
-      "value" : null,
       "columnName" : "donor_age_at_diagnosis",
+      "value" : "",
       "line" : 2
     }
   } ]
@@ -23,14 +23,14 @@
     "parameters" : {
       "columnName" : "donor_age_at_diagnosis",
       "value" : "56.4",
-      "expectedType" : "INTEGER",
-      "line" : 3
+      "line" : 3,
+      "expectedType" : "INTEGER"
     }
   }, {
     "code" : "MISSING_VALUE_ERROR",
     "parameters" : {
-      "value" : null,
       "columnName" : "donor_age_at_diagnosis",
+      "value" : "",
       "line" : 3
     }
   } ]

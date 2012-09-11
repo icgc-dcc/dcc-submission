@@ -3,10 +3,10 @@
   "errors" : [ {
     "code" : "CODELIST_ERROR",
     "parameters" : {
-      "value" : "3",
       "columnName" : "donor_vital_status",
-      "expectedValues" : "dr__donor_vital_status",
-      "line" : 2
+      "value" : "3",
+      "line" : 2,
+      "expectedValue" : "dr__donor_vital_status"
     }
   } ]
 }{
@@ -14,10 +14,10 @@
   "errors" : [ {
     "code" : "CODELIST_ERROR",
     "parameters" : {
-      "value" : "4",
       "columnName" : "donor_vital_status",
-      "expectedValues" : "dr__donor_vital_status",
-      "line" : 3
+      "value" : "4",
+      "line" : 3,
+      "expectedValue" : "dr__donor_vital_status"
     }
   } ]
 }
