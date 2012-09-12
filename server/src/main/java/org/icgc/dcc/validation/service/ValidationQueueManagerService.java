@@ -134,13 +134,17 @@ public class ValidationQueueManagerService extends AbstractService implements Va
           }
         } catch(FatalPlanningException e) {
           if(next.isPresent()) {
-            handleFailedValidation(next.get(), e.getErrors());
+            try {
+              handleFailedValidation(next.get(), e.getErrors());
+            } catch(Throwable f) {
+              log.error("Failed to handle a failed validation!", f);
+            }
           }
-        } catch(Exception e) { // exception thrown within the run method are not logged otherwise (NullPointerException
+        } catch(Throwable e) { // exception thrown within the run method are not logged otherwise (NullPointerException
                                // for instance)
           log.error("an error occured while processing the validation queue", e);
           if(next.isPresent()) {
-            dequeue(next.get(), SubmissionState.INVALID);
+            dequeue(next.get(), SubmissionState.ERROR);
           }
         }
       }
@@ -194,7 +198,9 @@ public class ValidationQueueManagerService extends AbstractService implements Va
   }
 
   public void handleFailedValidation(String projectKey, Map<String, TupleState> errors) {
+    log.info("failed validation with errors - about to dequeue project key {}", projectKey);
     checkArgument(projectKey != null);
+    dequeue(projectKey, SubmissionState.ERROR);
 
     SubmissionReport report = new SubmissionReport();
     List<SchemaReport> schemaReports = new ArrayList<SchemaReport>();
@@ -208,9 +214,6 @@ public class ValidationQueueManagerService extends AbstractService implements Va
     report.setSchemaReports(schemaReports);
 
     setSubmissionReport(projectKey, report);
-
-    log.info("failed validation - about to dequeue project key {}", projectKey);
-    dequeue(projectKey, SubmissionState.ERROR);
   }
 
   private void dequeue(String projectKey, SubmissionState state) {
