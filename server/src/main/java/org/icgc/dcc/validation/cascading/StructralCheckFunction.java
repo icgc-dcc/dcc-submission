@@ -21,9 +21,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.icgc.dcc.validation.ValidationErrorCode;
 
@@ -114,10 +112,6 @@ public class StructralCheckFunction extends BaseOperation implements Function {
       adjustedValues = Arrays.asList(new String[dictionaryFields.size()]); // can discard values but must match number
                                                                            // of fields in headers for later merge in
                                                                            // error reporting
-      Map<String, Object> params = new LinkedHashMap<String, Object>();
-      params.put("columnName", "FileLevelError");
-      params.put("actualNumColumns", headerSize);
-      params.put("value", dataSize);
       tupleState
           .reportError(ValidationErrorCode.STRUCTURALLY_INVALID_ROW_ERROR, "FileLevelError", dataSize, headerSize);
     }

@@ -127,7 +127,7 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
               for(TupleState.TupleError error : tupleState.getErrors()) {
                 if(errorMap.containsKey(error.getCode()) == true) {
                   ValidationErrorReport errorReport = errorMap.get(error.getCode());
-                  errorReport.updateReport(error, errorMap, tupleState.getOffset());
+                  errorReport.updateReport(error, errorMap);
                 } else {
                   errorMap.put(error.getCode(), new ValidationErrorReport(error));
                 }

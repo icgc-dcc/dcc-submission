@@ -51,7 +51,7 @@ public class ValidationErrorReport {
       TupleState.TupleError error = errors.next();
       this.setErrorType(error.getCode());
       this.setDescription(error.getMessage());
-      this.addColumn(error.getParameters());
+      this.addColumn(error);
     }
   }
 
@@ -59,7 +59,7 @@ public class ValidationErrorReport {
     this.columns = new LinkedList<ColumnErrorReport>();
     this.setErrorType(error.getCode());
     this.setDescription(error.getMessage());
-    this.addColumn(error.getParameters());
+    this.addColumn(error);
   }
 
   public ValidationErrorCode getErrorType() {
@@ -89,28 +89,29 @@ public class ValidationErrorReport {
     return column;
   }
 
-  public void addColumn(Map<String, Object> parameters) {
-    ColumnErrorReport column = new ColumnErrorReport(parameters);
+  public void addColumn(TupleError error) {
+    ColumnErrorReport column = new ColumnErrorReport(error);
     this.columns.add(column);
   }
 
-  public void updateColumn(String columnName, TupleError error, Long line) {
-    ColumnErrorReport column = this.getColumnByName(columnName);
-    column.incCount();
+  public void updateColumn(TupleError error) {
+    ColumnErrorReport column = this.getColumnByName(error.getColumnName());
 
     // Append line/value to lines/values
     if(column.getCount() < MAX_ERROR_COUNT) {
-      column.addLine(line);
-      column.addValue(error.getParameters().get(VALUE));
+      column.addLine(error.getLine());
+      column.addValue(error.getValue());
     }
+
+    column.incCount();
   }
 
-  public void updateReport(TupleError error, Map<ValidationErrorCode, ValidationErrorReport> errorMap, Long line) {
-    String columnName = error.getParameters().get(COLUMN_NAME).toString();
+  public void updateReport(TupleError error, Map<ValidationErrorCode, ValidationErrorReport> errorMap) {
+    String columnName = error.getColumnName();
     if(this.hasColumn(columnName) == true) {
-      this.updateColumn(columnName, error, line);
+      this.updateColumn(error);
     } else {
-      this.addColumn(error.getParameters());
+      this.addColumn(error);
       errorMap.put(error.getCode(), this);
     }
   }
@@ -137,19 +138,16 @@ public class ValidationErrorReport {
     public ColumnErrorReport() {
     }
 
-    public ColumnErrorReport(Map<String, Object> params) {
+    public ColumnErrorReport(TupleError error) {
       this.lines = new LinkedList<Long>();
       this.values = new LinkedList<Object>();
 
-      this.setColumnName(params.get(COLUMN_NAME).toString());
+      this.setColumnName(error.getColumnName());
       this.setCount(1L);
-      this.lines.add(Long.valueOf(params.get(LINE).toString()));
-      this.values.add(params.get(VALUE));
+      this.lines.add(error.getLine());
+      this.values.add(error.getValue());
 
-      params.remove(LINE);
-      params.remove(VALUE);
-      params.remove(COLUMN_NAME);
-      this.setParameters(params);
+      this.setParameters(error.getParameters());
     }
 
     public void incCount() {

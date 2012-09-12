@@ -41,7 +41,7 @@ public class TupleState implements Serializable {
 
   public void reportError(ValidationErrorCode code, String columnName, Object value, Object... params) {
     checkArgument(code != null);
-    ensureErrors().add(new TupleError(code, code.build(columnName, value, this.getOffset(), params)));
+    ensureErrors().add(new TupleError(code, columnName, value, this.getOffset(), code.build(params)));
     structurallyValid = code.isStructural() == false;
   }
 
@@ -98,24 +98,49 @@ public class TupleState implements Serializable {
 
     private final ValidationErrorCode code;
 
+    private final String columnName;
+
+    private final Object value;
+
+    private final Long line;
+
     private final Map<String, Object> parameters;
 
     public TupleError() {
-      code = null;
-      parameters = new LinkedHashMap<String, Object>();
+      this.code = null;
+      this.columnName = null;
+      this.value = null;
+      this.line = null;
+      this.parameters = new LinkedHashMap<String, Object>();
     }
 
-    private TupleError(ValidationErrorCode code, Map<String, Object> parameters) {
+    private TupleError(ValidationErrorCode code, String columnName, Object value, Long line,
+        Map<String, Object> parameters) {
       this.code = code;
+      this.columnName = columnName;
+      this.value = value != null ? value : "";
+      this.line = line;
       this.parameters = parameters;
     }
 
     public ValidationErrorCode getCode() {
-      return code;
+      return this.code;
+    }
+
+    public String getColumnName() {
+      return this.columnName;
+    }
+
+    public Object getValue() {
+      return this.value;
+    }
+
+    public Long getLine() {
+      return this.line;
     }
 
     public Map<String, Object> getParameters() {
-      return parameters;
+      return this.parameters;
     }
 
     @JsonIgnore
