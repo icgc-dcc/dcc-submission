@@ -137,6 +137,10 @@ public class ValidationQueueManagerService extends AbstractService implements Va
             try {
               handleFailedValidation(next.get(), e.getErrors());
             } catch(Throwable f) {
+              /*
+               * When a scheduled job throws an exception to the executor, all future runs of the job are cancelled.
+               * Thus, we should never throw an exception to our executor otherwise a server restart is necessary.
+               */
               log.error("Failed to handle a failed validation!", f);
             }
           }
