@@ -197,7 +197,7 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
     }
 
     protected void reportRelationError(TupleState tupleState, Tuple offendingLhsTuple) {
-      String columnName = lhs + Arrays.asList(lhsFields) + ":" + rhs + Arrays.asList(rhsFields);
+      String columnName = lhs + Arrays.toString(lhsFields) + ":" + rhs + Arrays.toString(rhsFields);
       List<Object> value = TuplesUtils.getObjects(offendingLhsTuple);
       tupleState.reportError(ValidationErrorCode.RELATION_ERROR, columnName, value);
     }
