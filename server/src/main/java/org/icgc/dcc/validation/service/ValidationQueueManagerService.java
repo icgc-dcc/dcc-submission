@@ -20,7 +20,7 @@ package org.icgc.dcc.validation.service;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -47,6 +47,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.AbstractService;
 import com.google.inject.Inject;
 
@@ -210,8 +211,12 @@ public class ValidationQueueManagerService extends AbstractService implements Va
     List<SchemaReport> schemaReports = new ArrayList<SchemaReport>();
     for(String schema : errors.keySet()) {
       SchemaReport schemaReport = new SchemaReport();
-      ValidationErrorReport errReport = new ValidationErrorReport(errors.get(schema));
-      schemaReport.setErrors(Arrays.asList(errReport));
+      Iterator<TupleState.TupleError> es = errors.get(schema).getErrors().iterator();
+      List<ValidationErrorReport> errReport = Lists.newArrayList();
+      while(es.hasNext()) {
+        errReport.add(new ValidationErrorReport(es.next()));
+      }
+      schemaReport.setErrors(errReport);
       schemaReport.setName(schema);
       schemaReports.add(schemaReport);
     }

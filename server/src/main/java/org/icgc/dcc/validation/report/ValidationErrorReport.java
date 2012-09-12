@@ -17,14 +17,14 @@
  */
 package org.icgc.dcc.validation.report;
 
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import org.icgc.dcc.validation.ValidationErrorCode;
-import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.cascading.TupleState.TupleError;
+
+import com.google.common.collect.Lists;
 
 public class ValidationErrorReport {
 
@@ -32,25 +32,14 @@ public class ValidationErrorReport {
 
   private String description;
 
-  private List<ColumnErrorReport> columns;
+  private final List<ColumnErrorReport> columns = Lists.newLinkedList();
 
   private static final int MAX_ERROR_COUNT = 50;
 
   public ValidationErrorReport() {
   }
 
-  public ValidationErrorReport(TupleState tupleState) {
-    Iterator<TupleState.TupleError> errors = tupleState.getErrors().iterator();
-    if(errors.hasNext()) {
-      TupleState.TupleError error = errors.next();
-      this.setErrorType(error.getCode());
-      this.setDescription(error.getMessage());
-      this.addColumn(error);
-    }
-  }
-
   public ValidationErrorReport(TupleError error) {
-    this.columns = new LinkedList<ColumnErrorReport>();
     this.setErrorType(error.getCode());
     this.setDescription(error.getMessage());
     this.addColumn(error);
