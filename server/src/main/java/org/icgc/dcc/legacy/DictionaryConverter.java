@@ -47,6 +47,7 @@ import org.icgc.dcc.dictionary.model.Relation;
 import org.icgc.dcc.dictionary.model.Restriction;
 import org.icgc.dcc.dictionary.model.SummaryType;
 import org.icgc.dcc.dictionary.model.ValueType;
+import org.icgc.dcc.validation.restriction.RequiredRestriction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -57,6 +58,7 @@ import org.xml.sax.SAXException;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
+import com.google.common.base.Optional;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -185,6 +187,56 @@ public class DictionaryConverter {
       if(this.dictionary.hasFileSchema(leftTable)) {
         FileSchema leftFileSchema = this.dictionary.fileSchema(leftTable).get();
         leftFileSchema.addRelation(new Relation(leftKeys, rightTable, rightKeys, leftCardinality, optionals));
+      }
+
+      // mark relation fields to be required
+      FileSchema leftFileSchema = this.dictionary.fileSchema(leftTable).get();
+      // calculate optional keys
+      List<String> optionalKeys = Lists.newArrayList();
+      for(Integer optionalIndex : optionals) {
+        optionalKeys.add(Iterables.toArray(leftKeys, String.class)[optionalIndex.intValue()]);
+      }
+      for(String key : leftKeys) {
+        Field leftField = leftFileSchema.field(key).get();
+        Optional<Restriction> leftRestriction = leftField.getRestriction(RequiredRestriction.NAME);
+        if(leftRestriction.isPresent()) {
+          // remove any existing required restrictions
+          leftField.removeRestriction(leftRestriction.get());
+        }
+        Restriction requiredRestriction = new Restriction();
+        requiredRestriction.setType(RequiredRestriction.NAME);
+        BasicDBObject parameter = new BasicDBObject();
+        // exceptions for making required field accept missing code
+        if(rightTable.equals("hsap_gene") || rightTable.equals("hsap_transcript")) {
+          parameter.append(RequiredRestriction.ACCEPT_MISSING_CODE, true);
+        } else if(optionalKeys.contains(key)) {
+          parameter.append(RequiredRestriction.ACCEPT_MISSING_CODE, true);
+        } else {
+          parameter.append(RequiredRestriction.ACCEPT_MISSING_CODE, false);
+        }
+        requiredRestriction.setConfig(parameter);
+        leftField.addRestriction(requiredRestriction);
+      }
+      FileSchema rightFileSchema = this.dictionary.fileSchema(rightTable).get();
+      for(String key : rightKeys) {
+        Field rightField = rightFileSchema.field(key).get();
+
+        Optional<Restriction> rightRestriction = rightField.getRestriction(RequiredRestriction.NAME);
+        if(rightRestriction.isPresent()) {
+          // remove any existing required restrictions
+          rightField.removeRestriction(rightRestriction.get());
+        }
+        Restriction requiredRestriction = new Restriction();
+        requiredRestriction.setType(RequiredRestriction.NAME);
+        BasicDBObject parameter = new BasicDBObject();
+        // exceptions for making required field accept missing code
+        if(rightTable.equals("hsap_gene") || rightTable.equals("hsap_transcript")) {
+          parameter.append(RequiredRestriction.ACCEPT_MISSING_CODE, true);
+        } else {
+          parameter.append(RequiredRestriction.ACCEPT_MISSING_CODE, false);
+        }
+        requiredRestriction.setConfig(parameter);
+        rightField.addRestriction(requiredRestriction);
       }
     }
 
@@ -340,7 +392,10 @@ public class DictionaryConverter {
     String required = iterator.next();
     if(Boolean.parseBoolean(required)) {
       Restriction requiredRestriction = new Restriction();
-      requiredRestriction.setType("required");
+      requiredRestriction.setType(RequiredRestriction.NAME);
+      BasicDBObject parameter = new BasicDBObject();
+      parameter.append(RequiredRestriction.ACCEPT_MISSING_CODE, true);
+      requiredRestriction.setConfig(parameter);
       restrictions.add(requiredRestriction);
     }
 
