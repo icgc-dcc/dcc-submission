@@ -39,7 +39,7 @@ public abstract class BaseRelease implements HasRelease {
 
   @Override
   public ReleaseFileSystem getReleaseFilesystem(User user) {
-    return this.dccFilesystem.getReleaseFilesystem(this.release, user);
+    return this.dccFilesystem.getReleaseFilesystem(this.release, user.getName());
   }
 
   @Override

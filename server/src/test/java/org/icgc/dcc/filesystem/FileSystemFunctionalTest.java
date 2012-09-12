@@ -82,7 +82,8 @@ public class FileSystemFunctionalTest extends FileSystemTest {
     log.info("ls2 = " + filenameList2);
 
     log.info("ls = " + filenameList0);
-    ReleaseFileSystem myReleaseFilesystem = this.dccFileSystem.getReleaseFilesystem(this.mockRelease, this.mockUser);
+    ReleaseFileSystem myReleaseFilesystem =
+        this.dccFileSystem.getReleaseFilesystem(this.mockRelease, this.mockUser.getName());
     Assert.assertNotNull(myReleaseFilesystem);
     log.info("release file system = " + myReleaseFilesystem);
 
