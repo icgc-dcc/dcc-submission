@@ -340,7 +340,7 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
             Tuple offendingRhsTuple = entry.selectTuple(new Fields(renamedRhsFields));
             TupleState state = new TupleState(CONVENTION_PARENT_OFFSET);
 
-            String columnName = lhs + Arrays.asList(lhsFields) + ":" + rhs + Arrays.asList(rhsFields);
+            String columnName = lhs + Arrays.toString(lhsFields) + ":" + rhs + Arrays.toString(rhsFields);
             List<Object> value = TuplesUtils.getObjects(offendingRhsTuple);
 
             state.reportError(ValidationErrorCode.RELATION_PARENT_ERROR, columnName, value);

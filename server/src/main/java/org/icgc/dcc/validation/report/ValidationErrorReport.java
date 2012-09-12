@@ -36,12 +36,6 @@ public class ValidationErrorReport {
 
   private static final int MAX_ERROR_COUNT = 50;
 
-  private static final String LINE = "line";
-
-  private static final String COLUMN_NAME = "columnName";
-
-  private static final String VALUE = "value";
-
   public ValidationErrorReport() {
   }
 
@@ -106,13 +100,11 @@ public class ValidationErrorReport {
     column.incCount();
   }
 
-  public void updateReport(TupleError error, Map<ValidationErrorCode, ValidationErrorReport> errorMap) {
-    String columnName = error.getColumnName();
-    if(this.hasColumn(columnName) == true) {
+  public void updateReport(TupleError error) {
+    if(this.hasColumn(error.getColumnName()) == true) {
       this.updateColumn(error);
     } else {
       this.addColumn(error);
-      errorMap.put(error.getCode(), this);
     }
   }
 
@@ -127,7 +119,7 @@ public class ValidationErrorReport {
   private static class ColumnErrorReport {
     private String columnName;
 
-    private Long count;
+    private long count;
 
     private List<Long> lines;
 
@@ -154,7 +146,7 @@ public class ValidationErrorReport {
       this.setCount(this.getCount() + 1);
     }
 
-    public Long getCount() {
+    public long getCount() {
       return this.count;
     }
 
@@ -194,7 +186,7 @@ public class ValidationErrorReport {
       this.lines = lines;
     }
 
-    private void setCount(Long c) {
+    private void setCount(long c) {
       this.count = c;
     }
 
