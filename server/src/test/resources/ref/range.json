@@ -2,10 +2,10 @@
   "offset" : 1,
   "errors" : [ {
     "code" : "OUT_OF_RANGE_ERROR",
+    "columnName" : "donor_age_at_diagnosis",
+    "value" : 205,
+    "line" : 1,
     "parameters" : {
-      "columnName" : "donor_age_at_diagnosis",
-      "value" : 205,
-      "line" : 1,
       "minRange" : 0,
       "maxRange" : 200
     }
@@ -14,10 +14,10 @@
   "offset" : 2,
   "errors" : [ {
     "code" : "OUT_OF_RANGE_ERROR",
+    "columnName" : "donor_age_at_diagnosis",
+    "value" : 201,
+    "line" : 2,
     "parameters" : {
-      "columnName" : "donor_age_at_diagnosis",
-      "value" : 201,
-      "line" : 2,
       "minRange" : 0,
       "maxRange" : 200
     }

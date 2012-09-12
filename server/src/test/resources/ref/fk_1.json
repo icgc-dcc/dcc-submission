@@ -2,30 +2,27 @@
   "offset" : 1,
   "errors" : [ {
     "code" : "RELATION_ERROR",
-    "parameters" : {
-      "columnName" : "specimen[donor_id, fakecolumn]:donor[donor_id, fakecolumn]",
-      "value" : [ "DN_Y20_0000", "x" ],
-      "line" : 1
-    }
+    "columnName" : "specimen[donor_id, fakecolumn]:donor[donor_id, fakecolumn]",
+    "value" : [ "DN_Y20_0000", "x" ],
+    "line" : 1,
+    "parameters" : { }
   } ]
 }{
   "offset" : 2,
   "errors" : [ {
     "code" : "RELATION_ERROR",
-    "parameters" : {
-      "columnName" : "specimen[donor_id, fakecolumn]:donor[donor_id, fakecolumn]",
-      "value" : [ "DN_Y20_00001", "y" ],
-      "line" : 2
-    }
+    "columnName" : "specimen[donor_id, fakecolumn]:donor[donor_id, fakecolumn]",
+    "value" : [ "DN_Y20_00001", "y" ],
+    "line" : 2,
+    "parameters" : { }
   } ]
 }{
   "offset" : 3,
   "errors" : [ {
     "code" : "RELATION_ERROR",
-    "parameters" : {
-      "columnName" : "specimen[donor_id, fakecolumn]:donor[donor_id, fakecolumn]",
-      "value" : [ "DN_Y20_0003", "y" ],
-      "line" : 3
-    }
+    "columnName" : "specimen[donor_id, fakecolumn]:donor[donor_id, fakecolumn]",
+    "value" : [ "DN_Y20_0003", "y" ],
+    "line" : 3,
+    "parameters" : { }
   } ]
 }

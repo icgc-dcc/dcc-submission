@@ -2,34 +2,31 @@
   "offset" : 1,
   "errors" : [ {
     "code" : "MISSING_VALUE_ERROR",
-    "parameters" : {
-      "columnName" : "donor_region_of_residence",
-      "value" : "",
-      "line" : 1
-    }
+    "columnName" : "donor_region_of_residence",
+    "value" : "",
+    "line" : 1,
+    "parameters" : { }
   } ]
 }{
   "offset" : 2,
   "errors" : [ {
     "code" : "MISSING_VALUE_ERROR",
-    "parameters" : {
-      "columnName" : "donor_region_of_residence",
-      "value" : "",
-      "line" : 2
-    }
+    "columnName" : "donor_region_of_residence",
+    "value" : "",
+    "line" : 2,
+    "parameters" : { }
   }, {
     "code" : "MISSING_VALUE_ERROR",
-    "parameters" : {
-      "columnName" : "donor_vital_status",
-      "value" : "",
-      "line" : 2
-    }
+    "columnName" : "donor_vital_status",
+    "value" : "",
+    "line" : 2,
+    "parameters" : { }
   }, {
     "code" : "CODELIST_ERROR",
+    "columnName" : "donor_vital_status",
+    "value" : "",
+    "line" : 2,
     "parameters" : {
-      "columnName" : "donor_vital_status",
-      "value" : "",
-      "line" : 2,
       "expectedValue" : "dr__donor_vital_status"
     }
   } ]
@@ -37,24 +34,22 @@
   "offset" : 3,
   "errors" : [ {
     "code" : "MISSING_VALUE_ERROR",
-    "parameters" : {
-      "columnName" : "donor_region_of_residence",
-      "value" : "",
-      "line" : 3
-    }
+    "columnName" : "donor_region_of_residence",
+    "value" : "",
+    "line" : 3,
+    "parameters" : { }
   }, {
     "code" : "MISSING_VALUE_ERROR",
-    "parameters" : {
-      "columnName" : "donor_vital_status",
-      "value" : "",
-      "line" : 3
-    }
+    "columnName" : "donor_vital_status",
+    "value" : "",
+    "line" : 3,
+    "parameters" : { }
   }, {
     "code" : "CODELIST_ERROR",
+    "columnName" : "donor_vital_status",
+    "value" : "",
+    "line" : 3,
     "parameters" : {
-      "columnName" : "donor_vital_status",
-      "value" : "",
-      "line" : 3,
       "expectedValue" : "dr__donor_vital_status"
     }
   } ]
