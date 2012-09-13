@@ -40,6 +40,10 @@ public class UserService extends BaseMorphiaService<User> {
     return this.where(QUser.user.username.eq(name)).singleResult();
   }
 
+  public String getUserEmail(String name) {
+    return this.getUser(name).getEmail();
+  }
+
   public void saveUser(User user) {
     datastore().save(user);
   }
