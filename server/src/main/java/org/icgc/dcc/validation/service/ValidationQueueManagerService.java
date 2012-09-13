@@ -21,7 +21,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -52,10 +52,12 @@ import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.report.Outcome;
 import org.icgc.dcc.validation.report.SchemaReport;
 import org.icgc.dcc.validation.report.SubmissionReport;
+import org.icgc.dcc.validation.report.ValidationErrorReport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.AbstractService;
 import com.google.inject.Inject;
 
@@ -142,14 +144,27 @@ public class ValidationQueueManagerService extends AbstractService implements Va
             }
           }
         } catch(FatalPlanningException e) {
+          log.error("a Fatal Planning Exception occured while processing the validation queue", e);
           if(next.isPresent()) {
-            handleFailedValidation(next.get(), e.getErrors());
+            try {
+              handleFailedValidation(next.get(), e.getErrors());
+            } catch(Throwable f) {
+              /*
+               * When a scheduled job throws an exception to the executor, all future runs of the job are cancelled.
+               * Thus, we should never throw an exception to our executor otherwise a server restart is necessary.
+               */
+              log.error("Failed to handle a failed validation!", f);
+            }
+          } else {
+            log.error("Next project in queue not present, could not dequeue");
           }
-        } catch(Exception e) { // exception thrown within the run method are not logged otherwise (NullPointerException
+        } catch(Throwable e) { // exception thrown within the run method are not logged otherwise (NullPointerException
                                // for instance)
           log.error("an error occured while processing the validation queue", e);
           if(next.isPresent()) {
-            dequeue(next.get(), SubmissionState.INVALID);
+            dequeue(next.get(), SubmissionState.ERROR);
+          } else {
+            log.error("Next project in queue not present, could not dequeue");
           }
         }
       }
@@ -220,28 +235,31 @@ public class ValidationQueueManagerService extends AbstractService implements Va
   @Override
   public void handleFailedValidation(String projectKey) {
     checkArgument(projectKey != null);
-    log.info("failed validation - about to dequeue project key {}", projectKey);
+    log.info("failed validation from unknown error - about to dequeue project key {}", projectKey);
     dequeue(projectKey, SubmissionState.ERROR);
   }
 
   public void handleFailedValidation(String projectKey, Map<String, TupleState> errors) {
+    log.info("failed validation with errors - about to dequeue project key {}", projectKey);
     checkArgument(projectKey != null);
+    dequeue(projectKey, SubmissionState.INVALID);
 
     SubmissionReport report = new SubmissionReport();
     List<SchemaReport> schemaReports = new ArrayList<SchemaReport>();
     for(String schema : errors.keySet()) {
       SchemaReport schemaReport = new SchemaReport();
-
-      schemaReport.setErrors(Arrays.asList(errors.get(schema)));
+      Iterator<TupleState.TupleError> es = errors.get(schema).getErrors().iterator();
+      List<ValidationErrorReport> errReport = Lists.newArrayList();
+      while(es.hasNext()) {
+        errReport.add(new ValidationErrorReport(es.next()));
+      }
+      schemaReport.setErrors(errReport);
       schemaReport.setName(schema);
       schemaReports.add(schemaReport);
     }
     report.setSchemaReports(schemaReports);
 
     setSubmissionReport(projectKey, report);
-
-    log.info("failed validation - about to dequeue project key {}", projectKey);
-    dequeue(projectKey, SubmissionState.ERROR);
   }
 
   private void dequeue(String projectKey, SubmissionState state) {

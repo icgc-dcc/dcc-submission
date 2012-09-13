@@ -197,8 +197,9 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
     }
 
     protected void reportRelationError(TupleState tupleState, Tuple offendingLhsTuple) {
-      tupleState.reportError(ValidationErrorCode.RELATION_ERROR, TuplesUtils.getObjects(offendingLhsTuple), lhs,
-          Arrays.asList(lhsFields), rhs, Arrays.asList(rhsFields));
+      String columnName = lhs + Arrays.toString(lhsFields) + ":" + rhs + Arrays.toString(rhsFields);
+      List<Object> value = TuplesUtils.getObjects(offendingLhsTuple);
+      tupleState.reportError(ValidationErrorCode.RELATION_ERROR, columnName, value);
     }
   }
 
@@ -338,8 +339,11 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
           if(TuplesUtils.hasValues(entry, lhsFields) == false) {
             Tuple offendingRhsTuple = entry.selectTuple(new Fields(renamedRhsFields));
             TupleState state = new TupleState(CONVENTION_PARENT_OFFSET);
-            state.reportError(ValidationErrorCode.RELATION_PARENT_ERROR, lhs, Arrays.asList(lhsFields),
-                TuplesUtils.getObjects(offendingRhsTuple), rhs, Arrays.asList(rhsFields));
+
+            String columnName = lhs + Arrays.toString(lhsFields) + ":" + rhs + Arrays.toString(rhsFields);
+            List<Object> value = TuplesUtils.getObjects(offendingRhsTuple);
+
+            state.reportError(ValidationErrorCode.RELATION_PARENT_ERROR, columnName, value);
             bufferCall.getOutputCollector().add(new Tuple(state));
           }
         }

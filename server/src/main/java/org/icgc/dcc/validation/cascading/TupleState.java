@@ -3,12 +3,11 @@ package org.icgc.dcc.validation.cascading;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-
-import javax.annotation.Nullable;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.icgc.dcc.validation.ValidationErrorCode;
@@ -40,9 +39,9 @@ public class TupleState implements Serializable {
     this.offset = offset;
   }
 
-  public void reportError(ValidationErrorCode code, @Nullable Object... parameters) {
+  public void reportError(ValidationErrorCode code, String columnName, Object value, Object... params) {
     checkArgument(code != null);
-    ensureErrors().add(new TupleError(code, parameters));
+    ensureErrors().add(new TupleError(code, columnName, value, this.getOffset(), code.build(params)));
     structurallyValid = code.isStructural() == false;
   }
 
@@ -99,35 +98,59 @@ public class TupleState implements Serializable {
 
     private final ValidationErrorCode code;
 
-    private final Object[] parameters;
+    private final String columnName;
+
+    private final Object value;
+
+    private final Long line;
+
+    private final Map<String, Object> parameters;
 
     public TupleError() {
-      code = null;
-      parameters = null;
+      this.code = null;
+      this.columnName = null;
+      this.value = null;
+      this.line = null;
+      this.parameters = new LinkedHashMap<String, Object>();
     }
 
-    private TupleError(ValidationErrorCode code, Object... parameters) {
+    private TupleError(ValidationErrorCode code, String columnName, Object value, Long line,
+        Map<String, Object> parameters) {
       this.code = code;
+      this.columnName = columnName;
+      this.value = value != null ? value : "";
+      this.line = line;
       this.parameters = parameters;
     }
 
     public ValidationErrorCode getCode() {
-      return code;
+      return this.code;
     }
 
-    public Object[] getParameters() {
-      return parameters;
+    public String getColumnName() {
+      return this.columnName;
+    }
+
+    public Object getValue() {
+      return this.value;
+    }
+
+    public Long getLine() {
+      return this.line;
+    }
+
+    public Map<String, Object> getParameters() {
+      return this.parameters;
     }
 
     @JsonIgnore
     public String getMessage() {
-      return code.format(getParameters());
+      return ""; // code.format(getParameters()); - doesn't work with Map
     }
 
     @Override
     public String toString() {
-      return Objects.toStringHelper(TupleError.class).add("code", code).add("parameters", Arrays.toString(parameters))
-          .toString();
+      return Objects.toStringHelper(TupleError.class).add("code", code).add("parameters", parameters).toString();
     }
 
   }

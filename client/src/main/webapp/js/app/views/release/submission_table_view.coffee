@@ -72,6 +72,7 @@ define (require) ->
           {
             sTitle: "Files"
             mDataProp: "submissionFiles"
+            bUseRendered: false
             fnRender: (oObj, sVal) ->
               size = 0
               for f in sVal

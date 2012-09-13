@@ -41,11 +41,12 @@ public class PlanningException extends RuntimeException {
     super(cause);
   }
 
-  public PlanningException(String schemaName, ValidationErrorCode errorCode, Object... parameters) {
+  public PlanningException(String schemaName, ValidationErrorCode errorCode, String columnName, Object value,
+      Object... params) {
     super();
     this.schemaName = schemaName;
     this.tupleState = new TupleState();
-    tupleState.reportError(errorCode, parameters);
+    tupleState.reportError(errorCode, columnName, value, params);
   }
 
   public String getSchemaName() {

@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.validation;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -53,6 +55,10 @@ public class Plan {
     this.cascadingStrategy = cascadingStrategy;
   }
 
+  public String path(final FileSchema schema) throws FileNotFoundException, IOException {
+    return this.cascadingStrategy.path(schema).getName().toString();
+  }
+
   public void include(FileSchema fileSchema, InternalFlowPlanner internal, ExternalFlowPlanner external) {
     this.plannedSchema.add(fileSchema);
     this.internalPlanners.put(fileSchema.getName(), internal);
@@ -62,7 +68,7 @@ public class Plan {
   public InternalFlowPlanner getInternalFlow(String schema) {
     InternalFlowPlanner schemaPlan = internalPlanners.get(schema);
     if(schemaPlan == null) {
-      throw new PlanningException(schema, ValidationErrorCode.MISSING_SCHEMA_ERROR, schema);
+      throw new PlanningException(schema, ValidationErrorCode.MISSING_SCHEMA_ERROR, schema, null);
     }
     return schemaPlan;
   }
@@ -74,7 +80,7 @@ public class Plan {
   public ExternalFlowPlanner getExternalFlow(String schema) {
     ExternalFlowPlanner schemaPlan = externalPlanners.get(schema);
     if(schemaPlan == null) {
-      throw new PlanningException(schema, ValidationErrorCode.MISSING_SCHEMA_ERROR, schema);
+      throw new PlanningException(schema, ValidationErrorCode.MISSING_SCHEMA_ERROR, schema, null);
     }
     return schemaPlan;
   }

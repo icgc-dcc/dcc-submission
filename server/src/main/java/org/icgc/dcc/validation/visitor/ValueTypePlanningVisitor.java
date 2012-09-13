@@ -92,7 +92,9 @@ public class ValueTypePlanningVisitor extends InternalFlowPlanningVisitor {
           parsedValue = parse(value);
         } catch(IllegalArgumentException e) {
           Object fieldName = arguments.getFields().get(0);
-          ValidationFields.state(arguments).reportError(ValidationErrorCode.VALUE_TYPE_ERROR, value, fieldName, type);
+
+          ValidationFields.state(arguments).reportError(ValidationErrorCode.VALUE_TYPE_ERROR, fieldName.toString(),
+              value, type);
         }
         functionCall.getOutputCollector().add(new Tuple(parsedValue, ValidationFields.state(arguments)));
       }
