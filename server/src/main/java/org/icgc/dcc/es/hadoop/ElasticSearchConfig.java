@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.mapred.JobConf;
 import org.elasticsearch.common.transport.TransportAddress;
 
 import cascading.flow.hadoop.util.HadoopUtil;
@@ -71,7 +72,7 @@ public class ElasticSearchConfig {
 
   public void addTransportAddress(TransportAddress address) {
     try {
-      String base64Address = HadoopUtil.serializeBase64(address);
+      String base64Address = HadoopUtil.serializeBase64(address, new JobConf(conf));
       String[] addresses = conf.getStrings("es.address");
       if(addresses == null) {
         conf.setStrings("es.address", base64Address);
@@ -89,7 +90,7 @@ public class ElasticSearchConfig {
       @Override
       public TransportAddress apply(String input) {
         try {
-          return (TransportAddress) HadoopUtil.deserializeBase64(input);
+          return HadoopUtil.deserializeBase64(input, new JobConf(conf), TransportAddress.class);
         } catch(IOException e) {
           throw new RuntimeException(e);
 
