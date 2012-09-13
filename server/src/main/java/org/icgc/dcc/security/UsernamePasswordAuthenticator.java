@@ -32,4 +32,5 @@ public interface UsernamePasswordAuthenticator {
 
   public String getCurrentUser();
 
+  public Subject getSubject();
 }
