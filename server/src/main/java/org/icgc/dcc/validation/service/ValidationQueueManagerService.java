@@ -134,6 +134,7 @@ public class ValidationQueueManagerService extends AbstractService implements Va
             }
           }
         } catch(FatalPlanningException e) {
+          log.error("a Fatal Planning Exception occured while processing the validation queue", e);
           if(next.isPresent()) {
             try {
               handleFailedValidation(next.get(), e.getErrors());
@@ -144,12 +145,16 @@ public class ValidationQueueManagerService extends AbstractService implements Va
                */
               log.error("Failed to handle a failed validation!", f);
             }
+          } else {
+            log.error("Next project in queue not present, could not dequeue");
           }
         } catch(Throwable e) { // exception thrown within the run method are not logged otherwise (NullPointerException
                                // for instance)
           log.error("an error occured while processing the validation queue", e);
           if(next.isPresent()) {
             dequeue(next.get(), SubmissionState.ERROR);
+          } else {
+            log.error("Next project in queue not present, could not dequeue");
           }
         }
       }
@@ -198,14 +203,14 @@ public class ValidationQueueManagerService extends AbstractService implements Va
   @Override
   public void handleFailedValidation(String projectKey) {
     checkArgument(projectKey != null);
-    log.info("failed validation - about to dequeue project key {}", projectKey);
+    log.info("failed validation from unknown error - about to dequeue project key {}", projectKey);
     dequeue(projectKey, SubmissionState.ERROR);
   }
 
   public void handleFailedValidation(String projectKey, Map<String, TupleState> errors) {
     log.info("failed validation with errors - about to dequeue project key {}", projectKey);
     checkArgument(projectKey != null);
-    dequeue(projectKey, SubmissionState.ERROR);
+    dequeue(projectKey, SubmissionState.INVALID);
 
     SubmissionReport report = new SubmissionReport();
     List<SchemaReport> schemaReports = new ArrayList<SchemaReport>();
