@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.validation;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -51,6 +53,10 @@ public class Plan {
 
   public Plan(CascadingStrategy cascadingStrategy) {
     this.cascadingStrategy = cascadingStrategy;
+  }
+
+  public String path(final FileSchema schema) throws FileNotFoundException, IOException {
+    return this.cascadingStrategy.path(schema).getName().toString();
   }
 
   public void include(FileSchema fileSchema, InternalFlowPlanner internal, ExternalFlowPlanner external) {

@@ -19,6 +19,8 @@ package org.icgc.dcc.validation;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -72,8 +74,17 @@ class DefaultExternalFlowPlanner extends BaseFileSchemaFlowPlanner implements Ex
 
       joinedTails.add(element.join(lhs, rhs));
     } catch(PlanningException e) {
-      throw new PlanningException(getSchema().getName(), ValidationErrorCode.INVALID_RELATION_ERROR, getSchema()
-          .getName(), element.rhs());
+      String fileName = null;
+      try {
+        fileName = this.plan.path(getSchema());
+      } catch(FileNotFoundException e1) {
+        // TODO Auto-generated catch block
+        e1.printStackTrace();
+      } catch(IOException e1) {
+        // TODO Auto-generated catch block
+        e1.printStackTrace();
+      }
+      throw new PlanningException(fileName, ValidationErrorCode.INVALID_RELATION_ERROR, "FileLevelError", element.rhs());
     }
   }
 
