@@ -20,6 +20,7 @@ package org.icgc.dcc.sftp;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.shiro.subject.Subject;
 import org.apache.sshd.server.FileSystemView;
 import org.apache.sshd.server.SshFile;
 import org.icgc.dcc.core.ProjectService;
@@ -58,9 +59,9 @@ public class HdfsFileSystemView implements FileSystemView {
   @Override
   public SshFile getFile(String file) {
     Path filePath = getFilePath(file);
-    String currentUser = this.passwordAuthenticator.getCurrentUser();
+    Subject currentSubject = this.passwordAuthenticator.getSubject();
     ReleaseFileSystem rfs =
-        this.dccFileSystem.getReleaseFilesystem(this.releaseService.getNextRelease().getRelease(), currentUser);
+        this.dccFileSystem.getReleaseFilesystem(this.releaseService.getNextRelease().getRelease(), currentSubject);
     RootHdfsSshFile root = new RootHdfsSshFile(rfs, this.projectService, this.releaseService);
 
     switch(filePath.depth()) {
