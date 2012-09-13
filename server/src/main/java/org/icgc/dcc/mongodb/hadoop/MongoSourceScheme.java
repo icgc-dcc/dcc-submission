@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
+import org.bson.BasicBSONObject;
 
 import cascading.flow.FlowProcess;
 import cascading.scheme.Scheme;
@@ -60,7 +61,10 @@ public final class MongoSourceScheme extends
     BSONWritable[] context = sourceCall.getContext();
 
     tuple.set(0, context[0].get(keyField).toString());
-    tuple.set(1, context[1]);
+    // Make a copy
+    BasicBSONObject object = new BasicBSONObject();
+    object.putAll(context[1]);
+    tuple.set(1, object);
 
     return true;
   }
