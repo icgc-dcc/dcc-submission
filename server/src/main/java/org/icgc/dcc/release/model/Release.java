@@ -2,10 +2,9 @@ package org.icgc.dcc.release.model;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.icgc.dcc.core.model.BaseEntity;
@@ -17,6 +16,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 
 @Entity
 public class Release extends BaseEntity implements HasName {
@@ -25,9 +25,9 @@ public class Release extends BaseEntity implements HasName {
 
   protected ReleaseState state;
 
-  protected List<Submission> submissions = new ArrayList<Submission>();
+  protected List<Submission> submissions = Lists.newArrayList();
 
-  protected List<String> queue = new ArrayList<String>();
+  protected List<QueuedProject> queue = Lists.newArrayList();
 
   protected Date releaseDate;
 
@@ -113,20 +113,27 @@ public class Release extends BaseEntity implements HasName {
     this.releaseDate = new Date();
   }
 
-  public List<String> getQueue() {
+  public List<String> getQueuedProjectKeys() {
+    List<String> projectKeys = Lists.newArrayList();
+    for(QueuedProject qp : this.getQueue()) {
+      projectKeys.add(qp.getProjectKey());
+    }
+    return projectKeys;
+  }
+
+  public List<QueuedProject> getQueue() {
     return queue;
   }
 
-  public void enqueue(String projectKey) {
-    List<String> queue = this.getQueue();
-    if(projectKey != null && !projectKey.isEmpty() && !queue.contains(projectKey)) {
-      queue.add(projectKey);
+  public void enqueue(QueuedProject project) {
+    if(project.getProjectKey() != null && !project.getProjectKey().isEmpty() && !this.queue.contains(project)) {
+      this.queue.add(project);
     }
   }
 
-  public void enqueue(List<String> projectKeys) {
+  public void enqueue(List<String> projectKeys, Set<String> userNames) {
     for(String projectKey : projectKeys) {
-      this.enqueue(projectKey);
+      this.enqueue(new QueuedProject(projectKey, userNames));
     }
   }
 
@@ -134,17 +141,17 @@ public class Release extends BaseEntity implements HasName {
     return this.queue.removeAll(projectKeys);
   }
 
-  public Optional<String> nextInQueue() {
-    return this.queue != null && this.queue.isEmpty() == false ? Optional.<String> of(this.queue.get(0)) : Optional
-        .<String> absent();
+  public Optional<QueuedProject> nextInQueue() {
+    return this.queue != null && this.queue.isEmpty() == false ? Optional.<QueuedProject> of(this.queue.get(0)) : Optional
+        .<QueuedProject> absent();
   }
 
-  public Optional<String> dequeue() {
-    return this.queue != null && this.queue.isEmpty() == false ? Optional.<String> of(this.queue.remove(0)) : Optional
-        .<String> absent();
+  public Optional<QueuedProject> dequeue() {
+    return this.queue != null && this.queue.isEmpty() == false ? Optional.<QueuedProject> of(this.queue.remove(0)) : Optional
+        .<QueuedProject> absent();
   }
 
   public void emptyQueue() {
-    this.queue = new LinkedList<String>();
+    this.queue = Lists.newArrayList();
   }
 }

@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.shiro.subject.Subject;
@@ -24,6 +25,7 @@ import org.icgc.dcc.filesystem.SubmissionFile;
 import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
 import org.icgc.dcc.release.model.DetailedSubmission;
 import org.icgc.dcc.release.model.QRelease;
+import org.icgc.dcc.release.model.QueuedProject;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.ReleaseView;
@@ -210,7 +212,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
     SubmissionState newState = SubmissionState.NOT_VALIDATED;
     Release release = getNextRelease().getRelease();
-    List<String> projectKeys = release.getQueue(); // TODO: what if nextrelease changes in the meantime?
+    List<String> projectKeys = release.getQueuedProjectKeys(); // TODO: what if nextrelease changes in the meantime?
 
     updateSubmisions(projectKeys, newState);
     release.emptyQueue();
@@ -218,14 +220,14 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     this.dbUpdateSubmissions(release.getName(), release.getQueue(), projectKeys, newState);
   }
 
-  public void queue(List<String> projectKeys) {
+  public void queue(List<String> projectKeys, Set<String> users) {
     log.info("enqueuing: {}", projectKeys);
 
     SubmissionState newState = SubmissionState.QUEUED;
     Release release = this.getNextRelease().getRelease();
 
     updateSubmisions(projectKeys, newState);
-    release.enqueue(projectKeys);
+    release.enqueue(projectKeys, users);
 
     this.dbUpdateSubmissions(release.getName(), release.getQueue(), projectKeys, newState);
   }
@@ -249,17 +251,17 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     return false;
   }
 
-  public Optional<String> dequeue(String projectKey, SubmissionState state) {
+  public Optional<QueuedProject> dequeue(String projectKey, SubmissionState state) {
     log.info("dequeuing: {}", projectKey);
 
     SubmissionState newState = state;
     Release release = this.getNextRelease().getRelease();
 
-    Optional<String> dequeued = release.nextInQueue();
-    if(dequeued.isPresent() && dequeued.get().equals(projectKey)) {
+    Optional<QueuedProject> dequeued = release.nextInQueue();
+    if(dequeued.isPresent() && dequeued.get().getProjectKey().equals(projectKey)) {
       List<String> projectKeys = Arrays.asList(projectKey);
       dequeued = release.dequeue();
-      if(dequeued.isPresent() && dequeued.get().equals(projectKey)) { // could still have changed
+      if(dequeued.isPresent() && dequeued.get().getProjectKey().equals(projectKey)) { // could still have changed
         updateSubmisions(projectKeys, newState);
         this.dbUpdateSubmissions(release.getName(), release.getQueue(), projectKeys, newState);
       }
@@ -341,7 +343,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
    * <p>
    * TODO: should probably revisit all this as it is not very clean
    */
-  private void dbUpdateSubmissions(String currentReleaseName, List<String> queue, List<String> projectKeys,
+  private void dbUpdateSubmissions(String currentReleaseName, List<QueuedProject> queue, List<String> projectKeys,
       SubmissionState newState) {
     checkArgument(currentReleaseName != null);
     checkArgument(queue != null);

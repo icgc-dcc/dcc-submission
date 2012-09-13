@@ -55,7 +55,7 @@ public class ReleaseView {
 
     this.name = release.name;
     this.state = release.state;
-    this.queue = release.getQueue();
+    this.queue = release.getQueuedProjectKeys();
     this.releaseDate = release.releaseDate;
     this.dictionaryVersion = release.dictionaryVersion;
     for(Entry<String, String> projectEntry : projectEntries) {

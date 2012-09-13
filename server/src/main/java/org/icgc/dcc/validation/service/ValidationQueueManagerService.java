@@ -41,6 +41,7 @@ import javax.mail.internet.MimeMessage;
 import org.icgc.dcc.dictionary.DictionaryService;
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.release.ReleaseService;
+import org.icgc.dcc.release.model.QueuedProject;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.Submission;
@@ -112,7 +113,7 @@ public class ValidationQueueManagerService extends AbstractService implements Va
     schedule = scheduler.scheduleWithFixedDelay(new Runnable() {
       @Override
       public void run() {
-        Optional<String> next = Optional.<String> absent();
+        Optional<QueuedProject> next = Optional.<QueuedProject> absent();
         try {
           if(isRunning() && releaseService.hasNextRelease()) {
             next = releaseService.getNextRelease().getNextInQueue();
@@ -128,7 +129,7 @@ public class ValidationQueueManagerService extends AbstractService implements Va
                   throw new ValidationServiceException(String.format("no dictionary found with version %s",
                       dictionaryVersion));
                 } else {
-                  String projectKey = next.get();
+                  String projectKey = next.get().getProjectKey();
                   Plan plan = validationService.validate(release, projectKey);
                   if(release.getState() == ReleaseState.OPENED) {
                     if(plan.getCascade().getCascadeStats().isSuccessful()) {
@@ -147,7 +148,7 @@ public class ValidationQueueManagerService extends AbstractService implements Va
           log.error("a Fatal Planning Exception occured while processing the validation queue", e);
           if(next.isPresent()) {
             try {
-              handleFailedValidation(next.get(), e.getErrors());
+              handleFailedValidation(next.get().getProjectKey(), e.getErrors());
             } catch(Throwable f) {
               /*
                * When a scheduled job throws an exception to the executor, all future runs of the job are cancelled.
@@ -162,7 +163,7 @@ public class ValidationQueueManagerService extends AbstractService implements Va
                                // for instance)
           log.error("an error occured while processing the validation queue", e);
           if(next.isPresent()) {
-            dequeue(next.get(), SubmissionState.ERROR);
+            dequeue(next.get().getProjectKey(), SubmissionState.ERROR);
           } else {
             log.error("Next project in queue not present, could not dequeue");
           }
@@ -187,28 +188,6 @@ public class ValidationQueueManagerService extends AbstractService implements Va
     Outcome outcome = plan.collect(report);
 
     setSubmissionReport(projectKey, report);
-
-    Properties props = new Properties();
-    props.put("mail.smtp.host", "smtp.oicr.on.ca");
-    Session session = Session.getDefaultInstance(props, null);
-
-    String msgBody = "Test Email";
-
-    try {
-      Message msg = new MimeMessage(session);
-      msg.setFrom(new InternetAddress("dcc-validator@oicr.on.ca", "DCC Validator"));
-      msg.addRecipient(Message.RecipientType.TO, new InternetAddress("shane.wilson@oicr.on.ca", "Shane Wilson"));
-      msg.setSubject("Your Example.com account has been activated");
-      msg.setText(msgBody);
-      Transport.send(msg);
-
-    } catch(AddressException e) {
-      log.error("an error occured while emailing: ", e);
-    } catch(MessagingException e) {
-      log.error("an error occured while emailing: ", e);
-    } catch(UnsupportedEncodingException e) {
-      log.error("an error occured while emailing: ", e);
-    }
 
     log.info("successful validation - about to dequeue project key {}", projectKey);
     if(outcome == Outcome.PASSED) {
@@ -263,8 +242,31 @@ public class ValidationQueueManagerService extends AbstractService implements Va
   }
 
   private void dequeue(String projectKey, SubmissionState state) {
-    Optional<String> dequeuedProjectKey = releaseService.dequeue(projectKey, state);
-    if(dequeuedProjectKey.isPresent() == false) {
+    // email here
+    Properties props = new Properties();
+    props.put("mail.smtp.host", "smtp.oicr.on.ca");
+    Session session = Session.getDefaultInstance(props, null);
+
+    String msgBody = projectKey + " has finished Validation. Status: " + state;
+
+    try {
+      Message msg = new MimeMessage(session);
+      msg.setFrom(new InternetAddress("dcc-validator@oicr.on.ca", "DCC Validator"));
+      msg.addRecipient(Message.RecipientType.TO, new InternetAddress("shane.wilson@oicr.on.ca", "Shane Wilson"));
+      msg.setSubject("[DCC] Validation Finished! [" + projectKey + " : " + state + "]");
+      msg.setText(msgBody);
+      Transport.send(msg);
+
+    } catch(AddressException e) {
+      log.error("an error occured while emailing: ", e);
+    } catch(MessagingException e) {
+      log.error("an error occured while emailing: ", e);
+    } catch(UnsupportedEncodingException e) {
+      log.error("an error occured while emailing: ", e);
+    }
+
+    Optional<QueuedProject> dequeuedProject = releaseService.dequeue(projectKey, state);
+    if(dequeuedProject.isPresent() == false) {
       log.warn("could not dequeue project {}, maybe the queue was emptied in the meantime?", projectKey);
     }
   }

@@ -1,6 +1,7 @@
 package org.icgc.dcc.web;
 
 import java.util.List;
+import java.util.Set;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -67,7 +68,8 @@ public class NextReleaseResource {
     ResponseTimestamper.evaluate(req, this.releaseService.getNextRelease().getRelease());
 
     if(this.releaseService.hasProjectKey(projectKeys)) {
-      this.releaseService.queue(projectKeys);
+      Set<String> userNames = ((ShiroSecurityContext) securityContext).getSubject().getPrincipals().asSet();
+      this.releaseService.queue(projectKeys, userNames);
       return Response.ok().build();
     } else {
       return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage("ProjectKeyNotFound")).build();

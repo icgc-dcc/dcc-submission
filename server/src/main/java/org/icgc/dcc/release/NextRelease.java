@@ -11,6 +11,7 @@ import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.DictionaryState;
 import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.filesystem.ReleaseFileSystem;
+import org.icgc.dcc.release.model.QueuedProject;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.Submission;
@@ -38,10 +39,10 @@ public class NextRelease extends BaseRelease {
   }
 
   public List<String> getQueued() {
-    return getRelease().getQueue();
+    return getRelease().getQueuedProjectKeys();
   }
 
-  public Optional<String> getNextInQueue() {
+  public Optional<QueuedProject> getNextInQueue() {
     return getRelease().nextInQueue();
   }
 
@@ -86,7 +87,7 @@ public class NextRelease extends BaseRelease {
 
     Release oldRelease = this.getRelease();
 
-    if(oldRelease.getQueue().isEmpty() == false) {
+    if(oldRelease.getQueuedProjectKeys().isEmpty() == false) {
       throw new ReleaseException("QueueNotEmpty");
     }
 

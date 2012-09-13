@@ -28,6 +28,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.google.common.collect.Sets;
+
 /**
  * 
  */
@@ -73,82 +75,82 @@ public class ReleaseTest {
 
   @Test
   public void test_enqueue_oneKey() {
-    assertEquals(0, release.getQueue().size());
+    assertEquals(0, release.getQueuedProjectKeys().size());
     String projectKey = "pkey";
-    release.enqueue(projectKey);
-    assertEquals(1, release.getQueue().size());
-    assertEquals("pkey", release.getQueue().get(0));
+    release.enqueue(new QueuedProject(projectKey, Sets.newHashSet("admin")));
+    assertEquals(1, release.getQueuedProjectKeys().size());
+    assertEquals("pkey", release.getQueuedProjectKeys().get(0));
   }
 
   @Test
   public void test_enqueue_oneKey_null() {
-    assertEquals(0, release.getQueue().size());
+    assertEquals(0, release.getQueuedProjectKeys().size());
     String projectKey = null;
-    release.enqueue(projectKey);
-    assertEquals(0, release.getQueue().size());
+    release.enqueue(new QueuedProject(projectKey, Sets.newHashSet("admin")));
+    assertEquals(0, release.getQueuedProjectKeys().size());
   }
 
   @Test
   public void test_enqueue_oneKey_emptyString() {
-    assertEquals(0, release.getQueue().size());
+    assertEquals(0, release.getQueuedProjectKeys().size());
     String projectKey = "";
-    release.enqueue(projectKey);
-    assertEquals(0, release.getQueue().size());
+    release.enqueue(new QueuedProject(projectKey, Sets.newHashSet("admin")));
+    assertEquals(0, release.getQueuedProjectKeys().size());
   }
 
   @Test
   public void test_enqueue_manyKeys() {
-    assertEquals(0, release.getQueue().size());
+    assertEquals(0, release.getQueuedProjectKeys().size());
     List<String> projectKeys = new ArrayList<String>();
     projectKeys.add("pkey1");
     projectKeys.add("pkey2");
-    release.enqueue(projectKeys);
-    assertEquals(2, release.getQueue().size());
-    assertEquals("pkey1", release.getQueue().get(0));
+    release.enqueue(projectKeys, Sets.newHashSet("admin"));
+    assertEquals(2, release.getQueuedProjectKeys().size());
+    assertEquals("pkey1", release.getQueuedProjectKeys().get(0));
   }
 
   @Test
   public void test_enqueue_manyKeys_null() {
-    assertEquals(0, release.getQueue().size());
+    assertEquals(0, release.getQueuedProjectKeys().size());
     List<String> projectKeys = new ArrayList<String>();
     projectKeys.add(null);
     projectKeys.add("pkey");
-    release.enqueue(projectKeys);
-    assertEquals(1, release.getQueue().size());
-    assertEquals("pkey", release.getQueue().get(0));
+    release.enqueue(projectKeys, Sets.newHashSet("admin"));
+    assertEquals(1, release.getQueuedProjectKeys().size());
+    assertEquals("pkey", release.getQueuedProjectKeys().get(0));
   }
 
   @Test
   public void test_enqueue_manyKeys_emptyString() {
-    assertEquals(0, release.getQueue().size());
+    assertEquals(0, release.getQueuedProjectKeys().size());
     List<String> projectKeys = new ArrayList<String>();
     projectKeys.add("");
     projectKeys.add("pkey");
-    release.enqueue(projectKeys);
-    assertEquals(1, release.getQueue().size());
-    assertEquals("pkey", release.getQueue().get(0));
+    release.enqueue(projectKeys, Sets.newHashSet("admin"));
+    assertEquals(1, release.getQueuedProjectKeys().size());
+    assertEquals("pkey", release.getQueuedProjectKeys().get(0));
   }
 
   @Test
   public void test_dequeue() {
-    assertEquals(0, release.getQueue().size());
+    assertEquals(0, release.getQueuedProjectKeys().size());
     List<String> projectKeys = new ArrayList<String>();
     projectKeys.add("pkey1");
     projectKeys.add("pkey2");
-    release.enqueue(projectKeys);
-    assertEquals(2, release.getQueue().size());
-    assertEquals("pkey1", release.dequeue().get());
-    assertEquals(1, release.getQueue().size());
-    assertEquals("pkey2", release.getQueue().get(0));
+    release.enqueue(projectKeys, Sets.newHashSet("admin"));
+    assertEquals(2, release.getQueuedProjectKeys().size());
+    assertEquals("pkey1", release.dequeue().get().getProjectKey());
+    assertEquals(1, release.getQueuedProjectKeys().size());
+    assertEquals("pkey2", release.getQueuedProjectKeys().get(0));
   }
 
   @Test
   public void test_emptyQueue() {
-    assertEquals(0, release.getQueue().size());
+    assertEquals(0, release.getQueuedProjectKeys().size());
     String projectKey = "pkey";
-    release.enqueue(projectKey);
-    assertEquals(1, release.getQueue().size());
+    release.enqueue(new QueuedProject(projectKey, Sets.newHashSet("admin")));
+    assertEquals(1, release.getQueuedProjectKeys().size());
     release.emptyQueue();
-    assertEquals(0, release.getQueue().size());
+    assertEquals(0, release.getQueuedProjectKeys().size());
   }
 }
