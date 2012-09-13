@@ -129,13 +129,13 @@ public class ValidationQueueManagerService extends AbstractService implements Va
                   throw new ValidationServiceException(String.format("no dictionary found with version %s",
                       dictionaryVersion));
                 } else {
-                  String projectKey = next.get().getProjectKey();
-                  Plan plan = validationService.validate(release, projectKey);
+                  QueuedProject project = next.get();
+                  Plan plan = validationService.validate(release, project.getProjectKey());
                   if(release.getState() == ReleaseState.OPENED) {
                     if(plan.getCascade().getCascadeStats().isSuccessful()) {
-                      handleSuccessfulValidation(projectKey, plan);
+                      handleSuccessfulValidation(project, plan);
                     } else {
-                      handleFailedValidation(projectKey);
+                      handleFailedValidation(project);
                     }
                   } else {
                     log.info("Release was closed during validation; states not changed");
@@ -148,7 +148,7 @@ public class ValidationQueueManagerService extends AbstractService implements Va
           log.error("a Fatal Planning Exception occured while processing the validation queue", e);
           if(next.isPresent()) {
             try {
-              handleFailedValidation(next.get().getProjectKey(), e.getErrors());
+              handleFailedValidation(next.get(), e.getErrors());
             } catch(Throwable f) {
               /*
                * When a scheduled job throws an exception to the executor, all future runs of the job are cancelled.
@@ -163,7 +163,7 @@ public class ValidationQueueManagerService extends AbstractService implements Va
                                // for instance)
           log.error("an error occured while processing the validation queue", e);
           if(next.isPresent()) {
-            dequeue(next.get().getProjectKey(), SubmissionState.ERROR);
+            dequeue(next.get(), SubmissionState.ERROR);
           } else {
             log.error("Next project in queue not present, could not dequeue");
           }
@@ -182,18 +182,18 @@ public class ValidationQueueManagerService extends AbstractService implements Va
   }
 
   @Override
-  public void handleSuccessfulValidation(String projectKey, Plan plan) {
-    checkArgument(projectKey != null);
+  public void handleSuccessfulValidation(QueuedProject project, Plan plan) {
+    checkArgument(project != null);
     SubmissionReport report = new SubmissionReport();
     Outcome outcome = plan.collect(report);
 
-    setSubmissionReport(projectKey, report);
+    setSubmissionReport(project.getProjectKey(), report);
 
-    log.info("successful validation - about to dequeue project key {}", projectKey);
+    log.info("successful validation - about to dequeue project key {}", project.getProjectKey());
     if(outcome == Outcome.PASSED) {
-      dequeue(projectKey, SubmissionState.VALID);
+      dequeue(project, SubmissionState.VALID);
     } else {
-      dequeue(projectKey, SubmissionState.INVALID);
+      dequeue(project, SubmissionState.INVALID);
     }
   }
 
@@ -212,16 +212,16 @@ public class ValidationQueueManagerService extends AbstractService implements Va
   }
 
   @Override
-  public void handleFailedValidation(String projectKey) {
-    checkArgument(projectKey != null);
-    log.info("failed validation from unknown error - about to dequeue project key {}", projectKey);
-    dequeue(projectKey, SubmissionState.ERROR);
+  public void handleFailedValidation(QueuedProject project) {
+    checkArgument(project != null);
+    log.info("failed validation from unknown error - about to dequeue project key {}", project.getProjectKey());
+    dequeue(project, SubmissionState.ERROR);
   }
 
-  public void handleFailedValidation(String projectKey, Map<String, TupleState> errors) {
-    log.info("failed validation with errors - about to dequeue project key {}", projectKey);
-    checkArgument(projectKey != null);
-    dequeue(projectKey, SubmissionState.INVALID);
+  public void handleFailedValidation(QueuedProject project, Map<String, TupleState> errors) {
+    log.info("failed validation with errors - about to dequeue project key {}", project.getProjectKey());
+    checkArgument(project != null);
+    dequeue(project, SubmissionState.INVALID);
 
     SubmissionReport report = new SubmissionReport();
     List<SchemaReport> schemaReports = new ArrayList<SchemaReport>();
@@ -238,22 +238,30 @@ public class ValidationQueueManagerService extends AbstractService implements Va
     }
     report.setSchemaReports(schemaReports);
 
-    setSubmissionReport(projectKey, report);
+    setSubmissionReport(project.getProjectKey(), report);
   }
 
-  private void dequeue(String projectKey, SubmissionState state) {
+  private void dequeue(QueuedProject project, SubmissionState state) {
+    // Get user email
+    // String email = UserService.getUserEmail(user);
+
     // email here
     Properties props = new Properties();
     props.put("mail.smtp.host", "smtp.oicr.on.ca");
     Session session = Session.getDefaultInstance(props, null);
 
-    String msgBody = projectKey + " has finished Validation. Status: " + state;
+    String msgBody = project.getProjectKey() + " has finished Validation. Status: " + state;
 
     try {
       Message msg = new MimeMessage(session);
       msg.setFrom(new InternetAddress("dcc-validator@oicr.on.ca", "DCC Validator"));
       msg.addRecipient(Message.RecipientType.TO, new InternetAddress("shane.wilson@oicr.on.ca", "Shane Wilson"));
-      msg.setSubject("[DCC] Validation Finished! [" + projectKey + " : " + state + "]");
+      // for(String userName : project.getUsers()) {
+      // msg.addRecipient(Message.RecipientType.TO, new InternetAddress(UserService.getUserEmail(userName),
+      // "Shane Wilson"));
+      // }
+
+      msg.setSubject("[DCC] Validation Finished! [" + project.getProjectKey() + " : " + state + "]");
       msg.setText(msgBody);
       Transport.send(msg);
 
@@ -265,9 +273,9 @@ public class ValidationQueueManagerService extends AbstractService implements Va
       log.error("an error occured while emailing: ", e);
     }
 
-    Optional<QueuedProject> dequeuedProject = releaseService.dequeue(projectKey, state);
+    Optional<QueuedProject> dequeuedProject = releaseService.dequeue(project.getProjectKey(), state);
     if(dequeuedProject.isPresent() == false) {
-      log.warn("could not dequeue project {}, maybe the queue was emptied in the meantime?", projectKey);
+      log.warn("could not dequeue project {}, maybe the queue was emptied in the meantime?", project.getProjectKey());
     }
   }
 

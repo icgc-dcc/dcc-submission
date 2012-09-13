@@ -17,11 +17,13 @@
  */
 package org.icgc.dcc.validation;
 
+import org.icgc.dcc.release.model.QueuedProject;
+
 /**
  * Callback interface for {@code ValidationQueueManagerService}
  */
 public interface ValidationCallback {
-  void handleSuccessfulValidation(String projectKey, Plan plan);
+  void handleSuccessfulValidation(QueuedProject project, Plan plan);
 
-  void handleFailedValidation(String projectKey);
+  void handleFailedValidation(QueuedProject project);
 }
