@@ -207,6 +207,11 @@
       <version>${hadoop-cdh.version}</version>
       <scope>runtime</scope>
     </dependency>
+    <dependency>
+      <groupId>org.elasticsearch</groupId>
+      <artifactId>elasticsearch</artifactId>
+      <version>${elasticsearch.version}</version>
+    </dependency>
     <!-- Test Dependencies -->
     <dependency>
       <groupId>junit</groupId>
@@ -261,6 +266,16 @@
     <repository>
       <id>conjars.org</id>
       <url>http://conjars.org/repo</url>
+    </repository>
+    <repository>
+      <id>oss.sonatype</id>
+      <url>http://oss.sonatype.org/content/repositories/releases/</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
     </repository>
   </repositories>
   <build>
@@ -443,6 +458,7 @@
     <cdh.version>cdh4.0.0</cdh.version>
     <hadoop-cdh.version>${hadoop.version}-${cdh.version}</hadoop-cdh.version>
     <hadoop-mr1-cdh.version>${hadoop.version}-mr1-${cdh.version}</hadoop-mr1-cdh.version>
+    <elasticsearch.version>0.19.9</elasticsearch.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 </project>
