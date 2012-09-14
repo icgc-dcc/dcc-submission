@@ -243,50 +243,62 @@ public class ValidationQueueManagerService extends AbstractService implements Va
   }
 
   private void dequeue(QueuedProject project, SubmissionState state) {
-    // Get user email
-    // String email = UserService.getUserEmail(user);
+    if(project.getEmails().size() > 0) {
+      this.email(project, state);
+    }
 
+    Optional<QueuedProject> dequeuedProject = releaseService.dequeue(project.getKey(), state);
+    if(dequeuedProject.isPresent() == false) {
+      log.warn("could not dequeue project {}, maybe the queue was emptied in the meantime?", project.getKey());
+    }
+  }
+
+  private void email(QueuedProject project, SubmissionState state) {
     // email here
+    // TODO get email settings from config
     Properties props = new Properties();
     props.put("mail.smtp.host", "smtp.oicr.on.ca");
     Session session = Session.getDefaultInstance(props, null);
 
     String msgBody = project.getKey() + " has finished Validation. Status: " + state;
 
-    Address[] addresses = new Address[project.getEmails().size()];
+    List<Address> aCheck = Lists.newArrayList();
 
-    int i = 0;
     for(String email : project.getEmails()) {
       try {
-        addresses[i] = new InternetAddress(email);
-        i++;
+        Address a = new InternetAddress(email);
+        aCheck.add(a);
       } catch(AddressException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
+        log.error("Illigal Address: " + e);
       }
     }
 
-    try {
-      Message msg = new MimeMessage(session);
-      msg.setFrom(new InternetAddress("dcc-validator@oicr.on.ca", "DCC Validator"));
-      msg.addRecipients(Message.RecipientType.TO, addresses);
+    if(aCheck.size() > 0) {
+      Address[] addresses = new Address[aCheck.size()];
 
-      msg.setSubject("[DCC] Validation Finished! [" + project.getKey() + " : " + state + "]");
-      msg.setText(msgBody);
-      Transport.send(msg);
-      log.error("Emails for {} sent to {}: ", project.getKey(), project.getEmails());
+      int i = 0;
+      for(Address email : aCheck) {
+        addresses[i] = email;
+        i++;
+      }
 
-    } catch(AddressException e) {
-      log.error("an error occured while emailing: ", e);
-    } catch(MessagingException e) {
-      log.error("an error occured while emailing: ", e);
-    } catch(UnsupportedEncodingException e) {
-      log.error("an error occured while emailing: ", e);
-    }
+      try {
+        Message msg = new MimeMessage(session);
+        msg.setFrom(new InternetAddress("dcc-validator@oicr.on.ca", "DCC Validator"));
+        msg.addRecipients(Message.RecipientType.TO, addresses);
 
-    Optional<QueuedProject> dequeuedProject = releaseService.dequeue(project.getKey(), state);
-    if(dequeuedProject.isPresent() == false) {
-      log.warn("could not dequeue project {}, maybe the queue was emptied in the meantime?", project.getKey());
+        msg.setSubject("[DCC] Validation Finished! [" + project.getKey() + " : " + state + "]");
+        msg.setText(msgBody);
+        Transport.send(msg);
+        log.error("Emails for {} sent to {}: ", project.getKey(), aCheck);
+
+      } catch(AddressException e) {
+        log.error("an error occured while emailing: ", e);
+      } catch(MessagingException e) {
+        log.error("an error occured while emailing: ", e);
+      } catch(UnsupportedEncodingException e) {
+        log.error("an error occured while emailing: ", e);
+      }
     }
   }
 
