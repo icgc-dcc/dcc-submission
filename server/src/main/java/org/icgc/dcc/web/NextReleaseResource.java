@@ -16,10 +16,12 @@ import javax.ws.rs.core.SecurityContext;
 
 import org.icgc.dcc.release.NextRelease;
 import org.icgc.dcc.release.ReleaseService;
+import org.icgc.dcc.release.model.QueuedProject;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.shiro.AuthorizationPrivileges;
 import org.icgc.dcc.shiro.ShiroSecurityContext;
 
+import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
 @Path("nextRelease")
@@ -58,8 +60,15 @@ public class NextReleaseResource {
 
   @POST
   @Path("queue")
-  public Response queue(List<String> projectKeys, @Context Request req, @Context SecurityContext securityContext) {
-    for(String projectKey : projectKeys) {
+  public Response queue(List<QueuedProject> queuedProjects, @Context Request req,
+      @Context SecurityContext securityContext) {
+
+    List<String> projectKeys = Lists.newArrayList();
+
+    for(QueuedProject qp : queuedProjects) {
+      String projectKey = qp.getKey();
+      projectKeys.add(projectKey);
+
       if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
           AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
         return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
@@ -69,7 +78,7 @@ public class NextReleaseResource {
 
     if(this.releaseService.hasProjectKey(projectKeys)) {
       Set<String> userNames = ((ShiroSecurityContext) securityContext).getSubject().getPrincipals().asSet();
-      this.releaseService.queue(projectKeys, userNames);
+      this.releaseService.queue(queuedProjects);
       return Response.ok().build();
     } else {
       return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage("ProjectKeyNotFound")).build();

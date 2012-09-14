@@ -17,36 +17,40 @@
  */
 package org.icgc.dcc.release.model;
 
-import java.util.Set;
+import java.util.List;
 
 import com.google.code.morphia.annotations.Embedded;
-import com.google.common.collect.Sets;
 
 @Embedded
 public class QueuedProject {
 
-  private final String projectKey;
+  private String key;
 
-  private final Set<String> userNames;
+  private List<String> emails;
 
   public QueuedProject() {
     super();
-
-    this.projectKey = null;
-    this.userNames = Sets.newHashSet();
   }
 
-  public QueuedProject(String projectKey, Set<String> users) {
+  public QueuedProject(String key, List<String> emails) {
     super();
-    this.projectKey = projectKey;
-    this.userNames = users;
+    this.key = key;
+    this.emails = emails;
   }
 
-  public Set<String> getUsers() {
-    return this.userNames;
+  public List<String> getEmails() {
+    return this.emails;
   }
 
-  public String getProjectKey() {
-    return this.projectKey;
+  public String getKey() {
+    return this.key;
+  }
+
+  public void setKey(String key) {
+    this.key = key;
+  }
+
+  public void setEmails(List<String> emails) {
+    this.emails = emails;
   }
 }

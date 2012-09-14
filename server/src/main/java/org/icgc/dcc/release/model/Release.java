@@ -4,7 +4,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.icgc.dcc.core.model.BaseEntity;
@@ -116,7 +115,7 @@ public class Release extends BaseEntity implements HasName {
   public List<String> getQueuedProjectKeys() {
     List<String> projectKeys = Lists.newArrayList();
     for(QueuedProject qp : this.getQueue()) {
-      projectKeys.add(qp.getProjectKey());
+      projectKeys.add(qp.getKey());
     }
     return projectKeys;
   }
@@ -126,14 +125,14 @@ public class Release extends BaseEntity implements HasName {
   }
 
   public void enqueue(QueuedProject project) {
-    if(project.getProjectKey() != null && !project.getProjectKey().isEmpty() && !this.queue.contains(project)) {
+    if(project.getKey() != null && !project.getKey().isEmpty() && !this.queue.contains(project)) {
       this.queue.add(project);
     }
   }
 
-  public void enqueue(List<String> projectKeys, Set<String> userNames) {
-    for(String projectKey : projectKeys) {
-      this.enqueue(new QueuedProject(projectKey, userNames));
+  public void enqueue(List<QueuedProject> queuedProjects) {
+    for(QueuedProject qp : queuedProjects) {
+      this.enqueue(qp);
     }
   }
 

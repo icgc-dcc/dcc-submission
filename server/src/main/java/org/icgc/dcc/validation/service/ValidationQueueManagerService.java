@@ -130,7 +130,7 @@ public class ValidationQueueManagerService extends AbstractService implements Va
                       dictionaryVersion));
                 } else {
                   QueuedProject project = next.get();
-                  Plan plan = validationService.validate(release, project.getProjectKey());
+                  Plan plan = validationService.validate(release, project.getKey());
                   if(release.getState() == ReleaseState.OPENED) {
                     if(plan.getCascade().getCascadeStats().isSuccessful()) {
                       handleSuccessfulValidation(project, plan);
@@ -187,9 +187,9 @@ public class ValidationQueueManagerService extends AbstractService implements Va
     SubmissionReport report = new SubmissionReport();
     Outcome outcome = plan.collect(report);
 
-    setSubmissionReport(project.getProjectKey(), report);
+    setSubmissionReport(project.getKey(), report);
 
-    log.info("successful validation - about to dequeue project key {}", project.getProjectKey());
+    log.info("successful validation - about to dequeue project key {}", project.getKey());
     if(outcome == Outcome.PASSED) {
       dequeue(project, SubmissionState.VALID);
     } else {
@@ -214,12 +214,12 @@ public class ValidationQueueManagerService extends AbstractService implements Va
   @Override
   public void handleFailedValidation(QueuedProject project) {
     checkArgument(project != null);
-    log.info("failed validation from unknown error - about to dequeue project key {}", project.getProjectKey());
+    log.info("failed validation from unknown error - about to dequeue project key {}", project.getKey());
     dequeue(project, SubmissionState.ERROR);
   }
 
   public void handleFailedValidation(QueuedProject project, Map<String, TupleState> errors) {
-    log.info("failed validation with errors - about to dequeue project key {}", project.getProjectKey());
+    log.info("failed validation with errors - about to dequeue project key {}", project.getKey());
     checkArgument(project != null);
     dequeue(project, SubmissionState.INVALID);
 
@@ -238,7 +238,7 @@ public class ValidationQueueManagerService extends AbstractService implements Va
     }
     report.setSchemaReports(schemaReports);
 
-    setSubmissionReport(project.getProjectKey(), report);
+    setSubmissionReport(project.getKey(), report);
   }
 
   private void dequeue(QueuedProject project, SubmissionState state) {
@@ -250,7 +250,7 @@ public class ValidationQueueManagerService extends AbstractService implements Va
     props.put("mail.smtp.host", "smtp.oicr.on.ca");
     Session session = Session.getDefaultInstance(props, null);
 
-    String msgBody = project.getProjectKey() + " has finished Validation. Status: " + state;
+    String msgBody = project.getKey() + " has finished Validation. Status: " + state;
 
     try {
       Message msg = new MimeMessage(session);
@@ -261,7 +261,7 @@ public class ValidationQueueManagerService extends AbstractService implements Va
       // "Shane Wilson"));
       // }
 
-      msg.setSubject("[DCC] Validation Finished! [" + project.getProjectKey() + " : " + state + "]");
+      msg.setSubject("[DCC] Validation Finished! [" + project.getKey() + " : " + state + "]");
       msg.setText(msgBody);
       Transport.send(msg);
 
@@ -273,9 +273,9 @@ public class ValidationQueueManagerService extends AbstractService implements Va
       log.error("an error occured while emailing: ", e);
     }
 
-    Optional<QueuedProject> dequeuedProject = releaseService.dequeue(project.getProjectKey(), state);
+    Optional<QueuedProject> dequeuedProject = releaseService.dequeue(project.getKey(), state);
     if(dequeuedProject.isPresent() == false) {
-      log.warn("could not dequeue project {}, maybe the queue was emptied in the meantime?", project.getProjectKey());
+      log.warn("could not dequeue project {}, maybe the queue was emptied in the meantime?", project.getKey());
     }
   }
 

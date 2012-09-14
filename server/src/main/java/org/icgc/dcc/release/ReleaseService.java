@@ -9,7 +9,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.shiro.subject.Subject;
@@ -220,14 +219,18 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     this.dbUpdateSubmissions(release.getName(), release.getQueue(), projectKeys, newState);
   }
 
-  public void queue(List<String> projectKeys, Set<String> users) {
-    log.info("enqueuing: {}", projectKeys);
+  public void queue(List<QueuedProject> queuedProjects) {
+    List<String> projectKeys = Lists.newArrayList();
+    for(QueuedProject qp : queuedProjects) {
+      projectKeys.add(qp.getKey());
+    }
+    log.info("enqueuing: {}", queuedProjects);
 
     SubmissionState newState = SubmissionState.QUEUED;
     Release release = this.getNextRelease().getRelease();
 
     updateSubmisions(projectKeys, newState);
-    release.enqueue(projectKeys, users);
+    release.enqueue(queuedProjects);
 
     this.dbUpdateSubmissions(release.getName(), release.getQueue(), projectKeys, newState);
   }
@@ -258,10 +261,10 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     Release release = this.getNextRelease().getRelease();
 
     Optional<QueuedProject> dequeued = release.nextInQueue();
-    if(dequeued.isPresent() && dequeued.get().getProjectKey().equals(projectKey)) {
+    if(dequeued.isPresent() && dequeued.get().getKey().equals(projectKey)) {
       List<String> projectKeys = Arrays.asList(projectKey);
       dequeued = release.dequeue();
-      if(dequeued.isPresent() && dequeued.get().getProjectKey().equals(projectKey)) { // could still have changed
+      if(dequeued.isPresent() && dequeued.get().getKey().equals(projectKey)) { // could still have changed
         updateSubmisions(projectKeys, newState);
         this.dbUpdateSubmissions(release.getName(), release.getQueue(), projectKeys, newState);
       }
