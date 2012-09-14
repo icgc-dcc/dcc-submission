@@ -30,6 +30,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import javax.mail.Address;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Session;
@@ -252,18 +253,28 @@ public class ValidationQueueManagerService extends AbstractService implements Va
 
     String msgBody = project.getKey() + " has finished Validation. Status: " + state;
 
+    Address[] addresses = new Address[project.getEmails().size()];
+
+    int i = 0;
+    for(String email : project.getEmails()) {
+      try {
+        addresses[i] = new InternetAddress(email);
+        i++;
+      } catch(AddressException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+    }
+
     try {
       Message msg = new MimeMessage(session);
       msg.setFrom(new InternetAddress("dcc-validator@oicr.on.ca", "DCC Validator"));
-      msg.addRecipient(Message.RecipientType.TO, new InternetAddress("shane.wilson@oicr.on.ca", "Shane Wilson"));
-      // for(String userName : project.getUsers()) {
-      // msg.addRecipient(Message.RecipientType.TO, new InternetAddress(UserService.getUserEmail(userName),
-      // "Shane Wilson"));
-      // }
+      msg.addRecipients(Message.RecipientType.TO, addresses);
 
       msg.setSubject("[DCC] Validation Finished! [" + project.getKey() + " : " + state + "]");
       msg.setText(msgBody);
       Transport.send(msg);
+      log.error("Emails for {} sent to {}: ", project.getKey(), project.getEmails());
 
     } catch(AddressException e) {
       log.error("an error occured while emailing: ", e);
