@@ -44,6 +44,10 @@ public class FileSchemaDirectory {
     this.fs = fs;
   }
 
+  public String getDirectoryPath() {
+    return directory.toUri().getPath();
+  }
+
   public boolean hasFile(final FileSchema fileSchema) {
     List<Path> paths = matches(fileSchema);
     if(paths != null && paths.size() > 1) {

@@ -75,9 +75,15 @@ public class DefaultPlanner implements Planner {
     Plan plan = new Plan(dictionary, strategy);
     for(FileSchema fileSchema : dictionary.getFiles()) {
       try {
-        if(strategy.getFileSchemaDirectory().hasFile(fileSchema) || systemDirectory.hasFile(fileSchema)) {
+        FileSchemaDirectory fileSchemaDirectory = strategy.getFileSchemaDirectory();
+        String fileSchemaName = fileSchema.getName();
+        if(fileSchemaDirectory.hasFile(fileSchema) || systemDirectory.hasFile(fileSchema)) {
+          log.info("including flow planners for file schema {}", fileSchemaName);
           plan.include(fileSchema, new DefaultInternalFlowPlanner(fileSchema), new DefaultExternalFlowPlanner(plan,
               fileSchema));
+        } else {
+          log.info("file schema {} has no matching datafile in submission directory {}", fileSchemaName,
+              fileSchemaDirectory.getDirectoryPath());
         }
       } catch(PlanningException e) {
         this.errors.put(e.getSchemaName(), e.getTupleState());
