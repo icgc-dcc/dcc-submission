@@ -255,7 +255,7 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
 
       while(iter.hasNext()) {
         TupleEntry entry = iter.next();
-        if(TuplesUtils.hasValues(entry, requiredRhsFields)) {
+        if(TuplesUtils.hasValues(entry, requiredRhsFields)) { // this already filters out join on nulls
           if(TuplesUtils.hasValues(entry, optionalLhsFields)) {
             Tuple lhsOptionalTuple = entry.selectTuple(new Fields(optionalLhsFields));
             lhsOptionalTuples.add(new SimpleEntry<Tuple, Integer>(lhsOptionalTuple, getLhsOffset(entry)));
@@ -263,12 +263,13 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
           if(TuplesUtils.hasValues(entry, optionalRhsFields)) {
             rhsOptionalTuples.add(entry.selectTuple(new Fields(optionalRhsFields)));
           }
-        }
+        } // if it does not, it is a problem that will be picked up by the corresponding non-conditional relation (see
+          // note in DCC-294)
       }
 
       /*
        * To keep track of reported errors (because there can be several specimen_id from the rhs) and we cannot use a
-       * set for lhsOptionalTuples
+       * set for lhsOptionalTuples (TODO: why?)
        */
       Set<Integer> reported = new HashSet<Integer>();
       for(Entry<Tuple, Integer> lhsTupleToOffset : lhsOptionalTuples) {
@@ -324,16 +325,20 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void operate(FlowProcess flowProcess, BufferCall bufferCall) {
       Iterator<TupleEntry> iter = bufferCall.getArgumentsIterator();
       while(iter.hasNext()) {
         TupleEntry entry = iter.next();
 
         if(TuplesUtils.hasValues(entry, renamedRhsFields) == false) {
-          TupleState state = new TupleState(getLhsOffset(entry));
-          reportRelationError(state, entry.selectTuple(new Fields(lhsFields)));
-          bufferCall.getOutputCollector().add(new Tuple(state));
+          if(TuplesUtils.hasValues(entry, lhsFields)) { // no need to report the result of joining on nulls
+                                                        // (required restriction will report error if this is not
+                                                        // acceptable)
+            TupleState state = new TupleState(getLhsOffset(entry));
+            reportRelationError(state, entry.selectTuple(new Fields(lhsFields)));
+            bufferCall.getOutputCollector().add(new Tuple(state));
+          }
         } else if(twoWays) {
           if(TuplesUtils.hasValues(entry, lhsFields) == false) {
             Tuple offendingRhsTuple = entry.selectTuple(new Fields(renamedRhsFields));
