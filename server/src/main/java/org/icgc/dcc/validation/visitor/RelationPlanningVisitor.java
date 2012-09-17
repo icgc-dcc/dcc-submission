@@ -31,10 +31,12 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.icgc.dcc.dictionary.model.Cardinality;
+import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.dictionary.model.Relation;
 import org.icgc.dcc.validation.ExternalFlowPlanningVisitor;
 import org.icgc.dcc.validation.ExternalPlanElement;
+import org.icgc.dcc.validation.Plan;
 import org.icgc.dcc.validation.ValidationErrorCode;
 import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.cascading.TuplesUtils;
@@ -63,12 +65,22 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
 
   private static final String NAME = "fk";
 
+  private Dictionary dictionary;
+
   @Override
-  public void visit(Relation relation) {
-    collect(new RelationPlanElement(getCurrentSchema(), relation));
+  public void apply(Plan plan) {
+    dictionary = plan.getDictionary();
+    super.apply(plan);
   }
 
-  static class RelationPlanElement implements ExternalPlanElement {
+  @Override
+  public void visit(Relation relation) {
+    FileSchema currentSchema = getCurrentSchema();
+    List<FileSchema> afferentStrictFileSchemata = currentSchema.getAfferentStrictFileSchemata(dictionary);
+    collect(new RelationPlanElement(currentSchema, relation, afferentStrictFileSchemata));
+  }
+
+  public static class RelationPlanElement implements ExternalPlanElement {
 
     private final String lhs;
 
@@ -78,17 +90,24 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
 
     private final String[] rhsFields;
 
-    protected final Cardinality cardinality;
+    private final Cardinality cardinality;
 
     private final List<Integer> optionals;
 
-    private RelationPlanElement(FileSchema fileSchema, Relation relation) {
+    private final List<FileSchema> afferentFileSchemata;
+
+    private RelationPlanElement(FileSchema fileSchema, Relation relation, List<FileSchema> afferentFileSchemata) {
+      checkArgument(fileSchema != null);
+      checkArgument(relation != null);
+      checkArgument(afferentFileSchemata != null);
+
       this.lhs = fileSchema.getName();
       this.lhsFields = relation.getFields().toArray(new String[] {});
       this.rhs = relation.getOther();
       this.rhsFields = relation.getOtherFields().toArray(new String[] {});
       this.cardinality = relation.getCardinality();
       this.optionals = relation.getOptionals();
+      this.afferentFileSchemata = afferentFileSchemata;
     }
 
     @Override
@@ -110,6 +129,11 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
     @Override
     public String[] rhsFields() {
       return rhsFields;
+    }
+
+    // TODO: override? (tbd)
+    public List<FileSchema> getAfferentFileSchemata() {
+      return afferentFileSchemata;
     }
 
     @Override

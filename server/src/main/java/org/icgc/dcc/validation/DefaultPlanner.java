@@ -34,11 +34,15 @@ import org.icgc.dcc.validation.visitor.InternalRestrictionPlanningVisitor;
 import org.icgc.dcc.validation.visitor.RelationPlanningVisitor;
 import org.icgc.dcc.validation.visitor.UniqueFieldsPlanningVisitor;
 import org.icgc.dcc.validation.visitor.ValueTypePlanningVisitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
 
 public class DefaultPlanner implements Planner {
+
+  private static final Logger log = LoggerFactory.getLogger(DefaultPlanner.class);
 
   private final List<? extends PlanningVisitor<?>> planningVisitors;
 
@@ -68,8 +72,7 @@ public class DefaultPlanner implements Planner {
 
     FileSchemaDirectory systemDirectory = strategy.getSystemDirectory();
 
-    Plan plan = new Plan(strategy);
-
+    Plan plan = new Plan(dictionary, strategy);
     for(FileSchema fileSchema : dictionary.getFiles()) {
       try {
         if(strategy.getFileSchemaDirectory().hasFile(fileSchema) || systemDirectory.hasFile(fileSchema)) {
@@ -89,6 +92,7 @@ public class DefaultPlanner implements Planner {
     }
 
     if(errors.size() > 0) {
+      log.error("fatal errors:\n\t{}", errors);
       throw new FatalPlanningException(errors);
     }
     return plan;

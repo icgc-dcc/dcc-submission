@@ -144,7 +144,7 @@ public class ValidationExternalIntegrityTest {
 
     String[] fieldNames = { "donor_id", "fakecolumn" };
 
-    specimen.getRelation().clear();
+    specimen.clearRelations();
     Relation relation =
         new Relation(Arrays.asList(fieldNames), "donor", Arrays.asList(fieldNames), Cardinality.ZERO_OR_MORE);
     specimen.addRelation(relation);
