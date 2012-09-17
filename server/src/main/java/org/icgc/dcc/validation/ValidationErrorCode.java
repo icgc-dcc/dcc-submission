@@ -138,7 +138,9 @@ public enum ValidationErrorCode {
   }
 
   public String format(Map<String, ? extends Object> parameters) {
-    return String.format(message, parameters);
+    // The formatted message doesn't make sense anymore since the column name was moved to TupleError
+    // return String.format(message, terms);
+    return this.message;
   }
 
   public boolean isStructural() {

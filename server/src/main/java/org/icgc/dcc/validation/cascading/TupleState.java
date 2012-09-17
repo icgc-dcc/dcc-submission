@@ -145,7 +145,7 @@ public class TupleState implements Serializable {
 
     @JsonIgnore
     public String getMessage() {
-      return ""; // code.format(getParameters()); - doesn't work with Map
+      return code.format(getParameters());
     }
 
     @Override
