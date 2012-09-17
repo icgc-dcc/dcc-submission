@@ -77,12 +77,10 @@ class DefaultExternalFlowPlanner extends BaseFileSchemaFlowPlanner implements Ex
       String fileName = null;
       try {
         fileName = this.plan.path(getSchema());
-      } catch(FileNotFoundException e1) {
-        // TODO Auto-generated catch block
-        e1.printStackTrace();
-      } catch(IOException e1) {
-        // TODO Auto-generated catch block
-        e1.printStackTrace();
+      } catch(FileNotFoundException fnfe) {
+        throw new PlanningException(fnfe);
+      } catch(IOException ioe) {
+        throw new PlanningException(ioe);
       }
       throw new PlanningException(fileName, ValidationErrorCode.INVALID_RELATION_ERROR, "FileLevelError", element.rhs());
     }

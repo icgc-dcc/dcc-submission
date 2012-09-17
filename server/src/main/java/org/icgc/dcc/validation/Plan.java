@@ -56,7 +56,7 @@ public class Plan {
   }
 
   public String path(final FileSchema schema) throws FileNotFoundException, IOException {
-    return this.cascadingStrategy.path(schema).getName().toString();
+    return this.cascadingStrategy.path(schema).toUri().getPath();
   }
 
   public void include(FileSchema fileSchema, InternalFlowPlanner internal, ExternalFlowPlanner external) {
