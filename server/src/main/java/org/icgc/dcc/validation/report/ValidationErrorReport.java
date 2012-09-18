@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.validation.report;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -58,7 +57,7 @@ public class ValidationErrorReport {
   }
 
   public boolean hasColumn(List<String> columnNames) {
-    return this.getColumnByName(columnNames) != null ? true : false;
+    return this.getColumnByName(columnNames) != null;
   }
 
   public ColumnErrorReport getColumnByName(List<String> columnNames) {
@@ -110,9 +109,9 @@ public class ValidationErrorReport {
 
     private long count;
 
-    private List<Long> lines;
+    private List<Long> lines = Lists.newLinkedList();
 
-    private List<Object> values;
+    private List<Object> values = Lists.newLinkedList();
 
     private Map<String, Object> parameters;
 
@@ -120,9 +119,6 @@ public class ValidationErrorReport {
     }
 
     public ColumnErrorReport(TupleError error) {
-      this.lines = new LinkedList<Long>();
-      this.values = new LinkedList<Object>();
-
       this.setColumnNames(error.getColumnNames());
       this.setCount(1L);
       this.lines.add(error.getLine());
@@ -132,7 +128,7 @@ public class ValidationErrorReport {
     }
 
     public void incCount() {
-      this.setCount(this.getCount() + 1);
+      this.setCount(this.count++);
     }
 
     public long getCount() {
