@@ -348,7 +348,6 @@ public class DictionaryConverter {
         fields.add(field_from);
         fields.add(field_to);
       } else {
-        System.out.println("here");
         fields.add(field);
       }
     }
