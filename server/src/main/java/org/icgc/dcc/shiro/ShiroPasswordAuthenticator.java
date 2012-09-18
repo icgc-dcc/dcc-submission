@@ -88,4 +88,9 @@ public class ShiroPasswordAuthenticator implements UsernamePasswordAuthenticator
     return SecurityUtils.getSubject().getPrincipal().toString();
   }
 
+  @Override
+  public Subject getSubject() {
+    return SecurityUtils.getSubject();
+  }
+
 }

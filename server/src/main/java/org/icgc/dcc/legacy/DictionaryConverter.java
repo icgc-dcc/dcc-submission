@@ -191,6 +191,11 @@ public class DictionaryConverter {
 
       // mark relation fields to be required
       FileSchema leftFileSchema = this.dictionary.fileSchema(leftTable).get();
+      // calculate optional keys
+      List<String> optionalKeys = Lists.newArrayList();
+      for(Integer optionalIndex : optionals) {
+        optionalKeys.add(Iterables.toArray(leftKeys, String.class)[optionalIndex.intValue()]);
+      }
       for(String key : leftKeys) {
         Field leftField = leftFileSchema.field(key).get();
         Optional<Restriction> leftRestriction = leftField.getRestriction(RequiredRestriction.NAME);
@@ -201,7 +206,14 @@ public class DictionaryConverter {
         Restriction requiredRestriction = new Restriction();
         requiredRestriction.setType(RequiredRestriction.NAME);
         BasicDBObject parameter = new BasicDBObject();
-        parameter.append(RequiredRestriction.ACCEPT_MISSING_CODE, false);
+        // exceptions for making required field accept missing code
+        if(rightTable.equals("hsap_gene") || rightTable.equals("hsap_transcript")) {
+          parameter.append(RequiredRestriction.ACCEPT_MISSING_CODE, true);
+        } else if(optionalKeys.contains(key)) {
+          parameter.append(RequiredRestriction.ACCEPT_MISSING_CODE, true);
+        } else {
+          parameter.append(RequiredRestriction.ACCEPT_MISSING_CODE, false);
+        }
         requiredRestriction.setConfig(parameter);
         leftField.addRestriction(requiredRestriction);
       }
@@ -217,7 +229,12 @@ public class DictionaryConverter {
         Restriction requiredRestriction = new Restriction();
         requiredRestriction.setType(RequiredRestriction.NAME);
         BasicDBObject parameter = new BasicDBObject();
-        parameter.append(RequiredRestriction.ACCEPT_MISSING_CODE, false);
+        // exceptions for making required field accept missing code
+        if(rightTable.equals("hsap_gene") || rightTable.equals("hsap_transcript")) {
+          parameter.append(RequiredRestriction.ACCEPT_MISSING_CODE, true);
+        } else {
+          parameter.append(RequiredRestriction.ACCEPT_MISSING_CODE, false);
+        }
         requiredRestriction.setConfig(parameter);
         rightField.addRestriction(requiredRestriction);
       }
