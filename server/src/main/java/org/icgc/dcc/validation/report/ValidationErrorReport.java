@@ -128,7 +128,7 @@ public class ValidationErrorReport {
     }
 
     public void incCount() {
-      this.setCount(this.count++);
+      this.count++;
     }
 
     public long getCount() {
