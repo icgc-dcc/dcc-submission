@@ -347,14 +347,16 @@ public class DictionaryConverter {
         field_to.setName("transcript_affected_by_bkpt_to");
         fields.add(field_from);
         fields.add(field_to);
+      } else {
+        System.out.println("here");
+        fields.add(field);
       }
-      fields.add(field);
     }
 
-    // special case for mirna_m, stsm_m, cnsm_m, jcn_m, sgv_m, ssm_m, meth_m, exp_m, add missing donor_id
+    // special case for mirna_m, stsm_m, cnsm_m, jcn_m, ssm_m, meth_m, exp_m, add missing donor_id
     if(FileSchemaName.equals("mirna_m") || FileSchemaName.equals("stsm_m") || FileSchemaName.equals("cnsm_m")
-        || FileSchemaName.equals("jcn_m") || FileSchemaName.equals("sgv_m") || FileSchemaName.equals("ssm_m")
-        || FileSchemaName.equals("meth_m") || FileSchemaName.equals("exp_m")) {
+        || FileSchemaName.equals("jcn_m") || FileSchemaName.equals("ssm_m") || FileSchemaName.equals("meth_m")
+        || FileSchemaName.equals("exp_m")) {
       if(!this.containField(fields, "donor_id")) {
         Field donorIDField = new Field();
         donorIDField.setName("donor_id");
