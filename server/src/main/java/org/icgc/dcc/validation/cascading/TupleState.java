@@ -39,9 +39,16 @@ public class TupleState implements Serializable {
     this.offset = offset;
   }
 
+  public void reportError(ValidationErrorCode code, List<String> columnNames, Object value, Object... params) {
+    checkArgument(code != null);
+    ensureErrors().add(new TupleError(code, columnNames, value, this.getOffset(), code.build(params)));
+    structurallyValid = code.isStructural() == false;
+  }
+
   public void reportError(ValidationErrorCode code, String columnName, Object value, Object... params) {
     checkArgument(code != null);
-    ensureErrors().add(new TupleError(code, columnName, value, this.getOffset(), code.build(params)));
+    List<String> columnNames = Lists.newArrayList(columnName);
+    ensureErrors().add(new TupleError(code, columnNames, value, this.getOffset(), code.build(params)));
     structurallyValid = code.isStructural() == false;
   }
 
@@ -98,7 +105,7 @@ public class TupleState implements Serializable {
 
     private final ValidationErrorCode code;
 
-    private final String columnName;
+    private final List<String> columnNames;
 
     private final Object value;
 
@@ -108,16 +115,16 @@ public class TupleState implements Serializable {
 
     public TupleError() {
       this.code = null;
-      this.columnName = null;
+      this.columnNames = Lists.newArrayList();
       this.value = null;
       this.line = null;
       this.parameters = new LinkedHashMap<String, Object>();
     }
 
-    private TupleError(ValidationErrorCode code, String columnName, Object value, Long line,
+    private TupleError(ValidationErrorCode code, List<String> columnNames, Object value, Long line,
         Map<String, Object> parameters) {
       this.code = code;
-      this.columnName = columnName;
+      this.columnNames = columnNames;
       this.value = value != null ? value : "";
       this.line = line;
       this.parameters = parameters;
@@ -127,8 +134,8 @@ public class TupleState implements Serializable {
       return this.code;
     }
 
-    public String getColumnName() {
-      return this.columnName;
+    public List<String> getColumnNames() {
+      return this.columnNames;
     }
 
     public Object getValue() {

@@ -82,7 +82,8 @@ class DefaultExternalFlowPlanner extends BaseFileSchemaFlowPlanner implements Ex
       } catch(IOException ioe) {
         throw new PlanningException(ioe);
       }
-      throw new PlanningException(fileName, ValidationErrorCode.INVALID_RELATION_ERROR, "FileLevelError", element.rhs());
+      throw new PlanningException(fileName, ValidationErrorCode.INVALID_RELATION_ERROR,
+          ValidationErrorCode.FILE_LEVEL_ERROR, element.rhs());
     }
   }
 

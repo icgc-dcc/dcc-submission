@@ -2,6 +2,7 @@ package org.icgc.dcc.validation;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -23,19 +24,23 @@ public enum ValidationErrorCode {
     @Override
     public final ImmutableMap<String, Object> build(Object... params) {
       checkArgument(params[0] instanceof Integer);
-      return ImmutableMap.of("actualNumColumns", params[0]);
+      return ImmutableMap.of(ACTUAL_NUM_COLUMNS, params[0]);
     }
   }, //
   RELATION_ERROR("invalid value(s) (%s) for field(s) %s.%s. Expected to match value(s) in: %s.%s") {
     @Override
     public final ImmutableMap<String, Object> build(Object... params) {
-      return ImmutableMap.of();
+      checkArgument(params[0] instanceof String);
+      checkArgument(params[1] instanceof List);
+      return ImmutableMap.of(RELATION_SCHEMA, params[0], RELATION_COLUMNS, params[1]);
     }
   }, //
   RELATION_PARENT_ERROR("no corresponding values in %s.%s for value(s) %s in %s.%s") {
     @Override
     public final ImmutableMap<String, Object> build(Object... params) {
-      return ImmutableMap.of();
+      checkArgument(params[0] instanceof String);
+      checkArgument(params[1] instanceof List);
+      return ImmutableMap.of(RELATION_SCHEMA, params[0], RELATION_COLUMNS, params[1]);
     }
   }, //
   UNIQUE_VALUE_ERROR("invalid set of values (%s) for fields %s. Expected to be unique") {
@@ -121,6 +126,14 @@ public enum ValidationErrorCode {
   private static final String MIN_RANGE = "minRange";
 
   private static final String MAX_RANGE = "maxRange";
+
+  private static final String ACTUAL_NUM_COLUMNS = "actualNumColumns";
+
+  private static final String RELATION_SCHEMA = "relationSchema";
+
+  private static final String RELATION_COLUMNS = "relationColumnNames";
+
+  public static final String FILE_LEVEL_ERROR = "FileLevelError";
 
   private final String message;
 

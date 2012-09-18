@@ -56,6 +56,8 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
+import com.google.common.collect.Lists;
+
 /**
  * Creates {@code PlanElement}s for {@code Relation}.
  */
@@ -197,9 +199,13 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
     }
 
     protected void reportRelationError(TupleState tupleState, Tuple offendingLhsTuple) {
-      String columnName = lhs + Arrays.toString(lhsFields) + ":" + rhs + Arrays.toString(rhsFields);
+      List<String> columnNames = Lists.newArrayList(lhsFields);
+      String relationSchema = rhs;
+      List<String> relationColumnNames = Lists.newArrayList(rhsFields);
       List<Object> value = TuplesUtils.getObjects(offendingLhsTuple);
-      tupleState.reportError(ValidationErrorCode.RELATION_ERROR, columnName, value);
+
+      tupleState.reportError(ValidationErrorCode.RELATION_ERROR, columnNames, value, relationSchema,
+          relationColumnNames);
     }
   }
 
@@ -340,10 +346,13 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
             Tuple offendingRhsTuple = entry.selectTuple(new Fields(renamedRhsFields));
             TupleState state = new TupleState(CONVENTION_PARENT_OFFSET);
 
-            String columnName = lhs + Arrays.toString(lhsFields) + ":" + rhs + Arrays.toString(rhsFields);
+            List<String> columnNames = Lists.newArrayList(lhsFields);
+            String relationSchema = rhs;
+            List<String> relationColumnNames = Lists.newArrayList(rhsFields);
             List<Object> value = TuplesUtils.getObjects(offendingRhsTuple);
 
-            state.reportError(ValidationErrorCode.RELATION_PARENT_ERROR, columnName, value);
+            state.reportError(ValidationErrorCode.RELATION_PARENT_ERROR, columnNames, value, relationSchema,
+                relationColumnNames);
             bufferCall.getOutputCollector().add(new Tuple(state));
           }
         }
