@@ -41,7 +41,7 @@ import com.google.common.collect.Lists;
  * Checks structural aspects of an input data file (header, format, ...)
  */
 @SuppressWarnings("rawtypes")
-public class StructralCheckFunction extends BaseOperation implements Function {
+public class StructuralCheckFunction extends BaseOperation implements Function {
 
   public static final String LINE_FIELD_NAME = "line";
 
@@ -57,7 +57,7 @@ public class StructralCheckFunction extends BaseOperation implements Function {
 
   private List<Integer> unknownHeaderIndices;
 
-  public StructralCheckFunction(Iterable<String> fieldNames) {
+  public StructuralCheckFunction(Iterable<String> fieldNames) {
     super(1);
     dictionaryFields = new Fields(Iterables.toArray(fieldNames, String.class));
   }
@@ -88,7 +88,7 @@ public class StructralCheckFunction extends BaseOperation implements Function {
     int offset = functionCall.getArguments().getInteger(ValidationFields.OFFSET_FIELD_NAME);
     TupleState tupleState = new TupleState(offset);
 
-    String line = arguments.getString(StructralCheckFunction.LINE_FIELD_NAME);
+    String line = arguments.getString(StructuralCheckFunction.LINE_FIELD_NAME);
     List<String> values = Lists.newArrayList(Splitter.on(FIELD_SEPARATOR).split(line));
     List<String> adjustedValues = adjustValues(values, tupleState);
     List<Object> tupleValues = Lists.<Object> newArrayList(adjustedValues);
