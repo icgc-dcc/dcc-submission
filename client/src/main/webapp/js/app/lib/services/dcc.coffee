@@ -22,10 +22,10 @@ define (require) ->
   utils = require 'lib/utils'
 
   class DCC extends ServiceProvider
-    baseUrl: utils.apiRoot
+    baseUrl: "#{window.location.origin}/ws/"
 
     constructor: ->
-      console.debug 'DCCServiceProvider#constructor', localStorage
+      console.debug 'DCCServiceProvider#constructor', localStorage 
       super
       @accessToken = localStorage.getItem 'accessToken'
       authCallback = _(@loginHandler).bind(this, @loginHandler)
