@@ -14,6 +14,7 @@ import org.icgc.dcc.validation.cascading.TupleState.TupleError;
 import com.google.common.collect.ImmutableMap;
 
 public enum ValidationErrorCode {
+
   UNKNOWN_COLUMNS_WARNING("value for unknown column: %s") {
     @Override
     public final ImmutableMap<String, Object> build(Object... params) {
@@ -98,13 +99,13 @@ public enum ValidationErrorCode {
       return ImmutableMap.of();
     }
   }, //
-  INVALID_RELATION_ERROR("a required schema for this relation was not found") {
+  INVALID_RELATION_ERROR("relation to schema %s has no matching file") {
     @Override
     public final ImmutableMap<String, Object> build(Object... params) {
       return ImmutableMap.of();
     }
   }, //
-  MISSING_SCHEMA_ERROR("no valid schema found") {
+  INVALID_REVERSE_RELATION_ERROR("relation from schema %s has no matching file and this relation imposes that there be one") {
     @Override
     public final ImmutableMap<String, Object> build(Object... params) {
       return ImmutableMap.of();

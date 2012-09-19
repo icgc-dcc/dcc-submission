@@ -28,6 +28,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.SerializationConfig;
 import org.icgc.dcc.dictionary.model.CodeList;
 import org.icgc.dcc.dictionary.model.Term;
 
@@ -43,6 +44,7 @@ public class CodeListConverter {
 
   public void saveToJSON(String fileName) throws JsonGenerationException, JsonMappingException, IOException {
     ObjectMapper mapper = new ObjectMapper();
+    mapper.enable(SerializationConfig.Feature.SORT_PROPERTIES_ALPHABETICALLY);
     mapper.writerWithDefaultPrettyPrinter().writeValue(new File(fileName), codec);
   }
 

@@ -139,7 +139,7 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
       } catch(IOException ioe) {
         throw new PlanningException(ioe);
       }
-      throw new PlanningException(fileName, ValidationErrorCode.DUPLICATE_HEADER_ERROR,
+      throw new PlanningFileLevelException(fileName, ValidationErrorCode.DUPLICATE_HEADER_ERROR,
           ValidationErrorCode.FILE_LEVEL_ERROR, e.getDuplicateHeader());
     }
 

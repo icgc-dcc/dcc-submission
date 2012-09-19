@@ -36,7 +36,7 @@ public class Relation implements DictionaryElement {
 
   private final List<String> fields;
 
-  private final Cardinality cardinality;
+  private final Cardinality cardinality; // lhs'; TODO: use boolean instead
 
   private final String other;
 

@@ -17,22 +17,21 @@
  */
 package org.icgc.dcc.validation;
 
+public class MissingFileException extends Exception {
 
-public class PlanningException extends RuntimeException {
-
-  public PlanningException() {
+  public MissingFileException() {
     super();
   }
 
-  public PlanningException(String message, Throwable cause) {
+  public MissingFileException(String message, Throwable cause) {
     super(message, cause);
   }
 
-  public PlanningException(String message) {
+  public MissingFileException(String message) {
     super(message);
   }
 
-  public PlanningException(Throwable cause) {
+  public MissingFileException(Throwable cause) {
     super(cause);
   }
 }
