@@ -209,7 +209,7 @@ public class ValidationExternalIntegrityTest {
 
     CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir, systemDir);
 
-    Plan plan = validationService.planCascade(null, cascadingStrategy, dictionary);
+    Plan plan = validationService.planCascade("dummyProject", cascadingStrategy, dictionary);
     Assert.assertEquals(5, plan.getCascade().getFlows().size());
 
     validationService.runCascade(plan.getCascade(), null);

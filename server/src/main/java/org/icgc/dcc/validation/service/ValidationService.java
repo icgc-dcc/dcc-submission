@@ -29,6 +29,7 @@ import org.icgc.dcc.filesystem.ReleaseFileSystem;
 import org.icgc.dcc.filesystem.SubmissionDirectory;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.validation.CascadingStrategy;
+import org.icgc.dcc.validation.FatalPlanningException;
 import org.icgc.dcc.validation.Plan;
 import org.icgc.dcc.validation.Planner;
 import org.icgc.dcc.validation.factory.CascadingStrategyFactory;
@@ -110,6 +111,10 @@ public class ValidationService {
     log.info("# external flows: {}", Iterables.size(plan.getExternalFlows()));
 
     plan.connect(cascadingStrategy);
+
+    if(plan.hasFileLevelErrors()) {
+      throw new FatalPlanningException(projectKey, plan); // the queue manager will handle it
+    }
 
     return plan;
   }
