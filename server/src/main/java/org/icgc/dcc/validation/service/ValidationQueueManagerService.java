@@ -202,7 +202,7 @@ public class ValidationQueueManagerService extends AbstractService {
 
     if(plan.hasFileLevelErrors()) { // successful but invalid because of file-level errors
       Map<String, TupleState> fileLevelErrors = plan.getFileLevelErrors();
-      log.error("fatal file errors:\n\t{}", fileLevelErrors);
+      log.error("file errors (fatal planning errors):\n\t{}", fileLevelErrors);
 
       log.info("about to dequeue project key {}", projectKey);
       dequeue(projectKey, SubmissionState.INVALID);
