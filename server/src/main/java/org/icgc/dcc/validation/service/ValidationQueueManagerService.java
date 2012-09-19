@@ -62,6 +62,7 @@ import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.AbstractService;
 import com.google.inject.Inject;
+import com.typesafe.config.Config;
 
 /**
  * Manages validation queue that:<br>
@@ -82,16 +83,20 @@ public class ValidationQueueManagerService extends AbstractService implements Va
 
   private final ValidationService validationService;
 
+  private final Config config;
+
   private ScheduledFuture<?> schedule;
 
   @Inject
   public ValidationQueueManagerService(final ReleaseService releaseService, final DictionaryService dictionaryService,
-      ValidationService validationService) {
+      ValidationService validationService, Config config) {
 
     checkArgument(releaseService != null);
     checkArgument(dictionaryService != null);
     checkArgument(validationService != null);
+    checkArgument(config != null);
 
+    this.config = config;
     this.releaseService = releaseService;
     this.dictionaryService = dictionaryService;
     this.validationService = validationService;
@@ -254,13 +259,9 @@ public class ValidationQueueManagerService extends AbstractService implements Va
   }
 
   private void email(QueuedProject project, SubmissionState state) {
-    // email here
-    // TODO get email settings from config
     Properties props = new Properties();
-    props.put("mail.smtp.host", "smtp.oicr.on.ca");
+    props.put("mail.smtp.host", this.config.getString("mail.smtp.host"));
     Session session = Session.getDefaultInstance(props, null);
-
-    String msgBody = project.getKey() + " has finished Validation. Status: " + state;
 
     List<Address> aCheck = Lists.newArrayList();
 
@@ -284,11 +285,12 @@ public class ValidationQueueManagerService extends AbstractService implements Va
 
       try {
         Message msg = new MimeMessage(session);
-        msg.setFrom(new InternetAddress("dcc-validator@oicr.on.ca", "DCC Validator"));
+        msg.setFrom(new InternetAddress(this.config.getString("mail.from.email"), this.config
+            .getString("mail.from.email")));
         msg.addRecipients(Message.RecipientType.TO, addresses);
 
-        msg.setSubject("[DCC] Validation Finished! [" + project.getKey() + " : " + state + "]");
-        msg.setText(msgBody);
+        msg.setSubject(String.format(this.config.getString("mail.subject"), project.getKey(), state));
+        msg.setText(String.format(this.config.getString("mail.body"), project.getKey(), state, project.getKey()));
         Transport.send(msg);
         log.error("Emails for {} sent to {}: ", project.getKey(), aCheck);
 

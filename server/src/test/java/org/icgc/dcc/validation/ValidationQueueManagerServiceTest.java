@@ -33,6 +33,8 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.typesafe.config.Config;
+
 public class ValidationQueueManagerServiceTest {
 
   private Release mockRelease;
@@ -45,6 +47,8 @@ public class ValidationQueueManagerServiceTest {
 
   private ValidationService mockValidationService;
 
+  private Config mockConfig;
+
   private ValidationQueueManagerService validationQueueManagerService;
 
   @Before
@@ -54,6 +58,7 @@ public class ValidationQueueManagerServiceTest {
     mockReleaseService = mock(ReleaseService.class);
     mockDictionaryService = mock(DictionaryService.class);
     mockValidationService = mock(ValidationService.class);
+    mockConfig = mock(Config.class);
 
     when(mockRelease.getName()).thenReturn("release1");
     when(mockNextRelease.getRelease()).thenReturn(mockRelease);
@@ -63,7 +68,7 @@ public class ValidationQueueManagerServiceTest {
         .thenReturn(new ArrayList<String>());
 
     validationQueueManagerService =
-        new ValidationQueueManagerService(mockReleaseService, mockDictionaryService, mockValidationService);
+        new ValidationQueueManagerService(mockReleaseService, mockDictionaryService, mockValidationService, mockConfig);
   }
 
   @Ignore
