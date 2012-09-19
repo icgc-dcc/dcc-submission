@@ -32,8 +32,7 @@ public class DuplicateHeaderException extends RuntimeException {
     this.duplicateHeaders.addAll(duplicateHeader);
   }
 
-  public String[] getDuplicateHeader() {
-    String[] result = new String[this.duplicateHeaders.size()];
-    return this.duplicateHeaders.toArray(result);
+  public List<String> getDuplicateHeader() {
+    return this.duplicateHeaders;
   }
 }

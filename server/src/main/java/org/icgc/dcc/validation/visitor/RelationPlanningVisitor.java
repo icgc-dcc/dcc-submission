@@ -30,9 +30,9 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.icgc.dcc.dictionary.model.Cardinality;
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.FileSchema;
+import org.icgc.dcc.dictionary.model.FileSchemaRole;
 import org.icgc.dcc.dictionary.model.Relation;
 import org.icgc.dcc.validation.ExternalFlowPlanningVisitor;
 import org.icgc.dcc.validation.ExternalPlanElement;
@@ -58,6 +58,8 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
+import com.google.common.collect.Lists;
+
 /**
  * Creates {@code PlanElement}s for {@code Relation}.
  */
@@ -76,8 +78,10 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
   @Override
   public void visit(Relation relation) {
     FileSchema currentSchema = getCurrentSchema();
-    List<FileSchema> afferentStrictFileSchemata = currentSchema.getAfferentStrictFileSchemata(dictionary);
-    collect(new RelationPlanElement(currentSchema, relation, afferentStrictFileSchemata));
+    List<FileSchema> afferentStrictFileSchemata = currentSchema.getBidirectionalAfferentFileSchemata(dictionary);
+    if(currentSchema.getRole() != FileSchemaRole.SYSTEM) {
+      collect(new RelationPlanElement(currentSchema, relation, afferentStrictFileSchemata));
+    }
   }
 
   public static class RelationPlanElement implements ExternalPlanElement {
@@ -90,7 +94,7 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
 
     private final String[] rhsFields;
 
-    private final Cardinality cardinality;
+    private final Boolean bidirectional;
 
     private final List<Integer> optionals;
 
@@ -105,14 +109,14 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
       this.lhsFields = relation.getFields().toArray(new String[] {});
       this.rhs = relation.getOther();
       this.rhsFields = relation.getOtherFields().toArray(new String[] {});
-      this.cardinality = relation.getCardinality();
+      this.bidirectional = relation.isBidirectional();
       this.optionals = relation.getOptionals();
       this.afferentFileSchemata = afferentFileSchemata;
     }
 
     @Override
     public String describe() {
-      return String.format("%s[%s:%s(%s)->%s:%s [%s]]", NAME, lhs, Arrays.toString(lhsFields), cardinality, rhs,
+      return String.format("%s[%s:%s(%s)->%s:%s [%s]]", NAME, lhs, Arrays.toString(lhsFields), bidirectional, rhs,
           Arrays.toString(rhsFields), optionals);
     }
 
@@ -145,19 +149,18 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
       String[] requiredRhsRenamedFields = extractRequiredFields(renamedRhsFields);
       String[] optionalRhsRenamedFields = extractOptionalFields(renamedRhsFields);
 
-      boolean twoWays = cardinality == Cardinality.ONE_OR_MORE;
       boolean conditional = optionals.isEmpty() == false;
-      checkState(conditional == false || twoWays == false, describe()); // by design, see DCC-289#3
+      checkState(conditional == false || bidirectional == false, describe()); // by design, see DCC-289#3
 
       rhsPipe = new Discard(rhsPipe, new Fields(ValidationFields.OFFSET_FIELD_NAME));
       rhsPipe = new Rename(rhsPipe, new Fields(rhsFields), new Fields(renamedRhsFields));
-      Joiner joiner = twoWays ? new OuterJoin() : new LeftJoin();
+      Joiner joiner = bidirectional ? new OuterJoin() : new LeftJoin();
       Pipe pipe =
           new CoGroup(lhsPipe, new Fields(requiredLhsFields), rhsPipe, new Fields(requiredRhsRenamedFields), joiner);
       NoNullBufferBase noNullBufferBase = //
           conditional ? new ConditionalNoNullBuffer(lhs, rhs, lhsFields, rhsFields, requiredLhsFields,
               requiredRhsRenamedFields, optionalLhsFields, optionalRhsRenamedFields) : //
-          new NoNullBuffer(lhs, rhs, lhsFields, rhsFields, renamedRhsFields, twoWays);
+          new NoNullBuffer(lhs, rhs, lhsFields, rhsFields, renamedRhsFields, bidirectional);
       return new Every(pipe, Fields.ALL, noNullBufferBase, Fields.RESULTS);
     }
 
@@ -221,8 +224,13 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
     }
 
     protected void reportRelationError(TupleState tupleState, Tuple offendingLhsTuple) {
-      tupleState.reportError(ValidationErrorCode.RELATION_ERROR, TuplesUtils.getObjects(offendingLhsTuple), lhs,
-          Arrays.asList(lhsFields), rhs, Arrays.asList(rhsFields));
+      List<String> columnNames = Lists.newArrayList(lhsFields);
+      String relationSchema = rhs;
+      List<String> relationColumnNames = Lists.newArrayList(rhsFields);
+      List<Object> value = TuplesUtils.getObjects(offendingLhsTuple);
+
+      tupleState.reportError(ValidationErrorCode.RELATION_ERROR, columnNames, value, relationSchema,
+          relationColumnNames);
     }
   }
 
@@ -338,14 +346,14 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
 
     private final String[] renamedRhsFields;
 
-    protected final boolean twoWays;
+    protected final boolean bidirectional;
 
     NoNullBuffer(String lhs, String rhs, String[] lhsFields, String[] rhsFields, String[] renamedRhsFields,
-        boolean twoWays) {
+        boolean bidirectional) {
       super(lhs, rhs, lhsFields, rhsFields);
       checkArgument(renamedRhsFields != null && renamedRhsFields.length > 0);
       this.renamedRhsFields = renamedRhsFields;
-      this.twoWays = twoWays;
+      this.bidirectional = bidirectional;
     }
 
     @Override
@@ -363,12 +371,18 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
             reportRelationError(state, entry.selectTuple(new Fields(lhsFields)));
             bufferCall.getOutputCollector().add(new Tuple(state));
           }
-        } else if(twoWays) {
+        } else if(bidirectional) {
           if(TuplesUtils.hasValues(entry, lhsFields) == false) {
             Tuple offendingRhsTuple = entry.selectTuple(new Fields(renamedRhsFields));
             TupleState state = new TupleState(CONVENTION_PARENT_OFFSET);
-            state.reportError(ValidationErrorCode.RELATION_PARENT_ERROR, lhs, Arrays.asList(lhsFields),
-                TuplesUtils.getObjects(offendingRhsTuple), rhs, Arrays.asList(rhsFields));
+
+            List<String> columnNames = Lists.newArrayList(lhsFields);
+            String relationSchema = rhs;
+            List<String> relationColumnNames = Lists.newArrayList(rhsFields);
+            List<Object> value = TuplesUtils.getObjects(offendingRhsTuple);
+
+            state.reportError(ValidationErrorCode.RELATION_PARENT_ERROR, columnNames, value, relationSchema,
+                relationColumnNames);
             bufferCall.getOutputCollector().add(new Tuple(state));
           }
         }

@@ -23,7 +23,7 @@ import java.util.List;
 
 import junit.framework.Assert;
 
-import org.icgc.dcc.validation.cascading.StructralCheckFunction;
+import org.icgc.dcc.validation.cascading.StructuralCheckFunction;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -35,7 +35,7 @@ import cascading.tuple.TupleListCollector;
 
 @Ignore
 // FIXME
-public class StructralCheckFunctionTest {
+public class StructuralCheckFunctionTest {
 
   private final Fields LINE_FIELDS = new Fields("line");
 
@@ -67,7 +67,7 @@ public class StructralCheckFunctionTest {
 
   @Test
   public void test_operate_valid() {
-    StructralCheckFunction function = new StructralCheckFunction(DICTIONARY_FIELD_NAMES);
+    StructuralCheckFunction function = new StructuralCheckFunction(DICTIONARY_FIELD_NAMES);
 
     function.processFileHeader(VALID_HEADER);
     TupleEntry[] tuples = VALID_DATA_TUPLES;
@@ -80,7 +80,7 @@ public class StructralCheckFunctionTest {
 
   @Test
   public void test_operate_missingColumns() {
-    StructralCheckFunction function = new StructralCheckFunction(DICTIONARY_FIELD_NAMES);
+    StructuralCheckFunction function = new StructuralCheckFunction(DICTIONARY_FIELD_NAMES);
 
     function.processFileHeader(MISSING_HEADER_FIELDS);
     TupleEntry[] tuples = MISSING_DATA_TUPLES;
@@ -93,7 +93,7 @@ public class StructralCheckFunctionTest {
 
   @Test
   public void test_operate_extraColumns() {
-    StructralCheckFunction function = new StructralCheckFunction(DICTIONARY_FIELD_NAMES);
+    StructuralCheckFunction function = new StructuralCheckFunction(DICTIONARY_FIELD_NAMES);
 
     function.processFileHeader(EXTRA_HEADER_FIELDS);
     TupleEntry[] tuples = EXTRA_DATA_TUPLES;
@@ -106,7 +106,7 @@ public class StructralCheckFunctionTest {
 
   @Test
   public void test_operate_missingHeaders() {
-    StructralCheckFunction function = new StructralCheckFunction(DICTIONARY_FIELD_NAMES);
+    StructuralCheckFunction function = new StructuralCheckFunction(DICTIONARY_FIELD_NAMES);
 
     function.processFileHeader(MISSING_HEADER_FIELDS);
     TupleEntry[] tuples = VALID_DATA_TUPLES;
@@ -119,7 +119,7 @@ public class StructralCheckFunctionTest {
 
   @Test
   public void test_operate_extraHeaders() {
-    StructralCheckFunction function = new StructralCheckFunction(DICTIONARY_FIELD_NAMES);
+    StructuralCheckFunction function = new StructuralCheckFunction(DICTIONARY_FIELD_NAMES);
 
     function.processFileHeader(EXTRA_HEADER_FIELDS);
     TupleEntry[] tuples = VALID_DATA_TUPLES;
@@ -132,7 +132,7 @@ public class StructralCheckFunctionTest {
 
   @Test
   public void test_operate_missingData() {
-    StructralCheckFunction function = new StructralCheckFunction(DICTIONARY_FIELD_NAMES);
+    StructuralCheckFunction function = new StructuralCheckFunction(DICTIONARY_FIELD_NAMES);
 
     function.processFileHeader(VALID_HEADER);
     TupleEntry[] tuples = MISSING_DATA_TUPLES;
@@ -145,7 +145,7 @@ public class StructralCheckFunctionTest {
 
   @Test
   public void test_operate_extraData() {
-    StructralCheckFunction function = new StructralCheckFunction(DICTIONARY_FIELD_NAMES);
+    StructuralCheckFunction function = new StructuralCheckFunction(DICTIONARY_FIELD_NAMES);
 
     function.processFileHeader(VALID_HEADER);
     TupleEntry[] tuples = EXTRA_DATA_TUPLES;
@@ -158,7 +158,7 @@ public class StructralCheckFunctionTest {
 
   @Test
   public void test_operate_chaos() { // missing and extra headers, missing and extra data!
-    StructralCheckFunction function = new StructralCheckFunction(DICTIONARY_FIELD_NAMES);
+    StructuralCheckFunction function = new StructuralCheckFunction(DICTIONARY_FIELD_NAMES);
 
     function.processFileHeader(new Fields("col1", "col5", "col4", "col6"));
     TupleEntry[] tuples = new TupleEntry[] {//
@@ -172,7 +172,7 @@ public class StructralCheckFunctionTest {
     Assert.assertFalse(iterator.hasNext());
   }
 
-  private Iterator<TupleEntry> callFunction(StructralCheckFunction function, TupleEntry[] tuples, Fields resultFields) {
+  private Iterator<TupleEntry> callFunction(StructuralCheckFunction function, TupleEntry[] tuples, Fields resultFields) {
     TupleListCollector c = CascadingTestCase.invokeFunction(function, tuples, resultFields);
     Assert.assertEquals(c.size(), tuples.length);
     Iterator<TupleEntry> iterator = c.entryIterator();

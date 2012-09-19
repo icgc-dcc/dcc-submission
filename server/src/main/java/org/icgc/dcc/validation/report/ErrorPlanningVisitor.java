@@ -21,6 +21,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.codehaus.jackson.map.MappingIterator;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -30,6 +32,7 @@ import org.icgc.dcc.validation.FlowType;
 import org.icgc.dcc.validation.PlanExecutionException;
 import org.icgc.dcc.validation.ReportingFlowPlanningVisitor;
 import org.icgc.dcc.validation.ReportingPlanElement;
+import org.icgc.dcc.validation.ValidationErrorCode;
 import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.cascading.TupleStates;
 import org.icgc.dcc.validation.cascading.ValidationFields;
@@ -93,6 +96,9 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
 
     class ErrorReportCollector implements ReportCollector {
 
+      private final Map<ValidationErrorCode, ValidationErrorReport> errorMap =
+          new HashMap<ValidationErrorCode, ValidationErrorReport>();
+
       public ErrorReportCollector() {
       }
 
@@ -106,7 +112,7 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
 
           ObjectMapper mapper = new ObjectMapper();
           if(report.getErrors() == null) {
-            report.setErrors(new ArrayList<TupleState>());
+            report.setErrors(new ArrayList<ValidationErrorReport>());
           }
           if(report.getFieldReports() == null) {
             report.setFieldReports(new ArrayList<FieldReport>());
@@ -118,12 +124,18 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
             TupleState tupleState = tupleStates.next();
             if(tupleState.isInvalid()) {
               outcome = Outcome.FAILED;
-              report.errors.add(tupleState);
+              for(TupleState.TupleError error : tupleState.getErrors()) {
+                if(errorMap.containsKey(error.getCode()) == true) {
+                  ValidationErrorReport errorReport = errorMap.get(error.getCode());
+                  errorReport.updateReport(error);
+                } else {
+                  errorMap.put(error.getCode(), new ValidationErrorReport(error));
+                }
+              }
             }
-            if(report.getErrors().size() >= 100) {
-              // Limit to 100 errors
-              break;
-            }
+          }
+          for(ValidationErrorReport e : errorMap.values()) {
+            report.errors.add(e);
           }
           return outcome;
         } catch(FileNotFoundException fnfe) {
@@ -136,5 +148,4 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
       }
     }
   }
-
 }

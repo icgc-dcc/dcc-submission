@@ -117,9 +117,7 @@ public class ValidationService {
   public void runCascade(Cascade cascade, String projectKey) {
     int size = cascade.getFlows().size();
     log.info("starting cascade with {} flows", size);
-    if(size > 0) {
-      cascade.complete();
-    }
+    cascade.complete();
     log.info("completed cascade with {} flows", size);
   }
 }

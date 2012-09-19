@@ -23,7 +23,7 @@ define (require) ->
 
   class Collection extends Chaplin.Collection
     # Place your application-specific collection features here
-    apiRoot: "http://hboot1.res.oicr.on.ca:5380/ws/"
+    apiRoot: "#{window.location.origin}/ws/"
 
     urlPath: ->
       console.debug 'Collection#urlPath'

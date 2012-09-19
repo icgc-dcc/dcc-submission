@@ -2,8 +2,6 @@ package org.icgc.dcc.validation.report;
 
 import java.util.List;
 
-import org.icgc.dcc.validation.cascading.TupleState;
-
 import com.google.code.morphia.annotations.Embedded;
 
 @Embedded
@@ -13,7 +11,7 @@ public class SchemaReport {
 
   protected List<FieldReport> fieldReports;
 
-  protected List<TupleState> errors;
+  protected List<ValidationErrorReport> errors;
 
   public String getName() {
     return name;
@@ -31,11 +29,11 @@ public class SchemaReport {
     this.fieldReports = fieldReports;
   }
 
-  public List<TupleState> getErrors() {
+  public List<ValidationErrorReport> getErrors() {
     return errors;
   }
 
-  public void setErrors(List<TupleState> errors) {
+  public void setErrors(List<ValidationErrorReport> errors) {
     this.errors = errors;
   }
 

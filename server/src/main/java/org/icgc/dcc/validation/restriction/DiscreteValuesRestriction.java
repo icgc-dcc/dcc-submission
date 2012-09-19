@@ -105,8 +105,8 @@ public class DiscreteValuesRestriction implements InternalPlanElement {
       String value = tupleEntry.getString(0);
       if(value != null && values.contains(value) == false) {
         Object fieldName = tupleEntry.getFields().get(0);
-        ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.DISCRETE_VALUES_ERROR, value, fieldName,
-            values);
+        ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.DISCRETE_VALUES_ERROR, fieldName.toString(),
+            value, values);
       }
       functionCall.getOutputCollector().add(tupleEntry.getTupleCopy());
     }

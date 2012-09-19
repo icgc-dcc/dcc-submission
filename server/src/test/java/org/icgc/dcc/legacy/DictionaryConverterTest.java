@@ -113,7 +113,7 @@ public class DictionaryConverterTest {
       assertEquals(refNode.get("role"), testNode.get("role"));
       assertEquals(refNode.get("uniqueFields"), testNode.get("uniqueFields"));
       this.test_compare_field(refNode.get("fields"), testNode.get("fields"));
-      this.test_compare_relation(refNode.get("relation"), testNode.get("relation"));
+      this.test_compare_relation(refNode.get("relations"), testNode.get("relations"));
 
     }
   }

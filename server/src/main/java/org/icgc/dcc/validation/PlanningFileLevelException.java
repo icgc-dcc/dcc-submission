@@ -15,8 +15,45 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.dictionary.model;
+package org.icgc.dcc.validation;
 
-public enum Cardinality {
-  ZERO_OR_MORE, ONE_OR_MORE,
+import org.icgc.dcc.validation.cascading.TupleState;
+
+public class PlanningFileLevelException extends PlanningException {
+
+  private String filename;
+
+  private TupleState tupleState;
+
+  public PlanningFileLevelException() {
+    super();
+  }
+
+  public PlanningFileLevelException(String message, Throwable cause) {
+    super(message, cause);
+  }
+
+  public PlanningFileLevelException(String message) {
+    super(message);
+  }
+
+  public PlanningFileLevelException(Throwable cause) {
+    super(cause);
+  }
+
+  public PlanningFileLevelException(String filename, ValidationErrorCode errorCode, String columnName, Object value,
+      Object... params) {
+    super();
+    this.filename = filename;
+    this.tupleState = new TupleState();
+    tupleState.reportError(errorCode, columnName, value, params);
+  }
+
+  public String getFilename() {
+    return this.filename;
+  }
+
+  public TupleState getTupleState() {
+    return this.tupleState;
+  }
 }
