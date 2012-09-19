@@ -19,6 +19,8 @@ package org.icgc.dcc.validation;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -60,6 +62,10 @@ public class Plan {
 
     this.dictionary = dictionary;
     this.cascadingStrategy = cascadingStrategy;
+  }
+
+  public String path(final FileSchema schema) throws FileNotFoundException, IOException {
+    return this.cascadingStrategy.path(schema).toUri().getPath();
   }
 
   public Dictionary getDictionary() {
@@ -116,8 +122,8 @@ public class Plan {
         if(flow != null) {
           cascade.addFlow(flow);
         }
-      } catch(PlanningException e) {
-        errors.put(e.getSchemaName(), e.getTupleState());
+      } catch(PlanningFileLevelException e) {
+        errors.put(e.getFilename(), e.getTupleState());
       }
     }
     if(errors.size() > 0) {

@@ -107,13 +107,15 @@ public class StructralCheckFunction extends BaseOperation implements Function {
       adjustedValues = convertMissingCodes(adjustedValues, tupleState);
       adjustedValues = replaceEmptyStrings(adjustedValues);
       if(REPORT_WARNINGS && unknownHeaderIndices.isEmpty() == false) {
-        tupleState.reportError(ValidationErrorCode.UNKNOWN_COLUMNS_WARNING, unknownHeaderIndices);
+        tupleState.reportError(ValidationErrorCode.UNKNOWN_COLUMNS_WARNING, ValidationErrorCode.FILE_LEVEL_ERROR,
+            unknownHeaderIndices);
       }
     } else {
       adjustedValues = Arrays.asList(new String[dictionaryFields.size()]); // can discard values but must match number
                                                                            // of fields in headers for later merge in
                                                                            // error reporting
-      tupleState.reportError(ValidationErrorCode.STRUCTURALLY_INVALID_ROW_ERROR, dataSize, headerSize);
+      tupleState.reportError(ValidationErrorCode.STRUCTURALLY_INVALID_ROW_ERROR, ValidationErrorCode.FILE_LEVEL_ERROR,
+          dataSize, headerSize);
     }
     return adjustedValues;
   }

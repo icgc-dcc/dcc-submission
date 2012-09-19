@@ -19,11 +19,12 @@ package org.icgc.dcc.validation;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
 import org.icgc.dcc.dictionary.model.FileSchema;
-import org.icgc.dcc.dictionary.model.FileSchemaRole;
 import org.icgc.dcc.validation.visitor.RelationPlanningVisitor.RelationPlanElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,8 +56,18 @@ class DefaultExternalFlowPlanner extends BaseFileSchemaFlowPlanner implements Ex
   @Override
   public void apply(ExternalPlanElement element) {
     checkArgument(element != null);
+
     String currentFileSchemaName = getSchema().getName();
     String referencedFileSchema = element.rhs();
+
+    String fileName = null;
+    try {
+      fileName = this.plan.path(getSchema());
+    } catch(FileNotFoundException fnfe) {
+      throw new PlanningException(fnfe);
+    } catch(IOException ioe) {
+      throw new PlanningException(ioe);
+    }
 
     InternalFlowPlanner lhsInternalFlow;
     InternalFlowPlanner rhsInternalFlow;
@@ -64,8 +75,8 @@ class DefaultExternalFlowPlanner extends BaseFileSchemaFlowPlanner implements Ex
       lhsInternalFlow = plan.getInternalFlow(currentFileSchemaName);
       rhsInternalFlow = plan.getInternalFlow(referencedFileSchema);
     } catch(MissingFileException e) {
-      throw new PlanningException(currentFileSchemaName, ValidationErrorCode.INVALID_RELATION_ERROR,
-          referencedFileSchema);
+      throw new PlanningFileLevelException(fileName, ValidationErrorCode.INVALID_RELATION_ERROR,
+          ValidationErrorCode.FILE_LEVEL_ERROR, referencedFileSchema);
     }
 
     if(element instanceof RelationPlanElement) { // FIXME: see DCC-391; lesser of all evils for now, file-level error
@@ -78,17 +89,12 @@ class DefaultExternalFlowPlanner extends BaseFileSchemaFlowPlanner implements Ex
         try {
           plan.getInternalFlow(afferentFileSchemataName);
         } catch(MissingFileException e) {
-          throw new PlanningException(currentFileSchemaName, ValidationErrorCode.INVALID_REVERSE_RELATION_ERROR,
-              afferentFileSchemataName);
+          throw new PlanningFileLevelException(fileName, ValidationErrorCode.INVALID_REVERSE_RELATION_ERROR,
+              ValidationErrorCode.FILE_LEVEL_ERROR, afferentFileSchemataName);
         }
       }
     }
 
-    if(getSchema().getRole() == FileSchemaRole.SYSTEM
-        && plan.getFileSchema(referencedFileSchema).getRole() == FileSchemaRole.SYSTEM) {
-      log.info("[{}] skipping element [{}]: relation between system files", getName(), element.describe());
-      return;
-    }
     log.info("[{}] applying element [{}]", getName(), element.describe());
     Trim trimLhs = lhsInternalFlow.addTrimmedOutput(element.lhsFields());
     Trim trimRhs = rhsInternalFlow.addTrimmedOutput(element.rhsFields());

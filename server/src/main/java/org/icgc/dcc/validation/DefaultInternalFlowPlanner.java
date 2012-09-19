@@ -20,6 +20,7 @@ package org.icgc.dcc.validation;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
@@ -130,8 +131,16 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
     } catch(IOException e) {
       throw new PlanningException("Error processing file header");
     } catch(DuplicateHeaderException e) {
-      throw new PlanningException(getSchema().getName(), ValidationErrorCode.DUPLICATE_HEADER_ERROR,
-          (Object) e.getDuplicateHeader());
+      String fileName = null;
+      try {
+        fileName = strategy.path(getSchema()).toUri().getPath();
+      } catch(FileNotFoundException fnfe) {
+        throw new PlanningException(fnfe);
+      } catch(IOException ioe) {
+        throw new PlanningException(ioe);
+      }
+      throw new PlanningFileLevelException(fileName, ValidationErrorCode.DUPLICATE_HEADER_ERROR,
+          ValidationErrorCode.FILE_LEVEL_ERROR, e.getDuplicateHeader());
     }
 
     flowDef.addSource(head, source);

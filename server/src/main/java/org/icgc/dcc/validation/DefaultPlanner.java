@@ -85,15 +85,15 @@ public class DefaultPlanner implements Planner {
           log.info("file schema {} has no matching datafile in submission directory {}", fileSchemaName,
               fileSchemaDirectory.getDirectoryPath());
         }
-      } catch(PlanningException e) {
-        this.errors.put(e.getSchemaName(), e.getTupleState());
+      } catch(PlanningFileLevelException e) {
+        this.errors.put(e.getFilename(), e.getTupleState());
       }
     }
     for(PlanningVisitor<?> visitor : planningVisitors) {
       try {
         visitor.apply(plan);
-      } catch(PlanningException e) {
-        this.errors.put(e.getSchemaName(), e.getTupleState());
+      } catch(PlanningFileLevelException e) {
+        this.errors.put(e.getFilename(), e.getTupleState());
       }
     }
 

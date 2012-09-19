@@ -147,6 +147,7 @@ public abstract class BaseCascadingStrategy implements CascadingStrategy {
   @Override
   public Path path(final FileSchema schema) throws FileNotFoundException, IOException {
     RemoteIterator<LocatedFileStatus> files = fileSystem.listFiles(input, false);
+
     while(files.hasNext()) {
       LocatedFileStatus file = files.next();
       if(file.isFile()) {

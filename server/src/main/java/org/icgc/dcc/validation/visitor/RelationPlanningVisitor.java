@@ -33,6 +33,7 @@ import java.util.Set;
 import org.icgc.dcc.dictionary.model.Cardinality;
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.FileSchema;
+import org.icgc.dcc.dictionary.model.FileSchemaRole;
 import org.icgc.dcc.dictionary.model.Relation;
 import org.icgc.dcc.validation.ExternalFlowPlanningVisitor;
 import org.icgc.dcc.validation.ExternalPlanElement;
@@ -58,6 +59,8 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
+import com.google.common.collect.Lists;
+
 /**
  * Creates {@code PlanElement}s for {@code Relation}.
  */
@@ -77,7 +80,9 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
   public void visit(Relation relation) {
     FileSchema currentSchema = getCurrentSchema();
     List<FileSchema> afferentStrictFileSchemata = currentSchema.getAfferentStrictFileSchemata(dictionary);
-    collect(new RelationPlanElement(currentSchema, relation, afferentStrictFileSchemata));
+    if(currentSchema.getRole() != FileSchemaRole.SYSTEM) {
+      collect(new RelationPlanElement(currentSchema, relation, afferentStrictFileSchemata));
+    }
   }
 
   public static class RelationPlanElement implements ExternalPlanElement {
@@ -221,8 +226,13 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
     }
 
     protected void reportRelationError(TupleState tupleState, Tuple offendingLhsTuple) {
-      tupleState.reportError(ValidationErrorCode.RELATION_ERROR, TuplesUtils.getObjects(offendingLhsTuple), lhs,
-          Arrays.asList(lhsFields), rhs, Arrays.asList(rhsFields));
+      List<String> columnNames = Lists.newArrayList(lhsFields);
+      String relationSchema = rhs;
+      List<String> relationColumnNames = Lists.newArrayList(rhsFields);
+      List<Object> value = TuplesUtils.getObjects(offendingLhsTuple);
+
+      tupleState.reportError(ValidationErrorCode.RELATION_ERROR, columnNames, value, relationSchema,
+          relationColumnNames);
     }
   }
 
@@ -367,8 +377,14 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
           if(TuplesUtils.hasValues(entry, lhsFields) == false) {
             Tuple offendingRhsTuple = entry.selectTuple(new Fields(renamedRhsFields));
             TupleState state = new TupleState(CONVENTION_PARENT_OFFSET);
-            state.reportError(ValidationErrorCode.RELATION_PARENT_ERROR, lhs, Arrays.asList(lhsFields),
-                TuplesUtils.getObjects(offendingRhsTuple), rhs, Arrays.asList(rhsFields));
+
+            List<String> columnNames = Lists.newArrayList(lhsFields);
+            String relationSchema = rhs;
+            List<String> relationColumnNames = Lists.newArrayList(rhsFields);
+            List<Object> value = TuplesUtils.getObjects(offendingRhsTuple);
+
+            state.reportError(ValidationErrorCode.RELATION_PARENT_ERROR, columnNames, value, relationSchema,
+                relationColumnNames);
             bufferCall.getOutputCollector().add(new Tuple(state));
           }
         }
