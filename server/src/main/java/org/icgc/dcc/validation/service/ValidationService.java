@@ -104,6 +104,7 @@ public class ValidationService {
   }
 
   public Plan planCascade(String projectKey, CascadingStrategy cascadingStrategy, Dictionary dictionary) {
+
     Plan plan = planner.plan(cascadingStrategy, dictionary);
 
     log.info("# internal flows: {}", Iterables.size(plan.getInternalFlows()));
