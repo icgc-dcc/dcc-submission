@@ -26,7 +26,7 @@ define (require) ->
     template: template
     template = null
 
-    autoRender: true
+    autoRender: false
     
     initialize: ->
       console.debug "ReportTableView#initialize", @model, @el
@@ -180,6 +180,24 @@ define (require) ->
         else
           "<td><strong>#{error.code}</strong></td><td><strong>#{error.parameters}</strong></td>"
 
+    formatParams: (error) ->
+      console.debug "ReportTableView#formatParams", error
+      out = []
+      errors = []
+      
+      for key, value of error.parameters
+        out.push "<strong>#{key}</strong>: #{value}<br>"
+        
+      for i in [0 .. error.lines.length - 1]
+        e = ''
+        e += "<strong>#{error.lines[i]}</strong>"
+        if error.values[i]
+          e += ": #{error.values[i]}"
+        errors.push e
+        
+      out.push(errors.join ", ")
+      out.join ""
+      
     formatDetails: (data) ->
       console.debug "ReportTableView#formatDetails", data
       
@@ -191,8 +209,9 @@ define (require) ->
           <table class='table table-striped'>
           <thead>
             <tr>
-            <th>Offset</th>
             <th>Error Type</th>
+            <th>Column Name</th>
+            <th>Count</th>
             <th>Parameters</th>
             </tr>
           </thead>
@@ -200,10 +219,12 @@ define (require) ->
         """
         
         for errorObj in data.errors
-          for error in errorObj.errors
+          console.log errorObj
+          for error in errorObj.columns
+            console.log errorObj, error
             sOut += "<tr>"
-            sOut += "<td>#{errorObj.offset}</td>"
-            sOut += @formatError(error)
+            sOut += "<td>#{errorObj.errorType}</td><td>#{error.columnNames.join ', '}</td>"
+            sOut += "<td>#{error.count}</td><td>#{@formatParams error}</td>"
             sOut += "</tr>"
         sOut += "</tbody></table>"
         
@@ -237,6 +258,13 @@ define (require) ->
           aaSorting: [[ 1, "asc" ]]
           
 
+    updateDataTable: ->
+      if @model.get('report').get('schemaReports').length
+        dt = @$el.dataTable()
+        dt.fnSetColumnVis( 3, true )
+        dt.fnSetColumnVis( 4, true )
+      super
+
     createDataTable: ->
       console.debug "ReportTableView#createDataTable", @$el
       aoColumns = [
@@ -260,19 +288,18 @@ define (require) ->
             fnRender: (oObj, Sval) ->
               utils.fileSize Sval
           }
-        ]
-        
-        reportCols = [
           {
             sTitle: "Status"
             mDataProp: null
             bSortable: true
+            bVisible: false
             fnRender: (oObj, Sval)->
               if oObj.aData.errors
                 errors = 0
-                for es in oObj.aData.errors
-                  errors += es.errors.length
-                "<span class='invalid'>#{errors} ERRORS</span>"
+                #for es in oObj.aData.errors
+                #  console.log es
+                #  errors += es.errors.length
+                "<span class='invalid'>INVALID</span>"
               else
                 "<span class='valid'>VALID</span>"
           }
@@ -280,13 +307,11 @@ define (require) ->
             sTitle: "Report"
             mDataProp: null
             bSortable: false
+            bVisible: false
             sDefaultContent: "<span class='link control'>view</span>"
           }
         ]
-      
-      if true# @model.get 'report'
-        aoColumns = aoColumns.concat reportCols
-      
+
       @$el.dataTable
         sDom:
           "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>"

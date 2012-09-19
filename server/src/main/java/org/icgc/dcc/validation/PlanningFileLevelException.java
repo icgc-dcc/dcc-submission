@@ -15,22 +15,45 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.security;
+package org.icgc.dcc.validation;
 
-import org.apache.shiro.subject.Subject;
+import org.icgc.dcc.validation.cascading.TupleState;
 
-/**
- * Contract for authenticating a user based on username-password tokens.
- */
-public interface UsernamePasswordAuthenticator {
+public class PlanningFileLevelException extends PlanningException {
 
-  /**
-   * 
-   * @return true when authentication succeeds, false otherwise.
-   */
-  public Subject authenticate(String username, char[] password, String host);
+  private String filename;
 
-  public String getCurrentUser();
+  private TupleState tupleState;
 
-  public Subject getSubject();
+  public PlanningFileLevelException() {
+    super();
+  }
+
+  public PlanningFileLevelException(String message, Throwable cause) {
+    super(message, cause);
+  }
+
+  public PlanningFileLevelException(String message) {
+    super(message);
+  }
+
+  public PlanningFileLevelException(Throwable cause) {
+    super(cause);
+  }
+
+  public PlanningFileLevelException(String filename, ValidationErrorCode errorCode, String columnName, Object value,
+      Object... params) {
+    super();
+    this.filename = filename;
+    this.tupleState = new TupleState();
+    tupleState.reportError(errorCode, columnName, value, params);
+  }
+
+  public String getFilename() {
+    return this.filename;
+  }
+
+  public TupleState getTupleState() {
+    return this.tupleState;
+  }
 }

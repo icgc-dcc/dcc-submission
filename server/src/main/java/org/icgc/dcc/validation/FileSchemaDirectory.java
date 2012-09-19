@@ -27,6 +27,8 @@ import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
 
+import com.google.common.collect.Lists;
+
 /**
  * A directory that contains files associated with {@code FileSchema}. Each {@code FileSchema} is expected to have at
  * most one file in this directory.
@@ -44,10 +46,19 @@ public class FileSchemaDirectory {
     this.fs = fs;
   }
 
+  public String getDirectoryPath() {
+    return directory.toUri().getPath();
+  }
+
   public boolean hasFile(final FileSchema fileSchema) {
     List<Path> paths = matches(fileSchema);
     if(paths != null && paths.size() > 1) {
-      throw new PlanningException(fileSchema.getName(), ValidationErrorCode.TOO_MANY_FILES_ERROR, paths.toString());
+      List<String> pathNames = Lists.newArrayList();
+      for(Path path : paths) {
+        pathNames.add(path.getName());
+      }
+      throw new PlanningFileLevelException(paths.get(0).getName().toString(), ValidationErrorCode.TOO_MANY_FILES_ERROR,
+          ValidationErrorCode.FILE_LEVEL_ERROR, pathNames);
     }
     return paths != null && paths.size() > 0;
   }

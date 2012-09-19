@@ -7,7 +7,7 @@ import java.util.Set;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.core.model.User;
+import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
 import org.icgc.dcc.release.model.Release;
 import org.slf4j.Logger;
@@ -67,8 +67,8 @@ public class DccFileSystem {
    * Creates new user-tailored "view" of a given release filesystem. We may change that behavior later to not creating
    * it on the fly (for now we have very few users and don't plan on having millions ever).
    */
-  public ReleaseFileSystem getReleaseFilesystem(Release release, User user) {
-    return new ReleaseFileSystem(this, release, user.getName());
+  public ReleaseFileSystem getReleaseFilesystem(Release release, Subject subject) {
+    return new ReleaseFileSystem(this, release, subject);
   }
 
   /**

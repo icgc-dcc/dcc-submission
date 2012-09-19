@@ -191,6 +191,11 @@ public class DictionaryConverter {
 
       // mark relation fields to be required
       FileSchema leftFileSchema = this.dictionary.fileSchema(leftTable).get();
+      // calculate optional keys
+      List<String> optionalKeys = Lists.newArrayList();
+      for(Integer optionalIndex : optionals) {
+        optionalKeys.add(Iterables.toArray(leftKeys, String.class)[optionalIndex.intValue()]);
+      }
       for(String key : leftKeys) {
         Field leftField = leftFileSchema.field(key).get();
         Optional<Restriction> leftRestriction = leftField.getRestriction(RequiredRestriction.NAME);
@@ -201,7 +206,14 @@ public class DictionaryConverter {
         Restriction requiredRestriction = new Restriction();
         requiredRestriction.setType(RequiredRestriction.NAME);
         BasicDBObject parameter = new BasicDBObject();
-        parameter.append(RequiredRestriction.ACCEPT_MISSING_CODE, false);
+        // exceptions for making required field accept missing code
+        if(rightTable.equals("hsap_gene") || rightTable.equals("hsap_transcript")) {
+          parameter.append(RequiredRestriction.ACCEPT_MISSING_CODE, true);
+        } else if(optionalKeys.contains(key)) {
+          parameter.append(RequiredRestriction.ACCEPT_MISSING_CODE, true);
+        } else {
+          parameter.append(RequiredRestriction.ACCEPT_MISSING_CODE, false);
+        }
         requiredRestriction.setConfig(parameter);
         leftField.addRestriction(requiredRestriction);
       }
@@ -217,7 +229,12 @@ public class DictionaryConverter {
         Restriction requiredRestriction = new Restriction();
         requiredRestriction.setType(RequiredRestriction.NAME);
         BasicDBObject parameter = new BasicDBObject();
-        parameter.append(RequiredRestriction.ACCEPT_MISSING_CODE, false);
+        // exceptions for making required field accept missing code
+        if(rightTable.equals("hsap_gene") || rightTable.equals("hsap_transcript")) {
+          parameter.append(RequiredRestriction.ACCEPT_MISSING_CODE, true);
+        } else {
+          parameter.append(RequiredRestriction.ACCEPT_MISSING_CODE, false);
+        }
         requiredRestriction.setConfig(parameter);
         rightField.addRestriction(requiredRestriction);
       }
@@ -330,14 +347,15 @@ public class DictionaryConverter {
         field_to.setName("transcript_affected_by_bkpt_to");
         fields.add(field_from);
         fields.add(field_to);
+      } else {
+        fields.add(field);
       }
-      fields.add(field);
     }
 
-    // special case for mirna_m, stsm_m, cnsm_m, jcn_m, sgv_m, ssm_m, meth_m, exp_m, add missing donor_id
+    // special case for mirna_m, stsm_m, cnsm_m, jcn_m, ssm_m, meth_m, exp_m, add missing donor_id
     if(FileSchemaName.equals("mirna_m") || FileSchemaName.equals("stsm_m") || FileSchemaName.equals("cnsm_m")
-        || FileSchemaName.equals("jcn_m") || FileSchemaName.equals("sgv_m") || FileSchemaName.equals("ssm_m")
-        || FileSchemaName.equals("meth_m") || FileSchemaName.equals("exp_m")) {
+        || FileSchemaName.equals("jcn_m") || FileSchemaName.equals("ssm_m") || FileSchemaName.equals("meth_m")
+        || FileSchemaName.equals("exp_m")) {
       if(!this.containField(fields, "donor_id")) {
         Field donorIDField = new Field();
         donorIDField.setName("donor_id");

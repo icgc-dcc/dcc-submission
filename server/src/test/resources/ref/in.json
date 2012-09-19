@@ -2,13 +2,22 @@
   "offset" : 2,
   "errors" : [ {
     "code" : "DISCRETE_VALUES_ERROR",
-    "parameters" : [ "GLL", "donor_region_of_residence", [ "CX", "GL", "FM" ] ]
+    "columnNames" : [ "donor_region_of_residence" ],
+    "value" : "GLL",
+    "line" : 2,
+    "parameters" : {
+      "expectedValue" : [ "CX", "GL", "FM" ]
+    }
   } ]
 }{
   "offset" : 3,
   "errors" : [ {
     "code" : "DISCRETE_VALUES_ERROR",
-    "parameters" : [ "FMM", "donor_region_of_residence", [ "CX", "GL", "FM" ] ]
+    "columnNames" : [ "donor_region_of_residence" ],
+    "value" : "FMM",
+    "line" : 3,
+    "parameters" : {
+      "expectedValue" : [ "CX", "GL", "FM" ]
+    }
   } ]
 }
-

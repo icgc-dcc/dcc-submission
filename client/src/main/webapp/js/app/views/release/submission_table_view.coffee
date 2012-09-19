@@ -70,6 +70,16 @@ define (require) ->
               "<a href='/releases/#{@collection.release}/submissions/#{sVal}'>#{sVal}</a>"
           }
           {
+            sTitle: "Files"
+            mDataProp: "submissionFiles"
+            bUseRendered: false
+            fnRender: (oObj, sVal) ->
+              size = 0
+              for f in sVal
+                size += f.size
+              "#{sVal.length} (#{utils.fileSize size})"
+          }
+          {
             sTitle: "State"
             mDataProp: "state"
             fnRender: (oObj, sVal) ->
@@ -110,15 +120,17 @@ define (require) ->
                        Sign Off
                     </a>
                   """
-                when "NOT VALIDATED", "INVALID"
-                  """
-                    <a id="validate-submission-popup-button"
-                       data-submission="#{oObj.aData.projectKey.replace(/<.*?>/g, '')}"
-                       data-toggle="modal"
-                       href='#validate-submission-popup'>
-                       Validate
-                    </a>
-                 """
+                when "NOT VALIDATED", "INVALID", "ERROR"
+                  if oObj.aData.submissionFiles.length
+                    """
+                      <a id="validate-submission-popup-button"
+                         data-submission="#{oObj.aData.projectKey.replace(/<.*?>/g, '')}"
+                         data-toggle="modal"
+                         href='#validate-submission-popup'>
+                         Validate
+                      </a>
+                    """
+                  else "<em>Upload Files</em>"
                 else ""
           }
         ]
@@ -129,12 +141,12 @@ define (require) ->
         bPaginate: false
         oLanguage:
           "sLengthMenu": "_MENU_ submissions per page"
-        aaSorting: [[ 2, "desc" ]]
+        aaSorting: [[ 3, "desc" ]]
         aoColumns: aoColumns
         sAjaxSource: ""
         sAjaxDataProp: ""
         fnRowCallback: (nRow, aData, iDisplayIndex, iDisplayIndexFull) ->
-          cell = $('td:nth-child(2)', nRow)
+          cell = $('td:nth-child(3)', nRow)
           switch aData.state
             when "SIGNED OFF"
               cell.css 'color', '#3A87AD'
@@ -142,7 +154,7 @@ define (require) ->
               cell.css 'color', '#468847'
             when "QUEUED"
               cell.css 'color', '#C09853'
-            when "INVALID"
+            when "INVALID", "ERROR"
               cell.css 'color', '#B94A48'
               
         fnServerData: (sSource, aoData, fnCallback) =>

@@ -105,14 +105,17 @@ public class StructralCheckFunction extends BaseOperation implements Function {
       adjustedValues = filterUnknownColumns(values); // existing valid fields first
       adjustedValues = padMissingColumns(adjustedValues); // then missing fields to be emulated
       adjustedValues = convertMissingCodes(adjustedValues, tupleState);
+      adjustedValues = replaceEmptyStrings(adjustedValues);
       if(REPORT_WARNINGS && unknownHeaderIndices.isEmpty() == false) {
-        tupleState.reportError(ValidationErrorCode.UNKNOWN_COLUMNS_WARNING, unknownHeaderIndices);
+        tupleState.reportError(ValidationErrorCode.UNKNOWN_COLUMNS_WARNING, ValidationErrorCode.FILE_LEVEL_ERROR,
+            unknownHeaderIndices);
       }
     } else {
       adjustedValues = Arrays.asList(new String[dictionaryFields.size()]); // can discard values but must match number
                                                                            // of fields in headers for later merge in
                                                                            // error reporting
-      tupleState.reportError(ValidationErrorCode.STRUCTURALLY_INVALID_ROW_ERROR, dataSize, headerSize);
+      tupleState.reportError(ValidationErrorCode.STRUCTURALLY_INVALID_ROW_ERROR, ValidationErrorCode.FILE_LEVEL_ERROR,
+          dataSize, headerSize);
     }
     return adjustedValues;
   }
@@ -150,6 +153,15 @@ public class StructralCheckFunction extends BaseOperation implements Function {
     checkState(adjustedDataSize <= size); // by design (since we discarded unknown columns)
     if(adjustedDataSize < size) { // padding with nulls
       adjustedValues.addAll(Arrays.asList(new String[size - adjustedDataSize]));
+    }
+    return adjustedValues;
+  }
+
+  private List<String> replaceEmptyStrings(List<String> adjustedValues) {
+    for(int i = 0; i < adjustedValues.size(); i++) {
+      if("".equals(adjustedValues.get(i))) {
+        adjustedValues.set(i, null);
+      }
     }
     return adjustedValues;
   }

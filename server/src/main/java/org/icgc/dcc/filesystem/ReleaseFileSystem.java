@@ -6,11 +6,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.List;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.Submission;
+import org.icgc.dcc.shiro.AuthorizationPrivileges;
 import org.mortbay.log.Log;
 
 public class ReleaseFileSystem {
@@ -19,9 +21,9 @@ public class ReleaseFileSystem {
 
   private final Release release;
 
-  private final String username;
+  private final Subject userSubject;
 
-  public ReleaseFileSystem(DccFileSystem dccFilesystem, Release release, String username) {
+  public ReleaseFileSystem(DccFileSystem dccFilesystem, Release release, Subject subject) {
     super();
 
     checkArgument(dccFilesystem != null);
@@ -29,7 +31,7 @@ public class ReleaseFileSystem {
 
     this.dccFileSystem = dccFilesystem;
     this.release = release;
-    this.username = username; // may be null
+    this.userSubject = subject; // may be null
   }
 
   public ReleaseFileSystem(DccFileSystem dccFilesystem, Release release) {
@@ -46,7 +48,8 @@ public class ReleaseFileSystem {
   private void checkSubmissionDirectory(Project project) {
     checkNotNull(project);
     if(hasPrivileges(project) == false) {
-      throw new DccFileSystemException("User " + username + " does not have permission to access project " + project);
+      throw new DccFileSystemException("User " + userSubject.getPrincipal()
+          + " does not have permission to access project " + project);
     }
     String projectStringPath = dccFileSystem.buildProjectStringPath(release, project.getKey());
     boolean exists = HadoopUtils.checkExistence(dccFileSystem.getFileSystem(), projectStringPath);
@@ -102,16 +105,16 @@ public class ReleaseFileSystem {
   }
 
   public Boolean isSystemDirectory(Path path) {
-    // TODO: hardcode admin for now, wait for DCC-268 to do proper checking
-    return this.getSystemDirectory().getName().equals(path.getName()) && this.username.equals("admin");
+    return this.getSystemDirectory().getName().equals(path.getName()) && this.userSubject.hasRole("admin");
   }
 
   private boolean isApplication() {
-    return username == null;
+    return this.userSubject == null;
   }
 
   private boolean hasPrivileges(Project project) {
-    return isApplication() || project.hasUser(username);
+    return isApplication()
+        || this.userSubject.isPermitted(AuthorizationPrivileges.projectViewPrivilege(project.getKey()));
   }
 
 }

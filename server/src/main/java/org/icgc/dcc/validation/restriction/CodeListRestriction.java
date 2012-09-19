@@ -152,7 +152,7 @@ public class CodeListRestriction implements InternalPlanElement {
       String value = object == null ? null : object.toString();
       if(value != null && codes.contains(value) == false && values.contains(value) == false) {
         Object fieldName = tupleEntry.getFields().get(0);
-        ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.CODELIST_ERROR, value, fieldName,
+        ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.CODELIST_ERROR, fieldName.toString(), value,
             codeListName);
       }
       functionCall.getOutputCollector().add(tupleEntry.getTupleCopy());
