@@ -19,10 +19,13 @@
 */
 
 body {
+  margin: 10px 20px;
   font-size: 13px;
 }
 
 .logged-out #content-container { opacity: 0;} 
+
+.navbar { margin-bottom: 0; }
 
 /* Status Text Colours */
 .signed, .signed_off {
@@ -31,7 +34,7 @@ body {
 .valid, .opened {
   color: #468847;
 }
-.invalid {
+.invalid, .error {
   color: #B94A48;
 }
 .queued {
