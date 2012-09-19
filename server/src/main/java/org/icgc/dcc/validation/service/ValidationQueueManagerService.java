@@ -113,24 +113,24 @@ public class ValidationQueueManagerService extends AbstractService implements Va
               validateSubmission(projectKey);
             }
           }
-        } catch(FatalPlanningException e) {
+        } catch(FatalPlanningException e) { // potentially thrown by validateSubmission() upon file-level errors
           log.error("a Fatal Planning Exception occured while processing the validation queue", e);
-          if(next.isPresent()) {
-            try {
-              handleFailedValidation(next.get(), e.getErrors());
-            } catch(Throwable f) {
-              /*
-               * When a scheduled job throws an exception to the executor, all future runs of the job are cancelled.
-               * Thus, we should never throw an exception to our executor otherwise a server restart is necessary.
-               */
-              log.error("Failed to handle a failed validation!", f);
+          try {
+            if(e.getPlan().hasFileLevelErrors() == false) {
+              new AssertionError(); // by design since this should be the condition for throwing the
+                                    // FatalPlanningException
             }
-          } else {
-            log.error("Next project in queue not present, could not dequeue");
+            handleSuccessfulValidation(e.getProjectKey(), e.getPlan()); // successful but invalid (file-level errors)
+          } catch(Throwable t) {
+            /*
+             * When a scheduled job throws an exception to the executor, all future runs of the job are cancelled. Thus,
+             * we should never throw an exception to our executor otherwise a server restart is necessary.
+             */
+            log.error("Failed to handle a failed validation!", t);
           }
-        } catch(Throwable e) { // exception thrown within the run method are not logged otherwise (NullPointerException
+        } catch(Throwable t) { // exception thrown within the run method are not logged otherwise (NullPointerException
                                // for instance)
-          log.error("an error occured while processing the validation queue", e);
+          log.error("an error occured while processing the validation queue", t);
           if(next.isPresent()) {
             dequeue(next.get(), SubmissionState.ERROR);
           } else {
@@ -139,7 +139,10 @@ public class ValidationQueueManagerService extends AbstractService implements Va
         }
       }
 
-      private void validateSubmission(final String projectKey) {
+      /**
+       * May throw unchecked FatalPlanningException upon file-level errors (too critical to continue)
+       */
+      private void validateSubmission(final String projectKey) throws FatalPlanningException {
         Release release = releaseService.getNextRelease().getRelease();
         if(release == null) {
           throw new ValidationServiceException("cannot access the next release");
@@ -152,7 +155,7 @@ public class ValidationQueueManagerService extends AbstractService implements Va
           } else {
             if(release.getState() == ReleaseState.OPENED) {
               Plan plan = validationService.validate(release, projectKey);
-              handleFinishedValidation(plan, projectKey);
+              handleCascadeStatus(plan, projectKey);
             } else {
               log.info("Release was closed during validation; states not changed");
             }
@@ -160,10 +163,10 @@ public class ValidationQueueManagerService extends AbstractService implements Va
         }
       }
 
-      private void handleFinishedValidation(final Plan plan, final String projectKey) {
+      private void handleCascadeStatus(final Plan plan, final String projectKey) {
         if(plan.getCascade().getCascadeStats().isSuccessful()) {
           handleSuccessfulValidation(projectKey, plan);
-        } else {
+        } else { // if cascading returned an error
           handleFailedValidation(projectKey);
         }
       }
@@ -184,15 +187,51 @@ public class ValidationQueueManagerService extends AbstractService implements Va
   public void handleSuccessfulValidation(String projectKey, Plan plan) {
     checkArgument(projectKey != null);
     SubmissionReport report = new SubmissionReport();
-    Outcome outcome = plan.collect(report);
 
-    setSubmissionReport(projectKey, report);
+    if(plan.hasFileLevelErrors()) { // successful but invalid because of file-level errors
+      Map<String, TupleState> fileLevelErrors = plan.getFileLevelErrors();
+      log.error("fatal file errors:\n\t{}", fileLevelErrors);
 
-    log.info("successful validation - about to dequeue project key {}", projectKey);
-    if(outcome == Outcome.PASSED) {
-      dequeue(projectKey, SubmissionState.VALID);
-    } else {
+      log.info("about to dequeue project key {}", projectKey);
       dequeue(projectKey, SubmissionState.INVALID);
+
+      List<SchemaReport> schemaReports = new ArrayList<SchemaReport>();
+      for(String schema : fileLevelErrors.keySet()) {
+        SchemaReport schemaReport = new SchemaReport();
+        Iterator<TupleState.TupleError> es = fileLevelErrors.get(schema).getErrors().iterator();
+        List<ValidationErrorReport> errReport = Lists.newArrayList();
+        while(es.hasNext()) {
+          errReport.add(new ValidationErrorReport(es.next()));
+        }
+        schemaReport.setErrors(errReport);
+        schemaReport.setName(schema);
+        schemaReports.add(schemaReport);
+      }
+      report.setSchemaReports(schemaReports);
+    } else {
+      Outcome outcome = plan.collect(report);
+
+      log.info("successful validation - about to dequeue project key {}", projectKey);
+      if(outcome == Outcome.PASSED) { // succesful and valid
+        dequeue(projectKey, SubmissionState.VALID);
+      } else { // successful but invalid because data errors
+        dequeue(projectKey, SubmissionState.INVALID);
+      }
+    }
+    setSubmissionReport(projectKey, report);
+  }
+
+  @Override
+  public void handleFailedValidation(String projectKey) {
+    checkArgument(projectKey != null);
+    log.info("failed validation from unknown error - about to dequeue project key {}", projectKey);
+    dequeue(projectKey, SubmissionState.ERROR);
+  }
+
+  private void dequeue(String projectKey, SubmissionState state) {
+    Optional<String> dequeuedProjectKey = releaseService.dequeue(projectKey, state);
+    if(dequeuedProjectKey.isPresent() == false) {
+      log.warn("could not dequeue project {}, maybe the queue was emptied in the meantime?", projectKey);
     }
   }
 
@@ -208,43 +247,6 @@ public class ValidationQueueManagerService extends AbstractService implements Va
     // persist the report to DB
     this.releaseService.updateSubmissionReport(release.getName(), projectKey, submission.getReport());
     log.info("report collecting finished on project {}", projectKey);
-  }
-
-  @Override
-  public void handleFailedValidation(String projectKey) {
-    checkArgument(projectKey != null);
-    log.info("failed validation from unknown error - about to dequeue project key {}", projectKey);
-    dequeue(projectKey, SubmissionState.ERROR);
-  }
-
-  public void handleFailedValidation(String projectKey, Map<String, TupleState> errors) {
-    log.info("failed validation with errors - about to dequeue project key {}", projectKey);
-    checkArgument(projectKey != null);
-    dequeue(projectKey, SubmissionState.INVALID);
-
-    SubmissionReport report = new SubmissionReport();
-    List<SchemaReport> schemaReports = new ArrayList<SchemaReport>();
-    for(String schema : errors.keySet()) {
-      SchemaReport schemaReport = new SchemaReport();
-      Iterator<TupleState.TupleError> es = errors.get(schema).getErrors().iterator();
-      List<ValidationErrorReport> errReport = Lists.newArrayList();
-      while(es.hasNext()) {
-        errReport.add(new ValidationErrorReport(es.next()));
-      }
-      schemaReport.setErrors(errReport);
-      schemaReport.setName(schema);
-      schemaReports.add(schemaReport);
-    }
-    report.setSchemaReports(schemaReports);
-
-    setSubmissionReport(projectKey, report);
-  }
-
-  private void dequeue(String projectKey, SubmissionState state) {
-    Optional<String> dequeuedProjectKey = releaseService.dequeue(projectKey, state);
-    if(dequeuedProjectKey.isPresent() == false) {
-      log.warn("could not dequeue project {}, maybe the queue was emptied in the meantime?", projectKey);
-    }
   }
 
 }
