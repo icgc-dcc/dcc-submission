@@ -17,8 +17,8 @@ public enum ValidationErrorCode {
   CODELIST_ERROR("invalid value %s for field %s. Expected code or value from CodeList %s"), //
   DISCRETE_VALUES_ERROR("invalid value %s for field %s. Expected one of the following values: %s"), //
   TOO_MANY_FILES_ERROR("more than one file matches the schema pattern"), //
-  INVALID_RELATION_ERROR("a required schema for this relation was not found"), //
-  MISSING_SCHEMA_ERROR("no valid schema found"), //
+  INVALID_RELATION_ERROR("relation to schema %s has no matching file"), //
+  INVALID_REVERSE_RELATION_ERROR("relation from schema %s has no matching file and this relation imposes that there be one"), //
   DUPLICATE_HEADER_ERROR("duplicate header found: %s");
 
   private final String message;

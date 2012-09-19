@@ -11,10 +11,7 @@
     "parameters" : [ null, "donor_region_of_residence" ]
   }, {
     "code" : "MISSING_VALUE_ERROR",
-    "parameters" : [ "", "donor_vital_status" ]
-  }, {
-    "code" : "CODELIST_ERROR",
-    "parameters" : [ "", "donor_vital_status", "dr__donor_vital_status" ]
+    "parameters" : [ null, "donor_vital_status" ]
   } ]
 }{
   "offset" : 3,
@@ -23,9 +20,6 @@
     "parameters" : [ null, "donor_region_of_residence" ]
   }, {
     "code" : "MISSING_VALUE_ERROR",
-    "parameters" : [ "", "donor_vital_status" ]
-  }, {
-    "code" : "CODELIST_ERROR",
-    "parameters" : [ "", "donor_vital_status", "dr__donor_vital_status" ]
+    "parameters" : [ null, "donor_vital_status" ]
   } ]
 }

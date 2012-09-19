@@ -15,22 +15,23 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.security;
+package org.icgc.dcc.validation;
 
-import org.apache.shiro.subject.Subject;
+public class MissingFileException extends Exception {
 
-/**
- * Contract for authenticating a user based on username-password tokens.
- */
-public interface UsernamePasswordAuthenticator {
+  public MissingFileException() {
+    super();
+  }
 
-  /**
-   * 
-   * @return true when authentication succeeds, false otherwise.
-   */
-  public Subject authenticate(String username, char[] password, String host);
+  public MissingFileException(String message, Throwable cause) {
+    super(message, cause);
+  }
 
-  public String getCurrentUser();
+  public MissingFileException(String message) {
+    super(message);
+  }
 
-  public Subject getSubject();
+  public MissingFileException(Throwable cause) {
+    super(cause);
+  }
 }
