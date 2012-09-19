@@ -185,4 +185,7 @@ define (require) ->
         model.fetch()
       , timing)
 
+    apitRoot: ->
+      "#{window.location.origin}/ws/"
+
   utils

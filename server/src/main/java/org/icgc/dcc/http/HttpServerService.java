@@ -7,12 +7,17 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.http.server.NetworkListener;
+import org.glassfish.grizzly.http.server.Request;
+import org.glassfish.grizzly.http.server.Response;
 import org.glassfish.grizzly.http.server.ServerConfiguration;
+import org.glassfish.grizzly.http.server.StaticHttpHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.AbstractService;
 import com.typesafe.config.Config;
 
@@ -43,6 +48,7 @@ public class HttpServerService extends AbstractService {
   protected void doStart() {
     final String host = config.getString("http.listen");
     final int port = config.getInt("http.port");
+    final Set<String> resources = ImmutableSet.copyOf(config.getStringList("http.resources"));
     server.addListener(new NetworkListener("http", host, port));
 
     final ServerConfiguration serverConfig = server.getServerConfiguration();
@@ -51,8 +57,15 @@ public class HttpServerService extends AbstractService {
     }
 
     // TODO: add a Handler for static files. This is tied to the way we package and deploy the app.
-    // serverConfig.addHttpHandler(new
-    // StaticHttpHandler(ImmutableSet.copyOf(config.getStringList("http.resources"))),"/");
+    serverConfig.addHttpHandler(new StaticHttpHandler(resources), "/");
+
+    // Redirect back to "/" and appends the request url after the hash(#), which the client can then parse
+    serverConfig.addHttpHandler(new HttpHandler() {
+      @Override
+      public void service(Request request, Response response) throws Exception {
+        response.sendRedirect("/#" + request.getDecodedRequestURI());
+      }
+    }, "/releases");
 
     try {
       server.start();
