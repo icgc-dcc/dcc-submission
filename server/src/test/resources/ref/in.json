@@ -2,7 +2,7 @@
   "offset" : 2,
   "errors" : [ {
     "code" : "DISCRETE_VALUES_ERROR",
-    "columnName" : "donor_region_of_residence",
+    "columnNames" : [ "donor_region_of_residence" ],
     "value" : "GLL",
     "line" : 2,
     "parameters" : {
@@ -13,7 +13,7 @@
   "offset" : 3,
   "errors" : [ {
     "code" : "DISCRETE_VALUES_ERROR",
-    "columnName" : "donor_region_of_residence",
+    "columnNames" : [ "donor_region_of_residence" ],
     "value" : "FMM",
     "line" : 3,
     "parameters" : {

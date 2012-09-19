@@ -36,7 +36,7 @@ public class Relation implements DictionaryElement {
 
   private final List<String> fields;
 
-  private final Cardinality cardinality;
+  private final Boolean bidirectional;
 
   private final String other;
 
@@ -47,27 +47,27 @@ public class Relation implements DictionaryElement {
   public Relation() {
     fields = new ArrayList<String>();
     otherFields = new ArrayList<String>();
-    cardinality = null;
     other = null;
+    bidirectional = null;
     optionals = new ArrayList<Integer>();
   }
 
-  public Relation(Iterable<String> leftFields, String right, Iterable<String> rightFields, Cardinality lhsCardinality) {
-    this(leftFields, right, rightFields, lhsCardinality, ImmutableList.<Integer> of());
+  public Relation(Iterable<String> leftFields, String right, Iterable<String> rightFields, boolean bidirectional) {
+    this(leftFields, right, rightFields, bidirectional, ImmutableList.<Integer> of());
   }
 
-  public Relation(Iterable<String> leftFields, String right, Iterable<String> rightFields, Cardinality lhsCardinality,
+  public Relation(Iterable<String> leftFields, String right, Iterable<String> rightFields, boolean bidirectional,
       Iterable<Integer> optionals) {
+    checkArgument(leftFields != null);
+    checkArgument(right != null);
+    checkArgument(rightFields != null);
+    checkArgument(optionals != null);
+
     this.fields = Lists.newArrayList(leftFields);
-    this.cardinality = lhsCardinality;
+    this.bidirectional = bidirectional;
     this.other = right;
     this.otherFields = Lists.newArrayList(rightFields);
     this.optionals = Lists.newArrayList(optionals);
-
-    checkArgument(this.fields != null);
-    checkArgument(this.other != null);
-    checkArgument(this.otherFields != null);
-    checkArgument(this.optionals != null);
 
     checkArgument(this.fields.isEmpty() == false, this.fields.size());
     checkArgument(this.fields.size() == this.otherFields.size());
@@ -82,17 +82,17 @@ public class Relation implements DictionaryElement {
           this.describe()));
     }
 
-    if(this.optionals.isEmpty() == false && lhsCardinality == Cardinality.ONE_OR_MORE) { // see comment DCC-289: only
-                                                                                         // allowing one or the other
+    if(this.optionals.isEmpty() == false && bidirectional) { // see comment DCC-289: only
+                                                             // allowing one or the other
       throw new DataModelException(String.format(
-          "invalid relation \"%s\" specified: cannot specify both optional fields (%s) and a cardinality of %s",
-          describe(), this.optionals, Cardinality.ONE_OR_MORE));
+          "invalid relation \"%s\" specified: cannot specify both optional fields (%s) and bidirectionality is %s",
+          describe(), this.optionals, bidirectional));
     }
   }
 
   public String describe() {
-    return String.format("?.%s (cardinality: %s) --> %s.%s [optionals: %s]", fields, cardinality, other, otherFields,
-        optionals);
+    return String.format("?.%s (bidirectionality: %s) --> %s.%s [optionals: %s]", fields, bidirectional, other,
+        otherFields, optionals);
   }
 
   @Override
@@ -104,8 +104,8 @@ public class Relation implements DictionaryElement {
     return fields;
   }
 
-  public Cardinality getCardinality() {
-    return cardinality;
+  public boolean isBidirectional() {
+    return bidirectional;
   }
 
   public String getOther() {

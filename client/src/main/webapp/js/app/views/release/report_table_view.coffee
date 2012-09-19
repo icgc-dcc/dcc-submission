@@ -223,7 +223,7 @@ define (require) ->
           for error in errorObj.columns
             console.log errorObj, error
             sOut += "<tr>"
-            sOut += "<td>#{errorObj.errorType}</td><td>#{error.columnName}</td>"
+            sOut += "<td>#{errorObj.errorType}</td><td>#{error.columnNames.join ', '}</td>"
             sOut += "<td>#{error.count}</td><td>#{@formatParams error}</td>"
             sOut += "</tr>"
         sOut += "</tbody></table>"

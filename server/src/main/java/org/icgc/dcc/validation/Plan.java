@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.validation;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -24,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.report.Outcome;
@@ -47,16 +50,26 @@ public class Plan {
 
   private final Map<String, ExternalFlowPlanner> externalPlanners = Maps.newHashMap();
 
-  private Cascade cascade;
+  private final Dictionary dictionary;
 
   private final CascadingStrategy cascadingStrategy;
 
-  public Plan(CascadingStrategy cascadingStrategy) {
+  private Cascade cascade;
+
+  public Plan(Dictionary dictionary, CascadingStrategy cascadingStrategy) {
+    checkArgument(dictionary != null);
+    checkArgument(cascadingStrategy != null);
+
+    this.dictionary = dictionary;
     this.cascadingStrategy = cascadingStrategy;
   }
 
   public String path(final FileSchema schema) throws FileNotFoundException, IOException {
-    return this.cascadingStrategy.path(schema).getName().toString();
+    return this.cascadingStrategy.path(schema).toUri().getPath();
+  }
+
+  public Dictionary getDictionary() {
+    return dictionary;
   }
 
   public void include(FileSchema fileSchema, InternalFlowPlanner internal, ExternalFlowPlanner external) {
@@ -65,10 +78,10 @@ public class Plan {
     this.externalPlanners.put(fileSchema.getName(), external);
   }
 
-  public InternalFlowPlanner getInternalFlow(String schema) {
+  public InternalFlowPlanner getInternalFlow(String schema) throws MissingFileException {
     InternalFlowPlanner schemaPlan = internalPlanners.get(schema);
     if(schemaPlan == null) {
-      throw new PlanningException(schema, ValidationErrorCode.MISSING_SCHEMA_ERROR, schema, null);
+      throw new MissingFileException(schema);
     }
     return schemaPlan;
   }
@@ -77,10 +90,10 @@ public class Plan {
     return Iterables.unmodifiableIterable(internalPlanners.values());
   }
 
-  public ExternalFlowPlanner getExternalFlow(String schema) {
+  public ExternalFlowPlanner getExternalFlow(String schema) throws MissingFileException {
     ExternalFlowPlanner schemaPlan = externalPlanners.get(schema);
     if(schemaPlan == null) {
-      throw new PlanningException(schema, ValidationErrorCode.MISSING_SCHEMA_ERROR, schema, null);
+      throw new MissingFileException(schema);
     }
     return schemaPlan;
   }
@@ -109,8 +122,8 @@ public class Plan {
         if(flow != null) {
           cascade.addFlow(flow);
         }
-      } catch(PlanningException e) {
-        errors.put(e.getSchemaName(), e.getTupleState());
+      } catch(PlanningFileLevelException e) {
+        errors.put(e.getFilename(), e.getTupleState());
       }
     }
     if(errors.size() > 0) {

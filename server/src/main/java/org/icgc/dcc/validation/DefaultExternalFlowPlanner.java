@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.icgc.dcc.dictionary.model.FileSchema;
-import org.icgc.dcc.dictionary.model.FileSchemaRole;
+import org.icgc.dcc.validation.visitor.RelationPlanningVisitor.RelationPlanElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,36 +56,53 @@ class DefaultExternalFlowPlanner extends BaseFileSchemaFlowPlanner implements Ex
   @Override
   public void apply(ExternalPlanElement element) {
     checkArgument(element != null);
+
+    String currentFileSchemaName = getSchema().getName();
+    String referencedFileSchema = element.rhs();
+
+    String fileName = null;
     try {
-      InternalFlowPlanner lhsInternalFlow = plan.getInternalFlow(getSchema().getName());
-      InternalFlowPlanner rhsInternalFlow = plan.getInternalFlow(element.rhs());
-
-      if(getSchema().getRole() == FileSchemaRole.SYSTEM
-          && plan.getFileSchema(element.rhs()).getRole() == FileSchemaRole.SYSTEM) {
-        log.info("[{}] skipping element [{}]: relation between system files", getName(), element.describe());
-        return;
-      }
-      log.info("[{}] applying element [{}]", getName(), element.describe());
-      Trim trimLhs = lhsInternalFlow.addTrimmedOutput(element.lhsFields());
-      Trim trimRhs = rhsInternalFlow.addTrimmedOutput(element.rhsFields());
-
-      Pipe lhs = getTrimmedHead(trimLhs);
-      Pipe rhs = getTrimmedHead(trimRhs);
-
-      joinedTails.add(element.join(lhs, rhs));
-    } catch(PlanningException e) {
-      String fileName = null;
-      try {
-        fileName = this.plan.path(getSchema());
-      } catch(FileNotFoundException e1) {
-        // TODO Auto-generated catch block
-        e1.printStackTrace();
-      } catch(IOException e1) {
-        // TODO Auto-generated catch block
-        e1.printStackTrace();
-      }
-      throw new PlanningException(fileName, ValidationErrorCode.INVALID_RELATION_ERROR, "FileLevelError", element.rhs());
+      fileName = this.plan.path(getSchema());
+    } catch(FileNotFoundException fnfe) {
+      throw new PlanningException(fnfe);
+    } catch(IOException ioe) {
+      throw new PlanningException(ioe);
     }
+
+    InternalFlowPlanner lhsInternalFlow;
+    InternalFlowPlanner rhsInternalFlow;
+    try {
+      lhsInternalFlow = plan.getInternalFlow(currentFileSchemaName);
+      rhsInternalFlow = plan.getInternalFlow(referencedFileSchema);
+    } catch(MissingFileException e) {
+      throw new PlanningFileLevelException(fileName, ValidationErrorCode.INVALID_RELATION_ERROR,
+          ValidationErrorCode.FILE_LEVEL_ERROR, referencedFileSchema);
+    }
+
+    if(element instanceof RelationPlanElement) { // FIXME: see DCC-391; lesser of all evils for now, file-level error
+                                                 // reporting should be thought through as a whole as we are currently
+                                                 // too dependent on visiting FileSchema-ta based on file presence (see
+                                                 // visitors' apply() method); visiting dictionary may be the way to go
+      RelationPlanElement relationPlanElement = (RelationPlanElement) element;
+      for(FileSchema afferentFileSchemata : relationPlanElement.getAfferentFileSchemata()) {
+        String afferentFileSchemataName = afferentFileSchemata.getName();
+        try {
+          plan.getInternalFlow(afferentFileSchemataName);
+        } catch(MissingFileException e) {
+          throw new PlanningFileLevelException(fileName, ValidationErrorCode.INVALID_REVERSE_RELATION_ERROR,
+              ValidationErrorCode.FILE_LEVEL_ERROR, afferentFileSchemataName);
+        }
+      }
+    }
+
+    log.info("[{}] applying element [{}]", getName(), element.describe());
+    Trim trimLhs = lhsInternalFlow.addTrimmedOutput(element.lhsFields());
+    Trim trimRhs = rhsInternalFlow.addTrimmedOutput(element.rhsFields());
+
+    Pipe lhs = getTrimmedHead(trimLhs);
+    Pipe rhs = getTrimmedHead(trimRhs);
+
+    joinedTails.add(element.join(lhs, rhs));
   }
 
   @Override

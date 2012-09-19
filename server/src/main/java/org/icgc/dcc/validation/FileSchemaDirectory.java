@@ -46,6 +46,10 @@ public class FileSchemaDirectory {
     this.fs = fs;
   }
 
+  public String getDirectoryPath() {
+    return directory.toUri().getPath();
+  }
+
   public boolean hasFile(final FileSchema fileSchema) {
     List<Path> paths = matches(fileSchema);
     if(paths != null && paths.size() > 1) {
@@ -53,8 +57,8 @@ public class FileSchemaDirectory {
       for(Path path : paths) {
         pathNames.add(path.getName());
       }
-      throw new PlanningException(paths.get(0).getName().toString(), ValidationErrorCode.TOO_MANY_FILES_ERROR,
-          "FileLevelError", pathNames);
+      throw new PlanningFileLevelException(paths.get(0).getName().toString(), ValidationErrorCode.TOO_MANY_FILES_ERROR,
+          ValidationErrorCode.FILE_LEVEL_ERROR, pathNames);
     }
     return paths != null && paths.size() > 0;
   }

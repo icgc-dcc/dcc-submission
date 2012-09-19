@@ -2,7 +2,7 @@
   "offset" : 2,
   "errors" : [ {
     "code" : "CODELIST_ERROR",
-    "columnName" : "donor_vital_status",
+    "columnNames" : [ "donor_vital_status" ],
     "value" : "3",
     "line" : 2,
     "parameters" : {
@@ -13,7 +13,7 @@
   "offset" : 3,
   "errors" : [ {
     "code" : "CODELIST_ERROR",
-    "columnName" : "donor_vital_status",
+    "columnNames" : [ "donor_vital_status" ],
     "value" : "4",
     "line" : 3,
     "parameters" : {

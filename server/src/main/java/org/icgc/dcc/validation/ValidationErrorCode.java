@@ -2,6 +2,7 @@ package org.icgc.dcc.validation;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -13,6 +14,7 @@ import org.icgc.dcc.validation.cascading.TupleState.TupleError;
 import com.google.common.collect.ImmutableMap;
 
 public enum ValidationErrorCode {
+
   UNKNOWN_COLUMNS_WARNING("value for unknown column: %s") {
     @Override
     public final ImmutableMap<String, Object> build(Object... params) {
@@ -23,19 +25,23 @@ public enum ValidationErrorCode {
     @Override
     public final ImmutableMap<String, Object> build(Object... params) {
       checkArgument(params[0] instanceof Integer);
-      return ImmutableMap.of("actualNumColumns", params[0]);
+      return ImmutableMap.of(ACTUAL_NUM_COLUMNS, params[0]);
     }
   }, //
   RELATION_ERROR("invalid value(s) (%s) for field(s) %s.%s. Expected to match value(s) in: %s.%s") {
     @Override
     public final ImmutableMap<String, Object> build(Object... params) {
-      return ImmutableMap.of();
+      checkArgument(params[0] instanceof String);
+      checkArgument(params[1] instanceof List);
+      return ImmutableMap.of(RELATION_SCHEMA, params[0], RELATION_COLUMNS, params[1]);
     }
   }, //
   RELATION_PARENT_ERROR("no corresponding values in %s.%s for value(s) %s in %s.%s") {
     @Override
     public final ImmutableMap<String, Object> build(Object... params) {
-      return ImmutableMap.of();
+      checkArgument(params[0] instanceof String);
+      checkArgument(params[1] instanceof List);
+      return ImmutableMap.of(RELATION_SCHEMA, params[0], RELATION_COLUMNS, params[1]);
     }
   }, //
   UNIQUE_VALUE_ERROR("invalid set of values (%s) for fields %s. Expected to be unique") {
@@ -93,13 +99,13 @@ public enum ValidationErrorCode {
       return ImmutableMap.of();
     }
   }, //
-  INVALID_RELATION_ERROR("a required schema for this relation was not found") {
+  INVALID_RELATION_ERROR("relation to schema %s has no matching file") {
     @Override
     public final ImmutableMap<String, Object> build(Object... params) {
       return ImmutableMap.of();
     }
   }, //
-  MISSING_SCHEMA_ERROR("no valid schema found") {
+  INVALID_REVERSE_RELATION_ERROR("relation from schema %s has no matching file and this relation imposes that there be one") {
     @Override
     public final ImmutableMap<String, Object> build(Object... params) {
       return ImmutableMap.of();
@@ -122,6 +128,14 @@ public enum ValidationErrorCode {
 
   private static final String MAX_RANGE = "maxRange";
 
+  private static final String ACTUAL_NUM_COLUMNS = "actualNumColumns";
+
+  private static final String RELATION_SCHEMA = "relationSchema";
+
+  private static final String RELATION_COLUMNS = "relationColumnNames";
+
+  public static final String FILE_LEVEL_ERROR = "FileLevelError";
+
   private final String message;
 
   private final boolean structural;
@@ -138,7 +152,9 @@ public enum ValidationErrorCode {
   }
 
   public String format(Map<String, ? extends Object> parameters) {
-    return String.format(message, parameters);
+    // The formatted message doesn't make sense anymore since the column name was moved to TupleError
+    // return String.format(message, terms);
+    return this.message;
   }
 
   public boolean isStructural() {

@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.validation.report;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -57,14 +56,14 @@ public class ValidationErrorReport {
     return columns;
   }
 
-  public boolean hasColumn(String columnName) {
-    return this.getColumnByName(columnName) != null ? true : false;
+  public boolean hasColumn(List<String> columnNames) {
+    return this.getColumnByName(columnNames) != null;
   }
 
-  public ColumnErrorReport getColumnByName(String columnName) {
+  public ColumnErrorReport getColumnByName(List<String> columnNames) {
     ColumnErrorReport column = null;
     for(ColumnErrorReport c : this.getColumns()) {
-      if(c.getColumnName().equals(columnName)) {
+      if(c.getColumnNames().equals(columnNames)) {
         column = c;
         break;
       }
@@ -78,7 +77,7 @@ public class ValidationErrorReport {
   }
 
   public void updateColumn(TupleError error) {
-    ColumnErrorReport column = this.getColumnByName(error.getColumnName());
+    ColumnErrorReport column = this.getColumnByName(error.getColumnNames());
 
     // Append line/value to lines/values
     if(column.getCount() < MAX_ERROR_COUNT) {
@@ -90,7 +89,7 @@ public class ValidationErrorReport {
   }
 
   public void updateReport(TupleError error) {
-    if(this.hasColumn(error.getColumnName()) == true) {
+    if(this.hasColumn(error.getColumnNames()) == true) {
       this.updateColumn(error);
     } else {
       this.addColumn(error);
@@ -106,13 +105,13 @@ public class ValidationErrorReport {
   }
 
   private static class ColumnErrorReport {
-    private String columnName;
+    private List<String> columnNames;
 
     private long count;
 
-    private List<Long> lines;
+    private List<Long> lines = Lists.newLinkedList();
 
-    private List<Object> values;
+    private List<Object> values = Lists.newLinkedList();
 
     private Map<String, Object> parameters;
 
@@ -120,10 +119,7 @@ public class ValidationErrorReport {
     }
 
     public ColumnErrorReport(TupleError error) {
-      this.lines = new LinkedList<Long>();
-      this.values = new LinkedList<Object>();
-
-      this.setColumnName(error.getColumnName());
+      this.setColumnNames(error.getColumnNames());
       this.setCount(1L);
       this.lines.add(error.getLine());
       this.values.add(error.getValue());
@@ -132,7 +128,7 @@ public class ValidationErrorReport {
     }
 
     public void incCount() {
-      this.setCount(this.getCount() + 1);
+      this.count++;
     }
 
     public long getCount() {
@@ -143,8 +139,8 @@ public class ValidationErrorReport {
       return this.parameters;
     }
 
-    public String getColumnName() {
-      return this.columnName;
+    public List<String> getColumnNames() {
+      return this.columnNames;
     }
 
     public List<Object> getValues() {
@@ -179,8 +175,8 @@ public class ValidationErrorReport {
       this.count = c;
     }
 
-    private void setColumnName(String columnName) {
-      this.columnName = columnName;
+    private void setColumnNames(List<String> columnNames) {
+      this.columnNames = columnNames;
     }
 
     private void setParameters(Map<String, Object> params) {

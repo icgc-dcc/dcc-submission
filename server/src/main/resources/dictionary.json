@@ -54,9 +54,9 @@
         }
       } ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "donor_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "donor",
       "otherFields" : [ "donor_id" ],
       "optionals" : [ ]
@@ -213,9 +213,9 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "sample_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "sample",
       "otherFields" : [ "analyzed_sample_id" ],
       "optionals" : [ ]
@@ -356,9 +356,9 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "analysis_id", "sample_id" ],
-      "cardinality" : "ONE_OR_MORE",
+      "bidirectional" : true,
       "other" : "mirna_m",
       "otherFields" : [ "analysis_id", "sample_id" ],
       "optionals" : [ ]
@@ -471,15 +471,15 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "analysis_id", "analyzed_sample_id", "mutation_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "ssm_p",
       "otherFields" : [ "analysis_id", "analyzed_sample_id", "mutation_id" ],
       "optionals" : [ ]
     }, {
       "fields" : [ "transcript_affected" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "hsap_transcript",
       "otherFields" : [ "stable_id_1066" ],
       "optionals" : [ ]
@@ -567,15 +567,15 @@
         }
       } ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "donor_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "donor",
       "otherFields" : [ "donor_id" ],
       "optionals" : [ ]
     }, {
       "fields" : [ "donor_id", "specimen_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "specimen",
       "otherFields" : [ "donor_id", "specimen_id" ],
       "optionals" : [ 1 ]
@@ -664,15 +664,15 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "mirna_seq" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "mirna_p",
       "otherFields" : [ "mirna_seq" ],
       "optionals" : [ ]
     }, {
       "fields" : [ "xref_mirbase_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "mirna_mirbase",
       "otherFields" : [ "xref_mirbase_id" ],
       "optionals" : [ ]
@@ -881,7 +881,7 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ ]
+    "relations" : [ ]
   }, {
     "name" : "family",
     "label" : null,
@@ -976,9 +976,9 @@
         }
       } ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "donor_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "donor",
       "otherFields" : [ "donor_id" ],
       "optionals" : [ ]
@@ -1274,9 +1274,9 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "donor_id" ],
-      "cardinality" : "ONE_OR_MORE",
+      "bidirectional" : true,
       "other" : "donor",
       "otherFields" : [ "donor_id" ],
       "optionals" : [ ]
@@ -1300,12 +1300,6 @@
       "summaryType" : null,
       "restrictions" : [ ]
     }, {
-      "name" : "gene_affected",
-      "label" : "Gene(s) affected by the breakpoints.  Use Ensembl gene id.  Separate multiple genes with vertical bars in the form of geneA|geneB|geneC. If both breakpoints affect genes, then use | to separate them.  If no gene is affected, use -888 (not applicable).",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ ]
-    }, {
       "name" : "transcript_affected_by_bkpt_from",
       "label" : null,
       "valueType" : "TEXT",
@@ -1319,17 +1313,6 @@
     }, {
       "name" : "transcript_affected_by_bkpt_to",
       "label" : null,
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      } ]
-    }, {
-      "name" : "transcript_affected",
-      "label" : "Transcript(s) affected by the breakpoints. Use Ensembl transcript id.  Separate multiple transcripts from the same gene with commas, and separate transcripts from different genes with vertical bars. eg. transcriptA1, transcriptA2|transcriptB1|transcriptC1",
       "valueType" : "TEXT",
       "summaryType" : null,
       "restrictions" : [ {
@@ -1412,21 +1395,21 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "analysis_id", "analyzed_sample_id", "sv_id", "placement" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "stsm_p",
       "otherFields" : [ "analysis_id", "analyzed_sample_id", "sv_id", "placement" ],
       "optionals" : [ ]
     }, {
       "fields" : [ "transcript_affected_by_bkpt_from" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "hsap_transcript",
       "otherFields" : [ "stable_id_1066" ],
       "optionals" : [ ]
     }, {
       "fields" : [ "transcript_affected_by_bkpt_to" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "hsap_transcript",
       "otherFields" : [ "stable_id_1066" ],
       "optionals" : [ ]
@@ -1710,9 +1693,9 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "analysis_id", "analyzed_sample_id" ],
-      "cardinality" : "ONE_OR_MORE",
+      "bidirectional" : true,
       "other" : "stsm_m",
       "otherFields" : [ "analysis_id", "analyzed_sample_id" ],
       "optionals" : [ ]
@@ -1785,15 +1768,15 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "analysis_id", "analyzed_sample_id", "methylated_fragment_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "meth_p",
       "otherFields" : [ "analysis_id", "analyzed_sample_id", "methylated_fragment_id" ],
       "optionals" : [ ]
     }, {
       "fields" : [ "gene_affected" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "hsap_gene",
       "otherFields" : [ "stable_id_1023" ],
       "optionals" : [ ]
@@ -1950,15 +1933,15 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "analyzed_sample_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "sample",
       "otherFields" : [ "analyzed_sample_id" ],
       "optionals" : [ ]
     }, {
       "fields" : [ "matched_sample_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "sample",
       "otherFields" : [ "analyzed_sample_id" ],
       "optionals" : [ ]
@@ -2026,9 +2009,9 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "specimen_id" ],
-      "cardinality" : "ONE_OR_MORE",
+      "bidirectional" : true,
       "other" : "specimen",
       "otherFields" : [ "specimen_id" ],
       "optionals" : [ ]
@@ -3503,7 +3486,7 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ ]
+    "relations" : [ ]
   }, {
     "name" : "mirna_mirbase",
     "label" : null,
@@ -3575,9 +3558,9 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "transcript_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "hsap_transcript",
       "otherFields" : [ "stable_id_1066" ],
       "optionals" : [ ]
@@ -4554,7 +4537,7 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ ]
+    "relations" : [ ]
   }, {
     "name" : "cnsm_s",
     "label" : null,
@@ -4634,15 +4617,15 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "analysis_id", "analyzed_sample_id", "mutation_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "cnsm_p",
       "otherFields" : [ "analysis_id", "analyzed_sample_id", "mutation_id" ],
       "optionals" : [ ]
     }, {
       "fields" : [ "transcript_affected" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "hsap_transcript",
       "otherFields" : [ "stable_id_1066" ],
       "optionals" : [ ]
@@ -4839,422 +4822,11 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "analysis_id", "analyzed_sample_id" ],
-      "cardinality" : "ONE_OR_MORE",
+      "bidirectional" : true,
       "other" : "cnsm_m",
       "otherFields" : [ "analysis_id", "analyzed_sample_id" ],
-      "optionals" : [ ]
-    } ]
-  }, {
-    "name" : "sgv_m",
-    "label" : null,
-    "pattern" : "^sgv__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__m__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
-    "role" : "SUBMISSION",
-    "uniqueFields" : [ "analysis_id", "control_sample_id" ],
-    "fields" : [ {
-      "name" : "analysis_id",
-      "label" : "Unique identfier for the analysis performed for a particular group of samples",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : false
-        }
-      } ]
-    }, {
-      "name" : "control_sample_id",
-      "label" : "Unique identifier for the control sample donated by the donor",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : false
-        }
-      } ]
-    }, {
-      "name" : "matched_sample_id",
-      "label" : "Unique identifier for the tumour matched to the control sample",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : false
-        }
-      } ]
-    }, {
-      "name" : "assembly_version",
-      "label" : "Version of reference genome assembly",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "appendix_B10"
-        }
-      } ]
-    }, {
-      "name" : "platform",
-      "label" : "Platform or technology used in detecting the mutation/variation",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "appendix_B5"
-        }
-      } ]
-    }, {
-      "name" : "experimental_protocol",
-      "label" : "Name of experimental protocol and URL to written protocol",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ ]
-    }, {
-      "name" : "base_calling_algorithm",
-      "label" : "Name of base calling algorithm and URL to written protocol",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      } ]
-    }, {
-      "name" : "alignment_algorithm",
-      "label" : "Name of alignment algorithm and URL to written protocol",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      } ]
-    }, {
-      "name" : "variation_calling_algorithm",
-      "label" : "Name of variation calling algorithm and URL to written protocol",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      } ]
-    }, {
-      "name" : "other_analysis_algorithm",
-      "label" : "Names of other analysis algorithms.  Separate multiple algorithms by commas.",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ ]
-    }, {
-      "name" : "seq_coverage",
-      "label" : "Sequence coverage if analyzed by sequencing platforms",
-      "valueType" : "DECIMAL",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ ]
-    }, {
-      "name" : "raw_data_repository",
-      "label" : "Public repository where raw data is submitted (#)",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "codelist",
-        "config" : {
-          "name" : "appendix_B12"
-        }
-      } ]
-    }, {
-      "name" : "raw_data_accession",
-      "label" : "Accession and URL for referencing the raw data at the public repository",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ ]
-    }, {
-      "name" : "note",
-      "label" : "Optional field to leave notes",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ ]
-    }, {
-      "name" : "donor_id",
-      "label" : "Unique identifier for the donor",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ ]
-    } ],
-    "relation" : [ {
-      "fields" : [ "control_sample_id" ],
-      "cardinality" : "ZERO_OR_MORE",
-      "other" : "sample",
-      "otherFields" : [ "analyzed_sample_id" ],
-      "optionals" : [ ]
-    }, {
-      "fields" : [ "matched_sample_id" ],
-      "cardinality" : "ZERO_OR_MORE",
-      "other" : "sample",
-      "otherFields" : [ "analyzed_sample_id" ],
-      "optionals" : [ ]
-    } ]
-  }, {
-    "name" : "sgv_p",
-    "label" : null,
-    "pattern" : "^sgv__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__p__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
-    "role" : "SUBMISSION",
-    "uniqueFields" : [ ],
-    "fields" : [ {
-      "name" : "analysis_id",
-      "label" : "Unique identfier for the analysis performed for a particular group of samples",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : false
-        }
-      } ]
-    }, {
-      "name" : "control_sample_id",
-      "label" : "Unique identifier for the control sample",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : false
-        }
-      } ]
-    }, {
-      "name" : "variation_id",
-      "label" : "Unique identifier for the variation",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      } ]
-    }, {
-      "name" : "variation_type",
-      "label" : "Type of variation",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "sgv_p__variation_type"
-        }
-      } ]
-    }, {
-      "name" : "chromosome",
-      "label" : "Name of the chromosome containing the mutation/variation",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "appendix_B6"
-        }
-      } ]
-    }, {
-      "name" : "chromosome_start",
-      "label" : "Start position of the mutation/variation on the chromosome",
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      } ]
-    }, {
-      "name" : "chromosome_end",
-      "label" : "End position of the mutation/variation on the chromosome",
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      } ]
-    }, {
-      "name" : "chromosome_strand",
-      "label" : "Chromosome strand",
-      "valueType" : "INTEGER",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "sgv_p__chromosome_strand"
-        }
-      } ]
-    }, {
-      "name" : "refsnp_allele",
-      "label" : "RefSNP alleles from dbSNP (use a dash for each missing base)",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      } ]
-    }, {
-      "name" : "refsnp_strand",
-      "label" : "Strand of RefSNP allele",
-      "valueType" : "INTEGER",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "codelist",
-        "config" : {
-          "name" : "sgv_p__refsnp_strand"
-        }
-      } ]
-    }, {
-      "name" : "reference_genome_allele",
-      "label" : "Allele in the reference genome (use a dash for each missing base)",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      } ]
-    }, {
-      "name" : "control_genotype",
-      "label" : "Genotype of the control sample (use a dash for each missing base)",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      } ]
-    }, {
-      "name" : "tumour_genotype",
-      "label" : "Genotype of the tumour sample (use a dash for each missing base)",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      } ]
-    }, {
-      "name" : "expressed_allele",
-      "label" : "For heterozygous SNPs, the dominant allele as revealed by RNA-seq, etc.",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ ]
-    }, {
-      "name" : "quality_score",
-      "label" : "Average quality score for the mutation/variation call",
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ ]
-    }, {
-      "name" : "probability",
-      "label" : "Probability of the mutation/variation call",
-      "valueType" : "DECIMAL",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ ]
-    }, {
-      "name" : "read_count",
-      "label" : "Average number of times the bases are covered by raw reads",
-      "valueType" : "DECIMAL",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ ]
-    }, {
-      "name" : "is_annotated",
-      "label" : "Indicate if the mutation/variation is annotated in dbSNP",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "codelist",
-        "config" : {
-          "name" : "sgv_p__is_annotated"
-        }
-      } ]
-    }, {
-      "name" : "validation_status",
-      "label" : "Indicate if the mutation/variation has been validated",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "sgv_p__validation_status"
-        }
-      } ]
-    }, {
-      "name" : "validation_platform",
-      "label" : "Platform or technology used in validation",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "codelist",
-        "config" : {
-          "name" : "appendix_B5"
-        }
-      } ]
-    }, {
-      "name" : "xref_ensembl_var_id",
-      "label" : "Cross-reference: Ensembl Variation ID",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ ]
-    }, {
-      "name" : "note",
-      "label" : "Optional field to leave notes",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ ]
-    } ],
-    "relation" : [ {
-      "fields" : [ "analysis_id", "control_sample_id" ],
-      "cardinality" : "ONE_OR_MORE",
-      "other" : "sgv_m",
-      "otherFields" : [ "analysis_id", "control_sample_id" ],
       "optionals" : [ ]
     } ]
   }, {
@@ -5394,123 +4966,19 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "analyzed_sample_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "sample",
       "otherFields" : [ "analyzed_sample_id" ],
       "optionals" : [ ]
     }, {
       "fields" : [ "matched_sample_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "sample",
       "otherFields" : [ "analyzed_sample_id" ],
       "optionals" : [ ]
     } ]
-  }, {
-    "name" : "sgv_s",
-    "label" : null,
-    "pattern" : null,
-    "role" : "SUBMISSION",
-    "uniqueFields" : [ ],
-    "fields" : [ {
-      "name" : "analysis_id",
-      "label" : "Unique identfier for the analysis performed for a particular group of samples",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      } ]
-    }, {
-      "name" : "control_sample_id",
-      "label" : "Unique identifier for the control sample",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      } ]
-    }, {
-      "name" : "variation_id",
-      "label" : "Unique identifier for the variation",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      } ]
-    }, {
-      "name" : "consequence_type",
-      "label" : "Functional consequence of the SNP.  If multiple transcripts are involved, separate multiple consequences by commas. (#)",
-      "valueType" : "INTEGER",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "appendix_B7"
-        }
-      } ]
-    }, {
-      "name" : "aa_variation",
-      "label" : "Changes at amino acid level. Indicate the reference aa, position and variation aa.  If multiple transcripts are involved, separate multiple aa variation by commas.",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ ]
-    }, {
-      "name" : "cds_variation",
-      "label" : "Changes in coding sequence.  Indicate position, reference base and variation base.  If multiple transcripts are involved, separate multiple cds variation by commas.",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ ]
-    }, {
-      "name" : "protein_domain_affected",
-      "label" : "Protein domain containing the mutation/variation.  Use Pfam accession.  If multiple transcripts are involved, separate multiple domains by commas.",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ ]
-    }, {
-      "name" : "gene_affected",
-      "label" : "Gene(s) containing the mutation/variation.  Use Ensembl gene id. Separate multiple genes with vertical bars in the form of geneA|geneB|geneC.  If no gene is affected, use -888 (not applicable).",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ ]
-    }, {
-      "name" : "transcript_affected",
-      "label" : "Transcript(s) containing the mutation/variation.  Use Ensembl transcript id. Separate multiple transcripts from the same gene with commas, and separate transcripts from different genes with vertical bars. eg. transcriptA1, transcriptA2|transcriptB1|transcriptC1,transcriptC2,transcriptC3.  If no transcript is affected, use -888 (not applicable).",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ ]
-    }, {
-      "name" : "gene_build_version",
-      "label" : "Version of Ensembl gene build used for annotation",
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      } ]
-    }, {
-      "name" : "note",
-      "label" : "Optional field to leave notes",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ ]
-    } ],
-    "relation" : [ ]
   }, {
     "name" : "ssm_p",
     "label" : null,
@@ -5761,9 +5229,9 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "analysis_id", "analyzed_sample_id" ],
-      "cardinality" : "ONE_OR_MORE",
+      "bidirectional" : true,
       "other" : "ssm_m",
       "otherFields" : [ "analysis_id", "analyzed_sample_id" ],
       "optionals" : [ ]
@@ -5964,15 +5432,15 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "analysis_id", "sample_id" ],
-      "cardinality" : "ONE_OR_MORE",
+      "bidirectional" : true,
       "other" : "exp_m",
       "otherFields" : [ "analysis_id", "sample_id" ],
       "optionals" : [ ]
     }, {
       "fields" : [ "gene_stable_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "hsap_gene",
       "otherFields" : [ "stable_id_1023" ],
       "optionals" : [ ]
@@ -6044,15 +5512,15 @@
         }
       } ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "donor_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "donor",
       "otherFields" : [ "donor_id" ],
       "optionals" : [ ]
     }, {
       "fields" : [ "donor_id", "specimen_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "specimen",
       "otherFields" : [ "donor_id", "specimen_id" ],
       "optionals" : [ 1 ]
@@ -6209,15 +5677,15 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "analyzed_sample_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "sample",
       "otherFields" : [ "analyzed_sample_id" ],
       "optionals" : [ ]
     }, {
       "fields" : [ "matched_sample_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "sample",
       "otherFields" : [ "analyzed_sample_id" ],
       "optionals" : [ ]
@@ -6526,15 +5994,15 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "analysis_id", "sample_id" ],
-      "cardinality" : "ONE_OR_MORE",
+      "bidirectional" : true,
       "other" : "jcn_m",
       "otherFields" : [ "analysis_id", "sample_id" ],
       "optionals" : [ ]
     }, {
       "fields" : [ "gene_stable_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "hsap_gene",
       "otherFields" : [ "stable_id_1023" ],
       "optionals" : [ ]
@@ -6679,9 +6147,9 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "analysis_id", "analyzed_sample_id" ],
-      "cardinality" : "ONE_OR_MORE",
+      "bidirectional" : true,
       "other" : "meth_m",
       "otherFields" : [ "analysis_id", "analyzed_sample_id" ],
       "optionals" : [ ]
@@ -6838,9 +6306,9 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "sample_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "sample",
       "otherFields" : [ "analyzed_sample_id" ],
       "optionals" : [ ]
@@ -6923,9 +6391,9 @@
         }
       } ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "donor_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "donor",
       "otherFields" : [ "donor_id" ],
       "optionals" : [ ]
@@ -7092,9 +6560,9 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "sample_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "sample",
       "otherFields" : [ "analyzed_sample_id" ],
       "optionals" : [ ]
@@ -7245,15 +6713,15 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "analyzed_sample_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "sample",
       "otherFields" : [ "analyzed_sample_id" ],
       "optionals" : [ ]
     }, {
       "fields" : [ "matched_sample_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "sample",
       "otherFields" : [ "analyzed_sample_id" ],
       "optionals" : [ ]

@@ -20,11 +20,10 @@ package org.icgc.dcc.sftp;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.shiro.subject.Subject;
 import org.apache.sshd.server.FileSystemView;
 import org.apache.sshd.server.SshFile;
 import org.icgc.dcc.core.ProjectService;
-import org.icgc.dcc.core.UserService;
-import org.icgc.dcc.core.model.User;
 import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.filesystem.DccFileSystemException;
 import org.icgc.dcc.filesystem.ReleaseFileSystem;
@@ -42,17 +41,14 @@ public class HdfsFileSystemView implements FileSystemView {
 
   private final ReleaseService releaseService;
 
-  private final UserService userService;
-
   private final UsernamePasswordAuthenticator passwordAuthenticator;
 
   public HdfsFileSystemView(DccFileSystem dccFileSystem, ProjectService projectService, ReleaseService releaseService,
-      UserService userService, UsernamePasswordAuthenticator passwordAuthenticator) {
+      UsernamePasswordAuthenticator passwordAuthenticator) {
     this.dccFileSystem = dccFileSystem;
     this.projectService = projectService;
     this.releaseService = releaseService;
     this.passwordAuthenticator = passwordAuthenticator;
-    this.userService = userService;
   }
 
   /**
@@ -63,9 +59,9 @@ public class HdfsFileSystemView implements FileSystemView {
   @Override
   public SshFile getFile(String file) {
     Path filePath = getFilePath(file);
-    User currentUser = this.userService.getUser(this.passwordAuthenticator.getCurrentUser());
+    Subject currentSubject = this.passwordAuthenticator.getSubject();
     ReleaseFileSystem rfs =
-        this.dccFileSystem.getReleaseFilesystem(this.releaseService.getNextRelease().getRelease(), currentUser);
+        this.dccFileSystem.getReleaseFilesystem(this.releaseService.getNextRelease().getRelease(), currentSubject);
     RootHdfsSshFile root = new RootHdfsSshFile(rfs, this.projectService, this.releaseService);
 
     switch(filePath.depth()) {

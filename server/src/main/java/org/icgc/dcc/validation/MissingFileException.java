@@ -15,8 +15,23 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.dictionary.model;
+package org.icgc.dcc.validation;
 
-public enum Cardinality {
-  ZERO_OR_MORE, ONE_OR_MORE,
+public class MissingFileException extends Exception {
+
+  public MissingFileException() {
+    super();
+  }
+
+  public MissingFileException(String message, Throwable cause) {
+    super(message, cause);
+  }
+
+  public MissingFileException(String message) {
+    super(message);
+  }
+
+  public MissingFileException(Throwable cause) {
+    super(cause);
+  }
 }

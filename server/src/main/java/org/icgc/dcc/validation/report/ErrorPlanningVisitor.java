@@ -128,17 +128,14 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
                 if(errorMap.containsKey(error.getCode()) == true) {
                   ValidationErrorReport errorReport = errorMap.get(error.getCode());
                   errorReport.updateReport(error);
-                  errorMap.put(error.getCode(), errorReport);
                 } else {
                   errorMap.put(error.getCode(), new ValidationErrorReport(error));
                 }
               }
             }
           }
-          if(errorMap.isEmpty() == false) {
-            for(ValidationErrorReport e : errorMap.values()) {
-              report.errors.add(e);
-            }
+          for(ValidationErrorReport e : errorMap.values()) {
+            report.errors.add(e);
           }
           return outcome;
         } catch(FileNotFoundException fnfe) {
@@ -151,5 +148,4 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
       }
     }
   }
-
 }

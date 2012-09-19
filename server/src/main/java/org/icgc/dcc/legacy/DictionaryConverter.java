@@ -38,7 +38,6 @@ import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
-import org.icgc.dcc.dictionary.model.Cardinality;
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.FileSchema;
@@ -160,7 +159,7 @@ public class DictionaryConverter {
       String rightKey = valueIterator.next();
       Iterable<String> rightKeys = Splitter.on(',').trimResults().omitEmptyStrings().split(rightKey);
 
-      Cardinality leftCardinality = getCardinality(valueIterator.next());
+      boolean bidirectionality = getBidirectionality(valueIterator.next());
       boolean rightUniqueness = Boolean.valueOf(valueIterator.next());
       if(rightUniqueness) {
         List<String> uniqueFields = schemaToUniqueFields.get(rightTable);
@@ -186,7 +185,7 @@ public class DictionaryConverter {
 
       if(this.dictionary.hasFileSchema(leftTable)) {
         FileSchema leftFileSchema = this.dictionary.fileSchema(leftTable).get();
-        leftFileSchema.addRelation(new Relation(leftKeys, rightTable, rightKeys, leftCardinality, optionals));
+        leftFileSchema.addRelation(new Relation(leftKeys, rightTable, rightKeys, bidirectionality, optionals));
       }
 
       // mark relation fields to be required
@@ -243,11 +242,11 @@ public class DictionaryConverter {
     return schemaToUniqueFields;
   }
 
-  private Cardinality getCardinality(String cardinalityString) {
+  private Boolean getBidirectionality(String cardinalityString) {
     if("1..n".equals(cardinalityString)) {
-      return Cardinality.ONE_OR_MORE;
+      return true;
     } else if("0..n".equals(cardinalityString)) {
-      return Cardinality.ZERO_OR_MORE;
+      return false;
     }
     return null;
   }
@@ -347,14 +346,15 @@ public class DictionaryConverter {
         field_to.setName("transcript_affected_by_bkpt_to");
         fields.add(field_from);
         fields.add(field_to);
+      } else {
+        fields.add(field);
       }
-      fields.add(field);
     }
 
-    // special case for mirna_m, stsm_m, cnsm_m, jcn_m, sgv_m, ssm_m, meth_m, exp_m, add missing donor_id
+    // special case for mirna_m, stsm_m, cnsm_m, jcn_m, ssm_m, meth_m, exp_m, add missing donor_id
     if(FileSchemaName.equals("mirna_m") || FileSchemaName.equals("stsm_m") || FileSchemaName.equals("cnsm_m")
-        || FileSchemaName.equals("jcn_m") || FileSchemaName.equals("sgv_m") || FileSchemaName.equals("ssm_m")
-        || FileSchemaName.equals("meth_m") || FileSchemaName.equals("exp_m")) {
+        || FileSchemaName.equals("jcn_m") || FileSchemaName.equals("ssm_m") || FileSchemaName.equals("meth_m")
+        || FileSchemaName.equals("exp_m")) {
       if(!this.containField(fields, "donor_id")) {
         Field donorIDField = new Field();
         donorIDField.setName("donor_id");

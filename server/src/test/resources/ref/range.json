@@ -2,7 +2,7 @@
   "offset" : 1,
   "errors" : [ {
     "code" : "OUT_OF_RANGE_ERROR",
-    "columnName" : "donor_age_at_diagnosis",
+    "columnNames" : [ "donor_age_at_diagnosis" ],
     "value" : 205,
     "line" : 1,
     "parameters" : {
@@ -14,7 +14,7 @@
   "offset" : 2,
   "errors" : [ {
     "code" : "OUT_OF_RANGE_ERROR",
-    "columnName" : "donor_age_at_diagnosis",
+    "columnNames" : [ "donor_age_at_diagnosis" ],
     "value" : 201,
     "line" : 2,
     "parameters" : {
