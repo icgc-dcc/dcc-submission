@@ -19,14 +19,11 @@ package org.icgc.dcc.validation;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.FileSchema;
-import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.report.ErrorPlanningVisitor;
 import org.icgc.dcc.validation.report.SummaryPlanningVisitor;
 import org.icgc.dcc.validation.visitor.ExternalRestrictionPlanningVisitor;
@@ -45,8 +42,6 @@ public class DefaultPlanner implements Planner {
   private static final Logger log = LoggerFactory.getLogger(DefaultPlanner.class);
 
   private final List<? extends PlanningVisitor<?>> planningVisitors;
-
-  private final Map<String, TupleState> fileLevelErrors = new LinkedHashMap<String, TupleState>();
 
   @Inject
   public DefaultPlanner(Set<RestrictionType> restrictionTypes) {
@@ -86,21 +81,17 @@ public class DefaultPlanner implements Planner {
               fileSchemaDirectory.getDirectoryPath());
         }
       } catch(PlanningFileLevelException e) {
-        this.fileLevelErrors.put(e.getFilename(), e.getTupleState());
+        plan.addFileLevelError(e);
       }
     }
     for(PlanningVisitor<?> visitor : planningVisitors) {
       try {
         visitor.apply(plan);
       } catch(PlanningFileLevelException e) {
-        this.fileLevelErrors.put(e.getFilename(), e.getTupleState());
+        plan.addFileLevelError(e);
       }
     }
 
-    if(fileLevelErrors.size() > 0) {
-      log.error("fatal file errors:\n\t{}", fileLevelErrors);
-      throw new FatalPlanningException(fileLevelErrors);
-    }
     return plan;
   }
 }

@@ -19,6 +19,8 @@ package org.icgc.dcc.validation.service;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.Map;
+
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.core.model.Project;
@@ -29,8 +31,10 @@ import org.icgc.dcc.filesystem.ReleaseFileSystem;
 import org.icgc.dcc.filesystem.SubmissionDirectory;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.validation.CascadingStrategy;
+import org.icgc.dcc.validation.FatalPlanningException;
 import org.icgc.dcc.validation.Plan;
 import org.icgc.dcc.validation.Planner;
+import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.factory.CascadingStrategyFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -103,13 +107,18 @@ public class ValidationService {
   }
 
   public Plan planCascade(String projectKey, CascadingStrategy cascadingStrategy, Dictionary dictionary) {
-
     Plan plan = planner.plan(cascadingStrategy, dictionary);
 
     log.info("# internal flows: {}", Iterables.size(plan.getInternalFlows()));
     log.info("# external flows: {}", Iterables.size(plan.getExternalFlows()));
 
     plan.connect(cascadingStrategy);
+
+    if(plan.hasFileLevelErrors()) {
+      Map<String, TupleState> fileLevelErrors = plan.getFileLevelErrors();
+      log.error("fatal file errors:\n\t{}", fileLevelErrors);
+      throw new FatalPlanningException(fileLevelErrors);
+    }
 
     return plan;
   }

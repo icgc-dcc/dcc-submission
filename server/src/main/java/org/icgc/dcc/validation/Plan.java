@@ -18,11 +18,13 @@
 package org.icgc.dcc.validation;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -38,6 +40,7 @@ import cascading.cascade.CascadeConnector;
 import cascading.cascade.CascadeDef;
 import cascading.flow.Flow;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -53,6 +56,8 @@ public class Plan {
   private final Dictionary dictionary;
 
   private final CascadingStrategy cascadingStrategy;
+
+  private final Map<String, TupleState> fileLevelErrors = new LinkedHashMap<String, TupleState>();
 
   private Cascade cascade;
 
@@ -115,7 +120,6 @@ public class Plan {
 
   public void connect(CascadingStrategy cascadingStrategy) {
     CascadeDef cascade = new CascadeDef();
-    Map<String, TupleState> errors = Maps.newLinkedHashMap();
     for(FileSchemaFlowPlanner planner : Iterables.concat(internalPlanners.values(), externalPlanners.values())) {
       try {
         Flow<?> flow = planner.connect(cascadingStrategy);
@@ -123,11 +127,8 @@ public class Plan {
           cascade.addFlow(flow);
         }
       } catch(PlanningFileLevelException e) {
-        errors.put(e.getFilename(), e.getTupleState());
+        addFileLevelError(e);
       }
-    }
-    if(errors.size() > 0) {
-      throw new FatalPlanningException(errors);
     }
 
     this.cascade = new CascadeConnector().connect(cascade);
@@ -177,5 +178,24 @@ public class Plan {
       }
     }
     return null;
+  }
+
+  public void addFileLevelError(PlanningFileLevelException e) {
+    String filename = e.getFilename();
+    TupleState tupleState = e.getTupleState();
+    checkState(filename != null);
+    checkState(tupleState != null);
+    if(fileLevelErrors.get(filename) != null) {
+      throw new AssertionError(filename);
+    }
+    fileLevelErrors.put(filename, tupleState);
+  }
+
+  public boolean hasFileLevelErrors() {
+    return fileLevelErrors.size() > 0;
+  }
+
+  public Map<String, TupleState> getFileLevelErrors() {
+    return ImmutableMap.<String, TupleState> copyOf(fileLevelErrors);
   }
 }
