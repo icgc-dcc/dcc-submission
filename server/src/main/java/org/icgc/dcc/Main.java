@@ -22,7 +22,8 @@ import com.typesafe.config.ConfigFactory;
 
 public class Main {
   public static void main(String[] args) throws IOException {
-    Injector injector = Guice.createInjector(new ConfigModule(ConfigFactory.load())//
+    String config = (args != null && args.length > 0 && args[0].equals("prod")) ? "application_prod" : "application";
+    Injector injector = Guice.createInjector(new ConfigModule(ConfigFactory.load(config))//
         , new CoreModule()//
         , new HttpModule()//
         , new JerseyModule()//
