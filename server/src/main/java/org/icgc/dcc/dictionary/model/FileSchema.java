@@ -159,11 +159,11 @@ public class FileSchema implements DictionaryElement {
     return false;
   }
 
-  public void setRelation(List<Relation> relations) { // TODO: should be plural (see DCC-393)
+  public void setRelations(List<Relation> relations) {
     this.relations = relations;
   }
 
-  public List<Relation> getRelation() { // TODO: should be plural (see DCC-393)
+  public List<Relation> getRelations() {
     return ImmutableList.<Relation> copyOf(relations);
   }
 
@@ -191,11 +191,11 @@ public class FileSchema implements DictionaryElement {
    * 
    * TODO: move to dictionary? better name?
    */
-  public List<FileSchema> getAfferentStrictFileSchemata(Dictionary dictionary) {
+  public List<FileSchema> getBidirectionalAfferentFileSchemata(Dictionary dictionary) {
     List<FileSchema> afferentFileSchemata = Lists.newArrayList();
     for(FileSchema tmp : dictionary.getFiles()) {
-      for(Relation relation : tmp.getRelation()) {
-        if(relation.getOther().equals(name) && relation.getCardinality() == Cardinality.ONE_OR_MORE) {
+      for(Relation relation : tmp.getRelations()) {
+        if(relation.getOther().equals(name) && relation.isBidirectional()) {
           afferentFileSchemata.add(tmp);
         }
       }

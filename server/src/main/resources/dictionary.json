@@ -54,9 +54,9 @@
         }
       } ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "donor_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "donor",
       "otherFields" : [ "donor_id" ],
       "optionals" : [ ]
@@ -213,9 +213,9 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "sample_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "sample",
       "otherFields" : [ "analyzed_sample_id" ],
       "optionals" : [ ]
@@ -356,9 +356,9 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "analysis_id", "sample_id" ],
-      "cardinality" : "ONE_OR_MORE",
+      "bidirectional" : true,
       "other" : "mirna_m",
       "otherFields" : [ "analysis_id", "sample_id" ],
       "optionals" : [ ]
@@ -471,15 +471,15 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "analysis_id", "analyzed_sample_id", "mutation_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "ssm_p",
       "otherFields" : [ "analysis_id", "analyzed_sample_id", "mutation_id" ],
       "optionals" : [ ]
     }, {
       "fields" : [ "transcript_affected" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "hsap_transcript",
       "otherFields" : [ "stable_id_1066" ],
       "optionals" : [ ]
@@ -567,15 +567,15 @@
         }
       } ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "donor_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "donor",
       "otherFields" : [ "donor_id" ],
       "optionals" : [ ]
     }, {
       "fields" : [ "donor_id", "specimen_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "specimen",
       "otherFields" : [ "donor_id", "specimen_id" ],
       "optionals" : [ 1 ]
@@ -664,15 +664,15 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "mirna_seq" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "mirna_p",
       "otherFields" : [ "mirna_seq" ],
       "optionals" : [ ]
     }, {
       "fields" : [ "xref_mirbase_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "mirna_mirbase",
       "otherFields" : [ "xref_mirbase_id" ],
       "optionals" : [ ]
@@ -881,7 +881,7 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ ]
+    "relations" : [ ]
   }, {
     "name" : "family",
     "label" : null,
@@ -976,9 +976,9 @@
         }
       } ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "donor_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "donor",
       "otherFields" : [ "donor_id" ],
       "optionals" : [ ]
@@ -1274,9 +1274,9 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "donor_id" ],
-      "cardinality" : "ONE_OR_MORE",
+      "bidirectional" : true,
       "other" : "donor",
       "otherFields" : [ "donor_id" ],
       "optionals" : [ ]
@@ -1395,21 +1395,21 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "analysis_id", "analyzed_sample_id", "sv_id", "placement" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "stsm_p",
       "otherFields" : [ "analysis_id", "analyzed_sample_id", "sv_id", "placement" ],
       "optionals" : [ ]
     }, {
       "fields" : [ "transcript_affected_by_bkpt_from" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "hsap_transcript",
       "otherFields" : [ "stable_id_1066" ],
       "optionals" : [ ]
     }, {
       "fields" : [ "transcript_affected_by_bkpt_to" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "hsap_transcript",
       "otherFields" : [ "stable_id_1066" ],
       "optionals" : [ ]
@@ -1693,9 +1693,9 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "analysis_id", "analyzed_sample_id" ],
-      "cardinality" : "ONE_OR_MORE",
+      "bidirectional" : true,
       "other" : "stsm_m",
       "otherFields" : [ "analysis_id", "analyzed_sample_id" ],
       "optionals" : [ ]
@@ -1768,15 +1768,15 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "analysis_id", "analyzed_sample_id", "methylated_fragment_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "meth_p",
       "otherFields" : [ "analysis_id", "analyzed_sample_id", "methylated_fragment_id" ],
       "optionals" : [ ]
     }, {
       "fields" : [ "gene_affected" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "hsap_gene",
       "otherFields" : [ "stable_id_1023" ],
       "optionals" : [ ]
@@ -1933,15 +1933,15 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "analyzed_sample_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "sample",
       "otherFields" : [ "analyzed_sample_id" ],
       "optionals" : [ ]
     }, {
       "fields" : [ "matched_sample_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "sample",
       "otherFields" : [ "analyzed_sample_id" ],
       "optionals" : [ ]
@@ -2009,9 +2009,9 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "specimen_id" ],
-      "cardinality" : "ONE_OR_MORE",
+      "bidirectional" : true,
       "other" : "specimen",
       "otherFields" : [ "specimen_id" ],
       "optionals" : [ ]
@@ -3486,7 +3486,7 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ ]
+    "relations" : [ ]
   }, {
     "name" : "mirna_mirbase",
     "label" : null,
@@ -3558,9 +3558,9 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "transcript_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "hsap_transcript",
       "otherFields" : [ "stable_id_1066" ],
       "optionals" : [ ]
@@ -4537,7 +4537,7 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ ]
+    "relations" : [ ]
   }, {
     "name" : "cnsm_s",
     "label" : null,
@@ -4617,15 +4617,15 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "analysis_id", "analyzed_sample_id", "mutation_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "cnsm_p",
       "otherFields" : [ "analysis_id", "analyzed_sample_id", "mutation_id" ],
       "optionals" : [ ]
     }, {
       "fields" : [ "transcript_affected" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "hsap_transcript",
       "otherFields" : [ "stable_id_1066" ],
       "optionals" : [ ]
@@ -4822,9 +4822,9 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "analysis_id", "analyzed_sample_id" ],
-      "cardinality" : "ONE_OR_MORE",
+      "bidirectional" : true,
       "other" : "cnsm_m",
       "otherFields" : [ "analysis_id", "analyzed_sample_id" ],
       "optionals" : [ ]
@@ -4966,15 +4966,15 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "analyzed_sample_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "sample",
       "otherFields" : [ "analyzed_sample_id" ],
       "optionals" : [ ]
     }, {
       "fields" : [ "matched_sample_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "sample",
       "otherFields" : [ "analyzed_sample_id" ],
       "optionals" : [ ]
@@ -5229,9 +5229,9 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "analysis_id", "analyzed_sample_id" ],
-      "cardinality" : "ONE_OR_MORE",
+      "bidirectional" : true,
       "other" : "ssm_m",
       "otherFields" : [ "analysis_id", "analyzed_sample_id" ],
       "optionals" : [ ]
@@ -5432,15 +5432,15 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "analysis_id", "sample_id" ],
-      "cardinality" : "ONE_OR_MORE",
+      "bidirectional" : true,
       "other" : "exp_m",
       "otherFields" : [ "analysis_id", "sample_id" ],
       "optionals" : [ ]
     }, {
       "fields" : [ "gene_stable_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "hsap_gene",
       "otherFields" : [ "stable_id_1023" ],
       "optionals" : [ ]
@@ -5512,15 +5512,15 @@
         }
       } ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "donor_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "donor",
       "otherFields" : [ "donor_id" ],
       "optionals" : [ ]
     }, {
       "fields" : [ "donor_id", "specimen_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "specimen",
       "otherFields" : [ "donor_id", "specimen_id" ],
       "optionals" : [ 1 ]
@@ -5677,15 +5677,15 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "analyzed_sample_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "sample",
       "otherFields" : [ "analyzed_sample_id" ],
       "optionals" : [ ]
     }, {
       "fields" : [ "matched_sample_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "sample",
       "otherFields" : [ "analyzed_sample_id" ],
       "optionals" : [ ]
@@ -5994,15 +5994,15 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "analysis_id", "sample_id" ],
-      "cardinality" : "ONE_OR_MORE",
+      "bidirectional" : true,
       "other" : "jcn_m",
       "otherFields" : [ "analysis_id", "sample_id" ],
       "optionals" : [ ]
     }, {
       "fields" : [ "gene_stable_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "hsap_gene",
       "otherFields" : [ "stable_id_1023" ],
       "optionals" : [ ]
@@ -6147,9 +6147,9 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "analysis_id", "analyzed_sample_id" ],
-      "cardinality" : "ONE_OR_MORE",
+      "bidirectional" : true,
       "other" : "meth_m",
       "otherFields" : [ "analysis_id", "analyzed_sample_id" ],
       "optionals" : [ ]
@@ -6306,9 +6306,9 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "sample_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "sample",
       "otherFields" : [ "analyzed_sample_id" ],
       "optionals" : [ ]
@@ -6391,9 +6391,9 @@
         }
       } ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "donor_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "donor",
       "otherFields" : [ "donor_id" ],
       "optionals" : [ ]
@@ -6560,9 +6560,9 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "sample_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "sample",
       "otherFields" : [ "analyzed_sample_id" ],
       "optionals" : [ ]
@@ -6713,15 +6713,15 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "analyzed_sample_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "sample",
       "otherFields" : [ "analyzed_sample_id" ],
       "optionals" : [ ]
     }, {
       "fields" : [ "matched_sample_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "sample",
       "otherFields" : [ "analyzed_sample_id" ],
       "optionals" : [ ]
