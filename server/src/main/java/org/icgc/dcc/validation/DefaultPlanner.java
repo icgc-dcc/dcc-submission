@@ -46,7 +46,7 @@ public class DefaultPlanner implements Planner {
 
   private final List<? extends PlanningVisitor<?>> planningVisitors;
 
-  private final Map<String, TupleState> errors = new LinkedHashMap<String, TupleState>();
+  private final Map<String, TupleState> fileLevelErrors = new LinkedHashMap<String, TupleState>();
 
   @Inject
   public DefaultPlanner(Set<RestrictionType> restrictionTypes) {
@@ -86,20 +86,20 @@ public class DefaultPlanner implements Planner {
               fileSchemaDirectory.getDirectoryPath());
         }
       } catch(PlanningFileLevelException e) {
-        this.errors.put(e.getFilename(), e.getTupleState());
+        this.fileLevelErrors.put(e.getFilename(), e.getTupleState());
       }
     }
     for(PlanningVisitor<?> visitor : planningVisitors) {
       try {
         visitor.apply(plan);
       } catch(PlanningFileLevelException e) {
-        this.errors.put(e.getFilename(), e.getTupleState());
+        this.fileLevelErrors.put(e.getFilename(), e.getTupleState());
       }
     }
 
-    if(errors.size() > 0) {
-      log.error("fatal errors:\n\t{}", errors);
-      throw new FatalPlanningException(errors);
+    if(fileLevelErrors.size() > 0) {
+      log.error("fatal file errors:\n\t{}", fileLevelErrors);
+      throw new FatalPlanningException(fileLevelErrors);
     }
     return plan;
   }

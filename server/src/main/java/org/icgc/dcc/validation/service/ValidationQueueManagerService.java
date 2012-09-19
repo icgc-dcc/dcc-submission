@@ -99,6 +99,7 @@ public class ValidationQueueManagerService extends AbstractService implements Va
 
   private void startScheduler() {
     log.info("polling queue every {} second", POLLING_FREQUENCY_PER_SEC);
+
     schedule = scheduler.scheduleWithFixedDelay(new Runnable() {
       @Override
       public void run() {
@@ -107,30 +108,9 @@ public class ValidationQueueManagerService extends AbstractService implements Va
           if(isRunning() && releaseService.hasNextRelease()) {
             next = releaseService.getNextRelease().getNextInQueue();
             if(next.isPresent()) {
-              log.info("next in queue {}", next);
-              Release release = releaseService.getNextRelease().getRelease();
-              if(release == null) {
-                throw new ValidationServiceException("cannot access the next release");
-              } else {
-                String dictionaryVersion = release.getDictionaryVersion();
-                Dictionary dictionary = dictionaryService.getFromVersion(dictionaryVersion);
-                if(dictionary == null) {
-                  throw new ValidationServiceException(String.format("no dictionary found with version %s",
-                      dictionaryVersion));
-                } else {
-                  String projectKey = next.get();
-                  Plan plan = validationService.validate(release, projectKey);
-                  if(release.getState() == ReleaseState.OPENED) {
-                    if(plan.getCascade().getCascadeStats().isSuccessful()) {
-                      handleSuccessfulValidation(projectKey, plan);
-                    } else {
-                      handleFailedValidation(projectKey);
-                    }
-                  } else {
-                    log.info("Release was closed during validation; states not changed");
-                  }
-                }
-              }
+              String projectKey = next.get();
+              log.info("next in queue {}", projectKey);
+              validateSubmission(projectKey);
             }
           }
         } catch(FatalPlanningException e) {
@@ -158,6 +138,36 @@ public class ValidationQueueManagerService extends AbstractService implements Va
           }
         }
       }
+
+      private void validateSubmission(final String projectKey) {
+        Release release = releaseService.getNextRelease().getRelease();
+        if(release == null) {
+          throw new ValidationServiceException("cannot access the next release");
+        } else {
+          String dictionaryVersion = release.getDictionaryVersion();
+          Dictionary dictionary = dictionaryService.getFromVersion(dictionaryVersion);
+          if(dictionary == null) {
+            throw new ValidationServiceException(String
+                .format("no dictionary found with version %s", dictionaryVersion));
+          } else {
+            if(release.getState() == ReleaseState.OPENED) {
+              Plan plan = validationService.validate(release, projectKey);
+              handleFinishedValidation(plan, projectKey);
+            } else {
+              log.info("Release was closed during validation; states not changed");
+            }
+          }
+        }
+      }
+
+      private void handleFinishedValidation(final Plan plan, final String projectKey) {
+        if(plan.getCascade().getCascadeStats().isSuccessful()) {
+          handleSuccessfulValidation(projectKey, plan);
+        } else {
+          handleFailedValidation(projectKey);
+        }
+      }
+
     }, POLLING_FREQUENCY_PER_SEC, POLLING_FREQUENCY_PER_SEC, TimeUnit.SECONDS);
   }
 
