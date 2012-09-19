@@ -115,7 +115,7 @@ public class ValidationQueueManagerService extends AbstractService {
           }
         } catch(FatalPlanningException e) { // potentially thrown by validateSubmission() upon file-level errors
           try {
-            handleSuccessfulValidation(e); // successful but invalid (file-level errors)
+            handleAbortedValidation(e);
           } catch(Throwable t) {
             criticalThrowable = Optional.fromNullable(t);
           }
@@ -169,9 +169,9 @@ public class ValidationQueueManagerService extends AbstractService {
 
       private void handleCascadeStatus(final Plan plan, final String projectKey) {
         if(plan.getCascade().getCascadeStats().isSuccessful()) {
-          handleSuccessfulValidation(projectKey, plan);
-        } else { // if cascading returned an error
-          handleFailedValidation(projectKey);
+          handleCompletedValidation(projectKey, plan);
+        } else {
+          handleUnexpectedException(projectKey);
         }
       }
 
@@ -187,48 +187,50 @@ public class ValidationQueueManagerService extends AbstractService {
     }
   }
 
-  public void handleSuccessfulValidation(FatalPlanningException e) { // successful but invalid (file-level errors)
+  public void handleAbortedValidation(FatalPlanningException e) {
     String projectKey = e.getProjectKey();
-    if(e.getPlan().hasFileLevelErrors() == false) {
+    Plan plan = e.getPlan();
+    if(plan.hasFileLevelErrors() == false) {
       new AssertionError(); // by design since this should be the condition for throwing the
                             // FatalPlanningException
     }
-    handleSuccessfulValidation(projectKey, e.getPlan());
-  }
 
-  public void handleSuccessfulValidation(String projectKey, Plan plan) {
+    Map<String, TupleState> fileLevelErrors = plan.getFileLevelErrors();
+    log.error("file errors (fatal planning errors):\n\t{}", fileLevelErrors);
+
+    log.info("about to dequeue project key {}", projectKey);
+    dequeue(projectKey, SubmissionState.INVALID);
+
     checkArgument(projectKey != null);
     SubmissionReport report = new SubmissionReport();
 
-    if(plan.hasFileLevelErrors()) { // successful but invalid because of file-level errors
-      Map<String, TupleState> fileLevelErrors = plan.getFileLevelErrors();
-      log.error("file errors (fatal planning errors):\n\t{}", fileLevelErrors);
-
-      log.info("about to dequeue project key {}", projectKey);
-      dequeue(projectKey, SubmissionState.INVALID);
-
-      List<SchemaReport> schemaReports = new ArrayList<SchemaReport>();
-      for(String schema : fileLevelErrors.keySet()) {
-        SchemaReport schemaReport = new SchemaReport();
-        Iterator<TupleState.TupleError> es = fileLevelErrors.get(schema).getErrors().iterator();
-        List<ValidationErrorReport> errReport = Lists.newArrayList();
-        while(es.hasNext()) {
-          errReport.add(new ValidationErrorReport(es.next()));
-        }
-        schemaReport.setErrors(errReport);
-        schemaReport.setName(schema);
-        schemaReports.add(schemaReport);
+    List<SchemaReport> schemaReports = new ArrayList<SchemaReport>();
+    for(String schema : fileLevelErrors.keySet()) {
+      SchemaReport schemaReport = new SchemaReport();
+      Iterator<TupleState.TupleError> es = fileLevelErrors.get(schema).getErrors().iterator();
+      List<ValidationErrorReport> errReport = Lists.newArrayList();
+      while(es.hasNext()) {
+        errReport.add(new ValidationErrorReport(es.next()));
       }
-      report.setSchemaReports(schemaReports);
+      schemaReport.setErrors(errReport);
+      schemaReport.setName(schema);
+      schemaReports.add(schemaReport);
+    }
+    report.setSchemaReports(schemaReports);
+    setSubmissionReport(projectKey, report);
+  }
+
+  public void handleCompletedValidation(String projectKey, Plan plan) {
+    checkArgument(projectKey != null);
+
+    SubmissionReport report = new SubmissionReport();
+    Outcome outcome = plan.collect(report);
+
+    log.info("completed validation - about to dequeue project key {}/set submission its state", projectKey);
+    if(outcome == Outcome.PASSED) {
+      dequeue(projectKey, SubmissionState.VALID);
     } else {
-      Outcome outcome = plan.collect(report);
-
-      log.info("successful validation - about to dequeue project key {}", projectKey);
-      if(outcome == Outcome.PASSED) { // succesful and valid
-        dequeue(projectKey, SubmissionState.VALID);
-      } else { // successful but invalid because data errors
-        dequeue(projectKey, SubmissionState.INVALID);
-      }
+      dequeue(projectKey, SubmissionState.INVALID);
     }
     setSubmissionReport(projectKey, report);
   }
@@ -247,7 +249,7 @@ public class ValidationQueueManagerService extends AbstractService {
     log.info("report collecting finished on project {}", projectKey);
   }
 
-  public void handleFailedValidation(String projectKey) {
+  public void handleUnexpectedException(String projectKey) {
     checkArgument(projectKey != null);
     log.info("failed validation from unknown error - about to dequeue project key {}", projectKey);
     dequeue(projectKey, SubmissionState.ERROR);
