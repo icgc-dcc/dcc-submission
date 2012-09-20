@@ -189,8 +189,10 @@ define (require) ->
           
 
     updateDataTable: ->
-      sr = @model.get('report').get('schemaReports').at(0)
-      if sr.get("errors") or sr.get("fieldReports")
+      srs = @model.get('report').get('schemaReports')
+      errors = (item for item in srs.pluck("errors") when item?)
+      fieldReport = (item for item in srs.pluck("fieldReports") when item?)
+      if errors or fieldReports
         dt = @$el.dataTable()
         dt.fnSetColumnVis( 3, true )
         dt.fnSetColumnVis( 4, true )
@@ -226,13 +228,11 @@ define (require) ->
             bVisible: false
             fnRender: (oObj, Sval)->
               if oObj.aData.errors
-                errors = 0
-                #for es in oObj.aData.errors
-                #  console.log es
-                #  errors += es.errors.length
                 "<span class='invalid'>INVALID</span>"
-              else
+              else if oObj.aData.fieldReports
                 "<span class='valid'>VALID</span>"
+              else
+                "<span>NOT VALIDATED</span>"
           }
           {
             sTitle: "Report"
