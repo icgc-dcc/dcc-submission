@@ -20,6 +20,7 @@ package org.icgc.dcc.release.model;
 import java.util.List;
 
 import com.google.code.morphia.annotations.Embedded;
+import com.google.common.collect.ImmutableList;
 
 @Embedded
 public class QueuedProject {
@@ -38,8 +39,8 @@ public class QueuedProject {
     this.emails = emails;
   }
 
-  public List<String> getEmails() {
-    return this.emails;
+  public ImmutableList<String> getEmails() {
+    return ImmutableList.copyOf(this.emails);
   }
 
   public String getKey() {

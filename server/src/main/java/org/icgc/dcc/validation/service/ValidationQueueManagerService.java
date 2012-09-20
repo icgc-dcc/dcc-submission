@@ -304,8 +304,7 @@ public class ValidationQueueManagerService extends AbstractService {
 
       int i = 0;
       for(Address email : aCheck) {
-        addresses[i] = email;
-        i++;
+        addresses[i++] = email;
       }
 
       try {

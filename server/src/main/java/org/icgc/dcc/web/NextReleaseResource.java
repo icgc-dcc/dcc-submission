@@ -1,7 +1,6 @@
 package org.icgc.dcc.web;
 
 import java.util.List;
-import java.util.Set;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -77,7 +76,6 @@ public class NextReleaseResource {
     ResponseTimestamper.evaluate(req, this.releaseService.getNextRelease().getRelease());
 
     if(this.releaseService.hasProjectKey(projectKeys)) {
-      Set<String> userNames = ((ShiroSecurityContext) securityContext).getSubject().getPrincipals().asSet();
       this.releaseService.queue(queuedProjects);
       return Response.ok().build();
     } else {
