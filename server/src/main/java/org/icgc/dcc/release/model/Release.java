@@ -151,6 +151,6 @@ public class Release extends BaseEntity implements HasName {
   }
 
   public void emptyQueue() {
-    this.queue = Lists.newArrayList();
+    this.queue.clear();
   }
 }
