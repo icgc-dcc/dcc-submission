@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -59,6 +60,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.AbstractService;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
@@ -149,12 +151,19 @@ public class ValidationQueueManagerService extends AbstractService {
             Throwable t = criticalThrowable.get();
             log.error("a critical error occured while processing the validation queue", t);
 
-            if(nextProject.isPresent()) {
+            if(nextProject != null && nextProject.isPresent()) {
               QueuedProject project = nextProject.get();
-              dequeue(project, SubmissionState.ERROR);
+              try {
+                dequeue(project, SubmissionState.ERROR);
+              } catch(Throwable t2) {
+                log.error(
+                    String.format("a critical error occured while attempting to dequeue project %s", project.getKey()),
+                    t2);
+              }
             } else {
-              log.error("Next project in queue not present, could not dequeue nor set submission state to "
-                  + SubmissionState.ERROR);
+              log.error(String.format(
+                  "next project in queue not present, could not dequeue nor set submission state to ",
+                  SubmissionState.ERROR));
             }
           }
         }
@@ -273,7 +282,7 @@ public class ValidationQueueManagerService extends AbstractService {
   }
 
   private void dequeue(QueuedProject project, SubmissionState state) {
-    if(project.getEmails().size() > 0) {
+    if(project.getEmails().isEmpty() == false) {
       this.email(project, state);
     }
 
@@ -288,7 +297,7 @@ public class ValidationQueueManagerService extends AbstractService {
     props.put("mail.smtp.host", this.config.getString("mail.smtp.host"));
     Session session = Session.getDefaultInstance(props, null);
 
-    List<Address> aCheck = Lists.newArrayList();
+    Set<Address> aCheck = Sets.newHashSet();
 
     for(String email : project.getEmails()) {
       try {
