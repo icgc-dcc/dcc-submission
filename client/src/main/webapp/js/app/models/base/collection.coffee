@@ -23,7 +23,7 @@ define (require) ->
 
   class Collection extends Chaplin.Collection
     # Place your application-specific collection features here
-    apiRoot: "#{window.location.origin}/ws/"
+    apiRoot: "/ws/"
 
     urlPath: ->
       console.debug 'Collection#urlPath'
@@ -32,7 +32,7 @@ define (require) ->
     url: ->
       console.debug 'Collection#url'
       @apiRoot + @urlPath() + "?preventCache="+ (new Date()).getTime()
-      
+
     sync: (method, model, options) ->
       console.debug 'Collection#sync', method, model, options
       

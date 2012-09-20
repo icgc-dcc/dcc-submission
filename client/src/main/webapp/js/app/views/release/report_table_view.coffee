@@ -99,86 +99,16 @@ define (require) ->
         
       sOut
 
-    formatError: (error) ->
-      switch error.code
-        when "MISSING_VALUE_ERROR"
-          """
-            <td>Value Missing</td>
-            <td>value missing for required field: <strong>#{error.parameters[1]}</strong></td>
-          """
-        when "RELATION_ERROR"
-          """
-            <td>Relation Error</td>
-            <td>invalid value(s) (<strong>#{error.parameters[0]}</strong>) for field(s) <strong>#{error.parameters[1]}.#{error.parameters[2]}</strong>. Expected to match value(s) in: <strong>#{error.parameters[3]}.#{error.parameters[4]}</strong></td>
-          """
-        when "RELATION_PARENT_ERROR"
-          """
-            <td>Relation Parent Error</td>
-            <td>no corresponding values in <strong>#{error.parameters[0]}.#{error.parameters[1]}</strong> for value(s) <strong>#{error.parameters[2]}</strong> in <strong>#{error.parameters[3]}.#{error.parameters[4]}</strong></td>
-          """
-          
-        when "STRUCTURALLY_INVALID_ROW_ERROR"
-          """
-            <td>Structurally Invalid Row</td>
-            <td>structurally invalid row: <strong>#{error.parameters[0]}</strong> columns against <strong>#{error.parameters[1]}</strong> declared in the header (row will be ignored by the rest of validation)"</td>
-          """
-        when "UNIQUE_VALUE_ERROR"
-          """
-            <td>Unique Value Error</td>
-            <td>invalid set of values (<strong>#{error.parameters[0]}</strong>) for fields <strong>#{error.parameters[1]}</strong>. Expected to be unique</td>
-          """
-        when "UNKNOWN_COLUMNS_WARNING"
-          """
-            <td>Unkown Column</td>
-            <td>value for unknown column: <strong>#{error.parameters[0]}</strong></td>
-          """
-        when "VALUE_TYPE_ERROR"
-          """
-            <td>Value Type Error</td>
-            <td>invalid value <strong>#{error.parameters[0]}</strong> for field <strong>#{error.parameters[1]}</strong>. Expected type is: <strong>#{error.parameters[2]}</strong></td>
-          """
-        when "OUT_OF_RANGE_ERROR"
-          """
-            <td>Out of Range</td>
-            <td>number <strong>#{error.parameters[0]}</strong> is out of range for field <strong>#{error.parameters[1]}</strong>. Expected value between <strong>#{error.parameters[2]}</strong> and <strong>#{error.parameters[3]}</strong></td>
-          """
-        when "NOT_A_NUMBER_ERROR"
-          """
-            <td>Not a Number</td>
-            <td><strong>#{error.parameters[0]}</strong> is not a number for field <strong>#{error.parameters[1]}</strong>. Expected a number</td>
-          """
-        when "MISSING_VALUE_ERROR"
-          """
-            <td>Missing Value</td>
-            <td>value missing for required field: <strong>#{error.parameters[0]}</strong></td>
-          """
-        when "CODELIST_ERROR"
-          """
-            <td>Codelist Error</td>
-            <td>invalid value <strong>#{error.parameters[0]}</strong> for field <strong>#{error.parameters[1]}</strong>. Expected code or value from CodeList <strong>#{error.parameters[2]}</strong></td>
-          """
-        when "DISCRETE_VALUES_ERROR"
-          """
-            <td>Discrete Values Error</td>
-            <td>invalid value <strong>#{error.parameters[0]}</strong> for field <strong>#{error.parameters[1]}</strong>. Expected one of the following values: <strong>#{error.parameters[2]}</strong></td>
-          """
-        when "TOO_MANY_FILES_ERROR"
-          """
-            <td>Too many files</td>
-            <td>more than one file matches the schema pattern</td>
-          """
-        when "INVALID_RELATION_ERROR"
-          """
-            <td>Invalid Relation</td>
-            <td>a required schema for this relation was not found</td>
-          """
-        when "MISSING_SCHEMA_ERROR"
-          """
-            <td>Missing Schema</td>
-            <td>no valid schema found</td>
-          """
-        else
-          "<td><strong>#{error.code}</strong></td><td><strong>#{error.parameters}</strong></td>"
+    formatErrorKey: (key) ->
+      switch key
+        when "expectedValue" then "Expected Value"
+        when "expectedType" then "Expected Type"
+        when "firstOffset" then "First Occurence"
+        when "minRange" then "Min Accepted Value"
+        when "maxRange" then "Max Accetped Value"
+        when "actualNumColumns" then "Expected Number of Columns"
+        when "relationSchema" then "Relation Schema"
+        when "relationColumnNames" then "Relation Columns"
 
     formatParams: (error) ->
       console.debug "ReportTableView#formatParams", error
@@ -186,7 +116,7 @@ define (require) ->
       errors = []
       
       for key, value of error.parameters
-        out.push "<strong>#{key}</strong>: #{value}<br>"
+        out.push "<strong>#{@formatErrorKey(key)}</strong>: #{value}<br>"
         
       for i in [0 .. error.lines.length - 1]
         e = ''
@@ -259,7 +189,8 @@ define (require) ->
           
 
     updateDataTable: ->
-      if @model.get('report').get('schemaReports').length
+      sr = @model.get('report').get('schemaReports').at(0)
+      if sr.get("errors") or sr.get("fieldReports")
         dt = @$el.dataTable()
         dt.fnSetColumnVis( 3, true )
         dt.fnSetColumnVis( 4, true )

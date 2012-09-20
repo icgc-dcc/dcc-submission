@@ -25,7 +25,7 @@ define (require) ->
 
   class Model extends Chaplin.Model
     # Place your application-specific model features here
-    apiRoot: "#{window.location.origin}/ws/"
+    apiRoot: "/ws/"
     urlKey: "_id"
 
     urlPath: ->
