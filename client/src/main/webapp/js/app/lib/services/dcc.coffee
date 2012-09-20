@@ -22,7 +22,7 @@ define (require) ->
   utils = require 'lib/utils'
 
   class DCC extends ServiceProvider
-    baseUrl: "#{window.location.origin}/ws/"
+    baseUrl: "/ws/"
 
     constructor: ->
       console.debug 'DCCServiceProvider#constructor', localStorage 
