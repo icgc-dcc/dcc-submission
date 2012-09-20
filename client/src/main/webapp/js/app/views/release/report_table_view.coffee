@@ -259,7 +259,8 @@ define (require) ->
           
 
     updateDataTable: ->
-      if @model.get('report').get('schemaReports').length
+      sr = @model.get('report').get('schemaReports').at(0)
+      if sr.get("errors") or sr.get("fieldReports")
         dt = @$el.dataTable()
         dt.fnSetColumnVis( 3, true )
         dt.fnSetColumnVis( 4, true )
