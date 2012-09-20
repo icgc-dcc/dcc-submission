@@ -132,12 +132,18 @@ public class ValidationQueueManagerService extends AbstractService {
             Throwable t = criticalThrowable.get();
             log.error("a critical error occured while processing the validation queue", t);
 
-            if(nextProjectKey.isPresent()) {
+            if(nextProjectKey != null && nextProjectKey.isPresent()) {
               String projectKey = nextProjectKey.get();
-              dequeue(projectKey, SubmissionState.ERROR);
+              try {
+                dequeue(projectKey, SubmissionState.ERROR);
+              } catch(Throwable t2) {
+                log.error(String.format("a critical error occured while attempting to dequeue project %s", projectKey),
+                    t2);
+              }
             } else {
-              log.error("Next project in queue not present, could not dequeue nor set submission state to "
-                  + SubmissionState.ERROR);
+              log.error(String.format(
+                  "next project in queue not present, could not dequeue nor set submission state to ",
+                  SubmissionState.ERROR));
             }
           }
         }
