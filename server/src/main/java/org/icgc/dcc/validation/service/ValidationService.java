@@ -27,6 +27,7 @@ import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.filesystem.ReleaseFileSystem;
 import org.icgc.dcc.filesystem.SubmissionDirectory;
+import org.icgc.dcc.release.model.QueuedProject;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.validation.CascadingStrategy;
 import org.icgc.dcc.validation.FatalPlanningException;
@@ -77,12 +78,12 @@ public class ValidationService {
 
   }
 
-  public Plan validate(Release release, String projectKey) {
+  public Plan validate(Release release, QueuedProject qProject) {
     String dictionaryVersion = release.getDictionaryVersion();
     Dictionary dictionary = this.dictionaries.getFromVersion(dictionaryVersion);
     ReleaseFileSystem releaseFilesystem = dccFileSystem.getReleaseFilesystem(release);
 
-    Project project = projectService.getProject(projectKey);
+    Project project = projectService.getProject(qProject.getKey());
     SubmissionDirectory submissionDirectory = releaseFilesystem.getSubmissionDirectory(project);
 
     Path rootDir = new Path(submissionDirectory.getSubmissionDirPath());
@@ -94,16 +95,16 @@ public class ValidationService {
 
     CascadingStrategy cascadingStrategy = cascadingStrategyFactory.get(rootDir, outputDir, systemDir);
 
-    log.info("starting validation on project {}", projectKey);
-    Plan plan = planCascade(projectKey, cascadingStrategy, dictionary);
+    log.info("starting validation on project {}", qProject.getKey());
+    Plan plan = planCascade(qProject, cascadingStrategy, dictionary);
 
-    runCascade(plan.getCascade(), projectKey);
-    log.info("validation finished for project {}", projectKey);
+    runCascade(plan.getCascade(), project.getKey());
+    log.info("validation finished for project {}", project.getKey());
 
     return plan;
   }
 
-  public Plan planCascade(String projectKey, CascadingStrategy cascadingStrategy, Dictionary dictionary) {
+  public Plan planCascade(QueuedProject project, CascadingStrategy cascadingStrategy, Dictionary dictionary) {
 
     Plan plan = planner.plan(cascadingStrategy, dictionary);
 
@@ -113,7 +114,7 @@ public class ValidationService {
     plan.connect(cascadingStrategy);
 
     if(plan.hasFileLevelErrors()) {
-      throw new FatalPlanningException(projectKey, plan); // the queue manager will handle it
+      throw new FatalPlanningException(project, plan); // the queue manager will handle it
     }
 
     return plan;

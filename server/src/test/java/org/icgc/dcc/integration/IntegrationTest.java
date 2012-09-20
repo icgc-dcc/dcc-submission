@@ -294,7 +294,10 @@ public class IntegrationTest {
   }
 
   private void test_queueProjects() throws IOException, JsonParseException, JsonMappingException {
-    Response response = sendPostRequest("/nextRelease/queue", "[\"project1\", \"project2\", \"project3\"]");
+    Response response =
+        sendPostRequest(
+            "/nextRelease/queue",
+            "[{\"key\": \"project1\", \"emails\": [\"a@a.ca\"]}, {\"key\": \"project2\", \"emails\": [\"a@a.ca\"]}, {\"key\": \"project3\", \"emails\": [\"a@a.ca\"]}]");
     assertEquals(200, response.getStatus());
   }
 

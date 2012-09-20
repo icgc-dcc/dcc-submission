@@ -2,21 +2,23 @@ package org.icgc.dcc.validation;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import org.icgc.dcc.release.model.QueuedProject;
+
 public class FatalPlanningException extends RuntimeException {
 
-  private final String projectKey;
+  private final QueuedProject project;
 
   private final Plan plan;
 
-  public FatalPlanningException(String projectKey, Plan plan) {
-    checkArgument(projectKey != null);
+  public FatalPlanningException(QueuedProject project, Plan plan) {
+    checkArgument(project != null);
     checkArgument(plan != null);
-    this.projectKey = projectKey;
+    this.project = project;
     this.plan = plan;
   }
 
-  public String getProjectKey() {
-    return projectKey;
+  public QueuedProject getProject() {
+    return project;
   }
 
   public Plan getPlan() {

@@ -15,36 +15,43 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core;
+package org.icgc.dcc.release.model;
 
-import org.icgc.dcc.core.model.QUser;
-import org.icgc.dcc.core.model.User;
-import org.icgc.dcc.core.morphia.BaseMorphiaService;
+import java.util.List;
 
-import com.google.code.morphia.Datastore;
-import com.google.code.morphia.Morphia;
-import com.google.inject.Inject;
+import com.google.code.morphia.annotations.Embedded;
+import com.google.common.collect.ImmutableList;
 
-/**
- * 
- */
-public class UserService extends BaseMorphiaService<User> {
+@Embedded
+public class QueuedProject {
 
-  @Inject
-  public UserService(Morphia morphia, Datastore datastore) {
-    super(morphia, datastore, QUser.user);
-    registerModelClasses(User.class);
+  private String key;
+
+  private List<String> emails;
+
+  public QueuedProject() {
+    super();
   }
 
-  public User getUser(String name) {
-    return this.where(QUser.user.username.eq(name)).singleResult();
+  public QueuedProject(String key, List<String> emails) {
+    super();
+    this.key = key;
+    this.emails = emails;
   }
 
-  public String getUserEmail(String name) {
-    return this.getUser(name).getEmail();
+  public ImmutableList<String> getEmails() {
+    return ImmutableList.copyOf(this.emails);
   }
 
-  public void saveUser(User user) {
-    datastore().save(user);
+  public String getKey() {
+    return this.key;
+  }
+
+  public void setKey(String key) {
+    this.key = key;
+  }
+
+  public void setEmails(List<String> emails) {
+    this.emails = emails;
   }
 }

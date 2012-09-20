@@ -44,6 +44,7 @@ import org.icgc.dcc.dictionary.model.ValueType;
 import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.filesystem.GuiceJUnitRunner;
 import org.icgc.dcc.filesystem.GuiceJUnitRunner.GuiceModules;
+import org.icgc.dcc.release.model.QueuedProject;
 import org.icgc.dcc.validation.factory.LocalCascadingStrategyFactory;
 import org.icgc.dcc.validation.service.ValidationService;
 import org.junit.Before;
@@ -209,7 +210,7 @@ public class ValidationExternalIntegrityTest {
 
     CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir, systemDir);
 
-    Plan plan = validationService.planCascade("dummyProject", cascadingStrategy, dictionary);
+    Plan plan = validationService.planCascade(new QueuedProject("dummyProject", null), cascadingStrategy, dictionary);
     Assert.assertEquals(5, plan.getCascade().getFlows().size());
 
     validationService.runCascade(plan.getCascade(), null);

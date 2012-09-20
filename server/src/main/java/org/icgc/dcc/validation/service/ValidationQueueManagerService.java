@@ -19,18 +19,31 @@ package org.icgc.dcc.validation.service;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import javax.mail.Address;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+
 import org.icgc.dcc.dictionary.DictionaryService;
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.release.ReleaseService;
+import org.icgc.dcc.release.model.QueuedProject;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.Submission;
@@ -47,8 +60,10 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.AbstractService;
 import com.google.inject.Inject;
+import com.typesafe.config.Config;
 
 /**
  * Manages validation queue that:<br>
@@ -69,16 +84,20 @@ public class ValidationQueueManagerService extends AbstractService {
 
   private final ValidationService validationService;
 
+  private final Config config;
+
   private ScheduledFuture<?> schedule;
 
   @Inject
   public ValidationQueueManagerService(final ReleaseService releaseService, final DictionaryService dictionaryService,
-      ValidationService validationService) {
+      ValidationService validationService, Config config) {
 
     checkArgument(releaseService != null);
     checkArgument(dictionaryService != null);
     checkArgument(validationService != null);
+    checkArgument(config != null);
 
+    this.config = config;
     this.releaseService = releaseService;
     this.dictionaryService = dictionaryService;
     this.validationService = validationService;
@@ -102,13 +121,13 @@ public class ValidationQueueManagerService extends AbstractService {
     schedule = scheduler.scheduleWithFixedDelay(new Runnable() {
       @Override
       public void run() {
-        Optional<String> nextProjectKey = Optional.<String> absent();
+        Optional<QueuedProject> nextProject = Optional.<QueuedProject> absent();
         Optional<Throwable> criticalThrowable = Optional.<Throwable> absent();
         try {
           if(isRunning() && releaseService.hasNextRelease()) {
-            nextProjectKey = releaseService.getNextRelease().getNextInQueue();
-            if(nextProjectKey.isPresent()) {
-              String projectKey = nextProjectKey.get();
+            nextProject = releaseService.getNextRelease().getNextInQueue();
+            if(nextProject.isPresent()) {
+              QueuedProject projectKey = nextProject.get();
               log.info("next in queue {}", projectKey);
               validateSubmission(projectKey);
             }
@@ -132,12 +151,13 @@ public class ValidationQueueManagerService extends AbstractService {
             Throwable t = criticalThrowable.get();
             log.error("a critical error occured while processing the validation queue", t);
 
-            if(nextProjectKey != null && nextProjectKey.isPresent()) {
-              String projectKey = nextProjectKey.get();
+            if(nextProject != null && nextProject.isPresent()) {
+              QueuedProject project = nextProject.get();
               try {
-                dequeue(projectKey, SubmissionState.ERROR);
+                dequeue(project, SubmissionState.ERROR);
               } catch(Throwable t2) {
-                log.error(String.format("a critical error occured while attempting to dequeue project %s", projectKey),
+                log.error(
+                    String.format("a critical error occured while attempting to dequeue project %s", project.getKey()),
                     t2);
               }
             } else {
@@ -152,7 +172,7 @@ public class ValidationQueueManagerService extends AbstractService {
       /**
        * May throw unchecked FatalPlanningException upon file-level errors (too critical to continue)
        */
-      private void validateSubmission(final String projectKey) throws FatalPlanningException {
+      private void validateSubmission(final QueuedProject project) throws FatalPlanningException {
         Release release = releaseService.getNextRelease().getRelease();
         if(release == null) {
           throw new ValidationServiceException("cannot access the next release");
@@ -164,8 +184,8 @@ public class ValidationQueueManagerService extends AbstractService {
                 .format("no dictionary found with version %s", dictionaryVersion));
           } else {
             if(release.getState() == ReleaseState.OPENED) {
-              Plan plan = validationService.validate(release, projectKey);
-              handleCascadeStatus(plan, projectKey);
+              Plan plan = validationService.validate(release, project);
+              handleCascadeStatus(plan, project);
             } else {
               log.info("Release was closed during validation; states not changed");
             }
@@ -173,11 +193,11 @@ public class ValidationQueueManagerService extends AbstractService {
         }
       }
 
-      private void handleCascadeStatus(final Plan plan, final String projectKey) {
+      private void handleCascadeStatus(final Plan plan, final QueuedProject project) {
         if(plan.getCascade().getCascadeStats().isSuccessful()) {
-          handleCompletedValidation(projectKey, plan);
+          handleCompletedValidation(project, plan);
         } else {
-          handleUnexpectedException(projectKey);
+          handleUnexpectedException(project);
         }
       }
 
@@ -194,7 +214,7 @@ public class ValidationQueueManagerService extends AbstractService {
   }
 
   public void handleAbortedValidation(FatalPlanningException e) {
-    String projectKey = e.getProjectKey();
+    QueuedProject project = e.getProject();
     Plan plan = e.getPlan();
     if(plan.hasFileLevelErrors() == false) {
       new AssertionError(); // by design since this should be the condition for throwing the
@@ -204,10 +224,10 @@ public class ValidationQueueManagerService extends AbstractService {
     Map<String, TupleState> fileLevelErrors = plan.getFileLevelErrors();
     log.error("file errors (fatal planning errors):\n\t{}", fileLevelErrors);
 
-    log.info("about to dequeue project key {}", projectKey);
-    dequeue(projectKey, SubmissionState.INVALID);
+    log.info("about to dequeue project key {}", project.getKey());
+    dequeue(project, SubmissionState.INVALID);
 
-    checkArgument(projectKey != null);
+    checkArgument(project != null);
     SubmissionReport report = new SubmissionReport();
 
     List<SchemaReport> schemaReports = new ArrayList<SchemaReport>();
@@ -223,22 +243,22 @@ public class ValidationQueueManagerService extends AbstractService {
       schemaReports.add(schemaReport);
     }
     report.setSchemaReports(schemaReports);
-    setSubmissionReport(projectKey, report);
+    setSubmissionReport(project.getKey(), report);
   }
 
-  public void handleCompletedValidation(String projectKey, Plan plan) {
-    checkArgument(projectKey != null);
+  public void handleCompletedValidation(QueuedProject project, Plan plan) {
+    checkArgument(project != null);
 
     SubmissionReport report = new SubmissionReport();
     Outcome outcome = plan.collect(report);
 
-    log.info("completed validation - about to dequeue project key {}/set submission its state", projectKey);
+    log.info("completed validation - about to dequeue project key {}/set submission its state", project.getKey());
     if(outcome == Outcome.PASSED) {
-      dequeue(projectKey, SubmissionState.VALID);
+      dequeue(project, SubmissionState.VALID);
     } else {
-      dequeue(projectKey, SubmissionState.INVALID);
+      dequeue(project, SubmissionState.INVALID);
     }
-    setSubmissionReport(projectKey, report);
+    setSubmissionReport(project.getKey(), report);
   }
 
   private void setSubmissionReport(String projectKey, SubmissionReport report) {
@@ -255,16 +275,65 @@ public class ValidationQueueManagerService extends AbstractService {
     log.info("report collecting finished on project {}", projectKey);
   }
 
-  public void handleUnexpectedException(String projectKey) {
-    checkArgument(projectKey != null);
-    log.info("failed validation from unknown error - about to dequeue project key {}", projectKey);
-    dequeue(projectKey, SubmissionState.ERROR);
+  public void handleUnexpectedException(QueuedProject project) {
+    checkArgument(project != null);
+    log.info("failed validation from unknown error - about to dequeue project key {}", project.getKey());
+    dequeue(project, SubmissionState.ERROR);
   }
 
-  private void dequeue(String projectKey, SubmissionState state) {
-    Optional<String> dequeuedProjectKey = releaseService.dequeue(projectKey, state);
-    if(dequeuedProjectKey.isPresent() == false) {
-      log.warn("could not dequeue project {}, maybe the queue was emptied in the meantime?", projectKey);
+  private void dequeue(QueuedProject project, SubmissionState state) {
+    if(project.getEmails().isEmpty() == false) {
+      this.email(project, state);
+    }
+
+    Optional<QueuedProject> dequeuedProject = releaseService.dequeue(project.getKey(), state);
+    if(dequeuedProject.isPresent() == false) {
+      log.warn("could not dequeue project {}, maybe the queue was emptied in the meantime?", project.getKey());
+    }
+  }
+
+  private void email(QueuedProject project, SubmissionState state) {
+    Properties props = new Properties();
+    props.put("mail.smtp.host", this.config.getString("mail.smtp.host"));
+    Session session = Session.getDefaultInstance(props, null);
+
+    Set<Address> aCheck = Sets.newHashSet();
+
+    for(String email : project.getEmails()) {
+      try {
+        Address a = new InternetAddress(email);
+        aCheck.add(a);
+      } catch(AddressException e) {
+        log.error("Illigal Address: " + e);
+      }
+    }
+
+    if(aCheck.size() > 0) {
+      Address[] addresses = new Address[aCheck.size()];
+
+      int i = 0;
+      for(Address email : aCheck) {
+        addresses[i++] = email;
+      }
+
+      try {
+        Message msg = new MimeMessage(session);
+        msg.setFrom(new InternetAddress(this.config.getString("mail.from.email"), this.config
+            .getString("mail.from.email")));
+        msg.addRecipients(Message.RecipientType.TO, addresses);
+
+        msg.setSubject(String.format(this.config.getString("mail.subject"), project.getKey(), state));
+        msg.setText(String.format(this.config.getString("mail.body"), project.getKey(), state, project.getKey()));
+        Transport.send(msg);
+        log.error("Emails for {} sent to {}: ", project.getKey(), aCheck);
+
+      } catch(AddressException e) {
+        log.error("an error occured while emailing: ", e);
+      } catch(MessagingException e) {
+        log.error("an error occured while emailing: ", e);
+      } catch(UnsupportedEncodingException e) {
+        log.error("an error occured while emailing: ", e);
+      }
     }
   }
 
