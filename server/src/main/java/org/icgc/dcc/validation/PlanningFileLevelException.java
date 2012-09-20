@@ -17,35 +17,24 @@
  */
 package org.icgc.dcc.validation;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import org.icgc.dcc.validation.cascading.TupleState;
 
-public class PlanningFileLevelException extends PlanningException {
+public class PlanningFileLevelException extends RuntimeException {
 
-  private String filename;
+  private final String filename;
 
-  private TupleState tupleState;
-
-  public PlanningFileLevelException() {
-    super();
-  }
-
-  public PlanningFileLevelException(String message, Throwable cause) {
-    super(message, cause);
-  }
-
-  public PlanningFileLevelException(String message) {
-    super(message);
-  }
-
-  public PlanningFileLevelException(Throwable cause) {
-    super(cause);
-  }
+  private final TupleState tupleState;
 
   public PlanningFileLevelException(String filename, ValidationErrorCode errorCode, String columnName, Object value,
       Object... params) {
-    super();
+    checkArgument(filename != null);
+    checkArgument(errorCode != null);
+    checkArgument(columnName != null);
+    checkArgument(params != null);
     this.filename = filename;
-    this.tupleState = new TupleState();
+    tupleState = new TupleState();
     tupleState.reportError(errorCode, columnName, value, params);
   }
 

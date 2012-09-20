@@ -34,7 +34,7 @@ public class RealmProvider implements Provider<Collection<Realm>> {
     log.debug("shiroIniFilePath = " + shiroIniFilePath);
 
     IniRealm iniRealm = new IniRealm();
-    iniRealm.setResourcePath("classpath:" + shiroIniFilePath);// TODO: existing constant for that?
+    iniRealm.setResourcePath("file:" + shiroIniFilePath);// TODO: existing constant for that?
     iniRealm.init();
 
     realms.add(iniRealm);

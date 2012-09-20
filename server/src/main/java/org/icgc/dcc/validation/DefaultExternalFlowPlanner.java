@@ -88,7 +88,7 @@ class DefaultExternalFlowPlanner extends BaseFileSchemaFlowPlanner implements Ex
         String afferentFileSchemataName = afferentFileSchemata.getName();
         try {
           plan.getInternalFlow(afferentFileSchemataName);
-        } catch(MissingFileException e) {
+        } catch(MissingFileException e) { // FIXME: this will only catch the first one
           throw new PlanningFileLevelException(fileName, ValidationErrorCode.INVALID_REVERSE_RELATION_ERROR,
               ValidationErrorCode.FILE_LEVEL_ERROR, afferentFileSchemataName);
         }
