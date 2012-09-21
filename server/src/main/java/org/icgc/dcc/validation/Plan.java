@@ -34,6 +34,8 @@ import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.report.Outcome;
 import org.icgc.dcc.validation.report.SchemaReport;
 import org.icgc.dcc.validation.report.SubmissionReport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cascading.cascade.Cascade;
 import cascading.cascade.CascadeConnector;
@@ -46,6 +48,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 public class Plan {
+
+  private static final Logger log = LoggerFactory.getLogger(Plan.class);
 
   private final List<FileSchema> plannedSchema = Lists.newArrayList();
 
@@ -86,6 +90,8 @@ public class Plan {
   public InternalFlowPlanner getInternalFlow(String schema) throws MissingFileException {
     InternalFlowPlanner schemaPlan = internalPlanners.get(schema);
     if(schemaPlan == null) {
+      log.error(String.format("no corresponding file for schema %s, schemata with files are %s", schema,
+          internalPlanners.keySet()));
       throw new MissingFileException(schema);
     }
     return schemaPlan;

@@ -75,6 +75,8 @@ class DefaultExternalFlowPlanner extends BaseFileSchemaFlowPlanner implements Ex
       lhsInternalFlow = plan.getInternalFlow(currentFileSchemaName);
       rhsInternalFlow = plan.getInternalFlow(referencedFileSchema);
     } catch(MissingFileException e) {
+      log.error(String.format("missing corresponding file for %s in relation coming from %s", referencedFileSchema,
+          currentFileSchemaName));
       throw new PlanningFileLevelException(fileName, ValidationErrorCode.INVALID_RELATION_ERROR, referencedFileSchema);
     }
 
@@ -88,6 +90,8 @@ class DefaultExternalFlowPlanner extends BaseFileSchemaFlowPlanner implements Ex
         try {
           plan.getInternalFlow(afferentFileSchemataName);
         } catch(MissingFileException e) { // FIXME: this will only catch the first one (consider DCC-391)
+          log.error(String.format("missing corresponding file for %s in relation going to %s", referencedFileSchema,
+              currentFileSchemaName));
           throw new PlanningFileLevelException(fileName, ValidationErrorCode.INVALID_REVERSE_RELATION_ERROR,
               afferentFileSchemataName);
         }
