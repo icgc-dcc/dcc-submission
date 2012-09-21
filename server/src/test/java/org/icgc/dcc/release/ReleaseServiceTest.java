@@ -48,6 +48,8 @@ public class ReleaseServiceTest {
 
   private DccFileSystem fs;
 
+  private DccFileSystem mockDccFileSystem;
+
   private ReleaseFileSystem mockReleaseFileSystem;
 
   final private String testDbName = "testDb";
@@ -63,6 +65,7 @@ public class ReleaseServiceTest {
       datastore = morphia.createDatastore(mongo, testDbName);
       fs = mock(DccFileSystem.class);
       mockReleaseFileSystem = mock(ReleaseFileSystem.class);
+      mockDccFileSystem = mock(DccFileSystem.class);
 
       when(fs.getReleaseFilesystem(any(Release.class))).thenReturn(mockReleaseFileSystem);
 
@@ -74,9 +77,6 @@ public class ReleaseServiceTest {
       // Set up a minimal test case
       dictionary = new Dictionary();
       dictionary.setVersion("foo");
-
-      dictionaryService = new DictionaryService(morphia, datastore);
-      dictionaryService.add(dictionary);
 
       release = new Release("release1");
 
@@ -104,6 +104,8 @@ public class ReleaseServiceTest {
 
       // Create the releaseService and populate it with the initial release
       releaseService = new ReleaseService(morphia, datastore, fs);
+      dictionaryService = new DictionaryService(morphia, datastore, mockDccFileSystem, releaseService);
+      dictionaryService.add(dictionary);
       releaseService.createInitialRelease(release);
     } catch(UnknownHostException e) {
       e.printStackTrace();
