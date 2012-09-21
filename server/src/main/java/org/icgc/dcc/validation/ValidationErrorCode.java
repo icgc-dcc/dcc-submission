@@ -24,6 +24,8 @@ public enum ValidationErrorCode {
   STRUCTURALLY_INVALID_ROW_ERROR("structurally invalid row: %s columns against %s declared in the header (row will be ignored by the rest of validation)", true) {
     @Override
     public final ImmutableMap<String, Object> build(Object... params) {
+      checkArgument(params != null);
+      checkArgument(params.length == 1);
       checkArgument(params[0] instanceof Integer);
       return ImmutableMap.of(ACTUAL_NUM_COLUMNS, params[0]);
     }
@@ -31,6 +33,8 @@ public enum ValidationErrorCode {
   RELATION_ERROR("invalid value(s) (%s) for field(s) %s.%s. Expected to match value(s) in: %s.%s") {
     @Override
     public final ImmutableMap<String, Object> build(Object... params) {
+      checkArgument(params != null);
+      checkArgument(params.length == 2);
       checkArgument(params[0] instanceof String);
       checkArgument(params[1] instanceof List);
       return ImmutableMap.of(RELATION_SCHEMA, params[0], RELATION_COLUMNS, params[1]);
@@ -39,6 +43,8 @@ public enum ValidationErrorCode {
   RELATION_PARENT_ERROR("no corresponding values in %s.%s for value(s) %s in %s.%s") {
     @Override
     public final ImmutableMap<String, Object> build(Object... params) {
+      checkArgument(params != null);
+      checkArgument(params.length == 2);
       checkArgument(params[0] instanceof String);
       checkArgument(params[1] instanceof List);
       return ImmutableMap.of(RELATION_SCHEMA, params[0], RELATION_COLUMNS, params[1]);
@@ -47,6 +53,8 @@ public enum ValidationErrorCode {
   UNIQUE_VALUE_ERROR("invalid set of values (%s) for fields %s. Expected to be unique") {
     @Override
     public final ImmutableMap<String, Object> build(Object... params) {
+      checkArgument(params != null);
+      checkArgument(params.length == 1);
       checkArgument(params[0] instanceof Long);
       return ImmutableMap.of(FIRST_OFFSET, params[0]);
     }
@@ -54,6 +62,8 @@ public enum ValidationErrorCode {
   VALUE_TYPE_ERROR("invalid value (%s) for field %s. Expected type is: %s") {
     @Override
     public final ImmutableMap<String, Object> build(Object... params) {
+      checkArgument(params != null);
+      checkArgument(params.length == 1);
       checkArgument(params[0] instanceof ValueType);
       return ImmutableMap.of(EXPECTED_TYPE, params[0]);
     }
@@ -61,6 +71,8 @@ public enum ValidationErrorCode {
   OUT_OF_RANGE_ERROR("number %d is out of range for field %s. Expected value between %d and %d") {
     @Override
     public final ImmutableMap<String, Object> build(Object... params) {
+      checkArgument(params != null);
+      checkArgument(params.length == 2);
       checkArgument(params[0] instanceof Long);
       checkArgument(params[1] instanceof Long);
 
@@ -82,39 +94,54 @@ public enum ValidationErrorCode {
   CODELIST_ERROR("invalid value %s for field %s. Expected code or value from CodeList %s") {
     @Override
     public final ImmutableMap<String, Object> build(Object... params) {
+      checkArgument(params != null);
+      checkArgument(params.length == 1);
       return ImmutableMap.of(EXPECTED_VALUE, params[0]);
     }
   }, //
   DISCRETE_VALUES_ERROR("invalid value %s for field %s. Expected one of the following values: %s") {
     @Override
     public final ImmutableMap<String, Object> build(Object... params) {
+      checkArgument(params != null);
+      checkArgument(params.length == 1);
       checkArgument(params[0] instanceof Set);
-
       return ImmutableMap.of(EXPECTED_VALUE, params[0]);
     }
   }, //
   TOO_MANY_FILES_ERROR("more than one file matches the schema pattern") {
     @Override
     public final ImmutableMap<String, Object> build(Object... params) {
-      return ImmutableMap.of();
+      checkArgument(params != null);
+      checkArgument(params.length == 1);
+      checkArgument(params[0] instanceof List);
+      return ImmutableMap.of(UNEXPECTED_VALUES, params[0]);
     }
   }, //
   INVALID_RELATION_ERROR("relation to schema %s has no matching file") {
     @Override
     public final ImmutableMap<String, Object> build(Object... params) {
-      return ImmutableMap.of();
+      checkArgument(params != null);
+      checkArgument(params.length == 1);
+      checkArgument(params[0] instanceof String);
+      return ImmutableMap.of(RELATION_SCHEMA, params[0]);
     }
   }, //
   INVALID_REVERSE_RELATION_ERROR("relation from schema %s has no matching file and this relation imposes that there be one") {
     @Override
     public final ImmutableMap<String, Object> build(Object... params) {
-      return ImmutableMap.of();
+      checkArgument(params != null);
+      checkArgument(params.length == 1);
+      checkArgument(params[0] instanceof String);
+      return ImmutableMap.of(RELATION_SCHEMA, params[0]);
     }
   }, //
   DUPLICATE_HEADER_ERROR("duplicate header found: %s") {
     @Override
     public final ImmutableMap<String, Object> build(Object... params) {
-      return ImmutableMap.of();
+      checkArgument(params != null);
+      checkArgument(params.length == 1);
+      checkArgument(params[0] instanceof List);
+      return ImmutableMap.of(UNEXPECTED_VALUES, params[0]);
     }
   };
 
@@ -134,7 +161,7 @@ public enum ValidationErrorCode {
 
   private static final String RELATION_COLUMNS = "relationColumnNames";
 
-  public static final String FILE_LEVEL_ERROR = "FileLevelError";
+  private static final String UNEXPECTED_VALUES = "unexpectedValues";
 
   private final String message;
 

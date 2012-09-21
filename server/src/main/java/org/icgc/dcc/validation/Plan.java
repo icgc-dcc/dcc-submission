@@ -70,7 +70,7 @@ public class Plan {
   }
 
   public String path(final FileSchema schema) throws FileNotFoundException, IOException {
-    return this.cascadingStrategy.path(schema).toUri().getPath();
+    return this.cascadingStrategy.path(schema).getName();
   }
 
   public Dictionary getDictionary() {
@@ -192,7 +192,7 @@ public class Plan {
   }
 
   public boolean hasFileLevelErrors() {
-    return fileLevelErrors.size() > 0;
+    return fileLevelErrors.isEmpty() == false;
   }
 
   public Map<String, TupleState> getFileLevelErrors() {
