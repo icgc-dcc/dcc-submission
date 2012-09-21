@@ -133,14 +133,13 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
     } catch(DuplicateHeaderException e) {
       String fileName = null;
       try {
-        fileName = strategy.path(getSchema()).toUri().getPath();
+        fileName = strategy.path(getSchema()).getName();
       } catch(FileNotFoundException fnfe) {
         throw new PlanningException(fnfe);
       } catch(IOException ioe) {
         throw new PlanningException(ioe);
       }
-      throw new PlanningFileLevelException(fileName, ValidationErrorCode.DUPLICATE_HEADER_ERROR,
-          ValidationErrorCode.FILE_LEVEL_ERROR, e.getDuplicateHeader());
+      throw new PlanningFileLevelException(fileName, ValidationErrorCode.DUPLICATE_HEADER_ERROR, e.getDuplicateHeader());
     }
 
     flowDef.addSource(head, source);

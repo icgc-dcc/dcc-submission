@@ -114,6 +114,7 @@ public class ValidationService {
     plan.connect(cascadingStrategy);
 
     if(plan.hasFileLevelErrors()) {
+      log.info(String.format("plan has errors, throwing a ", FatalPlanningException.class.getSimpleName()));
       throw new FatalPlanningException(project, plan); // the queue manager will handle it
     }
 
