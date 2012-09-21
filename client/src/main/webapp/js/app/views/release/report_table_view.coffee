@@ -239,7 +239,11 @@ define (require) ->
             mDataProp: null
             bSortable: false
             bVisible: false
-            sDefaultContent: "<span class='link control'>view</span>"
+            fnRender: (oObj, Sval)->
+              if oObj.aData.errors or oObj.aData.fieldReports
+                "<span class='link control'>view</span>"
+              else
+                ""
           }
         ]
 
