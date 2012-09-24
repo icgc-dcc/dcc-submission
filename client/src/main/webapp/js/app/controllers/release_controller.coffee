@@ -47,6 +47,7 @@ define (require) ->
       @model = new Release {name: params.release}
       @view = new ReleaseView {@model}
       @model.fetch
+        success: => @view.render()
         error: ->
           Chaplin.mediator.publish '!startupController', 'release', 'list'
 

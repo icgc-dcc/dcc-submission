@@ -33,7 +33,7 @@ define (require) ->
 
     container: '#content-container'
     containerMethod: 'html'
-    autoRender: true
+    autoRender: false
     tagName: 'div'
     id: 'release-view'
 
