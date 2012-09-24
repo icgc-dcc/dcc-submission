@@ -325,10 +325,26 @@ public class ReleaseService extends BaseMorphiaService<Release> {
             .set("dictionaryVersion", updatedDictionaryVersion);
     datastore().update(updateQuery, ops);
     if(sameDictionary == false) {
-      dbUpdateSubmissions(updatedName, oldRelease.getQueue(), oldProjectKeys, SubmissionState.NOT_VALIDATED);
+      dbUpdateSubmissions( // TODO: refactor with redundant code in resetSubmissions()?
+          updatedName, oldRelease.getQueue(), oldProjectKeys, SubmissionState.NOT_VALIDATED);
     }
 
     return oldRelease;
+  }
+
+  public void resetSubmissions(final Release release) {
+    for(Submission submission : release.getSubmissions()) {
+      resetSubmission(release, submission);
+    }
+  }
+
+  public void resetSubmission(final Release release, final Submission submission) {
+    submission.setState(SubmissionState.NOT_VALIDATED);
+    submission.setReport(null);
+
+    String releaseName = release.getName();
+    updateSubmission(releaseName, submission);
+    removeSubmissionReport(releaseName, submission.getProjectKey());
   }
 
   // TODO: should also take care of updating the queue, as the two should always go together
@@ -426,7 +442,8 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     }
 
     List<SubmissionFile> submissionFileList = new ArrayList<SubmissionFile>();
-    for(Path path : HadoopUtils.lsFile(this.fs.getFileSystem(), this.fs.buildProjectStringPath(release, projectKey))) {
+    for(Path path : HadoopUtils.lsFile(this.fs.getFileSystem(), //
+        this.fs.buildProjectStringPath(release, projectKey))) { // TODO: use DccFileSystem abstraction instead
       submissionFileList.add(new SubmissionFile(path, fs.getFileSystem()));
     }
     return submissionFileList;

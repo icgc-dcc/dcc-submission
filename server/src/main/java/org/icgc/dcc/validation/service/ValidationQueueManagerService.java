@@ -41,7 +41,6 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 import org.icgc.dcc.dictionary.DictionaryService;
-import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.QueuedProject;
 import org.icgc.dcc.release.model.Release;
@@ -127,9 +126,9 @@ public class ValidationQueueManagerService extends AbstractService {
           if(isRunning() && releaseService.hasNextRelease()) {
             nextProject = releaseService.getNextRelease().getNextInQueue();
             if(nextProject.isPresent()) {
-              QueuedProject projectKey = nextProject.get();
-              log.info("next in queue {}", projectKey);
-              validateSubmission(projectKey);
+              QueuedProject queuedProject = nextProject.get();
+              log.info("next in queue {}", queuedProject);
+              validateSubmission(queuedProject);
             }
           }
         } catch(FatalPlanningException e) { // potentially thrown by validateSubmission() upon file-level errors
@@ -172,23 +171,16 @@ public class ValidationQueueManagerService extends AbstractService {
       /**
        * May throw unchecked FatalPlanningException upon file-level errors (too critical to continue)
        */
-      private void validateSubmission(final QueuedProject project) throws FatalPlanningException {
+      private void validateSubmission(final QueuedProject queuedProject) throws FatalPlanningException {
         Release release = releaseService.getNextRelease().getRelease();
         if(release == null) {
           throw new ValidationServiceException("cannot access the next release");
         } else {
-          String dictionaryVersion = release.getDictionaryVersion();
-          Dictionary dictionary = dictionaryService.getFromVersion(dictionaryVersion);
-          if(dictionary == null) {
-            throw new ValidationServiceException(String
-                .format("no dictionary found with version %s", dictionaryVersion));
+          if(release.getState() == ReleaseState.OPENED) {
+            Plan plan = validationService.validate(release, queuedProject);
+            handleCascadeStatus(plan, queuedProject);
           } else {
-            if(release.getState() == ReleaseState.OPENED) {
-              Plan plan = validationService.validate(release, project);
-              handleCascadeStatus(plan, project);
-            } else {
-              log.info("Release was closed during validation; states not changed");
-            }
+            log.info("Release was closed during validation; states not changed");
           }
         }
       }
