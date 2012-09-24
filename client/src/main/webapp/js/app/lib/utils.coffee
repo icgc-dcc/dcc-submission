@@ -181,11 +181,9 @@ define (require) ->
       xhr.setRequestHeader 'Authorization', "X-DCC-Auth  #{@accessToken}"
 
     polling: (model, timing) ->
-      setInterval( =>
+      setInterval( ->
         model.fetch()
       , timing)
-
-    apitRoot: ->
-      "#{window.location.origin}/ws/"
+      return
 
   utils
