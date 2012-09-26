@@ -65,9 +65,9 @@ define (require) ->
       aoColumns = [
           {
             sTitle: "Project Key"
-            mDataProp: "projectKey"
+            mDataProp: "projectName"
             fnRender: (oObj, sVal) =>
-              "<a href='/releases/#{@collection.release}/submissions/#{sVal}'>#{sVal}</a>"
+              "<a href='/releases/#{@collection.release}/submissions/#{oObj.aData.projectKey.replace(/<.*?>/g, '')}'>#{sVal}</a>"
           }
           {
             sTitle: "Files"
