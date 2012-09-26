@@ -112,21 +112,19 @@ define (require) ->
 
     formatParams: (error) ->
       console.debug "ReportTableView#formatParams", error
-      out = []
-      errors = []
-      
+      out = ""
       for key, value of error.parameters
-        out.push "<strong>#{@formatErrorKey(key)}</strong>: #{value}<br>"
-        
+        out += "<strong>#{@formatErrorKey(key)}</strong> : #{value}<br>"
+      
+      out += "<table class='table'><th style='border:none'>Line</th><th style='border:none'>Value</th>"
+      map = {}
       for i in [0 .. error.lines.length - 1]
-        e = ''
-        e += "<strong>#{error.lines[i]}</strong>"
-        if error.values[i]
-          e += ": #{error.values[i]}"
-        errors.push e
-        
-      out.push(errors.join ", ")
-      out.join ""
+        map[error.lines[i]] = error.values[i]
+      lines = error.lines.sort((a,b)-> a - b)
+      for i in lines
+        out += "<tr><td style='border:none'>#{i}</td><td style='border:none'>#{map[i]}</td></tr>"
+      out += "</table>"
+      out
       
     formatDetails: (data) ->
       console.debug "ReportTableView#formatDetails", data
@@ -154,7 +152,11 @@ define (require) ->
             console.log errorObj, error
             sOut += "<tr>"
             sOut += "<td>#{errorObj.errorType}</td><td>#{error.columnNames.join ', '}</td>"
-            sOut += "<td>#{error.count}</td><td>#{@formatParams error}</td>"
+            sOut += "<td>#{error.count}</td>"
+            if errorObj.errorType is "MISSING_VALUE_ERROR"
+              sOut += "<td>#{error.lines.sort((a,b)-> a - b).join(', ')}</td>"
+            else
+              sOut += "<td>#{@formatParams error}</td>"
             sOut += "</tr>"
         sOut += "</tbody></table>"
         
@@ -203,8 +205,6 @@ define (require) ->
       aoColumns = [
           {
             sTitle: "File"
-            bSortable: false
-            bUseRendered: false
             mDataProp: "name"
           }
           {
@@ -224,15 +224,14 @@ define (require) ->
           {
             sTitle: "Status"
             mDataProp: null
-            bSortable: true
             bVisible: false
             fnRender: (oObj, Sval)->
               if oObj.aData.errors
-                "<span class='invalid'>INVALID</span>"
+                "INVALID"
               else if oObj.aData.fieldReports
-                "<span class='valid'>VALID</span>"
+                "VALID"
               else
-                "<span>NOT VALIDATED</span>"
+                "NOT VALIDATED"
           }
           {
             sTitle: "Report"
@@ -255,5 +254,12 @@ define (require) ->
         aoColumns: aoColumns
         sAjaxSource: ""
         sAjaxDataProp: ""
+        fnRowCallback: (nRow, aData, iDisplayIndex, iDisplayIndexFull) ->
+          cell = $('td:nth-child(4)', nRow)
+          switch cell.html()
+            when "VALID"
+              cell.css 'color', '#468847'
+            when "INVALID", "ERROR"
+              cell.css 'color', '#B94A48'
         fnServerData: (sSource, aoData, fnCallback) =>
           fnCallback @collection.toJSON()
