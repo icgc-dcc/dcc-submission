@@ -17,9 +17,13 @@
  */
 package org.icgc.dcc.validation.report;
 
+import java.io.IOException;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.validation.ValidationErrorCode;
 import org.icgc.dcc.validation.cascading.TupleState.TupleError;
 
@@ -102,6 +106,22 @@ public class ValidationErrorReport {
 
   private void setErrorType(ValidationErrorCode errorType) {
     this.errorType = errorType;
+  }
+
+  public void updateLineNumbers(Path file) throws IOException {
+    Collection<Long> offsets = new HashSet<Long>();
+    for(ColumnErrorReport column : this.columns) {
+      offsets.addAll(column.getLines());
+    }
+    Map<Long, Integer> byteToLine = ByteOffsetToLineNumber.convert(file, offsets);
+    for(ColumnErrorReport column : this.columns) {
+      List<Long> newLines = Lists.newLinkedList();
+      for(Long oldLine : column.getLines()) {
+        newLines.add(byteToLine.get(oldLine).longValue());
+      }
+      column.setLines(newLines);
+    }
+
   }
 
   private static class ColumnErrorReport {
