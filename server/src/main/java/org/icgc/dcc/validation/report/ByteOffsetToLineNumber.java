@@ -31,17 +31,28 @@ import java.util.Map;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 
 public class ByteOffsetToLineNumber {
+
+  private static final Logger log = LoggerFactory.getLogger(ByteOffsetToLineNumber.class);
 
   @Inject
   private static FileSystem fs;
 
   public static Map<Long, Integer> convert(Path file, Collection<Long> offsets) throws IOException {
     checkNotNull(file);
+    checkNotNull(fs);
 
+    if(fs.getScheme().equals("hdfs") == false) {
+      log.info("Local filesystem: not remapping line numbers for path " + file.toString());
+      return null;
+    }
+
+    log.info("Remapping byte offsets to line numbers for " + file.toString());
     List<Long> sortedOffsets = new ArrayList<Long>(offsets);
     Collections.sort(sortedOffsets);
     Map<Long, Integer> offsetToLine = new HashMap<Long, Integer>(sortedOffsets.size());

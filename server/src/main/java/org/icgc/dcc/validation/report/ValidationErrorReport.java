@@ -114,12 +114,15 @@ public class ValidationErrorReport {
       offsets.addAll(column.getLines());
     }
     Map<Long, Integer> byteToLine = ByteOffsetToLineNumber.convert(file, offsets);
-    for(ColumnErrorReport column : this.columns) {
-      List<Long> newLines = Lists.newLinkedList();
-      for(Long oldLine : column.getLines()) {
-        newLines.add(byteToLine.get(oldLine).longValue());
+
+    if(byteToLine != null) {
+      for(ColumnErrorReport column : this.columns) {
+        List<Long> newLines = Lists.newLinkedList();
+        for(Long oldLine : column.getLines()) {
+          newLines.add(byteToLine.get(oldLine).longValue());
+        }
+        column.setLines(newLines);
       }
-      column.setLines(newLines);
     }
 
   }
