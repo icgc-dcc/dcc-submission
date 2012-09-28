@@ -47,6 +47,7 @@ public class ByteOffsetToLineNumber {
     Map<Long, Integer> offsetToLine = new HashMap<Long, Integer>(sortedOffsets.size());
 
     LineNumberReader lineNumberReader = new LineNumberReader(new InputStreamReader(fs.open(file)));
+    lineNumberReader.setLineNumber(1);
     long currentByte = 0;
 
     for(long offset : sortedOffsets) {
