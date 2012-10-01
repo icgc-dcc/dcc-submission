@@ -151,7 +151,9 @@ abstract class HdfsSshFile implements SshFile {
 
   @Override
   public InputStream createInputStream(long offset) throws IOException {
-    return fs.open(path);
+    // because of DCC-412, the download size bug, we will temporarily disable download
+    // return fs.open(path);
+    throw new UnsupportedOperationException("disabled download from SFTP");
   }
 
   @Override
