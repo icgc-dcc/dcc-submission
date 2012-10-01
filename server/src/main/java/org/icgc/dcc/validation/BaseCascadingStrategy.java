@@ -70,13 +70,7 @@ public abstract class BaseCascadingStrategy implements CascadingStrategy {
   @Override
   public Tap<?, ?, ?> getSourceTap(FileSchema schema) {
     try {
-      if(schema.getRole() == FileSchemaRole.SUBMISSION) {
-        return tapSource(path(schema));
-      } else if(schema.getRole() == FileSchemaRole.SYSTEM) {
-        return tapSource(systemPath(schema));
-      } else {
-        throw new RuntimeException("undefined File Schema Role " + schema.getRole());
-      }
+      return tapSource(path(schema));
     } catch(IOException e) {
       throw new RuntimeException(e);
     }
@@ -100,14 +94,8 @@ public abstract class BaseCascadingStrategy implements CascadingStrategy {
 
   @Override
   public Fields getFileHeader(FileSchema schema) throws IOException {
-    Path path;
-    if(schema.getRole() == FileSchemaRole.SUBMISSION) {
-      path = this.path(schema);
-    } else if(schema.getRole() == FileSchemaRole.SYSTEM) {
-      path = this.systemPath(schema);
-    } else {
-      throw new RuntimeException("File Schema role is not defined");
-    }
+    Path path = this.path(schema);
+
     InputStreamReader isr = null;
     try {
       isr = new InputStreamReader(fileSystem.open(path), Charsets.UTF_8);
@@ -148,7 +136,15 @@ public abstract class BaseCascadingStrategy implements CascadingStrategy {
 
   @Override
   public Path path(final FileSchema schema) throws FileNotFoundException, IOException {
-    RemoteIterator<LocatedFileStatus> files = fileSystem.listFiles(input, false);
+
+    RemoteIterator<LocatedFileStatus> files;
+    if(schema.getRole() == FileSchemaRole.SUBMISSION) {
+      files = fileSystem.listFiles(input, false);
+    } else if(schema.getRole() == FileSchemaRole.SYSTEM) {
+      files = fileSystem.listFiles(system, false);
+    } else {
+      throw new RuntimeException("undefined File Schema Role " + schema.getRole());
+    }
 
     while(files.hasNext()) {
       LocatedFileStatus file = files.next();
@@ -160,22 +156,6 @@ public abstract class BaseCascadingStrategy implements CascadingStrategy {
       }
     }
     throw new FileNotFoundException("no file for schema " + schema.getName());
-  }
-
-  private Path systemPath(final FileSchema schema) throws FileNotFoundException, IOException {
-
-    RemoteIterator<LocatedFileStatus> files = fileSystem.listFiles(system, false);
-    while(files.hasNext()) {
-      LocatedFileStatus file = files.next();
-      if(file.isFile()) {
-        Path path = file.getPath();
-        if(Pattern.matches(schema.getPattern(), path.getName())) {
-          return path;
-        }
-      }
-    }
-    throw new FileNotFoundException("no file for schema " + schema.getName());
-
   }
 
   @Override
