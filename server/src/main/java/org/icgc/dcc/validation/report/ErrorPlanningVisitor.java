@@ -135,6 +135,7 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
             }
           }
           for(ValidationErrorReport e : errorMap.values()) {
+            e.updateLineNumbers(strategy.path(getFileSchema()));
             report.errors.add(e);
           }
           return outcome;
