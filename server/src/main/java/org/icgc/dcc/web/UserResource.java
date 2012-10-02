@@ -43,12 +43,14 @@ public class UserResource {
 
   @GET
   public Response getRoles(@Context HttpHeaders headers) {
+
     String username = passwordAuthenticator.getCurrentUser();
     User user = users.getUser(username);
 
     if(user == null) {
       user = new User();
       user.setUsername(username);
+      user.getRoles().addAll(this.passwordAuthenticator.getRoles());
       users.saveUser(user);
     }
     return Response.ok(user).build();
