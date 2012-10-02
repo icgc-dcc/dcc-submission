@@ -441,10 +441,16 @@ public class ReleaseService extends BaseMorphiaService<Release> {
       throw new ReleaseException("No such release");
     }
 
+    Dictionary dict = this.getDictionaryFromVersion(release.getDictionaryVersion());
+
+    if(dict == null) {
+      throw new ReleaseException("No Dictionary " + release.getDictionaryVersion());
+    }
+
     List<SubmissionFile> submissionFileList = new ArrayList<SubmissionFile>();
     for(Path path : HadoopUtils.lsFile(this.fs.getFileSystem(), //
         this.fs.buildProjectStringPath(release, projectKey))) { // TODO: use DccFileSystem abstraction instead
-      submissionFileList.add(new SubmissionFile(path, fs.getFileSystem()));
+      submissionFileList.add(new SubmissionFile(path, fs.getFileSystem(), dict));
     }
     return submissionFileList;
   }
