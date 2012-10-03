@@ -1,5 +1,6 @@
 package org.icgc.dcc.shiro;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -16,7 +17,9 @@ import org.icgc.dcc.core.UserService;
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.core.model.User;
 
-public class DccDbRealm extends AuthorizingRealm {
+import com.google.common.collect.Lists;
+
+public class DccDbRealm extends AuthorizingRealm implements DccRealm {
 
   private final UserService users;
 
@@ -52,6 +55,15 @@ public class DccDbRealm extends AuthorizingRealm {
   protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
     // Authorization is currently only performed via the Shiro INI file, so this is not populated
     return null;
+  }
+
+  @Override
+  public Collection<String> getRoles(String username) {
+    User user = users.getUser(username);
+    if(user == null) {
+      return Lists.newArrayList();
+    }
+    return user.getRoles();
   }
 
 }

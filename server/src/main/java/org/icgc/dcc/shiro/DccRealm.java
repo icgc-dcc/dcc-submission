@@ -19,17 +19,10 @@ package org.icgc.dcc.shiro;
 
 import java.util.Collection;
 
-import org.apache.shiro.authc.SimpleAccount;
-import org.apache.shiro.realm.text.IniRealm;
-
 /**
  * 
  */
-public class DccIniRealm extends IniRealm implements DccRealm {
+public interface DccRealm {
 
-  @Override
-  public Collection<String> getRoles(String username) {
-    SimpleAccount account = this.getUser(username);
-    return account.getRoles();
-  }
+  public Collection<String> getRoles(String username);
 }

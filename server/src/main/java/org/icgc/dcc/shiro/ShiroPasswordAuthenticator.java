@@ -105,11 +105,9 @@ public class ShiroPasswordAuthenticator implements UsernamePasswordAuthenticator
 
     DefaultSecurityManager defaultSecurityManager = (DefaultSecurityManager) this.securityManager;
     for(Realm realm : defaultSecurityManager.getRealms()) {
-      if(realm instanceof DccIniRealm) {
-        DccIniRealm iniRealm = (DccIniRealm) realm;
-        Collection<String> iniRealmRoles = iniRealm.getRoles(this.getCurrentUser());
-        roles.addAll(iniRealmRoles);
-      }
+      DccRealm dccRealm = (DccRealm) realm;
+      Collection<String> iniRealmRoles = dccRealm.getRoles(this.getCurrentUser());
+      roles.addAll(iniRealmRoles);
     }
     return roles;
   }
