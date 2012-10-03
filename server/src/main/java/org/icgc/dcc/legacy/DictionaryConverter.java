@@ -390,7 +390,8 @@ public class DictionaryConverter {
 
     // add required restriction
     String required = iterator.next();
-    if(Boolean.parseBoolean(required)) {
+    // only add required restriction for submission files
+    if(Boolean.parseBoolean(required) && fileSchema.getRole() != FileSchemaRole.SYSTEM) {
       Restriction requiredRestriction = new Restriction();
       requiredRestriction.setType(RequiredRestriction.NAME);
       BasicDBObject parameter = new BasicDBObject();
