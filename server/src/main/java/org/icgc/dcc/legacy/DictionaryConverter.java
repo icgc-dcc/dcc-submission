@@ -214,7 +214,9 @@ public class DictionaryConverter {
           parameter.append(RequiredRestriction.ACCEPT_MISSING_CODE, false);
         }
         requiredRestriction.setConfig(parameter);
-        leftField.addRestriction(requiredRestriction);
+        if(leftFileSchema.getRole() != FileSchemaRole.SYSTEM) {
+          leftField.addRestriction(requiredRestriction);
+        }
       }
       FileSchema rightFileSchema = this.dictionary.fileSchema(rightTable).get();
       for(String key : rightKeys) {
@@ -235,7 +237,9 @@ public class DictionaryConverter {
           parameter.append(RequiredRestriction.ACCEPT_MISSING_CODE, false);
         }
         requiredRestriction.setConfig(parameter);
-        rightField.addRestriction(requiredRestriction);
+        if(rightFileSchema.getRole() != FileSchemaRole.SYSTEM) {
+          rightField.addRestriction(requiredRestriction);
+        }
       }
     }
 
