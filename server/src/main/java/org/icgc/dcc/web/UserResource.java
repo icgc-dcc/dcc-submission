@@ -50,9 +50,11 @@ public class UserResource {
     if(user == null) {
       user = new User();
       user.setUsername(username);
-      user.getRoles().addAll(this.passwordAuthenticator.getRoles());
       users.saveUser(user);
     }
+
+    user.getRoles().addAll(this.passwordAuthenticator.getRoles());
+
     return Response.ok(user).build();
   }
 
