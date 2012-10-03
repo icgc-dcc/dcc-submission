@@ -15,26 +15,14 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.security;
+package org.icgc.dcc.shiro;
 
-import java.util.List;
-
-import org.apache.shiro.subject.Subject;
+import java.util.Collection;
 
 /**
- * Contract for authenticating a user based on username-password tokens.
+ * 
  */
-public interface UsernamePasswordAuthenticator {
+public interface DccRealm {
 
-  /**
-   * 
-   * @return true when authentication succeeds, false otherwise.
-   */
-  public Subject authenticate(String username, char[] password, String host);
-
-  public String getCurrentUser();
-
-  public Subject getSubject();
-
-  public List<String> getRoles();
+  public Collection<String> getRoles(String username);
 }

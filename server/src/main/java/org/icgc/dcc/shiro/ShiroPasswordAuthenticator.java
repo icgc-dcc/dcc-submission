@@ -17,13 +17,18 @@
  */
 package org.icgc.dcc.shiro;
 
+import java.util.Collection;
+import java.util.List;
+
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.authc.LockedAccountException;
 import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.authc.UsernamePasswordToken;
+import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.mgt.SecurityManager;
+import org.apache.shiro.realm.Realm;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
 import org.icgc.dcc.http.jersey.BasicHttpAuthenticationRequestFilter;
@@ -31,6 +36,7 @@ import org.icgc.dcc.security.UsernamePasswordAuthenticator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
 /**
@@ -93,4 +99,16 @@ public class ShiroPasswordAuthenticator implements UsernamePasswordAuthenticator
     return SecurityUtils.getSubject();
   }
 
+  @Override
+  public List<String> getRoles() {
+    List<String> roles = Lists.newArrayList();
+
+    DefaultSecurityManager defaultSecurityManager = (DefaultSecurityManager) this.securityManager;
+    for(Realm realm : defaultSecurityManager.getRealms()) {
+      DccRealm dccRealm = (DccRealm) realm;
+      Collection<String> iniRealmRoles = dccRealm.getRoles(this.getCurrentUser());
+      roles.addAll(iniRealmRoles);
+    }
+    return roles;
+  }
 }
