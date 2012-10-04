@@ -48,7 +48,7 @@ public class Relation implements DictionaryElement {
     fields = new ArrayList<String>();
     otherFields = new ArrayList<String>();
     other = null;
-    bidirectional = null;
+    bidirectional = false;
     optionals = new ArrayList<Integer>();
   }
 

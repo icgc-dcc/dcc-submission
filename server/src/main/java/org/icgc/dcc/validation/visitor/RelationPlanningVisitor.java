@@ -246,7 +246,7 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
 
     private final int optionalSize;
 
-    private final Comparator[] tupleComparators;
+    // private final Comparator[] tupleComparators;
 
     ConditionalNoNullBuffer(String lhs, String rhs, String[] lhsFields, String[] rhsFields, String[] requiredLhsFields,
         String[] requiredRhsFields, String[] optionalLhsFields, String[] optionalRhsFields) {
@@ -268,9 +268,9 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
               return object1 == null || object2 == null ? 0 : ((String) object1).compareTo(((String) object2));
             }
           };
-      this.tupleComparators = new Comparator[optionalSize];
+      // this.tupleComparators = new Comparator[optionalSize];
       for(int i = 0; i < optionalRhsFields.length; i++) {
-        this.tupleComparators[i] = comparator; // we can reuse the same for all fields
+        // this.tupleComparators[i] = comparator; // we can reuse the same for all fields
       }
     }
 
@@ -323,9 +323,9 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
 
     private boolean contains(List<Tuple> tuples, Tuple tuple) {
       for(Tuple tupleTmp : tuples) {
-        if(tupleTmp.compareTo(this.tupleComparators, tuple) == 0) {
-          return true;
-        }
+        // if(tupleTmp.compareTo(this.tupleComparators, tuple) == 0) {
+        // return true;
+        // }
       }
       return false;
     }
