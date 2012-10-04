@@ -38,7 +38,7 @@ public class NextReleaseResource {
   @POST
   public Response release(Release nextRelease, @Context Request req, @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
-        AuthorizationPrivileges.RELEASE_CLOSE.toString()) == false) {
+        AuthorizationPrivileges.RELEASE_CLOSE.getPrefix()) == false) {
       return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
     }
     NextRelease oldRelease = releaseService.getNextRelease();
@@ -87,7 +87,7 @@ public class NextReleaseResource {
   @Path("queue")
   public Response removeAllQueued(@Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
-        AuthorizationPrivileges.QUEUE_DELETE.toString()) == false) {
+        AuthorizationPrivileges.QUEUE_DELETE.getPrefix()) == false) {
       return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
     }
     this.releaseService.deleteQueuedRequest();
@@ -107,7 +107,7 @@ public class NextReleaseResource {
   @Path("signed")
   public Response signOff(List<String> projectKeys, @Context Request req, @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
-        AuthorizationPrivileges.RELEASE_SIGNOFF.toString()) == false) {
+        AuthorizationPrivileges.RELEASE_SIGNOFF.getPrefix()) == false) {
       return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
     }
     ResponseTimestamper.evaluate(req, this.releaseService.getNextRelease().getRelease());
@@ -124,7 +124,7 @@ public class NextReleaseResource {
   @Path("update")
   public Response update(Release release, @Context Request req, @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
-        AuthorizationPrivileges.RELEASE_MODIFY.toString()) == false) {
+        AuthorizationPrivileges.RELEASE_MODIFY.getPrefix()) == false) {
       return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
     }
     if(release != null) {
