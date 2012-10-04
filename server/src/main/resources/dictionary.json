@@ -1,6 +1,6 @@
 {
-  "created" : 1347304331746,
-  "lastUpdate" : 1347304331746,
+  "created" : 1349289196478,
+  "lastUpdate" : 1349289196478,
   "version" : "0.6c",
   "state" : "OPENED",
   "files" : [ {
@@ -2405,12 +2405,7 @@
       "label" : null,
       "valueType" : "TEXT",
       "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      } ]
+      "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_opri_bool",
       "label" : null,
@@ -3498,12 +3493,7 @@
       "label" : null,
       "valueType" : "TEXT",
       "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : false
-        }
-      } ]
+      "restrictions" : [ ]
     }, {
       "name" : "mirna_seq",
       "label" : null,
@@ -3515,12 +3505,7 @@
       "label" : null,
       "valueType" : "TEXT",
       "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      } ]
+      "restrictions" : [ ]
     }, {
       "name" : "overlap_type",
       "label" : null,
@@ -3618,12 +3603,7 @@
       "label" : null,
       "valueType" : "TEXT",
       "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      } ]
+      "restrictions" : [ ]
     }, {
       "name" : "value_1022",
       "label" : null,
@@ -4980,263 +4960,6 @@
       "optionals" : [ ]
     } ]
   }, {
-    "name" : "ssm_p",
-    "label" : null,
-    "pattern" : "^ssm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__p__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
-    "role" : "SUBMISSION",
-    "uniqueFields" : [ "analysis_id", "analyzed_sample_id", "mutation_id" ],
-    "fields" : [ {
-      "name" : "analysis_id",
-      "label" : "Unique identfier for the analysis performed for a particular group of samples",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : false
-        }
-      } ]
-    }, {
-      "name" : "analyzed_sample_id",
-      "label" : null,
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : false
-        }
-      } ]
-    }, {
-      "name" : "mutation_id",
-      "label" : "Unique identifier for the mutation",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : false
-        }
-      } ]
-    }, {
-      "name" : "mutation_type",
-      "label" : "Type of mutation",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "ssm_p__mutation_type"
-        }
-      } ]
-    }, {
-      "name" : "chromosome",
-      "label" : "Name of the chromosome containing the mutation/variation",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "appendix_B6"
-        }
-      } ]
-    }, {
-      "name" : "chromosome_start",
-      "label" : "Start position of the mutation/variation on the chromosome",
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      } ]
-    }, {
-      "name" : "chromosome_end",
-      "label" : "End position of the mutation/variation on the chromosome",
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      } ]
-    }, {
-      "name" : "chromosome_strand",
-      "label" : "Chromosome strand",
-      "valueType" : "INTEGER",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "ssm_p__chromosome_strand"
-        }
-      } ]
-    }, {
-      "name" : "refsnp_allele",
-      "label" : "RefSNP alleles from dbSNP (use a dash for each missing base)",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      } ]
-    }, {
-      "name" : "refsnp_strand",
-      "label" : "Strand of RefSNP allele",
-      "valueType" : "INTEGER",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "codelist",
-        "config" : {
-          "name" : "ssm_p__refsnp_strand"
-        }
-      } ]
-    }, {
-      "name" : "reference_genome_allele",
-      "label" : "Allele in the reference genome (use a dash for each missing base)",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      } ]
-    }, {
-      "name" : "control_genotype",
-      "label" : "Genotype of the control sample (use a dash for each missing base)",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      } ]
-    }, {
-      "name" : "tumour_genotype",
-      "label" : "Genotype of the tumour sample (use a dash for each missing base)",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      } ]
-    }, {
-      "name" : "mutation",
-      "label" : "Mutation, e.g. C > G",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      } ]
-    }, {
-      "name" : "expressed_allele",
-      "label" : "For heterozygous SNPs, the dominant allele as revealed by RNA-seq, etc.",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ ]
-    }, {
-      "name" : "quality_score",
-      "label" : "Average quality score for the mutation/variation call",
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ ]
-    }, {
-      "name" : "probability",
-      "label" : "Probability of the mutation/variation call",
-      "valueType" : "DECIMAL",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ ]
-    }, {
-      "name" : "read_count",
-      "label" : "Average number of times the bases are covered by raw reads",
-      "valueType" : "DECIMAL",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ ]
-    }, {
-      "name" : "is_annotated",
-      "label" : "Indicate if the mutation/variation is annotated in dbSNP",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "codelist",
-        "config" : {
-          "name" : "ssm_p__is_annotated"
-        }
-      } ]
-    }, {
-      "name" : "validation_status",
-      "label" : "Indicate if the mutation/variation has been validated",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "ssm_p__validation_status"
-        }
-      } ]
-    }, {
-      "name" : "validation_platform",
-      "label" : "Platform or technology used in validation",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "codelist",
-        "config" : {
-          "name" : "appendix_B5"
-        }
-      } ]
-    }, {
-      "name" : "xref_ensembl_var_id",
-      "label" : "Cross-reference: Ensembl Variation ID",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ ]
-    }, {
-      "name" : "note",
-      "label" : "Optional field to leave notes",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ ]
-    } ],
-    "relations" : [ {
-      "fields" : [ "analysis_id", "analyzed_sample_id" ],
-      "bidirectional" : true,
-      "other" : "ssm_m",
-      "otherFields" : [ "analysis_id", "analyzed_sample_id" ],
-      "optionals" : [ ]
-    } ]
-  }, {
     "name" : "exp_g",
     "label" : null,
     "pattern" : "^exp__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__g__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
@@ -5524,6 +5247,263 @@
       "other" : "specimen",
       "otherFields" : [ "donor_id", "specimen_id" ],
       "optionals" : [ 1 ]
+    } ]
+  }, {
+    "name" : "ssm_p",
+    "label" : null,
+    "pattern" : "^ssm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__p__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
+    "role" : "SUBMISSION",
+    "uniqueFields" : [ "analysis_id", "analyzed_sample_id", "mutation_id" ],
+    "fields" : [ {
+      "name" : "analysis_id",
+      "label" : "Unique identfier for the analysis performed for a particular group of samples",
+      "valueType" : "TEXT",
+      "summaryType" : null,
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : {
+          "acceptMissingCode" : false
+        }
+      } ]
+    }, {
+      "name" : "analyzed_sample_id",
+      "label" : null,
+      "valueType" : "TEXT",
+      "summaryType" : null,
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : {
+          "acceptMissingCode" : false
+        }
+      } ]
+    }, {
+      "name" : "mutation_id",
+      "label" : "Unique identifier for the mutation",
+      "valueType" : "TEXT",
+      "summaryType" : null,
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : {
+          "acceptMissingCode" : false
+        }
+      } ]
+    }, {
+      "name" : "mutation_type",
+      "label" : "Type of mutation",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : {
+          "acceptMissingCode" : true
+        }
+      }, {
+        "type" : "codelist",
+        "config" : {
+          "name" : "ssm_p__mutation_type"
+        }
+      } ]
+    }, {
+      "name" : "chromosome",
+      "label" : "Name of the chromosome containing the mutation/variation",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : {
+          "acceptMissingCode" : true
+        }
+      }, {
+        "type" : "codelist",
+        "config" : {
+          "name" : "appendix_B6"
+        }
+      } ]
+    }, {
+      "name" : "chromosome_start",
+      "label" : "Start position of the mutation/variation on the chromosome",
+      "valueType" : "INTEGER",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : {
+          "acceptMissingCode" : true
+        }
+      } ]
+    }, {
+      "name" : "chromosome_end",
+      "label" : "End position of the mutation/variation on the chromosome",
+      "valueType" : "INTEGER",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : {
+          "acceptMissingCode" : true
+        }
+      } ]
+    }, {
+      "name" : "chromosome_strand",
+      "label" : "Chromosome strand",
+      "valueType" : "INTEGER",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : {
+          "acceptMissingCode" : true
+        }
+      }, {
+        "type" : "codelist",
+        "config" : {
+          "name" : "ssm_p__chromosome_strand"
+        }
+      } ]
+    }, {
+      "name" : "refsnp_allele",
+      "label" : "RefSNP alleles from dbSNP (use a dash for each missing base)",
+      "valueType" : "TEXT",
+      "summaryType" : null,
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : {
+          "acceptMissingCode" : true
+        }
+      } ]
+    }, {
+      "name" : "refsnp_strand",
+      "label" : "Strand of RefSNP allele",
+      "valueType" : "INTEGER",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "codelist",
+        "config" : {
+          "name" : "ssm_p__refsnp_strand"
+        }
+      } ]
+    }, {
+      "name" : "reference_genome_allele",
+      "label" : "Allele in the reference genome (use a dash for each missing base)",
+      "valueType" : "TEXT",
+      "summaryType" : null,
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : {
+          "acceptMissingCode" : true
+        }
+      } ]
+    }, {
+      "name" : "control_genotype",
+      "label" : "Genotype of the control sample (use a dash for each missing base)",
+      "valueType" : "TEXT",
+      "summaryType" : null,
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : {
+          "acceptMissingCode" : true
+        }
+      } ]
+    }, {
+      "name" : "tumour_genotype",
+      "label" : "Genotype of the tumour sample (use a dash for each missing base)",
+      "valueType" : "TEXT",
+      "summaryType" : null,
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : {
+          "acceptMissingCode" : true
+        }
+      } ]
+    }, {
+      "name" : "mutation",
+      "label" : "Mutation, e.g. C > G",
+      "valueType" : "TEXT",
+      "summaryType" : null,
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : {
+          "acceptMissingCode" : true
+        }
+      } ]
+    }, {
+      "name" : "expressed_allele",
+      "label" : "For heterozygous SNPs, the dominant allele as revealed by RNA-seq, etc.",
+      "valueType" : "TEXT",
+      "summaryType" : null,
+      "restrictions" : [ ]
+    }, {
+      "name" : "quality_score",
+      "label" : "Average quality score for the mutation/variation call",
+      "valueType" : "INTEGER",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ ]
+    }, {
+      "name" : "probability",
+      "label" : "Probability of the mutation/variation call",
+      "valueType" : "DECIMAL",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ ]
+    }, {
+      "name" : "read_count",
+      "label" : "Average number of times the bases are covered by raw reads",
+      "valueType" : "DECIMAL",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ ]
+    }, {
+      "name" : "is_annotated",
+      "label" : "Indicate if the mutation/variation is annotated in dbSNP",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "codelist",
+        "config" : {
+          "name" : "ssm_p__is_annotated"
+        }
+      } ]
+    }, {
+      "name" : "validation_status",
+      "label" : "Indicate if the mutation/variation has been validated",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : {
+          "acceptMissingCode" : true
+        }
+      }, {
+        "type" : "codelist",
+        "config" : {
+          "name" : "ssm_p__validation_status"
+        }
+      } ]
+    }, {
+      "name" : "validation_platform",
+      "label" : "Platform or technology used in validation",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "codelist",
+        "config" : {
+          "name" : "appendix_B5"
+        }
+      } ]
+    }, {
+      "name" : "xref_ensembl_var_id",
+      "label" : "Cross-reference: Ensembl Variation ID",
+      "valueType" : "TEXT",
+      "summaryType" : null,
+      "restrictions" : [ ]
+    }, {
+      "name" : "note",
+      "label" : "Optional field to leave notes",
+      "valueType" : "TEXT",
+      "summaryType" : null,
+      "restrictions" : [ ]
+    } ],
+    "relations" : [ {
+      "fields" : [ "analysis_id", "analyzed_sample_id" ],
+      "bidirectional" : true,
+      "other" : "ssm_m",
+      "otherFields" : [ "analysis_id", "analyzed_sample_id" ],
+      "optionals" : [ ]
     } ]
   }, {
     "name" : "ssm_m",
