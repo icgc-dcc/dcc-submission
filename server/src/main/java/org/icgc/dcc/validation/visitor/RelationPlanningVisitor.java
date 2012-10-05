@@ -246,7 +246,7 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
 
     private final int optionalSize;
 
-    private final Comparator[] tupleComparators;
+    private final transient Comparator[] tupleComparators;
 
     ConditionalNoNullBuffer(String lhs, String rhs, String[] lhsFields, String[] rhsFields, String[] requiredLhsFields,
         String[] requiredRhsFields, String[] optionalLhsFields, String[] optionalRhsFields) {
