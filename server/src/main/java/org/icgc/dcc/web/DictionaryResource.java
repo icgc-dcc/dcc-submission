@@ -77,6 +77,9 @@ public class DictionaryResource {
     } else if(oldDictionary.getState() != DictionaryState.OPENED) {
       return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage("DictionaryNotOpen", version))
           .build();
+    } else if(newDictionary.getVersion() == null) {
+      return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage("DictionaryVersionNULL"))
+          .build();
     } else if(newDictionary.getVersion().equals(version) == false) {
       return Response.status(Status.BAD_REQUEST)
           .entity(new ServerErrorResponseMessage("DictionaryVersionMismatch", version, newDictionary.getVersion()))
