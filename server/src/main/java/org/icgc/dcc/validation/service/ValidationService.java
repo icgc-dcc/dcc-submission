@@ -96,6 +96,7 @@ public class ValidationService {
 
       log.info("rootDir = {} ", rootDir);
       log.info("outputDir = {} ", outputDir);
+      log.info("systemDir = {} ", systemDir);
 
       CascadingStrategy cascadingStrategy = cascadingStrategyFactory.get(rootDir, outputDir, systemDir);
 

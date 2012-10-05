@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.apache.hadoop.fs.FileContext;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
@@ -70,7 +71,9 @@ public abstract class BaseCascadingStrategy implements CascadingStrategy {
   @Override
   public Tap<?, ?, ?> getSourceTap(FileSchema schema) {
     try {
-      return tapSource(path(schema));
+      Path path = path(schema);
+      Path resolvedPath = FileContext.getFileContext(fileSystem.getUri()).resolvePath(path);
+      return tapSource(resolvedPath);
     } catch(IOException e) {
       throw new RuntimeException(e);
     }
@@ -98,7 +101,8 @@ public abstract class BaseCascadingStrategy implements CascadingStrategy {
 
     InputStreamReader isr = null;
     try {
-      isr = new InputStreamReader(fileSystem.open(path), Charsets.UTF_8);
+      Path resolvedPath = FileContext.getFileContext(fileSystem.getUri()).resolvePath(path);
+      isr = new InputStreamReader(fileSystem.open(resolvedPath), Charsets.UTF_8);
       LineReader lineReader = new LineReader(isr);
       String firstLine = lineReader.readLine();
       Iterable<String> header = Splitter.on('\t').split(firstLine);
