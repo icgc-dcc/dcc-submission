@@ -97,7 +97,7 @@ module.exports = class SubmissionTableView extends DataTableView
             source.state.replace '_', ' '
         }
         {
-          sTitle: "Last Updated"
+          sTitle: "Date Created"
           mData: (source) ->
             utils.date source.lastUpdated
         }
