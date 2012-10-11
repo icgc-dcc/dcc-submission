@@ -288,6 +288,7 @@ public class ValidationQueueManagerService extends AbstractService {
     Properties props = new Properties();
     props.put("mail.smtp.host", this.config.getString("mail.smtp.host"));
     Session session = Session.getDefaultInstance(props, null);
+    Release release = releaseService.getNextRelease().getRelease();
 
     Set<Address> aCheck = Sets.newHashSet();
 
@@ -315,7 +316,8 @@ public class ValidationQueueManagerService extends AbstractService {
         msg.addRecipients(Message.RecipientType.TO, addresses);
 
         msg.setSubject(String.format(this.config.getString("mail.subject"), project.getKey(), state));
-        msg.setText(String.format(this.config.getString("mail.body"), project.getKey(), state, project.getKey()));
+        msg.setText(String.format(this.config.getString("mail.body"), project.getKey(), state, release.getName(),
+            project.getKey()));
         Transport.send(msg);
         log.error("Emails for {} sent to {}: ", project.getKey(), aCheck);
 
