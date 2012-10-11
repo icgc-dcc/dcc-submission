@@ -151,8 +151,8 @@ found on host #{host}"
           onDeferral.apply context
 
   is_admin: ->
-    #console.debug 'utils#is_admin'
-    "admin" in mediator.user.roles
+    #console.debug 'utils#is_admin', mediator.user
+    "admin" in mediator.user.get "roles"
 
   is_released: (state)->
     state is "COMPLETED"

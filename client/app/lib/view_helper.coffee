@@ -40,8 +40,8 @@ Handlebars.registerHelper 'if_logged_in', (options) ->
 Handlebars.registerHelper 'is_admin', (options) ->
   "admin" in mediator.user.get "roles"
 
-Handlebars.registerHelper 'if_admin', (options) ->
-  if is_admin
+Handlebars.registerHelper 'if_has_role', (role, options) ->
+  if role in mediator.user.get "roles"
     options.fn(this)
   else
     options.inverse(this)
