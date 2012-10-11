@@ -1,18 +1,12 @@
 {{#if next}}
 <div class="alert alert-success"><button class="close" data-dismiss="alert">×</button>This release has been completed succesfully! The current open release is <a href="/releases/{{next}}">{{next}}</a>.</div>
 {{/if}}
-<div class="row-fluid page-header">
-    <div class="pull-left">
-    <h1><small>RELEASE</small> {{name}}<br>
-    <small class="{{lowercase state}}">{{state}}</small>
-    {{#if_completed state}}
-    <small> on {{date releaseDate}}</small>
-    {{/if_completed}}
-    </h1>
-  </div>
-  <div class="pull-right">
-    {{#if_opened state}}
-    <button id="complete-release-popup-button" class="btn btn-success">Complete</button>
-    {{/if_opened}}
-  </div>
+<div class="row-fluid">
+  <ul class="breadcrumb">
+    <li>
+      <a href="/releases/"><i class="icon-home"></i> Releases</a> <span class="divider">/</span>
+    </li>
+    <li>
+      {{name}}
+  </ul>
 </div>

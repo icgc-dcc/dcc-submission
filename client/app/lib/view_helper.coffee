@@ -79,7 +79,7 @@ Handlebars.registerHelper 'submission_action', (state) ->
         id="validate-submission-popup-button"
         data-toggle="modal"
         href="#validate-submission-popup">
-        Validate
+        Launch Validation
       </button>
       """
 
@@ -87,7 +87,7 @@ Handlebars.registerHelper 'submission_action', (state) ->
 Handlebars.registerHelper 'release_date', (date) ->
   return new Handlebars.SafeString '<em>Unreleased</em>' unless date
   Handlebars.helpers.date.call(this, date)
-  
+
 # Make a date out of epoc
 Handlebars.registerHelper 'date', (date) ->
   return false unless date
@@ -96,7 +96,7 @@ Handlebars.registerHelper 'date', (date) ->
 Handlebars.registerHelper 'underscore2space', (string) ->
   return false unless string
   new Handlebars.SafeString string.replace "_", " "
-  
+
 Handlebars.registerHelper 'lowercase', (string) ->
   return false unless string
   new Handlebars.SafeString string.toLowerCase()
@@ -109,7 +109,7 @@ Handlebars.registerHelper 'release_summary', (submissions) ->
   queued = 0
   invalid = 0
   not_validated = 0
-  
+
   for submission in submissions.models
     console.log submission
     switch submission.get "state"
@@ -118,7 +118,7 @@ Handlebars.registerHelper 'release_summary', (submissions) ->
       when 'QUEUED' then queued++
       when 'INVALID' then invalid++
       when 'NOT_VALIDATED' then not_validated++
-              
+
   new Handlebars.SafeString """
     <li>Signed Off: #{signed_off}</li>
     <li>Valid: #{valid}</li>
