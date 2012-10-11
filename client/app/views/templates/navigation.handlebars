@@ -1,0 +1,19 @@
+<div class="navbar-inne">
+	<div class="container-fluid">
+	<a href="http://www.icgc.org"><img src="/images/logo-icgc.png"></a>
+  <a href="http://www.oicr.on.ca"><img class="pull-right" src="/images/logo-oicr.jpg"></a>
+	</div>
+</div>
+<div class="navbar">
+  <div class="navbar-inner">
+    <span class="brand">DCC Data Submission</span>
+    {{#if username}}
+    <ul class="nav">
+      <li class="active"><a href="/releases">Releases</a></li>
+    </ul>
+    <ul class="nav pull-right">
+      <li><p class="navbar-text">{{username}} (<a href="/logout">logout</a>)</p></li>
+    </ul>
+    {{/if}}
+  </div>
+</div>
