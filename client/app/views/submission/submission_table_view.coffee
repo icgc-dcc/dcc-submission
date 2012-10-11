@@ -22,8 +22,8 @@
 
 
 DataTableView = require 'views/base/data_table_view'
-signOffSubmissionView = require 'views/release/signoff_submission_view'
-validateSubmissionView = require 'views/release/validate_submission_view'
+signOffSubmissionView = require 'views/submission/signoff_submission_view'
+validateSubmissionView = require 'views/submission/validate_submission_view'
 utils = require 'lib/utils'
 
 module.exports = class SubmissionTableView extends DataTableView

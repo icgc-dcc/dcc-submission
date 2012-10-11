@@ -21,16 +21,45 @@
 """
 
 
+Chaplin = require 'chaplin'
 View = require 'views/base/view'
-template = require 'views/templates/release/submission_header'
+NextRelease = require 'models/next_release'
+template = require 'views/templates/submission/validate_submission'
 
-module.exports = class SubmissionHeaderView extends View
+module.exports = class ValidateSubmissionView extends View
   template: template
   template = null
 
+  container: '#page-container'
+  containerMethod: 'append'
   autoRender: true
+  tagName: 'div'
+  className: "modal fade"
+  id: 'validate-submission-popup'
 
   initialize: ->
+    console.debug "ValidateSubmissionView#initialize", @options
+    @model = @options.submission
+
+    release = new NextRelease()
+    release.fetch
+      success: (data) =>
+        @model.set 'queue', data.get('queue').length
+
     super
 
     @modelBind 'change', @render
+
+    @delegate 'click', '#validate-submission-button', @validateSubmission
+
+  validateSubmission: (e) ->
+    console.debug "ValidateSubmissionView#completeRelease", @model
+    nextRelease = new NextRelease()
+
+    nextRelease.queue [
+      {key: @options.submission.get("projectKey")
+      emails: @.$('#emails').val().split(',')}
+      ],
+      success: =>
+        @$el.modal 'hide'
+        Chaplin.mediator.publish "validateSubmission"

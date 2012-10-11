@@ -22,13 +22,14 @@
 
 
 View = require 'views/base/view'
-SubmissionHeaderView = require 'views/release/submission_header_view'
+SubmissionHeaderView = require 'views/submission/submission_header_view'
 ReportTableView = require 'views/release/report_table_view'
-SubmissionFilesTableView = require 'views/release/submission_files_table_view'
-SignOffSubmissionView = require 'views/release/signoff_submission_view'
-ValidateSubmissionView = require 'views/release/validate_submission_view'
+SubmissionFilesTableView =
+  require 'views/submission/submission_files_table_view'
+SignOffSubmissionView = require 'views/submission/signoff_submission_view'
+ValidateSubmissionView = require 'views/submission/validate_submission_view'
 utils = require 'lib/utils'
-template = require 'views/templates/release/submission'
+template = require 'views/templates/submission/submission'
 
 module.exports = class SubmissionView extends View
   template: template

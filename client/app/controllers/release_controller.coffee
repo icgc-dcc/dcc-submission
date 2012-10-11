@@ -27,7 +27,7 @@ Release = require 'models/release'
 Submission = require 'models/submission'
 Releases = require 'models/releases'
 ReleaseView = require 'views/release/release_view'
-SubmissionView = require 'views/release/submission_view'
+SubmissionView = require 'views/submission/submission_view'
 ReleasesView = require 'views/release/releases_view'
 
 module.exports = class ReleaseController extends BaseController
