@@ -51,25 +51,23 @@ module.exports = class ReleaseTableView extends DataTableView
     aoColumns = [
         {
           sTitle: "Name"
-          mDataProp: "name"
           bUseRendered: false
-          fnRender: (oObj, sVal) ->
-            "<a href='/releases/#{sVal}'>#{sVal}</a>"
+          mData: (source) ->
+            "<a href='/releases/#{source.name}'>#{source.name}</a>"
         }
         { sTitle: "State", mDataProp: "state" }
         {
           sTitle: "Release Date"
-          mDataProp: "releaseDate"
-          fnRender: (oObj, sVal) ->
-            if sVal
-              utils.date(sVal)
+          mData: (source) ->
+            if source.releaseDate
+              utils.date(source.releaseDate)
             else
-              if utils.is_admin
+              if utils.is_admin()
                 """
                   <a
                     id="complete-release-popup-button"
                     data-toggle="modal"
-                    data-release-name="#{oObj.aData.name}"
+                    data-release-name="#{source.name}"
                     href="#complete-release-popup">
                     Release Now
                   </a>

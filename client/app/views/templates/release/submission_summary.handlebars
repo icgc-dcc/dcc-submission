@@ -4,7 +4,9 @@
       <h2 class="pull-left">Release Summary</h2>
       <div style="margin-top:17px; margin-right:50px" class="pull-right">
         {{#if_opened state}}
+        {{#if_has_role "admin"}}
         <button id="complete-release-popup-button" class="btn btn-success">Release Now</button>
+        {{/if_has_role}}
         {{/if_opened}}
       </div>
     </div>
@@ -32,6 +34,5 @@
       {{#if summary.NOT_VALIDATED}}
       <span class="label">Not Validated {{summary.NOT_VALIDATED}}</span>
       {{/if}}
-
   </div>
 </div>
