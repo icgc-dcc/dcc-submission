@@ -1,0 +1,19 @@
+<div class="row-fluid" style="margin-bottom:20px">
+    <ul class="breadcrumb">
+        <li><a href="/releases/"><i class="icon-home"></i> Releases</a> <span class="divider">/</span></li>
+        <li><a href="/releases/{{release}}/">{{release}}</a> <span class="divider">/</span></li>
+        <li><span>{{projectName}}</span></li>
+    </ul>
+    <div class="span6">
+        <div class="row-fluid">
+            <h2 class="pull-left">
+                Submission Summary
+            </h2>
+            <div style="margin-top:17px; margin-right:50px" class="pull-right">
+                {{submission_action state}}
+            </div>
+        </div><span>Name</span>: <span>{{projectName}}</span><br>
+        <span>State</span>: <span class="{{lowercase state}}">{{state}}</span><br>
+        <span>Number of submitted files</span>: <span>{{submissionFiles.length}}</span>
+    </div>
+</div>

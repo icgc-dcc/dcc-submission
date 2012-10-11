@@ -21,16 +21,35 @@
 """
 
 
+Chaplin = require 'chaplin'
 View = require 'views/base/view'
-template = require 'views/templates/release/submission_summary'
+NextRelease = require 'models/next_release'
+template = require 'views/templates/submission/signoff_submission'
 
-module.exports = class SubmissionSummaryView extends View
+module.exports = class SignOffSubmissionView extends View
   template: template
   template = null
 
+  container: '#page-container'
+  containerMethod: 'append'
   autoRender: true
+  tagName: 'div'
+  className: "modal fade"
+  id: 'signoff-submission-popup'
 
   initialize: ->
+    console.debug "SignOffSubmissionView#initialize", @options.submission
+    @model = @options.submission
     super
 
-    @modelBind 'change', @render
+    @delegate 'click', '#signoff-submission-button', @signOffSubmission
+
+  signOffSubmission: (e) ->
+    console.debug "SignOffSubmissionView#completeRelease"
+    nextRelease = new NextRelease()
+
+    nextRelease.signOff [@model.get "projectKey"],
+      success: =>
+        @$el.modal 'hide'
+        Chaplin.mediator.publish "signOffSubmission"
+

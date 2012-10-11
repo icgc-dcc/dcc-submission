@@ -23,9 +23,8 @@
 
 PageView = require 'views/base/view'
 ReleaseHeaderView = require 'views/release/release_header_view'
-SubmissionSummaryView = require 'views/release/submission_summary_view'
 CompleteReleaseView = require 'views/release/complete_release_view'
-SubmissionTableView = require 'views/release/submission_table_view'
+SubmissionTableView = require 'views/submission/submission_table_view'
 utils = require 'lib/utils'
 template = require 'views/templates/release/release'
 
@@ -69,13 +68,6 @@ module.exports = class ReleaseView extends PageView
       new ReleaseHeaderView {
         @model
         el: @.$("#release-header-container")
-      }
-    )
-
-    @subview('SubmissionSummary'
-      new SubmissionSummaryView {
-        @model
-        el: @.$("#submission-summary-container")
       }
     )
 
