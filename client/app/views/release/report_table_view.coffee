@@ -215,41 +215,41 @@ module.exports = class ReportTableView extends DataTableView
     aoColumns = [
         {
           sTitle: "File"
-          mDataProp: "name"
+          mData: "name"
         }
         {
           sTitle: "Last Updated"
-          mDataProp: "lastUpdate"
+          mData: (source) -> utils.date source.lastUpdate
           sType: "date"
-          fnRender: (oObj, sVal) ->
-            utils.date sVal
         }
         {
           sTitle: "Size"
-          mDataProp: "size"
           bUseRendered: false
-          fnRender: (oObj, Sval) ->
-            utils.fileSize Sval
+          mData: (source, type) ->
+            if type is "display"
+              return utils.fileSize source.size
+            source.size
         }
         {
           sTitle: "Status"
-          mDataProp: null
           bVisible: false
-          fnRender: (oObj, Sval)->
-            if oObj.aData.errors
-              "INVALID"
-            else if oObj.aData.fieldReports
-              "VALID"
+          mData: (source) ->
+            if source.matchedSchemaName
+              if source.errors
+                "INVALID"
+              else if source.fieldReports
+                "VALID"
+              else
+                "NOT VALIDATED"
             else
-              "NOT VALIDATED"
+              "SKIPPED"
         }
         {
           sTitle: "Report"
-          mDataProp: null
           bSortable: false
           bVisible: false
-          fnRender: (oObj, Sval)->
-            if oObj.aData.errors or oObj.aData.fieldReports
+          mData: (source) ->
+            if source.errors or source.fieldReports
               "<span class='link control'>view</span>"
             else
               ""
@@ -271,5 +271,7 @@ module.exports = class ReportTableView extends DataTableView
             cell.css 'color', '#468847'
           when "INVALID", "ERROR"
             cell.css 'color', '#B94A48'
+          when "SKIPPED"
+            $(nRow).css {'color': '#999', 'font-style': 'italic'}
       fnServerData: (sSource, aoData, fnCallback) =>
         fnCallback @collection.toJSON()

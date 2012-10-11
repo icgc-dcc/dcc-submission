@@ -69,56 +69,57 @@ module.exports = class SubmissionTableView extends DataTableView
     aoColumns = [
         {
           sTitle: "Project Key"
-          mDataProp: "projectName"
-          fnRender: (oObj, sVal) =>
+          mData: (source) =>
             r = @collection.release
-            s = oObj.aData.projectKey.replace(/<.*?>/g, '')
-            "<a href='/releases/#{r}/submissions/#{s}'>#{sVal}</a>"
+            k = source.projectKey.replace(/<.*?>/g, '')
+            n = source.projectName
+            "<a href='/releases/#{r}/submissions/#{k}'>#{n}</a>"
         }
         {
           sTitle: "Files"
-          mDataProp: "submissionFiles"
           bUseRendered: false
-          fnRender: (oObj, sVal) ->
-            size = 0
-            for f in sVal
-              size += f.size
-            "#{sVal.length} (#{utils.fileSize size})"
+          mData: (source, type, val) ->
+            if type is "display"
+              size = 0
+              fs = source.submissionFiles
+              for f in fs
+                size += f.size
+              if size
+                return "#{fs.length} (#{utils.fileSize size})"
+              else
+                return "<i>No files</i>"
+
+            source.submissionFiles
         }
         {
           sTitle: "State"
-          mDataProp: "state"
-          fnRender: (oObj, sVal) ->
-            sVal.replace '_', ' '
+          mData: (source) ->
+            source.state.replace '_', ' '
         }
         {
           sTitle: "Last Updated"
-          mDataProp: "lastUpdated"
-          fnRender: (oObj, sVal) ->
-            utils.date sVal
+          mData: (source) ->
+            utils.date source.lastUpdated
         }
         {
           sTitle: "Report"
-          mDataProp: null
           bSortable: false
-          fnRender: (oObj) =>
-            switch oObj.aData.state
+          mData: (source) =>
+            switch source.state
               when "VALID", "SIGNED OFF", "INVALID"
                 r = @collection.release
-                s = oObj.aData.projectKey.replace(/<.*?>/g, '')
+                s = source.projectKey.replace(/<.*?>/g, '')
                 "<a href='/releases/#{r}/submissions/#{s}'>View</a>"
               else ""
         }
         {
           sTitle: ""
-          mDataProp: null
           bSortable: false
-          sWidth: "75px"
           bVisible: not utils.is_released(@model.get "state")
-          fnRender: (oObj) ->
-            switch oObj.aData.state
+          mData: (source) ->
+            switch source.state
               when "VALID"
-                ds = oObj.aData.projectKey.replace(/<.*?>/g, '')
+                ds = source.projectKey.replace(/<.*?>/g, '')
                 """
                 <a id="signoff-submission-popup-button"
                    data-submission="#{ds}"
@@ -127,9 +128,9 @@ module.exports = class SubmissionTableView extends DataTableView
                    Sign Off
                 </a>
                 """
-              when "NOT VALIDATED", "INVALID", "ERROR"
-                if oObj.aData.submissionFiles.length
-                  ds = oObj.aData.projectKey.replace(/<.*?>/g, '')
+              when "NOT_VALIDATED", "INVALID", "ERROR"
+                if source.submissionFiles.length
+                  ds = source.projectKey.replace(/<.*?>/g, '')
                   """
                   <a id="validate-submission-popup-button"
                      data-submission="#{ds}"
@@ -156,9 +157,7 @@ module.exports = class SubmissionTableView extends DataTableView
       fnRowCallback: (nRow, aData, iDisplayIndex, iDisplayIndexFull) ->
         cell = $('td:nth-child(3)', nRow)
         switch aData.state
-          when "SIGNED OFF"
-            cell.css 'color', '#3A87AD'
-          when "VALID"
+          when "SIGNED OFF", "VALID"
             cell.css 'color', '#468847'
           when "QUEUED"
             cell.css 'color', '#C09853'

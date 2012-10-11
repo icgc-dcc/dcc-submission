@@ -1,19 +1,37 @@
-<div class="navbar-inne">
-	<div class="container-fluid">
-	<a href="http://www.icgc.org"><img src="/images/logo-icgc.png"></a>
-  <a href="http://www.oicr.on.ca"><img class="pull-right" src="/images/logo-oicr.jpg"></a>
-	</div>
-</div>
-<div class="navbar">
+<div id="external-nav" class="navbar navbar-fixed-top">
   <div class="navbar-inner">
-    <span class="brand">DCC Data Submission</span>
-    {{#if username}}
-    <ul class="nav">
-      <li class="active"><a href="/releases">Releases</a></li>
-    </ul>
-    <ul class="nav pull-right">
-      <li><p class="navbar-text">{{username}} (<a href="/logout">logout</a>)</p></li>
-    </ul>
-    {{/if}}
+      <div class="container" style="width: auto;">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target="#external-nav .nav-collapse">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="#">ICGC</a>
+          <div class="nav-collapse">
+              <ul class="nav">
+                  <li><a href="#">Publication Policy</a></li>
+                  <li><a href="#">Dataset Summary</a></li>
+                  <li><a href="#">Documentation</a></li>
+                  <li><a href="#">Download Data</a></li>
+                  <li><a href="#">Help</a></li>
+              </ul>
+              <ul class="nav pull-right" style="margin-right:20px">
+                  <li><a href="#">Contact</a></li>
+                  <li class="divider-vertical"></li>
+                  {{#if username}}
+                  <li><p class="navbar-text"><span>{{username}}</span> - <a href="/logout">logout</a></p></li>
+                  {{else}}
+                  <li><a href="#">Login</a></li>
+                  {{/if}}
+              </ul>
+          </div><!-- /.nav-collapse -->
+      </div>
+  </div><!-- /navbar-inner -->
+</div>
+<div class="row">
+  <div class="subhead">
+    <span class="span3"><a href="http://icgc.org" target="_blank"><img alt="ICGC" class="pull-left" style="margin-top:9px" width="172" height="57" src="/images/logo-icgc.png"></a></span>
+    <span class="span6"><h1 style="margin-top:24px">Data Submission</h1></span>
+    <a href="http://oicr.on.ca" target="_blank"><img alt="OICR" class="pull-right" width="112" height="75" src="/images/logo-oicr.jpg"></span>
   </div>
 </div>

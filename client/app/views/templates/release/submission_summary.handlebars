@@ -1,41 +1,37 @@
-<div class="row-fluid">
+<div class="row-fluid" style="margin-bottom:20px">
   <div class="span6">
-    <ul class="nav nav-list">
-      <li class="nav-header">Submission Summary</li>
-      <table class="table summary">
-        <tbody>
-        {{#if summary.SIGNED_OFF}}
-        <tr class="signed">
-          <td width="200">Signed Off</td>
-          <td>{{summary.SIGNED_OFF}}</td>
-        </tr>
-        {{/if}}
-        {{#if summary.VALID}}
-        <tr class="valid">
-          <td width="200">Valid</td>
-          <td>{{summary.VALID}}</td>
-        </tr>
-        {{/if}}
-        {{#if summary.QUEUED}}
-        <tr class="queued">
-          <td width="200">Queued</td>
-          <td>{{summary.QUEUED}}</td>
-        </tr>
-        {{/if}}
-        {{#if summary.INVALID}}
-        <tr class="invalid">
-          <td width="200">Invalid</td>
-          <td>{{summary.INVALID}}</td>
-        </tr>
-        {{/if}}
-        {{#if summary.NOT_VALIDATED}}
-        <tr>
-          <td width="200">Not Validated</td>
-          <td>{{summary.NOT_VALIDATED}}</td>
-        </tr>
-        {{/if}}
-        </tbody>
-      </table>
-    </ul>
+    <div class="row-fluid">
+      <h2 class="pull-left">Release Summary</h2>
+      <div style="margin-top:17px; margin-right:50px" class="pull-right">
+        {{#if_opened state}}
+        <button id="complete-release-popup-button" class="btn btn-success">Release Now</button>
+        {{/if_opened}}
+      </div>
+    </div>
+      <span>Name:</span> <span>{{name}}</span><br>
+      <span>State:</span> <span class="{{lowercase state}}">{{state}}</span><br>
+      {{#if_completed state}}
+      <span>Date:</span> <span>{{date releaseDate}}</span><br>
+      {{/if_completed}}
+      <span>Number of projects:</span> <span>{{submissions.length}}</span><br>
+      {{#if summary.SIGNED_OFF}}
+      <span class="label label-success">Signed Off {{summary.SIGNED_OFF}}</span>
+      {{/if}}
+      {{#if summary.VALID}}
+      <span class="label label-success">Valid {{summary.VALID}}</span>
+      {{/if}}
+      {{#if summary.QUEUED}}
+      <span class="label label-warning">Queued {{summary.QUEUED}}</span>
+      {{/if}}
+      {{#if summary.INVALID}}
+      <span class="label label-important">Invalid {{summary.INVALID}}</span>
+      {{/if}}
+      {{#if summary.ERROR}}
+      <span class="label label-important">Error {{summary.ERROR}}</span>
+      {{/if}}
+      {{#if summary.NOT_VALIDATED}}
+      <span class="label">Not Validated {{summary.NOT_VALIDATED}}</span>
+      {{/if}}
+
   </div>
 </div>

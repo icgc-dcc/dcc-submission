@@ -42,7 +42,7 @@ module.exports = class ReleaseController extends BaseController
     @collection = new Releases()
     @view = new ReleasesView {@collection}
     @collection.fetch()
-    
+
   show: (params) ->
     console.debug 'ReleaseController#show', params
     @title = params.release
