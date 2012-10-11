@@ -56,7 +56,6 @@ public class HttpServerService extends AbstractService {
       serverConfig.addHttpHandler(provider.get(), provider.path());
     }
 
-    // TODO: add a Handler for static files. This is tied to the way we package and deploy the app.
     serverConfig.addHttpHandler(new StaticHttpHandler(resources), "/");
 
     // Redirect back to "/" and appends the request url after the hash(#), which the client can then parse
