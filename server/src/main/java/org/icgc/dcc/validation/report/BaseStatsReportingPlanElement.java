@@ -18,7 +18,6 @@
 package org.icgc.dcc.validation.report;
 
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -146,12 +145,7 @@ abstract class BaseStatsReportingPlanElement implements ReportingPlanElement {
         report.setName(strategy.path(getFileSchema()).getName());
 
         ObjectMapper mapper = new ObjectMapper();
-        if(report.getErrors() == null) {
-          report.setErrors(new ArrayList<ValidationErrorReport>());
-        }
-        if(report.getFieldReports() == null) {
-          report.setFieldReports(new ArrayList<FieldReport>());
-        }
+
         MappingIterator<FieldSummary> fieldSummary = mapper.reader().withType(FieldSummary.class).readValues(src);
         while(fieldSummary.hasNext()) {
           FieldReport freport = FieldReport.convert(fieldSummary.next());
@@ -161,7 +155,7 @@ abstract class BaseStatsReportingPlanElement implements ReportingPlanElement {
 
           // skip adding report with 0 completeness
           if(freport.getCompleteness() > 0) {
-            report.getFieldReports().add(freport);
+            report.addFieldReport(freport);
           }
         }
 
