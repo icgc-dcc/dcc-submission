@@ -316,8 +316,12 @@ public class ValidationQueueManagerService extends AbstractService {
         msg.addRecipients(Message.RecipientType.TO, addresses);
 
         msg.setSubject(String.format(this.config.getString("mail.subject"), project.getKey(), state));
-        msg.setText(String.format(this.config.getString("mail.body"), project.getKey(), state, release.getName(),
-            project.getKey()));
+        if(state == SubmissionState.ERROR) {
+          msg.setText(String.format(this.config.getString("mail.error_body")));
+        } else {
+          msg.setText(String.format(this.config.getString("mail.body"), project.getKey(), state, release.getName(),
+              project.getKey()));
+        }
         Transport.send(msg);
         log.error("Emails for {} sent to {}: ", project.getKey(), aCheck);
 
