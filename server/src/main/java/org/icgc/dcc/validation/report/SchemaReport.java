@@ -35,8 +35,16 @@ public class SchemaReport {
     return ImmutableList.copyOf(this.fieldReports);
   }
 
+  public void setFieldReports(List<FieldReport> fieldReports) {
+    this.fieldReports = fieldReports;
+  }
+
   public List<ValidationErrorReport> getErrors() {
     return ImmutableList.copyOf(this.errors);
+  }
+
+  public void setErrors(List<ValidationErrorReport> errors) {
+    this.errors = errors;
   }
 
   public void addError(ValidationErrorReport error) {
