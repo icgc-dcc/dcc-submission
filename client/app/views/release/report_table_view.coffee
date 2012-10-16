@@ -249,7 +249,7 @@ module.exports = class ReportTableView extends DataTableView
           bSortable: false
           bVisible: false
           mData: (source) ->
-            if source.errors.length or source.fieldReports.length
+            if source.errors or source.fieldReports
               "<span class='link control'>view</span>"
             else
               ""
