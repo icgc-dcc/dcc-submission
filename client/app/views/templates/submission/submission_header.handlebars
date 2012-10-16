@@ -1,9 +1,9 @@
-<div class="row-fluid" style="margin-bottom:20px">
-    <ul class="breadcrumb">
+<ul class="breadcrumb">
         <li><a href="/releases/"><i class="icon-home"></i> Releases</a> <span class="divider">/</span></li>
         <li><a href="/releases/{{release}}/">{{release}}</a> <span class="divider">/</span></li>
         <li><span>{{projectName}}</span></li>
     </ul>
+<div class="row-fluid" style="margin-bottom:20px">
     <div class="span6">
         <div class="row-fluid">
             <h2 class="pull-left">
@@ -12,8 +12,13 @@
             <div style="margin-top:17px; margin-right:50px" class="pull-right">
                 {{submission_action state}}
             </div>
-        </div><span>Name</span>: <span>{{projectName}}</span><br>
-        <span>State</span>: <span class="{{lowercase state}}">{{state}}</span><br>
-        <span>Number of submitted files</span>: <span>{{submissionFiles.length}}</span>
+        </div>
+        <span>Name</span>: <span>{{projectName}}</span><br>
+        <span>State</span>: <span class="{{lowercase state}}">{{underscore2space state}}</span><br>
+        <span>Number of submitted files</span>: <span>{{submissionFiles.length}}</span><br>
+        <span>Size of submission data</span>: <span>{{fileSize submissionFiles}}</span>
+        <div style="margin-top:-12px; margin-right:50px" class="pull-right">
+            <button class="btn btn-primary disabled">Download Report</button>
+        </div>
     </div>
 </div>
