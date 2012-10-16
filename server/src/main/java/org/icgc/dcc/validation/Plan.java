@@ -159,14 +159,8 @@ public class Plan {
         // combine internal and external plans into one
         SchemaReport sreport = schemaReports.get(schemaReport.getName());
 
-        if(schemaReport.getFieldReports() != null) {
-          sreport.getFieldReports().addAll(schemaReport.getFieldReports());
-        }
-        if(sreport.getErrors() != null) {
-          sreport.getErrors().addAll(schemaReport.getErrors());
-        } else if(schemaReport.getErrors() != null) {
-          sreport.setErrors(schemaReport.getErrors());
-        }
+        sreport.addFieldReports(schemaReport.getFieldReports());
+        sreport.addErrors(schemaReport.getErrors());
       }
     }
 

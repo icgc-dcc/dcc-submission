@@ -56,7 +56,7 @@ module.exports = class ReportTableView extends DataTableView
     dT = @$el.dataTable()
 
     data = dT.fnGetData nTr
-    if data.errors
+    if data.errors.length
       style = 'alert-danger'
     else
       style = 'alert-info'
@@ -141,7 +141,7 @@ module.exports = class ReportTableView extends DataTableView
     sOut = ''
     sErr = ''
 
-    if data.errors
+    if data.errors.length
       sOut += """
         <table class='table table-striped'>
         <thead>
@@ -235,9 +235,9 @@ module.exports = class ReportTableView extends DataTableView
           bVisible: false
           mData: (source) ->
             if source.matchedSchemaName
-              if source.errors
+              if source.errors.length
                 "INVALID"
-              else if source.fieldReports
+              else if source.fieldReports.length
                 "VALID"
               else
                 "NOT VALIDATED"

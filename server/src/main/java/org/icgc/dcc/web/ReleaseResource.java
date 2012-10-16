@@ -170,7 +170,11 @@ public class ReleaseResource {
       return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoSuchReportInSchema", schema))
           .build();
     }
-    FieldReport fieldReport = schemaReport.getFieldReport(field);
+    if(schemaReport.getFieldReport(field).isPresent() == false) {
+      return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoSuchFieldInReport", schema))
+          .build();
+    }
+    FieldReport fieldReport = schemaReport.getFieldReport(field).get();
     if(fieldReport == null) {
       return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoReportForField", field))
           .build();

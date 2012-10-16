@@ -230,7 +230,7 @@ public class ValidationQueueManagerService extends AbstractService {
       while(es.hasNext()) {
         errReport.add(new ValidationErrorReport(es.next()));
       }
-      schemaReport.setErrors(errReport);
+      schemaReport.addErrors(errReport);
       schemaReport.setName(schema);
       schemaReports.add(schemaReport);
     }
