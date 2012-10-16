@@ -21,7 +21,7 @@
 """
 
 mediator = require 'mediator'
-utils = require 'chaplin/lib/utils'
+utils = require 'lib/utils'
 
 # View helpers (Handlebars in this case)
 # --------------------------------------
@@ -58,7 +58,6 @@ Handlebars.registerHelper 'if_completed', (state, options) ->
   else
     options.inverse(this)
 
-
 # Return a Unreleased if no release date
 Handlebars.registerHelper 'submission_action', (state) ->
   switch state
@@ -82,7 +81,6 @@ Handlebars.registerHelper 'submission_action', (state) ->
         Launch Validation
       </button>
       """
-
 # Return a Unreleased if no release date
 Handlebars.registerHelper 'release_date', (date) ->
   return new Handlebars.SafeString '<em>Unreleased</em>' unless date
@@ -101,28 +99,9 @@ Handlebars.registerHelper 'lowercase', (string) ->
   return false unless string
   new Handlebars.SafeString string.toLowerCase()
 
-
-Handlebars.registerHelper 'release_summary', (submissions) ->
-  console.log submissions
-  signed_off = 0
-  valid = 0
-  queued = 0
-  invalid = 0
-  not_validated = 0
-
-  for submission in submissions.models
-    console.log submission
-    switch submission.get "state"
-      when 'SIGNED_OFF' then signed_off++
-      when 'VALID' then valid++
-      when 'QUEUED' then queued++
-      when 'INVALID' then invalid++
-      when 'NOT_VALIDATED' then not_validated++
-
-  new Handlebars.SafeString """
-    <li>Signed Off: #{signed_off}</li>
-    <li>Valid: #{valid}</li>
-    <li>Queued: #{queued}</li>
-    <li>Invalid: #{invalid}</li>
-    <li>Not Validated: #{not_validated}</li>
-  """
+Handlebars.registerHelper 'fileSize', (fs) ->
+  total = 0
+  if fs
+    for f in fs
+      total += f.size
+  new Handlebars.SafeString utils.fileSize total

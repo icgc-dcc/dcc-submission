@@ -71,9 +71,13 @@ module.exports = class SubmissionTableView extends DataTableView
           sTitle: "Project Key"
           mData: (source) =>
             r = @collection.release
-            k = source.projectKey.replace(/<.*?>/g, '')
-            n = source.projectName
-            "<a href='/releases/#{r}/submissions/#{k}'>#{n}</a>"
+            k = source.projectKey
+            "<a href='/releases/#{r}/submissions/#{k}'>#{k}</a>"
+        }
+        {
+          sTitle: "Project Name"
+          mData: (source) ->
+            source.projectName
         }
         {
           sTitle: "Files"
@@ -113,7 +117,7 @@ module.exports = class SubmissionTableView extends DataTableView
               else ""
         }
         {
-          sTitle: ""
+          sTitle: "Actions"
           bSortable: false
           bVisible: not utils.is_released(@model.get "state")
           mData: (source) ->
