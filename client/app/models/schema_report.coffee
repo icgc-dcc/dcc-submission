@@ -22,6 +22,8 @@
 
 
 Model = require 'models/base/model'
+SchemaReportErrors = require 'models/schema_report_errors'
+SchemaReportFieldReports = require 'models/schema_report_field_reports'
 
 module.exports = class SchemaReport extends Model
 
@@ -29,3 +31,39 @@ module.exports = class SchemaReport extends Model
     #console.debug 'SchemaReport#initialize', @, @attributes
     super
 
+    @urlPath = ->
+      url = "releases/#{@get('release')}/" +
+        "submissions/#{@get('submission')}" +
+        "/report/#{@get('name')}"
+
+    if @get "errors"
+      errors = []
+      for e in @get "errors"
+        for c in e.columns
+          c.errorType = e.errorType
+          c.lineValueMap = {}
+          for i in [0 .. c.lines.length - 1]
+            c.lineValueMap[c.lines[i]] = c.values[i]
+          c.lines = c.lines.sort((a,b)-> a - b)
+          errors.push c
+
+    @set "errors", new SchemaReportErrors errors
+    @set "fieldReports", new SchemaReportFieldReports @get "fieldReports"
+
+  parse: (response) ->
+    response.state =
+      if response.errors.length then "INVALID" else "VALID"
+
+    errors = []
+    for e in response.errors
+      for c in e.columns
+        c.errorType = e.errorType
+        c.lineValueMap = {}
+        for i in [0 .. c.lines.length - 1]
+          c.lineValueMap[c.lines[i]] = c.values[i]
+        c.lines = c.lines.sort((a,b)-> a - b)
+        errors.push c
+
+    response.errors = new SchemaReportErrors errors
+    response.fieldReports = new SchemaReportFieldReports response.fieldReports
+    response

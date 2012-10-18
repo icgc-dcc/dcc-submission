@@ -25,6 +25,9 @@
       {{#if_completed state}}
       <span>Date:</span> <span>{{date releaseDate}}</span><br>
       {{/if_completed}}
+      {{#if_has_role "admin"}}
+      <span>Dictionary Version:</span> <span>{{dictionaryVersion}}</span><br>
+      {{/if_has_role}}
       <span>Number of projects:</span> <span>{{submissions.length}}</span><br>
       {{#if summary.SIGNED_OFF}}
       <span class="label label-success">Signed Off {{summary.SIGNED_OFF}}</span>

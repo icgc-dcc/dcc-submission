@@ -105,3 +105,5 @@ Handlebars.registerHelper 'fileSize', (fs) ->
     for f in fs
       total += f.size
   new Handlebars.SafeString utils.fileSize total
+
+
