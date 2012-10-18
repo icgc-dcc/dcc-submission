@@ -22,13 +22,18 @@
 
 
 Chaplin = require 'chaplin'
+
 BaseController = require 'controllers/base/controller'
+
 Release = require 'models/release'
 Submission = require 'models/submission'
 Releases = require 'models/releases'
+SchemaReport = require 'models/schema_report'
+
+ReleasesView = require 'views/release/releases_view'
 ReleaseView = require 'views/release/release_view'
 SubmissionView = require 'views/submission/submission_view'
-ReleasesView = require 'views/release/releases_view'
+SchemaReportPageView = require 'views/report/schema_report_page_view'
 
 module.exports = class ReleaseController extends BaseController
 
@@ -62,3 +67,18 @@ module.exports = class ReleaseController extends BaseController
       error: ->
         Chaplin.mediator.publish '!startupController', 'release', 'show'
           release: params.release
+
+  report: (params) ->
+    console.debug 'ReleaseController#report', params
+    @title = "#{params.report} - #{params.submission} - #{params.release}"
+    @model = new SchemaReport {
+      release: params.release
+      submission: params.submission
+      name: params.report
+    }
+    @view = new SchemaReportPageView {@model}
+    @model.fetch
+      error: ->
+        Chaplin.mediator.publish '!startupController', 'release', 'submission'
+          release: params.release
+          submission: params.submission

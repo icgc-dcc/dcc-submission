@@ -248,9 +248,11 @@ module.exports = class ReportTableView extends DataTableView
           sTitle: "Report"
           bSortable: false
           bVisible: false
-          mData: (source) ->
+          mData: (source) =>
             if source.errors or source.fieldReports
-              "<span class='link control'>view</span>"
+              "<a href='/releases/#{@model.get('release')}" +
+              "/submissions/#{@model.get('projectKey')}" +
+              "/report/#{source.name}'>view</span>"
             else
               ""
         }

@@ -21,24 +21,40 @@
 """
 
 
-module.exports = (match) ->
+View = require 'views/base/page_view'
+SchemaReportErrorTableView =
+  require 'views/report/schema_report_error_table_view'
+SchemaReportDetailsTableView =
+  require 'views/report/schema_report_details_table_view'
+template = require 'views/templates/report/schema_report'
 
-  # Releases
-  match '', 'release#list'
-  match 'releases', 'release#list'
-  match 'releases/', 'release#list'
-  match 'releases/:release', 'release#show'
-  match 'releases/:release/', 'release#show'
-  match 'releases/:release/submissions/:submission', 'release#submission'
-  match 'releases/:release/submissions/:submission/', 'release#submission'
-  match 'releases/:release/submissions/:submission/report/:report',
-    'release#report'
-  match 'releases/:release/submissions/:submission/report/:report/',
-    'release#report'
+module.exports = class SchemaReportPageView extends View
+  template: template
+  template = null
 
-  # Logout
-  match 'logout', 'auth#logout'
-  match 'logout/', 'auth#logout'
+  container: '#page-container'
+  autoRender: no
+  id: 'schema-report-view'
 
-  # 404
-  match '*anything', 'errors#notFound'
+  initialize: ->
+    console.log "SchemaReportPageView#initialize", @model
+    super
+
+  render: ->
+    console.debug "SchemaReportPageView#render", @model
+    super
+
+    if @model.get("errors").length
+      @subview('SchemaReportTable'
+        new SchemaReportErrorTableView {
+          collection: @model.get "errors"
+          el: @.$("#schema-report-container")
+        }
+      )
+    else
+      @subview('SchemaReportTable'
+        new SchemaReportDetailsTableView {
+          collection: @model.get "fieldReports"
+          el: @.$("#schema-report-container")
+        }
+      )

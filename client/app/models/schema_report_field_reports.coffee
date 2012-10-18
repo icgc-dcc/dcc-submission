@@ -21,24 +21,12 @@
 """
 
 
-module.exports = (match) ->
+Collection = require 'models/base/collection'
+SchemaReportFieldReport = require 'models/schema_report_field_report'
 
-  # Releases
-  match '', 'release#list'
-  match 'releases', 'release#list'
-  match 'releases/', 'release#list'
-  match 'releases/:release', 'release#show'
-  match 'releases/:release/', 'release#show'
-  match 'releases/:release/submissions/:submission', 'release#submission'
-  match 'releases/:release/submissions/:submission/', 'release#submission'
-  match 'releases/:release/submissions/:submission/report/:report',
-    'release#report'
-  match 'releases/:release/submissions/:submission/report/:report/',
-    'release#report'
+module.exports = class SchemaReportFieldReports extends Collection
+  model: SchemaReportFieldReport
 
-  # Logout
-  match 'logout', 'auth#logout'
-  match 'logout/', 'auth#logout'
-
-  # 404
-  match '*anything', 'errors#notFound'
+  initialize: ->
+    #console.debug 'SchemaReportFieldReport#initialize', @
+    super
