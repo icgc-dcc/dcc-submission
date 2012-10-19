@@ -21,7 +21,7 @@
 """
 
 
-Chaplin = require 'chaplin'
+mediator = require 'mediator'
 View = require 'views/base/view'
 Release = require 'models/release'
 NextRelease = require 'models/next_release'
@@ -65,13 +65,16 @@ module.exports = class CompleteReleaseView extends View
 
   completeRelease: ->
     console.debug "CompleteReleaseView#completeRelease"
-
-    nextRelease = new NextRelease {name: @.$('#nextRelease').val()}
+    name = @.$('#nextRelease').val()
+    nextRelease = new NextRelease {name: name}
 
     nextRelease.save {},
       success: (data) =>
         @$el.modal('hide')
-        Chaplin.mediator.publish "completeRelease", data
+        mediator.publish "completeRelease"
+        mediator.publish "notify", "This release has been completed " +
+          "succesfully! The current open release is " +
+          "<a href='/releases/#{name}'>#{name}</a>."
 
       error: (model, error) =>
         err = $.parseJSON error.responseText

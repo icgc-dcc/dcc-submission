@@ -20,7 +20,7 @@
 * POSSIBILITY OF SUCH DAMAGE.
 """
 
-
+mediator = require 'mediator'
 PageView = require 'views/base/view'
 ReleaseHeaderView = require 'views/release/release_header_view'
 CompleteReleaseView = require 'views/release/complete_release_view'
@@ -38,22 +38,22 @@ module.exports = class ReleaseView extends PageView
   id: 'release-view'
 
   initialize: ->
-    console.debug 'ReleaseView#initialize', @model
+    #console.debug 'ReleaseView#initialize', @model
     super
 
-    @subscribeEvent "completeRelease", (data) ->
-      @model.set "next", data.get "name"
-      @model.fetch()
-
+    @subscribeEvent "completeRelease", ->@model.fetch()
     @subscribeEvent "validateSubmission", -> @model.fetch()
     @subscribeEvent "signOffSubmission", -> @model.fetch()
 
     @delegate 'click', '#complete-release-popup-button', @completeReleasePopup
 
-    utils.polling @model, 60000
+    setInterval( =>
+      @model.fetch()
+    , 10000)
 
   completeReleasePopup: (e) ->
-    console.debug "ReleaseView#completeRelease", e
+    #console.debug "ReleaseView#completeRelease", e
+
     @subview('CompleteReleases'
       new CompleteReleaseView
         'name': @model.get 'name'
@@ -61,7 +61,7 @@ module.exports = class ReleaseView extends PageView
     )
 
   render: ->
-    console.debug "ReleaseView#render", @model
+    #console.debug "ReleaseView#render", @model
     super
 
     @subview('ReleaseHeader'

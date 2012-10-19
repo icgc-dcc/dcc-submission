@@ -21,39 +21,31 @@
 """
 
 
-mediator = require 'mediator'
 View = require 'views/base/view'
-NextRelease = require 'models/next_release'
-template = require 'views/templates/submission/signoff_submission'
+template = require 'views/templates/notification'
 
-module.exports = class SignOffSubmissionView extends View
+module.exports = class Notification extends View
   template: template
   template = null
 
-  container: '#page-container'
-  containerMethod: 'append'
+  container: '#outer-container'
+  containerMethod: 'prepend'
   autoRender: true
   tagName: 'div'
-  className: "modal fade"
-  id: 'signoff-submission-popup'
+  id: "notification"
 
   initialize: ->
-    console.debug "SignOffSubmissionView#initialize", @options.submission
-    @model = @options.submission
+    console.debug "Notification#initialize", @model,
+    @model.set "sec", 5
+
     super
 
-    @delegate 'click', '#signoff-submission-button', @signOffSubmission
-
-  signOffSubmission: (e) ->
-    console.debug "SignOffSubmissionView#completeRelease"
-    nextRelease = new NextRelease()
-
-    nextRelease.signOff [@model.get "projectKey"],
-      success: =>
-        @$el.modal 'hide'
-        mediator.publish "signOffSubmission"
-        mediator.publish "notify", "Submission <a href='/releases/" +
-          "#{@model.get('release')}/submissions/#{@model.get('projectKey')}'>"+
-          "#{@model.get('projectName')}</a> has been Signed Off."
+    i = setInterval =>
+      if @model.get('sec') > 0
+        @model.set 'sec', @model.get('sec') - 1
+      else
+        clearInterval(i)
+        @$el.fadeOut()
 
 
+    , 1000
