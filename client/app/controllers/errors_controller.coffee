@@ -26,6 +26,6 @@ notFoundView = require 'views/errors/not_found_view'
 
 module.exports = class ErrorController extends Controller
   notFound: (params) ->
-    console.debug 'ErrorController#notFound', params
+    #console.debug 'ErrorController#notFound', params
     @title = '404 - Request Not Found'
     @view = new notFoundView()

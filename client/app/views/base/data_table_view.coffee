@@ -32,7 +32,7 @@ module.exports = class DataTableView extends View
     @createDataTable()
 
   updateDataTable: ->
-    console.debug "DataTableView#updateDataTable"
+    #console.debug "DataTableView#updateDataTable"
     dt = @$el.dataTable()
     dt.fnClearTable()
     dt.fnAddData @collection.toJSON()
