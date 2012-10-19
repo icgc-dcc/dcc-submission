@@ -28,11 +28,11 @@ module.exports = class Notification extends View
   template: template
   template = null
 
-  container: '#outer-container'
-  containerMethod: 'prepend'
+  container: '#notification-container'
+  containerMethod: 'append'
   autoRender: true
   tagName: 'div'
-  id: "notification"
+  className: "notification container"
 
   initialize: ->
     console.debug "Notification#initialize", @model,
@@ -46,6 +46,5 @@ module.exports = class Notification extends View
       else
         clearInterval(i)
         @$el.fadeOut()
-
-
+        @remove()
     , 1000
