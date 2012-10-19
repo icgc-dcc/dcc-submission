@@ -22,8 +22,17 @@
 
 
 Chaplin = require 'chaplin'
+NotificationView = require 'views/notification_view'
+Model = require 'models/base/model'
 
 module.exports = class Layout extends Chaplin.Layout
   initialize: ->
     super
     # @subscribeEvent 'startupController', @doSomething
+
+    @subscribeEvent 'notify', @notify
+
+  notify: (message) ->
+    console.debug "Layout#notify", message
+    new NotificationView
+      model: new Model("message": message)

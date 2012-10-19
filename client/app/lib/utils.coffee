@@ -181,10 +181,4 @@ found on host #{host}"
 
     xhr.setRequestHeader 'Authorization', "X-DCC-Auth  #{@accessToken}"
 
-  polling: (model, timing) ->
-    setInterval( ->
-      model.fetch()
-    , timing)
-    return
-
 module.exports = utils

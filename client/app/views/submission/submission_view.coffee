@@ -53,6 +53,10 @@ module.exports = class SubmissionView extends View
     @delegate 'click', '#validate-submission-popup-button',
       @validateSubmissionPopup
 
+    setInterval( =>
+      @model.fetch()
+    , 10000)
+
   signOffSubmissionPopup: (e) ->
     console.debug "SubmissionView#signOffSubmissionPopup", e
     @subview("signOffSubmissionView"

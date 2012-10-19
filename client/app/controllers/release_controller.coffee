@@ -43,13 +43,13 @@ module.exports = class ReleaseController extends BaseController
     if params.release then "releases/#{params.release}" else "releases"
 
   list: (params) ->
-    console.debug 'ReleaseController#list', params
+    #console.debug 'ReleaseController#list', params
     @collection = new Releases()
     @view = new ReleasesView {@collection}
     @collection.fetch()
 
   show: (params) ->
-    console.debug 'ReleaseController#show', params
+    #console.debug 'ReleaseController#show', params
     @title = params.release
     @model = new Release {name: params.release}
     @view = new ReleaseView {@model}
@@ -59,7 +59,7 @@ module.exports = class ReleaseController extends BaseController
         Chaplin.mediator.publish '!startupController', 'release', 'list'
 
   submission: (params) ->
-    console.debug 'ReleaseController#submission', params
+    #console.debug 'ReleaseController#submission', params
     @title = "#{params.submission} - #{params.release}"
     @model = new Submission {release: params.release, name: params.submission}
     @view = new SubmissionView {@model}
@@ -69,7 +69,7 @@ module.exports = class ReleaseController extends BaseController
           release: params.release
 
   report: (params) ->
-    console.debug 'ReleaseController#report', params
+    #console.debug 'ReleaseController#report', params
     @title = "#{params.report} - #{params.submission} - #{params.release}"
     @model = new SchemaReport {
       release: params.release

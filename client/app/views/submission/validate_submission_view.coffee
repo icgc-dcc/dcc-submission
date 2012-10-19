@@ -21,7 +21,7 @@
 """
 
 
-Chaplin = require 'chaplin'
+mediator = require 'mediator'
 View = require 'views/base/view'
 NextRelease = require 'models/next_release'
 template = require 'views/templates/submission/validate_submission'
@@ -62,4 +62,10 @@ module.exports = class ValidateSubmissionView extends View
       ],
       success: =>
         @$el.modal 'hide'
-        Chaplin.mediator.publish "validateSubmission"
+        mediator.publish "validateSubmission"
+        mediator.publish "notify", "Submission <a href='/releases/" +
+          "#{@model.get('release')}/submissions/#{@model.get('projectKey')}'>"+
+          "#{@model.get('projectName')}</a> has been queued for Validation. " +
+          "There are currently #{@model.get('queue')} submission(s) ahead " +
+          "in the queue."
+

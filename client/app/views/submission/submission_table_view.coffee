@@ -33,7 +33,7 @@ module.exports = class SubmissionTableView extends DataTableView
   autoRender: true
 
   initialize: ->
-    console.debug "SubmissionsTableView#initialize", @model, @el
+    #console.debug "SubmissionsTableView#initialize", @model, @el
     @collection = @model.get "submissions"
 
     super
@@ -50,22 +50,21 @@ module.exports = class SubmissionTableView extends DataTableView
     @updateDataTable()
 
   signOffSubmissionPopup: (e) ->
-    console.debug "ReleaseView#signOffSubmissionPopup", e
+    #console.debug "ReleaseView#signOffSubmissionPopup", e
     @subview("signOffSubmissionView"
       new signOffSubmissionView
         "submission": @collection.get $(e.currentTarget).data("submission")
     )
 
   validateSubmissionPopup: (e) ->
-    console.debug "ReleaseView#validateSubmissionPopup", e
-
+    #console.debug "ReleaseView#validateSubmissionPopup", e
     @subview("validateSubmissionView"
       new validateSubmissionView
         "submission": @collection.get $(e.currentTarget).data("submission")
     )
 
   createDataTable: ->
-    console.debug "SubmissionsTableView#createDataTable", @$el, @collection
+    #console.debug "SubmissionsTableView#createDataTable", @$el, @collection
     aoColumns = [
         {
           sTitle: "Project Key"
@@ -110,7 +109,7 @@ module.exports = class SubmissionTableView extends DataTableView
           bSortable: false
           mData: (source) =>
             switch source.state
-              when "VALID", "SIGNED OFF", "INVALID"
+              when "VALID", "SIGNED_OFF", "INVALID"
                 r = @collection.release
                 s = source.projectKey.replace(/<.*?>/g, '')
                 "<a href='/releases/#{r}/submissions/#{s}'>View</a>"
@@ -159,9 +158,9 @@ module.exports = class SubmissionTableView extends DataTableView
       sAjaxSource: ""
       sAjaxDataProp: ""
       fnRowCallback: (nRow, aData, iDisplayIndex, iDisplayIndexFull) ->
-        cell = $('td:nth-child(3)', nRow)
+        cell = $('td:nth-child(4)', nRow)
         switch aData.state
-          when "SIGNED OFF", "VALID"
+          when "SIGNED_OFF", "VALID"
             cell.css 'color', '#468847'
           when "QUEUED"
             cell.css 'color', '#C09853'

@@ -35,12 +35,13 @@ module.exports = class ReleasesView extends PageView
   id: 'releases-view'
 
   initialize: ->
-    console.debug "ReleasesView#initialize", @collection
+    #console.debug "ReleasesView#initialize", @collection
     super
 
     @subscribeEvent 'completeRelease', -> @collection.fetch()
 
   render: ->
+    #console.debug "ReleasesView#render"
     super
     @subview(
       'ReleasesTable'
