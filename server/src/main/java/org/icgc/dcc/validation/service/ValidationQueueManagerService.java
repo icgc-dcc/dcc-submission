@@ -317,7 +317,7 @@ public class ValidationQueueManagerService extends AbstractService {
 
         msg.setSubject(String.format(this.config.getString("mail.subject"), project.getKey(), state));
         if(state == SubmissionState.ERROR) {
-          msg.setText(String.format(this.config.getString("mail.error_body")));
+          msg.setText(String.format(this.config.getString("mail.error_body"), release.getName(), project.getKey()));
         } else {
           msg.setText(String.format(this.config.getString("mail.body"), project.getKey(), state, release.getName(),
               project.getKey()));
