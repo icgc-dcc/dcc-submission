@@ -83,7 +83,7 @@ public class FileSystemFunctionalTest extends FileSystemTest {
     Iterable<String> filenameList2 = HadoopUtils.toFilenameList(HadoopUtils.lsDir(fileSystem, releaseStringPath));
     Assert.assertNotNull(filenameList2);
     Assert.assertEquals(//
-        "[DBQ, SystemFiles]",//
+        "[DBQ]",//
         filenameList2.toString());
     log.info("ls2 = " + filenameList2);
 
