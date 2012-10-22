@@ -123,6 +123,15 @@ public class DccFileSystem {
     // create corresponding release directory
     HadoopUtils.mkdirs(this.fileSystem, releaseStringPath);
     ensureSubmissionDirectories(release, projectKeyList);
+
+    // create system files for release directory
+    ReleaseFileSystem releaseFS = this.getReleaseFilesystem(release);
+    Path systemFilePath = releaseFS.getSystemDirectory();
+    exists = HadoopUtils.checkExistence(this.fileSystem, systemFilePath.toString());
+    if(exists) {
+      throw new DccFileSystemException("system directory " + systemFilePath.getName() + " already exists");
+    }
+    HadoopUtils.mkdirs(this.fileSystem, systemFilePath.toString());
   }
 
   public void mkdirProjectDirectory(Release release, String projectKey) {
