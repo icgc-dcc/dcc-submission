@@ -128,7 +128,7 @@ public class DccFileSystem {
     ReleaseFileSystem releaseFS = this.getReleaseFilesystem(release);
     Path systemFilePath = releaseFS.getSystemDirectory();
     exists = HadoopUtils.checkExistence(this.fileSystem, systemFilePath.toString());
-    if(exists != false) {
+    if(exists == false) {
       HadoopUtils.mkdirs(this.fileSystem, systemFilePath.toString());
     }
   }
