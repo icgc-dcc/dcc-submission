@@ -31,7 +31,7 @@ module.exports = class ReportTableView extends DataTableView
   autoRender: false
 
   initialize: ->
-    console.debug "ReportTableView#initialize", @model, @el
+    #console.debug "ReportTableView#initialize", @model, @el
     @report = @model.get "report"
     @collection = @report.get "schemaReports"
 
@@ -44,7 +44,7 @@ module.exports = class ReportTableView extends DataTableView
     @delegate 'click', '.summary', @rowSummary
 
   update: ->
-    console.debug "ReportTableView#update", @model
+    #console.debug "ReportTableView#update", @model
     @report = @model.get "report"
     @collection = @report.get "schemaReports"
     @updateDataTable()
@@ -71,7 +71,7 @@ module.exports = class ReportTableView extends DataTableView
       dT.fnOpen(nTr, @formatDetails(data), "details #{style}")
 
   rowSummary: (e) ->
-    console.debug "ReportTableView#rowSummary", e, @anOpen
+    #console.debug "ReportTableView#rowSummary", e, @anOpen
     control = e.target
     nTr = control.parentNode.parentNode
     dT = @.$(nTr.parentNode.parentNode).dataTable()
@@ -89,7 +89,7 @@ module.exports = class ReportTableView extends DataTableView
       dT.fnOpen(nTr, @summaryDetails(data), "summary_details well")
 
   summaryDetails: (data) ->
-    console.debug "ReportTableView#summaryDetails", data
+    #console.debug "ReportTableView#summaryDetails", data
     type = switch data.type
       when "AVERAGE" then "Summary Statistics"
       when "FREQUENCY" then "Value Frequencies"
@@ -117,7 +117,7 @@ module.exports = class ReportTableView extends DataTableView
       when "relationColumnNames" then "Relation Columns"
 
   formatParams: (error) ->
-    console.debug "ReportTableView#formatParams", error
+    #console.debug "ReportTableView#formatParams", error
     out = ""
     for key, value of error.parameters
       out += "<strong>#{@formatErrorKey(key)}</strong> : #{value}<br>"
@@ -136,7 +136,7 @@ module.exports = class ReportTableView extends DataTableView
     out
 
   formatDetails: (data) ->
-    console.debug "ReportTableView#formatDetails", data
+    #console.debug "ReportTableView#formatDetails", data
 
     sOut = ''
     sErr = ''
@@ -211,7 +211,7 @@ module.exports = class ReportTableView extends DataTableView
     super
 
   createDataTable: ->
-    console.debug "ReportTableView#createDataTable", @$el
+    #console.debug "ReportTableView#createDataTable", @$el
     aoColumns = [
         {
           sTitle: "File"
