@@ -62,7 +62,6 @@ module.exports = class CompleteReleaseView extends View
         "The release needs at least one SIGNED OFF
         submission before it can be COMPLETED."
 
-
   completeRelease: ->
     console.debug "CompleteReleaseView#completeRelease"
     name = @.$('#nextRelease').val()

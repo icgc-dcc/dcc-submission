@@ -39,7 +39,7 @@ module.exports = class Notification extends View
     @model.set "sec", 5
 
     super
-
+    ###
     i = setInterval =>
       if @model.get('sec') > 0
         @model.set 'sec', @model.get('sec') - 1
@@ -48,3 +48,4 @@ module.exports = class Notification extends View
         @$el.fadeOut()
         @remove()
     , 1000
+    ###

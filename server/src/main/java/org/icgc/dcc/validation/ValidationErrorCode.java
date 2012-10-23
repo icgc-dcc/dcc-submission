@@ -53,10 +53,7 @@ public enum ValidationErrorCode {
   UNIQUE_VALUE_ERROR("invalid set of values (%s) for fields %s. Expected to be unique") {
     @Override
     public final ImmutableMap<String, Object> build(Object... params) {
-      checkArgument(params != null);
-      checkArgument(params.length == 1);
-      checkArgument(params[0] instanceof Long);
-      return ImmutableMap.of(FIRST_OFFSET, params[0]);
+      return ImmutableMap.of();
     }
   }, //
   VALUE_TYPE_ERROR("invalid value (%s) for field %s. Expected type is: %s") {
@@ -148,8 +145,6 @@ public enum ValidationErrorCode {
   private static final String EXPECTED_VALUE = "expectedValue";
 
   private static final String EXPECTED_TYPE = "expectedType";
-
-  private static final String FIRST_OFFSET = "firstOffset";
 
   private static final String MIN_RANGE = "minRange";
 
