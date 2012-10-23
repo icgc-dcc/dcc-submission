@@ -53,7 +53,7 @@ module.exports = class ValidateSubmissionView extends View
     @delegate 'click', '#validate-submission-button', @validateSubmission
 
   validateSubmission: (e) ->
-    #console.debug "ValidateSubmissionView#completeRelease", @model
+    console.debug "ValidateSubmissionView#completeRelease", @model
 
     if not @.$("#emails").val()
       emails = @.$("#emails")
@@ -79,9 +79,8 @@ module.exports = class ValidateSubmissionView extends View
       success: =>
         @$el.modal 'hide'
         mediator.publish "validateSubmission"
-        mediator.publish "notify", "Submission <a href='/releases/" +
-          "#{@model.get('release')}/submissions/#{@model.get('projectKey')}'>"+
-          "#{@model.get('projectName')}</a> has been queued for Validation. " +
+        mediator.publish "notify", "Submission for Project "+
+          "#{@model.get('projectName')} has been queued for Validation. " +
           "There are currently #{@model.get('queue')} submission(s) ahead " +
           "in the queue."
 
