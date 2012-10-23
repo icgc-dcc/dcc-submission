@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.shiro.subject.Subject;
@@ -46,6 +47,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.mysema.query.mongodb.MongodbQuery;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
@@ -78,6 +80,9 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     Release nextRelease = new Release(initRelease.getName());
     nextRelease.setDictionaryVersion(dictionaryVersion);
     datastore().save(nextRelease);
+    // after initial release, create initial file system
+    Set<String> projects = Sets.newHashSet();
+    fs.ensureReleaseFilesystem(nextRelease, projects);
   }
 
   public boolean hasNextRelease() {
