@@ -124,22 +124,26 @@ module.exports = class SubmissionTableView extends DataTableView
               when "VALID"
                 ds = source.projectKey.replace(/<.*?>/g, '')
                 """
-                <a id="signoff-submission-popup-button"
-                   data-submission="#{ds}"
-                   data-toggle="modal"
-                   href='#signoff-submission-popup'>
-                   Sign Off
+                <button
+                  class="btn btn-success btn-mini"
+                  id="signoff-submission-popup-button"
+                  data-submission="#{ds}"
+                  data-toggle="modal"
+                  href='#signoff-submission-popup'>
+                  Sign Off
                 </a>
                 """
               when "NOT_VALIDATED", "INVALID", "ERROR"
                 if source.submissionFiles.length
                   ds = source.projectKey.replace(/<.*?>/g, '')
                   """
-                  <a id="validate-submission-popup-button"
-                     data-submission="#{ds}"
-                     data-toggle="modal"
-                     href='#validate-submission-popup'>
-                     Validate
+                  <button
+                    class="btn btn-success btn-mini"
+                    id="validate-submission-popup-button"
+                    data-submission="#{ds}"
+                    data-toggle="modal"
+                    href='#validate-submission-popup'>
+                    Validate
                   </a>
                   """
                 else "<em>Upload Files</em>"

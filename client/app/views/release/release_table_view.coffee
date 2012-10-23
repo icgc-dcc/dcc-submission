@@ -62,20 +62,30 @@ module.exports = class ReleaseTableView extends DataTableView
             if source.releaseDate
               utils.date(source.releaseDate)
             else
-              if utils.is_admin()
-                """
-                  <a
-                    id="complete-release-popup-button"
-                    data-toggle="modal"
-                    data-release-name="#{source.name}"
-                    href="#complete-release-popup">
-                    Release Now
-                  </a>
-                """
-              else
-                "<em>Unreleased</em>"
+              "<em>Unreleased</em>"
         }
-        { sTitle: "Studies", mDataProp: "submissions.length" }
+        {
+          sTitle: "Projects"
+          mData: (source) ->
+            source.submissions.length
+        }
+        {
+          sTitle: "Action"
+          bSortable: false
+          mData: (source) ->
+            if not source.releaseDate
+              """
+              <button
+                class="btn btn-success btn-mini"
+                id="complete-release-popup-button"
+                data-toggle="modal"
+                data-release-name="#{source.name}"
+                href="#complete-release-popup">
+                Release Now
+              </button>
+              """
+            else ""
+        }
       ]
 
     @$el.dataTable

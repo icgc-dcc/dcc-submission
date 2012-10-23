@@ -33,6 +33,6 @@ module.exports = class Layout extends Chaplin.Layout
     @subscribeEvent 'notify', @notify
 
   notify: (message) ->
-    console.debug "Layout#notify", message
+    #console.debug "Layout#notify", message
     new NotificationView
       model: new Model("message": message)
