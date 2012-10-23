@@ -53,7 +53,23 @@ module.exports = class ValidateSubmissionView extends View
     @delegate 'click', '#validate-submission-button', @validateSubmission
 
   validateSubmission: (e) ->
-    console.debug "ValidateSubmissionView#completeRelease", @model
+    #console.debug "ValidateSubmissionView#completeRelease", @model
+
+    if not @.$("#emails").val()
+      emails = @.$("#emails")
+      alert = @.$('#email-error')
+
+      if alert.length
+        alert.text("You must enter an email
+           address before submitting submission for Validation!")
+      else
+        emails
+          .before("<div id='email-error' class='error'>You must
+            enter an email address before submitting submission for
+            Validation!</div>")
+
+      return
+
     nextRelease = new NextRelease()
 
     nextRelease.queue [
