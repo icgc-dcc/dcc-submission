@@ -90,7 +90,7 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
           mData: "columnNames"
         }
         {
-          sTitle: "Columns"
+          sTitle: "Count of occurrences"
           mData: "count"
         }
         {

@@ -10,11 +10,13 @@
     <div class="row-fluid">
       <h2 class="pull-left">Release Summary</h2>
       <div style="margin-top:17px; margin-right:50px" class="pull-right">
-        {{#if_opened state}}
         {{#if_has_role "admin"}}
+        {{#if_opened state}}
+        {{#if summary.SIGNED_OFF}}
         <button id="complete-release-popup-button" class="btn btn-success">Release Now</button>
-        {{/if_has_role}}
+        {{/if}}
         {{/if_opened}}
+        {{/if_has_role}}
       </div>
     </div>
       <span>Name:</span> <span>{{name}}</span><br>
