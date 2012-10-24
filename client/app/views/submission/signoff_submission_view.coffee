@@ -52,8 +52,7 @@ module.exports = class SignOffSubmissionView extends View
       success: =>
         @$el.modal 'hide'
         mediator.publish "signOffSubmission"
-        mediator.publish "notify", "Submission <a href='/releases/" +
-          "#{@model.get('release')}/submissions/#{@model.get('projectKey')}'>"+
+        mediator.publish "notify", "Submission for Project "+
           "#{@model.get('projectName')}</a> has been Signed Off."
 
 

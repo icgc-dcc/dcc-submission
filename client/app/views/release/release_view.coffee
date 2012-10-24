@@ -48,12 +48,12 @@ module.exports = class ReleaseView extends PageView
     @delegate 'click', '#complete-release-popup-button', @completeReleasePopup
 
     i = setInterval( =>
-      popup = @subviewsByName
-        .SubmissionsTable
-        .subviewsByName
-        .validateSubmissionView?.$el.hasClass('in')
 
       if @model
+        popup = @subviewsByName
+          .SubmissionsTable
+          .subviewsByName
+          .validateSubmissionView?.$el.hasClass('in')
         if not popup
           @model.fetch()
       else

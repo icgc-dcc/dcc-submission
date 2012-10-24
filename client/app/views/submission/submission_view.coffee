@@ -54,9 +54,9 @@ module.exports = class SubmissionView extends View
       @validateSubmissionPopup
 
     i = setInterval( =>
-      popup = @subviewsByName.validateSubmissionView?.$el.hasClass('in')
 
       if @model
+        popup = @subviewsByName.validateSubmissionView?.$el.hasClass('in')
         if not popup
           @model.fetch()
       else
