@@ -229,7 +229,7 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
       List<String> relationColumnNames = Lists.newArrayList(rhsFields);
       List<Object> value = TuplesUtils.getObjects(offendingLhsTuple);
 
-      tupleState.reportError(ValidationErrorCode.RELATION_ERROR, columnNames, value, relationSchema,
+      tupleState.reportError(ValidationErrorCode.RELATION_VALUE_ERROR, columnNames, value, relationSchema,
           relationColumnNames);
     }
   }
@@ -381,7 +381,7 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
             List<String> relationColumnNames = Lists.newArrayList(rhsFields);
             List<Object> value = TuplesUtils.getObjects(offendingRhsTuple);
 
-            state.reportError(ValidationErrorCode.RELATION_PARENT_ERROR, columnNames, value, relationSchema,
+            state.reportError(ValidationErrorCode.RELATION_PARENT_VALUE_ERROR, columnNames, value, relationSchema,
                 relationColumnNames);
             bufferCall.getOutputCollector().add(new Tuple(state));
           }

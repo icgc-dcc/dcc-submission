@@ -61,7 +61,7 @@ module.exports = class SubmissionView extends View
           @model.fetch()
       else
         clearInterval i
-    , 10000)
+    , 1000000)
 
   signOffSubmissionPopup: (e) ->
     #console.debug "SubmissionView#signOffSubmissionPopup", e

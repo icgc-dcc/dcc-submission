@@ -22,7 +22,10 @@ exports.config =
         'stylesheets/app.css': /^(app|vendor)/
         'test/stylesheets/test.css': /^test/
       order:
-        before: ['vendor/styles/style.less']
+        before: [
+          'vendor/styles/style.less',
+          'vendor/styles/m-styles.min.css'
+        ]
         after: ['vendor/styles/helpers.css']
 
     templates:
