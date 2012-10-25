@@ -55,20 +55,21 @@ module.exports = class ValidateSubmissionView extends View
   validateSubmission: (e) ->
     console.debug "ValidateSubmissionView#completeRelease", @model
 
-    if not @.$("#emails").val()
-      emails = @.$("#emails")
-      alert = @.$('#email-error')
+    emails = @.$("#emails")
+    alert = @.$('#email-error')
+    val = @.$("#emails").val()
 
+    if not val or not val.match /.+@.+\..+/i
       if alert.length
-        alert.text("You must enter an email
+        alert.text("You must enter at least one valid email
            address before submitting submission for Validation!")
       else
         emails
-          .before("<div id='email-error' class='error'>You must
-            enter an email address before submitting submission for
+          .before("<div id='email-error' class='error'>You must enter at least
+            one valid email address before submitting submission for
             Validation!</div>")
-
       return
+
 
     nextRelease = new NextRelease()
 
