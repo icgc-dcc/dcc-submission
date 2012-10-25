@@ -120,7 +120,7 @@ public class StructuralCheckFunction extends BaseOperation implements Function {
       tupleState.reportError(ValidationErrorCode.STRUCTURALLY_INVALID_ROW_ERROR,//
           ROW_LEVEL_ERROR_COLUMN_NAME, // because we don't have a specific column to report this on (TODO: revisit not
                                        // elegant)
-          dataSize, headerSize);
+          dataSize, headerSize); // we use dataSize as the value, and headerSize as an expected value parameter
     }
     return adjustedValues;
   }

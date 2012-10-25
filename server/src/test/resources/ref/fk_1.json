@@ -1,7 +1,7 @@
 {
   "offset" : 1,
   "errors" : [ {
-    "code" : "RELATION_ERROR",
+    "code" : "RELATION_VALUE_ERROR",
     "columnNames" : [ "donor_id", "fakecolumn" ],
     "value" : [ "DN_Y20_0000", "x" ],
     "line" : 1,
@@ -13,7 +13,7 @@
 }{
   "offset" : 2,
   "errors" : [ {
-    "code" : "RELATION_ERROR",
+    "code" : "RELATION_VALUE_ERROR",
     "columnNames" : [ "donor_id", "fakecolumn" ],
     "value" : [ "DN_Y20_00001", "y" ],
     "line" : 2,
@@ -25,7 +25,7 @@
 }{
   "offset" : 3,
   "errors" : [ {
-    "code" : "RELATION_ERROR",
+    "code" : "RELATION_VALUE_ERROR",
     "columnNames" : [ "donor_id", "fakecolumn" ],
     "value" : [ "DN_Y20_0003", "y" ],
     "line" : 3,
