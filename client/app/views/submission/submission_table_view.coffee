@@ -125,7 +125,7 @@ module.exports = class SubmissionTableView extends DataTableView
                 ds = source.projectKey.replace(/<.*?>/g, '')
                 """
                 <button
-                  class="btn btn-success btn-mini"
+                  class="m-btn green-stripe mini"
                   id="signoff-submission-popup-button"
                   data-submission="#{ds}"
                   data-toggle="modal"
@@ -138,7 +138,7 @@ module.exports = class SubmissionTableView extends DataTableView
                   ds = source.projectKey.replace(/<.*?>/g, '')
                   """
                   <button
-                    class="btn btn-success btn-mini"
+                    class="m-btn blue-stripe mini"
                     id="validate-submission-popup-button"
                     data-submission="#{ds}"
                     data-toggle="modal"

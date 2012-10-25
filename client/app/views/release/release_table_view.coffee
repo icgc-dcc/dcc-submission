@@ -76,7 +76,7 @@ module.exports = class ReleaseTableView extends DataTableView
             if not source.releaseDate
               """
               <button
-                class="btn btn-success btn-mini"
+                class="m-btn blue-stripe mini"
                 id="complete-release-popup-button"
                 data-toggle="modal"
                 data-release-name="#{source.name}"
