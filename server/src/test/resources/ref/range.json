@@ -6,8 +6,8 @@
     "value" : 205,
     "line" : 1,
     "parameters" : {
-      "minRange" : 0,
-      "maxRange" : 200
+      "MIN" : 0,
+      "MAX" : 200
     }
   } ]
 }{
@@ -18,8 +18,8 @@
     "value" : 201,
     "line" : 2,
     "parameters" : {
-      "minRange" : 0,
-      "maxRange" : 200
+      "MIN" : 0,
+      "MAX" : 200
     }
   } ]
 }

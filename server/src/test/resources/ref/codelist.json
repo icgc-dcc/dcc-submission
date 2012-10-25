@@ -5,9 +5,7 @@
     "columnNames" : [ "donor_vital_status" ],
     "value" : "3",
     "line" : 2,
-    "parameters" : {
-      "expectedValue" : "dr__donor_vital_status"
-    }
+    "parameters" : { }
   } ]
 }{
   "offset" : 3,
@@ -16,8 +14,6 @@
     "columnNames" : [ "donor_vital_status" ],
     "value" : "4",
     "line" : 3,
-    "parameters" : {
-      "expectedValue" : "dr__donor_vital_status"
-    }
+    "parameters" : { }
   } ]
 }
