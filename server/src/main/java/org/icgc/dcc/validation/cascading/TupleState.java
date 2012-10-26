@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
+import org.icgc.dcc.validation.ErrorParameterKey;
 import org.icgc.dcc.validation.ValidationErrorCode;
 
 import com.google.common.base.Objects;
@@ -111,18 +112,18 @@ public class TupleState implements Serializable {
 
     private final Long line;
 
-    private final Map<String, Object> parameters;
+    private final Map<ErrorParameterKey, Object> parameters;
 
     public TupleError() {
       this.code = null;
       this.columnNames = Lists.newArrayList();
       this.value = null;
       this.line = null;
-      this.parameters = new LinkedHashMap<String, Object>();
+      this.parameters = new LinkedHashMap<ErrorParameterKey, Object>();
     }
 
     private TupleError(ValidationErrorCode code, List<String> columnNames, Object value, Long line,
-        Map<String, Object> parameters) {
+        Map<ErrorParameterKey, Object> parameters) {
       this.code = code;
       this.columnNames = columnNames;
       this.value = value != null ? value : "";
@@ -146,7 +147,7 @@ public class TupleState implements Serializable {
       return this.line;
     }
 
-    public Map<String, Object> getParameters() {
+    public Map<ErrorParameterKey, Object> getParameters() {
       return this.parameters;
     }
 
