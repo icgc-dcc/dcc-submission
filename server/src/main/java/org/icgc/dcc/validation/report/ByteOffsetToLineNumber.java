@@ -63,12 +63,7 @@ public class ByteOffsetToLineNumber {
 
     for(long offset : sortedOffsets) {
       while(currentByte < offset) {
-        String line = lineNumberReader.readLine();
-        if(line == null) {
-          currentByte += 1; // if line is null, just +1 for line terminator
-        } else {
-          currentByte += line.getBytes().length + 1; // "+1" to account for line terminator
-        }
+        currentByte += lineNumberReader.readLine().getBytes().length + 1; // "+1" to account for line terminator
       }
       offsetToLine.put(offset, lineNumberReader.getLineNumber());
     }
