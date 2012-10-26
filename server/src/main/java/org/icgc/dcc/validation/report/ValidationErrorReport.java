@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.validation.ErrorParameterKey;
 import org.icgc.dcc.validation.ValidationErrorCode;
 import org.icgc.dcc.validation.cascading.TupleState.TupleError;
 
@@ -136,7 +137,7 @@ public class ValidationErrorReport {
 
     private List<Object> values = Lists.newLinkedList();
 
-    private Map<String, Object> parameters;
+    private Map<ErrorParameterKey, Object> parameters;
 
     public ColumnErrorReport() {
     }
@@ -158,7 +159,7 @@ public class ValidationErrorReport {
       return this.count;
     }
 
-    public Map<String, Object> getParameters() {
+    public Map<ErrorParameterKey, Object> getParameters() {
       return this.parameters;
     }
 
@@ -202,7 +203,7 @@ public class ValidationErrorReport {
       this.columnNames = columnNames;
     }
 
-    private void setParameters(Map<String, Object> params) {
+    private void setParameters(Map<ErrorParameterKey, Object> params) {
       this.parameters = params;
     }
   }

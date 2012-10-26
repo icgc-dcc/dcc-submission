@@ -6,8 +6,8 @@
     "value" : [ "DN_Y20_0000", "x" ],
     "line" : 1,
     "parameters" : {
-      "relationSchema" : "donor",
-      "relationColumnNames" : [ "donor_id", "fakecolumn" ]
+      "SCHEMA" : "donor",
+      "FIELDS" : [ "donor_id", "fakecolumn" ]
     }
   } ]
 }{
@@ -18,8 +18,8 @@
     "value" : [ "DN_Y20_00001", "y" ],
     "line" : 2,
     "parameters" : {
-      "relationSchema" : "donor",
-      "relationColumnNames" : [ "donor_id", "fakecolumn" ]
+      "SCHEMA" : "donor",
+      "FIELDS" : [ "donor_id", "fakecolumn" ]
     }
   } ]
 }{
@@ -30,8 +30,8 @@
     "value" : [ "DN_Y20_0003", "y" ],
     "line" : 3,
     "parameters" : {
-      "relationSchema" : "donor",
-      "relationColumnNames" : [ "donor_id", "fakecolumn" ]
+      "SCHEMA" : "donor",
+      "FIELDS" : [ "donor_id", "fakecolumn" ]
     }
   } ]
 }
