@@ -311,10 +311,13 @@ public class ValidationQueueManagerService extends AbstractService {
         // send email to admin when Error occurs
         Address adminEmailAdd = new InternetAddress(this.config.getString("mail.admin.email"));
         aCheck.add(adminEmailAdd);
-        msg.setText(String.format(this.config.getString("mail.error_body"), release.getName(), project.getKey()));
-      } else {
-        msg.setText(String.format(this.config.getString("mail.body"), project.getKey(), state, release.getName(),
+        msg.setText(String.format(this.config.getString("mail.error_body"), project.getKey(), state));
+      } else if(state == SubmissionState.VALID) {
+        msg.setText(String.format(this.config.getString("mail.valid_body"), project.getKey(), state, release.getName(),
             project.getKey()));
+      } else if(state == SubmissionState.INVALID) {
+        msg.setText(String.format(this.config.getString("mail.invalid_body"), project.getKey(), state,
+            release.getName(), project.getKey()));
       }
 
       Address[] addresses = new Address[aCheck.size()];
