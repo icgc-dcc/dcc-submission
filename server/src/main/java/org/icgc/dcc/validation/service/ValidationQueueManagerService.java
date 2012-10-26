@@ -301,37 +301,41 @@ public class ValidationQueueManagerService extends AbstractService {
       }
     }
 
-    if(aCheck.size() > 0) {
+    try {
+      Message msg = new MimeMessage(session);
+      msg.setFrom(new InternetAddress(this.config.getString("mail.from.email"), this.config
+          .getString("mail.from.email")));
+
+      msg.setSubject(String.format(this.config.getString("mail.subject"), project.getKey(), state));
+      if(state == SubmissionState.ERROR) {
+        // send email to admin when Error occurs
+        Address adminEmailAdd = new InternetAddress(this.config.getString("mail.admin.email"));
+        aCheck.add(adminEmailAdd);
+        msg.setText(String.format(this.config.getString("mail.error_body"), release.getName(), project.getKey()));
+      } else {
+        msg.setText(String.format(this.config.getString("mail.body"), project.getKey(), state, release.getName(),
+            project.getKey()));
+      }
+
       Address[] addresses = new Address[aCheck.size()];
 
       int i = 0;
       for(Address email : aCheck) {
         addresses[i++] = email;
       }
+      msg.addRecipients(Message.RecipientType.TO, addresses);
 
-      try {
-        Message msg = new MimeMessage(session);
-        msg.setFrom(new InternetAddress(this.config.getString("mail.from.email"), this.config
-            .getString("mail.from.email")));
-        msg.addRecipients(Message.RecipientType.TO, addresses);
-
-        msg.setSubject(String.format(this.config.getString("mail.subject"), project.getKey(), state));
-        if(state == SubmissionState.ERROR) {
-          msg.setText(String.format(this.config.getString("mail.error_body"), release.getName(), project.getKey()));
-        } else {
-          msg.setText(String.format(this.config.getString("mail.body"), project.getKey(), state, release.getName(),
-              project.getKey()));
-        }
+      if(aCheck.isEmpty() == false) {
         Transport.send(msg);
         log.error("Emails for {} sent to {}: ", project.getKey(), aCheck);
-
-      } catch(AddressException e) {
-        log.error("an error occured while emailing: ", e);
-      } catch(MessagingException e) {
-        log.error("an error occured while emailing: ", e);
-      } catch(UnsupportedEncodingException e) {
-        log.error("an error occured while emailing: ", e);
       }
+
+    } catch(AddressException e) {
+      log.error("an error occured while emailing: ", e);
+    } catch(MessagingException e) {
+      log.error("an error occured while emailing: ", e);
+    } catch(UnsupportedEncodingException e) {
+      log.error("an error occured while emailing: ", e);
     }
   }
 
