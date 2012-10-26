@@ -31,7 +31,8 @@ module.exports = class DCC extends ServiceProvider
   constructor: ->
     #console.debug 'DCCServiceProvider#constructor', localStorage
     super
-    @accessToken = localStorage.getItem 'accessToken'
+    #@accessToken = localStorage.getItem 'accessToken'
+    @accessToken = $.cookie('accessToken')
     authCallback = _(@loginHandler).bind(this, @loginHandler)
     Chaplin.mediator.subscribe 'auth:callback:dcc', authCallback
 
@@ -54,10 +55,12 @@ module.exports = class DCC extends ServiceProvider
 
   # Trigger login popup
   triggerLogin: (loginContext) ->
-    ##console.debug 'DCCServiceProvider#triggerLogin', loginContext, @
+    #console.debug 'DCCServiceProvider#triggerLogin', loginContext, @
     #callback = _(@loginHandler).bind(this, @loginHandler)
     #window.location = URL
-    window.location.reload()
+    #window.location.reload()
+    $('#login').fadeOut 'fast', ->
+      window.location.reload()
 
   # Callback for the login popup
   loginHandler: (loginContext, response) =>
@@ -65,6 +68,7 @@ module.exports = class DCC extends ServiceProvider
     if response
       # Publish successful login
       Chaplin.mediator.publish 'loginSuccessful', {provider: this, loginContext}
+      $('#page-container').removeClass 'hide'
 
       # Publish the session
       @accessToken = response.accessToken
@@ -92,6 +96,7 @@ module.exports = class DCC extends ServiceProvider
 
     if not response or status is 'error'
       Chaplin.mediator.publish 'logout'
+      $('#page-container').addClass 'hide'
     else
       Chaplin.mediator.publish 'serviceProviderSession', _.extend response,
         provider: this
