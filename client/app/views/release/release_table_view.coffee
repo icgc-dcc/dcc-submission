@@ -32,7 +32,7 @@ module.exports = class ReleaseTableView extends DataTableView
   autoRender: true
 
   initialize: ->
-    console.debug "ReleasesTableView#initialize", @collection, @el
+    #console.debug "ReleasesTableView#initialize", @collection, @el
     super
 
     @modelBind 'reset', @updateDataTable
@@ -40,7 +40,7 @@ module.exports = class ReleaseTableView extends DataTableView
     @delegate 'click', '#complete-release-popup-button', @completeReleasePopup
 
   completeReleasePopup: (e) ->
-    console.debug "ReleaseTableView#completeRelease", e
+    #console.debug "ReleaseTableView#completeRelease", e
     @subview('CompleteReleases'
       new CompleteReleaseView
         'name': $(e.currentTarget).data('release-name')
@@ -53,7 +53,7 @@ module.exports = class ReleaseTableView extends DataTableView
     super
 
   createDataTable: ->
-    console.debug "ReleasesTableView#createDataTable"
+    #console.debug "ReleasesTableView#createDataTable"
     aoColumns = [
         {
           sTitle: "Name"

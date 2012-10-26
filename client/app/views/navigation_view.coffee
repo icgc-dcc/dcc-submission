@@ -29,7 +29,7 @@ module.exports = class NavigationView extends View
   template: template
   tagName: 'nav'
   containerMethod: 'html'
-  autoRender: true
+  autoRender: false
   className: 'navigation'
   container: '#header-container'
 
@@ -37,6 +37,8 @@ module.exports = class NavigationView extends View
     #console.debug 'NavigationView#initialize', @model
     super
     @modelBind 'change', @render
+
+    @delegate 'click', '#logout', @triggerLogout
 
     @subscribeEvent 'login', @setUsername
     #@subscribeEvent 'logout', @setUsername
@@ -46,8 +48,11 @@ module.exports = class NavigationView extends View
       @model.clear(silent: yes)
       @model.set attributes
 
-
   setUsername: (user)->
     #console.debug 'NavigationView#@setUsername', @model
-
     @model.set 'username', user.get('name')
+
+  triggerLogout: (e) ->
+    console.log "NavigationView#triggerLogout"
+
+    Chaplin.mediator.publish '!logout'

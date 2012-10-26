@@ -35,7 +35,7 @@ module.exports = class LoginView extends View
   # Expects the serviceProviders in the options
   initialize: (options) ->
     super
-    console.debug 'LoginView#initialize', @el, @$el, options
+    #console.debug 'LoginView#initialize', @el, @$el, options
     @initButtons options.serviceProviders
     #@$el.modal
     #  "keyboard": false
@@ -45,7 +45,7 @@ module.exports = class LoginView extends View
   # In this project we currently only have one service provider and therefore
   # one button. But this should allow for different service providers.
   initButtons: (serviceProviders) ->
-    console.debug 'LoginView#initButtons', serviceProviders
+    #console.debug 'LoginView#initButtons', serviceProviders
 
     for serviceProviderName, serviceProvider of serviceProviders
 
@@ -68,26 +68,26 @@ module.exports = class LoginView extends View
       serviceProvider.fail failed
 
   loginWith: (serviceProviderName, serviceProvider, e) ->
-    console.debug 'LoginView#loginWith',
-      serviceProviderName, serviceProvider, e
+    console.debug 'LoginView#loginWith', e
     e.preventDefault()
 
     # TODO - added just to make it work
     loginDetails = @$("form").serializeObject()
     @accessToken = btoa loginDetails.username.concat ":", loginDetails.password
-    localStorage.setItem 'accessToken', @accessToken
-    console.debug @accessToken, atob @accessToken
+    #localStorage.setItem 'accessToken', @accessToken
+    $.cookie 'accessToken', @accessToken
+    #console.debug @accessToken, atob @accessToken
     #
     return unless serviceProvider.isLoaded()
     Chaplin.mediator.publish 'login:pickService', serviceProviderName
     Chaplin.mediator.publish '!login', serviceProviderName
 
   serviceProviderLoaded: (serviceProviderName) ->
-    console.debug 'LoginView#serviceProviderLoaded', serviceProviderName
+    #console.debug 'LoginView#serviceProviderLoaded', serviceProviderName
     @$(".#{serviceProviderName}").removeClass('service-loading')
 
   serviceProviderFailed: (serviceProviderName) ->
-    console.debug 'LoginView#serviceProviderFailed', serviceProviderName
+    #console.debug 'LoginView#serviceProviderFailed', serviceProviderName
     @$(".#{serviceProviderName}")
       .removeClass('service-loading')
       .addClass('service-unavailable')
