@@ -40,18 +40,99 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
     @modelBind 'change', @update
 
   errors:
+    CODELIST_ERROR:
+      name: "Controlled vocabulary violation"
+      description: (source) ->
+        """
+        Values do not match any of the allowed values for this field
+        """
+    DISCRETE_VALUES_ERROR:
+      name: "Controlled vocabulary violation"
+      description: (source) ->
+        """
+        Values do not match any of the following allowed values for
+        this field: #{source.params[values]}
+        """
+    DUPLICATE_HEADER_ERRORR:
+      name: "Header field collision"
+      description: (source) ->
+        """
+        Duplicate field names found in the file header:
+        #{params['duplicateHeaderFieldNames']}
+        """
+    RELATION_FILE_ERROR:
+      name: "Required file missing"
+      description: (source) ->
+        """
+        "#{source.params['referencedSchema']}" file does not exist
+        """
+    REVERSE_RELATION_FILE_ERROR:
+      name: "Required file missing"
+      description: (source) ->
+        """
+        "#{params[referencingSchema]}" file does not exist
+        """
+    RELATION_VALUE_ERROR:
+      name: "Relation violation"
+      description: (source) ->
+        """
+        The following {params[referencedFieldNames]} values do not exist in the
+        reference file "params[referencedFile]"
+        """
+    RELATION_PARENT_VALUE_ERROR:
+      name: "Relation violation"
+      description: (source) ->
+        """
+        The following #{params[referencingFieldNames]} values from the reference
+        file do not exist in the current file "#{params[referencingFile]}"
+        """
     MISSING_VALUE_ERROR:
-      name: "Value Missing"
+      name: "Required value violation"
       description: (source) ->
         """
-        Requied values missing for #{source.columnNames} on lines
+        Required values missing
         """
-    RELATION_ERROR:
-      name: "Relation Error"
+    OUT_OF_RANGE_ERROR:
+      name: "Range restriction violation"
       description: (source) ->
         """
-        Relation errors
+        Values are out of range (inclusive): [#{source.params['min']},
+        #{source.params['max']}]
         """
+    NOT_A_NUMBER_ERROR:
+      name: "Data type violation"
+      description: (source) ->
+        """
+        Values for range field are not numerical
+        """
+    VALUE_TYPE_ERROR:
+      name: "Data type violation"
+      description: (source) ->
+        """
+        Invalid value types, expected type for this field is
+        "${source.params['expectedType']}"
+        """
+    UNIQUE_VALUE_ERROR:
+      name: "Unique check violation"
+      description: (source) ->
+        """
+        Duplicate values found
+        """
+    STRUCTURALLY_INVALID_ROW_ERROR:
+      name: "Invalid row structure"
+      description: (source) ->
+        """
+        Structurally invalid rows, based on header the expected number of
+        fields for rows throughout this file is "#{params['expectedSize']}"
+        """
+    TOO_MANY_FILES_ERROR:
+      name: "Filename collision"
+      description: (source) ->
+        """
+        More than one file matches the schema pattern
+        #{source.params['matchingFileNames']}
+        """
+
 
   details: (source) ->
     if source.errorType is "MISSING_VALUE_ERROR"
