@@ -342,7 +342,7 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
 
   static final class NoNullBuffer extends NoNullBufferBase {
 
-    private final int CONVENTION_PARENT_OFFSET = -1; // see DCC-289#2
+    private final int CONVENTION_PARENT_OFFSET = -1; // FIXME: https://jira.oicr.on.ca/browse/DCC-562
 
     private final String[] renamedRhsFields;
 
