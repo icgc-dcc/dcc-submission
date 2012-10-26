@@ -12,11 +12,9 @@
                   <li><a href="http://dcc.icgc.org/pages/docs/" target="_blank">Documentation</a></li>
               </ul>
               <ul class="nav pull-right" style="margin-right:20px">
-                  <li class="divider-vertical"></li>
                   {{#if username}}
+                  <li class="divider-vertical"></li>
                   <li><p class="navbar-text"><span>{{username}}</span> - <a href="/logout">logout</a></p></li>
-                  {{else}}
-                  <li><a href="#">Login</a></li>
                   {{/if}}
               </ul>
           </div><!-- /.nav-collapse -->

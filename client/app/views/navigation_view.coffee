@@ -39,6 +39,7 @@ module.exports = class NavigationView extends View
     @modelBind 'change', @render
 
     @subscribeEvent 'login', @setUsername
+    #@subscribeEvent 'logout', @setUsername
 
     @subscribeEvent 'navigation:change', (attributes) =>
       console.debug 'NavigationView#initialize#change', attributes

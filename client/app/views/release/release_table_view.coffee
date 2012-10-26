@@ -46,6 +46,12 @@ module.exports = class ReleaseTableView extends DataTableView
         'name': $(e.currentTarget).data('release-name')
     )
 
+  updateDataTable: ->
+    if not utils.is_admin()
+      dt = @$el.dataTable()
+      dt.fnSetColumnVis( 4, false )
+    super
+
   createDataTable: ->
     console.debug "ReleasesTableView#createDataTable"
     aoColumns = [

@@ -23,7 +23,7 @@ body {
   font-size: 13px;
 }
 
-.logged-out #content-container { opacity: 0;}
+.logged-out { opacity: 0;}
 
 .navbar { margin-bottom: 0; }
 

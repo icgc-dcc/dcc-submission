@@ -71,7 +71,7 @@ Handlebars.registerHelper 'submission_action', (state) ->
         Sign Off
       </button>
       """
-    when "INVALID", "NOT_VALIDATED"
+    when "NOT_VALIDATED"
       new Handlebars.SafeString """
       <button
         class="m-btn green"

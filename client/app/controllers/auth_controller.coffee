@@ -28,13 +28,17 @@ module.exports = class AuthController extends Controller
   historyURL: 'auth'
 
   logout: ->
-    # Save the current location so you don't lose your
-    # place on logout
-    location = window.location
-    localStorage.clear()
-    Chaplin.mediator.publish '!logout'
-    # I would rather use a Chaplin or Backbone method
-    # here, but this is the only way I can get the url
-    # to change without a refresh
-    window.location = location
-      
+    if Chaplin.mediator.user
+
+      # Save the current location so you don't lose your
+      # place on logout
+      location = window.location
+      localStorage.clear()
+      Chaplin.mediator.publish '!logout'
+      # I would rather use a Chaplin or Backbone method
+      # here, but this is the only way I can get the url
+      # to change without a refresh
+      window.location = location
+
+    else
+      Chaplin.mediator.publish '!startupController', 'release', 'list'

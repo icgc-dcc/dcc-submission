@@ -61,7 +61,7 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
     for key, value of source.parameters
       out += "<strong>#{key}</strong> : #{value}<br>"
 
-    out += "<br><table class='table-stripped table-condensed'>
+    out += "<br><table class='table table-condensed'>
       <th style='border:none'>Line</th>
       <th style='border:none'>Value</th>"
     for i in source.lines

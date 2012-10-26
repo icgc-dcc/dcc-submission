@@ -29,7 +29,6 @@ template = require 'views/templates/login'
 module.exports = class LoginView extends View
   template: template
   id: 'login'
-  className: 'modal hide fade'
   container: 'body'
   autoRender: true
 
@@ -38,10 +37,10 @@ module.exports = class LoginView extends View
     super
     console.debug 'LoginView#initialize', @el, @$el, options
     @initButtons options.serviceProviders
-    @$el.modal
-      "keyboard": false
-      "backdrop": "static"
-      "show": true
+    #@$el.modal
+    #  "keyboard": false
+    #  "backdrop": "static"
+    #  "show": true
 
   # In this project we currently only have one service provider and therefore
   # one button. But this should allow for different service providers.

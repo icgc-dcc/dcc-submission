@@ -65,6 +65,7 @@ module.exports = class DCC extends ServiceProvider
     if response
       # Publish successful login
       Chaplin.mediator.publish 'loginSuccessful', {provider: this, loginContext}
+      $('#page-container').removeClass 'hide'
 
       # Publish the session
       @accessToken = response.accessToken
@@ -92,6 +93,7 @@ module.exports = class DCC extends ServiceProvider
 
     if not response or status is 'error'
       Chaplin.mediator.publish 'logout'
+      $('#page-container').addClass 'hide'
     else
       Chaplin.mediator.publish 'serviceProviderSession', _.extend response,
         provider: this
