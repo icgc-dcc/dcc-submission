@@ -24,6 +24,7 @@ import org.icgc.dcc.validation.report.FieldReport;
 import org.icgc.dcc.validation.report.SchemaReport;
 import org.icgc.dcc.validation.report.SubmissionReport;
 
+import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
 @Path("releases")
@@ -33,9 +34,22 @@ public class ReleaseResource {
   private ReleaseService releaseService;
 
   @GET
-  public Response getResources() {
+  public Response getResources(@Context SecurityContext securityContext) {
     List<Release> releases = releaseService.query().list();
 
+    // filter out all the submissions that the current user can not see
+    for(Release release : releases) {
+      List<Submission> newSubmissions = Lists.newArrayList();
+      for(Submission submission : release.getSubmissions()) {
+        String projectKey = submission.getProjectKey();
+        if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
+            AuthorizationPrivileges.projectViewPrivilege(projectKey))) {
+          newSubmissions.add(submission);
+        }
+      }
+      release.getSubmissions().clear();
+      release.getSubmissions().addAll(newSubmissions);
+    }
     return Response.ok(releases).build();
   }
 
