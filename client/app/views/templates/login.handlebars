@@ -1,25 +1,23 @@
-<div class="modal-header">
-	<h3>DCC Submission Login</h3>
+<div class="login-inner">
+	<h2>Data Submission Login</h2>
+	<form class="form-horizontal">
+			<div class="control-group ">
+				<label class="control-label" for="username">Username</label>
+				<div class="controls">
+					<input type="text"  autofocus="autofocus" class="m-wrap" name="username" value="" required="required" id="username" placeholder="Enter your Username">
+				</div>
+			</div>
+			<div class="control-group ">
+				<label class="control-label" for="password">Password</label>
+				<div class="controls">
+					<input type="password" class="m-wrap" name="password" value="" required="required" id="password" placeholder="Enter your Password">
+				</div>
+			</div>
+			<div class="form-actions" style="border:1px solid #ddd">
+			<button type="submit" class="dcc m-btn green">
+				<i class="icon-lock"></i>
+				Login
+			</button>
+			</div>
+	</form>
 </div>
-<form class="form-horizontal" style="margin:0">
-	<div class="modal-body">
-		<div class="control-group ">
-			<label class="control-label" for="username">Username</label>
-			<div class="controls">
-				<input type="text" name="username" value="" required="required" id="username">
-			</div>
-		</div>
-		<div class="control-group ">
-			<label class="control-label" for="password">Password</label>
-			<div class="controls">
-				<input type="password" name="password" value="" required="required" id="password">
-			</div>
-		</div>
-	</div>
-	<div class="modal-footer">
-		<button type="submit" class="dcc btn btn-primary">
-			<i class="icon-lock icon-white"></i>
-			Login
-		</button>
-	</div>
-</form>
