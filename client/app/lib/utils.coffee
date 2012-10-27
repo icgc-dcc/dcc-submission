@@ -179,7 +179,9 @@ found on host #{host}"
     console.debug 'utils#sendAuthorization'
     #@accessToken = localStorage.getItem 'accessToken'
     accessToken = $.cookie 'accessToken'
-    console.log  accessToken
-    xhr.setRequestHeader 'Authorization', "X-DCC-Auth  #{accessToken}"
+    if accessToken
+      # refresh expire time
+      $.cookie 'accessToken', accessToken
+      xhr.setRequestHeader 'Authorization', "X-DCC-Auth  #{accessToken}"
 
 module.exports = utils

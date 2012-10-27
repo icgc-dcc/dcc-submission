@@ -74,10 +74,8 @@ module.exports = class LoginView extends View
     # TODO - added just to make it work
     loginDetails = @$("form").serializeObject()
     @accessToken = btoa loginDetails.username.concat ":", loginDetails.password
-    #localStorage.setItem 'accessToken', @accessToken
     $.cookie 'accessToken', @accessToken
-    #console.debug @accessToken, atob @accessToken
-    #
+
     return unless serviceProvider.isLoaded()
     Chaplin.mediator.publish 'login:pickService', serviceProviderName
     Chaplin.mediator.publish '!login', serviceProviderName
