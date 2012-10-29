@@ -45,7 +45,7 @@ public class ByteOffsetToLineNumber {// TODO: make non-static class
   @Inject
   private static FileSystem fs;
 
-  public static Map<Long, Integer> convert(Path file, Collection<Long> offsets) {
+  public static Map<Long, Long> convert(Path file, Collection<Long> offsets) {
     checkNotNull(file);
     checkNotNull(fs);
 
@@ -57,11 +57,11 @@ public class ByteOffsetToLineNumber {// TODO: make non-static class
 
     List<Long> sortedOffsets = new ArrayList<Long>(offsets);
     Collections.sort(sortedOffsets); // e.g. [11277, 11511, 11744, 11976, 32434, 32668, 32901, 33135]
-    Map<Long, Integer> byteToLineOffsetMap = buildByteToLineOffsetMap(file, sortedOffsets);
+    Map<Long, Long> byteToLineOffsetMap = buildByteToLineOffsetMap(file, sortedOffsets);
     return byteToLineOffsetMap;
   }
 
-  private static Map<Long, Integer> buildByteToLineOffsetMap(Path file, List<Long> sortedOffsets) {
+  private static Map<Long, Long> buildByteToLineOffsetMap(Path file, List<Long> sortedOffsets) {
     InputStream is = null;
     try {
       is = fs.open(file);
@@ -70,13 +70,13 @@ public class ByteOffsetToLineNumber {// TODO: make non-static class
           String.format("%s", file));
     }
 
-    Map<Long, Integer> offsetMap = Maps.newLinkedHashMap();
+    Map<Long, Long> offsetMap = Maps.newLinkedHashMap();
 
     long previousOffset = 0;
-    int lineOffset = 1; // 1-based
+    long lineOffset = 1; // 1-based
     for(Long byteOffset : sortedOffsets) {
-      int currentOffset = byteOffset.intValue(); // TODO: make non-static class out of it so as store those in members
-                                                 // and log useful error messages
+      long currentOffset = byteOffset.longValue(); // TODO: make non-static class out of it so as store those in members
+      // and log useful error messages
       Preconditions.checkState(currentOffset > previousOffset); // no two same offsets
 
       lineOffset += countLinesInInterval(is, previousOffset, currentOffset);
@@ -95,12 +95,12 @@ public class ByteOffsetToLineNumber {// TODO: make non-static class
     return offsetMap;
   }
 
-  private static final int countLinesInInterval(InputStream is, long previousOffset, long currentOffset) {
+  private static final long countLinesInInterval(InputStream is, long previousOffset, long currentOffset) {
     long difference = currentOffset - previousOffset;
     long quotient = difference / BUFFER_SIZE;
     int remainder = (int) (difference % BUFFER_SIZE);
 
-    int lines = 0;
+    long lines = 0;
     for(int i = 0; i < quotient; i++) {
       lines += countLinesInChunk(is, BUFFER_SIZE, false); // can be zero
     }
