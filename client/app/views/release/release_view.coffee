@@ -58,7 +58,7 @@ module.exports = class ReleaseView extends PageView
           @model.fetch()
       else
         clearInterval i
-    , 1000000)
+    , 10000)
 
   completeReleasePopup: (e) ->
     #console.debug "ReleaseView#completeRelease", e
