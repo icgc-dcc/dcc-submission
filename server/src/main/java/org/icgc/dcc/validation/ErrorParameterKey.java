@@ -17,22 +17,12 @@
  */
 package org.icgc.dcc.validation;
 
-import java.util.List;
-
-import com.google.common.collect.Lists;
-
 /**
- * 
+ * Describe set of keys used of error parameters.
+ * <p>
+ * Field name(s) and current value(s) are systematically recorded, so these keys only reflect extra parameters needed to
+ * describe the error
  */
-public class DuplicateHeaderException extends RuntimeException {
-  private final List<String> duplicateHeaderFieldNames = Lists.newArrayList();
-
-  DuplicateHeaderException(List<String> duplicateHeaderFieldNames) {
-    super();
-    this.duplicateHeaderFieldNames.addAll(duplicateHeaderFieldNames);
-  }
-
-  public List<String> getDuplicateHeaderFieldNames() {
-    return this.duplicateHeaderFieldNames;
-  }
+public enum ErrorParameterKey {
+  EXPECTED, MIN, MAX, SCHEMA, FILES, FIELDS;
 }

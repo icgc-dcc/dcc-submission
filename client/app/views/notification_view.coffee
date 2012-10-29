@@ -36,16 +36,15 @@ module.exports = class Notification extends View
 
   initialize: ->
     console.debug "Notification#initialize", @model,
-    @model.set "sec", 5
+    @model.set "sec", 30
 
     super
-    ###
+
     i = setInterval =>
       if @model.get('sec') > 0
         @model.set 'sec', @model.get('sec') - 1
       else
         clearInterval(i)
-        @$el.fadeOut()
-        @remove()
+        @$el.fadeOut 'fast', =>
+          @remove()
     , 1000
-    ###

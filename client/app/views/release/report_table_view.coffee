@@ -211,7 +211,7 @@ module.exports = class ReportTableView extends DataTableView
     super
 
   createDataTable: ->
-    #console.debug "ReportTableView#createDataTable", @$el
+    #console.debug "ReportTableView#createDataTable", @$el, @model.get "name"
     aoColumns = [
         {
           sTitle: "File"
@@ -261,6 +261,11 @@ module.exports = class ReportTableView extends DataTableView
     @$el.dataTable
       sDom:
         "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>"
+       oLanguage:
+        "sLengthMenu": "_MENU_ files per page"
+        "sEmptyTable": "You need to upload files for this submission." +
+          "<br> <em>sftp -oPort=5322 hwww.res.oicr.on.ca:/" +
+          "#{@model.get('name')}</em>"
       bPaginate: false
       aaSorting: [[ 1, "asc" ]]
       aoColumns: aoColumns

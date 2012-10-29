@@ -44,13 +44,13 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       name: "Value Missing"
       description: (source) ->
         """
-        Requied values missing for #{source.columnNames} on lines:
+        Requied values missing for #{source.columnNames} on lines
         """
     RELATION_ERROR:
       name: "Relation Error"
       description: (source) ->
         """
-        Relation error stuff
+        Relation errors
         """
 
   details: (source) ->
@@ -61,7 +61,7 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
     for key, value of source.parameters
       out += "<strong>#{key}</strong> : #{value}<br>"
 
-    out += "<br><table class='table-stripped table-condensed'>
+    out += "<br><table class='table table-condensed'>
       <th style='border:none'>Line</th>
       <th style='border:none'>Value</th>"
     for i in source.lines
@@ -96,11 +96,12 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
         {
           sTitle: "Details"
           mData: (source) =>
-            """
-            #{@errors[source.errorType]?.description(source)}
-            <br>
-            #{@details source}
-            """
+            out = "#{@errors[source.errorType]?.description(source)}"
+            if source.count > 50
+              out += " <em>(Showing first 50 errors)</em>"
+            out += " :<br>"
+            out += @details source
+            out
         }
       ]
 

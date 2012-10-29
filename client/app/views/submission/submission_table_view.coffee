@@ -125,7 +125,7 @@ module.exports = class SubmissionTableView extends DataTableView
                 ds = source.projectKey.replace(/<.*?>/g, '')
                 """
                 <button
-                  class="btn btn-success btn-mini"
+                  class="m-btn green-stripe mini"
                   id="signoff-submission-popup-button"
                   data-submission="#{ds}"
                   data-toggle="modal"
@@ -133,12 +133,12 @@ module.exports = class SubmissionTableView extends DataTableView
                   Sign Off
                 </a>
                 """
-              when "NOT_VALIDATED", "INVALID", "ERROR"
+              when "NOT_VALIDATED"
                 if source.submissionFiles.length
                   ds = source.projectKey.replace(/<.*?>/g, '')
                   """
                   <button
-                    class="btn btn-success btn-mini"
+                    class="m-btn blue-stripe mini"
                     id="validate-submission-popup-button"
                     data-submission="#{ds}"
                     data-toggle="modal"
@@ -146,7 +146,9 @@ module.exports = class SubmissionTableView extends DataTableView
                     Validate
                   </a>
                   """
-                else "<em>Upload Files</em>"
+                else
+                  "<em>Upload Submission Files</em><br>" +
+                  "<small>hwww.res.oicr.on.ca:/#{source.projectKey}</small>"
               else ""
         }
       ]
@@ -157,6 +159,7 @@ module.exports = class SubmissionTableView extends DataTableView
       bPaginate: false
       oLanguage:
         "sLengthMenu": "_MENU_ submissions per page"
+        "sEmptyTable": "You have no submissions for this release"
       aaSorting: [[ 3, "desc" ]]
       aoColumns: aoColumns
       sAjaxSource: ""
