@@ -64,15 +64,16 @@ module.exports = class DCC extends ServiceProvider
 
   # Callback for the login popup
   loginHandler: (loginContext, response) =>
+    # I dont use this anymore/ever?
     #console.debug 'DCCServiceProvider#loginHandler', loginContext, response
     if response
       # Publish successful login
       Chaplin.mediator.publish 'loginSuccessful', {provider: this, loginContext}
-      $('#page-container').removeClass 'hide'
+      #$('#page-container').removeClass 'hide'
 
       # Publish the session
-      @accessToken = response.accessToken
-      localStorage.setItem 'accessToken', @accessToken
+      #@accessToken = response.accessToken
+      #localStorage.setItem 'accessToken', @accessToken
       # We don't use user data
       @getUserData().done(@processUserData)
     else
