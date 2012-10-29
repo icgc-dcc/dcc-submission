@@ -183,7 +183,7 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
           sTitle: "Details"
           mData: (source) =>
             out = "#{@errors[source.errorType]?.description(source)}"
-            if source.count > 0
+            if source.count > 50
               out += " <em>(Showing first 50 errors)</em> "
             out += ":<br>"
             out += @details source
