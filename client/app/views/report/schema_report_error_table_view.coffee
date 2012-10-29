@@ -51,40 +51,40 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       description: (source) ->
         """
         Values do not match any of the following allowed values for
-        this field: #{source.parameters['EXPECTED']}
+        this field: #{source.parameters?.EXPECTED}
         """
-    DUPLICATE_HEADER_ERRORR:
+    DUPLICATE_HEADER_ERROR:
       name: "Duplicate field name"
       description: (source) ->
         """
         Duplicate field names found in the file header:
-        #{source.parameters['FIELDS']}
+        #{source.parameters?.FIELDS}
         """
     RELATION_FILE_ERROR:
       name: "Required file missing"
       description: (source) ->
         """
-        "#{source.parameters['SCHEMA']}" file is missing
+        "#{source.parameters?.SCHEMA}" file is missing
         """
     REVERSE_RELATION_FILE_ERROR:
       name: "Required file missing"
       description: (source) ->
         """
-        "#{source.parameters['SCHEMA']}" file is missing
+        "#{source.parameters?.SCHEMA}" file is missing
         """
     RELATION_VALUE_ERROR:
       name: "Relation violation"
       description: (source) ->
         """
-        The following "#{source.parameters['FIELDS']}" values do not exist in
-        the reference file "#{source.parameters['SCHEMA']}"
+        The following "#{source.parameters?.FIELDS}" values do not exist in
+        the reference file "#{source.parameters?.SCHEMA}"
         """
     RELATION_PARENT_VALUE_ERROR:
       name: "Relation violation"
       description: (source) ->
         """
-        The following "#{source.parameters['FIELDS']}" values from the reference
-        file do not exist in the current file "#{source.parameters['FILE']}"
+        The following "#{source.parameters?.FIELDS}" values from the reference
+        file do not exist in the current file "#{source.parameters?.FILE}"
         """
     MISSING_VALUE_ERROR:
       name: "Missing value"
@@ -96,8 +96,8 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       name: "Value out of range"
       description: (source) ->
         """
-        Values are out of range: [#{source.parameters['MIN']},
-        #{source.parameters['MAX']}] (inclusive). Offending lines
+        Values are out of range: [#{source.parameters?.MIN},
+        #{source.parameters?.MAX}] (inclusive). Offending lines
         """
     NOT_A_NUMBER_ERROR:
       name: "Data type erorr"
@@ -110,13 +110,13 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       description: (source) ->
         """
         Invalid value types, expected type for this field is
-        "#{source.parameters['EXPECTED']}"
+        "#{source.parameters?.EXPECTED}"
         """
     UNIQUE_VALUE_ERROR:
       name: "Value uniqueness error"
       description: (source) ->
         """
-        Duplicate values found in field(s) "#{source.parameters['FIELDS']}"
+        Duplicate values found in field(s) "#{source.parameters?.FIELDS}"
         """
     STRUCTURALLY_INVALID_ROW_ERROR:
       name: "Invalid row structure"
@@ -129,8 +129,8 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       name: "Filename collision"
       description: (source) ->
         """
-        More than one file matches the "#{source.parameters['SCHEMA']}"
-        filename pattern: #{source.parameters['FILES']}
+        More than one file matches the "#{source.parameters?.SCHEMA}"
+        filename pattern: #{source.parameters?.FILES}
         """
 
 
