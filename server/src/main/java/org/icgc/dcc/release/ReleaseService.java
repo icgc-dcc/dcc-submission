@@ -65,6 +65,25 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     registerModelClasses(Release.class);
   }
 
+  public List<Release> getReleases(Subject subject) {
+    List<Release> releases = query().list();
+
+    // filter out all the submissions that the current user can not see
+    for(Release release : releases) {
+      List<Submission> newSubmissions = Lists.newArrayList();
+      for(Submission submission : release.getSubmissions()) {
+        String projectKey = submission.getProjectKey();
+        if(subject.isPermitted(AuthorizationPrivileges.projectViewPrivilege(projectKey))) {
+          newSubmissions.add(submission);
+        }
+      }
+      release.getSubmissions().clear();
+      release.getSubmissions().addAll(newSubmissions);
+    }
+
+    return releases;
+  }
+
   public void createInitialRelease(Release initRelease) {
     // check for init release name
     if(!NameValidator.validate(initRelease.getName())) {
