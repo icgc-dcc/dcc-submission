@@ -20,7 +20,7 @@
 * POSSIBILITY OF SUCH DAMAGE.
 """
 
-
+mediator = require 'mediator'
 DataTableView = require 'views/base/data_table_view'
 utils = require 'lib/utils'
 
@@ -277,7 +277,7 @@ module.exports = class ReportTableView extends DataTableView
        oLanguage:
         "sLengthMenu": "_MENU_ files per page"
         "sEmptyTable": "You need to upload files for this submission." +
-          "<br> <em>sftp -oPort=5322 hwww.res.oicr.on.ca:/" +
+          "<br> <em>***REMOVED***:/" +
           "#{@model.get('name')}</em>"
       bPaginate: false
       aaSorting: [[ 1, "asc" ]]
