@@ -40,26 +40,112 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
     @modelBind 'change', @update
 
   errors:
+    CODELIST_ERROR:
+      name: "Invalid value"
+      description: (source) ->
+        """
+        Values do not match any of the allowed values for this field
+        """
+    DISCRETE_VALUES_ERROR:
+      name: "Invalid value"
+      description: (source) ->
+        """
+        Values do not match any of the following allowed values for
+        this field: #{source.parameters['EXPECTED']}
+        """
+    DUPLICATE_HEADER_ERRORR:
+      name: "Duplicate field name"
+      description: (source) ->
+        """
+        Duplicate field names found in the file header:
+        #{source.parameters['FIELDS']}
+        """
+    RELATION_FILE_ERROR:
+      name: "Required file missing"
+      description: (source) ->
+        """
+        "#{source.parameters['SCHEMA']}" file is missing
+        """
+    REVERSE_RELATION_FILE_ERROR:
+      name: "Required file missing"
+      description: (source) ->
+        """
+        "#{source.parameters['SCHEMA']}" file is missing
+        """
+    RELATION_VALUE_ERROR:
+      name: "Relation violation"
+      description: (source) ->
+        """
+        The following "#{source.parameters['FIELDS']}" values do not exist in
+        the reference file "#{source.parameters['SCHEMA']}"
+        """
+    RELATION_PARENT_VALUE_ERROR:
+      name: "Relation violation"
+      description: (source) ->
+        """
+        The following "#{source.parameters['FIELDS']}" values from the reference
+        file do not exist in the current file "#{source.parameters['FILE']}"
+        """
     MISSING_VALUE_ERROR:
-      name: "Value Missing"
+      name: "Missing value"
       description: (source) ->
         """
-        Requied values missing for #{source.columnNames} on lines
+        Missing value for required field. Offending lines
         """
-    RELATION_ERROR:
-      name: "Relation Error"
+    OUT_OF_RANGE_ERROR:
+      name: "Value out of range"
       description: (source) ->
         """
-        Relation errors
+        Values are out of range: [#{source.parameters['MIN']},
+        #{source.parameters['MAX']}] (inclusive). Offending lines
+        """
+    NOT_A_NUMBER_ERROR:
+      name: "Data type erorr"
+      description: (source) ->
+        """
+        Values for range field are not numerical. Offending lines
+        """
+    VALUE_TYPE_ERROR:
+      name: "Data type error"
+      description: (source) ->
+        """
+        Invalid value types, expected type for this field is
+        "#{source.parameters['EXPECTED']}"
+        """
+    UNIQUE_VALUE_ERROR:
+      name: "Value uniqueness error"
+      description: (source) ->
+        """
+        Duplicate values found in field(s) "#{source.parameters['FIELDS']}"
+        """
+    STRUCTURALLY_INVALID_ROW_ERROR:
+      name: "Invalid row structure"
+      description: (source) ->
+        """
+        Field counts in all lines are expected to match that of the file
+        header. Offending lines
+        """
+    TOO_MANY_FILES_ERROR:
+      name: "Filename collision"
+      description: (source) ->
+        """
+        More than one file matches the "#{source.parameters['SCHEMA']}"
+        filename pattern: #{source.parameters['FILES']}
         """
 
+
   details: (source) ->
-    if source.errorType is "MISSING_VALUE_ERROR"
+    if source.errorType in [
+      "MISSING_VALUE_ERROR"
+      "OUT_OF_RANGE_ERROR"
+      "NOT_A_NUMBER_ERROR"
+      "STRUCTURALLY_INVALID_ROW_ERROR"
+      ]
       return source.lines.join ', '
 
     out = ""
-    for key, value of source.parameters
-      out += "<strong>#{key}</strong> : #{value}<br>"
+    #for key, value of source.parameters
+    #  out += "<strong>#{key}</strong> : #{value}<br>"
 
     out += "<br><table class='table table-condensed'>
       <th style='border:none'>Line</th>
@@ -98,8 +184,8 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
           mData: (source) =>
             out = "#{@errors[source.errorType]?.description(source)}"
             if source.count > 50
-              out += " <em>(Showing first 50 errors)</em>"
-            out += " :<br>"
+              out += " <em>(Showing first 50 errors)</em> "
+            out += ":<br>"
             out += @details source
             out
         }
