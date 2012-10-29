@@ -33,9 +33,8 @@ public class ReleaseResource {
   private ReleaseService releaseService;
 
   @GET
-  public Response getResources() {
-    List<Release> releases = releaseService.query().list();
-
+  public Response getResources(@Context SecurityContext securityContext) {
+    List<Release> releases = this.releaseService.getReleases(((ShiroSecurityContext) securityContext).getSubject());
     return Response.ok(releases).build();
   }
 

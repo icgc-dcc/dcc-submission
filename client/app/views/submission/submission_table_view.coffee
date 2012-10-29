@@ -96,8 +96,30 @@ module.exports = class SubmissionTableView extends DataTableView
         }
         {
           sTitle: "State"
-          mData: (source) ->
-            source.state.replace '_', ' '
+          mData: (source, type, val) ->
+            if type is "display"
+              return switch source.state
+                when "NOT_VALIDATED"
+                  "<span><i class='icon-question-sign'></i> " +
+                    source.state.replace('_', ' ') + "</span>"
+                when "ERROR"
+                  "<span class='error'>" +
+                    "<i class='icon-exclamation-sign'></i> " +
+                    source.state.replace('_', ' ') + "</span>"
+                when "INVALID"
+                  "<span class='error'><i class='icon-remove-sign'></i> " +
+                    source.state.replace('_', ' ') + "</span>"
+                when "QUEUED"
+                  "<span class='queued'><i class='icon-time'></i> " +
+                    source.state.replace('_', ' ') + "</span>"
+                when "VALID"
+                  "<span class='valid'><i class='icon-ok-sign'></i> " +
+                    source.state.replace('_', ' ') + "</span>"
+                when "SIGNED_OFF"
+                  "<span class='valid'><i class='icon-lock'></i> " +
+                    source.state.replace('_', ' ') + "</span>"
+
+            source.state
         }
         {
           sTitle: "Date Created"
@@ -164,15 +186,6 @@ module.exports = class SubmissionTableView extends DataTableView
       aoColumns: aoColumns
       sAjaxSource: ""
       sAjaxDataProp: ""
-      fnRowCallback: (nRow, aData, iDisplayIndex, iDisplayIndexFull) ->
-        cell = $('td:nth-child(4)', nRow)
-        switch aData.state
-          when "SIGNED_OFF", "VALID"
-            cell.css 'color', '#468847'
-          when "QUEUED"
-            cell.css 'color', '#C09853'
-          when "INVALID", "ERROR"
-            cell.css 'color', '#B94A48'
 
       fnServerData: (sSource, aoData, fnCallback) =>
         fnCallback @collection.toJSON()
