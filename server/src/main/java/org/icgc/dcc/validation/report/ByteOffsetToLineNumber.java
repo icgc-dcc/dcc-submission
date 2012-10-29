@@ -53,6 +53,7 @@ public class ByteOffsetToLineNumber {// TODO: make non-static class
       log.info("Local filesystem: not remapping line numbers for path " + file.toString());
       return null;
     }
+    log.info("Hdfs: remapping line numbers for path " + file.toString());
 
     List<Long> sortedOffsets = new ArrayList<Long>(offsets);
     Collections.sort(sortedOffsets); // e.g. [11277, 11511, 11744, 11976, 32434, 32668, 32901, 33135]
