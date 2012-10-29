@@ -139,6 +139,7 @@ public class NextRelease extends BaseRelease {
         oldRelease.getSubmissions().remove(i);
       }
     }
+
     // update the newly changed status to mongoDB
     UpdateOperations<Release> ops =
         datastore().createUpdateOperations(Release.class).set("state", ReleaseState.COMPLETED)
