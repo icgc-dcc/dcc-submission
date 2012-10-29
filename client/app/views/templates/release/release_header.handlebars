@@ -6,7 +6,7 @@
   {{name}}
 </ul>
 <div class="row-fluid" style="margin-bottom:20px">
-  <div class="span6">
+  <div class="summary span6">
     <div class="row-fluid">
       <h2 class="pull-left">Release Summary</h2>
       <div style="margin-top:17px; margin-right:50px" class="pull-right">
@@ -19,15 +19,15 @@
         {{/if_has_role}}
       </div>
     </div>
-      <span>Name:</span> <span>{{name}}</span><br>
-      <span>State:</span> <span class="{{lowercase state}}">{{state}}</span><br>
+      <span class="key">Name</span>&nbsp;&nbsp;&nbsp;<span>{{name}}</span><br>
+      <span class="key">State</span>&nbsp;&nbsp;&nbsp;<strong><span class="{{lowercase state}}">{{state}}</span></strong><br>
       {{#if_completed state}}
-      <span>Date:</span> <span>{{date releaseDate}}</span><br>
+      <span class="key">Date</span>&nbsp;&nbsp;&nbsp;<span>{{date releaseDate}}</span><br>
       {{/if_completed}}
       {{#if_has_role "admin"}}
-      <span> Dictionary Version:</span> <span>{{dictionaryVersion}}</span><br>
+      <span class="key"> Dictionary Version</span>&nbsp;&nbsp;&nbsp;<span>{{dictionaryVersion}}</span><br>
       {{/if_has_role}}
-      <span>Number of projects:</span> <span>{{submissions.length}}</span><br>
+      <span class="key">Number of projects</span>&nbsp;&nbsp;&nbsp;<span>{{submissions.length}}</span><br>
       {{#if summary.SIGNED_OFF}}
       <span class="label label-success">Signed Off {{summary.SIGNED_OFF}}</span>
       {{/if}}

@@ -183,5 +183,7 @@ found on host #{host}"
       # refresh expire time
       $.cookie 'accessToken', accessToken
       xhr.setRequestHeader 'Authorization', "X-DCC-Auth  #{accessToken}"
+    else
+      Chaplin.mediator.publish '!logout'
 
 module.exports = utils

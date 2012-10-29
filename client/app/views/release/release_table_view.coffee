@@ -61,7 +61,7 @@ module.exports = class ReleaseTableView extends DataTableView
           mData: (source) ->
             "<a href='/releases/#{source.name}'>#{source.name}</a>"
         }
-        { sTitle: "State", mDataProp: "state" }
+        { sTitle: "State", mData: "state" }
         {
           sTitle: "Release Date"
           mData: (source) ->

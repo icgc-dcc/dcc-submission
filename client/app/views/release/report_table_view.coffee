@@ -233,8 +233,8 @@ module.exports = class ReportTableView extends DataTableView
         {
           sTitle: "Status"
           bVisible: false
-          mData: (source) ->
-            if source.matchedSchemaName
+          mData: (source, type) ->
+            state = if source.matchedSchemaName
               if source.errors.length
                 "INVALID"
               else if source.fieldReports.length
@@ -243,6 +243,19 @@ module.exports = class ReportTableView extends DataTableView
                 "NOT VALIDATED"
             else
               "SKIPPED"
+
+            if type == "display"
+              return switch state
+                when "INVALID"
+                  "<span class='error'>" +
+                  "<i class='icon-remove-sign'></i> " +
+                  state + "</span>"
+                when "VALID"
+                    "<span class='valid'>" +
+                    "<i class='icon-ok-sign'></i> " +
+                    state + "</span>"
+
+            state
         }
         {
           sTitle: "Report"
@@ -274,10 +287,6 @@ module.exports = class ReportTableView extends DataTableView
       fnRowCallback: (nRow, aData, iDisplayIndex, iDisplayIndexFull) ->
         cell = $('td:nth-child(4)', nRow)
         switch cell.html()
-          when "VALID"
-            cell.css 'color', '#468847'
-          when "INVALID", "ERROR"
-            cell.css 'color', '#B94A48'
           when "SKIPPED"
             $(nRow).css {'color': '#999', 'font-style': 'italic'}
       fnServerData: (sSource, aoData, fnCallback) =>

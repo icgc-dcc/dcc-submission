@@ -54,14 +54,13 @@ module.exports = class SubmissionView extends View
       @validateSubmissionPopup
 
     i = setInterval( =>
-
       if @model
         popup = @subviewsByName.validateSubmissionView?.$el.hasClass('in')
         if not popup
           @model.fetch()
       else
         clearInterval i
-    , 1000000)
+    , 10000)
 
   signOffSubmissionPopup: (e) ->
     #console.debug "SubmissionView#signOffSubmissionPopup", e
