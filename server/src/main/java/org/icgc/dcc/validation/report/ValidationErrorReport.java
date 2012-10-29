@@ -114,7 +114,7 @@ public class ValidationErrorReport {
     for(ColumnErrorReport column : this.columns) {
       offsets.addAll(column.getLines());
     }
-    Map<Long, Integer> byteToLine = ByteOffsetToLineNumber.convert(file, offsets);
+    Map<Long, Long> byteToLine = ByteOffsetToLineNumber.convert(file, offsets);
 
     if(byteToLine != null) {
       for(ColumnErrorReport column : this.columns) {

@@ -40,7 +40,6 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
-import org.icgc.dcc.dictionary.DictionaryService;
 import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.QueuedProject;
 import org.icgc.dcc.release.model.Release;
@@ -79,8 +78,6 @@ public class ValidationQueueManagerService extends AbstractService {
 
   private final ReleaseService releaseService;
 
-  private final DictionaryService dictionaryService;
-
   private final ValidationService validationService;
 
   private final Config config;
@@ -88,17 +85,15 @@ public class ValidationQueueManagerService extends AbstractService {
   private ScheduledFuture<?> schedule;
 
   @Inject
-  public ValidationQueueManagerService(final ReleaseService releaseService, final DictionaryService dictionaryService,
-      ValidationService validationService, Config config) {
+  public ValidationQueueManagerService(final ReleaseService releaseService, ValidationService validationService,
+      Config config) {
 
     checkArgument(releaseService != null);
-    checkArgument(dictionaryService != null);
     checkArgument(validationService != null);
     checkArgument(config != null);
 
     this.config = config;
     this.releaseService = releaseService;
-    this.dictionaryService = dictionaryService;
     this.validationService = validationService;
   }
 
