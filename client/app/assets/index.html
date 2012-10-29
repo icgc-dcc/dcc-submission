@@ -34,11 +34,13 @@
   <script>require('initialize');</script>
 </head>
 <body>
-  <header class="container" id="header-container"></header>
+  <div id="container" class="hide">
+    <header class="container" id="header-container"></header>
 
-  <div class="container outer-container" id="outer-container">
-    <div class="page-container" id="page-container"></div>
-    <div class="container" id="notification-container"></div>
+    <div class="container outer-container" id="outer-container">
+      <div class="page-container" id="page-container"></div>
+      <div class="container" id="notification-container" style="z-index: 100000"></div>
+    </div>
   </div>
 </body>
 </html>

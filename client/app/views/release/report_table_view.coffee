@@ -20,7 +20,7 @@
 * POSSIBILITY OF SUCH DAMAGE.
 """
 
-
+mediator = require 'mediator'
 DataTableView = require 'views/base/data_table_view'
 utils = require 'lib/utils'
 
@@ -233,8 +233,8 @@ module.exports = class ReportTableView extends DataTableView
         {
           sTitle: "Status"
           bVisible: false
-          mData: (source) ->
-            if source.matchedSchemaName
+          mData: (source, type) ->
+            state = if source.matchedSchemaName
               if source.errors.length
                 "INVALID"
               else if source.fieldReports.length
@@ -243,6 +243,19 @@ module.exports = class ReportTableView extends DataTableView
                 "NOT VALIDATED"
             else
               "SKIPPED"
+
+            if type == "display"
+              return switch state
+                when "INVALID"
+                  "<span class='error'>" +
+                  "<i class='icon-remove-sign'></i> " +
+                  state + "</span>"
+                when "VALID"
+                    "<span class='valid'>" +
+                    "<i class='icon-ok-sign'></i> " +
+                    state + "</span>"
+
+            state
         }
         {
           sTitle: "Report"
@@ -264,7 +277,7 @@ module.exports = class ReportTableView extends DataTableView
        oLanguage:
         "sLengthMenu": "_MENU_ files per page"
         "sEmptyTable": "You need to upload files for this submission." +
-          "<br> <em>sftp -oPort=5322 hwww.res.oicr.on.ca:/" +
+          "<br> <em>***REMOVED***:/" +
           "#{@model.get('name')}</em>"
       bPaginate: false
       aaSorting: [[ 1, "asc" ]]
@@ -274,10 +287,6 @@ module.exports = class ReportTableView extends DataTableView
       fnRowCallback: (nRow, aData, iDisplayIndex, iDisplayIndexFull) ->
         cell = $('td:nth-child(4)', nRow)
         switch cell.html()
-          when "VALID"
-            cell.css 'color', '#468847'
-          when "INVALID", "ERROR"
-            cell.css 'color', '#B94A48'
           when "SKIPPED"
             $(nRow).css {'color': '#999', 'font-style': 'italic'}
       fnServerData: (sSource, aoData, fnCallback) =>

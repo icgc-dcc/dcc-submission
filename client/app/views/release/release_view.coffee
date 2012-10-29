@@ -51,14 +51,14 @@ module.exports = class ReleaseView extends PageView
 
       if @model
         popup = @subviewsByName
-          .SubmissionsTable
-          .subviewsByName
-          .validateSubmissionView?.$el.hasClass('in')
+          ?.SubmissionsTable
+          ?.subviewsByName
+          ?.validateSubmissionView?.$el.hasClass('in')
         if not popup
           @model.fetch()
       else
         clearInterval i
-    , 10000)
+    , 1000000)
 
   completeReleasePopup: (e) ->
     #console.debug "ReleaseView#completeRelease", e
