@@ -110,7 +110,7 @@ module.exports = class SubmissionTableView extends DataTableView
                   "<span class='error'><i class='icon-remove-sign'></i> " +
                     source.state.replace('_', ' ') + "</span>"
                 when "QUEUED"
-                  "<span class='warning'><i class='icon-time'></i> " +
+                  "<span class='queued'><i class='icon-time'></i> " +
                     source.state.replace('_', ' ') + "</span>"
                 when "VALID"
                   "<span class='valid'><i class='icon-ok-sign'></i> " +
