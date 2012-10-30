@@ -1,4 +1,4 @@
-
+/*
 div.dataTables_length label {
   float: left;
   text-align: left;
@@ -7,11 +7,11 @@ div.dataTables_length label {
 div.dataTables_length select {
   width: 75px;
 }
-
+ */
 div.dataTables_filter label {
   float: right;
 }
-
+/*/
 div.dataTables_info {
   padding-top: 8px;
 }
@@ -20,12 +20,12 @@ div.dataTables_paginate {
   float: right;
   margin: 0;
 }
-/*
+
 table.table {
   clear: both;
   margin-bottom: 6px !important;
 }
-*/
+ */
 table.table thead .sorting,
 table.table thead .sorting_asc,
 table.table thead .sorting_desc,

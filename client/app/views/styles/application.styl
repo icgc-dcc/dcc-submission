@@ -8,7 +8,7 @@
   box-sizing: border-box
 
 body
-  padding-top 60px
+  padding-top 70px
   padding-bottom 40px
 
 #notification-container
@@ -31,8 +31,15 @@ input[type="password"].m-wrap
   padding: 8px 12px;
 
 table
- .table th, .table td
+  .table th, .table td
     line-height 13px
+
+  .table.summary td
+    border 0
+
+  .m-btn
+    margin 0
+    height auto
 
 #login
   margin-top 40px
@@ -48,3 +55,35 @@ table
   .key
     font-weight bold
     color #777
+
+h1
+  font-size 24px
+  line-height 30px
+  font-weight normal
+
+  small
+    font-size: 18px
+
+h2
+  font-size 21px
+  font-weight normal
+
+  small
+    font-size 16px
+
+.link
+  color #6F98B8
+
+.link:hover
+  cursor pointer
+  text-decoration underline
+
+/* Status Text Colours */
+.signed, .signed_off, .valid, .opened
+  color #468847
+
+.invalid, .error
+  color #B94A48
+
+.queued
+  color #C09853

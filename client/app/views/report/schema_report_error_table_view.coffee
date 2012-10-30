@@ -57,34 +57,36 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       name: "Duplicate field name"
       description: (source) ->
         """
-        Duplicate field names found in the file header:
-        #{source.parameters?.FIELDS}
+        Duplicate field names found in the file header
+        <em>#{source.parameters?.FIELDS}</em>
         """
     RELATION_FILE_ERROR:
       name: "Required file missing"
       description: (source) ->
         """
-        "#{source.parameters?.SCHEMA}" file is missing
+        <em>#{source.parameters?.SCHEMA}</em> file is missing
         """
     REVERSE_RELATION_FILE_ERROR:
       name: "Required file missing"
       description: (source) ->
         """
-        "#{source.parameters?.SCHEMA}" file is missing
+        <em>#{source.parameters?.SCHEMA}</em> file is missing
         """
     RELATION_VALUE_ERROR:
       name: "Relation violation"
       description: (source) ->
         """
-        The following "#{source.parameters?.FIELDS}" values do not exist in
-        the reference file "#{source.parameters?.SCHEMA}"
+        The following <em>#{source.parameters?.FIELDS.join ', '}</em> values
+        do not exist in the reference file
+        <em>#{source.parameters?.SCHEMA}</em>
         """
     RELATION_PARENT_VALUE_ERROR:
       name: "Relation violation"
       description: (source) ->
         """
-        The following "#{source.parameters?.FIELDS}" values from the reference
-        file do not exist in the current file "#{source.parameters?.FILE}"
+        The following <em>#{source.parameters?.FIELDS.join ', '}</em> values
+        from the reference file do not exist in the schema
+        <em>#{source.parameters?.SCHEMA}</em>
         """
     MISSING_VALUE_ERROR:
       name: "Missing value"
@@ -110,13 +112,14 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       description: (source) ->
         """
         Invalid value types, expected type for this field is
-        "#{source.parameters?.EXPECTED}"
+        <em>#{source.parameters?.EXPECTED}</em>
         """
     UNIQUE_VALUE_ERROR:
       name: "Value uniqueness error"
       description: (source) ->
+        console.log source
         """
-        Duplicate values found in field(s) "#{source.parameters?.FIELDS}"
+        Duplicate values found
         """
     STRUCTURALLY_INVALID_ROW_ERROR:
       name: "Invalid row structure"
@@ -129,12 +132,13 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       name: "Filename collision"
       description: (source) ->
         """
-        More than one file matches the "#{source.parameters?.SCHEMA}"
-        filename pattern: #{source.parameters?.FILES}
+        More than one file matches the <em>#{source.parameters?.SCHEMA}</em>
+        filename pattern: #{source.parameters?.FILES.join '<br>'}
         """
 
 
   details: (source) ->
+    console.log source
     if source.errorType in [
       "MISSING_VALUE_ERROR"
       "OUT_OF_RANGE_ERROR"
@@ -142,6 +146,8 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       "STRUCTURALLY_INVALID_ROW_ERROR"
       ]
       return source.lines.join ', '
+    else if source.columnNames[0] is "FileLevelError"
+      return ""
 
     out = ""
     #for key, value of source.parameters
@@ -173,7 +179,8 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
         }
         {
           sTitle: "Columns"
-          mData: "columnNames"
+          mData: (source) ->
+            source.columnNames.join "<br>"
         }
         {
           sTitle: "Count of occurrences"
@@ -185,7 +192,7 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
             out = "#{@errors[source.errorType]?.description(source)}"
             if source.count > 50
               out += " <em>(Showing first 50 errors)</em> "
-            out += ":<br>"
+            out += "<br>"
             out += @details source
             out
         }
