@@ -201,10 +201,7 @@ module.exports = class ReportTableView extends DataTableView
 
 
   updateDataTable: ->
-    srs = @model.get('report').get('schemaReports')
-    errors = (item for item in srs.pluck("errors") when item?)
-    fieldReport = (item for item in srs.pluck("fieldReports") when item?)
-    if errors or fieldReports
+    if @model.get("state") in ["VALID", "INVALID", "SIGNED_OFF"]
       dt = @$el.dataTable()
       dt.fnSetColumnVis( 3, true )
       dt.fnSetColumnVis( 4, true )

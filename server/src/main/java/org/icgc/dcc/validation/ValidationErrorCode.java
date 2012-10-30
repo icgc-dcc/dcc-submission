@@ -144,9 +144,10 @@ public enum ValidationErrorCode { // TODO: DCC-505 to fix the message (currently
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
       checkArgument(params != null);
-      checkArgument(params.length == 1);
-      checkArgument(params[0] instanceof List);
-      return ImmutableMap.of(ErrorParameterKey.FILES, params[0]);
+      checkArgument(params.length == 2);
+      checkArgument(params[0] instanceof String);
+      checkArgument(params[1] instanceof List);
+      return ImmutableMap.of(ErrorParameterKey.SCHEMA, params[0], ErrorParameterKey.FILES, params[1]);
     }
   }, //
   /**
