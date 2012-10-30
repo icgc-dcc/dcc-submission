@@ -1,23 +1,15 @@
 #!/bin/bash -e
 # see DCC-499
 #
-# usage:
-# - production  mode: ./deploy.sh production  hwww.res.oicr.on.ca
-# - development mode: ./deploy.sh development hwww2.res.oicr.on.ca
+# usage: ./deploy.sh hwww-qa.res.oicr.on.ca
 #
 # notes:
-# - based on https://wiki.oicr.on.ca/display/DCCSOFT/Standard+operating+procedures#Standardoperatingprocedures-SOPforDeployingtheserver (which also links to this script now)
-# - TODO: fix wiki + link to this script + comment about not runnign cake
-# - split in two scripts: one local, one remote
-
-# export this file, or wget it from github link: 
-# ssh+wget https://github.com/icgc-dcc/data-submission/raw/master/deploy.sh
+# - this script is based on https://wiki.oicr.on.ca/display/DCCSOFT/Standard+operating+procedures#Standardoperatingprocedures-SOPforDeployingtheserver (which also links to this script now)
+# - client code is expected to be at ../public (convention)
 
 exit_code=0
 
-mode=${1?}
-server=${2?}
-echo "mode=\"${mode?}\""
+server=${1?}
 echo "server=\"${server?}\""
 
 server_lib_dir="/tmp/lib" # must be absolute path
