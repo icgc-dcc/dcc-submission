@@ -143,8 +143,6 @@ public enum ValidationErrorCode { // TODO: DCC-505 to fix the message (currently
   TOO_MANY_FILES_ERROR("more than one file matches the schema pattern") {
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
-      System.out.println(params);
-
       checkArgument(params != null);
       checkArgument(params.length == 2);
       checkArgument(params[0] instanceof String);
