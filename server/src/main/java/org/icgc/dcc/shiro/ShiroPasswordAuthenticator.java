@@ -31,7 +31,6 @@ import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
-import org.icgc.dcc.http.jersey.BasicHttpAuthenticationRequestFilter;
 import org.icgc.dcc.security.UsernamePasswordAuthenticator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +51,7 @@ public class ShiroPasswordAuthenticator implements UsernamePasswordAuthenticator
     this.securityManager = securityManager;
   }
 
-  private static final Logger log = LoggerFactory.getLogger(BasicHttpAuthenticationRequestFilter.class);
+  private static final Logger log = LoggerFactory.getLogger(ShiroPasswordAuthenticator.class);
 
   @Override
   public Subject authenticate(final String username, final char[] password, final String host) {
