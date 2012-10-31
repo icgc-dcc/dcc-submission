@@ -133,7 +133,7 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       description: (source) ->
         """
         More than one file matches the <em>#{source.parameters?.SCHEMA}</em>
-        filename pattern: #{source.parameters?.FILES.join '<br>'}
+        filename pattern:<br>#{source.parameters?.FILES.join '<br>'}
         """
 
 
