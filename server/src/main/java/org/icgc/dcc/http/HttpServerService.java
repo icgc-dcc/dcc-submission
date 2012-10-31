@@ -2,7 +2,6 @@ package org.icgc.dcc.http;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.KeyManagementException;
@@ -46,7 +45,7 @@ public class HttpServerService extends AbstractService {
 
   private static final String CERTIFICATE = "/keystore";
 
-  private static final String CERTIFICATE_PASSWORD = "tmptmptmp"; // FIXME
+  private static final String CERTIFICATE_PASSWORD = "tmptmptmp"; // FIXME (DCC-570)
 
   private final Config config;
 
@@ -67,88 +66,107 @@ public class HttpServerService extends AbstractService {
   @Override
   protected void doStart() {
 
-    final String host = config.getString("http.listen");
-    final int port = config.getInt("http.port");
-    final boolean useSsl = true;// config.getBoolean("http.ssl");
-    final Set<String> resources = ImmutableSet.copyOf(config.getStringList("http.resources"));
-    log.info("host = {}, port = {}, use SSL = {}, resources = {}", new Object[] { host, port, useSsl, resources });
-
-    // add network listener
-    NetworkListener networkListener = new NetworkListener(LISTENER_NAME, host, port);
-    if(useSsl) {
-      networkListener.setSecure(true);
-      networkListener.setSSLEngineConfig(createSSLEngineConfigurator());
-    }
-    server.addListener(networkListener);
-
-    // add the http handlers
-    final ServerConfiguration serverConfig = server.getServerConfiguration();
-    for(HttpHandlerProvider provider : handlerProviders) {
-      serverConfig.addHttpHandler(provider.get(), provider.path());
-    }
-    serverConfig.addHttpHandler(new StaticHttpHandler(resources), "/");
-
-    // Redirect back to "/" and appends the request url after the hash(#), which the client can then parse
-    serverConfig.addHttpHandler(new HttpHandler() {
-      @Override
-      public void service(Request request, Response response) throws Exception {
-        response.sendRedirect("/#" + request.getDecodedRequestURI());
-      }
-    }, "/releases");
-
     try {
-      server.start();
-      notifyStarted();
-    } catch(IOException ex) {
-      log.error("Failed to start HTTP server on {}:{} : {}", new Object[] { host, port, ex.getMessage() });
-      notifyFailed(ex);
+      final String host = config.getString("http.listen");
+      final int port = config.getInt("http.port");
+      final boolean useSsl = config.getBoolean("http.ssl");
+      final Set<String> resources = ImmutableSet.copyOf(config.getStringList("http.resources"));
+      log.info("host = {}, port = {}, use SSL = {}, resources = {}", new Object[] { host, port, useSsl, resources });
+
+      // add network listener
+      NetworkListener networkListener = new NetworkListener(LISTENER_NAME, host, port);
+      if(useSsl) {
+        networkListener.setSecure(true);
+        networkListener.setSSLEngineConfig(createSSLEngineConfigurator(CERTIFICATE_PASSWORD.toCharArray()));
+      }
+      server.addListener(networkListener);
+
+      // add the http handlers
+      final ServerConfiguration serverConfig = server.getServerConfiguration();
+      for(HttpHandlerProvider provider : handlerProviders) {
+        serverConfig.addHttpHandler(provider.get(), provider.path());
+      }
+      serverConfig.addHttpHandler(new StaticHttpHandler(resources), "/");
+
+      // Redirect back to "/" and appends the request url after the hash(#), which the client can then parse
+      serverConfig.addHttpHandler(new HttpHandler() {
+        @Override
+        public void service(Request request, Response response) throws Exception {
+          response.sendRedirect("/#" + request.getDecodedRequestURI());
+        }
+      }, "/releases");
+
+      try {
+        server.start();
+        notifyStarted();
+      } catch(IOException ex) {
+        log.error("Failed to start HTTP server on {}:{} : {}", new Object[] { host, port, ex.getMessage() });
+        notifyFailed(ex);
+      }
+    } catch(Exception e) { // else exception is swallowed silently
+      log.error("Failed to start HTTP server", e);
     }
   }
 
   /**
    * Creates {@code SSLEngineConfigurator} object necessary to configure self-signed certificate for SSL.
    */
-  private SSLEngineConfigurator createSSLEngineConfigurator() {
-    SSLEngineConfigurator sslEngineConfigurator = null;
+  private SSLEngineConfigurator createSSLEngineConfigurator(char[] password) {
+
+    KeyStore keyStore = null;
     try {
-      char[] password = CERTIFICATE_PASSWORD.toCharArray();
-      KeyStore keyStore = createKeyStore(password);
-
-      KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-      keyManagerFactory.init(keyStore, password);
-
-      TrustManagerFactory trustManagerFactory =
-          TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-      trustManagerFactory.init(keyStore);
-
-      SSLContext sslContext = SSLContext.getInstance(PROTOCOL);
-      sslContext.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
-
-      sslEngineConfigurator = new SSLEngineConfigurator(sslContext, false, false, false);
-    } catch(UnrecoverableKeyException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      keyStore = createKeyStore(password);
     } catch(KeyStoreException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    } catch(FileNotFoundException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    } catch(CertificateException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    } catch(IOException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      log.error("failed to create key store", e);
     } catch(NoSuchAlgorithmException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    } catch(KeyManagementException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      log.error("failed to create key store", e);
+    } catch(CertificateException e) {
+      log.error("failed to create key store", e);
+    } catch(IOException e) {
+      log.error("failed to create key store", e);
     }
 
-    return sslEngineConfigurator;
+    KeyManagerFactory keyManagerFactory = null;
+    try {
+      keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+    } catch(NoSuchAlgorithmException e) {
+      log.error("failed to create key manager factory", e);
+    }
+    try {
+      keyManagerFactory.init(keyStore, password);
+    } catch(UnrecoverableKeyException e) {
+      log.error("failed to initialize key manager factory", e);
+    } catch(KeyStoreException e) {
+      log.error("failed to initialize key manager factory", e);
+    } catch(NoSuchAlgorithmException e) {
+      log.error("failed to initialize key manager factory", e);
+    }
+
+    TrustManagerFactory trustManagerFactory = null;
+    try {
+      trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+    } catch(NoSuchAlgorithmException e) {
+      log.error("failed to create trust manager factory", e);
+    }
+    try {
+      trustManagerFactory.init(keyStore);
+    } catch(KeyStoreException e) {
+      log.error("failed to initialize trust manager factory", e);
+    }
+
+    SSLContext sslContext = null;
+    try {
+      sslContext = SSLContext.getInstance(PROTOCOL);
+    } catch(NoSuchAlgorithmException e) {
+      log.error("failed to create SSL context", e);
+    }
+    try {
+      sslContext.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
+    } catch(KeyManagementException e) {
+      log.error("failed to initialize SSL context", e);
+    }
+
+    return new SSLEngineConfigurator(sslContext, false, false, false);
   }
 
   /**
@@ -161,7 +179,7 @@ public class HttpServerService extends AbstractService {
     InputStream is = this.getClass().getResourceAsStream(CERTIFICATE);
     if(is == null) {
       log.error("cannot find: {}", CERTIFICATE);
-      throw new RuntimeException(CERTIFICATE);// TODO
+      throw new CertificateNotFoundException(CERTIFICATE);
     }
     keyStore.load(is, password);
     is.close();
