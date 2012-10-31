@@ -176,7 +176,7 @@ found on host #{host}"
     Number(bytes).toFixed(precision) + " " + sizes[posttxt]
 
   sendAuthorization: (xhr) =>
-    console.debug 'utils#sendAuthorization'
+    #console.debug 'utils#sendAuthorization'
     #@accessToken = localStorage.getItem 'accessToken'
     accessToken = $.cookie 'accessToken'
     if accessToken

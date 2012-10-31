@@ -21,23 +21,38 @@
 """
 
 
-Chaplin = require 'chaplin'
-NotificationView = require 'views/notification_view'
-FeedbackTabView = require 'modules/feedback/views/feedback_tab_view'
-Model = require 'models/base/model'
+View = require 'views/base/view'
+template = require 'modules/feedback/views/templates/form'
 
-module.exports = class Layout extends Chaplin.Layout
+Feedback = require 'modules/feedback/models/feedback'
+
+module.exports = class FeedbackFormView extends View
+  template: template
+  template = null
+
+  container: 'body'
+  containerMethod: 'append'
+  autoRender: true
+  tagName: 'div'
+  className: "modal hide fade"
+  id: 'feedback-popup'
+
   initialize: ->
+    console.debug "FeedbackFormView#initialize"
     super
-    # @subscribeEvent 'startupController', @doSomething
 
-    @subscribeEvent 'notify', @notify
+    @$el.modal('show')
 
-    new FeedbackTabView()
+    @delegate 'click', '#feedback-submit-button', @sendFeedback
 
-  notify: (message, status="success") ->
-    #console.debug "Layout#notify", message
-    new NotificationView
-      model: new Model
-        "message": message
-        "status": status
+  sendFeedback: (e) ->
+    console.debug "FeedbackFormView#initialize", e
+
+    data = @.$('form').serializeObject()
+
+    feedback = new Feedback data
+
+    feedback.save {},
+      success: =>
+        @$el.modal 'hide'
+        @dispose()

@@ -21,23 +21,27 @@
 """
 
 
-Chaplin = require 'chaplin'
-NotificationView = require 'views/notification_view'
-FeedbackTabView = require 'modules/feedback/views/feedback_tab_view'
-Model = require 'models/base/model'
+View = require 'views/base/view'
+template = require 'modules/feedback/views/templates/tab'
 
-module.exports = class Layout extends Chaplin.Layout
+FeedbackFormView = require 'modules/feedback/views/feedback_form_view'
+
+module.exports = class FeedbackTabView extends View
+  template: template
+  template = null
+
+  container: 'body'
+  containerMethod: 'append'
+  autoRender: true
+  tagName: 'div'
+  #id: 'feedback-tab'
+  #className: 'm-btn green'
+
   initialize: ->
-    super
-    # @subscribeEvent 'startupController', @doSomething
+    console.debug "FeedbackTabView#initialize"
 
-    @subscribeEvent 'notify', @notify
+    @delegate "click", "#feedback-tab", @feedbackPopup
 
-    new FeedbackTabView()
-
-  notify: (message, status="success") ->
-    #console.debug "Layout#notify", message
-    new NotificationView
-      model: new Model
-        "message": message
-        "status": status
+  feedbackPopup: (e) ->
+    #console.debug "FeedbackTabView#feedbackPopup", e
+    new FeedbackFormView()
