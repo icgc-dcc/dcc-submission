@@ -169,10 +169,9 @@ module.exports = class SubmissionTableView extends DataTableView
                   </a>
                   """
                 else
-                  "<em>Upload Submission Files</em><br>" +
-                  "<small>***REMOVED***:/#{source.projectKey}</small>"
+                  "<em>Upload Submission Files</em><br>"
               when "ERROR"
-                  "<em>Contact ***REMOVED***</em>"
+                  "<em>Contact dcc@lists.oicr.on.ca</em>"
               else ""
         }
       ]

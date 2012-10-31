@@ -273,9 +273,7 @@ module.exports = class ReportTableView extends DataTableView
         "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>"
        oLanguage:
         "sLengthMenu": "_MENU_ files per page"
-        "sEmptyTable": "You need to upload files for this submission." +
-          "<br> <em>***REMOVED***:/" +
-          "#{@model.get('name')}</em>"
+        "sEmptyTable": "You need to upload files for this submission."
       bPaginate: false
       aaSorting: [[ 1, "asc" ]]
       aoColumns: aoColumns
