@@ -124,7 +124,7 @@ echo "# WIP (must nohup/screen), for now use screen (as hdfs) and roughly:"
 echo " cp -r ${remote_working_dir?} ${remote_dir?} # consider backing up existing ${remote_dir?} first"
 echo " cp ${remote_realm_file?} ${remote_server_dir?}/"
 echo " cd ${remote_server_dir?}"
-echo " java -cp ${jar_name?} org.icgc.dcc.Main prod > ${log_file?} 2>&1"
+echo " java -cp ${jar_file_name?} org.icgc.dcc.Main prod > ${log_file?} 2>&1"
 echo " tail -f ${log_file?} # elsewhere"
 
 # ===========================================================================
