@@ -38,7 +38,7 @@ module.exports = class FeedbackFormView extends View
   id: 'feedback-popup'
 
   initialize: ->
-    console.debug "FeedbackFormView#initialize"
+    #console.debug "FeedbackFormView#initialize"
     super
 
     @$el.modal('show')
@@ -46,7 +46,7 @@ module.exports = class FeedbackFormView extends View
     @delegate 'click', '#feedback-submit-button', @sendFeedback
 
   sendFeedback: (e) ->
-    console.debug "FeedbackFormView#initialize", e
+    #console.debug "FeedbackFormView#initialize", e
 
     data = @.$('form').serializeObject()
 

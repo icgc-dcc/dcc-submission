@@ -32,8 +32,8 @@ module.exports = class Layout extends Chaplin.Layout
     # @subscribeEvent 'startupController', @doSomething
 
     @subscribeEvent 'notify', @notify
-
-    new FeedbackTabView()
+    @subscribeEvent 'login', @feedback
+    @subscribeEvent 'logout', @feedbackClose
 
   notify: (message, status="success") ->
     #console.debug "Layout#notify", message
@@ -41,3 +41,9 @@ module.exports = class Layout extends Chaplin.Layout
       model: new Model
         "message": message
         "status": status
+
+  feedback: ->
+    @feedbackTabView = new FeedbackTabView()
+
+  feedbackClose: ->
+    @feedbackTabView?.remove()
