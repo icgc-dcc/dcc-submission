@@ -51,7 +51,7 @@ module.exports = class Model extends Chaplin.Model
       base + encodeURIComponent(@get(@urlKey))
     else
       base
-    url + "?preventCache="+ (new Date()).getTime()
+    url #+ "?preventCache="+ (new Date()).getTime()
 
   sync: (method, model, options) ->
     #console.debug? 'Model#sync', method, model, options
