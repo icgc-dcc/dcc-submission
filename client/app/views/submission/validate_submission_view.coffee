@@ -81,7 +81,5 @@ module.exports = class ValidateSubmissionView extends View
         @$el.modal 'hide'
         mediator.publish "validateSubmission"
         mediator.publish "notify", "Submission for Project "+
-          "#{@model.get('projectName')} has been queued for Validation. " +
-          "There are currently #{@model.get('queue')} submission(s) ahead " +
-          "in the queue."
+          "#{@model.get('projectName')} has been queued for Validation."
 
