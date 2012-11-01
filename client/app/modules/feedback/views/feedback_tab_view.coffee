@@ -38,7 +38,7 @@ module.exports = class FeedbackTabView extends View
   #className: 'm-btn green'
 
   initialize: ->
-    console.debug "FeedbackTabView#initialize"
+    #console.debug "FeedbackTabView#initialize"
 
     @delegate "click", "#feedback-tab", @feedbackPopup
 
