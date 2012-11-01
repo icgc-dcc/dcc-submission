@@ -152,7 +152,8 @@ found on host #{host}"
 
   is_admin: ->
     #console.debug 'utils#is_admin', mediator.user
-    "admin" in mediator.user?.get "roles"
+    roles = mediator.user?.get("roles") or []
+    "admin" in roles
 
   is_released: (state)->
     state is "COMPLETED"
