@@ -155,7 +155,7 @@ module.exports = class SubmissionTableView extends DataTableView
                   Sign Off
                 </a>
                 """
-              when "NOT_VALIDATED", "INVALID"
+              when "NOT_VALIDATED"
                 if source.submissionFiles.length
                   ds = source.projectKey.replace(/<.*?>/g, '')
                   """
