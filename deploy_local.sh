@@ -42,7 +42,7 @@ hash mvn 2>&- || { echo "ERROR: mvn is not available"; exit 1; }
 hash xpath 2>&- || { echo "ERROR: xpath is not available"; exit 1; }
 
 # check in data-submission directory
-[ -f "${parent_pom_file?}" ] && [ "$(get_xml_value ${parent_pom_file?} '//project/artifactId/text()')" == "dcc-parent" ] || { echo "ERROR: must be in data-submission dir"; exit 1; }
+#[ -f "${parent_pom_file?}" ] && [ "$(get_xml_value ${parent_pom_file?} '//project/artifactId/text()')" == "dcc-parent" ] || { echo "ERROR: must be in data-submission dir"; exit 1; }
 
 # ===========================================================================
 
@@ -52,9 +52,9 @@ echo "server=\"${server?}\""
 timestamp=$(date "+%y%m%d%H%M%S")
 echo "timestamp=\"${timestamp?}\""
 
-artifact_id=$(get_xml_value ${server_pom_file?} '//project/artifactId/text()')
+artifact_id=dcc-server #$(get_xml_value ${server_pom_file?} '//project/artifactId/text()')
 echo "artifact_id=\"${artifact_id?}\""
-version=$(get_xml_value ${server_pom_file?} '//project/parent/version/text()')
+version=1.5 #$(get_xml_value ${server_pom_file?} '//project/parent/version/text()')
 echo "version=\"${version?}\""
 jar_file_name="${artifact_id?}-${version?}.jar"
 jar_file="${dev_target_dir?}/${jar_file_name?}"
