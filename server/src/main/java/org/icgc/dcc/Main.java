@@ -1,6 +1,7 @@
 package org.icgc.dcc;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.icgc.dcc.config.ConfigModule;
 import org.icgc.dcc.core.CoreModule;
@@ -26,8 +27,12 @@ public class Main {
 
   private static final String HADOOP_USER_NAME = "hdfs";
 
+  private static final String[] CONFIG_SUFFIXES = new String[] { "qa", "dev" };
+
   public static void main(String[] args) throws IOException {
-    String config = (args != null && args.length > 0 && args[0].equals("prod")) ? "application_prod" : "application";
+    String config =
+        (args != null && args.length > 0 && Arrays.asList(CONFIG_SUFFIXES).contains(args[0])) ? "application_"
+            + args[0] : "application";
     System.setProperty(HADOOP_USER_NAME_PARAM, HADOOP_USER_NAME); // see DCC-572
 
     Injector injector = Guice.createInjector(new ConfigModule(ConfigFactory.load(config))//
