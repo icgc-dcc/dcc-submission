@@ -19,8 +19,8 @@ package org.icgc.dcc.validation.report;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -62,9 +62,10 @@ public class ByteOffsetToLineNumber {// TODO: make non-static class
   }
 
   private static Map<Long, Long> buildByteToLineOffsetMap(Path file, List<Long> sortedOffsets) {
-    InputStream is = null;
+    DataInputStream is = null;
     try {
       is = fs.open(file);
+
     } catch(IOException e) {
       throw new RuntimeException( // TODO: replace with our own
           String.format("%s", file));
@@ -76,13 +77,17 @@ public class ByteOffsetToLineNumber {// TODO: make non-static class
     long lineOffset = 1; // 1-based
     for(Long byteOffset : sortedOffsets) {
       long currentOffset = byteOffset.longValue(); // TODO: make non-static class out of it so as store those in members
-      // and log useful error messages
-      Preconditions.checkState(currentOffset > previousOffset); // no two same offsets
+      if(currentOffset == -1L) {
+        offsetMap.put(-1L, -1L);
+      } else {
+        // and log useful error messages
+        Preconditions.checkState(currentOffset > previousOffset); // no two same offsets
 
-      lineOffset += countLinesInInterval(is, previousOffset, currentOffset);
-      offsetMap.put(byteOffset, lineOffset);
+        lineOffset += countLinesInInterval(is, previousOffset, currentOffset);
+        offsetMap.put(byteOffset, lineOffset);
 
-      previousOffset = byteOffset;
+        previousOffset = byteOffset;
+      }
     }
 
     try {
@@ -95,9 +100,9 @@ public class ByteOffsetToLineNumber {// TODO: make non-static class
     return offsetMap;
   }
 
-  private static final long countLinesInInterval(InputStream is, long previousOffset, long currentOffset) {
+  private static final long countLinesInInterval(DataInputStream is, long previousOffset, long currentOffset) {
     long difference = currentOffset - previousOffset;
-    long quotient = difference / BUFFER_SIZE;
+    long quotient = (long) Math.floor(difference / (double) BUFFER_SIZE);
     int remainder = (int) (difference % BUFFER_SIZE);
 
     long lines = 0;
@@ -111,11 +116,11 @@ public class ByteOffsetToLineNumber {// TODO: make non-static class
     return lines;
   }
 
-  private static final long countLinesInChunk(InputStream is, int size, boolean lastChunk) {
+  private static final long countLinesInChunk(DataInputStream is, int size, boolean lastChunk) {
     byte[] buffer = readBuffer(is, size);
     if(lastChunk && buffer[size - 1] != '\n') {
       throw new RuntimeException( // TODO: replace with our own
-          String.format("expected '\\n' instead of %s for last chunk", buffer[size - 1]));
+          String.format("expected '\\n' instead of %s for last chunk: %s", buffer[size - 1], new String(buffer)));
     }
 
     long lines = 0;
@@ -127,10 +132,10 @@ public class ByteOffsetToLineNumber {// TODO: make non-static class
     return lines;
   }
 
-  private static byte[] readBuffer(InputStream is, int size) {
+  private static byte[] readBuffer(DataInputStream is, int size) {
     byte[] buffer = new byte[size];
     try {
-      is.read(buffer);
+      is.readFully(buffer);
     } catch(IOException e) {
       throw new RuntimeException(String.format("%s", size));
     }
