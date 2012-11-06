@@ -83,7 +83,7 @@ public class UserResource {
 
       msg.setSubject(feedback.getSubject());
       msg.setText(feedback.getMessage());
-      msg.addRecipient(Message.RecipientType.TO, new InternetAddress("shane.wilson@oicr.on.ca"));
+      msg.addRecipient(Message.RecipientType.TO, new InternetAddress("dcc@lists.oicr.on.ca"));
 
       Transport.send(msg);
     } catch(AddressException e) {
