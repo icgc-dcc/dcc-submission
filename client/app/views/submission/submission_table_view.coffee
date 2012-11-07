@@ -157,17 +157,21 @@ module.exports = class SubmissionTableView extends DataTableView
                 """
               when "NOT_VALIDATED"
                 if source.submissionFiles.length
-                  ds = source.projectKey.replace(/<.*?>/g, '')
-                  """
-                  <button
-                    class="m-btn blue-stripe mini"
-                    id="validate-submission-popup-button"
-                    data-submission="#{ds}"
-                    data-toggle="modal"
-                    href='#validate-submission-popup'>
-                    Validate
-                  </a>
-                  """
+                  files = source.submissionFiles
+                  show = _.without((f.matchedSchemaName for f in files), null)
+                  if show.length
+                    ds = source.projectKey.replace(/<.*?>/g, '')
+                    """
+                    <button
+                      class="m-btn blue-stripe mini"
+                      id="validate-submission-popup-button"
+                      data-submission="#{ds}"
+                      data-toggle="modal"
+                      href='#validate-submission-popup'>
+                      Validate
+                    </a>
+                    """
+                  else "<em>Upload Submission Files</em><br>"
                 else
                   "<em>Upload Submission Files</em><br>"
               when "ERROR"
