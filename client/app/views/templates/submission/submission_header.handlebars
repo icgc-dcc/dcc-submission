@@ -9,11 +9,11 @@
             <h2 class="pull-left">
                 Submission Summary
             </h2>
-            {{#if submissionFiles.length}}
+            {{#show_submission_action_button submissionFiles}}
             <div style="margin-top:7px; margin-right:50px" class="pull-right">
                 {{submission_action state}}
             </div>
-            {{/if}}
+            {{/show_submission_action_button}}
         </div>
         <span class="key">Name</span>&nbsp;&nbsp;&nbsp;<span>{{projectName}}</span><br>
         <span class="key">State</span>&nbsp;&nbsp;&nbsp;<strong><span class="{{lowercase state}}">{{underscore2space state}}</span></strong><br>
