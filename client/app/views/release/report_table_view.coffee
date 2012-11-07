@@ -280,9 +280,9 @@ module.exports = class ReportTableView extends DataTableView
       sAjaxSource: ""
       sAjaxDataProp: ""
       fnRowCallback: (nRow, aData, iDisplayIndex, iDisplayIndexFull) ->
-        cell = $('td:nth-child(4)', nRow)
-        switch cell.html()
-          when "SKIPPED"
+        switch aData.matchedSchemaName
+          when null
             $(nRow).css {'color': '#999', 'font-style': 'italic'}
+
       fnServerData: (sSource, aoData, fnCallback) =>
         fnCallback @collection.toJSON()

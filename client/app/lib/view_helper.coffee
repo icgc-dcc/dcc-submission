@@ -58,6 +58,15 @@ Handlebars.registerHelper 'if_completed', (state, options) ->
   else
     options.inverse(this)
 
+Handlebars.registerHelper 'show_submission_action_button', (files, options) ->
+  show = false
+  if files
+    show = _.without((f.matchedSchemaName for f in files), null).length
+  if show
+    options.fn(this)
+  else
+    options.inverse(this)
+
 # Return a Unreleased if no release date
 Handlebars.registerHelper 'submission_action', (state) ->
   switch state
