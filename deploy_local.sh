@@ -36,18 +36,23 @@ hash mvn 2>&- || { echo "ERROR: mvn is not available"; exit 1; }
 # check xpath
 hash xpath 2>&- || { echo "ERROR: xpath is not available"; exit 1; }
 
+function is_linux() {
+ [ "$(uname -s)" == "Linux" ]
+}
+function is_mac() {
+ [ "$(uname -s)" == "Darwin" ]
+}
 function get_xml_value() {
  file=${1?}
  path=${2?}
- system="$(uname -s)"
- if [ "${system?}" == "Linux" ]; then
+ if is_linux; then
   xpath -e "${path?}" "${file?}" 2>&-
  else
-  if [ "${system?}" == "Darwin" ]; then
-   xpath "${file?}" "${path?}" 2>&-
-  fi
+  xpath "${file?}" "${path?}" 2>&-
  fi
 }
+
+is_linux || is_mac || { echo "ERROR: must be using Linux or Mac (Darwin)"; exit 1; }
 
 # check in data-submission directory
 [ -f "${parent_pom_file?}" ] && [ "$(get_xml_value ${parent_pom_file?} '//project/artifactId/text()')" == "dcc-parent" ] || { echo "ERROR: must be in data-submission dir"; exit 1; }
@@ -92,8 +97,15 @@ if ! ${skip_mvn?}; then
  { cd ${dev_server_dir?} && mvn assembly:assembly && cd .. ; } || { echo "ERROR: failed to build project (server)"; exit 1; } # critical
 else
  ls ${jar_file?} >/dev/null || { echo "ERROR: ${jar_file?} does not exist"; exit 1; } # critical
- latest=$(date --date="@$(stat -c '%Y' ${jar_file?})") && echo "skipping jar creation, re-using: ${jar_file?} from \"${latest?}\""
+ echo -n "skipping jar creation, re-using: ${jar_file?}"
+ if is_linux; then
+  latest=$(stat -c '%Y' ${jar_file?}) && latest=$(date --date="@${latest?}")
+ else
+  latest=$(date -r $(stat -f "%m" ${jar_file?}))
+ fi
+ echo " from \"${latest?}\""
 fi
+echo "building client files..."
 { cd "${dev_client_dir?}" && brunch build && cd .. ; } || { echo "ERROR: failed to build project (client)"; exit 1; } # critical
 
 cp "${jar_file?}" "${local_server_dir?}/"
@@ -107,7 +119,7 @@ echo
 # ===========================================================================
 # copy files to server
 
-echo && read -p "copy to server - please enter OICR username: [$USER]" username
+read -p "copy to server - please enter OICR username [default \"$USER\"]: " username
 echo "username=\"${username?}\""
 username=${username:$USER}
 
@@ -149,12 +161,16 @@ else
  echo "==========================================================================="
  echo "please issue the following commands on ${server?} (must become hdfs then use screen first - WIP):"
  echo
+ echo "ssh ${username?}@${server?}"
+ echo "sudo -u hdfs -i"
+ echo
  echo "mv ${remote_dir?} ${backup_dir?}/dcc.${timestamp?}.bak"
  echo "cp -r ${remote_tmp_dir?} ${remote_dir?}"
  echo "cp ${remote_realm_file?} ${remote_server_dir?}/"
  echo "cd ${remote_server_dir?}"
- echo "echo \"tail -f ${log_file?}\" # to be used elsewhere"
- echo "java -cp ${jar_file_name?} org.icgc.dcc.Main ${mode?} >> ${log_file?} 2>&1"
+ echo "# tail -f ${log_file?} # to be used elsewhere"
+ echo
+ echo "java -cp ${jar_file_name?} org.icgc.dcc.Main ${mode?} >> ${log_file?} 2>&1 # in screen session"
  echo
 fi
 
