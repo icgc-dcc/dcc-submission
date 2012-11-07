@@ -1,11 +1,12 @@
-#!/bin/bash
+#!/bin/bash -e
 # see DCC-499
 #
-# usage: ./deploy_local.sh my.dcc.server [false]
+# example: ./deploy_local.sh my.dcc.server dev [true]
 #
 # notes:
 # - this script is based on former https://wiki.oicr.on.ca/display/DCCSOFT/Standard+operating+procedures#Standardoperatingprocedures-SOPforDeployingtheserver (which also links to this script now)
 # - assumptions:
+#   - using Linux or Darwin
 #   - must be in data-submission
 #   - must have checked out wanted branch
 #   - must have run "npm install" in ./client
@@ -21,7 +22,7 @@ dev_target_dir="${dev_server_dir?}/target"
 dev_client_dir="${dev_dir?}/client"
 dev_public_dir="${dev_client_dir?}/public"
 
-dev_server_deploy_script_name="deploy_server.sh"
+dev_server_deploy_script_name="remote_startup.sh"
 dev_server_deploy_script="${dev_dir?}/${dev_server_deploy_script_name?}"
 parent_pom_file="${dev_dir?}/pom.xml"
 server_pom_file="${dev_server_dir?}/pom.xml"
@@ -29,28 +30,39 @@ server_pom_file="${dev_server_dir?}/pom.xml"
 # ===========================================================================
 # basic checks
 
-function get_xml_value() {
- file=${1?}
- path=${2?}
- xpath -e "${path?}" "${file?}" 2>&-
-}
-
 # check mvn
 hash mvn 2>&- || { echo "ERROR: mvn is not available"; exit 1; }
 
 # check xpath
 hash xpath 2>&- || { echo "ERROR: xpath is not available"; exit 1; }
 
+function get_xml_value() {
+ file=${1?}
+ path=${2?}
+ system="$(uname -s)"
+ if [ "${system?}" == "Linux" ]; then
+  xpath -e "${path?}" "${file?}" 2>&-
+ else
+  if [ "${system?}" == "Darwin" ]; then
+   xpath "${file?}" "${path?}" 2>&-
+  fi
+ fi
+}
+
 # check in data-submission directory
 [ -f "${parent_pom_file?}" ] && [ "$(get_xml_value ${parent_pom_file?} '//project/artifactId/text()')" == "dcc-parent" ] || { echo "ERROR: must be in data-submission dir"; exit 1; }
+
 
 # ===========================================================================
 
 server=${1?}
-skip_mvn=$2
-skip_mvn=${skip_mvn:=false}
+mode=${2?}
+skip_mvn=$3 && skip_mvn=${skip_mvn:="true"} && [ "${skip_mvn}" == "true" ] && skip_mvn=true || skip_mvn=false
+
 echo "server=\"${server?}\""
+echo "mode=\"${mode?}\""
 echo "skip_mvn=\"${skip_mvn?}\""
+valid_modes="dev prod" && [ -n "$(echo "${valid_modes?}" | tr " " "\n" | awk '$0=="'"${mode?}"'"')" ] || { echo "ERROR: invalid mode: \"${mode?}\", valid modes are: \"dev\" or \"prod\""; exit 1; }
 
 timestamp=$(date "+%y%m%d%H%M%S")
 echo "timestamp=\"${timestamp?}\""
@@ -75,14 +87,15 @@ local_client_dir="${local_working_dir?}/client"
 # ===========================================================================
 
 # "build" project (mostly manual for now)
-echo && read -p "create dist? [press key]"
 mkdir -p ${local_working_dir?} ${local_server_dir?} ${local_working_dir?}/log && { rm -rf "${local_client_dir?}" 2>&- || : ; }
 if ! ${skip_mvn?}; then
  { cd ${dev_server_dir?} && mvn assembly:assembly && cd .. ; } || { echo "ERROR: failed to build project (server)"; exit 1; } # critical
 else
- ls ${jar_file?} || { echo "ERROR: ${jar_file?} does not exist"; exit 1; } # critical
+ ls ${jar_file?} >/dev/null || { echo "ERROR: ${jar_file?} does not exist"; exit 1; } # critical
+ latest=$(date --date="@$(stat -c '%Y' ${jar_file?})") && echo "skipping jar creation, re-using: ${jar_file?} from \"${latest?}\""
 fi
 { cd "${dev_client_dir?}" && brunch build && cd .. ; } || { echo "ERROR: failed to build project (client)"; exit 1; } # critical
+
 cp "${jar_file?}" "${local_server_dir?}/"
 cp -r "${dev_public_dir?}" "${local_client_dir?}"
 cp "${dev_server_deploy_script?}" "${local_working_dir?}/"
@@ -94,21 +107,23 @@ echo
 # ===========================================================================
 # copy files to server
 
-echo && read -p "copy to server - please enter OICR username: " username
+echo && read -p "copy to server - please enter OICR username: [$USER]" username
 echo "username=\"${username?}\""
+username=${username:$USER}
 
-remote_working_dir="/tmp/${local_working_dir_name?}"
-echo "remote_working_dir=\"${remote_working_dir?}\""
+remote_tmp_dir="/tmp/${local_working_dir_name?}"
+echo "remote_tmp_dir=\"${remote_tmp_dir?}\""
 
-echo "scp -r ${local_working_dir?} ${username?}@${server?}:${remote_working_dir?}"
+echo "scp -r ${local_working_dir?} ${username?}@${server?}:${remote_tmp_dir?}"
 echo "scp ${local_working_dir?} to server"
-scp -r ${local_working_dir?} ${username?}@${server?}:${remote_working_dir?} # must use /tmp for now (permission problems)
+scp -r ${local_working_dir?} ${username?}@${server?}:${remote_tmp_dir?} # must use /tmp for now (permission problems)
 #rm -rf ${local_working_dir?} && echo "${local_working_dir?} deleted" # remove working directory
 
 # ===========================================================================
 # start server remotely
 
 hdfs_dir="/var/lib/hdfs"
+backup_dir="${hdfs_dir?}/backup" # must be absolute path
 remote_dir="${hdfs_dir?}/dcc" # must be absolute path
 remote_realm_file="${hdfs_dir?}/realm.ini" # must exist already
 remote_log_dir="${hdfs_dir?}/log" # must exist already
@@ -121,21 +136,26 @@ echo "remote_log_dir=\"${remote_log_dir?}\""
 log_base="${artifact_id?}-${timestamp?}"
 log_file="${remote_log_dir?}/${log_base?}.log"
 
-echo && read -p "start server? [press key]"
 if false; then # WIP
- server_command="./${dev_server_deploy_script_name?} \"${server?}\" \"${timestamp?}\" \"${jar_file?}\" \"${log_file?}\" \"${hdfs_dir?}\" \"${remote_working_dir?}\" \"${remote_dir?}\" \"${remote_server_dir?}\" \"${remote_realm_file?}\""
+ echo && read -p "start server? [press Enter]"
+ server_command="./${dev_server_deploy_script_name?} \"${timestamp?}\" \"${jar_file_name?}\" \"${log_file?}\" \"${remote_tmp_dir?}\" \"${remote_dir?}\" \"${remote_server_dir?}\" \"${remote_realm_file?}\""
  echo "server_command=\"${server_command?}\""
  sudo_command="sudo -u hdfs -i \"${server_command?}\""
  echo "sudo_command=\"${sudo_command?}\""
-
- echo "enter password to ssh to start server" && ssh ${username?}@${server?} "${sudo_command?}"
+ screen_command="screen -S \"${sudo_command?}\""
+ echo "screen_command=\"${screen_command?}\""
+ echo "enter password to ssh and start server at ${server?}" && ssh ${username?}@${server?} "${sudo_command?}"
 else
- echo "# WIP (must nohup/screen), for now use screen (as hdfs) and roughly:"
- echo " cp -r ${remote_working_dir?} ${remote_dir?} # consider backing up existing ${remote_dir?} first"
- echo " cp ${remote_realm_file?} ${remote_server_dir?}/"
- echo " cd ${remote_server_dir?}"
- echo " java -cp ${jar_file_name?} org.icgc.dcc.Main prod > ${log_file?} 2>&1"
- echo " tail -f ${log_file?} # elsewhere"
+ echo "==========================================================================="
+ echo "please issue the following commands on ${server?} (must become hdfs then use screen first - WIP):"
+ echo
+ echo "mv ${remote_dir?} ${backup_dir?}/dcc.${timestamp?}.bak"
+ echo "cp -r ${remote_tmp_dir?} ${remote_dir?}"
+ echo "cp ${remote_realm_file?} ${remote_server_dir?}/"
+ echo "cd ${remote_server_dir?}"
+ echo "echo \"tail -f ${log_file?}\" # to be used elsewhere"
+ echo "java -cp ${jar_file_name?} org.icgc.dcc.Main ${mode?} >> ${log_file?} 2>&1"
+ echo
 fi
 
 # ===========================================================================
