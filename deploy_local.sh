@@ -94,7 +94,7 @@ local_client_dir="${local_working_dir?}/client"
 # "build" project (mostly manual for now)
 mkdir -p ${local_working_dir?} ${local_server_dir?} ${local_working_dir?}/log && { rm -rf "${local_client_dir?}" 2>&- || : ; }
 if ! ${skip_mvn?}; then
- { cd ${dev_server_dir?} && mvn assembly:assembly && cd .. ; } || { echo "ERROR: failed to build project (server)"; exit 1; } # critical
+ { cd ${dev_server_dir?} && mvn assembly:assembly -Dmaven.test.skip=true && cd .. ; } || { echo "ERROR: failed to build project (server)"; exit 1; } # critical
 else
  ls ${jar_file?} >/dev/null || { echo "ERROR: ${jar_file?} does not exist"; exit 1; } # critical
  echo -n "skipping jar creation, re-using: ${jar_file?}"
@@ -121,7 +121,7 @@ echo
 
 read -p "copy to server - please enter OICR username [default \"$USER\"]: " username
 echo "username=\"${username?}\""
-username=${username:$USER}
+username=${username:=$USER}
 
 remote_tmp_dir="/tmp/${local_working_dir_name?}"
 echo "remote_tmp_dir=\"${remote_tmp_dir?}\""
