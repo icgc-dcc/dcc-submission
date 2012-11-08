@@ -120,8 +120,8 @@ echo
 # copy files to server
 
 read -p "copy to server - please enter OICR username [default \"$USER\"]: " username
-echo "username=\"${username?}\""
-username=${username:$USER}
+username=${username:=$USER}
+echo "username=\"${username}\""
 
 remote_tmp_dir="/tmp/${local_working_dir_name?}"
 echo "remote_tmp_dir=\"${remote_tmp_dir?}\""
