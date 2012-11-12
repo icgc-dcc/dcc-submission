@@ -86,7 +86,8 @@ public class FieldReport {
 
     BasicDBObject summary = new BasicDBObject();
     for(String key : fieldSummary.summary.keySet()) {
-      summary.append(key, fieldSummary.summary.get(key));
+      // Note: periods and dollar signs must be replaced for MongoDB compatibility
+      summary.append(key.replace(".", "&#46;").replace("$", "&#36;"), fieldSummary.summary.get(key));
     }
     fieldReport.setSummary(summary);
     return fieldReport;
