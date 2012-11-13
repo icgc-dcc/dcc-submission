@@ -182,7 +182,7 @@ found on host #{host}"
     accessToken = $.cookie 'accessToken'
     if accessToken
       # refresh expire time
-      $.cookie 'accessToken', accessToken
+      #$.cookie 'accessToken', accessToken
       xhr.setRequestHeader 'Authorization', "X-DCC-Auth  #{accessToken}"
     else
       Chaplin.mediator.publish '!logout'
