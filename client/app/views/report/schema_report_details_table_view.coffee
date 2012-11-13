@@ -47,6 +47,7 @@ module.exports = class SchemaReportDetailsTableView extends DataTableView
     type = switch data.type
       when "AVERAGE" then "Statistics"
       when "FREQUENCY" then "Value Frequencies (value:count)"
+      else ""
 
     sOut = "<dt>#{type}</dt>"
     for key, value of data.summary

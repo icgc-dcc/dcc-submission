@@ -47,18 +47,14 @@ public class SummaryPlanningVisitor extends ReportingFlowPlanningVisitor {
    */
   private Map<SummaryType, List<Field>> buildSummaryTypeToFields(FileSchema fileSchema) {
     Map<SummaryType, List<Field>> summaryTypeToFields = new LinkedHashMap<SummaryType, List<Field>>();
-    for(SummaryType summaryType : SummaryType.values()) {
-      for(Field field : fileSchema.getFields()) {
-        SummaryType summaryTypeTmp = field.getSummaryType();
-        if(summaryType == summaryTypeTmp) {
-          List<Field> list = summaryTypeToFields.get(summaryType);
-          if(list == null) {
-            list = new ArrayList<Field>();
-            summaryTypeToFields.put(summaryType, list);
-          }
-          list.add(field);
-        }
+    for(Field field : fileSchema.getFields()) {
+      SummaryType summaryType = field.getSummaryType();
+      List<Field> list = summaryTypeToFields.get(summaryType);
+      if(list == null) {
+        list = new ArrayList<Field>();
+        summaryTypeToFields.put(summaryType, list);
       }
+      list.add(field);
     }
     return summaryTypeToFields;
   }
@@ -69,6 +65,10 @@ public class SummaryPlanningVisitor extends ReportingFlowPlanningVisitor {
   private void collectElements(FileSchema fileSchema, Map<SummaryType, List<Field>> summaryTypeToFields) {
     for(SummaryType summaryType : summaryTypeToFields.keySet()) {
       List<Field> fields = summaryTypeToFields.get(summaryType);
+      if(summaryType == null) {
+        collect(new SummaryPlanElement.CompletenessPlanElement(fileSchema, fields, this.getFlow()));
+        continue;
+      }
       switch(summaryType) {
       case AVERAGE:
         collect(new SummaryPlanElement.AveragePlanElement(fileSchema, fields, this.getFlow()));
