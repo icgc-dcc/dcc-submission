@@ -40,7 +40,7 @@ module.exports = class ValidateSubmissionView extends View
   initialize: ->
     console.debug "ValidateSubmissionView#initialize", @options
     @model = @options.submission
-
+    @model.set("email", mediator.user.get("email"))
     release = new NextRelease()
     release.fetch
       success: (data) =>
@@ -49,15 +49,14 @@ module.exports = class ValidateSubmissionView extends View
     super
 
     @modelBind 'change', @render
-
     @delegate 'click', '#validate-submission-button', @validateSubmission
 
   validateSubmission: (e) ->
     console.debug "ValidateSubmissionView#completeRelease", @model
-
     emails = @.$("#emails")
     alert = @.$('#email-error')
     val = @.$("#emails").val()
+    mediator.user.set "email", val
 
     if not val or not val.match /.+@.+\..+/i
       if alert.length
