@@ -56,13 +56,6 @@ public class SummaryPlanningVisitor extends ReportingFlowPlanningVisitor {
       }
       list.add(field);
     }
-
-    /*
-     * for(SummaryType summaryType : SummaryType.values()) { for(Field field : fileSchema.getFields()) { SummaryType
-     * summaryTypeTmp = field.getSummaryType(); if(summaryType == summaryTypeTmp) { List<Field> list =
-     * summaryTypeToFields.get(summaryType); if(list == null) { list = new ArrayList<Field>();
-     * summaryTypeToFields.put(summaryType, list); } list.add(field); } } }
-     */
     return summaryTypeToFields;
   }
 
