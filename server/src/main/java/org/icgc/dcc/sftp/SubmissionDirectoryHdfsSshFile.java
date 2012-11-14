@@ -30,15 +30,20 @@ class SubmissionDirectoryHdfsSshFile extends BaseDirectoryHdfsSshFile {
 
   @Override
   public String getAbsolutePath() {
-    return SEPARATOR + directory.getProjectKey();
+    return SEPARATOR + directoryName;
   }
 
   @Override
   public boolean isWritable() {
-    if(directory.isReadOnly()) {
+    if(directory == null || directory.isReadOnly()) {
       return false;
     }
     return super.isWritable();
+  }
+
+  @Override
+  public boolean doesExist() {
+    return directory == null ? false : super.doesExist();
   }
 
   @Override

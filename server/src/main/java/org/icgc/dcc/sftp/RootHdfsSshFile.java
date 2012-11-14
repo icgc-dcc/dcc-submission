@@ -106,7 +106,10 @@ class RootHdfsSshFile extends HdfsSshFile {
         if(this.rfs.isSystemDirectory(path)) {
           sshFileList.add(new SystemFileHdfsSshFile(this, path.getName()));
         } else {
-          sshFileList.add(new SubmissionDirectoryHdfsSshFile(this, path.getName()));
+          SubmissionDirectoryHdfsSshFile dir = new SubmissionDirectoryHdfsSshFile(this, path.getName());
+          if(dir.doesExist()) {
+            sshFileList.add(dir);
+          }
         }
       } catch(DccFileSystemException e) {
         Log.info("Directory skipped due to insufficient permissions: " + path.getName());
@@ -118,7 +121,11 @@ class RootHdfsSshFile extends HdfsSshFile {
   }
 
   public SubmissionDirectory getSubmissionDirectory(String directoryName) {
-    return this.rfs.getSubmissionDirectory(this.projects.getProject(directoryName));
+    try {
+      return this.rfs.getSubmissionDirectory(this.projects.getProject(directoryName));
+    } catch(RuntimeException e) {
+      return null;
+    }
   }
 
   @Override
