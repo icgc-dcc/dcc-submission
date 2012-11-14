@@ -109,6 +109,8 @@ public class HadoopCascadingStrategy extends BaseCascadingStrategy {
 
   @Override
   protected Tap<?, ?, ?> tapSource(Path path) {
-    return new Hfs(new TextLine(new Fields(ValidationFields.OFFSET_FIELD_NAME, "line")), path.toUri().getPath());
+    TextLine textLine = new TextLine(new Fields(ValidationFields.OFFSET_FIELD_NAME, "line"));
+    textLine.setSinkCompression(TextLine.Compress.ENABLE);
+    return new Hfs(textLine, path.toUri().getPath());
   }
 }
