@@ -1,6 +1,6 @@
 {
-  "created" : 1353007149436,
-  "lastUpdate" : 1353007149436,
+  "created" : 1353008969189,
+  "lastUpdate" : 1353008969189,
   "version" : "0.6c",
   "state" : "OPENED",
   "files" : [ {
@@ -2019,7 +2019,7 @@
   }, {
     "name" : "hsap_transcript",
     "label" : null,
-    "pattern" : "^hsapiens_gene_ensembl__transcript__main.txt$",
+    "pattern" : "^hsapiens_gene_ensembl__transcript__main.txt(.gz?)$",
     "role" : "SYSTEM",
     "uniqueFields" : [ ],
     "fields" : [ {
@@ -3485,7 +3485,7 @@
   }, {
     "name" : "mirna_mirbase",
     "label" : null,
-    "pattern" : "^mirna_mirbase.txt$",
+    "pattern" : "^mirna_mirbase.txt(.gz?)$",
     "role" : "SYSTEM",
     "uniqueFields" : [ ],
     "fields" : [ {
@@ -3553,7 +3553,7 @@
   }, {
     "name" : "hsap_gene",
     "label" : null,
-    "pattern" : "^hsapiens_gene_ensembl__gene__main.txt$",
+    "pattern" : "^hsapiens_gene_ensembl__gene__main.txt(.gz?)$",
     "role" : "SYSTEM",
     "uniqueFields" : [ ],
     "fields" : [ {
