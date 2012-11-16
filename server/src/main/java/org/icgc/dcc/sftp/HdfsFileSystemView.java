@@ -28,6 +28,8 @@ import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.filesystem.DccFileSystemException;
 import org.icgc.dcc.filesystem.ReleaseFileSystem;
 import org.icgc.dcc.release.ReleaseService;
+import org.icgc.dcc.release.model.Release;
+import org.icgc.dcc.release.model.SubmissionState;
 import org.icgc.dcc.security.UsernamePasswordAuthenticator;
 
 /**
@@ -60,8 +62,8 @@ public class HdfsFileSystemView implements FileSystemView {
   public SshFile getFile(String file) {
     Path filePath = getFilePath(file);
     Subject currentSubject = this.passwordAuthenticator.getSubject();
-    ReleaseFileSystem rfs =
-        this.dccFileSystem.getReleaseFilesystem(this.releaseService.getNextRelease().getRelease(), currentSubject);
+    Release curRelease = this.releaseService.getNextRelease().getRelease();
+    ReleaseFileSystem rfs = this.dccFileSystem.getReleaseFilesystem(curRelease, currentSubject);
     RootHdfsSshFile root = new RootHdfsSshFile(rfs, this.projectService, this.releaseService);
 
     switch(filePath.depth()) {
@@ -71,6 +73,16 @@ public class HdfsFileSystemView implements FileSystemView {
       return this.getHdfsSshFile(rfs, root, filePath);
     case 2:
       Path parentDirPath = filePath.getParent();
+      // check if the current project is validating
+      String projectKey = parentDirPath.getName();
+      if(curRelease.getSubmission(projectKey).getState() == SubmissionState.SIGNED_OFF) {
+        throw new DccFileSystemException("Project " + projectKey + " is signed off.");
+      }
+      if(curRelease.getSubmission(projectKey).getState() == SubmissionState.QUEUED
+          && curRelease.getQueuedProjectKeys().isEmpty() == false
+          && curRelease.getQueuedProjectKeys().get(0).equals(projectKey)) {
+        throw new DccFileSystemException("Project " + projectKey + " is validating.");
+      }
       return new FileHdfsSshFile(this.getHdfsSshFile(rfs, root, parentDirPath), filePath.getName());
     default:
       throw new DccFileSystemException("Invalid file path: " + file);
