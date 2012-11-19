@@ -23,6 +23,8 @@ public class ReleaseFileSystem {
 
   private final Subject userSubject;
 
+  public static final String SYSTEM_FILES = "SystemFiles";
+
   public ReleaseFileSystem(DccFileSystem dccFilesystem, Release release, Subject subject) {
     super();
 
@@ -111,14 +113,14 @@ public class ReleaseFileSystem {
   }
 
   public Path getSystemDirectory() {
-    return new Path(this.getReleaseDirectory(), "SystemFiles");
+    return new Path(this.getReleaseDirectory(), ReleaseFileSystem.SYSTEM_FILES);
   }
 
-  public Boolean isSystemDirectory(Path path) {
+  public boolean isSystemDirectory(Path path) {
     if(this.userSubject == null) {
-      return this.getSystemDirectory().getName().equals(path.getName());
+      return ReleaseFileSystem.SYSTEM_FILES.equals(path.getName());
     } else {
-      return this.getSystemDirectory().getName().equals(path.getName()) && this.userSubject.hasRole("admin");
+      return ReleaseFileSystem.SYSTEM_FILES.equals(path.getName()) && this.userSubject.hasRole("admin");
     }
   }
 
