@@ -127,9 +127,4 @@ public abstract class BaseDirectoryHdfsSshFile extends HdfsSshFile {
   }
 
   public abstract void notifyModified();
-
-  @Override
-  public boolean isWritable() {
-    return super.isWritable();
-  }
 }
