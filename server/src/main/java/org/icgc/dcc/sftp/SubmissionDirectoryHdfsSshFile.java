@@ -18,9 +18,6 @@
 package org.icgc.dcc.sftp;
 
 import org.icgc.dcc.filesystem.SubmissionDirectory;
-import org.icgc.dcc.release.model.Release;
-import org.icgc.dcc.release.model.Submission;
-import org.icgc.dcc.release.model.SubmissionState;
 
 class SubmissionDirectoryHdfsSshFile extends BaseDirectoryHdfsSshFile {
 
@@ -42,18 +39,9 @@ class SubmissionDirectoryHdfsSshFile extends BaseDirectoryHdfsSshFile {
       return false;
     }
     // check if the current project is validating
-    String projectKey = this.directory.getProjectKey();
-    Submission submission = this.directory.getSubmission();
-    Release curRelease = this.directory.getRelease();
-
-    if(submission.getState() == SubmissionState.SIGNED_OFF) {
+    if(this.directory.isWritable() == false) {
       return false;
     }
-    if(submission.getState() == SubmissionState.QUEUED && curRelease.getQueuedProjectKeys().isEmpty() == false
-        && curRelease.getQueuedProjectKeys().get(0).equals(projectKey)) {
-      return false;
-    }
-
     return super.isWritable();
   }
 

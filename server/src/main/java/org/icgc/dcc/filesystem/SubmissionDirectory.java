@@ -92,11 +92,14 @@ public class SubmissionDirectory {
     HadoopUtils.rmr(this.dccFileSystem.getFileSystem(), getValidationDirPath());
   }
 
-  public Release getRelease() {
-    return this.release;
-  }
-
-  public DccFileSystem getFileSystem() {
-    return this.dccFileSystem;
+  public boolean isWritable() {
+    if(submission.getState() == SubmissionState.SIGNED_OFF) {
+      return false;
+    }
+    if(submission.getState() == SubmissionState.QUEUED && release.getQueuedProjectKeys().isEmpty() == false
+        && release.getQueuedProjectKeys().get(0).equals(project.getKey())) {
+      return false;
+    }
+    return true;
   }
 }
