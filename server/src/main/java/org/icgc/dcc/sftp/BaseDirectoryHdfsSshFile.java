@@ -43,7 +43,6 @@ public abstract class BaseDirectoryHdfsSshFile extends HdfsSshFile {
     checkNotNull(directoryName);
     this.root = root;
     this.directoryName = directoryName;
-
   }
 
   @Override
