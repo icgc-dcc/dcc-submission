@@ -117,11 +117,7 @@ public class ReleaseFileSystem {
   }
 
   public boolean isSystemDirectory(Path path) {
-    if(this.userSubject == null) {
-      return ReleaseFileSystem.SYSTEM_FILES.equals(path.getName());
-    } else {
-      return ReleaseFileSystem.SYSTEM_FILES.equals(path.getName()) && this.userSubject.hasRole("admin");
-    }
+    return ReleaseFileSystem.SYSTEM_FILES.equals(path.getName()) && this.userSubject.hasRole("admin");
   }
 
   private boolean isApplication() {
