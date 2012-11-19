@@ -223,10 +223,6 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     return this.getSubmission(SubmissionState.SIGNED_OFF);
   }
 
-  public ReleaseFileSystem getReleaseFileSystem(Release release) {
-    return this.fs.getReleaseFilesystem(release);
-  }
-
   public void signOff(String user, List<String> projectKeys, String releaseName) {
     log.info("signinng off: {}", projectKeys);
 
