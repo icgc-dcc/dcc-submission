@@ -18,13 +18,14 @@
 package org.icgc.dcc.sftp;
 
 import org.icgc.dcc.filesystem.SubmissionDirectory;
+import org.icgc.dcc.release.ReleaseService;
 
 class SubmissionDirectoryHdfsSshFile extends BaseDirectoryHdfsSshFile {
 
   private final SubmissionDirectory directory;
 
-  public SubmissionDirectoryHdfsSshFile(RootHdfsSshFile root, String directoryName) {
-    super(root, directoryName);
+  public SubmissionDirectoryHdfsSshFile(RootHdfsSshFile root, String directoryName, ReleaseService releaseService) {
+    super(root, directoryName, releaseService);
     this.directory = root.getSubmissionDirectory(directoryName);
   }
 

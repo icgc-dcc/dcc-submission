@@ -26,7 +26,11 @@ import java.util.List;
 import org.apache.hadoop.fs.Path;
 import org.apache.sshd.server.SshFile;
 import org.icgc.dcc.filesystem.DccFileSystemException;
+import org.icgc.dcc.filesystem.ReleaseFileSystem;
 import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
+import org.icgc.dcc.release.ReleaseService;
+import org.icgc.dcc.release.model.Release;
+import org.icgc.dcc.release.model.SubmissionState;
 
 /**
  * 
@@ -37,12 +41,15 @@ public abstract class BaseDirectoryHdfsSshFile extends HdfsSshFile {
 
   private final String directoryName;
 
-  protected BaseDirectoryHdfsSshFile(RootHdfsSshFile root, String directoryName) {
+  private final ReleaseService releaseService;
+
+  protected BaseDirectoryHdfsSshFile(RootHdfsSshFile root, String directoryName, ReleaseService releaseService) {
     super(new Path(root.path, directoryName.isEmpty() ? "/" : directoryName), root.fs);
     checkNotNull(root);
     checkNotNull(directoryName);
     this.root = root;
     this.directoryName = directoryName;
+    this.releaseService = releaseService;
   }
 
   @Override
@@ -126,4 +133,24 @@ public abstract class BaseDirectoryHdfsSshFile extends HdfsSshFile {
   }
 
   public abstract void notifyModified();
+
+  @Override
+  public boolean isWritable() {
+    // check if the current project is validating
+    String projectKey = this.directoryName;
+    Release curRelease = this.releaseService.getNextRelease().getRelease();
+    ReleaseFileSystem curFS = this.releaseService.getReleaseFileSystem(curRelease);
+    if(curFS.isSystemDirectory(path)) {
+      return super.isWritable();
+    }
+    if(curRelease.getSubmission(projectKey).getState() == SubmissionState.SIGNED_OFF) {
+      return false;
+    }
+    if(curRelease.getSubmission(projectKey).getState() == SubmissionState.QUEUED
+        && curRelease.getQueuedProjectKeys().isEmpty() == false
+        && curRelease.getQueuedProjectKeys().get(0).equals(projectKey)) {
+      return false;
+    }
+    return super.isWritable();
+  }
 }

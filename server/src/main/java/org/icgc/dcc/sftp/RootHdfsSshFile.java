@@ -104,9 +104,9 @@ class RootHdfsSshFile extends HdfsSshFile {
       try {
         // if it is System File directory and admin user, add to file list
         if(this.rfs.isSystemDirectory(path)) {
-          sshFileList.add(new SystemFileHdfsSshFile(this, path.getName()));
+          sshFileList.add(new SystemFileHdfsSshFile(this, path.getName(), releases));
         } else {
-          sshFileList.add(new SubmissionDirectoryHdfsSshFile(this, path.getName()));
+          sshFileList.add(new SubmissionDirectoryHdfsSshFile(this, path.getName(), releases));
         }
       } catch(DccFileSystemException e) {
         Log.info("Directory skipped due to insufficient permissions: " + path.getName());
@@ -127,10 +127,10 @@ class RootHdfsSshFile extends HdfsSshFile {
     case 0:
       return this;
     case 1:
-      return new SubmissionDirectoryHdfsSshFile(this, filePath.getName());
+      return new SubmissionDirectoryHdfsSshFile(this, filePath.getName(), releases);
     case 2:
       SubmissionDirectoryHdfsSshFile parentDir =
-          new SubmissionDirectoryHdfsSshFile(this, filePath.getParent().getName());
+          new SubmissionDirectoryHdfsSshFile(this, filePath.getParent().getName(), releases);
       return new FileHdfsSshFile(parentDir, filePath.getName());
     }
     throw new DccFileSystemException("Invalid file path: " + this.getAbsolutePath() + filePath.toString());
