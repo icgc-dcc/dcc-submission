@@ -91,4 +91,12 @@ public class SubmissionDirectory {
   public void removeSubmissionDir() {
     HadoopUtils.rmr(this.dccFileSystem.getFileSystem(), getValidationDirPath());
   }
+
+  public Release getRelease() {
+    return this.release;
+  }
+
+  public DccFileSystem getFileSystem() {
+    return this.dccFileSystem;
+  }
 }

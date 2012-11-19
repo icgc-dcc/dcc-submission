@@ -17,15 +17,14 @@
  */
 package org.icgc.dcc.sftp;
 
-import org.icgc.dcc.release.ReleaseService;
 
 /**
  * 
  */
 public class SystemFileHdfsSshFile extends BaseDirectoryHdfsSshFile {
 
-  public SystemFileHdfsSshFile(RootHdfsSshFile root, String directoryName, ReleaseService releaseService) {
-    super(root, directoryName, releaseService);
+  public SystemFileHdfsSshFile(RootHdfsSshFile root, String directoryName) {
+    super(root, directoryName);
   }
 
   @Override

@@ -104,9 +104,9 @@ public class HdfsFileSystemView implements FileSystemView {
   private BaseDirectoryHdfsSshFile getHdfsSshFile(ReleaseFileSystem rfs, RootHdfsSshFile root, Path path) {
     BaseDirectoryHdfsSshFile result;
     if(rfs.isSystemDirectory(path)) {
-      result = new SystemFileHdfsSshFile(root, path.getName(), this.releaseService);
+      result = new SystemFileHdfsSshFile(root, path.getName());
     } else {
-      result = new SubmissionDirectoryHdfsSshFile(root, path.getName(), this.releaseService);
+      result = new SubmissionDirectoryHdfsSshFile(root, path.getName());
     }
     return result;
   }
