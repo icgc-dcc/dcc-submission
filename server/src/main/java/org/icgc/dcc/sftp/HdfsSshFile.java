@@ -146,6 +146,9 @@ abstract class HdfsSshFile implements SshFile {
 
   @Override
   public OutputStream createOutputStream(long offset) throws IOException {
+    if(this.isWritable() == false) {
+      throw new IOException("SFTP is in readonly mode");
+    }
     return fs.create(path);
   }
 

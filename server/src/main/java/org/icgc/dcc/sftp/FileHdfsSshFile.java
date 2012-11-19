@@ -85,8 +85,9 @@ class FileHdfsSshFile extends HdfsSshFile {
   @Override
   public boolean create() throws IOException {
     if(isWritable()) {
-      this.fs.createNewFile(path);
+      // update submission status before start creating files
       this.directory.notifyModified();
+      this.fs.createNewFile(path);
       return true;
     }
     return false;

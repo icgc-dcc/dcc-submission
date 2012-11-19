@@ -91,4 +91,15 @@ public class SubmissionDirectory {
   public void removeSubmissionDir() {
     HadoopUtils.rmr(this.dccFileSystem.getFileSystem(), getValidationDirPath());
   }
+
+  public boolean isWritable() {
+    if(submission.getState() == SubmissionState.SIGNED_OFF) {
+      return false;
+    }
+    if(submission.getState() == SubmissionState.QUEUED && release.getQueuedProjectKeys().isEmpty() == false
+        && release.getQueuedProjectKeys().get(0).equals(project.getKey())) {
+      return false;
+    }
+    return true;
+  }
 }

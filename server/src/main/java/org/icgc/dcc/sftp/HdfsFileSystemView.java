@@ -28,6 +28,7 @@ import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.filesystem.DccFileSystemException;
 import org.icgc.dcc.filesystem.ReleaseFileSystem;
 import org.icgc.dcc.release.ReleaseService;
+import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.security.UsernamePasswordAuthenticator;
 
 /**
@@ -60,8 +61,8 @@ public class HdfsFileSystemView implements FileSystemView {
   public SshFile getFile(String file) {
     Path filePath = getFilePath(file);
     Subject currentSubject = this.passwordAuthenticator.getSubject();
-    ReleaseFileSystem rfs =
-        this.dccFileSystem.getReleaseFilesystem(this.releaseService.getNextRelease().getRelease(), currentSubject);
+    Release curRelease = this.releaseService.getNextRelease().getRelease();
+    ReleaseFileSystem rfs = this.dccFileSystem.getReleaseFilesystem(curRelease, currentSubject);
     RootHdfsSshFile root = new RootHdfsSshFile(rfs, this.projectService, this.releaseService);
 
     switch(filePath.depth()) {

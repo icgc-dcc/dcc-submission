@@ -39,6 +39,10 @@ class SubmissionDirectoryHdfsSshFile extends BaseDirectoryHdfsSshFile {
     if(directory == null || directory.isReadOnly()) {
       return false;
     }
+    // check if the current project is validating
+    if(this.directory.isWritable() == false) {
+      return false;
+    }
     return super.isWritable();
   }
 
