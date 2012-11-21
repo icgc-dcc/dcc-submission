@@ -32,7 +32,7 @@ module.exports = class ReleaseTableView extends DataTableView
   autoRender: true
 
   initialize: ->
-    console.debug "ReleasesTableView#initialize", @collection, @el
+    #console.debug "ReleasesTableView#initialize", @collection, @el
     super
 
     @modelBind 'reset', @updateDataTable
@@ -40,14 +40,20 @@ module.exports = class ReleaseTableView extends DataTableView
     @delegate 'click', '#complete-release-popup-button', @completeReleasePopup
 
   completeReleasePopup: (e) ->
-    console.debug "ReleaseTableView#completeRelease", e
+    #console.debug "ReleaseTableView#completeRelease", e
     @subview('CompleteReleases'
       new CompleteReleaseView
         'name': $(e.currentTarget).data('release-name')
     )
 
+  updateDataTable: ->
+    if not utils.is_admin()
+      dt = @$el.dataTable()
+      dt.fnSetColumnVis( 4, false )
+    super
+
   createDataTable: ->
-    console.debug "ReleasesTableView#createDataTable"
+    #console.debug "ReleasesTableView#createDataTable"
     aoColumns = [
         {
           sTitle: "Name"
@@ -55,27 +61,37 @@ module.exports = class ReleaseTableView extends DataTableView
           mData: (source) ->
             "<a href='/releases/#{source.name}'>#{source.name}</a>"
         }
-        { sTitle: "State", mDataProp: "state" }
+        { sTitle: "State", mData: "state" }
         {
           sTitle: "Release Date"
           mData: (source) ->
             if source.releaseDate
               utils.date(source.releaseDate)
             else
-              if utils.is_admin()
-                """
-                  <a
-                    id="complete-release-popup-button"
-                    data-toggle="modal"
-                    data-release-name="#{source.name}"
-                    href="#complete-release-popup">
-                    Release Now
-                  </a>
-                """
-              else
-                "<em>Unreleased</em>"
+              "<em>Unreleased</em>"
         }
-        { sTitle: "Studies", mDataProp: "submissions.length" }
+        {
+          sTitle: "Projects"
+          mData: (source) ->
+            source.submissions.length
+        }
+        {
+          sTitle: "Action"
+          bSortable: false
+          mData: (source) ->
+            if not source.releaseDate
+              """
+              <button
+                class="m-btn blue-stripe mini"
+                id="complete-release-popup-button"
+                data-toggle="modal"
+                data-release-name="#{source.name}"
+                href="#complete-release-popup">
+                Release Now
+              </button>
+              """
+            else ""
+        }
       ]
 
     @$el.dataTable

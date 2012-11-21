@@ -3,13 +3,23 @@ package org.icgc.dcc.release;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
+import java.io.UnsupportedEncodingException;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Set;
+
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.shiro.subject.Subject;
@@ -51,6 +61,7 @@ import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.mysema.query.mongodb.MongodbQuery;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
+import com.typesafe.config.Config;
 
 public class ReleaseService extends BaseMorphiaService<Release> {
 
@@ -58,11 +69,33 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
   private final DccFileSystem fs;
 
+  private final Config config;
+
   @Inject
-  public ReleaseService(Morphia morphia, Datastore datastore, DccFileSystem fs) {
+  public ReleaseService(Morphia morphia, Datastore datastore, DccFileSystem fs, Config config) {
     super(morphia, datastore, QRelease.release);
     this.fs = fs;
+    this.config = config;
     registerModelClasses(Release.class);
+  }
+
+  public List<Release> getReleases(Subject subject) {
+    List<Release> releases = query().list();
+
+    // filter out all the submissions that the current user can not see
+    for(Release release : releases) {
+      List<Submission> newSubmissions = Lists.newArrayList();
+      for(Submission submission : release.getSubmissions()) {
+        String projectKey = submission.getProjectKey();
+        if(subject.isPermitted(AuthorizationPrivileges.projectViewPrivilege(projectKey))) {
+          newSubmissions.add(submission);
+        }
+      }
+      release.getSubmissions().clear();
+      release.getSubmissions().addAll(newSubmissions);
+    }
+
+    return releases;
   }
 
   public void createInitialRelease(Release initRelease) {
@@ -190,7 +223,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     return this.getSubmission(SubmissionState.SIGNED_OFF);
   }
 
-  public void signOff(List<String> projectKeys) {
+  public void signOff(String user, List<String> projectKeys, String releaseName) {
     log.info("signinng off: {}", projectKeys);
 
     SubmissionState newState = SubmissionState.SIGNED_OFF;
@@ -209,6 +242,29 @@ public class ReleaseService extends BaseMorphiaService<Release> {
       submissionDirectory.removeSubmissionDir();
     }
 
+    // after sign off, send a email to DCC support
+    try {
+      Properties props = new Properties();
+      props.put("mail.smtp.host", this.config.getString("mail.smtp.host"));
+      Session session = Session.getDefaultInstance(props, null);
+      Message msg = new MimeMessage(session);
+      msg.setFrom(new InternetAddress(this.config.getString("mail.from.email"), this.config
+          .getString("mail.from.email")));
+      msg.addRecipient(Message.RecipientType.TO, new InternetAddress(this.config.getString("mail.support.email")));
+
+      msg.setSubject(String.format("Signed off Projects: %s", projectKeys));
+
+      msg.setText(String.format(this.config.getString("mail.signoff_body"), user, projectKeys, releaseName));
+
+      Transport.send(msg);
+
+    } catch(AddressException e) {
+      log.error("an error occured while emailing: ", e);
+    } catch(MessagingException e) {
+      log.error("an error occured while emailing: ", e);
+    } catch(UnsupportedEncodingException e) {
+      log.error("an error occured while emailing: ", e);
+    }
   }
 
   public void deleteQueuedRequest() {

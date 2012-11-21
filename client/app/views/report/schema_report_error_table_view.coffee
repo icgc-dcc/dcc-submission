@@ -40,28 +40,120 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
     @modelBind 'change', @update
 
   errors:
+    CODELIST_ERROR:
+      name: "Invalid value"
+      description: (source) ->
+        """
+        Values do not match any of the allowed values for this field
+        """
+    DISCRETE_VALUES_ERROR:
+      name: "Invalid value"
+      description: (source) ->
+        """
+        Values do not match any of the following allowed values for
+        this field: #{source.parameters?.EXPECTED}
+        """
+    DUPLICATE_HEADER_ERROR:
+      name: "Duplicate field name"
+      description: (source) ->
+        """
+        Duplicate field names found in the file header
+        <em>#{source.parameters?.FIELDS}</em>
+        """
+    RELATION_FILE_ERROR:
+      name: "Required file missing"
+      description: (source) ->
+        """
+        <em>#{source.parameters?.SCHEMA}</em> file is missing
+        """
+    REVERSE_RELATION_FILE_ERROR:
+      name: "Required file missing"
+      description: (source) ->
+        """
+        <em>#{source.parameters?.SCHEMA}</em> file is missing
+        """
+    RELATION_VALUE_ERROR:
+      name: "Relation violation"
+      description: (source) ->
+        """
+        The following <em>#{source.parameters?.FIELDS.join ', '}</em> values
+        do not exist in the reference file
+        <em>#{source.parameters?.SCHEMA}</em>
+        """
+    RELATION_PARENT_VALUE_ERROR:
+      name: "Relation violation"
+      description: (source) ->
+        """
+        The following <em>#{source.parameters?.FIELDS.join ', '}</em> values
+        from the reference file do not exist in the schema
+        <em>#{source.parameters?.SCHEMA}</em>
+        """
     MISSING_VALUE_ERROR:
-      name: "Value Missing"
+      name: "Missing value"
       description: (source) ->
         """
-        Requied values missing for #{source.columnNames} on lines:
+        Missing value for required field. Offending lines
         """
-    RELATION_ERROR:
-      name: "Relation Error"
+    OUT_OF_RANGE_ERROR:
+      name: "Value out of range"
       description: (source) ->
         """
-        Relation error stuff
+        Values are out of range: [#{source.parameters?.MIN},
+        #{source.parameters?.MAX}] (inclusive). Offending lines
         """
+    NOT_A_NUMBER_ERROR:
+      name: "Data type erorr"
+      description: (source) ->
+        """
+        Values for range field are not numerical. Offending lines
+        """
+    VALUE_TYPE_ERROR:
+      name: "Data type error"
+      description: (source) ->
+        """
+        Invalid value types, expected type for this field is
+        <em>#{source.parameters?.EXPECTED}</em>
+        """
+    UNIQUE_VALUE_ERROR:
+      name: "Value uniqueness error"
+      description: (source) ->
+        console.log source
+        """
+        Duplicate values found
+        """
+    STRUCTURALLY_INVALID_ROW_ERROR:
+      name: "Invalid row structure"
+      description: (source) ->
+        """
+        Field counts in all lines are expected to match that of the file
+        header. Offending lines
+        """
+    TOO_MANY_FILES_ERROR:
+      name: "Filename collision"
+      description: (source) ->
+        """
+        More than one file matches the <em>#{source.parameters?.SCHEMA}</em>
+        filename pattern:<br>#{source.parameters?.FILES.join '<br>'}
+        """
+
 
   details: (source) ->
-    if source.errorType is "MISSING_VALUE_ERROR"
+    console.log source
+    if source.errorType in [
+      "MISSING_VALUE_ERROR"
+      "OUT_OF_RANGE_ERROR"
+      "NOT_A_NUMBER_ERROR"
+      "STRUCTURALLY_INVALID_ROW_ERROR"
+      ]
       return source.lines.join ', '
+    else if source.columnNames[0] is "FileLevelError"
+      return ""
 
     out = ""
-    for key, value of source.parameters
-      out += "<strong>#{key}</strong> : #{value}<br>"
+    #for key, value of source.parameters
+    #  out += "<strong>#{key}</strong> : #{value}<br>"
 
-    out += "<br><table class='table-stripped table-condensed'>
+    out += "<br><table class='table table-condensed'>
       <th style='border:none'>Line</th>
       <th style='border:none'>Value</th>"
     for i in source.lines
@@ -87,7 +179,8 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
         }
         {
           sTitle: "Columns"
-          mData: "columnNames"
+          mData: (source) ->
+            source.columnNames.join "<br>"
         }
         {
           sTitle: "Count of occurrences"
@@ -96,11 +189,12 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
         {
           sTitle: "Details"
           mData: (source) =>
-            """
-            #{@errors[source.errorType]?.description(source)}
-            <br>
-            #{@details source}
-            """
+            out = "#{@errors[source.errorType]?.description(source)}"
+            if source.count > 50
+              out += " <em>(Showing first 50 errors)</em> "
+            out += "<br>"
+            out += @details source
+            out
         }
       ]
 

@@ -56,7 +56,11 @@ module.exports = class ReleaseController extends BaseController
     @model.fetch
       success: => @view.render()
       error: ->
-        Chaplin.mediator.publish '!startupController', 'release', 'list'
+        if Chaplin.mediator.user
+          Chaplin.mediator.publish 'notify',
+            "Release #{params.release} not found.",
+            'error'
+          Chaplin.mediator.publish '!startupController', 'release', 'list'
 
   submission: (params) ->
     #console.debug 'ReleaseController#submission', params
@@ -65,8 +69,12 @@ module.exports = class ReleaseController extends BaseController
     @view = new SubmissionView {@model}
     @model.fetch
       error: ->
-        Chaplin.mediator.publish '!startupController', 'release', 'show'
-          release: params.release
+        if Chaplin.mediator.user
+          Chaplin.mediator.publish 'notify',
+            "Submission #{params.submission} not found.",
+            'error'
+          Chaplin.mediator.publish '!startupController', 'release', 'show'
+            release: params.release
 
   report: (params) ->
     #console.debug 'ReleaseController#report', params
@@ -79,6 +87,10 @@ module.exports = class ReleaseController extends BaseController
     @view = new SchemaReportPageView {@model}
     @model.fetch
       error: ->
-        Chaplin.mediator.publish '!startupController', 'release', 'submission'
-          release: params.release
-          submission: params.submission
+        if Chaplin.mediator.user
+          Chaplin.mediator.publish 'notify',
+            "File #{params.report} not found.",
+            'error'
+          Chaplin.mediator.publish '!startupController', 'release', 'submission'
+            release: params.release
+            submission: params.submission

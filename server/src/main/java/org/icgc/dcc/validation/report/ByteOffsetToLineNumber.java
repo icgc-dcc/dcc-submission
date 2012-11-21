@@ -19,13 +19,11 @@ package org.icgc.dcc.validation.report;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.LineNumberReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -34,16 +32,20 @@ import org.apache.hadoop.fs.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 
-public class ByteOffsetToLineNumber {
+public class ByteOffsetToLineNumber {// TODO: make non-static class
 
   private static final Logger log = LoggerFactory.getLogger(ByteOffsetToLineNumber.class);
+
+  private static final int BUFFER_SIZE = 1000000; // in bytes
 
   @Inject
   private static FileSystem fs;
 
-  public static Map<Long, Integer> convert(Path file, Collection<Long> offsets) throws IOException {
+  public static Map<Long, Long> convert(Path file, Collection<Long> offsets) {
     checkNotNull(file);
     checkNotNull(fs);
 
@@ -51,23 +53,95 @@ public class ByteOffsetToLineNumber {
       log.info("Local filesystem: not remapping line numbers for path " + file.toString());
       return null;
     }
+    log.info("Hdfs: remapping line numbers for path " + file.toString());
 
-    log.info("Remapping byte offsets to line numbers for " + file.toString());
     List<Long> sortedOffsets = new ArrayList<Long>(offsets);
-    Collections.sort(sortedOffsets);
-    Map<Long, Integer> offsetToLine = new HashMap<Long, Integer>(sortedOffsets.size());
+    Collections.sort(sortedOffsets); // e.g. [11277, 11511, 11744, 11976, 32434, 32668, 32901, 33135]
+    Map<Long, Long> byteToLineOffsetMap = buildByteToLineOffsetMap(file, sortedOffsets);
+    return byteToLineOffsetMap;
+  }
 
-    LineNumberReader lineNumberReader = new LineNumberReader(new InputStreamReader(fs.open(file)));
-    lineNumberReader.setLineNumber(1);
-    long currentByte = 0;
+  private static Map<Long, Long> buildByteToLineOffsetMap(Path file, List<Long> sortedOffsets) {
+    DataInputStream is = null;
+    try {
+      is = fs.open(file);
 
-    for(long offset : sortedOffsets) {
-      while(currentByte < offset) {
-        currentByte += lineNumberReader.readLine().getBytes().length + 1; // "+1" to account for line terminator
-      }
-      offsetToLine.put(offset, lineNumberReader.getLineNumber());
+    } catch(IOException e) {
+      throw new RuntimeException( // TODO: replace with our own
+          String.format("%s", file));
     }
 
-    return offsetToLine;
+    Map<Long, Long> offsetMap = Maps.newLinkedHashMap();
+
+    long previousOffset = 0;
+    long lineOffset = 1; // 1-based
+    for(Long byteOffset : sortedOffsets) {
+      long currentOffset = byteOffset.longValue(); // TODO: make non-static class out of it so as store those in members
+      if(currentOffset == -1L) {
+        offsetMap.put(-1L, -1L);
+      } else {
+        // and log useful error messages
+        Preconditions.checkState(currentOffset >= 0, "Current offset is negative: %s", currentOffset);
+        Preconditions.checkState(currentOffset > previousOffset,
+            "Current offset %s is greater than previous offset %s", currentOffset, previousOffset); // no two same
+                                                                                                    // offsets
+
+        lineOffset += countLinesInInterval(is, previousOffset, currentOffset);
+        offsetMap.put(byteOffset, lineOffset);
+
+        previousOffset = byteOffset;
+      }
+    }
+
+    try {
+      is.close();
+    } catch(IOException e) {
+      throw new RuntimeException( // TODO: replace with our own
+          String.format("%s", file));
+    }
+
+    return offsetMap;
+  }
+
+  private static final long countLinesInInterval(DataInputStream is, long previousOffset, long currentOffset) {
+    long difference = currentOffset - previousOffset;
+    long quotient = (long) Math.floor(difference / (double) BUFFER_SIZE);
+    int remainder = (int) (difference % BUFFER_SIZE);
+
+    long lines = 0;
+    for(int i = 0; i < quotient; i++) {
+      lines += countLinesInChunk(is, BUFFER_SIZE, false); // can be zero
+    }
+    if(remainder > 0) {
+      lines += countLinesInChunk(is, remainder, true); // at least one
+    }
+
+    return lines;
+  }
+
+  private static final long countLinesInChunk(DataInputStream is, int size, boolean lastChunk) {
+    byte[] buffer = readBuffer(is, size);
+    if(lastChunk && buffer[size - 1] != '\n') {
+      throw new RuntimeException( // TODO: replace with our own
+          String.format("expected '\\n' instead of %s for last chunk: %s", buffer[size - 1], new String(buffer)));
+    }
+
+    long lines = 0;
+    for(int i = 0; i < size; i++) {
+      if(buffer[i] == '\n') { // simply ignore '\r'
+        lines++;
+      }
+    }
+    return lines;
+  }
+
+  private static byte[] readBuffer(DataInputStream is, int size) {
+    byte[] buffer = new byte[size];
+    try {
+      is.readFully(buffer);
+    } catch(IOException e) {
+      throw new RuntimeException(String.format("%s", size));
+    }
+    return buffer;
   }
 }

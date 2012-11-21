@@ -58,7 +58,7 @@ public class FileSchemaDirectory {
         pathNames.add(path.getName());
       }
       throw new PlanningFileLevelException(paths.get(0).getName().toString(), ValidationErrorCode.TOO_MANY_FILES_ERROR,
-          pathNames);
+          fileSchema.getName(), pathNames);
     }
     return paths != null && paths.size() > 0;
   }

@@ -110,10 +110,12 @@ public class NextReleaseResource {
         AuthorizationPrivileges.RELEASE_SIGNOFF.getPrefix()) == false) {
       return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
     }
-    ResponseTimestamper.evaluate(req, this.releaseService.getNextRelease().getRelease());
+    Release release = this.releaseService.getNextRelease().getRelease();
+    ResponseTimestamper.evaluate(req, release);
 
     if(this.releaseService.hasProjectKey(projectKeys)) {
-      this.releaseService.signOff(projectKeys);
+      String user = ((ShiroSecurityContext) securityContext).getUserPrincipal().getName();
+      this.releaseService.signOff(user, projectKeys, release.getName());
       return Response.ok().build();
     } else {
       return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage("ProjectKeyNotFound")).build();

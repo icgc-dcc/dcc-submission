@@ -20,7 +20,7 @@
 * POSSIBILITY OF SUCH DAMAGE.
 """
 
-
+mediator = require 'mediator'
 DataTableView = require 'views/base/data_table_view'
 utils = require 'lib/utils'
 
@@ -31,7 +31,7 @@ module.exports = class ReportTableView extends DataTableView
   autoRender: false
 
   initialize: ->
-    console.debug "ReportTableView#initialize", @model, @el
+    #console.debug "ReportTableView#initialize", @model, @el
     @report = @model.get "report"
     @collection = @report.get "schemaReports"
 
@@ -44,7 +44,7 @@ module.exports = class ReportTableView extends DataTableView
     @delegate 'click', '.summary', @rowSummary
 
   update: ->
-    console.debug "ReportTableView#update", @model
+    #console.debug "ReportTableView#update", @model
     @report = @model.get "report"
     @collection = @report.get "schemaReports"
     @updateDataTable()
@@ -71,7 +71,7 @@ module.exports = class ReportTableView extends DataTableView
       dT.fnOpen(nTr, @formatDetails(data), "details #{style}")
 
   rowSummary: (e) ->
-    console.debug "ReportTableView#rowSummary", e, @anOpen
+    #console.debug "ReportTableView#rowSummary", e, @anOpen
     control = e.target
     nTr = control.parentNode.parentNode
     dT = @.$(nTr.parentNode.parentNode).dataTable()
@@ -89,7 +89,7 @@ module.exports = class ReportTableView extends DataTableView
       dT.fnOpen(nTr, @summaryDetails(data), "summary_details well")
 
   summaryDetails: (data) ->
-    console.debug "ReportTableView#summaryDetails", data
+    #console.debug "ReportTableView#summaryDetails", data
     type = switch data.type
       when "AVERAGE" then "Summary Statistics"
       when "FREQUENCY" then "Value Frequencies"
@@ -117,7 +117,7 @@ module.exports = class ReportTableView extends DataTableView
       when "relationColumnNames" then "Relation Columns"
 
   formatParams: (error) ->
-    console.debug "ReportTableView#formatParams", error
+    #console.debug "ReportTableView#formatParams", error
     out = ""
     for key, value of error.parameters
       out += "<strong>#{@formatErrorKey(key)}</strong> : #{value}<br>"
@@ -136,7 +136,7 @@ module.exports = class ReportTableView extends DataTableView
     out
 
   formatDetails: (data) ->
-    console.debug "ReportTableView#formatDetails", data
+    #console.debug "ReportTableView#formatDetails", data
 
     sOut = ''
     sErr = ''
@@ -201,17 +201,14 @@ module.exports = class ReportTableView extends DataTableView
 
 
   updateDataTable: ->
-    srs = @model.get('report').get('schemaReports')
-    errors = (item for item in srs.pluck("errors") when item?)
-    fieldReport = (item for item in srs.pluck("fieldReports") when item?)
-    if errors or fieldReports
+    if @model.get("state") in ["VALID", "INVALID", "SIGNED_OFF"]
       dt = @$el.dataTable()
       dt.fnSetColumnVis( 3, true )
       dt.fnSetColumnVis( 4, true )
     super
 
   createDataTable: ->
-    console.debug "ReportTableView#createDataTable", @$el
+    #console.debug "ReportTableView#createDataTable", @$el, @model.get "name"
     aoColumns = [
         {
           sTitle: "File"
@@ -233,8 +230,8 @@ module.exports = class ReportTableView extends DataTableView
         {
           sTitle: "Status"
           bVisible: false
-          mData: (source) ->
-            if source.matchedSchemaName
+          mData: (source, type) ->
+            state = if source.matchedSchemaName
               if source.errors.length
                 "INVALID"
               else if source.fieldReports.length
@@ -243,6 +240,19 @@ module.exports = class ReportTableView extends DataTableView
                 "NOT VALIDATED"
             else
               "SKIPPED"
+
+            if type == "display"
+              return switch state
+                when "INVALID"
+                  "<span class='error'>" +
+                  "<i class='icon-remove-sign'></i> " +
+                  state + "</span>"
+                when "VALID"
+                    "<span class='valid'>" +
+                    "<i class='icon-ok-sign'></i> " +
+                    state + "</span>"
+
+            state
         }
         {
           sTitle: "Report"
@@ -261,19 +271,18 @@ module.exports = class ReportTableView extends DataTableView
     @$el.dataTable
       sDom:
         "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>"
+       oLanguage:
+        "sLengthMenu": "_MENU_ files per page"
+        "sEmptyTable": "You need to upload files for this submission."
       bPaginate: false
       aaSorting: [[ 1, "asc" ]]
       aoColumns: aoColumns
       sAjaxSource: ""
       sAjaxDataProp: ""
       fnRowCallback: (nRow, aData, iDisplayIndex, iDisplayIndexFull) ->
-        cell = $('td:nth-child(4)', nRow)
-        switch cell.html()
-          when "VALID"
-            cell.css 'color', '#468847'
-          when "INVALID", "ERROR"
-            cell.css 'color', '#B94A48'
-          when "SKIPPED"
+        switch aData.matchedSchemaName
+          when null
             $(nRow).css {'color': '#999', 'font-style': 'italic'}
+
       fnServerData: (sSource, aoData, fnCallback) =>
         fnCallback @collection.toJSON()

@@ -4,24 +4,24 @@
     <li><span>{{projectKey}}</span></li>
 </ul>
 <div class="row-fluid" style="margin-bottom:20px">
-    <div class="span6">
+    <div class="summary span6">
         <div class="row-fluid">
             <h2 class="pull-left">
                 Submission Summary
             </h2>
-            {{#if submissionFiles.length}}
-            <div style="margin-top:17px; margin-right:50px" class="pull-right">
+            {{#show_submission_action_button submissionFiles}}
+            <div style="margin-top:7px; margin-right:50px" class="pull-right">
                 {{submission_action state}}
             </div>
-            {{/if}}
+            {{/show_submission_action_button}}
         </div>
-        <span>Name</span>: <span>{{projectName}}</span><br>
-        <span>State</span>: <span class="{{lowercase state}}">{{underscore2space state}}</span><br>
-        <span>Number of submitted files</span>: <span>{{submissionFiles.length}}</span><br>
-        <span>Size of submission data</span>: <span>{{fileSize submissionFiles}}</span>
+        <span class="key">Name</span>&nbsp;&nbsp;&nbsp;<span>{{projectName}}</span><br>
+        <span class="key">State</span>&nbsp;&nbsp;&nbsp;<strong><span class="{{lowercase state}}">{{underscore2space state}}</span></strong><br>
+        <span class="key">Number of submitted files</span>&nbsp;&nbsp;&nbsp;<span>{{submissionFiles.length}}</span><br>
+        <span class="key">Size of submission data</span>&nbsp;&nbsp;&nbsp;<span>{{fileSize submissionFiles}}</span>
         <!--
         <div style="margin-top:-12px; margin-right:50px" class="pull-right">
-            <button class="btn btn-primary disabled">Download Report</button>
+            <button class="m-btn blue">Download Report</button>
         </div>
         -->
     </div>

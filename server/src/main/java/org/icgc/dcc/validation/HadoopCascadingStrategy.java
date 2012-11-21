@@ -63,6 +63,8 @@ public class HadoopCascadingStrategy extends BaseCascadingStrategy {
     for(Map.Entry<String, ConfigValue> configEntry : hadoopConfig.entrySet()) {
       properties.put(configEntry.getKey(), configEntry.getValue().unwrapped());
     }
+    properties.put("mapred.compress.map.output", true);
+    properties.put("mapred.map.output.compression.codec", "org.apache.hadoop.io.compress.SnappyCodec");
     AppProps.setApplicationJarClass(properties, org.icgc.dcc.Main.class);
     return new HadoopFlowConnector(properties);
   }

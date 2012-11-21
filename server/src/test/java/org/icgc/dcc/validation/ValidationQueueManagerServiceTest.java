@@ -23,7 +23,6 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import org.icgc.dcc.dictionary.DictionaryService;
 import org.icgc.dcc.release.NextRelease;
 import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.Release;
@@ -43,8 +42,6 @@ public class ValidationQueueManagerServiceTest {
 
   private ReleaseService mockReleaseService;
 
-  private DictionaryService mockDictionaryService;
-
   private ValidationService mockValidationService;
 
   private Config mockConfig;
@@ -56,7 +53,6 @@ public class ValidationQueueManagerServiceTest {
     mockRelease = mock(Release.class);
     mockNextRelease = mock(NextRelease.class);
     mockReleaseService = mock(ReleaseService.class);
-    mockDictionaryService = mock(DictionaryService.class);
     mockValidationService = mock(ValidationService.class);
     mockConfig = mock(Config.class);
 
@@ -68,7 +64,7 @@ public class ValidationQueueManagerServiceTest {
         .thenReturn(new ArrayList<String>());
 
     validationQueueManagerService =
-        new ValidationQueueManagerService(mockReleaseService, mockDictionaryService, mockValidationService, mockConfig);
+        new ValidationQueueManagerService(mockReleaseService, mockValidationService, mockConfig);
   }
 
   @Ignore

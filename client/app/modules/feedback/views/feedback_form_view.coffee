@@ -21,20 +21,38 @@
 """
 
 
-Chaplin = require 'chaplin'
-Controller = require 'controllers/base/controller'
+View = require 'views/base/view'
+template = require 'modules/feedback/views/templates/form'
 
-module.exports = class AuthController extends Controller
-  historyURL: 'auth'
+Feedback = require 'modules/feedback/models/feedback'
 
-  logout: ->
-    # Save the current location so you don't lose your
-    # place on logout
-    location = window.location
-    localStorage.clear()
-    Chaplin.mediator.publish '!logout'
-    # I would rather use a Chaplin or Backbone method
-    # here, but this is the only way I can get the url
-    # to change without a refresh
-    window.location = location
-      
+module.exports = class FeedbackFormView extends View
+  template: template
+  template = null
+
+  container: 'body'
+  containerMethod: 'append'
+  autoRender: true
+  tagName: 'div'
+  className: "modal hide fade"
+  id: 'feedback-popup'
+
+  initialize: ->
+    #console.debug "FeedbackFormView#initialize"
+    super
+
+    @$el.modal('show')
+
+    @delegate 'click', '#feedback-submit-button', @sendFeedback
+
+  sendFeedback: (e) ->
+    #console.debug "FeedbackFormView#initialize", e
+
+    data = @.$('form').serializeObject()
+
+    feedback = new Feedback data
+
+    feedback.save {},
+      success: =>
+        @$el.modal 'hide'
+        @dispose()

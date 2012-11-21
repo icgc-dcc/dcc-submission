@@ -40,7 +40,7 @@ module.exports = class ValidateSubmissionView extends View
   initialize: ->
     console.debug "ValidateSubmissionView#initialize", @options
     @model = @options.submission
-
+    @model.set("email", mediator.user.get("email"))
     release = new NextRelease()
     release.fetch
       success: (data) =>
@@ -49,11 +49,27 @@ module.exports = class ValidateSubmissionView extends View
     super
 
     @modelBind 'change', @render
-
     @delegate 'click', '#validate-submission-button', @validateSubmission
 
   validateSubmission: (e) ->
     console.debug "ValidateSubmissionView#completeRelease", @model
+    emails = @.$("#emails")
+    alert = @.$('#email-error')
+    val = @.$("#emails").val()
+    mediator.user.set "email", val
+
+    if not val or not val.match /.+@.+\..+/i
+      if alert.length
+        alert.text("You must enter at least one valid email
+           address before submitting submission for Validation!")
+      else
+        emails
+          .before("<div id='email-error' class='error'>You must enter at least
+            one valid email address before submitting submission for
+            Validation!</div>")
+      return
+
+
     nextRelease = new NextRelease()
 
     nextRelease.queue [
@@ -63,9 +79,6 @@ module.exports = class ValidateSubmissionView extends View
       success: =>
         @$el.modal 'hide'
         mediator.publish "validateSubmission"
-        mediator.publish "notify", "Submission <a href='/releases/" +
-          "#{@model.get('release')}/submissions/#{@model.get('projectKey')}'>"+
-          "#{@model.get('projectName')}</a> has been queued for Validation. " +
-          "There are currently #{@model.get('queue')} submission(s) ahead " +
-          "in the queue."
+        mediator.publish "notify", "Submission for Project "+
+          "#{@model.get('projectName')} has been queued for Validation."
 

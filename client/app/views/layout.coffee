@@ -23,6 +23,7 @@
 
 Chaplin = require 'chaplin'
 NotificationView = require 'views/notification_view'
+FeedbackTabView = require 'modules/feedback/views/feedback_tab_view'
 Model = require 'models/base/model'
 
 module.exports = class Layout extends Chaplin.Layout
@@ -31,8 +32,18 @@ module.exports = class Layout extends Chaplin.Layout
     # @subscribeEvent 'startupController', @doSomething
 
     @subscribeEvent 'notify', @notify
+    @subscribeEvent 'login', @feedback
+    @subscribeEvent 'logout', @feedbackClose
 
-  notify: (message) ->
-    console.debug "Layout#notify", message
+  notify: (message, status="success") ->
+    #console.debug "Layout#notify", message
     new NotificationView
-      model: new Model("message": message)
+      model: new Model
+        "message": message
+        "status": status
+
+  feedback: ->
+    @feedbackTabView = new FeedbackTabView()
+
+  feedbackClose: ->
+    @feedbackTabView?.remove()

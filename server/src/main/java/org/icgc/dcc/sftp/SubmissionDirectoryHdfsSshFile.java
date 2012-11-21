@@ -30,15 +30,28 @@ class SubmissionDirectoryHdfsSshFile extends BaseDirectoryHdfsSshFile {
 
   @Override
   public String getAbsolutePath() {
-    return SEPARATOR + directory.getProjectKey();
+    return SEPARATOR + directoryName;
   }
 
   @Override
   public boolean isWritable() {
-    if(directory.isReadOnly()) {
+    // See doesExist for explanation of the null check
+    if(directory == null || directory.isReadOnly()) {
+      return false;
+    }
+    // check if the current project is validating
+    if(this.directory.isWritable() == false) {
       return false;
     }
     return super.isWritable();
+  }
+
+  @Override
+  public boolean doesExist() {
+    // If directory is null it means that the directory doesn't exist or the user does not have permission to access it
+    // We are using this in lieu of throwing an exception, since Mina's interface erroneously disallows checked
+    // exceptions
+    return directory == null ? false : super.doesExist();
   }
 
   @Override

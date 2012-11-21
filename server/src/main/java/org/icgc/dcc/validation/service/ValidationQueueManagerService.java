@@ -40,7 +40,6 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
-import org.icgc.dcc.dictionary.DictionaryService;
 import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.QueuedProject;
 import org.icgc.dcc.release.model.Release;
@@ -79,8 +78,6 @@ public class ValidationQueueManagerService extends AbstractService {
 
   private final ReleaseService releaseService;
 
-  private final DictionaryService dictionaryService;
-
   private final ValidationService validationService;
 
   private final Config config;
@@ -88,17 +85,15 @@ public class ValidationQueueManagerService extends AbstractService {
   private ScheduledFuture<?> schedule;
 
   @Inject
-  public ValidationQueueManagerService(final ReleaseService releaseService, final DictionaryService dictionaryService,
-      ValidationService validationService, Config config) {
+  public ValidationQueueManagerService(final ReleaseService releaseService, ValidationService validationService,
+      Config config) {
 
     checkArgument(releaseService != null);
-    checkArgument(dictionaryService != null);
     checkArgument(validationService != null);
     checkArgument(config != null);
 
     this.config = config;
     this.releaseService = releaseService;
-    this.dictionaryService = dictionaryService;
     this.validationService = validationService;
   }
 
@@ -301,27 +296,34 @@ public class ValidationQueueManagerService extends AbstractService {
       }
     }
 
-    if(aCheck.size() > 0) {
-      Address[] addresses = new Address[aCheck.size()];
-
-      int i = 0;
-      for(Address email : aCheck) {
-        addresses[i++] = email;
-      }
-
+    if(aCheck.isEmpty() == false) {
       try {
         Message msg = new MimeMessage(session);
         msg.setFrom(new InternetAddress(this.config.getString("mail.from.email"), this.config
             .getString("mail.from.email")));
-        msg.addRecipients(Message.RecipientType.TO, addresses);
 
         msg.setSubject(String.format(this.config.getString("mail.subject"), project.getKey(), state));
         if(state == SubmissionState.ERROR) {
-          msg.setText(String.format(this.config.getString("mail.error_body"), release.getName(), project.getKey()));
-        } else {
-          msg.setText(String.format(this.config.getString("mail.body"), project.getKey(), state, release.getName(),
-              project.getKey()));
+          // send email to admin when Error occurs
+          Address adminEmailAdd = new InternetAddress(this.config.getString("mail.admin.email"));
+          aCheck.add(adminEmailAdd);
+          msg.setText(String.format(this.config.getString("mail.error_body"), project.getKey(), state));
+        } else if(state == SubmissionState.VALID) {
+          msg.setText(String.format(this.config.getString("mail.valid_body"), project.getKey(), state,
+              release.getName(), project.getKey()));
+        } else if(state == SubmissionState.INVALID) {
+          msg.setText(String.format(this.config.getString("mail.invalid_body"), project.getKey(), state,
+              release.getName(), project.getKey()));
         }
+
+        Address[] addresses = new Address[aCheck.size()];
+
+        int i = 0;
+        for(Address email : aCheck) {
+          addresses[i++] = email;
+        }
+        msg.addRecipients(Message.RecipientType.TO, addresses);
+
         Transport.send(msg);
         log.error("Emails for {} sent to {}: ", project.getKey(), aCheck);
 

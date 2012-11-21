@@ -5,15 +5,15 @@
   <h3>Validate Submission</h3>
 </div>
 <div class="modal-body">
-<div class="alert alert-error"><strong>Careful!</strong> Validation may take several hours and cannot be cancelled once it has started!</div>
+<div class="alert alert-error">Validation may take several hours and cannot be cancelled once it has started!</div>
 <div class="alert alert-info">
 There are currently <strong>{{queue}}</strong> submission(s) in the Validation Queue.<br>
 <br>
-Enter a comma(,) seperated list of the email addresses that should be notified when validation is finished:<br>
-<textarea style="width:100%" id="emails"></textarea>
+Enter a comma(,) seperated list of the email addresses that should be notified when validation is finished:<br><br>
+<textarea autofocus="autofocus" style="width:100%" class="m-wrap" id="emails">{{email}}</textarea>
 </div>
 </div>
 <div class="modal-footer">
-  <a href="#" class="btn" data-dismiss="modal">Close</a>
-  <button type="submit" id="validate-submission-button" href="#" class="btn btn-success"><i class="icon-ok icon-white"></i> Validate {{projectKey}}</button>
+  <a href="#" class="m-btn grey-stripe" data-dismiss="modal">Close</a>
+  <button type="submit" id="validate-submission-button" href="#" class="m-btn green"><i class="icon-ok icon-white"></i> Validate Submission</button>
 </div>

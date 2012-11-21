@@ -17,13 +17,26 @@
  */
 package org.icgc.dcc.web;
 
+import java.util.Properties;
+
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 
 import org.icgc.dcc.core.UserService;
+import org.icgc.dcc.core.model.Feedback;
 import org.icgc.dcc.core.model.User;
 import org.icgc.dcc.security.UsernamePasswordAuthenticator;
 
@@ -56,6 +69,30 @@ public class UserResource {
     user.getRoles().addAll(this.passwordAuthenticator.getRoles());
 
     return Response.ok(user).build();
+  }
+
+  @POST
+  @Consumes("application/json")
+  public Response feedback(Feedback feedback, @Context Request req) {
+    Properties props = new Properties();
+    props.put("mail.smtp.host", "smtp.oicr.on.ca");
+    Session session = Session.getDefaultInstance(props, null);
+    try {
+      Message msg = new MimeMessage(session);
+      msg.setFrom(new InternetAddress(feedback.getEmail()));
+
+      msg.setSubject(feedback.getSubject());
+      msg.setText(feedback.getMessage());
+      msg.addRecipient(Message.RecipientType.TO, new InternetAddress("dcc@lists.oicr.on.ca"));
+
+      Transport.send(msg);
+    } catch(AddressException e) {
+      System.out.println("an error occured while emailing: " + e);
+    } catch(MessagingException e) {
+      System.out.println("an error occured while emailing: " + e);
+    }
+
+    return Response.ok().build();
   }
 
 }

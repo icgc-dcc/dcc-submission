@@ -96,8 +96,30 @@ module.exports = class SubmissionTableView extends DataTableView
         }
         {
           sTitle: "State"
-          mData: (source) ->
-            source.state.replace '_', ' '
+          mData: (source, type, val) ->
+            if type is "display"
+              return switch source.state
+                when "NOT_VALIDATED"
+                  "<span><i class='icon-question-sign'></i> " +
+                    source.state.replace('_', ' ') + "</span>"
+                when "ERROR"
+                  "<span class='error'>" +
+                    "<i class='icon-exclamation-sign'></i> " +
+                    source.state.replace('_', ' ') + "</span>"
+                when "INVALID"
+                  "<span class='error'><i class='icon-remove-sign'></i> " +
+                    source.state.replace('_', ' ') + "</span>"
+                when "QUEUED"
+                  "<span class='queued'><i class='icon-time'></i> " +
+                    source.state.replace('_', ' ') + "</span>"
+                when "VALID"
+                  "<span class='valid'><i class='icon-ok-sign'></i> " +
+                    source.state.replace('_', ' ') + "</span>"
+                when "SIGNED_OFF"
+                  "<span class='valid'><i class='icon-lock'></i> " +
+                    source.state.replace('_', ' ') + "</span>"
+
+            source.state
         }
         {
           sTitle: "Date Created"
@@ -124,25 +146,36 @@ module.exports = class SubmissionTableView extends DataTableView
               when "VALID"
                 ds = source.projectKey.replace(/<.*?>/g, '')
                 """
-                <a id="signoff-submission-popup-button"
-                   data-submission="#{ds}"
-                   data-toggle="modal"
-                   href='#signoff-submission-popup'>
-                   Sign Off
+                <button
+                  class="m-btn green-stripe mini"
+                  id="signoff-submission-popup-button"
+                  data-submission="#{ds}"
+                  data-toggle="modal"
+                  href='#signoff-submission-popup'>
+                  Sign Off
                 </a>
                 """
-              when "NOT_VALIDATED", "INVALID", "ERROR"
+              when "NOT_VALIDATED"
                 if source.submissionFiles.length
-                  ds = source.projectKey.replace(/<.*?>/g, '')
-                  """
-                  <a id="validate-submission-popup-button"
-                     data-submission="#{ds}"
-                     data-toggle="modal"
-                     href='#validate-submission-popup'>
-                     Validate
-                  </a>
-                  """
-                else "<em>Upload Files</em>"
+                  files = source.submissionFiles
+                  show = _.without((f.matchedSchemaName for f in files), null)
+                  if show.length
+                    ds = source.projectKey.replace(/<.*?>/g, '')
+                    """
+                    <button
+                      class="m-btn blue-stripe mini"
+                      id="validate-submission-popup-button"
+                      data-submission="#{ds}"
+                      data-toggle="modal"
+                      href='#validate-submission-popup'>
+                      Validate
+                    </a>
+                    """
+                  else "<em>Upload Submission Files</em><br>"
+                else
+                  "<em>Upload Submission Files</em><br>"
+              when "ERROR"
+                  "<em>Contact dcc@lists.oicr.on.ca</em>"
               else ""
         }
       ]
@@ -153,19 +186,11 @@ module.exports = class SubmissionTableView extends DataTableView
       bPaginate: false
       oLanguage:
         "sLengthMenu": "_MENU_ submissions per page"
+        "sEmptyTable": "You have no submissions for this release"
       aaSorting: [[ 3, "desc" ]]
       aoColumns: aoColumns
       sAjaxSource: ""
       sAjaxDataProp: ""
-      fnRowCallback: (nRow, aData, iDisplayIndex, iDisplayIndexFull) ->
-        cell = $('td:nth-child(4)', nRow)
-        switch aData.state
-          when "SIGNED_OFF", "VALID"
-            cell.css 'color', '#468847'
-          when "QUEUED"
-            cell.css 'color', '#C09853'
-          when "INVALID", "ERROR"
-            cell.css 'color', '#B94A48'
 
       fnServerData: (sSource, aoData, fnCallback) =>
         fnCallback @collection.toJSON()

@@ -9,20 +9,11 @@
           <a class="brand" href="http://icgc.org"><i class="icon-home"></i> ICGC</a>
           <div class="nav-collapse">
               <ul class="nav">
-                  <li><a href="http://www.icgc.org/icgc/goals-structure-policies-guidelines/e3-publication-policy" target="_blank">Publication Policy</a></li>
-                  <li><a href="http://dcc.icgc.org/pages/summary/" target="_blank">Dataset Summary</a></li>
                   <li><a href="http://dcc.icgc.org/pages/docs/" target="_blank">Documentation</a></li>
-                  <li><a href="ftp://data.dcc.icgc.org/" target="_blank">Download Data</a></li>
-                  <li><a href="http://dcc.icgc.org/pages/help/" target="_blank">Help</a></li>
               </ul>
-              <ul class="nav pull-right" style="margin-right:20px">
-                  <li><a href="http://icgc.org/icgc/contacts" target="_blank">Contact</a></li>
+              <ul class="nav pull-right {{#if username}} {{else}}hide{{/if}}" style="margin-right:20px">
                   <li class="divider-vertical"></li>
-                  {{#if username}}
-                  <li><p class="navbar-text"><span>{{username}}</span> - <a href="/logout">logout</a></p></li>
-                  {{else}}
-                  <li><a href="#">Login</a></li>
-                  {{/if}}
+                  <li><p class="navbar-text"><span>{{username}}</span> - <span class="link" style="color:#ddd" id="logout">logout</a></p></li>
               </ul>
           </div><!-- /.nav-collapse -->
       </div>

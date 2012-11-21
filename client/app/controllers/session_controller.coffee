@@ -88,9 +88,10 @@ module.exports = class SessionController extends Controller
   showLoginView: ->
     #console.debug 'SessionController#showLoginView', @loginView
     return if @loginView
-    @loadServiceProviders()
-    @loginView = new LoginView
-      serviceProviders: SessionController.serviceProviders
+    $('#container').fadeOut 'fast', =>
+      @loadServiceProviders()
+      @loginView = new LoginView
+        serviceProviders: SessionController.serviceProviders
 
   # Handler for the global !login event
   # Delegate the login to the selected service provider
@@ -108,10 +109,21 @@ module.exports = class SessionController extends Controller
 
     # Delegate to service provider
     serviceProvider.triggerLogin()
+    #@login()
+
+  login: ->
+    console.debug 'SessionController#login'
+    $('#login').fadeOut 'fast', ->
+      $('#container').fadeIn 'fast', ->
+        $('#container').removeClass 'hide'
 
   # Handler for the global serviceProviderSession event
   serviceProviderSession: (session) =>
     #console.debug 'SessionController#serviceProviderSession'
+
+    $('#container').fadeIn 'fast', ->
+      $('#container').removeClass 'hide'
+
     # Save the session provider used for login
     @serviceProviderName = session.provider.name
 
@@ -181,3 +193,6 @@ module.exports = class SessionController extends Controller
     Chaplin.mediator.user.dispose()
     # Nullify property on the mediator
     Chaplin.mediator.user = null
+    # Nullify accessToken cookie
+    #localStorage.accessToken = null
+    $.removeCookie('accessToken')

@@ -58,23 +58,32 @@ Handlebars.registerHelper 'if_completed', (state, options) ->
   else
     options.inverse(this)
 
+Handlebars.registerHelper 'show_submission_action_button', (files, options) ->
+  show = false
+  if files
+    show = _.without((f.matchedSchemaName for f in files), null).length
+  if show
+    options.fn(this)
+  else
+    options.inverse(this)
+
 # Return a Unreleased if no release date
 Handlebars.registerHelper 'submission_action', (state) ->
   switch state
     when "VALID"
       new Handlebars.SafeString """
       <button
-        class="btn btn-success"
+        class="m-btn green"
         id="signoff-submission-popup-button"
         data-toggle="modal"
         href="#signoff-submission-popup">
         Sign Off
       </button>
       """
-    when "INVALID", "NOT_VALIDATED"
+    when "NOT_VALIDATED"
       new Handlebars.SafeString """
       <button
-        class="btn btn-success"
+        class="m-btn green"
         id="validate-submission-popup-button"
         data-toggle="modal"
         href="#validate-submission-popup">

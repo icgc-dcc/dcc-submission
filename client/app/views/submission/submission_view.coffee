@@ -42,7 +42,7 @@ module.exports = class SubmissionView extends View
   id: 'submission-view'
 
   initialize: ->
-    console.debug 'SubmissionView#initialize', @model
+    #console.debug 'SubmissionView#initialize', @model
     super
 
     @subscribeEvent "signOffSubmission", -> @model.fetch()
@@ -54,35 +54,40 @@ module.exports = class SubmissionView extends View
       @validateSubmissionPopup
 
     i = setInterval( =>
-      if @model then @model.fetch() else clearInterval i
+      if @model
+        popup = @subviewsByName.validateSubmissionView?.$el.hasClass('in')
+        if not popup
+          @model.fetch()
+      else
+        clearInterval i
     , 10000)
 
   signOffSubmissionPopup: (e) ->
-    console.debug "SubmissionView#signOffSubmissionPopup", e
+    #console.debug "SubmissionView#signOffSubmissionPopup", e
     @subview("signOffSubmissionView"
       new SignOffSubmissionView
         "submission": @model
     )
 
   validateSubmissionPopup: (e) ->
-    console.debug "SubmissionView#validateSubmissionPopup", e
+    #console.debug "SubmissionView#validateSubmissionPopup", e
     @subview("validateSubmissionView"
       new ValidateSubmissionView
         "submission": @model
     )
 
   render: ->
-    console.debug "SubmissionView#render", @model
+    #console.debug "SubmissionView#render", @model
     super
 
-    @subview('SubmissionHeader'
+    @subview('SubmissionHeadeView'
       new SubmissionHeaderView {
         @model
         el: @.$("#submission-header-container")
       }
     )
 
-    @subview('Report'
+    @subview('ReportTableView'
       new ReportTableView {
         @model
         el: @.$("#report-container")

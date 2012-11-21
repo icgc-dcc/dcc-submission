@@ -106,7 +106,10 @@ class RootHdfsSshFile extends HdfsSshFile {
         if(this.rfs.isSystemDirectory(path)) {
           sshFileList.add(new SystemFileHdfsSshFile(this, path.getName()));
         } else {
-          sshFileList.add(new SubmissionDirectoryHdfsSshFile(this, path.getName()));
+          SubmissionDirectoryHdfsSshFile dir = new SubmissionDirectoryHdfsSshFile(this, path.getName());
+          if(dir.doesExist()) { // Necessary because of error handling workaround
+            sshFileList.add(dir);
+          }
         }
       } catch(DccFileSystemException e) {
         Log.info("Directory skipped due to insufficient permissions: " + path.getName());
@@ -118,7 +121,13 @@ class RootHdfsSshFile extends HdfsSshFile {
   }
 
   public SubmissionDirectory getSubmissionDirectory(String directoryName) {
-    return this.rfs.getSubmissionDirectory(this.projects.getProject(directoryName));
+    try {
+      return this.rfs.getSubmissionDirectory(this.projects.getProject(directoryName));
+    } catch(RuntimeException e) {
+      // Ideally we would rethrow as a FileNotFound or IOException, but Mina's interface won't let us.
+      // Instead we put it as null so it can be used to indicate that the directory doesn't exist later
+      return null;
+    }
   }
 
   @Override

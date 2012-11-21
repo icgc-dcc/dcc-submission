@@ -152,7 +152,8 @@ found on host #{host}"
 
   is_admin: ->
     #console.debug 'utils#is_admin', mediator.user
-    "admin" in mediator.user.get "roles"
+    roles = mediator.user?.get("roles") or []
+    "admin" in roles
 
   is_released: (state)->
     state is "COMPLETED"
@@ -177,8 +178,13 @@ found on host #{host}"
 
   sendAuthorization: (xhr) =>
     #console.debug 'utils#sendAuthorization'
-    @accessToken = localStorage.getItem 'accessToken'
-
-    xhr.setRequestHeader 'Authorization', "X-DCC-Auth  #{@accessToken}"
+    #@accessToken = localStorage.getItem 'accessToken'
+    accessToken = $.cookie 'accessToken'
+    if accessToken
+      # refresh expire time
+      #$.cookie 'accessToken', accessToken
+      xhr.setRequestHeader 'Authorization', "X-DCC-Auth  #{accessToken}"
+    else
+      Chaplin.mediator.publish '!logout'
 
 module.exports = utils
