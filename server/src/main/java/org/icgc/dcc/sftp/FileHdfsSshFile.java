@@ -116,9 +116,11 @@ class FileHdfsSshFile extends HdfsSshFile {
 
   @Override
   public boolean move(SshFile destination) {
-    if(isWritable()) {
+    if(isWritable() && destination.isWritable()) {
       try {
-        boolean success = this.fs.rename(path, new Path(destination.getAbsolutePath()));
+        boolean success =
+            this.fs.rename(path,
+                new Path(this.directory.getParentFile().path, destination.getAbsolutePath().substring(1)));
         if(success) {
           this.directory.notifyModified();
         }
