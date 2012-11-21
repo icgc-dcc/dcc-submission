@@ -64,8 +64,17 @@ public class SubmissionDirectory {
 
   public boolean isReadOnly() {
     SubmissionState state = this.submission.getState();
-    return this.release.getState() == ReleaseState.COMPLETED//
-        || state == SubmissionState.QUEUED || state == SubmissionState.SIGNED_OFF;
+    List<String> queuedProjects = release.getQueuedProjectKeys();
+
+    if(state == SubmissionState.SIGNED_OFF) {
+      return true;
+    }
+    if(submission.getState() == SubmissionState.QUEUED && queuedProjects.isEmpty() == false
+        && project.getKey().equals(queuedProjects.get(0))) {
+      return true;
+    }
+
+    return this.release.getState() == ReleaseState.COMPLETED;
   }
 
   public String getProjectKey() {
@@ -90,16 +99,5 @@ public class SubmissionDirectory {
 
   public void removeSubmissionDir() {
     HadoopUtils.rmr(this.dccFileSystem.getFileSystem(), getValidationDirPath());
-  }
-
-  public boolean isWritable() {
-    if(submission.getState() == SubmissionState.SIGNED_OFF) {
-      return false;
-    }
-    if(submission.getState() == SubmissionState.QUEUED && release.getQueuedProjectKeys().isEmpty() == false
-        && release.getQueuedProjectKeys().get(0).equals(project.getKey())) {
-      return false;
-    }
-    return true;
   }
 }
