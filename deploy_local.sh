@@ -1,7 +1,12 @@
 #!/bin/bash -e
 # see DCC-499
 #
-# example: ./deploy_local.sh my.dcc.server dev [true]
+# usage: ./deploy_local.sh my.dcc.server my_mode [optional flags...]
+# example:
+#  ./deploy_local.sh ***REMOVED*** dev # deploy on dev
+#  ./deploy_local.sh ***REMOVED*** dev false false # deploy on dev, don't skip mvn tests
+#  ./deploy_local.sh ***REMOVED*** dev false ignoreme true # deploy on dev, skip jar generation altogther (assumes there's an existing jar from a previous run)
+#  ./deploy_local.sh hwww-qa.oicr.on.ca dev true # prepare deployment on qa, skipping scp-ing the file
 #
 # notes:
 # - this script is based on former https://wiki.oicr.on.ca/display/DCCSOFT/Standard+operating+procedures#Standardoperatingprocedures-SOPforDeployingtheserver (which also links to this script now)
@@ -62,8 +67,9 @@ is_linux || is_mac || { echo "ERROR: must be using Linux or Mac (Darwin)"; exit 
 
 server=${1?}
 mode=${2?}
-skip_test=$3 && skip_test=${skip_test:="true"} && [ "${skip_test}" == "true" ] && skip_test=true || skip_test=false
-skip_mvn=$4 && skip_mvn=${skip_mvn:="false"} && [ "${skip_mvn}" == "true" ] && skip_mvn=true || skip_mvn=false # not recommended
+skip_scp=$3 && skip_scp=${skip_scp:="false"} && [ "${skip_scp}" == "true" ] && skip_scp=true || skip_scp=false
+skip_test=$4 && skip_test=${skip_test:="true"} && [ "${skip_test}" == "true" ] && skip_test=true || skip_test=false
+skip_mvn=$5 && skip_mvn=${skip_mvn:="false"} && [ "${skip_mvn}" == "true" ] && skip_mvn=true || skip_mvn=false # not recommended
 
 echo "server=\"${server?}\""
 echo "mode=\"${mode?}\""
@@ -83,6 +89,8 @@ echo "version=\"${version?}\""
 jar_file_name="${artifact_id?}-${version?}.jar"
 jar_file="${dev_target_dir?}/${jar_file_name?}"
 echo "jar_file=\"${jar_file?}\""
+git_hash=$(git rev-parse --short HEAD)
+echo "git_hash=\"${git_hash?}\""
 
 # ===========================================================================
 
@@ -114,6 +122,7 @@ echo "building client files..."
 
 cp "${jar_file?}" "${local_server_dir?}/"
 cp -r "${dev_public_dir?}" "${local_client_dir?}"
+echo "${git_hash?}" > "${local_client_dir?}/git.md5" # DCC-555
 cp "${dev_server_deploy_script?}" "${local_working_dir?}/"
 
 echo -e "content:\n"
@@ -123,17 +132,21 @@ echo
 # ===========================================================================
 # copy files to server
 
-read -p "copy to server - please enter OICR username [default \"$USER\"]: " username
-username=${username:=$USER}
-echo "username=\"${username?}\""
-
 remote_tmp_dir="/tmp/${local_working_dir_name?}"
 echo "remote_tmp_dir=\"${remote_tmp_dir?}\""
 
-echo "scp -r ${local_working_dir?} ${username?}@${server?}:${remote_tmp_dir?}"
-echo "scp ${local_working_dir?} to server"
-scp -r ${local_working_dir?} ${username?}@${server?}:${remote_tmp_dir?} # must use /tmp for now (permission problems)
-#rm -rf ${local_working_dir?} && echo "${local_working_dir?} deleted" # remove working directory
+if ${skip_scp?}; then
+ echo "skipping actual scp to ${server?}"
+else
+ read -p "copy to server - please enter OICR username [default \"$USER\"]: " username
+ username=${username:=$USER}
+ echo "username=\"${username?}\""
+
+ echo "scp -r ${local_working_dir?} ${username?}@${server?}:${remote_tmp_dir?}"
+ echo "scp ${local_working_dir?} to server"
+ scp -r ${local_working_dir?} ${username?}@${server?}:${remote_tmp_dir?} # must use /tmp for now (permission problems)
+ #rm -rf ${local_working_dir?} && echo "${local_working_dir?} deleted" # remove working directory
+fi
 
 # ===========================================================================
 # start server remotely
@@ -165,9 +178,12 @@ else
  echo "==========================================================================="
  echo "please issue the following commands on ${server?}:"
  echo
- echo "ssh ${username?}@${server?}"
+ if ${skip_scp?}; then
+  echo "# copy ${local_working_dir?} to ${server?}:${remote_tmp_dir?}"
+  echo
+ fi
+ echo "ssh ${username:='your_user'}@${server?}"
  echo "sudo -u hdfs -i"
- echo "script /dev/null"
  echo
  echo "mv ${remote_dir?} ${backup_dir?}/dcc.${timestamp?}.bak"
  echo "cp -r ${remote_tmp_dir?} ${remote_dir?}"
@@ -175,7 +191,8 @@ else
  echo "cd ${remote_server_dir?}"
  echo "# tail -f ${log_file?} # to be used elsewhere"
  echo
- echo "# in new screen session"
+ echo "script /dev/null"
+ echo "# in new screen session (requires the script command above)"
  echo "java -cp ${jar_file_name?} org.icgc.dcc.Main ${mode?} >> ${log_file?} 2>&1 # in screen session"
  echo
 fi
