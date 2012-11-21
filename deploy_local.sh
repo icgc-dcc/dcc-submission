@@ -55,26 +55,30 @@ function get_xml_value() {
 is_linux || is_mac || { echo "ERROR: must be using Linux or Mac (Darwin)"; exit 1; }
 
 # check in data-submission directory
-#[ -f "${parent_pom_file?}" ] && [ "$(get_xml_value ${parent_pom_file?} '//project/artifactId/text()')" == "dcc-parent" ] || { echo "ERROR: must be in data-submission dir"; exit 1; }
+[ -f "${parent_pom_file?}" ] && [ "$(get_xml_value ${parent_pom_file?} '//project/artifactId/text()')" == "dcc-parent" ] || { echo "ERROR: must be in data-submission dir"; exit 1; }
 
 
 # ===========================================================================
 
 server=${1?}
 mode=${2?}
-skip_mvn=$3 && skip_mvn=${skip_mvn:="true"} && [ "${skip_mvn}" == "true" ] && skip_mvn=true || skip_mvn=false
+skip_test=$3 && skip_test=${skip_test:="true"} && [ "${skip_test}" == "true" ] && skip_test=true || skip_test=false
+skip_mvn=$4 && skip_mvn=${skip_mvn:="false"} && [ "${skip_mvn}" == "true" ] && skip_mvn=true || skip_mvn=false # not recommended
 
 echo "server=\"${server?}\""
 echo "mode=\"${mode?}\""
 echo "skip_mvn=\"${skip_mvn?}\""
-valid_modes="dev prod" && [ -n "$(echo "${valid_modes?}" | tr " " "\n" | awk '$0=="'"${mode?}"'"')" ] || { echo "ERROR: invalid mode: \"${mode?}\", valid modes are: \"dev\" or \"prod\""; exit 1; }
+valid_modes="local dev qa" && [ -n "$(echo "${valid_modes?}" | tr " " "\n" | awk '$0=="'"${mode?}"'"')" ] || { echo "ERROR: invalid mode: \"${mode?}\""; exit 1; }
+if [ "${mode?}" == "local" ]; then
+ mode=""
+fi
 
 timestamp=$(date "+%y%m%d%H%M%S")
 echo "timestamp=\"${timestamp?}\""
 
-artifact_id=dcc-server #$(get_xml_value ${server_pom_file?} '//project/artifactId/text()')
+artifact_id=$(get_xml_value ${server_pom_file?} '//project/artifactId/text()')
 echo "artifact_id=\"${artifact_id?}\""
-version=1.5 #$(get_xml_value ${server_pom_file?} '//project/parent/version/text()')
+version=$(get_xml_value ${server_pom_file?} '//project/parent/version/text()')
 echo "version=\"${version?}\""
 jar_file_name="${artifact_id?}-${version?}.jar"
 jar_file="${dev_target_dir?}/${jar_file_name?}"
@@ -94,7 +98,7 @@ local_client_dir="${local_working_dir?}/client"
 # "build" project (mostly manual for now)
 mkdir -p ${local_working_dir?} ${local_server_dir?} ${local_working_dir?}/log && { rm -rf "${local_client_dir?}" 2>&- || : ; }
 if ! ${skip_mvn?}; then
- { cd ${dev_server_dir?} && mvn assembly:assembly && cd .. ; } || { echo "ERROR: failed to build project (server)"; exit 1; } # critical
+ { cd ${dev_server_dir?} && mvn assembly:assembly -Dmaven.test.skip=${skip_test?} && cd .. ; } || { echo "ERROR: failed to build project (server)"; exit 1; } # critical
 else
  ls ${jar_file?} >/dev/null || { echo "ERROR: ${jar_file?} does not exist"; exit 1; } # critical
  echo -n "skipping jar creation, re-using: ${jar_file?}"
@@ -121,7 +125,7 @@ echo
 
 read -p "copy to server - please enter OICR username [default \"$USER\"]: " username
 username=${username:=$USER}
-echo "username=\"${username}\""
+echo "username=\"${username?}\""
 
 remote_tmp_dir="/tmp/${local_working_dir_name?}"
 echo "remote_tmp_dir=\"${remote_tmp_dir?}\""
@@ -159,10 +163,11 @@ if false; then # WIP
  echo "enter password to ssh and start server at ${server?}" && ssh ${username?}@${server?} "${sudo_command?}"
 else
  echo "==========================================================================="
- echo "please issue the following commands on ${server?} (must become hdfs then use screen first - WIP):"
+ echo "please issue the following commands on ${server?}:"
  echo
  echo "ssh ${username?}@${server?}"
  echo "sudo -u hdfs -i"
+ echo "script /dev/null"
  echo
  echo "mv ${remote_dir?} ${backup_dir?}/dcc.${timestamp?}.bak"
  echo "cp -r ${remote_tmp_dir?} ${remote_dir?}"
@@ -170,6 +175,7 @@ else
  echo "cd ${remote_server_dir?}"
  echo "# tail -f ${log_file?} # to be used elsewhere"
  echo
+ echo "# in new screen session"
  echo "java -cp ${jar_file_name?} org.icgc.dcc.Main ${mode?} >> ${log_file?} 2>&1 # in screen session"
  echo
 fi
