@@ -67,7 +67,10 @@ skip_mvn=$3 && skip_mvn=${skip_mvn:="true"} && [ "${skip_mvn}" == "true" ] && sk
 echo "server=\"${server?}\""
 echo "mode=\"${mode?}\""
 echo "skip_mvn=\"${skip_mvn?}\""
-valid_modes="dev prod" && [ -n "$(echo "${valid_modes?}" | tr " " "\n" | awk '$0=="'"${mode?}"'"')" ] || { echo "ERROR: invalid mode: \"${mode?}\", valid modes are: \"dev\" or \"prod\""; exit 1; }
+valid_modes="local dev qa" && [ -n "$(echo "${valid_modes?}" | tr " " "\n" | awk '$0=="'"${mode?}"'"')" ] || { echo "ERROR: invalid mode: \"${mode?}\""; exit 1; }
+if [ "${mode?}" == "local" ]; then
+ mode=""
+fi
 
 timestamp=$(date "+%y%m%d%H%M%S")
 echo "timestamp=\"${timestamp?}\""
