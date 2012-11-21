@@ -81,6 +81,9 @@ public class ByteOffsetToLineNumber {// TODO: make non-static class
         offsetMap.put(-1L, -1L);
       } else {
         // and log useful error messages
+        Preconditions.checkState(currentOffset >= 0);
+        if(currentOffset <= previousOffset) log.info("Offsets are {} and {}", Long.toString(currentOffset),
+            Long.toString(previousOffset));
         Preconditions.checkState(currentOffset > previousOffset); // no two same offsets
 
         lineOffset += countLinesInInterval(is, previousOffset, currentOffset);

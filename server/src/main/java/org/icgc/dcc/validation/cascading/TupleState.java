@@ -32,10 +32,10 @@ public class TupleState implements Serializable {
   private final Set<String> missingFieldNames = new HashSet<String>();
 
   public TupleState() {
-    this(-1);
+    this(-1L);
   }
 
-  public TupleState(int offset) {
+  public TupleState(long offset) {
     this.structurallyValid = true;
     this.offset = offset;
   }

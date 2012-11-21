@@ -87,7 +87,7 @@ public class StructuralCheckFunction extends BaseOperation implements Function {
 
     TupleEntry arguments = functionCall.getArguments();
 
-    int offset = functionCall.getArguments().getInteger(ValidationFields.OFFSET_FIELD_NAME);
+    long offset = functionCall.getArguments().getLong(ValidationFields.OFFSET_FIELD_NAME);
     TupleState tupleState = new TupleState(offset);
 
     String line = arguments.getString(StructuralCheckFunction.LINE_FIELD_NAME);
