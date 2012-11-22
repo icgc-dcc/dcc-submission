@@ -34,11 +34,6 @@ public class DccDbRealm extends AuthorizingRealm implements DccRealm {
   protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
     String username = (String) principals.getPrimaryPrincipal();
     User user = users.getUser(username);
-    if(user == null) {
-      user = new User();
-      user.setUsername(username);
-      users.saveUser(user);
-    }
     SimpleAuthorizationInfo sai = new SimpleAuthorizationInfo(new HashSet<String>(user.getRoles()));
     Set<String> stringPermissions = new HashSet<String>();
     for(Project project : projects.getProjects()) {
@@ -55,6 +50,11 @@ public class DccDbRealm extends AuthorizingRealm implements DccRealm {
   protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
     // Authorization is currently only performed via the Shiro INI file, so this is not populated
     return null;
+  }
+
+  @Override
+  public boolean supports(AuthenticationToken token) {
+    return false;
   }
 
   @Override
