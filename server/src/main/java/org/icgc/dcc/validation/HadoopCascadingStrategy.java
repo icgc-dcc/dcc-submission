@@ -64,6 +64,11 @@ public class HadoopCascadingStrategy extends BaseCascadingStrategy {
     for(Map.Entry<String, ConfigValue> configEntry : hadoopConfig.entrySet()) {
       properties.put(configEntry.getKey(), configEntry.getValue().unwrapped());
     }
+    properties
+        .put(
+            "io.compression.codecs",
+            "org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.DefaultCodec,org.apache.hadoop.io.compress.BZip2Codec,com.hadoop.compression.lzo.LzoCodec,com.hadoop.compression.lzo.LzopCodec,org.apache.hadoop.io.compress.SnappyCodec");
+    properties.put("io.compression.codec.lzo.class", "com.hadoop.compression.lzo.LzoCodec");
     properties.put("mapred.compress.map.output", true);
     properties.put("mapred.map.output.compression.codec", "org.apache.hadoop.io.compress.SnappyCodec");
     properties.put("mapred.output.compression.type", "BLOCK");
