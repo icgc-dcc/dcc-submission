@@ -36,6 +36,7 @@ import cascading.flow.hadoop.HadoopFlowConnector;
 import cascading.property.AppProps;
 import cascading.scheme.hadoop.TextDelimited;
 import cascading.scheme.hadoop.TextLine;
+import cascading.scheme.hadoop.TextLine.Compress;
 import cascading.tap.Tap;
 import cascading.tap.hadoop.Hfs;
 import cascading.tuple.Fields;
@@ -65,6 +66,7 @@ public class HadoopCascadingStrategy extends BaseCascadingStrategy {
     }
     properties.put("mapred.compress.map.output", true);
     properties.put("mapred.map.output.compression.codec", "org.apache.hadoop.io.compress.SnappyCodec");
+    properties.put("mapred.output.compression.type", "BLOCK");
     AppProps.setApplicationJarClass(properties, org.icgc.dcc.Main.class);
     return new HadoopFlowConnector(properties);
   }
@@ -101,18 +103,22 @@ public class HadoopCascadingStrategy extends BaseCascadingStrategy {
 
   @Override
   protected Tap<?, ?, ?> tap(Path path) {
-    return new Hfs(new TextDelimited(true, "\t"), path.toUri().getPath());
+    TextDelimited textDelimited = new TextDelimited(true, "\t");
+    textDelimited.setSinkCompression(Compress.ENABLE);
+    return new Hfs(textDelimited, path.toUri().getPath());
   }
 
   @Override
   protected Tap<?, ?, ?> tap(Path path, Fields fields) {
-    return new Hfs(new TextDelimited(fields, true, "\t"), path.toUri().getPath());
+    TextDelimited textDelimited = new TextDelimited(fields, true, "\t");
+    textDelimited.setSinkCompression(Compress.ENABLE);
+    return new Hfs(textDelimited, path.toUri().getPath());
   }
 
   @Override
   protected Tap<?, ?, ?> tapSource(Path path) {
     TextLine textLine = new TextLine(new Fields(ValidationFields.OFFSET_FIELD_NAME, "line"));
-    textLine.setSinkCompression(TextLine.Compress.ENABLE);
+    textLine.setSinkCompression(Compress.ENABLE);
     return new Hfs(textLine, path.toUri().getPath());
   }
 }
