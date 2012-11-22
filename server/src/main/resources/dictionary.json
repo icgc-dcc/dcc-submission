@@ -1,12 +1,12 @@
 {
-  "created" : 1353008969189,
-  "lastUpdate" : 1353008969189,
+  "created" : 1353620177794,
+  "lastUpdate" : 1353620177794,
   "version" : "0.6c",
   "state" : "OPENED",
   "files" : [ {
     "name" : "exposure",
     "label" : null,
-    "pattern" : "^\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__exposure__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.gz?)$",
+    "pattern" : "^\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__exposure__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo?)$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ ],
     "fields" : [ {
@@ -64,7 +64,7 @@
   }, {
     "name" : "mirna_m",
     "label" : null,
-    "pattern" : "^mirna__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__m__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.gz?)$",
+    "pattern" : "^mirna__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__m__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo?)$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ "analysis_id", "sample_id" ],
     "fields" : [ {
@@ -223,7 +223,7 @@
   }, {
     "name" : "mirna_p",
     "label" : null,
-    "pattern" : "^mirna__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__p__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.gz?)$",
+    "pattern" : "^mirna__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__p__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo?)$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ ],
     "fields" : [ {
@@ -366,7 +366,7 @@
   }, {
     "name" : "ssm_s",
     "label" : null,
-    "pattern" : "^ssm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__s__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.gz?)$",
+    "pattern" : "^ssm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__s__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo?)$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ ],
     "fields" : [ {
@@ -487,7 +487,7 @@
   }, {
     "name" : "surgery",
     "label" : null,
-    "pattern" : "^\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__surgery__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.gz?)$",
+    "pattern" : "^\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__surgery__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo?)$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ ],
     "fields" : [ {
@@ -583,7 +583,7 @@
   }, {
     "name" : "mirna_s",
     "label" : null,
-    "pattern" : "^mirna__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__s__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.gz?)$",
+    "pattern" : "^mirna__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__s__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo?)$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ ],
     "fields" : [ {
@@ -680,7 +680,7 @@
   }, {
     "name" : "donor",
     "label" : null,
-    "pattern" : "^\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__donor__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.gz?)$",
+    "pattern" : "^\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__donor__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo?)$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ "donor_id" ],
     "fields" : [ {
@@ -885,7 +885,7 @@
   }, {
     "name" : "family",
     "label" : null,
-    "pattern" : "^\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__family__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.gz?)$",
+    "pattern" : "^\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__family__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo?)$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ ],
     "fields" : [ {
@@ -986,7 +986,7 @@
   }, {
     "name" : "specimen",
     "label" : null,
-    "pattern" : "^\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__specimen__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.gz?)$",
+    "pattern" : "^\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__specimen__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo?)$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ "specimen_id" ],
     "fields" : [ {
@@ -1284,7 +1284,7 @@
   }, {
     "name" : "stsm_s",
     "label" : null,
-    "pattern" : "^stsm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__s__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.gz?)$",
+    "pattern" : "^stsm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__s__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo?)$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ ],
     "fields" : [ {
@@ -1417,7 +1417,7 @@
   }, {
     "name" : "stsm_p",
     "label" : null,
-    "pattern" : "^stsm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__p__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.gz?)$",
+    "pattern" : "^stsm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__p__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo?)$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ "analysis_id", "analyzed_sample_id", "placement", "sv_id" ],
     "fields" : [ {
@@ -1703,7 +1703,7 @@
   }, {
     "name" : "meth_s",
     "label" : null,
-    "pattern" : "^meth__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__s__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.gz?)$",
+    "pattern" : "^meth__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__s__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo?)$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ ],
     "fields" : [ {
@@ -1784,7 +1784,7 @@
   }, {
     "name" : "stsm_m",
     "label" : null,
-    "pattern" : "^stsm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__m__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.gz?)$",
+    "pattern" : "^stsm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__m__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo?)$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ "analysis_id", "analyzed_sample_id" ],
     "fields" : [ {
@@ -1949,7 +1949,7 @@
   }, {
     "name" : "sample",
     "label" : null,
-    "pattern" : "^\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__sample__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.gz?)$",
+    "pattern" : "^\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__sample__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo?)$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ "analyzed_sample_id" ],
     "fields" : [ {
@@ -2019,7 +2019,7 @@
   }, {
     "name" : "hsap_transcript",
     "label" : null,
-    "pattern" : "^hsapiens_gene_ensembl__transcript__main.txt(.gz?)$",
+    "pattern" : "^hsapiens_gene_ensembl__transcript__main.txt(.lzo?)$",
     "role" : "SYSTEM",
     "uniqueFields" : [ ],
     "fields" : [ {
@@ -3485,7 +3485,7 @@
   }, {
     "name" : "mirna_mirbase",
     "label" : null,
-    "pattern" : "^mirna_mirbase.txt(.gz?)$",
+    "pattern" : "^mirna_mirbase.txt(.lzo?)$",
     "role" : "SYSTEM",
     "uniqueFields" : [ ],
     "fields" : [ {
@@ -3553,7 +3553,7 @@
   }, {
     "name" : "hsap_gene",
     "label" : null,
-    "pattern" : "^hsapiens_gene_ensembl__gene__main.txt(.gz?)$",
+    "pattern" : "^hsapiens_gene_ensembl__gene__main.txt(.lzo?)$",
     "role" : "SYSTEM",
     "uniqueFields" : [ ],
     "fields" : [ {
@@ -4521,7 +4521,7 @@
   }, {
     "name" : "cnsm_s",
     "label" : null,
-    "pattern" : "^cnsm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__s__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.gz?)$",
+    "pattern" : "^cnsm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__s__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo?)$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ ],
     "fields" : [ {
@@ -4613,7 +4613,7 @@
   }, {
     "name" : "cnsm_p",
     "label" : null,
-    "pattern" : "^cnsm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__p__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.gz?)$",
+    "pattern" : "^cnsm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__p__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo?)$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ "analysis_id", "analyzed_sample_id", "mutation_id" ],
     "fields" : [ {
@@ -4812,7 +4812,7 @@
   }, {
     "name" : "cnsm_m",
     "label" : null,
-    "pattern" : "^cnsm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__m__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.gz?)$",
+    "pattern" : "^cnsm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__m__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo?)$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ "analysis_id", "analyzed_sample_id" ],
     "fields" : [ {
@@ -4962,7 +4962,7 @@
   }, {
     "name" : "exp_g",
     "label" : null,
-    "pattern" : "^exp__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__g__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.gz?)$",
+    "pattern" : "^exp__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__g__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo?)$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ ],
     "fields" : [ {
@@ -5171,7 +5171,7 @@
   }, {
     "name" : "biomarker",
     "label" : null,
-    "pattern" : "^\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__biomarker__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.gz?)$",
+    "pattern" : "^\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__biomarker__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo?)$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ ],
     "fields" : [ {
@@ -5251,7 +5251,7 @@
   }, {
     "name" : "ssm_p",
     "label" : null,
-    "pattern" : "^ssm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__p__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.gz?)$",
+    "pattern" : "^ssm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__p__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo?)$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ "analysis_id", "analyzed_sample_id", "mutation_id" ],
     "fields" : [ {
@@ -5508,7 +5508,7 @@
   }, {
     "name" : "ssm_m",
     "label" : null,
-    "pattern" : "^ssm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__m__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.gz?)$",
+    "pattern" : "^ssm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__m__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo?)$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ "analysis_id", "analyzed_sample_id" ],
     "fields" : [ {
@@ -5673,7 +5673,7 @@
   }, {
     "name" : "jcn_p",
     "label" : null,
-    "pattern" : "^jcn__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__p__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.gz?)$",
+    "pattern" : "^jcn__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__p__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo?)$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ ],
     "fields" : [ {
@@ -5990,7 +5990,7 @@
   }, {
     "name" : "meth_p",
     "label" : null,
-    "pattern" : "^meth__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__p__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.gz?)$",
+    "pattern" : "^meth__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__p__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo?)$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ "analysis_id", "analyzed_sample_id", "methylated_fragment_id" ],
     "fields" : [ {
@@ -6137,7 +6137,7 @@
   }, {
     "name" : "exp_m",
     "label" : null,
-    "pattern" : "^exp__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__m__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.gz?)$",
+    "pattern" : "^exp__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__m__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo?)$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ "analysis_id", "sample_id" ],
     "fields" : [ {
@@ -6296,7 +6296,7 @@
   }, {
     "name" : "therapy",
     "label" : null,
-    "pattern" : "^\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__therapy__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.gz?)$",
+    "pattern" : "^\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__therapy__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo?)$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ ],
     "fields" : [ {
@@ -6381,7 +6381,7 @@
   }, {
     "name" : "jcn_m",
     "label" : null,
-    "pattern" : "^jcn__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__m__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.gz?)$",
+    "pattern" : "^jcn__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__m__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo?)$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ "analysis_id", "sample_id" ],
     "fields" : [ {
@@ -6550,7 +6550,7 @@
   }, {
     "name" : "meth_m",
     "label" : null,
-    "pattern" : "^meth__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__m__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.gz?)$",
+    "pattern" : "^meth__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__m__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo?)$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ "analysis_id", "analyzed_sample_id" ],
     "fields" : [ {
