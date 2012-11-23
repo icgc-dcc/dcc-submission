@@ -3,6 +3,7 @@ package org.icgc.dcc.shiro;
 import java.util.Collection;
 import java.util.HashSet;
 
+import org.apache.shiro.authc.credential.PasswordMatcher;
 import org.apache.shiro.realm.Realm;
 import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.core.UserService;
@@ -35,6 +36,8 @@ public class RealmProvider implements Provider<Collection<Realm>> {
     DccIniRealm iniRealm = new DccIniRealm();
     iniRealm.setResourcePath("file:" + shiroIniFilePath);// TODO: existing constant for that?
     iniRealm.init();
+
+    iniRealm.setCredentialsMatcher(new PasswordMatcher());
 
     realms.add(iniRealm);
 
