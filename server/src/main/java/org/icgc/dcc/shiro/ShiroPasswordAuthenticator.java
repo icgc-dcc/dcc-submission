@@ -31,6 +31,8 @@ import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
+import org.icgc.dcc.core.UserService;
+import org.icgc.dcc.core.model.User;
 import org.icgc.dcc.security.UsernamePasswordAuthenticator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,15 +48,27 @@ public class ShiroPasswordAuthenticator implements UsernamePasswordAuthenticator
   @SuppressWarnings("unused")
   private final SecurityManager securityManager;
 
+  private final UserService users;
+
   @Inject
-  public ShiroPasswordAuthenticator(SecurityManager securityManager) {
+  public ShiroPasswordAuthenticator(SecurityManager securityManager, UserService users) {
     this.securityManager = securityManager;
+    this.users = users;
   }
 
   private static final Logger log = LoggerFactory.getLogger(ShiroPasswordAuthenticator.class);
 
   @Override
   public Subject authenticate(final String username, final char[] password, final String host) {
+    // This code block is meant as a temporary solution for the need to disable user access after three failed
+    // authentication attempts. It should be removed when the crowd server is enabled
+    User user = users.getUser(username);
+    if(user.isLocked()) {
+      log.info("User " + username + " is locked. Please contact your administrator.");
+      return null;
+    }
+    // END HACK
+
     // build token from credentials
     UsernamePasswordToken token = new UsernamePasswordToken(username, password, false, host);
 
@@ -81,9 +95,16 @@ public class ShiroPasswordAuthenticator implements UsernamePasswordAuthenticator
     if(currentUser.isAuthenticated()) {
       // say who they are:
       // print their identifying principal (in this case, a username):
+      user.resetAttempts(); // Part of lockout hack
+      users.saveUser(user); // Part of lockout hack
       log.info("User [" + currentUser.getPrincipal() + "] logged in successfully.");
       return currentUser;
     }
+
+    // Hack
+    user.incrementAttempts();
+    users.saveUser(user);
+    // End hack
 
     return null;
   }
