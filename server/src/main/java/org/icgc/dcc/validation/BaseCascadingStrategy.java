@@ -25,11 +25,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileContext;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
+import org.apache.hadoop.io.compress.CompressionCodec;
+import org.apache.hadoop.io.compress.CompressionCodecFactory;
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.dictionary.model.FileSchemaRole;
 import org.icgc.dcc.filesystem.DccFileSystem;
@@ -101,9 +104,13 @@ public abstract class BaseCascadingStrategy implements CascadingStrategy {
     Path path = this.path(schema);
 
     InputStreamReader isr = null;
+    Configuration conf = this.fileSystem.getConf();
+    CompressionCodecFactory factory = new CompressionCodecFactory(conf);
     try {
       Path resolvedPath = FileContext.getFileContext(fileSystem.getUri()).resolvePath(path);
-      isr = new InputStreamReader(fileSystem.open(resolvedPath), Charsets.UTF_8);
+      CompressionCodec codec = factory.getCodec(resolvedPath);
+      isr = new InputStreamReader(codec.createInputStream(fileSystem.open(resolvedPath)), Charsets.UTF_8);
+      // isr = new InputStreamReader(fileSystem.open(resolvedPath), Charsets.UTF_8);
       LineReader lineReader = new LineReader(isr);
       String firstLine = lineReader.readLine();
       Log.info("HEADER: " + firstLine);
