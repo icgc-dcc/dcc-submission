@@ -67,7 +67,7 @@ public class HadoopCascadingStrategy extends BaseCascadingStrategy {
     properties
         .put(
             "io.compression.codecs",
-            "org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.DefaultCodec,org.apache.hadoop.io.compress.BZip2Codec,com.hadoop.compression.lzo.LzoCodec,com.hadoop.compression.lzo.LzopCodec,org.apache.hadoop.io.compress.SnappyCodec");
+            "org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.DefaultCodec,com.hadoop.compression.lzo.LzoCodec,com.hadoop.compression.lzo.LzopCodec,org.apache.hadoop.io.compress.BZip2Codec");
     properties.put("io.compression.codec.lzo.class", "com.hadoop.compression.lzo.LzoCodec");
     properties.put("mapred.compress.map.output", true);
     properties.put("mapred.map.output.compression.codec", "org.apache.hadoop.io.compress.SnappyCodec");
