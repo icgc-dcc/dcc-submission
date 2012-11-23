@@ -109,8 +109,11 @@ public abstract class BaseCascadingStrategy implements CascadingStrategy {
     try {
       Path resolvedPath = FileContext.getFileContext(fileSystem.getUri()).resolvePath(path);
       CompressionCodec codec = factory.getCodec(resolvedPath);
-      isr = new InputStreamReader(codec.createInputStream(fileSystem.open(resolvedPath)), Charsets.UTF_8);
-      // isr = new InputStreamReader(fileSystem.open(resolvedPath), Charsets.UTF_8);
+      if(codec == null) {
+        isr = new InputStreamReader(fileSystem.open(resolvedPath), Charsets.UTF_8);
+      } else {
+        isr = new InputStreamReader(codec.createInputStream(fileSystem.open(resolvedPath)), Charsets.UTF_8);
+      }
       LineReader lineReader = new LineReader(isr);
       String firstLine = lineReader.readLine();
       Log.info("HEADER: " + firstLine);
