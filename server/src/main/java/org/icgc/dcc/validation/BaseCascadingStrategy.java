@@ -33,6 +33,7 @@ import org.apache.hadoop.fs.RemoteIterator;
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.dictionary.model.FileSchemaRole;
 import org.icgc.dcc.filesystem.DccFileSystem;
+import org.mortbay.log.Log;
 
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
@@ -105,6 +106,7 @@ public abstract class BaseCascadingStrategy implements CascadingStrategy {
       isr = new InputStreamReader(fileSystem.open(resolvedPath), Charsets.UTF_8);
       LineReader lineReader = new LineReader(isr);
       String firstLine = lineReader.readLine();
+      Log.info("HEADER: " + firstLine);
       Iterable<String> header = Splitter.on('\t').split(firstLine);
       List<String> dupHeader = this.checkDuplicateHeader(header);
       if(!dupHeader.isEmpty()) {
