@@ -39,7 +39,7 @@ abstract class HdfsSshFile implements SshFile {
 
   protected final String SEPARATOR = "/";
 
-  protected final Path path;
+  protected Path path;
 
   protected final FileSystem fs;
 
