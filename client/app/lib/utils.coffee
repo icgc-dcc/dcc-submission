@@ -181,10 +181,13 @@ found on host #{host}"
     #@accessToken = localStorage.getItem 'accessToken'
     accessToken = $.cookie 'accessToken'
     if accessToken
+      console.log "!"
       # refresh expire time
       #$.cookie 'accessToken', accessToken
       xhr.setRequestHeader 'Authorization', "X-DCC-Auth  #{accessToken}"
     else
+
+      console.log "?"
       Chaplin.mediator.publish '!logout'
 
 module.exports = utils
