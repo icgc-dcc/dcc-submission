@@ -149,7 +149,6 @@ public class ByteOffsetToLineNumber {// TODO: make non-static class
     byte[] buffer = new byte[size];
     try {
       is.read(buffer);
-      // is.readFully(buffer);
     } catch(IOException e) {
       throw new RuntimeException(String.format("%s", size));
     }
