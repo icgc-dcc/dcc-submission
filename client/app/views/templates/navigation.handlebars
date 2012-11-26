@@ -1,19 +1,14 @@
 <div id="external-nav" class="navbar navbar-fixed-top navbar-inverse">
   <div class="navbar-inner">
-      <div class="container" style="width: auto;">
-          <a class="btn btn-navbar" data-toggle="collapse" data-target="#external-nav .nav-collapse">
-              <span class="icon-bar"></span>
-              <span class="icon-bar"></span>
-              <span class="icon-bar"></span>
-          </a>
+      <div class="container">
           <a class="brand" href="http://icgc.org"><i class="icon-home"></i> ICGC</a>
           <div class="nav-collapse">
               <ul class="nav">
                   <li><a href="http://dcc.icgc.org/pages/docs/" target="_blank">Documentation</a></li>
+                  <li><a id="feedback-tab" href="#">Feedback</a></li>
               </ul>
               <ul class="nav pull-right {{#if username}} {{else}}hide{{/if}}" style="margin-right:20px">
-                  <li class="divider-vertical"></li>
-                  <li><p class="navbar-text"><span>{{username}}</span> - <span class="link" style="color:#ddd" id="logout">logout</a></p></li>
+                  <li><p class="navbar-text"><span>{{username}}</span> <span class="link" style="color:#ddd" id="logout">(logout)</a></p></li>
               </ul>
           </div><!-- /.nav-collapse -->
       </div>
@@ -23,6 +18,6 @@
   <div class="subhead">
     <span class="span3"><a href="http://icgc.org" target="_blank"><img alt="ICGC" class="pull-left" style="margin-top:9px" width="172" height="57" src="/images/logo-icgc.png"></a></span>
     <span class="span6"><h1 style="margin-top:24px">Data Submission</h1></span>
-    <a href="http://oicr.on.ca" target="_blank"><img alt="OICR" class="pull-right" width="112" height="75" src="/images/logo-oicr.jpg"></span>
+    <span class="span pull-right" style="margin-top:3px"><a href="http://oicr.on.ca" target="_blank"><img alt="OICR" width="112" height="75" src="/images/logo-oicr.jpg"></a></span>
   </div>
 </div>

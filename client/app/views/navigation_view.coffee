@@ -25,6 +25,8 @@ Chaplin = require 'chaplin'
 View = require 'views/base/view'
 template = require 'views/templates/navigation'
 
+FeedbackFormView = require 'modules/feedback/views/feedback_form_view'
+
 module.exports = class NavigationView extends View
   template: template
   tagName: 'nav'
@@ -47,6 +49,12 @@ module.exports = class NavigationView extends View
       console.debug 'NavigationView#initialize#change', attributes
       @model.clear(silent: yes)
       @model.set attributes
+
+    @delegate "click", "#feedback-tab", @feedbackPopup
+
+  feedbackPopup: (e) ->
+    #console.debug "FeedbackTabView#feedbackPopup", e
+    new FeedbackFormView()
 
   setUsername: (user)->
     #console.debug 'NavigationView#@setUsername', @model

@@ -30,7 +30,7 @@ module.exports = class FeedbackTabView extends View
   template: template
   template = null
 
-  container: 'body'
+  container: 'external-nav'
   containerMethod: 'append'
   autoRender: true
   tagName: 'div'

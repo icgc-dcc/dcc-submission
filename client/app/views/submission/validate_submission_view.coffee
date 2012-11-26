@@ -34,7 +34,7 @@ module.exports = class ValidateSubmissionView extends View
   containerMethod: 'append'
   autoRender: true
   tagName: 'div'
-  className: "modal fade"
+  className: "modal hide fade"
   id: 'validate-submission-popup'
 
   initialize: ->
@@ -48,7 +48,7 @@ module.exports = class ValidateSubmissionView extends View
 
     super
 
-    @modelBind 'change', @render
+    #@modelBind 'change', @render
     @delegate 'click', '#validate-submission-button', @validateSubmission
 
   validateSubmission: (e) ->
