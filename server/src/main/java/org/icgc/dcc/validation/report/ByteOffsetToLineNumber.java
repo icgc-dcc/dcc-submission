@@ -21,17 +21,22 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.compress.CompressionCodec;
+import org.apache.hadoop.io.compress.CompressionCodecFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
@@ -63,7 +68,16 @@ public class ByteOffsetToLineNumber {// TODO: make non-static class
 
   private static Map<Long, Long> buildByteToLineOffsetMap(Path file, List<Long> sortedOffsets) {
     DataInputStream is = null;
+    InputStreamReader isr = null;
+    Configuration conf = fs.getConf();
+    CompressionCodecFactory factory = new CompressionCodecFactory(conf);
     try {
+      CompressionCodec codec = factory.getCodec(file);
+      if(codec == null) {
+        isr = new InputStreamReader(fs.open(file), Charsets.UTF_8);
+      } else {
+        isr = new InputStreamReader(codec.createInputStream(fs.open(file)), Charsets.UTF_8);
+      }
       is = fs.open(file);
 
     } catch(IOException e) {
