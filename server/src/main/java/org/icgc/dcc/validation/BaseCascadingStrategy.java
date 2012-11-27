@@ -172,7 +172,7 @@ public abstract class BaseCascadingStrategy implements CascadingStrategy {
     return this.systemDirectory;
   }
 
-  private List<String> checkDuplicateHeader(Iterable<String> header) {
+  protected List<String> checkDuplicateHeader(Iterable<String> header) {
     Set<String> headerSet = Sets.newHashSet();
     List<String> dupHeaders = Lists.newArrayList();
 

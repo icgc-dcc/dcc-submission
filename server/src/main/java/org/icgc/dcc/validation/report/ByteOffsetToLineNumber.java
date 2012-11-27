@@ -21,14 +21,18 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.compress.CompressionCodec;
+import org.apache.hadoop.io.compress.CompressionCodecFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,14 +66,17 @@ public class ByteOffsetToLineNumber {// TODO: make non-static class
   }
 
   private static Map<Long, Long> buildByteToLineOffsetMap(Path file, List<Long> sortedOffsets) {
-    DataInputStream is = null;
+    InputStream is = null;
+    Configuration conf = fs.getConf();
+    CompressionCodecFactory factory = new CompressionCodecFactory(conf);
     try {
-      is = fs.open(file);
-
+      CompressionCodec codec = factory.getCodec(file);
+      is = (codec == null) ? fs.open(file) : codec.createInputStream(fs.open(file));
     } catch(IOException e) {
       throw new RuntimeException( // TODO: replace with our own
           String.format("%s", file));
     }
+    DataInputStream dis = new DataInputStream(is);
 
     Map<Long, Long> offsetMap = Maps.newLinkedHashMap();
 
@@ -86,7 +93,7 @@ public class ByteOffsetToLineNumber {// TODO: make non-static class
             "Current offset %s is greater than previous offset %s", currentOffset, previousOffset); // no two same
                                                                                                     // offsets
 
-        lineOffset += countLinesInInterval(is, previousOffset, currentOffset);
+        lineOffset += countLinesInInterval(dis, previousOffset, currentOffset);
         offsetMap.put(byteOffset, lineOffset);
 
         previousOffset = byteOffset;

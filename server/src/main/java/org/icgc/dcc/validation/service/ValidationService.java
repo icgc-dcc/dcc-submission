@@ -100,11 +100,13 @@ public class ValidationService {
 
       CascadingStrategy cascadingStrategy = cascadingStrategyFactory.get(rootDir, outputDir, systemDir);
 
+      long startTime = System.nanoTime();
       log.info("starting validation on project {}", qProject.getKey());
       Plan plan = planCascade(qProject, cascadingStrategy, dictionary);
 
       runCascade(plan.getCascade(), project.getKey());
-      log.info("validation finished for project {}", project.getKey());
+      log.info("validation finished for project {}, time spent on validation is {} nanoseconds", project.getKey(),
+          System.nanoTime() - startTime);
 
       return plan;
     }
