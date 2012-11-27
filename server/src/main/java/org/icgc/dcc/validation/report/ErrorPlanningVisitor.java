@@ -128,8 +128,7 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
             }
           }
           for(ValidationErrorReport e : errorMap.values()) {
-            // skiping line number converter to test compression
-            // e.updateLineNumbers(strategy.path(getFileSchema()));
+            e.updateLineNumbers(strategy.path(getFileSchema()));
             report.errors.add(e);
           }
           return outcome;
