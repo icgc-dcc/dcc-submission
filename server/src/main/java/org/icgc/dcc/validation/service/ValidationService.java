@@ -105,7 +105,7 @@ public class ValidationService {
       Plan plan = planCascade(qProject, cascadingStrategy, dictionary);
 
       runCascade(plan.getCascade(), project.getKey());
-      log.info("validation finished for project {}, time spent on validation is {}", project.getKey(),
+      log.info("validation finished for project {}, time spent on validation is {} nanoseconds", project.getKey(),
           System.nanoTime() - startTime);
 
       return plan;
