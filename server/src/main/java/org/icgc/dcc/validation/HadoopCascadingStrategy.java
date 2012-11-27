@@ -19,13 +19,18 @@ package org.icgc.dcc.validation;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileContext;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.compress.CompressionCodec;
+import org.apache.hadoop.io.compress.CompressionCodecFactory;
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.validation.cascading.HadoopJsonScheme;
 import org.icgc.dcc.validation.cascading.TupleStateSerialization;
@@ -42,9 +47,14 @@ import cascading.tap.hadoop.Hfs;
 import cascading.tuple.Fields;
 import cascading.tuple.hadoop.TupleSerializationProps;
 
+import com.google.common.base.Charsets;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.io.ByteStreams;
+import com.google.common.io.Closeables;
 import com.google.common.io.InputSupplier;
+import com.google.common.io.LineReader;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigValue;
 
@@ -125,5 +135,33 @@ public class HadoopCascadingStrategy extends BaseCascadingStrategy {
     TextLine textLine = new TextLine(new Fields(ValidationFields.OFFSET_FIELD_NAME, "line"));
     textLine.setSinkCompression(Compress.ENABLE);
     return new Hfs(textLine, path.toUri().getPath());
+  }
+
+  @Override
+  public Fields getFileHeader(FileSchema schema) throws IOException {
+    Path path = this.path(schema);
+
+    InputStreamReader isr = null;
+    Configuration conf = this.fileSystem.getConf();
+    CompressionCodecFactory factory = new CompressionCodecFactory(conf);
+    try {
+      Path resolvedPath = FileContext.getFileContext(fileSystem.getUri()).resolvePath(path);
+      CompressionCodec codec = factory.getCodec(resolvedPath);
+
+      isr =
+          (codec == null) ? new InputStreamReader(fileSystem.open(resolvedPath), Charsets.UTF_8) : new InputStreamReader(
+              codec.createInputStream(fileSystem.open(resolvedPath)), Charsets.UTF_8);
+
+      LineReader lineReader = new LineReader(isr);
+      String firstLine = lineReader.readLine();
+      Iterable<String> header = Splitter.on('\t').split(firstLine);
+      List<String> dupHeader = this.checkDuplicateHeader(header);
+      if(!dupHeader.isEmpty()) {
+        throw new DuplicateHeaderException(dupHeader);
+      }
+      return new Fields(Iterables.toArray(header, String.class));
+    } finally {
+      Closeables.closeQuietly(isr);
+    }
   }
 }

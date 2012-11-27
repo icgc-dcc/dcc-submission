@@ -19,6 +19,7 @@ package org.icgc.dcc.validation.report;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -70,16 +71,12 @@ public class ByteOffsetToLineNumber {// TODO: make non-static class
     CompressionCodecFactory factory = new CompressionCodecFactory(conf);
     try {
       CompressionCodec codec = factory.getCodec(file);
-      if(codec == null) {
-        is = fs.open(file);
-      } else {
-        is = codec.createInputStream(fs.open(file));
-      }
-
+      is = (codec == null) ? fs.open(file) : codec.createInputStream(fs.open(file));
     } catch(IOException e) {
       throw new RuntimeException( // TODO: replace with our own
           String.format("%s", file));
     }
+    DataInputStream dis = new DataInputStream(is);
 
     Map<Long, Long> offsetMap = Maps.newLinkedHashMap();
 
@@ -96,7 +93,7 @@ public class ByteOffsetToLineNumber {// TODO: make non-static class
             "Current offset %s is greater than previous offset %s", currentOffset, previousOffset); // no two same
                                                                                                     // offsets
 
-        lineOffset += countLinesInInterval(is, previousOffset, currentOffset);
+        lineOffset += countLinesInInterval(dis, previousOffset, currentOffset);
         offsetMap.put(byteOffset, lineOffset);
 
         previousOffset = byteOffset;
@@ -113,7 +110,7 @@ public class ByteOffsetToLineNumber {// TODO: make non-static class
     return offsetMap;
   }
 
-  private static final long countLinesInInterval(InputStream is, long previousOffset, long currentOffset) {
+  private static final long countLinesInInterval(DataInputStream is, long previousOffset, long currentOffset) {
     long difference = currentOffset - previousOffset;
     long quotient = (long) Math.floor(difference / (double) BUFFER_SIZE);
     int remainder = (int) (difference % BUFFER_SIZE);
@@ -129,7 +126,7 @@ public class ByteOffsetToLineNumber {// TODO: make non-static class
     return lines;
   }
 
-  private static final long countLinesInChunk(InputStream is, int size, boolean lastChunk) {
+  private static final long countLinesInChunk(DataInputStream is, int size, boolean lastChunk) {
     byte[] buffer = readBuffer(is, size);
     if(lastChunk && buffer[size - 1] != '\n') {
       throw new RuntimeException( // TODO: replace with our own
@@ -145,10 +142,10 @@ public class ByteOffsetToLineNumber {// TODO: make non-static class
     return lines;
   }
 
-  private static byte[] readBuffer(InputStream is, int size) {
+  private static byte[] readBuffer(DataInputStream is, int size) {
     byte[] buffer = new byte[size];
     try {
-      is.read(buffer);
+      is.readFully(buffer);
     } catch(IOException e) {
       throw new RuntimeException(String.format("%s", size));
     }
