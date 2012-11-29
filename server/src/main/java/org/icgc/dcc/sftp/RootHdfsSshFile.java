@@ -152,13 +152,13 @@ class RootHdfsSshFile extends HdfsSshFile {
 
   public void notifyModified(SubmissionDirectory submissionDirectory) {
     Submission submission = submissionDirectory.getSubmission();
-    this.releases.resetSubmission(this.rfs.getRelease(), submission);
+    this.releases.resetSubmission(this.rfs.getRelease().getName(), submission.getProjectKey());
   }
 
   public void systemFilesNotifyModified() {
     // TODO: not very effiecient now, need to combine the query into one
     for(Submission submission : this.rfs.getRelease().getSubmissions()) {
-      this.releases.resetSubmission(this.rfs.getRelease(), submission);
+      this.releases.resetSubmission(this.rfs.getRelease().getName(), submission.getProjectKey());
     }
   }
 }

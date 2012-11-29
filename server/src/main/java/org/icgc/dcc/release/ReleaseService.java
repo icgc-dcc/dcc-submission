@@ -395,17 +395,19 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
   public void resetSubmissions(final Release release) {
     for(Submission submission : release.getSubmissions()) {
-      resetSubmission(release, submission);
+      resetSubmission(release.getName(), submission.getProjectKey());
     }
   }
 
-  public void resetSubmission(final Release release, final Submission submission) {
-    submission.setState(SubmissionState.NOT_VALIDATED);
-    submission.setReport(null);
-
-    String releaseName = release.getName();
-    updateSubmission(releaseName, submission);
-    removeSubmissionReport(releaseName, submission.getProjectKey());
+  public void resetSubmission(final String releaseName, final String projectKey) {
+    log.info("resetting submission for project {}", projectKey);
+    datastore().findAndModify( //
+        datastore().createQuery(Release.class) //
+            .filter("name = ", releaseName) //
+            .filter("submissions.projectKey = ", projectKey), //
+        datastore().createUpdateOperations(Release.class).disableValidation() //
+            .set("submissions.$.state", SubmissionState.NOT_VALIDATED) //
+            .unset("submissions.$.report"));
   }
 
   // TODO: should also take care of updating the queue, as the two should always go together
