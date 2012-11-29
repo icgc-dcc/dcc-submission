@@ -39,7 +39,8 @@ public class NextReleaseResource {
   public Response release(Release nextRelease, @Context Request req, @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.RELEASE_CLOSE.getPrefix()) == false) {
-      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
+      return Response.status(Status.UNAUTHORIZED)
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED.getCode())).build();
     }
     NextRelease oldRelease = releaseService.getNextRelease();
     // Check the timestamp of the oldRelease, since that is the object being updated
@@ -70,7 +71,8 @@ public class NextReleaseResource {
 
       if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
           AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
-        return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
+        return Response.status(Status.UNAUTHORIZED)
+            .entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED.getCode())).build();
       }
     }
     ResponseTimestamper.evaluate(req, this.releaseService.getNextRelease().getRelease());
@@ -88,7 +90,8 @@ public class NextReleaseResource {
   public Response removeAllQueued(@Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.QUEUE_DELETE.getPrefix()) == false) {
-      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
+      return Response.status(Status.UNAUTHORIZED)
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED.getCode())).build();
     }
     this.releaseService.deleteQueuedRequest();
 
@@ -108,7 +111,8 @@ public class NextReleaseResource {
   public Response signOff(List<String> projectKeys, @Context Request req, @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.RELEASE_SIGNOFF.getPrefix()) == false) {
-      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
+      return Response.status(Status.UNAUTHORIZED)
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED.getCode())).build();
     }
     Release release = this.releaseService.getNextRelease().getRelease();
     ResponseTimestamper.evaluate(req, release);
@@ -127,7 +131,8 @@ public class NextReleaseResource {
   public Response update(Release release, @Context Request req, @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.RELEASE_MODIFY.getPrefix()) == false) {
-      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
+      return Response.status(Status.UNAUTHORIZED)
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED.getCode())).build();
     }
     if(release != null) {
       ResponseTimestamper.evaluate(req, release);

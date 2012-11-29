@@ -10,7 +10,7 @@ public class ServerErrorResponseMessage {
     this.parameters = parameters;
   }
 
-  public ServerErrorResponseMessage(String code) {
+  public ServerErrorResponseMessage(String code) { // TODO: change this to accept ServerErrorCodeEnum instead (DCC-660)
     this.code = code;
     this.parameters = new Object[0];
   }

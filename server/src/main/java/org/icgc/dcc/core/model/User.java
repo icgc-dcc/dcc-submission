@@ -44,7 +44,7 @@ public class User extends BaseEntity implements HasName {
   }
 
   public boolean isLocked() {
-    return failedAttempts > MAX_ATTEMPTS;
+    return failedAttempts >= MAX_ATTEMPTS;
   }
 
   public void resetAttempts() {

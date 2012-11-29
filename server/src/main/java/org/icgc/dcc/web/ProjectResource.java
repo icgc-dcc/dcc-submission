@@ -61,7 +61,8 @@ public class ProjectResource {
   public Response getIt(@PathParam("projectKey") String projectKey, @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
-      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
+      return Response.status(Status.UNAUTHORIZED)
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED.getCode())).build();
     }
     Project project = projects.where(QProject.project.key.eq(projectKey)).uniqueResult();
     if(project == null) {
@@ -77,7 +78,8 @@ public class ProjectResource {
       @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
-      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
+      return Response.status(Status.UNAUTHORIZED)
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED.getCode())).build();
     }
     ResponseTimestamper.evaluate(req, project);
 
@@ -96,7 +98,8 @@ public class ProjectResource {
   public Response getReleases(@PathParam("projectKey") String projectKey, @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
-      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
+      return Response.status(Status.UNAUTHORIZED)
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED.getCode())).build();
     }
     Project project = projects.where(QProject.project.key.eq(projectKey)).uniqueResult();
     if(project == null) {

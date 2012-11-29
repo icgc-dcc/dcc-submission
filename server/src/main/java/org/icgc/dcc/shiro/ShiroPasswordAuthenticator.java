@@ -45,7 +45,6 @@ import com.google.inject.Inject;
  */
 public class ShiroPasswordAuthenticator implements UsernamePasswordAuthenticator {
 
-  @SuppressWarnings("unused")
   private final SecurityManager securityManager;
 
   private final UserService users;
@@ -96,14 +95,17 @@ public class ShiroPasswordAuthenticator implements UsernamePasswordAuthenticator
       // say who they are:
       // print their identifying principal (in this case, a username):
       user.resetAttempts(); // Part of lockout hack
-      users.saveUser(user); // Part of lockout hack
+      users.saveUser(user); // Part of lockout hack - FIXME: use update instead (DCC-661)
       log.info("User [" + currentUser.getPrincipal() + "] logged in successfully.");
       return currentUser;
     }
 
     // Hack
     user.incrementAttempts();
-    users.saveUser(user);
+    users.saveUser(user); // FIXME: use update instead? (DCC-661)
+    if(user.isLocked()) {
+      log.info("user {} was locked after too many failed attempts", username);
+    }
     // End hack
 
     return null;

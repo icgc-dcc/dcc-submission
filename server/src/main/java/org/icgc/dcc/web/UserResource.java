@@ -29,24 +29,34 @@ import javax.mail.internet.MimeMessage;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.SecurityContext;
 
 import org.icgc.dcc.core.UserService;
 import org.icgc.dcc.core.model.Feedback;
 import org.icgc.dcc.core.model.User;
 import org.icgc.dcc.security.UsernamePasswordAuthenticator;
+import org.icgc.dcc.shiro.AuthorizationPrivileges;
+import org.icgc.dcc.shiro.ShiroSecurityContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 
 /**
- * 
+ * Resource (REST end-points) for users.
  */
-@Path("users/self")
+@Path("users")
 public class UserResource {
+
+  private static final Logger log = LoggerFactory.getLogger(UserResource.class);
 
   @Inject
   private UserService users;
@@ -55,6 +65,7 @@ public class UserResource {
   private UsernamePasswordAuthenticator passwordAuthenticator;
 
   @GET
+  @Path("self")
   public Response getRoles(@Context HttpHeaders headers) {
 
     String username = passwordAuthenticator.getCurrentUser();
@@ -72,6 +83,7 @@ public class UserResource {
   }
 
   @POST
+  @Path("self")
   @Consumes("application/json")
   public Response feedback(Feedback feedback, @Context Request req) {
     Properties props = new Properties();
@@ -87,12 +99,41 @@ public class UserResource {
 
       Transport.send(msg);
     } catch(AddressException e) {
-      System.out.println("an error occured while emailing: " + e);
+      log.error("an error occured while emailing: " + e);
     } catch(MessagingException e) {
-      System.out.println("an error occured while emailing: " + e);
+      log.error("an error occured while emailing: " + e);
     }
 
     return Response.ok().build();
   }
 
+  @PUT
+  @Path("unlock/{username}")
+  public Response unlock(@PathParam("username") String username, @Context Request req,
+      @Context SecurityContext securityContext) {
+
+    if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(AuthorizationPrivileges.ALL.getPrefix()) == false) {
+      return Response.status(Status.UNAUTHORIZED)
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED.getCode())).build();
+    }
+
+    User user = users.getUser(username);
+    if(user == null) {
+      log.warn("unknown user {} provided", username);
+      return Response.status(Status.BAD_REQUEST)
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.UNKNOWN.getCode(), new Object[] { username })).build();
+    }
+
+    if(user.isLocked() == false) {
+      log.warn("user {} was not locked, aborting unlocking procedure", username);
+      return Response.status(Status.BAD_REQUEST)
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.NOT_APPLICABLE.getCode(), new Object[] { user }))
+          .build();
+    }
+
+    user = users.unlock(username);
+    log.info("user {} was unlocked", username);
+
+    return ResponseTimestamper.ok(user).build();
+  }
 }

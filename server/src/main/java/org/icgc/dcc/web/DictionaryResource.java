@@ -33,7 +33,8 @@ public class DictionaryResource {
   public Response addDictionary(Dictionary d, @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.DICTIONARY_MODIFY.toString()) == false) {
-      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
+      return Response.status(Status.UNAUTHORIZED)
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED.getCode())).build();
     }
     checkArgument(d != null);
     if(this.dictionaries.list().isEmpty() == false) {
@@ -69,11 +70,13 @@ public class DictionaryResource {
       @Context Request req, @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.DICTIONARY_MODIFY.toString()) == false) {
-      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
+      return Response.status(Status.UNAUTHORIZED)
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED.getCode())).build();
     }
     Dictionary oldDictionary = this.dictionaries.getFromVersion(version);
     if(oldDictionary == null) {
-      return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoSuchVersion", version)).build();
+      return Response.status(Status.NOT_FOUND)
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_VERSION.getCode(), version)).build();
     } else if(oldDictionary.getState() != DictionaryState.OPENED) {
       return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage("DictionaryNotOpen", version))
           .build();

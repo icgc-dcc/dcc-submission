@@ -15,28 +15,25 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.shiro;
+package org.icgc.dcc.web;
 
-public enum AuthorizationPrivileges {
+/**
+ * Represents server error types.
+ */
+public enum ServerErrorCode { // TODO: migrate all (DCC-660)
+  UNAUTHORIZED("Unauthorized"), //
+  NO_SUCH_VERSION("NoSuchVersion"), //
+  UNKNOWN("Unknown"), //
+  NOT_APPLICABLE("NotApplicable"), //
+  ;
 
-  ALL("*"), //
-  PROJECT("project"), RELEASE_VIEW("release:view"), //
-  RELEASE_CLOSE("release:close"), RELEASE_MODIFY("release:modify"), RELEASE_SIGNOFF("release:signoff"), //
-  CODELIST_MODIFY("codelist:modify"), //
-  DICTIONARY_MODIFY("dictionary:modify"), //
-  QUEUE_DELETE("queue:delete");
+  private String code;
 
-  private final String prefix;
-
-  AuthorizationPrivileges(String prefix) {
-    this.prefix = prefix;
+  private ServerErrorCode(String code) {
+    this.code = code;
   }
 
-  public static String projectViewPrivilege(String projectKey) {
-    return PROJECT.prefix + ":" + projectKey + ":view";
-  }
-
-  public String getPrefix() {
-    return this.prefix;
+  public String getCode() {
+    return code;
   }
 }
