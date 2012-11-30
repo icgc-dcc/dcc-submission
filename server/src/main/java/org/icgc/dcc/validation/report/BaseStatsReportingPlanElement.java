@@ -153,10 +153,7 @@ abstract class BaseStatsReportingPlanElement implements ReportingPlanElement {
           freport.setLabel(field.getLabel());
           freport.setType(field.getSummaryType());
 
-          // skip adding report with 0 completeness
-          if(freport.getCompleteness() > 0) {
-            report.addFieldReport(freport);
-          }
+          report.addFieldReport(freport);
         }
 
       } catch(Exception e) {
