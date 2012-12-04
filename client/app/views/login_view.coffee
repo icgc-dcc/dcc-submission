@@ -79,7 +79,6 @@ module.exports = class LoginView extends PageView
         Chaplin.mediator.publish '!startupController', 'release', 'list'
 
       error: (jqXHR, textStatus, errorThrown) =>
-        console.log jqXHR, textStatus, errorThrown
         alert = @.$('#login-error')
 
         if alert.length
