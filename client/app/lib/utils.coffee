@@ -177,17 +177,14 @@ found on host #{host}"
     Number(bytes).toFixed(precision) + " " + sizes[posttxt]
 
   sendAuthorization: (xhr) =>
-    #console.debug 'utils#sendAuthorization'
-    #@accessToken = localStorage.getItem 'accessToken'
-    accessToken = $.cookie 'accessToken'
+    console.debug 'utils#sendAuthorization', Chaplin.mediator.user
+    accessToken = Chaplin.mediator.user?.get "accessToken"
+    console.log accessToken
     if accessToken
-      console.log "!"
       # refresh expire time
       #$.cookie 'accessToken', accessToken
       xhr.setRequestHeader 'Authorization', "X-DCC-Auth  #{accessToken}"
     else
-
-      console.log "?"
-      Chaplin.mediator.publish '!logout'
+      Chaplin.mediator.publish '!startupController', 'session', 'login'
 
 module.exports = utils
