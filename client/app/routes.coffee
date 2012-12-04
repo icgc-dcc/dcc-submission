@@ -36,5 +36,9 @@ module.exports = (match) ->
   match 'releases/:release/submissions/:submission/report/:report/',
     'release#report'
 
+  match 'login', 'session#login'
+  match 'login/', 'session#login'
+
+
   # 404
   match '*anything', 'errors#notFound'

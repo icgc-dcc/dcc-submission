@@ -21,43 +21,24 @@
 """
 
 
-Chaplin = require 'chaplin'
 View = require 'views/base/view'
-template = require 'views/templates/navigation'
+template = require 'views/templates/navigation/user'
 
-FeedbackFormView = require 'modules/feedback/views/feedback_form_view'
-UserView = require 'views/navigation/user_view'
-
-module.exports = class NavigationView extends View
+module.exports = class UserView extends View
   template: template
-  tagName: 'nav'
-  containerMethod: 'html'
-  autoRender: false
-  className: 'navigation'
-  container: '#header-container'
+  template = null
+
+
+  tagName: "li"
+  container: "#user-area"
+  autoRender: true
 
   initialize: ->
-    console.debug 'NavigationView#initialize', @model
+    console.log "UserView#initialize"
     super
 
+    @delegate 'click', '#logout', @triggerLogout
 
-    @subscribeEvent 'loginSuccessful', ->
-      @render()
-      @subview('UserAreaView'
-      new UserView
-        model: Chaplin.mediator.user
-      )
-
-
-
-    @subscribeEvent 'navigation:change', (attributes) =>
-      console.debug 'NavigationView#initialize#change', attributes
-      @model.clear(silent: yes)
-      @model.set attributes
-
-    @delegate "click", "#feedback-tab", @feedbackPopup
-
-  feedbackPopup: (e) ->
-    #console.debug "FeedbackTabView#feedbackPopup", e
-    new FeedbackFormView()
-
+  triggerLogout: (e) ->
+    console.log "UserView#triggerLogout"
+    window.location.reload()

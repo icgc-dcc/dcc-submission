@@ -94,7 +94,7 @@ public class HttpServerService extends AbstractService {
         public void service(Request request, Response response) throws Exception {
           response.sendRedirect("/#" + request.getDecodedRequestURI());
         }
-      }, "/releases");
+      }, "/releases", "/login");
 
       try {
         server.start();
