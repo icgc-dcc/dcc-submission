@@ -32,7 +32,7 @@ module.exports = class NavigationView extends View
   template: template
   tagName: 'nav'
   containerMethod: 'html'
-  autoRender: true
+  autoRender: false
   className: 'navigation'
   container: '#header-container'
 
@@ -42,10 +42,12 @@ module.exports = class NavigationView extends View
 
 
     @subscribeEvent 'loginSuccessful', ->
+      @render()
       @subview('UserAreaView'
       new UserView
         model: Chaplin.mediator.user
       )
+
 
 
     @subscribeEvent 'navigation:change', (attributes) =>
