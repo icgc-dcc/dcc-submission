@@ -23,72 +23,54 @@
 
 Chaplin = require 'chaplin'
 utils = require 'lib/utils'
-View = require 'views/base/view'
+PageView = require 'views/base/page_view'
 template = require 'views/templates/login'
+User = require 'models/user'
 
-module.exports = class LoginView extends View
+module.exports = class LoginView extends PageView
   template: template
   id: 'login'
-  container: 'body'
+  container: '#page-container'
+  containerMethod: 'html'
   autoRender: true
 
+  baseUrl: "/ws/"
+
   # Expects the serviceProviders in the options
-  initialize: (options) ->
+  initialize: ->
+    console.log "LoginView#initialize"
     super
-    #console.debug 'LoginView#initialize', @el, @$el, options
-    @initButtons options.serviceProviders
-    #@$el.modal
-    #  "keyboard": false
-    #  "backdrop": "static"
-    #  "show": true
 
-  # In this project we currently only have one service provider and therefore
-  # one button. But this should allow for different service providers.
-  initButtons: (serviceProviders) ->
-    #console.debug 'LoginView#initButtons', serviceProviders
+    @delegate 'submit', '#login-form', @triggerLogin
 
-    for serviceProviderName, serviceProvider of serviceProviders
-
-      buttonSelector = ".#{serviceProviderName}"
-      @$(buttonSelector).addClass('service-loading')
-
-      loginHandler = _(@loginWith).bind(
-        this, serviceProviderName, serviceProvider
-      )
-      @delegate 'click', buttonSelector, loginHandler
-
-      loaded = _(@serviceProviderLoaded).bind(
-        this, serviceProviderName, serviceProvider
-      )
-      serviceProvider.done loaded
-
-      failed = _(@serviceProviderFailed).bind(
-        this, serviceProviderName, serviceProvider
-      )
-      serviceProvider.fail failed
-
-  loginWith: (serviceProviderName, serviceProvider, e) ->
-    console.debug 'LoginView#loginWith', e
+  triggerLogin: (e) ->
+    console.log "LoginView#triggerLogin"
     e.preventDefault()
 
-    # TODO - added just to make it work
-    loginDetails = @$("form").serializeObject()
-    @accessToken = btoa loginDetails.username.concat ":", loginDetails.password
-    $.cookie 'accessToken', @accessToken
+    loginDetails = $(e.currentTarget).serializeObject()
+    #user = new User {
+    #  username: form.username
+    #  password: form.password
+    #}
 
-    return unless serviceProvider.isLoaded()
-    Chaplin.mediator.publish 'login:pickService', serviceProviderName
-    Chaplin.mediator.publish '!login', serviceProviderName
+    @getUserData loginDetails
 
-  serviceProviderLoaded: (serviceProviderName) ->
-    #console.debug 'LoginView#serviceProviderLoaded', serviceProviderName
-    @$(".#{serviceProviderName}").removeClass('service-loading')
+  getUserData: (loginDetails) ->
+    #console.debug 'DCCServiceProvider#ajax', type, url, data
+    accessToken = btoa loginDetails.username.concat ":", loginDetails.password
+    $.ajax '/ws/users/self', {
+      type: 'get'
+      dataType: 'json'
+      beforeSend: (xhr) ->
+        xhr.setRequestHeader 'Authorization', "X-DCC-Auth  #{accessToken}"
+      success: (data) ->
+        #if data.locked @lockedOut
+        data.accessToken = accessToken
+        user = new User data
+        Chaplin.mediator.user = user
+        Chaplin.mediator.publish 'loginSuccessful'
+        Chaplin.mediator.publish '!startupController', 'release', 'list'
 
-  serviceProviderFailed: (serviceProviderName) ->
-    #console.debug 'LoginView#serviceProviderFailed', serviceProviderName
-    @$(".#{serviceProviderName}")
-      .removeClass('service-loading')
-      .addClass('service-unavailable')
-      .attr('disabled', true)
-      .attr('title', "Error connecting. Please check whether you are
-        blocking #{utils.upcase(serviceProviderName)}.")
+      error: (jqXHR, textStatus, errorThrown) ->
+        console.log jqXHR, textStatus, errorThrown
+    }

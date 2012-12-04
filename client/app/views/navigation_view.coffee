@@ -26,24 +26,27 @@ View = require 'views/base/view'
 template = require 'views/templates/navigation'
 
 FeedbackFormView = require 'modules/feedback/views/feedback_form_view'
+UserView = require 'views/navigation/user_view'
 
 module.exports = class NavigationView extends View
   template: template
   tagName: 'nav'
   containerMethod: 'html'
-  autoRender: false
+  autoRender: true
   className: 'navigation'
   container: '#header-container'
 
   initialize: ->
-    #console.debug 'NavigationView#initialize', @model
+    console.debug 'NavigationView#initialize', @model
     super
-    @modelBind 'change', @render
 
-    @delegate 'click', '#logout', @triggerLogout
 
-    @subscribeEvent 'login', @setUsername
-    #@subscribeEvent 'logout', @setUsername
+    @subscribeEvent 'loginSuccessful', ->
+      @subview('UserAreaView'
+      new UserView
+        model: Chaplin.mediator.user
+      )
+
 
     @subscribeEvent 'navigation:change', (attributes) =>
       console.debug 'NavigationView#initialize#change', attributes
@@ -56,11 +59,3 @@ module.exports = class NavigationView extends View
     #console.debug "FeedbackTabView#feedbackPopup", e
     new FeedbackFormView()
 
-  setUsername: (user)->
-    #console.debug 'NavigationView#@setUsername', @model
-    @model.set 'username', user.get('name')
-
-  triggerLogout: (e) ->
-    console.log "NavigationView#triggerLogout"
-
-    Chaplin.mediator.publish '!logout'

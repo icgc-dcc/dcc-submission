@@ -21,24 +21,24 @@
 """
 
 
-module.exports = (match) ->
+View = require 'views/base/view'
+template = require 'views/templates/navigation/user'
 
-  # Releases
-  match '', 'release#list'
-  match 'releases', 'release#list'
-  match 'releases/', 'release#list'
-  match 'releases/:release', 'release#show'
-  match 'releases/:release/', 'release#show'
-  match 'releases/:release/submissions/:submission', 'release#submission'
-  match 'releases/:release/submissions/:submission/', 'release#submission'
-  match 'releases/:release/submissions/:submission/report/:report',
-    'release#report'
-  match 'releases/:release/submissions/:submission/report/:report/',
-    'release#report'
-
-  match 'login', 'session#login'
-  match 'login/', 'session#login'
+module.exports = class UserView extends View
+  template: template
+  template = null
 
 
-  # 404
-  match '*anything', 'errors#notFound'
+  tagName: "li"
+  container: "#user-area"
+  autoRender: true
+
+  initialize: ->
+    console.log "UserView#initialize"
+    super
+
+    @delegate 'click', '#logout', @triggerLogout
+
+  triggerLogout: (e) ->
+    console.log "UserView#triggerLogout"
+    window.location.reload()
