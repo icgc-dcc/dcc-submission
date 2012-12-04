@@ -100,7 +100,8 @@ public class NextReleaseTest {
     when(queryDict.filter(anyString(), any())).thenReturn(queryDict);
 
     when(mockReleaseService.getFromName("not_existing_release")).thenReturn(null);
-    when(mockDictionaryService.getFromVersion("existing_dictionary")).thenReturn(mock(Dictionary.class));
+    Dictionary dictionary = mock(Dictionary.class);
+    when(mockDictionaryService.getFromVersion("existing_dictionary")).thenReturn(dictionary);
 
     nextRelease = new NextRelease(release, mockMorphia, ds, fs);
   }
