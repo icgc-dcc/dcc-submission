@@ -122,11 +122,6 @@ module.exports = class SubmissionTableView extends DataTableView
             source.state
         }
         {
-          sTitle: "Date Created"
-          mData: (source) ->
-            utils.date source.lastUpdated
-        }
-        {
           sTitle: "Report"
           bSortable: false
           mData: (source) =>
@@ -171,7 +166,7 @@ module.exports = class SubmissionTableView extends DataTableView
                       Validate
                     </a>
                     """
-                  else "<em>Upload Submission Files</em><br>"
+                  else "<em>Upload Files</em>"
                 else
                   "<em>Upload Submission Files</em><br>"
               when "ERROR"
