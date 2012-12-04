@@ -55,8 +55,16 @@ module.exports = class LoginView extends PageView
 
     @getUserData loginDetails
 
+  errors: (errorThrown) ->
+    switch errorThrown
+      when 'Unauthorized'
+        "The email address or password you provided does not match our records."
+      when "Internal Server Error"
+        "Server down. Please try agin later."
+
   getUserData: (loginDetails) ->
     #console.debug 'DCCServiceProvider#ajax', type, url, data
+    errors = @errors
     accessToken = btoa loginDetails.username.concat ":", loginDetails.password
     $.ajax '/ws/users/self', {
       type: 'get'
@@ -64,13 +72,20 @@ module.exports = class LoginView extends PageView
       beforeSend: (xhr) ->
         xhr.setRequestHeader 'Authorization', "X-DCC-Auth  #{accessToken}"
       success: (data) ->
-        #if data.locked @lockedOut
         data.accessToken = accessToken
         user = new User data
         Chaplin.mediator.user = user
         Chaplin.mediator.publish 'loginSuccessful'
         Chaplin.mediator.publish '!startupController', 'release', 'list'
 
-      error: (jqXHR, textStatus, errorThrown) ->
+      error: (jqXHR, textStatus, errorThrown) =>
         console.log jqXHR, textStatus, errorThrown
+        alert = @.$('#login-error')
+
+        if alert.length
+          alert.text(errors(errorThrown))
+        else
+          @.$('form')
+            .before("<div id='login-error' class='alert alert-error'>
+              #{errors(errorThrown)}</div>")
     }
