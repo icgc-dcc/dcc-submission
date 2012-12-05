@@ -32,6 +32,14 @@ module.exports = class SessionController extends Controller
   # Was the login status already determined?
   loggedIn: no
 
+  initialize: ->
+    console.debug 'SessionController#initialize'
+    @subscribeEvent 'loginSuccessful', ->
+      setTimeout( ->
+        window.location.reload()
+      , 360000)
+
+
   login: ->
     console.debug 'SessionController#show'
     @view = new LoginView()
