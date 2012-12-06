@@ -72,7 +72,7 @@ public class DefaultPlanner implements Planner {
       try {
         FileSchemaDirectory fileSchemaDirectory = strategy.getFileSchemaDirectory();
         String fileSchemaName = fileSchema.getName();
-        if(fileSchemaDirectory.hasFile(fileSchema) || systemDirectory.hasFile(fileSchema)) {
+        if(fileSchemaDirectory.hasFile(fileSchema, strategy) || systemDirectory.hasFile(fileSchema, strategy)) {
           log.info("including flow planners for file schema {}", fileSchemaName);
           plan.include(fileSchema, new DefaultInternalFlowPlanner(fileSchema), new DefaultExternalFlowPlanner(plan,
               fileSchema));

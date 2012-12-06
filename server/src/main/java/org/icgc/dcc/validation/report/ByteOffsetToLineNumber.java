@@ -23,7 +23,6 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -72,17 +71,6 @@ public class ByteOffsetToLineNumber {// TODO: make non-static class
     CompressionCodecFactory factory = new CompressionCodecFactory(conf);
 
     try {
-      DataInputStream testis = fs.open(file);
-      byte[] magicNumber = new byte[3];
-      testis.readFully(magicNumber);
-      testis.close();
-
-      if(Arrays.equals(magicNumber, new byte[] { 0x42, 0x5A, 0x68 })) {
-        log.info(file.getName() + " is bz2");
-      } else {
-        log.info(file.getName() + " is not bz2");
-      }
-
       CompressionCodec codec = factory.getCodec(file);
       is = (codec == null) ? fs.open(file) : codec.createInputStream(fs.open(file));
     } catch(IOException e) {
