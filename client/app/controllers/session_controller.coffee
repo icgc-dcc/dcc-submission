@@ -37,7 +37,7 @@ module.exports = class SessionController extends Controller
     @subscribeEvent 'loginSuccessful', ->
       setTimeout( ->
         window.location.reload()
-      , 360000)
+      , 3600000)
 
 
   login: ->
