@@ -88,3 +88,9 @@ module.exports = class LoginView extends PageView
             .before("<div id='login-error' class='alert alert-error'>
               #{errors(errorThrown)}</div>")
     }
+
+  afterRender: ->
+    super
+    text_input = document.getElementById('#username')
+    text_input.focus()
+    text_input.select()
