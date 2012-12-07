@@ -34,6 +34,8 @@ import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.report.Outcome;
 import org.icgc.dcc.validation.report.SchemaReport;
 import org.icgc.dcc.validation.report.SubmissionReport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cascading.cascade.Cascade;
 import cascading.cascade.CascadeConnector;
@@ -46,6 +48,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 public class Plan {
+
+  private static final Logger log = LoggerFactory.getLogger(Plan.class);
 
   private final List<FileSchema> plannedSchema = Lists.newArrayList();
 
@@ -70,7 +74,7 @@ public class Plan {
   }
 
   public String path(final FileSchema schema) throws FileNotFoundException, IOException {
-    return this.cascadingStrategy.path(schema).toUri().getPath();
+    return this.cascadingStrategy.path(schema).getName();
   }
 
   public Dictionary getDictionary() {
@@ -86,6 +90,8 @@ public class Plan {
   public InternalFlowPlanner getInternalFlow(String schema) throws MissingFileException {
     InternalFlowPlanner schemaPlan = internalPlanners.get(schema);
     if(schemaPlan == null) {
+      log.error(String.format("no corresponding file for schema %s, schemata with files are %s", schema,
+          internalPlanners.keySet()));
       throw new MissingFileException(schema);
     }
     return schemaPlan;
@@ -153,14 +159,8 @@ public class Plan {
         // combine internal and external plans into one
         SchemaReport sreport = schemaReports.get(schemaReport.getName());
 
-        if(schemaReport.getFieldReports() != null) {
-          sreport.getFieldReports().addAll(schemaReport.getFieldReports());
-        }
-        if(sreport.getErrors() != null) {
-          sreport.getErrors().addAll(schemaReport.getErrors());
-        } else if(schemaReport.getErrors() != null) {
-          sreport.setErrors(schemaReport.getErrors());
-        }
+        sreport.addFieldReports(schemaReport.getFieldReports());
+        sreport.addErrors(schemaReport.getErrors());
       }
     }
 
@@ -192,7 +192,7 @@ public class Plan {
   }
 
   public boolean hasFileLevelErrors() {
-    return fileLevelErrors.size() > 0;
+    return fileLevelErrors.isEmpty() == false;
   }
 
   public Map<String, TupleState> getFileLevelErrors() {

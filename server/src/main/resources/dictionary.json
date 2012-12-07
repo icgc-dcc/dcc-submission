@@ -1,12 +1,12 @@
 {
-  "created" : 1347304331746,
-  "lastUpdate" : 1347304331746,
+  "created" : 1353945038809,
+  "lastUpdate" : 1353945038809,
   "version" : "0.6c",
   "state" : "OPENED",
   "files" : [ {
     "name" : "exposure",
     "label" : null,
-    "pattern" : "^\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__exposure__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
+    "pattern" : "^\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__exposure__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo)?(.gz)?(.bz2)?$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ ],
     "fields" : [ {
@@ -64,7 +64,7 @@
   }, {
     "name" : "mirna_m",
     "label" : null,
-    "pattern" : "^mirna__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__m__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
+    "pattern" : "^mirna__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__m__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo)?(.gz)?(.bz2)?$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ "analysis_id", "sample_id" ],
     "fields" : [ {
@@ -223,7 +223,7 @@
   }, {
     "name" : "mirna_p",
     "label" : null,
-    "pattern" : "^mirna__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__p__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
+    "pattern" : "^mirna__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__p__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo)?(.gz)?(.bz2)?$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ ],
     "fields" : [ {
@@ -366,7 +366,7 @@
   }, {
     "name" : "ssm_s",
     "label" : null,
-    "pattern" : "^ssm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__s__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
+    "pattern" : "^ssm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__s__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo)?(.gz)?(.bz2)?$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ ],
     "fields" : [ {
@@ -487,7 +487,7 @@
   }, {
     "name" : "surgery",
     "label" : null,
-    "pattern" : "^\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__surgery__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
+    "pattern" : "^\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__surgery__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo)?(.gz)?(.bz2)?$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ ],
     "fields" : [ {
@@ -583,7 +583,7 @@
   }, {
     "name" : "mirna_s",
     "label" : null,
-    "pattern" : "^mirna__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__s__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
+    "pattern" : "^mirna__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__s__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo)?(.gz)?(.bz2)?$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ ],
     "fields" : [ {
@@ -680,7 +680,7 @@
   }, {
     "name" : "donor",
     "label" : null,
-    "pattern" : "^\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__donor__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
+    "pattern" : "^\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__donor__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo)?(.gz)?(.bz2)?$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ "donor_id" ],
     "fields" : [ {
@@ -885,7 +885,7 @@
   }, {
     "name" : "family",
     "label" : null,
-    "pattern" : "^\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__family__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
+    "pattern" : "^\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__family__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo)?(.gz)?(.bz2)?$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ ],
     "fields" : [ {
@@ -986,7 +986,7 @@
   }, {
     "name" : "specimen",
     "label" : null,
-    "pattern" : "^\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__specimen__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
+    "pattern" : "^\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__specimen__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo)?(.gz)?(.bz2)?$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ "specimen_id" ],
     "fields" : [ {
@@ -1284,7 +1284,7 @@
   }, {
     "name" : "stsm_s",
     "label" : null,
-    "pattern" : "^stsm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__s__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
+    "pattern" : "^stsm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__s__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo)?(.gz)?(.bz2)?$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ ],
     "fields" : [ {
@@ -1417,7 +1417,7 @@
   }, {
     "name" : "stsm_p",
     "label" : null,
-    "pattern" : "^stsm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__p__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
+    "pattern" : "^stsm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__p__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo)?(.gz)?(.bz2)?$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ "analysis_id", "analyzed_sample_id", "placement", "sv_id" ],
     "fields" : [ {
@@ -1703,7 +1703,7 @@
   }, {
     "name" : "meth_s",
     "label" : null,
-    "pattern" : "^meth__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__s__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
+    "pattern" : "^meth__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__s__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo)?(.gz)?(.bz2)?$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ ],
     "fields" : [ {
@@ -1784,7 +1784,7 @@
   }, {
     "name" : "stsm_m",
     "label" : null,
-    "pattern" : "^stsm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__m__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
+    "pattern" : "^stsm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__m__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo)?(.gz)?(.bz2)?$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ "analysis_id", "analyzed_sample_id" ],
     "fields" : [ {
@@ -1949,7 +1949,7 @@
   }, {
     "name" : "sample",
     "label" : null,
-    "pattern" : "^\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__sample__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
+    "pattern" : "^\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__sample__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo)?(.gz)?(.bz2)?$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ "analyzed_sample_id" ],
     "fields" : [ {
@@ -2019,7 +2019,7 @@
   }, {
     "name" : "hsap_transcript",
     "label" : null,
-    "pattern" : "^hsapiens_gene_ensembl__transcript__main.txt$",
+    "pattern" : "^hsapiens_gene_ensembl__transcript__main.txt(.lzo)?(.gz)?(.bz2)?$",
     "role" : "SYSTEM",
     "uniqueFields" : [ ],
     "fields" : [ {
@@ -2405,12 +2405,7 @@
       "label" : null,
       "valueType" : "TEXT",
       "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      } ]
+      "restrictions" : [ ]
     }, {
       "name" : "inter_paralog_opri_bool",
       "label" : null,
@@ -3490,7 +3485,7 @@
   }, {
     "name" : "mirna_mirbase",
     "label" : null,
-    "pattern" : "^mirna_mirbase.txt$",
+    "pattern" : "^mirna_mirbase.txt(.lzo)?(.gz)?(.bz2)?$",
     "role" : "SYSTEM",
     "uniqueFields" : [ ],
     "fields" : [ {
@@ -3498,12 +3493,7 @@
       "label" : null,
       "valueType" : "TEXT",
       "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : false
-        }
-      } ]
+      "restrictions" : [ ]
     }, {
       "name" : "mirna_seq",
       "label" : null,
@@ -3515,12 +3505,7 @@
       "label" : null,
       "valueType" : "TEXT",
       "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      } ]
+      "restrictions" : [ ]
     }, {
       "name" : "overlap_type",
       "label" : null,
@@ -3568,7 +3553,7 @@
   }, {
     "name" : "hsap_gene",
     "label" : null,
-    "pattern" : "^hsapiens_gene_ensembl__gene__main.txt$",
+    "pattern" : "^hsapiens_gene_ensembl__gene__main.txt(.lzo)?(.gz)?(.bz2)?$",
     "role" : "SYSTEM",
     "uniqueFields" : [ ],
     "fields" : [ {
@@ -3618,12 +3603,7 @@
       "label" : null,
       "valueType" : "TEXT",
       "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      } ]
+      "restrictions" : [ ]
     }, {
       "name" : "value_1022",
       "label" : null,
@@ -4541,7 +4521,7 @@
   }, {
     "name" : "cnsm_s",
     "label" : null,
-    "pattern" : "^cnsm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__s__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
+    "pattern" : "^cnsm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__s__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo)?(.gz)?(.bz2)?$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ ],
     "fields" : [ {
@@ -4633,7 +4613,7 @@
   }, {
     "name" : "cnsm_p",
     "label" : null,
-    "pattern" : "^cnsm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__p__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
+    "pattern" : "^cnsm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__p__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo)?(.gz)?(.bz2)?$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ "analysis_id", "analyzed_sample_id", "mutation_id" ],
     "fields" : [ {
@@ -4832,7 +4812,7 @@
   }, {
     "name" : "cnsm_m",
     "label" : null,
-    "pattern" : "^cnsm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__m__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
+    "pattern" : "^cnsm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__m__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo)?(.gz)?(.bz2)?$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ "analysis_id", "analyzed_sample_id" ],
     "fields" : [ {
@@ -4980,9 +4960,298 @@
       "optionals" : [ ]
     } ]
   }, {
+    "name" : "exp_g",
+    "label" : null,
+    "pattern" : "^exp__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__g__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo)?(.gz)?(.bz2)?$",
+    "role" : "SUBMISSION",
+    "uniqueFields" : [ ],
+    "fields" : [ {
+      "name" : "analysis_id",
+      "label" : "Unique identfier for the analysis performed for a particular group of samples",
+      "valueType" : "TEXT",
+      "summaryType" : null,
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : {
+          "acceptMissingCode" : false
+        }
+      } ]
+    }, {
+      "name" : "sample_id",
+      "label" : "Unique identifier for the sample being analyzed",
+      "valueType" : "TEXT",
+      "summaryType" : null,
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : {
+          "acceptMissingCode" : false
+        }
+      } ]
+    }, {
+      "name" : "gene_stable_id",
+      "label" : "For annotated gene, use Ensembl gene ID.  Otherwise, use assemblyBuild_chr_start_end where assemblyBuild is hg18 or hg19.",
+      "valueType" : "TEXT",
+      "summaryType" : null,
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : {
+          "acceptMissingCode" : true
+        }
+      } ]
+    }, {
+      "name" : "gene_chromosome",
+      "label" : "Name of the chromosome containing the mRNA",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : {
+          "acceptMissingCode" : true
+        }
+      }, {
+        "type" : "codelist",
+        "config" : {
+          "name" : "appendix_B6"
+        }
+      } ]
+    }, {
+      "name" : "gene_strand",
+      "label" : "Strand of the chromosome",
+      "valueType" : "INTEGER",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : {
+          "acceptMissingCode" : true
+        }
+      }, {
+        "type" : "codelist",
+        "config" : {
+          "name" : "exp_g__gene_strand"
+        }
+      } ]
+    }, {
+      "name" : "gene_start",
+      "label" : "Start position of the gene on the chromosome",
+      "valueType" : "INTEGER",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : {
+          "acceptMissingCode" : true
+        }
+      } ]
+    }, {
+      "name" : "gene_end",
+      "label" : "End position of the transcript on the chromosome",
+      "valueType" : "INTEGER",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : {
+          "acceptMissingCode" : true
+        }
+      } ]
+    }, {
+      "name" : "normalized_read_count",
+      "label" : "Normalized count of sequencing reads if analyzed by sequencing platforms",
+      "valueType" : "DECIMAL",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : {
+          "acceptMissingCode" : true
+        }
+      } ]
+    }, {
+      "name" : "raw_read_count",
+      "label" : "Raw count of sequencing reads if analyzed by sequencing platforms",
+      "valueType" : "INTEGER",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : {
+          "acceptMissingCode" : true
+        }
+      } ]
+    }, {
+      "name" : "normalized_expression_level",
+      "label" : "Normalized value of expression level if analyzed by microarray platforms",
+      "valueType" : "DECIMAL",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ ]
+    }, {
+      "name" : "fold_change",
+      "label" : "Expressed fold change if differential expression is measured",
+      "valueType" : "DECIMAL",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ ]
+    }, {
+      "name" : "reference_sample",
+      "label" : "ID of the reference sample if differential expression is measured",
+      "valueType" : "TEXT",
+      "summaryType" : null,
+      "restrictions" : [ ]
+    }, {
+      "name" : "quality_score",
+      "label" : "Quality score for the expression call",
+      "valueType" : "INTEGER",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ ]
+    }, {
+      "name" : "probability",
+      "label" : "Probability of the expression call",
+      "valueType" : "DECIMAL",
+      "summaryType" : "AVERAGE",
+      "restrictions" : [ ]
+    }, {
+      "name" : "is_annotated",
+      "label" : "Indicate if the expressed fragment is annotated in Ensembl",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "codelist",
+        "config" : {
+          "name" : "exp_g__is_annotated"
+        }
+      } ]
+    }, {
+      "name" : "validation_status",
+      "label" : "Indicate if the expressed fragment has been validated",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : {
+          "acceptMissingCode" : true
+        }
+      }, {
+        "type" : "codelist",
+        "config" : {
+          "name" : "exp_g__validation_status"
+        }
+      } ]
+    }, {
+      "name" : "validation_platform",
+      "label" : "Platform or technology used in validation",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "codelist",
+        "config" : {
+          "name" : "appendix_B5"
+        }
+      } ]
+    }, {
+      "name" : "probeset_id",
+      "label" : "ID of the probeset used in microarray",
+      "valueType" : "TEXT",
+      "summaryType" : null,
+      "restrictions" : [ ]
+    }, {
+      "name" : "note",
+      "label" : "Optional field to leave notes",
+      "valueType" : "TEXT",
+      "summaryType" : null,
+      "restrictions" : [ ]
+    } ],
+    "relations" : [ {
+      "fields" : [ "analysis_id", "sample_id" ],
+      "bidirectional" : true,
+      "other" : "exp_m",
+      "otherFields" : [ "analysis_id", "sample_id" ],
+      "optionals" : [ ]
+    }, {
+      "fields" : [ "gene_stable_id" ],
+      "bidirectional" : false,
+      "other" : "hsap_gene",
+      "otherFields" : [ "stable_id_1023" ],
+      "optionals" : [ ]
+    } ]
+  }, {
+    "name" : "biomarker",
+    "label" : null,
+    "pattern" : "^\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__biomarker__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo)?(.gz)?(.bz2)?$",
+    "role" : "SUBMISSION",
+    "uniqueFields" : [ ],
+    "fields" : [ {
+      "name" : "donor_id",
+      "label" : "Unique identifier for the donor; assigned by data provider. It must be coded, and correspond to a donor ID listed in the donor data file.",
+      "valueType" : "TEXT",
+      "summaryType" : null,
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : {
+          "acceptMissingCode" : false
+        }
+      } ]
+    }, {
+      "name" : "specimen_id",
+      "label" : "ID of the specimen on which biomarker ascertainment was performed, if applicable",
+      "valueType" : "TEXT",
+      "summaryType" : null,
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : {
+          "acceptMissingCode" : true
+        }
+      } ]
+    }, {
+      "name" : "biomarker_name",
+      "label" : "Biomarker name",
+      "valueType" : "TEXT",
+      "summaryType" : null,
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : {
+          "acceptMissingCode" : true
+        }
+      } ]
+    }, {
+      "name" : "biomarker_threshold",
+      "label" : "Threshold value for the biomarker for calling a result positive. Please include units.",
+      "valueType" : "TEXT",
+      "summaryType" : null,
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : {
+          "acceptMissingCode" : true
+        }
+      } ]
+    }, {
+      "name" : "biomarker_positive",
+      "label" : "Whether test is positive for named biomarker",
+      "valueType" : "TEXT",
+      "summaryType" : "FREQUENCY",
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : {
+          "acceptMissingCode" : true
+        }
+      }, {
+        "type" : "codelist",
+        "config" : {
+          "name" : "dr_biomarkers__biomarker_positive"
+        }
+      } ]
+    } ],
+    "relations" : [ {
+      "fields" : [ "donor_id" ],
+      "bidirectional" : false,
+      "other" : "donor",
+      "otherFields" : [ "donor_id" ],
+      "optionals" : [ ]
+    }, {
+      "fields" : [ "donor_id", "specimen_id" ],
+      "bidirectional" : false,
+      "other" : "specimen",
+      "otherFields" : [ "donor_id", "specimen_id" ],
+      "optionals" : [ 1 ]
+    } ]
+  }, {
     "name" : "ssm_p",
     "label" : null,
-    "pattern" : "^ssm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__p__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
+    "pattern" : "^ssm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__p__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo)?(.gz)?(.bz2)?$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ "analysis_id", "analyzed_sample_id", "mutation_id" ],
     "fields" : [ {
@@ -5237,298 +5506,9 @@
       "optionals" : [ ]
     } ]
   }, {
-    "name" : "exp_g",
-    "label" : null,
-    "pattern" : "^exp__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__g__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
-    "role" : "SUBMISSION",
-    "uniqueFields" : [ ],
-    "fields" : [ {
-      "name" : "analysis_id",
-      "label" : "Unique identfier for the analysis performed for a particular group of samples",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : false
-        }
-      } ]
-    }, {
-      "name" : "sample_id",
-      "label" : "Unique identifier for the sample being analyzed",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : false
-        }
-      } ]
-    }, {
-      "name" : "gene_stable_id",
-      "label" : "For annotated gene, use Ensembl gene ID.  Otherwise, use assemblyBuild_chr_start_end where assemblyBuild is hg18 or hg19.",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      } ]
-    }, {
-      "name" : "gene_chromosome",
-      "label" : "Name of the chromosome containing the mRNA",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "appendix_B6"
-        }
-      } ]
-    }, {
-      "name" : "gene_strand",
-      "label" : "Strand of the chromosome",
-      "valueType" : "INTEGER",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "exp_g__gene_strand"
-        }
-      } ]
-    }, {
-      "name" : "gene_start",
-      "label" : "Start position of the gene on the chromosome",
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      } ]
-    }, {
-      "name" : "gene_end",
-      "label" : "End position of the transcript on the chromosome",
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      } ]
-    }, {
-      "name" : "normalized_read_count",
-      "label" : "Normalized count of sequencing reads if analyzed by sequencing platforms",
-      "valueType" : "DECIMAL",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      } ]
-    }, {
-      "name" : "raw_read_count",
-      "label" : "Raw count of sequencing reads if analyzed by sequencing platforms",
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      } ]
-    }, {
-      "name" : "normalized_expression_level",
-      "label" : "Normalized value of expression level if analyzed by microarray platforms",
-      "valueType" : "DECIMAL",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ ]
-    }, {
-      "name" : "fold_change",
-      "label" : "Expressed fold change if differential expression is measured",
-      "valueType" : "DECIMAL",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ ]
-    }, {
-      "name" : "reference_sample",
-      "label" : "ID of the reference sample if differential expression is measured",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ ]
-    }, {
-      "name" : "quality_score",
-      "label" : "Quality score for the expression call",
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ ]
-    }, {
-      "name" : "probability",
-      "label" : "Probability of the expression call",
-      "valueType" : "DECIMAL",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ ]
-    }, {
-      "name" : "is_annotated",
-      "label" : "Indicate if the expressed fragment is annotated in Ensembl",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "codelist",
-        "config" : {
-          "name" : "exp_g__is_annotated"
-        }
-      } ]
-    }, {
-      "name" : "validation_status",
-      "label" : "Indicate if the expressed fragment has been validated",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "exp_g__validation_status"
-        }
-      } ]
-    }, {
-      "name" : "validation_platform",
-      "label" : "Platform or technology used in validation",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "codelist",
-        "config" : {
-          "name" : "appendix_B5"
-        }
-      } ]
-    }, {
-      "name" : "probeset_id",
-      "label" : "ID of the probeset used in microarray",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ ]
-    }, {
-      "name" : "note",
-      "label" : "Optional field to leave notes",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ ]
-    } ],
-    "relations" : [ {
-      "fields" : [ "analysis_id", "sample_id" ],
-      "bidirectional" : true,
-      "other" : "exp_m",
-      "otherFields" : [ "analysis_id", "sample_id" ],
-      "optionals" : [ ]
-    }, {
-      "fields" : [ "gene_stable_id" ],
-      "bidirectional" : false,
-      "other" : "hsap_gene",
-      "otherFields" : [ "stable_id_1023" ],
-      "optionals" : [ ]
-    } ]
-  }, {
-    "name" : "biomarker",
-    "label" : null,
-    "pattern" : "^\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__biomarker__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
-    "role" : "SUBMISSION",
-    "uniqueFields" : [ ],
-    "fields" : [ {
-      "name" : "donor_id",
-      "label" : "Unique identifier for the donor; assigned by data provider. It must be coded, and correspond to a donor ID listed in the donor data file.",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : false
-        }
-      } ]
-    }, {
-      "name" : "specimen_id",
-      "label" : "ID of the specimen on which biomarker ascertainment was performed, if applicable",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      } ]
-    }, {
-      "name" : "biomarker_name",
-      "label" : "Biomarker name",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      } ]
-    }, {
-      "name" : "biomarker_threshold",
-      "label" : "Threshold value for the biomarker for calling a result positive. Please include units.",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      } ]
-    }, {
-      "name" : "biomarker_positive",
-      "label" : "Whether test is positive for named biomarker",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : {
-          "acceptMissingCode" : true
-        }
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "dr_biomarkers__biomarker_positive"
-        }
-      } ]
-    } ],
-    "relations" : [ {
-      "fields" : [ "donor_id" ],
-      "bidirectional" : false,
-      "other" : "donor",
-      "otherFields" : [ "donor_id" ],
-      "optionals" : [ ]
-    }, {
-      "fields" : [ "donor_id", "specimen_id" ],
-      "bidirectional" : false,
-      "other" : "specimen",
-      "otherFields" : [ "donor_id", "specimen_id" ],
-      "optionals" : [ 1 ]
-    } ]
-  }, {
     "name" : "ssm_m",
     "label" : null,
-    "pattern" : "^ssm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__m__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
+    "pattern" : "^ssm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__m__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo)?(.gz)?(.bz2)?$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ "analysis_id", "analyzed_sample_id" ],
     "fields" : [ {
@@ -5693,7 +5673,7 @@
   }, {
     "name" : "jcn_p",
     "label" : null,
-    "pattern" : "^jcn__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__p__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
+    "pattern" : "^jcn__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__p__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo)?(.gz)?(.bz2)?$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ ],
     "fields" : [ {
@@ -6010,7 +5990,7 @@
   }, {
     "name" : "meth_p",
     "label" : null,
-    "pattern" : "^meth__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__p__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
+    "pattern" : "^meth__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__p__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo)?(.gz)?(.bz2)?$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ "analysis_id", "analyzed_sample_id", "methylated_fragment_id" ],
     "fields" : [ {
@@ -6157,7 +6137,7 @@
   }, {
     "name" : "exp_m",
     "label" : null,
-    "pattern" : "^exp__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__m__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
+    "pattern" : "^exp__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__m__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo)?(.gz)?(.bz2)?$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ "analysis_id", "sample_id" ],
     "fields" : [ {
@@ -6316,7 +6296,7 @@
   }, {
     "name" : "therapy",
     "label" : null,
-    "pattern" : "^\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__therapy__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
+    "pattern" : "^\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__therapy__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo)?(.gz)?(.bz2)?$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ ],
     "fields" : [ {
@@ -6401,7 +6381,7 @@
   }, {
     "name" : "jcn_m",
     "label" : null,
-    "pattern" : "^jcn__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__m__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
+    "pattern" : "^jcn__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__m__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo)?(.gz)?(.bz2)?$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ "analysis_id", "sample_id" ],
     "fields" : [ {
@@ -6570,7 +6550,7 @@
   }, {
     "name" : "meth_m",
     "label" : null,
-    "pattern" : "^meth__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__m__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
+    "pattern" : "^meth__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__m__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo)?(.gz)?(.bz2)?$",
     "role" : "SUBMISSION",
     "uniqueFields" : [ "analysis_id", "analyzed_sample_id" ],
     "fields" : [ {

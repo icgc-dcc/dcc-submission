@@ -58,7 +58,8 @@ public class CodeListResource {
   public Response addCodeLists(List<CodeList> codeLists, @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.CODELIST_MODIFY.toString()) == false) {
-      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
+      return Response.status(Status.UNAUTHORIZED)
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED.getCode())).build();
     }
     checkArgument(codeLists != null);
     this.dictionaries.addCodeList(codeLists);
@@ -69,7 +70,8 @@ public class CodeListResource {
   public Response createCodeList(String name, @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.CODELIST_MODIFY.toString()) == false) {
-      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
+      return Response.status(Status.UNAUTHORIZED)
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED.getCode())).build();
     }
     checkArgument(name != null);
     CodeList c = this.dictionaries.createCodeList(name);
@@ -93,7 +95,8 @@ public class CodeListResource {
       @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.CODELIST_MODIFY.toString()) == false) {
-      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
+      return Response.status(Status.UNAUTHORIZED)
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED.getCode())).build();
     }
     checkArgument(name != null);
     checkArgument(newCodeList != null);
@@ -117,7 +120,8 @@ public class CodeListResource {
       @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.CODELIST_MODIFY.toString()) == false) {
-      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
+      return Response.status(Status.UNAUTHORIZED)
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED.getCode())).build();
     }
     checkArgument(name != null);
     checkArgument(terms != null);

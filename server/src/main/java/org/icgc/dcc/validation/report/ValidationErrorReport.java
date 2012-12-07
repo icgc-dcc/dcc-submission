@@ -17,9 +17,14 @@
  */
 package org.icgc.dcc.validation.report;
 
+import java.io.IOException;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.validation.ErrorParameterKey;
 import org.icgc.dcc.validation.ValidationErrorCode;
 import org.icgc.dcc.validation.cascading.TupleState.TupleError;
 
@@ -104,6 +109,25 @@ public class ValidationErrorReport {
     this.errorType = errorType;
   }
 
+  public void updateLineNumbers(Path file) throws IOException {
+    Collection<Long> offsets = new HashSet<Long>();
+    for(ColumnErrorReport column : this.columns) {
+      offsets.addAll(column.getLines());
+    }
+    Map<Long, Long> byteToLine = ByteOffsetToLineNumber.convert(file, offsets);
+
+    if(byteToLine != null) {
+      for(ColumnErrorReport column : this.columns) {
+        List<Long> newLines = Lists.newLinkedList();
+        for(Long oldLine : column.getLines()) {
+          newLines.add(byteToLine.get(oldLine).longValue());
+        }
+        column.setLines(newLines);
+      }
+    }
+
+  }
+
   private static class ColumnErrorReport {
     private List<String> columnNames;
 
@@ -113,7 +137,7 @@ public class ValidationErrorReport {
 
     private List<Object> values = Lists.newLinkedList();
 
-    private Map<String, Object> parameters;
+    private Map<ErrorParameterKey, Object> parameters;
 
     public ColumnErrorReport() {
     }
@@ -135,7 +159,7 @@ public class ValidationErrorReport {
       return this.count;
     }
 
-    public Map<String, Object> getParameters() {
+    public Map<ErrorParameterKey, Object> getParameters() {
       return this.parameters;
     }
 
@@ -179,7 +203,7 @@ public class ValidationErrorReport {
       this.columnNames = columnNames;
     }
 
-    private void setParameters(Map<String, Object> params) {
+    private void setParameters(Map<ErrorParameterKey, Object> params) {
       this.parameters = params;
     }
   }

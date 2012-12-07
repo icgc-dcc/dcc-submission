@@ -20,7 +20,6 @@ package org.icgc.dcc.validation.report;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -111,12 +110,6 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
           report.setName(strategy.path(getFileSchema()).getName());
 
           ObjectMapper mapper = new ObjectMapper();
-          if(report.getErrors() == null) {
-            report.setErrors(new ArrayList<ValidationErrorReport>());
-          }
-          if(report.getFieldReports() == null) {
-            report.setFieldReports(new ArrayList<FieldReport>());
-          }
 
           Outcome outcome = Outcome.PASSED;
           MappingIterator<TupleState> tupleStates = mapper.reader().withType(TupleState.class).readValues(src);
@@ -135,6 +128,7 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
             }
           }
           for(ValidationErrorReport e : errorMap.values()) {
+            e.updateLineNumbers(strategy.path(getFileSchema()));
             report.errors.add(e);
           }
           return outcome;

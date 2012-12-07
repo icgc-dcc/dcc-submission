@@ -219,8 +219,8 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
     /*
      * The offset was passed from internal flow in order to access the offset
      */
-    protected int getLhsOffset(TupleEntry entry) {
-      return entry.getInteger(ValidationFields.OFFSET_FIELD_NAME);
+    protected long getLhsOffset(TupleEntry entry) {
+      return entry.getLong(ValidationFields.OFFSET_FIELD_NAME);
     }
 
     protected void reportRelationError(TupleState tupleState, Tuple offendingLhsTuple) {
@@ -229,7 +229,7 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
       List<String> relationColumnNames = Lists.newArrayList(rhsFields);
       List<Object> value = TuplesUtils.getObjects(offendingLhsTuple);
 
-      tupleState.reportError(ValidationErrorCode.RELATION_ERROR, columnNames, value, relationSchema,
+      tupleState.reportError(ValidationErrorCode.RELATION_VALUE_ERROR, columnNames, value, relationSchema,
           relationColumnNames);
     }
   }
@@ -246,7 +246,7 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
 
     private final int optionalSize;
 
-    private final Comparator[] tupleComparators;
+    private final transient Comparator[] tupleComparators;
 
     ConditionalNoNullBuffer(String lhs, String rhs, String[] lhsFields, String[] rhsFields, String[] requiredLhsFields,
         String[] requiredRhsFields, String[] optionalLhsFields, String[] optionalRhsFields) {
@@ -281,7 +281,7 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
       TupleEntry group = bufferCall.getGroup();
 
       // potential memory issue discussed in DCC-300
-      List<Entry<Tuple, Integer>> lhsOptionalTuples = new ArrayList<Entry<Tuple, Integer>>();
+      List<Entry<Tuple, Long>> lhsOptionalTuples = new ArrayList<Entry<Tuple, Long>>();
       List<Tuple> rhsOptionalTuples = new ArrayList<Tuple>();
       Tuple requiredLhsTuple = group.selectTuple(new Fields(requiredLhsFields));
 
@@ -290,7 +290,7 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
         if(TuplesUtils.hasValues(entry, requiredRhsFields)) { // this already filters out join on nulls
           if(TuplesUtils.hasValues(entry, optionalLhsFields)) {
             Tuple lhsOptionalTuple = entry.selectTuple(new Fields(optionalLhsFields));
-            lhsOptionalTuples.add(new SimpleEntry<Tuple, Integer>(lhsOptionalTuple, getLhsOffset(entry)));
+            lhsOptionalTuples.add(new SimpleEntry<Tuple, Long>(lhsOptionalTuple, getLhsOffset(entry)));
           }
           if(TuplesUtils.hasValues(entry, optionalRhsFields)) {
             rhsOptionalTuples.add(entry.selectTuple(new Fields(optionalRhsFields)));
@@ -303,11 +303,11 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
        * To keep track of reported errors (because there can be several specimen_id from the rhs) and we cannot use a
        * set for lhsOptionalTuples (TODO: why?)
        */
-      Set<Integer> reported = new HashSet<Integer>();
-      for(Entry<Tuple, Integer> lhsTupleToOffset : lhsOptionalTuples) {
+      Set<Long> reported = new HashSet<Long>();
+      for(Entry<Tuple, Long> lhsTupleToOffset : lhsOptionalTuples) {
         Tuple lhsOptionalTuple = lhsTupleToOffset.getKey();
         if(contains(rhsOptionalTuples, lhsOptionalTuple) == false) {
-          int lhsOffset = lhsTupleToOffset.getValue();
+          long lhsOffset = lhsTupleToOffset.getValue();
           TupleState tupleState = new TupleState(lhsOffset);
           if(reported.contains(lhsOffset) == false) {
             Tuple offendingLhsTuple = // so as to avoid storing it all in memory (memory/computing tradeoff)
@@ -342,7 +342,7 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
 
   static final class NoNullBuffer extends NoNullBufferBase {
 
-    private final int CONVENTION_PARENT_OFFSET = -1; // see DCC-289#2
+    private final long CONVENTION_PARENT_OFFSET = -1L; // FIXME: https://jira.oicr.on.ca/browse/DCC-562
 
     private final String[] renamedRhsFields;
 
@@ -381,7 +381,7 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
             List<String> relationColumnNames = Lists.newArrayList(rhsFields);
             List<Object> value = TuplesUtils.getObjects(offendingRhsTuple);
 
-            state.reportError(ValidationErrorCode.RELATION_PARENT_ERROR, columnNames, value, relationSchema,
+            state.reportError(ValidationErrorCode.RELATION_PARENT_VALUE_ERROR, columnNames, value, relationSchema,
                 relationColumnNames);
             bufferCall.getOutputCollector().add(new Tuple(state));
           }

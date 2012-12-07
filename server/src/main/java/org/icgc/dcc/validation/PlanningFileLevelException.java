@@ -23,19 +23,22 @@ import org.icgc.dcc.validation.cascading.TupleState;
 
 public class PlanningFileLevelException extends RuntimeException {
 
+  // conventions: because we neither have a row nor a column to report this on to; TODO: revisit (not elegant)
+  private static final String FILE_LEVEL_ERROR_COLUMN_NAME = "FileLevelError";
+
+  private static final String FILE_LEVEL_ERROR_VALUE = null;
+
   private final String filename;
 
   private final TupleState tupleState;
 
-  public PlanningFileLevelException(String filename, ValidationErrorCode errorCode, String columnName, Object value,
-      Object... params) {
+  public PlanningFileLevelException(String filename, ValidationErrorCode errorCode, Object... params) {
     checkArgument(filename != null);
     checkArgument(errorCode != null);
-    checkArgument(columnName != null);
     checkArgument(params != null);
     this.filename = filename;
     tupleState = new TupleState();
-    tupleState.reportError(errorCode, columnName, value, params);
+    tupleState.reportError(errorCode, FILE_LEVEL_ERROR_COLUMN_NAME, FILE_LEVEL_ERROR_VALUE, params);
   }
 
   public String getFilename() {

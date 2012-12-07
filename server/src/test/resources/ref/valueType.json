@@ -6,7 +6,7 @@
     "value" : "abc",
     "line" : 2,
     "parameters" : {
-      "expectedType" : "INTEGER"
+      "EXPECTED" : "INTEGER"
     }
   }, {
     "code" : "MISSING_VALUE_ERROR",
@@ -23,7 +23,7 @@
     "value" : "56.4",
     "line" : 3,
     "parameters" : {
-      "expectedType" : "INTEGER"
+      "EXPECTED" : "INTEGER"
     }
   }, {
     "code" : "MISSING_VALUE_ERROR",

@@ -18,7 +18,13 @@
 package org.icgc.dcc.shiro;
 
 public enum AuthorizationPrivileges {
-  PROJECT("project"), RELEASE_VIEW("release:view"), RELEASE_CLOSE("release:close"), RELEASE_MODIFY("release:modify"), RELEASE_SIGNOFF("release:signoff"), CODELIST_MODIFY("codelist:modify"), DICTIONARY_MODIFY("dictionary:modify"), QUEUE_DELETE("queue:delete");
+
+  ALL("*"), //
+  PROJECT("project"), RELEASE_VIEW("release:view"), //
+  RELEASE_CLOSE("release:close"), RELEASE_MODIFY("release:modify"), RELEASE_SIGNOFF("release:signoff"), //
+  CODELIST_MODIFY("codelist:modify"), //
+  DICTIONARY_MODIFY("dictionary:modify"), //
+  QUEUE_DELETE("queue:delete");
 
   private final String prefix;
 

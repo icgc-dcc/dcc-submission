@@ -43,13 +43,15 @@ import com.google.common.collect.Lists;
 @SuppressWarnings("rawtypes")
 public class StructuralCheckFunction extends BaseOperation implements Function {
 
+  private static final String ROW_LEVEL_ERROR_COLUMN_NAME = "RowLevelError";
+
   public static final String LINE_FIELD_NAME = "line";
 
   public static final char FIELD_SEPARATOR = '\t';
 
   public static final List<String> MISSING_CODES = Arrays.asList("-777", "-888", "-999");
 
-  private static boolean REPORT_WARNINGS = false; // see DCC-270
+  private static boolean REPORT_WARNINGS = false; // see DCC-270 & DCC-411
 
   private Integer headerSize;
 
@@ -85,7 +87,7 @@ public class StructuralCheckFunction extends BaseOperation implements Function {
 
     TupleEntry arguments = functionCall.getArguments();
 
-    int offset = functionCall.getArguments().getInteger(ValidationFields.OFFSET_FIELD_NAME);
+    long offset = functionCall.getArguments().getLong(ValidationFields.OFFSET_FIELD_NAME);
     TupleState tupleState = new TupleState(offset);
 
     String line = arguments.getString(StructuralCheckFunction.LINE_FIELD_NAME);
@@ -107,15 +109,18 @@ public class StructuralCheckFunction extends BaseOperation implements Function {
       adjustedValues = convertMissingCodes(adjustedValues, tupleState);
       adjustedValues = replaceEmptyStrings(adjustedValues);
       if(REPORT_WARNINGS && unknownHeaderIndices.isEmpty() == false) {
-        tupleState.reportError(ValidationErrorCode.UNKNOWN_COLUMNS_WARNING, ValidationErrorCode.FILE_LEVEL_ERROR,
-            unknownHeaderIndices);
+        // FIXME: not working as expected anyway: this would report the error on all tuples
+        // tupleState.reportError(ValidationErrorCode.UNKNOWN_COLUMNS_WARNING,
+        // ValidationErrorCode.FILE_LEVEL_ERROR_COLUMN_NAME, unknownHeaderIndices);
       }
     } else {
       adjustedValues = Arrays.asList(new String[dictionaryFields.size()]); // can discard values but must match number
                                                                            // of fields in headers for later merge in
                                                                            // error reporting
-      tupleState.reportError(ValidationErrorCode.STRUCTURALLY_INVALID_ROW_ERROR, ValidationErrorCode.FILE_LEVEL_ERROR,
-          dataSize, headerSize);
+      tupleState.reportError(ValidationErrorCode.STRUCTURALLY_INVALID_ROW_ERROR,//
+          ROW_LEVEL_ERROR_COLUMN_NAME, // because we don't have a specific column to report this on (TODO: revisit not
+                                       // elegant)
+          dataSize, headerSize); // we use dataSize as the value, and headerSize as an expected value parameter
     }
     return adjustedValues;
   }

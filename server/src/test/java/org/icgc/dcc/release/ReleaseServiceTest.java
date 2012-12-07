@@ -33,6 +33,7 @@ import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
+import com.typesafe.config.Config;
 
 public class ReleaseServiceTest {
 
@@ -47,6 +48,10 @@ public class ReleaseServiceTest {
   private Release release;
 
   private DccFileSystem fs;
+
+  private Config config;
+
+  private DccFileSystem mockDccFileSystem;
 
   private ReleaseFileSystem mockReleaseFileSystem;
 
@@ -63,6 +68,9 @@ public class ReleaseServiceTest {
       datastore = morphia.createDatastore(mongo, testDbName);
       fs = mock(DccFileSystem.class);
       mockReleaseFileSystem = mock(ReleaseFileSystem.class);
+      mockDccFileSystem = mock(DccFileSystem.class);
+
+      config = mock(Config.class);
 
       when(fs.getReleaseFilesystem(any(Release.class))).thenReturn(mockReleaseFileSystem);
 
@@ -74,9 +82,6 @@ public class ReleaseServiceTest {
       // Set up a minimal test case
       dictionary = new Dictionary();
       dictionary.setVersion("foo");
-
-      dictionaryService = new DictionaryService(morphia, datastore);
-      dictionaryService.add(dictionary);
 
       release = new Release("release1");
 
@@ -103,7 +108,9 @@ public class ReleaseServiceTest {
       release.setDictionaryVersion(dictionary.getVersion());
 
       // Create the releaseService and populate it with the initial release
-      releaseService = new ReleaseService(morphia, datastore, fs);
+      releaseService = new ReleaseService(morphia, datastore, fs, config);
+      dictionaryService = new DictionaryService(morphia, datastore, mockDccFileSystem, releaseService);
+      dictionaryService.add(dictionary);
       releaseService.createInitialRelease(release);
     } catch(UnknownHostException e) {
       e.printStackTrace();
@@ -175,7 +182,8 @@ public class ReleaseServiceTest {
 
     List<String> projectKeys = new ArrayList<String>();
     projectKeys.add("p1");
-    releaseService.signOff(projectKeys);
+    String user = "admin";
+    releaseService.signOff(user, projectKeys, releaseService.getNextRelease().getRelease().getName());
 
     assertTrue(releaseService.getNextRelease().canRelease());
   }
@@ -217,7 +225,8 @@ public class ReleaseServiceTest {
 
     List<String> projectKeys = new ArrayList<String>();
     projectKeys.add("p1");
-    releaseService.signOff(projectKeys);
+    String user = "admin";
+    releaseService.signOff(user, projectKeys, name);
 
     releaseService.getNextRelease().release(newRelease.getName());
     return newRelease;

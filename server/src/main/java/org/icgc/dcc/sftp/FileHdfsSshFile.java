@@ -24,6 +24,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.sshd.server.SshFile;
 import org.icgc.dcc.filesystem.DccFileSystemException;
 
+import com.google.common.base.Preconditions;
+
 /**
  * 
  */
@@ -84,9 +86,10 @@ class FileHdfsSshFile extends HdfsSshFile {
 
   @Override
   public boolean create() throws IOException {
+    Preconditions.checkState(path != null);
     if(isWritable()) {
-      this.fs.createNewFile(path);
       this.directory.notifyModified();
+      this.fs.createNewFile(path);
       return true;
     }
     return false;
@@ -94,11 +97,15 @@ class FileHdfsSshFile extends HdfsSshFile {
 
   @Override
   public boolean delete() {
+    Preconditions.checkState(path != null);
     if(isRemovable()) {
       try {
+        this.directory.notifyModified();
         boolean success = this.fs.delete(path, false);
-        if(success) {
-          this.directory.notifyModified();
+        if(success == false) {
+          throw new IOException(// must use IOException (see comments in
+                                // https://github.com/icgc-dcc/data-submission/pull/229)
+              "unable to delete file " + path.toUri());
         }
         return success;
       } catch(IOException e) {
@@ -115,12 +122,21 @@ class FileHdfsSshFile extends HdfsSshFile {
 
   @Override
   public boolean move(SshFile destination) {
-    if(isWritable()) {
+    Preconditions.checkState(path != null);
+    if(isWritable() && destination.isWritable()) {
       try {
-        boolean success = this.fs.rename(path, new Path(destination.getAbsolutePath()));
+        Path destinationPath =
+            new Path(this.directory.getParentFile().path, destination.getAbsolutePath().substring(1));
+        Preconditions.checkState(destinationPath != null);
+
+        this.directory.notifyModified();
+        boolean success = this.fs.rename(path, destinationPath);
         if(success) {
-          this.directory.notifyModified();
+          throw new IOException(// must use IOException (see comments in
+                                // https://github.com/icgc-dcc/data-submission/pull/229)
+              "unable to move file " + path.toUri() + " to " + destinationPath.toUri());
         }
+        this.path = destinationPath;
         return success;
       } catch(IOException e) {
         log.error("File system error", e);

@@ -123,6 +123,14 @@ public class DccFileSystem {
     // create corresponding release directory
     HadoopUtils.mkdirs(this.fileSystem, releaseStringPath);
     ensureSubmissionDirectories(release, projectKeyList);
+
+    // create system files for release directory
+    ReleaseFileSystem releaseFS = this.getReleaseFilesystem(release);
+    Path systemFilePath = releaseFS.getSystemDirectory();
+    exists = HadoopUtils.checkExistence(this.fileSystem, systemFilePath.toString());
+    if(exists == false) {
+      HadoopUtils.mkdirs(this.fileSystem, systemFilePath.toString());
+    }
   }
 
   public void mkdirProjectDirectory(Release release, String projectKey) {
@@ -137,10 +145,17 @@ public class DccFileSystem {
     log.info("\t" + "project path = " + projectStringPath);
   }
 
-  private void createDirIfDoesNotExist(String projectStringPath) {
-    if(HadoopUtils.checkExistence(this.fileSystem, projectStringPath) == false) {
-      HadoopUtils.mkdirs(this.fileSystem, projectStringPath);
-      checkState(HadoopUtils.checkExistence(this.fileSystem, projectStringPath));
+  void createDirIfDoesNotExist(final String stringPath) {
+    if(HadoopUtils.checkExistence(this.fileSystem, stringPath) == false) {
+      HadoopUtils.mkdirs(this.fileSystem, stringPath);
+      checkState(HadoopUtils.checkExistence(this.fileSystem, stringPath));
+    }
+  }
+
+  void removeDirIfExist(final String stringPath) {
+    if(HadoopUtils.checkExistence(this.fileSystem, stringPath)) {
+      HadoopUtils.rmr(this.fileSystem, stringPath);
+      checkState(HadoopUtils.checkExistence(this.fileSystem, stringPath) == false);
     }
   }
 

@@ -33,9 +33,8 @@ public class ReleaseResource {
   private ReleaseService releaseService;
 
   @GET
-  public Response getResources() {
-    List<Release> releases = releaseService.query().list();
-
+  public Response getResources(@Context SecurityContext securityContext) {
+    List<Release> releases = this.releaseService.getReleases(((ShiroSecurityContext) securityContext).getSubject());
     return Response.ok(releases).build();
   }
 
@@ -93,7 +92,8 @@ public class ReleaseResource {
       @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
-      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
+      return Response.status(Status.UNAUTHORIZED)
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED.getCode())).build();
     }
     DetailedSubmission submission = this.releaseService.getDetailedSubmission(name, projectKey);
 
@@ -110,7 +110,8 @@ public class ReleaseResource {
       @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
-      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
+      return Response.status(Status.UNAUTHORIZED)
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED.getCode())).build();
     }
     Submission submission = this.releaseService.getSubmission(name, projectKey);
     if(submission == null) {
@@ -127,7 +128,8 @@ public class ReleaseResource {
       @PathParam("schema") String schema, @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
-      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
+      return Response.status(Status.UNAUTHORIZED)
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED.getCode())).build();
     }
     Submission submission = this.releaseService.getSubmission(name, projectKey);
     if(submission == null) {
@@ -153,7 +155,8 @@ public class ReleaseResource {
       @PathParam("schema") String schema, @PathParam("field") String field, @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
-      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
+      return Response.status(Status.UNAUTHORIZED)
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED.getCode())).build();
     }
     Submission submission = this.releaseService.getSubmission(name, projectKey);
     if(submission == null) {
@@ -170,7 +173,11 @@ public class ReleaseResource {
       return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoSuchReportInSchema", schema))
           .build();
     }
-    FieldReport fieldReport = schemaReport.getFieldReport(field);
+    if(schemaReport.getFieldReport(field).isPresent() == false) {
+      return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoSuchFieldInReport", schema))
+          .build();
+    }
+    FieldReport fieldReport = schemaReport.getFieldReport(field).get();
     if(fieldReport == null) {
       return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoReportForField", field))
           .build();
@@ -184,7 +191,8 @@ public class ReleaseResource {
       @PathParam("projectKey") String projectKey, @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
-      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
+      return Response.status(Status.UNAUTHORIZED)
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED.getCode())).build();
     }
     Submission submission = this.releaseService.getSubmission(releaseName, projectKey);
     if(submission == null) {

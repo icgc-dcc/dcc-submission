@@ -20,7 +20,7 @@ import com.google.common.io.ByteStreams;
 import com.google.common.io.Closeables;
 
 /**
- * Handles all hadoop API related methods - TODO: change to use decorator pattern?
+ * Handles all hadoop API related methods - TODO: change to use proxy or decorator pattern?
  */
 public class HadoopUtils {
 

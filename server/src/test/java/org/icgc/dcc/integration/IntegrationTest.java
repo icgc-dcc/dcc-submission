@@ -30,7 +30,6 @@ import javax.ws.rs.MessageProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientFactory;
 import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.InvocationException;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -188,7 +187,7 @@ public class IntegrationTest {
     FileUtils.copyDirectory(srcDir, destDir);
   }
 
-  private void test_feedDB() throws InvocationException, NullPointerException, IllegalArgumentException, IOException {
+  private void test_feedDB() throws NullPointerException, IllegalArgumentException, IOException {
     this.client.target(BASEURI).path("/seed/dictionaries").request(MediaType.APPLICATION_JSON)
         .header("Authorization", AUTHORIZATION)
         .post(Entity.entity("[" + this.resourceToString("/dictionary.json") + "]", MediaType.APPLICATION_JSON));

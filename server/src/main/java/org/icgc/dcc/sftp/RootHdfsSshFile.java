@@ -31,7 +31,6 @@ import org.icgc.dcc.filesystem.SubmissionDirectory;
 import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
 import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.Submission;
-import org.icgc.dcc.release.model.SubmissionState;
 import org.mortbay.log.Log;
 
 /**
@@ -107,7 +106,10 @@ class RootHdfsSshFile extends HdfsSshFile {
         if(this.rfs.isSystemDirectory(path)) {
           sshFileList.add(new SystemFileHdfsSshFile(this, path.getName()));
         } else {
-          sshFileList.add(new SubmissionDirectoryHdfsSshFile(this, path.getName()));
+          SubmissionDirectoryHdfsSshFile dir = new SubmissionDirectoryHdfsSshFile(this, path.getName());
+          if(dir.doesExist()) { // Necessary because of error handling workaround
+            sshFileList.add(dir);
+          }
         }
       } catch(DccFileSystemException e) {
         Log.info("Directory skipped due to insufficient permissions: " + path.getName());
@@ -119,7 +121,13 @@ class RootHdfsSshFile extends HdfsSshFile {
   }
 
   public SubmissionDirectory getSubmissionDirectory(String directoryName) {
-    return this.rfs.getSubmissionDirectory(this.projects.getProject(directoryName));
+    try {
+      return this.rfs.getSubmissionDirectory(this.projects.getProject(directoryName));
+    } catch(RuntimeException e) {
+      // Ideally we would rethrow as a FileNotFound or IOException, but Mina's interface won't let us.
+      // Instead we put it as null so it can be used to indicate that the directory doesn't exist later
+      return null;
+    }
   }
 
   @Override
@@ -143,24 +151,14 @@ class RootHdfsSshFile extends HdfsSshFile {
   }
 
   public void notifyModified(SubmissionDirectory submissionDirectory) {
-    String releaseName = this.rfs.getRelease().getName();
     Submission submission = submissionDirectory.getSubmission();
-    this.resetSubmission(releaseName, submission);
+    this.releases.resetSubmission(this.rfs.getRelease().getName(), submission.getProjectKey());
   }
 
   public void systemFilesNotifyModified() {
-    String releaseName = this.rfs.getRelease().getName();
-
     // TODO: not very effiecient now, need to combine the query into one
     for(Submission submission : this.rfs.getRelease().getSubmissions()) {
-      this.resetSubmission(releaseName, submission);
+      this.releases.resetSubmission(this.rfs.getRelease().getName(), submission.getProjectKey());
     }
-  }
-
-  private void resetSubmission(String releaseName, Submission submission) {
-    submission.setState(SubmissionState.NOT_VALIDATED);
-    submission.setReport(null);
-    this.releases.updateSubmission(releaseName, submission);
-    this.releases.removeSubmissionReport(releaseName, submission.getProjectKey());
   }
 }

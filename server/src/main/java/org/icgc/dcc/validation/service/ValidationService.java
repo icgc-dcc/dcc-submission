@@ -78,30 +78,38 @@ public class ValidationService {
 
   }
 
-  public Plan validate(Release release, QueuedProject qProject) {
+  public Plan validate(final Release release, final QueuedProject qProject) {
     String dictionaryVersion = release.getDictionaryVersion();
     Dictionary dictionary = this.dictionaries.getFromVersion(dictionaryVersion);
-    ReleaseFileSystem releaseFilesystem = dccFileSystem.getReleaseFilesystem(release);
+    if(dictionary == null) {
+      throw new ValidationServiceException(String.format("no dictionary found with version %s, in release %s",
+          dictionaryVersion, release.getName()));
+    } else {
+      ReleaseFileSystem releaseFilesystem = dccFileSystem.getReleaseFilesystem(release);
 
-    Project project = projectService.getProject(qProject.getKey());
-    SubmissionDirectory submissionDirectory = releaseFilesystem.getSubmissionDirectory(project);
+      Project project = projectService.getProject(qProject.getKey());
+      SubmissionDirectory submissionDirectory = releaseFilesystem.getSubmissionDirectory(project);
 
-    Path rootDir = new Path(submissionDirectory.getSubmissionDirPath());
-    Path outputDir = new Path(submissionDirectory.getValidationDirPath());
-    Path systemDir = releaseFilesystem.getSystemDirectory();
+      Path rootDir = new Path(submissionDirectory.getSubmissionDirPath());
+      Path outputDir = new Path(submissionDirectory.getValidationDirPath());
+      Path systemDir = releaseFilesystem.getSystemDirectory();
 
-    log.info("rootDir = {} ", rootDir);
-    log.info("outputDir = {} ", outputDir);
+      log.info("rootDir = {} ", rootDir);
+      log.info("outputDir = {} ", outputDir);
+      log.info("systemDir = {} ", systemDir);
 
-    CascadingStrategy cascadingStrategy = cascadingStrategyFactory.get(rootDir, outputDir, systemDir);
+      CascadingStrategy cascadingStrategy = cascadingStrategyFactory.get(rootDir, outputDir, systemDir);
 
-    log.info("starting validation on project {}", qProject.getKey());
-    Plan plan = planCascade(qProject, cascadingStrategy, dictionary);
+      long startTime = System.nanoTime();
+      log.info("starting validation on project {}", qProject.getKey());
+      Plan plan = planCascade(qProject, cascadingStrategy, dictionary);
 
-    runCascade(plan.getCascade(), project.getKey());
-    log.info("validation finished for project {}", project.getKey());
+      runCascade(plan.getCascade(), project.getKey());
+      log.info("validation finished for project {}, time spent on validation is {} nanoseconds", project.getKey(),
+          System.nanoTime() - startTime);
 
-    return plan;
+      return plan;
+    }
   }
 
   public Plan planCascade(QueuedProject project, CascadingStrategy cascadingStrategy, Dictionary dictionary) {
@@ -114,6 +122,7 @@ public class ValidationService {
     plan.connect(cascadingStrategy);
 
     if(plan.hasFileLevelErrors()) {
+      log.info(String.format("plan has errors, throwing a %s", FatalPlanningException.class.getSimpleName()));
       throw new FatalPlanningException(project, plan); // the queue manager will handle it
     }
 

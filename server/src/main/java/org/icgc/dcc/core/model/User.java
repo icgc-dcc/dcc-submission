@@ -14,6 +14,10 @@ public class User extends BaseEntity implements HasName {
 
   protected String email;
 
+  private int failedAttempts = 0;
+
+  private static final int MAX_ATTEMPTS = 3;
+
   public boolean hasRole(String role) {
     return this.roles.contains(role);
   }
@@ -33,5 +37,17 @@ public class User extends BaseEntity implements HasName {
 
   public List<String> getRoles() {
     return roles;
+  }
+
+  public void incrementAttempts() {
+    failedAttempts++;
+  }
+
+  public boolean isLocked() {
+    return failedAttempts >= MAX_ATTEMPTS;
+  }
+
+  public void resetAttempts() {
+    failedAttempts = 0;
   }
 }

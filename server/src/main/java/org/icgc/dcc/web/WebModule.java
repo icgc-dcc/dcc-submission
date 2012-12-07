@@ -1,6 +1,6 @@
 package org.icgc.dcc.web;
 
-import org.glassfish.jersey.jackson.JacksonBinder;
+import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.icgc.dcc.http.jersey.BasicHttpAuthenticationRequestFilter;
 import org.icgc.dcc.web.mapper.DuplicateNameExceptionMapper;
@@ -24,7 +24,7 @@ public class WebModule extends AbstractModule {
   public static class RootResources {
     @Inject
     public RootResources(ResourceConfig config) {
-      config.addBinders(new JacksonBinder());
+      config.addClasses(JacksonFeature.class);
       config.addClasses(DictionaryResource.class);
       config.addClasses(ProjectResource.class);
       config.addClasses(ReleaseResource.class);
