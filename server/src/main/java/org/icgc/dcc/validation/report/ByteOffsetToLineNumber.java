@@ -69,7 +69,6 @@ public class ByteOffsetToLineNumber {// TODO: make non-static class
     InputStream is = null;
     Configuration conf = fs.getConf();
     CompressionCodecFactory factory = new CompressionCodecFactory(conf);
-
     try {
       CompressionCodec codec = factory.getCodec(file);
       is = (codec == null) ? fs.open(file) : codec.createInputStream(fs.open(file));

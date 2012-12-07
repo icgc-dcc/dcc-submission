@@ -57,7 +57,7 @@ public class FileSchemaDirectory {
     return directory.toUri().getPath();
   }
 
-  public boolean hasFile(final FileSchema fileSchema, final CascadingStrategy strategy) {
+  public boolean hasFile(final FileSchema fileSchema) {
     List<Path> paths = matches(fileSchema.getPattern());
     if(paths == null) {
       return false;
@@ -80,10 +80,13 @@ public class FileSchemaDirectory {
     try {
       DataInputStream testis = fs.open(path);
       byte[] magicNumber = new byte[3];
+      final byte[] BZ2_MAGIC_NUMBER = new byte[] { 0x42, 0x5A, 0x68 };
+      final String BZ2_EXTENSION = ".bz2";
+
       testis.readFully(magicNumber);
       testis.close();
 
-      if(Arrays.equals(magicNumber, new byte[] { 0x42, 0x5A, 0x68 }) != path.getName().endsWith(".bz2")) {
+      if(Arrays.equals(magicNumber, BZ2_MAGIC_NUMBER) != path.getName().endsWith(BZ2_EXTENSION)) {
         throw new PlanningFileLevelException(path.getName().toString(), ValidationErrorCode.COMPRESSION_CODEC_ERROR,
             fileSchema.getName());
       }
