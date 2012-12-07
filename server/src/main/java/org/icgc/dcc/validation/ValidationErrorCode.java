@@ -184,6 +184,18 @@ public enum ValidationErrorCode { // TODO: DCC-505 to fix the message (currently
     }
   }, //
   /**
+   * Compression codec doesn't match file extension
+   */
+  COMPRESSION_CODEC_ERROR("file compression type does not match file extension") {
+    @Override
+    public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
+      checkArgument(params != null);
+      checkArgument(params.length == 1);
+      checkArgument(params[0] instanceof String);
+      return ImmutableMap.of(ErrorParameterKey.SCHEMA, params[0]);
+    }
+  }, //
+  /**
    * Repeated field names found in header.
    */
   DUPLICATE_HEADER_ERROR("duplicate header found: %s") {
