@@ -37,11 +37,11 @@ module.exports = class SchemaReportPageView extends View
   id: 'schema-report-view'
 
   initialize: ->
-    console.log "SchemaReportPageView#initialize", @model
+    #console.log "SchemaReportPageView#initialize", @model
     super
 
   render: ->
-    console.debug "SchemaReportPageView#render", @model
+    #console.debug "SchemaReportPageView#render", @model
     super
 
     if @model.get("errors").length

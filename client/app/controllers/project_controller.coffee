@@ -36,14 +36,13 @@ module.exports = class ProjectController extends BaseController
     ''
 
   show: (params) ->
-    console.debug 'ProjectController#show'
+    #console.debug 'ProjectController#show'
     @model = new Project()
     @view = new ProjectView {@model}
     @model.fetch()
-    
+
   list: (params) ->
-    console.debug 'ProjectController#list'
+    #console.debug 'ProjectController#list'
     @collection = new Projects()
     @collection.fetch()
-    console.debug 'ProjectController#list', @collection
     @view = new ProjectsView {@collection}

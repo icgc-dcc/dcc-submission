@@ -38,7 +38,7 @@ module.exports = class ValidateSubmissionView extends View
   id: 'validate-submission-popup'
 
   initialize: ->
-    console.debug "ValidateSubmissionView#initialize", @options
+    #console.debug "ValidateSubmissionView#initialize", @options
     @model = @options.submission
     @model.set("email", mediator.user.get("email"))
     release = new NextRelease()
@@ -52,7 +52,7 @@ module.exports = class ValidateSubmissionView extends View
     @delegate 'click', '#validate-submission-button', @validateSubmission
 
   validateSubmission: (e) ->
-    console.debug "ValidateSubmissionView#completeRelease", @model
+    #console.debug "ValidateSubmissionView#completeRelease", @model
     emails = @.$("#emails")
     alert = @.$('#email-error')
     val = @.$("#emails").val()

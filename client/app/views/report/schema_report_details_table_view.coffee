@@ -33,17 +33,17 @@ module.exports = class SchemaReportDetailsTableView extends DataTableView
   autoRender: true
 
   initialize: ->
-    console.debug "SchemaReportDetailsTableView#initialize", @collection
+    #console.debug "SchemaReportDetailsTableView#initialize", @collection
     super
 
     @modelBind 'change', @update
 
   update: ->
-    console.debug "SchemaReportDetailsTableView#update", @collection
+    #console.debug "SchemaReportDetailsTableView#update", @collection
     @updateDataTable()
 
   summaryDetails: (data) ->
-    console.debug "ReportTableView#summaryDetails", data
+    #console.debug "ReportTableView#summaryDetails", data
     type = switch data.type
       when "AVERAGE" then "Statistics"
       when "FREQUENCY" then "Value Frequencies (value:count)"
@@ -61,8 +61,7 @@ module.exports = class SchemaReportDetailsTableView extends DataTableView
     sOut
 
   createDataTable: ->
-    console.debug "SchemaReportDetailsTableView#createDataTable",
-      @$el, @collection
+    #console.debug "SchemaReportDetailsTableView#createDataTable"
     aoColumns = [
         { sTitle: "Column Name", mData: "name"}
         { sTitle: "Percentage of populated rows", mData: "completeness"}

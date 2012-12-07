@@ -31,13 +31,12 @@ module.exports = class SubmissionFilesTableView extends DataTableView
   autoRender: true
 
   initialize: ->
-    console.debug "SubmissionFilesTableView#initialize", @model, @el
+    #console.debug "SubmissionFilesTableView#initialize", @model, @el
     @collection = @model.get "submissionFiles"
-    console.log "!~!~~!~!~!~~!", @collection
     super
 
   createDataTable: ->
-    console.debug "SubmissionFilesTableView#createDataTable", @$el
+    #console.debug "SubmissionFilesTableView#createDataTable", @$el
     aoColumns = [
         {
           sTitle: "File"

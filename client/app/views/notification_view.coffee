@@ -35,7 +35,7 @@ module.exports = class Notification extends View
   className: "notification container"
 
   initialize: ->
-    console.debug "Notification#initialize", @model
+    #console.debug "Notification#initialize", @model
     @model.set "sec", 30
 
     super

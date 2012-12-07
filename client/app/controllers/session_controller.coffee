@@ -33,7 +33,7 @@ module.exports = class SessionController extends Controller
   loggedIn: no
 
   initialize: ->
-    console.debug 'SessionController#initialize'
+    #console.debug 'SessionController#initialize'
     @subscribeEvent 'loginSuccessful', ->
       setTimeout( ->
         window.location.reload()
@@ -41,5 +41,5 @@ module.exports = class SessionController extends Controller
 
 
   login: ->
-    console.debug 'SessionController#show'
+    #console.debug 'SessionController#show'
     @view = new LoginView()
