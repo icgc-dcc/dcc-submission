@@ -38,14 +38,14 @@ module.exports = class SignOffSubmissionView extends View
   id: 'signoff-submission-popup'
 
   initialize: ->
-    console.debug "SignOffSubmissionView#initialize", @options.submission
+    #console.debug "SignOffSubmissionView#initialize", @options.submission
     @model = @options.submission
     super
 
     @delegate 'click', '#signoff-submission-button', @signOffSubmission
 
   signOffSubmission: (e) ->
-    console.debug "SignOffSubmissionView#completeRelease"
+    #console.debug "SignOffSubmissionView#completeRelease"
     nextRelease = new NextRelease()
 
     nextRelease.signOff [@model.get "projectKey"],

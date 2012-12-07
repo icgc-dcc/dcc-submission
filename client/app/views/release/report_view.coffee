@@ -32,7 +32,7 @@ module.exports = class ReportView extends View
   autoRender: false
 
   initialize: ->
-    console.debug "ReportView#initialize", @, @options
+    #console.debug "ReportView#initialize", @, @options
     super
 
     @model = new Report {

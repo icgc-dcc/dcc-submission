@@ -177,9 +177,8 @@ found on host #{host}"
     Number(bytes).toFixed(precision) + " " + sizes[posttxt]
 
   sendAuthorization: (xhr) =>
-    console.debug 'utils#sendAuthorization', Chaplin.mediator.user
+    #console.debug 'utils#sendAuthorization', Chaplin.mediator.user
     accessToken = Chaplin.mediator.user?.get "accessToken"
-    console.log accessToken
     if accessToken
       # refresh expire time
       #$.cookie 'accessToken', accessToken

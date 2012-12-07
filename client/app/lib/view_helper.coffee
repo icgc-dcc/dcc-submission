@@ -31,7 +31,6 @@ utils = require 'lib/utils'
 
 # Choose block by user login status
 Handlebars.registerHelper 'if_logged_in', (options) ->
-  console.log mediator.user
   if mediator.user
     options.fn(this)
   else

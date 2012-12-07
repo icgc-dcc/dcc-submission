@@ -34,7 +34,7 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
   autoRender: true
 
   initialize: ->
-    console.debug "SchemaReportTableView#initialize", @collection
+    #console.debug "SchemaReportTableView#initialize", @collection
     super
 
     @modelBind 'change', @update
@@ -135,10 +135,15 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
         More than one file matches the <em>#{source.parameters?.SCHEMA}</em>
         filename pattern:<br>#{source.parameters?.FILES.join '<br>'}
         """
+    COMPRESSION_CODEC_ERROR:
+      name: "Compression Error"
+      description: (source) ->
+        """
+        File compression type does not match file extension
+        """
 
 
   details: (source) ->
-    console.log source
     if source.errorType in [
       "MISSING_VALUE_ERROR"
       "OUT_OF_RANGE_ERROR"
@@ -164,11 +169,11 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
     out
 
   update: ->
-    console.debug "SchemaReportTableView#update", @collection
+    #console.debug "SchemaReportTableView#update", @collection
     @updateDataTable()
 
   createDataTable: ->
-    console.debug "SchemaReportTableView#createDataTable", @$el, @collection
+    #console.debug "SchemaReportTableView#createDataTable", @$el, @collection
     aoColumns = [
         {
           sTitle: "Error Type"

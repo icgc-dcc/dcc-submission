@@ -37,7 +37,7 @@ module.exports = class NavigationView extends View
   container: '#header-container'
 
   initialize: ->
-    console.debug 'NavigationView#initialize', @model
+    #console.debug 'NavigationView#initialize', @model
     super
 
 
@@ -51,7 +51,7 @@ module.exports = class NavigationView extends View
 
 
     @subscribeEvent 'navigation:change', (attributes) =>
-      console.debug 'NavigationView#initialize#change', attributes
+      #console.debug 'NavigationView#initialize#change', attributes
       @model.clear(silent: yes)
       @model.set attributes
 

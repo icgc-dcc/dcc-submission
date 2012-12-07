@@ -38,13 +38,13 @@ module.exports = class LoginView extends PageView
 
   # Expects the serviceProviders in the options
   initialize: ->
-    console.log "LoginView#initialize"
+    #console.log "LoginView#initialize"
     super
 
     @delegate 'submit', '#login-form', @triggerLogin
 
   triggerLogin: (e) ->
-    console.log "LoginView#triggerLogin"
+    #console.log "LoginView#triggerLogin"
     e.preventDefault()
 
     loginDetails = $(e.currentTarget).serializeObject()

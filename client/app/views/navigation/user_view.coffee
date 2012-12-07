@@ -34,11 +34,11 @@ module.exports = class UserView extends View
   autoRender: true
 
   initialize: ->
-    console.log "UserView#initialize"
+    #console.log "UserView#initialize"
     super
 
     @delegate 'click', '#logout', @triggerLogout
 
   triggerLogout: (e) ->
-    console.log "UserView#triggerLogout"
+    #console.log "UserView#triggerLogout"
     window.location.reload()

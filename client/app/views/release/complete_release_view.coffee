@@ -39,7 +39,7 @@ module.exports = class CompleteReleaseView extends View
   id: 'complete-release-popup'
 
   initialize: ->
-    console.debug "CompleteReleaseView#initialize", @options, @, @el
+    #console.debug "CompleteReleaseView#initialize", @options, @, @el
     super
 
     @model = new Release(@options)
@@ -63,7 +63,7 @@ module.exports = class CompleteReleaseView extends View
         submission before it can be COMPLETED."
 
   completeRelease: ->
-    console.debug "CompleteReleaseView#completeRelease"
+    #console.debug "CompleteReleaseView#completeRelease"
     name = @.$('#nextRelease').val()
     nextRelease = new NextRelease {name: name}
 
