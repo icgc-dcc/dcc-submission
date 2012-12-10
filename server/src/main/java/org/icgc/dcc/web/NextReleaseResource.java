@@ -39,8 +39,8 @@ public class NextReleaseResource {
   public Response release(Release nextRelease, @Context Request req, @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.RELEASE_CLOSE.getPrefix()) == false) {
-      return Response.status(Status.UNAUTHORIZED)
-          .entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED.getCode())).build();
+      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED))
+          .build();
     }
     NextRelease oldRelease = releaseService.getNextRelease();
     // Check the timestamp of the oldRelease, since that is the object being updated
@@ -72,16 +72,19 @@ public class NextReleaseResource {
       if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
           AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
         return Response.status(Status.UNAUTHORIZED)
-            .entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED.getCode())).build();
+            .entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED)).build();
       }
     }
     ResponseTimestamper.evaluate(req, this.releaseService.getNextRelease().getRelease());
 
-    if(this.releaseService.hasProjectKey(projectKeys)) {
+    List<String> projectsInRelease = this.releaseService.getProjectKeys();
+    if(projectsInRelease.containsAll(projectKeys)) {
       this.releaseService.queue(queuedProjects);
       return Response.ok().build();
     } else {
-      return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage("ProjectKeyNotFound")).build();
+      projectKeys.removeAll(projectsInRelease);
+      return Response.status(Status.BAD_REQUEST)
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, projectKeys)).build();
     }
   }
 
@@ -90,8 +93,8 @@ public class NextReleaseResource {
   public Response removeAllQueued(@Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.QUEUE_DELETE.getPrefix()) == false) {
-      return Response.status(Status.UNAUTHORIZED)
-          .entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED.getCode())).build();
+      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED))
+          .build();
     }
     this.releaseService.deleteQueuedRequest();
 
@@ -111,18 +114,21 @@ public class NextReleaseResource {
   public Response signOff(List<String> projectKeys, @Context Request req, @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.RELEASE_SIGNOFF.getPrefix()) == false) {
-      return Response.status(Status.UNAUTHORIZED)
-          .entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED.getCode())).build();
+      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED))
+          .build();
     }
     Release release = this.releaseService.getNextRelease().getRelease();
     ResponseTimestamper.evaluate(req, release);
 
-    if(this.releaseService.hasProjectKey(projectKeys)) {
+    List<String> projectsInRelease = this.releaseService.getProjectKeys();
+    if(projectsInRelease.containsAll(projectKeys)) {
       String user = ((ShiroSecurityContext) securityContext).getUserPrincipal().getName();
       this.releaseService.signOff(user, projectKeys, release.getName());
       return Response.ok().build();
     } else {
-      return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage("ProjectKeyNotFound")).build();
+      projectKeys.removeAll(projectsInRelease);
+      return Response.status(Status.BAD_REQUEST)
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, projectKeys)).build();
     }
   }
 
@@ -131,8 +137,8 @@ public class NextReleaseResource {
   public Response update(Release release, @Context Request req, @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.RELEASE_MODIFY.getPrefix()) == false) {
-      return Response.status(Status.UNAUTHORIZED)
-          .entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED.getCode())).build();
+      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED))
+          .build();
     }
     if(release != null) {
       ResponseTimestamper.evaluate(req, release);

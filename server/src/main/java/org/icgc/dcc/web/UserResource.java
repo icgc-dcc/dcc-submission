@@ -113,22 +113,19 @@ public class UserResource {
       @Context SecurityContext securityContext) {
 
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(AuthorizationPrivileges.ALL.getPrefix()) == false) {
-      return Response.status(Status.UNAUTHORIZED)
-          .entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED.getCode())).build();
+      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED))
+          .build();
     }
 
     User user = users.getUser(username);
     if(user == null) {
       log.warn("unknown user {} provided", username);
       return Response.status(Status.BAD_REQUEST)
-          .entity(new ServerErrorResponseMessage(ServerErrorCode.UNKNOWN.getCode(), new Object[] { username })).build();
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, new Object[] { username })).build();
     }
 
     if(user.isLocked() == false) {
       log.warn("user {} was not locked, aborting unlocking procedure", username);
-      return Response.status(Status.BAD_REQUEST)
-          .entity(new ServerErrorResponseMessage(ServerErrorCode.NOT_APPLICABLE.getCode(), new Object[] { user }))
-          .build();
     }
 
     user = users.unlock(username);
