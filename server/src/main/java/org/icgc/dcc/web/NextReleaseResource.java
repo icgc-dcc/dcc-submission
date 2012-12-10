@@ -14,6 +14,7 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 
 import org.icgc.dcc.release.NextRelease;
+import org.icgc.dcc.release.ReleaseException;
 import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.QueuedProject;
 import org.icgc.dcc.release.model.Release;
@@ -43,9 +44,20 @@ public class NextReleaseResource {
           .entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED.getCode())).build();
     }
     NextRelease oldRelease = releaseService.getNextRelease();
+
     // Check the timestamp of the oldRelease, since that is the object being updated
     ResponseTimestamper.evaluate(req, oldRelease.getRelease());
-    NextRelease newRelease = oldRelease.release(nextRelease.getName());
+
+    NextRelease newRelease = null;
+    try {
+      newRelease = oldRelease.release(nextRelease.getName());
+    } catch(ReleaseException e) {
+      return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage("TODO")).build();
+    } catch(Exception e) {
+      // TODO Auto-generated catch block
+      return Response.status(Status.SERVICE_UNAVAILABLE).entity(new ServerErrorResponseMessage("TODO")).build();
+      // TODO: add Retry-After (http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.4)
+    }
 
     return ResponseTimestamper.ok(newRelease.getRelease()).build();
   }

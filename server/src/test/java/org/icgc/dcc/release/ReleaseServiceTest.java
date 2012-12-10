@@ -108,7 +108,7 @@ public class ReleaseServiceTest {
       release.setDictionaryVersion(dictionary.getVersion());
 
       // Create the releaseService and populate it with the initial release
-      releaseService = new ReleaseService(morphia, datastore, fs, config);
+      releaseService = new ReleaseService(null, morphia, datastore, fs, config); // FIXME
       dictionaryService = new DictionaryService(morphia, datastore, mockDccFileSystem, releaseService);
       dictionaryService.add(dictionary);
       releaseService.createInitialRelease(release);
@@ -178,14 +178,14 @@ public class ReleaseServiceTest {
 
   // @Test
   public void test_can_release() {
-    assertTrue(!releaseService.getNextRelease().canRelease());
+    assertTrue(!releaseService.getNextRelease().releasable());
 
     List<String> projectKeys = new ArrayList<String>();
     projectKeys.add("p1");
     String user = "admin";
     releaseService.signOff(user, projectKeys, releaseService.getNextRelease().getRelease().getName());
 
-    assertTrue(releaseService.getNextRelease().canRelease());
+    assertTrue(releaseService.getNextRelease().releasable());
   }
 
   // @Test

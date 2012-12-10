@@ -67,13 +67,19 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
   private static final Logger log = LoggerFactory.getLogger(ReleaseService.class);
 
+  private final DccLocking dccLocking;
+
   private final DccFileSystem fs;
 
   private final Config config;
 
   @Inject
-  public ReleaseService(Morphia morphia, Datastore datastore, DccFileSystem fs, Config config) {
+  public ReleaseService(DccLocking dccLocking, Morphia morphia, Datastore datastore, DccFileSystem fs, Config config) {
     super(morphia, datastore, QRelease.release);
+    checkArgument(dccLocking != null);
+    checkArgument(fs != null);
+    checkArgument(config != null);
+    this.dccLocking = dccLocking;
     this.fs = fs;
     this.config = config;
     registerModelClasses(Release.class);
@@ -106,7 +112,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     String dictionaryVersion = initRelease.getDictionaryVersion();
     if(dictionaryVersion == null) {
       throw new ReleaseException("Dictionary version must not be null!");
-    } else if(this.datastore().createQuery(Dictionary.class).filter("version", dictionaryVersion).get() == null) {
+    } else if(buildDictionaryVersionQuery(dictionaryVersion).get() == null) {
       throw new ReleaseException("Specified dictionary version not found in DB: " + dictionaryVersion);
     }
     // Just use name and dictionaryVersion from incoming json
@@ -148,7 +154,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     if(nextRelease == null) {
       throw new IllegalStateException("no next release");
     }
-    return new NextRelease(nextRelease, morphia(), datastore(), this.fs);
+    return new NextRelease(dccLocking, nextRelease, morphia(), datastore(), this.fs);
   }
 
   public List<HasRelease> list() {
@@ -158,7 +164,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
     for(Release release : query.list()) {
       if(release.getState() == ReleaseState.OPENED) {
-        list.add(new NextRelease(release, morphia(), datastore(), fs));
+        list.add(new NextRelease(dccLocking, release, morphia(), datastore(), fs));
       } else {
         list.add(new CompletedRelease(release, morphia(), datastore(), fs));
       }
@@ -413,6 +419,11 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     if(submission == null || submission.getState() != SubmissionState.NOT_VALIDATED || submission.getReport() != null) {
       throw new ReleaseException("resetting submission failed for project " + projectKey);
     }
+  }
+
+  private Query<Dictionary> buildDictionaryVersionQuery(String dictionaryVersion) {
+    return this.datastore().createQuery(Dictionary.class) //
+        .filter("version", dictionaryVersion);
   }
 
   // TODO: should also take care of updating the queue, as the two should always go together

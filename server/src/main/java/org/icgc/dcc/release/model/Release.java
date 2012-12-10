@@ -24,6 +24,8 @@ public class Release extends BaseEntity implements HasName {
 
   protected ReleaseState state;
 
+  protected boolean transitioning; // mutex
+
   protected List<Submission> submissions = Lists.newArrayList();
 
   protected List<QueuedProject> queue = Lists.newArrayList();
@@ -58,6 +60,14 @@ public class Release extends BaseEntity implements HasName {
 
   public void setState(ReleaseState state) {
     this.state = state;
+  }
+
+  public boolean isTransitioning() {
+    return transitioning;
+  }
+
+  public void setTransitioning(boolean transitioning) {
+    this.transitioning = transitioning;
   }
 
   public List<Submission> getSubmissions() {
@@ -112,6 +122,9 @@ public class Release extends BaseEntity implements HasName {
     this.releaseDate = new Date();
   }
 
+  /**
+   * @return the list of project keys that are queued (possibly empty)
+   */
   public List<String> getQueuedProjectKeys() {
     List<String> projectKeys = Lists.newArrayList();
     for(QueuedProject qp : this.getQueue()) {
