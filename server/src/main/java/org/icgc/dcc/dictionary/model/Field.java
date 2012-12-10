@@ -44,6 +44,8 @@ public class Field implements DictionaryElement {
 
   private List<Restriction> restrictions;
 
+  private boolean controlled;
+
   public Field() {
     super();
     this.restrictions = new ArrayList<Restriction>();
@@ -126,6 +128,14 @@ public class Field implements DictionaryElement {
 
   public void setSummaryType(SummaryType summaryType) {
     this.summaryType = summaryType;
+  }
+
+  public boolean isControlled() {
+    return controlled;
+  }
+
+  public void setControlled(boolean controlled) {
+    this.controlled = controlled;
   }
 
 }
