@@ -59,5 +59,6 @@ module.exports = class NavigationView extends View
 
   feedbackPopup: (e) ->
     #console.debug "FeedbackTabView#feedbackPopup", e
+    e.preventDefault()
     new FeedbackFormView()
 
