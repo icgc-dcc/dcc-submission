@@ -2,6 +2,7 @@ package org.icgc.dcc.web;
 
 import java.util.List;
 
+import javax.validation.Valid;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -36,7 +37,7 @@ public class NextReleaseResource {
   }
 
   @POST
-  public Response release(Release nextRelease, @Context Request req, @Context SecurityContext securityContext) {
+  public Response release(@Valid Release nextRelease, @Context Request req, @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.RELEASE_CLOSE.getPrefix()) == false) {
       return Response.status(Status.UNAUTHORIZED)
@@ -60,7 +61,7 @@ public class NextReleaseResource {
 
   @POST
   @Path("queue")
-  public Response queue(List<QueuedProject> queuedProjects, @Context Request req,
+  public Response queue(@Valid List<QueuedProject> queuedProjects, @Context Request req,
       @Context SecurityContext securityContext) {
 
     List<String> projectKeys = Lists.newArrayList();
@@ -128,7 +129,7 @@ public class NextReleaseResource {
 
   @PUT
   @Path("update")
-  public Response update(Release release, @Context Request req, @Context SecurityContext securityContext) {
+  public Response update(@Valid Release release, @Context Request req, @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.RELEASE_MODIFY.getPrefix()) == false) {
       return Response.status(Status.UNAUTHORIZED)

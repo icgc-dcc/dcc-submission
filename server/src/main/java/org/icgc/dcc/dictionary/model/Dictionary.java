@@ -21,6 +21,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.icgc.dcc.core.model.BaseEntity;
 import org.icgc.dcc.core.model.HasName;
@@ -40,11 +43,13 @@ import com.google.common.collect.Iterables;
 @Entity
 public class Dictionary extends BaseEntity implements HasName, DictionaryElement {
 
+  @NotNull
   @Indexed(unique = true)
   private String version;
 
   private DictionaryState state;
 
+  @Valid
   private List<FileSchema> files;
 
   public Dictionary() {

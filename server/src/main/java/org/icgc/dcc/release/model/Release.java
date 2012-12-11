@@ -5,6 +5,9 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.util.Date;
 import java.util.List;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.icgc.dcc.core.model.BaseEntity;
 import org.icgc.dcc.core.model.HasName;
@@ -20,16 +23,20 @@ import com.google.common.collect.Lists;
 @Entity
 public class Release extends BaseEntity implements HasName {
 
+  @NotNull
   protected String name;
 
   protected ReleaseState state;
 
+  @Valid
   protected List<Submission> submissions = Lists.newArrayList();
 
+  @Valid
   protected List<QueuedProject> queue = Lists.newArrayList();
 
   protected Date releaseDate;
 
+  @NotNull
   protected String dictionaryVersion;
 
   public Release() {

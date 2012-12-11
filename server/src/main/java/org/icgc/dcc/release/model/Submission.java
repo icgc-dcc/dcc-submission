@@ -2,6 +2,9 @@ package org.icgc.dcc.release.model;
 
 import java.util.Date;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+
 import org.icgc.dcc.validation.report.SubmissionReport;
 
 import com.google.code.morphia.annotations.Embedded;
@@ -9,14 +12,17 @@ import com.google.code.morphia.annotations.Embedded;
 @Embedded
 public class Submission {
 
+  @NotNull
   protected String projectKey;
 
+  @NotNull
   protected String projectName;
 
   protected Date lastUpdated;
 
   protected SubmissionState state;
 
+  @Valid
   protected SubmissionReport report;
 
   public Submission() {

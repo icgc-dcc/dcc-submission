@@ -3,6 +3,8 @@ package org.icgc.dcc.core.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.validation.constraints.NotNull;
+
 import com.google.code.morphia.annotations.Entity;
 import com.google.code.morphia.annotations.Indexed;
 import com.google.common.collect.Lists;
@@ -10,9 +12,11 @@ import com.google.common.collect.Lists;
 @Entity
 public class Project extends BaseEntity implements HasName {
 
+  @NotNull
   @Indexed(unique = true)
   protected String key;
 
+  @NotNull
   protected String name;
 
   protected List<String> users = Lists.newArrayList();

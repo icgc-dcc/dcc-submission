@@ -17,6 +17,10 @@
  */
 package org.icgc.dcc.dictionary.model;
 
+import javax.validation.constraints.NotNull;
+
+import org.hibernate.validator.constraints.NotBlank;
+
 import com.google.code.morphia.annotations.Embedded;
 
 /**
@@ -26,8 +30,12 @@ import com.google.code.morphia.annotations.Embedded;
 @Embedded
 public class Term {
 
+  @NotNull
+  @NotBlank
   private String code;
 
+  @NotNull
+  @NotBlank
   private String value;
 
   private String uri;

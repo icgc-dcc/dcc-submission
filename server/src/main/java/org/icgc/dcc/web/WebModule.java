@@ -1,5 +1,10 @@
 package org.icgc.dcc.web;
 
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.ws.rs.ext.MessageBodyReader;
+import javax.ws.rs.ext.MessageBodyWriter;
+
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.icgc.dcc.http.jersey.BasicHttpAuthenticationRequestFilter;
@@ -15,6 +20,7 @@ public class WebModule extends AbstractModule {
   @Override
   protected void configure() {
     bind(RootResources.class).asEagerSingleton();
+    bind(Validator.class).toInstance(Validation.buildDefaultValidatorFactory().getValidator());
   }
 
   /**
@@ -24,8 +30,9 @@ public class WebModule extends AbstractModule {
   public static class RootResources {
     @Inject
     public RootResources(ResourceConfig config) {
+      config.register(ValidatingJacksonJsonProvider.class, MessageBodyReader.class, MessageBodyWriter.class);
+
       config.addClasses(JacksonFeature.class);
-      config.addClasses(DictionaryResource.class);
       config.addClasses(ProjectResource.class);
       config.addClasses(ReleaseResource.class);
       config.addClasses(NextReleaseResource.class);

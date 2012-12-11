@@ -21,6 +21,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.List;
 
+import javax.validation.Valid;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -55,7 +56,7 @@ public class CodeListResource {
   }
 
   @POST
-  public Response addCodeLists(List<CodeList> codeLists, @Context SecurityContext securityContext) {
+  public Response addCodeLists(@Valid List<CodeList> codeLists, @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.CODELIST_MODIFY.toString()) == false) {
       return Response.status(Status.UNAUTHORIZED)
@@ -91,7 +92,7 @@ public class CodeListResource {
 
   @PUT
   @Path("{name}")
-  public Response updateCodeList(@PathParam("name") String name, CodeList newCodeList, @Context Request req,
+  public Response updateCodeList(@PathParam("name") String name, @Valid CodeList newCodeList, @Context Request req,
       @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.CODELIST_MODIFY.toString()) == false) {
@@ -116,7 +117,7 @@ public class CodeListResource {
 
   @POST
   @Path("{name}/terms")
-  public Response addTerms(@PathParam("name") String name, List<Term> terms, @Context Request req,
+  public Response addTerms(@PathParam("name") String name, @Valid List<Term> terms, @Context Request req,
       @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.CODELIST_MODIFY.toString()) == false) {

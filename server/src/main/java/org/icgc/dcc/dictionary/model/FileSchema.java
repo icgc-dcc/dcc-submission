@@ -20,6 +20,9 @@ package org.icgc.dcc.dictionary.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.icgc.dcc.dictionary.visitor.DictionaryElement;
 import org.icgc.dcc.dictionary.visitor.DictionaryVisitor;
@@ -38,6 +41,7 @@ import com.google.common.collect.Lists;
 @Embedded
 public class FileSchema implements DictionaryElement {
 
+  @NotNull
   private String name;
 
   private String label;
@@ -48,8 +52,10 @@ public class FileSchema implements DictionaryElement {
 
   private List<String> uniqueFields;
 
+  @Valid
   private List<Field> fields;
 
+  @Valid
   private List<Relation> relations;
 
   public FileSchema() {

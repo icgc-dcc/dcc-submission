@@ -104,7 +104,7 @@ public class IntegrationTest {
       }
     });
     server.start();
-    Thread.sleep(5000);
+    Thread.sleep(7500);
   }
 
   private void clearDB() throws IOException, InterruptedException {

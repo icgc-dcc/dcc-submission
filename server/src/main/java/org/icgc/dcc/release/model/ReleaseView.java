@@ -24,6 +24,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+
 import org.icgc.dcc.filesystem.SubmissionFile;
 import org.icgc.dcc.release.ReleaseException;
 
@@ -32,16 +35,19 @@ import org.icgc.dcc.release.ReleaseException;
  */
 public class ReleaseView {
 
+  @NotNull
   protected String name;
 
   protected ReleaseState state;
 
+  @Valid
   protected List<DetailedSubmission> submissions = new ArrayList<DetailedSubmission>();
 
   protected List<String> queue = new ArrayList<String>();
 
   protected Date releaseDate;
 
+  @NotNull
   protected String dictionaryVersion;
 
   protected Map<SubmissionState, Integer> summary = new EnumMap<SubmissionState, Integer>(SubmissionState.class);
