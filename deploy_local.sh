@@ -118,7 +118,7 @@ else
  echo " from \"${latest?}\""
 fi
 echo "building client files..."
-{ cd "${dev_client_dir?}" && brunch build && cd .. ; } || { echo "ERROR: failed to build project (client)"; exit 1; } # critical
+{ cd "${dev_client_dir?}" && brunch b -m && cd .. ; } || { echo "ERROR: failed to build project (client)"; exit 1; } # critical
 
 cp "${jar_file?}" "${local_server_dir?}/"
 cp -r "${dev_public_dir?}" "${local_client_dir?}"
