@@ -52,6 +52,7 @@ import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
 import com.google.code.morphia.query.Query;
 import com.google.code.morphia.query.UpdateOperations;
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -297,12 +298,17 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   }
 
   public boolean hasProjectKey(List<String> projectKeys) {
-    for(String projectKey : projectKeys) {
-      if(!this.hasProjectKey(projectKey)) {
-        return false;
+    return this.getProjectKeys().containsAll(projectKeys);
+  }
+
+  public List<String> getProjectKeys() {
+    Release nextRelease = this.getNextRelease().getRelease();
+    return Lists.transform(nextRelease.getSubmissions(), new Function<Submission, String>() {
+      @Override
+      public String apply(Submission submission) {
+        return submission.getProjectKey();
       }
-    }
-    return true;
+    });
   }
 
   public boolean hasProjectKey(String projectKey) {
