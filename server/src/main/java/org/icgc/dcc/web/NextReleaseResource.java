@@ -37,7 +37,9 @@ public class NextReleaseResource {
   }
 
   @POST
-  public Response release(@Valid Release nextRelease, @Context Request req, @Context SecurityContext securityContext) {
+  public Response release(Release nextRelease, @Context Request req, @Context SecurityContext securityContext) {
+    // TODO: this is intentionally not validated, since we're only currently using the name. This seems sketchy to me
+    // --Jonathan
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.RELEASE_CLOSE.getPrefix()) == false) {
       return Response.status(Status.UNAUTHORIZED)
