@@ -234,7 +234,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
       throws InvalidStateException, DccModelOptimisticLockException {
 
     String nextReleaseName = nextRelease.getName();
-    log.info("signinng off {} for {}", projectKeys, nextReleaseName);
+    log.info("signing off {} for {}", projectKeys, nextReleaseName);
 
     // update release object
     SubmissionState expectedState = SubmissionState.VALID;
@@ -265,6 +265,8 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     MailUtils.sendEmail(this.config, //
         String.format("Signed off Projects: %s", projectKeys), //
         String.format(config.getString("mail.signoff_body"), user, projectKeys, nextReleaseName));
+
+    log.info("signed off {} for {}", projectKeys, nextReleaseName);
   }
 
   public void deleteQueuedRequest() {

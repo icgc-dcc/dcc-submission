@@ -477,12 +477,6 @@
       "other" : "ssm_p",
       "otherFields" : [ "analysis_id", "analyzed_sample_id", "mutation_id" ],
       "optionals" : [ ]
-    }, {
-      "fields" : [ "transcript_affected" ],
-      "bidirectional" : false,
-      "other" : "hsap_transcript",
-      "otherFields" : [ "stable_id_1066" ],
-      "optionals" : [ ]
     } ]
   }, {
     "name" : "surgery",
@@ -1401,18 +1395,6 @@
       "other" : "stsm_p",
       "otherFields" : [ "analysis_id", "analyzed_sample_id", "sv_id", "placement" ],
       "optionals" : [ ]
-    }, {
-      "fields" : [ "transcript_affected_by_bkpt_from" ],
-      "bidirectional" : false,
-      "other" : "hsap_transcript",
-      "otherFields" : [ "stable_id_1066" ],
-      "optionals" : [ ]
-    }, {
-      "fields" : [ "transcript_affected_by_bkpt_to" ],
-      "bidirectional" : false,
-      "other" : "hsap_transcript",
-      "otherFields" : [ "stable_id_1066" ],
-      "optionals" : [ ]
     } ]
   }, {
     "name" : "stsm_p",
@@ -1773,12 +1755,6 @@
       "bidirectional" : false,
       "other" : "meth_p",
       "otherFields" : [ "analysis_id", "analyzed_sample_id", "methylated_fragment_id" ],
-      "optionals" : [ ]
-    }, {
-      "fields" : [ "gene_affected" ],
-      "bidirectional" : false,
-      "other" : "hsap_gene",
-      "otherFields" : [ "stable_id_1023" ],
       "optionals" : [ ]
     } ]
   }, {
@@ -3558,13 +3534,7 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relations" : [ {
-      "fields" : [ "transcript_id" ],
-      "bidirectional" : false,
-      "other" : "hsap_transcript",
-      "otherFields" : [ "stable_id_1066" ],
-      "optionals" : [ ]
-    } ]
+    "relations" : []
   }, {
     "name" : "hsap_gene",
     "label" : null,
@@ -4623,12 +4593,6 @@
       "other" : "cnsm_p",
       "otherFields" : [ "analysis_id", "analyzed_sample_id", "mutation_id" ],
       "optionals" : [ ]
-    }, {
-      "fields" : [ "transcript_affected" ],
-      "bidirectional" : false,
-      "other" : "hsap_transcript",
-      "otherFields" : [ "stable_id_1066" ],
-      "optionals" : [ ]
     } ]
   }, {
     "name" : "cnsm_p",
@@ -5438,12 +5402,6 @@
       "other" : "exp_m",
       "otherFields" : [ "analysis_id", "sample_id" ],
       "optionals" : [ ]
-    }, {
-      "fields" : [ "gene_stable_id" ],
-      "bidirectional" : false,
-      "other" : "hsap_gene",
-      "otherFields" : [ "stable_id_1023" ],
-      "optionals" : [ ]
     } ]
   }, {
     "name" : "biomarker",
@@ -5999,12 +5957,6 @@
       "bidirectional" : true,
       "other" : "jcn_m",
       "otherFields" : [ "analysis_id", "sample_id" ],
-      "optionals" : [ ]
-    }, {
-      "fields" : [ "gene_stable_id" ],
-      "bidirectional" : false,
-      "other" : "hsap_gene",
-      "otherFields" : [ "stable_id_1023" ],
       "optionals" : [ ]
     } ]
   }, {
