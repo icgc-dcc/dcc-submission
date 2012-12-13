@@ -165,15 +165,15 @@ public class IntegrationTest {
     Response response1 =
         sendPostRequest("/projects",
             "{\"name\":\"Project One\",\"key\":\"project1\",\"users\":[\"admin\"],\"groups\":[\"admin\"]}");
-    assertEquals(201, response1.getStatus());
+    assertEquals(response1.getStatusInfo().getReasonPhrase(), 201, response1.getStatus());
     Response response2 =
         sendPostRequest("/projects",
             "{\"name\":\"Project Two\",\"key\":\"project2\",\"users\":[\"admin\", \"brett\"],\"groups\":[\"admin\"]}");
-    assertEquals(201, response2.getStatus());
+    assertEquals(response2.getStatusInfo().getReasonPhrase(), 201, response2.getStatus());
     Response response3 =
         sendPostRequest("/projects",
             "{\"name\":\"Project Three\",\"key\":\"project3\",\"users\":[\"admin\"],\"groups\":[\"admin\"]}");
-    assertEquals(201, response3.getStatus());
+    assertEquals(response3.getStatusInfo().getReasonPhrase(), 201, response3.getStatus());
   }
 
   private void test_feedFileSystem() throws IOException {
@@ -205,12 +205,12 @@ public class IntegrationTest {
 
   private void test_checkSubmissionsStates() throws IOException, InterruptedException {
     Response response = sendGetRequest("/releases/release1");
-    assertEquals(200, response.getStatus());
+    assertEquals(response.getStatusInfo().getReasonPhrase(), 200, response.getStatus());
 
     Submission submission;
     do {
       response = sendGetRequest("/releases/release1/submissions/project1");
-      assertEquals(200, response.getStatus());
+      assertEquals(response.getStatusInfo().getReasonPhrase(), 200, response.getStatus());
       submission = new ObjectMapper().readValue(response.readEntity(String.class), DetailedSubmission.class);
       Thread.sleep(2000);
     } while(submission.getState() == SubmissionState.QUEUED);
@@ -218,7 +218,7 @@ public class IntegrationTest {
 
     do {
       response = sendGetRequest("/releases/release1/submissions/project2");
-      assertEquals(200, response.getStatus());
+      assertEquals(response.getStatusInfo().getReasonPhrase(), 200, response.getStatus());
       submission = new ObjectMapper().readValue(response.readEntity(String.class), DetailedSubmission.class);
       Thread.sleep(2000);
     } while(submission.getState() == SubmissionState.QUEUED);
@@ -226,7 +226,7 @@ public class IntegrationTest {
 
     do {
       response = sendGetRequest("/releases/release1/submissions/project3");
-      assertEquals(200, response.getStatus());
+      assertEquals(response.getStatusInfo().getReasonPhrase(), 200, response.getStatus());
       submission = new ObjectMapper().readValue(response.readEntity(String.class), DetailedSubmission.class);
       Thread.sleep(2000);
     } while(submission.getState() == SubmissionState.QUEUED);
@@ -242,25 +242,25 @@ public class IntegrationTest {
   private void test_releaseFirstRelease() throws IOException {
     // Expect 400 Bad Request because no projects are signed off
     Response response = sendPostRequest("/nextRelease", "{\"name\": \"release2\"}");
-    assertEquals(400, response.getStatus());
+    assertEquals(response.getStatusInfo().getReasonPhrase(), 400, response.getStatus());
 
     // Sign off on a project
     response = sendPostRequest("/nextRelease/signed", "[\"project1\"]");
-    assertEquals(200, response.getStatus());
+    assertEquals(response.getStatusInfo().getReasonPhrase(), 200, response.getStatus());
 
     // Release again, expect 200 OK
     response = sendPostRequest("/nextRelease", "{\"name\": \"release2\"}");
-    assertEquals(200, response.getStatus());
+    assertEquals(response.getStatusInfo().getReasonPhrase(), 200, response.getStatus());
 
     // Release again, expect 400 Bad Request because of the duplicate release
     response = sendPostRequest("/nextRelease", "{\"name\": \"release2\"}");
-    assertEquals(400, response.getStatus());
+    assertEquals(response.getStatusInfo().getReasonPhrase(), 400, response.getStatus());
   }
 
   private void test_checkRelease(String releaseName, String dictionaryVersion, ReleaseState state,
       List<SubmissionState> states) throws IOException, JsonParseException, JsonMappingException {
     Response response = sendGetRequest("/releases/" + releaseName);
-    assertEquals(200, response.getStatus());
+    assertEquals(response.getStatusInfo().getReasonPhrase(), 200, response.getStatus());
 
     ReleaseView release = new ObjectMapper().readValue(response.readEntity(String.class), ReleaseView.class);
     assertNotNull(release);
@@ -276,14 +276,14 @@ public class IntegrationTest {
 
   private void test_checkQueueIsEmpty() throws IOException {
     Response response = sendGetRequest("/nextRelease/queue");
-    assertEquals(200, response.getStatus());
+    assertEquals(response.getStatusInfo().getReasonPhrase(), 200, response.getStatus());
     assertEquals("[]", response.readEntity(String.class));
   }
 
   private void test_createInitialRelease(String initReleaseRelPath) throws IOException, JsonParseException,
       JsonMappingException {
     Response response = sendPutRequest("/releases", resourceToString(initReleaseRelPath));
-    assertEquals(200, response.getStatus());
+    assertEquals(response.getStatusInfo().getReasonPhrase(), 200, response.getStatus());
     Release release = new ObjectMapper().readValue(response.readEntity(String.class), Release.class);
     assertEquals("release1", release.getName());
   }
@@ -297,13 +297,13 @@ public class IntegrationTest {
         sendPostRequest(
             "/nextRelease/queue",
             "[{\"key\": \"project1\", \"emails\": [\"a@a.ca\"]}, {\"key\": \"project2\", \"emails\": [\"a@a.ca\"]}, {\"key\": \"project3\", \"emails\": [\"a@a.ca\"]}]");
-    assertEquals(200, response.getStatus());
+    assertEquals(response.getStatusInfo().getReasonPhrase(), 200, response.getStatus());
   }
 
   private void test_updateRelease(String updatedReleaseRelPath) throws IOException, JsonParseException,
       JsonMappingException {
     Response response = sendPutRequest("/nextRelease/update", resourceToString(updatedReleaseRelPath));
-    assertEquals(200, response.getStatus());
+    assertEquals(response.getStatusInfo().getReasonPhrase(), 200, response.getStatus());
     Release release = new ObjectMapper().readValue(response.readEntity(String.class), Release.class);
     assertEquals("release2", release.getName());
   }
