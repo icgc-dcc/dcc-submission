@@ -5,7 +5,6 @@ import javax.validation.Validator;
 import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.MessageBodyWriter;
 
-import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.icgc.dcc.http.jersey.BasicHttpAuthenticationRequestFilter;
 import org.icgc.dcc.web.mapper.DuplicateNameExceptionMapper;
@@ -28,11 +27,11 @@ public class WebModule extends AbstractModule {
    * resources.
    */
   public static class RootResources {
+    @SuppressWarnings("unchecked")
     @Inject
     public RootResources(ResourceConfig config) {
       config.register(ValidatingJacksonJsonProvider.class, MessageBodyReader.class, MessageBodyWriter.class);
 
-      config.addClasses(JacksonFeature.class);
       config.addClasses(ProjectResource.class);
       config.addClasses(ReleaseResource.class);
       config.addClasses(NextReleaseResource.class);
