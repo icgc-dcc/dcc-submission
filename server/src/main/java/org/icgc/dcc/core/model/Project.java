@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+
+import org.icgc.dcc.web.validator.NameValidator;
 
 import com.google.code.morphia.annotations.Entity;
 import com.google.code.morphia.annotations.Indexed;
@@ -13,6 +16,7 @@ import com.google.common.collect.Lists;
 public class Project extends BaseEntity implements HasName {
 
   @NotNull
+  @Pattern(regexp = NameValidator.NAME_PATTERN)
   @Indexed(unique = true)
   protected String key;
 

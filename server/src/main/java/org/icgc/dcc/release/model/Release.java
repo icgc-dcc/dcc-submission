@@ -7,11 +7,13 @@ import java.util.List;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.icgc.dcc.core.model.BaseEntity;
 import org.icgc.dcc.core.model.HasName;
 import org.icgc.dcc.release.ReleaseException;
+import org.icgc.dcc.web.validator.NameValidator;
 
 import com.google.code.morphia.annotations.Entity;
 import com.google.common.base.Function;
@@ -24,6 +26,7 @@ import com.google.common.collect.Lists;
 public class Release extends BaseEntity implements HasName {
 
   @NotNull
+  @Pattern(regexp = NameValidator.NAME_PATTERN)
   protected String name;
 
   protected ReleaseState state;
