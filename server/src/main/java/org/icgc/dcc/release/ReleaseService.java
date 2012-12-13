@@ -84,10 +84,10 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   }
 
   public List<Release> getReleases(Subject subject) {
-    log.info("getting releases for {}", subject.getPrincipal());
+    log.debug("getting releases for {}", subject.getPrincipal());
 
     List<Release> releases = query().list();
-    log.info("> " + releases.size());
+    log.debug("#releases: ", releases.size());
 
     // filter out all the submissions that the current user can not see
     for(Release release : releases) {
@@ -98,10 +98,10 @@ public class ReleaseService extends BaseMorphiaService<Release> {
           newSubmissions.add(submission);
         }
       }
-      release.getSubmissions().clear();
+      release.getSubmissions().clear(); // TODO: should we manipulate release this way? consider creating DTO?
       release.getSubmissions().addAll(newSubmissions);
     }
-    log.info("> " + releases.size());
+    log.debug("#releases visible: ", releases.size());
 
     return releases;
   }
@@ -241,8 +241,10 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     nextRelease.removeFromQueue(projectKeys);
     for(String projectKey : projectKeys) {
       Submission submission = getSubmissionByName(nextRelease, projectKey);
-      if(expectedState == submission.getState()) {
-        throw new InvalidStateException("project " + projectKey + " is not " + expectedState);
+      SubmissionState currentState = submission.getState();
+      if(submission == null || expectedState != currentState) {
+        throw new InvalidStateException(//
+            "project " + projectKey + " is not " + expectedState + " (" + currentState + " instead)");
       }
       submission.setState(SubmissionState.SIGNED_OFF);
     }
@@ -289,13 +291,16 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     for(QueuedProject queuedProject : queuedProjects) {
       String projectKey = queuedProject.getKey();
       Submission submission = getSubmissionByName(nextRelease, projectKey);
-      if(expectedState == submission.getState()) {
-        throw new InvalidStateException("project " + projectKey + " is not " + expectedState);
+      SubmissionState currentState = submission.getState();
+      if(submission == null || expectedState != currentState) {
+        throw new InvalidStateException(//
+            "project " + projectKey + " is not " + expectedState + " (" + currentState + " instead)");
       }
       submission.setState(SubmissionState.QUEUED);
     }
 
     updateRelease(nextReleaseName, nextRelease);
+    log.info("enqueued {} for {}", queuedProjects, nextReleaseName);
   }
 
   public boolean hasProjectKey(List<String> projectKeys) {
@@ -327,9 +332,11 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   public Optional<QueuedProject> dequeue(String projectKey, SubmissionState destinationState) {
     checkArgument(SubmissionState.VALID == destinationState || SubmissionState.INVALID == destinationState
         || SubmissionState.ERROR == destinationState);
+    log.info("attempting to dequeue {} for next release", projectKey);
 
     Optional<QueuedProject> dequeued = null;
     String nextReleaseName = null;
+    SubmissionState expectedState = SubmissionState.QUEUED;
 
     int attempts = 0;
     int MAX_ATTEMPTS = 10; // 10 attempts should be sufficient to obtain a lock (otherwise the problem is probably not
@@ -352,15 +359,18 @@ public class ReleaseService extends BaseMorphiaService<Release> {
                                                                 // instance)
               String.format("mismatch: %s != %s", dequeuedQueuedProject, nextInQueue));
           Submission submission = getSubmissionByName(nextRelease, projectKey);
-          if(SubmissionState.QUEUED == submission.getState()) {
+          SubmissionState currentState = submission.getState();
+          if(submission == null || expectedState != currentState) {
             throw new ReleaseException( // not really recoverable
-                "submission " + projectKey + " is not in " + SubmissionState.QUEUED + " state");
+                "project " + projectKey + " is not " + expectedState + " (" + currentState + " instead)");
           }
           submission.setState(destinationState);
 
           // update corresponding database entity
           updateRelease(nextReleaseName, nextRelease);
         }
+        log.info("dequeued {} for {}", projectKey, nextReleaseName);
+        break;
       } catch(DccModelOptimisticLockException e) {
         attempts++;
         log.warn(

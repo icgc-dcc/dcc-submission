@@ -13,11 +13,15 @@ import org.icgc.dcc.release.ReleaseException;
 
 import com.google.code.morphia.annotations.Entity;
 import com.google.common.base.Function;
+import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
+/**
+ * Not meant to be used in a hash for now (override hashCode if so)
+ */
 @Entity
 public class Release extends BaseEntity implements HasName {
 
@@ -196,5 +200,33 @@ public class Release extends BaseEntity implements HasName {
 
   public void emptyQueue() {
     this.queue.clear();
+  }
+
+  @Override
+  public boolean equals(Object obj) { // TODO: hashCode (if we need hashes)
+    if(obj == null) {
+      return false;
+    }
+    if(obj == this) {
+      return true;
+    }
+    if(getClass() != obj.getClass()) {
+      return false;
+    }
+    final Release other = (Release) obj;
+    return Objects.equal(this.name, other.name);
+  }
+
+  @Override
+  public String toString() {
+    return Objects.toStringHelper(Release.class) //
+        .add("name", this.name) //
+        .add("state", this.state) //
+        .add("transitioning", this.transitioning) //
+        .add("releaseDate", this.releaseDate) //
+        .add("dictionaryVersion", this.dictionaryVersion) //
+        .add("queue", this.queue) //
+        .add("submissions", this.submissions) //
+        .toString();
   }
 }

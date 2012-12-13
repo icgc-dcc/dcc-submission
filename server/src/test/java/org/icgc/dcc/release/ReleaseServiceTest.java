@@ -17,6 +17,8 @@ import java.util.Set;
 import junit.framework.Assert;
 
 import org.icgc.dcc.core.model.BaseEntity;
+import org.icgc.dcc.core.model.DccModelOptimisticLockException;
+import org.icgc.dcc.core.model.InvalidStateException;
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.dictionary.DictionaryService;
 import org.icgc.dcc.dictionary.model.Dictionary;
@@ -36,6 +38,8 @@ import com.mongodb.MongoException;
 import com.typesafe.config.Config;
 
 public class ReleaseServiceTest {
+
+  private DccLocking dccLocking;
 
   private Datastore datastore;
 
@@ -66,6 +70,7 @@ public class ReleaseServiceTest {
       Morphia morphia = new Morphia();
       morphia.map(BaseEntity.class);
       datastore = morphia.createDatastore(mongo, testDbName);
+      dccLocking = mock(DccLocking.class);
       fs = mock(DccFileSystem.class);
       mockReleaseFileSystem = mock(ReleaseFileSystem.class);
       mockDccFileSystem = mock(DccFileSystem.class);
@@ -108,7 +113,7 @@ public class ReleaseServiceTest {
       release.setDictionaryVersion(dictionary.getVersion());
 
       // Create the releaseService and populate it with the initial release
-      releaseService = new ReleaseService(null, morphia, datastore, fs, config); // FIXME
+      releaseService = new ReleaseService(dccLocking, morphia, datastore, fs, config);
       dictionaryService = new DictionaryService(morphia, datastore, mockDccFileSystem, releaseService);
       dictionaryService.add(dictionary);
       releaseService.createInitialRelease(release);
@@ -177,15 +182,18 @@ public class ReleaseServiceTest {
   }
 
   // @Test
-  public void test_can_release() {
-    assertTrue(!releaseService.getNextRelease().releasable());
+  public void test_can_release() throws InvalidStateException, DccModelOptimisticLockException {
+    NextRelease nextRelease = releaseService.getNextRelease();
+    Release nextReleaseRelease = nextRelease.getRelease();
+    assertTrue(!nextRelease.atLeastOneSignedOff(nextReleaseRelease));
 
     List<String> projectKeys = new ArrayList<String>();
     projectKeys.add("p1");
     String user = "admin";
-    // FIXME: releaseService.signOff(user, projectKeys, releaseService.getNextRelease().getRelease().getName());
+    releaseService.signOff(nextReleaseRelease, projectKeys, user);
 
-    assertTrue(releaseService.getNextRelease().releasable());
+    nextRelease = releaseService.getNextRelease();
+    assertTrue(nextRelease.atLeastOneSignedOff(nextReleaseRelease));
   }
 
   // @Test
@@ -226,9 +234,20 @@ public class ReleaseServiceTest {
     List<String> projectKeys = new ArrayList<String>();
     projectKeys.add("p1");
     String user = "admin";
-    // FIXME: releaseService.signOff(user, projectKeys, name);
+    try {
+      releaseService.signOff(newRelease, projectKeys, user);
+    } catch(InvalidStateException e) {
+      throw new RuntimeException(e);
+    } catch(DccModelOptimisticLockException e) {
+      throw new RuntimeException(e);
+    }
 
-    releaseService.getNextRelease().release(newRelease.getName());
-    return newRelease;
+    NextRelease nextRelease = null;
+    try {
+      nextRelease = releaseService.getNextRelease().release(newRelease.getName());
+    } catch(InvalidStateException e) {
+      e.printStackTrace();
+    }
+    return nextRelease.getRelease();
   }
 }

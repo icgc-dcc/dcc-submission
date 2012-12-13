@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.icgc.dcc.core.model.InvalidStateException;
 import org.icgc.dcc.dictionary.DictionaryService;
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.DictionaryState;
@@ -36,6 +37,8 @@ public class NextReleaseTest {
   private Release release;
 
   private Dictionary dictionary;
+
+  private DccLocking dccLocking;
 
   private Datastore ds;
 
@@ -81,10 +84,14 @@ public class NextReleaseTest {
     when(release.getName()).thenReturn("my_release_name");
     when(release.getProjectKeys()).thenReturn(Arrays.asList("proj1"));
     when(release.getSubmissions()).thenReturn(submissions);
+    when(release.getState()).thenReturn(ReleaseState.OPENED).thenReturn(ReleaseState.COMPLETED);
 
+    dccLocking = mock(DccLocking.class);
     ds = mock(Datastore.class);
     mockMorphia = mock(Morphia.class);
 
+    when(dccLocking.acquireReleasingLock()).thenReturn(release);
+    when(dccLocking.relinquishReleasingLock()).thenReturn(release);
     when(ds.createUpdateOperations(Release.class)).thenReturn(updates);
     when(ds.createUpdateOperations(Dictionary.class)).thenReturn(updatesDict);
 
@@ -103,34 +110,18 @@ public class NextReleaseTest {
     Dictionary dictionary = mock(Dictionary.class);
     when(mockDictionaryService.getFromVersion("existing_dictionary")).thenReturn(dictionary);
 
-    nextRelease = new NextRelease(null, release, mockMorphia, ds, fs); // FIXME
+    nextRelease = new NextRelease(dccLocking, release, mockMorphia, ds, fs);
   }
 
   @Test(expected = IllegalReleaseStateException.class)
   public void test_NextRelease_throwsWhenBadReleaseState() {
     when(release.getState()).thenReturn(ReleaseState.COMPLETED);
 
-    new NextRelease(null, release, mockMorphia, ds, fs); // FIXME
-  }
-
-  @Ignore
-  @Test
-  public void test_signOff_stateSet() {
-    Submission submission = signOffSetUp();
-    // nextRelease.signOff(submission);
-    verify(submission).setState(SubmissionState.SIGNED_OFF);
-  }
-
-  @Ignore
-  @Test
-  public void test_signOff_submissionSaved() {
-    Submission submission = signOffSetUp();
-    // nextRelease.signOff(submission);
-    verify(ds).update(query, updates);
+    new NextRelease(dccLocking, release, mockMorphia, ds, fs);
   }
 
   @Test
-  public void test_release_setPreviousStateToCompleted() {
+  public void test_release_setPreviousStateToCompleted() throws InvalidStateException {
     releaseSetUp();
 
     nextRelease.release(NEXT_RELEASE_NAME);
@@ -139,7 +130,7 @@ public class NextReleaseTest {
   }
 
   @Test
-  public void test_release_setNewStateToOpened() {
+  public void test_release_setNewStateToOpened() throws InvalidStateException {
     releaseSetUp();
 
     NextRelease newRelease = nextRelease.release(NEXT_RELEASE_NAME);
@@ -148,20 +139,20 @@ public class NextReleaseTest {
   }
 
   @Test
-  public void test_release_datastoreUpdated() {
+  public void test_release_datastoreUpdated() throws InvalidStateException {
     releaseSetUp();
 
     NextRelease newRelease = nextRelease.release(NEXT_RELEASE_NAME);
 
+    verify(ds).save(newRelease.getRelease());
     verify(ds).createUpdateOperations(Release.class);
     verify(updates).set("state", ReleaseState.COMPLETED);
     verify(updates).set("releaseDate", release.getReleaseDate());
-    verify(ds).update(release, updates);
-    verify(ds).save(newRelease.getRelease());
+    verify(updates).set("submissions", release.getSubmissions());
   }
 
   @Test
-  public void test_release_correctReturnValue() {
+  public void test_release_correctReturnValue() throws InvalidStateException {
     releaseSetUp();
 
     NextRelease newRelease = nextRelease.release(NEXT_RELEASE_NAME);
@@ -171,7 +162,7 @@ public class NextReleaseTest {
   }
 
   @Test
-  public void test_release_newDictionarySet() {
+  public void test_release_newDictionarySet() throws InvalidStateException {
     releaseSetUp();
 
     NextRelease newRelease = nextRelease.release(NEXT_RELEASE_NAME);
@@ -180,7 +171,7 @@ public class NextReleaseTest {
   }
 
   @Test
-  public void test_release_dictionaryClosed() {
+  public void test_release_dictionaryClosed() throws InvalidStateException {
     releaseSetUp();
 
     assertTrue(release.getDictionaryVersion().equals(dictionary.getVersion()));
@@ -192,8 +183,8 @@ public class NextReleaseTest {
     // verify(dictionary).close();
   }
 
-  @Test(expected = ReleaseException.class)
-  public void test_release_throwsMissingDictionaryException() {
+  @Test(expected = InvalidStateException.class)
+  public void test_release_throwsMissingDictionaryException() throws InvalidStateException {
     assertTrue(release.getDictionaryVersion() == null);
 
     nextRelease.release("Release2");
@@ -201,7 +192,7 @@ public class NextReleaseTest {
 
   @Ignore
   @Test(expected = ReleaseException.class)
-  public void test_release_newReleaseUniqueness() {
+  public void test_release_newReleaseUniqueness() throws InvalidStateException {
     // TODO reinstate once NextRelease is fixed to make mocking easier
     releaseSetUp();
 

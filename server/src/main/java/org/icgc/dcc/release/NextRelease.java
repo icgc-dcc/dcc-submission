@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.List;
 
+import org.icgc.dcc.core.model.InvalidStateException;
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.core.model.QProject;
 import org.icgc.dcc.dictionary.model.Dictionary;
@@ -17,6 +18,8 @@ import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.release.model.SubmissionState;
 import org.icgc.dcc.web.validator.InvalidNameException;
 import org.icgc.dcc.web.validator.NameValidator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
@@ -29,6 +32,8 @@ import com.google.common.collect.Sets;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
 
 public class NextRelease extends BaseRelease {
+
+  private static final Logger log = LoggerFactory.getLogger(NextRelease.class);
 
   private final DccLocking dccLocking;
 
@@ -53,7 +58,7 @@ public class NextRelease extends BaseRelease {
     return getRelease().nextInQueue();
   }
 
-  public NextRelease release(final String nextReleaseName) {
+  public NextRelease release(final String nextReleaseName) throws InvalidStateException {
     checkArgument(nextReleaseName != null);
 
     // check for next release name
@@ -62,48 +67,48 @@ public class NextRelease extends BaseRelease {
     }
 
     Release nextRelease = null;
-    Release oldRelease = dccLocking.acquireReleasingLock();
+    Release oldRelease = dccLocking.acquireReleasingLock(); // TODO: for now nothing checks for it (DCC-685)
     try {
-      if(oldRelease == null) { // just in case
-        throw new RuntimeException("TODO");
+      if(oldRelease == null) { // just in case (can't really happen)
+        log.error("could not acquire lock on release");
+        throw new ReleaseException("ReleaseException");
       }
-      if(oldRelease.equals(this.getRelease()) == false) { // TODO: implement equals
-        throw new RuntimeException("TODO");
+      if(oldRelease.equals(this.getRelease()) == false) { // just in case (can't really happen)
+        log.error(oldRelease + " != " + this.getRelease());
+        throw new ReleaseException("ReleaseException");
       }
-
-      // check for signed-off submission states (must have at least one)
-      if(releasable() == false) {
-        throw new ReleaseException("SignedOffSubmissionRequired");
+      if(atLeastOneSignedOff(oldRelease) == false) { // check for signed-off submission states (must have at least one)
+        log.error("no signed off project in " + oldRelease);
+        throw new InvalidStateException("SignedOffSubmissionRequired");
       }
-
-      if(oldRelease.getQueuedProjectKeys().isEmpty() == false) {
-        throw new ReleaseException("QueueNotEmpty"); // TODO: handle properly
+      if(oldRelease.getQueue().isEmpty() == false) {
+        log.error("some projects are still enqueue in " + oldRelease);
+        throw new InvalidStateException("QueueNotEmpty");
       }
 
       String dictionaryVersion = oldRelease.getDictionaryVersion();
       if(dictionaryVersion == null) {
-        throw new ReleaseException("ReleaseMissingDictionary");
+        log.error("could not find a dictionary matching " + dictionaryVersion);
+        throw new InvalidStateException("ReleaseMissingDictionary"); // TODO: new kind of exception rather?
       }
       if(forName(nextReleaseName) != null) {
-        throw new ReleaseException("DuplicateReleaseName");
-      }
-      Iterable<String> oldProjectKeys = oldRelease.getProjectKeys();
-      if(oldProjectKeys == null) {
-        throw new ReleaseException("InvalidReleaseState");
+        log.error("found a conflicting release for name " + nextReleaseName);
+        throw new InvalidStateException("DuplicateReleaseName");
       }
 
       // critical operations
       nextRelease = createNextRelease(nextReleaseName, oldRelease, dictionaryVersion);
-      setupNextReleaseFileSystem(oldRelease, nextRelease, oldProjectKeys); // TODO: fix situation regarding aborting fs
-                                                                           // operations?
+      setupNextReleaseFileSystem(oldRelease, nextRelease, oldRelease.getProjectKeys()); // TODO: fix situation regarding
+                                                                                        // aborting fs operations?
       closeDictionary(dictionaryVersion);
       completeOldRelease(oldRelease);
-
     } finally {
       Release relinquishedRelease = dccLocking.relinquishReleasingLock();
       if(relinquishedRelease == null || //
-          relinquishedRelease.getName().equals(oldRelease.getName()) == false) { // just in case
-        throw new RuntimeException("TODO");
+          relinquishedRelease.equals(oldRelease) == false) { // just in case
+        log.error("could not relinquish lock on release {}, obtaining {}",
+            new Object[] { oldRelease, relinquishedRelease });
+        throw new ReleaseException("ReleaseException");
       }
     }
 
@@ -156,6 +161,7 @@ public class NextRelease extends BaseRelease {
         submissions.remove(i);
       }
     }
+
     datastore().findAndModify( //
         query() //
             .filter("name", oldRelease.getName()), //
@@ -165,9 +171,8 @@ public class NextRelease extends BaseRelease {
             .set("submissions", submissions));
   }
 
-  boolean releasable() {
-    Release nextRelease = this.getRelease();
-    for(Submission submission : nextRelease.getSubmissions()) {
+  boolean atLeastOneSignedOff(Release release) {
+    for(Submission submission : release.getSubmissions()) {
       if(submission.getState() == SubmissionState.SIGNED_OFF) {
         return true;
       }

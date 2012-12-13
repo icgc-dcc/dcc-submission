@@ -14,6 +14,7 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 
 import org.apache.shiro.subject.Subject;
+import org.glassfish.grizzly.http.util.Header;
 import org.icgc.dcc.core.model.DccModelOptimisticLockException;
 import org.icgc.dcc.core.model.InvalidStateException;
 import org.icgc.dcc.release.NextRelease;
@@ -23,12 +24,16 @@ import org.icgc.dcc.release.model.QueuedProject;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.shiro.AuthorizationPrivileges;
 import org.icgc.dcc.shiro.ShiroSecurityContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
 @Path("nextRelease")
 public class NextReleaseResource {
+
+  private static final Logger log = LoggerFactory.getLogger(NextReleaseResource.class);
 
   @Inject
   private ReleaseService releaseService;
@@ -46,7 +51,10 @@ public class NextReleaseResource {
       return Response.status(Status.UNAUTHORIZED)
           .entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED.getCode())).build();
     }
+
     NextRelease oldRelease = releaseService.getNextRelease();
+    String oldReleaseName = oldRelease.getRelease().getName();
+    log.info("releasing {}", oldReleaseName);
 
     // Check the timestamp of the oldRelease, since that is the object being updated
     ResponseTimestamper.evaluate(req, oldRelease.getRelease());
@@ -54,14 +62,15 @@ public class NextReleaseResource {
     NextRelease newRelease = null;
     try {
       newRelease = oldRelease.release(nextRelease.getName());
+      log.info("released {}", oldReleaseName);
     } catch(ReleaseException e) {
-      return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage("TODO")).build();
-    } catch(Exception e) {
-      // TODO Auto-generated catch block
-      return Response.status(Status.SERVICE_UNAVAILABLE).entity(new ServerErrorResponseMessage("TODO")).build();
-      // TODO: add Retry-After (http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.4)
+      log.error("ReleaseException", e);
+      return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage("ReleaseException")).build();
+    } catch(InvalidStateException e) {
+      ServerErrorCode code = ServerErrorCode.INVALID_STATE;
+      log.error(code.getCode(), e);
+      return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage(code.getCode())).build();
     }
-
     return ResponseTimestamper.ok(newRelease.getRelease()).build();
   }
 
@@ -96,13 +105,18 @@ public class NextReleaseResource {
     try {
       this.releaseService.queue(nextRelease, queuedProjects);
     } catch(ReleaseException e) {
+      log.error("ProjectKeyNotFound", e);
       return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage("ProjectKeyNotFound")).build();
     } catch(InvalidStateException e) {
-      return Response.status(Status.BAD_REQUEST)
-          .entity(new ServerErrorResponseMessage(ServerErrorCode.INVALID_STATE.getCode())).build();
+      ServerErrorCode code = ServerErrorCode.INVALID_STATE;
+      log.error(code.getCode(), e);
+      return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage(code.getCode())).build();
     } catch(DccModelOptimisticLockException e) { // not very likely
-      return Response.status(Status.SERVICE_UNAVAILABLE) // TODO: set Retry-After?
-          .entity(new ServerErrorResponseMessage(ServerErrorCode.UNKNOWN.getCode())).build(); // TODO
+      ServerErrorCode code = ServerErrorCode.UNAVAILABLE;
+      log.error(code.getCode(), e);
+      return Response.status(Status.SERVICE_UNAVAILABLE) //
+          .header(Header.RetryAfter.toString(), 3) //
+          .entity(new ServerErrorResponseMessage(code.getCode())).build();
     }
     return Response.ok().build();
   }
@@ -147,13 +161,18 @@ public class NextReleaseResource {
     try {
       this.releaseService.signOff(nextRelease, projectKeys, user);
     } catch(ReleaseException e) {
+      log.error("ProjectKeyNotFound", e);
       return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage("ProjectKeyNotFound")).build();
     } catch(InvalidStateException e) {
-      return Response.status(Status.BAD_REQUEST)
-          .entity(new ServerErrorResponseMessage(ServerErrorCode.INVALID_STATE.getCode())).build();
+      ServerErrorCode code = ServerErrorCode.INVALID_STATE;
+      log.error(code.getCode(), e);
+      return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage(code.getCode())).build();
     } catch(DccModelOptimisticLockException e) { // not very likely
-      return Response.status(Status.SERVICE_UNAVAILABLE) // TODO: set Retry-After?
-          .entity(new ServerErrorResponseMessage(ServerErrorCode.UNAVAILABLE.getCode())).build();
+      ServerErrorCode code = ServerErrorCode.UNAVAILABLE;
+      log.error(code.getCode(), e);
+      return Response.status(Status.SERVICE_UNAVAILABLE) //
+          .header(Header.RetryAfter.toString(), 3) //
+          .entity(new ServerErrorResponseMessage(code.getCode())).build();
     }
     return Response.ok().build();
   }
@@ -167,12 +186,17 @@ public class NextReleaseResource {
           .entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED.getCode())).build();
     }
     if(release != null) {
+      String name = release.getName();
+
+      log.info("updating {}", name);
       ResponseTimestamper.evaluate(req, release);
 
       if(this.releaseService.list().isEmpty()) {
         return Response.status(Status.BAD_REQUEST).build();
       } else {
         Release updatedRelease = releaseService.update(release);
+        log.info("updated {}", name);
+
         return ResponseTimestamper.ok(updatedRelease).build();
       }
     } else {
