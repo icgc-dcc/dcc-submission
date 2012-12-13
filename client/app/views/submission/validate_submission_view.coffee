@@ -23,6 +23,7 @@
 
 mediator = require 'mediator'
 View = require 'views/base/view'
+Model = require 'models/base/model'
 NextRelease = require 'models/next_release'
 template = require 'views/templates/submission/validate_submission'
 
@@ -39,8 +40,8 @@ module.exports = class ValidateSubmissionView extends View
 
   initialize: ->
     #console.debug "ValidateSubmissionView#initialize", @options
-    @model = @options.submission
-    @model.set("email", mediator.user.get("email"))
+    @model = new Model @options.submission.getAttributes()
+    @model.set({email: mediator.user.get("email")}, {silent: true})
     release = new NextRelease()
     release.fetch
       success: (data) =>
@@ -48,7 +49,7 @@ module.exports = class ValidateSubmissionView extends View
 
     super
 
-    #@modelBind 'change', @render
+    @modelBind 'change', @render
     @delegate 'click', '#validate-submission-button', @validateSubmission
 
   validateSubmission: (e) ->

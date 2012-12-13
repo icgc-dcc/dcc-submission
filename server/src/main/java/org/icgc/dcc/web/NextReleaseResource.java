@@ -48,8 +48,8 @@ public class NextReleaseResource {
   public Response release(Release nextRelease, @Context Request req, @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.RELEASE_CLOSE.getPrefix()) == false) {
-      return Response.status(Status.UNAUTHORIZED)
-          .entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED.getCode())).build();
+      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED))
+          .build();
     }
 
     NextRelease oldRelease = releaseService.getNextRelease();
@@ -64,12 +64,13 @@ public class NextReleaseResource {
       newRelease = oldRelease.release(nextRelease.getName());
       log.info("released {}", oldReleaseName);
     } catch(ReleaseException e) {
-      log.error("ReleaseException", e);
-      return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage("ReleaseException")).build();
+      ServerErrorCode code = ServerErrorCode.RELEASE_EXCEPTION;
+      log.error(code.getCode(), e);
+      return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage(code)).build();
     } catch(InvalidStateException e) {
       ServerErrorCode code = ServerErrorCode.INVALID_STATE;
       log.error(code.getCode(), e);
-      return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage(code.getCode())).build();
+      return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage(code)).build();
     }
     return ResponseTimestamper.ok(newRelease.getRelease()).build();
   }
@@ -95,7 +96,7 @@ public class NextReleaseResource {
 
       if(subject.isPermitted(AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
         return Response.status(Status.UNAUTHORIZED)
-            .entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED.getCode())).build();
+            .entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED)).build();
       }
     }
 
@@ -106,17 +107,18 @@ public class NextReleaseResource {
       this.releaseService.queue(nextRelease, queuedProjects);
     } catch(ReleaseException e) {
       log.error("ProjectKeyNotFound", e);
-      return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage("ProjectKeyNotFound")).build();
+      return Response.status(Status.BAD_REQUEST)
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, projectKeys)).build();
     } catch(InvalidStateException e) {
       ServerErrorCode code = ServerErrorCode.INVALID_STATE;
       log.error(code.getCode(), e);
-      return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage(code.getCode())).build();
+      return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage(code)).build();
     } catch(DccModelOptimisticLockException e) { // not very likely
       ServerErrorCode code = ServerErrorCode.UNAVAILABLE;
       log.error(code.getCode(), e);
       return Response.status(Status.SERVICE_UNAVAILABLE) //
           .header(Header.RetryAfter.toString(), 3) //
-          .entity(new ServerErrorResponseMessage(code.getCode())).build();
+          .entity(new ServerErrorResponseMessage(code)).build();
     }
     return Response.ok().build();
   }
@@ -126,8 +128,8 @@ public class NextReleaseResource {
   public Response removeAllQueued(@Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.QUEUE_DELETE.getPrefix()) == false) {
-      return Response.status(Status.UNAUTHORIZED)
-          .entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED.getCode())).build();
+      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED))
+          .build();
     }
     this.releaseService.deleteQueuedRequest();
 
@@ -145,14 +147,13 @@ public class NextReleaseResource {
   @POST
   @Path("signed")
   public Response signOff(List<String> projectKeys, @Context Request req, @Context SecurityContext securityContext) {
-
     ShiroSecurityContext context = (ShiroSecurityContext) securityContext;
     Subject subject = context.getSubject();
     String user = context.getUserPrincipal().getName();
 
     if(subject.isPermitted(AuthorizationPrivileges.RELEASE_SIGNOFF.getPrefix()) == false) {
-      return Response.status(Status.UNAUTHORIZED)
-          .entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED.getCode())).build();
+      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED))
+          .build();
     }
 
     Release nextRelease = this.releaseService.getNextRelease().getRelease();
@@ -161,18 +162,19 @@ public class NextReleaseResource {
     try {
       this.releaseService.signOff(nextRelease, projectKeys, user);
     } catch(ReleaseException e) {
-      log.error("ProjectKeyNotFound", e);
-      return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage("ProjectKeyNotFound")).build();
+      ServerErrorCode code = ServerErrorCode.NO_SUCH_ENTITY;
+      log.error(code.getCode(), e);
+      return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage(code, projectKeys)).build();
     } catch(InvalidStateException e) {
       ServerErrorCode code = ServerErrorCode.INVALID_STATE;
       log.error(code.getCode(), e);
-      return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage(code.getCode())).build();
+      return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage(code)).build();
     } catch(DccModelOptimisticLockException e) { // not very likely
       ServerErrorCode code = ServerErrorCode.UNAVAILABLE;
       log.error(code.getCode(), e);
       return Response.status(Status.SERVICE_UNAVAILABLE) //
           .header(Header.RetryAfter.toString(), 3) //
-          .entity(new ServerErrorResponseMessage(code.getCode())).build();
+          .entity(new ServerErrorResponseMessage(code)).build();
     }
     return Response.ok().build();
   }
@@ -182,8 +184,8 @@ public class NextReleaseResource {
   public Response update(Release release, @Context Request req, @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.RELEASE_MODIFY.getPrefix()) == false) {
-      return Response.status(Status.UNAUTHORIZED)
-          .entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED.getCode())).build();
+      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED))
+          .build();
     }
     if(release != null) {
       String name = release.getName();

@@ -38,8 +38,11 @@ module.exports = class LoginView extends PageView
 
   # Expects the serviceProviders in the options
   initialize: ->
-    #console.log "LoginView#initialize"
+    console.log "LoginView#initialize", window.location
     super
+
+    if window.location.pathname isnt "/login"
+      window.location = "/#login"
 
     @delegate 'submit', '#login-form', @triggerLogin
 
@@ -65,12 +68,15 @@ module.exports = class LoginView extends PageView
   getUserData: (loginDetails) ->
     #console.debug 'DCCServiceProvider#ajax', type, url, data
     errors = @errors
+    if not window.btoa then window.btoa = base64.encode
+    if not window.atob then window.atob = base64.decode
     accessToken = btoa loginDetails.username.concat ":", loginDetails.password
     $.ajax '/ws/users/self', {
       type: 'get'
       dataType: 'json'
       beforeSend: (xhr) ->
         xhr.setRequestHeader 'Authorization', "X-DCC-Auth  #{accessToken}"
+
       success: (data) ->
         data.accessToken = accessToken
         user = new User data
