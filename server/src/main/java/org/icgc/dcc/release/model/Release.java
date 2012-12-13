@@ -1,6 +1,7 @@
 package org.icgc.dcc.release.model;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 
 import java.util.Date;
 import java.util.List;
@@ -149,13 +150,43 @@ public class Release extends BaseEntity implements HasName {
     }
   }
 
-  public boolean removeFromQueue(List<String> projectKeys) {
-    return this.queue.removeAll(projectKeys);
+  public int removeFromQueue(final String projectKey) {
+    int count = 0;
+    for(int i = this.queue.size() - 1; i >= 0; i--) {
+      QueuedProject queuedProject = this.queue.get(i);
+      if(queuedProject != null && queuedProject.getKey().equals(projectKey)) {
+        this.queue.remove(i);
+        count++;
+      }
+    }
+    return count;
   }
 
+  public int removeFromQueue(final List<String> projectKeys) {
+    int count = 0;
+    for(String projectKey : projectKeys) {
+      count += removeFromQueue(projectKey);
+    }
+    return count;
+  }
+
+  /**
+   * Attempts to retrieve the first element of the queue.
+   */
   public Optional<QueuedProject> nextInQueue() {
     return this.queue != null && this.queue.isEmpty() == false ? Optional.<QueuedProject> of(this.queue.get(0)) : Optional
         .<QueuedProject> absent();
+  }
+
+  /**
+   * Dequeues the first element of the queue, expecting the queue to contain at least one element.<br>
+   * 
+   * Use in combination with <code>{@link Release#nextInQueue()}</code> and guava's <code>Optional.isPresent()</code><br>
+   * This method is <b>not</b> thread-safe.
+   */
+  public QueuedProject dequeueProject() {
+    checkState(queue != null && queue.isEmpty() == false);
+    return queue.remove(0);
   }
 
   public Optional<QueuedProject> dequeue() {

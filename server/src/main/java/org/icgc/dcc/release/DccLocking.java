@@ -28,7 +28,8 @@ import com.google.code.morphia.Datastore;
  * Class that handles locks throughout the application.
  * <p>
  * locks: <br>
- * - releasing
+ * - updating release<br>
+ * - releasing release<br>
  * <p>
  * TODO: consider burying Datastore under an abstraction like this to ensure use of locks?
  */
@@ -40,7 +41,7 @@ public class DccLocking {
 
   private Datastore datastore;
 
-  void setDatastore(Datastore datastore) {
+  void setDatastore(Datastore datastore) { // TODO: make fideld final and set in constructor (will need guice provider)
     if(this.datastore == null) this.datastore = datastore; // FIXME
   }
 

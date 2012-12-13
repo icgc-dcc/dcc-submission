@@ -3,26 +3,21 @@ package org.icgc.dcc.release;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
-import java.io.UnsupportedEncodingException;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.Set;
-
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.shiro.subject.Subject;
+import org.icgc.dcc.core.MailUtils;
+import org.icgc.dcc.core.model.BaseEntity;
+import org.icgc.dcc.core.model.DccConcurrencyException;
+import org.icgc.dcc.core.model.DccModelOptimisticLockException;
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.core.model.QProject;
 import org.icgc.dcc.core.morphia.BaseMorphiaService;
@@ -52,12 +47,14 @@ import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
 import com.google.code.morphia.query.Query;
 import com.google.code.morphia.query.UpdateOperations;
+import com.google.code.morphia.query.UpdateResults;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.inject.Inject;
 import com.mysema.query.mongodb.MongodbQuery;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
@@ -221,27 +218,30 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   }
 
   public Release getRelease(String releaseName) {
-    Release release = this.where(QRelease.release.name.eq(releaseName)).uniqueResult();
-    return release;
+    return this.where(QRelease.release.name.eq(releaseName)).uniqueResult();
   }
 
   public List<String> getSignedOff() {
     return this.getSubmission(SubmissionState.SIGNED_OFF);
   }
 
-  public void signOff(String user, List<String> projectKeys, String releaseName) {
-    log.info("signinng off: {}", projectKeys);
+  public void signOff(Release nextRelease, List<String> projectKeys, String user)
+      throws DccModelOptimisticLockException {
+    String nextReleaseName = nextRelease.getName();
+    log.info("signinng off {} for {}", projectKeys, nextReleaseName);
 
-    SubmissionState newState = SubmissionState.SIGNED_OFF;
-    Release release = getNextRelease().getRelease();
+    // update release object
+    nextRelease.removeFromQueue(projectKeys);
+    for(String projectKey : projectKeys) {
+      getSubmissionByName(nextRelease, projectKey).setState(SubmissionState.SIGNED_OFF);
+    }
 
-    updateSubmisions(projectKeys, newState);
-    release.removeFromQueue(projectKeys);
+    updateRelease(nextReleaseName, nextRelease);
 
-    this.dbUpdateSubmissions(release.getName(), release.getQueue(), projectKeys, newState);
-
-    // remove .validation folder form the Submission folder
-    ReleaseFileSystem releaseFS = this.fs.getReleaseFilesystem(release);
+    // TODO: synchronization (DCC-685), may require cleaning up the FS abstraction (do we really need the project object
+    // or is the projectKey sufficient?)
+    // remove .validation folder from the Submission folder
+    ReleaseFileSystem releaseFS = this.fs.getReleaseFilesystem(nextRelease);
     List<Project> projects = this.getProjects(projectKeys);
     for(Project project : projects) {
       SubmissionDirectory submissionDirectory = releaseFS.getSubmissionDirectory(project);
@@ -249,28 +249,9 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     }
 
     // after sign off, send a email to DCC support
-    try {
-      Properties props = new Properties();
-      props.put("mail.smtp.host", this.config.getString("mail.smtp.host"));
-      Session session = Session.getDefaultInstance(props, null);
-      Message msg = new MimeMessage(session);
-      msg.setFrom(new InternetAddress(this.config.getString("mail.from.email"), this.config
-          .getString("mail.from.email")));
-      msg.addRecipient(Message.RecipientType.TO, new InternetAddress(this.config.getString("mail.support.email")));
-
-      msg.setSubject(String.format("Signed off Projects: %s", projectKeys));
-
-      msg.setText(String.format(this.config.getString("mail.signoff_body"), user, projectKeys, releaseName));
-
-      Transport.send(msg);
-
-    } catch(AddressException e) {
-      log.error("an error occured while emailing: ", e);
-    } catch(MessagingException e) {
-      log.error("an error occured while emailing: ", e);
-    } catch(UnsupportedEncodingException e) {
-      log.error("an error occured while emailing: ", e);
-    }
+    MailUtils.sendEmail(this.config, //
+        String.format("Signed off Projects: %s", projectKeys), //
+        String.format(config.getString("mail.signoff_body"), user, projectKeys, nextReleaseName));
   }
 
   public void deleteQueuedRequest() {
@@ -286,20 +267,18 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     this.dbUpdateSubmissions(release.getName(), release.getQueue(), projectKeys, newState);
   }
 
-  public void queue(List<QueuedProject> queuedProjects) {
-    List<String> projectKeys = Lists.newArrayList();
-    for(QueuedProject qp : queuedProjects) {
-      projectKeys.add(qp.getKey());
+  public void queue(Release nextRelease, List<QueuedProject> queuedProjects) throws DccModelOptimisticLockException {
+    String nextReleaseName = nextRelease.getName();
+    log.info("enqueuing {} for {}", queuedProjects, nextReleaseName);
+
+    // update release object
+    nextRelease.enqueue(queuedProjects);
+    for(QueuedProject queuedProject : queuedProjects) {
+      String projectKey = queuedProject.getKey();
+      getSubmissionByName(nextRelease, projectKey).setState(SubmissionState.QUEUED);
     }
-    log.info("enqueuing: {}", queuedProjects);
 
-    SubmissionState newState = SubmissionState.QUEUED;
-    Release release = this.getNextRelease().getRelease();
-
-    updateSubmisions(projectKeys, newState);
-    release.enqueue(queuedProjects);
-
-    this.dbUpdateSubmissions(release.getName(), release.getQueue(), projectKeys, newState);
+    updateRelease(nextReleaseName, nextRelease);
   }
 
   public boolean hasProjectKey(List<String> projectKeys) {
@@ -321,20 +300,51 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     return false;
   }
 
-  public Optional<QueuedProject> dequeue(String projectKey, SubmissionState state) {
-    log.info("dequeuing: {}", projectKey);
+  public Optional<QueuedProject> dequeue(String projectKey, SubmissionState destinationState) {
+    checkArgument(SubmissionState.VALID == destinationState || SubmissionState.INVALID == destinationState
+        || SubmissionState.ERROR == destinationState);
 
-    SubmissionState newState = state;
-    Release release = this.getNextRelease().getRelease();
+    Optional<QueuedProject> dequeued = null;
+    String nextReleaseName = null;
 
-    Optional<QueuedProject> dequeued = release.nextInQueue();
-    if(dequeued.isPresent() && dequeued.get().getKey().equals(projectKey)) {
-      List<String> projectKeys = Arrays.asList(projectKey);
-      dequeued = release.dequeue();
-      if(dequeued.isPresent() && dequeued.get().getKey().equals(projectKey)) { // could still have changed
-        updateSubmisions(projectKeys, newState);
-        this.dbUpdateSubmissions(release.getName(), release.getQueue(), projectKeys, newState);
+    int attempts = 0;
+    int MAX_ATTEMPTS = 10; // 10 attempts should be sufficient to obtain a lock (otherwise the problem is probably not
+                           // recoverable - deadlock or other)
+    while(attempts < MAX_ATTEMPTS) {
+      dequeued = Optional.absent();
+
+      try {
+        Release nextRelease = getNextRelease().getRelease();
+        nextReleaseName = nextRelease.getName();
+        log.info("dequeuing {} (as {}) for {}", new Object[] { projectKey, destinationState, nextReleaseName });
+
+        // if project was found (TODO: explain)
+        dequeued = nextRelease.nextInQueue();
+        if(dequeued.isPresent() && dequeued.get().getKey().equals(projectKey)) {
+          QueuedProject nextInQueue = dequeued.get();
+
+          // update release object
+          QueuedProject dequeuedQueuedProject = nextRelease.dequeueProject();
+          checkState(dequeuedQueuedProject.equals(nextInQueue), // can't really happen (no other thread can access that
+                                                                // instance)
+              String.format("mismatch: %s != %s", dequeuedQueuedProject, nextInQueue));
+          getSubmissionByName(nextRelease, projectKey).setState(destinationState);
+
+          // update corresponding database entity
+          updateRelease(nextReleaseName, nextRelease);
+        }
+      } catch(DccModelOptimisticLockException e) {
+        attempts++;
+        log.warn(
+            "there was a concurrency issue while attempting to dequeue {} (as {}) for release {}, number of attempts: {}",
+            new Object[] { projectKey, destinationState, nextReleaseName, attempts });
+        Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
       }
+    }
+    if(attempts >= MAX_ATTEMPTS) {
+      String message = String.format("failed to dequeue project %s (could never acquire lock)", projectKey);
+      MailUtils.sendEmail(this.config, message, message);
+      throw new DccConcurrencyException(message);
     }
 
     return dequeued;
@@ -543,6 +553,42 @@ public class ReleaseService extends BaseMorphiaService<Release> {
       }
     }
     return projectKeys;
+  }
+
+  /**
+   * Updates the release with the given name, there must be a matching release.<br>
+   * 
+   * Concurrency is handled with <code>{@link BaseEntity#internalVersion}</code> (optimistic lock).
+   * 
+   * @throws DccModelOptimisticLockException if optimistic lock fails
+   * @throws ReleaseException if the update fails for other reasons (probably not recoverable)
+   */
+  private void updateRelease(String originalReleaseName, Release updatedRelease) throws DccModelOptimisticLockException {
+    UpdateResults<Release> update = null;
+    try {
+      update = datastore().updateFirst( //
+          datastore().createQuery(Release.class) //
+              .filter("name = ", originalReleaseName), //
+          updatedRelease, false);
+    } catch(ConcurrentModificationException e) {
+      throw new DccModelOptimisticLockException(e);
+    }
+    if(update == null || update.getHadError()) {
+      throw new ReleaseException(String.format("failed to update release %s", originalReleaseName));
+    }
+  }
+
+  /**
+   * Attempts to retrieve a submission for the given project key provided from the release object provided (no database
+   * call).
+   */
+  private Submission getSubmissionByName(Release release, String projectKey) {
+    Submission submission = release.getSubmission(projectKey);
+    if(submission == null) {
+      throw new ReleaseException(String.format("there is no project \"%s\" associated with release \"%s\"", projectKey,
+          release.getName()));
+    }
+    return submission;
   }
 
   private Dictionary getDictionaryFromVersion(String version) { // also found in DictionaryService - see comments in

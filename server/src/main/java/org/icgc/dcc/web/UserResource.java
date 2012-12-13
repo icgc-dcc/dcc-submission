@@ -85,7 +85,7 @@ public class UserResource {
   @POST
   @Path("self")
   @Consumes("application/json")
-  public Response feedback(Feedback feedback, @Context Request req) {
+  public Response feedback(Feedback feedback, @Context Request req) { // TODO: merge with mail service (DCC-686)
     Properties props = new Properties();
     props.put("mail.smtp.host", "smtp.oicr.on.ca");
     Session session = Session.getDefaultInstance(props, null);

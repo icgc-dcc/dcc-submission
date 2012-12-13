@@ -19,6 +19,10 @@ package org.icgc.dcc.release.model;
 
 import java.util.List;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
+
 import com.google.code.morphia.annotations.Embedded;
 import com.google.common.collect.ImmutableList;
 
@@ -53,5 +57,28 @@ public class QueuedProject {
 
   public void setEmails(List<String> emails) {
     this.emails = emails;
+  }
+
+  @Override
+  public String toString() {
+    return ReflectionToStringBuilder.toString(this, ToStringStyle.SIMPLE_STYLE, false, false);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if(obj == null) {
+      return false;
+    }
+    if(obj == this) {
+      return true;
+    }
+    if(obj.getClass() != getClass()) {
+      return false;
+    }
+    QueuedProject rhs = (QueuedProject) obj;
+    return new EqualsBuilder() //
+        .append(key, rhs.key)//
+        .append(emails, rhs.emails) //
+        .isEquals();
   }
 }

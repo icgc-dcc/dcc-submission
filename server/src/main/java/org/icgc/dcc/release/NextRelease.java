@@ -94,7 +94,8 @@ public class NextRelease extends BaseRelease {
 
       // critical operations
       nextRelease = createNextRelease(nextReleaseName, oldRelease, dictionaryVersion);
-      setupNextReleaseFileSystem(oldRelease, nextRelease, oldProjectKeys);
+      setupNextReleaseFileSystem(oldRelease, nextRelease, oldProjectKeys); // TODO: fix situation regarding aborting fs
+                                                                           // operations?
       closeDictionary(dictionaryVersion);
       completeOldRelease(oldRelease);
 
