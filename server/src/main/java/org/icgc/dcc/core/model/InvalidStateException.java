@@ -15,27 +15,21 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.web;
+package org.icgc.dcc.core.model;
 
 /**
- * Represents server error types.
+ * When an operation is attempted on the system when its states does not allow it.
  */
-public enum ServerErrorCode { // TODO: migrate all (DCC-660)
-  UNAUTHORIZED("Unauthorized"), //
-  NO_SUCH_VERSION("NoSuchVersion"), //
-  UNKNOWN("Unknown"), //
-  NOT_APPLICABLE("NotApplicable"), //
-  UNAVAILABLE("Unavailable"), //
-  INVALID_STATE("InvalidState"), //
-  ;
-
-  private String code;
-
-  private ServerErrorCode(String code) {
-    this.code = code;
+public class InvalidStateException extends Exception {
+  public InvalidStateException(Exception e) {
+    super(e);
   }
 
-  public String getCode() {
-    return code;
+  public InvalidStateException(String message) {
+    super(message);
+  }
+
+  public InvalidStateException(String message, Exception e) {
+    super(message, e);
   }
 }

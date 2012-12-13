@@ -183,7 +183,7 @@ public class ReleaseServiceTest {
     List<String> projectKeys = new ArrayList<String>();
     projectKeys.add("p1");
     String user = "admin";
-    releaseService.signOff(user, projectKeys, releaseService.getNextRelease().getRelease().getName());
+    // FIXME: releaseService.signOff(user, projectKeys, releaseService.getNextRelease().getRelease().getName());
 
     assertTrue(releaseService.getNextRelease().releasable());
   }
@@ -226,7 +226,7 @@ public class ReleaseServiceTest {
     List<String> projectKeys = new ArrayList<String>();
     projectKeys.add("p1");
     String user = "admin";
-    releaseService.signOff(user, projectKeys, name);
+    // FIXME: releaseService.signOff(user, projectKeys, name);
 
     releaseService.getNextRelease().release(newRelease.getName());
     return newRelease;

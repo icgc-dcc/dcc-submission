@@ -1,6 +1,5 @@
 package org.icgc.dcc.web;
 
-import java.util.ConcurrentModificationException;
 import java.util.List;
 
 import javax.ws.rs.DELETE;
@@ -15,6 +14,8 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 
 import org.apache.shiro.subject.Subject;
+import org.icgc.dcc.core.model.DccModelOptimisticLockException;
+import org.icgc.dcc.core.model.InvalidStateException;
 import org.icgc.dcc.release.NextRelease;
 import org.icgc.dcc.release.ReleaseException;
 import org.icgc.dcc.release.ReleaseService;
@@ -96,7 +97,10 @@ public class NextReleaseResource {
       this.releaseService.queue(nextRelease, queuedProjects);
     } catch(ReleaseException e) {
       return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage("ProjectKeyNotFound")).build();
-    } catch(ConcurrentModificationException e) { // not very likely
+    } catch(InvalidStateException e) {
+      return Response.status(Status.BAD_REQUEST)
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.INVALID_STATE.getCode())).build();
+    } catch(DccModelOptimisticLockException e) { // not very likely
       return Response.status(Status.SERVICE_UNAVAILABLE) // TODO: set Retry-After?
           .entity(new ServerErrorResponseMessage(ServerErrorCode.UNKNOWN.getCode())).build(); // TODO
     }
@@ -144,9 +148,12 @@ public class NextReleaseResource {
       this.releaseService.signOff(nextRelease, projectKeys, user);
     } catch(ReleaseException e) {
       return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage("ProjectKeyNotFound")).build();
-    } catch(ConcurrentModificationException e) { // not very likely
+    } catch(InvalidStateException e) {
+      return Response.status(Status.BAD_REQUEST)
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.INVALID_STATE.getCode())).build();
+    } catch(DccModelOptimisticLockException e) { // not very likely
       return Response.status(Status.SERVICE_UNAVAILABLE) // TODO: set Retry-After?
-          .entity(new ServerErrorResponseMessage(ServerErrorCode.UNKNOWN.getCode())).build(); // TODO
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.UNAVAILABLE.getCode())).build();
     }
     return Response.ok().build();
   }

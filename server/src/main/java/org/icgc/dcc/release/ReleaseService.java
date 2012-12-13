@@ -18,6 +18,7 @@ import org.icgc.dcc.core.MailUtils;
 import org.icgc.dcc.core.model.BaseEntity;
 import org.icgc.dcc.core.model.DccConcurrencyException;
 import org.icgc.dcc.core.model.DccModelOptimisticLockException;
+import org.icgc.dcc.core.model.InvalidStateException;
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.core.model.QProject;
 import org.icgc.dcc.core.morphia.BaseMorphiaService;
@@ -83,7 +84,10 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   }
 
   public List<Release> getReleases(Subject subject) {
+    log.info("getting releases for {}", subject.getPrincipal());
+
     List<Release> releases = query().list();
+    log.info("> " + releases.size());
 
     // filter out all the submissions that the current user can not see
     for(Release release : releases) {
@@ -97,6 +101,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
       release.getSubmissions().clear();
       release.getSubmissions().addAll(newSubmissions);
     }
+    log.info("> " + releases.size());
 
     return releases;
   }
@@ -225,15 +230,21 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     return this.getSubmission(SubmissionState.SIGNED_OFF);
   }
 
-  public void signOff(Release nextRelease, List<String> projectKeys, String user)
-      throws DccModelOptimisticLockException {
+  public void signOff(Release nextRelease, List<String> projectKeys, String user) //
+      throws InvalidStateException, DccModelOptimisticLockException {
+
     String nextReleaseName = nextRelease.getName();
     log.info("signinng off {} for {}", projectKeys, nextReleaseName);
 
     // update release object
+    SubmissionState expectedState = SubmissionState.VALID;
     nextRelease.removeFromQueue(projectKeys);
     for(String projectKey : projectKeys) {
-      getSubmissionByName(nextRelease, projectKey).setState(SubmissionState.SIGNED_OFF);
+      Submission submission = getSubmissionByName(nextRelease, projectKey);
+      if(expectedState == submission.getState()) {
+        throw new InvalidStateException("project " + projectKey + " is not " + expectedState);
+      }
+      submission.setState(SubmissionState.SIGNED_OFF);
     }
 
     updateRelease(nextReleaseName, nextRelease);
@@ -267,15 +278,21 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     this.dbUpdateSubmissions(release.getName(), release.getQueue(), projectKeys, newState);
   }
 
-  public void queue(Release nextRelease, List<QueuedProject> queuedProjects) throws DccModelOptimisticLockException {
+  public void queue(Release nextRelease, List<QueuedProject> queuedProjects) //
+      throws InvalidStateException, DccModelOptimisticLockException {
     String nextReleaseName = nextRelease.getName();
     log.info("enqueuing {} for {}", queuedProjects, nextReleaseName);
 
     // update release object
+    SubmissionState expectedState = SubmissionState.NOT_VALIDATED;
     nextRelease.enqueue(queuedProjects);
     for(QueuedProject queuedProject : queuedProjects) {
       String projectKey = queuedProject.getKey();
-      getSubmissionByName(nextRelease, projectKey).setState(SubmissionState.QUEUED);
+      Submission submission = getSubmissionByName(nextRelease, projectKey);
+      if(expectedState == submission.getState()) {
+        throw new InvalidStateException("project " + projectKey + " is not " + expectedState);
+      }
+      submission.setState(SubmissionState.QUEUED);
     }
 
     updateRelease(nextReleaseName, nextRelease);
@@ -300,6 +317,13 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     return false;
   }
 
+  /**
+   * Attempts to dequeue the given project, if the project is found the given state is set for it.<br>
+   * <p>
+   * This method is robust enough to handle rare cases like when:<br>
+   * - the queue was emptied by an admin in another thread (TODO: complete, this is only partially supported now)<br>
+   * - the optimistic lock on Release cannot be obtained (retries a number of time before giving up)<br>
+   */
   public Optional<QueuedProject> dequeue(String projectKey, SubmissionState destinationState) {
     checkArgument(SubmissionState.VALID == destinationState || SubmissionState.INVALID == destinationState
         || SubmissionState.ERROR == destinationState);
@@ -318,7 +342,6 @@ public class ReleaseService extends BaseMorphiaService<Release> {
         nextReleaseName = nextRelease.getName();
         log.info("dequeuing {} (as {}) for {}", new Object[] { projectKey, destinationState, nextReleaseName });
 
-        // if project was found (TODO: explain)
         dequeued = nextRelease.nextInQueue();
         if(dequeued.isPresent() && dequeued.get().getKey().equals(projectKey)) {
           QueuedProject nextInQueue = dequeued.get();
@@ -328,7 +351,12 @@ public class ReleaseService extends BaseMorphiaService<Release> {
           checkState(dequeuedQueuedProject.equals(nextInQueue), // can't really happen (no other thread can access that
                                                                 // instance)
               String.format("mismatch: %s != %s", dequeuedQueuedProject, nextInQueue));
-          getSubmissionByName(nextRelease, projectKey).setState(destinationState);
+          Submission submission = getSubmissionByName(nextRelease, projectKey);
+          if(SubmissionState.QUEUED == submission.getState()) {
+            throw new ReleaseException( // not really recoverable
+                "submission " + projectKey + " is not in " + SubmissionState.QUEUED + " state");
+          }
+          submission.setState(destinationState);
 
           // update corresponding database entity
           updateRelease(nextReleaseName, nextRelease);
@@ -338,7 +366,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
         log.warn(
             "there was a concurrency issue while attempting to dequeue {} (as {}) for release {}, number of attempts: {}",
             new Object[] { projectKey, destinationState, nextReleaseName, attempts });
-        Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
+        Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS); // TODO: cleanup - use Executor instead?
       }
     }
     if(attempts >= MAX_ATTEMPTS) {
