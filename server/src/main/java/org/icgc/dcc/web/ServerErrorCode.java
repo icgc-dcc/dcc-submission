@@ -22,11 +22,18 @@ package org.icgc.dcc.web;
  */
 public enum ServerErrorCode { // TODO: migrate all (DCC-660)
   UNAUTHORIZED("Unauthorized"), //
-  NO_SUCH_VERSION("NoSuchVersion"), //
-  UNKNOWN("Unknown"), //
-  NOT_APPLICABLE("NotApplicable"), //
-  UNAVAILABLE("Unavailable"), //
+  NO_SUCH_ENTITY("NoSuchEntity"), //
+  NO_DATA("NoData"), //
+  NAME_MISMATCH("NameMismatch"), //
+  ALREADY_EXISTS("AlreadyExists"), //
+  RESOURCE_CLOSED("ResourceClosed"), //
+  ALREADY_INITIALIZED("AlreadyInitialized"), //
+  MISSING_REQUIRED_DATA("MissingRequiredData"), //
+  EMPTY_REQUEST("EmptyRequest"), //
+  INVALID_NAME("InvalidName"), //
   INVALID_STATE("InvalidState"), //
+  UNAVAILABLE("Unavailable"), //
+  RELEASE_EXCEPTION("ReleaseException"), //
   ;
 
   private String code;

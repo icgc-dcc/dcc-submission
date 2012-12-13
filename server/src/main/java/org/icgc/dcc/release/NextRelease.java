@@ -67,7 +67,8 @@ public class NextRelease extends BaseRelease {
     }
 
     Release nextRelease = null;
-    Release oldRelease = dccLocking.acquireReleasingLock(); // TODO: for now nothing checks for it (DCC-685)
+    Release oldRelease = dccLocking.acquireReleasingLock(); // TODO: for now nothing checks for it (DCC-685); also
+                                                            // consider reentrance out of safety
     try {
       if(oldRelease == null) { // just in case (can't really happen)
         log.error("could not acquire lock on release");

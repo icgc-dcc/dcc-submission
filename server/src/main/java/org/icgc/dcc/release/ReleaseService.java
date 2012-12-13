@@ -303,25 +303,6 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     log.info("enqueued {} for {}", queuedProjects, nextReleaseName);
   }
 
-  public boolean hasProjectKey(List<String> projectKeys) {
-    for(String projectKey : projectKeys) {
-      if(!this.hasProjectKey(projectKey)) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  public boolean hasProjectKey(String projectKey) {
-    Release nextRelease = this.getNextRelease().getRelease();
-    for(Submission submission : nextRelease.getSubmissions()) {
-      if(submission.getProjectKey().equals(projectKey)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
   /**
    * Attempts to dequeue the given project, if the project is found the given state is set for it.<br>
    * <p>
