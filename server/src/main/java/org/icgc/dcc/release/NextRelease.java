@@ -42,8 +42,8 @@ public class NextRelease extends BaseRelease {
     super(release, morphia, datastore, fs);
     checkArgument(dccLocking != null);
 
-    this.dccLocking = dccLocking; // TODO: moveup?
-    dccLocking.setDatastore(datastore);// FIXME
+    this.dccLocking = dccLocking; // TODO: moveup (DCC-685)?
+    dccLocking.setDatastore(datastore);
 
     if(release.getState() != ReleaseState.OPENED) {
       throw new IllegalReleaseStateException(release, ReleaseState.OPENED);

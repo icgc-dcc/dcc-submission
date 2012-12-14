@@ -41,8 +41,9 @@ public class DccLocking {
 
   private Datastore datastore;
 
-  void setDatastore(Datastore datastore) { // TODO: make fideld final and set in constructor (will need guice provider)
-    if(this.datastore == null) this.datastore = datastore; // FIXME
+  void setDatastore(Datastore datastore) { // TODO: DCC-685; make field final and set in constructor (will need guice
+                                           // provider)
+    if(this.datastore == null) this.datastore = datastore;
   }
 
   public Release acquireReleasingLock() {

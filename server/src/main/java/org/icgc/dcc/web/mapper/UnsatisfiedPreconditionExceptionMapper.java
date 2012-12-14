@@ -18,17 +18,24 @@
 package org.icgc.dcc.web.mapper;
 
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
 import org.icgc.dcc.web.UnsatisfiedPreconditionException;
 
 @Provider
-public class UnsatisfiedPrecondtionExceptionMapper implements ExceptionMapper<UnsatisfiedPreconditionException> {
+public class UnsatisfiedPreconditionExceptionMapper implements ExceptionMapper<UnsatisfiedPreconditionException> {
 
   @Override
   public Response toResponse(UnsatisfiedPreconditionException exception) {
-    return exception.getResponse().build();
+    // return exception.getResponse().build();
+    return Response.status(Status.SERVICE_UNAVAILABLE).build();
+
+    /*
+     * return Response.status(Status.BAD_REQUEST) .entity(new ServerErrorResponseMessage(ServerErrorCode.ALREADY_EXISTS,
+     * exception.getMessage())).build();
+     */
   }
 
 }
