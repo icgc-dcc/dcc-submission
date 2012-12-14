@@ -15,34 +15,21 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.web;
+package org.icgc.dcc.core.model;
 
 /**
- * Represents server error types.
+ * For failure to obtain a lock optimistically.
  */
-public enum ServerErrorCode { // TODO: migrate all (DCC-660)
-  UNAUTHORIZED("Unauthorized"), //
-  NO_SUCH_ENTITY("NoSuchEntity"), //
-  NO_DATA("NoData"), //
-  NAME_MISMATCH("NameMismatch"), //
-  ALREADY_EXISTS("AlreadyExists"), //
-  RESOURCE_CLOSED("ResourceClosed"), //
-  ALREADY_INITIALIZED("AlreadyInitialized"), //
-  MISSING_REQUIRED_DATA("MissingRequiredData"), //
-  EMPTY_REQUEST("EmptyRequest"), //
-  INVALID_NAME("InvalidName"), //
-  INVALID_STATE("InvalidState"), //
-  UNAVAILABLE("Unavailable"), //
-  RELEASE_EXCEPTION("ReleaseException"), //
-  ;
-
-  private String code;
-
-  private ServerErrorCode(String code) {
-    this.code = code;
+public class DccModelOptimisticLockException extends Exception {
+  public DccModelOptimisticLockException(Exception e) {
+    super(e);
   }
 
-  public String getCode() {
-    return code;
+  public DccModelOptimisticLockException(String message) {
+    super(message);
+  }
+
+  public DccModelOptimisticLockException(String message, Exception e) {
+    super(message, e);
   }
 }

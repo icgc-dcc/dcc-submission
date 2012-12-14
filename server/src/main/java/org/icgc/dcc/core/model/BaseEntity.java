@@ -7,6 +7,7 @@ import org.codehaus.jackson.annotate.JsonIgnore;
 
 import com.google.code.morphia.annotations.Entity;
 import com.google.code.morphia.annotations.Id;
+import com.google.code.morphia.annotations.Version;
 
 @Entity
 public class BaseEntity extends Timestamped implements HasId {
@@ -14,6 +15,12 @@ public class BaseEntity extends Timestamped implements HasId {
   @Id
   @JsonIgnore
   protected ObjectId id;
+
+  /**
+   * Internal version for optimistic lock (do <b>not</b> modify directly)
+   */
+  @Version
+  private Long internalVersion;
 
   protected BaseEntity() {
     this.created = new Date();

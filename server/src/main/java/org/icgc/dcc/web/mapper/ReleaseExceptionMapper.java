@@ -15,34 +15,24 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.web;
+package org.icgc.dcc.web.mapper;
 
-/**
- * Represents server error types.
- */
-public enum ServerErrorCode { // TODO: migrate all (DCC-660)
-  UNAUTHORIZED("Unauthorized"), //
-  NO_SUCH_ENTITY("NoSuchEntity"), //
-  NO_DATA("NoData"), //
-  NAME_MISMATCH("NameMismatch"), //
-  ALREADY_EXISTS("AlreadyExists"), //
-  RESOURCE_CLOSED("ResourceClosed"), //
-  ALREADY_INITIALIZED("AlreadyInitialized"), //
-  MISSING_REQUIRED_DATA("MissingRequiredData"), //
-  EMPTY_REQUEST("EmptyRequest"), //
-  INVALID_NAME("InvalidName"), //
-  INVALID_STATE("InvalidState"), //
-  UNAVAILABLE("Unavailable"), //
-  RELEASE_EXCEPTION("ReleaseException"), //
-  ;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.ext.ExceptionMapper;
+import javax.ws.rs.ext.Provider;
 
-  private String code;
+import org.icgc.dcc.release.ReleaseException;
+import org.icgc.dcc.web.ServerErrorCode;
+import org.icgc.dcc.web.ServerErrorResponseMessage;
 
-  private ServerErrorCode(String code) {
-    this.code = code;
+@Provider
+public class ReleaseExceptionMapper implements ExceptionMapper<ReleaseException> {
+
+  @Override
+  public Response toResponse(ReleaseException exception) {
+    return Response.status(Status.BAD_REQUEST)
+        .entity(new ServerErrorResponseMessage(ServerErrorCode.RELEASE_EXCEPTION, exception.getMessage())).build();
   }
 
-  public String getCode() {
-    return code;
-  }
 }

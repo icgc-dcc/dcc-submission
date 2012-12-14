@@ -71,7 +71,7 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
 
   public void update(Dictionary dictionary) {
     checkArgument(dictionary != null);
-    Query<Dictionary> updateQuery = this.buildQuery(dictionary);
+    Query<Dictionary> updateQuery = this.buildDictionaryVersionQuery(dictionary);
     if(updateQuery.countAll() != 1) {
       throw new DictionaryServiceException("cannot update a non-existent dictionary: " + dictionary.getVersion());
     }
@@ -179,7 +179,8 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
     datastore().update(updateQuery, ops);
   }
 
-  private Query<Dictionary> buildQuery(Dictionary dictionary) {
-    return datastore().createQuery(Dictionary.class).filter("version" + " = ", dictionary.getVersion());
+  private Query<Dictionary> buildDictionaryVersionQuery(Dictionary dictionary) {
+    return datastore().createQuery(Dictionary.class) //
+        .filter("version" + " = ", dictionary.getVersion());
   }
 }

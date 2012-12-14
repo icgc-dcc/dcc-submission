@@ -23,17 +23,22 @@ import org.icgc.dcc.shiro.ShiroSecurityContext;
 import org.icgc.dcc.validation.report.FieldReport;
 import org.icgc.dcc.validation.report.SchemaReport;
 import org.icgc.dcc.validation.report.SubmissionReport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 
 @Path("releases")
 public class ReleaseResource {
 
+  private static final Logger log = LoggerFactory.getLogger(ReleaseResource.class);
+
   @Inject
   private ReleaseService releaseService;
 
   @GET
   public Response getResources(@Context SecurityContext securityContext) {
+    log.debug("getting releases");
     List<Release> releases = this.releaseService.getReleases(((ShiroSecurityContext) securityContext).getSubject());
     return Response.ok(releases).build();
   }

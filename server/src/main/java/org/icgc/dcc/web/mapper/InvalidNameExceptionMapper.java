@@ -8,13 +8,9 @@ import javax.ws.rs.ext.Provider;
 import org.icgc.dcc.web.ServerErrorCode;
 import org.icgc.dcc.web.ServerErrorResponseMessage;
 import org.icgc.dcc.web.validator.InvalidNameException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Provider
 public class InvalidNameExceptionMapper implements ExceptionMapper<InvalidNameException> {
-
-  private static final Logger log = LoggerFactory.getLogger(InvalidNameExceptionMapper.class);
 
   @Override
   public Response toResponse(InvalidNameException exception) {

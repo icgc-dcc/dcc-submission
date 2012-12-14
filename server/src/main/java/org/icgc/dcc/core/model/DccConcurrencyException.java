@@ -15,22 +15,21 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.web;
+package org.icgc.dcc.core.model;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
-
-import org.icgc.dcc.release.ReleaseException;
-
-@Provider
-public class ReleaseExceptionMapper implements ExceptionMapper<ReleaseException> {
-
-  @Override
-  public Response toResponse(ReleaseException exception) {
-    return Response.status(Status.BAD_REQUEST)
-        .entity(new ServerErrorResponseMessage(ServerErrorCode.RELEASE_EXCEPTION, exception.getMessage())).build();
+/**
+ * For concurrency problems of unknown origins (such as deadlocks).
+ */
+public class DccConcurrencyException extends RuntimeException {
+  public DccConcurrencyException(Exception e) {
+    super(e);
   }
 
+  public DccConcurrencyException(String message) {
+    super(message);
+  }
+
+  public DccConcurrencyException(String message, Exception e) {
+    super(message, e);
+  }
 }

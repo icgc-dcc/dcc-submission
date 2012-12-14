@@ -20,6 +20,7 @@ package org.icgc.dcc.release.model;
 import java.util.List;
 
 import com.google.code.morphia.annotations.Embedded;
+import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 
 @Embedded
@@ -53,5 +54,29 @@ public class QueuedProject {
 
   public void setEmails(List<String> emails) {
     this.emails = emails;
+  }
+
+  @Override
+  public String toString() {
+    return Objects.toStringHelper(QueuedProject.class) //
+        .add("key", this.key) //
+        .add("emails", this.emails) //
+        .toString();
+  }
+
+  @Override
+  public boolean equals(Object obj) { // TODO: hashCode (if we need hashes)
+    if(obj == null) {
+      return false;
+    }
+    if(obj == this) {
+      return true;
+    }
+    if(getClass() != obj.getClass()) {
+      return false;
+    }
+    final QueuedProject other = (QueuedProject) obj;
+    return Objects.equal(this.key, other.key) //
+        && Objects.equal(this.emails, other.emails);
   }
 }
