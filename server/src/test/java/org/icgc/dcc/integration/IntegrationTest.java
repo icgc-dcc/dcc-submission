@@ -83,9 +83,11 @@ public class IntegrationTest {
 
   private static final String SEED_ENDPOINT = "/seed";
 
-  private static final String CODELIST_ENDPOINT = SEED_ENDPOINT + "/codelists";
+  private static final String SEED_CODELIST_ENDPOINT = SEED_ENDPOINT + "/codelists";
 
-  private static final String DICTIONARIES_ENDPOINT = SEED_ENDPOINT + "/dictionaries";
+  private static final String SEED_DICTIONARIES_ENDPOINT = SEED_ENDPOINT + "/dictionaries";
+
+  private static final String DICTIONARIES_ENDPOINT = "/dictionaries";
 
   private static final String PROJECTS_ENDPOINT = "/projects";
 
@@ -194,11 +196,9 @@ public class IntegrationTest {
     try {
 
       // feed db
-      TestUtils.post(client, DICTIONARIES_ENDPOINT,
-          TestUtils.resourceToJsonArray(FIRST_DICTIONARY_RESOURCE));
-      TestUtils.post(client, DICTIONARIES_ENDPOINT,
-          TestUtils.resourceToJsonArray(SECOND_DICTIONARY_RESOURCE));
-      TestUtils.post(client, CODELIST_ENDPOINT, TestUtils.resourceToString(CODELISTS_RESOURCE));
+      TestUtils.post(client, SEED_DICTIONARIES_ENDPOINT, TestUtils.resourceToJsonArray(FIRST_DICTIONARY_RESOURCE));
+      TestUtils.post(client, SEED_DICTIONARIES_ENDPOINT, TestUtils.resourceToJsonArray(SECOND_DICTIONARY_RESOURCE));
+      TestUtils.post(client, SEED_CODELIST_ENDPOINT, TestUtils.resourceToString(CODELISTS_RESOURCE));
 
       // create initial release and projects (and therefore submissions)
       createInitialRelease();
@@ -225,7 +225,8 @@ public class IntegrationTest {
           Arrays.<SubmissionState> asList( //
               SubmissionState.NOT_VALIDATED, SubmissionState.INVALID, SubmissionState.INVALID));
 
-      // update release with another dictionary
+      // update release with another dictionary (that we also update while at it)
+      updateDictionary();
       updateRelease(UPDATED_INITIAL_RELEASE_RESOURCE);
       checkRelease(NEXT_RELEASE_NAME, SECOND_DICTIONARY_VERSION, ReleaseState.OPENED, //
           Arrays.<SubmissionState> asList( //
@@ -240,8 +241,7 @@ public class IntegrationTest {
   }
 
   private void createInitialRelease() throws Exception {
-    Response response =
-        TestUtils.put(client, RELEASES_ENDPOINT, TestUtils.resourceToString(INITIAL_RELEASE_RESOURCE));
+    Response response = TestUtils.put(client, RELEASES_ENDPOINT, TestUtils.resourceToString(INITIAL_RELEASE_RESOURCE));
     assertEquals(200, response.getStatus());
 
     Release release = TestUtils.asRelease(response);
@@ -340,10 +340,17 @@ public class IntegrationTest {
     assertEquals(400, response.getStatus());
   }
 
+  private void updateDictionary() throws Exception {
+    String secondDictionary = TestUtils.resourceToString(SECOND_DICTIONARY_RESOURCE);
+    String updatedSecondDictionary = secondDictionary.replace("Unique identifier for the donor", "Donor ID");
+    assertTrue(secondDictionary.equals(updatedSecondDictionary) == false);
+    Response response = TestUtils.put(client, DICTIONARIES_ENDPOINT + "/0.6d", updatedSecondDictionary);
+    assertEquals(200, response.getStatus());
+  }
+
   private void updateRelease(String updatedReleaseRelPath) throws Exception {
     Response response =
-        TestUtils.put(client, UPDATE_RELEASE_ENDPOINT,
-            TestUtils.resourceToString(updatedReleaseRelPath));
+        TestUtils.put(client, UPDATE_RELEASE_ENDPOINT, TestUtils.resourceToString(updatedReleaseRelPath));
     assertEquals(200, response.getStatus());
 
     Release release = TestUtils.asRelease(response);
