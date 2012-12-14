@@ -32,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientFactory;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.io.FileUtils;
 import org.icgc.dcc.Main;
@@ -151,6 +152,8 @@ public class IntegrationTest {
 
   private final Client client = ClientFactory.newClient();
 
+  private int dictionaryUpdateCount = 0;
+
   @Inject
   private Datastore datastore;
 
@@ -214,6 +217,8 @@ public class IntegrationTest {
       FileUtils.copyDirectory(new File(SYSTEM_FILES_DIR), new File(INITIAL_RELEASE_SYSTEM_FILES_DIR));
 
       // validate
+      updateDictionary( // dictionary is OPENED
+          FIRST_DICTIONARY_RESOURCE, FIRST_DICTIONARY_VERSION, Status.OK.getStatusCode());
       enqueueProjects(); // triggers validations
       checkValidations(); // will poll until all validated
 
@@ -225,8 +230,13 @@ public class IntegrationTest {
           Arrays.<SubmissionState> asList( //
               SubmissionState.NOT_VALIDATED, SubmissionState.INVALID, SubmissionState.INVALID));
 
-      // update release with another dictionary (that we also update while at it)
-      updateDictionary();
+      // update dictionaries
+      updateDictionary( // dictionary is CLOSED
+          FIRST_DICTIONARY_RESOURCE, FIRST_DICTIONARY_VERSION, Status.BAD_REQUEST.getStatusCode());
+      updateDictionary( // dictionary is OPENED
+          SECOND_DICTIONARY_RESOURCE, SECOND_DICTIONARY_VERSION, Status.OK.getStatusCode());
+
+      // update release
       updateRelease(UPDATED_INITIAL_RELEASE_RESOURCE);
       checkRelease(NEXT_RELEASE_NAME, SECOND_DICTIONARY_VERSION, ReleaseState.OPENED, //
           Arrays.<SubmissionState> asList( //
@@ -340,12 +350,14 @@ public class IntegrationTest {
     assertEquals(400, response.getStatus());
   }
 
-  private void updateDictionary() throws Exception {
-    String secondDictionary = TestUtils.resourceToString(SECOND_DICTIONARY_RESOURCE);
-    String updatedSecondDictionary = secondDictionary.replace("Unique identifier for the donor", "Donor ID");
-    assertTrue(secondDictionary.equals(updatedSecondDictionary) == false);
-    Response response = TestUtils.put(client, DICTIONARIES_ENDPOINT + "/0.6d", updatedSecondDictionary);
-    assertEquals(200, response.getStatus());
+  private void updateDictionary(String dictionaryResource, String dictionaryVersion, int expectedStatus)
+      throws Exception {
+    String dictionary = TestUtils.resourceToString(dictionaryResource);
+    String updatedSecondDictionary = dictionary.replace("Unique identifier for the donor", //
+        "Unique identifier for the donor (update" + ++dictionaryUpdateCount + ")");
+    assertTrue(dictionary.equals(updatedSecondDictionary) == false);
+    Response response = TestUtils.put(client, DICTIONARIES_ENDPOINT + "/" + dictionaryVersion, updatedSecondDictionary);
+    assertEquals(expectedStatus, response.getStatus());
   }
 
   private void updateRelease(String updatedReleaseRelPath) throws Exception {
