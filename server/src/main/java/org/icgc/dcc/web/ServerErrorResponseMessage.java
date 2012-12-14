@@ -5,13 +5,14 @@ public class ServerErrorResponseMessage {
 
   public Object[] parameters;
 
-  public ServerErrorResponseMessage(String code, Object... parameters) {
-    this.code = code;
+  public ServerErrorResponseMessage(ServerErrorCode code, Object... parameters) {
+    this.code = code.getCode();
     this.parameters = parameters;
   }
 
-  public ServerErrorResponseMessage(String code) { // TODO: change this to accept ServerErrorCodeEnum instead (DCC-660)
-    this.code = code;
+  public ServerErrorResponseMessage(ServerErrorCode code) { // TODO: change this to accept ServerErrorCodeEnum instead
+                                                            // (DCC-660)
+    this.code = code.getCode();
     this.parameters = new Object[0];
   }
 }

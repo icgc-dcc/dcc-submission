@@ -45,7 +45,8 @@ public class ReleaseResource {
     ReleaseView release = releaseService.getReleaseView(name, ((ShiroSecurityContext) securityContext).getSubject());
 
     if(release == null) {
-      return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoSuchRelease", name)).build();
+      return Response.status(Status.NOT_FOUND)
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, name)).build();
     }
     return Response.ok(release).build();
   }
@@ -59,10 +60,12 @@ public class ReleaseResource {
         this.releaseService.createInitialRelease(release);
         return ResponseTimestamper.ok(release).build();
       } else {
-        return Response.status(Status.BAD_REQUEST).build();
+        return Response.status(Status.BAD_REQUEST)
+            .entity(new ServerErrorResponseMessage(ServerErrorCode.ALREADY_INITIALIZED)).build();
       }
     } else {
-      return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage("ReleaseUpdateError")).build();
+      return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage(ServerErrorCode.EMPTY_REQUEST))
+          .build();
     }
   }
 
@@ -93,14 +96,14 @@ public class ReleaseResource {
       @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
-      return Response.status(Status.UNAUTHORIZED)
-          .entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED.getCode())).build();
+      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED))
+          .build();
     }
     DetailedSubmission submission = this.releaseService.getDetailedSubmission(name, projectKey);
 
     if(submission == null) {
       return Response.status(Status.NOT_FOUND)
-          .entity(new ServerErrorResponseMessage("NoSuchSubmission", name, projectKey)).build();
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, name, projectKey)).build();
     }
     return Response.ok(submission).build();
   }
@@ -111,13 +114,13 @@ public class ReleaseResource {
       @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
-      return Response.status(Status.UNAUTHORIZED)
-          .entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED.getCode())).build();
+      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED))
+          .build();
     }
     Submission submission = this.releaseService.getSubmission(name, projectKey);
     if(submission == null) {
       return Response.status(Status.NOT_FOUND)
-          .entity(new ServerErrorResponseMessage("NoSuchSubmission", name, projectKey)).build();
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, name, projectKey)).build();
     }
     SubmissionReport report = submission.getReport();
     return Response.ok(report).build();
@@ -129,23 +132,23 @@ public class ReleaseResource {
       @PathParam("schema") String schema, @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
-      return Response.status(Status.UNAUTHORIZED)
-          .entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED.getCode())).build();
+      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED))
+          .build();
     }
     Submission submission = this.releaseService.getSubmission(name, projectKey);
     if(submission == null) {
       return Response.status(Status.NOT_FOUND)
-          .entity(new ServerErrorResponseMessage("NoSuchSubmission", name, projectKey)).build();
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, name, projectKey)).build();
     }
     SubmissionReport report = submission.getReport();
     if(report == null) {
-      return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoSuchReport", name, projectKey))
-          .build();
+      return Response.status(Status.NOT_FOUND)
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, name, projectKey)).build();
     }
     SchemaReport schemaReport = report.getSchemaReport(schema);
     if(schemaReport == null) {
-      return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoSuchReportInSchema", schema))
-          .build();
+      return Response.status(Status.NOT_FOUND)
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, schema)).build();
     }
     return Response.ok(schemaReport).build();
   }
@@ -156,32 +159,32 @@ public class ReleaseResource {
       @PathParam("schema") String schema, @PathParam("field") String field, @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
-      return Response.status(Status.UNAUTHORIZED)
-          .entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED.getCode())).build();
+      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED))
+          .build();
     }
     Submission submission = this.releaseService.getSubmission(name, projectKey);
     if(submission == null) {
       return Response.status(Status.NOT_FOUND)
-          .entity(new ServerErrorResponseMessage("NoSuchSubmission", name, projectKey)).build();
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, name, projectKey)).build();
     }
     SubmissionReport report = submission.getReport();
     if(report == null) {
-      return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoSuchReport", name, projectKey))
-          .build();
+      return Response.status(Status.NOT_FOUND)
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, name, projectKey)).build();
     }
     SchemaReport schemaReport = report.getSchemaReport(schema);
     if(schemaReport == null) {
-      return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoSuchReportInSchema", schema))
-          .build();
+      return Response.status(Status.NOT_FOUND)
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, schema)).build();
     }
     if(schemaReport.getFieldReport(field).isPresent() == false) {
-      return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoSuchFieldInReport", schema))
-          .build();
+      return Response.status(Status.NOT_FOUND)
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, schema, field)).build();
     }
     FieldReport fieldReport = schemaReport.getFieldReport(field).get();
     if(fieldReport == null) {
-      return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoReportForField", field))
-          .build();
+      return Response.status(Status.NOT_FOUND)
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, field)).build();
     }
     return Response.ok(fieldReport).build();
   }
@@ -192,13 +195,13 @@ public class ReleaseResource {
       @PathParam("projectKey") String projectKey, @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
-      return Response.status(Status.UNAUTHORIZED)
-          .entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED.getCode())).build();
+      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED))
+          .build();
     }
     Submission submission = this.releaseService.getSubmission(releaseName, projectKey);
     if(submission == null) {
       return Response.status(Status.NOT_FOUND)
-          .entity(new ServerErrorResponseMessage("NoSuchSubmission", releaseName, projectKey)).build();
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, releaseName, projectKey)).build();
     }
 
     List<SubmissionFile> submissionFiles = this.releaseService.getSubmissionFiles(releaseName, projectKey);

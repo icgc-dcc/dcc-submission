@@ -21,6 +21,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.ExceptionMapper;
 
+import org.icgc.dcc.web.ServerErrorCode;
 import org.icgc.dcc.web.ServerErrorResponseMessage;
 import org.icgc.dcc.web.validator.DuplicateNameException;
 
@@ -32,7 +33,7 @@ public class DuplicateNameExceptionMapper implements ExceptionMapper<DuplicateNa
   @Override
   public Response toResponse(DuplicateNameException exception) {
     return Response.status(Status.BAD_REQUEST)
-        .entity(new ServerErrorResponseMessage("DuplicateName", exception.getMessage())).build();
+        .entity(new ServerErrorResponseMessage(ServerErrorCode.ALREADY_EXISTS, exception.getMessage())).build();
   }
 
 }

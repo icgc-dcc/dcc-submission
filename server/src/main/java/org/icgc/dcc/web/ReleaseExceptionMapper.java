@@ -29,7 +29,8 @@ public class ReleaseExceptionMapper implements ExceptionMapper<ReleaseException>
 
   @Override
   public Response toResponse(ReleaseException exception) {
-    return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage(exception.getMessage())).build();
+    return Response.status(Status.BAD_REQUEST)
+        .entity(new ServerErrorResponseMessage(ServerErrorCode.RELEASE_EXCEPTION, exception.getMessage())).build();
   }
 
 }

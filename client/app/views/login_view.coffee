@@ -38,8 +38,11 @@ module.exports = class LoginView extends PageView
 
   # Expects the serviceProviders in the options
   initialize: ->
-    #console.log "LoginView#initialize"
+    console.log "LoginView#initialize", window.location
     super
+
+    if window.location.pathname isnt "/login"
+      window.location = "/#login"
 
     @delegate 'submit', '#login-form', @triggerLogin
 
