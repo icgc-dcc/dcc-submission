@@ -14,6 +14,8 @@ import org.icgc.dcc.filesystem.GuiceJUnitRunner.GuiceModules;
 import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
 import org.icgc.dcc.http.HttpModule;
 import org.icgc.dcc.http.jersey.JerseyModule;
+import org.icgc.dcc.shiro.ShiroModule;
+import org.icgc.dcc.shiro.ShiroPasswordAuthenticator;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,7 +30,7 @@ import com.google.inject.Inject;
 @RunWith(GuiceJUnitRunner.class)
 @GuiceModules({ ConfigModule.class, CoreModule.class,//
 HttpModule.class, JerseyModule.class,// TODO: find out why those two seem necessary
-MorphiaModule.class, FileSystemModule.class })
+MorphiaModule.class, FileSystemModule.class, ShiroModule.class })
 public class FileSystemFunctionalTest extends FileSystemTest {
 
   private static final Logger log = LoggerFactory.getLogger(FileSystemFunctionalTest.class);
@@ -37,9 +39,12 @@ public class FileSystemFunctionalTest extends FileSystemTest {
 
   private FileSystem fileSystem;
 
+  private ShiroPasswordAuthenticator passwordAuthenticator;
+
   @Inject
-  public void setFileSystem(FileSystem fileSystem) {
+  public void setFileSystem(FileSystem fileSystem, ShiroPasswordAuthenticator passwordAuthenticator) {
     this.fileSystem = fileSystem;
+    this.passwordAuthenticator = passwordAuthenticator;
   }
 
   @Override
@@ -51,6 +56,7 @@ public class FileSystemFunctionalTest extends FileSystemTest {
 
   @Test
   public void test_fileSystem_typicalWorkflow() throws IOException { // TODO: split?
+
     FileSystem fileSystem = this.dccFileSystem.getFileSystem();
 
     Iterable<String> filenameList0 =
@@ -77,14 +83,20 @@ public class FileSystemFunctionalTest extends FileSystemTest {
     Iterable<String> filenameList2 = HadoopUtils.toFilenameList(HadoopUtils.lsDir(fileSystem, releaseStringPath));
     Assert.assertNotNull(filenameList2);
     Assert.assertEquals(//
-        "[DBQ]",//
+        "[DBQ, SystemFiles]",//
         filenameList2.toString());
     log.info("ls2 = " + filenameList2);
 
     log.info("ls = " + filenameList0);
-    ReleaseFileSystem myReleaseFilesystem = this.dccFileSystem.getReleaseFilesystem(this.mockRelease, this.mockUser);
+
+    this.passwordAuthenticator.authenticate("admin", "adminspasswd".toCharArray(), null);
+
+    ReleaseFileSystem myReleaseFilesystem =
+        this.dccFileSystem.getReleaseFilesystem(this.mockRelease, this.passwordAuthenticator.getSubject());
     Assert.assertNotNull(myReleaseFilesystem);
     log.info("release file system = " + myReleaseFilesystem);
+
+    myReleaseFilesystem.emptyValidationFolders();
 
     boolean releaseReadOnly = myReleaseFilesystem.isReadOnly();
     Assert.assertFalse(releaseReadOnly);

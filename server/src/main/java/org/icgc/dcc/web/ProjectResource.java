@@ -25,6 +25,7 @@ import org.icgc.dcc.shiro.ShiroSecurityContext;
 
 import com.google.code.morphia.query.Query;
 import com.google.code.morphia.query.UpdateOperations;
+import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.mongodb.MongoException.DuplicateKey;
 
@@ -38,7 +39,7 @@ public class ProjectResource {
   public Response getProjects(@Context SecurityContext securityContext) {
     List<Project> projectlist = projects.getProjects(((ShiroSecurityContext) securityContext).getSubject());
     if(projectlist == null) {
-      return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoProjects")).build();
+      projectlist = Lists.newArrayList();
     }
     return Response.ok(projectlist).build();
   }
@@ -52,7 +53,7 @@ public class ProjectResource {
       return Response.created(UriBuilder.fromResource(ProjectResource.class).path(project.getKey()).build()).build();
     } catch(DuplicateKey e) {
       return Response.status(Status.BAD_REQUEST)
-          .entity(new ServerErrorResponseMessage("ProjectExists", project.getKey())).build();
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.ALREADY_EXISTS, project.getKey())).build();
     }
   }
 
@@ -61,12 +62,13 @@ public class ProjectResource {
   public Response getIt(@PathParam("projectKey") String projectKey, @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
-      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
+      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED))
+          .build();
     }
     Project project = projects.where(QProject.project.key.eq(projectKey)).uniqueResult();
     if(project == null) {
-      return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoSuchProject", projectKey))
-          .build();
+      return Response.status(Status.NOT_FOUND)
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, projectKey)).build();
     }
     return ResponseTimestamper.ok(project).build();
   }
@@ -77,7 +79,8 @@ public class ProjectResource {
       @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
-      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
+      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED))
+          .build();
     }
     ResponseTimestamper.evaluate(req, project);
 
@@ -96,12 +99,13 @@ public class ProjectResource {
   public Response getReleases(@PathParam("projectKey") String projectKey, @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
-      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
+      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED))
+          .build();
     }
     Project project = projects.where(QProject.project.key.eq(projectKey)).uniqueResult();
     if(project == null) {
-      return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoSuchProject", projectKey))
-          .build();
+      return Response.status(Status.NOT_FOUND)
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, projectKey)).build();
     }
     return Response.ok(projects.getReleases(project)).build();
   }

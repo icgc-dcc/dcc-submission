@@ -39,7 +39,7 @@ abstract class HdfsSshFile implements SshFile {
 
   protected final String SEPARATOR = "/";
 
-  protected final Path path;
+  protected Path path;
 
   protected final FileSystem fs;
 
@@ -146,12 +146,19 @@ abstract class HdfsSshFile implements SshFile {
 
   @Override
   public OutputStream createOutputStream(long offset) throws IOException {
+    if(this.isWritable() == false) {
+      throw new IOException("SFTP is in readonly mode");
+    }
     return fs.create(path);
   }
 
   @Override
   public InputStream createInputStream(long offset) throws IOException {
-    return fs.open(path);
+    // because of DCC-412, the download size bug, we will temporarily disable download
+    // return fs.open(path);
+    // Ideally we would throw an Unsupported Exception, but mina will kick user out
+    // so we have to use a low level IOException to keep user connected
+    throw new IOException("download from SFTP is disabled");
   }
 
   @Override

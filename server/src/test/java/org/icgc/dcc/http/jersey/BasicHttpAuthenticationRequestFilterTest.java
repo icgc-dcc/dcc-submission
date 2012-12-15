@@ -92,7 +92,7 @@ public class BasicHttpAuthenticationRequestFilterTest {
     verify(this.mockContext).abortWith(response.capture());
     assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), response.getValue().getStatus());
     assertEquals(String.format("%s realm=\"%s\"", HTTP_AUTH_PREFIX, WWW_AUTHENTICATE_REALM), response.getValue()
-        .getHeader(HttpHeaders.WWW_AUTHENTICATE));
+        .getHeaderString(HttpHeaders.WWW_AUTHENTICATE));
   }
 
   @Test
@@ -107,7 +107,7 @@ public class BasicHttpAuthenticationRequestFilterTest {
     verify(this.mockContext).abortWith(response.capture());
     assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), response.getValue().getStatus());
     assertEquals(String.format("%s realm=\"%s\"", HTTP_AUTH_PREFIX, WWW_AUTHENTICATE_REALM), response.getValue()
-        .getHeader(HttpHeaders.WWW_AUTHENTICATE));
+        .getHeaderString(HttpHeaders.WWW_AUTHENTICATE));
   }
 
   @Test

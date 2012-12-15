@@ -1,6 +1,6 @@
 {
-  "created" : 1345729110363,
-  "lastUpdate" : 1345729110363,
+  "created" : 1347304331746,
+  "lastUpdate" : 1347304331746,
   "version" : "0.6d",
   "state" : "OPENED",
   "files" : [ {
@@ -16,7 +16,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "exposure_type",
@@ -25,7 +27,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "exposure_intensity",
@@ -34,7 +38,9 @@
       "summaryType" : "AVERAGE",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "exposure_notes",
@@ -43,12 +49,14 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "donor_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "donor",
       "otherFields" : [ "donor_id" ],
       "optionals" : [ ]
@@ -66,7 +74,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "sample_id",
@@ -75,7 +85,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "assembly_version",
@@ -84,7 +96,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "gene_build_version",
@@ -93,7 +107,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -107,7 +123,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -127,7 +145,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "alignment_algorithm",
@@ -136,7 +156,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "normalization_algorithm",
@@ -145,7 +167,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "other_analysis_algorithm",
@@ -189,9 +213,9 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "sample_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "sample",
       "otherFields" : [ "analyzed_sample_id" ],
       "optionals" : [ ]
@@ -201,7 +225,7 @@
     "label" : null,
     "pattern" : "^mirna__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__p__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
     "role" : "SUBMISSION",
-    "uniqueFields" : [ "mirna_seq" ],
+    "uniqueFields" : [ ],
     "fields" : [ {
       "name" : "analysis_id",
       "label" : "Unique identifier for the analysis performed for a particular group of samples",
@@ -209,7 +233,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "sample_id",
@@ -218,7 +244,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "mirna_seq",
@@ -227,7 +255,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "normalized_read_count",
@@ -236,7 +266,9 @@
       "summaryType" : "AVERAGE",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "raw_read_count",
@@ -245,7 +277,9 @@
       "summaryType" : "AVERAGE",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "normalized_expression_level",
@@ -295,7 +329,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -320,9 +356,9 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "analysis_id", "sample_id" ],
-      "cardinality" : "ONE_OR_MORE",
+      "bidirectional" : true,
       "other" : "mirna_m",
       "otherFields" : [ "analysis_id", "sample_id" ],
       "optionals" : [ ]
@@ -340,7 +376,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "analyzed_sample_id",
@@ -349,7 +387,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "mutation_id",
@@ -358,7 +398,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "consequence_type",
@@ -367,7 +409,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -403,7 +447,12 @@
       "label" : "Transcript(s) containing the mutation/variation.  Use Ensembl transcript id.",
       "valueType" : "TEXT",
       "summaryType" : null,
-      "restrictions" : [ ]
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : {
+          "acceptMissingCode" : true
+        }
+      } ]
     }, {
       "name" : "gene_build_version",
       "label" : "Version of Ensembl gene build used for annotation",
@@ -411,7 +460,9 @@
       "summaryType" : "AVERAGE",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "note",
@@ -420,17 +471,11 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "analysis_id", "analyzed_sample_id", "mutation_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "ssm_p",
       "otherFields" : [ "analysis_id", "analyzed_sample_id", "mutation_id" ],
-      "optionals" : [ ]
-    }, {
-      "fields" : [ "transcript_affected" ],
-      "cardinality" : "ZERO_OR_MORE",
-      "other" : "hsap_transcript",
-      "otherFields" : [ "stable_id_1066" ],
       "optionals" : [ ]
     } ]
   }, {
@@ -446,7 +491,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "procedure_interval",
@@ -455,7 +502,9 @@
       "summaryType" : "AVERAGE",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "procedure_type",
@@ -464,7 +513,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -478,7 +529,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "resection_status",
@@ -487,7 +540,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -501,18 +556,20 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "donor_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "donor",
       "otherFields" : [ "donor_id" ],
       "optionals" : [ ]
     }, {
       "fields" : [ "donor_id", "specimen_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "specimen",
       "otherFields" : [ "donor_id", "specimen_id" ],
       "optionals" : [ 1 ]
@@ -530,7 +587,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "chromosome",
@@ -539,7 +598,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -553,7 +614,9 @@
       "summaryType" : "AVERAGE",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "chromosome_end",
@@ -562,7 +625,9 @@
       "summaryType" : "AVERAGE",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "chromosome_strand",
@@ -580,7 +645,12 @@
       "label" : "Cross-reference to miRBase ID (e.g. has-let-7c) if available",
       "valueType" : "TEXT",
       "summaryType" : null,
-      "restrictions" : [ ]
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : {
+          "acceptMissingCode" : false
+        }
+      } ]
     }, {
       "name" : "note",
       "label" : "Optional field to leave notes",
@@ -588,15 +658,15 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "mirna_seq" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "mirna_p",
       "otherFields" : [ "mirna_seq" ],
       "optionals" : [ ]
     }, {
       "fields" : [ "xref_mirbase_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "mirna_mirbase",
       "otherFields" : [ "xref_mirbase_id" ],
       "optionals" : [ ]
@@ -614,7 +684,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "donor_sex",
@@ -623,7 +695,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -637,7 +711,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "donor_vital_status",
@@ -646,7 +722,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -660,7 +738,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -674,7 +754,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -688,7 +770,9 @@
       "summaryType" : "AVERAGE",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "donor_age_at_enrollment",
@@ -697,7 +781,9 @@
       "summaryType" : "AVERAGE",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "donor_age_at_last_followup",
@@ -706,7 +792,9 @@
       "summaryType" : "AVERAGE",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "donor_relapse_interval",
@@ -715,7 +803,9 @@
       "summaryType" : "AVERAGE",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "donor_diagnosis_icd10",
@@ -724,7 +814,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "donor_tumour_staging_system_at_diagnosis",
@@ -733,7 +825,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "donor_tumour_stage_at_diagnosis",
@@ -742,7 +836,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "donor_tumour_stage_at_diagnosis_supplemental",
@@ -757,7 +853,9 @@
       "summaryType" : "AVERAGE",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "donor_interval_of_last_followup",
@@ -766,7 +864,9 @@
       "summaryType" : "AVERAGE",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "donor_notes",
@@ -775,7 +875,7 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ ]
+    "relations" : [ ]
   }, {
     "name" : "family",
     "label" : null,
@@ -789,7 +889,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "relationship_type",
@@ -798,7 +900,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -812,7 +916,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "relationship_sex",
@@ -821,7 +927,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -835,7 +943,9 @@
       "summaryType" : "AVERAGE",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "relationship_disease_icd10",
@@ -844,7 +954,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "relationship_disease",
@@ -853,12 +965,14 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "donor_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "donor",
       "otherFields" : [ "donor_id" ],
       "optionals" : [ ]
@@ -876,7 +990,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "specimen_id",
@@ -885,7 +1001,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "specimen_type",
@@ -894,7 +1012,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -908,7 +1028,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "specimen_interval",
@@ -917,7 +1039,9 @@
       "summaryType" : "AVERAGE",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "specimen_donor_treatment_type",
@@ -926,7 +1050,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -940,7 +1066,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "specimen_processing",
@@ -949,7 +1077,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -963,7 +1093,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "specimen_storage",
@@ -972,7 +1104,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -986,7 +1120,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "tumour_confirmed",
@@ -995,7 +1131,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -1009,7 +1147,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "specimen_biobank_id",
@@ -1018,7 +1158,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "specimen_available",
@@ -1027,7 +1169,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -1041,7 +1185,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "tumour_grading_system",
@@ -1050,7 +1196,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "tumour_grade",
@@ -1059,7 +1207,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "tumour_grade_supplemental",
@@ -1068,7 +1218,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "tumour_stage_system",
@@ -1077,7 +1229,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "tumour_stage",
@@ -1086,7 +1240,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "tumour_stage_supplemental",
@@ -1101,7 +1257,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "specimen_notes",
@@ -1110,9 +1268,9 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "donor_id" ],
-      "cardinality" : "ONE_OR_MORE",
+      "bidirectional" : true,
       "other" : "donor",
       "otherFields" : [ "donor_id" ],
       "optionals" : [ ]
@@ -1136,29 +1294,27 @@
       "summaryType" : null,
       "restrictions" : [ ]
     }, {
-      "name" : "gene_affected",
-      "label" : "Gene(s) affected by the breakpoints.  Use Ensembl gene id.  Separate multiple genes with vertical bars in the form of geneA|geneB|geneC. If both breakpoints affect genes, then use | to separate them.  If no gene is affected, use -888 (not applicable).",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ ]
-    }, {
       "name" : "transcript_affected_by_bkpt_from",
       "label" : null,
       "valueType" : "TEXT",
       "summaryType" : null,
-      "restrictions" : [ ]
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : {
+          "acceptMissingCode" : true
+        }
+      } ]
     }, {
       "name" : "transcript_affected_by_bkpt_to",
       "label" : null,
       "valueType" : "TEXT",
       "summaryType" : null,
-      "restrictions" : [ ]
-    }, {
-      "name" : "transcript_affected",
-      "label" : "Transcript(s) affected by the breakpoints. Use Ensembl transcript id.  Separate multiple transcripts from the same gene with commas, and separate transcripts from different genes with vertical bars. eg. transcriptA1, transcriptA2|transcriptB1|transcriptC1",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ ]
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : {
+          "acceptMissingCode" : true
+        }
+      } ]
     }, {
       "name" : "analysis_id",
       "label" : "Unique identfier for the analysis performed for a particular group of samples",
@@ -1166,7 +1322,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "analyzed_sample_id",
@@ -1175,7 +1333,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "sv_id",
@@ -1184,7 +1344,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "placement",
@@ -1193,7 +1355,9 @@
       "summaryType" : "AVERAGE",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "bkpt_from_context",
@@ -1214,7 +1378,9 @@
       "summaryType" : "AVERAGE",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "note",
@@ -1223,23 +1389,11 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "analysis_id", "analyzed_sample_id", "sv_id", "placement" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "stsm_p",
       "otherFields" : [ "analysis_id", "analyzed_sample_id", "sv_id", "placement" ],
-      "optionals" : [ ]
-    }, {
-      "fields" : [ "transcript_affected_by_bkpt_from" ],
-      "cardinality" : "ZERO_OR_MORE",
-      "other" : "hsap_transcript",
-      "otherFields" : [ "stable_id_1066" ],
-      "optionals" : [ ]
-    }, {
-      "fields" : [ "transcript_affected_by_bkpt_to" ],
-      "cardinality" : "ZERO_OR_MORE",
-      "other" : "hsap_transcript",
-      "otherFields" : [ "stable_id_1066" ],
       "optionals" : [ ]
     } ]
   }, {
@@ -1255,7 +1409,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "analyzed_sample_id",
@@ -1264,7 +1420,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "sv_id",
@@ -1273,7 +1431,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "placement",
@@ -1282,7 +1442,9 @@
       "summaryType" : "AVERAGE",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "annotation",
@@ -1291,7 +1453,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "interpreted_annotation",
@@ -1306,7 +1470,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -1320,7 +1486,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -1334,7 +1502,9 @@
       "summaryType" : "AVERAGE",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "chr_from_strand",
@@ -1343,7 +1513,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -1369,7 +1541,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -1383,7 +1557,9 @@
       "summaryType" : "AVERAGE",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "chr_to_strand",
@@ -1392,7 +1568,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -1464,7 +1642,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -1495,9 +1675,9 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "analysis_id", "analyzed_sample_id" ],
-      "cardinality" : "ONE_OR_MORE",
+      "bidirectional" : true,
       "other" : "stsm_m",
       "otherFields" : [ "analysis_id", "analyzed_sample_id" ],
       "optionals" : [ ]
@@ -1515,7 +1695,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "analyzed_sample_id",
@@ -1524,7 +1706,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "methylated_fragment_id",
@@ -1533,7 +1717,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "gene_affected",
@@ -1542,7 +1728,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "gene_build_version",
@@ -1551,7 +1739,9 @@
       "summaryType" : "AVERAGE",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "note",
@@ -1560,17 +1750,11 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "analysis_id", "analyzed_sample_id", "methylated_fragment_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "meth_p",
       "otherFields" : [ "analysis_id", "analyzed_sample_id", "methylated_fragment_id" ],
-      "optionals" : [ ]
-    }, {
-      "fields" : [ "gene_affected" ],
-      "cardinality" : "ZERO_OR_MORE",
-      "other" : "hsap_gene",
-      "otherFields" : [ "stable_id_1023" ],
       "optionals" : [ ]
     } ]
   }, {
@@ -1586,7 +1770,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "analyzed_sample_id",
@@ -1595,7 +1781,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "matched_sample_id",
@@ -1604,7 +1792,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "assembly_version",
@@ -1613,7 +1803,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -1627,7 +1819,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -1647,7 +1841,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "alignment_algorithm",
@@ -1656,7 +1852,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "variation_calling_algorithm",
@@ -1665,7 +1863,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "other_analysis_algorithm",
@@ -1709,9 +1909,15 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "analyzed_sample_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
+      "other" : "sample",
+      "otherFields" : [ "analyzed_sample_id" ],
+      "optionals" : [ ]
+    }, {
+      "fields" : [ "matched_sample_id" ],
+      "bidirectional" : false,
       "other" : "sample",
       "otherFields" : [ "analyzed_sample_id" ],
       "optionals" : [ ]
@@ -1729,7 +1935,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "specimen_id",
@@ -1738,7 +1946,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "analyzed_sample_type",
@@ -1747,7 +1957,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -1773,9 +1985,9 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "specimen_id" ],
-      "cardinality" : "ONE_OR_MORE",
+      "bidirectional" : true,
       "other" : "specimen",
       "otherFields" : [ "specimen_id" ],
       "optionals" : [ ]
@@ -2169,7 +2381,12 @@
       "label" : null,
       "valueType" : "TEXT",
       "summaryType" : null,
-      "restrictions" : [ ]
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : {
+          "acceptMissingCode" : true
+        }
+      } ]
     }, {
       "name" : "inter_paralog_opri_bool",
       "label" : null,
@@ -3245,7 +3462,7 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ ]
+    "relations" : [ ]
   }, {
     "name" : "mirna_mirbase",
     "label" : null,
@@ -3257,7 +3474,12 @@
       "label" : null,
       "valueType" : "TEXT",
       "summaryType" : null,
-      "restrictions" : [ ]
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : {
+          "acceptMissingCode" : false
+        }
+      } ]
     }, {
       "name" : "mirna_seq",
       "label" : null,
@@ -3269,7 +3491,12 @@
       "label" : null,
       "valueType" : "TEXT",
       "summaryType" : null,
-      "restrictions" : [ ]
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : {
+          "acceptMissingCode" : true
+        }
+      } ]
     }, {
       "name" : "overlap_type",
       "label" : null,
@@ -3307,13 +3534,7 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
-      "fields" : [ "transcript_id" ],
-      "cardinality" : "ZERO_OR_MORE",
-      "other" : "hsap_transcript",
-      "otherFields" : [ "stable_id_1066" ],
-      "optionals" : [ ]
-    } ]
+    "relations" : []
   }, {
     "name" : "hsap_gene",
     "label" : null,
@@ -3367,7 +3588,12 @@
       "label" : null,
       "valueType" : "TEXT",
       "summaryType" : null,
-      "restrictions" : [ ]
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : {
+          "acceptMissingCode" : true
+        }
+      } ]
     }, {
       "name" : "value_1022",
       "label" : null,
@@ -4281,7 +4507,7 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ ]
+    "relations" : [ ]
   }, {
     "name" : "cnsm_s",
     "label" : null,
@@ -4295,7 +4521,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "analyzed_sample_id",
@@ -4304,7 +4532,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "mutation_id",
@@ -4313,7 +4543,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "gene_affected",
@@ -4322,14 +4554,21 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "transcript_affected",
       "label" : "Transcript(s) containing the mutation/variation.  Use Ensembl transcript id. Separate multiple transcripts from the same gene with commas, and separate transcripts from different genes with vertical bars. eg. transcriptA1, transcriptA2|transcriptB1|transcriptC1,transcriptC2,transcriptC3.  If no transcript is affected, use -888 (not applicable).",
       "valueType" : "TEXT",
       "summaryType" : null,
-      "restrictions" : [ ]
+      "restrictions" : [ {
+        "type" : "required",
+        "config" : {
+          "acceptMissingCode" : true
+        }
+      } ]
     }, {
       "name" : "gene_build_version",
       "label" : "Version of Ensembl gene build used for annotation",
@@ -4337,7 +4576,9 @@
       "summaryType" : "AVERAGE",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "note",
@@ -4346,17 +4587,11 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "analysis_id", "analyzed_sample_id", "mutation_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "cnsm_p",
       "otherFields" : [ "analysis_id", "analyzed_sample_id", "mutation_id" ],
-      "optionals" : [ ]
-    }, {
-      "fields" : [ "transcript_affected" ],
-      "cardinality" : "ZERO_OR_MORE",
-      "other" : "hsap_transcript",
-      "otherFields" : [ "stable_id_1066" ],
       "optionals" : [ ]
     } ]
   }, {
@@ -4372,7 +4607,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "analyzed_sample_id",
@@ -4381,7 +4618,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "mutation_id",
@@ -4390,7 +4629,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "mutation_type",
@@ -4399,7 +4640,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -4413,7 +4656,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -4427,7 +4672,9 @@
       "summaryType" : "AVERAGE",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "chromosome_end",
@@ -4436,7 +4683,9 @@
       "summaryType" : "AVERAGE",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "chromosome_start_range",
@@ -4510,7 +4759,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -4535,368 +4786,11 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "analysis_id", "analyzed_sample_id" ],
-      "cardinality" : "ONE_OR_MORE",
+      "bidirectional" : true,
       "other" : "cnsm_m",
       "otherFields" : [ "analysis_id", "analyzed_sample_id" ],
-      "optionals" : [ ]
-    } ]
-  }, {
-    "name" : "sgv_m",
-    "label" : null,
-    "pattern" : "^sgv__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__m__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
-    "role" : "SUBMISSION",
-    "uniqueFields" : [ "analysis_id", "control_sample_id" ],
-    "fields" : [ {
-      "name" : "analysis_id",
-      "label" : "Unique identfier for the analysis performed for a particular group of samples",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "control_sample_id",
-      "label" : "Unique identifier for the control sample donated by the donor",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "matched_sample_id",
-      "label" : "Unique identifier for the tumour matched to the control sample",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "assembly_version",
-      "label" : "Version of reference genome assembly",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "appendix_B10"
-        }
-      } ]
-    }, {
-      "name" : "platform",
-      "label" : "Platform or technology used in detecting the mutation/variation",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "appendix_B5"
-        }
-      } ]
-    }, {
-      "name" : "experimental_protocol",
-      "label" : "Name of experimental protocol and URL to written protocol",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ ]
-    }, {
-      "name" : "base_calling_algorithm",
-      "label" : "Name of base calling algorithm and URL to written protocol",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "alignment_algorithm",
-      "label" : "Name of alignment algorithm and URL to written protocol",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "variation_calling_algorithm",
-      "label" : "Name of variation calling algorithm and URL to written protocol",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "other_analysis_algorithm",
-      "label" : "Names of other analysis algorithms.  Separate multiple algorithms by commas.",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ ]
-    }, {
-      "name" : "seq_coverage",
-      "label" : "Sequence coverage if analyzed by sequencing platforms",
-      "valueType" : "DECIMAL",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ ]
-    }, {
-      "name" : "raw_data_repository",
-      "label" : "Public repository where raw data is submitted (#)",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "codelist",
-        "config" : {
-          "name" : "appendix_B12"
-        }
-      } ]
-    }, {
-      "name" : "raw_data_accession",
-      "label" : "Accession and URL for referencing the raw data at the public repository",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ ]
-    }, {
-      "name" : "note",
-      "label" : "Optional field to leave notes",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ ]
-    }, {
-      "name" : "donor_id",
-      "label" : "Unique identifier for the donor",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ ]
-    } ],
-    "relation" : [ ]
-  }, {
-    "name" : "sgv_p",
-    "label" : null,
-    "pattern" : "^sgv__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__p__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt$",
-    "role" : "SUBMISSION",
-    "uniqueFields" : [ ],
-    "fields" : [ {
-      "name" : "analysis_id",
-      "label" : "Unique identfier for the analysis performed for a particular group of samples",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "control_sample_id",
-      "label" : "Unique identifier for the control sample",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "variation_id",
-      "label" : "Unique identifier for the variation",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "variation_type",
-      "label" : "Type of variation",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "sgv_p__variation_type"
-        }
-      } ]
-    }, {
-      "name" : "chromosome",
-      "label" : "Name of the chromosome containing the mutation/variation",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "appendix_B6"
-        }
-      } ]
-    }, {
-      "name" : "chromosome_start",
-      "label" : "Start position of the mutation/variation on the chromosome",
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "chromosome_end",
-      "label" : "End position of the mutation/variation on the chromosome",
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "chromosome_strand",
-      "label" : "Chromosome strand",
-      "valueType" : "INTEGER",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "sgv_p__chromosome_strand"
-        }
-      } ]
-    }, {
-      "name" : "refsnp_allele",
-      "label" : "RefSNP alleles from dbSNP (use a dash for each missing base)",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "refsnp_strand",
-      "label" : "Strand of RefSNP allele",
-      "valueType" : "INTEGER",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "codelist",
-        "config" : {
-          "name" : "sgv_p__refsnp_strand"
-        }
-      } ]
-    }, {
-      "name" : "reference_genome_allele",
-      "label" : "Allele in the reference genome (use a dash for each missing base)",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "control_genotype",
-      "label" : "Genotype of the control sample (use a dash for each missing base)",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "tumour_genotype",
-      "label" : "Genotype of the tumour sample (use a dash for each missing base)",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "expressed_allele",
-      "label" : "For heterozygous SNPs, the dominant allele as revealed by RNA-seq, etc.",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ ]
-    }, {
-      "name" : "quality_score",
-      "label" : "Average quality score for the mutation/variation call",
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ ]
-    }, {
-      "name" : "probability",
-      "label" : "Probability of the mutation/variation call",
-      "valueType" : "DECIMAL",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ ]
-    }, {
-      "name" : "read_count",
-      "label" : "Average number of times the bases are covered by raw reads",
-      "valueType" : "DECIMAL",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ ]
-    }, {
-      "name" : "is_annotated",
-      "label" : "Indicate if the mutation/variation is annotated in dbSNP",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "codelist",
-        "config" : {
-          "name" : "sgv_p__is_annotated"
-        }
-      } ]
-    }, {
-      "name" : "validation_status",
-      "label" : "Indicate if the mutation/variation has been validated",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "sgv_p__validation_status"
-        }
-      } ]
-    }, {
-      "name" : "validation_platform",
-      "label" : "Platform or technology used in validation",
-      "valueType" : "TEXT",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "codelist",
-        "config" : {
-          "name" : "appendix_B5"
-        }
-      } ]
-    }, {
-      "name" : "xref_ensembl_var_id",
-      "label" : "Cross-reference: Ensembl Variation ID",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ ]
-    }, {
-      "name" : "note",
-      "label" : "Optional field to leave notes",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ ]
-    } ],
-    "relation" : [ {
-      "fields" : [ "analysis_id", "control_sample_id" ],
-      "cardinality" : "ONE_OR_MORE",
-      "other" : "sgv_m",
-      "otherFields" : [ "analysis_id", "control_sample_id" ],
       "optionals" : [ ]
     } ]
   }, {
@@ -4912,7 +4806,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "analyzed_sample_id",
@@ -4921,7 +4817,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "matched_sample_id",
@@ -4930,7 +4828,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "assembly_version",
@@ -4939,7 +4839,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -4953,7 +4855,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -5026,107 +4930,19 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "analyzed_sample_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
+      "other" : "sample",
+      "otherFields" : [ "analyzed_sample_id" ],
+      "optionals" : [ ]
+    }, {
+      "fields" : [ "matched_sample_id" ],
+      "bidirectional" : false,
       "other" : "sample",
       "otherFields" : [ "analyzed_sample_id" ],
       "optionals" : [ ]
     } ]
-  }, {
-    "name" : "sgv_s",
-    "label" : null,
-    "pattern" : null,
-    "role" : "SUBMISSION",
-    "uniqueFields" : [ ],
-    "fields" : [ {
-      "name" : "analysis_id",
-      "label" : "Unique identfier for the analysis performed for a particular group of samples",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "control_sample_id",
-      "label" : "Unique identifier for the control sample",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "variation_id",
-      "label" : "Unique identifier for the variation",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "consequence_type",
-      "label" : "Functional consequence of the SNP.  If multiple transcripts are involved, separate multiple consequences by commas. (#)",
-      "valueType" : "INTEGER",
-      "summaryType" : "FREQUENCY",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      }, {
-        "type" : "codelist",
-        "config" : {
-          "name" : "appendix_B7"
-        }
-      } ]
-    }, {
-      "name" : "aa_variation",
-      "label" : "Changes at amino acid level. Indicate the reference aa, position and variation aa.  If multiple transcripts are involved, separate multiple aa variation by commas.",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ ]
-    }, {
-      "name" : "cds_variation",
-      "label" : "Changes in coding sequence.  Indicate position, reference base and variation base.  If multiple transcripts are involved, separate multiple cds variation by commas.",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ ]
-    }, {
-      "name" : "protein_domain_affected",
-      "label" : "Protein domain containing the mutation/variation.  Use Pfam accession.  If multiple transcripts are involved, separate multiple domains by commas.",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ ]
-    }, {
-      "name" : "gene_affected",
-      "label" : "Gene(s) containing the mutation/variation.  Use Ensembl gene id. Separate multiple genes with vertical bars in the form of geneA|geneB|geneC.  If no gene is affected, use -888 (not applicable).",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ ]
-    }, {
-      "name" : "transcript_affected",
-      "label" : "Transcript(s) containing the mutation/variation.  Use Ensembl transcript id. Separate multiple transcripts from the same gene with commas, and separate transcripts from different genes with vertical bars. eg. transcriptA1, transcriptA2|transcriptB1|transcriptC1,transcriptC2,transcriptC3.  If no transcript is affected, use -888 (not applicable).",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ ]
-    }, {
-      "name" : "gene_build_version",
-      "label" : "Version of Ensembl gene build used for annotation",
-      "valueType" : "INTEGER",
-      "summaryType" : "AVERAGE",
-      "restrictions" : [ {
-        "type" : "required",
-        "config" : null
-      } ]
-    }, {
-      "name" : "note",
-      "label" : "Optional field to leave notes",
-      "valueType" : "TEXT",
-      "summaryType" : null,
-      "restrictions" : [ ]
-    } ],
-    "relation" : [ ]
   }, {
     "name" : "ssm_p",
     "label" : null,
@@ -5140,7 +4956,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "analyzed_sample_id",
@@ -5149,7 +4967,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "mutation_id",
@@ -5158,7 +4978,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "mutation_type",
@@ -5167,7 +4989,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -5181,7 +5005,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -5195,7 +5021,9 @@
       "summaryType" : "AVERAGE",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "chromosome_end",
@@ -5204,7 +5032,9 @@
       "summaryType" : "AVERAGE",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "chromosome_strand",
@@ -5213,7 +5043,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -5227,7 +5059,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "refsnp_strand",
@@ -5247,7 +5081,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "control_genotype",
@@ -5256,7 +5092,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "tumour_genotype",
@@ -5265,7 +5103,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "mutation",
@@ -5274,7 +5114,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "expressed_allele",
@@ -5318,7 +5160,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -5349,9 +5193,9 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "analysis_id", "analyzed_sample_id" ],
-      "cardinality" : "ONE_OR_MORE",
+      "bidirectional" : true,
       "other" : "ssm_m",
       "otherFields" : [ "analysis_id", "analyzed_sample_id" ],
       "optionals" : [ ]
@@ -5369,7 +5213,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "sample_id",
@@ -5378,7 +5224,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "gene_stable_id",
@@ -5387,7 +5235,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "gene_chromosome",
@@ -5396,7 +5246,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -5410,7 +5262,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -5424,7 +5278,9 @@
       "summaryType" : "AVERAGE",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "gene_end",
@@ -5433,7 +5289,9 @@
       "summaryType" : "AVERAGE",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "normalized_read_count",
@@ -5442,7 +5300,9 @@
       "summaryType" : "AVERAGE",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "raw_read_count",
@@ -5451,7 +5311,9 @@
       "summaryType" : "AVERAGE",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "normalized_expression_level",
@@ -5501,7 +5363,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -5532,17 +5396,11 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "analysis_id", "sample_id" ],
-      "cardinality" : "ONE_OR_MORE",
+      "bidirectional" : true,
       "other" : "exp_m",
       "otherFields" : [ "analysis_id", "sample_id" ],
-      "optionals" : [ ]
-    }, {
-      "fields" : [ "gene_stable_id" ],
-      "cardinality" : "ZERO_OR_MORE",
-      "other" : "hsap_gene",
-      "otherFields" : [ "stable_id_1023" ],
       "optionals" : [ ]
     } ]
   }, {
@@ -5558,7 +5416,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "specimen_id",
@@ -5567,7 +5427,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "biomarker_name",
@@ -5576,7 +5438,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "biomarker_threshold",
@@ -5585,7 +5449,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "biomarker_positive",
@@ -5594,7 +5460,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -5602,15 +5470,15 @@
         }
       } ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "donor_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "donor",
       "otherFields" : [ "donor_id" ],
       "optionals" : [ ]
     }, {
       "fields" : [ "donor_id", "specimen_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "specimen",
       "otherFields" : [ "donor_id", "specimen_id" ],
       "optionals" : [ 1 ]
@@ -5628,7 +5496,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "analyzed_sample_id",
@@ -5637,7 +5507,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "matched_sample_id",
@@ -5646,7 +5518,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "assembly_version",
@@ -5655,7 +5529,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -5669,7 +5545,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -5689,7 +5567,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "alignment_algorithm",
@@ -5698,7 +5578,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "variation_calling_algorithm",
@@ -5707,7 +5589,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "other_analysis_algorithm",
@@ -5751,9 +5635,15 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "analyzed_sample_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
+      "other" : "sample",
+      "otherFields" : [ "analyzed_sample_id" ],
+      "optionals" : [ ]
+    }, {
+      "fields" : [ "matched_sample_id" ],
+      "bidirectional" : false,
       "other" : "sample",
       "otherFields" : [ "analyzed_sample_id" ],
       "optionals" : [ ]
@@ -5771,7 +5661,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "sample_id",
@@ -5780,7 +5672,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "junction_id",
@@ -5789,7 +5683,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "gene_stable_id",
@@ -5798,7 +5694,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "gene_chromosome",
@@ -5807,7 +5705,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -5821,7 +5721,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -5835,7 +5737,9 @@
       "summaryType" : "AVERAGE",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "gene_end",
@@ -5844,7 +5748,9 @@
       "summaryType" : "AVERAGE",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "second_gene_stable_id",
@@ -5859,7 +5765,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -5873,7 +5781,9 @@
       "summaryType" : "AVERAGE",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "exon1_end",
@@ -5882,7 +5792,9 @@
       "summaryType" : "AVERAGE",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "exon1_strand",
@@ -5902,7 +5814,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -5916,7 +5830,9 @@
       "summaryType" : "AVERAGE",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "exon2_start",
@@ -5925,7 +5841,9 @@
       "summaryType" : "AVERAGE",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "exon2_strand",
@@ -5984,7 +5902,9 @@
       "summaryType" : "AVERAGE",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "quality_score",
@@ -6005,7 +5925,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -6030,17 +5952,11 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "analysis_id", "sample_id" ],
-      "cardinality" : "ONE_OR_MORE",
+      "bidirectional" : true,
       "other" : "jcn_m",
       "otherFields" : [ "analysis_id", "sample_id" ],
-      "optionals" : [ ]
-    }, {
-      "fields" : [ "gene_stable_id" ],
-      "cardinality" : "ZERO_OR_MORE",
-      "other" : "hsap_gene",
-      "otherFields" : [ "stable_id_1023" ],
       "optionals" : [ ]
     } ]
   }, {
@@ -6056,7 +5972,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "analyzed_sample_id",
@@ -6065,7 +5983,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "methylated_fragment_id",
@@ -6074,7 +5994,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "chromosome",
@@ -6083,7 +6005,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -6097,7 +6021,9 @@
       "summaryType" : "AVERAGE",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "chromosome_end",
@@ -6106,7 +6032,9 @@
       "summaryType" : "AVERAGE",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "chromosome_strand",
@@ -6144,7 +6072,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -6169,9 +6099,9 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "analysis_id", "analyzed_sample_id" ],
-      "cardinality" : "ONE_OR_MORE",
+      "bidirectional" : true,
       "other" : "meth_m",
       "otherFields" : [ "analysis_id", "analyzed_sample_id" ],
       "optionals" : [ ]
@@ -6189,7 +6119,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "sample_id",
@@ -6198,7 +6130,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "assembly_version",
@@ -6207,7 +6141,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -6221,7 +6157,9 @@
       "summaryType" : "AVERAGE",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "platform",
@@ -6230,7 +6168,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -6250,7 +6190,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "alignment_algorithm",
@@ -6259,7 +6201,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "normalization_algorithm",
@@ -6268,7 +6212,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "other_analysis_algorithm",
@@ -6312,9 +6258,9 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "sample_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "sample",
       "otherFields" : [ "analyzed_sample_id" ],
       "optionals" : [ ]
@@ -6332,7 +6278,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "therapy_start_interval",
@@ -6341,7 +6289,9 @@
       "summaryType" : "AVERAGE",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "therapy_duration",
@@ -6350,7 +6300,9 @@
       "summaryType" : "AVERAGE",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "therapy_type",
@@ -6359,7 +6311,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "therapy_response",
@@ -6368,7 +6322,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -6382,12 +6338,14 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "donor_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "donor",
       "otherFields" : [ "donor_id" ],
       "optionals" : [ ]
@@ -6405,7 +6363,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "sample_id",
@@ -6414,7 +6374,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "assembly_version",
@@ -6423,7 +6385,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -6437,7 +6401,9 @@
       "summaryType" : "AVERAGE",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "platform",
@@ -6446,7 +6412,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -6466,7 +6434,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "alignment_algorithm",
@@ -6475,7 +6445,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "normalization_algorithm",
@@ -6484,7 +6456,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "other_analysis_algorithm",
@@ -6505,7 +6479,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -6519,7 +6495,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "note",
@@ -6534,9 +6512,9 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "sample_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
       "other" : "sample",
       "otherFields" : [ "analyzed_sample_id" ],
       "optionals" : [ ]
@@ -6554,7 +6532,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "analyzed_sample_id",
@@ -6563,7 +6543,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "matched_sample_id",
@@ -6572,7 +6554,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : false
+        }
       } ]
     }, {
       "name" : "assembly_version",
@@ -6581,7 +6565,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -6595,7 +6581,9 @@
       "summaryType" : "FREQUENCY",
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       }, {
         "type" : "codelist",
         "config" : {
@@ -6615,7 +6603,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "alignment_algorithm",
@@ -6624,7 +6614,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "variation_calling_algorithm",
@@ -6633,7 +6625,9 @@
       "summaryType" : null,
       "restrictions" : [ {
         "type" : "required",
-        "config" : null
+        "config" : {
+          "acceptMissingCode" : true
+        }
       } ]
     }, {
       "name" : "other_analysis_algorithm",
@@ -6671,9 +6665,15 @@
       "summaryType" : null,
       "restrictions" : [ ]
     } ],
-    "relation" : [ {
+    "relations" : [ {
       "fields" : [ "analyzed_sample_id" ],
-      "cardinality" : "ZERO_OR_MORE",
+      "bidirectional" : false,
+      "other" : "sample",
+      "otherFields" : [ "analyzed_sample_id" ],
+      "optionals" : [ ]
+    }, {
+      "fields" : [ "matched_sample_id" ],
+      "bidirectional" : false,
       "other" : "sample",
       "otherFields" : [ "analyzed_sample_id" ],
       "optionals" : [ ]

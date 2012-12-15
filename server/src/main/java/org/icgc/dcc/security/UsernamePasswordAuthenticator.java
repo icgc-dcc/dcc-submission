@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.security;
 
+import java.util.List;
+
 import org.apache.shiro.subject.Subject;
 
 /**
@@ -32,4 +34,7 @@ public interface UsernamePasswordAuthenticator {
 
   public String getCurrentUser();
 
+  public Subject getSubject();
+
+  public List<String> getRoles();
 }

@@ -20,6 +20,7 @@ package org.icgc.dcc.validation;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
@@ -27,7 +28,7 @@ import java.util.Map;
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.validation.cascading.RemoveEmptyLineFilter;
 import org.icgc.dcc.validation.cascading.RemoveHeaderFilter;
-import org.icgc.dcc.validation.cascading.StructralCheckFunction;
+import org.icgc.dcc.validation.cascading.StructuralCheckFunction;
 import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.cascading.TupleStates;
 import org.icgc.dcc.validation.cascading.ValidationFields;
@@ -63,7 +64,7 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
 
   private final Map<Trim, Pipe> trimmedTails = Maps.newHashMap();
 
-  private StructralCheckFunction structralCheck;
+  private StructuralCheckFunction structralCheck;
 
   DefaultInternalFlowPlanner(FileSchema fileSchema) {
     super(fileSchema, FlowType.INTERNAL);
@@ -130,8 +131,15 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
     } catch(IOException e) {
       throw new PlanningException("Error processing file header");
     } catch(DuplicateHeaderException e) {
-      throw new PlanningException(getSchema().getName(), ValidationErrorCode.DUPLICATE_HEADER_ERROR,
-          e.getDuplicateHeader());
+      String fileName = null;
+      try {
+        fileName = strategy.path(getSchema()).getName();
+      } catch(FileNotFoundException fnfe) {
+        throw new PlanningException(fnfe);
+      } catch(IOException ioe) {
+        throw new PlanningException(ioe);
+      }
+      throw new PlanningFileLevelException(fileName, ValidationErrorCode.DUPLICATE_HEADER_ERROR, e.getDuplicateHeaderFieldNames());
     }
 
     flowDef.addSource(head, source);
@@ -145,9 +153,9 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
   private void applySystemPipes(Pipe pipe) {
     pipe = new Each(pipe, new RemoveEmptyLineFilter());
     pipe = new Each(pipe, new RemoveHeaderFilter());
-    structralCheck = new StructralCheckFunction(getSchema().getFieldNames());
+    structralCheck = new StructuralCheckFunction(getSchema().getFieldNames());
     pipe =
-        new Each(pipe, new Fields(ValidationFields.OFFSET_FIELD_NAME, StructralCheckFunction.LINE_FIELD_NAME),
+        new Each(pipe, new Fields(ValidationFields.OFFSET_FIELD_NAME, StructuralCheckFunction.LINE_FIELD_NAME),
             structralCheck, Fields.SWAP); // parse "line" into the actual expected fields
     this.structurallyValidTail = new Each(pipe, TupleStates.keepStructurallyValidTuplesFilter());
     this.structurallyInvalidTail = new Each(pipe, TupleStates.keepStructurallyInvalidTuplesFilter());

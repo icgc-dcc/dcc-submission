@@ -30,6 +30,7 @@ import org.icgc.dcc.filesystem.ReleaseFileSystem;
 import org.icgc.dcc.filesystem.SubmissionDirectory;
 import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
 import org.icgc.dcc.release.ReleaseService;
+import org.icgc.dcc.release.model.Submission;
 import org.mortbay.log.Log;
 
 /**
@@ -101,7 +102,15 @@ class RootHdfsSshFile extends HdfsSshFile {
     List<SshFile> sshFileList = new ArrayList<SshFile>();
     for(Path path : pathList) {
       try {
-        sshFileList.add(new DirectoryHdfsSshFile(this, path.getName()));
+        // if it is System File directory and admin user, add to file list
+        if(this.rfs.isSystemDirectory(path)) {
+          sshFileList.add(new SystemFileHdfsSshFile(this, path.getName()));
+        } else {
+          SubmissionDirectoryHdfsSshFile dir = new SubmissionDirectoryHdfsSshFile(this, path.getName());
+          if(dir.doesExist()) { // Necessary because of error handling workaround
+            sshFileList.add(dir);
+          }
+        }
       } catch(DccFileSystemException e) {
         Log.info("Directory skipped due to insufficient permissions: " + path.getName());
       } catch(ProjectServiceException e) {
@@ -112,7 +121,13 @@ class RootHdfsSshFile extends HdfsSshFile {
   }
 
   public SubmissionDirectory getSubmissionDirectory(String directoryName) {
-    return this.rfs.getSubmissionDirectory(this.projects.getProject(directoryName));
+    try {
+      return this.rfs.getSubmissionDirectory(this.projects.getProject(directoryName));
+    } catch(RuntimeException e) {
+      // Ideally we would rethrow as a FileNotFound or IOException, but Mina's interface won't let us.
+      // Instead we put it as null so it can be used to indicate that the directory doesn't exist later
+      return null;
+    }
   }
 
   @Override
@@ -121,9 +136,10 @@ class RootHdfsSshFile extends HdfsSshFile {
     case 0:
       return this;
     case 1:
-      return new DirectoryHdfsSshFile(this, filePath.getName());
+      return new SubmissionDirectoryHdfsSshFile(this, filePath.getName());
     case 2:
-      DirectoryHdfsSshFile parentDir = new DirectoryHdfsSshFile(this, filePath.getParent().getName());
+      SubmissionDirectoryHdfsSshFile parentDir =
+          new SubmissionDirectoryHdfsSshFile(this, filePath.getParent().getName());
       return new FileHdfsSshFile(parentDir, filePath.getName());
     }
     throw new DccFileSystemException("Invalid file path: " + this.getAbsolutePath() + filePath.toString());
@@ -135,7 +151,14 @@ class RootHdfsSshFile extends HdfsSshFile {
   }
 
   public void notifyModified(SubmissionDirectory submissionDirectory) {
-    submissionDirectory.notifyModified();
-    this.releases.updateSubmission(this.rfs.getRelease().getName(), submissionDirectory.getSubmission());
+    Submission submission = submissionDirectory.getSubmission();
+    this.releases.resetSubmission(this.rfs.getRelease().getName(), submission.getProjectKey());
+  }
+
+  public void systemFilesNotifyModified() {
+    // TODO: not very effiecient now, need to combine the query into one
+    for(Submission submission : this.rfs.getRelease().getSubmissions()) {
+      this.releases.resetSubmission(this.rfs.getRelease().getName(), submission.getProjectKey());
+    }
   }
 }

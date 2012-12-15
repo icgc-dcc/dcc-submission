@@ -30,11 +30,13 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.icgc.dcc.dictionary.model.Cardinality;
+import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.FileSchema;
+import org.icgc.dcc.dictionary.model.FileSchemaRole;
 import org.icgc.dcc.dictionary.model.Relation;
 import org.icgc.dcc.validation.ExternalFlowPlanningVisitor;
 import org.icgc.dcc.validation.ExternalPlanElement;
+import org.icgc.dcc.validation.Plan;
 import org.icgc.dcc.validation.ValidationErrorCode;
 import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.cascading.TuplesUtils;
@@ -56,6 +58,8 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
+import com.google.common.collect.Lists;
+
 /**
  * Creates {@code PlanElement}s for {@code Relation}.
  */
@@ -63,12 +67,24 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
 
   private static final String NAME = "fk";
 
+  private Dictionary dictionary;
+
   @Override
-  public void visit(Relation relation) {
-    collect(new RelationPlanElement(getCurrentSchema(), relation));
+  public void apply(Plan plan) {
+    dictionary = plan.getDictionary();
+    super.apply(plan);
   }
 
-  static class RelationPlanElement implements ExternalPlanElement {
+  @Override
+  public void visit(Relation relation) {
+    FileSchema currentSchema = getCurrentSchema();
+    List<FileSchema> afferentStrictFileSchemata = currentSchema.getBidirectionalAfferentFileSchemata(dictionary);
+    if(currentSchema.getRole() != FileSchemaRole.SYSTEM) {
+      collect(new RelationPlanElement(currentSchema, relation, afferentStrictFileSchemata));
+    }
+  }
+
+  public static class RelationPlanElement implements ExternalPlanElement {
 
     private final String lhs;
 
@@ -78,22 +94,29 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
 
     private final String[] rhsFields;
 
-    protected final Cardinality cardinality;
+    private final Boolean bidirectional;
 
     private final List<Integer> optionals;
 
-    private RelationPlanElement(FileSchema fileSchema, Relation relation) {
+    private final List<FileSchema> afferentFileSchemata;
+
+    private RelationPlanElement(FileSchema fileSchema, Relation relation, List<FileSchema> afferentFileSchemata) {
+      checkArgument(fileSchema != null);
+      checkArgument(relation != null);
+      checkArgument(afferentFileSchemata != null);
+
       this.lhs = fileSchema.getName();
       this.lhsFields = relation.getFields().toArray(new String[] {});
       this.rhs = relation.getOther();
       this.rhsFields = relation.getOtherFields().toArray(new String[] {});
-      this.cardinality = relation.getCardinality();
+      this.bidirectional = relation.isBidirectional();
       this.optionals = relation.getOptionals();
+      this.afferentFileSchemata = afferentFileSchemata;
     }
 
     @Override
     public String describe() {
-      return String.format("%s[%s:%s(%s)->%s:%s [%s]]", NAME, lhs, Arrays.toString(lhsFields), cardinality, rhs,
+      return String.format("%s[%s:%s(%s)->%s:%s [%s]]", NAME, lhs, Arrays.toString(lhsFields), bidirectional, rhs,
           Arrays.toString(rhsFields), optionals);
     }
 
@@ -112,6 +135,11 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
       return rhsFields;
     }
 
+    // TODO: override? (tbd)
+    public List<FileSchema> getAfferentFileSchemata() {
+      return afferentFileSchemata;
+    }
+
     @Override
     public Pipe join(Pipe lhsPipe, Pipe rhsPipe) {
       String[] requiredLhsFields = extractRequiredFields(lhsFields);
@@ -121,19 +149,18 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
       String[] requiredRhsRenamedFields = extractRequiredFields(renamedRhsFields);
       String[] optionalRhsRenamedFields = extractOptionalFields(renamedRhsFields);
 
-      boolean twoWays = cardinality == Cardinality.ONE_OR_MORE;
       boolean conditional = optionals.isEmpty() == false;
-      checkState(conditional == false || twoWays == false, describe()); // by design, see DCC-289#3
+      checkState(conditional == false || bidirectional == false, describe()); // by design, see DCC-289#3
 
       rhsPipe = new Discard(rhsPipe, new Fields(ValidationFields.OFFSET_FIELD_NAME));
       rhsPipe = new Rename(rhsPipe, new Fields(rhsFields), new Fields(renamedRhsFields));
-      Joiner joiner = twoWays ? new OuterJoin() : new LeftJoin();
+      Joiner joiner = bidirectional ? new OuterJoin() : new LeftJoin();
       Pipe pipe =
           new CoGroup(lhsPipe, new Fields(requiredLhsFields), rhsPipe, new Fields(requiredRhsRenamedFields), joiner);
       NoNullBufferBase noNullBufferBase = //
           conditional ? new ConditionalNoNullBuffer(lhs, rhs, lhsFields, rhsFields, requiredLhsFields,
               requiredRhsRenamedFields, optionalLhsFields, optionalRhsRenamedFields) : //
-          new NoNullBuffer(lhs, rhs, lhsFields, rhsFields, renamedRhsFields, twoWays);
+          new NoNullBuffer(lhs, rhs, lhsFields, rhsFields, renamedRhsFields, bidirectional);
       return new Every(pipe, Fields.ALL, noNullBufferBase, Fields.RESULTS);
     }
 
@@ -192,13 +219,18 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
     /*
      * The offset was passed from internal flow in order to access the offset
      */
-    protected int getLhsOffset(TupleEntry entry) {
-      return entry.getInteger(ValidationFields.OFFSET_FIELD_NAME);
+    protected long getLhsOffset(TupleEntry entry) {
+      return entry.getLong(ValidationFields.OFFSET_FIELD_NAME);
     }
 
     protected void reportRelationError(TupleState tupleState, Tuple offendingLhsTuple) {
-      tupleState.reportError(ValidationErrorCode.RELATION_ERROR, TuplesUtils.getObjects(offendingLhsTuple), lhs,
-          Arrays.asList(lhsFields), rhs, Arrays.asList(rhsFields));
+      List<String> columnNames = Lists.newArrayList(lhsFields);
+      String relationSchema = rhs;
+      List<String> relationColumnNames = Lists.newArrayList(rhsFields);
+      List<Object> value = TuplesUtils.getObjects(offendingLhsTuple);
+
+      tupleState.reportError(ValidationErrorCode.RELATION_VALUE_ERROR, columnNames, value, relationSchema,
+          relationColumnNames);
     }
   }
 
@@ -214,7 +246,7 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
 
     private final int optionalSize;
 
-    private final Comparator[] tupleComparators;
+    private final transient Comparator[] tupleComparators;
 
     ConditionalNoNullBuffer(String lhs, String rhs, String[] lhsFields, String[] rhsFields, String[] requiredLhsFields,
         String[] requiredRhsFields, String[] optionalLhsFields, String[] optionalRhsFields) {
@@ -249,32 +281,33 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
       TupleEntry group = bufferCall.getGroup();
 
       // potential memory issue discussed in DCC-300
-      List<Entry<Tuple, Integer>> lhsOptionalTuples = new ArrayList<Entry<Tuple, Integer>>();
+      List<Entry<Tuple, Long>> lhsOptionalTuples = new ArrayList<Entry<Tuple, Long>>();
       List<Tuple> rhsOptionalTuples = new ArrayList<Tuple>();
       Tuple requiredLhsTuple = group.selectTuple(new Fields(requiredLhsFields));
 
       while(iter.hasNext()) {
         TupleEntry entry = iter.next();
-        if(TuplesUtils.hasValues(entry, requiredRhsFields)) {
+        if(TuplesUtils.hasValues(entry, requiredRhsFields)) { // this already filters out join on nulls
           if(TuplesUtils.hasValues(entry, optionalLhsFields)) {
             Tuple lhsOptionalTuple = entry.selectTuple(new Fields(optionalLhsFields));
-            lhsOptionalTuples.add(new SimpleEntry<Tuple, Integer>(lhsOptionalTuple, getLhsOffset(entry)));
+            lhsOptionalTuples.add(new SimpleEntry<Tuple, Long>(lhsOptionalTuple, getLhsOffset(entry)));
           }
           if(TuplesUtils.hasValues(entry, optionalRhsFields)) {
             rhsOptionalTuples.add(entry.selectTuple(new Fields(optionalRhsFields)));
           }
-        }
+        } // if it does not, it is a problem that will be picked up by the corresponding non-conditional relation (see
+          // note in DCC-294)
       }
 
       /*
        * To keep track of reported errors (because there can be several specimen_id from the rhs) and we cannot use a
-       * set for lhsOptionalTuples
+       * set for lhsOptionalTuples (TODO: why?)
        */
-      Set<Integer> reported = new HashSet<Integer>();
-      for(Entry<Tuple, Integer> lhsTupleToOffset : lhsOptionalTuples) {
+      Set<Long> reported = new HashSet<Long>();
+      for(Entry<Tuple, Long> lhsTupleToOffset : lhsOptionalTuples) {
         Tuple lhsOptionalTuple = lhsTupleToOffset.getKey();
         if(contains(rhsOptionalTuples, lhsOptionalTuple) == false) {
-          int lhsOffset = lhsTupleToOffset.getValue();
+          long lhsOffset = lhsTupleToOffset.getValue();
           TupleState tupleState = new TupleState(lhsOffset);
           if(reported.contains(lhsOffset) == false) {
             Tuple offendingLhsTuple = // so as to avoid storing it all in memory (memory/computing tradeoff)
@@ -309,37 +342,47 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
 
   static final class NoNullBuffer extends NoNullBufferBase {
 
-    private final int CONVENTION_PARENT_OFFSET = -1; // see DCC-289#2
+    private final long CONVENTION_PARENT_OFFSET = -1L; // FIXME: https://jira.oicr.on.ca/browse/DCC-562
 
     private final String[] renamedRhsFields;
 
-    protected final boolean twoWays;
+    protected final boolean bidirectional;
 
     NoNullBuffer(String lhs, String rhs, String[] lhsFields, String[] rhsFields, String[] renamedRhsFields,
-        boolean twoWays) {
+        boolean bidirectional) {
       super(lhs, rhs, lhsFields, rhsFields);
       checkArgument(renamedRhsFields != null && renamedRhsFields.length > 0);
       this.renamedRhsFields = renamedRhsFields;
-      this.twoWays = twoWays;
+      this.bidirectional = bidirectional;
     }
 
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     public void operate(FlowProcess flowProcess, BufferCall bufferCall) {
       Iterator<TupleEntry> iter = bufferCall.getArgumentsIterator();
       while(iter.hasNext()) {
         TupleEntry entry = iter.next();
 
         if(TuplesUtils.hasValues(entry, renamedRhsFields) == false) {
-          TupleState state = new TupleState(getLhsOffset(entry));
-          reportRelationError(state, entry.selectTuple(new Fields(lhsFields)));
-          bufferCall.getOutputCollector().add(new Tuple(state));
-        } else if(twoWays) {
+          if(TuplesUtils.hasValues(entry, lhsFields)) { // no need to report the result of joining on nulls
+                                                        // (required restriction will report error if this is not
+                                                        // acceptable)
+            TupleState state = new TupleState(getLhsOffset(entry));
+            reportRelationError(state, entry.selectTuple(new Fields(lhsFields)));
+            bufferCall.getOutputCollector().add(new Tuple(state));
+          }
+        } else if(bidirectional) {
           if(TuplesUtils.hasValues(entry, lhsFields) == false) {
             Tuple offendingRhsTuple = entry.selectTuple(new Fields(renamedRhsFields));
             TupleState state = new TupleState(CONVENTION_PARENT_OFFSET);
-            state.reportError(ValidationErrorCode.RELATION_PARENT_ERROR, lhs, Arrays.asList(lhsFields),
-                TuplesUtils.getObjects(offendingRhsTuple), rhs, Arrays.asList(rhsFields));
+
+            List<String> columnNames = Lists.newArrayList(lhsFields);
+            String relationSchema = rhs;
+            List<String> relationColumnNames = Lists.newArrayList(rhsFields);
+            List<Object> value = TuplesUtils.getObjects(offendingRhsTuple);
+
+            state.reportError(ValidationErrorCode.RELATION_PARENT_VALUE_ERROR, columnNames, value, relationSchema,
+                relationColumnNames);
             bufferCall.getOutputCollector().add(new Tuple(state));
           }
         }

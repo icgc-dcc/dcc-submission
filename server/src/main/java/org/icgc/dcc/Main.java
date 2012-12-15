@@ -22,8 +22,27 @@ import com.google.inject.Injector;
 import com.typesafe.config.ConfigFactory;
 
 public class Main {
+
+  private static final String HADOOP_USER_NAME_PARAM = "HADOOP_USER_NAME";
+
+  private static final String HADOOP_USER_NAME = "hdfs";
+
+  private static enum CONFIG {
+    qa("application_qa"), dev("application_dev"), local("application");
+
+    String filename;
+
+    private CONFIG(String filename) {
+      this.filename = filename;
+    }
+  };
+
   public static void main(String[] args) throws IOException {
-    Injector injector = Guice.createInjector(new ConfigModule(ConfigFactory.load())//
+
+    String config = (args != null && args.length > 0) ? CONFIG.valueOf(args[0]).filename : "application";
+    System.setProperty(HADOOP_USER_NAME_PARAM, HADOOP_USER_NAME); // see DCC-572
+
+    final Injector injector = Guice.createInjector(new ConfigModule(ConfigFactory.load(config))//
         , new CoreModule()//
         , new HttpModule()//
         , new JerseyModule()//
@@ -37,9 +56,15 @@ public class Main {
         , new ValidationModule()//
         , new DataModule());
 
+    Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+      @Override
+      public void run() {
+        injector.getInstance(DccRuntime.class).stop();
+      }
+
+    }, "Shutdown-thread"));
+
     injector.getInstance(DccRuntime.class).start();
-    System.in.read();
-    injector.getInstance(DccRuntime.class).stop();
 
   }
 }

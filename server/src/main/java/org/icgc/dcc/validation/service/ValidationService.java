@@ -27,8 +27,10 @@ import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.filesystem.ReleaseFileSystem;
 import org.icgc.dcc.filesystem.SubmissionDirectory;
+import org.icgc.dcc.release.model.QueuedProject;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.validation.CascadingStrategy;
+import org.icgc.dcc.validation.FatalPlanningException;
 import org.icgc.dcc.validation.Plan;
 import org.icgc.dcc.validation.Planner;
 import org.icgc.dcc.validation.factory.CascadingStrategyFactory;
@@ -73,35 +75,44 @@ public class ValidationService {
     this.planner = planner;
     this.dictionaries = dictionaries;
     this.cascadingStrategyFactory = cascadingStrategyFactory;
+
   }
 
-  public Plan validate(Release release, String projectKey) {
+  public Plan validate(final Release release, final QueuedProject qProject) {
     String dictionaryVersion = release.getDictionaryVersion();
     Dictionary dictionary = this.dictionaries.getFromVersion(dictionaryVersion);
-    ReleaseFileSystem releaseFilesystem = dccFileSystem.getReleaseFilesystem(release);
+    if(dictionary == null) {
+      throw new ValidationServiceException(String.format("no dictionary found with version %s, in release %s",
+          dictionaryVersion, release.getName()));
+    } else {
+      ReleaseFileSystem releaseFilesystem = dccFileSystem.getReleaseFilesystem(release);
 
-    Project project = projectService.getProject(projectKey);
-    SubmissionDirectory submissionDirectory = releaseFilesystem.getSubmissionDirectory(project);
+      Project project = projectService.getProject(qProject.getKey());
+      SubmissionDirectory submissionDirectory = releaseFilesystem.getSubmissionDirectory(project);
 
-    Path rootDir = new Path(submissionDirectory.getSubmissionDirPath());
-    Path outputDir = new Path(submissionDirectory.getValidationDirPath());
-    Path systemDir = releaseFilesystem.getSystemDirectory();
+      Path rootDir = new Path(submissionDirectory.getSubmissionDirPath());
+      Path outputDir = new Path(submissionDirectory.getValidationDirPath());
+      Path systemDir = releaseFilesystem.getSystemDirectory();
 
-    log.info("rootDir = {} ", rootDir);
-    log.info("outputDir = {} ", outputDir);
+      log.info("rootDir = {} ", rootDir);
+      log.info("outputDir = {} ", outputDir);
+      log.info("systemDir = {} ", systemDir);
 
-    CascadingStrategy cascadingStrategy = cascadingStrategyFactory.get(rootDir, outputDir, systemDir);
+      CascadingStrategy cascadingStrategy = cascadingStrategyFactory.get(rootDir, outputDir, systemDir);
 
-    log.info("starting validation on project {}", projectKey);
-    Plan plan = planCascade(projectKey, cascadingStrategy, dictionary);
+      long startTime = System.nanoTime();
+      log.info("starting validation on project {}", qProject.getKey());
+      Plan plan = planCascade(qProject, cascadingStrategy, dictionary);
 
-    runCascade(plan.getCascade(), projectKey);
-    log.info("validation finished for project {}", projectKey);
+      runCascade(plan.getCascade(), project.getKey());
+      log.info("validation finished for project {}, time spent on validation is {} nanoseconds", project.getKey(),
+          System.nanoTime() - startTime);
 
-    return plan;
+      return plan;
+    }
   }
 
-  public Plan planCascade(String projectKey, CascadingStrategy cascadingStrategy, Dictionary dictionary) {
+  public Plan planCascade(QueuedProject project, CascadingStrategy cascadingStrategy, Dictionary dictionary) {
 
     Plan plan = planner.plan(cascadingStrategy, dictionary);
 
@@ -109,6 +120,11 @@ public class ValidationService {
     log.info("# external flows: {}", Iterables.size(plan.getExternalFlows()));
 
     plan.connect(cascadingStrategy);
+
+    if(plan.hasFileLevelErrors()) {
+      log.info(String.format("plan has errors, throwing a %s", FatalPlanningException.class.getSimpleName()));
+      throw new FatalPlanningException(project, plan); // the queue manager will handle it
+    }
 
     return plan;
   }

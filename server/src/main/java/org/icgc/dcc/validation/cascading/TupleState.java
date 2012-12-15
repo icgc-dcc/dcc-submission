@@ -3,14 +3,14 @@ package org.icgc.dcc.validation.cascading;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.Nullable;
-
 import org.codehaus.jackson.annotate.JsonIgnore;
+import org.icgc.dcc.validation.ErrorParameterKey;
 import org.icgc.dcc.validation.ValidationErrorCode;
 
 import com.google.common.base.Objects;
@@ -32,17 +32,24 @@ public class TupleState implements Serializable {
   private final Set<String> missingFieldNames = new HashSet<String>();
 
   public TupleState() {
-    this(-1);
+    this(-1L);
   }
 
-  public TupleState(int offset) {
+  public TupleState(long offset) {
     this.structurallyValid = true;
     this.offset = offset;
   }
 
-  public void reportError(ValidationErrorCode code, @Nullable Object... parameters) {
+  public void reportError(ValidationErrorCode code, List<String> columnNames, Object value, Object... params) {
     checkArgument(code != null);
-    ensureErrors().add(new TupleError(code, parameters));
+    ensureErrors().add(new TupleError(code, columnNames, value, this.getOffset(), code.build(params)));
+    structurallyValid = code.isStructural() == false;
+  }
+
+  public void reportError(ValidationErrorCode code, String columnName, Object value, Object... params) {
+    checkArgument(code != null);
+    List<String> columnNames = Lists.newArrayList(columnName);
+    ensureErrors().add(new TupleError(code, columnNames, value, this.getOffset(), code.build(params)));
     structurallyValid = code.isStructural() == false;
   }
 
@@ -99,24 +106,49 @@ public class TupleState implements Serializable {
 
     private final ValidationErrorCode code;
 
-    private final Object[] parameters;
+    private final List<String> columnNames;
+
+    private final Object value;
+
+    private final Long line;
+
+    private final Map<ErrorParameterKey, Object> parameters;
 
     public TupleError() {
-      code = null;
-      parameters = null;
+      this.code = null;
+      this.columnNames = Lists.newArrayList();
+      this.value = null;
+      this.line = null;
+      this.parameters = new LinkedHashMap<ErrorParameterKey, Object>();
     }
 
-    private TupleError(ValidationErrorCode code, Object... parameters) {
+    private TupleError(ValidationErrorCode code, List<String> columnNames, Object value, Long line,
+        Map<ErrorParameterKey, Object> parameters) {
       this.code = code;
+      this.columnNames = columnNames;
+      this.value = value != null ? value : "";
+      this.line = line;
       this.parameters = parameters;
     }
 
     public ValidationErrorCode getCode() {
-      return code;
+      return this.code;
     }
 
-    public Object[] getParameters() {
-      return parameters;
+    public List<String> getColumnNames() {
+      return this.columnNames;
+    }
+
+    public Object getValue() {
+      return this.value;
+    }
+
+    public Long getLine() {
+      return this.line;
+    }
+
+    public Map<ErrorParameterKey, Object> getParameters() {
+      return this.parameters;
     }
 
     @JsonIgnore
@@ -126,8 +158,7 @@ public class TupleState implements Serializable {
 
     @Override
     public String toString() {
-      return Objects.toStringHelper(TupleError.class).add("code", code).add("parameters", Arrays.toString(parameters))
-          .toString();
+      return Objects.toStringHelper(TupleError.class).add("code", code).add("parameters", parameters).toString();
     }
 
   }

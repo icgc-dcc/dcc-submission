@@ -19,41 +19,56 @@ package org.icgc.dcc.validation.service;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.icgc.dcc.dictionary.DictionaryService;
-import org.icgc.dcc.dictionary.model.Dictionary;
+import javax.mail.Address;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+
 import org.icgc.dcc.release.ReleaseService;
+import org.icgc.dcc.release.model.QueuedProject;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.Submission;
+import org.icgc.dcc.release.model.SubmissionState;
 import org.icgc.dcc.validation.FatalPlanningException;
 import org.icgc.dcc.validation.Plan;
-import org.icgc.dcc.validation.ValidationCallback;
 import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.report.Outcome;
 import org.icgc.dcc.validation.report.SchemaReport;
 import org.icgc.dcc.validation.report.SubmissionReport;
+import org.icgc.dcc.validation.report.ValidationErrorReport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.AbstractService;
 import com.google.inject.Inject;
+import com.typesafe.config.Config;
 
 /**
  * Manages validation queue that:<br>
  * - launches validation for queue submissions<br>
  * - updates submission states upon termination of the validation process
  */
-public class ValidationQueueManagerService extends AbstractService implements ValidationCallback {
+public class ValidationQueueManagerService extends AbstractService {
 
   private static final Logger log = LoggerFactory.getLogger(ValidationQueueManagerService.class);
 
@@ -63,22 +78,22 @@ public class ValidationQueueManagerService extends AbstractService implements Va
 
   private final ReleaseService releaseService;
 
-  private final DictionaryService dictionaryService;
-
   private final ValidationService validationService;
+
+  private final Config config;
 
   private ScheduledFuture<?> schedule;
 
   @Inject
-  public ValidationQueueManagerService(final ReleaseService releaseService, final DictionaryService dictionaryService,
-      ValidationService validationService) {
+  public ValidationQueueManagerService(final ReleaseService releaseService, ValidationService validationService,
+      Config config) {
 
     checkArgument(releaseService != null);
-    checkArgument(dictionaryService != null);
     checkArgument(validationService != null);
+    checkArgument(config != null);
 
+    this.config = config;
     this.releaseService = releaseService;
-    this.dictionaryService = dictionaryService;
     this.validationService = validationService;
   }
 
@@ -96,52 +111,83 @@ public class ValidationQueueManagerService extends AbstractService implements Va
 
   private void startScheduler() {
     log.info("polling queue every {} second", POLLING_FREQUENCY_PER_SEC);
+
     schedule = scheduler.scheduleWithFixedDelay(new Runnable() {
       @Override
       public void run() {
-        Optional<String> next = Optional.<String> absent();
+        Optional<QueuedProject> nextProject = Optional.<QueuedProject> absent();
+        Optional<Throwable> criticalThrowable = Optional.<Throwable> absent();
         try {
           if(isRunning() && releaseService.hasNextRelease()) {
-            next = releaseService.getNextRelease().getNextInQueue();
-            if(next.isPresent()) {
-              log.info("next in queue {}", next);
-              Release release = releaseService.getNextRelease().getRelease();
-              if(release == null) {
-                throw new ValidationServiceException("cannot access the next release");
-              } else {
-                String dictionaryVersion = release.getDictionaryVersion();
-                Dictionary dictionary = dictionaryService.getFromVersion(dictionaryVersion);
-                if(dictionary == null) {
-                  throw new ValidationServiceException(String.format("no dictionary found with version %s",
-                      dictionaryVersion));
-                } else {
-                  String projectKey = next.get();
-                  Plan plan = validationService.validate(release, projectKey);
-                  if(release.getState() == ReleaseState.OPENED) {
-                    if(plan.getCascade().getCascadeStats().isSuccessful()) {
-                      handleSuccessfulValidation(projectKey, plan);
-                    } else {
-                      handleFailedValidation(projectKey);
-                    }
-                  } else {
-                    log.info("Release was closed during validation; states not changed");
-                  }
-                }
-              }
+            nextProject = releaseService.getNextRelease().getNextInQueue();
+            if(nextProject.isPresent()) {
+              QueuedProject queuedProject = nextProject.get();
+              log.info("next in queue {}", queuedProject);
+              validateSubmission(queuedProject);
             }
           }
-        } catch(FatalPlanningException e) {
-          if(next.isPresent()) {
-            handleFailedValidation(next.get(), e.getErrors());
+        } catch(FatalPlanningException e) { // potentially thrown by validateSubmission() upon file-level errors
+          try {
+            handleAbortedValidation(e);
+          } catch(Throwable t) {
+            criticalThrowable = Optional.fromNullable(t);
           }
-        } catch(Exception e) { // exception thrown within the run method are not logged otherwise (NullPointerException
+        } catch(Throwable t) { // exception thrown within the run method are not logged otherwise (NullPointerException
                                // for instance)
-          log.error("an error occured while processing the validation queue", e);
-          if(next.isPresent()) {
-            dequeue(next.get(), false);
+          criticalThrowable = Optional.fromNullable(t);
+        } finally {
+
+          /*
+           * When a scheduled job throws an exception to the executor, all future runs of the job are cancelled. Thus,
+           * we should never throw an exception to our executor otherwise a server restart is necessary.
+           */
+          if(criticalThrowable.isPresent()) {
+            Throwable t = criticalThrowable.get();
+            log.error("a critical error occured while processing the validation queue", t);
+
+            if(nextProject != null && nextProject.isPresent()) {
+              QueuedProject project = nextProject.get();
+              try {
+                dequeue(project, SubmissionState.ERROR);
+              } catch(Throwable t2) {
+                log.error(
+                    String.format("a critical error occured while attempting to dequeue project %s", project.getKey()),
+                    t2);
+              }
+            } else {
+              log.error(String.format(
+                  "next project in queue not present, could not dequeue nor set submission state to ",
+                  SubmissionState.ERROR));
+            }
           }
         }
       }
+
+      /**
+       * May throw unchecked FatalPlanningException upon file-level errors (too critical to continue)
+       */
+      private void validateSubmission(final QueuedProject queuedProject) throws FatalPlanningException {
+        Release release = releaseService.getNextRelease().getRelease();
+        if(release == null) {
+          throw new ValidationServiceException("cannot access the next release");
+        } else {
+          if(release.getState() == ReleaseState.OPENED) {
+            Plan plan = validationService.validate(release, queuedProject);
+            handleCascadeStatus(plan, queuedProject);
+          } else {
+            log.info("Release was closed during validation; states not changed");
+          }
+        }
+      }
+
+      private void handleCascadeStatus(final Plan plan, final QueuedProject project) {
+        if(plan.getCascade().getCascadeStats().isSuccessful()) {
+          handleCompletedValidation(project, plan);
+        } else {
+          handleUnexpectedException(project);
+        }
+      }
+
     }, POLLING_FREQUENCY_PER_SEC, POLLING_FREQUENCY_PER_SEC, TimeUnit.SECONDS);
   }
 
@@ -154,16 +200,52 @@ public class ValidationQueueManagerService extends AbstractService implements Va
     }
   }
 
-  @Override
-  public void handleSuccessfulValidation(String projectKey, Plan plan) {
-    checkArgument(projectKey != null);
+  public void handleAbortedValidation(FatalPlanningException e) {
+    QueuedProject project = e.getProject();
+    Plan plan = e.getPlan();
+    if(plan.hasFileLevelErrors() == false) {
+      new AssertionError(); // by design since this should be the condition for throwing the
+                            // FatalPlanningException
+    }
+
+    Map<String, TupleState> fileLevelErrors = plan.getFileLevelErrors();
+    log.error("file errors (fatal planning errors):\n\t{}", fileLevelErrors);
+
+    log.info("about to dequeue project key {}", project.getKey());
+    dequeue(project, SubmissionState.INVALID);
+
+    checkArgument(project != null);
+    SubmissionReport report = new SubmissionReport();
+
+    List<SchemaReport> schemaReports = new ArrayList<SchemaReport>();
+    for(String schema : fileLevelErrors.keySet()) {
+      SchemaReport schemaReport = new SchemaReport();
+      Iterator<TupleState.TupleError> es = fileLevelErrors.get(schema).getErrors().iterator();
+      List<ValidationErrorReport> errReport = Lists.newArrayList();
+      while(es.hasNext()) {
+        errReport.add(new ValidationErrorReport(es.next()));
+      }
+      schemaReport.addErrors(errReport);
+      schemaReport.setName(schema);
+      schemaReports.add(schemaReport);
+    }
+    report.setSchemaReports(schemaReports);
+    setSubmissionReport(project.getKey(), report);
+  }
+
+  public void handleCompletedValidation(QueuedProject project, Plan plan) {
+    checkArgument(project != null);
+
     SubmissionReport report = new SubmissionReport();
     Outcome outcome = plan.collect(report);
 
-    setSubmissionReport(projectKey, report);
-
-    log.info("successful validation - about to dequeue project key {}", projectKey);
-    dequeue(projectKey, outcome == Outcome.PASSED);
+    log.info("completed validation - about to dequeue project key {}/set submission its state", project.getKey());
+    if(outcome == Outcome.PASSED) {
+      dequeue(project, SubmissionState.VALID);
+    } else {
+      dequeue(project, SubmissionState.INVALID);
+    }
+    setSubmissionReport(project.getKey(), report);
   }
 
   private void setSubmissionReport(String projectKey, SubmissionReport report) {
@@ -180,37 +262,78 @@ public class ValidationQueueManagerService extends AbstractService implements Va
     log.info("report collecting finished on project {}", projectKey);
   }
 
-  @Override
-  public void handleFailedValidation(String projectKey) {
-    checkArgument(projectKey != null);
-    log.info("failed validation - about to dequeue project key {}", projectKey);
-    dequeue(projectKey, false);
+  public void handleUnexpectedException(QueuedProject project) {
+    checkArgument(project != null);
+    log.info("failed validation from unknown error - about to dequeue project key {}", project.getKey());
+    dequeue(project, SubmissionState.ERROR);
   }
 
-  public void handleFailedValidation(String projectKey, Map<String, TupleState> errors) {
-    checkArgument(projectKey != null);
-
-    SubmissionReport report = new SubmissionReport();
-    List<SchemaReport> schemaReports = new ArrayList<SchemaReport>();
-    for(String schema : errors.keySet()) {
-      SchemaReport schemaReport = new SchemaReport();
-
-      schemaReport.setErrors(Arrays.asList(errors.get(schema)));
-      schemaReport.setName(schema);
-      schemaReports.add(schemaReport);
+  private void dequeue(QueuedProject project, SubmissionState state) {
+    if(project.getEmails().isEmpty() == false) {
+      this.email(project, state);
     }
-    report.setSchemaReports(schemaReports);
 
-    setSubmissionReport(projectKey, report);
-
-    log.info("failed validation - about to dequeue project key {}", projectKey);
-    dequeue(projectKey, false);
+    Optional<QueuedProject> dequeuedProject = releaseService.dequeue(project.getKey(), state);
+    if(dequeuedProject.isPresent() == false) {
+      log.warn("could not dequeue project {}, maybe the queue was emptied in the meantime?", project.getKey());
+    }
   }
 
-  private void dequeue(String projectKey, boolean valid) {
-    Optional<String> dequeuedProjectKey = releaseService.dequeue(projectKey, valid);
-    if(dequeuedProjectKey.isPresent() == false) {
-      log.warn("could not dequeue project {}, maybe the queue was emptied in the meantime?", projectKey);
+  private void email(QueuedProject project, SubmissionState state) {
+    Properties props = new Properties();
+    props.put("mail.smtp.host", this.config.getString("mail.smtp.host"));
+    Session session = Session.getDefaultInstance(props, null);
+    Release release = releaseService.getNextRelease().getRelease();
+
+    Set<Address> aCheck = Sets.newHashSet();
+
+    for(String email : project.getEmails()) {
+      try {
+        Address a = new InternetAddress(email);
+        aCheck.add(a);
+      } catch(AddressException e) {
+        log.error("Illigal Address: " + e);
+      }
+    }
+
+    if(aCheck.isEmpty() == false) {
+      try {
+        Message msg = new MimeMessage(session);
+        msg.setFrom(new InternetAddress(this.config.getString("mail.from.email"), this.config
+            .getString("mail.from.email")));
+
+        msg.setSubject(String.format(this.config.getString("mail.subject"), project.getKey(), state));
+        if(state == SubmissionState.ERROR) {
+          // send email to admin when Error occurs
+          Address adminEmailAdd = new InternetAddress(this.config.getString("mail.admin.email"));
+          aCheck.add(adminEmailAdd);
+          msg.setText(String.format(this.config.getString("mail.error_body"), project.getKey(), state));
+        } else if(state == SubmissionState.VALID) {
+          msg.setText(String.format(this.config.getString("mail.valid_body"), project.getKey(), state,
+              release.getName(), project.getKey()));
+        } else if(state == SubmissionState.INVALID) {
+          msg.setText(String.format(this.config.getString("mail.invalid_body"), project.getKey(), state,
+              release.getName(), project.getKey()));
+        }
+
+        Address[] addresses = new Address[aCheck.size()];
+
+        int i = 0;
+        for(Address email : aCheck) {
+          addresses[i++] = email;
+        }
+        msg.addRecipients(Message.RecipientType.TO, addresses);
+
+        Transport.send(msg);
+        log.error("Emails for {} sent to {}: ", project.getKey(), aCheck);
+
+      } catch(AddressException e) {
+        log.error("an error occured while emailing: ", e);
+      } catch(MessagingException e) {
+        log.error("an error occured while emailing: ", e);
+      } catch(UnsupportedEncodingException e) {
+        log.error("an error occured while emailing: ", e);
+      }
     }
   }
 

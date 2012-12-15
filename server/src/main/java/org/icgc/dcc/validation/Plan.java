@@ -17,27 +17,39 @@
  */
 package org.icgc.dcc.validation;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.report.Outcome;
 import org.icgc.dcc.validation.report.SchemaReport;
 import org.icgc.dcc.validation.report.SubmissionReport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cascading.cascade.Cascade;
 import cascading.cascade.CascadeConnector;
 import cascading.cascade.CascadeDef;
 import cascading.flow.Flow;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 public class Plan {
+
+  private static final Logger log = LoggerFactory.getLogger(Plan.class);
 
   private final List<FileSchema> plannedSchema = Lists.newArrayList();
 
@@ -45,12 +57,28 @@ public class Plan {
 
   private final Map<String, ExternalFlowPlanner> externalPlanners = Maps.newHashMap();
 
-  private Cascade cascade;
+  private final Dictionary dictionary;
 
   private final CascadingStrategy cascadingStrategy;
 
-  public Plan(CascadingStrategy cascadingStrategy) {
+  private final Map<String, TupleState> fileLevelErrors = new LinkedHashMap<String, TupleState>();
+
+  private Cascade cascade;
+
+  public Plan(Dictionary dictionary, CascadingStrategy cascadingStrategy) {
+    checkArgument(dictionary != null);
+    checkArgument(cascadingStrategy != null);
+
+    this.dictionary = dictionary;
     this.cascadingStrategy = cascadingStrategy;
+  }
+
+  public String path(final FileSchema schema) throws FileNotFoundException, IOException {
+    return this.cascadingStrategy.path(schema).getName();
+  }
+
+  public Dictionary getDictionary() {
+    return dictionary;
   }
 
   public void include(FileSchema fileSchema, InternalFlowPlanner internal, ExternalFlowPlanner external) {
@@ -59,10 +87,12 @@ public class Plan {
     this.externalPlanners.put(fileSchema.getName(), external);
   }
 
-  public InternalFlowPlanner getInternalFlow(String schema) {
+  public InternalFlowPlanner getInternalFlow(String schema) throws MissingFileException {
     InternalFlowPlanner schemaPlan = internalPlanners.get(schema);
     if(schemaPlan == null) {
-      throw new PlanningException(schema, ValidationErrorCode.MISSING_SCHEMA_ERROR, schema);
+      log.error(String.format("no corresponding file for schema %s, schemata with files are %s", schema,
+          internalPlanners.keySet()));
+      throw new MissingFileException(schema);
     }
     return schemaPlan;
   }
@@ -71,10 +101,10 @@ public class Plan {
     return Iterables.unmodifiableIterable(internalPlanners.values());
   }
 
-  public ExternalFlowPlanner getExternalFlow(String schema) {
+  public ExternalFlowPlanner getExternalFlow(String schema) throws MissingFileException {
     ExternalFlowPlanner schemaPlan = externalPlanners.get(schema);
     if(schemaPlan == null) {
-      throw new PlanningException(schema, ValidationErrorCode.MISSING_SCHEMA_ERROR, schema);
+      throw new MissingFileException(schema);
     }
     return schemaPlan;
   }
@@ -96,19 +126,15 @@ public class Plan {
 
   public void connect(CascadingStrategy cascadingStrategy) {
     CascadeDef cascade = new CascadeDef();
-    Map<String, TupleState> errors = Maps.newLinkedHashMap();
     for(FileSchemaFlowPlanner planner : Iterables.concat(internalPlanners.values(), externalPlanners.values())) {
       try {
         Flow<?> flow = planner.connect(cascadingStrategy);
         if(flow != null) {
           cascade.addFlow(flow);
         }
-      } catch(PlanningException e) {
-        errors.put(e.getSchemaName(), e.getTupleState());
+      } catch(PlanningFileLevelException e) {
+        addFileLevelError(e);
       }
-    }
-    if(errors.size() > 0) {
-      throw new FatalPlanningException(errors);
     }
 
     this.cascade = new CascadeConnector().connect(cascade);
@@ -133,14 +159,8 @@ public class Plan {
         // combine internal and external plans into one
         SchemaReport sreport = schemaReports.get(schemaReport.getName());
 
-        if(schemaReport.getFieldReports() != null) {
-          sreport.getFieldReports().addAll(schemaReport.getFieldReports());
-        }
-        if(sreport.getErrors() != null) {
-          sreport.getErrors().addAll(schemaReport.getErrors());
-        } else if(schemaReport.getErrors() != null) {
-          sreport.setErrors(schemaReport.getErrors());
-        }
+        sreport.addFieldReports(schemaReport.getFieldReports());
+        sreport.addErrors(schemaReport.getErrors());
       }
     }
 
@@ -158,5 +178,24 @@ public class Plan {
       }
     }
     return null;
+  }
+
+  public void addFileLevelError(PlanningFileLevelException e) {
+    String filename = e.getFilename();
+    TupleState tupleState = e.getTupleState();
+    checkState(filename != null);
+    checkState(tupleState != null);
+    if(fileLevelErrors.get(filename) != null) {
+      throw new AssertionError(filename);
+    }
+    fileLevelErrors.put(filename, tupleState);
+  }
+
+  public boolean hasFileLevelErrors() {
+    return fileLevelErrors.isEmpty() == false;
+  }
+
+  public Map<String, TupleState> getFileLevelErrors() {
+    return ImmutableMap.<String, TupleState> copyOf(fileLevelErrors);
   }
 }

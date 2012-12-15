@@ -7,7 +7,7 @@ import java.util.Set;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.core.model.User;
+import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
 import org.icgc.dcc.release.model.Release;
 import org.slf4j.Logger;
@@ -67,8 +67,8 @@ public class DccFileSystem {
    * Creates new user-tailored "view" of a given release filesystem. We may change that behavior later to not creating
    * it on the fly (for now we have very few users and don't plan on having millions ever).
    */
-  public ReleaseFileSystem getReleaseFilesystem(Release release, User user) {
-    return new ReleaseFileSystem(this, release, user.getName());
+  public ReleaseFileSystem getReleaseFilesystem(Release release, Subject subject) {
+    return new ReleaseFileSystem(this, release, subject);
   }
 
   /**
@@ -123,6 +123,14 @@ public class DccFileSystem {
     // create corresponding release directory
     HadoopUtils.mkdirs(this.fileSystem, releaseStringPath);
     ensureSubmissionDirectories(release, projectKeyList);
+
+    // create system files for release directory
+    ReleaseFileSystem releaseFS = this.getReleaseFilesystem(release);
+    Path systemFilePath = releaseFS.getSystemDirectory();
+    exists = HadoopUtils.checkExistence(this.fileSystem, systemFilePath.toString());
+    if(exists == false) {
+      HadoopUtils.mkdirs(this.fileSystem, systemFilePath.toString());
+    }
   }
 
   public void mkdirProjectDirectory(Release release, String projectKey) {
@@ -137,10 +145,17 @@ public class DccFileSystem {
     log.info("\t" + "project path = " + projectStringPath);
   }
 
-  private void createDirIfDoesNotExist(String projectStringPath) {
-    if(HadoopUtils.checkExistence(this.fileSystem, projectStringPath) == false) {
-      HadoopUtils.mkdirs(this.fileSystem, projectStringPath);
-      checkState(HadoopUtils.checkExistence(this.fileSystem, projectStringPath));
+  void createDirIfDoesNotExist(final String stringPath) {
+    if(HadoopUtils.checkExistence(this.fileSystem, stringPath) == false) {
+      HadoopUtils.mkdirs(this.fileSystem, stringPath);
+      checkState(HadoopUtils.checkExistence(this.fileSystem, stringPath));
+    }
+  }
+
+  void removeDirIfExist(final String stringPath) {
+    if(HadoopUtils.checkExistence(this.fileSystem, stringPath)) {
+      HadoopUtils.rmr(this.fileSystem, stringPath);
+      checkState(HadoopUtils.checkExistence(this.fileSystem, stringPath) == false);
     }
   }
 

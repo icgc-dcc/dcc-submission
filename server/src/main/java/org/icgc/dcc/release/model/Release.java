@@ -1,10 +1,9 @@
 package org.icgc.dcc.release.model;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
@@ -14,10 +13,15 @@ import org.icgc.dcc.release.ReleaseException;
 
 import com.google.code.morphia.annotations.Entity;
 import com.google.common.base.Function;
+import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 
+/**
+ * Not meant to be used in a hash for now (override hashCode if so)
+ */
 @Entity
 public class Release extends BaseEntity implements HasName {
 
@@ -25,9 +29,11 @@ public class Release extends BaseEntity implements HasName {
 
   protected ReleaseState state;
 
-  protected List<Submission> submissions = new ArrayList<Submission>();
+  protected boolean transitioning; // mutex
 
-  protected List<String> queue = new ArrayList<String>();
+  protected List<Submission> submissions = Lists.newArrayList();
+
+  protected List<QueuedProject> queue = Lists.newArrayList();
 
   protected Date releaseDate;
 
@@ -59,6 +65,14 @@ public class Release extends BaseEntity implements HasName {
 
   public void setState(ReleaseState state) {
     this.state = state;
+  }
+
+  public boolean isTransitioning() {
+    return transitioning;
+  }
+
+  public void setTransitioning(boolean transitioning) {
+    this.transitioning = transitioning;
   }
 
   public List<Submission> getSubmissions() {
@@ -113,38 +127,106 @@ public class Release extends BaseEntity implements HasName {
     this.releaseDate = new Date();
   }
 
-  public List<String> getQueue() {
+  /**
+   * @return the list of project keys that are queued (possibly empty)
+   */
+  public List<String> getQueuedProjectKeys() {
+    List<String> projectKeys = Lists.newArrayList();
+    for(QueuedProject qp : this.getQueue()) {
+      projectKeys.add(qp.getKey());
+    }
+    return projectKeys;
+  }
+
+  public List<QueuedProject> getQueue() {
     return queue;
   }
 
-  public void enqueue(String projectKey) {
-    List<String> queue = this.getQueue();
-    if(projectKey != null && !projectKey.isEmpty() && !queue.contains(projectKey)) {
-      queue.add(projectKey);
+  public void enqueue(QueuedProject project) {
+    if(project.getKey() != null && !project.getKey().isEmpty() && !this.queue.contains(project)) {
+      this.queue.add(project);
     }
   }
 
-  public void enqueue(List<String> projectKeys) {
+  public void enqueue(List<QueuedProject> queuedProjects) {
+    for(QueuedProject qp : queuedProjects) {
+      this.enqueue(qp);
+    }
+  }
+
+  public int removeFromQueue(final String projectKey) {
+    int count = 0;
+    for(int i = this.queue.size() - 1; i >= 0; i--) {
+      QueuedProject queuedProject = this.queue.get(i);
+      if(queuedProject != null && queuedProject.getKey().equals(projectKey)) {
+        this.queue.remove(i);
+        count++;
+      }
+    }
+    return count;
+  }
+
+  public int removeFromQueue(final List<String> projectKeys) {
+    int count = 0;
     for(String projectKey : projectKeys) {
-      this.enqueue(projectKey);
+      count += removeFromQueue(projectKey);
     }
+    return count;
   }
 
-  public boolean removeFromQueue(List<String> projectKeys) {
-    return this.queue.removeAll(projectKeys);
+  /**
+   * Attempts to retrieve the first element of the queue.
+   */
+  public Optional<QueuedProject> nextInQueue() {
+    return this.queue != null && this.queue.isEmpty() == false ? Optional.<QueuedProject> of(this.queue.get(0)) : Optional
+        .<QueuedProject> absent();
   }
 
-  public Optional<String> nextInQueue() {
-    return this.queue != null && this.queue.isEmpty() == false ? Optional.<String> of(this.queue.get(0)) : Optional
-        .<String> absent();
+  /**
+   * Dequeues the first element of the queue, expecting the queue to contain at least one element.<br>
+   * 
+   * Use in combination with <code>{@link Release#nextInQueue()}</code> and guava's <code>Optional.isPresent()</code><br>
+   * This method is <b>not</b> thread-safe.
+   */
+  public QueuedProject dequeueProject() {
+    checkState(queue != null && queue.isEmpty() == false);
+    return queue.remove(0);
   }
 
-  public Optional<String> dequeue() {
-    return this.queue != null && this.queue.isEmpty() == false ? Optional.<String> of(this.queue.remove(0)) : Optional
-        .<String> absent();
+  public Optional<QueuedProject> dequeue() {
+    return this.queue != null && this.queue.isEmpty() == false ? Optional.<QueuedProject> of(this.queue.remove(0)) : Optional
+        .<QueuedProject> absent();
   }
 
   public void emptyQueue() {
-    this.queue = new LinkedList<String>();
+    this.queue.clear();
+  }
+
+  @Override
+  public boolean equals(Object obj) { // TODO: hashCode (if we need hashes)
+    if(obj == null) {
+      return false;
+    }
+    if(obj == this) {
+      return true;
+    }
+    if(getClass() != obj.getClass()) {
+      return false;
+    }
+    final Release other = (Release) obj;
+    return Objects.equal(this.name, other.name);
+  }
+
+  @Override
+  public String toString() {
+    return Objects.toStringHelper(Release.class) //
+        .add("name", this.name) //
+        .add("state", this.state) //
+        .add("transitioning", this.transitioning) //
+        .add("releaseDate", this.releaseDate) //
+        .add("dictionaryVersion", this.dictionaryVersion) //
+        .add("queue", this.queue) //
+        .add("submissions", this.submissions) //
+        .toString();
   }
 }

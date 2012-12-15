@@ -17,13 +17,8 @@
  */
 package org.icgc.dcc.validation;
 
-import org.icgc.dcc.validation.cascading.TupleState;
 
 public class PlanningException extends RuntimeException {
-
-  private String schemaName;
-
-  private TupleState tupleState;
 
   public PlanningException() {
     super();
@@ -39,20 +34,5 @@ public class PlanningException extends RuntimeException {
 
   public PlanningException(Throwable cause) {
     super(cause);
-  }
-
-  public PlanningException(String schemaName, ValidationErrorCode errorCode, Object... parameters) {
-    super();
-    this.schemaName = schemaName;
-    this.tupleState = new TupleState();
-    tupleState.reportError(errorCode, parameters);
-  }
-
-  public String getSchemaName() {
-    return this.schemaName;
-  }
-
-  public TupleState getTupleState() {
-    return this.tupleState;
   }
 }

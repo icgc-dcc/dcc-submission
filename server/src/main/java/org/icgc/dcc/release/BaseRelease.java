@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.core.model.QProject;
-import org.icgc.dcc.core.model.User;
 import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.filesystem.ReleaseFileSystem;
 import org.icgc.dcc.release.model.Release;
@@ -35,11 +34,6 @@ public abstract class BaseRelease implements HasRelease {
     this.morphia = morphia;
     this.datastore = datastore;
     this.dccFilesystem = fs;
-  }
-
-  @Override
-  public ReleaseFileSystem getReleaseFilesystem(User user) {
-    return this.dccFilesystem.getReleaseFilesystem(this.release, user);
   }
 
   @Override

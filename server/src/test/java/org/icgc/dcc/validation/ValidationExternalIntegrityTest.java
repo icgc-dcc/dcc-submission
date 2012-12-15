@@ -34,7 +34,6 @@ import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.dictionary.DictionaryService;
-import org.icgc.dcc.dictionary.model.Cardinality;
 import org.icgc.dcc.dictionary.model.CodeList;
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.Field;
@@ -45,6 +44,7 @@ import org.icgc.dcc.dictionary.model.ValueType;
 import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.filesystem.GuiceJUnitRunner;
 import org.icgc.dcc.filesystem.GuiceJUnitRunner.GuiceModules;
+import org.icgc.dcc.release.model.QueuedProject;
 import org.icgc.dcc.validation.factory.LocalCascadingStrategyFactory;
 import org.icgc.dcc.validation.service.ValidationService;
 import org.junit.Before;
@@ -80,6 +80,7 @@ public class ValidationExternalIntegrityTest {
     CodeList codeList2 = mock(CodeList.class);
     CodeList codeList3 = mock(CodeList.class);
     CodeList codeList4 = mock(CodeList.class);
+    CodeList codeList5 = mock(CodeList.class);
 
     List<Term> termList1 = Arrays.asList(new Term("1", "dummy", null), new Term("2", "dummy", null));
     List<Term> termList2 = Arrays.asList(new Term("1", "dummy", null), new Term("2", "dummy", null));
@@ -87,6 +88,8 @@ public class ValidationExternalIntegrityTest {
         Arrays.asList(new Term("1", "dummy", null), new Term("2", "dummy", null), new Term("3", "dummy", null),
             new Term("4", "dummy", null), new Term("5", "dummy", null));
     List<Term> termList4 =
+        Arrays.asList(new Term("1", "dummy", null), new Term("2", "dummy", null), new Term("3", "dummy", null));
+    List<Term> termList5 =
         Arrays.asList(new Term("1", "dummy", null), new Term("2", "dummy", null), new Term("3", "dummy", null));
 
     when(dictionaryService.getCodeList("dr__donor_sex")).thenReturn(codeList1);
@@ -101,10 +104,13 @@ public class ValidationExternalIntegrityTest {
     when(dictionaryService.getCodeList("specimen__tumour_confirmed")).thenReturn(codeList1);
     when(dictionaryService.getCodeList("specimen__specimen_available")).thenReturn(codeList1);
 
+    when(dictionaryService.getCodeList("sp__analyzed_sample_type")).thenReturn(codeList5);
+
     when(codeList1.getTerms()).thenReturn(termList1);
     when(codeList2.getTerms()).thenReturn(termList2);
     when(codeList3.getTerms()).thenReturn(termList3);
     when(codeList4.getTerms()).thenReturn(termList4);
+    when(codeList5.getTerms()).thenReturn(termList5);
 
     validationService =
         new ValidationService(dccFileSystem, projectService, planner, dictionaryService,
@@ -125,6 +131,8 @@ public class ValidationExternalIntegrityTest {
     String specimenTrim = getUnsortedFileContent(ROOTDIR, "/.validation/specimen#donor_id-offset.tsv");
     String specimenTrimExpected = getUnsortedFileContent("/ref/fk_specimen_trim.tsv");
     Assert.assertEquals("Incorrect specimen ID trim list", specimenTrimExpected.trim(), specimenTrim.trim());
+
+    resetDictionary();
   }
 
   @Test
@@ -144,9 +152,8 @@ public class ValidationExternalIntegrityTest {
 
     String[] fieldNames = { "donor_id", "fakecolumn" };
 
-    specimen.getRelation().clear();
-    Relation relation =
-        new Relation(Arrays.asList(fieldNames), "donor", Arrays.asList(fieldNames), Cardinality.ZERO_OR_MORE);
+    specimen.clearRelations();
+    Relation relation = new Relation(Arrays.asList(fieldNames), "donor", Arrays.asList(fieldNames), false);
     specimen.addRelation(relation);
 
     testErrorType("fk_1");
@@ -203,8 +210,8 @@ public class ValidationExternalIntegrityTest {
 
     CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir, systemDir);
 
-    Plan plan = validationService.planCascade(null, cascadingStrategy, dictionary);
-    Assert.assertEquals(3, plan.getCascade().getFlows().size());
+    Plan plan = validationService.planCascade(new QueuedProject("dummyProject", null), cascadingStrategy, dictionary);
+    Assert.assertEquals(5, plan.getCascade().getFlows().size());
 
     validationService.runCascade(plan.getCascade(), null);
 

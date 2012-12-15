@@ -28,7 +28,9 @@ import com.google.code.morphia.annotations.Embedded;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 
 /**
  * Describes a file schema that contains {@code Field}s and that is part of a {@code Dictionary}
@@ -157,16 +159,20 @@ public class FileSchema implements DictionaryElement {
     return false;
   }
 
-  public List<Relation> getRelation() {
-    return relations;
+  public void setRelations(List<Relation> relations) {
+    this.relations = relations;
   }
 
-  public void setRelation(List<Relation> relations) {
-    this.relations = relations;
+  public List<Relation> getRelations() {
+    return ImmutableList.<Relation> copyOf(relations);
   }
 
   public boolean addRelation(Relation relation) {
     return this.relations.add(relation);
+  }
+
+  public void clearRelations() {
+    this.relations.clear();
   }
 
   @JsonIgnore
@@ -177,5 +183,23 @@ public class FileSchema implements DictionaryElement {
         return input.getName();
       }
     });
+  }
+
+  /**
+   * Returns a list of file schema having relations afferent to the current file schema and that have a 1..n left
+   * cardinality ("strict")
+   * 
+   * TODO: move to dictionary? better name?
+   */
+  public List<FileSchema> getBidirectionalAfferentFileSchemata(Dictionary dictionary) {
+    List<FileSchema> afferentFileSchemata = Lists.newArrayList();
+    for(FileSchema tmp : dictionary.getFiles()) {
+      for(Relation relation : tmp.getRelations()) {
+        if(relation.getOther().equals(name) && relation.isBidirectional()) {
+          afferentFileSchemata.add(tmp);
+        }
+      }
+    }
+    return ImmutableList.<FileSchema> copyOf(afferentFileSchemata);
   }
 }

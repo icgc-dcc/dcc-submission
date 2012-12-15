@@ -29,7 +29,7 @@ public class RemoveHeaderFilter extends BaseOperation implements Filter {
 
   @Override
   public boolean isRemove(FlowProcess flowProcess, FilterCall filterCall) {
-    if(filterCall.getArguments().getInteger(ValidationFields.OFFSET_FIELD_NAME) == 0) {
+    if(filterCall.getArguments().getLong(ValidationFields.OFFSET_FIELD_NAME) == 0) {
       return true;
     } else {
       return false;
