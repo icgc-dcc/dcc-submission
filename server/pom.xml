@@ -215,6 +215,11 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>com.foursquare</groupId>
+      <artifactId>fongo</artifactId>
+      <version>1.0.3</version>
+    </dependency>
+    <dependency>
       <groupId>org.glassfish.jersey.core</groupId>
       <artifactId>jersey-client</artifactId>
       <version>${jersey.version}</version>

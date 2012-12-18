@@ -25,9 +25,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientFactory;
@@ -158,7 +161,7 @@ public class IntegrationTest {
   private Datastore datastore;
 
   @Before
-  public void startServer() throws IOException {
+  public void startServer() throws IOException, InterruptedException, ExecutionException, TimeoutException {
 
     // clean up fs
     FileUtils.deleteDirectory(new File(DCC_ROOT_DIR));
@@ -168,7 +171,7 @@ public class IntegrationTest {
 
     // start server
     log.info("starting server");
-    service.execute(new Runnable() {
+    Future<?> future = service.submit(new Runnable() {
       @Override
       public void run() {
         try {
@@ -183,7 +186,7 @@ public class IntegrationTest {
     });
 
     // give enough time for server to start properly before having the test connect to it
-    Uninterruptibles.sleepUninterruptibly(2, TimeUnit.SECONDS);
+    future.get(20, TimeUnit.SECONDS);
   }
 
   @After

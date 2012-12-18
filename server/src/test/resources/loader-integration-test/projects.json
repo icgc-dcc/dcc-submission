@@ -1,0 +1,64 @@
+[
+   {
+      "name":"Project One",
+      "key":"project1",
+      "users":[
+         "admin"
+      ],
+      "groups":[
+         "admin"
+      ]
+   },
+   {
+      "name":"Project Two",
+      "key":"project2",
+      "users":[
+         "admin","brett"
+      ],
+      "groups":[
+         "admin"
+      ]
+   },
+   {
+      "name":"Project Three",
+      "key":"project3",
+      "users":[
+         "admin"
+      ],
+      "groups":[
+         "admin"
+      ]
+   },
+   {
+      "name":"project4",
+      "key":"project4",
+      "users":[
+         "admin"
+      ],
+      "groups":[
+         "admin"
+      ]
+   },
+   {
+      "name":"project5",
+      "key":"project5",
+      "users":[
+         "admin"
+      ],
+      "groups":[
+         "admin"
+      ]
+   },
+   {
+      "name":"project6",
+      "key":"project6",
+      "users":[
+         "admin"
+      ],
+      "groups":[
+         "admin"
+      ]
+   }
+]
+
+
