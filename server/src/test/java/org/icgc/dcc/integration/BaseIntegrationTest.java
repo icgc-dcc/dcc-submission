@@ -45,6 +45,12 @@ import com.typesafe.config.ConfigFactory;
 @GuiceModules({ ConfigModule.class, MorphiaModule.class })
 public abstract class BaseIntegrationTest {
 
+  static {
+    // See http://stackoverflow.com/questions/7134723/hadoop-on-osx-unable-to-load-realm-info-from-scdynamicstore
+    System.setProperty("java.security.krb5.realm", "OX.AC.UK");
+    System.setProperty("java.security.krb5.kdc", "kdc0.ox.ac.uk:kdc1.ox.ac.uk");
+  }
+
   protected static final String DCC_ROOT_DIR = ConfigFactory.load().getString("fs.root");
 
   protected final Client client = ClientFactory.newClient();
