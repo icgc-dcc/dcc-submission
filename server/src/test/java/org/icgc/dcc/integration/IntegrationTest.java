@@ -25,20 +25,16 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
-import javax.ws.rs.MessageProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientFactory;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.io.FileUtils;
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.glassfish.jersey.internal.util.Base64;
 import org.icgc.dcc.Main;
 import org.icgc.dcc.config.ConfigModule;
 import org.icgc.dcc.core.CoreModule;
@@ -52,282 +48,324 @@ import org.icgc.dcc.release.model.DetailedSubmission;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.ReleaseView;
-import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.release.model.SubmissionState;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.code.morphia.Datastore;
-import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
-import com.google.common.io.Resources;
+import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.inject.Inject;
 import com.typesafe.config.ConfigFactory;
 
 @RunWith(GuiceJUnitRunner.class)
-@GuiceModules({ ConfigModule.class, CoreModule.class,//
-HttpModule.class, JerseyModule.class,// TODO: find out why those two seem necessary
-MorphiaModule.class, FileSystemModule.class })
+@GuiceModules({ ConfigModule.class, CoreModule.class, HttpModule.class, JerseyModule.class, MorphiaModule.class, FileSystemModule.class })
 public class IntegrationTest {
+
+  private static final Logger log = LoggerFactory.getLogger(IntegrationTest.class);
+
+  private static final String FIRST_DICTIONARY_VERSION = "0.6c";
+
+  private static final String SECOND_DICTIONARY_VERSION = "0.6d";
+
+  private static final String PROJECT1_NAME = "project1";
+
+  private static final String PROJECT2_NAME = "project2";
+
+  private static final String PROJECT3_NAME = "project3";
+
+  private static final String INITITAL_RELEASE_NAME = "release1";
+
+  private static final String NEXT_RELEASE_NAME = "release2";
+
+  private static final String SEED_ENDPOINT = "/seed";
+
+  private static final String SEED_CODELIST_ENDPOINT = SEED_ENDPOINT + "/codelists";
+
+  private static final String SEED_DICTIONARIES_ENDPOINT = SEED_ENDPOINT + "/dictionaries";
+
+  private static final String DICTIONARIES_ENDPOINT = "/dictionaries";
+
+  private static final String PROJECTS_ENDPOINT = "/projects";
+
+  private static final String RELEASES_ENDPOINT = "/releases";
+
+  private static final String NEXT_RELEASE_ENPOINT = "/nextRelease";
+
+  private static final String UPDATE_RELEASE_ENDPOINT = NEXT_RELEASE_ENPOINT + "/update"; // TODO: ?
+
+  private static final String SIGNOFF_ENDPOINT = NEXT_RELEASE_ENPOINT + "/signed";
+
+  private static final String QUEUE_ENDPOINT = NEXT_RELEASE_ENPOINT + "/queue";
+
+  private static final String INITIAL_RELEASE_ENDPOINT = RELEASES_ENDPOINT + "/" + INITITAL_RELEASE_NAME;
+
+  private static final String INITIAL_RELEASE_SUBMISSIONS_ENDPOINT = INITIAL_RELEASE_ENDPOINT + "/submissions";
+
+  private static final String INTEGRATION_TEST_DIR_RESOURCE = "/integrationtest";
+
+  private static final String CODELISTS_RESOURCE = INTEGRATION_TEST_DIR_RESOURCE + "/codelists.json";
+
+  private static final String FIRST_DICTIONARY_RESOURCE = "/dictionary.json";// TODO: move to INTEGRATION_TEST_DIR
+
+  private static final String SECOND_DICTIONARY_RESOURCE = // careful, also updated by converter, do not edit manually,
+                                                           // update via
+                                                           // DictionaryConverterTest.updateSecondDictionaryContent()
+                                                           // instead
+      INTEGRATION_TEST_DIR_RESOURCE + "/secondDictionary.json";
+
+  private static final String INITIAL_RELEASE_RESOURCE = INTEGRATION_TEST_DIR_RESOURCE + "/initRelease.json";
+
+  private static final String UPDATED_INITIAL_RELEASE_RESOURCE = INTEGRATION_TEST_DIR_RESOURCE + "/updatedRelease.json";
+
+  private static final String SECOND_RELEASE = "{\"name\": \"release2\"}";
+
+  private static final String PROJECT1 =
+      "{\"name\":\"Project One\",\"key\":\"project1\",\"users\":[\"admin\"],\"groups\":[\"admin\"]}";
+
+  private static final String PROJECT2 =
+      "{\"name\":\"Project Two\",\"key\":\"project2\",\"users\":[\"admin\", \"brett\"],\"groups\":[\"admin\"]}";
+
+  private static final String PROJECT3 =
+      "{\"name\":\"Project Three\",\"key\":\"project3\",\"users\":[\"admin\"],\"groups\":[\"admin\"]}";
+
+  private static final String PROJECT_TO_SIGN_OFF = "[\"project1\"]";
+
+  private static final String PROJECTS_TO_ENQUEUE =
+      "[{\"key\": \"project1\", \"emails\": [\"a@a.ca\"]}, {\"key\": \"project2\", \"emails\": [\"a@a.ca\"]}, {\"key\": \"project3\", \"emails\": [\"a@a.ca\"]}]";
+
+  private static final String FS_DIR = "src/test/resources/integrationtest/fs";
+
+  private static final String SYSTEM_FILES_DIR = "src/test/resources/integrationtest/fs/SystemFiles";
+
+  private static final String DCC_ROOT_DIR = ConfigFactory.load().getString("fs.root");
+
+  private static final String INITIAL_RELEASE_SYSTEM_FILES_DIR = DCC_ROOT_DIR + "/release1/SystemFiles";
+
+  private static final String PROJECT1_VALIDATION_DIR = "release1/project1/.validation";
+
+  private final ExecutorService service = Executors.newSingleThreadExecutor();
+
+  private final Client client = ClientFactory.newClient();
+
+  private int dictionaryUpdateCount = 0;
 
   @Inject
   private Datastore datastore;
 
-  private static final String DCC_ROOT_DIR = ConfigFactory.load().getString("fs.root");
-
-  static private Thread server;
-
-  private final Client client = ClientFactory.newClient();
-
-  private static final String BASEURI = "http://localhost:5380/ws";
-
-  private static final String AUTHORIZATION = "X-DCC-Auth " + Base64.encodeAsString("admin:adminspasswd");
-
-  private WebTarget target;
-
   @Before
-  public void startServer() throws InterruptedException, IOException {
-    clearFS();
-    clearDB();
+  public void startServer() throws IOException {
 
-    server = new Thread(new Runnable() {
+    // clean up fs
+    FileUtils.deleteDirectory(new File(DCC_ROOT_DIR));
+
+    // clean up db
+    datastore.getDB().dropDatabase();
+
+    // start server
+    log.info("starting server");
+    service.execute(new Runnable() {
       @Override
       public void run() {
         try {
+          log.info("server main thread started");
           Main.main(null);
-        } catch(IOException e) {
-          System.err.println("Problem starting server");
+        } catch(Exception e) {
           e.printStackTrace();
+        } finally {
+          log.info("server main thread ended");
         }
       }
     });
-    server.start();
-    Thread.sleep(5000);
-  }
 
-  private void clearDB() throws IOException, InterruptedException {
-    datastore.getDB().dropDatabase();
-    Thread.sleep(1000);
-  }
-
-  private void clearFS() throws IOException {
-    FileUtils.deleteDirectory(new File(DCC_ROOT_DIR));
+    // give enough time for server to start properly before having the test connect to it
+    Uninterruptibles.sleepUninterruptibly(2, TimeUnit.SECONDS);
   }
 
   @After
   public void stopServer() {
-    server.interrupt();
+    log.info("shutting down server");
+    service.shutdown();
+    log.info("shut down server");
   }
 
   @Test
-  public void test_IntegrationTest() throws JsonParseException, JsonMappingException, MessageProcessingException,
-      IllegalStateException, IOException, InterruptedException {
-    test_feedDB();
+  public void testSystem() throws Exception {
+    log.info("starting tests");
+    try {
 
-    test_createInitialRelease("/integrationtest/initRelease.json");
+      // feed db
+      TestUtils.post(client, SEED_DICTIONARIES_ENDPOINT, TestUtils.resourceToJsonArray(FIRST_DICTIONARY_RESOURCE));
+      TestUtils.post(client, SEED_DICTIONARIES_ENDPOINT, TestUtils.resourceToJsonArray(SECOND_DICTIONARY_RESOURCE));
+      TestUtils.post(client, SEED_CODELIST_ENDPOINT, TestUtils.resourceToString(CODELISTS_RESOURCE));
 
-    test_checkRelease("release1", "0.6c", ReleaseState.OPENED, Arrays.<SubmissionState> asList());
+      // create initial release and projects (and therefore submissions)
+      createInitialRelease();
+      checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, ReleaseState.OPENED, //
+          Arrays.<SubmissionState> asList());
+      addProjects();
+      checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, ReleaseState.OPENED, //
+          Arrays.<SubmissionState> asList( //
+              SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED));
 
-    test_addProjects();
+      // feed filesystem; TODO: ideally we should use an sftp client to upload data files
+      FileUtils.copyDirectory(new File(FS_DIR), new File(DCC_ROOT_DIR));
+      FileUtils.copyDirectory(new File(SYSTEM_FILES_DIR), new File(INITIAL_RELEASE_SYSTEM_FILES_DIR));
 
-    test_checkRelease("release1", "0.6c", ReleaseState.OPENED, Arrays.<SubmissionState> asList(
-        SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED));
+      // validate
+      updateDictionary( // dictionary is OPENED
+          FIRST_DICTIONARY_RESOURCE, FIRST_DICTIONARY_VERSION, Status.OK.getStatusCode());
+      enqueueProjects(); // triggers validations
+      checkValidations(); // will poll until all validated
 
-    test_feedFileSystem();
+      // release
+      releaseInitialRelease();
+      checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, ReleaseState.COMPLETED, //
+          Arrays.<SubmissionState> asList(SubmissionState.SIGNED_OFF));
+      checkRelease(NEXT_RELEASE_NAME, FIRST_DICTIONARY_VERSION, ReleaseState.OPENED, //
+          Arrays.<SubmissionState> asList( //
+              SubmissionState.NOT_VALIDATED, SubmissionState.INVALID, SubmissionState.INVALID));
 
-    test_checkQueueIsEmpty();
+      // update dictionaries
+      updateDictionary( // dictionary is CLOSED
+          FIRST_DICTIONARY_RESOURCE, FIRST_DICTIONARY_VERSION, Status.BAD_REQUEST.getStatusCode());
+      updateDictionary( // dictionary is OPENED
+          SECOND_DICTIONARY_RESOURCE, SECOND_DICTIONARY_VERSION, Status.OK.getStatusCode());
 
-    test_queueProjects();
+      // update release
+      updateRelease(UPDATED_INITIAL_RELEASE_RESOURCE);
+      checkRelease(NEXT_RELEASE_NAME, SECOND_DICTIONARY_VERSION, ReleaseState.OPENED, //
+          Arrays.<SubmissionState> asList( //
+              SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED));
 
-    test_checkSubmissionsStates();
+    } catch(Exception e) {
+      e.printStackTrace(); // make sure we get stacktrace
+      throw e;
+    }
 
-    test_fileIsEmpty(DCC_ROOT_DIR, "release1/project1/.validation/donor.internal#errors.json");
-    test_fileIsEmpty(DCC_ROOT_DIR, "release1/project1/.validation/specimen.internal#errors.json");
-    test_fileIsEmpty(DCC_ROOT_DIR, "release1/project1/.validation/specimen.external#errors.json");
-
-    test_releaseFirstRelease();
-
-    test_checkRelease("release1", "0.6c", ReleaseState.COMPLETED,
-        Arrays.<SubmissionState> asList(SubmissionState.SIGNED_OFF));
-
-    test_checkRelease("release2", "0.6c", ReleaseState.OPENED, Arrays.<SubmissionState> asList(
-        SubmissionState.NOT_VALIDATED, SubmissionState.INVALID, SubmissionState.INVALID));
-
-    test_updateRelease("/integrationtest/updatedRelease.json");
-
-    test_checkRelease("release2", "0.6d", ReleaseState.OPENED, Arrays.<SubmissionState> asList(
-        SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED));
+    log.info("ending tests");
   }
 
-  private void test_addProjects() throws IOException {
-    Response response1 =
-        sendPostRequest("/projects",
-            "{\"name\":\"Project One\",\"key\":\"project1\",\"users\":[\"admin\"],\"groups\":[\"admin\"]}");
+  private void createInitialRelease() throws Exception {
+    Response response = TestUtils.put(client, RELEASES_ENDPOINT, TestUtils.resourceToString(INITIAL_RELEASE_RESOURCE));
+    assertEquals(200, response.getStatus());
+
+    Release release = TestUtils.asRelease(response);
+    assertEquals(INITITAL_RELEASE_NAME, release.getName());
+  }
+
+  private void checkRelease(String releaseName, String dictionaryVersion, ReleaseState expectedReleaseState,
+      List<SubmissionState> expectedSubmissionStates) throws Exception {
+
+    Response response = TestUtils.get(client, RELEASES_ENDPOINT + "/" + releaseName);
+    assertEquals(200, response.getStatus());
+
+    ReleaseView releaseView = TestUtils.asReleaseView(response);
+    assertNotNull(releaseView);
+
+    assertEquals(dictionaryVersion, releaseView.getDictionaryVersion());
+    assertEquals(expectedReleaseState, releaseView.getState());
+    assertEquals(ImmutableList.<String> of(), releaseView.getQueue());
+    assertEquals(expectedSubmissionStates.size(), releaseView.getSubmissions().size());
+    int i = 0;
+    for(DetailedSubmission submission : releaseView.getSubmissions()) {
+      assertEquals(expectedSubmissionStates.get(i++), submission.getState());
+    }
+  }
+
+  private void addProjects() throws IOException {
+    Response response1 = TestUtils.post(client, PROJECTS_ENDPOINT, PROJECT1);
     assertEquals(201, response1.getStatus());
-    Response response2 =
-        sendPostRequest("/projects",
-            "{\"name\":\"Project Two\",\"key\":\"project2\",\"users\":[\"admin\", \"brett\"],\"groups\":[\"admin\"]}");
+
+    Response response2 = TestUtils.post(client, PROJECTS_ENDPOINT, PROJECT2);
     assertEquals(201, response2.getStatus());
-    Response response3 =
-        sendPostRequest("/projects",
-            "{\"name\":\"Project Three\",\"key\":\"project3\",\"users\":[\"admin\"],\"groups\":[\"admin\"]}");
+
+    Response response3 = TestUtils.post(client, PROJECTS_ENDPOINT, PROJECT3);
     assertEquals(201, response3.getStatus());
   }
 
-  private void test_feedFileSystem() throws IOException {
-    // TODO ideally we should use a sftp client to upload data files
-    File srcDir = new File("src/test/resources/integrationtest/fs/");
-    File destDir = new File(DCC_ROOT_DIR);
-    FileUtils.copyDirectory(srcDir, destDir);
+  private void enqueueProjects() throws Exception {
+    Response response = TestUtils.get(client, QUEUE_ENDPOINT);
+    assertEquals(200, response.getStatus());
+    assertEquals("[]", TestUtils.asString(response));
 
-    srcDir = new File("src/test/resources/integrationtest/fs/SystemFiles");
-    destDir = new File(DCC_ROOT_DIR + "/release1/SystemFiles");
-    FileUtils.copyDirectory(srcDir, destDir);
+    response = TestUtils.post(client, QUEUE_ENDPOINT, PROJECTS_TO_ENQUEUE);
+    assertEquals(200, response.getStatus());
   }
 
-  private void test_feedDB() throws NullPointerException, IllegalArgumentException, IOException {
-    this.client.target(BASEURI).path("/seed/dictionaries").request(MediaType.APPLICATION_JSON)
-        .header("Authorization", AUTHORIZATION)
-        .post(Entity.entity("[" + this.resourceToString("/dictionary.json") + "]", MediaType.APPLICATION_JSON));
-    String secondDictionaryPath = "/integrationtest/secondDictionary.json"; // careful, also updated by converter, do
-                                                                            // not edit manually, update via
-                                                                            // DictionaryConverterTest.updateSecondDictionaryContent()
-                                                                            // instead
-    this.client.target(BASEURI).path("/seed/dictionaries").request(MediaType.APPLICATION_JSON)
-        .header("Authorization", AUTHORIZATION)
-        .post(Entity.entity("[" + this.resourceToString(secondDictionaryPath) + "]", MediaType.APPLICATION_JSON));
-    this.client.target(BASEURI).path("/seed/codelists").request(MediaType.APPLICATION_JSON)
-        .header("Authorization", AUTHORIZATION)
-        .post(Entity.entity(this.resourceToString("/integrationtest/codelists.json"), MediaType.APPLICATION_JSON));
-  }
-
-  private void test_checkSubmissionsStates() throws IOException, InterruptedException {
-    Response response = sendGetRequest("/releases/release1");
+  private void checkValidations() throws Exception {
+    Response response = TestUtils.get(client, INITIAL_RELEASE_ENDPOINT);
     assertEquals(200, response.getStatus());
 
-    Submission submission;
-    do {
-      response = sendGetRequest("/releases/release1/submissions/project1");
-      assertEquals(200, response.getStatus());
-      submission = new ObjectMapper().readValue(response.readEntity(String.class), DetailedSubmission.class);
-      Thread.sleep(2000);
-    } while(submission.getState() == SubmissionState.QUEUED);
-    assertEquals(SubmissionState.VALID, submission.getState());
+    checkValidatedSubmission(PROJECT1_NAME, SubmissionState.VALID);
+    checkValidatedSubmission(PROJECT2_NAME, SubmissionState.INVALID);
+    checkValidatedSubmission(PROJECT3_NAME, SubmissionState.INVALID);
 
-    do {
-      response = sendGetRequest("/releases/release1/submissions/project2");
-      assertEquals(200, response.getStatus());
-      submission = new ObjectMapper().readValue(response.readEntity(String.class), DetailedSubmission.class);
-      Thread.sleep(2000);
-    } while(submission.getState() == SubmissionState.QUEUED);
-    assertEquals(SubmissionState.INVALID, submission.getState());
-
-    do {
-      response = sendGetRequest("/releases/release1/submissions/project3");
-      assertEquals(200, response.getStatus());
-      submission = new ObjectMapper().readValue(response.readEntity(String.class), DetailedSubmission.class);
-      Thread.sleep(2000);
-    } while(submission.getState() == SubmissionState.QUEUED);
-    assertEquals(SubmissionState.INVALID, submission.getState());
+    // check no errors for project 1
+    checkEmptyFile(DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/donor.internal#errors.json");
+    checkEmptyFile(DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/specimen.internal#errors.json");
+    checkEmptyFile(DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/specimen.external#errors.json");
+    // TODO add more
   }
 
-  private void test_fileIsEmpty(String dir, String path) throws IOException {
+  private void checkValidatedSubmission(String project, SubmissionState expectedSubmissionState) throws Exception {
+    DetailedSubmission detailedSubmission;
+    do {
+      Uninterruptibles.sleepUninterruptibly(2, TimeUnit.SECONDS);
+
+      Response response = TestUtils.get(client, INITIAL_RELEASE_SUBMISSIONS_ENDPOINT + "/" + project);
+      assertEquals(200, response.getStatus());
+
+      detailedSubmission = TestUtils.asDetailedSubmission(response);
+    } while(detailedSubmission.getState() == SubmissionState.QUEUED);
+
+    assertEquals(expectedSubmissionState, detailedSubmission.getState());
+  }
+
+  private void checkEmptyFile(String dir, String path) throws IOException {
     File errorFile = new File(dir, path);
     assertTrue("Expected file does not exist: " + path, errorFile.exists());
     assertTrue("Expected empty file: " + path, FileUtils.readFileToString(errorFile).isEmpty());
   }
 
-  private void test_releaseFirstRelease() throws IOException {
-    // Expect 400 Bad Request because no projects are signed off
-    Response response = sendPostRequest("/nextRelease", "{\"name\": \"release2\"}");
+  private void releaseInitialRelease() {
+    // attempts releasing (expect failure)
+    Response response = TestUtils.post(client, NEXT_RELEASE_ENPOINT, SECOND_RELEASE);
+    assertEquals(400, response.getStatus()); // no signed off projects
+
+    // sign off
+    response = TestUtils.post(client, SIGNOFF_ENDPOINT, PROJECT_TO_SIGN_OFF);
+    assertEquals(200, response.getStatus());
+
+    // attempt releasing again
+    response = TestUtils.post(client, NEXT_RELEASE_ENPOINT, SECOND_RELEASE);
+    assertEquals(200, response.getStatus());
+
+    // attempt releasing one too many times
+    response = TestUtils.post(client, NEXT_RELEASE_ENPOINT, SECOND_RELEASE);
     assertEquals(400, response.getStatus());
-
-    // Sign off on a project
-    response = sendPostRequest("/nextRelease/signed", "[\"project1\"]");
-    assertEquals(200, response.getStatus());
-
-    // Release again, expect 200 OK
-    response = sendPostRequest("/nextRelease", "{\"name\": \"release2\"}");
-    assertEquals(200, response.getStatus());
-
-    // Release again, expect 400 Bad Request because of the duplicate release
-    response = sendPostRequest("/nextRelease", "{\"name\": \"release2\"}");
-    assertEquals(400, response.getStatus());
   }
 
-  private void test_checkRelease(String releaseName, String dictionaryVersion, ReleaseState state,
-      List<SubmissionState> states) throws IOException, JsonParseException, JsonMappingException {
-    Response response = sendGetRequest("/releases/" + releaseName);
-    assertEquals(200, response.getStatus());
-
-    ReleaseView release = new ObjectMapper().readValue(response.readEntity(String.class), ReleaseView.class);
-    assertNotNull(release);
-    assertEquals(dictionaryVersion, release.getDictionaryVersion());
-    assertEquals(ImmutableList.<String> of(), release.getQueue());
-    assertEquals(state, release.getState());
-    assertEquals(states.size(), release.getSubmissions().size());
-    int i = 0;
-    for(DetailedSubmission submission : release.getSubmissions()) {
-      assertEquals(states.get(i++), submission.getState());
-    }
+  private void updateDictionary(String dictionaryResource, String dictionaryVersion, int expectedStatus)
+      throws Exception {
+    String dictionary = TestUtils.resourceToString(dictionaryResource);
+    String updatedSecondDictionary = dictionary.replace("Unique identifier for the donor", //
+        "Unique identifier for the donor (update" + ++dictionaryUpdateCount + ")");
+    assertTrue(dictionary.equals(updatedSecondDictionary) == false);
+    Response response = TestUtils.put(client, DICTIONARIES_ENDPOINT + "/" + dictionaryVersion, updatedSecondDictionary);
+    assertEquals(expectedStatus, response.getStatus());
   }
 
-  private void test_checkQueueIsEmpty() throws IOException {
-    Response response = sendGetRequest("/nextRelease/queue");
-    assertEquals(200, response.getStatus());
-    assertEquals("[]", response.readEntity(String.class));
-  }
-
-  private void test_createInitialRelease(String initReleaseRelPath) throws IOException, JsonParseException,
-      JsonMappingException {
-    Response response = sendPutRequest("/releases", resourceToString(initReleaseRelPath));
-    assertEquals(200, response.getStatus());
-    Release release = new ObjectMapper().readValue(response.readEntity(String.class), Release.class);
-    assertEquals("release1", release.getName());
-  }
-
-  private String resourceToString(String resourcePath) throws IOException {
-    return Resources.toString(this.getClass().getResource(resourcePath), Charsets.UTF_8);
-  }
-
-  private void test_queueProjects() throws IOException, JsonParseException, JsonMappingException {
+  private void updateRelease(String updatedReleaseRelPath) throws Exception {
     Response response =
-        sendPostRequest(
-            "/nextRelease/queue",
-            "[{\"key\": \"project1\", \"emails\": [\"a@a.ca\"]}, {\"key\": \"project2\", \"emails\": [\"a@a.ca\"]}, {\"key\": \"project3\", \"emails\": [\"a@a.ca\"]}]");
+        TestUtils.put(client, UPDATE_RELEASE_ENDPOINT, TestUtils.resourceToString(updatedReleaseRelPath));
     assertEquals(200, response.getStatus());
-  }
 
-  private void test_updateRelease(String updatedReleaseRelPath) throws IOException, JsonParseException,
-      JsonMappingException {
-    Response response = sendPutRequest("/nextRelease/update", resourceToString(updatedReleaseRelPath));
-    assertEquals(200, response.getStatus());
-    Release release = new ObjectMapper().readValue(response.readEntity(String.class), Release.class);
-    assertEquals("release2", release.getName());
-  }
-
-  private Response sendPutRequest(String requestPath, String payload) throws IOException {
-
-    this.target = this.client.target(BASEURI).path(requestPath);
-    Response response =
-        this.target.request(MediaType.APPLICATION_JSON).header("Authorization", AUTHORIZATION)
-            .put(Entity.entity(payload, MediaType.APPLICATION_JSON));
-    return response;
-  }
-
-  private Response sendGetRequest(String requestPath) throws IOException {
-    this.target = this.client.target(BASEURI).path(requestPath);
-    Response response = this.target.request(MediaType.APPLICATION_JSON).header("Authorization", AUTHORIZATION).get();
-    return response;
-  }
-
-  private Response sendPostRequest(String requestPath, String payload) throws IOException {
-    this.target = this.client.target(BASEURI).path(requestPath);
-    Response response =
-        this.target.request(MediaType.APPLICATION_JSON).header("Authorization", AUTHORIZATION)
-            .post(Entity.entity(payload, MediaType.APPLICATION_JSON));
-    return response;
+    Release release = TestUtils.asRelease(response);
+    assertEquals(NEXT_RELEASE_NAME, release.getName());
   }
 }
