@@ -205,6 +205,7 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
     protected final String[] rhsFields;
 
     NoNullBufferBase(String lhs, String rhs, String[] lhsFields, String[] rhsFields) {
+      // TODO: Check that lhsFields and rhsFields is not null before super call
       super(lhsFields.length + rhsFields.length, new Fields(ValidationFields.STATE_FIELD_NAME));
       checkArgument(lhs != null && lhs.isEmpty() == false);
       checkArgument(rhs != null && rhs.isEmpty() == false);

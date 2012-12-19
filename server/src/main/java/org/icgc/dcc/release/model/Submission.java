@@ -63,11 +63,6 @@ public class Submission {
     this.projectKey = projectKey;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#hashCode()
-   */
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -76,21 +71,19 @@ public class Submission {
     return result;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
   @Override
   public boolean equals(Object obj) {
-    if(this == obj) return true;
-    if(obj == null) return false;
-    if(getClass() != obj.getClass()) return false;
-    Submission other = (Submission) obj;
-    if(projectKey == null) {
-      if(other.projectKey != null) return false;
-    } else if(!projectKey.equals(other.projectKey)) return false;
-    return true;
+    if(obj == null) {
+      return false;
+    }
+    if(obj == this) {
+      return true;
+    }
+    if(getClass() != obj.getClass()) {
+      return false;
+    }
+    final Submission other = (Submission) obj;
+    return Objects.equal(this.projectKey, other.projectKey);
   }
 
   @Override
