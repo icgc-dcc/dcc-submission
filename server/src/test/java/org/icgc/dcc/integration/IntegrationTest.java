@@ -25,12 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientFactory;
@@ -52,7 +47,6 @@ import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.ReleaseView;
 import org.icgc.dcc.release.model.SubmissionState;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -151,8 +145,6 @@ public class IntegrationTest {
 
   private static final String PROJECT1_VALIDATION_DIR = "release1/project1/.validation";
 
-  private final ExecutorService service = Executors.newSingleThreadExecutor();
-
   private final Client client = ClientFactory.newClient();
 
   private int dictionaryUpdateCount = 0;
@@ -161,7 +153,7 @@ public class IntegrationTest {
   private Datastore datastore;
 
   @Before
-  public void startServer() throws IOException, InterruptedException, ExecutionException, TimeoutException {
+  public void startServer() throws IOException {
 
     // clean up fs
     FileUtils.deleteDirectory(new File(DCC_ROOT_DIR));
@@ -171,29 +163,14 @@ public class IntegrationTest {
 
     // start server
     log.info("starting server");
-    Future<?> future = service.submit(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          log.info("server main thread started");
-          Main.main(null);
-        } catch(Exception e) {
-          e.printStackTrace();
-        } finally {
-          log.info("server main thread ended");
-        }
-      }
-    });
-
-    // give enough time for server to start properly before having the test connect to it
-    future.get(20, TimeUnit.SECONDS);
-  }
-
-  @After
-  public void stopServer() {
-    log.info("shutting down server");
-    service.shutdown();
-    log.info("shut down server");
+    try {
+      log.info("server main thread started");
+      Main.main(null);
+    } catch(Exception e) {
+      e.printStackTrace();
+    } finally {
+      log.info("server main thread ended");
+    }
   }
 
   @Test
