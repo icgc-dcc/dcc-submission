@@ -30,7 +30,7 @@ public class Trim {
 
   private static final char FIELD_SEPARATOR = '-';
 
-  private static final String SCHEMA_SEPERATOR = ":";
+  private static final String SCHEMA_SEPERATOR = "#";
 
   private final FileSchema schema;
 
