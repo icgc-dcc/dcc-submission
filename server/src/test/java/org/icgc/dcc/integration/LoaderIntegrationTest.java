@@ -37,11 +37,18 @@ import java.io.IOException;
 
 import javax.ws.rs.core.Response;
 
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.loader.Main;
 import org.icgc.dcc.release.model.DetailedSubmission;
 import org.icgc.dcc.release.model.Release;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.google.common.base.Charsets;
+import com.google.common.base.Throwables;
+import com.google.common.io.Files;
+import com.wordnik.system.mongodb.SnapshotUtil;
 
 /**
  * Integration test to exercise the loader main entry point.
@@ -92,7 +99,11 @@ public class LoaderIntegrationTest extends BaseIntegrationTest {
 
   private static final String PROJECTS_TO_ENQUEUE = "[{\"key\": \"project1\", \"emails\": [\"a@a.ca\"]}]";
 
-  private static final String FS_DIR = "src/test/resources/loader-integration-test/fs";
+  private static final String INTEGRATION_TEST_DIR = "src/test/resources/loader-integration-test";
+
+  private static final String FS_DIR = INTEGRATION_TEST_DIR + "/fs";
+
+  private static final String MONGO_EXPORT_DIR = INTEGRATION_TEST_DIR + "/mongo-export";
 
   private static final String SYSTEM_FILES_DIR = FS_DIR + "/SystemFiles";
 
@@ -119,18 +130,21 @@ public class LoaderIntegrationTest extends BaseIntegrationTest {
 
   /**
    * Execute loader on test data set.
+   * @throws IOException
    */
   @Test
-  public void testSystem() {
+  public void testSystem() throws IOException {
     String[] args = { RELEASE_NAME };
     Main.main(args);
+
+    compareDb();
   }
 
   /**
    * @throws IOException
    */
   private void startValidator() throws IOException {
-    org.icgc.dcc.Main.main(null);
+    org.icgc.dcc.Main.main(new String[] {});
   }
 
   /**
@@ -211,6 +225,40 @@ public class LoaderIntegrationTest extends BaseIntegrationTest {
   private void releaseRelease() {
     Response response = post(client, NEXT_RELEASE_ENPOINT, NEXT_RELEASE);
     assertEquals(200, response.getStatus());
+  }
+
+  /**
+   * @throws IOException
+   */
+  private void compareDb() {
+    SnapshotUtil.main(new String[] { //
+        "-d", Main.DATABASE_NAME, // Database
+        "-o", DCC_ROOT_DIR, // Output dir
+        "-J" // Output in json
+        });
+
+    for(File file : new File(MONGO_EXPORT_DIR).listFiles()) {
+      try {
+        String expectedJson = Files.toString(file, Charsets.UTF_8);
+        String actualJson = Files.toString(new File(DCC_ROOT_DIR + "/" + file.getName()), Charsets.UTF_8);
+
+        assertJsonEquals(expectedJson, actualJson);
+      } catch(IOException e) {
+        Throwables.propagate(e);
+      }
+    }
+  }
+
+  private void assertJsonEquals(String actualJson, String expectedJson) {
+    try {
+      ObjectMapper mapper = new ObjectMapper();
+      JsonNode tree1 = mapper.readTree(actualJson);
+      JsonNode tree2 = mapper.readTree(expectedJson);
+
+      assertEquals(tree1, tree2);
+    } catch(Exception e) {
+      Throwables.propagate(e);
+    }
   }
 
 }
