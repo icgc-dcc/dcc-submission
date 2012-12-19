@@ -8,7 +8,7 @@ import org.codehaus.jackson.annotate.JsonIgnore;
 import com.google.code.morphia.annotations.Id;
 import com.google.code.morphia.annotations.Version;
 
-public class BaseEntity extends Timestamped implements HasId {
+public abstract class BaseEntity extends Timestamped implements HasId {
 
   @Id
   @JsonIgnore
