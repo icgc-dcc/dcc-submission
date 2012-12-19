@@ -1,0 +1,8 @@
+{ "_id" : "ENSG00000166211", "name" : "12", "biotype" : "protein_coding", "label" : "SPIC", "description" : "Spi-C transcription factor (Spi-1/PU.1 related) [Source:HGNC Symbol;Acc:29549]" }
+{ "_id" : "ENSG00000170379", "name" : "7", "biotype" : "protein_coding", "label" : "FAM115C", "description" : "family with sequence similarity 115, member C [Source:HGNC Symbol;Acc:26878]" }
+{ "_id" : "ENSG00000179222", "name" : "X", "biotype" : "protein_coding", "label" : "MAGED1", "description" : "melanoma antigen family D, 1 [Source:HGNC Symbol;Acc:6813]" }
+{ "_id" : "ENSG00000182308", "name" : "4", "biotype" : "protein_coding", "label" : "DCAF4L1", "description" : "DDB1 and CUL4 associated factor 4-like 1 [Source:HGNC Symbol;Acc:27723]" }
+{ "_id" : "ENSG00000186047", "name" : "13", "biotype" : "protein_coding", "label" : "DLEU7", "description" : "deleted in lymphocytic leukemia, 7 [Source:HGNC Symbol;Acc:17567]" }
+{ "_id" : "ENSG00000221855", "name" : "7", "biotype" : "protein_coding", "label" : "TAS2R41", "description" : "taste receptor, type 2, member 41 [Source:HGNC Symbol;Acc:18883]" }
+{ "_id" : "ENSG00000250565", "name" : "2", "biotype" : "protein_coding", "label" : "ATP6V1E2", "description" : "ATPase, H+ transporting, lysosomal 31kDa, V1 subunit E2 [Source:HGNC Symbol;Acc:18125]" }
+{ "_id" : "ENSG00000258589", "name" : "HSCHR6_MHC_DBB", "biotype" : "protein_coding", "label" : "DADB-127H9.10.1", "description" : "Lymphocyte antigen 6 complex, locus G5B [Source:UniProtKB/TrEMBL;Acc:B0UXB1]" }
