@@ -18,10 +18,12 @@
      { "name" : "referenceGenomeAllele", "type":"text", "fileSchemaField": "reference_genome_allele"},
      { "name" : "controlGenotype", "type":"text", "fileSchemaField": "control_genotype"},
      { "name" : "tumourGenotype", "type":"text", "fileSchemaField": "tumour_genotype"},
+     { "name" : "mutation", "type":"text", "fileSchemaField": "mutation"},
      { "name" : "mutation_id", "type":"text", "fileSchemaField": "mutation_id"},
      { "name" : "mutation_type", "type":"text", "fileSchemaField": "mutation_type"},
      { "name" : "expressedAllele", "type":"text", "fileSchemaField": "expressed_allele"},
      { "name" : "validationStatus", "type":"integer", "fileSchemaField": "validation_status"},
+     { "name" : "qualityScore", "type":"decimal", "fileSchemaField": "quality_score"},
 
      { "name" : "location", "type" : "record",
         "fields" : [
