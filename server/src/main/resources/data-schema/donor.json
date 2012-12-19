@@ -5,6 +5,7 @@
    "collection":"Donor",
    "fields" : [
       { "name" : "_id", "type" : "text", "fileSchemaField" : "donor_id" },
+      
       { "name" : "ageAtDiagnosis", "type" : "text", "fileSchemaField" : "donor_age_at_diagnosis" },
       { "name" : "gender", "type" : "integer", "fileSchemaField" : "donor_sex" },
       { "name" : "regionOfResidence", "type" : "text", "fileSchemaField" : "donor_region_of_residence" },
