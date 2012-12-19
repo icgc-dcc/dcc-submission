@@ -65,7 +65,16 @@ public class QueuedProject {
   }
 
   @Override
-  public boolean equals(Object obj) { // TODO: hashCode (if we need hashes)
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((emails == null) ? 0 : emails.hashCode());
+    result = prime * result + ((key == null) ? 0 : key.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
     if(obj == null) {
       return false;
     }
@@ -79,4 +88,5 @@ public class QueuedProject {
     return Objects.equal(this.key, other.key) //
         && Objects.equal(this.emails, other.emails);
   }
+
 }

@@ -203,7 +203,15 @@ public class Release extends BaseEntity implements HasName {
   }
 
   @Override
-  public boolean equals(Object obj) { // TODO: hashCode (if we need hashes)
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((name == null) ? 0 : name.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
     if(obj == null) {
       return false;
     }

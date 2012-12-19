@@ -64,7 +64,15 @@ public class Submission {
   }
 
   @Override
-  public boolean equals(Object obj) { // TODO: hashCode (if we need hashes)
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((projectKey == null) ? 0 : projectKey.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
     if(obj == null) {
       return false;
     }

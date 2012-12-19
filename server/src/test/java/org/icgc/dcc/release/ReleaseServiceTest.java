@@ -32,6 +32,7 @@ import org.junit.Test;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
+import com.google.common.base.Throwables;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
 import com.typesafe.config.Config;
@@ -224,8 +225,9 @@ public class ReleaseServiceTest {
     try {
       nextRelease = releaseService.getNextRelease().release(newRelease.getName());
     } catch(InvalidStateException e) {
-      e.printStackTrace();
+      Throwables.propagate(e);
     }
+
     return nextRelease.getRelease();
   }
 }

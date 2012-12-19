@@ -247,12 +247,7 @@ public class DictionaryConverter {
   }
 
   private Boolean getBidirectionality(String cardinalityString) {
-    if("1..n".equals(cardinalityString)) {
-      return true;
-    } else if("0..n".equals(cardinalityString)) {
-      return false;
-    }
-    return null;
+    return "1..n".equals(cardinalityString);
   }
 
   private String buildDebugString(Map<String, List<String>> schemaToUniqueFields) {
@@ -412,9 +407,6 @@ public class DictionaryConverter {
 
     // deconvolution
     String deconvolution = iterator.next();
-    if(deconvolution.isEmpty()) {
-
-    }
 
     String codeList = iterator.next();
     if(!codeList.isEmpty()) {
