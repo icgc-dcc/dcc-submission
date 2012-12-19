@@ -28,6 +28,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import org.icgc.dcc.data.schema.Schema;
+import org.icgc.dcc.loader.Main;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
@@ -102,7 +103,7 @@ public class SchemaDataResource {
   }
 
   protected DBCollection collection(String name) {
-    return mongo.getDB("icgc").getCollection(name);
+    return mongo.getDB(Main.DATABASE_NAME).getCollection(name);
   }
 
   protected DBCollection collection() {
