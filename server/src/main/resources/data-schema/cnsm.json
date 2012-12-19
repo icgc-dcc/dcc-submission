@@ -1,19 +1,21 @@
+wip
+
 {
-   "name" : "ssm",
+   "name" : "cnsm",
    "type" : "record",
-   "fileSchema": "ssm_p",
-   "metadataSchema":"ssm_m",
+   "fileSchema": "cnsm_p",
+   "metadataSchema":"cnsm_m",
    "collection":"Observation",
    "fields":[
      { "name" : "type", "type" : "text", "fileSchemaField" : "type" },
      { "name" : "className", "type" : "text", "fileSchemaField" : "className" },
      { "name" : "donorId", "type":"text", "fileSchemaField": "donor_id"},
 
-     { "name" : "platform", "type" : "text", "fileSchema":"ssm_m", "fileSchemaField" : "platform" },
-     { "name" : "samples", "type" : "array", "items":{"type":"text", "fileSchema":"ssm_m", "fileSchemaField" : "analyzed_sample_id,matched_sample_id"}},
-     { "name" : "experimentalProtocol", "type":"text", "fileSchema":"ssm_m", "fileSchemaField": "experimental_protocol"},
-     { "name" : "baseCallingAlgorithm", "type":"text", "fileSchema":"ssm_m", "fileSchemaField": "base_calling_algorithm"},
-     { "name" : "alignmentAlgorithm", "type":"text", "fileSchema":"ssm_m", "fileSchemaField": "alignment_algorithm"},
+     { "name" : "platform", "type" : "text", "fileSchema":"cnsm_m", "fileSchemaField" : "platform" },
+     { "name" : "samples", "type" : "array", "items":{"type":"text", "fileSchema":"cnsm_m", "fileSchemaField" : "analyzed_sample_id,matched_sample_id"}},
+     { "name" : "experimentalProtocol", "type":"text", "fileSchema":"cnsm_m", "fileSchemaField": "experimental_protocol"},
+     { "name" : "baseCallingAlgorithm", "type":"text", "fileSchema":"cnsm_m", "fileSchemaField": "base_calling_algorithm"},
+     { "name" : "alignmentAlgorithm", "type":"text", "fileSchema":"cnsm_m", "fileSchemaField": "alignment_algorithm"},
 
      { "name" : "referenceGenomeAllele", "type":"text", "fileSchemaField": "reference_genome_allele"},
      { "name" : "controlGenotype", "type":"text", "fileSchemaField": "control_genotype"},
@@ -25,16 +27,16 @@
 
      { "name" : "location", "type" : "record",
         "fields" : [
-          { "name" : "chromosome", "type" : "text", "fileSchema":"ssm_p", "fileSchemaField":"chromosome"},
-          { "name" : "start", "type" : "integer", "fileSchema":"ssm_p", "fileSchemaField":"chromosome_start"},
-          { "name" : "end", "type" : "integer", "fileSchema":"ssm_p", "fileSchemaField":"chromosome_end"},
-          { "name" : "strand", "type" : "text", "fileSchema":"ssm_p", "fileSchemaField":"chromosome_strand"}
+          { "name" : "chromosome", "type" : "text", "fileSchema":"cnsm_p", "fileSchemaField":"chromosome"},
+          { "name" : "start", "type" : "integer", "fileSchema":"cnsm_p", "fileSchemaField":"chromosome_start"},
+          { "name" : "end", "type" : "integer", "fileSchema":"cnsm_p", "fileSchemaField":"chromosome_end"},
+          { "name" : "strand", "type" : "text", "fileSchema":"cnsm_p", "fileSchemaField":"chromosome_strand"}
         ]
      },
      { "name" : "affectedGenes", "type" : "array", "items" : {
            "name" : "AAChange",
            "type" : "record",
-           "fileSchema" : "ssm_s",
+           "fileSchema" : "cnsm_s",
            "fields" : [
              { "name" : "type", "type" : "integer", "fileSchemaField":"consequence_type"},
              { "name" : "geneId", "type" : "text", "fileSchemaField":"gene_affected"},
