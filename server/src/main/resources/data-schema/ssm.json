@@ -5,15 +5,16 @@
    "metadataSchema":"ssm_m",
    "collection":"Observation",
    "fields":[
-     { "name" : "type", "type" : "text", "fileSchemaField" : "type" },
-     { "name" : "className", "type" : "text", "fileSchemaField" : "className" },
-     { "name" : "donorId", "type":"text", "fileSchemaField": "donor_id"},
+     { "name" : "type", "fileSchema": "N/A", "type" : "text", "fileSchemaField" : "type" },
+     { "name" : "className", "fileSchema": "N/A", "type" : "text", "fileSchemaField" : "className" },
+     
+     { "name" : "donorId", "fileSchema": "specimen", "type":"text", "fileSchemaField": "donor_id"},
 
      { "name" : "platform", "type" : "text", "fileSchema":"ssm_m", "fileSchemaField" : "platform" },
-     { "name" : "samples", "type" : "array", "items":{"type":"text", "fileSchema":"ssm_m", "fileSchemaField" : "analyzed_sample_id,matched_sample_id"}},
-     { "name" : "experimentalProtocol", "type":"text", "fileSchema":"ssm_m", "fileSchemaField": "experimental_protocol"},
-     { "name" : "baseCallingAlgorithm", "type":"text", "fileSchema":"ssm_m", "fileSchemaField": "base_calling_algorithm"},
-     { "name" : "alignmentAlgorithm", "type":"text", "fileSchema":"ssm_m", "fileSchemaField": "alignment_algorithm"},
+     { "name" : "samples", "type" : "array", "items":{"type":"text", "fileSchema": "ssm_m", "fileSchemaField" : "analyzed_sample_id,matched_sample_id"}},
+     { "name" : "experimentalProtocol", "type":"text", "fileSchema": "ssm_m", "fileSchemaField": "experimental_protocol"},
+     { "name" : "baseCallingAlgorithm", "type":"text", "fileSchema": "ssm_m", "fileSchemaField": "base_calling_algorithm"},
+     { "name" : "alignmentAlgorithm", "type":"text", "fileSchema": "ssm_m", "fileSchemaField": "alignment_algorithm"},
 
      { "name" : "referenceGenomeAllele", "type":"text", "fileSchemaField": "reference_genome_allele"},
      { "name" : "controlGenotype", "type":"text", "fileSchemaField": "control_genotype"},
@@ -22,9 +23,25 @@
      { "name" : "mutation_id", "type":"text", "fileSchemaField": "mutation_id"},
      { "name" : "mutation_type", "type":"text", "fileSchemaField": "mutation_type"},
      { "name" : "expressedAllele", "type":"text", "fileSchemaField": "expressed_allele"},
-     { "name" : "validationStatus", "type":"integer", "fileSchemaField": "validation_status"},
-     { "name" : "qualityScore", "type":"decimal", "fileSchemaField": "quality_score"},
+     { "name" : "validationStatus", "type":"text", "fileSchemaField": "validation_status"},
+     
+     { "name" : "analysisId", "type": "text", "fileSchema": "ssm_m", "fileSchemaField": "analysis_id" },
+     { "name" : "assemblyVersion", "type": "text", "fileSchema": "ssm_m", "fileSchemaField": "assembly_version" },
+     { "name" : "otherAnalysisAlgorithm", "type": "text", "fileSchema": "ssm_m", "fileSchemaField": "other_analysis_algorithm" },
+     { "name" : "rawDataAccession", "type": "text", "fileSchema": "ssm_m", "fileSchemaField": "raw_data_accession" },
+     { "name" : "rawDataRepository", "type": "text", "fileSchema": "ssm_m", "fileSchemaField": "raw_data_repository" },
+     { "name" : "seqCoverage", "type": "decimal", "fileSchema": "ssm_m", "fileSchemaField": "seq_coverage" },
+     { "name" : "variationCallingAlgorithm", "type": "text", "fileSchema": "ssm_m", "fileSchemaField": "variation_calling_algorithm" },
 
+     { "name" : "isAnnotated", "type": "text", "fileSchemaField": "is_annotated" },   
+     { "name" : "probability", "type": "decimal", "fileSchemaField": "probability" },
+     { "name" : "qualityScore", "type": "decimal", "fileSchemaField": "quality_score"},
+     { "name" : "readCount", "type": "decimal", "fileSchemaField": "read_count"},
+     { "name" : "refsnpAllele", "type": "text", "fileSchemaField": "refsnp_allele"},
+     { "name" : "refsnpStrand", "type": "integer", "fileSchemaField": "refsnp_strand"},
+     { "name" : "validationPlatform", "type": "text", "fileSchemaField": "validation_platform"},
+     { "name" : "xrefEnsemblVarId", "type": "text", "fileSchemaField": "xref_ensembl_var_id"},
+   
      { "name" : "location", "type" : "record",
         "fields" : [
           { "name" : "chromosome", "type" : "text", "fileSchema":"ssm_p", "fileSchemaField":"chromosome"},
@@ -43,7 +60,9 @@
              { "name" : "aaMutation", "type" : "text", "fileSchemaField":"aa_mutation"},
              { "name" : "cdsMutation", "type" : "text", "fileSchemaField":"cds_mutation"},
              { "name" : "proteinDomainAffected", "type" : "text", "fileSchemaField":"protein_domain_affected"},
-             { "name" : "transcriptId", "type" : "text", "fileSchemaField":"transcript_affected"}
+             { "name" : "transcriptId", "type" : "text", "fileSchemaField":"transcript_affected"},
+             
+             { "name": "gene_build_version", "type": "integer", "fileSchema": "ssm_s", "fileSchemaField": "gene_build_version" }
            ]
          }
        }
