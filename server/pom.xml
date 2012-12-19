@@ -215,11 +215,17 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>com.foursquare</groupId>
-      <artifactId>fongo</artifactId>
-      <version>1.0.3</version>
+	  <groupId>com.wordnik</groupId>
+	  <artifactId>mongo-admin-utils-distribution</artifactId>
+	  <version>1.2.0</version>
+	  <exclusions>
+        <exclusion>
+          <artifactId>slf4j-log4j12</artifactId>
+          <groupId>org.slf4j</groupId>
+        </exclusion>
+      </exclusions>
       <scope>test</scope>
-    </dependency>
+	</dependency>
     <dependency>
       <groupId>org.glassfish.jersey.core</groupId>
       <artifactId>jersey-client</artifactId>

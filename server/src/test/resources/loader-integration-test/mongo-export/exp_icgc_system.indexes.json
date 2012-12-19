@@ -1,2 +1,0 @@
-{ "v" : 1, "key" : { "_id" : 1 }, "ns" : "icgc.Gene", "name" : "_id_" }
-{ "v" : 1, "key" : { "_id" : 1 }, "ns" : "icgc.Donor", "name" : "_id_" }
