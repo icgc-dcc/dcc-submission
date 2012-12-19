@@ -150,14 +150,11 @@ public class ValidationQueueManagerService extends AbstractService {
               try {
                 dequeue(project, SubmissionState.ERROR);
               } catch(Throwable t2) {
-                log.error(
-                    String.format("a critical error occured while attempting to dequeue project %s", project.getKey()),
-                    t2);
+                log.error("a critical error occured while attempting to dequeue project {}", project.getKey());
               }
             } else {
-              log.error(String.format(
-                  "next project in queue not present, could not dequeue nor set submission state to ",
-                  SubmissionState.ERROR));
+              log.error("next project in queue not present, could not dequeue nor set submission state to {}",
+                  SubmissionState.ERROR);
             }
           }
         }
@@ -204,8 +201,8 @@ public class ValidationQueueManagerService extends AbstractService {
     QueuedProject project = e.getProject();
     Plan plan = e.getPlan();
     if(plan.hasFileLevelErrors() == false) {
-      new AssertionError(); // by design since this should be the condition for throwing the
-                            // FatalPlanningException
+      throw new AssertionError(); // by design since this should be the condition for throwing the
+      // FatalPlanningException
     }
 
     Map<String, TupleState> fileLevelErrors = plan.getFileLevelErrors();

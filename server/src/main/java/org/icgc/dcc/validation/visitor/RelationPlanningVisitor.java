@@ -208,8 +208,8 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
       super(lhsFields.length + rhsFields.length, new Fields(ValidationFields.STATE_FIELD_NAME));
       checkArgument(lhs != null && lhs.isEmpty() == false);
       checkArgument(rhs != null && rhs.isEmpty() == false);
-      checkArgument(lhsFields != null && lhsFields.length > 0);
-      checkArgument(rhsFields != null && rhsFields.length > 0);
+      checkArgument(lhsFields.length > 0);
+      checkArgument(rhsFields.length > 0);
       this.lhs = lhs;
       this.rhs = rhs;
       this.lhsFields = lhsFields;

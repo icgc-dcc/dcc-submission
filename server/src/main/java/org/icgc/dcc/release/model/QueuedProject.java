@@ -64,19 +64,38 @@ public class QueuedProject {
         .toString();
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.lang.Object#hashCode()
+   */
   @Override
-  public boolean equals(Object obj) { // TODO: hashCode (if we need hashes)
-    if(obj == null) {
-      return false;
-    }
-    if(obj == this) {
-      return true;
-    }
-    if(getClass() != obj.getClass()) {
-      return false;
-    }
-    final QueuedProject other = (QueuedProject) obj;
-    return Objects.equal(this.key, other.key) //
-        && Objects.equal(this.emails, other.emails);
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((emails == null) ? 0 : emails.hashCode());
+    result = prime * result + ((key == null) ? 0 : key.hashCode());
+    return result;
   }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.lang.Object#equals(java.lang.Object)
+   */
+  @Override
+  public boolean equals(Object obj) {
+    if(this == obj) return true;
+    if(obj == null) return false;
+    if(getClass() != obj.getClass()) return false;
+    QueuedProject other = (QueuedProject) obj;
+    if(emails == null) {
+      if(other.emails != null) return false;
+    } else if(!emails.equals(other.emails)) return false;
+    if(key == null) {
+      if(other.key != null) return false;
+    } else if(!key.equals(other.key)) return false;
+    return true;
+  }
+
 }

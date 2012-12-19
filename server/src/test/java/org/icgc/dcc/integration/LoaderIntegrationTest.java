@@ -130,7 +130,8 @@ public class LoaderIntegrationTest extends BaseIntegrationTest {
    * @throws IOException
    */
   private void startValidator() throws IOException {
-    org.icgc.dcc.Main.main(null);
+    String[] args = new String[] {};
+    org.icgc.dcc.Main.main(args);
   }
 
   /**
