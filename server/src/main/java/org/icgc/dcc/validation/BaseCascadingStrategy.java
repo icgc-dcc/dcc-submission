@@ -120,7 +120,9 @@ public abstract class BaseCascadingStrategy implements CascadingStrategy {
     if(trim.getSchema().getRole() == FileSchemaRole.SUBMISSION) {
       return new Path(output, trim.getName() + ".tsv");
     } else if(trim.getSchema().getRole() == FileSchemaRole.SYSTEM) {
-      return new Path(new Path(system, DccFileSystem.VALIDATION_DIRNAME), trim.getName() + ".tsv");
+      return new Path(new Path(system, DccFileSystem.VALIDATION_DIRNAME), trim.getName() + ".tsv"); // TODO: should use
+                                                                                                    // DccFileSystem
+                                                                                                    // abstraction
     } else {
       throw new RuntimeException("undefined File Schema Role " + trim.getSchema().getRole());
     }

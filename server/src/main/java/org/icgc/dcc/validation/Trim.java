@@ -28,6 +28,10 @@ import com.google.common.base.Joiner;
  */
 public class Trim {
 
+  private static final char FIELD_SEPARATOR = '-';
+
+  private static final String SCHEMA_SEPERATOR = ":";
+
   private final FileSchema schema;
 
   private final String[] fields;
@@ -46,7 +50,7 @@ public class Trim {
   }
 
   public String getName() {
-    return schema.getName() + "#" + Joiner.on('-').join(fields);
+    return schema.getName() + SCHEMA_SEPERATOR + Joiner.on(FIELD_SEPARATOR).join(fields);
   }
 
   @Override
