@@ -15,24 +15,39 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.dictionary.model;
+package org.icgc.dcc.data;
 
-import java.util.Date;
+import org.glassfish.jersey.server.ResourceConfig;
+import org.icgc.dcc.core.AbstractDccModule;
+import org.icgc.dcc.data.schema.SchemaRegistry;
+import org.icgc.dcc.data.web.DonorDataResource;
+import org.icgc.dcc.data.web.DonorsResource;
+import org.icgc.dcc.data.web.GenesResource;
+
+import com.google.inject.Inject;
 
 /**
- * Possible (data) types for a {@code Field}
+ * 
  */
-public enum ValueType {
+public class DataModule extends AbstractDccModule {
 
-  TEXT(String.class), INTEGER(Long.class), DATETIME(Date.class), DECIMAL(Double.class);
-
-  private final Class<?> javaType;
-
-  private ValueType(Class<?> javaType) {
-    this.javaType = javaType;
+  @Override
+  protected void configure() {
+    bind(SchemaRegistry.class).asEagerSingleton();
+    bind(RootResources.class).asEagerSingleton();
   }
 
-  public Class getJavaType() {
-    return javaType;
+  /**
+   * Used to register resources in {@code Jersey}. This is required because {@code Jersey} cannot use Guice to discover
+   * resources.
+   */
+  public static class RootResources {
+    @Inject
+    public RootResources(ResourceConfig config) {
+      config.addClasses(DonorDataResource.class);
+      config.addClasses(DonorsResource.class);
+      config.addClasses(GenesResource.class);
+    }
   }
+
 }

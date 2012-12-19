@@ -15,24 +15,53 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.dictionary.model;
+package org.icgc.dcc.data.schema;
 
-import java.util.Date;
+import java.io.IOException;
 
-/**
- * Possible (data) types for a {@code Field}
- */
-public enum ValueType {
+import org.codehaus.jackson.JsonGenerator;
+import org.codehaus.jackson.JsonNode;
 
-  TEXT(String.class), INTEGER(Long.class), DATETIME(Date.class), DECIMAL(Double.class);
+public class ArraySchema extends BaseSchema {
 
-  private final Class<?> javaType;
+  private static final String ITEMS = "items";
 
-  private ValueType(Class<?> javaType) {
-    this.javaType = javaType;
+  private Schema items;
+
+  public ArraySchema(String name) {
+    super(name, Type.ARRAY);
   }
 
-  public Class getJavaType() {
-    return javaType;
+  public Schema getItems() {
+    return items;
   }
+
+  @Override
+  public void accept(SchemaVisitor visitor) {
+    visitor.visit(this);
+    items.accept(visitor);
+  }
+
+  @Override
+  public ArraySchema asArray() {
+    return this;
+  }
+
+  @Override
+  protected void fromJson(Parser parser, JsonNode node) {
+    JsonNode itemsNode = node.get(ITEMS);
+    if(itemsNode == null || itemsNode.isObject() == false) {
+      throw new RuntimeException("invalid schema. items is not a schema.");
+    }
+    this.items = parser.parseSchemaNode(node.get(ITEMS));
+  }
+
+  @Override
+  protected void toJson(JsonGenerator generator) throws IOException {
+    super.toJson(generator);
+    generator.writeFieldName(ITEMS);
+    ((BaseSchema) items).toJson(generator);
+    generator.writeEndObject();
+  }
+
 }

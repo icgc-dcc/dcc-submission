@@ -15,24 +15,34 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.dictionary.model;
+package org.icgc.dcc.data.model;
 
 import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
-/**
- * Possible (data) types for a {@code Field}
- */
-public enum ValueType {
+import org.icgc.dcc.core.model.Timestamped;
 
-  TEXT(String.class), INTEGER(Long.class), DATETIME(Date.class), DECIMAL(Double.class);
+import com.google.code.morphia.annotations.Entity;
+import com.google.code.morphia.annotations.Id;
 
-  private final Class<?> javaType;
+@Entity
+public class Variation extends Timestamped {
 
-  private ValueType(Class<?> javaType) {
-    this.javaType = javaType;
+  @Id
+  public String id;
+
+  public PhysicalLocation location;
+
+  public List<AminoAcidChange> consequences;
+
+  public Set<String> samples;
+
+  public String variation; // "A>G"
+
+  public Variation() {
+    this.created = new Date();
+    this.lastUpdate = this.created;
   }
 
-  public Class getJavaType() {
-    return javaType;
-  }
 }

@@ -15,24 +15,13 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.dictionary.model;
+package org.icgc.dcc.data.web;
 
-import java.util.Date;
+import org.codehaus.jackson.annotate.JsonIgnore;
 
-/**
- * Possible (data) types for a {@code Field}
- */
-public enum ValueType {
+public interface HasKey {
 
-  TEXT(String.class), INTEGER(Long.class), DATETIME(Date.class), DECIMAL(Double.class);
+  @JsonIgnore
+  public Object getKey();
 
-  private final Class<?> javaType;
-
-  private ValueType(Class<?> javaType) {
-    this.javaType = javaType;
-  }
-
-  public Class getJavaType() {
-    return javaType;
-  }
 }

@@ -16,7 +16,6 @@ import java.util.Set;
 
 import junit.framework.Assert;
 
-import org.icgc.dcc.core.model.BaseEntity;
 import org.icgc.dcc.core.model.DccModelOptimisticLockException;
 import org.icgc.dcc.core.model.InvalidStateException;
 import org.icgc.dcc.core.model.Project;
@@ -68,7 +67,6 @@ public class ReleaseServiceTest {
       // use local host as test MongoDB for now
       Mongo mongo = new Mongo("localhost");
       Morphia morphia = new Morphia();
-      morphia.map(BaseEntity.class);
       datastore = morphia.createDatastore(mongo, testDbName);
       dccLocking = mock(DccLocking.class);
       fs = mock(DccFileSystem.class);

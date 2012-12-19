@@ -15,24 +15,34 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.dictionary.model;
-
-import java.util.Date;
+package org.icgc.dcc.data.model;
 
 /**
- * Possible (data) types for a {@code Field}
+ * 
  */
-public enum ValueType {
+public enum Strand {
 
-  TEXT(String.class), INTEGER(Long.class), DATETIME(Date.class), DECIMAL(Double.class);
+  PLUS("+", 1), MINUS("-", -1);
 
-  private final Class<?> javaType;
+  private char symbol;
 
-  private ValueType(Class<?> javaType) {
-    this.javaType = javaType;
+  private int value;
+
+  private Strand(String symbol, int value) {
+    this.symbol = symbol.charAt(0);
+    this.value = value;
   }
 
-  public Class getJavaType() {
-    return javaType;
+  public static Strand parse(String value) {
+    for(Strand s : Strand.values()) {
+      if(value.charAt(0) == s.symbol) return s;
+      try {
+        if(Integer.parseInt(value) == s.value) return s;
+      } catch(NumberFormatException e) {
+        // ignore
+      }
+    }
+    throw new IllegalArgumentException(value);
   }
+
 }

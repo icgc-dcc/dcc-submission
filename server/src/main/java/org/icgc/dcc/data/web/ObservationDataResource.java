@@ -15,24 +15,36 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.dictionary.model;
+package org.icgc.dcc.data.web;
 
-import java.util.Date;
+import java.util.Iterator;
 
-/**
- * Possible (data) types for a {@code Field}
- */
-public enum ValueType {
+import javax.ws.rs.Path;
 
-  TEXT(String.class), INTEGER(Long.class), DATETIME(Date.class), DECIMAL(Double.class);
+import org.icgc.dcc.data.schema.SchemaRegistry;
 
-  private final Class<?> javaType;
+import com.google.common.collect.ImmutableList;
+import com.google.inject.Inject;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 
-  private ValueType(Class<?> javaType) {
-    this.javaType = javaType;
+@Path("/data/observations")
+public class ObservationDataResource extends SchemaDataResource {
+
+  @Inject
+  public ObservationDataResource(SchemaRegistry registry) {
+    super(registry.getSchema("ssm"));
   }
 
-  public Class getJavaType() {
-    return javaType;
+  @Override
+  protected DBObject index(DBObject donor) {
+    donor.put("observations", ImmutableList.copyOf(donorObservations(donor.get("_id"))));
+    return donor;
+  }
+
+  private Iterator<DBObject> donorObservations(Object donorId) {
+    BasicDBObject query = new BasicDBObject();
+    query.put("donorId", donorId);
+    return collection().find(query).iterator();
   }
 }

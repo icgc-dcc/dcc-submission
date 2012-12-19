@@ -15,65 +15,57 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.validation;
+package org.icgc.dcc.data.model;
 
-import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 
-import org.icgc.dcc.dictionary.model.FileSchema;
+import org.icgc.dcc.core.model.Timestamped;
+import org.icgc.dcc.data.web.HasKey;
 
-import com.google.common.base.Joiner;
+import com.google.code.morphia.annotations.Entity;
+import com.google.code.morphia.annotations.Id;
 
-/**
- * Holds a reference to trimmed content. Used to plan outputs from the internal flow and inputs for the external flow.
- */
-public class Trim {
+@Entity
+public class Gene extends Timestamped implements HasKey {
 
-  private static final char FIELD_SEPARATOR = '-';
+  @Id
+  public String name;
 
-  private static final String SCHEMA_SEPERATOR = "#";
+  public String ensemblId;
 
-  private final FileSchema schema;
+  public List<String> aliases;
 
-  private final String[] fields;
+  public String description;
 
-  public Trim(FileSchema schema, String... fields) {
-    this.schema = schema;
-    this.fields = fields;
-  }
+  public String biotype;
 
-  public FileSchema getSchema() {
-    return schema;
-  }
+  public PhysicalLocation location;
 
-  public String[] getFields() {
-    return fields;
-  }
+  public List<Transcript> transcripts;
 
-  public String getName() {
-    return schema.getName() + SCHEMA_SEPERATOR + Joiner.on(FIELD_SEPARATOR).join(fields);
+  public Gene() {
+    this.created = new Date();
+    this.lastUpdate = new Date();
   }
 
   @Override
-  public String toString() {
-    return getName();
+  public Object getKey() {
+    return name;
   }
 
   @Override
   public boolean equals(Object obj) {
-    if(obj == null) {
+    if(obj instanceof Gene == false) {
       return false;
     }
-    if(obj instanceof Trim == false) {
-      return super.equals(obj);
-    }
-    Trim rhs = (Trim) obj;
-    return this.schema.equals(rhs.schema) && Arrays.equals(fields, rhs.fields);
+    Gene rhs = (Gene) obj;
+    return name.equals(rhs.name);
   }
 
   @Override
   public int hashCode() {
-    int hashCode = schema.hashCode();
-    hashCode += 37 * Arrays.hashCode(fields);
-    return hashCode;
+    return name.hashCode();
   }
+
 }

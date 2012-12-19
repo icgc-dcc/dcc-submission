@@ -52,8 +52,7 @@ public class Main {
         , new SftpModule()//
         , new DictionaryModule()//
         , new ReleaseModule()//
-        , new ValidationModule()//
-        );
+        , new ValidationModule());
 
     Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
       @Override

@@ -15,24 +15,23 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.dictionary.model;
+package org.icgc.dcc.data.index.model;
 
-import java.util.Date;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.icgc.dcc.data.model.Donor;
+import org.icgc.dcc.data.model.Observation;
 
-/**
- * Possible (data) types for a {@code Field}
- */
-public enum ValueType {
+public class DonorObservation extends Donor {
 
-  TEXT(String.class), INTEGER(Long.class), DATETIME(Date.class), DECIMAL(Double.class);
+  private static final ObjectMapper mapper = new ObjectMapper();
 
-  private final Class<?> javaType;
+  public Iterable<Observation> observations;
 
-  private ValueType(Class<?> javaType) {
-    this.javaType = javaType;
+  public static DonorObservation indexed(Donor donor, Iterable<Observation> obs) {
+    DonorObservation d = mapper.convertValue(donor, DonorObservation.class);
+    d.observations = obs;
+    d.specimens = null;
+    return d;
   }
 
-  public Class getJavaType() {
-    return javaType;
-  }
 }

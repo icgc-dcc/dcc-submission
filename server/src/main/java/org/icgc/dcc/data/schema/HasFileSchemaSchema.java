@@ -15,24 +15,43 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.dictionary.model;
+package org.icgc.dcc.data.schema;
 
-import java.util.Date;
+import java.io.IOException;
+
+import org.codehaus.jackson.JsonGenerator;
+import org.codehaus.jackson.JsonNode;
 
 /**
- * Possible (data) types for a {@code Field}
+ * A {@code Schema} that refers to a {@code FileSchema} for scoping field references.
  */
-public enum ValueType {
+public abstract class HasFileSchemaSchema extends BaseSchema {
 
-  TEXT(String.class), INTEGER(Long.class), DATETIME(Date.class), DECIMAL(Double.class);
+  private static final String FILESCHEMA = "fileSchema";
 
-  private final Class<?> javaType;
+  private String fileSchema;
 
-  private ValueType(Class<?> javaType) {
-    this.javaType = javaType;
+  protected HasFileSchemaSchema(String name, Type type) {
+    super(name, type);
   }
 
-  public Class getJavaType() {
-    return javaType;
+  public String getFileSchema() {
+    return fileSchema;
+  }
+
+  @Override
+  protected void fromJson(Parser parser, JsonNode node) {
+    JsonNode fileSchemaNode = node.get(FILESCHEMA);
+    if(fileSchemaNode != null) {
+      fileSchema = fileSchemaNode.getTextValue();
+    }
+  }
+
+  @Override
+  protected void toJson(JsonGenerator generator) throws IOException {
+    super.toJson(generator);
+    if(fileSchema != null) {
+      generator.writeStringField(FILESCHEMA, fileSchema);
+    }
   }
 }

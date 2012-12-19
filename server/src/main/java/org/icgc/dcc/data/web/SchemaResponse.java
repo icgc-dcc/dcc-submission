@@ -15,24 +15,21 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.dictionary.model;
+package org.icgc.dcc.data.web;
 
-import java.util.Date;
+import org.icgc.dcc.data.schema.Schema;
 
 /**
- * Possible (data) types for a {@code Field}
+ * A response that includes the schema of the contained resource
  */
-public enum ValueType {
+public class SchemaResponse {
 
-  TEXT(String.class), INTEGER(Long.class), DATETIME(Date.class), DECIMAL(Double.class);
+  public Schema schema;
 
-  private final Class<?> javaType;
+  public Object payload;
 
-  private ValueType(Class<?> javaType) {
-    this.javaType = javaType;
-  }
-
-  public Class getJavaType() {
-    return javaType;
+  SchemaResponse(Schema schema, Object payload) {
+    this.schema = schema;
+    this.payload = payload;
   }
 }

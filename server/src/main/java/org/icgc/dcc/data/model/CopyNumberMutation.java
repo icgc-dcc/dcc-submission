@@ -15,24 +15,13 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.dictionary.model;
+package org.icgc.dcc.data.model;
 
-import java.util.Date;
+import com.google.code.morphia.annotations.Entity;
 
-/**
- * Possible (data) types for a {@code Field}
- */
-public enum ValueType {
+@Entity("Observation")
+public class CopyNumberMutation extends SomaticObservation {
 
-  TEXT(String.class), INTEGER(Long.class), DATETIME(Date.class), DECIMAL(Double.class);
+  public Float segmentMean;
 
-  private final Class<?> javaType;
-
-  private ValueType(Class<?> javaType) {
-    this.javaType = javaType;
-  }
-
-  public Class getJavaType() {
-    return javaType;
-  }
 }

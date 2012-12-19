@@ -15,24 +15,16 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.dictionary.model;
+package org.icgc.dcc.data.model;
 
-import java.util.Date;
+import com.google.code.morphia.annotations.Embedded;
+import com.google.code.morphia.annotations.Indexed;
 
-/**
- * Possible (data) types for a {@code Field}
- */
-public enum ValueType {
+@Embedded
+public class AffectsGene {
 
-  TEXT(String.class), INTEGER(Long.class), DATETIME(Date.class), DECIMAL(Double.class);
+  @Indexed
+  public String geneId;
 
-  private final Class<?> javaType;
-
-  private ValueType(Class<?> javaType) {
-    this.javaType = javaType;
-  }
-
-  public Class getJavaType() {
-    return javaType;
-  }
+  public String transcript;
 }
