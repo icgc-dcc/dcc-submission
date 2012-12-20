@@ -32,6 +32,9 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map.Entry;
 
 import javax.ws.rs.core.Response;
 
@@ -44,6 +47,7 @@ import org.junit.Test;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
 import com.google.common.io.Files;
 import com.wordnik.system.mongodb.SnapshotUtil;
 
@@ -266,10 +270,35 @@ public class LoaderIntegrationTest extends BaseIntegrationTest {
       JsonNode actualJsonNode = mapper.readTree(actualJson);
       JsonNode expectedJsonNode = mapper.readTree(expectedJson);
 
+      filterTree(actualJsonNode, null, ImmutableList.of("$oid"), Integer.MAX_VALUE);
+      filterTree(expectedJsonNode, null, ImmutableList.of("$oid"), Integer.MAX_VALUE);
+
       assertEquals("JSON mismatch!", actualJsonNode, expectedJsonNode);
     } catch(Exception e) {
       Throwables.propagate(e);
     }
   }
 
+  public void filterTree(JsonNode o, List<String> includedProperties, List<String> excludedProperties, int maxDepth) {
+    this.filterTreeRecursive(o, includedProperties, excludedProperties, maxDepth, null);
+  }
+
+  private void filterTreeRecursive(JsonNode tree, List<String> includedProperties, List<String> excludedProperties,
+      int maxDepth, String key) {
+    Iterator<Entry<String, JsonNode>> fieldsIter = tree.getFields();
+    while(fieldsIter.hasNext()) {
+      Entry<String, JsonNode> field = fieldsIter.next();
+      String fullName = key == null ? field.getKey() : key + "." + field.getKey();
+
+      boolean depthOk = field.getValue().isContainerNode() && maxDepth >= 0;
+      boolean isIncluded = includedProperties != null && !includedProperties.contains(fullName);
+      boolean isExcluded = excludedProperties != null && excludedProperties.contains(fullName);
+      if((!depthOk && !isIncluded) || isExcluded) {
+        fieldsIter.remove();
+        continue;
+      }
+
+      this.filterTreeRecursive(field.getValue(), includedProperties, excludedProperties, maxDepth - 1, fullName);
+    }
+  }
 }
