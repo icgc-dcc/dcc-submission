@@ -50,61 +50,60 @@ import com.wordnik.system.mongodb.SnapshotUtil;
 /**
  * Integration test to exercise the loader main entry point.
  * 
- * This test should be simplified to not use the Validator / Submitter to seed the data, but rather by a "back door".
- * This will make setup simpler and quicker.
+ * This test should be simplified to not use the Submitter to seed the data, but rather by a "back door". This will make
+ * setup simpler and quicker.
  */
 public class LoaderIntegrationTest extends BaseIntegrationTest {
 
+  /**
+   * Test metadata constants.
+   */
+  // @formatter:off
+  private static final int RELEASE_ID = 2;
+  private static final String RELEASE_NAME = "release" + RELEASE_ID;
   private static final String PROJECT_NAME = "project1";
+  private static final String RELEASE = "{\"name\":\"" + RELEASE_NAME + "\", \"state\":\"OPENED\",\"submissions\":[{\"projectKey\":\"" + PROJECT_NAME + "\",\"state\":\"NOT_VALIDATED\"}],\"dictionaryVersion\":\"0.6c\"}";
+  private static final String PROJECT = "{\"name\":\"Project One\",\"key\":\"" + PROJECT_NAME + "\",\"users\":[\"admin\"],\"groups\":[\"admin\"]}";
+  private static final String PROJECT_TO_SIGN_OFF = "[\"" + PROJECT_NAME + "\"]";
+  private static final String PROJECTS_TO_ENQUEUE = "[{\"key\": \"" + PROJECT_NAME + "\", \"emails\": [\"a@a.ca\"]}]";
+  private static final String NEXT_RELEASE = "{\"name\": \"release" + (RELEASE_ID + 1) + "\"}";
+  // @formatter:on
 
-  private static final String RELEASE_NAME = "release1";
-
+  /**
+   * REST endpoint constants.
+   */
+  // @formatter:off
   private static final String SEED_ENDPOINT = "/seed";
-
   private static final String SEED_CODELIST_ENDPOINT = SEED_ENDPOINT + "/codelists";
-
   private static final String SEED_DICTIONARIES_ENDPOINT = SEED_ENDPOINT + "/dictionaries";
-
   private static final String PROJECTS_ENDPOINT = "/projects";
-
   private static final String RELEASES_ENDPOINT = "/releases";
-
   private static final String NEXT_RELEASE_ENPOINT = "/nextRelease";
-
-  private static final String NEXT_RELEASE = "{\"name\": \"release2\"}";
-
   private static final String SIGNOFF_ENDPOINT = NEXT_RELEASE_ENPOINT + "/signed";
-
   private static final String QUEUE_ENDPOINT = NEXT_RELEASE_ENPOINT + "/queue";
-
   private static final String RELEASE_ENDPOINT = RELEASES_ENDPOINT + "/" + RELEASE_NAME;
-
   private static final String RELEASE_SUBMISSIONS_ENDPOINT = RELEASE_ENDPOINT + "/submissions";
+  // @formatter:on
 
-  private static final String INTEGRATION_TEST_DIR_RESOURCE = "/loader-integration-test";
+  /**
+   * Resource constants.
+   */
+  // @formatter:off
+  private static final String INTEGRATION_TEST_RESOURCE_DIR = "/loader-integration-test";
+  private static final String CODELISTS_RESOURCE = INTEGRATION_TEST_RESOURCE_DIR + "/codelists.json";
+  private static final String DICTIONARY_RESOURCE = INTEGRATION_TEST_RESOURCE_DIR + "/dictionary.json";
+  // @formatter:on
 
-  private static final String CODELISTS_RESOURCE = INTEGRATION_TEST_DIR_RESOURCE + "/codelists.json";
-
-  private static final String DICTIONARY_RESOURCE = "/dictionary.json";
-
-  private static final String RELEASE_RESOURCE = INTEGRATION_TEST_DIR_RESOURCE + "/initRelease.json";
-
-  private static final String PROJECT =
-      "{\"name\":\"Project One\",\"key\":\"project1\",\"users\":[\"admin\"],\"groups\":[\"admin\"]}";
-
-  private static final String PROJECT_TO_SIGN_OFF = "[\"project1\"]";
-
-  private static final String PROJECTS_TO_ENQUEUE = "[{\"key\": \"project1\", \"emails\": [\"a@a.ca\"]}]";
-
+  /**
+   * File system constants.
+   */
+  // @formatter:off
   private static final String INTEGRATION_TEST_DIR = "src/test/resources/loader-integration-test";
-
   private static final String FS_DIR = INTEGRATION_TEST_DIR + "/fs";
-
   private static final String MONGO_EXPORT_DIR = INTEGRATION_TEST_DIR + "/mongo-export";
-
   private static final String SYSTEM_FILES_DIR = FS_DIR + "/SystemFiles";
-
   private static final String RELEASE_SYSTEM_FILES_DIR = DCC_ROOT_DIR + "/" + RELEASE_NAME + "/SystemFiles";
+  // @formatter:on
 
   /**
    * Perform a clean release with a single validated project
@@ -160,7 +159,7 @@ public class LoaderIntegrationTest extends BaseIntegrationTest {
    * @throws Exception
    */
   private void createRelease() throws Exception {
-    Response response = put(client, RELEASES_ENDPOINT, resourceToString(RELEASE_RESOURCE));
+    Response response = put(client, RELEASES_ENDPOINT, RELEASE);
     assertEquals(200, response.getStatus());
   }
 
@@ -267,7 +266,7 @@ public class LoaderIntegrationTest extends BaseIntegrationTest {
       JsonNode actualJsonNode = mapper.readTree(actualJson);
       JsonNode expectedJsonNode = mapper.readTree(expectedJson);
 
-      assertEquals("Json mismatch!", actualJsonNode, expectedJsonNode);
+      assertEquals("JSON mismatch!", actualJsonNode, expectedJsonNode);
     } catch(Exception e) {
       Throwables.propagate(e);
     }
