@@ -17,13 +17,20 @@
  */
 package org.icgc.dcc;
 
+import java.util.List;
 import java.util.Map;
 
+import org.icgc.dcc.dictionary.model.CodeList;
 import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.FileSchema;
+import org.icgc.dcc.dictionary.model.Term;
 import org.icgc.dcc.dictionary.model.ValueType;
 
+import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableTable;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Table;
 
 /**
  * Translates validator object into simpler structures (temporary solution).
@@ -36,4 +43,28 @@ public class Translator {
     }
     return builder.build();
   }
+
+  public static Table<String, String, String> translateCodeLists(FileSchema fileSchema, List<CodeList> codeLists) {
+    ImmutableMap<String, CodeList> index = Maps.uniqueIndex(codeLists, new Function<CodeList, String>() {
+      @Override
+      public String apply(CodeList codeList) {
+        return codeList.getName();
+      }
+    });
+
+    ImmutableTable.Builder<String, String, String> builder = ImmutableTable.builder();
+
+    for(Field field : fileSchema.getFields()) {
+      String fieldName = field.getName();
+      CodeList codeList = index.get(fieldName);
+      if(null != codeList) {
+        for(Term term : codeList.getTerms()) {
+          builder.put(fieldName, term.getValue(), term.getCode());
+        }
+      }
+    }
+
+    return builder.build();
+  }
+
 }
