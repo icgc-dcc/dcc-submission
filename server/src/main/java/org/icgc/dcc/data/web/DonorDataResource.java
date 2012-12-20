@@ -52,6 +52,7 @@ public class DonorDataResource extends SchemaDataResource {
   }
 
   private Iterable<String> geneId(DBObject observation) {
+    @SuppressWarnings("unchecked")
     List<DBObject> affectedGenes = (List<DBObject>) observation.get("affectedGenes");
     if(affectedGenes != null) {
       return Iterables.transform(affectedGenes, new Function<DBObject, String>() {

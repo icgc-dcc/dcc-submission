@@ -21,8 +21,6 @@ import static com.google.common.util.concurrent.Uninterruptibles.sleepUninterrup
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.commons.io.FileUtils.copyDirectory;
 import static org.icgc.dcc.integration.TestUtils.asDetailedSubmission;
-import static org.icgc.dcc.integration.TestUtils.asRelease;
-import static org.icgc.dcc.integration.TestUtils.asString;
 import static org.icgc.dcc.integration.TestUtils.get;
 import static org.icgc.dcc.integration.TestUtils.post;
 import static org.icgc.dcc.integration.TestUtils.put;
@@ -41,7 +39,6 @@ import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.loader.Main;
 import org.icgc.dcc.release.model.DetailedSubmission;
-import org.icgc.dcc.release.model.Release;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -54,7 +51,7 @@ import com.wordnik.system.mongodb.SnapshotUtil;
  * Integration test to exercise the loader main entry point.
  * 
  * This test should be simplified to not use the Validator / Submitter to seed the data, but rather by a "back door".
- * This will make setup simpler.
+ * This will make setup simpler and quicker.
  */
 public class LoaderIntegrationTest extends BaseIntegrationTest {
 
@@ -129,11 +126,10 @@ public class LoaderIntegrationTest extends BaseIntegrationTest {
   }
 
   /**
-   * Execute loader on test data set.
-   * @throws IOException
+   * Execute the loader on an integration test data set and compares the results to verified set of output files.
    */
   @Test
-  public void testSystem() throws IOException {
+  public void testSystem() {
     String[] args = { RELEASE_NAME };
     Main.main(args);
 
@@ -141,6 +137,8 @@ public class LoaderIntegrationTest extends BaseIntegrationTest {
   }
 
   /**
+   * Starts the validator web service.
+   * 
    * @throws IOException
    */
   private void startValidator() throws IOException {
@@ -157,25 +155,26 @@ public class LoaderIntegrationTest extends BaseIntegrationTest {
   }
 
   /**
+   * Creates a release.
+   * 
    * @throws Exception
    */
   private void createRelease() throws Exception {
     Response response = put(client, RELEASES_ENDPOINT, resourceToString(RELEASE_RESOURCE));
     assertEquals(200, response.getStatus());
-
-    Release release = asRelease(response);
-    assertEquals(RELEASE_NAME, release.getName());
   }
 
   /**
-   * @throws IOException
+   * Adds a new project.
    */
-  private void addProject() throws IOException {
+  private void addProject() {
     Response response = post(client, PROJECTS_ENDPOINT, PROJECT);
     assertEquals(201, response.getStatus());
   }
 
   /**
+   * Uploads a valid submission.
+   * 
    * @throws IOException
    */
   private void uploadSubmission() throws IOException {
@@ -184,18 +183,21 @@ public class LoaderIntegrationTest extends BaseIntegrationTest {
   }
 
   /**
+   * Queue the added project.
+   * 
    * @throws Exception
    */
   private void enqueueProject() throws Exception {
     Response response = get(client, QUEUE_ENDPOINT);
     assertEquals(200, response.getStatus());
-    assertEquals("[]", asString(response));
 
     response = post(client, QUEUE_ENDPOINT, PROJECTS_TO_ENQUEUE);
     assertEquals(200, response.getStatus());
   }
 
   /**
+   * Validates the queued project.
+   * 
    * @throws Exception
    */
   private void validateSubmission() throws Exception {
@@ -213,7 +215,7 @@ public class LoaderIntegrationTest extends BaseIntegrationTest {
   }
 
   /**
-   * 
+   * Signs off the validated project
    */
   private void signOffProject() {
     Response response = post(client, SIGNOFF_ENDPOINT, PROJECT_TO_SIGN_OFF);
@@ -221,7 +223,7 @@ public class LoaderIntegrationTest extends BaseIntegrationTest {
   }
 
   /**
-   * 
+   * Releases the signed-off project.
    */
   private void releaseRelease() {
     Response response = post(client, NEXT_RELEASE_ENPOINT, NEXT_RELEASE);
@@ -229,9 +231,12 @@ public class LoaderIntegrationTest extends BaseIntegrationTest {
   }
 
   /**
+   * Compares the integration database to a set of validated reference files.
+   * 
    * @throws IOException
    */
   private void compareDb() {
+    // Export
     SnapshotUtil.main(new String[] { //
         "-d", Main.DATABASE_NAME, // Database
         "-o", DCC_ROOT_DIR, // Output dir
@@ -250,13 +255,19 @@ public class LoaderIntegrationTest extends BaseIntegrationTest {
     }
   }
 
+  /**
+   * Asserts that {@code expectedJson} is canonically equal to {@code actualJson}.
+   * 
+   * @param actualJson
+   * @param expectedJson
+   */
   private void assertJsonEquals(String actualJson, String expectedJson) {
     try {
       ObjectMapper mapper = new ObjectMapper();
-      JsonNode tree1 = mapper.readTree(actualJson);
-      JsonNode tree2 = mapper.readTree(expectedJson);
+      JsonNode actualJsonNode = mapper.readTree(actualJson);
+      JsonNode expectedJsonNode = mapper.readTree(expectedJson);
 
-      assertEquals(tree1, tree2);
+      assertEquals("Json mismatch!", actualJsonNode, expectedJsonNode);
     } catch(Exception e) {
       Throwables.propagate(e);
     }
