@@ -1,3 +1,0 @@
-# name	datatype	required?	primary key?	deconvolution level	mapping file
-gene_id_1020_key	INTEGER	true	false		
-stable_id_1023	TEXT	true	false		
