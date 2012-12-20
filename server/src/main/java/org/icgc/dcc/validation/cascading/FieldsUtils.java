@@ -80,4 +80,12 @@ public class FieldsUtils {
     }
     return fieldNames;
   }
+
+  public static List<String> getFields(Fields fields) {
+    List<String> fieldNames = new ArrayList<String>();
+    for(int i = 0; i < fields.size(); i++) {
+      fieldNames.add(fields.get(i).toString());
+    }
+    return fieldNames;
+  }
 }
