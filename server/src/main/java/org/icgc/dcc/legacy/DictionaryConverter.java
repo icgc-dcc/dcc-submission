@@ -406,6 +406,7 @@ public class DictionaryConverter {
     }
 
     // deconvolution
+    // TODO: Determine why this is never used
     String deconvolution = iterator.next();
 
     String codeList = iterator.next();

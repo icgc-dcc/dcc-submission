@@ -49,7 +49,7 @@ public class InjectModule extends AbstractModule {
     public Object resolve(Injectee injectee, ServiceHandle<?> root) {
       Type type = injectee.getRequiredType();
       if(type instanceof Class) {
-        return injector.getInstance((Class) type);
+        return injector.getInstance((Class<?>) type);
       }
       throw new IllegalStateException("don't know how to inject type " + type);
     }
