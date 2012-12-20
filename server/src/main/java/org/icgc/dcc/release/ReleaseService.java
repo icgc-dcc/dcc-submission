@@ -305,19 +305,10 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     log.info("enqueued {} for {}", queuedProjects, nextReleaseName);
   }
 
-  /**
-   * Attempts to dequeue the given project, if the project is found the given state is set for it.<br>
-   * <p>
-   * This method is robust enough to handle rare cases like when:<br>
-   * - the queue was emptied by an admin in another thread (TODO: complete, this is only partially supported now)<br>
-   * - the optimistic lock on Release cannot be obtained (retries a number of time before giving up)<br>
-   */
-  public Optional<QueuedProject> dequeue(String projectKey, SubmissionState destinationState) {
-    checkArgument(SubmissionState.VALID == destinationState || SubmissionState.INVALID == destinationState
-        || SubmissionState.ERROR == destinationState);
-    log.info("attempting to dequeue {} for next release", projectKey);
+  public Optional<QueuedProject> setToValidating(String projectKey) {
+    log.info("attempting to set {} to validating", projectKey);
 
-    Optional<QueuedProject> dequeued = null;
+    Optional<QueuedProject> validating = null;
     String nextReleaseName = null;
     SubmissionState expectedState = SubmissionState.QUEUED;
 
@@ -325,16 +316,16 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     int MAX_ATTEMPTS = 10; // 10 attempts should be sufficient to obtain a lock (otherwise the problem is probably not
                            // recoverable - deadlock or other)
     while(attempts < MAX_ATTEMPTS) {
-      dequeued = Optional.absent();
+      validating = Optional.absent();
 
       try {
         Release nextRelease = getNextRelease().getRelease();
         nextReleaseName = nextRelease.getName();
-        log.info("dequeuing {} (as {}) for {}", new Object[] { projectKey, destinationState, nextReleaseName });
+        log.info("setting {} to validated for {}", new Object[] { projectKey, nextReleaseName });
 
-        dequeued = nextRelease.nextInQueue();
-        if(dequeued.isPresent() && dequeued.get().getKey().equals(projectKey)) {
-          QueuedProject nextInQueue = dequeued.get();
+        validating = nextRelease.nextInQueue();
+        if(validating.isPresent() && validating.get().getKey().equals(projectKey)) {
+          QueuedProject nextInQueue = validating.get();
 
           // update release object
           QueuedProject dequeuedQueuedProject = nextRelease.dequeueProject();
@@ -347,28 +338,80 @@ public class ReleaseService extends BaseMorphiaService<Release> {
             throw new ReleaseException( // not really recoverable
                 "project " + projectKey + " is not " + expectedState + " (" + currentState + " instead)");
           }
-          submission.setState(destinationState);
+          submission.setState(SubmissionState.VALIDATING);
 
           // update corresponding database entity
           updateRelease(nextReleaseName, nextRelease);
         }
-        log.info("dequeued {} for {}", projectKey, nextReleaseName);
+        log.info("dequeued {} to validating state for {}", projectKey, nextReleaseName);
         break;
       } catch(DccModelOptimisticLockException e) {
         attempts++;
         log.warn(
-            "there was a concurrency issue while attempting to dequeue {} (as {}) for release {}, number of attempts: {}",
+            "there was a concurrency issue while attempting to set {} to validating state for release {}, number of attempts: {}",
+            new Object[] { projectKey, nextReleaseName, attempts });
+        Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS); // TODO: cleanup - use Executor instead?
+      }
+    }
+    if(attempts >= MAX_ATTEMPTS) {
+      String message = String.format("failed to validate project %s (could never acquire lock)", projectKey);
+      MailUtils.sendEmail(this.config, message, message);
+      throw new DccConcurrencyException(message);
+    }
+
+    return validating;
+  }
+
+  /**
+   * Attempts to resolve the given project, if the project is found the given state is set for it.<br>
+   * <p>
+   * This method is robust enough to handle rare cases like when:<br>
+   * - the queue was emptied by an admin in another thread (TODO: complete, this is only partially supported now)<br>
+   * - the optimistic lock on Release cannot be obtained (retries a number of time before giving up)<br>
+   */
+  public void resolve(String projectKey, SubmissionState destinationState) {
+    checkArgument(SubmissionState.VALID == destinationState || SubmissionState.INVALID == destinationState
+        || SubmissionState.ERROR == destinationState);
+
+    log.info("attempting to resolve {} (as {})", new Object[] { projectKey, destinationState });
+
+    String nextReleaseName = null;
+    SubmissionState expectedState = SubmissionState.VALIDATING;
+
+    int attempts = 0;
+    int MAX_ATTEMPTS = 10; // 10 attempts should be sufficient to obtain a lock (otherwise the problem is probably not
+                           // recoverable - deadlock or other)
+    while(attempts < MAX_ATTEMPTS) {
+      try {
+        Release nextRelease = getNextRelease().getRelease();
+        nextReleaseName = nextRelease.getName();
+        log.info("resolving {} (as {}) for {}", new Object[] { projectKey, destinationState, nextReleaseName });
+
+        Submission submission = getSubmissionByName(nextRelease, projectKey);
+        SubmissionState currentState = submission.getState();
+        if(submission == null || expectedState != currentState) {
+          throw new ReleaseException( // not really recoverable
+              "project " + projectKey + " is not " + expectedState + " (" + currentState + " instead)");
+        }
+        submission.setState(destinationState);
+
+        // update corresponding database entity
+        updateRelease(nextReleaseName, nextRelease);
+        log.info("resolved {} for {}", projectKey, nextReleaseName);
+        break;
+      } catch(DccModelOptimisticLockException e) {
+        attempts++;
+        log.warn(
+            "there was a concurrency issue while attempting to resolve {} (as {}) for release {}, number of attempts: {}",
             new Object[] { projectKey, destinationState, nextReleaseName, attempts });
         Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS); // TODO: cleanup - use Executor instead?
       }
     }
     if(attempts >= MAX_ATTEMPTS) {
-      String message = String.format("failed to dequeue project %s (could never acquire lock)", projectKey);
+      String message = String.format("failed to resolve project %s (could never acquire lock)", projectKey);
       MailUtils.sendEmail(this.config, message, message);
       throw new DccConcurrencyException(message);
     }
-
-    return dequeued;
   }
 
   /**

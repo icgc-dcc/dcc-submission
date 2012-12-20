@@ -56,6 +56,9 @@ import org.icgc.dcc.validation.report.ValidationErrorReport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cascading.cascade.Cascade;
+import cascading.cascade.CascadeListener;
+
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -84,6 +87,12 @@ public class ValidationQueueManagerService extends AbstractService {
 
   private ScheduledFuture<?> schedule;
 
+  private static int currentlyValidating = 0;
+
+  private static final int DEFAULT_MAX_VALIDATING = 1;
+
+  private final int MAX_VALIDATING;
+
   @Inject
   public ValidationQueueManagerService(final ReleaseService releaseService, ValidationService validationService,
       Config config) {
@@ -95,6 +104,8 @@ public class ValidationQueueManagerService extends AbstractService {
     this.config = config;
     this.releaseService = releaseService;
     this.validationService = validationService;
+    this.MAX_VALIDATING =
+        config.hasPath("validator.max_simultaneous") ? config.getInt("validator.max_simultaneous") : DEFAULT_MAX_VALIDATING;
   }
 
   @Override
@@ -120,7 +131,7 @@ public class ValidationQueueManagerService extends AbstractService {
         try {
           if(isRunning() && releaseService.hasNextRelease()) {
             nextProject = releaseService.getNextRelease().getNextInQueue();
-            if(nextProject.isPresent()) {
+            if(nextProject.isPresent() && currentlyValidating < MAX_VALIDATING) {
               QueuedProject queuedProject = nextProject.get();
               log.info("next in queue {}", queuedProject);
               validateSubmission(queuedProject);
@@ -148,7 +159,7 @@ public class ValidationQueueManagerService extends AbstractService {
             if(nextProject != null && nextProject.isPresent()) {
               QueuedProject project = nextProject.get();
               try {
-                dequeue(project, SubmissionState.ERROR);
+                resolve(project, SubmissionState.ERROR);
               } catch(Throwable t2) {
                 log.error(
                     String.format("a critical error occured while attempting to dequeue project %s", project.getKey()),
@@ -172,8 +183,14 @@ public class ValidationQueueManagerService extends AbstractService {
           throw new ValidationServiceException("cannot access the next release");
         } else {
           if(release.getState() == ReleaseState.OPENED) {
-            Plan plan = validationService.validate(release, queuedProject);
-            handleCascadeStatus(plan, queuedProject);
+            currentlyValidating++;
+            Optional<QueuedProject> dequeuedProject = releaseService.setToValidating(queuedProject.getKey());
+            if(dequeuedProject.isPresent() == true) {
+              validationService.validate(release, queuedProject, new ValidationCascadeListener());
+            } else {
+              log.error("Project {} could not be moved from queue to validating state", queuedProject.getKey());
+            }
+            // handleCascadeStatus(plan, queuedProject);
           } else {
             log.info("Release was closed during validation; states not changed");
           }
@@ -212,7 +229,7 @@ public class ValidationQueueManagerService extends AbstractService {
     log.error("file errors (fatal planning errors):\n\t{}", fileLevelErrors);
 
     log.info("about to dequeue project key {}", project.getKey());
-    dequeue(project, SubmissionState.INVALID);
+    resolve(project, SubmissionState.INVALID);
 
     checkArgument(project != null);
     SubmissionReport report = new SubmissionReport();
@@ -241,9 +258,9 @@ public class ValidationQueueManagerService extends AbstractService {
 
     log.info("completed validation - about to dequeue project key {}/set submission its state", project.getKey());
     if(outcome == Outcome.PASSED) {
-      dequeue(project, SubmissionState.VALID);
+      resolve(project, SubmissionState.VALID);
     } else {
-      dequeue(project, SubmissionState.INVALID);
+      resolve(project, SubmissionState.INVALID);
     }
     setSubmissionReport(project.getKey(), report);
   }
@@ -265,17 +282,17 @@ public class ValidationQueueManagerService extends AbstractService {
   public void handleUnexpectedException(QueuedProject project) {
     checkArgument(project != null);
     log.info("failed validation from unknown error - about to dequeue project key {}", project.getKey());
-    dequeue(project, SubmissionState.ERROR);
+    resolve(project, SubmissionState.ERROR);
   }
 
-  private void dequeue(QueuedProject project, SubmissionState state) {
+  private void resolve(QueuedProject project, SubmissionState state) {
     if(project.getEmails().isEmpty() == false) {
       this.email(project, state);
     }
 
-    Optional<QueuedProject> dequeuedProject = releaseService.dequeue(project.getKey(), state);
-    if(dequeuedProject.isPresent() == false) {
-      log.warn("could not dequeue project {}, maybe the queue was emptied in the meantime?", project.getKey());
+    releaseService.resolve(project.getKey(), state);
+    if(currentlyValidating > 0) {
+      currentlyValidating--;
     }
   }
 
@@ -337,4 +354,39 @@ public class ValidationQueueManagerService extends AbstractService {
     }
   }
 
+  public class ValidationCascadeListener implements CascadeListener {
+    Plan plan;
+
+    QueuedProject project;
+
+    public void setPlan(Plan plan) {
+      this.plan = plan;
+    }
+
+    public void setProject(QueuedProject project) {
+      this.project = project;
+    }
+
+    @Override
+    public void onStarting(Cascade cascade) {
+      // No-op for now, can add in external hook
+    }
+
+    @Override
+    public void onStopping(Cascade cascade) {
+      handleUnexpectedException(project);
+
+    }
+
+    @Override
+    public void onCompleted(Cascade cascade) {
+      handleCompletedValidation(project, plan);
+    }
+
+    @Override
+    public boolean onThrowable(Cascade cascade, Throwable throwable) {
+      // No-op for now; false indica
+      return false;
+    }
+  }
 }

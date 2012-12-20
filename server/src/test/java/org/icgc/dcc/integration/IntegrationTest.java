@@ -301,7 +301,8 @@ public class IntegrationTest {
       assertEquals(200, response.getStatus());
 
       detailedSubmission = TestUtils.asDetailedSubmission(response);
-    } while(detailedSubmission.getState() == SubmissionState.QUEUED);
+    } while(detailedSubmission.getState() == SubmissionState.QUEUED
+        || detailedSubmission.getState() == SubmissionState.VALIDATING);
 
     assertEquals(expectedSubmissionState, detailedSubmission.getState());
   }

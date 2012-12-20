@@ -8,7 +8,6 @@ import org.icgc.dcc.filesystem.FileSystemModule;
 import org.icgc.dcc.release.CompletedRelease;
 import org.icgc.dcc.release.NextRelease;
 import org.icgc.dcc.release.ReleaseService;
-import org.icgc.dcc.release.model.QueuedProject;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.validation.service.ValidationService;
 import org.slf4j.Logger;
@@ -42,7 +41,8 @@ public class Main {
     Release release = getRelease(releaseService, releaseName);
     if(null != release) {
       ValidationService validationService = injector.getInstance(ValidationService.class);
-      validationService.validate(release, new QueuedProject(projectKey, null));
+      // TODO re-enable this once validation has switched over to the CascadeListener
+      // validationService.validate(release, new QueuedProject(projectKey, null));
     } else {
       log.info("there is no next release at the moment");
     }

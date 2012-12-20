@@ -123,7 +123,7 @@
     <dependency>
       <groupId>cascading</groupId>
       <artifactId>cascading-test</artifactId>
-      <version>${cascading.version}</version>
+      <version>${cascading.test.version}</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -452,11 +452,12 @@
     <jersey.version>2.0-m10</jersey.version>
     <shiro.version>1.2.0</shiro.version>
     <mina.version>0.6.0</mina.version>
-    <cascading.version>2.0.1</cascading.version>
+    <cascading.version>2.1.0</cascading.version>
     <hadoop.version>2.0.0</hadoop.version>
     <cdh.version>cdh4.1.2</cdh.version>
     <hadoop-cdh.version>${hadoop.version}-${cdh.version}</hadoop-cdh.version>
     <hadoop-mr1-cdh.version>${hadoop.version}-mr1-${cdh.version}</hadoop-mr1-cdh.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <cascading.test.version>2.0.8</cascading.test.version>
   </properties>
 </project>
