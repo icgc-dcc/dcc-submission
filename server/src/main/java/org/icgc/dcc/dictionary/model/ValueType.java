@@ -32,7 +32,7 @@ public enum ValueType {
     this.javaType = javaType;
   }
 
-  public Class getJavaType() {
+  public Class<?> getJavaType() {
     return javaType;
   }
 }
