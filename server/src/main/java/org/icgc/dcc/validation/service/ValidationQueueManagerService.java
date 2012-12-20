@@ -385,7 +385,7 @@ public class ValidationQueueManagerService extends AbstractService {
 
     @Override
     public boolean onThrowable(Cascade cascade, Throwable throwable) {
-      // No-op for now; false indica
+      // No-op for now; false indicates that the throwable was not handled and needs to be re-thrown
       return false;
     }
   }

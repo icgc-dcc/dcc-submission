@@ -64,17 +64,13 @@ public class SubmissionDirectory {
 
   public boolean isReadOnly() {
     SubmissionState state = this.submission.getState();
-    List<String> queuedProjects = release.getQueuedProjectKeys();
 
-    if(state == SubmissionState.SIGNED_OFF) {
-      return true;
-    }
-    if(submission.getState() == SubmissionState.QUEUED && queuedProjects.isEmpty() == false
-        && project.getKey().equals(queuedProjects.get(0))) {
+    if(state == SubmissionState.SIGNED_OFF || state == SubmissionState.QUEUED || state == SubmissionState.VALIDATING
+        || this.release.getState() == ReleaseState.COMPLETED) {
       return true;
     }
 
-    return this.release.getState() == ReleaseState.COMPLETED;
+    return false;
   }
 
   public String getProjectKey() {
