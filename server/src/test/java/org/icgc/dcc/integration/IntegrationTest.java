@@ -47,6 +47,7 @@ import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.ReleaseView;
 import org.icgc.dcc.release.model.SubmissionState;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -171,6 +172,11 @@ public class IntegrationTest {
     } finally {
       log.info("server main thread ended");
     }
+  }
+
+  @After
+  public void stopServer() {
+    Main.shutdown();
   }
 
   @Test

@@ -25,14 +25,8 @@ import java.io.IOException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientFactory;
 
-import org.icgc.dcc.config.ConfigModule;
-import org.icgc.dcc.core.morphia.MorphiaModule;
-import org.icgc.dcc.filesystem.GuiceJUnitRunner;
-import org.icgc.dcc.filesystem.GuiceJUnitRunner.GuiceModules;
-import org.junit.runner.RunWith;
-
-import com.google.code.morphia.Datastore;
-import com.google.inject.Inject;
+import com.mongodb.Mongo;
+import com.mongodb.MongoURI;
 import com.typesafe.config.ConfigFactory;
 
 /**
@@ -41,8 +35,6 @@ import com.typesafe.config.ConfigFactory;
  * This class is responsible for setting up the reusable objects for establishing the integration test environment,
  * encapsulating the minimal set of required Guice module.
  */
-@RunWith(GuiceJUnitRunner.class)
-@GuiceModules({ ConfigModule.class, MorphiaModule.class })
 public abstract class BaseIntegrationTest {
 
   static {
@@ -53,17 +45,22 @@ public abstract class BaseIntegrationTest {
 
   protected static final String DCC_ROOT_DIR = ConfigFactory.load().getString("fs.root");
 
-  protected final Client client = ClientFactory.newClient();
+  protected static final String MONGO_URI = ConfigFactory.load().getString("mongo.uri");
 
-  @Inject
-  protected Datastore datastore;
+  protected final Client client = ClientFactory.newClient();
 
   /**
    * @throws IOException
    */
   protected void cleanStorage() throws IOException {
     deleteDirectory(new File(DCC_ROOT_DIR));
-    datastore.getDB().dropDatabase();
+
+    MongoURI uri = new MongoURI(MONGO_URI);
+    Mongo mongo = uri.connect();
+    mongo.dropDatabase("testDb");
+    mongo.dropDatabase("icgc");
+    mongo.dropDatabase("icgc-dev");
+    mongo.dropDatabase("icgc-loader");
   }
 
 }
