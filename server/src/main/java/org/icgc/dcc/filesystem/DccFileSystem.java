@@ -23,6 +23,8 @@ public class DccFileSystem {
 
   public static final String VALIDATION_DIRNAME = ".validation";
 
+  public static final String LOADER_DIRNAME = ".loader";
+
   /**
    * This is the only hadoop element in this class (everything else is handled in HadoopUtils)
    */

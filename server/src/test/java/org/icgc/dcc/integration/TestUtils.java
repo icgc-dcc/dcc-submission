@@ -40,7 +40,7 @@ import com.google.common.io.Resources;
 /**
  * Utils class for integration test (to help un-clutter it).
  */
-public class TestUtils {
+public final class TestUtils {
 
   private static final Logger log = LoggerFactory.getLogger(TestUtils.class);
 
@@ -92,4 +92,9 @@ public class TestUtils {
   static DetailedSubmission asDetailedSubmission(Response response) throws Exception {
     return new ObjectMapper().readValue(asString(response), DetailedSubmission.class);
   }
+
+  private TestUtils() {
+    // Prevent construction
+  }
+
 }
