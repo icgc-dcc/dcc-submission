@@ -433,6 +433,8 @@
         <version>2.12</version>
         <configuration>
           <argLine>-Xms256m -Xmx256m</argLine>
+          <!-- This is required so that Main shutdown hooks are called between tests. By default, they are not -->
+          <forkMode>always</forkMode>
         </configuration>
       </plugin>
     </plugins>

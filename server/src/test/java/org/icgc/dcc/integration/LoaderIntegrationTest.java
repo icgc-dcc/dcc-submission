@@ -59,7 +59,7 @@ public class LoaderIntegrationTest extends BaseIntegrationTest {
    * Test metadata constants.
    */
   // @formatter:off
-  private static final int RELEASE_ID = 2;
+  private static final int RELEASE_ID = 3;
   private static final String RELEASE_NAME = "release" + RELEASE_ID;
   private static final String PROJECT_NAME = "project1";
   private static final String RELEASE = "{\"name\":\"" + RELEASE_NAME + "\", \"state\":\"OPENED\",\"submissions\":[{\"projectKey\":\"" + PROJECT_NAME + "\",\"state\":\"NOT_VALIDATED\"}],\"dictionaryVersion\":\"0.6c\"}";
