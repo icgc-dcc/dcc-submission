@@ -24,13 +24,21 @@ import java.util.Map.Entry;
 import org.codehaus.jackson.JsonNode;
 
 /**
- * General tools for working with JSON
+ * General test utilities for working with JSON objects.
  */
 public final class JsonUtils {
 
-  public static void filterTree(JsonNode o, List<String> includedProperties, List<String> excludedProperties,
-      int maxDepth) {
-    filterTreeRecursive(o, includedProperties, excludedProperties, maxDepth, null);
+  /**
+   * Filters the supplied {@code tree} subject to {@code includedProperties}, {@code excludedProperties} and
+   * {@code maxDepth}. Inclusion takes priority over exclusion.
+   * 
+   * @param tree the JSON object to filter
+   * @param includedProperties the properties to include
+   * @param excludedProperties the properties to exclude
+   * @param maxDepth maximum tree depth to filter
+   */
+  static void filterTree(JsonNode tree, List<String> includedProperties, List<String> excludedProperties, int maxDepth) {
+    filterTreeRecursive(tree, includedProperties, excludedProperties, maxDepth, null);
   }
 
   private static void filterTreeRecursive(JsonNode tree, List<String> includedProperties,
