@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.integration;
 
+import static com.google.common.base.Charsets.UTF_8;
 import static com.google.common.util.concurrent.Uninterruptibles.sleepUninterruptibly;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.commons.io.FileUtils.copyDirectory;
@@ -42,7 +43,6 @@ import org.icgc.dcc.release.model.DetailedSubmission;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Files;
@@ -113,6 +113,7 @@ public class LoaderIntegrationTest extends BaseIntegrationTest {
    */
   @Before
   public void setup() throws Exception {
+    // Basic sequence to initialize and validate a single project
     cleanStorage();
     startValidator();
     seedDb();
@@ -133,7 +134,7 @@ public class LoaderIntegrationTest extends BaseIntegrationTest {
     String[] args = { RELEASE_NAME };
     Main.main(args);
 
-    compareDb();
+    verifyDb();
   }
 
   /**
@@ -147,6 +148,8 @@ public class LoaderIntegrationTest extends BaseIntegrationTest {
   }
 
   /**
+   * Seeds reference data.
+   * 
    * @throws IOException
    */
   private void seedDb() throws IOException {
@@ -231,22 +234,23 @@ public class LoaderIntegrationTest extends BaseIntegrationTest {
   }
 
   /**
-   * Compares the integration database to a set of validated reference files.
+   * Verifies the integration database against of manually validated reference files.
    * 
    * @throws IOException
    */
-  private void compareDb() {
-    // Export
-    SnapshotUtil.main(new String[] { //
-        "-d", Main.DATABASE_NAME, // Database
-        "-o", DCC_ROOT_DIR, // Output dir
-        "-J" // Output in json
-        });
+  private void verifyDb() {
+    // Export @formatter:off
+   SnapshotUtil.main(new String[] {
+      "-d", Main.DATABASE_NAME, // Database
+      "-o", DCC_ROOT_DIR,       // Output dir
+      "-J"                      // Output in json
+   });
+   // @formatter:on
 
     for(File file : new File(MONGO_EXPORT_DIR).listFiles()) {
       try {
-        String expectedJson = Files.toString(file, Charsets.UTF_8);
-        String actualJson = Files.toString(new File(DCC_ROOT_DIR + "/" + file.getName()), Charsets.UTF_8);
+        String expectedJson = Files.toString(file, UTF_8);
+        String actualJson = Files.toString(new File(DCC_ROOT_DIR, file.getName()), UTF_8);
 
         assertJsonEquals(expectedJson, actualJson);
       } catch(IOException e) {
