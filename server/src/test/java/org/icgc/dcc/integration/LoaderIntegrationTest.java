@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.integration;
 
-import static com.google.common.base.Charsets.UTF_8;
 import static com.google.common.util.concurrent.Uninterruptibles.sleepUninterruptibly;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.commons.io.FileUtils.copyDirectory;
@@ -37,6 +36,7 @@ import java.io.IOException;
 import javax.ws.rs.core.Response;
 
 import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.map.MappingIterator;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.loader.Main;
 import org.icgc.dcc.release.model.DetailedSubmission;
@@ -45,7 +45,6 @@ import org.junit.Test;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
-import com.google.common.io.Files;
 import com.wordnik.system.mongodb.SnapshotUtil;
 
 /**
@@ -239,53 +238,65 @@ public class LoaderIntegrationTest extends BaseIntegrationTest {
    * @throws IOException
    */
   private void verifyDb() {
-    // Export @formatter:off
-   SnapshotUtil.main(new String[] {
-      "-d", Main.DATABASE_NAME, // Database
-      "-o", DCC_ROOT_DIR,       // Output dir
-      "-J"                      // Output in json
-   });
-   // @formatter:on
+    exportDb(Main.DATABASE_NAME, DCC_ROOT_DIR);
 
-    for(File file : new File(MONGO_EXPORT_DIR).listFiles()) {
-      try {
-        String expectedJson = Files.toString(file, UTF_8);
-        String actualJson = Files.toString(new File(DCC_ROOT_DIR, file.getName()), UTF_8);
+    for(File expectedFile : new File(MONGO_EXPORT_DIR).listFiles()) {
+      File actualFile = new File(DCC_ROOT_DIR, expectedFile.getName());
 
-        assertJsonEquals(expectedJson, actualJson);
-      } catch(IOException e) {
-        Throwables.propagate(e);
-      }
+      assertJsonFileEquals(expectedFile, actualFile);
     }
   }
 
   /**
-   * Asserts that {@code expectedJson} is canonically equal to {@code actualJson}.
+   * Export all collections in {@code dbName} to {@code outputDir} as serialized sequence files of JSON objects.
    * 
-   * @param actualJson
-   * @param expectedJson
+   * @param dbName
+   * @param outputDir
    */
-  private static void assertJsonEquals(String actualJson, String expectedJson) {
+  private static void exportDb(String dbName, String outputDir) {
+    SnapshotUtil.main("-d", dbName, "-o", outputDir, "-J");
+  }
+
+  /**
+   * Asserts semantic JSON equality between {@code expectedFile} and {@code actualFile} using a memory efficient
+   * stream-based comparison of deserialized sequences of JSON objects, ignoring transient fields.
+   * 
+   * @param expectedFile
+   * @param actualFile
+   */
+  private static void assertJsonFileEquals(File expectedFile, File actualFile) {
     try {
       ObjectMapper mapper = new ObjectMapper();
-      JsonNode actualJsonNode = mapper.readTree(actualJson);
-      JsonNode expectedJsonNode = mapper.readTree(expectedJson);
+      MappingIterator<JsonNode> expected = mapper.reader(JsonNode.class).readValues(expectedFile);
+      MappingIterator<JsonNode> actual = mapper.reader(JsonNode.class).readValues(actualFile);
 
-      sanitizeJsonNode(actualJsonNode);
-      sanitizeJsonNode(expectedJsonNode);
+      while(actual.hasNext() && expected.hasNext()) {
+        JsonNode expectedJsonNode = expected.nextValue();
+        JsonNode actualJsonNode = actual.nextValue();
 
-      assertEquals("JSON mismatch!", actualJsonNode, expectedJsonNode);
-    } catch(Exception e) {
+        // Remove transient fields
+        normalizeJsonNode(expectedJsonNode);
+        normalizeJsonNode(actualJsonNode);
+
+        assertEquals(
+            "JSON mismatch between expected JSON file " + expectedFile + " and actual JSON file " + actualFile,
+            expectedJsonNode, actualJsonNode);
+      }
+
+      // Ensure same number of elements
+      assertEquals("Actual JSON file is missing objects", expected.hasNext(), false);
+      assertEquals("Actual JSON file has additional objects", actual.hasNext(), false);
+    } catch(IOException e) {
       Throwables.propagate(e);
     }
   }
 
   /**
-   * Remove JSON properties that can change across runs (e.g. $oid).
+   * Removes transient JSON properties that can change across runs (e.g. $oid).
    * 
    * @param jsonNode
    */
-  private static void sanitizeJsonNode(JsonNode jsonNode) {
+  private static void normalizeJsonNode(JsonNode jsonNode) {
     JsonUtils.filterTree(jsonNode, null, ImmutableList.of("$oid"), Integer.MAX_VALUE);
   }
 
