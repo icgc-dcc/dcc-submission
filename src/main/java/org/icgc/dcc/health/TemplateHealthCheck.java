@@ -19,30 +19,24 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc;
+package org.icgc.dcc.health;
 
-import com.yammer.dropwizard.Service;
-import com.yammer.dropwizard.config.Bootstrap;
-import com.yammer.dropwizard.config.Environment;
-import org.icgc.dcc.health.TemplateHealthCheck;
-import org.icgc.dcc.resources.SayingResource;
+import com.yammer.metrics.core.HealthCheck;
 
-public class DataPortalApiService extends Service<DataPortalApiConfiguration> {
-    public static void main(String[] args) throws Exception {
-        new DataPortalApiService().run(args);
+public class TemplateHealthCheck extends HealthCheck {
+    private final String template;
+
+    public TemplateHealthCheck(String template) {
+        super("template");
+        this.template = template;
     }
 
     @Override
-    public void initialize(Bootstrap<DataPortalApiConfiguration> bootstrap) {
-        bootstrap.setName("data-portal-api");
-    }
-
-    @Override
-    public void run(DataPortalApiConfiguration configuration,
-                    Environment environment) {
-        final String template = configuration.getTemplate();
-        final String defaultName = configuration.getDefaultName();
-        environment.addResource(new SayingResource(template, defaultName));
-        environment.addHealthCheck(new TemplateHealthCheck(template));
+    protected Result check() throws Exception {
+        final String saying = String.format(template, "TEST");
+        if (saying.contains("TEST") == false) {
+            return Result.unhealthy("template doesn't include a name");
+        }
+        return Result.healthy();
     }
 }
