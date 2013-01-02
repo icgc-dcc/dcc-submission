@@ -40,6 +40,7 @@ import org.codehaus.jackson.map.MappingIterator;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.loader.Main;
 import org.icgc.dcc.release.model.DetailedSubmission;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -126,10 +127,18 @@ public class LoaderIntegrationTest extends BaseIntegrationTest {
   }
 
   /**
+   * Shuts down the validator / submitter threads.
+   */
+  @After
+  public void teardown() {
+    org.icgc.dcc.Main.shutdown();
+  }
+
+  /**
    * Execute the loader on an integration test data set and compares the results to verified set of output files.
    */
   @Test
-  public void testSystem() {
+  public void testLoader() {
     String[] args = { RELEASE_NAME };
     Main.main(args);
 
