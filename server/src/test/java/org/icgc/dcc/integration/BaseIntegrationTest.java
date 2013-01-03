@@ -17,16 +17,22 @@
  */
 package org.icgc.dcc.integration;
 
-import static org.apache.commons.io.FileUtils.deleteDirectory;
+import static com.google.common.base.Preconditions.checkState;
 
-import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientFactory;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+
 import com.mongodb.Mongo;
 import com.mongodb.MongoURI;
+import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
 /**
@@ -43,24 +49,49 @@ public abstract class BaseIntegrationTest {
     System.setProperty("java.security.krb5.kdc", "kdc0.ox.ac.uk:kdc1.ox.ac.uk");
   }
 
-  protected static final String DCC_ROOT_DIR = ConfigFactory.load().getString("fs.root");
+  protected Config config;
 
-  protected static final String MONGO_URI = ConfigFactory.load().getString("mongo.uri");
+  protected Configuration conf;
+
+  protected FileSystem fs;
 
   protected final Client client = ClientFactory.newClient();
+
+  protected void setup(String fileName) throws IOException, URISyntaxException, InterruptedException {
+    this.config = ConfigFactory.load(fileName);
+    this.conf = new Configuration();
+    this.fs = FileSystem.get(new URI(getFsUrl()), conf, "hdfs");
+  }
 
   /**
    * @throws IOException
    */
   protected void cleanStorage() throws IOException {
-    deleteDirectory(new File(DCC_ROOT_DIR));
+    // Remove the root file system
+    Path path = new Path(getRootDir());
+    if(fs.exists(path)) {
+      checkState(fs.delete(path, true));
+    }
 
-    MongoURI uri = new MongoURI(MONGO_URI);
+    // Drop test databases
+    MongoURI uri = new MongoURI(getMongoUri());
     Mongo mongo = uri.connect();
     mongo.dropDatabase("testDb");
     mongo.dropDatabase("icgc");
     mongo.dropDatabase("icgc-dev");
     mongo.dropDatabase("icgc-loader");
+  }
+
+  protected String getFsUrl() {
+    return config.getString("fs.url");
+  }
+
+  protected String getRootDir() {
+    return config.getString("fs.root");
+  }
+
+  protected String getMongoUri() {
+    return config.getString("mongo.uri");
   }
 
 }

@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.dictionary.model;
 
+import java.io.Serializable;
+
 import org.icgc.dcc.dictionary.visitor.DictionaryElement;
 import org.icgc.dcc.dictionary.visitor.DictionaryVisitor;
 
@@ -29,7 +31,7 @@ import com.mongodb.BasicDBObject;
  * TODO: possibly to some file schemata too in the future
  */
 @Embedded
-public class Restriction implements DictionaryElement {
+public class Restriction implements DictionaryElement, Serializable {
 
   public static final String CONFIG_VALUE_SEPARATOR = ","; // simple key-value pair for now, so the value can hold a
                                                            // comma-separated list of values

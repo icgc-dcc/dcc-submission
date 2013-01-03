@@ -1,5 +1,7 @@
 package org.icgc.dcc.validation.report;
 
+import java.io.Serializable;
+
 import org.icgc.dcc.dictionary.model.SummaryType;
 import org.icgc.dcc.validation.report.BaseStatsReportingPlanElement.FieldSummary;
 
@@ -8,7 +10,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
 @Embedded
-public class FieldReport {
+public class FieldReport implements Serializable {
 
   protected String name;
 

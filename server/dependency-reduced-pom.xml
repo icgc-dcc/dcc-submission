@@ -209,6 +209,10 @@
       <scope>test</scope>
       <exclusions>
         <exclusion>
+          <artifactId>junit</artifactId>
+          <groupId>junit</groupId>
+        </exclusion>
+        <exclusion>
           <artifactId>slf4j-log4j12</artifactId>
           <groupId>org.slf4j</groupId>
         </exclusion>
@@ -239,6 +243,30 @@
         <exclusion>
           <artifactId>hamcrest-core</artifactId>
           <groupId>org.hamcrest</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>com.wordnik</groupId>
+      <artifactId>mongo-admin-utils-distribution</artifactId>
+      <version>1.2.0</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>slf4j-log4j12</artifactId>
+          <groupId>org.slf4j</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>mongo-admin-utils_2.10.0-RC5</artifactId>
+          <groupId>com.wordnik</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>mongo-utils_2.10.0-RC5</artifactId>
+          <groupId>com.wordnik</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>scala-library</artifactId>
+          <groupId>org.scala-lang</groupId>
         </exclusion>
       </exclusions>
     </dependency>

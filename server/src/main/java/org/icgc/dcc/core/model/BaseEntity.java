@@ -1,5 +1,6 @@
 package org.icgc.dcc.core.model;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import org.bson.types.ObjectId;
@@ -8,7 +9,7 @@ import org.codehaus.jackson.annotate.JsonIgnore;
 import com.google.code.morphia.annotations.Id;
 import com.google.code.morphia.annotations.Version;
 
-public abstract class BaseEntity extends Timestamped implements HasId {
+public abstract class BaseEntity extends Timestamped implements HasId, Serializable {
 
   @Id
   @JsonIgnore

@@ -60,7 +60,8 @@ public interface Schema {
     }
 
     public Schema parse(String schema) throws JsonParseException, JsonProcessingException, IOException {
-      JsonNode node = new JsonFactory().createJsonParser(schema).readValueAsTree();
+      JsonNode node = new ObjectMapper().readTree(schema);
+
       return parseSchemaNode(node);
     }
 

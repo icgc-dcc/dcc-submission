@@ -34,8 +34,8 @@ import org.icgc.dcc.dictionary.model.ValueType;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Table;
 
 /**
@@ -64,7 +64,9 @@ public class Translator {
       }
     });
 
-    ImmutableTable.Builder<String, String, String> builder = ImmutableTable.builder();
+    // This has to be mutable since ImmutableTable is not serializable. This will cause errors downstream with cascading
+    // and hadoop.
+    Table<String, String, String> table = HashBasedTable.create();
 
     for(Field field : fileSchema.getFields()) {
       // Try to find a code list restriction
@@ -84,12 +86,12 @@ public class Translator {
         // Add code list terms
         String fieldName = field.getName();
         for(Term term : codeList.getTerms()) {
-          builder.put(fieldName, term.getCode(), term.getValue());
+          table.put(fieldName, term.getCode(), term.getValue());
         }
       }
     }
 
-    return builder.build();
+    return table;
   }
 
 }

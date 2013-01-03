@@ -18,6 +18,7 @@
 package org.icgc.dcc.validation.report;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -30,7 +31,7 @@ import org.icgc.dcc.validation.cascading.TupleState.TupleError;
 
 import com.google.common.collect.Lists;
 
-public class ValidationErrorReport {
+public class ValidationErrorReport implements Serializable {
 
   private ValidationErrorCode errorType;
 
@@ -128,7 +129,7 @@ public class ValidationErrorReport {
 
   }
 
-  private static class ColumnErrorReport {
+  private static class ColumnErrorReport implements Serializable {
     private List<String> columnNames;
 
     private long count;

@@ -19,7 +19,6 @@ package org.icgc.dcc.integration;
 
 import static com.google.common.util.concurrent.Uninterruptibles.sleepUninterruptibly;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.apache.commons.io.FileUtils.copyDirectory;
 import static org.icgc.dcc.integration.TestUtils.asDetailedSubmission;
 import static org.icgc.dcc.integration.TestUtils.get;
 import static org.icgc.dcc.integration.TestUtils.post;
@@ -32,14 +31,17 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 
 import javax.ws.rs.core.Response;
 
+import org.apache.hadoop.fs.Path;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.MappingIterator;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.loader.Main;
 import org.icgc.dcc.release.model.DetailedSubmission;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -54,6 +56,23 @@ import com.wordnik.system.mongodb.SnapshotUtil;
  * setup simpler and quicker.
  */
 public class LoaderIntegrationTest extends BaseIntegrationTest {
+
+  /**
+   * Configuration file. Change this to switch environments.
+   */
+  // NOTE: To test against HDFS:
+  // - set to dev
+  // - change realm.ini path in application_dev.conf
+  // - comment out the test body
+  // - run (will fail on validation due to jar)
+  // - set to local
+  // - restore realm.ini path
+  // - Set loader.Main to use: public static final String MONGODB_URL = "mongodb://10.0.3.154";
+  // - mvn package -DskipTests=true
+  // - cd target
+  // - java -Xmx1g -cp dcc-server-1.5.jar org.icgc.dcc.loader.Main dev release3
+  // - view job status at http://hcn51.res.oicr.on.ca:50030/
+  private static final String ENV = "local"; // local, dev, prod
 
   /**
    * Test metadata constants.
@@ -102,7 +121,6 @@ public class LoaderIntegrationTest extends BaseIntegrationTest {
   private static final String FS_DIR = INTEGRATION_TEST_DIR + "/fs";
   private static final String MONGO_EXPORT_DIR = INTEGRATION_TEST_DIR + "/mongo-export";
   private static final String SYSTEM_FILES_DIR = FS_DIR + "/SystemFiles";
-  private static final String RELEASE_SYSTEM_FILES_DIR = DCC_ROOT_DIR + "/" + RELEASE_NAME + "/SystemFiles";
   // @formatter:on
 
   /**
@@ -112,6 +130,8 @@ public class LoaderIntegrationTest extends BaseIntegrationTest {
    */
   @Before
   public void setup() throws Exception {
+    super.setup(Main.CONFIG.valueOf(ENV).filename);
+
     // Basic sequence to initialize and validate a single project
     cleanStorage();
     startValidator();
@@ -126,11 +146,19 @@ public class LoaderIntegrationTest extends BaseIntegrationTest {
   }
 
   /**
+   * Shuts down the validator / submitter threads.
+   */
+  @After
+  public void teardown() {
+    org.icgc.dcc.Main.shutdown();
+  }
+
+  /**
    * Execute the loader on an integration test data set and compares the results to verified set of output files.
    */
   @Test
-  public void testSystem() {
-    String[] args = { RELEASE_NAME };
+  public void testLoader() {
+    String[] args = { ENV, RELEASE_NAME };
     Main.main(args);
 
     verifyDb();
@@ -142,7 +170,7 @@ public class LoaderIntegrationTest extends BaseIntegrationTest {
    * @throws IOException
    */
   private void startValidator() throws IOException {
-    String[] args = new String[] {};
+    String[] args = { ENV };
     org.icgc.dcc.Main.main(args);
   }
 
@@ -178,10 +206,16 @@ public class LoaderIntegrationTest extends BaseIntegrationTest {
    * Uploads a valid submission.
    * 
    * @throws IOException
+   * @throws URISyntaxException
    */
-  private void uploadSubmission() throws IOException {
-    copyDirectory(new File(FS_DIR), new File(DCC_ROOT_DIR));
-    copyDirectory(new File(SYSTEM_FILES_DIR), new File(RELEASE_SYSTEM_FILES_DIR));
+  private void uploadSubmission() throws IOException, URISyntaxException {
+    // Creating a release makes the dir again, so delete (hadoop fs requirement?)
+    fs.delete(new Path(getRootDir() + "/" + RELEASE_NAME), true);
+
+    fs.copyFromLocalFile(false, true, new Path(FS_DIR + "/" + RELEASE_NAME),
+        new Path(getRootDir() + "/" + RELEASE_NAME));
+    fs.copyFromLocalFile(false, true, new Path(SYSTEM_FILES_DIR), new Path(getRootDir() + "/" + RELEASE_NAME
+        + "/SystemFiles"));
   }
 
   /**
@@ -238,10 +272,10 @@ public class LoaderIntegrationTest extends BaseIntegrationTest {
    * @throws IOException
    */
   private void verifyDb() {
-    exportDb(Main.DATABASE_NAME, DCC_ROOT_DIR);
+    exportDb(Main.DATABASE_NAME, getRootDir());
 
     for(File expectedFile : new File(MONGO_EXPORT_DIR).listFiles()) {
-      File actualFile = new File(DCC_ROOT_DIR, expectedFile.getName());
+      File actualFile = new File(getRootDir(), expectedFile.getName());
 
       assertJsonFileEquals(expectedFile, actualFile);
     }
