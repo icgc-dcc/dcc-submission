@@ -21,21 +21,21 @@
 
 package org.icgc.dcc.health;
 
-import com.mongodb.Mongo;
 import com.yammer.metrics.core.HealthCheck;
+import org.jongo.Jongo;
 
 public class MongoHealthCheck extends HealthCheck {
 
-    private Mongo mongo;
+    private Jongo mongo;
 
-    public MongoHealthCheck(Mongo mongo) {
+    public MongoHealthCheck(Jongo mongo) {
         super("MongoHealthCheck");
         this.mongo = mongo;
     }
 
     @Override
     protected Result check() throws Exception {
-        mongo.getDatabaseNames();
+        mongo.getDatabase();
         return Result.healthy();
     }
 

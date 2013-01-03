@@ -19,31 +19,36 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc.resources;
+package org.icgc.dcc.utils;
 
-import com.yammer.metrics.annotation.Timed;
-import org.icgc.dcc.core.Gene;
-import org.icgc.dcc.dao.GeneDAO;
+import com.mongodb.DB;
+import com.mongodb.Mongo;
+import com.mongodb.MongoException;
+import org.icgc.dcc.DataPortalConfiguration;
 import org.jongo.Jongo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
+import java.net.UnknownHostException;
 
-@Path("/genes")
-@Produces(MediaType.APPLICATION_JSON)
-public class GeneResource {
+public class MongoHelper {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MongoHelper.class);
 
-    private final GeneDAO genes;
+    public static Jongo getMongo(DataPortalConfiguration configuration) {
 
-    public GeneResource(Jongo mongo) {
-        this.genes = new GeneDAO(mongo);
-    }
+        Mongo mongo;
+        DB db = null;
 
-    @GET
-    @Timed
-    public Iterable<Gene> getAll() {
-        return genes.findAll();
+        try {
+            // TODO config
+            mongo = new Mongo();
+            db = mongo.getDB("data-portal-local");
+        } catch (UnknownHostException e) {
+            LOGGER.error("MongoDB Connection Error", e);
+        } catch (MongoException e) {
+            LOGGER.error("MongoDB Error", e);
+        }
+
+        return new Jongo(db);
     }
 }

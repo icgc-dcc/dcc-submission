@@ -21,23 +21,15 @@
 
 package org.icgc.dcc;
 
-import com.mongodb.DB;
-import com.mongodb.Mongo;
 import com.yammer.dropwizard.Service;
 import com.yammer.dropwizard.config.Bootstrap;
 import com.yammer.dropwizard.config.Environment;
-import org.icgc.dcc.core.Gene;
 import org.icgc.dcc.health.MongoHealthCheck;
 import org.icgc.dcc.resources.GeneResource;
+import org.icgc.dcc.utils.MongoHelper;
 import org.jongo.Jongo;
-import org.jongo.MongoCollection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.net.UnknownHostException;
 
 public class DataPortalService extends Service<DataPortalConfiguration> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(DataPortalService.class);
 
     public static void main(String[] args) throws Exception {
         new DataPortalService().run(new String[]{"server", "settings.yml"});
@@ -52,26 +44,10 @@ public class DataPortalService extends Service<DataPortalConfiguration> {
     public void run(DataPortalConfiguration configuration,
                     Environment environment) {
 
-        Mongo mongo = null;
-        DB db = null;
-        try {
-            mongo = new Mongo();
-            db = mongo.getDB("data-portal-local");
-        } catch (UnknownHostException e) {
-            LOGGER.error("MongoDB Connection Error", e);
-        }
-
-        MongoManaged mongoManaged = new MongoManaged(mongo);
-
-        Jongo jongo = new Jongo(db);
-        MongoCollection genes = jongo.getCollection("genes");
-        genes.insert("{name: 'Joe', age: 18}");
-        Gene gene = genes.findOne().as(Gene.class);
-        LOGGER.info(gene.getName());
+        Jongo mongo = MongoHelper.getMongo(configuration);
 
         environment.addHealthCheck(new MongoHealthCheck(mongo));
 
-        environment.manage(mongoManaged);
-        environment.addResource(new GeneResource());
+        environment.addResource(new GeneResource(mongo));
     }
 }

@@ -19,24 +19,21 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc;
+package org.icgc.dcc.dao;
 
-import com.mongodb.Mongo;
-import com.yammer.dropwizard.lifecycle.Managed;
+import org.icgc.dcc.core.Gene;
+import org.jongo.Jongo;
+import org.jongo.MongoCollection;
 
-public class MongoManaged implements Managed {
+public class GeneDAO {
 
-    private Mongo m;
+    private final MongoCollection store;
 
-    public MongoManaged(Mongo m) {
-        this.m = m;
+    public GeneDAO(Jongo mongo) {
+        this.store = mongo.getCollection("genes");
     }
 
-    public void start() throws Exception {
-    }
-
-    public void stop() throws Exception {
-        System.out.println("here");
-        m.close();
+    public Iterable<Gene> findAll() {
+        return store.find().as(Gene.class);
     }
 }
