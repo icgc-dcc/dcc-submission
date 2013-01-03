@@ -196,15 +196,6 @@ public class ValidationQueueManagerService extends AbstractService {
           }
         }
       }
-
-      private void handleCascadeStatus(final Plan plan, final QueuedProject project) {
-        if(plan.getCascade().getCascadeStats().isSuccessful()) {
-          handleCompletedValidation(project, plan);
-        } else {
-          handleUnexpectedException(project);
-        }
-      }
-
     }, POLLING_FREQUENCY_PER_SEC, POLLING_FREQUENCY_PER_SEC, TimeUnit.SECONDS);
   }
 
@@ -370,21 +361,24 @@ public class ValidationQueueManagerService extends AbstractService {
     @Override
     public void onStarting(Cascade cascade) {
       // No-op for now, can add in external hook
+      log.debug("CascadeListener onStarting");
     }
 
     @Override
     public void onStopping(Cascade cascade) {
+      log.debug("CascadeListener onStopping");
       handleUnexpectedException(project);
-
     }
 
     @Override
     public void onCompleted(Cascade cascade) {
+      log.debug("CascadeListener onCompleted");
       handleCompletedValidation(project, plan);
     }
 
     @Override
     public boolean onThrowable(Cascade cascade, Throwable throwable) {
+      log.debug("CascadeListener onThrowable");
       // No-op for now; false indicates that the throwable was not handled and needs to be re-thrown
       return false;
     }
