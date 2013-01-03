@@ -1,5 +1,6 @@
 package org.icgc.dcc.release.model;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import org.icgc.dcc.validation.report.SubmissionReport;
@@ -8,7 +9,7 @@ import com.google.code.morphia.annotations.Embedded;
 import com.google.common.base.Objects;
 
 @Embedded
-public class Submission {
+public class Submission implements Serializable {
 
   protected String projectKey;
 

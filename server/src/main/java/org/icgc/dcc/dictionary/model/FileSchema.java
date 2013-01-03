@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.dictionary.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,7 +37,7 @@ import com.google.common.collect.Lists;
  * Describes a file schema that contains {@code Field}s and that is part of a {@code Dictionary}
  */
 @Embedded
-public class FileSchema implements DictionaryElement {
+public class FileSchema implements DictionaryElement, Serializable {
 
   private String name;
 

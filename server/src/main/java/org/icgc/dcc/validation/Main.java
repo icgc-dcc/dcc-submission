@@ -24,19 +24,41 @@ public class Main {
 
   private static final Logger log = LoggerFactory.getLogger(Main.class);
 
+  private static final String HADOOP_USER_NAME_PARAM = "HADOOP_USER_NAME";
+
+  private static final String HADOOP_USER_NAME = "hdfs";
+
+  public static enum CONFIG {
+    qa("application_qa"), dev("application_dev"), local("application");
+
+    public String filename;
+
+    private CONFIG(String filename) {
+      this.filename = filename;
+    }
+  }
+
   public static void main(String[] args) throws Exception {
-    Injector injector = Guice.createInjector(new ConfigModule(ConfigFactory.load())//
+    final String env = args[0];
+    final String releaseName = args[1];
+    final String projectKey = args[2];
+    final String config = CONFIG.valueOf(env).filename;
+    checkArgument(env != null);
+    checkArgument(releaseName != null);
+    checkArgument(projectKey != null);
+    checkArgument(config != null);
+    log.info("env = {} ", env);
+    log.info("releaseName = {} ", releaseName);
+    log.info("projectKey = {} ", projectKey);
+    log.info("config = {} ", config);
+
+    System.setProperty(HADOOP_USER_NAME_PARAM, HADOOP_USER_NAME); // see DCC-572
+
+    Injector injector = Guice.createInjector(new ConfigModule(ConfigFactory.load(config))//
         , new MorphiaModule()//
         , new FileSystemModule()//
         , new ValidationModule()//
         );
-
-    final String releaseName = args[0];
-    final String projectKey = args[1];
-    checkArgument(releaseName != null);
-    checkArgument(projectKey != null);
-    log.info("releaseName = {} ", releaseName);
-    log.info("projectKey = {} ", projectKey);
 
     ReleaseService releaseService = injector.getInstance(ReleaseService.class);
     Release release = getRelease(releaseService, releaseName);

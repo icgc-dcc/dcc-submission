@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.dictionary.model;
 
+import java.io.Serializable;
+
 import com.google.code.morphia.annotations.Embedded;
 
 /**
@@ -24,7 +26,7 @@ import com.google.code.morphia.annotations.Embedded;
  * string) associated with a value, and a URI as reference for the controlled term
  */
 @Embedded
-public class Term {
+public class Term implements Serializable {
 
   private String code;
 

@@ -2,6 +2,7 @@ package org.icgc.dcc.release;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.io.Serializable;
 import java.util.List;
 
 import org.icgc.dcc.core.model.Project;
@@ -15,13 +16,13 @@ import com.google.code.morphia.Morphia;
 import com.google.common.collect.ImmutableList;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
 
-public abstract class BaseRelease implements HasRelease {
+public abstract class BaseRelease implements HasRelease, Serializable {
 
-  private final Datastore datastore;
+  private final transient Datastore datastore;
 
-  private final Morphia morphia;
+  private final transient Morphia morphia;
 
-  private final DccFileSystem dccFilesystem;
+  private final transient DccFileSystem dccFilesystem;
 
   private final Release release;
 
