@@ -19,22 +19,26 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc.core;
+package org.icgc.dcc;
 
-public class Saying {
-    private final long id;
-    private final String content;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.yammer.dropwizard.config.Configuration;
+import org.hibernate.validator.constraints.NotEmpty;
 
-    public Saying(long id, String content) {
-        this.id = id;
-        this.content = content;
+public class DataPortalConfiguration extends Configuration {
+    @NotEmpty
+    @JsonProperty
+    private String template;
+
+    @NotEmpty
+    @JsonProperty
+    private String defaultName = "Stranger";
+
+    public String getTemplate() {
+        return template;
     }
 
-    public long getId() {
-        return id;
-    }
-
-    public String getContent() {
-        return content;
+    public String getDefaultName() {
+        return defaultName;
     }
 }

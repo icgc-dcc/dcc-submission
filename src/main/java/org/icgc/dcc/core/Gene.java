@@ -19,24 +19,26 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc.health;
+package org.icgc.dcc.core;
 
-import com.yammer.metrics.core.HealthCheck;
+public class Gene {
 
-public class TemplateHealthCheck extends HealthCheck {
-    private final String template;
+    private String name;
+    private long age;
 
-    public TemplateHealthCheck(String template) {
-        super("template");
-        this.template = template;
+    public Gene() {
     }
 
-    @Override
-    protected Result check() throws Exception {
-        final String saying = String.format(template, "TEST");
-        if (saying.contains("TEST") == false) {
-            return Result.unhealthy("template doesn't include a name");
-        }
-        return Result.healthy();
+    public Gene(String name, long age) {
+        this.name = name;
+        this.age = age;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public long getAge() {
+        return age;
     }
 }

@@ -19,36 +19,24 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc.resources;
+package org.icgc.dcc;
 
-import com.google.common.base.Optional;
-import com.yammer.metrics.annotation.Timed;
-import org.icgc.dcc.core.Saying;
+import com.mongodb.Mongo;
+import com.yammer.dropwizard.lifecycle.Managed;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import java.util.concurrent.atomic.AtomicLong;
+public class MongoManaged implements Managed {
 
-@Path("/sayings")
-@Produces(MediaType.APPLICATION_JSON)
-public class SayingResource {
-    private final String template;
-    private final String defaultName;
-    private final AtomicLong counter;
+    private Mongo m;
 
-    public SayingResource(String template, String defaultName) {
-        this.template = template;
-        this.defaultName = defaultName;
-        this.counter = new AtomicLong();
+    public MongoManaged(Mongo m) {
+        this.m = m;
     }
 
-    @GET
-    @Timed
-    public Saying sayHello(@QueryParam("name") Optional<String> name) {
-        return new Saying(counter.incrementAndGet(),
-                String.format(template, name.or(defaultName)));
+    public void start() throws Exception {
+    }
+
+    public void stop() throws Exception {
+        System.out.println("here");
+        m.close();
     }
 }

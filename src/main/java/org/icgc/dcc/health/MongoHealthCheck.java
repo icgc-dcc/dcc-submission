@@ -19,26 +19,24 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc;
+package org.icgc.dcc.health;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.yammer.dropwizard.config.Configuration;
-import org.hibernate.validator.constraints.NotEmpty;
+import com.mongodb.Mongo;
+import com.yammer.metrics.core.HealthCheck;
 
-public class DataPortalApiConfiguration extends Configuration {
-    @NotEmpty
-    @JsonProperty
-    private String template;
+public class MongoHealthCheck extends HealthCheck {
 
-    @NotEmpty
-    @JsonProperty
-    private String defaultName = "Stranger";
+    private Mongo mongo;
 
-    public String getTemplate() {
-        return template;
+    public MongoHealthCheck(Mongo mongo) {
+        super("MongoHealthCheck");
+        this.mongo = mongo;
     }
 
-    public String getDefaultName() {
-        return defaultName;
+    @Override
+    protected Result check() throws Exception {
+        mongo.getDatabaseNames();
+        return Result.healthy();
     }
+
 }

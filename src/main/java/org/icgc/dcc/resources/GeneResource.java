@@ -19,30 +19,24 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc;
+package org.icgc.dcc.resources;
 
-import com.yammer.dropwizard.Service;
-import com.yammer.dropwizard.config.Bootstrap;
-import com.yammer.dropwizard.config.Environment;
-import org.icgc.dcc.health.TemplateHealthCheck;
-import org.icgc.dcc.resources.SayingResource;
+import com.yammer.metrics.annotation.Timed;
+import org.icgc.dcc.core.Gene;
 
-public class DataPortalApiService extends Service<DataPortalApiConfiguration> {
-    public static void main(String[] args) throws Exception {
-        new DataPortalApiService().run(args);
-    }
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 
-    @Override
-    public void initialize(Bootstrap<DataPortalApiConfiguration> bootstrap) {
-        bootstrap.setName("data-portal-api");
-    }
+@Path("/genes")
+@Produces(MediaType.APPLICATION_JSON)
+public class GeneResource {
 
-    @Override
-    public void run(DataPortalApiConfiguration configuration,
-                    Environment environment) {
-        final String template = configuration.getTemplate();
-        final String defaultName = configuration.getDefaultName();
-        environment.addResource(new SayingResource(template, defaultName));
-        environment.addHealthCheck(new TemplateHealthCheck(template));
+
+    @GET
+    @Timed
+    public Gene sayHello() {
+        return new Gene("GENENNAME", 1);
     }
 }
