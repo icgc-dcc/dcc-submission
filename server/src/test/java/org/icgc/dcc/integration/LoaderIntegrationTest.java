@@ -78,18 +78,6 @@ public class LoaderIntegrationTest extends BaseIntegrationTest {
   private static final String SYSTEM_FILES_DIR = FS_DIR + "/SystemFiles";
   // @formatter:on
 
-  protected String getValidatorDbName() {
-    return new MongoURI(config.getString("mongo.uri")).getDatabase();
-  }
-
-  protected String getLoaderDbName() {
-    return "icgc-loader-" + RELEASE_NAME;
-  }
-
-  protected String getLoaderExportDir() {
-    return getRootDir() + "/" + "loader-export";
-  }
-
   /**
    * Perform a clean release with a single validated project
    * 
@@ -99,9 +87,8 @@ public class LoaderIntegrationTest extends BaseIntegrationTest {
   public void setup() throws Exception {
     super.setup(Main.CONFIG.valueOf(ENV).filename);
 
-    // Basic sequence to initialize and validate a single project
     cleanStorage();
-    importDb(getValidatorDbName(), MONGO_IMPORT_DIR);
+    importValidatorDb();
     uploadSubmission();
   }
 
@@ -117,10 +104,24 @@ public class LoaderIntegrationTest extends BaseIntegrationTest {
     verifyLoaderDb();
   }
 
+  // @formatter:on
+
+  private String getValidatorDbName() {
+    return new MongoURI(config.getString("mongo.uri")).getDatabase();
+  }
+
+  private String getLoaderDbName() {
+    return "icgc-loader-" + RELEASE_NAME;
+  }
+
+  private String getLoaderExportDir() {
+    return getRootDir() + "/" + "loader-export";
+  }
+
   /**
    * @throws IOException
    */
-  protected void cleanStorage() throws IOException {
+  private void cleanStorage() throws IOException {
     // Remove the root file system
     Path path = new Path(getRootDir());
     if(fs.exists(path)) {
@@ -132,6 +133,13 @@ public class LoaderIntegrationTest extends BaseIntegrationTest {
     Mongo mongo = uri.connect();
     mongo.dropDatabase(getValidatorDbName());
     mongo.dropDatabase(getLoaderDbName());
+  }
+
+  /**
+   * Imports the validator db state into the db.
+   */
+  private void importValidatorDb() {
+    importDb(getValidatorDbName(), MONGO_IMPORT_DIR);
   }
 
   /**

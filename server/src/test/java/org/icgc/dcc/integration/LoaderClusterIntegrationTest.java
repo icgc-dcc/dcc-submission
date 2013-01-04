@@ -74,9 +74,9 @@ public class LoaderClusterIntegrationTest extends BaseClusterTest {
   private static final String SYSTEM_FILES_DIR = FS_DIR + "/SystemFiles";
   // @formatter:on
 
-  protected Config config;
+  private Config config;
 
-  protected FileSystem fs;
+  private FileSystem fs;
 
   /**
    * Simulates the state of a clean release with a single validated project
@@ -88,11 +88,45 @@ public class LoaderClusterIntegrationTest extends BaseClusterTest {
     super.setUp();
 
     configure(Main.CONFIG.valueOf(ENV).filename);
-
-    // Basic sequence to initialize and validate a single project
     cleanStorage();
-    importDb(getValidatorDbName(), MONGO_IMPORT_DIR);
+    importValidatorDb();
     uploadSubmission();
+  }
+
+  /**
+   * Execute the loader on an integration test data set and compares the results to verified set of output files.
+   */
+  @Test
+  public void testLoader() {
+    String[] args = { ENV, RELEASE_NAME };
+    Main.main(args);
+
+    exportLoaderDb();
+    verifyLoaderDb();
+  }
+
+  private String getValidatorDbName() {
+    return new MongoURI(config.getString("mongo.uri")).getDatabase();
+  }
+
+  private String getLoaderDbName() {
+    return "icgc-loader-" + RELEASE_NAME;
+  }
+
+  private String getFsUrl() {
+    return config.getString("fs.url");
+  }
+
+  private String getRootDir() {
+    return config.getString("fs.root");
+  }
+
+  private String getMongoUri() {
+    return config.getString("mongo.uri");
+  }
+
+  private String getLoaderExportDir() {
+    return getRootDir() + "/" + "loader-export";
   }
 
   /**
@@ -103,7 +137,7 @@ public class LoaderClusterIntegrationTest extends BaseClusterTest {
    * @throws URISyntaxException
    * @throws InterruptedException
    */
-  protected void configure(String fileName) throws IOException, URISyntaxException, InterruptedException {
+  private void configure(String fileName) throws IOException, URISyntaxException, InterruptedException {
     this.config = ConfigFactory.load(fileName);
     this.fs = FileSystem.get(new URI(getFsUrl()), new Configuration());
   }
@@ -113,7 +147,7 @@ public class LoaderClusterIntegrationTest extends BaseClusterTest {
    * 
    * @throws IOException
    */
-  protected void cleanStorage() throws IOException {
+  private void cleanStorage() throws IOException {
     // Remove the root file system
     Path path = new Path(getRootDir());
     if(fs.exists(path)) {
@@ -127,40 +161,11 @@ public class LoaderClusterIntegrationTest extends BaseClusterTest {
     mongo.dropDatabase(getLoaderDbName());
   }
 
-  protected String getValidatorDbName() {
-    return new MongoURI(config.getString("mongo.uri")).getDatabase();
-  }
-
-  protected String getLoaderDbName() {
-    return "icgc-loader-" + RELEASE_NAME;
-  }
-
-  protected String getFsUrl() {
-    return config.getString("fs.url");
-  }
-
-  protected String getRootDir() {
-    return config.getString("fs.root");
-  }
-
-  protected String getMongoUri() {
-    return config.getString("mongo.uri");
-  }
-
-  protected String getLoaderExportDir() {
-    return getRootDir() + "/" + "loader-export";
-  }
-
   /**
-   * Execute the loader on an integration test data set and compares the results to verified set of output files.
+   * Imports the validator db state into the db.
    */
-  @Test
-  public void testLoader() {
-    String[] args = { ENV, RELEASE_NAME };
-    Main.main(args);
-
-    exportLoaderDb();
-    verifyLoaderDb();
+  private void importValidatorDb() {
+    importDb(getValidatorDbName(), MONGO_IMPORT_DIR);
   }
 
   /**
