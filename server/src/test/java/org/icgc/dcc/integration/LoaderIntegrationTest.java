@@ -17,36 +17,23 @@
  */
 package org.icgc.dcc.integration;
 
-import static com.google.common.util.concurrent.Uninterruptibles.sleepUninterruptibly;
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.icgc.dcc.integration.TestUtils.asDetailedSubmission;
-import static org.icgc.dcc.integration.TestUtils.get;
-import static org.icgc.dcc.integration.TestUtils.post;
-import static org.icgc.dcc.integration.TestUtils.put;
-import static org.icgc.dcc.integration.TestUtils.resourceToJsonArray;
-import static org.icgc.dcc.integration.TestUtils.resourceToString;
-import static org.icgc.dcc.release.model.SubmissionState.QUEUED;
-import static org.icgc.dcc.release.model.SubmissionState.VALID;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
-import javax.ws.rs.core.Response;
-
 import org.apache.hadoop.fs.Path;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.MappingIterator;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.loader.Main;
-import org.icgc.dcc.release.model.DetailedSubmission;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
+import com.wordnik.system.mongodb.RestoreUtil;
 import com.wordnik.system.mongodb.SnapshotUtil;
 
 /**
@@ -80,37 +67,6 @@ public class LoaderIntegrationTest extends BaseIntegrationTest {
   // @formatter:off
   private static final int RELEASE_ID = 3;
   private static final String RELEASE_NAME = "release" + RELEASE_ID;
-  private static final String PROJECT_NAME = "project1";
-  private static final String RELEASE = "{\"name\":\"" + RELEASE_NAME + "\", \"state\":\"OPENED\",\"submissions\":[{\"projectKey\":\"" + PROJECT_NAME + "\",\"state\":\"NOT_VALIDATED\"}],\"dictionaryVersion\":\"0.6c\"}";
-  private static final String PROJECT = "{\"name\":\"Project One\",\"key\":\"" + PROJECT_NAME + "\",\"users\":[\"admin\"],\"groups\":[\"admin\"]}";
-  private static final String PROJECT_TO_SIGN_OFF = "[\"" + PROJECT_NAME + "\"]";
-  private static final String PROJECTS_TO_ENQUEUE = "[{\"key\": \"" + PROJECT_NAME + "\", \"emails\": [\"a@a.ca\"]}]";
-  private static final String NEXT_RELEASE = "{\"name\": \"release" + (RELEASE_ID + 1) + "\"}";
-  // @formatter:on
-
-  /**
-   * REST endpoint constants.
-   */
-  // @formatter:off
-  private static final String SEED_ENDPOINT = "/seed";
-  private static final String SEED_CODELIST_ENDPOINT = SEED_ENDPOINT + "/codelists";
-  private static final String SEED_DICTIONARIES_ENDPOINT = SEED_ENDPOINT + "/dictionaries";
-  private static final String PROJECTS_ENDPOINT = "/projects";
-  private static final String RELEASES_ENDPOINT = "/releases";
-  private static final String NEXT_RELEASE_ENPOINT = "/nextRelease";
-  private static final String SIGNOFF_ENDPOINT = NEXT_RELEASE_ENPOINT + "/signed";
-  private static final String QUEUE_ENDPOINT = NEXT_RELEASE_ENPOINT + "/queue";
-  private static final String RELEASE_ENDPOINT = RELEASES_ENDPOINT + "/" + RELEASE_NAME;
-  private static final String RELEASE_SUBMISSIONS_ENDPOINT = RELEASE_ENDPOINT + "/submissions";
-  // @formatter:on
-
-  /**
-   * Resource constants.
-   */
-  // @formatter:off
-  private static final String INTEGRATION_TEST_RESOURCE_DIR = "/loader-integration-test";
-  private static final String CODELISTS_RESOURCE = INTEGRATION_TEST_RESOURCE_DIR + "/codelists.json";
-  private static final String DICTIONARY_RESOURCE = INTEGRATION_TEST_RESOURCE_DIR + "/dictionary.json";
   // @formatter:on
 
   /**
@@ -119,6 +75,7 @@ public class LoaderIntegrationTest extends BaseIntegrationTest {
   // @formatter:off
   private static final String INTEGRATION_TEST_DIR = "src/test/resources/loader-integration-test";
   private static final String FS_DIR = INTEGRATION_TEST_DIR + "/fs";
+  private static final String MONGO_IMPORT_DIR = INTEGRATION_TEST_DIR + "/mongo-import";
   private static final String MONGO_EXPORT_DIR = INTEGRATION_TEST_DIR + "/mongo-export";
   private static final String SYSTEM_FILES_DIR = FS_DIR + "/SystemFiles";
   // @formatter:on
@@ -134,23 +91,8 @@ public class LoaderIntegrationTest extends BaseIntegrationTest {
 
     // Basic sequence to initialize and validate a single project
     cleanStorage();
-    startValidator();
-    seedDb();
-    createRelease();
-    addProject();
+    importDb("icgc-dev", MONGO_IMPORT_DIR);
     uploadSubmission();
-    enqueueProject();
-    validateSubmission();
-    signOffProject();
-    releaseRelease();
-  }
-
-  /**
-   * Shuts down the validator / submitter threads.
-   */
-  @After
-  public void teardown() {
-    org.icgc.dcc.Main.shutdown();
   }
 
   /**
@@ -162,44 +104,6 @@ public class LoaderIntegrationTest extends BaseIntegrationTest {
     Main.main(args);
 
     verifyDb();
-  }
-
-  /**
-   * Starts the validator web service.
-   * 
-   * @throws IOException
-   */
-  private void startValidator() throws IOException {
-    String[] args = { ENV };
-    org.icgc.dcc.Main.main(args);
-  }
-
-  /**
-   * Seeds reference data.
-   * 
-   * @throws IOException
-   */
-  private void seedDb() throws IOException {
-    post(client, SEED_DICTIONARIES_ENDPOINT, resourceToJsonArray(DICTIONARY_RESOURCE));
-    post(client, SEED_CODELIST_ENDPOINT, resourceToString(CODELISTS_RESOURCE));
-  }
-
-  /**
-   * Creates a release.
-   * 
-   * @throws Exception
-   */
-  private void createRelease() throws Exception {
-    Response response = put(client, RELEASES_ENDPOINT, RELEASE);
-    assertEquals(200, response.getStatus());
-  }
-
-  /**
-   * Adds a new project.
-   */
-  private void addProject() {
-    Response response = post(client, PROJECTS_ENDPOINT, PROJECT);
-    assertEquals(201, response.getStatus());
   }
 
   /**
@@ -219,66 +123,30 @@ public class LoaderIntegrationTest extends BaseIntegrationTest {
   }
 
   /**
-   * Queue the added project.
-   * 
-   * @throws Exception
-   */
-  private void enqueueProject() throws Exception {
-    Response response = get(client, QUEUE_ENDPOINT);
-    assertEquals(200, response.getStatus());
-
-    response = post(client, QUEUE_ENDPOINT, PROJECTS_TO_ENQUEUE);
-    assertEquals(200, response.getStatus());
-  }
-
-  /**
-   * Validates the queued project.
-   * 
-   * @throws Exception
-   */
-  private void validateSubmission() throws Exception {
-    DetailedSubmission detailedSubmission;
-    do {
-      sleepUninterruptibly(2, SECONDS);
-
-      Response response = get(client, RELEASE_SUBMISSIONS_ENDPOINT + "/" + PROJECT_NAME);
-      assertEquals(200, response.getStatus());
-
-      detailedSubmission = asDetailedSubmission(response);
-    } while(detailedSubmission.getState() == QUEUED);
-
-    assertEquals(VALID, detailedSubmission.getState());
-  }
-
-  /**
-   * Signs off the validated project
-   */
-  private void signOffProject() {
-    Response response = post(client, SIGNOFF_ENDPOINT, PROJECT_TO_SIGN_OFF);
-    assertEquals(200, response.getStatus());
-  }
-
-  /**
-   * Releases the signed-off project.
-   */
-  private void releaseRelease() {
-    Response response = post(client, NEXT_RELEASE_ENPOINT, NEXT_RELEASE);
-    assertEquals(200, response.getStatus());
-  }
-
-  /**
    * Verifies the integration database against of manually validated reference files.
    * 
    * @throws IOException
    */
   private void verifyDb() {
-    exportDb(Main.DATABASE_NAME, getRootDir());
+    String dbName = "icgc-loader-" + RELEASE_NAME;
+
+    exportDb(dbName, getRootDir());
 
     for(File expectedFile : new File(MONGO_EXPORT_DIR).listFiles()) {
       File actualFile = new File(getRootDir(), expectedFile.getName());
 
       assertJsonFileEquals(expectedFile, actualFile);
     }
+  }
+
+  /**
+   * Import all collections in {@code dbName} to {@code inputDir} as serialized sequence files of JSON objects.
+   * 
+   * @param dbName
+   * @param inputDir
+   */
+  private static void importDb(String dbName, String inputDir) {
+    RestoreUtil.main("-d", dbName, "-i", inputDir, "-D");
   }
 
   /**

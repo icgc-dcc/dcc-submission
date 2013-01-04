@@ -44,6 +44,13 @@ import com.typesafe.config.ConfigFactory;
 public abstract class BaseIntegrationTest {
 
   static {
+    setProperties();
+  }
+
+  /**
+   * Sets key system properties before test initialization.
+   */
+  private static void setProperties() {
     // See http://stackoverflow.com/questions/7134723/hadoop-on-osx-unable-to-load-realm-info-from-scdynamicstore
     System.setProperty("java.security.krb5.realm", "OX.AC.UK");
     System.setProperty("java.security.krb5.kdc", "kdc0.ox.ac.uk:kdc1.ox.ac.uk");
@@ -76,10 +83,9 @@ public abstract class BaseIntegrationTest {
     // Drop test databases
     MongoURI uri = new MongoURI(getMongoUri());
     Mongo mongo = uri.connect();
-    mongo.dropDatabase("testDb");
-    mongo.dropDatabase("icgc");
-    mongo.dropDatabase("icgc-dev");
-    mongo.dropDatabase("icgc-loader");
+    for(String databaseName : mongo.getDatabaseNames()) {
+      mongo.dropDatabase(databaseName);
+    }
   }
 
   protected String getFsUrl() {
