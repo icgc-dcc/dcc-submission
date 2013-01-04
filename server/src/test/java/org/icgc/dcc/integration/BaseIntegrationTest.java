@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.integration;
 
-import static com.google.common.base.Preconditions.checkState;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -28,10 +26,7 @@ import javax.ws.rs.client.ClientFactory;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 
-import com.mongodb.Mongo;
-import com.mongodb.MongoURI;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
@@ -68,24 +63,6 @@ public abstract class BaseIntegrationTest {
     this.config = ConfigFactory.load(fileName);
     this.conf = new Configuration();
     this.fs = FileSystem.get(new URI(getFsUrl()), conf, "hdfs");
-  }
-
-  /**
-   * @throws IOException
-   */
-  protected void cleanStorage() throws IOException {
-    // Remove the root file system
-    Path path = new Path(getRootDir());
-    if(fs.exists(path)) {
-      checkState(fs.delete(path, true));
-    }
-
-    // Drop test databases
-    MongoURI uri = new MongoURI(getMongoUri());
-    Mongo mongo = uri.connect();
-    for(String databaseName : mongo.getDatabaseNames()) {
-      mongo.dropDatabase(databaseName);
-    }
   }
 
   protected String getFsUrl() {

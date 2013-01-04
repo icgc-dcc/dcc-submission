@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.integration;
 
+import static com.google.common.base.Preconditions.checkState;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
@@ -34,6 +35,7 @@ import org.junit.Test;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
+import com.mongodb.Mongo;
 import com.mongodb.MongoURI;
 import com.wordnik.system.mongodb.RestoreUtil;
 import com.wordnik.system.mongodb.SnapshotUtil;
@@ -113,6 +115,23 @@ public class LoaderIntegrationTest extends BaseIntegrationTest {
 
     exportLoaderDb();
     verifyLoaderDb();
+  }
+
+  /**
+   * @throws IOException
+   */
+  protected void cleanStorage() throws IOException {
+    // Remove the root file system
+    Path path = new Path(getRootDir());
+    if(fs.exists(path)) {
+      checkState(fs.delete(path, true));
+    }
+
+    // Drop test databases
+    MongoURI uri = new MongoURI(getMongoUri());
+    Mongo mongo = uri.connect();
+    mongo.dropDatabase(getValidatorDbName());
+    mongo.dropDatabase(getLoaderDbName());
   }
 
   /**
