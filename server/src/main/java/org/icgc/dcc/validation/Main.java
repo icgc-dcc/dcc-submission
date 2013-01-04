@@ -10,6 +10,7 @@ import org.icgc.dcc.release.NextRelease;
 import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.QueuedProject;
 import org.icgc.dcc.release.model.Release;
+import org.icgc.dcc.validation.service.ValidationQueueManagerService;
 import org.icgc.dcc.validation.service.ValidationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,7 +65,10 @@ public class Main {
     Release release = getRelease(releaseService, releaseName);
     if(null != release) {
       ValidationService validationService = injector.getInstance(ValidationService.class);
-      validationService.validate(release, new QueuedProject(projectKey, null));
+      ValidationQueueManagerService validationQueueManagerService =
+          injector.getInstance(ValidationQueueManagerService.class);
+      validationService.validate(release, new QueuedProject(projectKey, null),
+          validationQueueManagerService.new ValidationCascadeListener());
     } else {
       log.info("there is no next release at the moment");
     }

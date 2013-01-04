@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 
@@ -53,6 +54,7 @@ import org.junit.runner.RunWith;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
+import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.inject.Inject;
 
 @RunWith(GuiceJUnitRunner.class)
@@ -213,8 +215,11 @@ public class ValidationExternalIntegrityTest {
     Plan plan = validationService.planCascade(new QueuedProject("dummyProject", null), cascadingStrategy, dictionary);
     Assert.assertEquals(5, plan.getCascade().getFlows().size());
 
-    validationService.runCascade(plan.getCascade(), null);
-
+    TestCascadeListener listener = new TestCascadeListener();
+    validationService.runCascade(plan.getCascade(), listener);
+    while(listener.isRunning()) {
+      Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
+    }
     Assert.assertTrue(errorFileString, errorFile.exists());
     return FileUtils.readFileToString(errorFile);
   }

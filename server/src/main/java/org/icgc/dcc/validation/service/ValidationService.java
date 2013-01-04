@@ -34,10 +34,12 @@ import org.icgc.dcc.validation.FatalPlanningException;
 import org.icgc.dcc.validation.Plan;
 import org.icgc.dcc.validation.Planner;
 import org.icgc.dcc.validation.factory.CascadingStrategyFactory;
+import org.icgc.dcc.validation.service.ValidationQueueManagerService.ValidationCascadeListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cascading.cascade.Cascade;
+import cascading.cascade.CascadeListener;
 
 import com.google.common.collect.Iterables;
 import com.google.inject.Inject;
@@ -78,7 +80,7 @@ public class ValidationService {
 
   }
 
-  public Plan validate(final Release release, final QueuedProject qProject) {
+  public Plan validate(final Release release, final QueuedProject qProject, final ValidationCascadeListener listener) {
     String dictionaryVersion = release.getDictionaryVersion();
     Dictionary dictionary = this.dictionaries.getFromVersion(dictionaryVersion);
     if(dictionary == null) {
@@ -104,7 +106,9 @@ public class ValidationService {
       log.info("starting validation on project {}", qProject.getKey());
       Plan plan = planCascade(qProject, cascadingStrategy, dictionary);
 
-      runCascade(plan.getCascade(), project.getKey());
+      listener.setPlan(plan);
+      listener.setProject(qProject);
+      runCascade(plan.getCascade(), listener);
       log.info("validation finished for project {}, time spent on validation is {} nanoseconds", project.getKey(),
           System.nanoTime() - startTime);
 
@@ -129,10 +133,11 @@ public class ValidationService {
     return plan;
   }
 
-  public void runCascade(Cascade cascade, String projectKey) {
+  public void runCascade(Cascade cascade, CascadeListener listener) {
     int size = cascade.getFlows().size();
     log.info("starting cascade with {} flows", size);
-    cascade.complete();
+    cascade.addListener(listener);
+    cascade.start();
     log.info("completed cascade with {} flows", size);
   }
 }
