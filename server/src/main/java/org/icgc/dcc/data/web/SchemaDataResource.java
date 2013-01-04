@@ -28,7 +28,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import org.icgc.dcc.data.schema.Schema;
-import org.icgc.dcc.loader.Main;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
@@ -103,7 +102,13 @@ public class SchemaDataResource {
   }
 
   protected DBCollection collection(String name) {
-    return mongo.getDB(Main.DATABASE_NAME).getCollection(name);
+    // TODO: the database name here needs to be dynamic since it changes from release to release.
+    String databaseName = "";
+    if(databaseName.isEmpty()) {
+      throw new UnsupportedOperationException("Not implemented!");
+    }
+
+    return mongo.getDB(databaseName).getCollection(name);
   }
 
   protected DBCollection collection() {

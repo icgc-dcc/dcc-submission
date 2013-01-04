@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.integration;
 
-import static com.google.common.base.Preconditions.checkState;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -28,10 +26,7 @@ import javax.ws.rs.client.ClientFactory;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 
-import com.mongodb.Mongo;
-import com.mongodb.MongoURI;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
@@ -44,6 +39,13 @@ import com.typesafe.config.ConfigFactory;
 public abstract class BaseIntegrationTest {
 
   static {
+    setProperties();
+  }
+
+  /**
+   * Sets key system properties before test initialization.
+   */
+  private static void setProperties() {
     // See http://stackoverflow.com/questions/7134723/hadoop-on-osx-unable-to-load-realm-info-from-scdynamicstore
     System.setProperty("java.security.krb5.realm", "OX.AC.UK");
     System.setProperty("java.security.krb5.kdc", "kdc0.ox.ac.uk:kdc1.ox.ac.uk");
@@ -61,25 +63,6 @@ public abstract class BaseIntegrationTest {
     this.config = ConfigFactory.load(fileName);
     this.conf = new Configuration();
     this.fs = FileSystem.get(new URI(getFsUrl()), conf, "hdfs");
-  }
-
-  /**
-   * @throws IOException
-   */
-  protected void cleanStorage() throws IOException {
-    // Remove the root file system
-    Path path = new Path(getRootDir());
-    if(fs.exists(path)) {
-      checkState(fs.delete(path, true));
-    }
-
-    // Drop test databases
-    MongoURI uri = new MongoURI(getMongoUri());
-    Mongo mongo = uri.connect();
-    mongo.dropDatabase("testDb");
-    mongo.dropDatabase("icgc");
-    mongo.dropDatabase("icgc-dev");
-    mongo.dropDatabase("icgc-loader");
   }
 
   protected String getFsUrl() {
