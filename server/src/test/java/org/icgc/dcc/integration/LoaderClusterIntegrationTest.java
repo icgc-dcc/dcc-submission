@@ -32,7 +32,6 @@ import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.MappingIterator;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.loader.Main;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.common.base.Throwables;
@@ -47,7 +46,6 @@ import com.wordnik.system.mongodb.SnapshotUtil;
 /**
  * Integration test to exercise the loader main entry point using a pseudo-distributed cluster.
  */
-@Ignore
 public class LoaderClusterIntegrationTest extends BaseClusterTest {
 
   /**

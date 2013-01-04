@@ -9,7 +9,6 @@ import java.util.List;
 
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.core.model.User;
-import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.release.model.SubmissionState;
@@ -46,6 +45,19 @@ public class FileSystemTest {
   protected Submission mockSubmission;
 
   protected Config mockConfig;
+
+  static {
+    setProperties();
+  }
+
+  /**
+   * Sets key system properties before test initialization.
+   */
+  private static void setProperties() {
+    // See http://stackoverflow.com/questions/7134723/hadoop-on-osx-unable-to-load-realm-info-from-scdynamicstore
+    System.setProperty("java.security.krb5.realm", "OX.AC.UK");
+    System.setProperty("java.security.krb5.kdc", "kdc0.ox.ac.uk:kdc1.ox.ac.uk");
+  }
 
   @Before
   public void setUp() throws IOException {
