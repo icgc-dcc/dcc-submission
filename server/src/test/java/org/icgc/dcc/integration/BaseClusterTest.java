@@ -25,6 +25,7 @@ import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.mapred.ClusterMapReduceTestCase;
+import org.apache.hadoop.mapred.JobConf;
 
 /**
  * Basis for pseudo-distributed Hadoop integration tests.
@@ -43,21 +44,37 @@ public abstract class BaseClusterTest extends ClusterMapReduceTestCase {
     System.setProperty("java.security.krb5.realm", "OX.AC.UK");
     System.setProperty("java.security.krb5.kdc", "kdc0.ox.ac.uk:kdc1.ox.ac.uk");
 
+    System.setProperty("HADOOP_USER_NAME", System.getProperty("user.name"));
     System.setProperty("hadoop.log.dir", "target/test/hadoop/logs");
     System.setProperty(PROP_TEST_BUILD_DATA, "target/test/hadoop");
   }
 
   @Override
   protected void setUp() throws Exception {
+    File test = new File("target/test");
+    if(test.exists()) {
+      FileUtils.deleteDirectory(test);
+    }
+
     Properties props = new Properties();
-    startCluster(true, props);
+    super.startCluster(true, props);
+
+    // Get the dynamic values of the namenode and job tracker
+    JobConf jobConf = createJobConf();
+    String jobTracker = jobConf.get("mapred.job.tracker");
+    String fs = jobConf.get("fs.defaultFS");
+
+    // Set for typesafe config overrides
+    System.setProperty("hadoop.mapred.job.tracker", jobTracker);
+    System.setProperty("fs.url", fs);
+    System.setProperty("hadoop.mapred.compress.map.output", "false"); // Snappy compression not available in test
   }
 
   @Override
   protected void tearDown() throws Exception {
     super.tearDown();
 
-    clean();
+    moveTestFiles();
   }
 
   /**
@@ -66,12 +83,8 @@ public abstract class BaseClusterTest extends ClusterMapReduceTestCase {
    * @throws IOException
    * @see https://issues.apache.org/jira/browse/MAPREDUCE-2817
    */
-  private void clean() throws IOException {
+  private void moveTestFiles() throws IOException {
     File target = new File("target/test/hadoop/build");
-    if(target.exists()) {
-      FileUtils.deleteDirectory(target);
-    }
-
     File build = new File("build");
     build.renameTo(target);
   }

@@ -50,6 +50,9 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.wordnik.system.mongodb.SnapshotUtil;
 
+/**
+ * Run this to regenerate the inputs for the integration test.
+ */
 public class LoaderIntegrationTestExporter {
 
   protected Config config;
@@ -99,18 +102,6 @@ public class LoaderIntegrationTestExporter {
   /**
    * Configuration file. Change this to switch environments.
    */
-  // NOTE: To test against HDFS:
-  // - set to dev
-  // - change realm.ini path in application_dev.conf
-  // - comment out the test body
-  // - run (will fail on validation due to jar)
-  // - set to local
-  // - restore realm.ini path
-  // - Set loader.Main to use: public static final String MONGODB_URL = "mongodb://10.0.3.154";
-  // - mvn package -DskipTests=true
-  // - cd target
-  // - java -Xmx1g -cp dcc-server-1.5.jar org.icgc.dcc.loader.Main dev release3
-  // - view job status at http://hcn51.res.oicr.on.ca:50030/
   private static final String ENV = "local"; // local, dev, prod
 
   /**

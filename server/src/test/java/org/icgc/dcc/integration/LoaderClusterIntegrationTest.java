@@ -17,45 +17,43 @@
  */
 package org.icgc.dcc.integration;
 
-import static org.junit.Assert.assertEquals;
+import static com.google.common.base.Preconditions.checkState;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.MappingIterator;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.loader.Main;
-import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
+import com.mongodb.Mongo;
 import com.mongodb.MongoURI;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import com.wordnik.system.mongodb.RestoreUtil;
 import com.wordnik.system.mongodb.SnapshotUtil;
 
 /**
- * Integration test to exercise the loader main entry point. This supports running in both "local" and "dev" modes.
+ * Integration test to exercise the loader main entry point using a pseudo-distributed cluster.
  */
-public class LoaderIntegrationTest extends BaseIntegrationTest {
+@Ignore
+public class LoaderClusterIntegrationTest extends BaseClusterTest {
 
   /**
-   * Configuration file. Change this to switch environments.
+   * Configuration file.
    */
-  // NOTE: To test against HDFS:
-  // - set ENV to dev
-  // - change application_dev.conf to use "mongodb://10.0.3.154";
-  // - comment out the test body
-  // - restore ENV to local
-  // - mvn package -DskipTests=true
-  // - cd target
-  // - java -Xmx1g -cp dcc-server-1.5.jar org.icgc.dcc.loader.Main dev release3
-  // - view job status at http://hcn51.res.oicr.on.ca:50030/
-  private static final String ENV = "local"; // local, dev, prod
+  private static final String ENV = "local";
 
   /**
    * Test metadata constants.
@@ -76,6 +74,59 @@ public class LoaderIntegrationTest extends BaseIntegrationTest {
   private static final String SYSTEM_FILES_DIR = FS_DIR + "/SystemFiles";
   // @formatter:on
 
+  protected Config config;
+
+  protected FileSystem fs;
+
+  /**
+   * Simulates the state of a clean release with a single validated project
+   * 
+   * @throws Exception
+   */
+  @Override
+  public void setUp() throws Exception {
+    super.setUp();
+
+    configure(Main.CONFIG.valueOf(ENV).filename);
+
+    // Basic sequence to initialize and validate a single project
+    cleanStorage();
+    importDb(getValidatorDbName(), MONGO_IMPORT_DIR);
+    uploadSubmission();
+  }
+
+  /**
+   * Configures the test.
+   * 
+   * @param fileName
+   * @throws IOException
+   * @throws URISyntaxException
+   * @throws InterruptedException
+   */
+  protected void configure(String fileName) throws IOException, URISyntaxException, InterruptedException {
+    this.config = ConfigFactory.load(fileName);
+    this.fs = FileSystem.get(new URI(getFsUrl()), new Configuration());
+  }
+
+  /**
+   * Cleans persistent storgage.
+   * 
+   * @throws IOException
+   */
+  protected void cleanStorage() throws IOException {
+    // Remove the root file system
+    Path path = new Path(getRootDir());
+    if(fs.exists(path)) {
+      checkState(fs.delete(path, true));
+    }
+
+    // Drop test databases
+    MongoURI uri = new MongoURI(getMongoUri());
+    Mongo mongo = uri.connect();
+    mongo.dropDatabase(getValidatorDbName());
+    mongo.dropDatabase(getLoaderDbName());
+  }
+
   protected String getValidatorDbName() {
     return new MongoURI(config.getString("mongo.uri")).getDatabase();
   }
@@ -84,23 +135,20 @@ public class LoaderIntegrationTest extends BaseIntegrationTest {
     return "icgc-loader-" + RELEASE_NAME;
   }
 
-  protected String getLoaderExportDir() {
-    return getRootDir() + "/" + "loader-export";
+  protected String getFsUrl() {
+    return config.getString("fs.url");
   }
 
-  /**
-   * Perform a clean release with a single validated project
-   * 
-   * @throws Exception
-   */
-  @Before
-  public void setup() throws Exception {
-    super.setup(Main.CONFIG.valueOf(ENV).filename);
+  protected String getRootDir() {
+    return config.getString("fs.root");
+  }
 
-    // Basic sequence to initialize and validate a single project
-    cleanStorage();
-    importDb(getValidatorDbName(), MONGO_IMPORT_DIR);
-    uploadSubmission();
+  protected String getMongoUri() {
+    return config.getString("mongo.uri");
+  }
+
+  protected String getLoaderExportDir() {
+    return getRootDir() + "/" + "loader-export";
   }
 
   /**
@@ -132,6 +180,20 @@ public class LoaderIntegrationTest extends BaseIntegrationTest {
   }
 
   /**
+   * Verifies the integration database against of manually validated reference files.
+   * 
+   * @throws IOException
+   */
+  private void verifyLoaderDb() {
+    for(File expectedFile : new File(MONGO_EXPORT_DIR).listFiles()) {
+      File actualFile = new File(getLoaderExportDir(), expectedFile.getName());
+
+      System.out.println("Comparing: expected = " + expectedFile + " to actual = " + actualFile);
+      assertJsonFileEquals(expectedFile, actualFile);
+    }
+  }
+
+  /**
    * Exports the loader database to the file system.
    */
   private void exportLoaderDb() {
@@ -150,21 +212,7 @@ public class LoaderIntegrationTest extends BaseIntegrationTest {
   }
 
   /**
-   * Verifies the integration database against of manually validated reference files.
-   * 
-   * @throws IOException
-   */
-  private void verifyLoaderDb() {
-    for(File expectedFile : new File(MONGO_EXPORT_DIR).listFiles()) {
-      File actualFile = new File(getLoaderExportDir(), expectedFile.getName());
-
-      System.out.println("Comparing: expected " + expectedFile + " to actual " + actualFile);
-      assertJsonFileEquals(expectedFile, actualFile);
-    }
-  }
-
-  /**
-   * Import all collections in {@code dbName} to {@code inputDir} as serialized sequence files of JSON objects.
+   * Import all collections in {@code inputDir} to {@code dbName} as serialized sequence files of JSON objects.
    * 
    * @param dbName
    * @param inputDir
