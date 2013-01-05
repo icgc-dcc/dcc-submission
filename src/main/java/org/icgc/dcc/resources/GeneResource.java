@@ -22,10 +22,9 @@
 package org.icgc.dcc.resources;
 
 import com.yammer.metrics.annotation.Timed;
+import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.client.Client;
 import org.icgc.dcc.dao.GeneDAO;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -35,8 +34,8 @@ import javax.ws.rs.core.Response;
 
 @Path("/genes")
 @Produces(MediaType.APPLICATION_JSON)
+@Slf4j
 public class GeneResource {
-    private static final Logger log = LoggerFactory.getLogger(GeneResource.class);
 
     private final GeneDAO genes;
 

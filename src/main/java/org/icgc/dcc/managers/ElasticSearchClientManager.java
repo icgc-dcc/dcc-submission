@@ -22,12 +22,11 @@
 package org.icgc.dcc.managers;
 
 import com.yammer.dropwizard.lifecycle.Managed;
+import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.client.Client;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+@Slf4j
 public final class ElasticSearchClientManager implements Managed {
-    private static final Logger log = LoggerFactory.getLogger(ElasticSearchClientManager.class);
     private static final String STOP_LOG = "Stopping ElasticSearch Client";
 
     private final Client client;

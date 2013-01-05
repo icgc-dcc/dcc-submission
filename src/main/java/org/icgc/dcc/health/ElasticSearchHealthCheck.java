@@ -22,12 +22,11 @@
 package org.icgc.dcc.health;
 
 import com.yammer.metrics.core.HealthCheck;
+import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.client.Client;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+@Slf4j
 public final class ElasticSearchHealthCheck extends HealthCheck {
-    private static final Logger log = LoggerFactory.getLogger(ElasticSearchHealthCheck.class);
     private static final String CLASS_NAME = "ElasticSearchHealthCheck";
     private static final String CHECK_LOG = "Checking the Health of ElasticSearch";
 

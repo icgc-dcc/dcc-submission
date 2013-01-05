@@ -21,14 +21,13 @@
 
 package org.icgc.dcc.utils;
 
+import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+@Slf4j
 public class ElasticSearchHelper {
-    private static final Logger log = LoggerFactory.getLogger(ElasticSearchHelper.class);
 
     public static Client getESClient() {
         return new TransportClient()

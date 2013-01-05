@@ -21,11 +21,14 @@
 
 package org.icgc.dcc.core;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Data
+@Slf4j
+@NoArgsConstructor
+@AllArgsConstructor
 public class Donor {
-    private static final Logger log = LoggerFactory.getLogger(Donor.class);
 }

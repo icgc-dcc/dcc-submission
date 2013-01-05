@@ -25,6 +25,7 @@ import com.mongodb.Mongo;
 import com.yammer.dropwizard.Service;
 import com.yammer.dropwizard.config.Bootstrap;
 import com.yammer.dropwizard.config.Environment;
+import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.client.Client;
 import org.icgc.dcc.health.ElasticSearchHealthCheck;
 import org.icgc.dcc.health.MongoHealthCheck;
@@ -33,11 +34,9 @@ import org.icgc.dcc.managers.MongoClientManager;
 import org.icgc.dcc.resources.GeneResource;
 import org.icgc.dcc.utils.ElasticSearchHelper;
 import org.icgc.dcc.utils.MongoHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+@Slf4j
 public class DataPortalService extends Service<DataPortalConfiguration> {
-    private static final Logger log = LoggerFactory.getLogger(DataPortalService.class);
     private static final String APPLICATION_NAME = "data-portal";
 
     public static void main(String[] args) throws Exception {

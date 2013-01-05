@@ -22,9 +22,8 @@
 package org.icgc.dcc;
 
 import com.yammer.dropwizard.config.Configuration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class DataPortalConfiguration extends Configuration {
-    private static final Logger log = LoggerFactory.getLogger(DataPortalConfiguration.class);
 }

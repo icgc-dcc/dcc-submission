@@ -21,15 +21,14 @@
 
 package org.icgc.dcc.dao;
 
+import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static org.elasticsearch.index.query.QueryBuilders.matchAllQuery;
 
+@Slf4j
 public class GeneDAO {
-    private static final Logger log = LoggerFactory.getLogger(GeneDAO.class);
     private static final String GET_ALL_LOG = "Returning all Genes";
     private static final String INDEX = "blog";
 

@@ -23,11 +23,10 @@ package org.icgc.dcc.managers;
 
 import com.mongodb.Mongo;
 import com.yammer.dropwizard.lifecycle.Managed;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public final class MongoClientManager implements Managed {
-    private static final Logger log = LoggerFactory.getLogger(MongoClientManager.class);
     private static final String STOP_LOG = "Closing MongoDB Client";
 
     private final Mongo mongo;

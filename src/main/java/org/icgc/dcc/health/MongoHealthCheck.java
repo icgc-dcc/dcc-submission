@@ -23,11 +23,10 @@ package org.icgc.dcc.health;
 
 import com.mongodb.Mongo;
 import com.yammer.metrics.core.HealthCheck;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public final class MongoHealthCheck extends HealthCheck {
-    private static final Logger log = LoggerFactory.getLogger(MongoHealthCheck.class);
     private static final String CLASS_NAME = "MongoHealthCheck";
     private static final String CHECK_LOG = "Checking Health of MongoDB";
 
