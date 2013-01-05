@@ -21,16 +21,20 @@
 
 package org.icgc.dcc.managers;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.mongodb.Mongo;
 import com.yammer.dropwizard.lifecycle.Managed;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Singleton
 public final class MongoClientManager implements Managed {
     private static final String STOP_LOG = "Closing MongoDB Client";
 
     private final Mongo mongo;
 
+    @Inject
     public MongoClientManager(Mongo mongo) {
         this.mongo = mongo;
     }

@@ -21,47 +21,32 @@
 
 package org.icgc.dcc;
 
-import com.mongodb.Mongo;
+import com.hubspot.dropwizard.guice.GuiceBundle;
 import com.yammer.dropwizard.Service;
 import com.yammer.dropwizard.config.Bootstrap;
 import com.yammer.dropwizard.config.Environment;
 import lombok.extern.slf4j.Slf4j;
-import org.elasticsearch.client.Client;
-import org.icgc.dcc.dao.GeneDao;
-import org.icgc.dcc.health.ElasticSearchHealthCheck;
-import org.icgc.dcc.health.MongoHealthCheck;
-import org.icgc.dcc.managers.ElasticSearchClientManager;
-import org.icgc.dcc.managers.MongoClientManager;
-import org.icgc.dcc.resources.GeneResource;
-import org.icgc.dcc.utils.ElasticSearchHelper;
-import org.icgc.dcc.utils.MongoHelper;
 
 @Slf4j
 public class DataPortalService extends Service<DataPortalConfiguration> {
     private static final String APPLICATION_NAME = "data-portal";
 
     public static void main(String[] args) throws Exception {
-        new DataPortalService().run(new String[]{"server", "settings.yml"});
+        new DataPortalService().run(new String[]{"server"});
     }
 
     @Override
     public final void initialize(Bootstrap<DataPortalConfiguration> bootstrap) {
         bootstrap.setName(APPLICATION_NAME);
+        bootstrap.addBundle(GuiceBundle.newBuilder()
+                .addModule(new DataPortalModule())
+                .enableAutoConfig(getClass().getPackage().getName())
+                .build()
+        );
     }
 
     @Override
     public final void run(DataPortalConfiguration configuration,
                           Environment environment) {
-
-        Mongo mongo = MongoHelper.getMongoClient();
-        Client es = ElasticSearchHelper.getESClient();
-
-        environment.manage(new ElasticSearchClientManager(es));
-        environment.manage(new MongoClientManager(mongo));
-
-        environment.addHealthCheck(new MongoHealthCheck(mongo));
-        environment.addHealthCheck(new ElasticSearchHealthCheck(es));
-
-        environment.addResource(new GeneResource(new GeneDao(es)));
     }
 }

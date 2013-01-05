@@ -21,16 +21,20 @@
 
 package org.icgc.dcc.managers;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.yammer.dropwizard.lifecycle.Managed;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.client.Client;
 
 @Slf4j
+@Singleton
 public final class ElasticSearchClientManager implements Managed {
     private static final String STOP_LOG = "Closing ElasticSearch Client";
 
     private final Client client;
 
+    @Inject
     public ElasticSearchClientManager(Client client) {
         this.client = client;
     }

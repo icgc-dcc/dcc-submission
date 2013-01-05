@@ -1,4 +1,4 @@
-/*
+package org.icgc.dcc;/*
  * Copyright 2013(c) The Ontario Institute for Cancer Research. All rights reserved.
  *
  * This program and the accompanying materials are made available under the
@@ -19,11 +19,17 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc;
-
-import com.yammer.dropwizard.config.Configuration;
+import com.google.inject.AbstractModule;
 import lombok.extern.slf4j.Slf4j;
+import org.elasticsearch.client.Client;
+import org.icgc.dcc.utils.ElasticSearchHelper;
 
 @Slf4j
-public class DataPortalConfiguration extends Configuration {
+public class DataPortalModule extends AbstractModule {
+
+    @Override
+    protected void configure() {
+        bind(Client.class).toInstance(ElasticSearchHelper.getESClient());
+
+    }
 }

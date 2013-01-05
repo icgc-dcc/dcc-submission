@@ -25,6 +25,7 @@ import com.yammer.metrics.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.dao.GeneDao;
 
+import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -39,6 +40,7 @@ public class GeneResource {
 
     private final GeneDao geneDao;
 
+    @Inject
     public GeneResource(GeneDao geneDao) {
         this.geneDao = geneDao;
     }
