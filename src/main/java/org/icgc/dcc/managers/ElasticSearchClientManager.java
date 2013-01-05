@@ -27,7 +27,7 @@ import org.elasticsearch.client.Client;
 
 @Slf4j
 public final class ElasticSearchClientManager implements Managed {
-    private static final String STOP_LOG = "Stopping ElasticSearch Client";
+    private static final String STOP_LOG = "Closing ElasticSearch Client";
 
     private final Client client;
 

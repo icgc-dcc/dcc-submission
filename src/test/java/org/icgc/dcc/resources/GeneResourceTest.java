@@ -21,39 +21,45 @@
 
 package org.icgc.dcc.resources;
 
-import com.yammer.metrics.annotation.Timed;
-import lombok.extern.slf4j.Slf4j;
+import com.sun.tools.javac.util.List;
+import com.yammer.dropwizard.testing.ResourceTest;
+import org.icgc.dcc.core.Gene;
 import org.icgc.dcc.dao.GeneDao;
+import org.junit.Test;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.*;
 
-@Path("/genes")
-@Produces(MediaType.APPLICATION_JSON)
-@Slf4j
-public class GeneResource {
+public class GeneResourceTest extends ResourceTest {
+    private final Gene gene1 = new Gene("L", 1L);
+    private final Gene gene2 = new Gene("S", 2L);
+    private final List<Gene> genes = List.of(gene1, gene2);
+    private final GeneDao geneDao = mock(GeneDao.class);
 
-    private final GeneDao geneDao;
-
-    public GeneResource(GeneDao geneDao) {
-        this.geneDao = geneDao;
+    @Override
+    protected void setUpResources() throws Exception {
+        when(geneDao.getOne(anyString())).thenReturn(gene1);
+        when(geneDao.getAll()).thenReturn(genes);
+        addResource(new GeneResource(geneDao));
     }
 
-    @GET
-    @Timed
-    public final Response getAll() {
-        return Response.ok(geneDao.getAll()).build();
+    @Test
+    public final void testGetAll() throws Exception {
+        assertThat(
+                client().resource("/genes").get(List.class))
+                .isEqualTo(genes);
+
+        verify(geneDao).getAll();
     }
 
-    @Path("/{id}")
-    @Produces(MediaType.APPLICATION_JSON)
-    @GET
-    @Timed
-    public final Response getOne(@PathParam("id") String Id) {
-        return Response.ok(geneDao.getOne(Id)).build();
+    @Test
+    public final void testGetOne() throws Exception {
+        assertThat(
+                client().resource("/genes/1").get(Gene.class))
+                .isEqualTo(gene1);
+
+        verify(geneDao).getOne("1");
     }
+
 }

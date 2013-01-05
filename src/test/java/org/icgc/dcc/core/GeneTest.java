@@ -24,15 +24,14 @@ package org.icgc.dcc.core;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static com.yammer.dropwizard.testing.JsonHelpers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
 public class GeneTest {
-    private static final Logger log = LoggerFactory.getLogger(GeneTest.class);
+
+    private final Gene gene = new Gene("L", 1L);
 
     @Before
     public void setUp() throws Exception {
@@ -45,16 +44,14 @@ public class GeneTest {
     }
 
     @Test
-    public void serializesToJSON() throws Exception {
-        final Gene gene = new Gene("L", 1L);
+    public final void serializesToJSON() throws Exception {
         assertThat("a Gene can be serialized to JSON",
                 asJson(gene),
                 is(jsonFixture("fixtures/gene.json")));
     }
 
     @Test
-    public void deserializesFromJSON() throws Exception {
-        final Gene gene = new Gene("L", 1L);
+    public final void deserializesFromJSON() throws Exception {
         assertThat("a Gene can be deserialized from JSON",
                 fromJson(jsonFixture("fixtures/gene.json"), Gene.class),
                 is(gene));

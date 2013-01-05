@@ -27,6 +27,7 @@ import com.yammer.dropwizard.config.Bootstrap;
 import com.yammer.dropwizard.config.Environment;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.client.Client;
+import org.icgc.dcc.dao.GeneDao;
 import org.icgc.dcc.health.ElasticSearchHealthCheck;
 import org.icgc.dcc.health.MongoHealthCheck;
 import org.icgc.dcc.managers.ElasticSearchClientManager;
@@ -61,6 +62,6 @@ public class DataPortalService extends Service<DataPortalConfiguration> {
         environment.addHealthCheck(new MongoHealthCheck(mongo));
         environment.addHealthCheck(new ElasticSearchHealthCheck(es));
 
-        environment.addResource(new GeneResource(es));
+        environment.addResource(new GeneResource(new GeneDao(es)));
     }
 }
