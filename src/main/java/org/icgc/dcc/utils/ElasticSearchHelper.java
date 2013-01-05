@@ -19,34 +19,28 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc.resources;
+package org.icgc.dcc.utils;
 
-import com.yammer.metrics.annotation.Timed;
 import org.elasticsearch.client.Client;
-import org.icgc.dcc.core.Gene;
-import org.icgc.dcc.dao.GeneDAO;
+import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.settings.ImmutableSettings;
+import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.icgc.dcc.DataPortalConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+public class ElasticSearchHelper {
+    private static final Logger LOG = LoggerFactory.getLogger(MongoHelper.class);
 
-@Path("/genes")
-@Produces(MediaType.APPLICATION_JSON)
-public class GeneResource {
-
-    private final GeneDAO genes;
-
-    public GeneResource(Client es) {
-        this.genes = new GeneDAO(es);
-    }
-
-    @GET
-    @Timed
-    public Response getAll() {
-        final Gene g = new Gene("L", 1L);
-        System.out.println(g.getName());
-        return Response.ok(genes.getAll()).build();
+    public static Client getESClient(DataPortalConfiguration configuration) {
+        LOG.info("Starting ES Client");
+        Settings settings = ImmutableSettings
+                .settingsBuilder()
+                .put("client.transport.sniff", true)
+                .build();
+        return new TransportClient(settings)
+                //.addTransportAddress(new InetSocketTransportAddress("hcn50.res.oicr.on.ca", 9300));
+                .addTransportAddress(new InetSocketTransportAddress("localhost", 9300));
     }
 }

@@ -19,34 +19,32 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc.resources;
+package org.icgc.dcc.managers;
 
-import com.yammer.metrics.annotation.Timed;
+import com.yammer.dropwizard.lifecycle.Managed;
 import org.elasticsearch.client.Client;
-import org.icgc.dcc.core.Gene;
-import org.icgc.dcc.dao.GeneDAO;
+import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.settings.ImmutableSettings;
+import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+public class ElasticSearchClientManager implements Managed {
+    private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
-@Path("/genes")
-@Produces(MediaType.APPLICATION_JSON)
-public class GeneResource {
+    private Client client;
 
-    private final GeneDAO genes;
-
-    public GeneResource(Client es) {
-        this.genes = new GeneDAO(es);
+    public ElasticSearchClientManager(Client client) {
+        this.client = client;
     }
 
-    @GET
-    @Timed
-    public Response getAll() {
-        final Gene g = new Gene("L", 1L);
-        System.out.println(g.getName());
-        return Response.ok(genes.getAll()).build();
+    @Override
+    public void start() throws Exception {
+    }
+
+    @Override
+    public void stop() throws Exception {
+        client.close();
     }
 }

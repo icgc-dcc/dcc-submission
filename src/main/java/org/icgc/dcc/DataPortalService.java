@@ -24,8 +24,11 @@ package org.icgc.dcc;
 import com.yammer.dropwizard.Service;
 import com.yammer.dropwizard.config.Bootstrap;
 import com.yammer.dropwizard.config.Environment;
+import org.elasticsearch.client.Client;
 import org.icgc.dcc.health.MongoHealthCheck;
+import org.icgc.dcc.managers.ElasticSearchClientManager;
 import org.icgc.dcc.resources.GeneResource;
+import org.icgc.dcc.utils.ElasticSearchHelper;
 import org.icgc.dcc.utils.MongoHelper;
 import org.jongo.Jongo;
 
@@ -44,10 +47,13 @@ public class DataPortalService extends Service<DataPortalConfiguration> {
     public void run(DataPortalConfiguration configuration,
                     Environment environment) {
 
-        Jongo mongo = MongoHelper.getMongo(configuration);
+        Jongo mongo = MongoHelper.getMongoClient(configuration);
+        Client es = ElasticSearchHelper.getESClient(configuration);
+
+        environment.manage(new ElasticSearchClientManager(es));
 
         environment.addHealthCheck(new MongoHealthCheck(mongo));
 
-        environment.addResource(new GeneResource(mongo));
+        environment.addResource(new GeneResource(es));
     }
 }

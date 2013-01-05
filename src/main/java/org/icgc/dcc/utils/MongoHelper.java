@@ -32,9 +32,9 @@ import org.slf4j.LoggerFactory;
 import java.net.UnknownHostException;
 
 public class MongoHelper {
-    private static final Logger LOGGER = LoggerFactory.getLogger(MongoHelper.class);
+    private static final Logger LOG = LoggerFactory.getLogger(MongoHelper.class);
 
-    public static Jongo getMongo(DataPortalConfiguration configuration) {
+    public static Jongo getMongoClient(DataPortalConfiguration configuration) {
 
         Mongo mongo;
         DB db = null;
@@ -44,9 +44,9 @@ public class MongoHelper {
             mongo = new Mongo();
             db = mongo.getDB("data-portal-local");
         } catch (UnknownHostException e) {
-            LOGGER.error("MongoDB Connection Error", e);
+            LOG.error("MongoDB Connection Error", e);
         } catch (MongoException e) {
-            LOGGER.error("MongoDB Error", e);
+            LOG.error("MongoDB Error", e);
         }
 
         return new Jongo(db);

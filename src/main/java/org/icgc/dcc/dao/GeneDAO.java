@@ -21,19 +21,29 @@
 
 package org.icgc.dcc.dao;
 
-import org.icgc.dcc.core.Gene;
-import org.jongo.Jongo;
-import org.jongo.MongoCollection;
+import org.elasticsearch.action.search.SearchType;
+import org.elasticsearch.client.Client;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static org.elasticsearch.index.query.QueryBuilders.matchAllQuery;
 
 public class GeneDAO {
+    private static final Logger LOG = LoggerFactory.getLogger(GeneDAO.class);
 
-    private final MongoCollection store;
+    private final Client store;
 
-    public GeneDAO(Jongo mongo) {
-        this.store = mongo.getCollection("genes");
+    public GeneDAO(Client es) {
+        this.store = es;
     }
 
-    public Iterable<Gene> findAll() {
-        return store.find().as(Gene.class);
+    public String getAll() {
+        return store.prepareSearch("blog")
+                .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
+                .setQuery(matchAllQuery())
+                .setFrom(0).setSize(2).setExplain(true)
+                .execute()
+                .actionGet()
+                .toString();
     }
 }

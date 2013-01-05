@@ -21,24 +21,14 @@
 
 package org.icgc.dcc.core;
 
-public class Gene {
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Gene {
     private String name;
     private long age;
-
-    public Gene() {
-    }
-
-    public Gene(String name, long age) {
-        this.name = name;
-        this.age = age;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public long getAge() {
-        return age;
-    }
 }
