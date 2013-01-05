@@ -21,6 +21,8 @@
 
 package org.icgc.dcc.dao;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.sun.tools.javac.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.search.SearchType;
@@ -29,6 +31,7 @@ import org.icgc.dcc.core.Gene;
 
 import static org.elasticsearch.index.query.QueryBuilders.matchAllQuery;
 
+@Singleton
 @Slf4j
 public class GeneDao {
     private static final String GET_ALL_LOG = "Returning all Genes";
@@ -37,6 +40,7 @@ public class GeneDao {
 
     private final Client store;
 
+    @Inject
     public GeneDao(Client es) {
         this.store = es;
     }
