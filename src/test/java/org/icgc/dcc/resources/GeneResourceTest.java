@@ -21,11 +21,13 @@
 
 package org.icgc.dcc.resources;
 
-import com.sun.tools.javac.util.List;
 import com.yammer.dropwizard.testing.ResourceTest;
 import org.icgc.dcc.core.Gene;
 import org.icgc.dcc.dao.GeneDao;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.anyString;
@@ -34,7 +36,7 @@ import static org.mockito.Mockito.*;
 public class GeneResourceTest extends ResourceTest {
     private final Gene gene1 = new Gene("L", 1L);
     private final Gene gene2 = new Gene("S", 2L);
-    private final List<Gene> genes = List.of(gene1, gene2);
+    private final List<Gene> genes = new ArrayList<Gene>();
     private final GeneDao geneDao = mock(GeneDao.class);
 
     @Override
