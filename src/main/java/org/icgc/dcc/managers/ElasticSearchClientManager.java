@@ -23,28 +23,26 @@ package org.icgc.dcc.managers;
 
 import com.yammer.dropwizard.lifecycle.Managed;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.settings.ImmutableSettings;
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ElasticSearchClientManager implements Managed {
-    private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+public final class ElasticSearchClientManager implements Managed {
+    private static final Logger log = LoggerFactory.getLogger(ElasticSearchClientManager.class);
+    private static final String STOP_LOG = "Stopping ElasticSearch Client";
 
-    private Client client;
+    private final Client client;
 
     public ElasticSearchClientManager(Client client) {
         this.client = client;
     }
 
     @Override
-    public void start() throws Exception {
+    public final void start() throws Exception {
     }
 
     @Override
-    public void stop() throws Exception {
+    public final void stop() throws Exception {
+        log.info(STOP_LOG);
         client.close();
     }
 }

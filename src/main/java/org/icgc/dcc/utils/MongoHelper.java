@@ -21,34 +21,29 @@
 
 package org.icgc.dcc.utils;
 
-import com.mongodb.DB;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
-import org.icgc.dcc.DataPortalConfiguration;
-import org.jongo.Jongo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.UnknownHostException;
 
-public class MongoHelper {
-    private static final Logger LOG = LoggerFactory.getLogger(MongoHelper.class);
+public final class MongoHelper {
+    private static final Logger log = LoggerFactory.getLogger(MongoHelper.class);
+    private static final String MONGO_DB_ERROR = "MongoDB Error";
 
-    public static Jongo getMongoClient(DataPortalConfiguration configuration) {
+    public static Mongo getMongoClient() {
 
-        Mongo mongo;
-        DB db = null;
+        Mongo mongo = null;
 
         try {
-            // TODO config
             mongo = new Mongo();
-            db = mongo.getDB("data-portal-local");
         } catch (UnknownHostException e) {
-            LOG.error("MongoDB Connection Error", e);
+            log.error(MONGO_DB_ERROR, e);
         } catch (MongoException e) {
-            LOG.error("MongoDB Error", e);
+            log.error(MONGO_DB_ERROR, e);
         }
 
-        return new Jongo(db);
+        return mongo;
     }
 }

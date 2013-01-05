@@ -21,38 +21,46 @@
 
 package org.icgc.dcc;
 
+import com.mongodb.Mongo;
 import com.yammer.dropwizard.Service;
 import com.yammer.dropwizard.config.Bootstrap;
 import com.yammer.dropwizard.config.Environment;
 import org.elasticsearch.client.Client;
+import org.icgc.dcc.health.ElasticSearchHealthCheck;
 import org.icgc.dcc.health.MongoHealthCheck;
 import org.icgc.dcc.managers.ElasticSearchClientManager;
+import org.icgc.dcc.managers.MongoClientManager;
 import org.icgc.dcc.resources.GeneResource;
 import org.icgc.dcc.utils.ElasticSearchHelper;
 import org.icgc.dcc.utils.MongoHelper;
-import org.jongo.Jongo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DataPortalService extends Service<DataPortalConfiguration> {
+    private static final Logger log = LoggerFactory.getLogger(DataPortalService.class);
+    private static final String APPLICATION_NAME = "data-portal";
 
     public static void main(String[] args) throws Exception {
         new DataPortalService().run(new String[]{"server", "settings.yml"});
     }
 
     @Override
-    public void initialize(Bootstrap<DataPortalConfiguration> bootstrap) {
-        bootstrap.setName("data-portal");
+    public final void initialize(Bootstrap<DataPortalConfiguration> bootstrap) {
+        bootstrap.setName(APPLICATION_NAME);
     }
 
     @Override
-    public void run(DataPortalConfiguration configuration,
-                    Environment environment) {
+    public final void run(DataPortalConfiguration configuration,
+                          Environment environment) {
 
-        Jongo mongo = MongoHelper.getMongoClient(configuration);
-        Client es = ElasticSearchHelper.getESClient(configuration);
+        Mongo mongo = MongoHelper.getMongoClient();
+        Client es = ElasticSearchHelper.getESClient();
 
         environment.manage(new ElasticSearchClientManager(es));
+        environment.manage(new MongoClientManager(mongo));
 
         environment.addHealthCheck(new MongoHealthCheck(mongo));
+        environment.addHealthCheck(new ElasticSearchHealthCheck(es));
 
         environment.addResource(new GeneResource(es));
     }

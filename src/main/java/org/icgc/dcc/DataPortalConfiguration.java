@@ -21,24 +21,10 @@
 
 package org.icgc.dcc;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.yammer.dropwizard.config.Configuration;
-import org.hibernate.validator.constraints.NotEmpty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DataPortalConfiguration extends Configuration {
-    @NotEmpty
-    @JsonProperty
-    private String template;
-
-    @NotEmpty
-    @JsonProperty
-    private String defaultName = "Stranger";
-
-    public String getTemplate() {
-        return template;
-    }
-
-    public String getDefaultName() {
-        return defaultName;
-    }
+    private static final Logger log = LoggerFactory.getLogger(DataPortalConfiguration.class);
 }

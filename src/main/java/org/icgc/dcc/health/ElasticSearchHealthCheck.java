@@ -19,16 +19,35 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc.core;
+package org.icgc.dcc.health;
 
-import lombok.Data;
+import com.yammer.metrics.core.HealthCheck;
+import org.elasticsearch.client.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Data
-public class Gene {
-    private static final Logger log = LoggerFactory.getLogger(Observation.class);
+public final class ElasticSearchHealthCheck extends HealthCheck {
+    private static final Logger log = LoggerFactory.getLogger(ElasticSearchHealthCheck.class);
+    private static final String CLASS_NAME = "ElasticSearchHealthCheck";
+    private static final String CHECK_LOG = "Checking the Health of ElasticSearch";
 
-    private String name;
-    private long age;
+    private final Client client;
+
+    public ElasticSearchHealthCheck(Client client) {
+        super(CLASS_NAME);
+        this.client = client;
+    }
+
+    @Override
+    protected final Result check() throws Exception {
+        log.info(CHECK_LOG);
+        client.admin()
+                .cluster()
+                .prepareHealth()
+                .execute()
+                .actionGet()
+                .getStatus()
+                .name();
+        return Result.healthy();
+    }
 }

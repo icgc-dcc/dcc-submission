@@ -29,7 +29,9 @@ import org.slf4j.LoggerFactory;
 import static org.elasticsearch.index.query.QueryBuilders.matchAllQuery;
 
 public class GeneDAO {
-    private static final Logger LOG = LoggerFactory.getLogger(GeneDAO.class);
+    private static final Logger log = LoggerFactory.getLogger(GeneDAO.class);
+    private static final String GET_ALL_LOG = "Returning all Genes";
+    private static final String INDEX = "blog";
 
     private final Client store;
 
@@ -37,8 +39,9 @@ public class GeneDAO {
         this.store = es;
     }
 
-    public String getAll() {
-        return store.prepareSearch("blog")
+    public final String getAll() {
+        log.info(GET_ALL_LOG);
+        return store.prepareSearch(INDEX)
                 .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
                 .setQuery(matchAllQuery())
                 .setFrom(0).setSize(2).setExplain(true)

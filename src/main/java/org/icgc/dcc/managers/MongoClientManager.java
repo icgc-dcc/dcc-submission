@@ -19,16 +19,31 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc.core;
+package org.icgc.dcc.managers;
 
-import lombok.Data;
+import com.mongodb.Mongo;
+import com.yammer.dropwizard.lifecycle.Managed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Data
-public class Gene {
-    private static final Logger log = LoggerFactory.getLogger(Observation.class);
+public final class MongoClientManager implements Managed {
+    private static final Logger log = LoggerFactory.getLogger(MongoClientManager.class);
+    private static final String STOP_LOG = "Closing MongoDB Client";
 
-    private String name;
-    private long age;
+    private final Mongo mongo;
+
+    public MongoClientManager(Mongo mongo) {
+        this.mongo = mongo;
+    }
+
+    @Override
+    public final void start() throws Exception {
+    }
+
+    @Override
+    public final void stop() throws Exception {
+        log.info(STOP_LOG);
+        mongo.close();
+    }
+
 }

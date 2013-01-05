@@ -23,23 +23,15 @@ package org.icgc.dcc.utils;
 
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.settings.ImmutableSettings;
-import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
-import org.icgc.dcc.DataPortalConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ElasticSearchHelper {
-    private static final Logger LOG = LoggerFactory.getLogger(MongoHelper.class);
+    private static final Logger log = LoggerFactory.getLogger(ElasticSearchHelper.class);
 
-    public static Client getESClient(DataPortalConfiguration configuration) {
-        LOG.info("Starting ES Client");
-        Settings settings = ImmutableSettings
-                .settingsBuilder()
-                .put("client.transport.sniff", true)
-                .build();
-        return new TransportClient(settings)
+    public static Client getESClient() {
+        return new TransportClient()
                 //.addTransportAddress(new InetSocketTransportAddress("hcn50.res.oicr.on.ca", 9300));
                 .addTransportAddress(new InetSocketTransportAddress("localhost", 9300));
     }

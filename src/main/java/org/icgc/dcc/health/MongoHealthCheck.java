@@ -21,21 +21,27 @@
 
 package org.icgc.dcc.health;
 
+import com.mongodb.Mongo;
 import com.yammer.metrics.core.HealthCheck;
-import org.jongo.Jongo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class MongoHealthCheck extends HealthCheck {
+public final class MongoHealthCheck extends HealthCheck {
+    private static final Logger log = LoggerFactory.getLogger(MongoHealthCheck.class);
+    private static final String CLASS_NAME = "MongoHealthCheck";
+    private static final String CHECK_LOG = "Checking Health of MongoDB";
 
-    private Jongo mongo;
+    private final Mongo mongo;
 
-    public MongoHealthCheck(Jongo mongo) {
-        super("MongoHealthCheck");
+    public MongoHealthCheck(Mongo mongo) {
+        super(CLASS_NAME);
         this.mongo = mongo;
     }
 
     @Override
-    protected Result check() throws Exception {
-        mongo.getDatabase();
+    protected final Result check() throws Exception {
+        log.info(CHECK_LOG);
+        mongo.getDatabaseNames();
         return Result.healthy();
     }
 

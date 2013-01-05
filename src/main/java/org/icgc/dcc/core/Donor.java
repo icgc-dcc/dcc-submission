@@ -26,9 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Data
-public class Gene {
-    private static final Logger log = LoggerFactory.getLogger(Observation.class);
-
-    private String name;
-    private long age;
+public class Donor {
+    private static final Logger log = LoggerFactory.getLogger(Donor.class);
 }
