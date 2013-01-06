@@ -21,53 +21,12 @@
 
 package org.icgc.dcc.dao;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import com.sun.tools.javac.util.List;
-import lombok.extern.slf4j.Slf4j;
-import org.elasticsearch.action.search.SearchType;
-import org.elasticsearch.client.Client;
 import org.icgc.dcc.core.Gene;
 
-import static org.elasticsearch.index.query.QueryBuilders.matchAllQuery;
+import java.util.List;
 
-@Singleton
-@Slf4j
-public class GeneDao {
-    private static final String GET_ALL_LOG = "Returning all Genes";
-    private static final String GET_ONE_LOG = "Returning Gene %s";
-    private static final String INDEX = "blog";
+public interface GeneDao {
+    List<Gene> getAll();
 
-    private final Client store;
-
-    @Inject
-    public GeneDao(Client es) {
-        this.store = es;
-    }
-
-    public final Gene getOne(String Id) {
-        GeneDao.log.info(String.format(GET_ONE_LOG, Id));
-        store.prepareSearch(INDEX)
-                .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
-                .setQuery(matchAllQuery())
-                .setFrom(0).setSize(1).setExplain(true)
-                .execute()
-                .actionGet()
-                .toString();
-
-        return new Gene();
-    }
-
-    public final List<Gene> getAll() {
-        GeneDao.log.info(GET_ALL_LOG);
-        store.prepareSearch(INDEX)
-                .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
-                .setQuery(matchAllQuery())
-                .setFrom(0).setSize(2).setExplain(true)
-                .execute()
-                .actionGet()
-                .toString();
-
-        return List.of(new Gene());
-    }
+    Gene getOne(String Id);
 }
