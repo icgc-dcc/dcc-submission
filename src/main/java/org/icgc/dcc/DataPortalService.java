@@ -29,24 +29,26 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class DataPortalService extends Service<DataPortalConfiguration> {
-    private static final String APPLICATION_NAME = "data-portal";
+	
+	private static final String APPLICATION_NAME = "data-portal";
 
-    public static void main(String[] args) throws Exception {
-        new DataPortalService().run(new String[]{"server"});
-    }
+	public static void main(String[] args) throws Exception {
+		new DataPortalService().run(args);
+	}
 
-    @Override
-    public final void initialize(Bootstrap<DataPortalConfiguration> bootstrap) {
-        bootstrap.setName(APPLICATION_NAME);
-        bootstrap.addBundle(GuiceBundle.newBuilder()
-                .addModule(new DataPortalModule())
-                .enableAutoConfig(getClass().getPackage().getName())
-                .build()
-        );
-    }
+	@Override
+	public final void initialize(Bootstrap<DataPortalConfiguration> bootstrap) {
+		bootstrap.setName(APPLICATION_NAME);
+		bootstrap.addBundle(GuiceBundle.newBuilder()
+				.addModule(new DataPortalModule())
+				.enableAutoConfig(getClass().getPackage().getName()).build());
+	}
 
-    @Override
-    public final void run(DataPortalConfiguration configuration,
-                          Environment environment) {
-    }
+	@Override
+	public void run(DataPortalConfiguration configuration,
+			Environment environment) throws Exception {
+		log.info("Running service...");
+		
+	}
+
 }

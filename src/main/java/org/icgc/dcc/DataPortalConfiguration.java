@@ -22,8 +22,6 @@
 package org.icgc.dcc;
 
 import com.yammer.dropwizard.config.Configuration;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 public class DataPortalConfiguration extends Configuration {
 }

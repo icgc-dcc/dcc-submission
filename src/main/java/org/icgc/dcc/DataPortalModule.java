@@ -19,20 +19,19 @@ package org.icgc.dcc;/*
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.google.inject.AbstractModule;
-import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.client.Client;
 import org.icgc.dcc.dao.GeneDao;
 import org.icgc.dcc.dao.impl.GeneDaoImpl;
 import org.icgc.dcc.utils.ElasticSearchHelper;
 
-@Slf4j
+import com.google.inject.AbstractModule;
+
 public class DataPortalModule extends AbstractModule {
 
-    @Override
-    protected void configure() {
-        bind(Client.class).toInstance(ElasticSearchHelper.getESClient());
-        bind(GeneDao.class).to(GeneDaoImpl.class);
+	@Override
+	protected void configure() {
+		bind(Client.class).toInstance(ElasticSearchHelper.getESClient());
+		bind(GeneDao.class).to(GeneDaoImpl.class);
 
-    }
+	}
 }

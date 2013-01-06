@@ -22,9 +22,7 @@
 package org.icgc.dcc.core;
 
 import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
 
 @Data
-@Slf4j
 public class Observation {
 }
