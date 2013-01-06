@@ -12,8 +12,9 @@ import com.yammer.dropwizard.config.Environment;
 
 public class SwaggerBundle extends AssetsBundle {
 
-	public static final String RESOURCE_PATH = "/swagger-ui/";
-	public static final String URI_PATH = "/docs/";
+	private static final String EMPTY_FORMAT = "";
+	private static final String RESOURCE_PATH = "/swagger-ui/";
+	private static final String URI_PATH = "/docs/";
 
 	public SwaggerBundle() {
 		super(RESOURCE_PATH, URI_PATH, "index.html");
@@ -24,7 +25,7 @@ public class SwaggerBundle extends AssetsBundle {
 		super.initialize(bootstrap);
 
 		// Set the Swagger suffix to an empty string before Swagger warms up
-		JaxrsApiReader.setFormatString("");
+		JaxrsApiReader.setFormatString(EMPTY_FORMAT);
 	}
 
 	@Override
@@ -42,7 +43,7 @@ public class SwaggerBundle extends AssetsBundle {
 	@Path("/api-docs")
 	@Api("/api-docs")
 	@Produces("application/json")
-	static class ApiListingResourceJSON extends ApiListing {
+	private static class ApiListingResourceJSON extends ApiListing {
 	}
 
 }
