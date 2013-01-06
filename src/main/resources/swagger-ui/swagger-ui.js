@@ -191,7 +191,7 @@ templates['content_type'] = template(function (Handlebars,depth0,helpers,partial
 function program1(depth0,data) {
   
   var buffer = "", stack1, stack2;
-  buffer += "\n<label for=\"contentType\"></label>\n<select name=\"contentType\">\n	";
+  buffer += "\n    ";
   foundHelper = helpers.supportedContentTypes;
   stack1 = foundHelper || depth0.supportedContentTypes;
   stack2 = helpers.each;
@@ -201,7 +201,7 @@ function program1(depth0,data) {
   tmp1.inverse = self.noop;
   stack1 = stack2.call(depth0, stack1, tmp1);
   if(stack1 || stack1 === 0) { buffer += stack1; }
-  buffer += "\n</select>\n";
+  buffer += "\n";
   return buffer;}
 function program2(depth0,data) {
   
@@ -219,16 +219,22 @@ function program2(depth0,data) {
   buffer += "</option>\n	";
   return buffer;}
 
+function program4(depth0,data) {
+  
+  
+  return "\n    <option value=\"application/json\">application/json</option>\n";}
+
+  buffer += "<label for=\"contentType\"></label>\n<select name=\"contentType\">\n";
   foundHelper = helpers.supportedContentTypes;
   stack1 = foundHelper || depth0.supportedContentTypes;
   stack2 = helpers['if'];
   tmp1 = self.program(1, program1, data);
   tmp1.hash = {};
   tmp1.fn = tmp1;
-  tmp1.inverse = self.noop;
+  tmp1.inverse = self.program(4, program4, data);
   stack1 = stack2.call(depth0, stack1, tmp1);
   if(stack1 || stack1 === 0) { buffer += stack1; }
-  buffer += "\n";
+  buffer += "\n</select>\n";
   return buffer;});
 })();
 
@@ -288,47 +294,20 @@ function program1(depth0,data) {
 
 function program3(depth0,data) {
   
-  var buffer = "", stack1, stack2;
-  buffer += "\n                    <h4>Response Class</h4>\n                    ";
-  foundHelper = helpers.responseClassSignature;
-  stack1 = foundHelper || depth0.responseClassSignature;
-  stack2 = helpers['if'];
-  tmp1 = self.program(4, program4, data);
-  tmp1.hash = {};
-  tmp1.fn = tmp1;
-  tmp1.inverse = self.program(6, program6, data);
-  stack1 = stack2.call(depth0, stack1, tmp1);
-  if(stack1 || stack1 === 0) { buffer += stack1; }
-  buffer += "\n                ";
-  return buffer;}
-function program4(depth0,data) {
   
-  
-  return "\n                        <p><span class=\"model-signature\"></span></p>\n                    ";}
+  return "\n                    <h4>Response Class</h4>\n                    <p><span class=\"model-signature\" /></p>\n                    <br/>\n                    <div class=\"content-type\" />\n                ";}
 
-function program6(depth0,data) {
-  
-  var buffer = "", stack1;
-  buffer += "\n                        <p>";
-  foundHelper = helpers.responseClass;
-  stack1 = foundHelper || depth0.responseClass;
-  if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
-  else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "responseClass", { hash: {} }); }
-  if(stack1 || stack1 === 0) { buffer += stack1; }
-  buffer += "</p>\n                    ";
-  return buffer;}
-
-function program8(depth0,data) {
+function program5(depth0,data) {
   
   
   return "\n                    <div style='margin:0;padding:0;display:inline'></div>\n                    <h4>Status Codes</h4>\n                    <table class='fullwidth'>\n                        <thead>\n                        <tr>\n                            <th>HTTP Status Code</th>\n                            <th>Reason</th>\n                        </tr>\n                        </thead>\n                        <tbody class=\"operation-status\">\n                        \n                        </tbody>\n                    </table>\n                    ";}
 
-function program10(depth0,data) {
+function program7(depth0,data) {
   
   
   return "\n                    ";}
 
-function program12(depth0,data) {
+function program9(depth0,data) {
   
   
   return "\n                    <div class='sandbox_header'>\n                        <input class='submit' name='commit' type='button' value='Try it out!' />\n                        <a href='#' class='response_hider' style='display:none'>Hide Response</a>\n                        <img alt='Throbber' class='response_throbber' src='images/throbber.gif' style='display:none' />\n                    </div>\n                    ";}
@@ -478,7 +457,7 @@ function program12(depth0,data) {
   foundHelper = helpers.errorResponses;
   stack1 = foundHelper || depth0.errorResponses;
   stack2 = helpers['if'];
-  tmp1 = self.program(8, program8, data);
+  tmp1 = self.program(5, program5, data);
   tmp1.hash = {};
   tmp1.fn = tmp1;
   tmp1.inverse = self.noop;
@@ -488,13 +467,13 @@ function program12(depth0,data) {
   foundHelper = helpers.isReadOnly;
   stack1 = foundHelper || depth0.isReadOnly;
   stack2 = helpers['if'];
-  tmp1 = self.program(10, program10, data);
+  tmp1 = self.program(7, program7, data);
   tmp1.hash = {};
   tmp1.fn = tmp1;
-  tmp1.inverse = self.program(12, program12, data);
+  tmp1.inverse = self.program(9, program9, data);
   stack1 = stack2.call(depth0, stack1, tmp1);
   if(stack1 || stack1 === 0) { buffer += stack1; }
-  buffer += "\n                </form>\n                <div class='response' style='display:none'>\n                    <h4>Request URL</h4>\n                    <div class='block request_url'></div>\n                    <h4>Response Body</h4>\n                    <div class='block response_body'></div>\n                    <h4>Response Code</h4>\n                    <div class='block response_code'></div>\n                    <h4>Response Headers</h4>\n                    <div class='block response_headers'></div>\n                </div>\n            </div>\n        </li>\n    </ul>";
+  buffer += "\n                </form>\n                <div class='response' style='display:none'>\n                    <h4>Request URL</h4>\n                    <div class='block request_url'></div>\n                    <h4>Response Body</h4>\n                    <div class='block response_body'></div>\n                    <h4>Response Code</h4>\n                    <div class='block response_code'></div>\n                    <h4>Response Headers</h4>\n                    <div class='block response_headers'></div>\n                </div>\n            </div>\n        </li>\n    </ul>\n";
   return buffer;});
 })();
 
@@ -1294,7 +1273,7 @@ templates['status_code'] = template(function (Handlebars,depth0,helpers,partials
 
     HeaderView.prototype.showPetStore = function(e) {
       return this.trigger('update-swagger-ui', {
-        discoveryUrl: "http://petstore.swagger.wordnik.com/api/api-docs.json",
+        discoveryUrl: "http://localhost:8080/api-docs.json",
         apiKey: "special-key"
       });
     };

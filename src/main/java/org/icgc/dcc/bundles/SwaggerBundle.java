@@ -1,5 +1,6 @@
 package org.icgc.dcc.bundles;
 
+import com.wordnik.swagger.jaxrs.JaxrsApiReader;
 import com.wordnik.swagger.jaxrs.listing.ApiListingResourceJSON;
 import com.yammer.dropwizard.assets.AssetsBundle;
 import com.yammer.dropwizard.config.Bootstrap;
@@ -17,6 +18,9 @@ public class SwaggerBundle extends AssetsBundle {
 	@Override
 	public void initialize(Bootstrap<?> bootstrap) {
 		super.initialize(bootstrap);
+
+		// Set the Swagger suffix to an empty string before Swagger warms up
+		JaxrsApiReader.setFormatString("");
 	}
 
 	@Override

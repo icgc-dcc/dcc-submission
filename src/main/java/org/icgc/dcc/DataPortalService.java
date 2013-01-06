@@ -21,14 +21,14 @@
 
 package org.icgc.dcc;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.icgc.dcc.bundles.SwaggerBundle;
 
 import com.hubspot.dropwizard.guice.GuiceBundle;
-import com.wordnik.swagger.jaxrs.JaxrsApiReader;
 import com.yammer.dropwizard.Service;
 import com.yammer.dropwizard.config.Bootstrap;
 import com.yammer.dropwizard.config.Environment;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class DataPortalService extends Service<DataPortalConfiguration> {
@@ -36,8 +36,6 @@ public class DataPortalService extends Service<DataPortalConfiguration> {
 	private static final String APPLICATION_NAME = "icgc-data-portal-api";
 
 	public static void main(String[] args) throws Exception {
-		// Set the Swagger suffix to an empty string before Swagger warms up
-		JaxrsApiReader.setFormatString("");
 		new DataPortalService().run(args);
 	}
 
