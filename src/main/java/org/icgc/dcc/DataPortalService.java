@@ -21,21 +21,33 @@
 
 package org.icgc.dcc;
 
+import static org.apache.commons.lang.StringUtils.join;
+import static org.apache.commons.lang.StringUtils.repeat;
+
+import java.io.File;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
+import java.util.List;
+
+import lombok.extern.slf4j.Slf4j;
+
+import org.icgc.dcc.bundles.SwaggerBundle;
+
 import com.bazaarvoice.dropwizard.redirect.RedirectBundle;
 import com.google.common.collect.ImmutableMap;
 import com.hubspot.dropwizard.guice.GuiceBundle;
 import com.yammer.dropwizard.Service;
 import com.yammer.dropwizard.config.Bootstrap;
 import com.yammer.dropwizard.config.Environment;
-import lombok.extern.slf4j.Slf4j;
-import org.icgc.dcc.bundles.SwaggerBundle;
 
 @Slf4j
 public class DataPortalService extends Service<DataPortalConfiguration> {
 
 	private static final String APPLICATION_NAME = "icgc-data-portal-api";
+	private static String[] args;
 
 	public static void main(String... args) throws Exception {
+		DataPortalService.args = args;
 		new DataPortalService().run(new String[] { "server" });
 	}
 
@@ -46,10 +58,38 @@ public class DataPortalService extends Service<DataPortalConfiguration> {
 		bootstrap.addBundle(GuiceBundle.newBuilder().addModule(new DataPortalModule()).enableAutoConfig(getClass().getPackage().getName()).build());
 		bootstrap.addBundle(new RedirectBundle(ImmutableMap.<String, String> builder().put("/", "/docs/").put("/docs", "/docs/").build()));
 	}
-
+	
 	@Override
 	public final void run(DataPortalConfiguration configuration, Environment environment) throws Exception {
-		log.info("Running service...");
+		logInfo(args);
+	}
+
+	private static void logInfo(String[] args) {
+		log.info("");
+		log.info(repeat("-", 80));
+		log.info("  {}", APPLICATION_NAME.toUpperCase() + " " + getVersion());
+		log.info("    > {}", formatArguments(args));
+		log.info(repeat("-", 80));
+		log.info("");
+	}
+
+	private static String getVersion() {
+		String implementationVersion = DataPortalService.class.getPackage().getImplementationVersion();
+		return implementationVersion == null ? "" : "v" + implementationVersion;
+	}
+
+	private static String getJarName() {
+		String jarPath = DataPortalService.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+		File jarFile = new File(jarPath);
+
+		return jarFile.getName();
+	}
+
+	private static String formatArguments(String[] args) {
+		RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
+		List<String> inputArguments = runtime.getInputArguments();
+
+		return "java " + join(inputArguments, ' ') + " -jar " + getJarName() + " " + join(args, ' ');
 	}
 
 }

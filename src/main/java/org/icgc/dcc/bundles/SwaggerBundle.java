@@ -31,8 +31,6 @@ public class SwaggerBundle extends AssetsBundle {
 	@Override
 	public void run(Environment environment) {
 		super.run(environment);
-
-		environment.addResource(new ApiListingResourceJSON());
 	}
 
 	/**
@@ -48,7 +46,7 @@ public class SwaggerBundle extends AssetsBundle {
 	@Path("/api-docs")
 	@Api("/api-docs")
 	@Produces("application/json")
-	private static class ApiListingResourceJSON extends ApiListing {
+	public static class ApiListingResourceJSON extends ApiListing {
 		// Empty
 	}
 

@@ -30,23 +30,22 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Singleton
 public final class MongoClientManager implements Managed {
-    private static final String STOP_LOG = "Closing MongoDB Client";
 
-    private final Mongo mongo;
+	private final Mongo mongo;
 
-    @Inject
-    public MongoClientManager(Mongo mongo) {
-        this.mongo = mongo;
-    }
+	@Inject
+	public MongoClientManager(Mongo mongo) {
+		this.mongo = mongo;
+	}
 
-    @Override
-    public final void start() throws Exception {
-    }
+	@Override
+	public final void start() throws Exception {
+	}
 
-    @Override
-    public final void stop() throws Exception {
-        log.info(STOP_LOG);
-        mongo.close();
-    }
+	@Override
+	public final void stop() throws Exception {
+		log.info("Closing MongoDB client...");
+		mongo.close();
+	}
 
 }
