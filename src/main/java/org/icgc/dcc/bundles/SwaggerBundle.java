@@ -12,42 +12,43 @@ import com.yammer.dropwizard.config.Environment;
 
 public class SwaggerBundle extends AssetsBundle {
 
-	private static final String EMPTY_FORMAT = "";
-	private static final String RESOURCE_PATH = "/swagger-ui/";
-	private static final String URI_PATH = "/docs/";
+  private static final String EMPTY_FORMAT = "";
 
-	public SwaggerBundle() {
-		super(RESOURCE_PATH, URI_PATH, "index.html");
-	}
+  private static final String RESOURCE_PATH = "/swagger-ui/";
 
-	@Override
-	public void initialize(Bootstrap<?> bootstrap) {
-		super.initialize(bootstrap);
+  private static final String URI_PATH = "/docs/";
 
-		// Set the Swagger suffix to an empty string before Swagger warms up
-		JaxrsApiReader.setFormatString(EMPTY_FORMAT);
-	}
+  public SwaggerBundle() {
+    super(RESOURCE_PATH, URI_PATH, "index.html");
+  }
 
-	@Override
-	public void run(Environment environment) {
-		super.run(environment);
-	}
+  @Override
+  public void initialize(Bootstrap<?> bootstrap) {
+    super.initialize(bootstrap);
 
-	/**
-	 * Required to remove the Swagger <code>.{format}</code> extension from
-	 * Swagger resources:
-	 * <ul>
-	 * <li><code>/api-docs</code></li>
-	 * <li><code>/api-docs/{route}</code></li>
-	 * </ul>
-	 * 
-	 * @author btiernay
-	 */
-	@Path("/api-docs")
-	@Api("/api-docs")
-	@Produces("application/json")
-	public static class ApiListingResourceJSON extends ApiListing {
-		// Empty
-	}
+    // Set the Swagger suffix to an empty string before Swagger warms up
+    JaxrsApiReader.setFormatString(EMPTY_FORMAT);
+  }
+
+  @Override
+  public void run(Environment environment) {
+    super.run(environment);
+  }
+
+  /**
+   * Required to remove the Swagger <code>.{format}</code> extension from Swagger resources:
+   * <ul>
+   * <li><code>/api-docs</code></li>
+   * <li><code>/api-docs/{route}</code></li>
+   * </ul>
+   * 
+   * @author btiernay
+   */
+  @Path("/api-docs")
+  @Api("/api-docs")
+  @Produces("application/json")
+  public static class ApiListingResourceJSON extends ApiListing {
+    // Empty
+  }
 
 }

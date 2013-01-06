@@ -29,7 +29,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 
-import com.yammer.dropwizard.testing.ResourceTest;
 import org.icgc.dcc.core.Gene;
 import org.icgc.dcc.dao.GeneDao;
 import org.junit.Test;
@@ -37,35 +36,38 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import com.yammer.dropwizard.testing.ResourceTest;
+
 @RunWith(MockitoJUnitRunner.class)
 @SuppressWarnings("unchecked")
 public class GeneResourceTest extends ResourceTest {
 
-	private final Gene gene1 = new Gene("L", 1L);
-	private final List<Gene> genes = newArrayList();
+  private final Gene gene1 = new Gene("L", 1L);
 
-	@Mock
-	private GeneDao geneDao;
+  private final List<Gene> genes = newArrayList();
 
-	@Override
-	protected final void setUpResources() throws Exception {
-		when(geneDao.getOne(anyString())).thenReturn(gene1);
-		when(geneDao.getAll()).thenReturn(genes);
-		addResource(new GeneResource(geneDao));
-	}
+  @Mock
+  private GeneDao geneDao;
 
-	@Test
-	public final void testGetAll() throws Exception {
-		assertThat(client().resource("/genes").get(List.class)).isEqualTo(genes);
+  @Override
+  protected final void setUpResources() throws Exception {
+    when(geneDao.getOne(anyString())).thenReturn(gene1);
+    when(geneDao.getAll()).thenReturn(genes);
+    addResource(new GeneResource(geneDao));
+  }
 
-		verify(geneDao).getAll();
-	}
+  @Test
+  public final void testGetAll() throws Exception {
+    assertThat(client().resource("/genes").get(List.class)).isEqualTo(genes);
 
-	@Test
-	public final void testGetOne() throws Exception {
-		assertThat(client().resource("/genes/1").get(Gene.class)).isEqualTo(gene1);
+    verify(geneDao).getAll();
+  }
 
-		verify(geneDao).getOne("1");
-	}
+  @Test
+  public final void testGetOne() throws Exception {
+    assertThat(client().resource("/genes/1").get(Gene.class)).isEqualTo(gene1);
+
+    verify(geneDao).getOne("1");
+  }
 
 }

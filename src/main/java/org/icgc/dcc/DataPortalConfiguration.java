@@ -21,9 +21,9 @@
 
 package org.icgc.dcc;
 
-import org.hibernate.validator.constraints.NotEmpty;
-
 import lombok.Getter;
+
+import org.hibernate.validator.constraints.NotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.yammer.dropwizard.config.Configuration;
@@ -31,12 +31,12 @@ import com.yammer.dropwizard.config.Configuration;
 @Getter
 public class DataPortalConfiguration extends Configuration {
 
-	@JsonProperty
-	@NotEmpty
-	private String mongoUri;
-	
-	@JsonProperty
-	@NotEmpty
-	private String esHost;
+  @JsonProperty
+  @NotEmpty
+  private String mongoUri;
+
+  @JsonProperty
+  @NotEmpty
+  private String esHost;
 
 }

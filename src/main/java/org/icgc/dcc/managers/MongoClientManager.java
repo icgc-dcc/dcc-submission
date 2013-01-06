@@ -21,31 +21,32 @@
 
 package org.icgc.dcc.managers;
 
+import lombok.extern.slf4j.Slf4j;
+
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.mongodb.Mongo;
 import com.yammer.dropwizard.lifecycle.Managed;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Singleton
 public final class MongoClientManager implements Managed {
 
-	private final Mongo mongo;
+  private final Mongo mongo;
 
-	@Inject
-	public MongoClientManager(Mongo mongo) {
-		this.mongo = mongo;
-	}
+  @Inject
+  public MongoClientManager(Mongo mongo) {
+    this.mongo = mongo;
+  }
 
-	@Override
-	public final void start() throws Exception {
-	}
+  @Override
+  public final void start() throws Exception {
+  }
 
-	@Override
-	public final void stop() throws Exception {
-		log.info("Closing MongoDB client...");
-		mongo.close();
-	}
+  @Override
+  public final void stop() throws Exception {
+    log.info("Closing MongoDB client...");
+    mongo.close();
+  }
 
 }

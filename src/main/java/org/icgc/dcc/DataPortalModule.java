@@ -36,25 +36,25 @@ import com.yammer.dropwizard.config.Configuration;
 
 public class DataPortalModule extends AbstractModule {
 
-	@Override
-	protected void configure() {
-		bind(GeneDao.class).to(GeneDaoImpl.class).in(Singleton.class);
-	}
+  @Override
+  protected void configure() {
+    bind(GeneDao.class).to(GeneDaoImpl.class).in(Singleton.class);
+  }
 
-	@Provides
-	@Singleton
-	Mongo mongo(Configuration conf) throws UnknownHostException {
-		DataPortalConfiguration configuration = (DataPortalConfiguration) conf;
+  @Provides
+  @Singleton
+  Mongo mongo(Configuration conf) throws UnknownHostException {
+    DataPortalConfiguration configuration = (DataPortalConfiguration) conf;
 
-		return new Mongo(new MongoURI(configuration.getMongoUri()));
-	}
+    return new Mongo(new MongoURI(configuration.getMongoUri()));
+  }
 
-	@Provides
-	@Singleton
-	Client esClient(Configuration conf) {
-		DataPortalConfiguration configuration = (DataPortalConfiguration) conf;
+  @Provides
+  @Singleton
+  Client esClient(Configuration conf) {
+    DataPortalConfiguration configuration = (DataPortalConfiguration) conf;
 
-		return new TransportClient().addTransportAddress(new InetSocketTransportAddress(configuration.getEsHost(), 9300));
-	}
+    return new TransportClient().addTransportAddress(new InetSocketTransportAddress(configuration.getEsHost(), 9300));
+  }
 
 }

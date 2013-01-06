@@ -32,8 +32,8 @@ import javax.ws.rs.core.Response;
 import org.icgc.dcc.dao.GeneDao;
 
 import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiErrors;
 import com.wordnik.swagger.annotations.ApiError;
+import com.wordnik.swagger.annotations.ApiErrors;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 import com.yammer.metrics.annotation.Timed;
@@ -43,28 +43,27 @@ import com.yammer.metrics.annotation.Timed;
 @Api(value = "/genes", description = "Operations about genes")
 public class GeneResource {
 
-	private final GeneDao geneDao;
+  private final GeneDao geneDao;
 
-	@Inject
-	public GeneResource(GeneDao geneDao) {
-		this.geneDao = geneDao;
-	}
+  @Inject
+  public GeneResource(GeneDao geneDao) {
+    this.geneDao = geneDao;
+  }
 
-	@GET
-	@Timed
-	@ApiOperation("Retrieve a list of genes")
-	public final Response getAll() {
-		return Response.ok(geneDao.getAll()).build();
-	}
+  @GET
+  @Timed
+  @ApiOperation("Retrieve a list of genes")
+  public final Response getAll() {
+    return Response.ok(geneDao.getAll()).build();
+  }
 
-	@Path("/{id}")
-	@Produces(MediaType.APPLICATION_JSON)
-	@GET
-	@Timed
-	@ApiOperation(value = "Find a gene by id", notes = "If a gene does not exist with the specified id an error will be returned", responseClass = "org.icgc.dcc.core.Gene")
-	@ApiErrors(value = { @ApiError(code = 400, reason = "Invalid ID supplied"), @ApiError(code = 404, reason = "Gene not found") })
-	public final Response getOne(@ApiParam(value = "id of gene that needs to be fetched", required = true) @PathParam("id") String Id) {
-		return Response.ok(geneDao.getOne(Id)).build();
-	}
-
+  @Path("/{id}")
+  @Produces(MediaType.APPLICATION_JSON)
+  @GET
+  @Timed
+  @ApiOperation(value = "Find a gene by id", notes = "If a gene does not exist with the specified id an error will be returned", responseClass = "org.icgc.dcc.core.Gene")
+  @ApiErrors(value = { @ApiError(code = 400, reason = "Invalid ID supplied"), @ApiError(code = 404, reason = "Gene not found") })
+  public final Response getOne(@ApiParam(value = "id of gene that needs to be fetched") @PathParam("id") String Id) {
+    return Response.ok(geneDao.getOne(Id)).build();
+  }
 }

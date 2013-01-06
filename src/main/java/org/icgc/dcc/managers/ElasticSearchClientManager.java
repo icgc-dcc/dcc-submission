@@ -21,31 +21,33 @@
 
 package org.icgc.dcc.managers;
 
+import lombok.extern.slf4j.Slf4j;
+
+import org.elasticsearch.client.Client;
+
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.yammer.dropwizard.lifecycle.Managed;
-import lombok.extern.slf4j.Slf4j;
-import org.elasticsearch.client.Client;
 
 @Slf4j
 @Singleton
 public final class ElasticSearchClientManager implements Managed {
 
-	private final Client client;
+  private final Client client;
 
-	@Inject
-	public ElasticSearchClientManager(Client client) {
-		this.client = client;
-	}
+  @Inject
+  public ElasticSearchClientManager(Client client) {
+    this.client = client;
+  }
 
-	@Override
-	public final void start() throws Exception {
-	}
+  @Override
+  public final void start() throws Exception {
+  }
 
-	@Override
-	public final void stop() throws Exception {
-		log.info("Closing ElasticSearch client...");
-		client.close();
-	}
+  @Override
+  public final void stop() throws Exception {
+    log.info("Closing ElasticSearch client...");
+    client.close();
+  }
 
 }

@@ -29,6 +29,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Gene {
-	private String name;
-	private long age;
+  private String name;
+
+  private long age;
 }
