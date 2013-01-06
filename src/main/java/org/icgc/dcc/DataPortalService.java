@@ -25,6 +25,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.bundles.SwaggerBundle;
 
+import com.bazaarvoice.dropwizard.redirect.RedirectBundle;
+import com.google.common.collect.ImmutableMap;
 import com.hubspot.dropwizard.guice.GuiceBundle;
 import com.yammer.dropwizard.Service;
 import com.yammer.dropwizard.config.Bootstrap;
@@ -42,8 +44,9 @@ public class DataPortalService extends Service<DataPortalConfiguration> {
 	@Override
 	public final void initialize(Bootstrap<DataPortalConfiguration> bootstrap) {
 		bootstrap.setName(APPLICATION_NAME);
-		bootstrap.addBundle(GuiceBundle.newBuilder().addModule(new DataPortalModule()).enableAutoConfig(getClass().getPackage().getName()).build());
 		bootstrap.addBundle(new SwaggerBundle());
+		bootstrap.addBundle(GuiceBundle.newBuilder().addModule(new DataPortalModule()).enableAutoConfig(getClass().getPackage().getName()).build());
+		bootstrap.addBundle(new RedirectBundle(ImmutableMap.<String, String> builder().put("/", "/docs/").build()));
 	}
 
 	@Override
