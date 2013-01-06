@@ -27,7 +27,7 @@ import com.yammer.dropwizard.config.Configuration;
 
 @Getter
 public class DataPortalConfiguration extends Configuration {
-	
-	private String mongoUri;
-	
+
+  private String mongoUri;
+
 }

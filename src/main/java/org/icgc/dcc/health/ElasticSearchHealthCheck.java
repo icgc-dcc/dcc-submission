@@ -21,36 +21,33 @@
 
 package org.icgc.dcc.health;
 
+import lombok.extern.slf4j.Slf4j;
+
+import org.elasticsearch.client.Client;
+
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.yammer.metrics.core.HealthCheck;
-import lombok.extern.slf4j.Slf4j;
-import org.elasticsearch.client.Client;
 
 @Slf4j
 @Singleton
 public final class ElasticSearchHealthCheck extends HealthCheck {
-    private static final String CHECK_NAME = "elasticsearch";
-    private static final String CHECK_LOG = "Checking the Health of ElasticSearch";
+  private static final String CHECK_NAME = "elasticsearch";
 
-    private final Client client;
+  private static final String CHECK_LOG = "Checking the Health of ElasticSearch";
 
-    @Inject
-    public ElasticSearchHealthCheck(Client client) {
-        super(CHECK_NAME);
-        this.client = client;
-    }
+  private final Client client;
 
-    @Override
-    protected final Result check() throws Exception {
-        log.info(CHECK_LOG);
-        client.admin()
-                .cluster()
-                .prepareHealth()
-                .execute()
-                .actionGet()
-                .getStatus()
-                .name();
-        return Result.healthy();
-    }
+  @Inject
+  public ElasticSearchHealthCheck(Client client) {
+    super(CHECK_NAME);
+    this.client = client;
+  }
+
+  @Override
+  protected final Result check() throws Exception {
+    log.info(CHECK_LOG);
+    client.admin().cluster().prepareHealth().execute().actionGet().getStatus().name();
+    return Result.healthy();
+  }
 }

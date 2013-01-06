@@ -21,54 +21,48 @@
 
 package org.icgc.dcc.dao.impl;
 
-import com.google.inject.Inject;
+import static org.elasticsearch.index.query.QueryBuilders.matchAllQuery;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.icgc.dcc.core.Gene;
 import org.icgc.dcc.dao.GeneDao;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.elasticsearch.index.query.QueryBuilders.matchAllQuery;
+import com.google.inject.Inject;
 
 @Slf4j
 public class GeneDaoImpl implements GeneDao {
-    private static final String GET_ALL_LOG = "Returning all Genes";
-    private static final String GET_ONE_LOG = "Returning Gene %s";
-    private static final String INDEX = "blog";
+  private static final String GET_ALL_LOG = "Returning all Genes";
 
-    private final Client client;
+  private static final String GET_ONE_LOG = "Returning Gene %s";
 
-    @Inject
-    public GeneDaoImpl(Client client) {
-        this.client = client;
-    }
+  private static final String INDEX = "blog";
 
-    public final Gene getOne(String Id) {
-        log.info(String.format(GET_ONE_LOG, Id));
-        client.prepareSearch(INDEX)
-                .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
-                .setQuery(matchAllQuery())
-                .setFrom(0).setSize(1).setExplain(true)
-                .execute()
-                .actionGet()
-                .toString();
+  private final Client client;
 
-        return new Gene();
-    }
+  @Inject
+  public GeneDaoImpl(Client client) {
+    this.client = client;
+  }
 
-    public final List<Gene> getAll() {
-        log.info(GET_ALL_LOG);
-        client.prepareSearch(INDEX)
-                .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
-                .setQuery(matchAllQuery())
-                .setFrom(0).setSize(2).setExplain(true)
-                .execute()
-                .actionGet()
-                .toString();
+  public final Gene getOne(String Id) {
+    log.info(String.format(GET_ONE_LOG, Id));
+    client.prepareSearch(INDEX).setSearchType(SearchType.DFS_QUERY_THEN_FETCH).setQuery(matchAllQuery()).setFrom(0)
+        .setSize(1).setExplain(true).execute().actionGet().toString();
 
-        return new ArrayList<Gene>();
-    }
+    return new Gene();
+  }
+
+  public final List<Gene> getAll() {
+    log.info(GET_ALL_LOG);
+    client.prepareSearch(INDEX).setSearchType(SearchType.DFS_QUERY_THEN_FETCH).setQuery(matchAllQuery()).setFrom(0)
+        .setSize(2).setExplain(true).execute().actionGet().toString();
+
+    return new ArrayList<Gene>();
+  }
 }

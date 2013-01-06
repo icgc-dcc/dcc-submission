@@ -33,28 +33,26 @@ import com.mongodb.Mongo;
 
 public class DataPortalModule extends AbstractModule {
 
-	@Override
-	protected void configure() {
-		bind(Mongo.class).toInstance(mongo());
-		bind(Client.class).toInstance(esClient());
-		bind(GeneDao.class).to(GeneDaoImpl.class);
-	}
+  @Override
+  protected void configure() {
+    bind(Mongo.class).toInstance(mongo());
+    bind(Client.class).toInstance(esClient());
+    bind(GeneDao.class).to(GeneDaoImpl.class);
+  }
 
-	private Mongo mongo() {
-		try {
-			return new Mongo();
-		} catch (UnknownHostException e) {
-			Throwables.propagate(e);
-		}
+  private Mongo mongo() {
+    try {
+      return new Mongo();
+    } catch(UnknownHostException e) {
+      Throwables.propagate(e);
+    }
 
-		return null;
-	}
+    return null;
+  }
 
-	private Client esClient() {
-		// TODO: inject "hcn50.res.oicr.on.ca"
-		return new TransportClient()
-				.addTransportAddress(new InetSocketTransportAddress(
-						"localhost", 9300));
-	}
+  private Client esClient() {
+    // TODO: inject "hcn50.res.oicr.on.ca"
+    return new TransportClient().addTransportAddress(new InetSocketTransportAddress("localhost", 9300));
+  }
 
 }

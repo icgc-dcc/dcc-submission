@@ -21,39 +21,38 @@
 
 package org.icgc.dcc.core;
 
+import static com.yammer.dropwizard.testing.JsonHelpers.asJson;
+import static com.yammer.dropwizard.testing.JsonHelpers.fromJson;
+import static com.yammer.dropwizard.testing.JsonHelpers.jsonFixture;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import static com.yammer.dropwizard.testing.JsonHelpers.*;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
-
 public class GeneTest {
 
-    private final Gene gene = new Gene("L", 1L);
+  private final Gene gene = new Gene("L", 1L);
 
-    @Before
-    public void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
 
-    }
+  }
 
-    @After
-    public void tearDown() throws Exception {
+  @After
+  public void tearDown() throws Exception {
 
-    }
+  }
 
-    @Test
-    public final void serializesToJSON() throws Exception {
-        assertThat("a Gene can be serialized to JSON",
-                asJson(gene),
-                is(jsonFixture("fixtures/gene.json")));
-    }
+  @Test
+  public final void serializesToJSON() throws Exception {
+    assertThat("a Gene can be serialized to JSON", asJson(gene), is(jsonFixture("fixtures/gene.json")));
+  }
 
-    @Test
-    public final void deserializesFromJSON() throws Exception {
-        assertThat("a Gene can be deserialized from JSON",
-                fromJson(jsonFixture("fixtures/gene.json"), Gene.class),
-                is(gene));
-    }
+  @Test
+  public final void deserializesFromJSON() throws Exception {
+    assertThat("a Gene can be deserialized from JSON", fromJson(jsonFixture("fixtures/gene.json"), Gene.class),
+        is(gene));
+  }
 }

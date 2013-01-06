@@ -21,31 +21,33 @@
 
 package org.icgc.dcc.health;
 
+import lombok.extern.slf4j.Slf4j;
+
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.mongodb.Mongo;
 import com.yammer.metrics.core.HealthCheck;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Singleton
 public final class MongoHealthCheck extends HealthCheck {
-    private static final String CHECK_NAME = "mongodb";
-    private static final String CHECK_LOG = "Checking Health of MongoDB";
+  private static final String CHECK_NAME = "mongodb";
 
-    private final Mongo mongo;
+  private static final String CHECK_LOG = "Checking Health of MongoDB";
 
-    @Inject
-    public MongoHealthCheck(Mongo mongo) {
-        super(CHECK_NAME);
-        this.mongo = mongo;
-    }
+  private final Mongo mongo;
 
-    @Override
-    protected final Result check() throws Exception {
-        log.info(CHECK_LOG);
-        mongo.getDatabaseNames();
-        return Result.healthy();
-    }
+  @Inject
+  public MongoHealthCheck(Mongo mongo) {
+    super(CHECK_NAME);
+    this.mongo = mongo;
+  }
+
+  @Override
+  protected final Result check() throws Exception {
+    log.info(CHECK_LOG);
+    mongo.getDatabaseNames();
+    return Result.healthy();
+  }
 
 }

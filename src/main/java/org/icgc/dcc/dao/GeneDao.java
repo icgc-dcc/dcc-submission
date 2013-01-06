@@ -21,12 +21,12 @@
 
 package org.icgc.dcc.dao;
 
-import org.icgc.dcc.core.Gene;
-
 import java.util.List;
 
-public interface GeneDao {
-    List<Gene> getAll();
+import org.icgc.dcc.core.Gene;
 
-    Gene getOne(String Id);
+public interface GeneDao {
+  List<Gene> getAll();
+
+  Gene getOne(String Id);
 }
