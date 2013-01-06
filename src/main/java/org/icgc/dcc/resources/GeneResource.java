@@ -32,7 +32,10 @@ import javax.ws.rs.core.Response;
 import org.icgc.dcc.dao.GeneDao;
 
 import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiErrors;
+import com.wordnik.swagger.annotations.ApiError;
 import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiParam;
 import com.yammer.metrics.annotation.Timed;
 
 @Path("/genes")
@@ -58,8 +61,9 @@ public class GeneResource {
 	@Produces(MediaType.APPLICATION_JSON)
 	@GET
 	@Timed
-	@ApiOperation(value = "Find a gene by id", notes = "Add extra notes here", responseClass = "org.icgc.dcc.core.Gene")
-	public final Response getOne(@PathParam("id") String Id) {
+	@ApiOperation(value = "Find a gene by id", notes = "If a gene does not exist with the specified id an error will be returned", responseClass = "org.icgc.dcc.core.Gene")
+	@ApiErrors(value = { @ApiError(code = 400, reason = "Invalid ID supplied"), @ApiError(code = 404, reason = "Gene not found") })
+	public final Response getOne(@ApiParam(value = "id of gene that needs to be fetched", required = true) @PathParam("id") String Id) {
 		return Response.ok(geneDao.getOne(Id)).build();
 	}
 
