@@ -20,9 +20,10 @@ package org.icgc.dcc;/*
  */
 
 import org.elasticsearch.client.Client;
+import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.icgc.dcc.dao.GeneDao;
 import org.icgc.dcc.dao.impl.GeneDaoImpl;
-import org.icgc.dcc.utils.ElasticSearchHelper;
 
 import com.google.inject.AbstractModule;
 
@@ -30,8 +31,15 @@ public class DataPortalModule extends AbstractModule {
 
 	@Override
 	protected void configure() {
-		bind(Client.class).toInstance(ElasticSearchHelper.getESClient());
+		bind(Client.class).toInstance(esClient());
 		bind(GeneDao.class).to(GeneDaoImpl.class);
-
 	}
+
+	private Client esClient() {
+		// TODO: inject "hcn50.res.oicr.on.ca"
+		return new TransportClient()
+				.addTransportAddress(new InetSocketTransportAddress(
+						"localhost", 9300));
+	}
+
 }
