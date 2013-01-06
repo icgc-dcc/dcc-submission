@@ -36,7 +36,12 @@ public class SwaggerBundle extends AssetsBundle {
 	}
 
 	/**
-	 * Required to remove the Swagger .{format} extension.
+	 * Required to remove the Swagger <code>.{format}</code> extension from
+	 * Swagger resources:
+	 * <ul>
+	 * <li><code>/api-docs</code></li>
+	 * <li><code>/api-docs/{route}</code></li>
+	 * </ul>
 	 * 
 	 * @author btiernay
 	 */
@@ -44,6 +49,7 @@ public class SwaggerBundle extends AssetsBundle {
 	@Api("/api-docs")
 	@Produces("application/json")
 	private static class ApiListingResourceJSON extends ApiListing {
+		// Empty
 	}
 
 }
