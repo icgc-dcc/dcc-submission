@@ -21,7 +21,10 @@
 
 package org.icgc.dcc;
 
+import org.icgc.dcc.bundles.SwaggerBundle;
+
 import com.hubspot.dropwizard.guice.GuiceBundle;
+import com.wordnik.swagger.jaxrs.JaxrsApiReader;
 import com.yammer.dropwizard.Service;
 import com.yammer.dropwizard.config.Bootstrap;
 import com.yammer.dropwizard.config.Environment;
@@ -29,26 +32,25 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class DataPortalService extends Service<DataPortalConfiguration> {
-	
-	private static final String APPLICATION_NAME = "data-portal";
+
+	private static final String APPLICATION_NAME = "icgc-data-portal-api";
 
 	public static void main(String[] args) throws Exception {
+		// Set the Swagger suffix to an empty string before Swagger warms up
+		JaxrsApiReader.setFormatString("");
 		new DataPortalService().run(args);
 	}
 
 	@Override
 	public final void initialize(Bootstrap<DataPortalConfiguration> bootstrap) {
 		bootstrap.setName(APPLICATION_NAME);
-		bootstrap.addBundle(GuiceBundle.newBuilder()
-				.addModule(new DataPortalModule())
-				.enableAutoConfig(getClass().getPackage().getName()).build());
+		bootstrap.addBundle(GuiceBundle.newBuilder().addModule(new DataPortalModule()).enableAutoConfig(getClass().getPackage().getName()).build());
+		bootstrap.addBundle(new SwaggerBundle());
 	}
 
 	@Override
-	public void run(DataPortalConfiguration configuration,
-			Environment environment) throws Exception {
+	public void run(DataPortalConfiguration configuration, Environment environment) throws Exception {
 		log.info("Running service...");
-		
 	}
 
 }

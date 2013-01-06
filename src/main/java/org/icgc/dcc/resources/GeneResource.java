@@ -31,30 +31,36 @@ import javax.ws.rs.core.Response;
 
 import org.icgc.dcc.dao.GeneDao;
 
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
 import com.yammer.metrics.annotation.Timed;
 
 @Path("/genes")
 @Produces(MediaType.APPLICATION_JSON)
+@Api(value = "/genes", description = "Operations about genes")
 public class GeneResource {
 
-    private final GeneDao geneDao;
+	private final GeneDao geneDao;
 
-    @Inject
-    public GeneResource(GeneDao geneDao) {
-        this.geneDao = geneDao;
-    }
+	@Inject
+	public GeneResource(GeneDao geneDao) {
+		this.geneDao = geneDao;
+	}
 
-    @GET
-    @Timed
-    public final Response getAll() {
-        return Response.ok(geneDao.getAll()).build();
-    }
+	@GET
+	@Timed
+	@ApiOperation("Retrieve a list of genes")
+	public final Response getAll() {
+		return Response.ok(geneDao.getAll()).build();
+	}
 
-    @Path("/{id}")
-    @Produces(MediaType.APPLICATION_JSON)
-    @GET
-    @Timed
-    public final Response getOne(@PathParam("id") String Id) {
-        return Response.ok(geneDao.getOne(Id)).build();
-    }
+	@Path("/{id}")
+	@Produces(MediaType.APPLICATION_JSON)
+	@GET
+	@Timed
+	@ApiOperation(value = "Find a gene by id", notes = "Add extra notes here", responseClass = "org.icgc.dcc.core.Gene")
+	public final Response getOne(@PathParam("id") String Id) {
+		return Response.ok(geneDao.getOne(Id)).build();
+	}
+
 }
