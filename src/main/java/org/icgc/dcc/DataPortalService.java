@@ -46,7 +46,7 @@ public class DataPortalService extends Service<DataPortalConfiguration> {
 		bootstrap.setName(APPLICATION_NAME);
 		bootstrap.addBundle(new SwaggerBundle());
 		bootstrap.addBundle(GuiceBundle.newBuilder().addModule(new DataPortalModule()).enableAutoConfig(getClass().getPackage().getName()).build());
-		bootstrap.addBundle(new RedirectBundle(ImmutableMap.<String, String> builder().put("/", "/docs/").build()));
+		bootstrap.addBundle(new RedirectBundle(ImmutableMap.<String, String> builder().put("/", "/docs/").put("/api-docs/*", "/api-docs.json/*").build()));
 	}
 
 	@Override

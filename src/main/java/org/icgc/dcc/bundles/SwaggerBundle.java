@@ -1,7 +1,11 @@
 package org.icgc.dcc.bundles;
 
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+
+import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.jaxrs.JaxrsApiReader;
-import com.wordnik.swagger.jaxrs.listing.ApiListingResourceJSON;
+import com.wordnik.swagger.jaxrs.listing.ApiListing;
 import com.yammer.dropwizard.assets.AssetsBundle;
 import com.yammer.dropwizard.config.Bootstrap;
 import com.yammer.dropwizard.config.Environment;
@@ -28,6 +32,17 @@ public class SwaggerBundle extends AssetsBundle {
 		super.run(environment);
 
 		environment.addResource(new ApiListingResourceJSON());
+	}
+
+	/**
+	 * Required to remove the Swagger .{format} extension.
+	 * 
+	 * @author btiernay
+	 */
+	@Path("/api-docs")
+	@Api("/api-docs")
+	@Produces("application/json")
+	static class ApiListingResourceJSON extends ApiListing {
 	}
 
 }
