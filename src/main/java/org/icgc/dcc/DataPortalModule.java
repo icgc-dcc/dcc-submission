@@ -27,34 +27,34 @@ import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.icgc.dcc.dao.GeneDao;
 import org.icgc.dcc.dao.impl.GeneDaoImpl;
 
-import com.google.common.base.Throwables;
 import com.google.inject.AbstractModule;
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
 import com.mongodb.Mongo;
+import com.mongodb.MongoURI;
+import com.yammer.dropwizard.config.Configuration;
 
 public class DataPortalModule extends AbstractModule {
 
 	@Override
 	protected void configure() {
-		bind(Mongo.class).toInstance(mongo());
-		bind(Client.class).toInstance(esClient());
-		bind(GeneDao.class).to(GeneDaoImpl.class);
+		bind(GeneDao.class).to(GeneDaoImpl.class).in(Singleton.class);
 	}
 
-	private Mongo mongo() {
-		try {
-			return new Mongo();
-		} catch (UnknownHostException e) {
-			Throwables.propagate(e);
-		}
+	@Provides
+	@Singleton
+	Mongo mongo(Configuration conf) throws UnknownHostException {
+		DataPortalConfiguration configuration = (DataPortalConfiguration) conf;
 
-		return null;
+		return new Mongo(new MongoURI(configuration.getMongoUri()));
 	}
 
-	private Client esClient() {
-		// TODO: inject "hcn50.res.oicr.on.ca"
-		return new TransportClient()
-				.addTransportAddress(new InetSocketTransportAddress(
-						"localhost", 9300));
+	@Provides
+	@Singleton
+	Client esClient(Configuration conf) {
+		DataPortalConfiguration configuration = (DataPortalConfiguration) conf;
+
+		return new TransportClient().addTransportAddress(new InetSocketTransportAddress(configuration.getEsHost(), 9300));
 	}
 
 }

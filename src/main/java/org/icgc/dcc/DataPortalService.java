@@ -43,22 +43,23 @@ import com.yammer.dropwizard.config.Environment;
 @Slf4j
 public class DataPortalService extends Service<DataPortalConfiguration> {
 
+	private static final String PACKAGE = DataPortalService.class.getPackage().getName();
 	private static final String APPLICATION_NAME = "icgc-data-portal-api";
 	private static String[] args;
 
 	public static void main(String... args) throws Exception {
 		DataPortalService.args = args;
-		new DataPortalService().run(new String[] { "server" });
+		new DataPortalService().run(new String[] { "server", "settings.yml" });
 	}
 
 	@Override
 	public final void initialize(Bootstrap<DataPortalConfiguration> bootstrap) {
 		bootstrap.setName(APPLICATION_NAME);
 		bootstrap.addBundle(new SwaggerBundle());
-		bootstrap.addBundle(GuiceBundle.newBuilder().addModule(new DataPortalModule()).enableAutoConfig(getClass().getPackage().getName()).build());
+		bootstrap.addBundle(GuiceBundle.newBuilder().addModule(new DataPortalModule()).enableAutoConfig(PACKAGE).build());
 		bootstrap.addBundle(new RedirectBundle(ImmutableMap.<String, String> builder().put("/", "/docs/").put("/docs", "/docs/").build()));
 	}
-	
+
 	@Override
 	public final void run(DataPortalConfiguration configuration, Environment environment) throws Exception {
 		logInfo(args);

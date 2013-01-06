@@ -1,2 +1,6 @@
-# Test
-mongoUri: localhost
+# Mongo URI
+mongoUri: "mongodb://localhost"
+
+# ElasticSearch host
+esHost: "localhost"
+# esHost: "hcn50.res.oicr.on.ca"
