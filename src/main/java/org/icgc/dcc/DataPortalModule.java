@@ -19,20 +19,35 @@ package org.icgc.dcc;/*
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+import java.net.UnknownHostException;
+
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.icgc.dcc.dao.GeneDao;
 import org.icgc.dcc.dao.impl.GeneDaoImpl;
 
+import com.google.common.base.Throwables;
 import com.google.inject.AbstractModule;
+import com.mongodb.Mongo;
 
 public class DataPortalModule extends AbstractModule {
 
 	@Override
 	protected void configure() {
+		bind(Mongo.class).toInstance(mongo());
 		bind(Client.class).toInstance(esClient());
 		bind(GeneDao.class).to(GeneDaoImpl.class);
+	}
+
+	private Mongo mongo() {
+		try {
+			return new Mongo();
+		} catch (UnknownHostException e) {
+			Throwables.propagate(e);
+		}
+
+		return null;
 	}
 
 	private Client esClient() {
