@@ -21,10 +21,6 @@
 
 package org.icgc.dcc.resources;
 
-import com.yammer.metrics.annotation.Timed;
-import lombok.extern.slf4j.Slf4j;
-import org.icgc.dcc.dao.GeneDao;
-
 import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -33,9 +29,12 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.icgc.dcc.dao.GeneDao;
+
+import com.yammer.metrics.annotation.Timed;
+
 @Path("/genes")
 @Produces(MediaType.APPLICATION_JSON)
-@Slf4j
 public class GeneResource {
 
     private final GeneDao geneDao;
