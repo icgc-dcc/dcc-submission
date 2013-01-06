@@ -21,24 +21,22 @@
 
 package org.icgc.dcc;
 
-import lombok.extern.slf4j.Slf4j;
-
-import org.icgc.dcc.bundles.SwaggerBundle;
-
 import com.bazaarvoice.dropwizard.redirect.RedirectBundle;
 import com.google.common.collect.ImmutableMap;
 import com.hubspot.dropwizard.guice.GuiceBundle;
 import com.yammer.dropwizard.Service;
 import com.yammer.dropwizard.config.Bootstrap;
 import com.yammer.dropwizard.config.Environment;
+import lombok.extern.slf4j.Slf4j;
+import org.icgc.dcc.bundles.SwaggerBundle;
 
 @Slf4j
 public class DataPortalService extends Service<DataPortalConfiguration> {
 
 	private static final String APPLICATION_NAME = "icgc-data-portal-api";
 
-	public static void main(String[] args) throws Exception {
-		new DataPortalService().run(args);
+	public static void main(String... args) throws Exception {
+		new DataPortalService().run(new String[] { "server" });
 	}
 
 	@Override
@@ -46,11 +44,11 @@ public class DataPortalService extends Service<DataPortalConfiguration> {
 		bootstrap.setName(APPLICATION_NAME);
 		bootstrap.addBundle(new SwaggerBundle());
 		bootstrap.addBundle(GuiceBundle.newBuilder().addModule(new DataPortalModule()).enableAutoConfig(getClass().getPackage().getName()).build());
-		bootstrap.addBundle(new RedirectBundle(ImmutableMap.<String, String> builder().put("/", "/docs/").put("/api-docs/*", "/api-docs.json/*").build()));
+		bootstrap.addBundle(new RedirectBundle(ImmutableMap.<String, String> builder().put("/", "/docs/").build()));
 	}
 
 	@Override
-	public void run(DataPortalConfiguration configuration, Environment environment) throws Exception {
+	public final void run(DataPortalConfiguration configuration, Environment environment) throws Exception {
 		log.info("Running service...");
 	}
 
