@@ -28,6 +28,7 @@ import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.AbstractService;
 import com.typesafe.config.Config;
@@ -118,12 +119,16 @@ public class HttpServerService extends AbstractService {
       keyStore = createKeyStore(password);
     } catch(KeyStoreException e) {
       log.error("failed to create key store", e);
+      Throwables.propagate(e);
     } catch(NoSuchAlgorithmException e) {
       log.error("failed to create key store", e);
+      Throwables.propagate(e);
     } catch(CertificateException e) {
       log.error("failed to create key store", e);
+      Throwables.propagate(e);
     } catch(IOException e) {
       log.error("failed to create key store", e);
+      Throwables.propagate(e);
     }
 
     KeyManagerFactory keyManagerFactory = null;
@@ -131,15 +136,19 @@ public class HttpServerService extends AbstractService {
       keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
     } catch(NoSuchAlgorithmException e) {
       log.error("failed to create key manager factory", e);
+      Throwables.propagate(e);
     }
     try {
       keyManagerFactory.init(keyStore, password);
     } catch(UnrecoverableKeyException e) {
       log.error("failed to initialize key manager factory", e);
+      Throwables.propagate(e);
     } catch(KeyStoreException e) {
       log.error("failed to initialize key manager factory", e);
+      Throwables.propagate(e);
     } catch(NoSuchAlgorithmException e) {
       log.error("failed to initialize key manager factory", e);
+      Throwables.propagate(e);
     }
 
     TrustManagerFactory trustManagerFactory = null;
@@ -147,23 +156,25 @@ public class HttpServerService extends AbstractService {
       trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
     } catch(NoSuchAlgorithmException e) {
       log.error("failed to create trust manager factory", e);
+      Throwables.propagate(e);
     }
     try {
       trustManagerFactory.init(keyStore);
     } catch(KeyStoreException e) {
       log.error("failed to initialize trust manager factory", e);
+      Throwables.propagate(e);
     }
 
     SSLContext sslContext = null;
     try {
       sslContext = SSLContext.getInstance(PROTOCOL);
+      sslContext.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
     } catch(NoSuchAlgorithmException e) {
       log.error("failed to create SSL context", e);
-    }
-    try {
-      sslContext.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
+      Throwables.propagate(e);
     } catch(KeyManagementException e) {
       log.error("failed to initialize SSL context", e);
+      Throwables.propagate(e);
     }
 
     return new SSLEngineConfigurator(sslContext, false, false, false);

@@ -31,6 +31,8 @@ public enum ServerErrorCode { // TODO: migrate all (DCC-660)
   MISSING_REQUIRED_DATA("MissingRequiredData"), //
   EMPTY_REQUEST("EmptyRequest"), //
   INVALID_NAME("InvalidName"), //
+  INVALID_STATE("InvalidState"), //
+  UNAVAILABLE("Unavailable"), //
   RELEASE_EXCEPTION("ReleaseException"), //
   ;
 

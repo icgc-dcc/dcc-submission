@@ -16,6 +16,7 @@ import org.icgc.dcc.shiro.ShiroModule;
 import org.icgc.dcc.validation.ValidationModule;
 import org.icgc.dcc.web.WebModule;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.typesafe.config.ConfigFactory;
@@ -36,12 +37,14 @@ public class Main {
     }
   };
 
+  private static Injector injector;
+
   public static void main(String[] args) throws IOException {
 
     String config = (args != null && args.length > 0) ? CONFIG.valueOf(args[0]).filename : "application";
     System.setProperty(HADOOP_USER_NAME_PARAM, HADOOP_USER_NAME); // see DCC-572
 
-    final Injector injector = Guice.createInjector(new ConfigModule(ConfigFactory.load(config))//
+    Main.injector = Guice.createInjector(new ConfigModule(ConfigFactory.load(config))//
         , new CoreModule()//
         , new HttpModule()//
         , new JerseyModule()//
@@ -52,8 +55,7 @@ public class Main {
         , new SftpModule()//
         , new DictionaryModule()//
         , new ReleaseModule()//
-        , new ValidationModule()//
-        );
+        , new ValidationModule());
 
     Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
       @Override
@@ -64,6 +66,14 @@ public class Main {
     }, "Shutdown-thread"));
 
     injector.getInstance(DccRuntime.class).start();
-
   }
+
+  /**
+   * This method is required for testing since shutdown hooks are not invoked between tests.
+   */
+  @VisibleForTesting
+  public static void shutdown() {
+    injector.getInstance(DccRuntime.class).stop();
+  }
+
 }

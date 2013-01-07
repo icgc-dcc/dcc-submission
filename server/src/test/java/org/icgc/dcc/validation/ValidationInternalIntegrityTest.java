@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 
@@ -37,6 +38,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.inject.Inject;
 import com.mongodb.BasicDBObject;
 
@@ -183,7 +185,12 @@ public class ValidationInternalIntegrityTest {
 
     Plan plan = validationService.planCascade(null, cascadingStrategy, dictionary);
     Assert.assertEquals(1, plan.getCascade().getFlows().size());
-    validationService.runCascade(plan.getCascade(), null);
+
+    TestCascadeListener listener = new TestCascadeListener();
+    validationService.runCascade(plan.getCascade(), listener);
+    while(listener.isRunning()) {
+      Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
+    }
 
     Assert.assertTrue(errorFileString, errorFile.exists());
     return FileUtils.readFileToString(errorFile);

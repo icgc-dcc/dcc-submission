@@ -9,7 +9,8 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.icgc.dcc.http.jersey.BasicHttpAuthenticationRequestFilter;
 import org.icgc.dcc.web.mapper.DuplicateNameExceptionMapper;
 import org.icgc.dcc.web.mapper.InvalidNameExceptionMapper;
-import org.icgc.dcc.web.mapper.UnsatisfiedPrecondtionExceptionMapper;
+import org.icgc.dcc.web.mapper.ReleaseExceptionMapper;
+import org.icgc.dcc.web.mapper.UnsatisfiedPreconditionExceptionMapper;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
@@ -38,7 +39,7 @@ public class WebModule extends AbstractModule {
       config.addClasses(DictionaryResource.class);
       config.addClasses(CodeListResource.class);
       config.addClasses(BasicHttpAuthenticationRequestFilter.class);
-      config.addClasses(UnsatisfiedPrecondtionExceptionMapper.class);
+      config.addClasses(UnsatisfiedPreconditionExceptionMapper.class);
       config.addClasses(ReleaseExceptionMapper.class);
       config.addClasses(InvalidNameExceptionMapper.class);
       config.addClasses(DuplicateNameExceptionMapper.class);

@@ -15,22 +15,34 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.web;
+package org.icgc.dcc.data.model;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
-import org.icgc.dcc.release.ReleaseException;
+import org.icgc.dcc.core.model.Timestamped;
 
-@Provider
-public class ReleaseExceptionMapper implements ExceptionMapper<ReleaseException> {
+import com.google.code.morphia.annotations.Entity;
+import com.google.code.morphia.annotations.Id;
 
-  @Override
-  public Response toResponse(ReleaseException exception) {
-    return Response.status(Status.BAD_REQUEST)
-        .entity(new ServerErrorResponseMessage(ServerErrorCode.RELEASE_EXCEPTION, exception.getMessage())).build();
+@Entity
+public class Variation extends Timestamped {
+
+  @Id
+  public String id;
+
+  public PhysicalLocation location;
+
+  public List<AminoAcidChange> consequences;
+
+  public Set<String> samples;
+
+  public String variation; // "A>G"
+
+  public Variation() {
+    this.created = new Date();
+    this.lastUpdate = this.created;
   }
 
 }

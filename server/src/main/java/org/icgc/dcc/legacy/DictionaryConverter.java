@@ -202,18 +202,9 @@ public class DictionaryConverter {
           // remove any existing required restrictions
           leftField.removeRestriction(leftRestriction.get());
         }
-        Restriction requiredRestriction = new Restriction();
-        requiredRestriction.setType(RequiredRestriction.NAME);
-        BasicDBObject parameter = new BasicDBObject();
-        // exceptions for making required field accept missing code
-        if(rightTable.equals("hsap_gene") || rightTable.equals("hsap_transcript")) {
-          parameter.append(RequiredRestriction.ACCEPT_MISSING_CODE, true);
-        } else if(optionalKeys.contains(key)) {
-          parameter.append(RequiredRestriction.ACCEPT_MISSING_CODE, true);
-        } else {
-          parameter.append(RequiredRestriction.ACCEPT_MISSING_CODE, false);
-        }
-        requiredRestriction.setConfig(parameter);
+        Restriction requiredRestriction =
+            buildRequiredRestriction(rightTable.equals("hsap_gene") || rightTable.equals("hsap_transcript")
+                || optionalKeys.contains(key));
         if(leftFileSchema.getRole() != FileSchemaRole.SYSTEM) {
           leftField.addRestriction(requiredRestriction);
         }
@@ -246,13 +237,18 @@ public class DictionaryConverter {
     return schemaToUniqueFields;
   }
 
+  private Restriction buildRequiredRestriction(boolean acceptMissingCodes) {
+    Restriction requiredRestriction = new Restriction();
+    requiredRestriction.setType(RequiredRestriction.NAME);
+    BasicDBObject parameter = new BasicDBObject();
+    // exceptions for making required field accept missing code
+    parameter.append(RequiredRestriction.ACCEPT_MISSING_CODE, acceptMissingCodes);
+    requiredRestriction.setConfig(parameter);
+    return requiredRestriction;
+  }
+
   private Boolean getBidirectionality(String cardinalityString) {
-    if("1..n".equals(cardinalityString)) {
-      return true;
-    } else if("0..n".equals(cardinalityString)) {
-      return false;
-    }
-    return null;
+    return "1..n".equals(cardinalityString);
   }
 
   private String buildDebugString(Map<String, List<String>> schemaToUniqueFields) {
@@ -315,8 +311,8 @@ public class DictionaryConverter {
   }
 
   private FileSchema readFileSchema(File tsvFile, FileSchemaRole role) throws IOException {
-    String FileSchemaName = FilenameUtils.removeExtension(extractFileSchemaName(tsvFile));
-    FileSchema fileSchema = new FileSchema(FileSchemaName);
+    String fileSchemaName = FilenameUtils.removeExtension(extractFileSchemaName(tsvFile));
+    FileSchema fileSchema = new FileSchema(fileSchemaName);
 
     String fileSchemaText = Files.toString(tsvFile, Charsets.UTF_8);
 
@@ -334,8 +330,10 @@ public class DictionaryConverter {
     List<Field> fields = new ArrayList<Field>();
     while(lineIterator.hasNext()) {
       Field field = this.readField(lineIterator.next(), fileSchema);
+
       // hardcode special case for stsm_s gene_affected and transcript_affected
-      if(FileSchemaName.equals("stsm_s") && field.getName().equals("gene_affected")) {
+      String fieldName = field.getName();
+      if(fileSchemaName.equals("stsm_s") && fieldName.equals("gene_affected")) {
         Field field_from = new Field(field);
         Field field_to = new Field(field);
         field_from.setName("gene_affected_by_bkpt_from");
@@ -343,7 +341,7 @@ public class DictionaryConverter {
 
         fields.add(field_from);
         fields.add(field_to);
-      } else if(FileSchemaName.equals("stsm_s") && field.getName().equals("transcript_affected")) {
+      } else if(fileSchemaName.equals("stsm_s") && fieldName.equals("transcript_affected")) {
         Field field_from = new Field(field);
         Field field_to = new Field(field);
         field_from.setName("transcript_affected_by_bkpt_from");
@@ -356,9 +354,9 @@ public class DictionaryConverter {
     }
 
     // special case for mirna_m, stsm_m, cnsm_m, jcn_m, ssm_m, meth_m, exp_m, add missing donor_id
-    if(FileSchemaName.equals("mirna_m") || FileSchemaName.equals("stsm_m") || FileSchemaName.equals("cnsm_m")
-        || FileSchemaName.equals("jcn_m") || FileSchemaName.equals("ssm_m") || FileSchemaName.equals("meth_m")
-        || FileSchemaName.equals("exp_m")) {
+    if(fileSchemaName.equals("mirna_m") || fileSchemaName.equals("stsm_m") || fileSchemaName.equals("cnsm_m")
+        || fileSchemaName.equals("jcn_m") || fileSchemaName.equals("ssm_m") || fileSchemaName.equals("meth_m")
+        || fileSchemaName.equals("exp_m")) {
       if(!this.containField(fields, "donor_id")) {
         Field donorIDField = new Field();
         donorIDField.setName("donor_id");
@@ -411,10 +409,8 @@ public class DictionaryConverter {
     }
 
     // deconvolution
+    // TODO: Determine why this is never used
     String deconvolution = iterator.next();
-    if(deconvolution.isEmpty()) {
-
-    }
 
     String codeList = iterator.next();
     if(!codeList.isEmpty()) {
@@ -433,6 +429,7 @@ public class DictionaryConverter {
     }
 
     field.setRestrictions(restrictions);
+    field.setControlled(false);
 
     return field;
   }

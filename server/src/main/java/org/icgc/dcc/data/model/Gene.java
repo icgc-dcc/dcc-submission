@@ -15,20 +15,57 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.web.mapper;
+package org.icgc.dcc.data.model;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
+import java.util.Date;
+import java.util.List;
 
-import org.icgc.dcc.web.UnsatisfiedPreconditionException;
+import org.icgc.dcc.core.model.Timestamped;
+import org.icgc.dcc.data.web.HasKey;
 
-@Provider
-public class UnsatisfiedPrecondtionExceptionMapper implements ExceptionMapper<UnsatisfiedPreconditionException> {
+import com.google.code.morphia.annotations.Entity;
+import com.google.code.morphia.annotations.Id;
+
+@Entity
+public class Gene extends Timestamped implements HasKey {
+
+  @Id
+  public String name;
+
+  public String ensemblId;
+
+  public List<String> aliases;
+
+  public String description;
+
+  public String biotype;
+
+  public PhysicalLocation location;
+
+  public List<Transcript> transcripts;
+
+  public Gene() {
+    this.created = new Date();
+    this.lastUpdate = new Date();
+  }
 
   @Override
-  public Response toResponse(UnsatisfiedPreconditionException exception) {
-    return exception.getResponse().build();
+  public Object getKey() {
+    return name;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if(obj instanceof Gene == false) {
+      return false;
+    }
+    Gene rhs = (Gene) obj;
+    return name.equals(rhs.name);
+  }
+
+  @Override
+  public int hashCode() {
+    return name.hashCode();
   }
 
 }

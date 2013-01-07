@@ -1,5 +1,6 @@
 package org.icgc.dcc.validation.report;
 
+import java.io.Serializable;
 import java.util.List;
 
 import com.google.code.morphia.annotations.Embedded;
@@ -10,7 +11,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 @Embedded
-public class SchemaReport {
+public class SchemaReport implements Serializable {
 
   protected String name;
 

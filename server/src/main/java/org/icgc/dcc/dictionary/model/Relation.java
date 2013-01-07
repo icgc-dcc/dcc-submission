@@ -19,6 +19,7 @@ package org.icgc.dcc.dictionary.model;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -32,7 +33,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 @Embedded
-public class Relation implements DictionaryElement {
+public class Relation implements DictionaryElement, Serializable {
 
   private final List<String> fields;
 

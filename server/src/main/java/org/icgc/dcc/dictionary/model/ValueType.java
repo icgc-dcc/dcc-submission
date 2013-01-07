@@ -17,9 +17,22 @@
  */
 package org.icgc.dcc.dictionary.model;
 
+import java.util.Date;
+
 /**
  * Possible (data) types for a {@code Field}
  */
 public enum ValueType {
-  TEXT, INTEGER, DATETIME, DECIMAL
+
+  TEXT(String.class), INTEGER(Long.class), DATETIME(Date.class), DECIMAL(Double.class);
+
+  private final Class<?> javaType;
+
+  private ValueType(Class<?> javaType) {
+    this.javaType = javaType;
+  }
+
+  public Class<?> getJavaType() {
+    return javaType;
+  }
 }

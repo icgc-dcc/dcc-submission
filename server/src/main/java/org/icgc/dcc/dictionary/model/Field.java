@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.dictionary.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,7 +36,7 @@ import com.google.common.collect.Iterables;
  * Describes a field that has {@code Restriction}s and that is part of a {@code FileSchema}
  */
 @Embedded
-public class Field implements DictionaryElement {
+public class Field implements DictionaryElement, Serializable {
 
   @NotNull
   private String name;

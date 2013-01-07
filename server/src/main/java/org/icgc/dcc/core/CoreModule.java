@@ -2,6 +2,7 @@ package org.icgc.dcc.core;
 
 import java.util.logging.LogManager;
 
+import org.icgc.dcc.release.DccLocking;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import com.google.inject.AbstractModule;
@@ -21,6 +22,7 @@ public class CoreModule extends AbstractModule {
     bind(DccRuntime.class).in(Singleton.class);
     bind(ProjectService.class).in(Singleton.class);
     bind(UserService.class).in(Singleton.class);
+    bind(DccLocking.class).in(Singleton.class);
   }
 
 }

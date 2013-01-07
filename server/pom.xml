@@ -122,10 +122,15 @@
     </dependency>
     <dependency>
       <groupId>cascading</groupId>
-      <artifactId>cascading-test</artifactId>
+      <artifactId>cascading-core</artifactId>
       <version>${cascading.version}</version>
+      <classifier>tests</classifier>
       <scope>test</scope>
       <exclusions>
+        <exclusion>
+          <groupId>junit</groupId>
+      	  <artifactId>junit</artifactId>
+        </exclusion>
         <exclusion>
           <artifactId>slf4j-log4j12</artifactId>
           <groupId>org.slf4j</groupId>
@@ -135,6 +140,11 @@
           <groupId>log4j</groupId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.mongodb</groupId>
+      <artifactId>mongo-hadoop-core</artifactId>
+      <version>1.1.0-93d3667</version>
     </dependency>
     <dependency>
       <groupId>ch.qos.logback</groupId>
@@ -197,11 +207,11 @@
       </exclusions>
     </dependency>
     <dependency>
-		<groupId>org.apache.hadoop</groupId>
-		<artifactId>hadoop-hdfs</artifactId>	
-		<version>${hadoop-cdh.version}</version>
-		<scope>runtime</scope>
-	</dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-hdfs</artifactId>
+      <version>${hadoop-cdh.version}</version>
+      <scope>runtime</scope>
+    </dependency>
     <!-- Test Dependencies -->
     <dependency>
       <groupId>junit</groupId>
@@ -209,6 +219,36 @@
       <version>4.10</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-test</artifactId>
+      <version>${hadoop-mr1-cdh.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-minicluster</artifactId>
+      <version>${hadoop-mr1-cdh.version}</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>slf4j-log4j12</artifactId>
+          <groupId>org.slf4j</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+	  <groupId>com.wordnik</groupId>
+	  <artifactId>mongo-admin-utils-distribution</artifactId>
+	  <version>1.2.0</version>
+	  <exclusions>
+        <exclusion>
+          <artifactId>slf4j-log4j12</artifactId>
+          <groupId>org.slf4j</groupId>
+        </exclusion>
+      </exclusions>
+      <scope>test</scope>
+	</dependency>
     <dependency>
       <groupId>org.glassfish.jersey.core</groupId>
       <artifactId>jersey-client</artifactId>
@@ -334,27 +374,27 @@
         <artifactId>maven-shade-plugin</artifactId>
         <version>1.7.1</version>
         <configuration>
-            <artifactSet>
-                <excludes>
-                  <exclude>com.sun.jersey:*</exclude>
-                </excludes>
-            </artifactSet>
-            <filters>
-                <filter>
-                    <artifact>*:*</artifact>
-                    <excludes>
-                        <exclude>META-INF/*.SF</exclude>
-                        <exclude>META-INF/*.RSA</exclude>
-                        <exclude>META-INF/*.INF</exclude>
-                    </excludes>
-                </filter>
-            </filters>
-            <transformers>
-                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
-                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                  <mainClass>org.icgc.dcc.Main</mainClass>
-                </transformer>
-            </transformers>
+          <artifactSet>
+            <excludes>
+              <exclude>com.sun.jersey:*</exclude>
+            </excludes>
+          </artifactSet>
+          <filters>
+            <filter>
+              <artifact>*:*</artifact>
+              <excludes>
+                <exclude>META-INF/*.SF</exclude>
+                <exclude>META-INF/*.RSA</exclude>
+                <exclude>META-INF/*.INF</exclude>
+              </excludes>
+            </filter>
+          </filters>
+          <transformers>
+            <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+            <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+              <mainClass>org.icgc.dcc.Main</mainClass>
+            </transformer>
+          </transformers>
         </configuration>
         <executions>
           <execution>
@@ -462,7 +502,7 @@
     <jersey.version>2.0-m10</jersey.version>
     <shiro.version>1.2.0</shiro.version>
     <mina.version>0.6.0</mina.version>
-    <cascading.version>2.0.1</cascading.version>
+    <cascading.version>2.1.1</cascading.version>
     <hadoop.version>2.0.0</hadoop.version>
     <cdh.version>cdh4.1.2</cdh.version>
     <hadoop-cdh.version>${hadoop.version}-${cdh.version}</hadoop-cdh.version>

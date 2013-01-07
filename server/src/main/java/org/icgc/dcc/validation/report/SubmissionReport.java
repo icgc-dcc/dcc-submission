@@ -1,11 +1,12 @@
 package org.icgc.dcc.validation.report;
 
+import java.io.Serializable;
 import java.util.List;
 
 import com.google.code.morphia.annotations.Embedded;
 
 @Embedded
-public class SubmissionReport {
+public class SubmissionReport implements Serializable {
   protected List<SchemaReport> schemaReports;
 
   public List<SchemaReport> getSchemaReports() {
@@ -22,4 +23,5 @@ public class SubmissionReport {
     }
     return null;
   }
+
 }

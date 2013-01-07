@@ -1,0 +1,39 @@
+{
+   "name" : "donor",
+   "type" : "record",
+   "fileSchema" : "donor",
+   "collection":"Donor",
+   "fields" : [
+      { "name" : "_id", "type" : "text", "fileSchemaField" : "donor_id" },
+      
+      { "name" : "ageAtDiagnosis", "type" : "text", "fileSchemaField" : "donor_age_at_diagnosis" },
+      { "name" : "gender", "type" : "integer", "fileSchemaField" : "donor_sex" },
+      { "name" : "regionOfResidence", "type" : "text", "fileSchemaField" : "donor_region_of_residence" },
+      { "name" : "donorVitalStatus", "type" : "integer", "fileSchemaField" : "donor_vital_status" },
+      { "name" : "donorSurvivalTime", "type" : "integer", "fileSchemaField" : "donor_survival_time" },
+      { "name" : "specimen", "type" : "array", "items": 
+        {
+        "name" : "Specimen",
+        "type" : "record",
+        "fileSchema" : "specimen",
+        "fields" : [
+          { "name" : "id", "type" : "text", "fileSchemaField":"specimen_id"},
+          { "name" : "type", "type" : "integer", "fileSchemaField":"specimen_type" },
+          { "name" : "tumourGrade", "type" : "integer", "fileSchemaField":"tumour_grade" },
+          { "name" : "sample", "type" : "array", "items" : 
+            {
+            "name" : "Sample",
+            "type" : "record",
+            "fileSchema" : "sample",
+            "fields" : [
+              { "name" : "id", "type" : "text", "fileSchemaField" : "analyzed_sample_id" },
+              { "name" : "type", "type" : "integer", "fileSchemaField" : "analyzed_sample_type" },
+              { "name" : "interval", "type" : "integer", "fileSchemaField" : "analyzed_sample_interval" }
+            ]
+            } 
+          }
+        ]
+        }
+     }
+   ]
+}
