@@ -26,6 +26,10 @@ import java.util.Properties;
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.mapred.ClusterMapReduceTestCase;
 import org.apache.hadoop.mapred.JobConf;
+import org.slf4j.LoggerFactory;
+
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
 
 /**
  * Basis for pseudo-distributed Hadoop integration tests.
@@ -40,13 +44,28 @@ public abstract class BaseClusterTest extends ClusterMapReduceTestCase {
    * Sets key system properties before test initialization.
    */
   private static void setProperties() {
-    // See http://stackoverflow.com/questions/7134723/hadoop-on-osx-unable-to-load-realm-info-from-scdynamicstore
+    // See HADOOP-7489
     System.setProperty("java.security.krb5.realm", "OX.AC.UK");
     System.setProperty("java.security.krb5.kdc", "kdc0.ox.ac.uk:kdc1.ox.ac.uk");
 
+    // See DCC-572
     System.setProperty("HADOOP_USER_NAME", System.getProperty("user.name"));
-    System.setProperty("hadoop.log.dir", "target/test/hadoop/logs");
     System.setProperty(PROP_TEST_BUILD_DATA, "target/test/hadoop");
+
+    // See MAPREDUCE-2785
+    System.setProperty("hadoop.log.dir", "target/test/hadoop/logs");
+
+    // Configure logging
+    if(System.getProperty("hadoop.log.file") == null) {
+      System.setProperty("hadoop.log.file", "hadoop.log");
+    }
+    if(System.getProperty("hadoop.root.logger") == null) {
+      System.setProperty("hadoop.root.logger", "DEBUG,console");
+    }
+
+    ((Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)).setLevel(Level.WARN);
+    ((Logger) LoggerFactory.getLogger("org.apache.hadoop.conf")).setLevel(Level.ERROR);
+    ((Logger) LoggerFactory.getLogger("mapreduce")).setLevel(Level.ERROR);
   }
 
   @Override

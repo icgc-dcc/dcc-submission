@@ -58,9 +58,8 @@ public final class JsonUtils {
         normalizeJsonNode(expectedJsonNode);
         normalizeJsonNode(actualJsonNode);
 
-        assertEquals(
-            "JSON mismatch between expected JSON file " + expectedFile + " and actual JSON file " + actualFile,
-            expectedJsonNode, actualJsonNode);
+        assertEquals("JSON mismatch between expected JSON file:\n\t" + expectedFile + "\nand actual JSON file:\n\t"
+            + actualFile + "\n", expectedJsonNode, actualJsonNode);
       }
 
       // Ensure same number of elements
