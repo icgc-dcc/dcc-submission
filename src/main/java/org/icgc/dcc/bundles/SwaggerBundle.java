@@ -2,13 +2,13 @@ package org.icgc.dcc.bundles;
 
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.jaxrs.JaxrsApiReader;
 import com.wordnik.swagger.jaxrs.listing.ApiListing;
 import com.yammer.dropwizard.assets.AssetsBundle;
 import com.yammer.dropwizard.config.Bootstrap;
-import com.yammer.dropwizard.config.Environment;
 
 public class SwaggerBundle extends AssetsBundle {
 
@@ -23,16 +23,11 @@ public class SwaggerBundle extends AssetsBundle {
   }
 
   @Override
-  public void initialize(Bootstrap<?> bootstrap) {
+  public final void initialize(Bootstrap<?> bootstrap) {
     super.initialize(bootstrap);
 
     // Set the Swagger suffix to an empty string before Swagger warms up
     JaxrsApiReader.setFormatString(EMPTY_FORMAT);
-  }
-
-  @Override
-  public void run(Environment environment) {
-    super.run(environment);
   }
 
   /**
@@ -46,7 +41,7 @@ public class SwaggerBundle extends AssetsBundle {
    */
   @Path("/api-docs")
   @Api("/api-docs")
-  @Produces("application/json")
+  @Produces(MediaType.APPLICATION_JSON)
   public static class ApiListingResourceJSON extends ApiListing {
     // Empty
   }

@@ -41,11 +41,11 @@ public final class ElasticSearchClientManager implements Managed {
   }
 
   @Override
-  public final void start() throws Exception {
+  public void start() throws Exception {
   }
 
   @Override
-  public final void stop() throws Exception {
+  public void stop() throws Exception {
     log.info("Closing ElasticSearch client...");
     client.close();
   }

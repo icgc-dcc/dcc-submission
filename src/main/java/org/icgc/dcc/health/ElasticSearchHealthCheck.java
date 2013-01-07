@@ -34,8 +34,6 @@ import com.yammer.metrics.core.HealthCheck;
 public final class ElasticSearchHealthCheck extends HealthCheck {
   private static final String CHECK_NAME = "elasticsearch";
 
-  private static final String CHECK_LOG = "Checking the Health of ElasticSearch";
-
   private final Client client;
 
   @Inject
@@ -45,8 +43,8 @@ public final class ElasticSearchHealthCheck extends HealthCheck {
   }
 
   @Override
-  protected final Result check() throws Exception {
-    log.info(CHECK_LOG);
+  protected Result check() throws Exception {
+    log.info("Checking the Health of ElasticSearch");
     client.admin().cluster().prepareHealth().execute().actionGet().getStatus().name();
     return Result.healthy();
   }

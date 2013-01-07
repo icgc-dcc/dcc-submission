@@ -33,8 +33,6 @@ import com.yammer.metrics.core.HealthCheck;
 public final class MongoHealthCheck extends HealthCheck {
   private static final String CHECK_NAME = "mongodb";
 
-  private static final String CHECK_LOG = "Checking Health of MongoDB";
-
   private final Mongo mongo;
 
   @Inject
@@ -44,8 +42,8 @@ public final class MongoHealthCheck extends HealthCheck {
   }
 
   @Override
-  protected final Result check() throws Exception {
-    log.info(CHECK_LOG);
+  protected Result check() throws Exception {
+    log.info("Checking Health of MongoDB");
     mongo.getDatabaseNames();
     return Result.healthy();
   }

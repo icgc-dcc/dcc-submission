@@ -37,10 +37,6 @@ import com.google.inject.Inject;
 
 @Slf4j
 public class GeneDaoImpl implements GeneDao {
-  private static final String GET_ALL_LOG = "Returning all Genes";
-
-  private static final String GET_ONE_LOG = "Returning Gene %s";
-
   private static final String INDEX = "blog";
 
   private final Client client;
@@ -50,8 +46,7 @@ public class GeneDaoImpl implements GeneDao {
     this.client = client;
   }
 
-  public final Gene getOne(String Id) {
-    log.info(String.format(GET_ONE_LOG, Id));
+  public final Gene getOne(String id) {
     client.prepareSearch(INDEX).setSearchType(SearchType.DFS_QUERY_THEN_FETCH).setQuery(matchAllQuery()).setFrom(0)
         .setSize(1).setExplain(true).execute().actionGet().toString();
 
@@ -59,7 +54,6 @@ public class GeneDaoImpl implements GeneDao {
   }
 
   public final List<Gene> getAll() {
-    log.info(GET_ALL_LOG);
     client.prepareSearch(INDEX).setSearchType(SearchType.DFS_QUERY_THEN_FETCH).setQuery(matchAllQuery()).setFrom(0)
         .setSize(2).setExplain(true).execute().actionGet().toString();
 

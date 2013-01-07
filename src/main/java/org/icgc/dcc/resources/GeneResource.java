@@ -29,6 +29,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.eclipse.jetty.http.HttpStatus;
 import org.icgc.dcc.dao.GeneDao;
 
 import com.wordnik.swagger.annotations.Api;
@@ -62,8 +63,8 @@ public class GeneResource {
   @GET
   @Timed
   @ApiOperation(value = "Find a gene by id", notes = "If a gene does not exist with the specified id an error will be returned", responseClass = "org.icgc.dcc.core.Gene")
-  @ApiErrors(value = { @ApiError(code = 400, reason = "Invalid ID supplied"), @ApiError(code = 404, reason = "Gene not found") })
-  public final Response getOne(@ApiParam(value = "id of gene that needs to be fetched") @PathParam("id") String Id) {
-    return Response.ok(geneDao.getOne(Id)).build();
+  @ApiErrors(value = { @ApiError(code = HttpStatus.BAD_REQUEST_400, reason = "Invalid ID supplied"), @ApiError(code = HttpStatus.NOT_FOUND_404, reason = "Gene not found") })
+  public final Response getOne(@ApiParam(value = "id of gene that needs to be fetched") @PathParam("id") String id) {
+    return Response.ok(geneDao.getOne(id)).build();
   }
 }

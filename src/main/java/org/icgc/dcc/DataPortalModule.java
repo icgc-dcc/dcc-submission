@@ -37,13 +37,13 @@ import com.yammer.dropwizard.config.Configuration;
 public class DataPortalModule extends AbstractModule {
 
   @Override
-  protected void configure() {
+  protected final void configure() {
     bind(GeneDao.class).to(GeneDaoImpl.class).in(Singleton.class);
   }
 
   @Provides
   @Singleton
-  Mongo mongo(Configuration conf) throws UnknownHostException {
+  private Mongo mongo(Configuration conf) throws UnknownHostException {
     DataPortalConfiguration configuration = (DataPortalConfiguration) conf;
 
     // Mongo in thread-safe so @Singleton is appropriate
@@ -52,7 +52,7 @@ public class DataPortalModule extends AbstractModule {
 
   @Provides
   @Singleton
-  Client esClient(Configuration conf) {
+  private Client esClient(Configuration conf) {
     DataPortalConfiguration configuration = (DataPortalConfiguration) conf;
 
     // TrasportClient in thread-safe so @Singleton is appropriate

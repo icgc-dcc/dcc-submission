@@ -46,12 +46,15 @@ public class DataPortalService extends Service<DataPortalConfiguration> {
   private static final String PACKAGE = DataPortalService.class.getPackage().getName();
 
   private static final String APPLICATION_NAME = "icgc-data-portal-api";
+	private static final char SPACE = ' ';
+	private static final char DASH = '-';
 
-  private static String[] args;
+	private static String[] args;
 
   public static void main(String... args) throws Exception {
     DataPortalService.args = args;
-    new DataPortalService().run(new String[] { "server", "settings.yml" });
+	  //logInfo(args);
+	  new DataPortalService().run(args);
   }
 
   @Override
@@ -65,16 +68,14 @@ public class DataPortalService extends Service<DataPortalConfiguration> {
 
   @Override
   public final void run(DataPortalConfiguration configuration, Environment environment) throws Exception {
-    logInfo(args);
+   logInfo(args);
   }
 
-  private static void logInfo(String[] args) {
-    log.info("");
-    log.info(repeat("-", 80));
-    log.info("  {}", APPLICATION_NAME.toUpperCase() + " " + getVersion());
-    log.info("    > {}", formatArguments(args));
-    log.info(repeat("-", 80));
-    log.info("");
+  private static void logInfo(String... args) {
+    log.info(repeat("=", 60));
+    log.info("{} {}", APPLICATION_NAME.toUpperCase().replace(DASH, SPACE), getVersion());
+    log.info(" > {}", formatArguments(args));
+    log.info(repeat("=", 60));
   }
 
   private static String getVersion() {
@@ -89,11 +90,11 @@ public class DataPortalService extends Service<DataPortalConfiguration> {
     return jarFile.getName();
   }
 
-  private static String formatArguments(String[] args) {
+  private static String formatArguments(String... args) {
     RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
     List<String> inputArguments = runtime.getInputArguments();
 
-    return "java " + join(inputArguments, ' ') + " -jar " + getJarName() + " " + join(args, ' ');
+    return String.format("java %s -jar %s %s", join(inputArguments, SPACE), getJarName(), join(args, SPACE));
   }
 
 }

@@ -28,5 +28,5 @@ import org.icgc.dcc.core.Gene;
 public interface GeneDao {
   List<Gene> getAll();
 
-  Gene getOne(String Id);
+  Gene getOne(String id);
 }
