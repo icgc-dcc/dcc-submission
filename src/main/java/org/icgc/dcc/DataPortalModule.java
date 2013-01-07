@@ -44,18 +44,20 @@ public class DataPortalModule extends AbstractModule {
   @Provides
   @Singleton
   Mongo mongo(Configuration conf) throws UnknownHostException {
+    // See https://github.com/HubSpot/dropwizard-guice/issues/2
     DataPortalConfiguration configuration = (DataPortalConfiguration) conf;
 
-    // Mongo in thread-safe so @Singleton is appropriate
+    // Mongo is thread-safe so @Singleton is appropriate
     return new Mongo(new MongoURI(configuration.getMongoUri()));
   }
 
   @Provides
   @Singleton
   Client esClient(Configuration conf) {
+    // See https://github.com/HubSpot/dropwizard-guice/issues/2
     DataPortalConfiguration configuration = (DataPortalConfiguration) conf;
 
-    // TrasportClient in thread-safe so @Singleton is appropriate
+    // TrasportClient is thread-safe so @Singleton is appropriate
     return new TransportClient().addTransportAddress(new InetSocketTransportAddress(configuration.getEsHost(),
         configuration.getEsPort()));
   }
