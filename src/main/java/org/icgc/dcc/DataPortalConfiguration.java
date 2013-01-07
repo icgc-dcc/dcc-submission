@@ -40,7 +40,6 @@ public class DataPortalConfiguration extends Configuration {
   private String esHost;
 
   @JsonProperty
-  @NotEmpty
   private final int esPort = 9300;
 
 }
