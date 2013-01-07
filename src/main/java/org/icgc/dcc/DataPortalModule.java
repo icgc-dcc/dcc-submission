@@ -46,6 +46,7 @@ public class DataPortalModule extends AbstractModule {
   Mongo mongo(Configuration conf) throws UnknownHostException {
     DataPortalConfiguration configuration = (DataPortalConfiguration) conf;
 
+    // Mongo in thread-safe so @Singleton is appropriate
     return new Mongo(new MongoURI(configuration.getMongoUri()));
   }
 
@@ -54,7 +55,9 @@ public class DataPortalModule extends AbstractModule {
   Client esClient(Configuration conf) {
     DataPortalConfiguration configuration = (DataPortalConfiguration) conf;
 
-    return new TransportClient().addTransportAddress(new InetSocketTransportAddress(configuration.getEsHost(), 9300));
+    // TrasportClient in thread-safe so @Singleton is appropriate
+    return new TransportClient().addTransportAddress(new InetSocketTransportAddress(configuration.getEsHost(),
+        configuration.getEsPort()));
   }
 
 }
