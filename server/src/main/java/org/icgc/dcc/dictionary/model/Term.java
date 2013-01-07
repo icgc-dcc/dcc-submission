@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.dictionary.model;
 
+import java.io.Serializable;
+
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotBlank;
@@ -28,7 +30,7 @@ import com.google.code.morphia.annotations.Embedded;
  * string) associated with a value, and a URI as reference for the controlled term
  */
 @Embedded
-public class Term {
+public class Term implements Serializable {
 
   @NotNull
   @NotBlank

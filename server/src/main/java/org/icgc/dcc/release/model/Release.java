@@ -1,6 +1,7 @@
 package org.icgc.dcc.release.model;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 
 import java.util.Date;
 import java.util.List;
@@ -17,11 +18,15 @@ import org.icgc.dcc.web.validator.NameValidator;
 
 import com.google.code.morphia.annotations.Entity;
 import com.google.common.base.Function;
+import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
+/**
+ * Not meant to be used in a hash for now (override hashCode if so)
+ */
 @Entity
 public class Release extends BaseEntity implements HasName {
 
@@ -30,6 +35,8 @@ public class Release extends BaseEntity implements HasName {
   protected String name;
 
   protected ReleaseState state;
+
+  protected boolean transitioning; // mutex
 
   @Valid
   protected List<Submission> submissions = Lists.newArrayList();
@@ -68,6 +75,14 @@ public class Release extends BaseEntity implements HasName {
 
   public void setState(ReleaseState state) {
     this.state = state;
+  }
+
+  public boolean isTransitioning() {
+    return transitioning;
+  }
+
+  public void setTransitioning(boolean transitioning) {
+    this.transitioning = transitioning;
   }
 
   public List<Submission> getSubmissions() {
@@ -122,6 +137,9 @@ public class Release extends BaseEntity implements HasName {
     this.releaseDate = new Date();
   }
 
+  /**
+   * @return the list of project keys that are queued (possibly empty)
+   */
   public List<String> getQueuedProjectKeys() {
     List<String> projectKeys = Lists.newArrayList();
     for(QueuedProject qp : this.getQueue()) {
@@ -146,13 +164,43 @@ public class Release extends BaseEntity implements HasName {
     }
   }
 
-  public boolean removeFromQueue(List<String> projectKeys) {
-    return this.queue.removeAll(projectKeys);
+  public int removeFromQueue(final String projectKey) {
+    int count = 0;
+    for(int i = this.queue.size() - 1; i >= 0; i--) {
+      QueuedProject queuedProject = this.queue.get(i);
+      if(queuedProject != null && queuedProject.getKey().equals(projectKey)) {
+        this.queue.remove(i);
+        count++;
+      }
+    }
+    return count;
   }
 
+  public int removeFromQueue(final List<String> projectKeys) {
+    int count = 0;
+    for(String projectKey : projectKeys) {
+      count += removeFromQueue(projectKey);
+    }
+    return count;
+  }
+
+  /**
+   * Attempts to retrieve the first element of the queue.
+   */
   public Optional<QueuedProject> nextInQueue() {
     return this.queue != null && this.queue.isEmpty() == false ? Optional.<QueuedProject> of(this.queue.get(0)) : Optional
         .<QueuedProject> absent();
+  }
+
+  /**
+   * Dequeues the first element of the queue, expecting the queue to contain at least one element.<br>
+   * 
+   * Use in combination with <code>{@link Release#nextInQueue()}</code> and guava's <code>Optional.isPresent()</code><br>
+   * This method is <b>not</b> thread-safe.
+   */
+  public QueuedProject dequeueProject() {
+    checkState(queue != null && queue.isEmpty() == false);
+    return queue.remove(0);
   }
 
   public Optional<QueuedProject> dequeue() {
@@ -162,5 +210,41 @@ public class Release extends BaseEntity implements HasName {
 
   public void emptyQueue() {
     this.queue.clear();
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((name == null) ? 0 : name.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if(obj == null) {
+      return false;
+    }
+    if(obj == this) {
+      return true;
+    }
+    if(getClass() != obj.getClass()) {
+      return false;
+    }
+    final Release other = (Release) obj;
+    return Objects.equal(this.name, other.name);
+  }
+
+  @Override
+  public String toString() {
+    return Objects.toStringHelper(Release.class) //
+        .add("name", this.name) //
+        .add("state", this.state) //
+        .add("transitioning", this.transitioning) //
+        .add("releaseDate", this.releaseDate) //
+        .add("dictionaryVersion", this.dictionaryVersion) //
+        .add("queue", this.queue) //
+        .add("submissions", this.submissions) //
+        .toString();
   }
 }
