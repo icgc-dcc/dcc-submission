@@ -17,16 +17,67 @@
  */
 package org.icgc.dcc.integration;
 
+import static org.junit.Assert.assertEquals;
+
+import java.io.File;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 
 import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.map.MappingIterator;
+import org.codehaus.jackson.map.ObjectMapper;
+
+import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
 
 /**
  * General test utilities for working with JSON objects.
  */
 public final class JsonUtils {
+
+  /**
+   * Asserts semantic JSON equality between {@code expectedFile} and {@code actualFile} using a memory efficient
+   * stream-based comparison of deserialized sequences of JSON objects, ignoring transient fields.
+   * 
+   * @param expectedFile
+   * @param actualFile
+   */
+  public static void assertJsonFileEquals(File expectedFile, File actualFile) {
+    try {
+      ObjectMapper mapper = new ObjectMapper();
+      MappingIterator<JsonNode> expected = mapper.reader(JsonNode.class).readValues(expectedFile);
+      MappingIterator<JsonNode> actual = mapper.reader(JsonNode.class).readValues(actualFile);
+
+      while(actual.hasNext() && expected.hasNext()) {
+        JsonNode expectedJsonNode = expected.nextValue();
+        JsonNode actualJsonNode = actual.nextValue();
+
+        // Remove transient fields
+        normalizeJsonNode(expectedJsonNode);
+        normalizeJsonNode(actualJsonNode);
+
+        assertEquals("JSON mismatch between expected JSON file:\n\t" + expectedFile + "\nand actual JSON file:\n\t"
+            + actualFile + "\n", expectedJsonNode, actualJsonNode);
+      }
+
+      // Ensure same number of elements
+      assertEquals("Actual JSON file is missing objects", expected.hasNext(), false);
+      assertEquals("Actual JSON file has additional objects", actual.hasNext(), false);
+    } catch(IOException e) {
+      Throwables.propagate(e);
+    }
+  }
+
+  /**
+   * Removes transient JSON properties that can change across runs (e.g. $oid).
+   * 
+   * @param jsonNode
+   */
+  public static void normalizeJsonNode(JsonNode jsonNode) {
+    filterTree(jsonNode, null, ImmutableList.of("$oid"), Integer.MAX_VALUE);
+  }
 
   /**
    * Filters the supplied {@code tree} subject to {@code includedProperties}, {@code excludedProperties} and

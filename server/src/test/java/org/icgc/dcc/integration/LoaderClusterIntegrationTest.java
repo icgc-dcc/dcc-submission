@@ -18,6 +18,7 @@
 package org.icgc.dcc.integration;
 
 import static com.google.common.base.Preconditions.checkState;
+import static org.icgc.dcc.integration.JsonUtils.assertJsonFileEquals;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,15 +29,10 @@ import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.MappingIterator;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.loader.Main;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableList;
 import com.mongodb.Mongo;
 import com.mongodb.MongoURI;
 import com.typesafe.config.Config;
@@ -47,7 +43,6 @@ import com.wordnik.system.mongodb.SnapshotUtil;
 /**
  * Integration test to exercise the loader main entry point using a pseudo-distributed cluster.
  */
-@Ignore
 public class LoaderClusterIntegrationTest extends BaseClusterTest {
 
   /**
@@ -98,15 +93,14 @@ public class LoaderClusterIntegrationTest extends BaseClusterTest {
    */
   @Test
   public void testLoader() {
-    String[] args = { ENV, RELEASE_NAME };
-    Main.main(args);
+    Main.main(ENV, RELEASE_NAME);
 
     exportLoaderDb();
     verifyLoaderDb();
   }
 
   private String getValidatorDbName() {
-    return new MongoURI(config.getString("mongo.uri")).getDatabase();
+    return new MongoURI(getMongoUri()).getDatabase();
   }
 
   private String getLoaderDbName() {
@@ -143,7 +137,7 @@ public class LoaderClusterIntegrationTest extends BaseClusterTest {
   }
 
   /**
-   * Cleans persistent storgage.
+   * Cleans persistent storage.
    * 
    * @throws IOException
    */
@@ -234,49 +228,6 @@ public class LoaderClusterIntegrationTest extends BaseClusterTest {
    */
   private static void exportDb(String dbName, String outputDir) {
     SnapshotUtil.main("-d", dbName, "-o", outputDir, "-J");
-  }
-
-  /**
-   * Asserts semantic JSON equality between {@code expectedFile} and {@code actualFile} using a memory efficient
-   * stream-based comparison of deserialized sequences of JSON objects, ignoring transient fields.
-   * 
-   * @param expectedFile
-   * @param actualFile
-   */
-  private static void assertJsonFileEquals(File expectedFile, File actualFile) {
-    try {
-      ObjectMapper mapper = new ObjectMapper();
-      MappingIterator<JsonNode> expected = mapper.reader(JsonNode.class).readValues(expectedFile);
-      MappingIterator<JsonNode> actual = mapper.reader(JsonNode.class).readValues(actualFile);
-
-      while(actual.hasNext() && expected.hasNext()) {
-        JsonNode expectedJsonNode = expected.nextValue();
-        JsonNode actualJsonNode = actual.nextValue();
-
-        // Remove transient fields
-        normalizeJsonNode(expectedJsonNode);
-        normalizeJsonNode(actualJsonNode);
-
-        assertEquals(
-            "JSON mismatch between expected JSON file " + expectedFile + " and actual JSON file " + actualFile,
-            expectedJsonNode, actualJsonNode);
-      }
-
-      // Ensure same number of elements
-      assertEquals("Actual JSON file is missing objects", expected.hasNext(), false);
-      assertEquals("Actual JSON file has additional objects", actual.hasNext(), false);
-    } catch(IOException e) {
-      Throwables.propagate(e);
-    }
-  }
-
-  /**
-   * Removes transient JSON properties that can change across runs (e.g. $oid).
-   * 
-   * @param jsonNode
-   */
-  private static void normalizeJsonNode(JsonNode jsonNode) {
-    JsonUtils.filterTree(jsonNode, null, ImmutableList.of("$oid"), Integer.MAX_VALUE);
   }
 
 }

@@ -111,7 +111,10 @@ module.exports = class SubmissionTableView extends DataTableView
                     source.state.replace('_', ' ') + "</span>"
                 when "QUEUED"
                   "<span class='queued'><i class='icon-time'></i> " +
-                    source.state.replace('_', ' ') + "</span>"
+                  source.state.replace('_', ' ') + "</span>"
+                when "VALIDATING"
+                  "<span class='validating'><i class='icon-cogs'></i> " +
+                  source.state.replace('_', ' ') + "</span>"
                 when "VALID"
                   "<span class='valid'><i class='icon-ok-sign'></i> " +
                     source.state.replace('_', ' ') + "</span>"

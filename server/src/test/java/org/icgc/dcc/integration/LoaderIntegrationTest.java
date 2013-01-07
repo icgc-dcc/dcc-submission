@@ -18,7 +18,7 @@
 package org.icgc.dcc.integration;
 
 import static com.google.common.base.Preconditions.checkState;
-import static org.junit.Assert.assertEquals;
+import static org.icgc.dcc.integration.JsonUtils.assertJsonFileEquals;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,15 +26,11 @@ import java.net.URISyntaxException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.fs.Path;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.MappingIterator;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.loader.Main;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableList;
 import com.mongodb.Mongo;
 import com.mongodb.MongoURI;
 import com.wordnik.system.mongodb.RestoreUtil;
@@ -48,16 +44,22 @@ public class LoaderIntegrationTest extends BaseIntegrationTest {
   /**
    * Configuration file. Change this to switch environments.
    */
-  // NOTE: To test against HDFS:
-  // - set ENV to dev
-  // - change application_dev.conf to use "mongodb://10.0.3.154";
-  // - comment out the test body
-  // - restore ENV to local
-  // - mvn package -DskipTests=true
-  // - cd target
-  // - java -Xmx1g -cp dcc-server-1.5.jar org.icgc.dcc.loader.Main dev release3
-  // - view job status at http://hcn51.res.oicr.on.ca:50030/
-  private static final String ENV = "local"; // local, dev, prod
+  // NOTE: To test against HDFS on the dev cluster:
+  // 1. Copy data to HDFS:
+  // - Set ENV to dev
+  // - Comment out the test body
+  // - Run this test
+  // 2. Build jar and run cascade:
+  // - Change application_dev.conf to use your machine ip (e.g. "mongodb://10.0.3.154") so that it can callback from the
+  // cluster
+  // - mvn package -DskipTests=true && cd target
+  // - java -Xmx1g -cp dcc-server-1.5.jar org.icgc.dcc.loader.Main dev
+  // release3
+  // - View job status at http://hcn51.res.oicr.on.ca:50030/
+  // 3. Cleanup:
+  // - git checkout src/main/java/org/icgc/dcc/integration/LoaderIntegrationTest
+  // - git checkout src/main/resources/application_dev.conf
+  private static final String ENV = "local"; // One of {local, dev, qa}
 
   /**
    * Test metadata constants.
@@ -107,7 +109,7 @@ public class LoaderIntegrationTest extends BaseIntegrationTest {
   // @formatter:on
 
   private String getValidatorDbName() {
-    return new MongoURI(config.getString("mongo.uri")).getDatabase();
+    return new MongoURI(getMongoUri()).getDatabase();
   }
 
   private String getLoaderDbName() {
@@ -208,49 +210,6 @@ public class LoaderIntegrationTest extends BaseIntegrationTest {
    */
   private static void exportDb(String dbName, String outputDir) {
     SnapshotUtil.main("-d", dbName, "-o", outputDir, "-J");
-  }
-
-  /**
-   * Asserts semantic JSON equality between {@code expectedFile} and {@code actualFile} using a memory efficient
-   * stream-based comparison of deserialized sequences of JSON objects, ignoring transient fields.
-   * 
-   * @param expectedFile
-   * @param actualFile
-   */
-  private static void assertJsonFileEquals(File expectedFile, File actualFile) {
-    try {
-      ObjectMapper mapper = new ObjectMapper();
-      MappingIterator<JsonNode> expected = mapper.reader(JsonNode.class).readValues(expectedFile);
-      MappingIterator<JsonNode> actual = mapper.reader(JsonNode.class).readValues(actualFile);
-
-      while(actual.hasNext() && expected.hasNext()) {
-        JsonNode expectedJsonNode = expected.nextValue();
-        JsonNode actualJsonNode = actual.nextValue();
-
-        // Remove transient fields
-        normalizeJsonNode(expectedJsonNode);
-        normalizeJsonNode(actualJsonNode);
-
-        assertEquals(
-            "JSON mismatch between expected JSON file " + expectedFile + " and actual JSON file " + actualFile,
-            expectedJsonNode, actualJsonNode);
-      }
-
-      // Ensure same number of elements
-      assertEquals("Actual JSON file is missing objects", expected.hasNext(), false);
-      assertEquals("Actual JSON file has additional objects", actual.hasNext(), false);
-    } catch(IOException e) {
-      Throwables.propagate(e);
-    }
-  }
-
-  /**
-   * Removes transient JSON properties that can change across runs (e.g. $oid).
-   * 
-   * @param jsonNode
-   */
-  private static void normalizeJsonNode(JsonNode jsonNode) {
-    JsonUtils.filterTree(jsonNode, null, ImmutableList.of("$oid"), Integer.MAX_VALUE);
   }
 
 }

@@ -60,7 +60,11 @@ public class Main {
     Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
       @Override
       public void run() {
-        injector.getInstance(DccRuntime.class).stop();
+        // No one call shutdown?
+        boolean running = injector != null;
+        if(running) {
+          injector.getInstance(DccRuntime.class).stop();
+        }
       }
 
     }, "Shutdown-thread"));
@@ -74,6 +78,7 @@ public class Main {
   @VisibleForTesting
   public static void shutdown() {
     injector.getInstance(DccRuntime.class).stop();
+    injector = null;
   }
 
 }

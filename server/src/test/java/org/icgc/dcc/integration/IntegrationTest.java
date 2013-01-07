@@ -150,6 +150,19 @@ public class IntegrationTest {
 
   private int dictionaryUpdateCount = 0;
 
+  static {
+    setProperties();
+  }
+
+  /**
+   * Sets key system properties before test initialization.
+   */
+  private static void setProperties() {
+    // See http://stackoverflow.com/questions/7134723/hadoop-on-osx-unable-to-load-realm-info-from-scdynamicstore
+    System.setProperty("java.security.krb5.realm", "OX.AC.UK");
+    System.setProperty("java.security.krb5.kdc", "kdc0.ox.ac.uk:kdc1.ox.ac.uk");
+  }
+
   @Inject
   private Datastore datastore;
 
@@ -238,7 +251,7 @@ public class IntegrationTest {
 
   private void createInitialRelease() throws Exception {
     Response response = TestUtils.put(client, RELEASES_ENDPOINT, TestUtils.resourceToString(INITIAL_RELEASE_RESOURCE));
-    assertEquals(response.getStatusInfo().getReasonPhrase(), Response.Status.OK.getStatusCode(), response.getStatus());
+    assertEquals(200, response.getStatus());
 
     Release release = TestUtils.asRelease(response);
     assertEquals(INITITAL_RELEASE_NAME, release.getName());
@@ -248,7 +261,7 @@ public class IntegrationTest {
       List<SubmissionState> expectedSubmissionStates) throws Exception {
 
     Response response = TestUtils.get(client, RELEASES_ENDPOINT + "/" + releaseName);
-    assertEquals(response.getStatusInfo().getReasonPhrase(), Response.Status.OK.getStatusCode(), response.getStatus());
+    assertEquals(200, response.getStatus());
 
     ReleaseView releaseView = TestUtils.asReleaseView(response);
     assertNotNull(releaseView);
@@ -265,30 +278,27 @@ public class IntegrationTest {
 
   private void addProjects() throws IOException {
     Response response1 = TestUtils.post(client, PROJECTS_ENDPOINT, PROJECT1);
-    assertEquals(response1.getStatusInfo().getReasonPhrase(), Response.Status.CREATED.getStatusCode(),
-        response1.getStatus());
+    assertEquals(201, response1.getStatus());
 
     Response response2 = TestUtils.post(client, PROJECTS_ENDPOINT, PROJECT2);
-    assertEquals(response2.getStatusInfo().getReasonPhrase(), Response.Status.CREATED.getStatusCode(),
-        response2.getStatus());
+    assertEquals(201, response2.getStatus());
 
     Response response3 = TestUtils.post(client, PROJECTS_ENDPOINT, PROJECT3);
-    assertEquals(response3.getStatusInfo().getReasonPhrase(), Response.Status.CREATED.getStatusCode(),
-        response3.getStatus());
+    assertEquals(201, response3.getStatus());
   }
 
   private void enqueueProjects() throws Exception {
     Response response = TestUtils.get(client, QUEUE_ENDPOINT);
-    assertEquals(response.getStatusInfo().getReasonPhrase(), Response.Status.OK.getStatusCode(), response.getStatus());
+    assertEquals(200, response.getStatus());
     assertEquals("[]", TestUtils.asString(response));
 
     response = TestUtils.post(client, QUEUE_ENDPOINT, PROJECTS_TO_ENQUEUE);
-    assertEquals(response.getStatusInfo().getReasonPhrase(), Response.Status.OK.getStatusCode(), response.getStatus());
+    assertEquals(200, response.getStatus());
   }
 
   private void checkValidations() throws Exception {
     Response response = TestUtils.get(client, INITIAL_RELEASE_ENDPOINT);
-    assertEquals(response.getStatusInfo().getReasonPhrase(), Response.Status.OK.getStatusCode(), response.getStatus());
+    assertEquals(200, response.getStatus());
 
     checkValidatedSubmission(PROJECT1_NAME, SubmissionState.VALID);
     checkValidatedSubmission(PROJECT2_NAME, SubmissionState.INVALID);
@@ -307,7 +317,7 @@ public class IntegrationTest {
       Uninterruptibles.sleepUninterruptibly(2, TimeUnit.SECONDS);
 
       Response response = TestUtils.get(client, INITIAL_RELEASE_SUBMISSIONS_ENDPOINT + "/" + project);
-      assertEquals(response.getStatusInfo().getReasonPhrase(), Response.Status.OK.getStatusCode(), response.getStatus());
+      assertEquals(200, response.getStatus());
 
       detailedSubmission = TestUtils.asDetailedSubmission(response);
     } while(detailedSubmission.getState() == SubmissionState.QUEUED
@@ -325,24 +335,19 @@ public class IntegrationTest {
   private void releaseInitialRelease() {
     // attempts releasing (expect failure)
     Response response = TestUtils.post(client, NEXT_RELEASE_ENPOINT, SECOND_RELEASE);
-    assertEquals(response.getStatusInfo().getReasonPhrase(), Response.Status.BAD_REQUEST.getStatusCode(),
-        response.getStatus()); // no
-    // signed
-    // off
-    // projects
+    assertEquals(400, response.getStatus()); // no signed off projects
 
     // sign off
     response = TestUtils.post(client, SIGNOFF_ENDPOINT, PROJECT_TO_SIGN_OFF);
-    assertEquals(response.getStatusInfo().getReasonPhrase(), Response.Status.OK.getStatusCode(), response.getStatus());
+    assertEquals(200, response.getStatus());
 
     // attempt releasing again
     response = TestUtils.post(client, NEXT_RELEASE_ENPOINT, SECOND_RELEASE);
-    assertEquals(response.getStatusInfo().getReasonPhrase(), Response.Status.OK.getStatusCode(), response.getStatus());
+    assertEquals(200, response.getStatus());
 
     // attempt releasing one too many times
     response = TestUtils.post(client, NEXT_RELEASE_ENPOINT, SECOND_RELEASE);
-    assertEquals(response.getStatusInfo().getReasonPhrase(), Response.Status.BAD_REQUEST.getStatusCode(),
-        response.getStatus());
+    assertEquals(400, response.getStatus());
   }
 
   private void updateDictionary(String dictionaryResource, String dictionaryVersion, int expectedStatus)
@@ -358,7 +363,7 @@ public class IntegrationTest {
   private void updateRelease(String updatedReleaseRelPath) throws Exception {
     Response response =
         TestUtils.put(client, UPDATE_RELEASE_ENDPOINT, TestUtils.resourceToString(updatedReleaseRelPath));
-    assertEquals(response.getStatusInfo().getReasonPhrase(), Response.Status.OK.getStatusCode(), response.getStatus());
+    assertEquals(200, response.getStatus());
 
     Release release = TestUtils.asRelease(response);
     assertEquals(NEXT_RELEASE_NAME, release.getName());

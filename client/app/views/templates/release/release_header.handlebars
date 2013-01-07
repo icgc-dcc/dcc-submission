@@ -37,6 +37,9 @@
       {{#if summary.QUEUED}}
       <span class="label label-warning">Queued {{summary.QUEUED}}</span>
       {{/if}}
+      {{#if summary.VALIDATING}}
+      <span class="label label-validating">Validating {{summary.VALIDATING}}</span>
+      {{/if}}
       {{#if summary.INVALID}}
       <span class="label label-important">Invalid {{summary.INVALID}}</span>
       {{/if}}
