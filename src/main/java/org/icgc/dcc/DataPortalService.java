@@ -78,6 +78,7 @@ public class DataPortalService extends Service<DataPortalConfiguration> {
 				.build();
 		// @formatter:on
 
+    // See https://github.com/codahale/dropwizard/issues/237
     bundle.initialize(bootstrap);
 
     return bundle;
