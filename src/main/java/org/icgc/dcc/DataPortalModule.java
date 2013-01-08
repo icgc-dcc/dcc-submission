@@ -33,24 +33,24 @@ import com.mongodb.MongoURI;
 
 public class DataPortalModule extends AbstractModule {
 
-	@Override
-	protected void configure() {
-		bind(GeneDao.class).to(GeneDaoImpl.class).in(Singleton.class);
-	}
+  @Override
+  protected void configure() {
+    bind(GeneDao.class).to(GeneDaoImpl.class).in(Singleton.class);
+  }
 
-	@Provides
-	@Singleton
-	Mongo mongo(DataPortalConfiguration configuration) throws UnknownHostException {
-		// Mongo is thread-safe so @Singleton is appropriate
-		return new Mongo(new MongoURI(configuration.getMongoUri()));
-	}
+  @Provides
+  @Singleton
+  Mongo mongo(DataPortalConfiguration configuration) throws UnknownHostException {
+    // Mongo is thread-safe so @Singleton is appropriate
+    return new Mongo(new MongoURI(configuration.getMongoUri()));
+  }
 
-	@Provides
-	@Singleton
-	Client esClient(DataPortalConfiguration configuration) {
-		// TrasportClient is thread-safe so @Singleton is appropriate
-		return new TransportClient().addTransportAddress(new InetSocketTransportAddress(configuration
-				.getEsHost(), configuration.getEsPort()));
-	}
+  @Provides
+  @Singleton
+  Client esClient(DataPortalConfiguration configuration) {
+    // TrasportClient is thread-safe so @Singleton is appropriate
+    return new TransportClient().addTransportAddress(new InetSocketTransportAddress(configuration.getEsHost(),
+        configuration.getEsPort()));
+  }
 
 }

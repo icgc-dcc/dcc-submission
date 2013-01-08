@@ -28,20 +28,21 @@ import com.yammer.dropwizard.lifecycle.Managed;
 @Singleton
 public final class MongoClientManager implements Managed {
 
-	private final Mongo mongo;
+  private final Mongo mongo;
 
-	@Inject
-	public MongoClientManager(Mongo mongo) {
-		this.mongo = mongo;
-	}
+  @Inject
+  public MongoClientManager(Mongo mongo) {
+    this.mongo = mongo;
+  }
 
-	@Override
-	public void start() throws Exception {}
+  @Override
+  public void start() throws Exception {
+  }
 
-	@Override
-	public void stop() throws Exception {
-		log.info("Closing MongoDB client...");
-		mongo.close();
-	}
+  @Override
+  public void stop() throws Exception {
+    log.info("Closing MongoDB client...");
+    mongo.close();
+  }
 
 }

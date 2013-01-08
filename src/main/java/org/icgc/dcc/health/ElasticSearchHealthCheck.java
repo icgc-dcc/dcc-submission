@@ -28,20 +28,20 @@ import com.yammer.metrics.core.HealthCheck;
 @Slf4j
 @Singleton
 public final class ElasticSearchHealthCheck extends HealthCheck {
-	private static final String CHECK_NAME = "elasticsearch";
+  private static final String CHECK_NAME = "elasticsearch";
 
-	private final Client client;
+  private final Client client;
 
-	@Inject
-	public ElasticSearchHealthCheck(Client client) {
-		super(CHECK_NAME);
-		this.client = client;
-	}
+  @Inject
+  public ElasticSearchHealthCheck(Client client) {
+    super(CHECK_NAME);
+    this.client = client;
+  }
 
-	@Override
-	protected Result check() throws Exception {
-		log.info("Checking the Health of ElasticSearch");
-		client.admin().cluster().prepareHealth().execute().actionGet().getStatus().name();
-		return Result.healthy();
-	}
+  @Override
+  protected Result check() throws Exception {
+    log.info("Checking the Health of ElasticSearch");
+    client.admin().cluster().prepareHealth().execute().actionGet().getStatus().name();
+    return Result.healthy();
+  }
 }

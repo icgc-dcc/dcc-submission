@@ -29,20 +29,21 @@ import com.yammer.dropwizard.lifecycle.Managed;
 @Singleton
 public final class ElasticSearchClientManager implements Managed {
 
-	private final Client client;
+  private final Client client;
 
-	@Inject
-	public ElasticSearchClientManager(Client client) {
-		this.client = client;
-	}
+  @Inject
+  public ElasticSearchClientManager(Client client) {
+    this.client = client;
+  }
 
-	@Override
-	public void start() throws Exception {}
+  @Override
+  public void start() throws Exception {
+  }
 
-	@Override
-	public void stop() throws Exception {
-		log.info("Closing ElasticSearch client...");
-		client.close();
-	}
+  @Override
+  public void stop() throws Exception {
+    log.info("Closing ElasticSearch client...");
+    client.close();
+  }
 
 }

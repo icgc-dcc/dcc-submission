@@ -41,29 +41,27 @@ import org.icgc.dcc.dao.GeneDao;
 @Api(value = "/genes", description = "Operations about genes")
 public class GeneResource {
 
-	private final GeneDao geneDao;
+  private final GeneDao geneDao;
 
-	@Inject
-	public GeneResource(GeneDao geneDao) {
-		this.geneDao = geneDao;
-	}
+  @Inject
+  public GeneResource(GeneDao geneDao) {
+    this.geneDao = geneDao;
+  }
 
-	@GET
-	@Timed
-	@ApiOperation("Retrieve a list of genes")
-	public final Response getAll() {
-		return Response.ok(geneDao.getAll()).build();
-	}
+  @GET
+  @Timed
+  @ApiOperation("Retrieve a list of genes")
+  public final Response getAll() {
+    return Response.ok(geneDao.getAll()).build();
+  }
 
-	@Path("/{id}")
-	@Produces(MediaType.APPLICATION_JSON)
-	@GET
-	@Timed
-	@ApiOperation(value = "Find a gene by id", notes = "If a gene does not exist with the specified id an error will be returned", responseClass = "org.icgc.dcc.core.Gene")
-	@ApiErrors(value = {@ApiError(code = HttpStatus.BAD_REQUEST_400, reason = "Invalid ID supplied"),
-			@ApiError(code = HttpStatus.NOT_FOUND_404, reason = "Gene not found")})
-	public final Response getOne(
-			@ApiParam(value = "id of gene that needs to be fetched") @PathParam("id") String id) {
-		return Response.ok(geneDao.getOne(id)).build();
-	}
+  @Path("/{id}")
+  @Produces(MediaType.APPLICATION_JSON)
+  @GET
+  @Timed
+  @ApiOperation(value = "Find a gene by id", notes = "If a gene does not exist with the specified id an error will be returned", responseClass = "org.icgc.dcc.core.Gene")
+  @ApiErrors(value = { @ApiError(code = HttpStatus.BAD_REQUEST_400, reason = "Invalid ID supplied"), @ApiError(code = HttpStatus.NOT_FOUND_404, reason = "Gene not found") })
+  public final Response getOne(@ApiParam(value = "id of gene that needs to be fetched") @PathParam("id") String id) {
+    return Response.ok(geneDao.getOne(id)).build();
+  }
 }

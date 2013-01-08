@@ -27,21 +27,21 @@ import com.yammer.metrics.core.HealthCheck;
 @Slf4j
 @Singleton
 public final class MongoHealthCheck extends HealthCheck {
-	private static final String CHECK_NAME = "mongodb";
+  private static final String CHECK_NAME = "mongodb";
 
-	private final Mongo mongo;
+  private final Mongo mongo;
 
-	@Inject
-	public MongoHealthCheck(Mongo mongo) {
-		super(CHECK_NAME);
-		this.mongo = mongo;
-	}
+  @Inject
+  public MongoHealthCheck(Mongo mongo) {
+    super(CHECK_NAME);
+    this.mongo = mongo;
+  }
 
-	@Override
-	protected Result check() throws Exception {
-		log.info("Checking Health of MongoDB");
-		mongo.getDatabaseNames();
-		return Result.healthy();
-	}
+  @Override
+  protected Result check() throws Exception {
+    log.info("Checking Health of MongoDB");
+    mongo.getDatabaseNames();
+    return Result.healthy();
+  }
 
 }

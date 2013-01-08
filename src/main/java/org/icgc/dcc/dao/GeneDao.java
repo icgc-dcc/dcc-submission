@@ -22,7 +22,7 @@ import java.util.List;
 import org.icgc.dcc.core.Gene;
 
 public interface GeneDao {
-	List<Gene> getAll();
+  List<Gene> getAll();
 
-	Gene getOne(String id);
+  Gene getOne(String id);
 }

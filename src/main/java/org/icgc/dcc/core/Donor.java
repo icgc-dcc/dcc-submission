@@ -20,4 +20,5 @@ package org.icgc.dcc.core;
 import lombok.Data;
 
 @Data
-public class Donor {}
+public class Donor {
+}

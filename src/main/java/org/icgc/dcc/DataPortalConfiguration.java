@@ -27,15 +27,15 @@ import com.yammer.dropwizard.config.Configuration;
 @Getter
 public class DataPortalConfiguration extends Configuration {
 
-	@JsonProperty
-	@NotEmpty
-	private String mongoUri;
+  @JsonProperty
+  @NotEmpty
+  private String mongoUri;
 
-	@JsonProperty
-	@NotEmpty
-	private String esHost;
+  @JsonProperty
+  @NotEmpty
+  private String esHost;
 
-	@JsonProperty
-	private int esPort = 9300;
+  @JsonProperty
+  private int esPort = 9300;
 
 }

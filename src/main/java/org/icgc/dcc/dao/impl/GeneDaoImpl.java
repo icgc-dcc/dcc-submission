@@ -24,10 +24,11 @@ import java.util.List;
 
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
-import org.icgc.dcc.core.Gene;
-import org.icgc.dcc.dao.GeneDao;
 
 import com.google.inject.Inject;
+
+import org.icgc.dcc.core.Gene;
+import org.icgc.dcc.dao.GeneDao;
 
 public class GeneDaoImpl implements GeneDao {
   private static final String INDEX = "blog";

@@ -29,27 +29,26 @@ import org.junit.Test;
 
 public class GeneTest {
 
-	private final Gene gene = new Gene("L", 1L);
+  private final Gene gene = new Gene("L", 1L);
 
-	@Before
-	public void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
 
-	}
+  }
 
-	@After
-	public void tearDown() throws Exception {
+  @After
+  public void tearDown() throws Exception {
 
-	}
+  }
 
-	@Test
-	public final void serializesToJSON() throws Exception {
-		assertThat("a Gene can be serialized to JSON", asJson(gene),
-				is(jsonFixture("fixtures/gene.json")));
-	}
+  @Test
+  public final void serializesToJSON() throws Exception {
+    assertThat("a Gene can be serialized to JSON", asJson(gene), is(jsonFixture("fixtures/gene.json")));
+  }
 
-	@Test
-	public final void deserializesFromJSON() throws Exception {
-		assertThat("a Gene can be deserialized from JSON",
-				fromJson(jsonFixture("fixtures/gene.json"), Gene.class), is(gene));
-	}
+  @Test
+  public final void deserializesFromJSON() throws Exception {
+    assertThat("a Gene can be deserialized from JSON", fromJson(jsonFixture("fixtures/gene.json"), Gene.class),
+        is(gene));
+  }
 }

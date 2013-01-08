@@ -39,32 +39,32 @@ import org.icgc.dcc.dao.GeneDao;
 @SuppressWarnings("unchecked")
 public class GeneResourceTest extends ResourceTest {
 
-	private final Gene gene1 = new Gene("L", 1L);
+  private final Gene gene1 = new Gene("L", 1L);
 
-	private final List<Gene> genes = newArrayList();
+  private final List<Gene> genes = newArrayList();
 
-	@Mock
-	private GeneDao geneDao;
+  @Mock
+  private GeneDao geneDao;
 
-	@Override
-	protected final void setUpResources() throws Exception {
-		when(geneDao.getOne(anyString())).thenReturn(gene1);
-		when(geneDao.getAll()).thenReturn(genes);
-		addResource(new GeneResource(geneDao));
-	}
+  @Override
+  protected final void setUpResources() throws Exception {
+    when(geneDao.getOne(anyString())).thenReturn(gene1);
+    when(geneDao.getAll()).thenReturn(genes);
+    addResource(new GeneResource(geneDao));
+  }
 
-	@Test
-	public final void testGetAll() throws Exception {
-		assertThat(client().resource("/genes").get(List.class)).isEqualTo(genes);
+  @Test
+  public final void testGetAll() throws Exception {
+    assertThat(client().resource("/genes").get(List.class)).isEqualTo(genes);
 
-		verify(geneDao).getAll();
-	}
+    verify(geneDao).getAll();
+  }
 
-	@Test
-	public final void testGetOne() throws Exception {
-		assertThat(client().resource("/genes/1").get(Gene.class)).isEqualTo(gene1);
+  @Test
+  public final void testGetOne() throws Exception {
+    assertThat(client().resource("/genes/1").get(Gene.class)).isEqualTo(gene1);
 
-		verify(geneDao).getOne("1");
-	}
+    verify(geneDao).getOne("1");
+  }
 
 }
