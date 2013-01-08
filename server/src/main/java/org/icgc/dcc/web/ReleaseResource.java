@@ -2,6 +2,7 @@ package org.icgc.dcc.web;
 
 import java.util.List;
 
+import javax.validation.Valid;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -56,7 +57,7 @@ public class ReleaseResource {
   }
 
   @PUT
-  public Response initialize(Release release, @Context Request req) {
+  public Response initialize(@Valid Release release, @Context Request req) {
     if(release != null) {
       ResponseTimestamper.evaluate(req, release);
 

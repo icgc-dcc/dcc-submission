@@ -6,10 +6,15 @@ import static com.google.common.base.Preconditions.checkState;
 import java.util.Date;
 import java.util.List;
 
+import javax.validation.Valid;
+import javax.validation.constraints.Pattern;
+
 import org.codehaus.jackson.annotate.JsonIgnore;
+import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.core.model.BaseEntity;
 import org.icgc.dcc.core.model.HasName;
 import org.icgc.dcc.release.ReleaseException;
+import org.icgc.dcc.web.validator.NameValidator;
 
 import com.google.code.morphia.annotations.Entity;
 import com.google.common.base.Function;
@@ -25,18 +30,23 @@ import com.google.common.collect.Lists;
 @Entity
 public class Release extends BaseEntity implements HasName {
 
+  @NotBlank
+  @Pattern(regexp = NameValidator.NAME_PATTERN)
   protected String name;
 
   protected ReleaseState state;
 
   protected boolean transitioning; // mutex
 
+  @Valid
   protected List<Submission> submissions = Lists.newArrayList();
 
+  @Valid
   protected List<QueuedProject> queue = Lists.newArrayList();
 
   protected Date releaseDate;
 
+  @NotBlank
   protected String dictionaryVersion;
 
   public Release() {

@@ -3,6 +3,9 @@ package org.icgc.dcc.release.model;
 import java.io.Serializable;
 import java.util.Date;
 
+import javax.validation.Valid;
+
+import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.validation.report.SubmissionReport;
 
 import com.google.code.morphia.annotations.Embedded;
@@ -11,14 +14,17 @@ import com.google.common.base.Objects;
 @Embedded
 public class Submission implements Serializable {
 
+  @NotBlank
   protected String projectKey;
 
+  @NotBlank
   protected String projectName;
 
   protected Date lastUpdated;
 
   protected SubmissionState state;
 
+  @Valid
   protected SubmissionReport report;
 
   public Submission() {

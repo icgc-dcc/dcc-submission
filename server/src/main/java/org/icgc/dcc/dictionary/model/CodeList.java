@@ -22,6 +22,9 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.validation.Valid;
+
+import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.core.model.BaseEntity;
 import org.icgc.dcc.core.model.HasName;
 
@@ -33,10 +36,12 @@ import com.google.code.morphia.annotations.Entity;
 @Entity
 public class CodeList extends BaseEntity implements HasName {
 
+  @NotBlank
   private String name;
 
   private String label;
 
+  @Valid
   private List<Term> terms;
 
   public CodeList() {

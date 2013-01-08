@@ -15,64 +15,24 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.dictionary.model;
+package org.icgc.dcc.release.model;
 
-import java.io.Serializable;
+import static junit.framework.Assert.assertEquals;
 
-import org.hibernate.validator.constraints.NotBlank;
-import org.hibernate.validator.constraints.URL;
+import java.util.Set;
 
-import com.google.code.morphia.annotations.Embedded;
+import javax.validation.ConstraintViolation;
 
-/**
- * Describes a controlled term as part of a {@code CodeList}, which is simply a code (usually integer or integer-looking
- * string) associated with a value, and a URI as reference for the controlled term
- */
-@Embedded
-public class Term implements Serializable {
+import org.junit.Test;
 
-  @NotBlank
-  private String code;
+public class ReleaseValidationTest extends ModelValidationTest<Release> {
 
-  @NotBlank
-  private String value;
+  @Test
+  public void test_shouldFailValidationWithNullInputValuesForDictionaryVersionField() {
+    Set<ConstraintViolation<Release>> violations = validateValue("dictionaryVersion", null);
 
-  @URL
-  private String uri;
-
-  public Term() {
-    super();
-  }
-
-  public Term(String code, String value, String uri) {
-    this();
-    this.code = code;
-    this.value = value;
-    this.uri = uri;
-  }
-
-  public String getCode() {
-    return code;
-  }
-
-  public void setCode(String code) {
-    this.code = code;
-  }
-
-  public String getValue() {
-    return value;
-  }
-
-  public void setValue(String value) {
-    this.value = value;
-  }
-
-  public String getUri() {
-    return uri;
-  }
-
-  public void setUri(String uri) {
-    this.uri = uri;
+    assertEquals("dictionaryVersion field should have a validation error for null input", 1, violations.size());
+    assertEquals("may not be empty", violations.iterator().next().getMessage());
   }
 
 }

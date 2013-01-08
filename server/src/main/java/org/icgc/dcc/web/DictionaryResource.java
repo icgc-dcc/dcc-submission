@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.List;
 
+import javax.validation.Valid;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -31,7 +32,7 @@ public class DictionaryResource {
   private DictionaryService dictionaries;
 
   @POST
-  public Response addDictionary(Dictionary d, @Context SecurityContext securityContext) {
+  public Response addDictionary(@Valid Dictionary d, @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.DICTIONARY_MODIFY.toString()) == false) {
       return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED))
@@ -69,7 +70,7 @@ public class DictionaryResource {
 
   @PUT
   @Path("{version}")
-  public Response updateDictionary(@PathParam("version") String version, Dictionary newDictionary,
+  public Response updateDictionary(@PathParam("version") String version, @Valid Dictionary newDictionary,
       @Context Request req, @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.DICTIONARY_MODIFY.toString()) == false) {
