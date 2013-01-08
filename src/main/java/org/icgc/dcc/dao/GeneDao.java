@@ -17,12 +17,21 @@
 
 package org.icgc.dcc.dao;
 
-import java.util.List;
+import java.io.IOException;
+import java.util.Set;
+
+import org.elasticsearch.action.search.SearchResponse;
+
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.jsonschema.JsonSchema;
 
 import org.icgc.dcc.core.Gene;
+import org.icgc.dcc.responses.BaseResponse;
 
 public interface GeneDao {
-  List<Gene> getAll();
+	String getAll();
 
-  Gene getOne(String id);
+	BaseResponse getOne(String id) throws IOException;
+
+	JsonSchema getSchema() throws JsonMappingException;
 }

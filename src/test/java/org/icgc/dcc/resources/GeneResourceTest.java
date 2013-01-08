@@ -19,9 +19,7 @@ package org.icgc.dcc.resources;
 
 import static org.elasticsearch.common.collect.Lists.newArrayList;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.util.List;
 
@@ -46,12 +44,12 @@ public class GeneResourceTest extends ResourceTest {
   @Mock
   private GeneDao geneDao;
 
-  @Override
-  protected final void setUpResources() throws Exception {
-    when(geneDao.getOne(anyString())).thenReturn(gene1);
-    when(geneDao.getAll()).thenReturn(genes);
-    addResource(new GeneResource(geneDao));
-  }
+	@Override
+	protected final void setUpResources() throws Exception {
+		//when(geneDao.getOne(anyString())).thenReturn(gene1);
+		//when(geneDao.getAll()).thenReturn("[]");
+		addResource(new GeneResource(geneDao));
+	}
 
   @Test
   public final void testGetAll() throws Exception {

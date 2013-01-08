@@ -22,35 +22,44 @@ import java.net.UnknownHostException;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
-import org.icgc.dcc.dao.GeneDao;
-import org.icgc.dcc.dao.impl.GeneDaoImpl;
+import org.jongo.Jongo;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+import com.mongodb.DB;
 import com.mongodb.Mongo;
 import com.mongodb.MongoURI;
 
+import org.icgc.dcc.dao.GeneDao;
+import org.icgc.dcc.dao.impl.GeneDaoImpl;
+
 public class DataPortalModule extends AbstractModule {
 
-  @Override
-  protected void configure() {
-    bind(GeneDao.class).to(GeneDaoImpl.class).in(Singleton.class);
-  }
+	@Provides
+	@Singleton
+	public final Mongo mongo(DataPortalConfiguration configuration) throws UnknownHostException {
+		// Mongo is thread-safe so @Singleton is appropriate
+		return new Mongo(new MongoURI(configuration.getMongoUri()));
+	}
 
-  @Provides
-  @Singleton
-  Mongo mongo(DataPortalConfiguration configuration) throws UnknownHostException {
-    // Mongo is thread-safe so @Singleton is appropriate
-    return new Mongo(new MongoURI(configuration.getMongoUri()));
-  }
+	@Provides
+	@Singleton
+	public final Jongo jongo(DataPortalConfiguration configuration, Mongo mongo) {
+		DB db = mongo.getDB("data-portal-local");
+		return new Jongo(db);
+	}
 
-  @Provides
-  @Singleton
-  Client esClient(DataPortalConfiguration configuration) {
-    // TrasportClient is thread-safe so @Singleton is appropriate
-    return new TransportClient().addTransportAddress(new InetSocketTransportAddress(configuration.getEsHost(),
-        configuration.getEsPort()));
-  }
+	@Provides
+	@Singleton
+	public final Client esClient(DataPortalConfiguration configuration) {
+		// TrasportClient is thread-safe so @Singleton is appropriate
+		return new TransportClient().addTransportAddress(new InetSocketTransportAddress(configuration
+				.getEsHost(), configuration.getEsPort()));
+	}
 
+	@Override
+	protected final void configure() {
+		bind(GeneDao.class).to(GeneDaoImpl.class).in(Singleton.class);
+	}
 }

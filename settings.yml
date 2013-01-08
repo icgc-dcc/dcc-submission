@@ -3,4 +3,5 @@ mongoUri: "mongodb://localhost"
 
 # ElasticSearch host
 esHost: "localhost"
+esPort: 9300
 # esHost: "hcn50.res.oicr.on.ca"

@@ -17,43 +17,56 @@
 
 package org.icgc.dcc.dao.impl;
 
-import static org.elasticsearch.index.query.QueryBuilders.matchAllQuery;
+import java.io.IOException;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.jongo.Jongo;
+import org.jongo.MongoCollection;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.jsonschema.JsonSchema;
 import com.google.inject.Inject;
 
 import org.icgc.dcc.core.Gene;
 import org.icgc.dcc.dao.GeneDao;
+import org.icgc.dcc.responses.BaseResponse;
 
 public class GeneDaoImpl implements GeneDao {
-  private static final String INDEX = "blog";
+	private static final String INDEX = "blog";
 
-  private final Client client;
+	private final SearchRequestBuilder search;
 
-  @Inject
-  public GeneDaoImpl(Client client) {
-    this.client = client;
-  }
+	private final MongoCollection db;
 
-  @Override
-  public final Gene getOne(String id) {
-    client.prepareSearch(INDEX).setSearchType(SearchType.DFS_QUERY_THEN_FETCH).setQuery(matchAllQuery()).setFrom(0)
-        .setSize(1).setExplain(true).execute().actionGet().toString();
+	@Inject
+	public GeneDaoImpl(Client es, Jongo mongo) {
+		this.search = es.prepareSearch(INDEX).setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
+		this.db = mongo.getCollection("genes");
+	}
 
-    return new Gene();
-  }
+	@Override
+	public final JsonSchema getSchema() throws JsonMappingException {
+		return new ObjectMapper().generateJsonSchema(Gene.class);
+	}
 
-  @Override
-  public final List<Gene> getAll() {
-    client.prepareSearch(INDEX).setSearchType(SearchType.DFS_QUERY_THEN_FETCH).setQuery(matchAllQuery()).setFrom(0)
-        .setSize(2).setExplain(true).execute().actionGet().toString();
+	@Override
+	public final BaseResponse getOne(String id) throws IOException {
+		SearchResponse sr =
+				search.setQuery(QueryBuilders.matchAllQuery()).setFrom(0).setSize(1).execute().actionGet();
+		// return String.valueOf(sr);
+		// return new ObjectMapper().readValue(sr.getHits().getHits()[0].getSourceAsString(),
+		// Gene.class);
+		return new BaseResponse(sr.getHits());
+	}
 
-    return new ArrayList<Gene>();
-  }
-
+	@Override
+	public final String getAll() {
+		return search.setQuery(QueryBuilders.matchAllQuery()).setFrom(0).setSize(2).setExplain(true)
+				.execute().actionGet().toString();
+	}
 }
