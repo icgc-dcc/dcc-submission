@@ -25,8 +25,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 
+import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.filesystem.SubmissionFile;
 import org.icgc.dcc.release.ReleaseException;
 
@@ -35,7 +35,7 @@ import org.icgc.dcc.release.ReleaseException;
  */
 public class ReleaseView {
 
-  @NotNull
+  @NotBlank
   protected String name;
 
   protected ReleaseState state;
@@ -47,7 +47,7 @@ public class ReleaseView {
 
   protected Date releaseDate;
 
-  @NotNull
+  @NotBlank
   protected String dictionaryVersion;
 
   protected Map<SubmissionState, Integer> summary = new EnumMap<SubmissionState, Integer>(SubmissionState.class);

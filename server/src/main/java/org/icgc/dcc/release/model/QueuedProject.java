@@ -19,8 +19,6 @@ package org.icgc.dcc.release.model;
 
 import java.util.List;
 
-import javax.validation.constraints.NotNull;
-
 import org.hibernate.validator.constraints.NotBlank;
 
 import com.google.code.morphia.annotations.Embedded;
@@ -30,7 +28,6 @@ import com.google.common.collect.ImmutableList;
 @Embedded
 public class QueuedProject {
 
-  @NotNull
   @NotBlank
   private String key;
 

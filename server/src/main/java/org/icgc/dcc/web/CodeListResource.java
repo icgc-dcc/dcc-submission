@@ -68,18 +68,6 @@ public class CodeListResource {
     return Response.status(Status.CREATED).build();
   }
 
-  @POST
-  public Response createCodeList(String name, @Context SecurityContext securityContext) {
-    if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
-        AuthorizationPrivileges.CODELIST_MODIFY.toString()) == false) {
-      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED))
-          .build();
-    }
-    checkArgument(name != null);
-    CodeList c = this.dictionaries.createCodeList(name);
-    return ResponseTimestamper.ok(c).build();
-  }
-
   @GET
   @Path("{name}")
   public Response getCodeList(@PathParam("name") String name) {

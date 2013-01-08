@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -128,7 +129,11 @@ public class ValidatingJacksonJsonProvider implements MessageBodyReader<Object>,
     return false;
   }
 
+  @SuppressWarnings({ "rawtypes", "unchecked" })
   private List<String> validate(Object o) {
+    if(o instanceof Collection<?>) {
+      o = new CollectionWrapper((Collection<?>) o);
+    }
     Set<String> errors = Sets.newHashSet();
     Set<ConstraintViolation<Object>> violations = validator.validate(o);
     for(ConstraintViolation<Object> v : violations) {
@@ -139,5 +144,14 @@ public class ValidatingJacksonJsonProvider implements MessageBodyReader<Object>,
 
   private static Response unprocessableEntity(String msg) {
     return Response.status(UNPROCESSABLE_ENTITY).entity(msg).type(MediaType.TEXT_PLAIN_TYPE).build();
+  }
+
+  private class CollectionWrapper<T> {
+    @Valid
+    private final Collection<T> collection;
+
+    public CollectionWrapper(Collection<T> toWrap) {
+      this.collection = toWrap;
+    }
   }
 }
