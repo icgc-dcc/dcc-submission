@@ -36,30 +36,30 @@ import org.icgc.dcc.dao.impl.GeneDaoImpl;
 
 public class DataPortalModule extends AbstractModule {
 
-	@Provides
-	@Singleton
-	public final Mongo mongo(DataPortalConfiguration configuration) throws UnknownHostException {
-		// Mongo is thread-safe so @Singleton is appropriate
-		return new Mongo(new MongoURI(configuration.getMongoUri()));
-	}
+  @Provides
+  @Singleton
+  public final Mongo mongo(DataPortalConfiguration configuration) throws UnknownHostException {
+    // Mongo is thread-safe so @Singleton is appropriate
+    return new Mongo(new MongoURI(configuration.getMongoUri()));
+  }
 
-	@Provides
-	@Singleton
-	public final Jongo jongo(DataPortalConfiguration configuration, Mongo mongo) {
-		DB db = mongo.getDB("data-portal-local");
-		return new Jongo(db);
-	}
+  @Provides
+  @Singleton
+  public final Jongo jongo(DataPortalConfiguration configuration, Mongo mongo) {
+    DB db = mongo.getDB("data-portal-local");
+    return new Jongo(db);
+  }
 
-	@Provides
-	@Singleton
-	public final Client esClient(DataPortalConfiguration configuration) {
-		// TrasportClient is thread-safe so @Singleton is appropriate
-		return new TransportClient().addTransportAddress(new InetSocketTransportAddress(configuration
-				.getEsHost(), configuration.getEsPort()));
-	}
+  @Provides
+  @Singleton
+  public final Client esClient(DataPortalConfiguration configuration) {
+    // TrasportClient is thread-safe so @Singleton is appropriate
+    return new TransportClient().addTransportAddress(new InetSocketTransportAddress(configuration.getEsHost(),
+        configuration.getEsPort()));
+  }
 
-	@Override
-	protected final void configure() {
-		bind(GeneDao.class).to(GeneDaoImpl.class).in(Singleton.class);
-	}
+  @Override
+  protected final void configure() {
+    bind(GeneDao.class).to(GeneDaoImpl.class).in(Singleton.class);
+  }
 }

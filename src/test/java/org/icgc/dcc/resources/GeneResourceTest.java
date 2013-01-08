@@ -44,12 +44,12 @@ public class GeneResourceTest extends ResourceTest {
   @Mock
   private GeneDao geneDao;
 
-	@Override
-	protected final void setUpResources() throws Exception {
-		//when(geneDao.getOne(anyString())).thenReturn(gene1);
-		//when(geneDao.getAll()).thenReturn("[]");
-		addResource(new GeneResource(geneDao));
-	}
+  @Override
+  protected final void setUpResources() throws Exception {
+    // when(geneDao.getOne(anyString())).thenReturn(gene1);
+    // when(geneDao.getAll()).thenReturn("[]");
+    addResource(new GeneResource(geneDao));
+  }
 
   @Test
   public final void testGetAll() throws Exception {

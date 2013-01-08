@@ -20,5 +20,4 @@ package org.icgc.dcc.core;
 import lombok.Data;
 
 @Data
-public class Observation {
-}
+public class Observation {}

@@ -37,36 +37,35 @@ import org.icgc.dcc.dao.GeneDao;
 import org.icgc.dcc.responses.BaseResponse;
 
 public class GeneDaoImpl implements GeneDao {
-	private static final String INDEX = "blog";
+  private static final String INDEX = "blog";
 
-	private final SearchRequestBuilder search;
+  private final SearchRequestBuilder search;
 
-	private final MongoCollection db;
+  private final MongoCollection db;
 
-	@Inject
-	public GeneDaoImpl(Client es, Jongo mongo) {
-		this.search = es.prepareSearch(INDEX).setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
-		this.db = mongo.getCollection("genes");
-	}
+  @Inject
+  public GeneDaoImpl(Client es, Jongo mongo) {
+    this.search = es.prepareSearch(INDEX).setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
+    this.db = mongo.getCollection("genes");
+  }
 
-	@Override
-	public final JsonSchema getSchema() throws JsonMappingException {
-		return new ObjectMapper().generateJsonSchema(Gene.class);
-	}
+  @Override
+  public final JsonSchema getSchema() throws JsonMappingException {
+    return new ObjectMapper().generateJsonSchema(Gene.class);
+  }
 
-	@Override
-	public final BaseResponse getOne(String id) throws IOException {
-		SearchResponse sr =
-				search.setQuery(QueryBuilders.matchAllQuery()).setFrom(0).setSize(1).execute().actionGet();
-		// return String.valueOf(sr);
-		// return new ObjectMapper().readValue(sr.getHits().getHits()[0].getSourceAsString(),
-		// Gene.class);
-		return new BaseResponse(sr.getHits());
-	}
+  @Override
+  public final BaseResponse getOne(String id) throws IOException {
+    SearchResponse sr = search.setQuery(QueryBuilders.matchAllQuery()).setFrom(0).setSize(1).execute().actionGet();
+    // return String.valueOf(sr);
+    // return new ObjectMapper().readValue(sr.getHits().getHits()[0].getSourceAsString(),
+    // Gene.class);
+    return new BaseResponse(sr.getHits());
+  }
 
-	@Override
-	public final String getAll() {
-		return search.setQuery(QueryBuilders.matchAllQuery()).setFrom(0).setSize(2).setExplain(true)
-				.execute().actionGet().toString();
-	}
+  @Override
+  public final String getAll() {
+    return search.setQuery(QueryBuilders.matchAllQuery()).setFrom(0).setSize(2).setExplain(true).execute().actionGet()
+        .toString();
+  }
 }

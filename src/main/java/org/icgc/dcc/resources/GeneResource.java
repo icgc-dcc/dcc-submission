@@ -24,7 +24,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
 import java.io.IOException;
 
 import org.eclipse.jetty.http.HttpStatus;
@@ -52,30 +51,30 @@ public class GeneResource {
     this.geneDao = geneDao;
   }
 
- 	@GET
-	@Timed
-	@ApiOperation("Retrieve a list of genes")
-	public final Response getAll() {
-		return Response.ok().entity(geneDao.getAll()).build();
-	}
+  @GET
+  @Timed
+  @ApiOperation("Retrieve a list of genes")
+  public final Response getAll() {
+    return Response.ok().entity(geneDao.getAll()).build();
+  }
 
-	@Path("/_schema")
-	@GET
-	@ApiOperation("Returns JSON Schema of Resource")
-	public final Response getSchema() throws JsonMappingException {
-		JsonSchema s = geneDao.getSchema();
-		//ResourceFactory
-		return Response.ok(s).build();
-	}
+  @Path("/_schema")
+  @GET
+  @ApiOperation("Returns JSON Schema of Resource")
+  public final Response getSchema() throws JsonMappingException {
+    JsonSchema s = geneDao.getSchema();
+    // ResourceFactory
+    return Response.ok(s).build();
+  }
 
-	@Path("/{id}")
-	@GET
-	@Timed
-	@ApiOperation(value = "Find a gene by id", notes = "If a gene does not exist with the specified id an error will be returned", responseClass = "org.icgc.dcc.core.Gene")
-	@ApiErrors(value = {@ApiError(code = HttpStatus.BAD_REQUEST_400, reason = "Invalid ID supplied"),
-			@ApiError(code = HttpStatus.NOT_FOUND_404, reason = "Gene not found")})
-	public final Response getOne(
-			@ApiParam(value = "id of gene that needs to be fetched") @PathParam("id") String id) throws IOException {
-		return Response.ok(geneDao.getOne(id)).build();
-	}
+  @Path("/{id}")
+  @GET
+  @Timed
+  @ApiOperation(value = "Find a gene by id", notes = "If a gene does not exist with the specified id an error will be returned", responseClass = "org.icgc.dcc.core.Gene")
+  @ApiErrors(value = {@ApiError(code = HttpStatus.BAD_REQUEST_400, reason = "Invalid ID supplied"),
+      @ApiError(code = HttpStatus.NOT_FOUND_404, reason = "Gene not found")})
+  public final Response getOne(@ApiParam(value = "id of gene that needs to be fetched") @PathParam("id") String id)
+      throws IOException {
+    return Response.ok(geneDao.getOne(id)).build();
+  }
 }

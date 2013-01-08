@@ -70,13 +70,9 @@ public class DataPortalService extends Service<DataPortalConfiguration> {
    * @return
    */
   private GuiceBundle<DataPortalConfiguration> createGuiceBundle(Bootstrap<DataPortalConfiguration> bootstrap) {
-    // @formatter:off
-    GuiceBundle<DataPortalConfiguration> bundle = new GuiceBundle.Builder<DataPortalConfiguration>()
-				.addModule(new DataPortalModule())
-				.setConfigClass(DataPortalConfiguration.class)
-				.enableAutoConfig(PACKAGE)
-				.build();
-		// @formatter:on
+    GuiceBundle<DataPortalConfiguration> bundle =
+        new GuiceBundle.Builder<DataPortalConfiguration>().addModule(new DataPortalModule())
+            .setConfigClass(DataPortalConfiguration.class).enableAutoConfig(PACKAGE).build();
 
     bundle.initialize(bootstrap);
 
@@ -89,12 +85,7 @@ public class DataPortalService extends Service<DataPortalConfiguration> {
    * @return
    */
   private RedirectBundle createRedirectBundle() {
-    // @formatter:off
-		return new RedirectBundle(ImmutableMap.<String, String>builder()
-				.put("/",     "/docs/")
-				.put("/docs", "/docs/")
-				.build());
-		// @formatter:on
+    return new RedirectBundle(ImmutableMap.<String, String>builder().put("/", "/docs/").put("/docs", "/docs/").build());
   }
 
   private static void logInfo(String... args) {
