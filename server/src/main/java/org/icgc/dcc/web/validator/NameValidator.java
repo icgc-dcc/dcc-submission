@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
  */
 public class NameValidator {
 
-  private final static String NAME_PATTERN = "^[\\w]{3,}$";
+  public final static String NAME_PATTERN = "^[\\w]{3,}$";
 
   public static boolean validate(String name) {
     Pattern pattern = Pattern.compile(NAME_PATTERN);

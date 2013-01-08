@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.List;
 
+import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -46,7 +47,7 @@ public class ProjectResource {
 
   @POST
   @Consumes("application/json")
-  public Response addProject(Project project) {
+  public Response addProject(@Valid Project project) {
     checkArgument(project != null);
     try {
       this.projects.addProject(project);
@@ -75,8 +76,8 @@ public class ProjectResource {
 
   @PUT
   @Path("{projectKey}")
-  public Response updateProject(@PathParam("projectKey") String projectKey, Project project, @Context Request req,
-      @Context SecurityContext securityContext) {
+  public Response updateProject(@PathParam("projectKey") String projectKey, @Valid Project project,
+      @Context Request req, @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
       return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED))

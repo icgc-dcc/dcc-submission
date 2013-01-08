@@ -19,6 +19,8 @@ package org.icgc.dcc.release.model;
 
 import java.util.List;
 
+import org.hibernate.validator.constraints.NotBlank;
+
 import com.google.code.morphia.annotations.Embedded;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
@@ -26,6 +28,7 @@ import com.google.common.collect.ImmutableList;
 @Embedded
 public class QueuedProject {
 
+  @NotBlank
   private String key;
 
   private List<String> emails;

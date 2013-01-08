@@ -3,6 +3,7 @@ package org.icgc.dcc.web;
 import java.io.IOException;
 import java.io.InputStream;
 
+import javax.validation.Valid;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -40,7 +41,7 @@ public class SeedResource {
 
   @POST
   @Path("users")
-  public Response seedUsers(User[] users, @DefaultValue("false") @QueryParam("delete") boolean delete) {
+  public Response seedUsers(@Valid User[] users, @DefaultValue("false") @QueryParam("delete") boolean delete) {
     if(delete) {
       this.datastore.getCollection(User.class).drop();
     }
@@ -50,7 +51,7 @@ public class SeedResource {
 
   @POST
   @Path("projects")
-  public Response seedProjects(Project[] projects, @DefaultValue("false") @QueryParam("delete") boolean delete) {
+  public Response seedProjects(@Valid Project[] projects, @DefaultValue("false") @QueryParam("delete") boolean delete) {
     if(delete) {
       this.datastore.getCollection(Project.class).drop();
     }
@@ -60,7 +61,7 @@ public class SeedResource {
 
   @POST
   @Path("releases")
-  public Response seedReleases(Release[] releases, @DefaultValue("false") @QueryParam("delete") boolean delete) {
+  public Response seedReleases(@Valid Release[] releases, @DefaultValue("false") @QueryParam("delete") boolean delete) {
     if(delete) {
       this.datastore.getCollection(Release.class).drop();
     }
@@ -70,7 +71,7 @@ public class SeedResource {
 
   @POST
   @Path("dictionaries")
-  public Response seedDictionaries(Dictionary[] dictionaries,
+  public Response seedDictionaries(@Valid Dictionary[] dictionaries,
       @DefaultValue("false") @QueryParam("delete") boolean delete) {
     if(delete) {
       this.datastore.getCollection(Dictionary.class).drop();
@@ -81,7 +82,7 @@ public class SeedResource {
 
   @POST
   @Path("codelists")
-  public Response seedCodeLists(CodeList[] codelists, @DefaultValue("false") @QueryParam("delete") boolean delete) {
+  public Response seedCodeLists(@Valid CodeList[] codelists, @DefaultValue("false") @QueryParam("delete") boolean delete) {
     if(delete) {
       this.datastore.getCollection(CodeList.class).drop();
     }

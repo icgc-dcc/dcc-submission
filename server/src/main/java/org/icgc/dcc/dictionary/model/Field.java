@@ -21,6 +21,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.validation.Valid;
+
+import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.dictionary.visitor.DictionaryElement;
 import org.icgc.dcc.dictionary.visitor.DictionaryVisitor;
 
@@ -35,6 +38,7 @@ import com.google.common.collect.Iterables;
 @Embedded
 public class Field implements DictionaryElement, Serializable {
 
+  @NotBlank
   private String name;
 
   private String label;
@@ -43,6 +47,7 @@ public class Field implements DictionaryElement, Serializable {
 
   private SummaryType summaryType;
 
+  @Valid
   private List<Restriction> restrictions;
 
   private boolean controlled;
