@@ -30,7 +30,6 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.mongodb.Mongo;
 import com.mongodb.MongoURI;
-import com.yammer.dropwizard.config.Configuration;
 
 public class DataPortalModule extends AbstractModule {
 
@@ -41,20 +40,14 @@ public class DataPortalModule extends AbstractModule {
 
 	@Provides
 	@Singleton
-	Mongo mongo(Configuration conf) throws UnknownHostException {
-		// See https://github.com/HubSpot/dropwizard-guice/issues/2
-		DataPortalConfiguration configuration = (DataPortalConfiguration) conf;
-
+	Mongo mongo(DataPortalConfiguration configuration) throws UnknownHostException {
 		// Mongo is thread-safe so @Singleton is appropriate
 		return new Mongo(new MongoURI(configuration.getMongoUri()));
 	}
 
 	@Provides
 	@Singleton
-	Client esClient(Configuration conf) {
-		// See https://github.com/HubSpot/dropwizard-guice/issues/2
-		DataPortalConfiguration configuration = (DataPortalConfiguration) conf;
-
+	Client esClient(DataPortalConfiguration configuration) {
 		// TrasportClient is thread-safe so @Singleton is appropriate
 		return new TransportClient().addTransportAddress(new InetSocketTransportAddress(configuration
 				.getEsHost(), configuration.getEsPort()));

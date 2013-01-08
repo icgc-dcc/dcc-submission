@@ -34,67 +34,93 @@ import com.yammer.dropwizard.Service;
 import com.yammer.dropwizard.config.Bootstrap;
 import com.yammer.dropwizard.config.Environment;
 
-import org.icgc.dcc.bundles.SwaggerBundle;
-
 @Slf4j
 public class DataPortalService extends Service<DataPortalConfiguration> {
-	private static final String PACKAGE = DataPortalService.class.getPackage().getName();
+  private static final String PACKAGE = DataPortalService.class.getPackage().getName();
 
-	private static final String APPLICATION_NAME = "icgc-data-portal-api";
+  private static final String APPLICATION_NAME = "icgc-data-portal-api";
 
-	private static final char SPACE = ' ';
+  private static final char SPACE = ' ';
 
-	private static final char DASH = '-';
+  private static final char DASH = '-';
 
-	private static String[] args;
+  private static String[] args;
 
-	public static void main(String... args) throws Exception {
-		DataPortalService.args = args;
-		new DataPortalService().run(args);
-	}
+  public static void main(String... args) throws Exception {
+    DataPortalService.args = args;
+    new DataPortalService().run(args);
+  }
 
-	private static void logInfo(String... args) {
-		log.info(repeat("=", 60));
-		log.info("{} {}", APPLICATION_NAME.toUpperCase().replace(DASH, SPACE), getVersion());
-		log.info(" > {}", formatArguments(args));
-		log.info(repeat("=", 60));
-	}
+  @Override
+  public final void initialize(Bootstrap<DataPortalConfiguration> bootstrap) {
+    bootstrap.setName(APPLICATION_NAME);
+    bootstrap.addBundle(createGuiceBundle(bootstrap));
+    bootstrap.addBundle(createRedirectBundle());
+  }
 
-	private static String getVersion() {
-		String implementationVersion = DataPortalService.class.getPackage().getImplementationVersion();
-		return implementationVersion == null ? "" : "v" + implementationVersion;
-	}
+  @Override
+  public final void run(DataPortalConfiguration configuration, Environment environment) throws Exception {
+    logInfo(args);
+  }
 
-	private static String getJarName() {
-		String jarPath =
-				DataPortalService.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-		File jarFile = new File(jarPath);
+  /**
+   * Configures the {@code GuiceBundle} with application modules and classpath scanning.
+   * 
+   * @param bootstrap
+   * @return
+   */
+  private GuiceBundle<DataPortalConfiguration> createGuiceBundle(Bootstrap<DataPortalConfiguration> bootstrap) {
+    // @formatter:off
+    GuiceBundle<DataPortalConfiguration> bundle = new GuiceBundle.Builder<DataPortalConfiguration>()
+				.addModule(new DataPortalModule())
+				.setConfigClass(DataPortalConfiguration.class)
+				.enableAutoConfig(PACKAGE)
+				.build();
+		// @formatter:on
 
-		return jarFile.getName();
-	}
+    bundle.initialize(bootstrap);
 
-	private static String formatArguments(String... args) {
-		RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
-		List<String> inputArguments = runtime.getInputArguments();
+    return bundle;
+  }
 
-		return String.format("java %s -jar %s %s", join(inputArguments, SPACE), getJarName(),
-				join(args, SPACE));
-	}
+  /**
+   * Configures convenient url redirections.
+   * 
+   * @return
+   */
+  private RedirectBundle createRedirectBundle() {
+    // @formatter:off
+		return new RedirectBundle(ImmutableMap.<String, String>builder()
+				.put("/",     "/docs/")
+				.put("/docs", "/docs/")
+				.build());
+		// @formatter:on
+  }
 
-	@Override
-	public final void initialize(Bootstrap<DataPortalConfiguration> bootstrap) {
-		bootstrap.setName(APPLICATION_NAME);
-		bootstrap.addBundle(new SwaggerBundle());
-		bootstrap.addBundle(GuiceBundle.newBuilder().addModule(new DataPortalModule())
-				.enableAutoConfig(PACKAGE).build());
-		bootstrap.addBundle(new RedirectBundle(ImmutableMap.<String, String>builder()
-				.put("/", "/docs/").put("/docs", "/docs/").build()));
-	}
+  private static void logInfo(String... args) {
+    log.info(repeat("=", 60));
+    log.info("{} {}", APPLICATION_NAME.toUpperCase().replace(DASH, SPACE), getVersion());
+    log.info(" > {}", formatArguments(args));
+    log.info(repeat("=", 60));
+  }
 
-	@Override
-	public final void run(DataPortalConfiguration configuration, Environment environment)
-			throws Exception {
-		logInfo(args);
-	}
+  private static String getVersion() {
+    String implementationVersion = DataPortalService.class.getPackage().getImplementationVersion();
+    return implementationVersion == null ? "" : "v" + implementationVersion;
+  }
+
+  private static String getJarName() {
+    String jarPath = DataPortalService.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+    File jarFile = new File(jarPath);
+
+    return jarFile.getName();
+  }
+
+  private static String formatArguments(String... args) {
+    RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
+    List<String> inputArguments = runtime.getInputArguments();
+
+    return String.format("java %s -jar %s %s", join(inputArguments, SPACE), getJarName(), join(args, SPACE));
+  }
 
 }

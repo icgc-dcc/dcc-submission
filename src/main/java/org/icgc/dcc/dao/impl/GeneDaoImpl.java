@@ -22,42 +22,37 @@ import static org.elasticsearch.index.query.QueryBuilders.matchAllQuery;
 import java.util.ArrayList;
 import java.util.List;
 
-import lombok.extern.slf4j.Slf4j;
-
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
-
-import com.google.inject.Inject;
-
 import org.icgc.dcc.core.Gene;
 import org.icgc.dcc.dao.GeneDao;
 
-@Slf4j
+import com.google.inject.Inject;
+
 public class GeneDaoImpl implements GeneDao {
-	private static final String INDEX = "blog";
+  private static final String INDEX = "blog";
 
-	private final Client client;
+  private final Client client;
 
-	@Inject
-	public GeneDaoImpl(Client client) {
-		this.client = client;
-	}
+  @Inject
+  public GeneDaoImpl(Client client) {
+    this.client = client;
+  }
 
-	@Override
-	public final Gene getOne(String id) {
-		client.prepareSearch(INDEX).setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
-				.setQuery(matchAllQuery()).setFrom(0).setSize(1).setExplain(true).execute().actionGet()
-				.toString();
+  @Override
+  public final Gene getOne(String id) {
+    client.prepareSearch(INDEX).setSearchType(SearchType.DFS_QUERY_THEN_FETCH).setQuery(matchAllQuery()).setFrom(0)
+        .setSize(1).setExplain(true).execute().actionGet().toString();
 
-		return new Gene();
-	}
+    return new Gene();
+  }
 
-	@Override
-	public final List<Gene> getAll() {
-		client.prepareSearch(INDEX).setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
-				.setQuery(matchAllQuery()).setFrom(0).setSize(2).setExplain(true).execute().actionGet()
-				.toString();
+  @Override
+  public final List<Gene> getAll() {
+    client.prepareSearch(INDEX).setSearchType(SearchType.DFS_QUERY_THEN_FETCH).setQuery(matchAllQuery()).setFrom(0)
+        .setSize(2).setExplain(true).execute().actionGet().toString();
 
-		return new ArrayList<Gene>();
-	}
+    return new ArrayList<Gene>();
+  }
+
 }
