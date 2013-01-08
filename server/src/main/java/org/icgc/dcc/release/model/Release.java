@@ -7,10 +7,10 @@ import java.util.Date;
 import java.util.List;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
+import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.core.model.BaseEntity;
 import org.icgc.dcc.core.model.HasName;
 import org.icgc.dcc.release.ReleaseException;
@@ -30,7 +30,7 @@ import com.google.common.collect.Lists;
 @Entity
 public class Release extends BaseEntity implements HasName {
 
-  @NotNull
+  @NotBlank
   @Pattern(regexp = NameValidator.NAME_PATTERN)
   protected String name;
 
@@ -46,7 +46,7 @@ public class Release extends BaseEntity implements HasName {
 
   protected Date releaseDate;
 
-  @NotNull
+  @NotBlank
   protected String dictionaryVersion;
 
   public Release() {

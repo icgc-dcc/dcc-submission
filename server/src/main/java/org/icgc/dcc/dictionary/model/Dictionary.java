@@ -22,9 +22,9 @@ import java.util.Date;
 import java.util.List;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
+import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.core.model.BaseEntity;
 import org.icgc.dcc.core.model.HasName;
 import org.icgc.dcc.dictionary.visitor.DictionaryElement;
@@ -43,7 +43,7 @@ import com.google.common.collect.Iterables;
 @Entity
 public class Dictionary extends BaseEntity implements HasName, DictionaryElement {
 
-  @NotNull
+  @NotBlank
   @Indexed(unique = true)
   private String version;
 

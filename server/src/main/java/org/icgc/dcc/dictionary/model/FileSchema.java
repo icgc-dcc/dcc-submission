@@ -22,9 +22,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
+import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.dictionary.visitor.DictionaryElement;
 import org.icgc.dcc.dictionary.visitor.DictionaryVisitor;
 
@@ -42,7 +42,7 @@ import com.google.common.collect.Lists;
 @Embedded
 public class FileSchema implements DictionaryElement, Serializable {
 
-  @NotNull
+  @NotBlank
   private String name;
 
   private String label;

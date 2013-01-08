@@ -4,8 +4,8 @@ import java.io.Serializable;
 import java.util.Date;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 
+import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.validation.report.SubmissionReport;
 
 import com.google.code.morphia.annotations.Embedded;
@@ -14,10 +14,10 @@ import com.google.common.base.Objects;
 @Embedded
 public class Submission implements Serializable {
 
-  @NotNull
+  @NotBlank
   protected String projectKey;
 
-  @NotNull
+  @NotBlank
   protected String projectName;
 
   protected Date lastUpdated;

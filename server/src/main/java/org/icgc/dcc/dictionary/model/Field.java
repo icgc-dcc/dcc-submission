@@ -22,8 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 
+import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.dictionary.visitor.DictionaryElement;
 import org.icgc.dcc.dictionary.visitor.DictionaryVisitor;
 
@@ -38,7 +38,7 @@ import com.google.common.collect.Iterables;
 @Embedded
 public class Field implements DictionaryElement, Serializable {
 
-  @NotNull
+  @NotBlank
   private String name;
 
   private String label;
