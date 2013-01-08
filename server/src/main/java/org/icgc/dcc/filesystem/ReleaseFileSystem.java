@@ -116,6 +116,10 @@ public class ReleaseFileSystem {
     return new Path(this.getReleaseDirectory(), ReleaseFileSystem.SYSTEM_FILES);
   }
 
+  public Path getLoaderDirectory() {
+    return new Path(this.getReleaseDirectory(), DccFileSystem.LOADER_DIRNAME);
+  }
+
   public boolean isSystemDirectory(Path path) {
     return this.getSystemDirectory().getName().equals(path.getName()) && this.userSubject.hasRole("admin");
   }
