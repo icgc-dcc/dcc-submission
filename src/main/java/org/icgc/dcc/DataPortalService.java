@@ -74,6 +74,7 @@ public class DataPortalService extends Service<DataPortalConfiguration> {
         new GuiceBundle.Builder<DataPortalConfiguration>().addModule(new DataPortalModule())
             .setConfigClass(DataPortalConfiguration.class).enableAutoConfig(PACKAGE).build();
 
+    // See https://github.com/codahale/dropwizard/issues/237
     bundle.initialize(bootstrap);
 
     return bundle;
