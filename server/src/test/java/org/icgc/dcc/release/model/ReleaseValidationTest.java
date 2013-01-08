@@ -32,7 +32,7 @@ public class ReleaseValidationTest extends ModelValidationTest<Release> {
     Set<ConstraintViolation<Release>> violations = validateValue("dictionaryVersion", null);
 
     assertEquals("dictionaryVersion field should have a validation error for null input", 1, violations.size());
-    assertEquals("may not be null", violations.iterator().next().getMessage());
+    assertEquals("may not be empty", violations.iterator().next().getMessage());
   }
 
 }
