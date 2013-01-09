@@ -369,7 +369,7 @@
   </repositories>
   <build>
     <plugins>
-      <!-- Process - Generate Morpia bindings -->
+      <!-- Generate sources - Generate Morpia bindings -->
       <plugin>
         <groupId>com.mysema.maven</groupId>
         <artifactId>maven-apt-plugin</artifactId>
@@ -388,7 +388,7 @@
         </executions>
       </plugin>
 
-      <!-- Generate sources - Add Morphia binding to sources -->
+      <!-- Generate sources - Add Morphia bindings to sources -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
