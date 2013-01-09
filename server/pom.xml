@@ -27,7 +27,7 @@
       <artifactId>jersey-media-json-jackson</artifactId>
       <version>${jersey.version}</version>
     </dependency>
-    
+
     <!-- Mongo -->
     <dependency>
       <groupId>org.mongodb</groupId>
@@ -61,8 +61,8 @@
           <groupId>org.slf4j</groupId>
         </exclusion>
       </exclusions>
-    </dependency>    
-    
+    </dependency>
+
     <!-- Cascading -->
     <dependency>
       <groupId>cascading</groupId>
@@ -113,7 +113,7 @@
         </exclusion>
       </exclusions>
     </dependency>
-    
+
     <!-- Hadoop -->
     <dependency>
       <groupId>org.apache.hadoop</groupId>
@@ -166,13 +166,13 @@
       <groupId>com.google.inject.extensions</groupId>
       <artifactId>guice-multibindings</artifactId>
     </dependency>
-    
+
     <!-- Configuration -->
     <dependency>
       <groupId>com.typesafe</groupId>
       <artifactId>config</artifactId>
     </dependency>
-    
+
     <!-- Logging -->
     <dependency>
       <groupId>ch.qos.logback</groupId>
@@ -189,42 +189,42 @@
       <artifactId>jul-to-slf4j</artifactId>
       <version>${slf4j.version}</version>
     </dependency>
-    
+
     <!-- Security -->
     <dependency>
       <groupId>org.apache.shiro</groupId>
       <artifactId>shiro-core</artifactId>
       <version>${shiro.version}</version>
     </dependency>
-    
+
     <!-- SFTP -->
     <dependency>
       <groupId>org.apache.sshd</groupId>
       <artifactId>sshd-core</artifactId>
       <version>${mina.version}</version>
     </dependency>
-        
+
     <!-- Cryptography -->
     <dependency>
       <groupId>org.bouncycastle</groupId>
       <artifactId>bcprov-jdk16</artifactId>
       <version>1.45</version>
     </dependency>
-    
+
     <!-- Compression -->
     <dependency>
       <groupId>com.hadoop.gplcompression</groupId>
       <artifactId>hadoop-lzo</artifactId>
       <version>0.4.16</version>
     </dependency>
-    
+
     <!-- Mail -->
     <dependency>
       <groupId>javax.mail</groupId>
       <artifactId>mail</artifactId>
       <version>1.4.5</version>
-    </dependency> 
-    
+    </dependency>
+
     <!-- Validation -->
     <dependency>
       <groupId>javax.validation</groupId>
@@ -235,8 +235,8 @@
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-validator</artifactId>
       <version>4.3.1.Final</version>
-    </dependency>    
-    
+    </dependency>
+
     <!-- Testing - Unit, mocking, assertions -->
     <dependency>
       <groupId>junit</groupId>
@@ -251,18 +251,18 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-	  <groupId>org.easytesting</groupId>
-	  <artifactId>fest-assert-core</artifactId>
-	  <version>2.0M8</version>
-      <scope>test</scope>  
+      <groupId>org.easytesting</groupId>
+      <artifactId>fest-assert-core</artifactId>
+      <version>2.0M8</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.easytesting</groupId>
       <artifactId>fest-guava-assert</artifactId>
       <version>1.0</version>
-      <scope>test</scope>  
-    </dependency>    
-    
+      <scope>test</scope>
+    </dependency>
+
     <!-- Testing - REST -->
     <dependency>
       <groupId>org.glassfish.jersey.test-framework</groupId>
@@ -281,22 +281,22 @@
           <groupId>com.googlecode.guava-osgi</groupId>
         </exclusion>
       </exclusions>
-    </dependency>    
-    
+    </dependency>
+
     <!-- Testing - Mongo -->
     <dependency>
-	  <groupId>com.wordnik</groupId>
-	  <artifactId>mongo-admin-utils-distribution</artifactId>
-	  <version>1.2.0</version>
+      <groupId>com.wordnik</groupId>
+      <artifactId>mongo-admin-utils-distribution</artifactId>
+      <version>1.2.0</version>
       <scope>test</scope>
-	  <exclusions>
+      <exclusions>
         <exclusion>
           <artifactId>slf4j-log4j12</artifactId>
           <groupId>org.slf4j</groupId>
         </exclusion>
       </exclusions>
-	</dependency>
-	    
+    </dependency>
+
     <!-- Testing - Cascading -->
     <dependency>
       <groupId>cascading</groupId>
@@ -307,7 +307,7 @@
       <exclusions>
         <exclusion>
           <groupId>junit</groupId>
-      	  <artifactId>junit</artifactId>
+          <artifactId>junit</artifactId>
         </exclusion>
         <exclusion>
           <artifactId>slf4j-log4j12</artifactId>
@@ -319,7 +319,7 @@
         </exclusion>
       </exclusions>
     </dependency>
-    
+
     <!-- Testing - Hadoop -->
     <dependency>
       <groupId>org.apache.hadoop</groupId>
@@ -370,8 +370,8 @@
       <url>http://conjars.org/repo</url>
     </repository>
     <repository>
-        <id>twttr.com</id>
-        <url>http://maven.twttr.com/</url>
+      <id>twttr.com</id>
+      <url>http://maven.twttr.com/</url>
     </repository>
   </repositories>
   <build>
