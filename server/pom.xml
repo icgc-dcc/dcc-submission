@@ -10,23 +10,7 @@
   <artifactId>dcc-server</artifactId>
   <packaging>jar</packaging>
   <dependencies>
-    <dependency>
-      <groupId>com.google.inject</groupId>
-      <artifactId>guice</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.google.inject.extensions</groupId>
-      <artifactId>guice-multibindings</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.typesafe</groupId>
-      <artifactId>config</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.glassfish.jersey.test-framework</groupId>
-      <artifactId>jersey-test-framework-core</artifactId>
-      <version>${jersey.version}</version>
-    </dependency>
+    <!-- REST -->
     <dependency>
       <groupId>org.glassfish.jersey.containers</groupId>
       <artifactId>jersey-container-grizzly2-http</artifactId>
@@ -42,6 +26,13 @@
       <groupId>org.glassfish.jersey.media</groupId>
       <artifactId>jersey-media-json-jackson</artifactId>
       <version>${jersey.version}</version>
+    </dependency>
+    
+    <!-- Mongo -->
+    <dependency>
+      <groupId>org.mongodb</groupId>
+      <artifactId>mongo-hadoop-core</artifactId>
+      <version>1.1.0-93d3667</version>
     </dependency>
     <dependency>
       <groupId>com.google.code.morphia</groupId>
@@ -70,7 +61,9 @@
           <groupId>org.slf4j</groupId>
         </exclusion>
       </exclusions>
-    </dependency>
+    </dependency>    
+    
+    <!-- Cascading -->
     <dependency>
       <groupId>cascading</groupId>
       <artifactId>cascading-core</artifactId>
@@ -120,57 +113,8 @@
         </exclusion>
       </exclusions>
     </dependency>
-    <dependency>
-      <groupId>cascading</groupId>
-      <artifactId>cascading-core</artifactId>
-      <version>${cascading.version}</version>
-      <classifier>tests</classifier>
-      <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>junit</groupId>
-      	  <artifactId>junit</artifactId>
-        </exclusion>
-        <exclusion>
-          <artifactId>slf4j-log4j12</artifactId>
-          <groupId>org.slf4j</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>log4j</artifactId>
-          <groupId>log4j</groupId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.mongodb</groupId>
-      <artifactId>mongo-hadoop-core</artifactId>
-      <version>1.1.0-93d3667</version>
-    </dependency>
-    <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-classic</artifactId>
-      <version>${logback.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>jcl-over-slf4j</artifactId>
-      <version>${slf4j.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>jul-to-slf4j</artifactId>
-      <version>${slf4j.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.shiro</groupId>
-      <artifactId>shiro-core</artifactId>
-      <version>${shiro.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.sshd</groupId>
-      <artifactId>sshd-core</artifactId>
-      <version>${mina.version}</version>
-    </dependency>
+    
+    <!-- Hadoop -->
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-common</artifactId>
@@ -212,13 +156,158 @@
       <version>${hadoop-cdh.version}</version>
       <scope>runtime</scope>
     </dependency>
-    <!-- Test Dependencies -->
+
+    <!-- Dependency injection -->
+    <dependency>
+      <groupId>com.google.inject</groupId>
+      <artifactId>guice</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.google.inject.extensions</groupId>
+      <artifactId>guice-multibindings</artifactId>
+    </dependency>
+    
+    <!-- Configuration -->
+    <dependency>
+      <groupId>com.typesafe</groupId>
+      <artifactId>config</artifactId>
+    </dependency>
+    
+    <!-- Logging -->
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <version>${logback.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jcl-over-slf4j</artifactId>
+      <version>${slf4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jul-to-slf4j</artifactId>
+      <version>${slf4j.version}</version>
+    </dependency>
+    
+    <!-- Security -->
+    <dependency>
+      <groupId>org.apache.shiro</groupId>
+      <artifactId>shiro-core</artifactId>
+      <version>${shiro.version}</version>
+    </dependency>
+    
+    <!-- SFTP -->
+    <dependency>
+      <groupId>org.apache.sshd</groupId>
+      <artifactId>sshd-core</artifactId>
+      <version>${mina.version}</version>
+    </dependency>
+        
+    <!-- Cryptography -->
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcprov-jdk16</artifactId>
+      <version>1.45</version>
+    </dependency>
+    
+    <!-- Compression -->
+    <dependency>
+      <groupId>com.hadoop.gplcompression</groupId>
+      <artifactId>hadoop-lzo</artifactId>
+      <version>0.4.16</version>
+    </dependency>
+    
+    <!-- Mail -->
+    <dependency>
+      <groupId>javax.mail</groupId>
+      <artifactId>mail</artifactId>
+      <version>1.4.5</version>
+    </dependency> 
+    
+    <!-- Validation -->
+    <dependency>
+      <groupId>javax.validation</groupId>
+      <artifactId>validation-api</artifactId>
+      <version>1.0.0.GA</version>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-validator</artifactId>
+      <version>4.3.1.Final</version>
+    </dependency>    
+    
+    <!-- Testing - Unit, mocking, assertions -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.10</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>1.9.0</version>
+      <scope>test</scope>
+    </dependency>
+    
+    <!-- Testing - REST -->
+    <dependency>
+      <groupId>org.glassfish.jersey.test-framework</groupId>
+      <artifactId>jersey-test-framework-core</artifactId>
+      <version>${jersey.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.jersey.core</groupId>
+      <artifactId>jersey-client</artifactId>
+      <version>${jersey.version}</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>guava-osgi</artifactId>
+          <groupId>com.googlecode.guava-osgi</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>    
+    
+    <!-- Testing - Mongo -->
+    <dependency>
+	  <groupId>com.wordnik</groupId>
+	  <artifactId>mongo-admin-utils-distribution</artifactId>
+	  <version>1.2.0</version>
+      <scope>test</scope>
+	  <exclusions>
+        <exclusion>
+          <artifactId>slf4j-log4j12</artifactId>
+          <groupId>org.slf4j</groupId>
+        </exclusion>
+      </exclusions>
+	</dependency>
+	    
+    <!-- Testing - Cascading -->
+    <dependency>
+      <groupId>cascading</groupId>
+      <artifactId>cascading-core</artifactId>
+      <version>${cascading.version}</version>
+      <classifier>tests</classifier>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>junit</groupId>
+      	  <artifactId>junit</artifactId>
+        </exclusion>
+        <exclusion>
+          <artifactId>slf4j-log4j12</artifactId>
+          <groupId>org.slf4j</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>log4j</artifactId>
+          <groupId>log4j</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    
+    <!-- Testing - Hadoop -->
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-test</artifactId>
@@ -236,61 +325,6 @@
           <groupId>org.slf4j</groupId>
         </exclusion>
       </exclusions>
-    </dependency>
-    <dependency>
-	  <groupId>com.wordnik</groupId>
-	  <artifactId>mongo-admin-utils-distribution</artifactId>
-	  <version>1.2.0</version>
-	  <exclusions>
-        <exclusion>
-          <artifactId>slf4j-log4j12</artifactId>
-          <groupId>org.slf4j</groupId>
-        </exclusion>
-      </exclusions>
-      <scope>test</scope>
-	</dependency>
-    <dependency>
-      <groupId>org.glassfish.jersey.core</groupId>
-      <artifactId>jersey-client</artifactId>
-      <version>${jersey.version}</version>
-      <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <artifactId>guava-osgi</artifactId>
-          <groupId>com.googlecode.guava-osgi</groupId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
-      <version>1.9.0</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-    	<groupId>javax.mail</groupId>
-    	<artifactId>mail</artifactId>
-    	<version>1.4.5</version>
-    </dependency>
-    <dependency>
-    	<groupId>org.bouncycastle</groupId>
-    	<artifactId>bcprov-jdk16</artifactId>
-    	<version>1.45</version>
-    </dependency>
-    <dependency>
-    	<groupId>com.hadoop.gplcompression</groupId>
-    	<artifactId>hadoop-lzo</artifactId>
-    	<version>0.4.16</version>
-    </dependency>
-    <dependency>
-    	<groupId>javax.validation</groupId>
-    	<artifactId>validation-api</artifactId>
-    	<version>1.0.0.GA</version>
-    </dependency>
-    <dependency>
-    	<groupId>org.hibernate</groupId>
-    	<artifactId>hibernate-validator</artifactId>
-    	<version>4.3.1.Final</version>
     </dependency>
   </dependencies>
   <repositories>
