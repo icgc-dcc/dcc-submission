@@ -27,6 +27,27 @@
       <artifactId>jersey-media-json-jackson</artifactId>
       <version>${jersey.version}</version>
     </dependency>
+    
+    <!-- Security -->
+    <dependency>
+      <groupId>org.apache.shiro</groupId>
+      <artifactId>shiro-core</artifactId>
+      <version>${shiro.version}</version>
+    </dependency>
+    
+    <!-- Validation -->
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-validator</artifactId>
+      <version>${hibernate-validator.version}</version>
+    </dependency>    
+    
+    <!-- SFTP -->
+    <dependency>
+      <groupId>org.apache.sshd</groupId>
+      <artifactId>sshd-core</artifactId>
+      <version>${mina.version}</version>
+    </dependency>
 
     <!-- Mongo -->
     <dependency>
@@ -178,6 +199,20 @@
       <artifactId>config</artifactId>
     </dependency>
 
+    <!-- Cryptography -->
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcprov-jdk16</artifactId>
+      <version>1.45</version>
+    </dependency>
+
+    <!-- Mail -->
+    <dependency>
+      <groupId>javax.mail</groupId>
+      <artifactId>mail</artifactId>
+      <version>1.4.5</version>
+    </dependency>
+
     <!-- Logging -->
     <dependency>
       <groupId>ch.qos.logback</groupId>
@@ -194,47 +229,7 @@
       <artifactId>jul-to-slf4j</artifactId>
       <version>${slf4j.version}</version>
     </dependency>
-
-    <!-- Security -->
-    <dependency>
-      <groupId>org.apache.shiro</groupId>
-      <artifactId>shiro-core</artifactId>
-      <version>${shiro.version}</version>
-    </dependency>
-
-    <!-- SFTP -->
-    <dependency>
-      <groupId>org.apache.sshd</groupId>
-      <artifactId>sshd-core</artifactId>
-      <version>${mina.version}</version>
-    </dependency>
-
-    <!-- Cryptography -->
-    <dependency>
-      <groupId>org.bouncycastle</groupId>
-      <artifactId>bcprov-jdk16</artifactId>
-      <version>1.45</version>
-    </dependency>
-
-    <!-- Mail -->
-    <dependency>
-      <groupId>javax.mail</groupId>
-      <artifactId>mail</artifactId>
-      <version>1.4.5</version>
-    </dependency>
-
-    <!-- Validation -->
-    <dependency>
-      <groupId>javax.validation</groupId>
-      <artifactId>validation-api</artifactId>
-      <version>1.0.0.GA</version>
-    </dependency>
-    <dependency>
-      <groupId>org.hibernate</groupId>
-      <artifactId>hibernate-validator</artifactId>
-      <version>4.3.1.Final</version>
-    </dependency>
-
+    
     <!-- Testing - Unit, mocking, assertions -->
     <dependency>
       <groupId>junit</groupId>
@@ -557,18 +552,19 @@
   </build>
   <properties>
     <!-- Versions -->
-    <slf4j.version>1.6.1</slf4j.version>
-    <logback.version>1.0.3</logback.version>
-    <querydsl.version>2.6.0</querydsl.version>
-    <morphia.version>0.99.1-DCC</morphia.version>
     <jersey.version>2.0-m10</jersey.version>
     <shiro.version>1.2.0</shiro.version>
+    <hibernate-validator.version>4.3.1.Final</hibernate-validator.version>
     <mina.version>0.6.0</mina.version>
+    <morphia.version>0.99.1-DCC</morphia.version>
+    <querydsl.version>2.6.0</querydsl.version>
     <cascading.version>2.1.1</cascading.version>
-    <hadoop.version>2.0.0</hadoop.version>
     <cdh.version>cdh4.1.2</cdh.version>
+    <hadoop.version>2.0.0</hadoop.version>
     <hadoop-cdh.version>${hadoop.version}-${cdh.version}</hadoop-cdh.version>
     <hadoop-mr1-cdh.version>${hadoop.version}-mr1-${cdh.version}</hadoop-mr1-cdh.version>
+    <slf4j.version>1.6.1</slf4j.version>
+    <logback.version>1.0.3</logback.version>
     
     <!-- Encoding -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
