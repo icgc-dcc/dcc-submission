@@ -374,36 +374,61 @@
   </repositories>
   <build>
     <plugins>
+      <!-- Process - Generate Morpia bindings -->
+      <plugin>
+        <groupId>com.mysema.maven</groupId>
+        <artifactId>maven-apt-plugin</artifactId>
+        <version>1.0.3</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>process</goal>
+            </goals>
+            <configuration>
+              <logOnlyOnError>true</logOnlyOnError>
+              <outputDirectory>${project.build.directory}/generated-sources/java</outputDirectory>
+              <processor>com.mysema.query.mongodb.morphia.MorphiaAnnotationProcessor</processor>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Generate sources - Add Morphia binding to sources -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>1.7</version>
+        <executions>
+          <execution>
+            <id>add-source</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>${project.build.directory}/generated-sources/java/</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Test -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-pmd-plugin</artifactId>
-        <version>2.7.1</version>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.12</version>
         <configuration>
-          <targetJdk>1.6</targetJdk>
-          <rulesets>
-            <ruleset>/rulesets/basic.xml</ruleset>
-            <ruleset>/rulesets/unusedcode.xml</ruleset>
-            <ruleset>/rulesets/codesize.xml</ruleset>
-          </rulesets>
-          <excludeRoots>
-            <excludeRoot>${project.build.directory}/generated-sources/java/</excludeRoot>
-          </excludeRoots>
+          <argLine>-Xms256m -Xmx256m</argLine>
+          <redirectTestOutputToFile>true</redirectTestOutputToFile>
+          <excludes>
+            <exclude>**/LoaderClusterIntegrationTest.java</exclude>
+          </excludes>
         </configuration>
       </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>findbugs-maven-plugin</artifactId>
-        <version>2.4.0</version>
-        <configuration>
-          <xmlOutput>true</xmlOutput>
-          <excludeFilterFile>${project.basedir}/src/main/tools/findbugs-exclude.xml</excludeFilterFile>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>cobertura-maven-plugin</artifactId>
-        <version>2.5.1</version>
-      </plugin>
+
+      <!-- Package -->
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <configuration>
@@ -450,42 +475,40 @@
           </execution>
         </executions>
       </plugin>
+
+      <!-- Install - Code quality -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-pmd-plugin</artifactId>
+        <version>2.7.1</version>
+        <configuration>
+          <targetJdk>1.6</targetJdk>
+          <rulesets>
+            <ruleset>/rulesets/basic.xml</ruleset>
+            <ruleset>/rulesets/unusedcode.xml</ruleset>
+            <ruleset>/rulesets/codesize.xml</ruleset>
+          </rulesets>
+          <excludeRoots>
+            <excludeRoot>${project.build.directory}/generated-sources/java/</excludeRoot>
+          </excludeRoots>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <version>1.7</version>
-        <executions>
-          <execution>
-            <id>add-source</id>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>add-source</goal>
-            </goals>
-            <configuration>
-              <sources>
-                <source>${project.build.directory}/generated-sources/java/</source>
-              </sources>
-            </configuration>
-          </execution>
-        </executions>
+        <artifactId>findbugs-maven-plugin</artifactId>
+        <version>2.5.2</version>
+        <configuration>
+          <xmlOutput>true</xmlOutput>
+          <excludeFilterFile>${project.basedir}/src/main/tools/findbugs-exclude.xml</excludeFilterFile>
+        </configuration>
       </plugin>
       <plugin>
-        <groupId>com.mysema.maven</groupId>
-        <artifactId>maven-apt-plugin</artifactId>
-        <version>1.0.3</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>process</goal>
-            </goals>
-            <configuration>
-              <logOnlyOnError>true</logOnlyOnError>
-              <outputDirectory>${project.build.directory}/generated-sources/java</outputDirectory>
-              <processor>com.mysema.query.mongodb.morphia.MorphiaAnnotationProcessor</processor>
-            </configuration>
-          </execution>
-        </executions>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>cobertura-maven-plugin</artifactId>
+        <version>2.5.2</version>
       </plugin>
+
+      <!-- CLI execution -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
@@ -501,21 +524,10 @@
           <mainClass>org.icgc.dcc.Main</mainClass>
         </configuration>
       </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.12</version>
-        <configuration>
-          <argLine>-Xms256m -Xmx256m</argLine>
-          <redirectTestOutputToFile>true</redirectTestOutputToFile>
-          <excludes>
-            <exclude>**/LoaderClusterIntegrationTest.java</exclude>
-          </excludes>
-        </configuration>
-      </plugin>
     </plugins>
     <pluginManagement>
       <plugins>
+        <!-- M2E lifecycle -->
         <plugin>
           <groupId>org.eclipse.m2e</groupId>
           <artifactId>lifecycle-mapping</artifactId>
@@ -544,6 +556,7 @@
     </pluginManagement>
   </build>
   <properties>
+    <!-- Versions -->
     <slf4j.version>1.6.1</slf4j.version>
     <logback.version>1.0.3</logback.version>
     <querydsl.version>2.6.0</querydsl.version>
@@ -556,6 +569,9 @@
     <cdh.version>cdh4.1.2</cdh.version>
     <hadoop-cdh.version>${hadoop.version}-${cdh.version}</hadoop-cdh.version>
     <hadoop-mr1-cdh.version>${hadoop.version}-mr1-${cdh.version}</hadoop-mr1-cdh.version>
+    
+    <!-- Encoding -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
   </properties>
 </project>
