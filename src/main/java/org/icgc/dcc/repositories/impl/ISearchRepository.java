@@ -15,40 +15,44 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc.core;
+package org.icgc.dcc.repositories.impl;
 
-import static com.yammer.dropwizard.testing.JsonHelpers.asJson;
-import static com.yammer.dropwizard.testing.JsonHelpers.fromJson;
-import static com.yammer.dropwizard.testing.JsonHelpers.jsonFixture;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
+import javax.annotation.Nonnull;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.elasticsearch.action.search.SearchType;
+import org.elasticsearch.client.Client;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHits;
 
-public class GeneTest {
+import com.google.inject.Inject;
 
-  private final Gene gene = new Gene("L", 1L);
+import org.icgc.dcc.core.Indexes;
+import org.icgc.dcc.repositories.SearchRepository;
 
-  @Before
-  public void setUp() throws Exception {
+public class ISearchRepository implements SearchRepository {
 
+  private final Indexes index;
+
+  private final Client client;
+
+  @Inject
+  public ISearchRepository(Client client) {
+    this.client = client;
+    this.index = Indexes.ALL;
   }
 
-  @After
-  public void tearDown() throws Exception {
-
+  public ISearchRepository(Client client, Indexes index) {
+    this.client = client;
+    this.index = index;
   }
 
-  @Test
-  public final void serializesToJSON() throws Exception {
-    assertThat("a Gene can be serialized to JSON", asJson(gene), is(jsonFixture("fixtures/gene.json")));
+  public final ISearchRepository withIndex(@Nonnull Indexes index) {
+    return this.index.equals(index) ? this : new ISearchRepository(this.client, index);
   }
 
-  @Test
-  public final void deserializesFromJSON() throws Exception {
-    assertThat("a Gene can be deserialized from JSON", fromJson(jsonFixture("fixtures/gene.json"), Gene.class),
-        is(gene));
+  @Override
+  public final SearchHits search() {
+    return client.prepareSearch(String.valueOf(index)).setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
+        .setQuery(QueryBuilders.matchAllQuery()).setFrom(0).setSize(2).execute().actionGet().getHits();
   }
 }

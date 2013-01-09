@@ -33,6 +33,10 @@ public class DataPortalConfiguration extends Configuration {
 
   @JsonProperty
   @NotEmpty
+  private String mongoDb;
+
+  @JsonProperty
+  @NotEmpty
   private String esHost;
 
   @JsonProperty

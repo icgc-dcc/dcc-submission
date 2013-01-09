@@ -31,8 +31,8 @@ import com.mongodb.DB;
 import com.mongodb.Mongo;
 import com.mongodb.MongoURI;
 
-import org.icgc.dcc.dao.GeneDao;
-import org.icgc.dcc.dao.impl.GeneDaoImpl;
+import org.icgc.dcc.repositories.SearchRepository;
+import org.icgc.dcc.repositories.impl.ISearchRepository;
 
 public class DataPortalModule extends AbstractModule {
 
@@ -46,7 +46,7 @@ public class DataPortalModule extends AbstractModule {
   @Provides
   @Singleton
   public final Jongo jongo(DataPortalConfiguration configuration, Mongo mongo) {
-    DB db = mongo.getDB("data-portal-local");
+    DB db = mongo.getDB(configuration.getMongoDb());
     return new Jongo(db);
   }
 
@@ -60,6 +60,6 @@ public class DataPortalModule extends AbstractModule {
 
   @Override
   protected final void configure() {
-    bind(GeneDao.class).to(GeneDaoImpl.class).in(Singleton.class);
+    bind(SearchRepository.class).to(ISearchRepository.class).in(Singleton.class);
   }
 }

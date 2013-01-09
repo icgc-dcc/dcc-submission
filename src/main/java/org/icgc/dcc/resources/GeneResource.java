@@ -28,8 +28,6 @@ import java.io.IOException;
 
 import org.eclipse.jetty.http.HttpStatus;
 
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.jsonschema.JsonSchema;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiError;
 import com.wordnik.swagger.annotations.ApiErrors;
@@ -37,44 +35,41 @@ import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 import com.yammer.metrics.annotation.Timed;
 
-import org.icgc.dcc.dao.GeneDao;
+import org.icgc.dcc.core.Indexes;
+import org.icgc.dcc.repositories.SearchRepository;
+import org.icgc.dcc.responses.ManyResponse;
+import org.icgc.dcc.responses.SingleResponse;
 
 @Path("/genes")
 @Produces(MediaType.APPLICATION_JSON)
 @Api(value = "/genes", description = "Operations about genes")
 public class GeneResource {
 
-  private final GeneDao geneDao;
+  private final SearchRepository store;
 
   @Inject
-  public GeneResource(GeneDao geneDao) {
-    this.geneDao = geneDao;
+  public GeneResource(SearchRepository searchRepository) {
+    this.store = searchRepository.withIndex(Indexes.GENES);
   }
 
   @GET
   @Timed
-  @ApiOperation("Retrieve a list of genes")
-  public final Response getAll() {
-    return Response.ok().entity(geneDao.getAll()).build();
-  }
-
-  @Path("/_schema")
-  @GET
-  @ApiOperation("Returns JSON Schema of Resource")
-  public final Response getSchema() throws JsonMappingException {
-    JsonSchema s = geneDao.getSchema();
-    // ResourceFactory
-    return Response.ok(s).build();
+  @ApiOperation(value = "Retrieve a list of genes", responseClass = "org.icgc.dcc.responses.ManyResponse")
+  public final Response getAll() throws IOException {
+    ManyResponse response = new ManyResponse(store.search());// .withLinks();
+    return Response.ok().entity(response).build();
   }
 
   @Path("/{id}")
   @GET
   @Timed
-  @ApiOperation(value = "Find a gene by id", notes = "If a gene does not exist with the specified id an error will be returned", responseClass = "org.icgc.dcc.core.Gene")
+  @ApiOperation(value = "Find a gene by id", notes = "If a gene does not exist with the specified id an error will be returned", responseClass = "org.icgc.dcc.responses.SingleResponse")
   @ApiErrors(value = {@ApiError(code = HttpStatus.BAD_REQUEST_400, reason = "Invalid ID supplied"),
       @ApiError(code = HttpStatus.NOT_FOUND_404, reason = "Gene not found")})
   public final Response getOne(@ApiParam(value = "id of gene that needs to be fetched") @PathParam("id") String id)
       throws IOException {
-    return Response.ok(geneDao.getOne(id)).build();
+    SingleResponse response = new SingleResponse(store.search());// .withLinks();
+    return Response.ok().entity(response).build();
+
   }
 }

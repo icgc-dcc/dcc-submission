@@ -18,24 +18,30 @@
 package org.icgc.dcc.responses;
 
 import java.io.IOException;
+import java.net.URI;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 import org.elasticsearch.search.SearchHits;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import org.icgc.dcc.core.Gene;
+import com.google.common.collect.ImmutableSet;
 
 @Data
 @Slf4j
 public class BaseResponse {
-  private final int apiVersion = 1;
 
-  private final Gene payload;
+  private final long pagination;
 
-  public BaseResponse(SearchHits hits) throws IOException {
-    this.payload = new ObjectMapper().readValue(hits.getHits()[0].getSourceAsString(), Gene.class);
+  private final ImmutableSet<LinkedEntity> links = ImmutableSet.of();
+
+  public BaseResponse(final SearchHits hits) throws IOException {
+    this.pagination = hits.getTotalHits();
+  }
+
+  @Data
+  private static final class LinkedEntity {
+    private final String name;
+    private final URI uri;
   }
 }

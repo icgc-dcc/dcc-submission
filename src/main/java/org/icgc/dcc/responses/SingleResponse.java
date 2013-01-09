@@ -15,19 +15,32 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc.dao;
+package org.icgc.dcc.responses;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.jsonschema.JsonSchema;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.responses.BaseResponse;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHits;
 
-public interface GeneDao {
-  String getAll();
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-  BaseResponse getOne(String id) throws IOException;
+@Data
+@EqualsAndHashCode(callSuper = false)
+@Slf4j
+public final class SingleResponse extends BaseResponse {
+  private final JsonNode data;
 
-  JsonSchema getSchema() throws JsonMappingException;
+  public SingleResponse(final SearchHits hits) throws IOException {
+    super(hits);
+    this.data = gatherData(hits.getHits()[0]);
+  }
+
+  private JsonNode gatherData(final SearchHit hit) throws IOException {
+    return new ObjectMapper().readValue(hit.getSourceAsString(), JsonNode.class);
+  }
 }

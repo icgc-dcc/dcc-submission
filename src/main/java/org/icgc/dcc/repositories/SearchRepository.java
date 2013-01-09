@@ -15,17 +15,17 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc.core;
+package org.icgc.dcc.repositories;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import org.elasticsearch.search.SearchHits;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class Gene {
-  private String name;
+import org.icgc.dcc.core.Indexes;
+import org.icgc.dcc.repositories.impl.ISearchRepository;
 
-  private long age;
+public interface SearchRepository {
+
+  SearchHits search();
+
+  ISearchRepository withIndex(Indexes index);
+
 }
