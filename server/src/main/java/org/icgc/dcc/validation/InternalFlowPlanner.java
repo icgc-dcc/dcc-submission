@@ -28,7 +28,7 @@ public interface InternalFlowPlanner extends FileSchemaFlowPlanner {
    * @param fields the fields to keep in the trimmed output
    * @return a {@code Trim} instance representing this unique trimmed output
    */
-  public Trim addTrimmedOutput(String... fields);
+  public Key addTrimmedOutput(String... fields);
 
   /**
    * Applies an {@code InternalPlanElement} to this {@code planner}

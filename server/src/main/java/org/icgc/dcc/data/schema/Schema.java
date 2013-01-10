@@ -33,9 +33,7 @@ public interface Schema {
   static final ObjectMapper MAPPER = (ObjectMapper) FACTORY.getCodec();
 
   public enum Type {
-
-    INTEGER, DECIMAL, ARRAY, TEXT, RECORD, UNION
-
+    INTEGER, DECIMAL, ARRAY, TEXT, RECORD
   }
 
   public String getName();
@@ -43,8 +41,6 @@ public interface Schema {
   public Type getType();
 
   public RecordSchema asRecord();
-
-  public UnionSchema asUnion();
 
   public ArraySchema asArray();
 
@@ -73,9 +69,6 @@ public interface Schema {
         switch(type) {
         case RECORD:
           schema = new RecordSchema(name);
-          break;
-        case UNION:
-          schema = new UnionSchema(name);
           break;
         case ARRAY:
           schema = new ArraySchema(name);

@@ -62,11 +62,6 @@ public abstract class BaseSchema implements Schema, Serializable {
   }
 
   @Override
-  public UnionSchema asUnion() {
-    throw new IllegalStateException("not a UnionSchema");
-  }
-
-  @Override
   public ArraySchema asArray() {
     throw new IllegalStateException("not an ArraySchema");
   }

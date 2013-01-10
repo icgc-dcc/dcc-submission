@@ -27,7 +27,7 @@ import com.google.common.base.Joiner;
 /**
  * Holds a reference to trimmed content. Used to plan outputs from the internal flow and inputs for the external flow.
  */
-public class Trim implements Serializable {
+public class Key implements Serializable {
 
   private static final char FIELD_SEPARATOR = '-';
 
@@ -37,7 +37,7 @@ public class Trim implements Serializable {
 
   private final String[] fields;
 
-  public Trim(FileSchema schema, String... fields) {
+  public Key(FileSchema schema, String... fields) {
     this.schema = schema;
     this.fields = fields;
   }
@@ -64,10 +64,10 @@ public class Trim implements Serializable {
     if(obj == null) {
       return false;
     }
-    if(obj instanceof Trim == false) {
+    if(obj instanceof Key == false) {
       return super.equals(obj);
     }
-    Trim rhs = (Trim) obj;
+    Key rhs = (Key) obj;
     return this.schema.equals(rhs.schema) && Arrays.equals(fields, rhs.fields);
   }
 

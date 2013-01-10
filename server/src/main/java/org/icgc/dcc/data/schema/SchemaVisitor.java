@@ -21,8 +21,6 @@ public interface SchemaVisitor {
 
   public void visit(RecordSchema record);
 
-  public void visit(UnionSchema union);
-
   public void visit(ArraySchema arrray);
 
   public void visit(ValueSchema value);

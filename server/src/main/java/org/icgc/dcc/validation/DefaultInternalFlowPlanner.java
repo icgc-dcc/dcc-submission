@@ -62,7 +62,7 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
 
   private Pipe structurallyInvalidTail;
 
-  private final Map<Trim, Pipe> trimmedTails = Maps.newHashMap();
+  private final Map<Key, Pipe> trimmedTails = Maps.newHashMap();
 
   private StructuralCheckFunction structralCheck;
 
@@ -82,25 +82,25 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
   }
 
   @Override
-  public Trim addTrimmedOutput(String... fields) {
+  public Key addTrimmedOutput(String... fields) {
     checkArgument(fields != null);
     checkArgument(fields.length > 0);
 
-    String[] trimFields = // in order to obtain offset of referencing side
+    String[] keyFields = // in order to obtain offset of referencing side
         ObjectArrays.concat(fields, ValidationFields.OFFSET_FIELD_NAME);
 
-    Trim trim = new Trim(getSchema(), trimFields);
-    if(trimmedTails.containsKey(trim) == false) {
-      String[] preTrimFields = ObjectArrays.concat(fields, ValidationFields.STATE_FIELD_NAME);
+    Key key = new Key(getSchema(), keyFields);
+    if(trimmedTails.containsKey(key) == false) {
+      String[] preKeyFields = ObjectArrays.concat(fields, ValidationFields.STATE_FIELD_NAME);
 
-      Pipe newHead = new Pipe(trim.getName(), structurallyValidTail);
-      Pipe tail = new Retain(newHead, new Fields(preTrimFields));
+      Pipe newHead = new Pipe(key.getName(), structurallyValidTail);
+      Pipe tail = new Retain(newHead, new Fields(preKeyFields));
       tail = new Each(tail, ValidationFields.STATE_FIELD, new OffsetFunction(), Fields.SWAP);
 
-      log.info("[{}] planned trimmed output with {}", getName(), Arrays.toString(trim.getFields()));
-      trimmedTails.put(trim, tail);
+      log.info("[{}] planned trimmed output with {}", getName(), Arrays.toString(key.getFields()));
+      trimmedTails.put(key, tail);
     }
-    return trim;
+    return key;
   }
 
   @Override
@@ -144,7 +144,7 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
 
     flowDef.addSource(head, source);
 
-    for(Map.Entry<Trim, Pipe> e : trimmedTails.entrySet()) {
+    for(Map.Entry<Key, Pipe> e : trimmedTails.entrySet()) {
       flowDef.addTailSink(e.getValue(), strategy.getTrimmedTap(e.getKey()));
     }
     return flowDef;

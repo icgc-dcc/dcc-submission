@@ -186,6 +186,7 @@ public class LoaderClusterIntegrationTest extends BaseClusterTest {
   private void verifyLoaderDb() {
     for(File expectedFile : new File(MONGO_EXPORT_DIR).listFiles()) {
       File actualFile = new File(getLoaderExportDir(), expectedFile.getName());
+      JsonUtils.normalizeDumpFile(actualFile);
 
       System.out.println("Comparing: expected = " + expectedFile + " to actual = " + actualFile);
       assertJsonFileEquals(expectedFile, actualFile);

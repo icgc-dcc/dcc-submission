@@ -36,7 +36,7 @@ public interface CascadingStrategy {
 
   public Tap<?, ?, ?> getFlowSinkTap(FileSchema schema, FlowType type);
 
-  public Tap<?, ?, ?> getTrimmedTap(Trim trim);
+  public Tap<?, ?, ?> getTrimmedTap(Key key);
 
   public Tap<?, ?, ?> getReportTap(FileSchema schema, FlowType type, String reportName);
 

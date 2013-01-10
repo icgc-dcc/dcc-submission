@@ -42,7 +42,7 @@ class DefaultExternalFlowPlanner extends BaseFileSchemaFlowPlanner implements Ex
 
   private final Plan plan;
 
-  private final Map<Trim, Pipe> trimmedHeads = Maps.newHashMap();
+  private final Map<Key, Pipe> trimmedHeads = Maps.newHashMap();
 
   private final List<Pipe> joinedTails = Lists.newLinkedList();
 
@@ -99,19 +99,19 @@ class DefaultExternalFlowPlanner extends BaseFileSchemaFlowPlanner implements Ex
     }
 
     log.info("[{}] applying element [{}]", getName(), element.describe());
-    Trim trimLhs = lhsInternalFlow.addTrimmedOutput(element.lhsFields());
-    Trim trimRhs = rhsInternalFlow.addTrimmedOutput(element.rhsFields());
+    Key lhsKey = lhsInternalFlow.addTrimmedOutput(element.lhsFields());
+    Key rhsKey = rhsInternalFlow.addTrimmedOutput(element.rhsFields());
 
-    Pipe lhs = getTrimmedHead(trimLhs);
-    Pipe rhs = getTrimmedHead(trimRhs);
+    Pipe lhs = getTrimmedHead(lhsKey);
+    Pipe rhs = getTrimmedHead(rhsKey);
 
     joinedTails.add(element.join(lhs, rhs));
   }
 
   @Override
   protected FlowDef onConnect(FlowDef flowDef, CascadingStrategy strategy) {
-    for(Trim trim : trimmedHeads.keySet()) {
-      flowDef.addSource(trim.getName(), strategy.getTrimmedTap(trim));
+    for(Key key : trimmedHeads.keySet()) {
+      flowDef.addSource(key.getName(), strategy.getTrimmedTap(key));
     }
     return flowDef;
   }
@@ -126,11 +126,11 @@ class DefaultExternalFlowPlanner extends BaseFileSchemaFlowPlanner implements Ex
     throw new IllegalStateException("method should not be used in the context of external validation");
   }
 
-  private Pipe getTrimmedHead(Trim trim) {
-    Pipe head = trimmedHeads.get(trim);
+  private Pipe getTrimmedHead(Key key) {
+    Pipe head = trimmedHeads.get(key);
     if(head == null) {
-      head = new Pipe(trim.getName());
-      trimmedHeads.put(trim, head);
+      head = new Pipe(key.getName());
+      trimmedHeads.put(key, head);
     }
     return head;
   }

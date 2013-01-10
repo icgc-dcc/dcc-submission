@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.icgc.dcc.loader.CascadingUtils;
 import org.icgc.dcc.validation.ValidationErrorCode;
 
 import cascading.flow.FlowProcess;
@@ -73,11 +74,11 @@ public class StructuralCheckFunction extends BaseOperation implements Function {
     Fields adjustedFields = headerFields.subtract(extraFields); // existing valid fields first
     Fields missingFields = dictionaryFields.subtract(adjustedFields);
     adjustedFields = adjustedFields.append(missingFields); // then missing fields to be emulated
-    checkState(FieldsUtils.buildSortedList(dictionaryFields)//
-        .equals(FieldsUtils.buildSortedList(adjustedFields))); // worth checking; order may differ but nothing else
+    checkState(CascadingUtils.buildSortedList(dictionaryFields)//
+        .equals(CascadingUtils.buildSortedList(adjustedFields))); // worth checking; order may differ but nothing else
     fieldDeclaration = adjustedFields.append(ValidationFields.STATE_FIELD); // lastly state
 
-    unknownHeaderIndices = FieldsUtils.indicesOf(headerFields, extraFields);
+    unknownHeaderIndices = CascadingUtils.indicesOf(headerFields, extraFields);
   }
 
   @Override

@@ -11,7 +11,7 @@
      { "name" : "donorId", "type":"text", "fileSchema": "specimen", "fileSchemaField": "donor_id"},
 
      { "name" : "platform", "type" : "text", "fileSchema":"cnsm_m", "fileSchemaField" : "platform" },
-     { "name" : "samples", "type" : "array", "items":{"type":"text", "fileSchema":"cnsm_m", "fileSchemaField" : "analyzed_sample_id,matched_sample_id"}},
+     { "name" : "samples", "type" : "array", "items":{"name": "ignoreme", "type":"text", "fileSchema":"cnsm_m", "fileSchemaField" : "analyzed_sample_id,matched_sample_id"}},
      { "name" : "experimentalProtocol", "type":"text", "fileSchema":"cnsm_m", "fileSchemaField": "experimental_protocol"},
      { "name" : "baseCallingAlgorithm", "type":"text", "fileSchema":"cnsm_m", "fileSchemaField": "base_calling_algorithm"},
      { "name" : "alignmentAlgorithm", "type":"text", "fileSchema":"cnsm_m", "fileSchemaField": "alignment_algorithm"},

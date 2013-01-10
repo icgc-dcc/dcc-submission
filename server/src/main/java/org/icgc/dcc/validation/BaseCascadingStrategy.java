@@ -85,8 +85,8 @@ public abstract class BaseCascadingStrategy implements CascadingStrategy {
   }
 
   @Override
-  public Tap<?, ?, ?> getTrimmedTap(Trim trim) {
-    return tap(trimmedPath(trim), new Fields(trim.getFields()));
+  public Tap<?, ?, ?> getTrimmedTap(Key key) {
+    return tap(trimmedPath(key), new Fields(key.getFields()));
   }
 
   @Override
@@ -116,15 +116,15 @@ public abstract class BaseCascadingStrategy implements CascadingStrategy {
     }
   }
 
-  protected Path trimmedPath(Trim trim) {
-    if(trim.getSchema().getRole() == FileSchemaRole.SUBMISSION) {
-      return new Path(output, trim.getName() + ".tsv");
-    } else if(trim.getSchema().getRole() == FileSchemaRole.SYSTEM) {
-      return new Path(new Path(system, DccFileSystem.VALIDATION_DIRNAME), trim.getName() + ".tsv"); // TODO: should use
+  protected Path trimmedPath(Key key) {
+    if(key.getSchema().getRole() == FileSchemaRole.SUBMISSION) {
+      return new Path(output, key.getName() + ".tsv");
+    } else if(key.getSchema().getRole() == FileSchemaRole.SYSTEM) {
+      return new Path(new Path(system, DccFileSystem.VALIDATION_DIRNAME), key.getName() + ".tsv"); // TODO: should use
                                                                                                     // DccFileSystem
                                                                                                     // abstraction
     } else {
-      throw new RuntimeException("undefined File Schema Role " + trim.getSchema().getRole());
+      throw new RuntimeException("undefined File Schema Role " + key.getSchema().getRole());
     }
   }
 
