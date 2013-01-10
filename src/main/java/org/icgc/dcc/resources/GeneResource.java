@@ -69,18 +69,24 @@ public class GeneResource {
 
   @GET
   @Timed
-  @ApiOperation(value = "Retrieves a list of genes", responseClass = "org.icgc.dcc.responses.ManyResponse")
-  public final Response getAll(@QueryParam("from") int from, @QueryParam("size") int size) {
-    ManyResponse response = new ManyResponse(store.getAll(from, size), httpServletRequest);
+  @ApiOperation(value = "Retrieves a list of genes")
+  public final Response getAll(
+      @ApiParam(value = "Start index of results", allowableValues = "range[1,]", required = false) @QueryParam("from") int from,
+      @ApiParam(value = "Number of results returned", allowableValues = "range[1,100]", required = false) @QueryParam("size") int size,
+      @ApiParam(value = "Column to sort results on", required = false) @QueryParam("sort") String sort,
+      @ApiParam(value = "Order to sort the column", allowableValues = "asc, desc", required = false) @QueryParam("order") String order) {
+    RequestedSearch requestedSearch = new RequestedSearch(from, size, sort, order);
+
+    ManyResponse response = new ManyResponse(store.getAll(requestedSearch), httpServletRequest, requestedSearch);
 
     return Response.ok().entity(response).build();
   }
 
   @POST
   @Timed
-  @ApiOperation(value = "Retrieves a filtered list of genes", responseClass = "org.icgc.dcc.responses.ManyResponse")
+  @ApiOperation(value = "Retrieves a filtered list of genes")
   public final Response filteredGetAll(@Valid RequestedSearch requestedSearch) {
-    ManyResponse response = new ManyResponse(store.getAll(requestedSearch), httpServletRequest);
+    ManyResponse response = new ManyResponse(store.getAll(requestedSearch), httpServletRequest, requestedSearch);
 
     return Response.ok().entity(response).build();
   }
@@ -88,10 +94,10 @@ public class GeneResource {
   @Path("/{id}")
   @GET
   @Timed
-  @ApiOperation(value = "Find a gene by id", notes = "If a gene does not exist with the specified id an error will be returned", responseClass = "org.icgc.dcc.responses.SingleResponse")
+  @ApiOperation(value = "Find a gene by id", notes = "If a gene does not exist with the specified id an error will be returned")
   @ApiErrors(value = {@ApiError(code = HttpStatus.BAD_REQUEST_400, reason = "Invalid ID supplied"),
       @ApiError(code = HttpStatus.NOT_FOUND_404, reason = "Gene not found")})
-  public final Response getOne(@ApiParam(value = "id of gene that needs to be fetched") @PathParam("id") String id)
+  public final Response getOne(@ApiParam(value = "ID of gene that needs to be fetched") @PathParam("id") String id)
       throws IOException {
     SingleResponse response = new SingleResponse(store.getOne(id), httpServletRequest);
 

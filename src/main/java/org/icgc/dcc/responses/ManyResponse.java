@@ -15,6 +15,9 @@
 
 package org.icgc.dcc.responses;
 
+import static java.lang.Math.ceil;
+import static java.lang.Math.floor;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
@@ -32,16 +35,20 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 
+import org.icgc.dcc.search.RequestedSearch;
+
 @Data
 @EqualsAndHashCode(callSuper = false)
 public class ManyResponse extends BaseResponse {
   private final ImmutableList<JsonNode> data;
 
-  // private final Pagination pagination;
+  private final Pagination pagination;
 
-  public ManyResponse(final SearchHits hits, final HttpServletRequest httpServletRequest) {
+  public ManyResponse(final SearchHits hits, final HttpServletRequest httpServletRequest,
+      RequestedSearch requestedSearch) {
     super(httpServletRequest);
     this.data = extractData(hits.getHits());
+    this.pagination = new Pagination(hits, requestedSearch);
   }
 
   private ImmutableList<JsonNode> extractData(final SearchHit... hits) {
@@ -64,18 +71,31 @@ public class ManyResponse extends BaseResponse {
   @Data
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
   private static final class Pagination {
-    private final long count;
-
-    private final long size;
-
-    private final long from;
+    private final int count;
 
     private final long total;
 
-    private final long page;
+    private final int size;
 
-    private final long pages;
+    private final int from;
 
-    private final long sort;
+    private final double page;
+
+    private final double pages;
+
+    private final String sort;
+
+    private final String order;
+
+    public Pagination(final SearchHits hits, RequestedSearch requestedSearch) {
+      this.count = hits.getHits().length;
+      this.total = hits.getTotalHits();
+      this.size = requestedSearch.getSize();
+      this.from = requestedSearch.getFrom() + 1;
+      this.sort = requestedSearch.getSort();
+      this.order = requestedSearch.getOrder();
+      this.page = floor(from / size) + 1;
+      this.pages = ceil(total / size);
+    }
   }
 }

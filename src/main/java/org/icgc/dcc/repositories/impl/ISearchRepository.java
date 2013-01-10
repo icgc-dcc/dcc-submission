@@ -33,7 +33,7 @@ import org.icgc.dcc.search.RequestedSearch;
 
 public class ISearchRepository implements SearchRepository {
 
-  private final String index = "icgc";
+  private final String index = "blog";
 
   private final Types type;
 
@@ -57,12 +57,6 @@ public class ISearchRepository implements SearchRepository {
   @Override
   public final GetResponse getOne(final String id) {
     return client.prepareGet(index, type.name(), id).execute().actionGet();
-  }
-
-  @Override
-  public final SearchHits getAll(final int from, final int size) {
-    return client.prepareSearch(String.valueOf(index)).setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
-        .setQuery(QueryBuilders.matchAllQuery()).setFrom(from).setSize(size).execute().actionGet().getHits();
   }
 
   @Override

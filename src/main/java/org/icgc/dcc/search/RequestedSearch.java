@@ -27,6 +27,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @Data
 public class RequestedSearch {
 
+  private static final int DEFAULT_SIZE = 10;
+  private static final int MAX_SIZE = 100;
+
   @JsonProperty
   private RequestedQuery query;
 
@@ -47,4 +50,22 @@ public class RequestedSearch {
 
   @JsonProperty
   private String sort;
+
+  @JsonProperty
+  private String order;
+
+  public RequestedSearch(final int from, final int size, final String sort, final String order) {
+    this.from = from < 1 ? 1 : from;
+    // Prevent massive requests
+    this.size = size == 0 ? DEFAULT_SIZE : size > MAX_SIZE ? MAX_SIZE : size;
+    this.sort = sort;
+    // param enum thing
+    this.order = order;
+  }
+
+  // For the user this.from should be 1-index, but ES is 0-index
+  // Set here instead of cstr so it works with both get and post
+  public final int getFrom() {
+    return this.from == 0 ? 0 : this.from - 1;
+  }
 }

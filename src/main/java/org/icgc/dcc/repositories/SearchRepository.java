@@ -28,8 +28,6 @@ public interface SearchRepository {
 
   GetResponse getOne(final String id);
 
-  SearchHits getAll(final int from, final int size);
-
   SearchHits getAll(final RequestedSearch requestedSearch);
 
   SearchHits search(final String text);
