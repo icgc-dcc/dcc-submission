@@ -1,8 +1,9 @@
 # Mongo URI
-mongoUri: "mongodb://localhost"
-mongoDb: "data-portal-local"
+mongo:
+  uri: "mongodb://localhost"
+  db: "data-portal-local"
 
 # ElasticSearch host
-# esHost: "hcn50.res.oicr.on.ca"
-esHost: "localhost"
-esPort: 9300
+elastic:
+  host: "localhost"
+  port: 9300

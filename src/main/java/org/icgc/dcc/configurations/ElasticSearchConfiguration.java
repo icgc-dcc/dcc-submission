@@ -15,27 +15,23 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc;
+package org.icgc.dcc.configurations;
 
-import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 
 import lombok.Getter;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.yammer.dropwizard.config.Configuration;
-
-import org.icgc.dcc.configurations.ElasticSearchConfiguration;
-import org.icgc.dcc.configurations.MongoDbConfiguration;
 
 @Getter
-public class DataPortalConfiguration extends Configuration {
-
-  @Valid
+public class ElasticSearchConfiguration {
   @JsonProperty
-  private MongoDbConfiguration mongo = new MongoDbConfiguration();
+  private String host = "localhost";
 
-  @Valid
+  @Min(1)
+  @Max(65535)
   @JsonProperty
-  private ElasticSearchConfiguration elastic = new ElasticSearchConfiguration();
+  private int port = 9300;
 
 }

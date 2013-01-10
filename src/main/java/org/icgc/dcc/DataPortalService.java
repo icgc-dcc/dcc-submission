@@ -34,6 +34,8 @@ import com.yammer.dropwizard.Service;
 import com.yammer.dropwizard.config.Bootstrap;
 import com.yammer.dropwizard.config.Environment;
 
+import org.icgc.dcc.bundles.SwaggerBundle;
+
 @Slf4j
 public class DataPortalService extends Service<DataPortalConfiguration> {
   private static final String PACKAGE = DataPortalService.class.getPackage().getName();
@@ -56,6 +58,7 @@ public class DataPortalService extends Service<DataPortalConfiguration> {
     bootstrap.setName(APPLICATION_NAME);
     bootstrap.addBundle(createGuiceBundle(bootstrap));
     bootstrap.addBundle(createRedirectBundle());
+    bootstrap.addBundle(new SwaggerBundle());
   }
 
   @Override

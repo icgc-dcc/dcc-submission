@@ -31,6 +31,8 @@ import com.mongodb.DB;
 import com.mongodb.Mongo;
 import com.mongodb.MongoURI;
 
+import org.icgc.dcc.configurations.ElasticSearchConfiguration;
+import org.icgc.dcc.configurations.MongoDbConfiguration;
 import org.icgc.dcc.repositories.SearchRepository;
 import org.icgc.dcc.repositories.impl.ISearchRepository;
 
@@ -38,24 +40,24 @@ public class DataPortalModule extends AbstractModule {
 
   @Provides
   @Singleton
-  public final Mongo mongo(DataPortalConfiguration configuration) throws UnknownHostException {
+  public final Mongo mongo(MongoDbConfiguration configuration) throws UnknownHostException {
     // Mongo is thread-safe so @Singleton is appropriate
-    return new Mongo(new MongoURI(configuration.getMongoUri()));
+    return new Mongo(new MongoURI(configuration.getUri()));
   }
 
   @Provides
   @Singleton
-  public final Jongo jongo(DataPortalConfiguration configuration, Mongo mongo) {
-    DB db = mongo.getDB(configuration.getMongoDb());
+  public final Jongo jongo(MongoDbConfiguration configuration, Mongo mongo) {
+    DB db = mongo.getDB(configuration.getDb());
     return new Jongo(db);
   }
 
   @Provides
   @Singleton
-  public final Client esClient(DataPortalConfiguration configuration) {
+  public final Client elasticClient(ElasticSearchConfiguration configuration) {
     // TrasportClient is thread-safe so @Singleton is appropriate
-    return new TransportClient().addTransportAddress(new InetSocketTransportAddress(configuration.getEsHost(),
-        configuration.getEsPort()));
+    return new TransportClient().addTransportAddress(new InetSocketTransportAddress(configuration.getHost(),
+        configuration.getPort()));
   }
 
   @Override
