@@ -17,45 +17,31 @@
 
 package org.icgc.dcc.responses;
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.List;
+import javax.ws.rs.core.Response.StatusType;
+import java.io.IOException;
 
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import lombok.EqualsAndHashCode;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-
+@EqualsAndHashCode(callSuper = false)
 @Data
-@NoArgsConstructor
-@Slf4j
-public abstract class BaseResponse {
+public class ErrorResponse extends BaseResponse {
+  private final ErrorEntity error;
 
-  private static final String SELF = "_self";
-
-  private final List<LinkedEntity> links = Lists.newArrayList();
-
-  public BaseResponse(HttpServletRequest httpServletRequest) {
-    this.addSelfLink(httpServletRequest);
-  }
-
-  private void addSelfLink(HttpServletRequest httpServletRequest) {
-    this.addLink(SELF, httpServletRequest);
-  }
-
-  public final void addLink(final String name, final HttpServletRequest httpServletRequest) {
-    this.links.add(new LinkedEntity(name, httpServletRequest.getMethod(), httpServletRequest.getRequestURI()));
-  }
-
-  public final ImmutableList<LinkedEntity> getLinks() {
-    return ImmutableList.copyOf(this.links);
+  public ErrorResponse(final StatusType badRequest, final IOException e) {
+    super();
+    this.error = new ErrorEntity(badRequest, e);
   }
 
   @Data
-  private static final class LinkedEntity {
-    private final String name;
-    private final String method;
-    private final String uri;
+  private static class ErrorEntity {
+    private final int code;
+
+    private final String message;
+
+    private ErrorEntity(final StatusType code, final IOException message) {
+      this.code = code.getStatusCode();
+      this.message = message.getMessage();
+    }
   }
 }

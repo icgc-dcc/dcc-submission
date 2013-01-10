@@ -17,15 +17,23 @@
 
 package org.icgc.dcc.repositories;
 
+import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.search.SearchHits;
 
-import org.icgc.dcc.core.Indexes;
+import org.icgc.dcc.core.Types;
 import org.icgc.dcc.repositories.impl.ISearchRepository;
+import org.icgc.dcc.search.RequestedSearch;
 
 public interface SearchRepository {
 
-  SearchHits search();
+  GetResponse getOne(final String id);
 
-  ISearchRepository withIndex(Indexes index);
+  SearchHits getAll(final int from, final int size);
+
+  SearchHits getAll(final RequestedSearch requestedSearch);
+
+  SearchHits search(final String text);
+
+  ISearchRepository withType(Types index);
 
 }

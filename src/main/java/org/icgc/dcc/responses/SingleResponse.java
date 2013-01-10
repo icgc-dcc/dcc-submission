@@ -17,30 +17,37 @@
 
 package org.icgc.dcc.responses;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.io.IOException;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.extern.slf4j.Slf4j;
 
-import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.action.get.GetResponse;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
-@Slf4j
 public final class SingleResponse extends BaseResponse {
   private final JsonNode data;
 
-  public SingleResponse(final SearchHits hits) throws IOException {
-    super(hits);
-    this.data = gatherData(hits.getHits()[0]);
+  public SingleResponse(final GetResponse hit, final HttpServletRequest hsr) {
+    super(hsr);
+    this.data = extractData(hit);
   }
 
-  private JsonNode gatherData(final SearchHit hit) throws IOException {
-    return new ObjectMapper().readValue(hit.getSourceAsString(), JsonNode.class);
+  private JsonNode extractData(final GetResponse hit) {
+    try {
+      return new ObjectMapper().readValue(hit.getSourceAsString(), JsonNode.class);
+    } catch (IOException e) {
+      ErrorResponse errorResponse = new ErrorResponse(Response.Status.BAD_REQUEST, e);
+      throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST).entity(errorResponse)
+          .type(MediaType.APPLICATION_JSON_TYPE).build());
+    }
   }
 }

@@ -15,47 +15,19 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc.responses;
+package org.icgc.dcc.core;
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.List;
+public enum Types {
+  ALL(""), GENES("blog");
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+  private String type;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-
-@Data
-@NoArgsConstructor
-@Slf4j
-public abstract class BaseResponse {
-
-  private static final String SELF = "_self";
-
-  private final List<LinkedEntity> links = Lists.newArrayList();
-
-  public BaseResponse(HttpServletRequest httpServletRequest) {
-    this.addSelfLink(httpServletRequest);
+  private Types(final String type) {
+    this.type = type;
   }
 
-  private void addSelfLink(HttpServletRequest httpServletRequest) {
-    this.addLink(SELF, httpServletRequest);
+  public final String toString() {
+    return this.type;
   }
 
-  public final void addLink(final String name, final HttpServletRequest httpServletRequest) {
-    this.links.add(new LinkedEntity(name, httpServletRequest.getMethod(), httpServletRequest.getRequestURI()));
-  }
-
-  public final ImmutableList<LinkedEntity> getLinks() {
-    return ImmutableList.copyOf(this.links);
-  }
-
-  @Data
-  private static final class LinkedEntity {
-    private final String name;
-    private final String method;
-    private final String uri;
-  }
 }

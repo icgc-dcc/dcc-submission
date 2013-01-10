@@ -15,36 +15,67 @@
 
 package org.icgc.dcc.responses;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.io.IOException;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.extern.slf4j.Slf4j;
 
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
-@Slf4j
 public class ManyResponse extends BaseResponse {
   private final ImmutableList<JsonNode> data;
 
-  public ManyResponse(final SearchHits hits) throws IOException {
-    super(hits);
-    this.data = gatherData(hits.getHits());
+  // private final Pagination pagination;
+
+  public ManyResponse(final SearchHits hits, final HttpServletRequest httpServletRequest) {
+    super(httpServletRequest);
+    this.data = extractData(hits.getHits());
   }
 
-  private ImmutableList<JsonNode> gatherData(final SearchHit... hits) throws IOException {
+  private ImmutableList<JsonNode> extractData(final SearchHit... hits) {
     ObjectMapper mapper = new ObjectMapper();
     ImmutableList.Builder<JsonNode> list = ImmutableList.<JsonNode>builder();
     for (SearchHit hit : hits) {
-      list.add(mapper.readValue(hit.getSourceAsString(), JsonNode.class));
+      JsonNode node;
+      try {
+        node = mapper.readValue(hit.getSourceAsString(), JsonNode.class);
+      } catch (IOException e) {
+        ErrorResponse errorResponse = new ErrorResponse(Response.Status.BAD_REQUEST, e);
+        throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST).entity(errorResponse)
+            .type(MediaType.APPLICATION_JSON_TYPE).build());
+      }
+      list.add(node);
     }
     return list.build();
+  }
+
+  @Data
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
+  private static final class Pagination {
+    private final long count;
+
+    private final long size;
+
+    private final long from;
+
+    private final long total;
+
+    private final long page;
+
+    private final long pages;
+
+    private final long sort;
   }
 }

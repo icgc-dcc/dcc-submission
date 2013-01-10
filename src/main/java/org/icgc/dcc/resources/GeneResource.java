@@ -17,14 +17,23 @@
 
 package org.icgc.dcc.resources;
 
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
+
+import lombok.extern.slf4j.Slf4j;
 
 import org.eclipse.jetty.http.HttpStatus;
 
@@ -35,28 +44,44 @@ import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 import com.yammer.metrics.annotation.Timed;
 
-import org.icgc.dcc.core.Indexes;
+import org.icgc.dcc.core.Types;
 import org.icgc.dcc.repositories.SearchRepository;
 import org.icgc.dcc.responses.ManyResponse;
 import org.icgc.dcc.responses.SingleResponse;
+import org.icgc.dcc.search.RequestedSearch;
 
 @Path("/genes")
-@Produces(MediaType.APPLICATION_JSON)
+@Produces(APPLICATION_JSON)
+@Consumes(APPLICATION_JSON)
 @Api(value = "/genes", description = "Operations about genes")
+@Slf4j
 public class GeneResource {
 
   private final SearchRepository store;
 
+  @Context
+  private HttpServletRequest httpServletRequest;
+
   @Inject
   public GeneResource(SearchRepository searchRepository) {
-    this.store = searchRepository.withIndex(Indexes.GENES);
+    this.store = searchRepository.withType(Types.GENES);
   }
 
   @GET
   @Timed
-  @ApiOperation(value = "Retrieve a list of genes", responseClass = "org.icgc.dcc.responses.ManyResponse")
-  public final Response getAll() throws IOException {
-    ManyResponse response = new ManyResponse(store.search());// .withLinks();
+  @ApiOperation(value = "Retrieves a list of genes", responseClass = "org.icgc.dcc.responses.ManyResponse")
+  public final Response getAll(@QueryParam("from") int from, @QueryParam("size") int size) {
+    ManyResponse response = new ManyResponse(store.getAll(from, size), httpServletRequest);
+
+    return Response.ok().entity(response).build();
+  }
+
+  @POST
+  @Timed
+  @ApiOperation(value = "Retrieves a filtered list of genes", responseClass = "org.icgc.dcc.responses.ManyResponse")
+  public final Response filteredGetAll(@Valid RequestedSearch requestedSearch) {
+    ManyResponse response = new ManyResponse(store.getAll(requestedSearch), httpServletRequest);
+
     return Response.ok().entity(response).build();
   }
 
@@ -68,8 +93,8 @@ public class GeneResource {
       @ApiError(code = HttpStatus.NOT_FOUND_404, reason = "Gene not found")})
   public final Response getOne(@ApiParam(value = "id of gene that needs to be fetched") @PathParam("id") String id)
       throws IOException {
-    SingleResponse response = new SingleResponse(store.search());// .withLinks();
-    return Response.ok().entity(response).build();
+    SingleResponse response = new SingleResponse(store.getOne(id), httpServletRequest);
 
+    return Response.ok().entity(response).build();
   }
 }
