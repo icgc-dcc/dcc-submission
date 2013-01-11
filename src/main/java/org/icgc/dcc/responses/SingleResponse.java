@@ -34,6 +34,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Data
 @EqualsAndHashCode(callSuper = false)
 public final class SingleResponse extends BaseResponse {
+
   private final JsonNode data;
 
   public SingleResponse(final GetResponse hit, final HttpServletRequest hsr) {
@@ -45,9 +46,8 @@ public final class SingleResponse extends BaseResponse {
     try {
       return new ObjectMapper().readValue(hit.getSourceAsString(), JsonNode.class);
     } catch (IOException e) {
-      ErrorResponse errorResponse = new ErrorResponse(Response.Status.BAD_REQUEST, e);
-      throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST).entity(errorResponse)
-          .type(MediaType.APPLICATION_JSON_TYPE).build());
+      throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST)
+          .entity(new ErrorResponse(Response.Status.BAD_REQUEST, e)).type(MediaType.APPLICATION_JSON_TYPE).build());
     }
   }
 }

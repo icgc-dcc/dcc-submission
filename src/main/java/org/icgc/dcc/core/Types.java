@@ -18,7 +18,7 @@
 package org.icgc.dcc.core;
 
 public enum Types {
-  ALL(""), GENES("blog");
+  ALL("_all"), GENES("post");
 
   private String type;
 

@@ -22,17 +22,17 @@ import java.util.List;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 @Data
 @NoArgsConstructor
-@Slf4j
 public abstract class BaseResponse {
 
   private static final String SELF = "_self";
+
+  private static final String URI_FORMAT = "%s://%s:%d%s?%s";
 
   private final List<LinkedEntity> links = Lists.newArrayList();
 
@@ -44,8 +44,11 @@ public abstract class BaseResponse {
     this.addLink(SELF, httpServletRequest);
   }
 
-  public final void addLink(final String name, final HttpServletRequest httpServletRequest) {
-    this.links.add(new LinkedEntity(name, httpServletRequest.getMethod(), httpServletRequest.getRequestURI()));
+  public final void addLink(final String name, final HttpServletRequest hsr) {
+    String uri =
+        String.format(URI_FORMAT, hsr.getScheme(), hsr.getServerName(), hsr.getLocalPort(), hsr.getRequestURI(),
+            hsr.getQueryString());
+    this.links.add(new LinkedEntity(name, hsr.getMethod(), uri));
   }
 
   public final ImmutableList<LinkedEntity> getLinks() {
@@ -55,7 +58,9 @@ public abstract class BaseResponse {
   @Data
   private static final class LinkedEntity {
     private final String name;
+
     private final String method;
+
     private final String uri;
   }
 }

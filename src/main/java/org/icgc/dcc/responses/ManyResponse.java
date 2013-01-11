@@ -35,7 +35,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 
-import org.icgc.dcc.search.RequestedSearch;
+import org.icgc.dcc.search.SearchQuery;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -44,11 +44,10 @@ public class ManyResponse extends BaseResponse {
 
   private final Pagination pagination;
 
-  public ManyResponse(final SearchHits hits, final HttpServletRequest httpServletRequest,
-      RequestedSearch requestedSearch) {
+  public ManyResponse(final SearchHits hits, final HttpServletRequest httpServletRequest, SearchQuery searchQuery) {
     super(httpServletRequest);
     this.data = extractData(hits.getHits());
-    this.pagination = new Pagination(hits, requestedSearch);
+    this.pagination = new Pagination(hits, searchQuery);
   }
 
   private ImmutableList<JsonNode> extractData(final SearchHit... hits) {
@@ -59,9 +58,8 @@ public class ManyResponse extends BaseResponse {
       try {
         node = mapper.readValue(hit.getSourceAsString(), JsonNode.class);
       } catch (IOException e) {
-        ErrorResponse errorResponse = new ErrorResponse(Response.Status.BAD_REQUEST, e);
-        throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST).entity(errorResponse)
-            .type(MediaType.APPLICATION_JSON_TYPE).build());
+        throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST)
+            .entity(new ErrorResponse(Response.Status.BAD_REQUEST, e)).type(MediaType.APPLICATION_JSON_TYPE).build());
       }
       list.add(node);
     }
@@ -87,13 +85,13 @@ public class ManyResponse extends BaseResponse {
 
     private final String order;
 
-    public Pagination(final SearchHits hits, RequestedSearch requestedSearch) {
+    public Pagination(final SearchHits hits, SearchQuery searchQuery) {
       this.count = hits.getHits().length;
       this.total = hits.getTotalHits();
-      this.size = requestedSearch.getSize();
-      this.from = requestedSearch.getFrom() + 1;
-      this.sort = requestedSearch.getSort();
-      this.order = requestedSearch.getOrder();
+      this.size = searchQuery.getSize();
+      this.from = searchQuery.getFrom() + 1;
+      this.sort = searchQuery.getSort();
+      this.order = searchQuery.getOrder();
       this.page = floor(from / size) + 1;
       this.pages = ceil(total / size);
     }

@@ -25,7 +25,7 @@ import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode(callSuper = false)
 @Data
-public class ErrorResponse extends BaseResponse {
+public final class ErrorResponse extends BaseResponse {
   private final ErrorEntity error;
 
   public ErrorResponse(final StatusType badRequest, final IOException e) {

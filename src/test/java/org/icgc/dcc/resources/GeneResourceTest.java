@@ -29,14 +29,14 @@ import org.mockito.runners.MockitoJUnitRunner;
 import com.sun.jersey.api.client.WebResource;
 import com.yammer.dropwizard.testing.ResourceTest;
 
-import org.icgc.dcc.repositories.impl.ISearchRepository;
+import org.icgc.dcc.repositories.impl.SearchRepositoryImpl;
 
 @RunWith(MockitoJUnitRunner.class)
 @SuppressWarnings("unchecked")
 public class GeneResourceTest extends ResourceTest {
 
   @Mock
-  private ISearchRepository store;
+  private SearchRepositoryImpl store;
 
   @Override
   protected final void setUpResources() throws Exception {
