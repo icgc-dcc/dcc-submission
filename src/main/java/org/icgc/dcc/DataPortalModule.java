@@ -34,7 +34,7 @@ import com.mongodb.MongoURI;
 import org.icgc.dcc.configurations.ElasticSearchConfiguration;
 import org.icgc.dcc.configurations.MongoDbConfiguration;
 import org.icgc.dcc.repositories.SearchRepository;
-import org.icgc.dcc.repositories.impl.ISearchRepository;
+import org.icgc.dcc.repositories.impl.SearchRepositoryImpl;
 
 public class DataPortalModule extends AbstractModule {
 
@@ -62,6 +62,6 @@ public class DataPortalModule extends AbstractModule {
 
   @Override
   protected final void configure() {
-    bind(SearchRepository.class).to(ISearchRepository.class).in(Singleton.class);
+    bind(SearchRepository.class).to(SearchRepositoryImpl.class).in(Singleton.class);
   }
 }

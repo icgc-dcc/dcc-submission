@@ -21,17 +21,17 @@ import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.search.SearchHits;
 
 import org.icgc.dcc.core.Types;
-import org.icgc.dcc.repositories.impl.ISearchRepository;
-import org.icgc.dcc.search.RequestedSearch;
+import org.icgc.dcc.repositories.impl.SearchRepositoryImpl;
+import org.icgc.dcc.search.SearchQuery;
 
 public interface SearchRepository {
 
   GetResponse getOne(final String id);
 
-  SearchHits getAll(final RequestedSearch requestedSearch);
+  SearchHits getAll(final SearchQuery searchQuery);
 
-  SearchHits search(final String text);
+  SearchHits search(final String text, final int from, final int size);
 
-  ISearchRepository withType(Types index);
+  SearchRepositoryImpl withType(final Types index);
 
 }

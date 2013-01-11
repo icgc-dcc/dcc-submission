@@ -17,7 +17,7 @@
 
 package org.icgc.dcc.repositories.impl;
 
-import javax.annotation.Nonnull;
+import lombok.extern.slf4j.Slf4j;
 
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchType;
@@ -29,46 +29,50 @@ import com.google.inject.Inject;
 
 import org.icgc.dcc.core.Types;
 import org.icgc.dcc.repositories.SearchRepository;
-import org.icgc.dcc.search.RequestedSearch;
+import org.icgc.dcc.search.SearchQuery;
 
-public class ISearchRepository implements SearchRepository {
+@Slf4j
+public class SearchRepositoryImpl implements SearchRepository {
 
-  private final String index = "blog";
+  private final static String index = "blog"; // This should probably be set in a config
 
   private final Types type;
 
   private final Client client;
 
   @Inject
-  public ISearchRepository(Client client) {
+  public SearchRepositoryImpl(Client client) {
     this.client = client;
     this.type = Types.ALL;
   }
 
-  public ISearchRepository(Client client, Types type) {
+  public SearchRepositoryImpl(Client client, Types type) {
     this.client = client;
     this.type = type;
   }
 
-  public final ISearchRepository withType(@Nonnull Types type) {
-    return this.type.equals(type) ? this : new ISearchRepository(this.client, type);
+  public final SearchRepositoryImpl withType(Types type) {
+    return this.type.equals(type) ? this : new SearchRepositoryImpl(this.client, type);
   }
 
+  // Returns one hit
   @Override
   public final GetResponse getOne(final String id) {
     return client.prepareGet(index, type.name(), id).execute().actionGet();
   }
 
+  // Returns many hits by index
   @Override
-  public final SearchHits getAll(final RequestedSearch requestedSearch) {
-    return client.prepareSearch(String.valueOf(index)).setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
-        .setQuery(QueryBuilders.matchAllQuery()).setFrom(requestedSearch.getFrom()).setSize(requestedSearch.getSize())
+  public final SearchHits getAll(final SearchQuery searchQuery) {
+    return client.prepareSearch(index).setTypes(type.toString()).setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
+        .setQuery(QueryBuilders.matchAllQuery()).setFrom(searchQuery.getFrom()).setSize(searchQuery.getSize())
         .execute().actionGet().getHits();
   }
 
+  // Text search
   @Override
-  public final SearchHits search(final String text) {
-    return client.prepareSearch(String.valueOf(index)).setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
-        .setQuery(QueryBuilders.matchAllQuery()).setFrom(0).setSize(2).execute().actionGet().getHits();
+  public final SearchHits search(final String text, final int from, final int size) {
+    return client.prepareSearch(index).setTypes(type.toString()).setQuery(QueryBuilders.queryString(text))
+        .setFrom(from).setSize(size).execute().actionGet().getHits();
   }
 }
