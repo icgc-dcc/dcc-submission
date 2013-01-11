@@ -23,6 +23,7 @@ import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -48,7 +49,7 @@ import org.icgc.dcc.core.Types;
 import org.icgc.dcc.repositories.SearchRepository;
 import org.icgc.dcc.responses.ManyResponse;
 import org.icgc.dcc.responses.SingleResponse;
-import org.icgc.dcc.search.RequestedSearch;
+import org.icgc.dcc.search.SearchQuery;
 
 @Path("/genes")
 @Produces(APPLICATION_JSON)
@@ -71,13 +72,12 @@ public class GeneResource {
   @Timed
   @ApiOperation(value = "Retrieves a list of genes")
   public final Response getAll(
-      @ApiParam(value = "Start index of results", allowableValues = "range[1,]", required = false) @QueryParam("from") int from,
-      @ApiParam(value = "Number of results returned", allowableValues = "range[1,100]", required = false) @QueryParam("size") int size,
+      @ApiParam(value = "Start index of results", required = false) @QueryParam("from") @DefaultValue("1") int from,
+      @ApiParam(value = "Number of results returned", allowableValues = "range[1,100]", required = false) @QueryParam("size") @DefaultValue("10") int size,
       @ApiParam(value = "Column to sort results on", required = false) @QueryParam("sort") String sort,
       @ApiParam(value = "Order to sort the column", allowableValues = "asc, desc", required = false) @QueryParam("order") String order) {
-    RequestedSearch requestedSearch = new RequestedSearch(from, size, sort, order);
-
-    ManyResponse response = new ManyResponse(store.getAll(requestedSearch), httpServletRequest, requestedSearch);
+    SearchQuery searchQuery = new SearchQuery(from, size, sort, order);
+    ManyResponse response = new ManyResponse(store.getAll(searchQuery), httpServletRequest, searchQuery);
 
     return Response.ok().entity(response).build();
   }
@@ -85,8 +85,9 @@ public class GeneResource {
   @POST
   @Timed
   @ApiOperation(value = "Retrieves a filtered list of genes")
-  public final Response filteredGetAll(@Valid RequestedSearch requestedSearch) {
-    ManyResponse response = new ManyResponse(store.getAll(requestedSearch), httpServletRequest, requestedSearch);
+  public final Response filteredGetAll(@Valid SearchQuery searchQuery) {
+    // TODO This is broken
+    ManyResponse response = new ManyResponse(store.getAll(searchQuery), httpServletRequest, searchQuery);
 
     return Response.ok().entity(response).build();
   }
@@ -103,4 +104,5 @@ public class GeneResource {
 
     return Response.ok().entity(response).build();
   }
+
 }
