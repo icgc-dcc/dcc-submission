@@ -34,7 +34,7 @@ import org.icgc.dcc.search.SearchQuery;
 @Slf4j
 public class SearchRepositoryImpl implements SearchRepository {
 
-  private final static String index = "blog"; // This should probably be set in a config
+  private final static String index = "icgc_test54"; // This should probably be set in a config
 
   private final Types type;
 
@@ -58,7 +58,7 @@ public class SearchRepositoryImpl implements SearchRepository {
   // Returns one hit
   @Override
   public final GetResponse getOne(final String id) {
-    return client.prepareGet(index, type.name(), id).execute().actionGet();
+    return client.prepareGet(index, type.toString(), id).execute().actionGet();
   }
 
   // Returns many hits by index
@@ -72,7 +72,7 @@ public class SearchRepositoryImpl implements SearchRepository {
   // Text search
   @Override
   public final SearchHits search(final String text, final int from, final int size) {
-    return client.prepareSearch(index).setTypes(type.toString()).setQuery(QueryBuilders.queryString(text))
-        .setFrom(from).setSize(size).execute().actionGet().getHits();
+    return client.prepareSearch(index).setQuery(QueryBuilders.queryString(text)).setFrom(from).setSize(size).execute()
+        .actionGet().getHits();
   }
 }

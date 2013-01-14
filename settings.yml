@@ -5,5 +5,5 @@ mongo:
 
 # ElasticSearch host
 elastic:
-  host: "localhost"
+  host: "hcn50.res.oicr.on.ca"
   port: 9300
