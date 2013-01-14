@@ -401,7 +401,7 @@ body #content_message {
 }
 
 body #header {
-    background-color: #89bf04;
+    background-color: #385777;
     padding: 14px;
 }
 
@@ -409,8 +409,7 @@ body #header a#logo {
     font-size: 1.5em;
     font-weight: bold;
     text-decoration: none;
-    background: transparent url(../images/logo_small.png) no-repeat left center;
-    padding: 20px 0 20px 40px;
+    padding: 20px 0;
     color: white;
 }
 
@@ -1128,7 +1127,6 @@ body ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operatio
     overflow-y: auto;
 }
 
-
 body ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation.patch {
     float: none;
     clear: both;
@@ -1503,18 +1501,25 @@ body ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operatio
     overflow-y: auto;
 }
 
-
 .model-signature {
     font-family: "Droid Sans", sans-serif;
     font-size: 1em;
     line-height: 1.5em;
 }
+
 .model-signature .description span {
     font-size: 0.9em;
     line-height: 1.5em;
 }
-.model-signature .description span:nth-child(odd)    { color:#333; }
-.model-signature .description span:nth-child(even)    { color:#C5862B; }
+
+.model-signature .description span:nth-child(odd) {
+    color: #333;
+}
+
+.model-signature .description span:nth-child(even) {
+    color: #C5862B;
+}
+
 .model-signature .signature-nav a {
     text-decoration: none;
     color: #AAA;
@@ -1577,14 +1582,14 @@ body ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operatio
 }
 
 pre code {
-  background: none;
+    background: none;
 }
 
 .content > .content-type > div > label {
-  clear: both;
-  display: block;
-  color: #0F6AB4;
-  font-size: 1.1em;
-  margin: 0;
-  padding: 15px 0 5px 0px;
+    clear: both;
+    display: block;
+    color: #0F6AB4;
+    font-size: 1.1em;
+    margin: 0;
+    padding: 15px 0 5px 0px;
 }
