@@ -19,12 +19,14 @@ package org.icgc.dcc.search;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import javax.xml.bind.annotation.XmlRootElement;
 
 import lombok.Data;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Data
+@XmlRootElement(name = "SearchQuery")
 public class SearchQuery {
 
   private static final int DEFAULT_SIZE = 10;
@@ -78,18 +80,21 @@ public class SearchQuery {
   }
 
   @Data
+  @XmlRootElement(name = "Query")
   private static class Query {
     @JsonProperty
     private String name;
   }
 
   @Data
+  @XmlRootElement(name = "Filters")
   private static class Filters {
     @JsonProperty
     private String name;
   }
 
   @Data
+  @XmlRootElement(name = "Facets")
   private static class Facets {
     @JsonProperty
     private String name;

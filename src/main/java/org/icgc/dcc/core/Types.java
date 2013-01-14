@@ -18,7 +18,7 @@
 package org.icgc.dcc.core;
 
 public enum Types {
-  ALL("_all"), GENES("genes");
+  ALL("_all"), GENES("genes"), DONORS("donors"), OBSERVATIONS("obs"), PROJECTS("projects");
 
   private String type;
 
