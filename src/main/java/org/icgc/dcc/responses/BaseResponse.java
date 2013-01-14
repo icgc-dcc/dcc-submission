@@ -32,7 +32,9 @@ public abstract class BaseResponse {
 
   private static final String SELF = "_self";
 
-  private static final String URI_FORMAT = "%s://%s:%d%s?%s";
+  private static final String URI_FORMAT = "%s://%s:%d%s";
+
+  private static final String URI_FORMAT_WITH_QUERY = "%s://%s:%d%s?%s";
 
   private final List<LinkedEntity> links = Lists.newArrayList();
 
@@ -45,9 +47,15 @@ public abstract class BaseResponse {
   }
 
   public final void addLink(final String name, final HttpServletRequest hsr) {
-    String uri =
-        String.format(URI_FORMAT, hsr.getScheme(), hsr.getServerName(), hsr.getLocalPort(), hsr.getRequestURI(),
-            hsr.getQueryString());
+    String uri;
+
+    if (hsr.getQueryString() != null) {
+      uri =
+          String.format(URI_FORMAT_WITH_QUERY, hsr.getScheme(), hsr.getServerName(), hsr.getLocalPort(),
+              hsr.getRequestURI(), hsr.getQueryString());
+    } else {
+      uri = String.format(URI_FORMAT, hsr.getScheme(), hsr.getServerName(), hsr.getLocalPort(), hsr.getRequestURI());
+    }
     this.links.add(new LinkedEntity(name, hsr.getMethod(), uri));
   }
 
