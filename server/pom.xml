@@ -182,13 +182,6 @@
       <version>0.4.16</version>
     </dependency>
 
-    <!-- Search -->
-    <dependency>
-      <groupId>org.elasticsearch</groupId>
-      <artifactId>elasticsearch</artifactId>
-      <version>${elasticsearch.version}</version>
-    </dependency>
-
     <!-- Dependency injection -->
     <dependency>
       <groupId>com.google.inject</groupId>
