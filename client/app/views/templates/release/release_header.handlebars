@@ -1,0 +1,53 @@
+<ul  id="breadcrumb" class="breadcrumb">
+<li>
+  <a href="/releases/"><i class="icon-home"></i> Releases</a> <span class="divider">/</span>
+</li>
+<li>
+  {{name}}
+</ul>
+<div class="row-fluid" style="margin-bottom:20px">
+  <div class="summary span6">
+    <div class="row-fluid">
+      <h2 class="pull-left">Release Summary</h2>
+      <div style="margin-top:17px; margin-right:50px" class="pull-right">
+        {{#if_has_role "admin"}}
+        {{#if_opened state}}
+        {{#if summary.SIGNED_OFF}}
+        <button id="complete-release-popup-button" class="m-btn green">Release Now</button>
+        {{/if}}
+        {{/if_opened}}
+        {{/if_has_role}}
+      </div>
+    </div>
+      <span class="key">Name</span>&nbsp;&nbsp;&nbsp;<span>{{name}}</span><br>
+      <span class="key">State</span>&nbsp;&nbsp;&nbsp;<strong><span class="{{lowercase state}}">{{state}}</span></strong><br>
+      {{#if_completed state}}
+      <span class="key">Date</span>&nbsp;&nbsp;&nbsp;<span>{{date releaseDate}}</span><br>
+      {{/if_completed}}
+      {{#if_has_role "admin"}}
+      <span class="key"> Dictionary Version</span>&nbsp;&nbsp;&nbsp;<span>{{dictionaryVersion}}</span><br>
+      {{/if_has_role}}
+      <span class="key">Number of projects</span>&nbsp;&nbsp;&nbsp;<span>{{submissions.length}}</span><br>
+      {{#if summary.SIGNED_OFF}}
+      <span class="label label-success">Signed Off {{summary.SIGNED_OFF}}</span>
+      {{/if}}
+      {{#if summary.VALID}}
+      <span class="label label-success">Valid {{summary.VALID}}</span>
+      {{/if}}
+      {{#if summary.QUEUED}}
+      <span class="label label-warning">Queued {{summary.QUEUED}}</span>
+      {{/if}}
+      {{#if summary.VALIDATING}}
+      <span class="label label-validating">Validating {{summary.VALIDATING}}</span>
+      {{/if}}
+      {{#if summary.INVALID}}
+      <span class="label label-important">Invalid {{summary.INVALID}}</span>
+      {{/if}}
+      {{#if summary.ERROR}}
+      <span class="label label-important">Error {{summary.ERROR}}</span>
+      {{/if}}
+      {{#if summary.NOT_VALIDATED}}
+      <span class="label">Not Validated {{summary.NOT_VALIDATED}}</span>
+      {{/if}}
+  </div>
+</div>

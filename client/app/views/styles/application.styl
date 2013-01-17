@@ -1,0 +1,120 @@
+// nib is a powerful lib for stylus that provides cross-browser css3 mixins.
+// No more vendor prefixes. http://visionmedia.github.com/nib/
+@import 'nib'
+
+// Apply a natural box layout model to all elements.
+// http://paulirish.com/2012/box-sizing-border-box-ftw/
+*
+  box-sizing: border-box
+
+@font-face {
+  font-family: 'Ubuntu';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Ubuntu'), url('../font/ubuntu.woff') format('woff');
+}
+
+body
+  padding-top 45px
+  padding-bottom 40px
+
+#notification-container
+  position fixed
+  top 30px
+  right 310px
+  width 0
+
+  .notification
+    width 300px
+
+  .alert
+    box-shadow 1px 1px 10px
+
+input[type="text"].m-wrap,
+input[type="password"].m-wrap
+  height auto
+  line-height 15px
+  margin 0
+
+.m-input-append .add-on,
+.m-input-prepend .add-on
+  height auto
+  line-height 20px
+
+.m-input-append button,
+.m-input-prepend button
+  padding: 8px 12px;
+
+table
+  .table th, .table td
+    line-height 13px
+
+  .table.summary td
+    border 0
+
+  .m-btn
+    margin 0
+    height auto
+
+#login
+  margin-top 0px
+
+.login-inner
+  margin: 0 auto;
+  width: 570px;
+  padding: 40px;
+  background: #F9F9F9;
+  border: 1px solid #EEE;
+
+.summary
+  .key
+    font-weight bold
+    color #777
+
+.subhead
+  text-align: center
+  h1
+    margin-top 11px
+    font-size: 42px
+    small
+      margin-top 11px
+      font-size: 22px
+
+h1
+  font-size 24px
+  line-height 30px
+  font-weight normal
+
+  small
+    font-size: 18px
+
+h2
+  font-size 21px
+  font-weight normal
+
+  small
+    font-size 16px
+
+.link
+  color #6F98B8
+
+.link:hover
+  cursor pointer
+  text-decoration underline
+
+/* Status Text Colours */
+.signed, .signed_off, .valid, .opened
+  color #468847
+
+.invalid, .error
+  color #B94A48
+
+.queued
+  color #C09853
+
+.validating
+  color hsl(23, 61%, 53%)
+
+.label-validating
+  color #fff
+  background hsl(23, 61%, 53%)

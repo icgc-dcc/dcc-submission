@@ -4,6 +4,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.core.model.User;
@@ -44,6 +46,19 @@ public class FileSystemTest {
 
   protected Config mockConfig;
 
+  static {
+    setProperties();
+  }
+
+  /**
+   * Sets key system properties before test initialization.
+   */
+  private static void setProperties() {
+    // See http://stackoverflow.com/questions/7134723/hadoop-on-osx-unable-to-load-realm-info-from-scdynamicstore
+    System.setProperty("java.security.krb5.realm", "OX.AC.UK");
+    System.setProperty("java.security.krb5.kdc", "kdc0.ox.ac.uk:kdc1.ox.ac.uk");
+  }
+
   @Before
   public void setUp() throws IOException {
 
@@ -66,5 +81,9 @@ public class FileSystemTest {
     when(this.mockSubmission.getState()).thenReturn(SubmissionState.SIGNED_OFF);
 
     when(this.mockRelease.getSubmission(this.mockProject.getKey())).thenReturn(this.mockSubmission);
+    List<String> projectKeys = Arrays.asList(this.mockProject.getKey()); // must be separated from thenReturn call
+                                                                         // (mockito bug:
+                                                                         // http://code.google.com/p/mockito/issues/detail?id=53)
+    when(this.mockRelease.getProjectKeys()).thenReturn(projectKeys);
   }
 }

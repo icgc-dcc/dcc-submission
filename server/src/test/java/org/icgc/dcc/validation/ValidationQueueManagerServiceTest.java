@@ -23,7 +23,6 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import org.icgc.dcc.dictionary.DictionaryService;
 import org.icgc.dcc.release.NextRelease;
 import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.Release;
@@ -33,6 +32,8 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.typesafe.config.Config;
+
 public class ValidationQueueManagerServiceTest {
 
   private Release mockRelease;
@@ -41,9 +42,9 @@ public class ValidationQueueManagerServiceTest {
 
   private ReleaseService mockReleaseService;
 
-  private DictionaryService mockDictionaryService;
-
   private ValidationService mockValidationService;
+
+  private Config mockConfig;
 
   private ValidationQueueManagerService validationQueueManagerService;
 
@@ -52,8 +53,8 @@ public class ValidationQueueManagerServiceTest {
     mockRelease = mock(Release.class);
     mockNextRelease = mock(NextRelease.class);
     mockReleaseService = mock(ReleaseService.class);
-    mockDictionaryService = mock(DictionaryService.class);
     mockValidationService = mock(ValidationService.class);
+    mockConfig = mock(Config.class);
 
     when(mockRelease.getName()).thenReturn("release1");
     when(mockNextRelease.getRelease()).thenReturn(mockRelease);
@@ -63,19 +64,19 @@ public class ValidationQueueManagerServiceTest {
         .thenReturn(new ArrayList<String>());
 
     validationQueueManagerService =
-        new ValidationQueueManagerService(mockReleaseService, mockDictionaryService, mockValidationService);
+        new ValidationQueueManagerService(mockReleaseService, mockValidationService, mockConfig);
   }
 
   @Ignore
   @Test
   public void test_handleSuccessfulValidation_invalidProjectKey() {
-    validationQueueManagerService.handleSuccessfulValidation("project0", null);
+    // validationQueueManagerService.handleCompletedValidation("project0", null);
   }
 
   @Ignore
   @Test
   public void test_handleFailedValidation_invalidProjectKey() {
-    validationQueueManagerService.handleFailedValidation("project0");
+    // validationQueueManagerService.handleUnexpectedException("project0");
   }
 
   @Test

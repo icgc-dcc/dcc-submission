@@ -1,0 +1,22 @@
+donor_id	specimen_id	biomarker_name	biomarker_threshold	biomarker_positive
+DN_Y20_00001	-777	LH	10 ng/ml	1
+DN_Y20_00035	-777	Fibrinogen	10 ng/ml	3
+DN_Y20_00047	-777	PR	5 ng/ml	1
+DN_Y20_00056	-777	LH	10 ng/ml	3
+DN_Y20_00072	-777	Insulin	50 ng/ml	2
+DN_Y20_00182	-777	PCNA	20 ng/ml	2
+DN_Y20_00291	-777	Fibrinogen	50 ng/ml	1
+DN_Y20_00327	-777	Fibrinogen	50 ng/ml	3
+DN_Y20_00337	-777	NSE	50 ng/ml	2
+DN_Y20_00384	-777	CA 15.3	10 ng/ml	3
+DN_Y20_00414	-777	CA 19.9	10 ng/ml	2
+DN_Y20_00426	-777	Insulin	50 ng/ml	2
+DN_Y20_00436	-777	CA 15.3	5 ng/ml	3
+DN_Y20_00475	-777	CA 19.9	5 ng/ml	2
+DN_Y20_00508	-777	Gastrin	20 ng/ml	1
+DN_Y20_00533	-777	PCNA	20 ng/ml	1
+DN_Y20_00686	-777	PSA	20 ng/ml	2
+DN_Y20_00689	-777	PR	10 ng/ml	2
+DN_Y20_00791	-777	CA 15.3	10 ng/ml	3
+DN_Y20_00797	-777	NSE	10 ng/ml	1
+

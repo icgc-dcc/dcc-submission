@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.validation;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
 import org.icgc.dcc.dictionary.model.FileSchema;
@@ -26,7 +27,11 @@ import com.google.common.base.Joiner;
 /**
  * Holds a reference to trimmed content. Used to plan outputs from the internal flow and inputs for the external flow.
  */
-public class Trim {
+public class Trim implements Serializable {
+
+  private static final char FIELD_SEPARATOR = '-';
+
+  private static final String SCHEMA_SEPERATOR = "#";
 
   private final FileSchema schema;
 
@@ -46,7 +51,7 @@ public class Trim {
   }
 
   public String getName() {
-    return schema.getName() + "#" + Joiner.on('-').join(fields);
+    return schema.getName() + SCHEMA_SEPERATOR + Joiner.on(FIELD_SEPARATOR).join(fields);
   }
 
   @Override

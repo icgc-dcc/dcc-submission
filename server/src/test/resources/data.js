@@ -26,7 +26,7 @@ db.Dictionary.insert({
         "", 
         ""
       ],
-      "relation": {
+      "relations": {
         "fields": [],
         "otherFields": [],
         "other": null,

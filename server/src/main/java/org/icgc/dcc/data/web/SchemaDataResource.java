@@ -102,7 +102,13 @@ public class SchemaDataResource {
   }
 
   protected DBCollection collection(String name) {
-    return mongo.getDB("icgc").getCollection(name);
+    // TODO: the database name here needs to be dynamic since it changes from release to release.
+    String databaseName = "";
+    if(databaseName.isEmpty()) {
+      throw new UnsupportedOperationException("Not implemented!");
+    }
+
+    return mongo.getDB(databaseName).getCollection(name);
   }
 
   protected DBCollection collection() {

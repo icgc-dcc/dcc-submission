@@ -17,6 +17,11 @@
  */
 package org.icgc.dcc.dictionary.model;
 
+import java.io.Serializable;
+
+import org.hibernate.validator.constraints.NotBlank;
+import org.hibernate.validator.constraints.URL;
+
 import com.google.code.morphia.annotations.Embedded;
 
 /**
@@ -24,12 +29,15 @@ import com.google.code.morphia.annotations.Embedded;
  * string) associated with a value, and a URI as reference for the controlled term
  */
 @Embedded
-public class Term {
+public class Term implements Serializable {
 
+  @NotBlank
   private String code;
 
+  @NotBlank
   private String value;
 
+  @URL
   private String uri;
 
   public Term() {

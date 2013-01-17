@@ -20,6 +20,7 @@ package org.icgc.dcc.data.schema;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.io.StringWriter;
 
 import org.codehaus.jackson.JsonFactory;
@@ -27,7 +28,7 @@ import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 
-public abstract class BaseSchema implements Schema {
+public abstract class BaseSchema implements Schema, Serializable {
 
   private static transient JsonFactory factory;
 

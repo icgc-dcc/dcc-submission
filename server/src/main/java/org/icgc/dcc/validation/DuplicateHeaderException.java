@@ -25,15 +25,14 @@ import com.google.common.collect.Lists;
  * 
  */
 public class DuplicateHeaderException extends RuntimeException {
-  private final List<String> duplicateHeaders = Lists.newArrayList();
+  private final List<String> duplicateHeaderFieldNames = Lists.newArrayList();
 
-  DuplicateHeaderException(List<String> duplicateHeader) {
+  DuplicateHeaderException(List<String> duplicateHeaderFieldNames) {
     super();
-    this.duplicateHeaders.addAll(duplicateHeader);
+    this.duplicateHeaderFieldNames.addAll(duplicateHeaderFieldNames);
   }
 
-  public String[] getDuplicateHeader() {
-    String[] result = new String[this.duplicateHeaders.size()];
-    return this.duplicateHeaders.toArray(result);
+  public List<String> getDuplicateHeaderFieldNames() {
+    return this.duplicateHeaderFieldNames;
   }
 }

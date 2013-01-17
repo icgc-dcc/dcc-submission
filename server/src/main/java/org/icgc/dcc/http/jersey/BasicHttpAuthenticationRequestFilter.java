@@ -28,7 +28,7 @@ import com.google.inject.Inject;
  * http://localhost:5379/ws/myresource
  */
 @Provider
-@BindingPriority(BindingPriority.SECURITY)
+@BindingPriority(BindingPriority.AUTHENTICATION)
 public class BasicHttpAuthenticationRequestFilter implements ContainerRequestFilter {
 
   private static final Logger log = LoggerFactory.getLogger(BasicHttpAuthenticationRequestFilter.class);

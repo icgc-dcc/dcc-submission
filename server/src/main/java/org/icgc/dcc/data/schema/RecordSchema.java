@@ -65,6 +65,10 @@ public class RecordSchema extends HasFileSchemaSchema {
     return this;
   }
 
+  public boolean hasMetadataSchema() {
+    return metadataSchema != null;
+  }
+
   public String getMetadataSchema() {
     return metadataSchema;
   }

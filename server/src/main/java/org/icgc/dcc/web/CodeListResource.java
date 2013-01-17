@@ -21,6 +21,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.List;
 
+import javax.validation.Valid;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -38,6 +39,7 @@ import org.icgc.dcc.dictionary.model.Term;
 import org.icgc.dcc.shiro.AuthorizationPrivileges;
 import org.icgc.dcc.shiro.ShiroSecurityContext;
 
+import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
 @Path("codeLists")
@@ -49,31 +51,21 @@ public class CodeListResource {
   public Response getCodeLists() {
     List<CodeList> codeLists = this.dictionaries.listCodeList();
     if(codeLists == null) {
-      return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoCodeLists")).build();
+      codeLists = Lists.newArrayList();
     }
     return Response.ok(codeLists).build();
   }
 
   @POST
-  public Response addCodeLists(List<CodeList> codeLists, @Context SecurityContext securityContext) {
+  public Response addCodeLists(@Valid List<CodeList> codeLists, @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.CODELIST_MODIFY.toString()) == false) {
-      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
+      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED))
+          .build();
     }
     checkArgument(codeLists != null);
     this.dictionaries.addCodeList(codeLists);
     return Response.status(Status.CREATED).build();
-  }
-
-  @POST
-  public Response createCodeList(String name, @Context SecurityContext securityContext) {
-    if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
-        AuthorizationPrivileges.CODELIST_MODIFY.toString()) == false) {
-      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
-    }
-    checkArgument(name != null);
-    CodeList c = this.dictionaries.createCodeList(name);
-    return ResponseTimestamper.ok(c).build();
   }
 
   @GET
@@ -82,28 +74,31 @@ public class CodeListResource {
     checkArgument(name != null);
     CodeList c = this.dictionaries.getCodeList(name);
     if(c == null) {
-      return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoSuchCodeList", name)).build();
+      return Response.status(Status.NOT_FOUND)
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, name)).build();
     }
     return ResponseTimestamper.ok(c).build();
   }
 
   @PUT
   @Path("{name}")
-  public Response updateCodeList(@PathParam("name") String name, CodeList newCodeList, @Context Request req,
+  public Response updateCodeList(@PathParam("name") String name, @Valid CodeList newCodeList, @Context Request req,
       @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.CODELIST_MODIFY.toString()) == false) {
-      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
+      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED))
+          .build();
     }
     checkArgument(name != null);
     checkArgument(newCodeList != null);
 
     CodeList oldCodeList = this.dictionaries.getCodeList(name);
     if(oldCodeList == null) {
-      return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoSuchCodeList", name)).build();
+      return Response.status(Status.NOT_FOUND)
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, name)).build();
     } else if(newCodeList.getName().equals(name) == false) {
       return Response.status(Status.BAD_REQUEST)
-          .entity(new ServerErrorResponseMessage("CodeListNameMismatch", newCodeList.getName(), name)).build();
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.NAME_MISMATCH, newCodeList.getName(), name)).build();
     }
     ResponseTimestamper.evaluate(req, oldCodeList);
     this.dictionaries.updateCodeList(newCodeList);
@@ -113,17 +108,19 @@ public class CodeListResource {
 
   @POST
   @Path("{name}/terms")
-  public Response addTerms(@PathParam("name") String name, List<Term> terms, @Context Request req,
+  public Response addTerms(@PathParam("name") String name, @Valid List<Term> terms, @Context Request req,
       @Context SecurityContext securityContext) {
     if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
         AuthorizationPrivileges.CODELIST_MODIFY.toString()) == false) {
-      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage("Unauthorized")).build();
+      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED))
+          .build();
     }
     checkArgument(name != null);
     checkArgument(terms != null);
     CodeList c = this.dictionaries.getCodeList(name);
     if(c == null) {
-      return Response.status(Status.NOT_FOUND).entity(new ServerErrorResponseMessage("NoSuchCodeList", name)).build();
+      return Response.status(Status.NOT_FOUND)
+          .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, name)).build();
     }
     ResponseTimestamper.evaluate(req, c);
 
@@ -132,7 +129,7 @@ public class CodeListResource {
     for(Term term : terms) {
       if(c.containsTerm(term)) {
         return Response.status(Status.BAD_REQUEST)
-            .entity(new ServerErrorResponseMessage("TermAlreadyExists", term.getCode())).build();
+            .entity(new ServerErrorResponseMessage(ServerErrorCode.ALREADY_EXISTS, term.getCode())).build();
       }
     }
     for(Term term : terms) {

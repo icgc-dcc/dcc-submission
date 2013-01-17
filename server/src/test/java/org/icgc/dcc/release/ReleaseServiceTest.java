@@ -16,7 +16,8 @@ import java.util.Set;
 
 import junit.framework.Assert;
 
-import org.icgc.dcc.core.model.BaseEntity;
+import org.icgc.dcc.core.model.DccModelOptimisticLockException;
+import org.icgc.dcc.core.model.InvalidStateException;
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.dictionary.DictionaryService;
 import org.icgc.dcc.dictionary.model.Dictionary;
@@ -31,10 +32,14 @@ import org.junit.Test;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
+import com.google.common.base.Throwables;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
+import com.typesafe.config.Config;
 
 public class ReleaseServiceTest {
+
+  private DccLocking dccLocking;
 
   private Datastore datastore;
 
@@ -48,6 +53,10 @@ public class ReleaseServiceTest {
 
   private DccFileSystem fs;
 
+  private Config config;
+
+  private DccFileSystem mockDccFileSystem;
+
   private ReleaseFileSystem mockReleaseFileSystem;
 
   final private String testDbName = "testDb";
@@ -59,10 +68,13 @@ public class ReleaseServiceTest {
       // use local host as test MongoDB for now
       Mongo mongo = new Mongo("localhost");
       Morphia morphia = new Morphia();
-      morphia.map(BaseEntity.class);
       datastore = morphia.createDatastore(mongo, testDbName);
+      dccLocking = mock(DccLocking.class);
       fs = mock(DccFileSystem.class);
       mockReleaseFileSystem = mock(ReleaseFileSystem.class);
+      mockDccFileSystem = mock(DccFileSystem.class);
+
+      config = mock(Config.class);
 
       when(fs.getReleaseFilesystem(any(Release.class))).thenReturn(mockReleaseFileSystem);
 
@@ -74,9 +86,6 @@ public class ReleaseServiceTest {
       // Set up a minimal test case
       dictionary = new Dictionary();
       dictionary.setVersion("foo");
-
-      dictionaryService = new DictionaryService(morphia, datastore);
-      dictionaryService.add(dictionary);
 
       release = new Release("release1");
 
@@ -103,7 +112,9 @@ public class ReleaseServiceTest {
       release.setDictionaryVersion(dictionary.getVersion());
 
       // Create the releaseService and populate it with the initial release
-      releaseService = new ReleaseService(morphia, datastore, fs);
+      releaseService = new ReleaseService(dccLocking, morphia, datastore, fs, config);
+      dictionaryService = new DictionaryService(morphia, datastore, mockDccFileSystem, releaseService);
+      dictionaryService.add(dictionary);
       releaseService.createInitialRelease(release);
     } catch(UnknownHostException e) {
       e.printStackTrace();
@@ -170,34 +181,18 @@ public class ReleaseServiceTest {
   }
 
   // @Test
-  public void test_can_release() {
-    assertTrue(!releaseService.getNextRelease().canRelease());
+  public void test_can_release() throws InvalidStateException, DccModelOptimisticLockException {
+    NextRelease nextRelease = releaseService.getNextRelease();
+    Release nextReleaseRelease = nextRelease.getRelease();
+    assertTrue(!nextRelease.atLeastOneSignedOff(nextReleaseRelease));
 
     List<String> projectKeys = new ArrayList<String>();
     projectKeys.add("p1");
-    releaseService.signOff(projectKeys);
+    String user = "admin";
+    releaseService.signOff(nextReleaseRelease, projectKeys, user);
 
-    assertTrue(releaseService.getNextRelease().canRelease());
-  }
-
-  // @Test
-  public void test_has_projectKey() {
-    assertTrue(releaseService.hasProjectKey("p1"));
-    assertTrue(releaseService.hasProjectKey("p2"));
-    assertTrue(releaseService.hasProjectKey("p3"));
-    assertTrue(!releaseService.hasProjectKey("p4"));
-  }
-
-  // @Test
-  public void test_has_projectKeys() {
-    List<String> projectKeys = new ArrayList<String>();
-    projectKeys.add("p1");
-    projectKeys.add("p2");
-    projectKeys.add("p3");
-    assertTrue(releaseService.hasProjectKey(projectKeys));
-
-    projectKeys.add("p4");
-    assertTrue(!releaseService.hasProjectKey(projectKeys));
+    nextRelease = releaseService.getNextRelease();
+    assertTrue(nextRelease.atLeastOneSignedOff(nextReleaseRelease));
   }
 
   // @Test
@@ -217,9 +212,22 @@ public class ReleaseServiceTest {
 
     List<String> projectKeys = new ArrayList<String>();
     projectKeys.add("p1");
-    releaseService.signOff(projectKeys);
+    String user = "admin";
+    try {
+      releaseService.signOff(newRelease, projectKeys, user);
+    } catch(InvalidStateException e) {
+      throw new RuntimeException(e);
+    } catch(DccModelOptimisticLockException e) {
+      throw new RuntimeException(e);
+    }
 
-    releaseService.getNextRelease().release(newRelease.getName());
-    return newRelease;
+    NextRelease nextRelease = null;
+    try {
+      nextRelease = releaseService.getNextRelease().release(newRelease.getName());
+    } catch(InvalidStateException e) {
+      Throwables.propagate(e);
+    }
+
+    return nextRelease.getRelease();
   }
 }

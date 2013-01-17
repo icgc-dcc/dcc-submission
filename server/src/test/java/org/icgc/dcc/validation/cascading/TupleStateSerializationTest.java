@@ -63,8 +63,8 @@ public class TupleStateSerializationTest extends CascadingTestCase {
     TupleOutputStream output =
         new HadoopTupleOutputStream(new FileOutputStream(file, false), tupleSerialization.getElementWriter());
 
-    TupleState testState = new TupleState();
-    testState.reportError(ValidationErrorCode.OUT_OF_RANGE_ERROR);
+    TupleState testState = new TupleState(1L);
+    testState.reportError(ValidationErrorCode.OUT_OF_RANGE_ERROR, "string", 4L, 1L, 10L);
 
     Tuple outputTuple = new Tuple(testState);
     output.writeTuple(outputTuple);
@@ -88,6 +88,8 @@ public class TupleStateSerializationTest extends CascadingTestCase {
     TupleError[] resultErrors = Iterables.toArray(resultState.getErrors(), TupleError.class);
     // check TupleError list is serialized
     assertEquals(testErrors.length, resultErrors.length);
+
+    input.close();
   }
 
   @Override

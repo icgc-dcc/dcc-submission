@@ -91,13 +91,12 @@ public class UniqueFieldsPlanningVisitor extends InternalFlowPlanningVisitor {
         if(i.hasNext()) {
           TupleEntry firstTuple = i.next();
           bufferCall.getOutputCollector().add(firstTuple.getTupleCopy());
-          long firstOffset = ValidationFields.state(firstTuple).getOffset();
 
           while(i.hasNext()) {
             TupleEntry tupleEntry = i.next();
             List<String> values = fetchValues(tupleEntry);
-            ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.UNIQUE_VALUE_ERROR, values, fields,
-                firstOffset);
+
+            ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.UNIQUE_VALUE_ERROR, fields, values);
             bufferCall.getOutputCollector().add(tupleEntry.getTupleCopy());
           }
         }

@@ -52,6 +52,10 @@ public class DictionaryConverterTest {
 
   private static final String SECOND_DICTIONARY = "target/secondDictionary.json";
 
+  private String testFileContent;
+
+  private String refFileContent;
+
   @Before
   public void setUp() {
 
@@ -67,18 +71,18 @@ public class DictionaryConverterTest {
     dc.readDictionary(CONVERSION_INPUT_FOLDER);
     dc.saveToJSON(NEW_DICTIONARY);
 
-    File testFile = new File(NEW_DICTIONARY);
-    File refFile = new File(CURRENT_DICTIONARY);
-
     ObjectMapper mapper = new ObjectMapper();
-
-    JsonNode testTree = mapper.readTree(FileUtils.readFileToString(testFile));
-    JsonNode refTree = mapper.readTree(FileUtils.readFileToString(refFile));
+    log.info("current: " + CURRENT_DICTIONARY);
+    log.info("new: " + NEW_DICTIONARY);
+    refFileContent = FileUtils.readFileToString(new File(CURRENT_DICTIONARY));
+    testFileContent = FileUtils.readFileToString(new File(NEW_DICTIONARY));
+    JsonNode testTree = mapper.readTree(testFileContent);
+    JsonNode refTree = mapper.readTree(refFileContent);
 
     // check Dictionary fields
-    assertEquals(refTree.get("name"), testTree.get("name"));
-    assertEquals(refTree.get("version"), testTree.get("version"));
-    assertEquals(refTree.get("state"), testTree.get("state"));
+    assertEquals(getFileContents(), refTree.get("name"), testTree.get("name"));
+    assertEquals(getFileContents(), refTree.get("version"), testTree.get("version"));
+    assertEquals(getFileContents(), refTree.get("state"), testTree.get("state"));
 
     this.test_compare_fileSchema(refTree.get("files"), testTree.get("files"));
 
@@ -101,56 +105,56 @@ public class DictionaryConverterTest {
 
   private void test_compare_fileSchema(JsonNode refFileSchemas, JsonNode testFileSchemas) {
     // check FileSchema List Size
-    assertEquals(refFileSchemas.size(), testFileSchemas.size());
+    assertEquals(getFileContents(), refFileSchemas.size(), testFileSchemas.size());
     // check each FileSchema
     for(int i = 0; i < refFileSchemas.size(); i++) {
       JsonNode refNode = refFileSchemas.get(i);
       JsonNode testNode = this.findNode(testFileSchemas, refNode.get("name"));
 
-      assertEquals(refNode.get("name"), testNode.get("name"));
-      assertEquals(refNode.get("label"), testNode.get("label"));
-      assertEquals(refNode.get("pattern"), testNode.get("pattern"));
-      assertEquals(refNode.get("role"), testNode.get("role"));
-      assertEquals(refNode.get("uniqueFields"), testNode.get("uniqueFields"));
+      assertEquals(getFileContents(), refNode.get("name"), testNode.get("name"));
+      assertEquals(getFileContents(), refNode.get("label"), testNode.get("label"));
+      assertEquals(getFileContents(), refNode.get("pattern"), testNode.get("pattern"));
+      assertEquals(getFileContents(), refNode.get("role"), testNode.get("role"));
+      assertEquals(getFileContents(), refNode.get("uniqueFields"), testNode.get("uniqueFields"));
       this.test_compare_field(refNode.get("fields"), testNode.get("fields"));
-      this.test_compare_relation(refNode.get("relation"), testNode.get("relation"));
+      this.test_compare_relation(refNode.get("relations"), testNode.get("relations"));
 
     }
   }
 
   private void test_compare_field(JsonNode refFields, JsonNode testFields) {
-    assertEquals(refFields.size(), testFields.size());
+    assertEquals(getFileContents(), refFields.size(), testFields.size());
 
     for(int i = 0; i < refFields.size(); i++) {
       JsonNode refField = refFields.get(i);
       JsonNode testField = this.findNode(testFields, refField.get("name"));
 
-      assertEquals(refField.get("name"), testField.get("name"));
-      assertEquals(refField.get("label"), testField.get("label"));
-      assertEquals(refField.get("valueType"), testField.get("valueType"));
+      assertEquals(getFileContents(), refField.get("name"), testField.get("name"));
+      assertEquals(getFileContents(), refField.get("label"), testField.get("label"));
+      assertEquals(getFileContents(), refField.get("valueType"), testField.get("valueType"));
 
       this.test_compare_restriction(refField.get("restrictions"), testField.get("restrictions"));
     }
   }
 
   private void test_compare_restriction(JsonNode refRestrictions, JsonNode testRestrictions) {
-    assertEquals(refRestrictions.size(), testRestrictions.size());
+    assertEquals(getFileContents(), refRestrictions.size(), testRestrictions.size());
 
     for(int i = 0; i < refRestrictions.size(); i++) {
       JsonNode refRestriction = refRestrictions.get(i);
       JsonNode testRestriction = this.findRestrictionNode(testRestrictions, refRestriction.get("type"));
 
-      assertEquals(refRestriction.get("type"), testRestriction.get("type"));
-      assertEquals(refRestriction.get("config"), testRestriction.get("config"));
+      assertEquals(getFileContents(), refRestriction.get("type"), testRestriction.get("type"));
+      assertEquals(getFileContents(), refRestriction.get("config"), testRestriction.get("config"));
     }
   }
 
   private void test_compare_relation(JsonNode refRelation, JsonNode testRelation) {
-    assertEquals(refRelation.get("fields"), testRelation.get("fields"));
-    assertEquals(refRelation.get("other"), testRelation.get("other"));
-    assertEquals(refRelation.get("allowOrphan"), testRelation.get("allowOrphan"));
-    assertEquals(refRelation.get("joinType"), testRelation.get("joinType"));
-    assertEquals(refRelation.get("otherFields"), testRelation.get("otherFields"));
+    assertEquals(getFileContents(), refRelation.get("fields"), testRelation.get("fields"));
+    assertEquals(getFileContents(), refRelation.get("other"), testRelation.get("other"));
+    assertEquals(getFileContents(), refRelation.get("allowOrphan"), testRelation.get("allowOrphan"));
+    assertEquals(getFileContents(), refRelation.get("joinType"), testRelation.get("joinType"));
+    assertEquals(getFileContents(), refRelation.get("otherFields"), testRelation.get("otherFields"));
   }
 
   private JsonNode findNode(JsonNode tree, JsonNode name) {
@@ -183,5 +187,9 @@ public class DictionaryConverterTest {
     String content = Files.toString(new File(temporaryDictionary), Charsets.UTF_8);
     content = updateSecondDictionaryContent(content);
     Files.write(content.getBytes(), new File(destination));
+  }
+
+  private String getFileContents() {
+    return testFileContent + ", " + refFileContent;
   }
 }

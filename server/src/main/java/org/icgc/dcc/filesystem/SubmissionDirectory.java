@@ -64,8 +64,8 @@ public class SubmissionDirectory {
 
   public boolean isReadOnly() {
     SubmissionState state = this.submission.getState();
-    return this.release.getState() == ReleaseState.COMPLETED//
-        || state == SubmissionState.QUEUED || state == SubmissionState.SIGNED_OFF;
+
+    return (state.isReadOnly() || this.release.getState() == ReleaseState.COMPLETED);
   }
 
   public String getProjectKey() {

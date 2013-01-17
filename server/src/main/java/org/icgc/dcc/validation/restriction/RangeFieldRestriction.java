@@ -112,12 +112,13 @@ public class RangeFieldRestriction implements InternalPlanElement {
       if(value instanceof Number) {
         Number num = (Number) value;
         if(num.longValue() < this.min.longValue() || num.longValue() > this.max.longValue()) {
-          ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.OUT_OF_RANGE_ERROR, num.longValue(),
-              fieldName, this.min.longValue(), this.max.longValue());
+
+          ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.OUT_OF_RANGE_ERROR, fieldName.toString(),
+              num.longValue(), min.longValue(), max.longValue());
         }
       } else if(value != null) {
-        ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.NOT_A_NUMBER_ERROR, value.toString(),
-            fieldName);
+        ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.NOT_A_NUMBER_ERROR, fieldName.toString(),
+            value.toString());
       }
       functionCall.getOutputCollector().add(tupleEntry.getTupleCopy());
     }

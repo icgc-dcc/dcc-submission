@@ -83,7 +83,7 @@ public class FileSystemFunctionalTest extends FileSystemTest {
     Iterable<String> filenameList2 = HadoopUtils.toFilenameList(HadoopUtils.lsDir(fileSystem, releaseStringPath));
     Assert.assertNotNull(filenameList2);
     Assert.assertEquals(//
-        "[DBQ]",//
+        "[DBQ, SystemFiles]",//
         filenameList2.toString());
     log.info("ls2 = " + filenameList2);
 
@@ -95,6 +95,8 @@ public class FileSystemFunctionalTest extends FileSystemTest {
         this.dccFileSystem.getReleaseFilesystem(this.mockRelease, this.passwordAuthenticator.getSubject());
     Assert.assertNotNull(myReleaseFilesystem);
     log.info("release file system = " + myReleaseFilesystem);
+
+    myReleaseFilesystem.emptyValidationFolders();
 
     boolean releaseReadOnly = myReleaseFilesystem.isReadOnly();
     Assert.assertFalse(releaseReadOnly);

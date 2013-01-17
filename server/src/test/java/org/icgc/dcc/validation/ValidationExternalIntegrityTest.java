@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 
@@ -34,7 +35,6 @@ import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.dictionary.DictionaryService;
-import org.icgc.dcc.dictionary.model.Cardinality;
 import org.icgc.dcc.dictionary.model.CodeList;
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.Field;
@@ -45,6 +45,7 @@ import org.icgc.dcc.dictionary.model.ValueType;
 import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.filesystem.GuiceJUnitRunner;
 import org.icgc.dcc.filesystem.GuiceJUnitRunner.GuiceModules;
+import org.icgc.dcc.release.model.QueuedProject;
 import org.icgc.dcc.validation.factory.LocalCascadingStrategyFactory;
 import org.icgc.dcc.validation.service.ValidationService;
 import org.junit.Before;
@@ -53,6 +54,7 @@ import org.junit.runner.RunWith;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
+import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.inject.Inject;
 
 @RunWith(GuiceJUnitRunner.class)
@@ -153,8 +155,7 @@ public class ValidationExternalIntegrityTest {
     String[] fieldNames = { "donor_id", "fakecolumn" };
 
     specimen.clearRelations();
-    Relation relation =
-        new Relation(Arrays.asList(fieldNames), "donor", Arrays.asList(fieldNames), Cardinality.ZERO_OR_MORE);
+    Relation relation = new Relation(Arrays.asList(fieldNames), "donor", Arrays.asList(fieldNames), false);
     specimen.addRelation(relation);
 
     testErrorType("fk_1");
@@ -211,11 +212,14 @@ public class ValidationExternalIntegrityTest {
 
     CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir, systemDir);
 
-    Plan plan = validationService.planCascade(null, cascadingStrategy, dictionary);
+    Plan plan = validationService.planCascade(new QueuedProject("dummyProject", null), cascadingStrategy, dictionary);
     Assert.assertEquals(5, plan.getCascade().getFlows().size());
 
-    validationService.runCascade(plan.getCascade(), null);
-
+    TestCascadeListener listener = new TestCascadeListener();
+    validationService.runCascade(plan.getCascade(), listener);
+    while(listener.isRunning()) {
+      Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
+    }
     Assert.assertTrue(errorFileString, errorFile.exists());
     return FileUtils.readFileToString(errorFile);
   }

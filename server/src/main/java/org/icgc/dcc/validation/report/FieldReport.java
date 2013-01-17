@@ -1,5 +1,7 @@
 package org.icgc.dcc.validation.report;
 
+import java.io.Serializable;
+
 import org.icgc.dcc.dictionary.model.SummaryType;
 import org.icgc.dcc.validation.report.BaseStatsReportingPlanElement.FieldSummary;
 
@@ -8,7 +10,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
 @Embedded
-public class FieldReport {
+public class FieldReport implements Serializable {
 
   protected String name;
 
@@ -86,7 +88,8 @@ public class FieldReport {
 
     BasicDBObject summary = new BasicDBObject();
     for(String key : fieldSummary.summary.keySet()) {
-      summary.append(key, fieldSummary.summary.get(key));
+      // Note: periods and dollar signs must be replaced for MongoDB compatibility
+      summary.append(key.replace(".", "&#46;").replace("$", "&#36;"), fieldSummary.summary.get(key));
     }
     fieldReport.setSummary(summary);
     return fieldReport;

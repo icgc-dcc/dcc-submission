@@ -1,19 +1,28 @@
 package org.icgc.dcc.validation.report;
 
+import java.io.Serializable;
 import java.util.List;
 
-import org.icgc.dcc.validation.cascading.TupleState;
-
 import com.google.code.morphia.annotations.Embedded;
+import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 
 @Embedded
-public class SchemaReport {
+public class SchemaReport implements Serializable {
 
   protected String name;
 
   protected List<FieldReport> fieldReports;
 
-  protected List<TupleState> errors;
+  protected List<ValidationErrorReport> errors;
+
+  public SchemaReport() {
+    this.fieldReports = Lists.newArrayList();
+    this.errors = Lists.newArrayList();
+  }
 
   public String getName() {
     return name;
@@ -24,27 +33,44 @@ public class SchemaReport {
   }
 
   public List<FieldReport> getFieldReports() {
-    return fieldReports;
+    return ImmutableList.copyOf(this.fieldReports);
   }
 
   public void setFieldReports(List<FieldReport> fieldReports) {
     this.fieldReports = fieldReports;
   }
 
-  public List<TupleState> getErrors() {
-    return errors;
+  public List<ValidationErrorReport> getErrors() {
+    return ImmutableList.copyOf(this.errors);
   }
 
-  public void setErrors(List<TupleState> errors) {
+  public void setErrors(List<ValidationErrorReport> errors) {
     this.errors = errors;
   }
 
-  public FieldReport getFieldReport(String field) {
-    for(FieldReport report : this.fieldReports) {
-      if(report.getName().equals(field)) {
-        return report;
+  public void addError(ValidationErrorReport error) {
+    this.errors.add(error);
+  }
+
+  public void addErrors(List<ValidationErrorReport> errors) {
+    this.errors.addAll(errors);
+  }
+
+  public Optional<FieldReport> getFieldReport(final String field) {
+    return Iterables.tryFind(fieldReports, new Predicate<FieldReport>() {
+
+      @Override
+      public boolean apply(FieldReport input) {
+        return input.getName().equals(field);
       }
-    }
-    return null;
+    });
+  }
+
+  public void addFieldReport(FieldReport fieldReport) {
+    this.fieldReports.add(fieldReport);
+  }
+
+  public void addFieldReports(List<FieldReport> fieldReports) {
+    this.fieldReports.addAll(fieldReports);
   }
 }

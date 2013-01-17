@@ -1,0 +1,21 @@
+<ul id="breadcrumb" class="breadcrumb">
+    <li><a href="/releases/"><i class="icon-home"></i> Releases</a> <span class="divider">/</span></li>
+    <li><a href="/releases/{{release}}/">{{release}}</a> <span class="divider">/</span></li>
+    <li><a href="/releases/{{release}}/submissions/{{submission}}">{{submission}}</a> <span class="divider">/</span></li>
+    <li><span>{{name}}</span></li>
+</ul>
+<div class="row-fluid" style="margin-bottom:20px">
+    <div class="summary span6">
+        <div class="row-fluid">
+            <h2 class="pull-left">
+                File Summary
+            </h2>
+        </div>
+        <span class="key">File name</span>&nbsp;&nbsp;&nbsp;<span>{{name}}</span><br>
+        <span class="key">State</span>&nbsp;&nbsp;&nbsp;<span class="{{lowercase state}}">{{underscore2space state}}</span>
+    </div>
+</div>
+<h2 style="margin-bottom:0;">
+{{#if errors.length}}Error{{else}}Detailed{{/if}} Report
+</h2>
+<table width="100%" id="schema-report-container" class="alert-{{#if errors.length}}danger{{else}}info{{/if}} schema-report table table-striped table-bordered"></table>

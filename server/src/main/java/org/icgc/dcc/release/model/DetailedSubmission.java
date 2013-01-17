@@ -3,11 +3,16 @@ package org.icgc.dcc.release.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.validation.Valid;
+
+import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.filesystem.SubmissionFile;
 
 public class DetailedSubmission extends Submission {
+  @NotBlank
   private String projectName;
 
+  @Valid
   private List<SubmissionFile> submissionFiles;
 
   public DetailedSubmission() {

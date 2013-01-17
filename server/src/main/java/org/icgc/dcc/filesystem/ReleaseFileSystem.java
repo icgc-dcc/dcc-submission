@@ -23,6 +23,8 @@ public class ReleaseFileSystem {
 
   private final Subject userSubject;
 
+  public static final String SYSTEM_FILES = "SystemFiles";
+
   public ReleaseFileSystem(DccFileSystem dccFilesystem, Release release, Subject subject) {
     super();
 
@@ -51,7 +53,8 @@ public class ReleaseFileSystem {
       throw new DccFileSystemException("User " + userSubject.getPrincipal()
           + " does not have permission to access project " + project);
     }
-    String projectStringPath = dccFileSystem.buildProjectStringPath(release, project.getKey());
+    String projectKey = project.getKey();
+    String projectStringPath = dccFileSystem.buildProjectStringPath(release, projectKey);
     boolean exists = HadoopUtils.checkExistence(dccFileSystem.getFileSystem(), projectStringPath);
     if(exists == false) {
       throw new DccFileSystemException("Release directory " + projectStringPath + " does not exist");
@@ -84,6 +87,15 @@ public class ReleaseFileSystem {
     }
   }
 
+  public void emptyValidationFolders() {
+    for(String projectKey : release.getProjectKeys()) {
+      String validationStringPath = this.dccFileSystem.buildValidationDirStringPath(release, projectKey);
+      dccFileSystem.removeDirIfExist(validationStringPath);
+      dccFileSystem.createDirIfDoesNotExist(validationStringPath);
+      Log.info("emptied directory {} for project {} ", validationStringPath, projectKey);
+    }
+  }
+
   public boolean isReadOnly() {
     return ReleaseState.COMPLETED == release.getState();
   }
@@ -101,10 +113,14 @@ public class ReleaseFileSystem {
   }
 
   public Path getSystemDirectory() {
-    return new Path(this.getReleaseDirectory(), "SystemFiles");
+    return new Path(this.getReleaseDirectory(), ReleaseFileSystem.SYSTEM_FILES);
   }
 
-  public Boolean isSystemDirectory(Path path) {
+  public Path getLoaderDirectory() {
+    return new Path(this.getReleaseDirectory(), DccFileSystem.LOADER_DIRNAME);
+  }
+
+  public boolean isSystemDirectory(Path path) {
     return this.getSystemDirectory().getName().equals(path.getName()) && this.userSubject.hasRole("admin");
   }
 

@@ -37,10 +37,26 @@ public class UserService extends BaseMorphiaService<User> {
   }
 
   public User getUser(String name) {
-    return this.where(QUser.user.username.eq(name)).singleResult();
+    User user = this.where(QUser.user.username.eq(name)).singleResult();
+    if(user == null) {
+      user = new User();
+      user.setUsername(name);
+      saveUser(user);
+    }
+    return user;
+  }
+
+  public String getUserEmail(String name) {
+    return this.getUser(name).getEmail();
   }
 
   public void saveUser(User user) {
     datastore().save(user);
+  }
+
+  public User unlock(String username) {
+    return datastore().findAndModify( //
+        datastore().createQuery(User.class).filter("username", username), //
+        datastore().createUpdateOperations(User.class).set("failedAttempts", 0));
   }
 }

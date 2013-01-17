@@ -27,7 +27,8 @@ import org.icgc.dcc.dictionary.DictionaryServiceException;
 import org.icgc.dcc.dictionary.model.CodeList;
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.Term;
-import org.icgc.dcc.dictionary.visitor.DictionaryCloneVisitor;
+import org.icgc.dcc.filesystem.DccFileSystem;
+import org.icgc.dcc.release.ReleaseService;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -44,8 +45,6 @@ public class DictionaryServiceTest {
 
   private Datastore mockDatastore;
 
-  private DictionaryCloneVisitor mockDictionaryCloneVisitor;
-
   private MongodbQuery<Dictionary> mockMongodbQuery;
 
   private Query<Dictionary> mockQuery;
@@ -58,18 +57,23 @@ public class DictionaryServiceTest {
 
   private DictionaryService dictionaryService;
 
+  private DccFileSystem mockDccFileSystem;
+
+  private ReleaseService mockReleaseService;
+
   @Before
   @SuppressWarnings("unchecked")
   // TODO: how to mock parametized?
   public void setUp() {
     mockMorphia = mock(Morphia.class);
     mockDatastore = mock(Datastore.class);
-    mockDictionaryCloneVisitor = mock(DictionaryCloneVisitor.class);
     mockMongodbQuery = mock(MongodbQuery.class);
     mockDictionary = mock(Dictionary.class);
     mockCodeList = mock(CodeList.class);
     mockTerm = mock(Term.class);
     mockQuery = mock(Query.class);
+    mockDccFileSystem = mock(DccFileSystem.class);
+    mockReleaseService = mock(ReleaseService.class);
 
     when(mockDictionary.getVersion()).thenReturn("abc");
     when(mockCodeList.getName()).thenReturn("def");
@@ -80,18 +84,13 @@ public class DictionaryServiceTest {
     when(mockMongodbQuery.where(any(Predicate.class))).thenReturn(mockMongodbQuery);
     when(mockMongodbQuery.singleResult()).thenReturn(null).thenReturn(mockDictionary).thenReturn(mockDictionary);
 
-    this.dictionaryService = new DictionaryService(mockMorphia, mockDatastore);
+    this.dictionaryService = new DictionaryService(mockMorphia, mockDatastore, mockDccFileSystem, mockReleaseService);
   }
 
   @Test(expected = DictionaryServiceException.class)
   // TODO: is there a way to check message too?
   public void test_update_failOnUnexisting() {
     dictionaryService.update(mockDictionary);
-  }
-
-  @Test(expected = DictionaryServiceException.class)
-  public void test_close_failOnUnexisting() {
-    dictionaryService.close(mockDictionary);
   }
 
   @Test(expected = DictionaryServiceException.class)

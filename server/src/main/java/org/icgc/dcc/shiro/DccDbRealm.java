@@ -1,5 +1,6 @@
 package org.icgc.dcc.shiro;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -16,7 +17,9 @@ import org.icgc.dcc.core.UserService;
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.core.model.User;
 
-public class DccDbRealm extends AuthorizingRealm {
+import com.google.common.collect.Lists;
+
+public class DccDbRealm extends AuthorizingRealm implements DccRealm {
 
   private final UserService users;
 
@@ -31,11 +34,6 @@ public class DccDbRealm extends AuthorizingRealm {
   protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
     String username = (String) principals.getPrimaryPrincipal();
     User user = users.getUser(username);
-    if(user == null) {
-      user = new User();
-      user.setUsername(username);
-      users.saveUser(user);
-    }
     SimpleAuthorizationInfo sai = new SimpleAuthorizationInfo(new HashSet<String>(user.getRoles()));
     Set<String> stringPermissions = new HashSet<String>();
     for(Project project : projects.getProjects()) {
@@ -52,6 +50,20 @@ public class DccDbRealm extends AuthorizingRealm {
   protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
     // Authorization is currently only performed via the Shiro INI file, so this is not populated
     return null;
+  }
+
+  @Override
+  public boolean supports(AuthenticationToken token) {
+    return false;
+  }
+
+  @Override
+  public Collection<String> getRoles(String username) {
+    User user = users.getUser(username);
+    if(user == null) {
+      return Lists.newArrayList();
+    }
+    return user.getRoles();
   }
 
 }

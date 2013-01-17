@@ -17,9 +17,13 @@
  */
 package org.icgc.dcc.dictionary.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.validation.Valid;
+
+import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.dictionary.visitor.DictionaryElement;
 import org.icgc.dcc.dictionary.visitor.DictionaryVisitor;
 
@@ -32,8 +36,9 @@ import com.google.common.collect.Iterables;
  * Describes a field that has {@code Restriction}s and that is part of a {@code FileSchema}
  */
 @Embedded
-public class Field implements DictionaryElement {
+public class Field implements DictionaryElement, Serializable {
 
+  @NotBlank
   private String name;
 
   private String label;
@@ -42,7 +47,10 @@ public class Field implements DictionaryElement {
 
   private SummaryType summaryType;
 
+  @Valid
   private List<Restriction> restrictions;
+
+  private boolean controlled;
 
   public Field() {
     super();
@@ -126,6 +134,14 @@ public class Field implements DictionaryElement {
 
   public void setSummaryType(SummaryType summaryType) {
     this.summaryType = summaryType;
+  }
+
+  public boolean isControlled() {
+    return controlled;
+  }
+
+  public void setControlled(boolean controlled) {
+    this.controlled = controlled;
   }
 
 }

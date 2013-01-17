@@ -19,14 +19,11 @@ package org.icgc.dcc.validation;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.FileSchema;
-import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.report.ErrorPlanningVisitor;
 import org.icgc.dcc.validation.report.SummaryPlanningVisitor;
 import org.icgc.dcc.validation.visitor.ExternalRestrictionPlanningVisitor;
@@ -45,8 +42,6 @@ public class DefaultPlanner implements Planner {
   private static final Logger log = LoggerFactory.getLogger(DefaultPlanner.class);
 
   private final List<? extends PlanningVisitor<?>> planningVisitors;
-
-  private final Map<String, TupleState> errors = new LinkedHashMap<String, TupleState>();
 
   @Inject
   public DefaultPlanner(Set<RestrictionType> restrictionTypes) {
@@ -85,22 +80,18 @@ public class DefaultPlanner implements Planner {
           log.info("file schema {} has no matching datafile in submission directory {}", fileSchemaName,
               fileSchemaDirectory.getDirectoryPath());
         }
-      } catch(PlanningException e) {
-        this.errors.put(e.getSchemaName(), e.getTupleState());
+      } catch(PlanningFileLevelException e) {
+        plan.addFileLevelError(e);
       }
     }
     for(PlanningVisitor<?> visitor : planningVisitors) {
       try {
         visitor.apply(plan);
-      } catch(PlanningException e) {
-        this.errors.put(e.getSchemaName(), e.getTupleState());
+      } catch(PlanningFileLevelException e) {
+        plan.addFileLevelError(e);
       }
     }
 
-    if(errors.size() > 0) {
-      log.error("fatal errors:\n\t{}", errors);
-      throw new FatalPlanningException(errors);
-    }
     return plan;
   }
 }

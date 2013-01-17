@@ -25,11 +25,15 @@ import java.util.List;
 import org.icgc.dcc.core.morphia.BaseMorphiaService;
 import org.icgc.dcc.dictionary.model.CodeList;
 import org.icgc.dcc.dictionary.model.Dictionary;
-import org.icgc.dcc.dictionary.model.DictionaryState;
 import org.icgc.dcc.dictionary.model.QCodeList;
 import org.icgc.dcc.dictionary.model.QDictionary;
 import org.icgc.dcc.dictionary.model.Term;
 import org.icgc.dcc.dictionary.visitor.DictionaryCloneVisitor;
+import org.icgc.dcc.filesystem.DccFileSystem;
+import org.icgc.dcc.filesystem.ReleaseFileSystem;
+import org.icgc.dcc.release.NextRelease;
+import org.icgc.dcc.release.ReleaseService;
+import org.icgc.dcc.release.model.Release;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
@@ -43,9 +47,17 @@ import com.mysema.query.mongodb.morphia.MorphiaQuery;
  */
 public class DictionaryService extends BaseMorphiaService<Dictionary> {
 
+  private final DccFileSystem fs;
+
+  private final ReleaseService releases;
+
   @Inject
-  public DictionaryService(Morphia morphia, Datastore datastore) {
+  public DictionaryService(Morphia morphia, Datastore datastore, DccFileSystem fs, ReleaseService releases) {
     super(morphia, datastore, QDictionary.dictionary);
+    checkArgument(fs != null);
+    checkArgument(releases != null);
+    this.fs = fs;
+    this.releases = releases;
     registerModelClasses(Dictionary.class, CodeList.class);
   }
 
@@ -59,22 +71,18 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
 
   public void update(Dictionary dictionary) {
     checkArgument(dictionary != null);
-    Query<Dictionary> updateQuery = this.buildQuery(dictionary);
+    Query<Dictionary> updateQuery = this.buildDictionaryVersionQuery(dictionary);
     if(updateQuery.countAll() != 1) {
-      throw new DictionaryServiceException("cannot update an unexisting dictionary: " + dictionary.getVersion());
+      throw new DictionaryServiceException("cannot update a non-existent dictionary: " + dictionary.getVersion());
     }
     datastore().updateFirst(updateQuery, dictionary, false);
-  }
 
-  public void close(Dictionary dictionary) {
-    checkArgument(dictionary != null);
-    Query<Dictionary> updateQuery = this.buildQuery(dictionary);
-    if(updateQuery.countAll() != 1) {
-      throw new DictionaryServiceException("cannot close an unexisting dictionary: " + dictionary.getVersion());
-    }
-    UpdateOperations<Dictionary> ops =
-        datastore().createUpdateOperations(Dictionary.class).set("state", DictionaryState.CLOSED);
-    datastore().update(updateQuery, ops);
+    NextRelease nextRelease = releases.getNextRelease();
+    Release release = nextRelease.getRelease();
+    ReleaseFileSystem releaseFilesystem = fs.getReleaseFilesystem(release);
+    releaseFilesystem.emptyValidationFolders(); // else cascade may not rerun (DCC-416)
+
+    releases.resetSubmissions(release);
   }
 
   public Dictionary clone(String oldVersion, String newVersion) {
@@ -85,7 +93,7 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
     }
     Dictionary oldDictionary = this.getFromVersion(oldVersion);
     if(oldDictionary == null) {
-      throw new DictionaryServiceException("cannot clone an unexisting dictionary: " + oldVersion);
+      throw new DictionaryServiceException("cannot clone an non-existent dictionary: " + oldVersion);
     }
     if(getFromVersion(newVersion) != null) {
       throw new DictionaryServiceException("cannot clone to an already existing dictionary: " + newVersion);
@@ -171,7 +179,8 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
     datastore().update(updateQuery, ops);
   }
 
-  private Query<Dictionary> buildQuery(Dictionary dictionary) {
-    return datastore().createQuery(Dictionary.class).filter("version" + " = ", dictionary.getVersion());
+  private Query<Dictionary> buildDictionaryVersionQuery(Dictionary dictionary) {
+    return datastore().createQuery(Dictionary.class) //
+        .filter("version" + " = ", dictionary.getVersion());
   }
 }

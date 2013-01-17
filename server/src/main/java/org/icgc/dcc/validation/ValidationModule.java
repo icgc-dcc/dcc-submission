@@ -19,6 +19,7 @@ package org.icgc.dcc.validation;
 
 import org.icgc.dcc.core.AbstractDccModule;
 import org.icgc.dcc.validation.factory.CascadingStrategyFactory;
+import org.icgc.dcc.validation.report.ByteOffsetToLineNumber;
 import org.icgc.dcc.validation.restriction.CodeListRestriction;
 import org.icgc.dcc.validation.restriction.DiscreteValuesRestriction;
 import org.icgc.dcc.validation.restriction.RangeFieldRestriction;
@@ -49,6 +50,7 @@ public class ValidationModule extends AbstractDccModule {
     bindRestriction(RangeFieldRestriction.Type.class);
     bindRestriction(RequiredRestriction.Type.class);
     bindRestriction(CodeListRestriction.Type.class);
+    requestStaticInjection(ByteOffsetToLineNumber.class);
   }
 
   private void bindRestriction(Class<? extends RestrictionType> type) {

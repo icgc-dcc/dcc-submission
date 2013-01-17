@@ -35,7 +35,7 @@ public abstract class BaseDirectoryHdfsSshFile extends HdfsSshFile {
 
   private final RootHdfsSshFile root;
 
-  private final String directoryName;
+  protected final String directoryName;
 
   protected BaseDirectoryHdfsSshFile(RootHdfsSshFile root, String directoryName) {
     super(new Path(root.path, directoryName.isEmpty() ? "/" : directoryName), root.fs);

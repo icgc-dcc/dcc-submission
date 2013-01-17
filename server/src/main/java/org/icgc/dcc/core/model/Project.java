@@ -1,21 +1,31 @@
 package org.icgc.dcc.core.model;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import javax.validation.constraints.Pattern;
+
+import org.hibernate.validator.constraints.NotBlank;
+import org.icgc.dcc.web.validator.NameValidator;
 
 import com.google.code.morphia.annotations.Entity;
 import com.google.code.morphia.annotations.Indexed;
+import com.google.common.collect.Lists;
 
 @Entity
 public class Project extends BaseEntity implements HasName {
 
+  @NotBlank
+  @Pattern(regexp = NameValidator.NAME_PATTERN)
   @Indexed(unique = true)
   protected String key;
 
+  @NotBlank
   protected String name;
 
-  protected List<String> users;
+  protected List<String> users = Lists.newArrayList();
 
-  protected List<String> groups;
+  protected List<String> groups = Lists.newArrayList();
 
   public Project() {
     super();
@@ -34,7 +44,7 @@ public class Project extends BaseEntity implements HasName {
 
   @Override
   public String getName() {
-    return name;
+    return name == null ? key : name;
   }
 
   public void setName(String name) {
@@ -58,7 +68,7 @@ public class Project extends BaseEntity implements HasName {
   }
 
   public List<String> getGroups() {
-    return groups;
+    return groups == null ? new ArrayList<String>() : groups;
   }
 
   public void setGroups(List<String> groups) {

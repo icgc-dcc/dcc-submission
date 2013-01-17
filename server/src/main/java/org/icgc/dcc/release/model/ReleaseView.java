@@ -24,6 +24,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.validation.Valid;
+
+import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.filesystem.SubmissionFile;
 import org.icgc.dcc.release.ReleaseException;
 
@@ -32,16 +35,19 @@ import org.icgc.dcc.release.ReleaseException;
  */
 public class ReleaseView {
 
+  @NotBlank
   protected String name;
 
   protected ReleaseState state;
 
+  @Valid
   protected List<DetailedSubmission> submissions = new ArrayList<DetailedSubmission>();
 
   protected List<String> queue = new ArrayList<String>();
 
   protected Date releaseDate;
 
+  @NotBlank
   protected String dictionaryVersion;
 
   protected Map<SubmissionState, Integer> summary = new EnumMap<SubmissionState, Integer>(SubmissionState.class);
@@ -55,7 +61,7 @@ public class ReleaseView {
 
     this.name = release.name;
     this.state = release.state;
-    this.queue = release.getQueue();
+    this.queue = release.getQueuedProjectKeys();
     this.releaseDate = release.releaseDate;
     this.dictionaryVersion = release.dictionaryVersion;
     for(Entry<String, String> projectEntry : projectEntries) {
