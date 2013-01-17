@@ -54,7 +54,7 @@
            "fields" : [
              { "name" : "geneId", "type" : "text", "fileSchemaField":"gene_affected"},
              { "name" : "transcriptId", "type" : "text", "fileSchemaField":"transcript_affected"},
-             { "name": "gene_build_version", "type": "integer", "fileSchema": "cnsm_s", "fileSchemaField": "gene_build_version" }
+             { "name": "gene_build_version", "type": "integer", "fileSchema": "cnsm_s", "fileSchemaField": "gene_build_version" },
              { "name": "note", "type": "integer", "fileSchema": "cnsm_s", "fileSchemaField": "note" }
            ]
          }
