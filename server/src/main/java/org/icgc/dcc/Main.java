@@ -41,7 +41,7 @@ public class Main {
     }
 
     public static String listValues() {
-      return Arrays.asList(CONFIG.class.getEnumConstants()).toString();
+      return Arrays.asList(CONFIG.values()).toString();
     }
   };
 
