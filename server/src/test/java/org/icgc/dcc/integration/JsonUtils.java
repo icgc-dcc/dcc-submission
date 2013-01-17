@@ -22,7 +22,6 @@ import static org.junit.Assert.assertEquals;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -99,9 +98,7 @@ public final class JsonUtils {
    * Removes transient JSON properties that can change across runs (e.g. $oid).
    * 
    * @param jsonNode
-   * @deprecated shouldn't be necessary anymore
    */
-  @Deprecated
   public static void normalizeJsonNode(JsonNode jsonNode) {
     filterTree(jsonNode, null, ImmutableList.of("$oid"), Integer.MAX_VALUE);
   }
@@ -145,7 +142,7 @@ public final class JsonUtils {
    */
   @SuppressWarnings("unchecked")
   public static void normalizeDumpFile(File file) {
-    File format;
+    File format = null;
     ObjectMapper mapper = new ObjectMapper();
     FileReader fileReader = null;
     BufferedReader bufferedReader = null;
@@ -163,16 +160,8 @@ public final class JsonUtils {
       while((line = bufferedReader.readLine()) != null) {
         processLine(mapper, bufferedWriter, mapper.readValue(line, Map.class));
       }
-    } catch(JsonParseException e) {
-      throw new RuntimeException(e);
-    } catch(JsonMappingException e) {
-      throw new RuntimeException(e);
-    } catch(JsonGenerationException e) {
-      throw new RuntimeException(e);
-    } catch(FileNotFoundException e) {
-      throw new RuntimeException(e);
-    } catch(IOException e) {
-      throw new RuntimeException(e);
+    } catch(Exception e) {
+      Throwables.propagate(e);
     } finally {
       try {
         bufferedReader.close();

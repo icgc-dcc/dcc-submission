@@ -2,7 +2,7 @@ package org.icgc.dcc.validation.cascading;
 
 import java.beans.ConstructorProperties;
 
-import org.icgc.dcc.loader.CascadingUtils;
+import org.icgc.dcc.loader.utils.FieldsUtils;
 
 import cascading.tuple.Fields;
 import cascading.tuple.TupleEntry;
@@ -28,7 +28,7 @@ public class ValidationFields extends Fields {
   @SuppressWarnings("rawtypes")
   @ConstructorProperties({ "fields" })
   public ValidationFields(Comparable... fields) {
-    super(CascadingUtils.concat(fields, STATE_FIELD_NAME));
+    super(FieldsUtils.concat(fields, STATE_FIELD_NAME));
   }
 
 }

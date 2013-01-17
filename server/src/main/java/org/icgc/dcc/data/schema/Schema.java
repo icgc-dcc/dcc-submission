@@ -90,7 +90,7 @@ public interface Schema {
     }
 
     private Type readType(JsonNode node) {
-      String typeName = node.get("type").getTextValue();
+      String typeName = node.get(BaseSchema.TYPE).getTextValue();
       if(typeName != null) {
         try {
           return Type.valueOf(typeName.toUpperCase());

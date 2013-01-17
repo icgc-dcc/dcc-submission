@@ -32,9 +32,9 @@ public abstract class BaseSchema implements Schema, Serializable {
 
   private static transient JsonFactory factory;
 
-  private static final String NAME = "name";
+  static final String NAME = "name";
 
-  private static final String TYPE = "type";
+  static final String TYPE = "type";
 
   private final String name;
 
