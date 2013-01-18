@@ -16,9 +16,7 @@
      { "name" : "baseCallingAlgorithm", "type":"text", "fileSchema":"cnsm_m", "fileSchemaField": "base_calling_algorithm"},
      { "name" : "alignmentAlgorithm", "type":"text", "fileSchema":"cnsm_m", "fileSchemaField": "alignment_algorithm"},
 
-     { "name" : "referenceGenomeAllele", "type":"text", "fileSchemaField": "reference_genome_allele"},
      { "name" : "copyNumber", "type":"decimal", "fileSchemaField": "copy_number"},
-     { "name" : "tumourGenotype", "type":"text", "fileSchemaField": "tumour_genotype"},
      { "name" : "mutation_id", "type":"text", "fileSchemaField": "mutation_id"},
      { "name" : "mutation_type", "type":"text", "fileSchemaField": "mutation_type"},
      { "name" : "validationStatus", "type":"text", "fileSchemaField": "validation_status"},
@@ -54,14 +52,10 @@
            "type" : "record",
            "fileSchema" : "cnsm_s",
            "fields" : [
-             { "name" : "type", "type" : "integer", "fileSchemaField":"consequence_type"},
              { "name" : "geneId", "type" : "text", "fileSchemaField":"gene_affected"},
-             { "name" : "aaMutation", "type" : "text", "fileSchemaField":"aa_mutation"},
-             { "name" : "cdsMutation", "type" : "text", "fileSchemaField":"cds_mutation"},
-             { "name" : "proteinDomainAffected", "type" : "text", "fileSchemaField":"protein_domain_affected"},
              { "name" : "transcriptId", "type" : "text", "fileSchemaField":"transcript_affected"},
-             
-             { "name": "gene_build_version", "type": "integer", "fileSchema": "cnsm_s", "fileSchemaField": "gene_build_version" }
+             { "name": "gene_build_version", "type": "integer", "fileSchema": "cnsm_s", "fileSchemaField": "gene_build_version" },
+             { "name": "note", "type": "integer", "fileSchema": "cnsm_s", "fileSchemaField": "note" }
            ]
          }
        }
