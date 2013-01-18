@@ -176,11 +176,9 @@ public final class JsonUtils {
 
     File sort = new File(file.getAbsolutePath() + ".sort");
     try {
-      String sortCommand = "sort " + format.getAbsolutePath() + " > " + sort.getAbsolutePath();
-      Runtime.getRuntime().exec(new String[] { "sh", "-c", sortCommand }).waitFor();
+      // Use external file based sorting as to not exhaust memory
+      ExternalSort.main(new String[] { format.getAbsolutePath(), sort.getAbsolutePath() });
     } catch(IOException e) {
-      throw new RuntimeException(e);
-    } catch(InterruptedException e) {
       throw new RuntimeException(e);
     }
 
@@ -241,4 +239,15 @@ public final class JsonUtils {
     }
     return treeMap;
   }
+
+  static String[] mapToStringArray(Map<String, String> map) {
+    final String[] strings = new String[map.size()];
+    int i = 0;
+    for(Map.Entry<String, String> e : map.entrySet()) {
+      strings[i] = e.getKey() + '=' + e.getValue();
+      i++;
+    }
+    return strings;
+  }
+
 }
