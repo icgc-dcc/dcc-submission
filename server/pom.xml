@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.icgc.dcc</groupId>
@@ -27,21 +26,21 @@
       <artifactId>jersey-media-json-jackson</artifactId>
       <version>${jersey.version}</version>
     </dependency>
-    
+
     <!-- Security -->
     <dependency>
       <groupId>org.apache.shiro</groupId>
       <artifactId>shiro-core</artifactId>
       <version>${shiro.version}</version>
     </dependency>
-    
+
     <!-- Validation -->
     <dependency>
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-validator</artifactId>
       <version>${hibernate-validator.version}</version>
-    </dependency>    
-    
+    </dependency>
+
     <!-- SFTP -->
     <dependency>
       <groupId>org.apache.sshd</groupId>
@@ -229,7 +228,7 @@
       <artifactId>jul-to-slf4j</artifactId>
       <version>${slf4j.version}</version>
     </dependency>
-    
+
     <!-- Testing - Unit, mocking, assertions -->
     <dependency>
       <groupId>junit</groupId>
@@ -363,6 +362,16 @@
       <url>http://conjars.org/repo</url>
     </repository>
     <repository>
+      <id>oss.sonatype</id>
+      <url>http://oss.sonatype.org/content/repositories/releases/</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+    <repository>
       <id>twttr.com</id>
       <url>http://maven.twttr.com/</url>
     </repository>
@@ -375,7 +384,7 @@
         <artifactId>maven-release-plugin</artifactId>
         <version>2.4</version>
       </plugin>
-    
+
       <!-- Generate sources - Generate Morpia bindings -->
       <plugin>
         <groupId>com.mysema.maven</groupId>
@@ -570,9 +579,10 @@
     <hadoop.version>2.0.0</hadoop.version>
     <hadoop-cdh.version>${hadoop.version}-${cdh.version}</hadoop-cdh.version>
     <hadoop-mr1-cdh.version>${hadoop.version}-mr1-${cdh.version}</hadoop-mr1-cdh.version>
+    <elasticsearch.version>0.19.9</elasticsearch.version>
     <slf4j.version>1.6.1</slf4j.version>
     <logback.version>1.0.3</logback.version>
-    
+
     <!-- Encoding -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
