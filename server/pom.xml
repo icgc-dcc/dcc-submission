@@ -331,6 +331,14 @@
         </exclusion>
       </exclusions>
     </dependency>
+
+    <!-- Testing - Utilities -->
+    <dependency>
+      <groupId>com.google.code</groupId>
+      <artifactId>externalsortinginjava</artifactId>
+      <version>0.1.1</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
   <repositories>
     <repository>
