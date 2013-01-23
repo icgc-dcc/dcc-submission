@@ -1,4 +1,4 @@
-LeftTable	LeftKey (FK)	RightTable	RightKey (PK, with one exception for mirna_p table)	LeftCardinality	RightUniqueness	optionals	JoinType (unused for now)
+LeftTable	LeftKeys (FK)	RightTable	RightKeys (PK, with one exception for mirna_p table)	BiDirectionality	RightUniqueness	Optional?	JoinType (unused for now)
 specimen	donor_id	donor	donor_id	1..n	TRUE		inner
 sample	specimen_id	specimen	specimen_id	1..n	TRUE		inner
 exposure	donor_id	donor	donor_id	0..n	TRUE		right
@@ -8,8 +8,10 @@ biomarker	donor_id	donor	donor_id	0..n	TRUE		right
 surgery	donor_id	donor	donor_id	0..n	TRUE		right
 biomarker	donor_id,specimen_id	specimen	donor_id,specimen_id	0..n	FALSE	1	right
 surgery	donor_id,specimen_id	specimen	donor_id,specimen_id	0..n	FALSE	1	right
+sgv_p	analysis_id,control_sample_id	sgv_m	analysis_id,control_sample_id	1..n	TRUE		inner
+sgv_m	control_sample_id	sample	analyzed_sample_id	0..n	TRUE		inner
+sgv_m	matched_sample_id	sample	analyzed_sample_id	0..n	TRUE		inner
 ssm_p	analysis_id,analyzed_sample_id	ssm_m	analysis_id,analyzed_sample_id	1..n	TRUE		inner
-ssm_s	analysis_id,analyzed_sample_id,mutation_id	ssm_p	analysis_id,analyzed_sample_id,mutation_id	0..n	TRUE		right
 ssm_m	analyzed_sample_id	sample	analyzed_sample_id	0..n	TRUE		inner
 ssm_m	matched_sample_id	sample	analyzed_sample_id	0..n	TRUE		inner
 cnsm_p	analysis_id,analyzed_sample_id	cnsm_m	analysis_id,analyzed_sample_id	1..n	TRUE		inner

@@ -355,7 +355,7 @@ public class IntegrationTest {
     String dictionary = TestUtils.resourceToString(dictionaryResource);
     String updatedSecondDictionary = dictionary.replace("Unique identifier for the donor", //
         "Unique identifier for the donor (update" + ++dictionaryUpdateCount + ")");
-    assertTrue(dictionary.equals(updatedSecondDictionary) == false);
+    assertTrue(dictionary, dictionary.equals(updatedSecondDictionary) == false);
     Response response = TestUtils.put(client, DICTIONARIES_ENDPOINT + "/" + dictionaryVersion, updatedSecondDictionary);
     assertEquals(expectedStatus, response.getStatus());
   }
