@@ -32,6 +32,8 @@ dev_server_deploy_script="${dev_dir?}/${dev_server_deploy_script_name?}"
 parent_pom_file="${dev_dir?}/pom.xml"
 server_pom_file="${dev_server_dir?}/pom.xml"
 
+main_class="org.icgc.dcc.Main"
+
 # ===========================================================================
 # basic checks
 
@@ -185,15 +187,13 @@ else
  echo "ssh ${username:='your_user'}@${server?}"
  echo "sudo -u hdfs -i"
  echo
+ echo "current_pid=\$(jps -lm | grep \"${main_class?} ${mode?}\" | awk '{print "'$1'"}') && read -p \"kill \$current_pid?\" && kill \$current_pid"
  echo "mv ${remote_dir?} ${backup_dir?}/dcc.${timestamp?}.bak"
  echo "cp -r ${remote_tmp_dir?} ${remote_dir?}"
  echo "cp ${remote_realm_file?} ${remote_server_dir?}/"
  echo "cd ${remote_server_dir?}"
- echo "# tail -f ${log_file?} # to be used elsewhere"
- echo
- echo "script /dev/null"
- echo "# in new screen session (requires the script command above)"
- echo "java -cp ${jar_file_name?} org.icgc.dcc.Main ${mode?} >> ${log_file?} 2>&1 # in screen session"
+ echo "nohup java -cp ${jar_file_name?} ${main_class?} ${mode?} >> ${log_file?} 2>&1 &"
+ echo "tail -f ${log_file?}"
  echo
 fi
 

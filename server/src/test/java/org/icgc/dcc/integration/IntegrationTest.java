@@ -123,7 +123,8 @@ public class IntegrationTest {
   private static final String SECOND_RELEASE = "{\"name\": \"release2\"}";
 
   private static final String PROJECT1 =
-      "{\"name\":\"Project One\",\"key\":\"project1\",\"users\":[\"admin\"],\"groups\":[\"admin\"]}";
+      "{\"name\":\"Project One\",\"key\":\"project1\",\"users\":[\"admin\"],\"groups\":[\"admin\"]}"; // TODO: use:
+                                                                                                      // ./server/src/main/resources/integration/project1.json
 
   private static final String PROJECT2 =
       "{\"name\":\"Project Two\",\"key\":\"project2\",\"users\":[\"admin\", \"brett\"],\"groups\":[\"admin\"]}";
