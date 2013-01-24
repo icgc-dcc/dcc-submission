@@ -1,0 +1,11 @@
+{
+  "key":"project1",
+  "name":"project1",
+  "users":[
+     "admin"
+  ],
+  "groups":[
+     "admin"
+  ]
+}
+
