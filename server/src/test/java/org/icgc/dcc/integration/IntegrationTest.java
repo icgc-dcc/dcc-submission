@@ -123,7 +123,8 @@ public class IntegrationTest {
   private static final String SECOND_RELEASE = "{\"name\": \"release2\"}";
 
   private static final String PROJECT1 =
-      "{\"name\":\"Project One\",\"key\":\"project1\",\"users\":[\"admin\"],\"groups\":[\"admin\"]}";
+      "{\"name\":\"Project One\",\"key\":\"project1\",\"users\":[\"admin\"],\"groups\":[\"admin\"]}"; // TODO: use:
+                                                                                                      // ./server/src/main/resources/integration/project1.json
 
   private static final String PROJECT2 =
       "{\"name\":\"Project Two\",\"key\":\"project2\",\"users\":[\"admin\", \"brett\"],\"groups\":[\"admin\"]}";
@@ -355,7 +356,7 @@ public class IntegrationTest {
     String dictionary = TestUtils.resourceToString(dictionaryResource);
     String updatedSecondDictionary = dictionary.replace("Unique identifier for the donor", //
         "Unique identifier for the donor (update" + ++dictionaryUpdateCount + ")");
-    assertTrue(dictionary.equals(updatedSecondDictionary) == false);
+    assertTrue(dictionary, dictionary.equals(updatedSecondDictionary) == false);
     Response response = TestUtils.put(client, DICTIONARIES_ENDPOINT + "/" + dictionaryVersion, updatedSecondDictionary);
     assertEquals(expectedStatus, response.getStatus());
   }

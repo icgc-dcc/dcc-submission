@@ -201,7 +201,6 @@ public final class JsonUtils {
       Map<String, Object> map = (Map<String, Object>) object;
       if(map.containsKey(OID_FIELD)) { // changes for every run
         map.put("$oid", "[removed-for-comparisons]");
-        // map.remove(OID_FIELD);
       }
     }
     StringWriter sw = new StringWriter();

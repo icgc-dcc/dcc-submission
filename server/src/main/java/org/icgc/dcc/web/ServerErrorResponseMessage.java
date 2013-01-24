@@ -6,13 +6,12 @@ public class ServerErrorResponseMessage {
   public Object[] parameters;
 
   public ServerErrorResponseMessage(ServerErrorCode code, Object... parameters) {
-    this.code = code.getCode();
+    this.code = code.getFrontEndString();
     this.parameters = parameters;
   }
 
-  public ServerErrorResponseMessage(ServerErrorCode code) { // TODO: change this to accept ServerErrorCodeEnum instead
-                                                            // (DCC-660)
-    this.code = code.getCode();
+  public ServerErrorResponseMessage(ServerErrorCode code) {
+    this.code = code.getFrontEndString();
     this.parameters = new Object[0];
   }
 }

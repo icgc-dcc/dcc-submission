@@ -1,0 +1,11 @@
+[ReplicaSetStatus:Updater] WARN  c.m.ReplicaSetStatus - Server seen down: hmongodb
+java.io.IOException: Broken pipe
+java.lang.IllegalStateException: Incorrect identification: bad line ending
+java.lang.IllegalStateException: Unable to negociate key exchange for item 1
+java.net.SocketException: Connection timed out
+org.apache.mina.core.write.WriteToClosedSessionException: null
+org.apache.sshd.common.SshException: Unsupported protocol version: SSH-
+WARN  o.a.s.s.s.ServerSession - Exception caught
+java.io.IOException: Connection reset by peer
+java.lang.IllegalStateException: Bad item length: 825503800
+java.lang.IllegalStateException: Bad item length: 825505841

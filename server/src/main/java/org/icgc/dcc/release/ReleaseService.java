@@ -39,6 +39,7 @@ import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.release.model.SubmissionState;
 import org.icgc.dcc.shiro.AuthorizationPrivileges;
 import org.icgc.dcc.validation.report.SubmissionReport;
+import org.icgc.dcc.web.ServerErrorCode;
 import org.icgc.dcc.web.validator.InvalidNameException;
 import org.icgc.dcc.web.validator.NameValidator;
 import org.slf4j.Logger;
@@ -240,12 +241,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     SubmissionState expectedState = SubmissionState.VALID;
     nextRelease.removeFromQueue(projectKeys);
     for(String projectKey : projectKeys) {
-      Submission submission = getSubmissionByName(nextRelease, projectKey);
-      SubmissionState currentState = submission.getState();
-      if(submission == null || expectedState != currentState) {
-        throw new InvalidStateException(//
-            "project " + projectKey + " is not " + expectedState + " (" + currentState + " instead)");
-      }
+      Submission submission = fetchAndCheckSubmission(nextRelease, projectKey, expectedState);
       submission.setState(SubmissionState.SIGNED_OFF);
     }
 
@@ -292,12 +288,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     nextRelease.enqueue(queuedProjects);
     for(QueuedProject queuedProject : queuedProjects) {
       String projectKey = queuedProject.getKey();
-      Submission submission = getSubmissionByName(nextRelease, projectKey);
-      SubmissionState currentState = submission.getState();
-      if(submission == null || expectedState != currentState) {
-        throw new InvalidStateException(//
-            "project " + projectKey + " is not " + expectedState + " (" + currentState + " instead)");
-      }
+      Submission submission = fetchAndCheckSubmission(nextRelease, projectKey, expectedState);
       submission.setState(SubmissionState.QUEUED);
     }
 
@@ -606,6 +597,24 @@ public class ReleaseService extends BaseMorphiaService<Release> {
       submissionFileList.add(new SubmissionFile(path, fs.getFileSystem(), dict));
     }
     return submissionFileList;
+  }
+
+  private Submission fetchAndCheckSubmission(Release nextRelease, String projectKey, SubmissionState expectedState)
+      throws InvalidStateException {
+    Submission submission = getSubmissionByName(nextRelease, projectKey);
+    String errorMessage;
+    if(submission == null) {
+      errorMessage = "project " + projectKey + " cannot be found";
+      log.error(errorMessage);
+      throw new InvalidStateException(ServerErrorCode.PROJECT_KEY_NOT_FOUND, errorMessage);
+    }
+    SubmissionState currentState = submission.getState();
+    if(expectedState != currentState) {
+      errorMessage = "project " + projectKey + " is not " + expectedState + " (" + currentState + " instead)";
+      log.error(errorMessage);
+      throw new InvalidStateException(ServerErrorCode.INVALID_STATE, errorMessage);
+    }
+    return submission;
   }
 
   private List<String> getSubmission(final SubmissionState state) {

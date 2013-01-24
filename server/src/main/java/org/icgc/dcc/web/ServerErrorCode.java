@@ -34,15 +34,21 @@ public enum ServerErrorCode { // TODO: migrate all (DCC-660)
   INVALID_STATE("InvalidState"), //
   UNAVAILABLE("Unavailable"), //
   RELEASE_EXCEPTION("ReleaseException"), //
+  SIGNED_OFF_SUBMISSION_REQUIRED("SignedOffSubmissionRequired"), //
+  QUEUE_NOT_EMPTY("QueueNotEmpty"), //
+  RELEASE_MISSING_DICTIONARY("ReleaseMissingDictionary"), //
+  DUPLICATE_RELEASE_NAME("DuplicateReleaseName"), //
+  PROJECT_KEY_NOT_FOUND("ProjectKeyNotFound"), //
   ;
 
-  private String code;
+  private String frontEndString; // TODO: see https://jira.oicr.on.ca/browse/DCC-660?focusedCommentId=44725&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-44725
 
-  private ServerErrorCode(String code) {
-    this.code = code;
+
+  private ServerErrorCode(String frontEndString) {
+    this.frontEndString = frontEndString;
   }
 
-  public String getCode() {
-    return code;
+  public String getFrontEndString() {
+    return frontEndString;
   }
 }

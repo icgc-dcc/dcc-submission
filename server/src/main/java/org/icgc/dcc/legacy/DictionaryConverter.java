@@ -79,8 +79,8 @@ public class DictionaryConverter {
 
   public void saveToJSON(String fileName) throws JsonGenerationException, JsonMappingException, IOException {
     ObjectMapper mapper = new ObjectMapper();
-    mapper.writerWithDefaultPrettyPrinter().writeValue(new File(fileName), dictionary);
     mapper.enable(SerializationConfig.Feature.SORT_PROPERTIES_ALPHABETICALLY);
+    mapper.writerWithDefaultPrettyPrinter().writeValue(new File(fileName), dictionary);
     mapper.readValue(new File(fileName), Dictionary.class);
   }
 
@@ -234,6 +234,12 @@ public class DictionaryConverter {
       }
     }
 
+    // because those have no secondary files
+    schemaToUniqueFields.put("ssm_p", Lists.newArrayList("analysis_id", "analyzed_sample_id", "mutation_id"));
+    schemaToUniqueFields.put("sgv_p", Lists.newArrayList("analysis_id", "control_sample_id", "variation_id"));
+
+    log.info("schemaToUniqueFields = " + schemaToUniqueFields);
+
     return schemaToUniqueFields;
   }
 
@@ -324,8 +330,7 @@ public class DictionaryConverter {
       this.readTSVHeader(lineIterator.next());
     }
     // initialize unique fields
-    List<String> uniqueFields = new ArrayList<String>();
-    fileSchema.setUniqueFields(uniqueFields);
+    fileSchema.setUniqueFields(new ArrayList<String>());
     // Read field
     List<Field> fields = new ArrayList<Field>();
     while(lineIterator.hasNext()) {
@@ -355,8 +360,8 @@ public class DictionaryConverter {
 
     // special case for mirna_m, stsm_m, cnsm_m, jcn_m, ssm_m, meth_m, exp_m, add missing donor_id
     if(fileSchemaName.equals("mirna_m") || fileSchemaName.equals("stsm_m") || fileSchemaName.equals("cnsm_m")
-        || fileSchemaName.equals("jcn_m") || fileSchemaName.equals("ssm_m") || fileSchemaName.equals("meth_m")
-        || fileSchemaName.equals("exp_m")) {
+        || fileSchemaName.equals("jcn_m") || fileSchemaName.equals("sgv_m") || fileSchemaName.equals("ssm_m")
+        || fileSchemaName.equals("meth_m") || fileSchemaName.equals("exp_m")) {
       if(!this.containField(fields, "donor_id")) {
         Field donorIDField = new Field();
         donorIDField.setName("donor_id");
