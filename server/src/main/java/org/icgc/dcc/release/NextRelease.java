@@ -16,6 +16,7 @@ import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.release.model.SubmissionState;
+import org.icgc.dcc.web.ServerErrorCode;
 import org.icgc.dcc.web.validator.InvalidNameException;
 import org.icgc.dcc.web.validator.NameValidator;
 import org.slf4j.Logger;
@@ -70,31 +71,40 @@ public class NextRelease extends BaseRelease {
     Release oldRelease = dccLocking.acquireReleasingLock(); // TODO: for now nothing checks for it (DCC-685); also
                                                             // consider reentrance out of safety
     try {
+      String errorMessage;
+
       if(oldRelease == null) { // just in case (can't really happen)
-        log.error("could not acquire lock on release");
+        errorMessage = "could not acquire lock on release";
+        log.error(errorMessage);
         throw new ReleaseException("ReleaseException");
       }
       if(oldRelease.equals(this.getRelease()) == false) { // just in case (can't really happen)
-        log.error(oldRelease + " != " + this.getRelease());
+        errorMessage = oldRelease + " != " + this.getRelease();
+        log.error(errorMessage);
         throw new ReleaseException("ReleaseException");
       }
       if(atLeastOneSignedOff(oldRelease) == false) { // check for signed-off submission states (must have at least one)
-        log.error("no signed off project in " + oldRelease);
-        throw new InvalidStateException("SignedOffSubmissionRequired");
+        errorMessage = "no signed off project in " + oldRelease;
+        log.error(errorMessage);
+        throw new InvalidStateException(ServerErrorCode.SIGNED_OFF_SUBMISSION_REQUIRED, errorMessage);
       }
       if(oldRelease.getQueue().isEmpty() == false) {
-        log.error("some projects are still enqueue in " + oldRelease);
-        throw new InvalidStateException("QueueNotEmpty");
+        errorMessage = "some projects are still enqueue in " + oldRelease;
+        log.error(errorMessage);
+        throw new InvalidStateException(ServerErrorCode.QUEUE_NOT_EMPTY, errorMessage);
       }
 
       String dictionaryVersion = oldRelease.getDictionaryVersion();
       if(dictionaryVersion == null) {
-        log.error("could not find a dictionary matching " + dictionaryVersion);
-        throw new InvalidStateException("ReleaseMissingDictionary"); // TODO: new kind of exception rather?
+        errorMessage = "could not find a dictionary matching " + dictionaryVersion;
+        log.error(errorMessage);
+        throw new InvalidStateException(ServerErrorCode.RELEASE_MISSING_DICTIONARY, errorMessage); // TODO: new kind of
+                                                                                                   // exception rather?
       }
       if(forName(nextReleaseName) != null) {
-        log.error("found a conflicting release for name " + nextReleaseName);
-        throw new InvalidStateException("DuplicateReleaseName");
+        errorMessage = "found a conflicting release for name " + nextReleaseName;
+        log.error(errorMessage);
+        throw new InvalidStateException(ServerErrorCode.DUPLICATE_RELEASE_NAME, errorMessage);
       }
 
       // critical operations

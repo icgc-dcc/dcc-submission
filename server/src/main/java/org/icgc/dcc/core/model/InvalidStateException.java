@@ -17,19 +17,20 @@
  */
 package org.icgc.dcc.core.model;
 
+import org.icgc.dcc.web.ServerErrorCode;
+
 /**
  * When an operation is attempted on the system when its states does not allow it.
  */
 public class InvalidStateException extends Exception {
-  public InvalidStateException(Exception e) {
-    super(e);
-  }
+  private final ServerErrorCode code;
 
-  public InvalidStateException(String message) {
+  public InvalidStateException(ServerErrorCode code, String message) {
     super(message);
+    this.code = code;
   }
 
-  public InvalidStateException(String message, Exception e) {
-    super(message, e);
+  public ServerErrorCode getCode() {
+    return code;
   }
 }

@@ -68,11 +68,11 @@ public class NextReleaseResource {
       log.info("released {}", oldReleaseName);
     } catch(ReleaseException e) {
       ServerErrorCode code = ServerErrorCode.RELEASE_EXCEPTION;
-      log.error(code.getCode(), e);
+      log.error(code.getFrontEndString(), e);
       return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage(code)).build();
     } catch(InvalidStateException e) {
-      ServerErrorCode code = ServerErrorCode.INVALID_STATE;
-      log.error(code.getCode(), e);
+      ServerErrorCode code = e.getCode();
+      log.error(code.getFrontEndString(), e);
       return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage(code)).build();
     }
     return ResponseTimestamper.ok(newRelease.getRelease()).build();
@@ -113,12 +113,12 @@ public class NextReleaseResource {
       return Response.status(Status.BAD_REQUEST)
           .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, projectKeys)).build();
     } catch(InvalidStateException e) {
-      ServerErrorCode code = ServerErrorCode.INVALID_STATE;
-      log.error(code.getCode(), e);
+      ServerErrorCode code = e.getCode();
+      log.error(code.getFrontEndString(), e);
       return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage(code)).build();
     } catch(DccModelOptimisticLockException e) { // not very likely
       ServerErrorCode code = ServerErrorCode.UNAVAILABLE;
-      log.error(code.getCode(), e);
+      log.error(code.getFrontEndString(), e);
       return Response.status(Status.SERVICE_UNAVAILABLE) //
           .header(Header.RetryAfter.toString(), 3) //
           .entity(new ServerErrorResponseMessage(code)).build();
@@ -166,15 +166,15 @@ public class NextReleaseResource {
       this.releaseService.signOff(nextRelease, projectKeys, user);
     } catch(ReleaseException e) {
       ServerErrorCode code = ServerErrorCode.NO_SUCH_ENTITY;
-      log.error(code.getCode(), e);
+      log.error(code.getFrontEndString(), e);
       return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage(code, projectKeys)).build();
     } catch(InvalidStateException e) {
-      ServerErrorCode code = ServerErrorCode.INVALID_STATE;
-      log.error(code.getCode(), e);
+      ServerErrorCode code = e.getCode();
+      log.error(code.getFrontEndString(), e);
       return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage(code)).build();
     } catch(DccModelOptimisticLockException e) { // not very likely
       ServerErrorCode code = ServerErrorCode.UNAVAILABLE;
-      log.error(code.getCode(), e);
+      log.error(code.getFrontEndString(), e);
       return Response.status(Status.SERVICE_UNAVAILABLE) //
           .header(Header.RetryAfter.toString(), 3) //
           .entity(new ServerErrorResponseMessage(code)).build();
