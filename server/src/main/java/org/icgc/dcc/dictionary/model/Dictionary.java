@@ -33,9 +33,11 @@ import org.icgc.dcc.dictionary.visitor.DictionaryVisitor;
 import com.google.code.morphia.annotations.Entity;
 import com.google.code.morphia.annotations.Indexed;
 import com.google.code.morphia.annotations.PrePersist;
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 
 /**
  * Describes a dictionary that contains {@code FileSchema}ta and that may be used by some releases
@@ -118,6 +120,20 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
         return input.getName().equals(fileName);
       }
     });
+  }
+
+  /**
+   * Returns the list of {@code FileSchema} names
+   * 
+   * @return the list of {@code FileSchema} names
+   */
+  public List<String> fileSchemaNames() {
+    return Lists.newArrayList(Iterables.transform(this.files, new Function<FileSchema, String>() {
+      @Override
+      public String apply(FileSchema input) {
+        return input.getName();
+      }
+    }));
   }
 
   public boolean hasFileSchema(String fileName) {

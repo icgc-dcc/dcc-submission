@@ -1,5 +1,5 @@
 {
-  "created" : 1358969833966,
+  "created" : 1359064382307,
   "files" : [ {
     "fields" : [ {
       "controlled" : false,
@@ -396,6 +396,97 @@
   }, {
     "fields" : [ {
       "controlled" : false,
+      "label" : "Unique identfier for the analysis performed for a particular group of samples",
+      "name" : "analysis_id",
+      "restrictions" : [ ],
+      "summaryType" : null,
+      "valueType" : "TEXT"
+    }, {
+      "controlled" : false,
+      "label" : null,
+      "name" : "analyzed_sample_id",
+      "restrictions" : [ ],
+      "summaryType" : null,
+      "valueType" : "TEXT"
+    }, {
+      "controlled" : false,
+      "label" : "Unique identifier for the mutation",
+      "name" : "mutation_id",
+      "restrictions" : [ ],
+      "summaryType" : null,
+      "valueType" : "TEXT"
+    }, {
+      "controlled" : false,
+      "label" : "Functional consequence of the SNP.",
+      "name" : "consequence_type",
+      "restrictions" : [ ],
+      "summaryType" : null,
+      "valueType" : "TEXT"
+    }, {
+      "controlled" : false,
+      "label" : "Changes at amino acid level. Indicate the reference aa, position and mutation aa.",
+      "name" : "aa_mutation",
+      "restrictions" : [ ],
+      "summaryType" : null,
+      "valueType" : "TEXT"
+    }, {
+      "controlled" : false,
+      "label" : "Changes in coding sequence.  Indicate position, reference base and mutation base.",
+      "name" : "cds_mutation",
+      "restrictions" : [ ],
+      "summaryType" : null,
+      "valueType" : "TEXT"
+    }, {
+      "controlled" : false,
+      "label" : "Protein domain containing the mutation/variation.  Use Pfam accession.",
+      "name" : "protein_domain_affected",
+      "restrictions" : [ ],
+      "summaryType" : null,
+      "valueType" : "TEXT"
+    }, {
+      "controlled" : false,
+      "label" : "Gene(s) containing the mutation/variation.",
+      "name" : "gene_affected",
+      "restrictions" : [ ],
+      "summaryType" : null,
+      "valueType" : "TEXT"
+    }, {
+      "controlled" : false,
+      "label" : "Transcript(s) containing the mutation/variation.  Use Ensembl transcript id.",
+      "name" : "transcript_affected",
+      "restrictions" : [ ],
+      "summaryType" : null,
+      "valueType" : "TEXT"
+    }, {
+      "controlled" : false,
+      "label" : "Version of Ensembl gene build used for annotation",
+      "name" : "gene_build_version",
+      "restrictions" : [ ],
+      "summaryType" : null,
+      "valueType" : "TEXT"
+    }, {
+      "controlled" : false,
+      "label" : "Optional field to leave notes",
+      "name" : "note",
+      "restrictions" : [ ],
+      "summaryType" : null,
+      "valueType" : "TEXT"
+    } ],
+    "label" : null,
+    "name" : "ssm_s",
+    "pattern" : "^ssm__\\p{Lower}\\p{Lower}__\\d\\d__\\d\\d\\d__s__\\d+__(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\\.txt(.lzo)?(.gz)?(.bz2)?$",
+    "relations" : [ {
+      "bidirectional" : false,
+      "fields" : [ "analysis_id", "analyzed_sample_id", "mutation_id" ],
+      "optionals" : [ ],
+      "other" : "ssm_p",
+      "otherFields" : [ "analysis_id", "analyzed_sample_id", "mutation_id" ]
+    } ],
+    "role" : "SUBMISSION",
+    "uniqueFields" : [ ]
+  }, {
+    "fields" : [ {
+      "controlled" : false,
       "label" : "Unique identifier for the donor; assigned by data provider. It must be coded, and correspond to a donor ID listed in the donor data file.",
       "name" : "donor_id",
       "restrictions" : [ {
@@ -630,7 +721,7 @@
       "summaryType" : "FREQUENCY",
       "valueType" : "TEXT"
     }, {
-      "controlled" : false,
+      "controlled" : true,
       "label" : "Country, and optionally state or province code, but not city.",
       "name" : "donor_region_of_residence",
       "restrictions" : [ {
@@ -808,7 +899,7 @@
       "summaryType" : "AVERAGE",
       "valueType" : "INTEGER"
     }, {
-      "controlled" : false,
+      "controlled" : true,
       "label" : "Free text notes concerning donor",
       "name" : "donor_notes",
       "restrictions" : [ ],
@@ -5022,7 +5113,7 @@
     "uniqueFields" : [ ]
   }, {
     "fields" : [ {
-      "controlled" : false,
+      "controlled" : true,
       "label" : "Unique identfier for the analysis performed for a particular group of samples",
       "name" : "analysis_id",
       "restrictions" : [ {
@@ -5034,7 +5125,7 @@
       "summaryType" : null,
       "valueType" : "TEXT"
     }, {
-      "controlled" : false,
+      "controlled" : true,
       "label" : "Unique identifier for the control sample donated by the donor",
       "name" : "control_sample_id",
       "restrictions" : [ {
@@ -5046,7 +5137,7 @@
       "summaryType" : null,
       "valueType" : "TEXT"
     }, {
-      "controlled" : false,
+      "controlled" : true,
       "label" : "Unique identifier for the tumour matched to the control sample",
       "name" : "matched_sample_id",
       "restrictions" : [ {
@@ -5058,7 +5149,7 @@
       "summaryType" : null,
       "valueType" : "TEXT"
     }, {
-      "controlled" : false,
+      "controlled" : true,
       "label" : "Version of reference genome assembly",
       "name" : "assembly_version",
       "restrictions" : [ {
@@ -5075,7 +5166,7 @@
       "summaryType" : "FREQUENCY",
       "valueType" : "TEXT"
     }, {
-      "controlled" : false,
+      "controlled" : true,
       "label" : "Platform or technology used in detecting the mutation/variation",
       "name" : "platform",
       "restrictions" : [ {
@@ -5092,14 +5183,14 @@
       "summaryType" : "FREQUENCY",
       "valueType" : "TEXT"
     }, {
-      "controlled" : false,
+      "controlled" : true,
       "label" : "Name of experimental protocol and URL to written protocol",
       "name" : "experimental_protocol",
       "restrictions" : [ ],
       "summaryType" : null,
       "valueType" : "TEXT"
     }, {
-      "controlled" : false,
+      "controlled" : true,
       "label" : "Name of base calling algorithm and URL to written protocol",
       "name" : "base_calling_algorithm",
       "restrictions" : [ {
@@ -5111,7 +5202,7 @@
       "summaryType" : null,
       "valueType" : "TEXT"
     }, {
-      "controlled" : false,
+      "controlled" : true,
       "label" : "Name of alignment algorithm and URL to written protocol",
       "name" : "alignment_algorithm",
       "restrictions" : [ {
@@ -5123,7 +5214,7 @@
       "summaryType" : null,
       "valueType" : "TEXT"
     }, {
-      "controlled" : false,
+      "controlled" : true,
       "label" : "Name of variation calling algorithm and URL to written protocol",
       "name" : "variation_calling_algorithm",
       "restrictions" : [ {
@@ -5135,21 +5226,21 @@
       "summaryType" : null,
       "valueType" : "TEXT"
     }, {
-      "controlled" : false,
+      "controlled" : true,
       "label" : "Names of other analysis algorithms.  Separate multiple algorithms by commas.",
       "name" : "other_analysis_algorithm",
       "restrictions" : [ ],
       "summaryType" : null,
       "valueType" : "TEXT"
     }, {
-      "controlled" : false,
+      "controlled" : true,
       "label" : "Sequence coverage if analyzed by sequencing platforms",
       "name" : "seq_coverage",
       "restrictions" : [ ],
       "summaryType" : "AVERAGE",
       "valueType" : "DECIMAL"
     }, {
-      "controlled" : false,
+      "controlled" : true,
       "label" : "Public repository where raw data is submitted (#)",
       "name" : "raw_data_repository",
       "restrictions" : [ {
@@ -5161,21 +5252,21 @@
       "summaryType" : "FREQUENCY",
       "valueType" : "TEXT"
     }, {
-      "controlled" : false,
+      "controlled" : true,
       "label" : "Accession and URL for referencing the raw data at the public repository",
       "name" : "raw_data_accession",
       "restrictions" : [ ],
       "summaryType" : null,
       "valueType" : "TEXT"
     }, {
-      "controlled" : false,
+      "controlled" : true,
       "label" : "Optional field to leave notes",
       "name" : "note",
       "restrictions" : [ ],
       "summaryType" : null,
       "valueType" : "TEXT"
     }, {
-      "controlled" : false,
+      "controlled" : true,
       "label" : "Unique identifier for the donor",
       "name" : "donor_id",
       "restrictions" : [ ],
@@ -5421,7 +5512,7 @@
     "uniqueFields" : [ "analysis_id", "analyzed_sample_id", "mutation_id" ]
   }, {
     "fields" : [ {
-      "controlled" : false,
+      "controlled" : true,
       "label" : "Unique identfier for the analysis performed for a particular group of samples",
       "name" : "analysis_id",
       "restrictions" : [ {
@@ -5433,7 +5524,7 @@
       "summaryType" : null,
       "valueType" : "TEXT"
     }, {
-      "controlled" : false,
+      "controlled" : true,
       "label" : "Unique identifier for the control sample",
       "name" : "control_sample_id",
       "restrictions" : [ {
@@ -5445,7 +5536,7 @@
       "summaryType" : null,
       "valueType" : "TEXT"
     }, {
-      "controlled" : false,
+      "controlled" : true,
       "label" : "Unique identifier for the variation",
       "name" : "variation_id",
       "restrictions" : [ {
@@ -5457,7 +5548,7 @@
       "summaryType" : null,
       "valueType" : "TEXT"
     }, {
-      "controlled" : false,
+      "controlled" : true,
       "label" : "Type of variation",
       "name" : "variation_type",
       "restrictions" : [ {
@@ -5474,7 +5565,7 @@
       "summaryType" : "FREQUENCY",
       "valueType" : "TEXT"
     }, {
-      "controlled" : false,
+      "controlled" : true,
       "label" : "Name of the chromosome containing the mutation/variation",
       "name" : "chromosome",
       "restrictions" : [ {
@@ -5491,7 +5582,7 @@
       "summaryType" : "FREQUENCY",
       "valueType" : "TEXT"
     }, {
-      "controlled" : false,
+      "controlled" : true,
       "label" : "Start position of the mutation/variation on the chromosome",
       "name" : "chromosome_start",
       "restrictions" : [ {
@@ -5503,7 +5594,7 @@
       "summaryType" : "AVERAGE",
       "valueType" : "INTEGER"
     }, {
-      "controlled" : false,
+      "controlled" : true,
       "label" : "End position of the mutation/variation on the chromosome",
       "name" : "chromosome_end",
       "restrictions" : [ {
@@ -5515,7 +5606,7 @@
       "summaryType" : "AVERAGE",
       "valueType" : "INTEGER"
     }, {
-      "controlled" : false,
+      "controlled" : true,
       "label" : "Chromosome strand",
       "name" : "chromosome_strand",
       "restrictions" : [ {
@@ -5532,7 +5623,7 @@
       "summaryType" : "FREQUENCY",
       "valueType" : "INTEGER"
     }, {
-      "controlled" : false,
+      "controlled" : true,
       "label" : "RefSNP alleles from dbSNP (use a dash for each missing base)",
       "name" : "refsnp_allele",
       "restrictions" : [ {
@@ -5544,7 +5635,7 @@
       "summaryType" : null,
       "valueType" : "TEXT"
     }, {
-      "controlled" : false,
+      "controlled" : true,
       "label" : "Strand of RefSNP allele",
       "name" : "refsnp_strand",
       "restrictions" : [ {
@@ -5556,7 +5647,7 @@
       "summaryType" : "FREQUENCY",
       "valueType" : "INTEGER"
     }, {
-      "controlled" : false,
+      "controlled" : true,
       "label" : "Allele in the reference genome (use a dash for each missing base)",
       "name" : "reference_genome_allele",
       "restrictions" : [ {
@@ -5568,7 +5659,7 @@
       "summaryType" : null,
       "valueType" : "TEXT"
     }, {
-      "controlled" : false,
+      "controlled" : true,
       "label" : "Genotype of the control sample (use a dash for each missing base)",
       "name" : "control_genotype",
       "restrictions" : [ {
@@ -5580,7 +5671,7 @@
       "summaryType" : null,
       "valueType" : "TEXT"
     }, {
-      "controlled" : false,
+      "controlled" : true,
       "label" : "Genotype of the tumour sample (use a dash for each missing base)",
       "name" : "tumour_genotype",
       "restrictions" : [ {
@@ -5592,35 +5683,35 @@
       "summaryType" : null,
       "valueType" : "TEXT"
     }, {
-      "controlled" : false,
+      "controlled" : true,
       "label" : "For heterozygous SNPs, the dominant allele as revealed by RNA-seq, etc.",
       "name" : "expressed_allele",
       "restrictions" : [ ],
       "summaryType" : null,
       "valueType" : "TEXT"
     }, {
-      "controlled" : false,
+      "controlled" : true,
       "label" : "Average quality score for the mutation/variation call",
       "name" : "quality_score",
       "restrictions" : [ ],
       "summaryType" : "AVERAGE",
       "valueType" : "INTEGER"
     }, {
-      "controlled" : false,
+      "controlled" : true,
       "label" : "Probability of the mutation/variation call",
       "name" : "probability",
       "restrictions" : [ ],
       "summaryType" : "AVERAGE",
       "valueType" : "DECIMAL"
     }, {
-      "controlled" : false,
+      "controlled" : true,
       "label" : "Average number of times the bases are covered by raw reads",
       "name" : "read_count",
       "restrictions" : [ ],
       "summaryType" : "AVERAGE",
       "valueType" : "DECIMAL"
     }, {
-      "controlled" : false,
+      "controlled" : true,
       "label" : "Indicate if the mutation/variation is annotated in dbSNP",
       "name" : "is_annotated",
       "restrictions" : [ {
@@ -5632,7 +5723,7 @@
       "summaryType" : "FREQUENCY",
       "valueType" : "TEXT"
     }, {
-      "controlled" : false,
+      "controlled" : true,
       "label" : "Indicate if the mutation/variation has been validated",
       "name" : "validation_status",
       "restrictions" : [ {
@@ -5649,7 +5740,7 @@
       "summaryType" : "FREQUENCY",
       "valueType" : "TEXT"
     }, {
-      "controlled" : false,
+      "controlled" : true,
       "label" : "Platform or technology used in validation",
       "name" : "validation_platform",
       "restrictions" : [ {
@@ -5661,14 +5752,14 @@
       "summaryType" : "FREQUENCY",
       "valueType" : "TEXT"
     }, {
-      "controlled" : false,
+      "controlled" : true,
       "label" : "Cross-reference: Ensembl Variation ID",
       "name" : "xref_ensembl_var_id",
       "restrictions" : [ ],
       "summaryType" : null,
       "valueType" : "TEXT"
     }, {
-      "controlled" : false,
+      "controlled" : true,
       "label" : "Optional field to leave notes",
       "name" : "note",
       "restrictions" : [ ],
@@ -6190,7 +6281,7 @@
       "name" : "mutation_id",
       "restrictions" : [ {
         "config" : {
-          "acceptMissingCode" : true
+          "acceptMissingCode" : false
         },
         "type" : "required"
       } ],
@@ -7740,7 +7831,7 @@
     "role" : "SUBMISSION",
     "uniqueFields" : [ "analysis_id", "analyzed_sample_id" ]
   } ],
-  "lastUpdate" : 1358969833966,
+  "lastUpdate" : 1359064382307,
   "state" : "OPENED",
   "version" : "0.6c"
 }
