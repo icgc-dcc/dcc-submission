@@ -38,6 +38,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import com.google.common.base.Optional;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.inject.Inject;
 import com.mongodb.BasicDBObject;
@@ -74,10 +75,10 @@ public class ValidationInternalIntegrityTest {
     List<Term> termList4 =
         Arrays.asList(new Term("1", "dummy", null), new Term("2", "dummy", null), new Term("3", "dummy", null));
 
-    when(dictionaryService.getCodeList("dr__donor_sex")).thenReturn(codeList1);
-    when(dictionaryService.getCodeList("dr__donor_vital_status")).thenReturn(codeList2);
-    when(dictionaryService.getCodeList("dr__disease_status_last_followup")).thenReturn(codeList3);
-    when(dictionaryService.getCodeList("dr__donor_relapse_type")).thenReturn(codeList4);
+    when(dictionaryService.getCodeList("dr__donor_sex")).thenReturn(Optional.of(codeList1));
+    when(dictionaryService.getCodeList("dr__donor_vital_status")).thenReturn(Optional.of(codeList2));
+    when(dictionaryService.getCodeList("dr__disease_status_last_followup")).thenReturn(Optional.of(codeList3));
+    when(dictionaryService.getCodeList("dr__donor_relapse_type")).thenReturn(Optional.of(codeList4));
 
     when(codeList1.getTerms()).thenReturn(termList1);
     when(codeList2.getTerms()).thenReturn(termList2);

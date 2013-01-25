@@ -1,7 +1,7 @@
 [ {
-  "created" : 1347981138637,
+  "created" : 1359141368108,
   "label" : null,
-  "lastUpdate" : 1347981138637,
+  "lastUpdate" : 1359141368108,
   "name" : "specimen__specimen_donor_treatment_type",
   "terms" : [ {
     "code" : "1",
@@ -37,9 +37,9 @@
     "value" : "other therapy"
   } ]
 }, {
-  "created" : 1347981138657,
+  "created" : 1359141368126,
   "label" : null,
-  "lastUpdate" : 1347981138657,
+  "lastUpdate" : 1359141368126,
   "name" : "pancreatic_cancer__therapy__site_radiated",
   "terms" : [ {
     "code" : "1",
@@ -71,9 +71,9 @@
     "value" : "other"
   } ]
 }, {
-  "created" : 1347981138657,
+  "created" : 1359141368126,
   "label" : null,
-  "lastUpdate" : 1347981138657,
+  "lastUpdate" : 1359141368126,
   "name" : "dr_therapy__therapy_response",
   "terms" : [ {
     "code" : "1",
@@ -93,9 +93,9 @@
     "value" : "stable disease"
   } ]
 }, {
-  "created" : 1347981138657,
+  "created" : 1359141368126,
   "label" : null,
-  "lastUpdate" : 1347981138657,
+  "lastUpdate" : 1359141368126,
   "name" : "meth_p__validation_status",
   "terms" : [ {
     "code" : "1",
@@ -111,9 +111,9 @@
     "value" : "not valid"
   } ]
 }, {
-  "created" : 1347981138657,
+  "created" : 1359141368126,
   "label" : null,
-  "lastUpdate" : 1347981138657,
+  "lastUpdate" : 1359141368126,
   "name" : "specimen__tumour_confirmed",
   "terms" : [ {
     "code" : "1",
@@ -125,9 +125,9 @@
     "value" : "yes"
   } ]
 }, {
-  "created" : 1347981138657,
+  "created" : 1359141368126,
   "label" : null,
-  "lastUpdate" : 1347981138657,
+  "lastUpdate" : 1359141368126,
   "name" : "appendix_B10",
   "terms" : [ {
     "code" : "1",
@@ -159,9 +159,9 @@
     "value" : "GRCh37.p5"
   } ]
 }, {
-  "created" : 1347981138658,
+  "created" : 1359141368126,
   "label" : null,
-  "lastUpdate" : 1347981138658,
+  "lastUpdate" : 1359141368126,
   "name" : "ped_brain__surgery__procedure_site__ped_brain",
   "terms" : [ {
     "code" : "1",
@@ -193,9 +193,9 @@
     "value" : "others"
   } ]
 }, {
-  "created" : 1347981138658,
+  "created" : 1359141368126,
   "label" : null,
-  "lastUpdate" : 1347981138658,
+  "lastUpdate" : 1359141368126,
   "name" : "pancreatic_cancer__therapy__recurrence_type",
   "terms" : [ {
     "code" : "1",
@@ -207,9 +207,27 @@
     "value" : "local"
   } ]
 }, {
-  "created" : 1347981138658,
+  "created" : 1359141368126,
   "label" : null,
-  "lastUpdate" : 1347981138658,
+  "lastUpdate" : 1359141368126,
+  "name" : "sgv_p__validation_status",
+  "terms" : [ {
+    "code" : "1",
+    "uri" : null,
+    "value" : "validated"
+  }, {
+    "code" : "2",
+    "uri" : null,
+    "value" : "not tested"
+  }, {
+    "code" : "3",
+    "uri" : null,
+    "value" : "not valid"
+  } ]
+}, {
+  "created" : 1359141368127,
+  "label" : null,
+  "lastUpdate" : 1359141368127,
   "name" : "specimen__specimen_type",
   "terms" : [ {
     "code" : "1",
@@ -257,9 +275,9 @@
     "value" : "tumour (other)"
   } ]
 }, {
-  "created" : 1347981138658,
+  "created" : 1359141368127,
   "label" : null,
-  "lastUpdate" : 1347981138658,
+  "lastUpdate" : 1359141368127,
   "name" : "dr__disease_status_last_followup",
   "terms" : [ {
     "code" : "1",
@@ -283,9 +301,23 @@
     "value" : "stable"
   } ]
 }, {
-  "created" : 1347981138658,
+  "created" : 1359141368127,
   "label" : null,
-  "lastUpdate" : 1347981138658,
+  "lastUpdate" : 1359141368127,
+  "name" : "sgv_p__is_annotated",
+  "terms" : [ {
+    "code" : "1",
+    "uri" : null,
+    "value" : "annotated"
+  }, {
+    "code" : "2",
+    "uri" : null,
+    "value" : "not annotated"
+  } ]
+}, {
+  "created" : 1359141368127,
+  "label" : null,
+  "lastUpdate" : 1359141368127,
   "name" : "sp__analyzed_sample_type",
   "terms" : [ {
     "code" : "1",
@@ -333,9 +365,9 @@
     "value" : "Other (specify)"
   } ]
 }, {
-  "created" : 1347981138658,
+  "created" : 1359141368127,
   "label" : null,
-  "lastUpdate" : 1347981138658,
+  "lastUpdate" : 1359141368127,
   "name" : "pancreatic_cancer__surgery__intraoperative_findings",
   "terms" : [ {
     "code" : "1",
@@ -371,9 +403,9 @@
     "value" : "other"
   } ]
 }, {
-  "created" : 1347981138658,
+  "created" : 1359141368127,
   "label" : null,
-  "lastUpdate" : 1347981138658,
+  "lastUpdate" : 1359141368127,
   "name" : "pancreatic_cancer__surgery__procedure_site__pancreatic_cancer",
   "terms" : [ {
     "code" : "1",
@@ -393,9 +425,9 @@
     "value" : "pancreatic tail"
   } ]
 }, {
-  "created" : 1347981138658,
+  "created" : 1359141368127,
   "label" : null,
-  "lastUpdate" : 1347981138658,
+  "lastUpdate" : 1359141368127,
   "name" : "mirna_p__validation_status",
   "terms" : [ {
     "code" : "1",
@@ -411,9 +443,9 @@
     "value" : "not valid"
   } ]
 }, {
-  "created" : 1347981138659,
+  "created" : 1359141368127,
   "label" : null,
-  "lastUpdate" : 1347981138659,
+  "lastUpdate" : 1359141368127,
   "name" : "cnsm_p__is_annotated",
   "terms" : [ {
     "code" : "1",
@@ -425,9 +457,9 @@
     "value" : "not annotated"
   } ]
 }, {
-  "created" : 1347981138659,
+  "created" : 1359141368128,
   "label" : null,
-  "lastUpdate" : 1347981138659,
+  "lastUpdate" : 1359141368128,
   "name" : "dr__donor_relapse_type",
   "terms" : [ {
     "code" : "1",
@@ -443,9 +475,9 @@
     "value" : "progression (liquid tumours)"
   } ]
 }, {
-  "created" : 1347981138659,
+  "created" : 1359141368128,
   "label" : null,
-  "lastUpdate" : 1347981138659,
+  "lastUpdate" : 1359141368128,
   "name" : "yes_no",
   "terms" : [ {
     "code" : "1",
@@ -457,9 +489,9 @@
     "value" : "no"
   } ]
 }, {
-  "created" : 1347981138659,
+  "created" : 1359141368128,
   "label" : null,
-  "lastUpdate" : 1347981138659,
+  "lastUpdate" : 1359141368128,
   "name" : "pancreatic_cancer__therapy__intent",
   "terms" : [ {
     "code" : "1",
@@ -475,9 +507,9 @@
     "value" : "palliative"
   } ]
 }, {
-  "created" : 1347981138659,
+  "created" : 1359141368128,
   "label" : null,
-  "lastUpdate" : 1347981138659,
+  "lastUpdate" : 1359141368128,
   "name" : "cnsm_p__mutation_type",
   "terms" : [ {
     "code" : "1",
@@ -505,9 +537,9 @@
     "value" : "amp LOH"
   } ]
 }, {
-  "created" : 1347981138659,
+  "created" : 1359141368128,
   "label" : null,
-  "lastUpdate" : 1347981138659,
+  "lastUpdate" : 1359141368128,
   "name" : "pancreatic_cancer__surgery__perineural_invasion",
   "terms" : [ {
     "code" : "1",
@@ -523,9 +555,9 @@
     "value" : "indeterminate"
   } ]
 }, {
-  "created" : 1347981138659,
+  "created" : 1359141368128,
   "label" : null,
-  "lastUpdate" : 1347981138659,
+  "lastUpdate" : 1359141368128,
   "name" : "ssm_p__mutation_type",
   "terms" : [ {
     "code" : "1",
@@ -545,9 +577,9 @@
     "value" : "multiple base substitution (>=2bp and <=200bp)"
   } ]
 }, {
-  "created" : 1347981138659,
+  "created" : 1359141368128,
   "label" : null,
-  "lastUpdate" : 1347981138659,
+  "lastUpdate" : 1359141368128,
   "name" : "ssm_p__refsnp_strand",
   "terms" : [ {
     "code" : "1",
@@ -559,9 +591,9 @@
     "value" : "-1"
   } ]
 }, {
-  "created" : 1347981138659,
+  "created" : 1359141368128,
   "label" : null,
-  "lastUpdate" : 1347981138659,
+  "lastUpdate" : 1359141368128,
   "name" : "jcn_p__is_novel_splice_form",
   "terms" : [ {
     "code" : "1",
@@ -573,9 +605,9 @@
     "value" : "no"
   } ]
 }, {
-  "created" : 1347981138659,
+  "created" : 1359141368128,
   "label" : null,
-  "lastUpdate" : 1347981138659,
+  "lastUpdate" : 1359141368128,
   "name" : "stsm_p__chr_to_strand",
   "terms" : [ {
     "code" : "1",
@@ -587,9 +619,9 @@
     "value" : "-1"
   } ]
 }, {
-  "created" : 1347981138659,
+  "created" : 1359141368128,
   "label" : null,
-  "lastUpdate" : 1347981138659,
+  "lastUpdate" : 1359141368128,
   "name" : "pancreatic_cancer__exposure__exposure_type",
   "terms" : [ {
     "code" : "smoking",
@@ -601,9 +633,9 @@
     "value" : "alcohol"
   } ]
 }, {
-  "created" : 1347981138659,
+  "created" : 1359141368128,
   "label" : null,
-  "lastUpdate" : 1347981138659,
+  "lastUpdate" : 1359141368128,
   "name" : "dr_biomarkers__biomarker_positive",
   "terms" : [ {
     "code" : "1",
@@ -619,9 +651,9 @@
     "value" : "present"
   } ]
 }, {
-  "created" : 1347981138660,
+  "created" : 1359141368128,
   "label" : null,
-  "lastUpdate" : 1347981138660,
+  "lastUpdate" : 1359141368128,
   "name" : "benneel_ovary__specimen_histotype_subclassification",
   "terms" : [ {
     "code" : "1",
@@ -649,9 +681,9 @@
     "value" : "other"
   } ]
 }, {
-  "created" : 1347981138660,
+  "created" : 1359141368129,
   "label" : null,
-  "lastUpdate" : 1347981138660,
+  "lastUpdate" : 1359141368129,
   "name" : "dr__donor_sex",
   "terms" : [ {
     "code" : "1",
@@ -663,9 +695,9 @@
     "value" : "female"
   } ]
 }, {
-  "created" : 1347981138660,
+  "created" : 1359141368129,
   "label" : null,
-  "lastUpdate" : 1347981138660,
+  "lastUpdate" : 1359141368129,
   "name" : "dr_surgical_procedures__resection_status",
   "terms" : [ {
     "code" : "1",
@@ -681,9 +713,9 @@
     "value" : "R2 - gross residual disease."
   } ]
 }, {
-  "created" : 1347981138660,
+  "created" : 1359141368129,
   "label" : null,
-  "lastUpdate" : 1347981138660,
+  "lastUpdate" : 1359141368129,
   "name" : "mirna_m__gene_build_version",
   "terms" : [ {
     "code" : "1",
@@ -707,9 +739,9 @@
     "value" : "GRCh37.p3"
   } ]
 }, {
-  "created" : 1347981138660,
+  "created" : 1359141368129,
   "label" : null,
-  "lastUpdate" : 1347981138660,
+  "lastUpdate" : 1359141368129,
   "name" : "ssm_p__validation_status",
   "terms" : [ {
     "code" : "1",
@@ -725,9 +757,9 @@
     "value" : "not valid"
   } ]
 }, {
-  "created" : 1347981138660,
+  "created" : 1359141368129,
   "label" : null,
-  "lastUpdate" : 1347981138660,
+  "lastUpdate" : 1359141368129,
   "name" : "meth_p__chromosome_strand",
   "terms" : [ {
     "code" : "1",
@@ -739,9 +771,9 @@
     "value" : "1"
   } ]
 }, {
-  "created" : 1347981138660,
+  "created" : 1359141368129,
   "label" : null,
-  "lastUpdate" : 1347981138660,
+  "lastUpdate" : 1359141368129,
   "name" : "jcn_p__exon1_strand",
   "terms" : [ {
     "code" : "1",
@@ -753,9 +785,9 @@
     "value" : "-1"
   } ]
 }, {
-  "created" : 1347981138660,
+  "created" : 1359141368129,
   "label" : null,
-  "lastUpdate" : 1347981138660,
+  "lastUpdate" : 1359141368129,
   "name" : "exp_g__gene_strand",
   "terms" : [ {
     "code" : "1",
@@ -767,9 +799,9 @@
     "value" : "-1"
   } ]
 }, {
-  "created" : 1347981138660,
+  "created" : 1359141368129,
   "label" : null,
-  "lastUpdate" : 1347981138660,
+  "lastUpdate" : 1359141368129,
   "name" : "pancreatic_cancer__family__bond",
   "terms" : [ {
     "code" : "1",
@@ -781,9 +813,9 @@
     "value" : "paternal"
   } ]
 }, {
-  "created" : 1347981138660,
+  "created" : 1359141368129,
   "label" : null,
-  "lastUpdate" : 1347981138660,
+  "lastUpdate" : 1359141368129,
   "name" : "stsm_p__validation_status",
   "terms" : [ {
     "code" : "1",
@@ -799,9 +831,9 @@
     "value" : "not valid"
   } ]
 }, {
-  "created" : 1347981138660,
+  "created" : 1359141368129,
   "label" : null,
-  "lastUpdate" : 1347981138660,
+  "lastUpdate" : 1359141368129,
   "name" : "pancreatic_cancer__therapy__agents",
   "terms" : [ {
     "code" : "1",
@@ -825,9 +857,9 @@
     "value" : "other"
   } ]
 }, {
-  "created" : 1347981138660,
+  "created" : 1359141368130,
   "label" : null,
-  "lastUpdate" : 1347981138660,
+  "lastUpdate" : 1359141368130,
   "name" : "dr_surgical_procedures__procedure_type",
   "terms" : [ {
     "code" : "1",
@@ -863,9 +895,9 @@
     "value" : "other"
   } ]
 }, {
-  "created" : 1347981138661,
+  "created" : 1359141368130,
   "label" : null,
-  "lastUpdate" : 1347981138661,
+  "lastUpdate" : 1359141368130,
   "name" : "stsm_p__zygosity",
   "terms" : [ {
     "code" : "1",
@@ -885,9 +917,9 @@
     "value" : "nullizygous"
   } ]
 }, {
-  "created" : 1347981138661,
+  "created" : 1359141368130,
   "label" : null,
-  "lastUpdate" : 1347981138661,
+  "lastUpdate" : 1359141368130,
   "name" : "dr__donor_vital_status",
   "terms" : [ {
     "code" : "1",
@@ -899,9 +931,9 @@
     "value" : "deceased"
   } ]
 }, {
-  "created" : 1347981138661,
+  "created" : 1359141368130,
   "label" : null,
-  "lastUpdate" : 1347981138661,
+  "lastUpdate" : 1359141368130,
   "name" : "jcn_p__junction_type",
   "terms" : [ {
     "code" : "1",
@@ -917,9 +949,9 @@
     "value" : "U12"
   } ]
 }, {
-  "created" : 1347981138661,
+  "created" : 1359141368130,
   "label" : null,
-  "lastUpdate" : 1347981138661,
+  "lastUpdate" : 1359141368130,
   "name" : "pancreatic_cancer__surgery__extent_of_local_spread",
   "terms" : [ {
     "code" : "1",
@@ -943,9 +975,9 @@
     "value" : "wall of duodenum"
   } ]
 }, {
-  "created" : 1347981138661,
+  "created" : 1359141368130,
   "label" : null,
-  "lastUpdate" : 1347981138661,
+  "lastUpdate" : 1359141368130,
   "name" : "pancreatic_cancer__surgery__state_of_sma",
   "terms" : [ {
     "code" : "1",
@@ -961,9 +993,9 @@
     "value" : "no involvement"
   } ]
 }, {
-  "created" : 1347981138661,
+  "created" : 1359141368130,
   "label" : null,
-  "lastUpdate" : 1347981138661,
+  "lastUpdate" : 1359141368130,
   "name" : "stsm_p__chr_from_strand",
   "terms" : [ {
     "code" : "1",
@@ -975,9 +1007,9 @@
     "value" : "-1"
   } ]
 }, {
-  "created" : 1347981138661,
+  "created" : 1359141368130,
   "label" : null,
-  "lastUpdate" : 1347981138661,
+  "lastUpdate" : 1359141368130,
   "name" : "involved_notinvolved",
   "terms" : [ {
     "code" : "1",
@@ -989,9 +1021,9 @@
     "value" : "not involved"
   } ]
 }, {
-  "created" : 1347981138661,
+  "created" : 1359141368130,
   "label" : null,
-  "lastUpdate" : 1347981138661,
+  "lastUpdate" : 1359141368130,
   "name" : "mirna_p__is_annotated",
   "terms" : [ {
     "code" : "1",
@@ -1003,9 +1035,9 @@
     "value" : "not annotated"
   } ]
 }, {
-  "created" : 1347981138661,
+  "created" : 1359141368130,
   "label" : null,
-  "lastUpdate" : 1347981138661,
+  "lastUpdate" : 1359141368130,
   "name" : "jcn_p__is_fusion_gene",
   "terms" : [ {
     "code" : "1",
@@ -1017,9 +1049,31 @@
     "value" : "no"
   } ]
 }, {
-  "created" : 1347981138661,
+  "created" : 1359141368130,
   "label" : null,
-  "lastUpdate" : 1347981138661,
+  "lastUpdate" : 1359141368130,
+  "name" : "sgv_p__variation_type",
+  "terms" : [ {
+    "code" : "1",
+    "uri" : null,
+    "value" : "single base substitution"
+  }, {
+    "code" : "2",
+    "uri" : null,
+    "value" : "insertion of <=200bp"
+  }, {
+    "code" : "3",
+    "uri" : null,
+    "value" : "deletion of <=200bp"
+  }, {
+    "code" : "4",
+    "uri" : null,
+    "value" : "multiple base substitution (>=2bp and <=200bp)"
+  } ]
+}, {
+  "created" : 1359141368131,
+  "label" : null,
+  "lastUpdate" : 1359141368131,
   "name" : "benneel_ovary__brca_mutation",
   "terms" : [ {
     "code" : "1",
@@ -1035,9 +1089,9 @@
     "value" : "none"
   } ]
 }, {
-  "created" : 1347981138661,
+  "created" : 1359141368131,
   "label" : null,
-  "lastUpdate" : 1347981138661,
+  "lastUpdate" : 1359141368131,
   "name" : "exp_g__validation_status",
   "terms" : [ {
     "code" : "1",
@@ -1053,9 +1107,9 @@
     "value" : "not valid"
   } ]
 }, {
-  "created" : 1347981138662,
+  "created" : 1359141368131,
   "label" : null,
-  "lastUpdate" : 1347981138662,
+  "lastUpdate" : 1359141368131,
   "name" : "dr_family_history__relationship_sex",
   "terms" : [ {
     "code" : "1",
@@ -1067,9 +1121,9 @@
     "value" : "female"
   } ]
 }, {
-  "created" : 1347981138662,
+  "created" : 1359141368131,
   "label" : null,
-  "lastUpdate" : 1347981138662,
+  "lastUpdate" : 1359141368131,
   "name" : "jcn_p__exon2_strand",
   "terms" : [ {
     "code" : "1",
@@ -1081,9 +1135,9 @@
     "value" : "-1"
   } ]
 }, {
-  "created" : 1347981138662,
+  "created" : 1359141368131,
   "label" : null,
-  "lastUpdate" : 1347981138662,
+  "lastUpdate" : 1359141368131,
   "name" : "appendix_B7",
   "terms" : [ {
     "code" : "1",
@@ -1223,9 +1277,9 @@
     "value" : "complex_substitution"
   } ]
 }, {
-  "created" : 1347981138662,
+  "created" : 1359141368131,
   "label" : null,
-  "lastUpdate" : 1347981138662,
+  "lastUpdate" : 1359141368131,
   "name" : "specimen__specimen_storage",
   "terms" : [ {
     "code" : "1",
@@ -1257,9 +1311,9 @@
     "value" : "other"
   } ]
 }, {
-  "created" : 1347981138662,
+  "created" : 1359141368131,
   "label" : null,
-  "lastUpdate" : 1347981138662,
+  "lastUpdate" : 1359141368131,
   "name" : "specimen__specimen_processing",
   "terms" : [ {
     "code" : "1",
@@ -1299,9 +1353,9 @@
     "value" : "other technique"
   } ]
 }, {
-  "created" : 1347981138662,
+  "created" : 1359141368132,
   "label" : null,
-  "lastUpdate" : 1347981138662,
+  "lastUpdate" : 1359141368132,
   "name" : "appendix_B5",
   "terms" : [ {
     "code" : "1",
@@ -1605,9 +1659,9 @@
     "value" : "Illumina HumanOmniExpress BeadChip"
   } ]
 }, {
-  "created" : 1347981138663,
+  "created" : 1359141368133,
   "label" : null,
-  "lastUpdate" : 1347981138663,
+  "lastUpdate" : 1359141368133,
   "name" : "stsm_p__evidence",
   "terms" : [ {
     "code" : "1",
@@ -1647,9 +1701,9 @@
     "value" : "Sequence across breakpoint"
   } ]
 }, {
-  "created" : 1347981138664,
+  "created" : 1359141368133,
   "label" : null,
-  "lastUpdate" : 1347981138664,
+  "lastUpdate" : 1359141368133,
   "name" : "cnsm_p__validation_status",
   "terms" : [ {
     "code" : "1",
@@ -1665,9 +1719,9 @@
     "value" : "not valid"
   } ]
 }, {
-  "created" : 1347981138664,
+  "created" : 1359141368133,
   "label" : null,
-  "lastUpdate" : 1347981138664,
+  "lastUpdate" : 1359141368133,
   "name" : "appendix_B6",
   "terms" : [ {
     "code" : "1",
@@ -2219,9 +2273,9 @@
     "value" : "HSCHR4_1"
   } ]
 }, {
-  "created" : 1347981138665,
+  "created" : 1359141368135,
   "label" : null,
-  "lastUpdate" : 1347981138665,
+  "lastUpdate" : 1359141368135,
   "name" : "appendix_B12",
   "terms" : [ {
     "code" : "1",
@@ -2245,9 +2299,23 @@
     "value" : "GEO"
   } ]
 }, {
-  "created" : 1347981138665,
+  "created" : 1359141368135,
   "label" : null,
-  "lastUpdate" : 1347981138665,
+  "lastUpdate" : 1359141368135,
+  "name" : "sgv_p__chromosome_strand",
+  "terms" : [ {
+    "code" : "1",
+    "uri" : null,
+    "value" : "1"
+  }, {
+    "code" : "-1",
+    "uri" : null,
+    "value" : "-1"
+  } ]
+}, {
+  "created" : 1359141368135,
+  "label" : null,
+  "lastUpdate" : 1359141368135,
   "name" : "pancreatic_cancer__surgery__state_of_pv_smv",
   "terms" : [ {
     "code" : "1",
@@ -2263,9 +2331,9 @@
     "value" : "no involvement"
   } ]
 }, {
-  "created" : 1347981138665,
+  "created" : 1359141368135,
   "label" : null,
-  "lastUpdate" : 1347981138665,
+  "lastUpdate" : 1359141368135,
   "name" : "ssm_p__is_annotated",
   "terms" : [ {
     "code" : "1",
@@ -2277,9 +2345,9 @@
     "value" : "not annotated"
   } ]
 }, {
-  "created" : 1347981138665,
+  "created" : 1359141368135,
   "label" : null,
-  "lastUpdate" : 1347981138665,
+  "lastUpdate" : 1359141368135,
   "name" : "appendix_B9",
   "terms" : [ {
     "code" : "1",
@@ -2363,9 +2431,9 @@
     "value" : "extrachromosomal"
   } ]
 }, {
-  "created" : 1347981138665,
+  "created" : 1359141368135,
   "label" : null,
-  "lastUpdate" : 1347981138665,
+  "lastUpdate" : 1359141368135,
   "name" : "ssm_p__chromosome_strand",
   "terms" : [ {
     "code" : "1",
@@ -2377,9 +2445,9 @@
     "value" : "-1"
   } ]
 }, {
-  "created" : 1347981138665,
+  "created" : 1359141368135,
   "label" : null,
-  "lastUpdate" : 1347981138665,
+  "lastUpdate" : 1359141368135,
   "name" : "mirna_s__chromosome_strand",
   "terms" : [ {
     "code" : "1",
@@ -2391,9 +2459,23 @@
     "value" : "-1"
   } ]
 }, {
-  "created" : 1347981138666,
+  "created" : 1359141368135,
   "label" : null,
-  "lastUpdate" : 1347981138666,
+  "lastUpdate" : 1359141368135,
+  "name" : "sgv_p__refsnp_strand",
+  "terms" : [ {
+    "code" : "1",
+    "uri" : null,
+    "value" : "1"
+  }, {
+    "code" : "-1",
+    "uri" : null,
+    "value" : "-1"
+  } ]
+}, {
+  "created" : 1359141368135,
+  "label" : null,
+  "lastUpdate" : 1359141368135,
   "name" : "exp_g__is_annotated",
   "terms" : [ {
     "code" : "1",
@@ -2405,9 +2487,9 @@
     "value" : "not annotated"
   } ]
 }, {
-  "created" : 1347981138666,
+  "created" : 1359141368135,
   "label" : null,
-  "lastUpdate" : 1347981138666,
+  "lastUpdate" : 1359141368135,
   "name" : "specimen__specimen_available",
   "terms" : [ {
     "code" : "1",
@@ -2419,9 +2501,9 @@
     "value" : "yes"
   } ]
 }, {
-  "created" : 1347981138666,
+  "created" : 1359141368136,
   "label" : null,
-  "lastUpdate" : 1347981138666,
+  "lastUpdate" : 1359141368136,
   "name" : "pancreatic_cancer__surgery__intent",
   "terms" : [ {
     "code" : "1",
@@ -2445,9 +2527,9 @@
     "value" : "other"
   } ]
 }, {
-  "created" : 1347981138666,
+  "created" : 1359141368136,
   "label" : null,
-  "lastUpdate" : 1347981138666,
+  "lastUpdate" : 1359141368136,
   "name" : "benneel_ovary__specimen_treatment_status",
   "terms" : [ {
     "code" : "1",
@@ -2463,9 +2545,9 @@
     "value" : "recurrence"
   } ]
 }, {
-  "created" : 1347981138666,
+  "created" : 1359141368136,
   "label" : null,
-  "lastUpdate" : 1347981138666,
+  "lastUpdate" : 1359141368136,
   "name" : "dr_family_history__relationship_type",
   "terms" : [ {
     "code" : "1",
@@ -2493,9 +2575,9 @@
     "value" : "other"
   } ]
 }, {
-  "created" : 1347981138666,
+  "created" : 1359141368136,
   "label" : null,
-  "lastUpdate" : 1347981138666,
+  "lastUpdate" : 1359141368136,
   "name" : "pancreatic_cancer__therapy__objective_response",
   "terms" : [ {
     "code" : "1",
@@ -2519,9 +2601,9 @@
     "value" : "other"
   } ]
 }, {
-  "created" : 1347981138666,
+  "created" : 1359141368136,
   "label" : null,
-  "lastUpdate" : 1347981138666,
+  "lastUpdate" : 1359141368136,
   "name" : "benneel_ovary__in_vivo_xenograft",
   "terms" : [ {
     "code" : "1",
@@ -2541,9 +2623,9 @@
     "value" : "pending"
   } ]
 }, {
-  "created" : 1347981138666,
+  "created" : 1359141368136,
   "label" : null,
-  "lastUpdate" : 1347981138666,
+  "lastUpdate" : 1359141368136,
   "name" : "jcn_p__gene_strand",
   "terms" : [ {
     "code" : "1",
@@ -2555,9 +2637,9 @@
     "value" : "-1"
   } ]
 }, {
-  "created" : 1347981138666,
+  "created" : 1359141368136,
   "label" : null,
-  "lastUpdate" : 1347981138666,
+  "lastUpdate" : 1359141368136,
   "name" : "pancreatic_cancer__surgery__lymphovascular_invasion",
   "terms" : [ {
     "code" : "1",
@@ -2573,9 +2655,9 @@
     "value" : "indeterminate"
   } ]
 }, {
-  "created" : 1347981138666,
+  "created" : 1359141368136,
   "label" : null,
-  "lastUpdate" : 1347981138666,
+  "lastUpdate" : 1359141368136,
   "name" : "jcn_p__validation_status",
   "terms" : [ {
     "code" : "1",
