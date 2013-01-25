@@ -39,6 +39,7 @@ import org.icgc.dcc.dictionary.model.Term;
 import org.icgc.dcc.shiro.AuthorizationPrivileges;
 import org.icgc.dcc.shiro.ShiroSecurityContext;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
@@ -72,12 +73,12 @@ public class CodeListResource {
   @Path("{name}")
   public Response getCodeList(@PathParam("name") String name) {
     checkArgument(name != null);
-    CodeList c = this.dictionaries.getCodeList(name);
-    if(c == null) {
+    Optional<CodeList> optional = this.dictionaries.getCodeList(name);
+    if(optional.isPresent() == false) {
       return Response.status(Status.NOT_FOUND)
           .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, name)).build();
     }
-    return ResponseTimestamper.ok(c).build();
+    return ResponseTimestamper.ok(optional.get()).build();
   }
 
   @PUT
@@ -92,15 +93,15 @@ public class CodeListResource {
     checkArgument(name != null);
     checkArgument(newCodeList != null);
 
-    CodeList oldCodeList = this.dictionaries.getCodeList(name);
-    if(oldCodeList == null) {
+    Optional<CodeList> optional = this.dictionaries.getCodeList(name);
+    if(optional.isPresent() == false) {
       return Response.status(Status.NOT_FOUND)
           .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, name)).build();
     } else if(newCodeList.getName().equals(name) == false) {
       return Response.status(Status.BAD_REQUEST)
           .entity(new ServerErrorResponseMessage(ServerErrorCode.NAME_MISMATCH, newCodeList.getName(), name)).build();
     }
-    ResponseTimestamper.evaluate(req, oldCodeList);
+    ResponseTimestamper.evaluate(req, optional.get());
     this.dictionaries.updateCodeList(newCodeList);
 
     return ResponseTimestamper.ok(newCodeList).build();
@@ -117,17 +118,18 @@ public class CodeListResource {
     }
     checkArgument(name != null);
     checkArgument(terms != null);
-    CodeList c = this.dictionaries.getCodeList(name);
-    if(c == null) {
+    Optional<CodeList> optional = this.dictionaries.getCodeList(name);
+    if(optional.isPresent() == false) {
       return Response.status(Status.NOT_FOUND)
           .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, name)).build();
     }
-    ResponseTimestamper.evaluate(req, c);
+    CodeList codeList = optional.get();
+    ResponseTimestamper.evaluate(req, codeList);
 
     // First check if the terms exist. The DictionaryService addTerm method checks too, but we don't want to add some of
     // the list and then have it fail part way through
     for(Term term : terms) {
-      if(c.containsTerm(term)) {
+      if(codeList.containsTerm(term)) {
         return Response.status(Status.BAD_REQUEST)
             .entity(new ServerErrorResponseMessage(ServerErrorCode.ALREADY_EXISTS, term.getCode())).build();
       }
@@ -136,6 +138,6 @@ public class CodeListResource {
       this.dictionaries.addTerm(name, term);
     }
 
-    return ResponseTimestamper.ok(c).build();
+    return ResponseTimestamper.ok(codeList).build();
   }
 }

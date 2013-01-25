@@ -28,6 +28,7 @@ import org.icgc.dcc.dictionary.model.Term;
 import org.icgc.dcc.validation.FlowType;
 import org.icgc.dcc.validation.InternalPlanElement;
 import org.icgc.dcc.validation.PlanElement;
+import org.icgc.dcc.validation.PlanningException;
 import org.icgc.dcc.validation.RestrictionType;
 import org.icgc.dcc.validation.RestrictionTypeSchema;
 import org.icgc.dcc.validation.RestrictionTypeSchema.FieldRestrictionParameter;
@@ -44,6 +45,7 @@ import cascading.pipe.Pipe;
 import cascading.tuple.Fields;
 import cascading.tuple.TupleEntry;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
@@ -62,10 +64,9 @@ public class CodeListRestriction implements InternalPlanElement {
 
   private final Set<String> values;
 
-  protected CodeListRestriction(String field, String codeListName, DictionaryService dictionaries) {
+  protected CodeListRestriction(String field, CodeList codeList) {
     this.field = field;
-    this.codeListName = codeListName;
-    CodeList codeList = dictionaries.getCodeList(codeListName);
+    this.codeListName = codeList.getName();
     List<Term> terms = codeList.getTerms();
     codes = Sets.newHashSet(Iterables.transform(terms, new com.google.common.base.Function<Term, String>() {
       @Override
@@ -88,8 +89,7 @@ public class CodeListRestriction implements InternalPlanElement {
 
   @Override
   public Pipe extend(Pipe pipe) {
-    return new Each(pipe, new ValidationFields(field), new InCodeListFunction(codeListName, codes, values),
-        Fields.REPLACE);
+    return new Each(pipe, new ValidationFields(field), new InCodeListFunction(codes, values), Fields.REPLACE);
   }
 
   public static class Type implements RestrictionType {
@@ -124,23 +124,23 @@ public class CodeListRestriction implements InternalPlanElement {
     @Override
     public PlanElement build(Field field, Restriction restriction) {
       String codeListName = restriction.getConfig().getString(FIELD);
-      return new CodeListRestriction(field.getName(), codeListName, dictionaries);
+      Optional<CodeList> codeList = dictionaries.getCodeList(codeListName);
+      if(codeList.isPresent() == false) {
+        throw new PlanningException("Could not find codeList " + codeListName);
+      }
+      return new CodeListRestriction(field.getName(), codeList.get());
     }
-
   }
 
   @SuppressWarnings("rawtypes")
   public static class InCodeListFunction extends BaseOperation implements Function {
 
-    private final String codeListName;
-
     private final Set<String> codes;
 
     private final Set<String> values;
 
-    protected InCodeListFunction(String codeListName, Set<String> codes, Set<String> values) {
+    protected InCodeListFunction(Set<String> codes, Set<String> values) {
       super(2, Fields.ARGS);
-      this.codeListName = codeListName;
       this.codes = codes;
       this.values = values;
     }

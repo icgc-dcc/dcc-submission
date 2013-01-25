@@ -34,11 +34,13 @@ import org.icgc.dcc.filesystem.ReleaseFileSystem;
 import org.icgc.dcc.release.NextRelease;
 import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.Release;
+import org.mortbay.log.Log;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
 import com.google.code.morphia.query.Query;
 import com.google.code.morphia.query.UpdateOperations;
+import com.google.common.base.Optional;
 import com.google.inject.Inject;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
 
@@ -128,13 +130,11 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
     this.datastore().save(codeLists);
   }
 
-  public CodeList getCodeList(String name) {
+  public Optional<CodeList> getCodeList(String name) {
     checkArgument(name != null);
-    return this.queryCodeList().where(QCodeList.codeList.name.eq(name)).singleResult();
-  }
-
-  private MorphiaQuery<CodeList> queryCodeList() {
-    return new MorphiaQuery<CodeList>(morphia(), datastore(), QCodeList.codeList);
+    Log.debug("retrieving codelist {}", name);
+    CodeList codeList = this.queryCodeList().where(QCodeList.codeList.name.eq(name)).singleResult();
+    return codeList == null ? Optional.<CodeList> absent() : Optional.<CodeList> of(codeList);
   }
 
   public CodeList createCodeList(String name) {
@@ -150,12 +150,13 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
   public void updateCodeList(CodeList newCodeList) {
     checkArgument(newCodeList != null);
     String name = newCodeList.getName();
-    CodeList oldCodeList = this.getCodeList(name);
-    if(oldCodeList == null) {
+    Optional<CodeList> optional = this.getCodeList(name);
+    if(optional.isPresent() == false) {
       throw new DictionaryServiceException("cannot perform update to non-existant codeList: " + name);
     }
 
-    oldCodeList.setLabel(newCodeList.getLabel());
+    CodeList codeList = optional.get();
+    codeList.setLabel(newCodeList.getLabel());
     Query<CodeList> updateQuery = datastore().createQuery(CodeList.class).filter("name" + " = ", name);
     checkState(updateQuery.countAll() == 1);
     UpdateOperations<CodeList> ops =
@@ -167,7 +168,11 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
     checkArgument(name != null);
     checkArgument(term != null);
 
-    CodeList codeList = this.getCodeList(name);
+    Optional<CodeList> optional = this.getCodeList(name);
+    if(optional.isPresent() == false) {
+      throw new DictionaryServiceException("cannot add term to non-existant codeList: " + name);
+    }
+    CodeList codeList = optional.get();
     if(codeList.containsTerm(term)) {
       throw new DictionaryServiceException("cannot add an existing term: " + term.getCode());
     }
@@ -182,5 +187,9 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
   private Query<Dictionary> buildDictionaryVersionQuery(Dictionary dictionary) {
     return datastore().createQuery(Dictionary.class) //
         .filter("version" + " = ", dictionary.getVersion());
+  }
+
+  private MorphiaQuery<CodeList> queryCodeList() {
+    return new MorphiaQuery<CodeList>(morphia(), datastore(), QCodeList.codeList);
   }
 }
