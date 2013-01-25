@@ -129,6 +129,10 @@ public class DictionaryConverter {
 
     this.readXMLinfo("src/test/resources/converter/icgc.0.7.xml");
 
+    this.setControlledDataValues();
+
+    this.neutralizeReannotatedFile("ssm_s");
+
     return dictionary;
   }
 
@@ -434,9 +438,31 @@ public class DictionaryConverter {
     }
 
     field.setRestrictions(restrictions);
-    field.setControlled(false);
 
     return field;
+  }
+
+  private void setControlledDataValues() {
+    for(FileSchema fileSchema : dictionary.getFiles()) {
+      boolean isSgv = fileSchema.getName().startsWith("sgv_");
+      boolean isDonor = fileSchema.getName().equals("donor");
+      for(Field field : fileSchema.getFields()) {
+        String fieldName = field.getName();
+        boolean isDonorNotes = fieldName.equals("donor_notes");
+        boolean isDonorResidence = fieldName.equals("donor_region_of_residence");
+        field.setControlled(isSgv || (isDonor && (isDonorNotes || isDonorResidence)));
+      }
+    }
+  }
+
+  private void neutralizeReannotatedFile(String fileName) {
+    FileSchema fileSchema = dictionary.fileSchema(fileName).get(); // converter is EOL
+    fileSchema.setUniqueFields(new ArrayList<String>());
+    for(Field field : fileSchema.getFields()) {
+      field.setValueType(ValueType.TEXT); // no value type check for TEXT
+      field.setRestrictions(new ArrayList<Restriction>()); // clear restrictions
+      field.setSummaryType(null);
+    }
   }
 
   private Iterable<String> readTSVHeader(String line) {

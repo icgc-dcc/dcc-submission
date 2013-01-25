@@ -12,6 +12,7 @@ sgv_p	analysis_id,control_sample_id	sgv_m	analysis_id,control_sample_id	1..n	TRU
 sgv_m	control_sample_id	sample	analyzed_sample_id	0..n	TRUE		inner
 sgv_m	matched_sample_id	sample	analyzed_sample_id	0..n	TRUE		inner
 ssm_p	analysis_id,analyzed_sample_id	ssm_m	analysis_id,analyzed_sample_id	1..n	TRUE		inner
+ssm_s	analysis_id,analyzed_sample_id,mutation_id	ssm_p	analysis_id,analyzed_sample_id,mutation_id	0..n	TRUE		right
 ssm_m	analyzed_sample_id	sample	analyzed_sample_id	0..n	TRUE		inner
 ssm_m	matched_sample_id	sample	analyzed_sample_id	0..n	TRUE		inner
 cnsm_p	analysis_id,analyzed_sample_id	cnsm_m	analysis_id,analyzed_sample_id	1..n	TRUE		inner
