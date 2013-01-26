@@ -21,13 +21,13 @@ import java.io.File;
 import java.io.IOException;
 import java.net.UnknownHostException;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.bson.BSONObject;
 import org.bson.BasicBSONObject;
 import org.jongo.Jongo;
 import org.jongo.MongoCollection;
 import org.jongo.marshall.jackson.bson4jackson.MongoBsonFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MappingIterator;
@@ -39,9 +39,8 @@ import com.mongodb.MongoURI;
 /**
  * Loads from Heliotrope dump into dcc gene database.
  */
+@Slf4j
 public class GenesLoader {
-
-  private static final Logger log = LoggerFactory.getLogger(GenesLoader.class);
 
   private final GeneTransformer transformer = new GeneTransformer();
 
