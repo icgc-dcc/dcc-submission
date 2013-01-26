@@ -17,8 +17,8 @@
  */
 package org.icgc.dcc.genes;
 
-import java.util.ArrayList;
-import java.util.Iterator;
+import static com.google.common.collect.Lists.newArrayList;
+
 import java.util.List;
 
 import org.bson.BSONObject;
@@ -26,8 +26,10 @@ import org.bson.BasicBSONObject;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
+ * Transforms from Heliotrope JSON structure to DCC JSON structure
  * 
  * @see https://wiki.oicr.on.ca/display/DCCSOFT/ElasticSearch+Index+Specification#ElasticSearchIndexSpecification-Donor-
  * Genepaircentricindex
@@ -39,23 +41,27 @@ public class GeneTransformer {
   public BSONObject transform(BSONObject gene) {
     JsonNode node = node(gene);
 
-    BSONObject t = new BasicBSONObject();
-    t.put("symbol", symbol(node));
-    t.put("name", name(node));
-    t.put("synonyms", synonyms(node));
-    t.put("chromosome", location(node).path("chromosome").asText());
-    t.put("strand", location(node).path("strand").asInt());
-    t.put("start", location(node).path("txStart").asLong());
-    t.put("end", location(node).path("txEnd").asLong());
-    t.put("ensembl_gene_id", id(node));
-    t.put("canonical_transcript_id", transcripts(node).path("canonicalTranscriptId").asText());
-    t.put("transcripts", transcripts(node).path("records"));
+    BSONObject result = new BasicBSONObject();
+    result.put("symbol", symbol(node));
+    result.put("name", name(node));
+    result.put("synonyms", synonyms(node));
+    result.put("chromosome", location(node).path("chromosome").asText());
+    result.put("strand", location(node).path("strand").asInt());
+    result.put("start", location(node).path("txStart").asLong());
+    result.put("end", location(node).path("txEnd").asLong());
+    result.put("ensembl_gene_id", id(node));
+    result.put("canonical_transcript_id", canonicalTranscriptId(node));
+    result.put("transcripts", transcripts(node));
 
-    return t;
+    return result;
   }
 
   private JsonNode node(BSONObject gene) {
     return mapper.valueToTree(gene);
+  }
+
+  private Object name(JsonNode node) {
+    return node.path("sections").path("description").path("data").path("fullName").asText();
   }
 
   private String symbol(JsonNode node) {
@@ -66,21 +72,16 @@ public class GeneTransformer {
     return node.path("id").asText();
   }
 
-  private Object name(JsonNode node) {
-    return node.path("sections").path("description").path("data").path("fullName").asText();
-  }
-
   private List<String> synonyms(JsonNode node) {
     String symbol = symbol(node);
-    Iterator<JsonNode> synonyms = node.path("sections").path("description").path("data").path("synonyms").elements();
-    List<String> values = new ArrayList<String>();
+    JsonNode synonyms = node.path("sections").path("description").path("data").path("synonyms");
 
-    while(synonyms.hasNext()) {
-      String synonym = synonyms.next().asText();
-
-      final boolean unique = synonym.equals(symbol) == false;
+    List<String> values = newArrayList();
+    for(JsonNode synonym : synonyms) {
+      String value = synonym.asText();
+      final boolean unique = value.equals(symbol) == false;
       if(unique) {
-        values.add(synonym);
+        values.add(value);
       }
     }
 
@@ -91,8 +92,39 @@ public class GeneTransformer {
     return node.path("sections").path("location").path("data");
   }
 
-  private JsonNode transcripts(JsonNode node) {
-    return node.path("sections").path("transcripts").path("data");
+  private String canonicalTranscriptId(JsonNode node) {
+    return node.path("sections").path("transcripts").path("data").path("canonicalTranscriptId").asText();
+  }
+
+  private List<JsonNode> transcripts(JsonNode node) {
+    JsonNode records = node.path("sections").path("transcripts").path("data").path("records");
+
+    List<JsonNode> transcripts = newArrayList();
+    for(JsonNode record : records) {
+      transcripts.add(transcript(record));
+    }
+
+    return transcripts;
+  }
+
+  private JsonNode transcript(JsonNode record) {
+    ObjectNode transcript = mapper.createObjectNode();
+    transcript.put("transcript_id", record.path("id").asText());
+    transcript.put("transcript_name", record.path("name").asText());
+    transcript.put("isCanonical", record.path("isCanonical").asBoolean());
+    transcript.put("length", record.path("length").asLong());
+    transcript.put("lengthAminoAcid", record.path("lengthAminoAcid").asLong());
+    transcript.put("lengthDNA", record.path("lengthDNA").asLong());
+    transcript.put("numberOfExons", record.path("numberOfExons").asLong());
+    transcript.put("startExon", record.path("startExon").asLong());
+    transcript.put("seqExonStart", record.path("seqExonStart").asLong());
+    transcript.put("seqExonEnd", record.path("seqExonEnd").asLong());
+    transcript.put("endExon", record.path("endExon").asLong());
+    transcript.put("translationId", record.path("translationId").asText());
+    transcript.put("exons", record.path("exons"));
+    transcript.put("domains", record.path("domains"));
+
+    return transcript;
   }
 
 }

@@ -26,23 +26,28 @@ import org.bson.BasicBSONObject;
 import org.jongo.Jongo;
 import org.jongo.MongoCollection;
 import org.jongo.marshall.jackson.bson4jackson.MongoBsonFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.DB;
 import com.mongodb.Mongo;
+import com.mongodb.MongoURI;
 
 /**
  * Loads from Heliotrope dump into dcc gene database.
  */
 public class GenesLoader {
 
+  private static final Logger log = LoggerFactory.getLogger(GenesLoader.class);
+
   private final GeneTransformer transformer = new GeneTransformer();
 
-  public void load(File bsonFile) throws IOException {
+  public void load(File bsonFile, MongoURI mongoUri) throws IOException {
     // Drop the current collection
-    final MongoCollection genes = getGenesCollection();
+    final MongoCollection genes = getGenesCollection(mongoUri);
     genes.drop();
 
     // Open BSON stream
@@ -59,12 +64,8 @@ public class GenesLoader {
     });
   }
 
-  /**
-   * @return
-   * @throws UnknownHostException
-   */
-  MongoCollection getGenesCollection() throws UnknownHostException {
-    DB db = new Mongo().getDB("dcc-genes");
+  MongoCollection getGenesCollection(MongoURI mongoUri) throws UnknownHostException {
+    DB db = new Mongo(mongoUri).getDB("dcc-genes");
     Jongo jongo = new Jongo(db);
 
     MongoCollection genes = jongo.getCollection("Genes");
@@ -72,12 +73,6 @@ public class GenesLoader {
     return genes;
   }
 
-  /**
-   * @param bsonFile
-   * @return
-   * @throws IOException
-   * @throws JsonProcessingException
-   */
   @SuppressWarnings({ "rawtypes", "unchecked" })
   MappingIterator<BSONObject> openStream(File bsonFile) throws IOException, JsonProcessingException {
     ObjectMapper mapper = new ObjectMapper(new MongoBsonFactory());
@@ -88,29 +83,27 @@ public class GenesLoader {
 
   void eachGene(MappingIterator<BSONObject> iterator, GeneCallback callback) throws IOException {
     try {
-      int i = 1;
+      int insertCount = 0;
       while(hasNext(iterator)) {
         BSONObject gene = iterator.next();
         callback.handle(gene);
 
-        if(++i % 1000 == 0) {
-          System.out.println("Inserted " + i + " records");
+        if(++insertCount % 1000 == 0) {
+          log.info("Processed {} genes", insertCount);
         }
       }
+      log.info("Finished processing {} genes total", insertCount);
     } finally {
       iterator.close();
     }
+
   }
 
-  /**
-   * @param iterator
-   * @return
-   */
   boolean hasNext(MappingIterator<BSONObject> iterator) {
     try {
       return iterator.hasNextValue();
     } catch(IOException e) {
-      // Erroneous exception
+      // Erroneous exception?
       return false;
     }
   }
@@ -118,4 +111,5 @@ public class GenesLoader {
   interface GeneCallback {
     void handle(BSONObject gene);
   }
+
 }

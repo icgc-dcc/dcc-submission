@@ -9,6 +9,13 @@
   <artifactId>dcc-genes</artifactId>
   <packaging>jar</packaging>
   <dependencies>
+    <!-- CLI -->
+    <dependency>
+      <groupId>com.beust</groupId>
+      <artifactId>jcommander</artifactId>
+      <version>${jcommander.version}</version>
+    </dependency>
+
     <!-- Mongo -->
     <dependency>
       <groupId>org.jongo</groupId>
@@ -16,15 +23,9 @@
       <version>${jongo.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.wordnik</groupId>
-      <artifactId>mongo-admin-utils-distribution</artifactId>
-      <version>1.2.0</version>
-      <exclusions>
-        <exclusion>
-          <artifactId>slf4j-log4j12</artifactId>
-          <groupId>org.slf4j</groupId>
-        </exclusion>
-      </exclusions>
+      <groupId>org.mongodb</groupId>
+      <artifactId>mongo-java-driver</artifactId>
+      <version>${mongo.version}</version>
     </dependency>
 
     <!-- JSON -->
@@ -39,20 +40,10 @@
       <version>${jackson.version}</version>
     </dependency>
 
-    <!-- Dependency injection -->
+    <!-- Utilities -->
     <dependency>
-      <groupId>com.google.inject</groupId>
-      <artifactId>guice</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.google.inject.extensions</groupId>
-      <artifactId>guice-multibindings</artifactId>
-    </dependency>
-
-    <!-- Configuration -->
-    <dependency>
-      <groupId>com.typesafe</groupId>
-      <artifactId>config</artifactId>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
     </dependency>
 
     <!-- Logging -->
@@ -97,26 +88,11 @@
       <version>1.0</version>
       <scope>test</scope>
     </dependency>
-
   </dependencies>
   <repositories>
     <repository>
       <id>internal</id>
       <url>http://seqwaremaven.oicr.on.ca/artifactory/dcc-dependencies</url>
-    </repository>
-    <repository>
-      <id>morphia</id>
-      <url> http://morphia.googlecode.com/svn/mavenrepo/</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>twttr.com</id>
-      <url>http://maven.twttr.com/</url>
     </repository>
   </repositories>
   <build>
@@ -213,7 +189,9 @@
   </build>
   <properties>
     <!-- Versions -->
+    <jcommander.version>1.30</jcommander.version>
     <jongo.version>0.3</jongo.version>
+    <mongo.version>2.10.1</mongo.version>
     <jackson.version>1.9.8</jackson.version>
     <slf4j.version>1.6.1</slf4j.version>
     <logback.version>1.0.3</logback.version>
