@@ -134,10 +134,10 @@
               <manifestEntries>
                 <Main-Class>org.icgc.dcc.genes.Main</Main-Class>
                 <Build-Number>0.0.1</Build-Number>
-                <Implementation-Title>${pom.name}</Implementation-Title>
-                <Implementation-Version>${pom.version}</Implementation-Version>
-                <Implementation-Vendor-Id>${pom.groupId}</Implementation-Vendor-Id>
-                <Implementation-Vendor>${pom.organization.name}</Implementation-Vendor>
+                <Implementation-Title>${project.name}</Implementation-Title>
+                <Implementation-Version>${project.version}</Implementation-Version>
+                <Implementation-Vendor-Id>${project.groupId}</Implementation-Vendor-Id>
+                <Implementation-Vendor>${project.organization.name}</Implementation-Vendor>
               </manifestEntries>
             </transformer>
           </transformers>

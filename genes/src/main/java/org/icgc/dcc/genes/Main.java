@@ -9,8 +9,7 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 
 /**
- * Command line utility used to import Heliotrope genes.bson {@code mongodump}
- * file into DCC's MongoDB gene database.
+ * Command line utility used to import Heliotrope genes.bson {@code mongodump} file into DCC's MongoDB gene database.
  */
 @Slf4j
 public class Main {
@@ -23,25 +22,25 @@ public class Main {
 
   private void run(String... args) throws IOException {
     JCommander cli = new JCommander(options);
-    cli.setProgramName("java -jar " + getJarName());
+    cli.setProgramName(getProgramName());
 
     try {
       cli.parse(args);
 
-      if (options.help) {
+      if(options.help) {
         cli.usage();
 
         return;
-      } else if (options.version) {
+      } else if(options.version) {
         System.out.printf("ICGC DCC Gene Loader\nVersion %s\n", getVersion());
 
         return;
       }
 
       load();
-    } catch (ParameterException pe) {
+    } catch(ParameterException pe) {
       System.err.printf("dcc-genes: %s\n", pe.getMessage());
-      System.err.printf("Try `%s --help' for more information.\n", "java -jar " + getJarName());
+      System.err.printf("Try '%s --help' for more information.\n", getProgramName());
     }
   }
 
@@ -51,6 +50,10 @@ public class Main {
     log.info("Loading gene model using: {}", options);
     loader.load(options.file, options.mongoUri);
     log.info("Finished loading!");
+  }
+
+  private String getProgramName() {
+    return "java -jar " + getJarName();
   }
 
   private String getVersion() {

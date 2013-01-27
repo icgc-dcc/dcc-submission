@@ -10,7 +10,7 @@ public class MongoURIValidator implements IParameterValidator {
   public void validate(String name, String uri) throws ParameterException {
     try {
       new MongoURI(uri);
-    } catch (IllegalArgumentException e) {
+    } catch(IllegalArgumentException e) {
       throw new ParameterException("Invalid option: " + name + ": " + e.getMessage());
     }
   }

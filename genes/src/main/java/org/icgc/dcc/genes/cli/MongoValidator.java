@@ -18,12 +18,12 @@ public class MongoValidator implements IValueValidator<MongoURI> {
         Socket socket = mongo.getMongoOptions().socketFactory.createSocket();
         socket.connect(mongo.getAddress().getSocketAddress());
         socket.close();
-      } catch (IOException ex) {
+      } catch(IOException ex) {
         throw new ParameterException("Invalid option: " + name + ": " + mongoUri + " is not accessible");
       } finally {
         mongo.close();
       }
-    } catch (UnknownHostException e) {
+    } catch(UnknownHostException e) {
       throw new ParameterException("Invalid option: " + name + ": " + mongoUri + " is not accessible");
     }
   }
