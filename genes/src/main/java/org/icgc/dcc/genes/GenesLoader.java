@@ -27,7 +27,6 @@ import org.bson.BSONObject;
 import org.bson.BasicBSONObject;
 import org.jongo.Jongo;
 import org.jongo.MongoCollection;
-import org.jongo.marshall.jackson.bson4jackson.MongoBsonFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MappingIterator;
@@ -35,6 +34,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.DB;
 import com.mongodb.Mongo;
 import com.mongodb.MongoURI;
+
+import de.undercouch.bson4jackson.BsonFactory;
 
 /**
  * Loads from Heliotrope {@code genes.bson} {@code mongodump} file into DCC gene database.
@@ -92,7 +93,7 @@ public class GenesLoader {
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
   MappingIterator<BSONObject> getSourceIterator(File bsonFile) throws IOException, JsonProcessingException {
-    ObjectMapper mapper = new ObjectMapper(new MongoBsonFactory());
+    ObjectMapper mapper = new ObjectMapper(new BsonFactory());
     MappingIterator<BSONObject> iterator = (MappingIterator) mapper.reader(BasicBSONObject.class).readValues(bsonFile);
 
     return iterator;
@@ -125,7 +126,7 @@ public class GenesLoader {
     try {
       return iterator.hasNextValue();
     } catch(IOException e) {
-      // Erroneous exception?
+      // Erroneous bson4jackson exception?
       return false;
     }
   }
