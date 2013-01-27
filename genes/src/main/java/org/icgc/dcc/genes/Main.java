@@ -28,7 +28,7 @@ public class Main {
   @Parameter(names = { "-v", "--version" }, help = true, description = "Show version information")
   private boolean version;
   
-  @Parameter(names = { "-h", "--help" }, help = true, description = "Show help")
+  @Parameter(names = { "-h", "--help" }, help = true, description = "Show help information")
   private boolean help;
   
   public static void main(String... args) throws IOException {
@@ -71,7 +71,7 @@ public class Main {
     log.info("Finished loading", file);
   }
 
-  private static class MongoURIConverter implements IStringConverter<MongoURI> {
+  public static class MongoURIConverter implements IStringConverter<MongoURI> {
     @Override
     public MongoURI convert(String value) {
       return new MongoURI(value);
