@@ -39,6 +39,7 @@ public class GeneTransformer {
   private final ObjectMapper mapper = new ObjectMapper();
 
   public BSONObject transform(BSONObject gene) {
+    // For easier navigation, manipulation and to avoid casting
     JsonNode node = node(gene);
 
     BSONObject result = new BasicBSONObject();

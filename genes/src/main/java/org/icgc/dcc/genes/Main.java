@@ -5,12 +5,8 @@ import java.io.IOException;
 
 import lombok.extern.slf4j.Slf4j;
 
-import com.beust.jcommander.IStringConverter;
-import com.beust.jcommander.IValueValidator;
 import com.beust.jcommander.JCommander;
-import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
-import com.mongodb.MongoURI;
 
 /**
  * Command line utility used to import Heliotrope genes.bson {@code mongodump}
@@ -19,71 +15,42 @@ import com.mongodb.MongoURI;
 @Slf4j
 public class Main {
 
-  @Parameter(names = { "-f", "--file" }, required = true, validateValueWith = FileExistsValidator.class, description = "Heliotrope genes.bson mongodump file (e.g. genes.bson)")
-  private File file;
+  private final Options options = new Options();
 
-  @Parameter(names = { "-d", "--database" }, required = true, converter = MongoURIConverter.class, description = "DCC mongo database uri (e.g. mongodb://localhost)")
-  private MongoURI mongoUri;
-
-  @Parameter(names = { "-v", "--version" }, help = true, description = "Show version information")
-  private boolean version;
-  
-  @Parameter(names = { "-h", "--help" }, help = true, description = "Show help information")
-  private boolean help;
-  
   public static void main(String... args) throws IOException {
     new Main().run(args);
   }
 
   private void run(String... args) throws IOException {
-    JCommander cli = new JCommander(this);
+    JCommander cli = new JCommander(options);
     cli.setProgramName("java -jar " + getJarName());
 
     try {
       cli.parse(args);
 
-      if (version) {
-        System.out.println("ICGC DCC Gene Loader");
-        System.out.printf("Version %s\n\n", getVersion());
-        
-        return;
-      }      
-      if (help) {
+      if (options.help) {
         cli.usage();
-        
+
+        return;
+      } else if (options.version) {
+        System.out.printf("ICGC DCC Gene Loader\nVersion %s\n", getVersion());
+
         return;
       }
 
       load();
     } catch (ParameterException pe) {
-      System.err.printf("%s\n\n", pe.getMessage());
-      cli.usage();
+      System.err.printf("dcc-genes: %s\n", pe.getMessage());
+      System.err.printf("Try `%s --help' for more information.\n", "java -jar " + getJarName());
     }
   }
 
   private void load() throws IOException {
     GenesLoader loader = new GenesLoader();
 
-    log.info("Loading gene model using:");
-    log.info("  file:     {}", file);
-    log.info("  database: {}", mongoUri);
-    loader.load(file, mongoUri);
-    log.info("Finished loading", file);
-  }
-
-  public static class MongoURIConverter implements IStringConverter<MongoURI> {
-    @Override
-    public MongoURI convert(String value) {
-      return new MongoURI(value);
-    }
-  }
-
-  public static class FileExistsValidator implements IValueValidator<File> {
-    public void validate(String name, File file) throws ParameterException {
-      if (file.exists() == false) {
-        throw new ParameterException(file.getAbsolutePath() + " does not exist");
-      }
-    }
+    log.info("Loading gene model using: {}", options);
+    loader.load(options.file, options.mongoUri);
+    log.info("Finished loading!");
   }
 
   private String getVersion() {

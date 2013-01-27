@@ -37,10 +37,15 @@ import com.mongodb.Mongo;
 import com.mongodb.MongoURI;
 
 /**
- * Loads from Heliotrope dump into dcc gene database.
+ * Loads from Heliotrope {@code genes.bson} {@code mongodump} file into DCC gene
+ * database.
  */
 @Slf4j
 public class GenesLoader {
+
+  private static final String GENES_DATABASE = "dcc-genes";
+
+  private static final String GENES_COLLECTION = "Genes";
 
   private final GeneTransformer transformer = new GeneTransformer();
 
@@ -64,10 +69,10 @@ public class GenesLoader {
   }
 
   MongoCollection getGenesCollection(MongoURI mongoUri) throws UnknownHostException {
-    DB db = new Mongo(mongoUri).getDB("dcc-genes");
+    DB db = new Mongo(mongoUri).getDB(GENES_DATABASE);
     Jongo jongo = new Jongo(db);
 
-    MongoCollection genes = jongo.getCollection("Genes");
+    MongoCollection genes = jongo.getCollection(GENES_COLLECTION);
 
     return genes;
   }
@@ -83,11 +88,11 @@ public class GenesLoader {
   void eachGene(MappingIterator<BSONObject> iterator, GeneCallback callback) throws IOException {
     try {
       int insertCount = 0;
-      while(hasNext(iterator)) {
+      while (hasNext(iterator)) {
         BSONObject gene = iterator.next();
         callback.handle(gene);
 
-        if(++insertCount % 1000 == 0) {
+        if (++insertCount % 1000 == 0) {
           log.info("Processed {} genes", insertCount);
         }
       }
@@ -95,18 +100,29 @@ public class GenesLoader {
     } finally {
       iterator.close();
     }
-
   }
 
+  /**
+   * Wrapper method for dealing with a similar bug described in
+   * https://github.com/vznet/mongo-jackson-mapper/issues/6
+   * 
+   * @param iterator
+   * @return
+   */
   boolean hasNext(MappingIterator<BSONObject> iterator) {
     try {
       return iterator.hasNextValue();
-    } catch(IOException e) {
+    } catch (IOException e) {
       // Erroneous exception?
       return false;
     }
   }
 
+  /**
+   * Abstraction to allow for templated transformation and persistence.
+   * 
+   * @author btiernay
+   */
   interface GeneCallback {
     void handle(BSONObject gene);
   }

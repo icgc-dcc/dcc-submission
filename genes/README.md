@@ -1,7 +1,7 @@
 dcc-genes
 ===
 
-Genes model loader that reads a MongoDB dump of the Heliotrope gene model (`genes.bson`) and inserts a transformed version into the DCC dcc-genes MongoDB database.
+Genes model loader that reads a MongoDB dump of the Heliotrope gene model (`genes.bson`) and inserts a transformed version into the DCC `dcc-genes` MongoDB database.
 
 Build
 ---
