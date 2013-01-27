@@ -109,7 +109,7 @@ public class GenesLoader {
           log.info("Processed {} genes", insertCount);
         }
       }
-      log.info("Finished processing {} genes total", insertCount);
+      log.info("Finished processing {} gene(s) total", insertCount);
     } finally {
       iterator.close();
     }

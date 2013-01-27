@@ -22,7 +22,7 @@ Help
 
 From the command line, type `java -jar target/dcc-genes-<version>.jar --help`:
 
-	Usage: java -jar dcc-genes.jar [options]
+	Usage: java -jar dcc-genes-<version>.jar [options]
 	  Options:
 	  * -d, --database
 	       DCC mongo database uri (e.g. mongodb://localhost)
