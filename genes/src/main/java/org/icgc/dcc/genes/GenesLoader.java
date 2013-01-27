@@ -42,42 +42,56 @@ import com.mongodb.MongoURI;
 @Slf4j
 public class GenesLoader {
 
-  private static final String GENES_DATABASE = "dcc-genes";
-
-  private static final String GENES_COLLECTION = "Genes";
-
   private final GeneTransformer transformer = new GeneTransformer();
 
-  public void load(File bsonFile, MongoURI mongoUri) throws IOException {
-    // Drop the current collection
-    final MongoCollection genes = getGenesCollection(mongoUri);
-    genes.drop();
+  private final File bsonFile;
 
-    // Open BSON stream
-    MappingIterator<BSONObject> iterator = openStream(bsonFile);
+  private final MongoURI mongoUri;
 
-    // Transform and save
-    eachGene(iterator, new GeneCallback() {
-      @Override
-      public void handle(BSONObject gene) {
-        BSONObject transformed = transformer.transform(gene);
-
-        genes.save(transformed);
-      }
-    });
+  public GenesLoader(File bsonFile, MongoURI mongoUri) {
+    this.bsonFile = bsonFile;
+    this.mongoUri = mongoUri;
   }
 
-  MongoCollection getGenesCollection(MongoURI mongoUri) throws UnknownHostException {
-    DB db = new Mongo(mongoUri).getDB(GENES_DATABASE);
+  public void load() throws IOException {
+    final MongoCollection genes = getTargetCollection(mongoUri);
+    try {
+      // Drop the current collection
+      genes.drop();
+
+      // Open BSON file stream
+      MappingIterator<BSONObject> iterator = getSourceIterator(bsonFile);
+
+      // Transform and save
+      eachGene(iterator, new GeneCallback() {
+        @Override
+        public void handle(BSONObject gene) {
+          BSONObject transformed = transformer.transform(gene);
+
+          genes.save(transformed);
+        }
+      });
+    } finally {
+      // Close db connection
+      genes.getDBCollection().getDB().getMongo().close();
+    }
+  }
+
+  MongoCollection getTargetCollection(MongoURI mongoUri) throws UnknownHostException {
+    String database = mongoUri.getDatabase();
+    String collection = mongoUri.getCollection();
+
+    Mongo mongo = new Mongo(mongoUri);
+    DB db = mongo.getDB(database);
     Jongo jongo = new Jongo(db);
 
-    MongoCollection genes = jongo.getCollection(GENES_COLLECTION);
+    MongoCollection genes = jongo.getCollection(collection);
 
     return genes;
   }
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
-  MappingIterator<BSONObject> openStream(File bsonFile) throws IOException, JsonProcessingException {
+  MappingIterator<BSONObject> getSourceIterator(File bsonFile) throws IOException, JsonProcessingException {
     ObjectMapper mapper = new ObjectMapper(new MongoBsonFactory());
     MappingIterator<BSONObject> iterator = (MappingIterator) mapper.reader(BasicBSONObject.class).readValues(bsonFile);
 

@@ -45,10 +45,10 @@ public class Main {
   }
 
   private void load() throws IOException {
-    GenesLoader loader = new GenesLoader();
+    GenesLoader loader = new GenesLoader(options.file, options.mongoUri);
 
     log.info("Loading gene model using: {}", options);
-    loader.load(options.file, options.mongoUri);
+    loader.load();
     log.info("Finished loading!");
   }
 
