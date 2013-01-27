@@ -10,10 +10,17 @@ From the command line:
 
 	mvn package
 
-Execution
+Example
 ---
 
-From the produced jar in `target/`:
+From the command line:
+
+	java -jar target/dcc-genes-<version>.jar -d mongodb://localhost/dcc-genes.Genes -f ~/heliotrope-bson/dump/heliotrope/genes.bson
+
+Help
+---
+
+From the command line, type `java -jar target/dcc-genes-<version>.jar --help`:
 
 	Usage: java -jar dcc-genes.jar [options]
 	  Options:
@@ -27,4 +34,3 @@ From the produced jar in `target/`:
 	    -v, --version
 	       Show version information
 	       Default: false
-

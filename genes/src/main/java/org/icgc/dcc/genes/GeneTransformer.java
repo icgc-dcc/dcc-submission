@@ -26,6 +26,7 @@ import org.bson.BasicBSONObject;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
@@ -123,9 +124,26 @@ public class GeneTransformer {
     transcript.put("endExon", record.path("endExon").asLong());
     transcript.put("translationId", record.path("translationId").asText());
     transcript.put("exons", record.path("exons"));
-    transcript.put("domains", record.path("domains"));
+    transcript.put("domains", domains(record));
 
     return transcript;
+  }
+
+  private JsonNode domains(JsonNode record) {
+    JsonNode domains = record.path("domains");
+
+    ArrayNode arrayNode = mapper.createArrayNode();
+    for(JsonNode domain : domains) {
+      final String gffSource = domain.path("gffSource").asText();
+
+      // Only add Pfam sources
+      final boolean pFam = "Pfam".equals(gffSource);
+      if(pFam) {
+        arrayNode.add(domain);
+      }
+    }
+
+    return arrayNode;
   }
 
 }
