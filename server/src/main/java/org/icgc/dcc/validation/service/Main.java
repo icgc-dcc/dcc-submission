@@ -1,4 +1,4 @@
-package org.icgc.dcc.validation;
+package org.icgc.dcc.validation.service;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -10,8 +10,8 @@ import org.icgc.dcc.release.NextRelease;
 import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.QueuedProject;
 import org.icgc.dcc.release.model.Release;
-import org.icgc.dcc.validation.service.ValidationQueueManagerService;
-import org.icgc.dcc.validation.service.ValidationService;
+import org.icgc.dcc.validation.Plan;
+import org.icgc.dcc.validation.ValidationModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,8 +67,9 @@ public class Main {
       ValidationService validationService = injector.getInstance(ValidationService.class);
       ValidationQueueManagerService validationQueueManagerService =
           injector.getInstance(ValidationQueueManagerService.class);
-      validationService.validate(release, new QueuedProject(projectKey, null),
+      Plan plan = validationService.prepareValidation(release, new QueuedProject(projectKey, null),
           validationQueueManagerService.new ValidationCascadeListener());
+      validationService.runValidation(plan);
     } else {
       log.info("there is no next release at the moment");
     }

@@ -24,6 +24,7 @@ import java.util.Set;
 
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.FileSchema;
+import org.icgc.dcc.release.model.QueuedProject;
 import org.icgc.dcc.validation.report.ErrorPlanningVisitor;
 import org.icgc.dcc.validation.report.SummaryPlanningVisitor;
 import org.icgc.dcc.validation.visitor.ExternalRestrictionPlanningVisitor;
@@ -61,13 +62,13 @@ public class DefaultPlanner implements Planner {
   }
 
   @Override
-  public Plan plan(CascadingStrategy strategy, Dictionary dictionary) {
+  public Plan plan(QueuedProject queuedProject, CascadingStrategy strategy, Dictionary dictionary) {
     checkArgument(strategy != null);
     checkArgument(dictionary != null);
 
     FileSchemaDirectory systemDirectory = strategy.getSystemDirectory();
 
-    Plan plan = new Plan(dictionary, strategy);
+    Plan plan = new Plan(queuedProject, dictionary, strategy);
     for(FileSchema fileSchema : dictionary.getFiles()) {
       try {
         FileSchemaDirectory fileSchemaDirectory = strategy.getFileSchemaDirectory();

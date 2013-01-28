@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.validation;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.io.FileNotFoundException;
@@ -30,10 +30,12 @@ import java.util.Map;
 
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.FileSchema;
+import org.icgc.dcc.release.model.QueuedProject;
 import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.report.Outcome;
 import org.icgc.dcc.validation.report.SchemaReport;
 import org.icgc.dcc.validation.report.SubmissionReport;
+import org.icgc.dcc.validation.service.ValidationQueueManagerService.ValidationCascadeListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,18 +61,20 @@ public class Plan {
 
   private final Dictionary dictionary;
 
+  private final QueuedProject queuedProject;
+
   private final CascadingStrategy cascadingStrategy;
 
   private final Map<String, TupleState> fileLevelErrors = new LinkedHashMap<String, TupleState>();
 
   private Cascade cascade;
 
-  public Plan(Dictionary dictionary, CascadingStrategy cascadingStrategy) {
-    checkArgument(dictionary != null);
-    checkArgument(cascadingStrategy != null);
+  private long startTime; // TODO: use proper timer (see DCC-739)
 
-    this.dictionary = dictionary;
-    this.cascadingStrategy = cascadingStrategy;
+  public Plan(QueuedProject queuedProject, Dictionary dictionary, CascadingStrategy cascadingStrategy) {
+    this.queuedProject = checkNotNull(queuedProject);
+    this.dictionary = checkNotNull(dictionary);
+    this.cascadingStrategy = checkNotNull(cascadingStrategy);
   }
 
   public String path(final FileSchema schema) throws FileNotFoundException, IOException {
@@ -79,6 +83,14 @@ public class Plan {
 
   public Dictionary getDictionary() {
     return dictionary;
+  }
+
+  public QueuedProject getQueuedProject() {
+    return queuedProject;
+  }
+
+  public String getProjectKey() {
+    return queuedProject.getKey();
   }
 
   public void include(FileSchema fileSchema, InternalFlowPlanner internal, ExternalFlowPlanner external) {
@@ -138,6 +150,24 @@ public class Plan {
     }
 
     this.cascade = new CascadeConnector().connect(cascade);
+  }
+
+  public void setStartTime() {
+    startTime = System.nanoTime();
+  }
+
+  /**
+   * startTime must have been set already (unit is nanoseconds).
+   */
+  public long getDuration() {
+    checkNotNull(startTime);
+    return System.nanoTime() - startTime;
+  }
+
+  public void addCascaddeListener(final ValidationCascadeListener listener, final QueuedProject qProject) {
+    this.cascade.addListener(listener);
+    listener.setPlan(this);
+    listener.setProject(qProject);
   }
 
   public Cascade getCascade() {

@@ -26,6 +26,7 @@ import org.icgc.dcc.dictionary.model.Term;
 import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.filesystem.GuiceJUnitRunner;
 import org.icgc.dcc.filesystem.GuiceJUnitRunner.GuiceModules;
+import org.icgc.dcc.release.model.QueuedProject;
 import org.icgc.dcc.validation.factory.LocalCascadingStrategyFactory;
 import org.icgc.dcc.validation.restriction.CodeListRestriction;
 import org.icgc.dcc.validation.restriction.DiscreteValuesRestriction;
@@ -46,6 +47,10 @@ import com.mongodb.BasicDBObject;
 @RunWith(GuiceJUnitRunner.class)
 @GuiceModules({ ValidationTestModule.class })
 public class ValidationInternalIntegrityTest {
+
+  private static final String ROOT_DIR = "/integration/validation/internal";
+
+  private static final QueuedProject QUEUED_PROJECT = new QueuedProject("dummyProject", null); // TODO: mock
 
   @Inject
   private DictionaryService dictionaryService;
@@ -93,7 +98,7 @@ public class ValidationInternalIntegrityTest {
 
   @Test
   public void test_validate_valid() throws IOException {
-    String content = validate(validationService, dictionary, "/integration/validation/internal");
+    String content = validate(validationService, dictionary, ROOT_DIR);
     Assert.assertTrue(content, content.isEmpty());
   }
 
@@ -184,11 +189,16 @@ public class ValidationInternalIntegrityTest {
 
     CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir, systemDir);
 
-    Plan plan = validationService.planCascade(null, cascadingStrategy, dictionary);
+    Plan plan;
+    try {
+      plan = validationService.planCascade(QUEUED_PROJECT, cascadingStrategy, dictionary);
+    } catch(FilePresenceException e) {
+      throw new RuntimeException();
+    }
     Assert.assertEquals(1, plan.getCascade().getFlows().size());
 
     TestCascadeListener listener = new TestCascadeListener();
-    validationService.runCascade(plan.getCascade(), listener);
+    validationService.runCascade(plan.getCascade());
     while(listener.isRunning()) {
       Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
     }
