@@ -91,10 +91,9 @@ public class GenesLoader {
     return genes;
   }
 
-  @SuppressWarnings({ "rawtypes", "unchecked" })
   MappingIterator<BSONObject> getSourceIterator(File bsonFile) throws IOException, JsonProcessingException {
     ObjectMapper mapper = new ObjectMapper(new BsonFactory());
-    MappingIterator<BSONObject> iterator = (MappingIterator) mapper.reader(BasicBSONObject.class).readValues(bsonFile);
+    MappingIterator<BSONObject> iterator = mapper.reader(BasicBSONObject.class).readValues(bsonFile);
 
     return iterator;
   }

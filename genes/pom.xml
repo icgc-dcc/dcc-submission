@@ -31,13 +31,18 @@
 
     <!-- JSON -->
     <dependency>
-      <groupId>org.codehaus.jackson</groupId>
-      <artifactId>jackson-core-asl</artifactId>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
       <version>${jackson.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.codehaus.jackson</groupId>
-      <artifactId>jackson-mapper-asl</artifactId>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
       <version>${jackson.version}</version>
     </dependency>
     <dependency>
@@ -212,7 +217,7 @@
     <jcommander.version>1.30</jcommander.version>
     <jongo.version>0.3</jongo.version>
     <mongo.version>2.10.1</mongo.version>
-    <jackson.version>1.9.8</jackson.version>
+    <jackson.version>2.1.2</jackson.version>
     <slf4j.version>1.6.1</slf4j.version>
     <logback.version>1.0.3</logback.version>
 
