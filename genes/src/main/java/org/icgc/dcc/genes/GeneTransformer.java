@@ -17,13 +17,6 @@
  */
 package org.icgc.dcc.genes;
 
-import static com.google.common.collect.Lists.newArrayList;
-
-import java.util.List;
-
-import org.bson.BSONObject;
-import org.bson.BasicBSONObject;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -39,46 +32,39 @@ public class GeneTransformer {
 
   private final ObjectMapper mapper = new ObjectMapper();
 
-  public BSONObject transform(BSONObject gene) {
-    // For easier navigation, manipulation and to avoid casting
-    JsonNode node = node(gene);
-
-    BSONObject result = new BasicBSONObject();
-    result.put("symbol", symbol(node));
-    result.put("name", name(node));
-    result.put("synonyms", synonyms(node));
-    result.put("chromosome", location(node).path("chromosome").asText());
-    result.put("strand", location(node).path("strand").asInt());
-    result.put("start", location(node).path("txStart").asLong());
-    result.put("end", location(node).path("txEnd").asLong());
-    result.put("ensembl_gene_id", id(node));
-    result.put("canonical_transcript_id", canonicalTranscriptId(node));
+  public JsonNode transform(JsonNode node) {
+    ObjectNode result = mapper.createObjectNode();
+    result.set("symbol", symbol(node));
+    result.set("name", name(node));
+    result.set("synonyms", synonyms(node));
+    result.set("chromosome", location(node).path("chromosome"));
+    result.set("strand", location(node).path("strand"));
+    result.set("start", location(node).path("txStart"));
+    result.set("end", location(node).path("txEnd"));
+    result.set("ensembl_gene_id", id(node));
+    result.set("canonical_transcript_id", canonicalTranscriptId(node));
     result.put("transcripts", transcripts(node));
 
     return result;
   }
 
-  private JsonNode node(BSONObject gene) {
-    return mapper.valueToTree(gene);
+  private JsonNode name(JsonNode node) {
+    return node.path("sections").path("description").path("data").path("fullName");
   }
 
-  private Object name(JsonNode node) {
-    return node.path("sections").path("description").path("data").path("fullName").asText();
+  private JsonNode symbol(JsonNode node) {
+    return node.path("name");
   }
 
-  private String symbol(JsonNode node) {
-    return node.path("name").asText();
+  private JsonNode id(JsonNode node) {
+    return node.path("id");
   }
 
-  private String id(JsonNode node) {
-    return node.path("id").asText();
-  }
-
-  private List<String> synonyms(JsonNode node) {
-    String symbol = symbol(node);
+  private ArrayNode synonyms(JsonNode node) {
+    String symbol = symbol(node).asText();
     JsonNode synonyms = node.path("sections").path("description").path("data").path("synonyms");
 
-    List<String> values = newArrayList();
+    ArrayNode values = mapper.createArrayNode();
     for(JsonNode synonym : synonyms) {
       String value = synonym.asText();
       final boolean unique = value.equals(symbol) == false;
@@ -94,19 +80,19 @@ public class GeneTransformer {
     return node.path("sections").path("location").path("data");
   }
 
-  private String canonicalTranscriptId(JsonNode node) {
-    return node.path("sections").path("transcripts").path("data").path("canonicalTranscriptId").asText();
+  private JsonNode canonicalTranscriptId(JsonNode node) {
+    return node.path("sections").path("transcripts").path("data").path("canonicalTranscriptId");
   }
 
-  private List<JsonNode> transcripts(JsonNode node) {
-    JsonNode records = node.path("sections").path("transcripts").path("data").path("records");
+  private ArrayNode transcripts(JsonNode node) {
+    JsonNode transcripts = node.path("sections").path("transcripts").path("data").path("records");
 
-    List<JsonNode> transcripts = newArrayList();
-    for(JsonNode record : records) {
-      transcripts.add(transcript(record));
+    ArrayNode values = mapper.createArrayNode();
+    for(JsonNode record : transcripts) {
+      values.add(transcript(record));
     }
 
-    return transcripts;
+    return values;
   }
 
   private JsonNode transcript(JsonNode record) {

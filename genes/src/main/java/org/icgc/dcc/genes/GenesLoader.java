@@ -23,12 +23,11 @@ import java.net.UnknownHostException;
 
 import lombok.extern.slf4j.Slf4j;
 
-import org.bson.BSONObject;
-import org.bson.BasicBSONObject;
 import org.jongo.Jongo;
 import org.jongo.MongoCollection;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.DB;
@@ -61,13 +60,13 @@ public class GenesLoader {
       genes.drop();
 
       // Open BSON file stream
-      MappingIterator<BSONObject> iterator = getSourceIterator(bsonFile);
+      MappingIterator<JsonNode> iterator = getSourceIterator(bsonFile);
 
       // Transform and save
       eachGene(iterator, new GeneCallback() {
         @Override
-        public void handle(BSONObject gene) {
-          BSONObject transformed = transformer.transform(gene);
+        public void handle(JsonNode gene) {
+          JsonNode transformed = transformer.transform(gene);
 
           genes.save(transformed);
         }
@@ -91,18 +90,18 @@ public class GenesLoader {
     return genes;
   }
 
-  MappingIterator<BSONObject> getSourceIterator(File bsonFile) throws IOException, JsonProcessingException {
+  MappingIterator<JsonNode> getSourceIterator(File bsonFile) throws IOException, JsonProcessingException {
     ObjectMapper mapper = new ObjectMapper(new BsonFactory());
-    MappingIterator<BSONObject> iterator = mapper.reader(BasicBSONObject.class).readValues(bsonFile);
+    MappingIterator<JsonNode> iterator = mapper.reader(JsonNode.class).readValues(bsonFile);
 
     return iterator;
   }
 
-  void eachGene(MappingIterator<BSONObject> iterator, GeneCallback callback) throws IOException {
+  void eachGene(MappingIterator<JsonNode> iterator, GeneCallback callback) throws IOException {
     try {
       int insertCount = 0;
       while(hasNext(iterator)) {
-        BSONObject gene = iterator.next();
+        JsonNode gene = iterator.next();
         callback.handle(gene);
 
         if(++insertCount % 1000 == 0) {
@@ -121,7 +120,7 @@ public class GenesLoader {
    * @param iterator
    * @return
    */
-  boolean hasNext(MappingIterator<BSONObject> iterator) {
+  boolean hasNext(MappingIterator<JsonNode> iterator) {
     try {
       return iterator.hasNextValue();
     } catch(IOException e) {
@@ -136,7 +135,7 @@ public class GenesLoader {
    * @author btiernay
    */
   interface GeneCallback {
-    void handle(BSONObject gene);
+    void handle(JsonNode gene);
   }
 
 }
