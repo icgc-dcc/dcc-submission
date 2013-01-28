@@ -117,7 +117,7 @@ public class GenesLoader {
   }
 
   /**
-   * Wrapper method for dealing with a similar bug described in https://github.com/vznet/mongo-jackson-mapper/issues/6
+   * Wrapper method for working around with https://github.com/michel-kraemer/bson4jackson/issues/25
    * 
    * @param iterator
    * @return
