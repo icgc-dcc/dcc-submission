@@ -1,8 +1,8 @@
 {
-	"type":"object",
-	"$schema": "http://json-schema.org/draft-03/schema",
-	"id": "#",
+	"$schema": "http://json-schema.org/draft-03/schema#",
+	"id": "http://schema.dcc.icgc.org/genes.schema.json#",
 	"required":false,
+	"type":"object",
 	"properties":{
 		"canonical_transcript_id": {
 			"type":"string",
