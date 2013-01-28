@@ -1,6 +1,7 @@
 package org.icgc.dcc.release;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.AbstractMap.SimpleEntry;
@@ -50,7 +51,6 @@ import com.google.code.morphia.Morphia;
 import com.google.code.morphia.query.Query;
 import com.google.code.morphia.query.UpdateOperations;
 import com.google.code.morphia.query.UpdateResults;
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -296,10 +296,10 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     log.info("enqueued {} for {}", queuedProjects, nextReleaseName);
   }
 
-  public Optional<QueuedProject> setToValidating(String projectKey) {
-    log.info("attempting to set {} to validating", projectKey);
+  public void dequeueToValidating(QueuedProject nextProject) {
+    String nextProjectKey = nextProject.getKey();
+    log.info("attempting to set {} to validating", nextProjectKey);
 
-    Optional<QueuedProject> validating = null;
     String nextReleaseName = null;
     SubmissionState expectedState = SubmissionState.QUEUED;
 
@@ -307,50 +307,48 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     int MAX_ATTEMPTS = 10; // 10 attempts should be sufficient to obtain a lock (otherwise the problem is probably not
                            // recoverable - deadlock or other)
     while(attempts < MAX_ATTEMPTS) {
-      validating = Optional.absent();
 
       try {
         Release nextRelease = getNextRelease().getRelease();
         nextReleaseName = nextRelease.getName();
-        log.info("setting {} to validated for {}", new Object[] { projectKey, nextReleaseName });
+        log.info("setting {} to validating for {}", new Object[] { nextProjectKey, nextReleaseName });
 
-        validating = nextRelease.nextInQueue();
-        if(validating.isPresent() && validating.get().getKey().equals(projectKey)) {
-          QueuedProject nextInQueue = validating.get();
-
-          // update release object
-          QueuedProject dequeuedQueuedProject = nextRelease.dequeueProject();
-          checkState(dequeuedQueuedProject.equals(nextInQueue), // can't really happen (no other thread can access that
-                                                                // instance)
-              String.format("mismatch: %s != %s", dequeuedQueuedProject, nextInQueue));
-          Submission submission = getSubmissionByName(nextRelease, projectKey);
-          SubmissionState currentState = submission.getState();
-          if(submission == null || expectedState != currentState) {
-            throw new ReleaseException( // not really recoverable
-                "project " + projectKey + " is not " + expectedState + " (" + currentState + " instead)");
-          }
-          submission.setState(SubmissionState.VALIDATING);
-
-          // update corresponding database entity
-          updateRelease(nextReleaseName, nextRelease);
+        // actually dequeue the project
+        QueuedProject dequeuedProject = nextRelease.dequeueProject();
+        String dequeuedProjectKey = dequeuedProject.getKey();
+        if(dequeuedProjectKey.equals(nextProjectKey) == false) { // not recoverable: TODO: create dedicated exception?
+          throw new ReleaseException("mismatch: " + dequeuedProjectKey + " != " + nextProjectKey);
         }
-        log.info("dequeued {} to validating state for {}", projectKey, nextReleaseName);
+
+        // update release object
+        Submission submission = getSubmissionByName(nextRelease, nextProjectKey);
+        checkNotNull(submission); // checked in getSubmissionByName
+
+        SubmissionState currentState = submission.getState();
+        if(expectedState != currentState) {
+          throw new ReleaseException( // not recoverable
+              "project " + nextProjectKey + " is not " + expectedState + " (" + currentState + " instead)");
+        }
+        submission.setState(SubmissionState.VALIDATING);
+
+        // update corresponding database entity
+        updateRelease(nextReleaseName, nextRelease);
+
+        log.info("dequeued {} to validating state for {}", nextProjectKey, nextReleaseName);
         break;
       } catch(DccModelOptimisticLockException e) {
         attempts++;
         log.warn(
             "there was a concurrency issue while attempting to set {} to validating state for release {}, number of attempts: {}",
-            new Object[] { projectKey, nextReleaseName, attempts });
+            new Object[] { nextProjectKey, nextReleaseName, attempts });
         Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS); // TODO: cleanup - use Executor instead?
       }
     }
     if(attempts >= MAX_ATTEMPTS) {
-      String message = String.format("failed to validate project %s (could never acquire lock)", projectKey);
+      String message = String.format("failed to validate project %s (could never acquire lock)", nextProjectKey);
       MailUtils.sendEmail(this.config, message, message);
       throw new DccConcurrencyException(message);
     }
-
-    return validating;
   }
 
   /**
@@ -654,6 +652,8 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   /**
    * Attempts to retrieve a submission for the given project key provided from the release object provided (no database
    * call).
+   * <p>
+   * Throws a {@code ReleaseException} if not matching submission is found.
    */
   private Submission getSubmissionByName(Release release, String projectKey) {
     Submission submission = release.getSubmission(projectKey);

@@ -191,14 +191,14 @@ public class ValidationInternalIntegrityTest {
 
     Plan plan;
     try {
-      plan = validationService.planCascade(QUEUED_PROJECT, cascadingStrategy, dictionary);
+      plan = validationService.planAndConnectCascade(QUEUED_PROJECT, cascadingStrategy, dictionary);
     } catch(FilePresenceException e) {
       throw new RuntimeException();
     }
     Assert.assertEquals(1, plan.getCascade().getFlows().size());
 
     TestCascadeListener listener = new TestCascadeListener();
-    validationService.runCascade(plan.getCascade());
+    validationService.startCascade(plan.getCascade());
     while(listener.isRunning()) {
       Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
     }

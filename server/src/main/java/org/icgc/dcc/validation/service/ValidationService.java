@@ -83,12 +83,15 @@ public class ValidationService {
 
   Plan prepareValidation(final Release release, final QueuedProject qProject, final ValidationCascadeListener listener)
       throws FilePresenceException {
+
     String dictionaryVersion = release.getDictionaryVersion();
     Dictionary dictionary = this.dictionaries.getFromVersion(dictionaryVersion);
     if(dictionary == null) {
       throw new ValidationServiceException(String.format("no dictionary found with version %s, in release %s",
           dictionaryVersion, release.getName()));
     } else {
+      log.info("Preparing validation for project {}", qProject.getKey());
+
       ReleaseFileSystem releaseFilesystem = dccFileSystem.getReleaseFilesystem(release);
 
       Project project = projectService.getProject(qProject.getKey());
@@ -103,23 +106,29 @@ public class ValidationService {
       log.info("systemDir = {} ", systemDir);
 
       CascadingStrategy cascadingStrategy = cascadingStrategyFactory.get(rootDir, outputDir, systemDir);
-      Plan plan = planCascade(qProject, cascadingStrategy, dictionary);
+      Plan plan = planAndConnectCascade(qProject, cascadingStrategy, dictionary);
       plan.addCascaddeListener(listener, qProject);
+
+      log.info("Prepared validation for project {}", qProject.getKey());
       return plan;
     }
   }
 
   @VisibleForTesting
-  public Plan planCascade(QueuedProject queuedProject, CascadingStrategy cascadingStrategy, Dictionary dictionary)
-      throws FilePresenceException {
+  public Plan planAndConnectCascade(QueuedProject queuedProject, CascadingStrategy cascadingStrategy,
+      Dictionary dictionary) throws FilePresenceException { // TODO: separate plan and connect?
+
+    log.info("Planning cascade for project {}", queuedProject.getKey());
     Plan plan = planner.plan(queuedProject, cascadingStrategy, dictionary);
+    log.info("Planned cascade for project {}", queuedProject.getKey());
 
     log.info("# internal flows: {}", Iterables.size(plan.getInternalFlows()));
     log.info("# external flows: {}", Iterables.size(plan.getExternalFlows()));
 
+    log.info("Connecting cascade for project {}", queuedProject.getKey());
     plan.connect(cascadingStrategy);
-
-    if(plan.hasFileLevelErrors()) {
+    log.info("Connected cascade for project {}", queuedProject.getKey());
+    if(plan.hasFileLevelErrors()) { // determined during connection
       log.info(String.format("plan has errors, throwing a %s", FilePresenceException.class.getSimpleName()));
       throw new FilePresenceException(plan); // the queue manager will handle it
     }
@@ -128,28 +137,25 @@ public class ValidationService {
   }
 
   /**
-   * {@code Plan} contains the {@code Cascade}
+   * Starts validation in a asynchronous manner.
+   * <p>
+   * {@code Plan} contains the {@code Cascade}.<br/>
+   * This is a non-blocking call, completion is handled by
+   * <code>{@link ValidationCascadeListener#onCompleted(Cascade)}</code>
    */
-  void runValidation(Plan plan) {
+  void startValidation(Plan plan) {
     QueuedProject queuedProject = plan.getQueuedProject();
     checkNotNull(queuedProject);
     String projectKey = queuedProject.getKey();
-
     log.info("starting validation on project {}", projectKey);
     plan.setStartTime();
-
-    Cascade cascade = plan.getCascade();
-    runCascade(cascade);
-
-    log.info("validation finished for project {}, time spent on validation is {} nanoseconds", projectKey,
-        plan.getDuration());
+    this.startCascade(plan.getCascade()); // non-blocking
   }
 
   @VisibleForTesting
-  public void runCascade(Cascade cascade) {
+  public void startCascade(Cascade cascade) {
     int size = cascade.getFlows().size();
     log.info("starting cascade with {} flows", size);
     cascade.start();
-    log.info("completed cascade with {} flows", size);
   }
 }

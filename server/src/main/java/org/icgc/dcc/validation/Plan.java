@@ -153,21 +153,20 @@ public class Plan {
   }
 
   public void setStartTime() {
-    startTime = System.nanoTime();
+    startTime = System.currentTimeMillis();
   }
 
   /**
-   * startTime must have been set already (unit is nanoseconds).
+   * startTime must have been set already (unit is milliseconds).
    */
   public long getDuration() {
     checkNotNull(startTime);
-    return System.nanoTime() - startTime;
+    return System.currentTimeMillis() - startTime;
   }
 
   public void addCascaddeListener(final ValidationCascadeListener listener, final QueuedProject qProject) {
     this.cascade.addListener(listener);
     listener.setPlan(this);
-    listener.setProject(qProject);
   }
 
   public Cascade getCascade() {

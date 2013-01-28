@@ -11,7 +11,6 @@ import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.DictionaryState;
 import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.filesystem.ReleaseFileSystem;
-import org.icgc.dcc.release.model.QueuedProject;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.Submission;
@@ -26,7 +25,6 @@ import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
 import com.google.code.morphia.query.Query;
 import com.google.code.morphia.query.UpdateOperations;
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -55,9 +53,6 @@ public class NextRelease extends BaseRelease {
     return getRelease().getQueuedProjectKeys();
   }
 
-  public Optional<QueuedProject> getNextInQueue() {
-    return getRelease().nextInQueue();
-  }
 
   public NextRelease release(final String nextReleaseName) throws InvalidStateException {
     checkArgument(nextReleaseName != null);

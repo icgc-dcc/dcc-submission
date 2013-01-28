@@ -18,6 +18,7 @@
 package org.icgc.dcc.validation.service;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.io.UnsupportedEncodingException;
@@ -41,6 +42,7 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
+import org.icgc.dcc.release.NextRelease;
 import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.QueuedProject;
 import org.icgc.dcc.release.model.Release;
@@ -135,14 +137,15 @@ public class ValidationQueueManagerService extends AbstractService {
     schedule = scheduler.scheduleWithFixedDelay(new Runnable() {
       @Override
       public void run() {
-        Optional<QueuedProject> nextProject = Optional.<QueuedProject> absent();
+        log.info("polling"); // TODO: make debug
+
+        Optional<QueuedProject> optionalNextProject = Optional.<QueuedProject> absent();
         Optional<Throwable> criticalThrowable = Optional.<Throwable> absent();
         try {
           if(isRunning() && releaseService.hasNextRelease()) {
-            nextProject = processNext();
+            optionalNextProject = processNext();
           }
-        } catch(FilePresenceException e) { // potentially thrown by validateSubmission() upon file-level errors; TODO:
-                                           // make this a checked exception since we must handle it/is recoverable
+        } catch(FilePresenceException e) {
           try {
             handleAbortedValidation(e);
           } catch(Throwable t) {
@@ -158,9 +161,11 @@ public class ValidationQueueManagerService extends AbstractService {
            * we should never throw an exception to our executor otherwise a server restart is necessary.
            */
           if(criticalThrowable.isPresent()) {
-            processCriticalThrowable(criticalThrowable.get(), nextProject);
+            processCriticalThrowable(criticalThrowable.get(), optionalNextProject);
           }
         }
+
+        log.info("polled");
       }
 
       /**
@@ -171,46 +176,41 @@ public class ValidationQueueManagerService extends AbstractService {
        * @throws FilePresenceException
        */
       private Optional<QueuedProject> processNext() throws FilePresenceException {
-        Optional<QueuedProject> nextProject = releaseService.getNextRelease().getNextInQueue();
+        Optional<QueuedProject> optionalNextProject = Optional.absent();
 
-        Optional<Plan> optionalPlan = Optional.absent();
-        synchronized(mutex) { // atomically access/modify synchronizedCount
-          if(nextProject.isPresent() && synchronizedCount < MAX_VALIDATING) { // critical
-            QueuedProject queuedProject = nextProject.get();
-            log.info("next in queue {}", queuedProject);
-            Release release = releaseService.getNextRelease().getRelease();
-            if(release == null) {
-              throw new ValidationServiceException("cannot access the next release");
-            } else {
-              if(release.getState() == ReleaseState.OPENED) {
+        NextRelease nextRelease = releaseService.getNextRelease();
+        Release release = nextRelease.getRelease();
+        if(release == null) {
+          throw new ValidationServiceException("cannot access the next release");
+        } else if(release.getState() != ReleaseState.OPENED) {
+          log.info("Release was closed during validation; states not changed");
+        } else {
+          optionalNextProject = release.nextInQueue();
+          if(optionalNextProject.isPresent()) {
+            QueuedProject nextProject = optionalNextProject.get();
+            String projectKey = nextProject.getKey();
+            log.info("next in queue {}", projectKey);
+
+            synchronized(mutex) {
+              if(synchronizedCount < MAX_VALIDATING) { // critical
                 synchronizedCount++; // critical
                 checkState(synchronizedCount <= MAX_VALIDATING); // by design
-
-                Optional<QueuedProject> dequeuedProject = releaseService.setToValidating(queuedProject.getKey());
-                if(dequeuedProject.isPresent() == true) {
-                  Plan plan = validationService.prepareValidation( // see method comment
-                      release, queuedProject, new ValidationCascadeListener());
-                  optionalPlan = Optional.of(plan);
-                } else {
-                  log.error("Project {} could not be moved from queue to validating state", queuedProject.getKey());
-                }
-              } else {
-                log.info("Release was closed during validation; states not changed");
               }
             }
+
+            releaseService.dequeueToValidating(nextProject);
+            Plan plan = validationService.prepareValidation(release, nextProject, new ValidationCascadeListener());
+            validationService.startValidation(plan); // non-blocking
           }
         }
-        if(optionalPlan.isPresent()) {
-          validationService.runValidation(optionalPlan.get());
-        }
-        return nextProject;
+        return optionalNextProject;
       }
 
-      private void processCriticalThrowable(Throwable t, Optional<QueuedProject> nextProject) {
+      private void processCriticalThrowable(Throwable t, Optional<QueuedProject> optionalNextProject) {
         log.error("a critical error occured while processing the validation queue", t);
 
-        if(nextProject != null && nextProject.isPresent()) {
-          QueuedProject project = nextProject.get();
+        if(optionalNextProject != null && optionalNextProject.isPresent()) {
+          QueuedProject project = optionalNextProject.get();
           try {
             resolve(project, SubmissionState.ERROR);
           } catch(Throwable t2) {
@@ -273,19 +273,29 @@ public class ValidationQueueManagerService extends AbstractService {
   /**
    * Triggered by cascading (via listener on cascade).
    */
-  public void handleCompletedValidation(QueuedProject project, Plan plan) {
-    checkArgument(project != null);
+  public void handleCompletedValidation(Plan plan) {
+    checkArgument(plan != null);
 
+    QueuedProject queuedProject = plan.getQueuedProject();
+    checkNotNull(queuedProject);
+    String projectKey = queuedProject.getKey();
+    log.info("Cascade finished normally for project {}", projectKey);
+
+    log.info("Gathering report for project {}", projectKey);
     SubmissionReport report = new SubmissionReport();
     Outcome outcome = plan.collect(report);
+    log.info("Gathered report for project {}", projectKey);
 
-    log.info("completed validation - about to dequeue project key {}/set submission its state", project.getKey());
+    // resolving submission
     if(outcome == Outcome.PASSED) {
-      resolve(project, SubmissionState.VALID);
+      resolve(queuedProject, SubmissionState.VALID);
     } else {
-      resolve(project, SubmissionState.INVALID);
+      resolve(queuedProject, SubmissionState.INVALID);
     }
-    setSubmissionReport(project.getKey(), report);
+    setSubmissionReport(projectKey, report);
+
+    log.info("Validation finished normally for project {}, time spent on validation is {} seconds", projectKey,
+        plan.getDuration() / 1000.0);
   }
 
   private void setSubmissionReport(String projectKey, SubmissionReport report) {
@@ -331,6 +341,7 @@ public class ValidationQueueManagerService extends AbstractService {
     if(project.getEmails().isEmpty() == false) {
       this.email(project, state);
     }
+    log.info("resolved {}", key);
   }
 
   private void email(QueuedProject project, SubmissionState state) {
@@ -353,8 +364,8 @@ public class ValidationQueueManagerService extends AbstractService {
     if(aCheck.isEmpty() == false) {
       try {
         Message msg = new MimeMessage(session);
-        msg.setFrom(new InternetAddress(this.config.getString("mail.from.email"), this.config
-            .getString("mail.from.email")));
+        String fromEmail = this.config.getString("mail.from.email");
+        msg.setFrom(new InternetAddress(fromEmail, fromEmail));
 
         msg.setSubject(String.format(this.config.getString("mail.subject"), project.getKey(), state));
         if(state == SubmissionState.ERROR) {
@@ -397,14 +408,8 @@ public class ValidationQueueManagerService extends AbstractService {
   public class ValidationCascadeListener implements CascadeListener {
     Plan plan;
 
-    QueuedProject project;
-
     public void setPlan(Plan plan) {
       this.plan = plan;
-    }
-
-    public void setProject(QueuedProject project) {
-      this.project = project;
     }
 
     @Override
@@ -416,13 +421,13 @@ public class ValidationQueueManagerService extends AbstractService {
     @Override
     public void onStopping(Cascade cascade) {
       log.debug("CascadeListener onStopping");
-      handleUnexpectedException(project);
+      handleUnexpectedException(plan.getQueuedProject());
     }
 
     @Override
     public void onCompleted(Cascade cascade) {
       log.debug("CascadeListener onCompleted");
-      handleCompletedValidation(project, plan);
+      handleCompletedValidation(plan);
     }
 
     @Override
