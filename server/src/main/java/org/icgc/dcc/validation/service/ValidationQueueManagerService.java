@@ -137,7 +137,7 @@ public class ValidationQueueManagerService extends AbstractService {
     schedule = scheduler.scheduleWithFixedDelay(new Runnable() {
       @Override
       public void run() {
-        log.info("polling"); // TODO: make debug
+        log.debug("polling");
 
         Optional<QueuedProject> optionalNextProject = Optional.<QueuedProject> absent();
         Optional<Throwable> criticalThrowable = Optional.<Throwable> absent();
@@ -165,7 +165,7 @@ public class ValidationQueueManagerService extends AbstractService {
           }
         }
 
-        log.info("polled");
+        log.debug("polled");
       }
 
       /**

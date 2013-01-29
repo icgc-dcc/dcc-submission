@@ -653,10 +653,12 @@ public class ReleaseService extends BaseMorphiaService<Release> {
           datastore().createQuery(Release.class) //
               .filter("name = ", originalReleaseName), //
           updatedRelease, false);
-    } catch(ConcurrentModificationException e) {
+    } catch(ConcurrentModificationException e) { // see method comments for why this could be thrown
+      log.warn("a possibly recoverable concurrency issue arose when trying to update release {}", originalReleaseName);
       throw new DccModelOptimisticLockException(e);
     }
     if(update == null || update.getHadError()) {
+      log.error("an unrecoverable error happenend when trying to update release {}", originalReleaseName);
       throw new ReleaseException(String.format("failed to update release %s", originalReleaseName));
     }
   }
