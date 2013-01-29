@@ -1,7 +1,6 @@
 package org.icgc.dcc.release;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.AbstractMap.SimpleEntry;
@@ -318,23 +317,21 @@ public class ReleaseService extends BaseMorphiaService<Release> {
       try {
         Release nextRelease = getNextRelease().getRelease();
         nextReleaseName = nextRelease.getName();
-        log.info("Dequeuing {} to validating for {}", new Object[] { nextProjectKey, nextReleaseName });
+        log.info("Dequeuing {} to validating for {}", nextProjectKey, nextReleaseName);
 
         // actually dequeue the project
         QueuedProject dequeuedProject = nextRelease.dequeueProject();
         String dequeuedProjectKey = dequeuedProject.getKey();
         if(dequeuedProjectKey.equals(nextProjectKey) == false) { // not recoverable: TODO: create dedicated exception?
-          throw new ReleaseException("mismatch: " + dequeuedProjectKey + " != " + nextProjectKey);
+          throw new ReleaseException("Mismatch: " + dequeuedProjectKey + " != " + nextProjectKey);
         }
 
         // update release object
-        Submission submission = getSubmissionByName(nextRelease, nextProjectKey);
-        checkNotNull(submission); // checked in getSubmissionByName
-
+        Submission submission = getSubmissionByName(nextRelease, nextProjectKey); // can't be null
         SubmissionState currentState = submission.getState();
         if(expectedState != currentState) {
           throw new ReleaseException( // not recoverable
-              "project " + nextProjectKey + " is not " + expectedState + " (" + currentState + " instead)");
+              "Project " + nextProjectKey + " is not " + expectedState + " (" + currentState + " instead)");
         }
         submission.setState(SubmissionState.VALIDATING);
 
@@ -346,7 +343,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
       } catch(DccModelOptimisticLockException e) {
         attempts++;
         log.warn(
-            "there was a concurrency issue while attempting to set {} to validating state for release {}, number of attempts: {}",
+            "There was a concurrency issue while attempting to set {} to validating state for release {}, number of attempts: {}",
             new Object[] { nextProjectKey, nextReleaseName, attempts });
         Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS); // TODO: cleanup - use Executor instead?
       }
@@ -370,7 +367,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     checkArgument(SubmissionState.VALID == destinationState || SubmissionState.INVALID == destinationState
         || SubmissionState.ERROR == destinationState);
 
-    log.info("attempting to resolve {} (as {})", new Object[] { projectKey, destinationState });
+    log.info("attempting to resolve {} (as {})", projectKey, destinationState);
 
     String nextReleaseName = null;
     SubmissionState expectedState = SubmissionState.VALIDATING;
@@ -383,11 +380,9 @@ public class ReleaseService extends BaseMorphiaService<Release> {
       try {
         Release nextRelease = getNextRelease().getRelease();
         nextReleaseName = nextRelease.getName();
-        log.info("resolving {} (as {}) for {}", new Object[] { projectKey, destinationState, nextReleaseName });
+        log.info("Resolving {} (as {}) for {}", new Object[] { projectKey, destinationState, nextReleaseName });
 
-        Submission submission = getSubmissionByName(nextRelease, projectKey);
-        checkNotNull(submission); // checked in getSubmissionByName
-
+        Submission submission = getSubmissionByName(nextRelease, projectKey); // can't be null
         SubmissionState currentState = submission.getState();
         if(expectedState != currentState) {
           throw new ReleaseException( // not recoverable
@@ -398,18 +393,18 @@ public class ReleaseService extends BaseMorphiaService<Release> {
         // update corresponding database entity
         updateRelease(nextReleaseName, nextRelease);
 
-        log.info("resolved {} for {}", projectKey, nextReleaseName);
+        log.info("Resolved {} for {}", projectKey, nextReleaseName);
         break;
       } catch(DccModelOptimisticLockException e) {
         attempts++;
         log.warn(
-            "there was a concurrency issue while attempting to resolve {} (as {}) for release {}, number of attempts: {}",
+            "There was a concurrency issue while attempting to resolve {} (as {}) for release {}, number of attempts: {}",
             new Object[] { projectKey, destinationState, nextReleaseName, attempts });
         Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS); // TODO: cleanup - use Executor instead?
       }
     }
     if(attempts >= MAX_ATTEMPTS) {
-      String message = String.format("failed to resolve project %s (could never acquire lock)", projectKey);
+      String message = String.format("Failed to resolve project %s (could never acquire lock)", projectKey);
       MailUtils.sendEmail(this.config, message, message);
       throw new DccConcurrencyException(message);
     }
@@ -689,15 +684,15 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     for(Project project : projects) {
       projectEntries.add(new SimpleEntry<String, String>(project.getKey(), project.getName()));
     }
-    return ImmutableList.<Entry<String, String>> copyOf(projectEntries);
+    return ImmutableList.copyOf(projectEntries);
   }
 
   private Map<String, List<SubmissionFile>> buildSubmissionFilesMap(String releaseName, Release release) {
-    Map<String, List<SubmissionFile>> submissionFilesMap = Maps.<String, List<SubmissionFile>> newLinkedHashMap();
+    Map<String, List<SubmissionFile>> submissionFilesMap = Maps.newLinkedHashMap();
     for(String projectKey : release.getProjectKeys()) {
       submissionFilesMap.put(projectKey, getSubmissionFiles(releaseName, projectKey));
     }
-    return ImmutableMap.<String, List<SubmissionFile>> copyOf(submissionFilesMap);
+    return ImmutableMap.copyOf(submissionFilesMap);
   }
 
 }

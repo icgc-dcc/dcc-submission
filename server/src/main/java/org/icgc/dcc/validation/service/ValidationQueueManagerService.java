@@ -32,6 +32,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.mail.Address;
 import javax.mail.Message;
@@ -95,26 +96,17 @@ public class ValidationQueueManagerService extends AbstractService {
   private ScheduledFuture<?> schedule;
 
   /**
-   * Mutex for synchronizing parallel validation.
-   */
-  private final Object mutex = new Object();
-
-  /**
    * To keep track of parallel validations.
    */
-  private volatile int synchronizedCount = 0;
+  private final AtomicInteger parallelValidationCount = new AtomicInteger();
 
   @Inject
   public ValidationQueueManagerService(final ReleaseService releaseService, ValidationService validationService,
       Config config) {
+    this.config = checkNotNull(config);
+    this.releaseService = checkNotNull(releaseService);
+    this.validationService = checkNotNull(validationService);
 
-    checkArgument(releaseService != null);
-    checkArgument(validationService != null);
-    checkArgument(config != null);
-
-    this.config = config;
-    this.releaseService = releaseService;
-    this.validationService = validationService;
     this.MAX_VALIDATING =
         config.hasPath("validator.max_simultaneous") ? config.getInt("validator.max_simultaneous") : DEFAULT_MAX_VALIDATING;
   }
@@ -139,8 +131,8 @@ public class ValidationQueueManagerService extends AbstractService {
       public void run() {
         log.debug("polling");
 
-        Optional<QueuedProject> optionalNextProject = Optional.<QueuedProject> absent();
-        Optional<Throwable> criticalThrowable = Optional.<Throwable> absent();
+        Optional<QueuedProject> optionalNextProject = Optional.absent();
+        Optional<Throwable> criticalThrowable = Optional.absent();
         try {
           if(isRunning() && releaseService.hasNextRelease()) {
             optionalNextProject = processNext();
@@ -167,63 +159,55 @@ public class ValidationQueueManagerService extends AbstractService {
 
         log.debug("polled");
       }
-
-      /**
-       * Handles the next item in the queue if there are any.
-       * <p>
-       * Note that a checked exception {@code FilePresenceException} may be thrown and that section 14.19 of the JLS
-       * guarantees that the mutex will be released in that case as well.
-       * @throws FilePresenceException
-       */
-      private Optional<QueuedProject> processNext() throws FilePresenceException {
-        Optional<QueuedProject> optionalNextProject = Optional.absent();
-
-        NextRelease nextRelease = releaseService.getNextRelease();
-        Release release = nextRelease.getRelease();
-        if(release == null || release.getState() != ReleaseState.OPENED) {
-          throw new ValidationServiceException("cannot access the release");
-        } else {
-          optionalNextProject = release.nextInQueue();
-          if(optionalNextProject.isPresent()) {
-            boolean run = false;
-            synchronized(mutex) {
-              if(synchronizedCount < MAX_VALIDATING) { // critical
-                synchronizedCount++; // critical
-                checkState(synchronizedCount <= MAX_VALIDATING); // by design
-                run = true;
-              }
-            }
-
-            if(run) {
-              QueuedProject nextProject = optionalNextProject.get();
-              String projectKey = nextProject.getKey();
-              log.info("next in queue {}", projectKey);
-
-              releaseService.dequeueToValidating(nextProject);
-              Plan plan = validationService.prepareValidation(release, nextProject, new ValidationCascadeListener());
-              validationService.startValidation(plan); // non-blocking
-            }
-          }
-        }
-        return optionalNextProject;
-      }
-
-      private void processCriticalThrowable(Throwable t, Optional<QueuedProject> optionalNextProject) {
-        log.error("a critical error occured while processing the validation queue", t);
-
-        if(optionalNextProject != null && optionalNextProject.isPresent()) {
-          QueuedProject project = optionalNextProject.get();
-          try {
-            resolve(project, SubmissionState.ERROR);
-          } catch(Throwable t2) {
-            log.error("a critical error occured while attempting to dequeue project {}", project.getKey());
-          }
-        } else {
-          log.error("next project in queue not present, could not dequeue nor set submission state to {}",
-              SubmissionState.ERROR);
-        }
-      }
     }, POLLING_FREQUENCY_PER_SEC, POLLING_FREQUENCY_PER_SEC, TimeUnit.SECONDS);
+  }
+
+  /**
+   * Handles the next item in the queue if there are any.
+   * <p>
+   * Note that a checked exception {@code FilePresenceException} may be thrown and that section 14.19 of the JLS
+   * guarantees that the lock will be released in that case as well.
+   * 
+   * @throws FilePresenceException
+   */
+  private Optional<QueuedProject> processNext() throws FilePresenceException {
+    Optional<QueuedProject> optionalNextProject = Optional.absent();
+
+    NextRelease nextRelease = releaseService.getNextRelease();
+    Release release = nextRelease.getRelease();
+    if(release == null || release.getState() != ReleaseState.OPENED) {
+      throw new ValidationServiceException("cannot access the release");
+    } else {
+      optionalNextProject = release.nextInQueue();
+      if(optionalNextProject.isPresent()) {
+        if(isRunnable()) {
+          QueuedProject nextProject = optionalNextProject.get();
+          String projectKey = nextProject.getKey();
+          log.info("next in queue {}", projectKey);
+
+          releaseService.dequeueToValidating(nextProject);
+          Plan plan = validationService.prepareValidation(release, nextProject, new ValidationCascadeListener());
+          validationService.startValidation(plan); // non-blocking
+        }
+      }
+    }
+    return optionalNextProject;
+  }
+
+  private void processCriticalThrowable(Throwable t, Optional<QueuedProject> optionalNextProject) {
+    log.error("a critical error occured while processing the validation queue", t);
+
+    if(checkNotNull(optionalNextProject.isPresent())) {
+      QueuedProject project = optionalNextProject.get();
+      try {
+        resolveSubmission(project, SubmissionState.ERROR);
+      } catch(Throwable t2) {
+        log.error("a critical error occured while attempting to dequeue project " + project.getKey(), t2);
+      }
+    } else {
+      log.error("next project in queue not present, could not dequeue nor set submission state to {}",
+          SubmissionState.ERROR);
+    }
   }
 
   private void stopScheduler() {
@@ -242,17 +226,16 @@ public class ValidationQueueManagerService extends AbstractService {
     Plan plan = e.getPlan();
     if(plan.hasFileLevelErrors() == false) {
       throw new AssertionError(); // by design since this should be the condition for throwing the
-      // FatalPlanningException
+                                  // FatalPlanningException
     }
 
     Map<String, TupleState> fileLevelErrors = plan.getFileLevelErrors();
     log.error("file errors (fatal planning errors):\n\t{}", fileLevelErrors);
 
-    QueuedProject queuedProject = plan.getQueuedProject();
-    checkArgument(queuedProject != null);
+    QueuedProject queuedProject = checkNotNull(plan.getQueuedProject());
     String projectKey = queuedProject.getKey();
     log.info("about to dequeue project key {}", projectKey);
-    resolve(queuedProject, SubmissionState.INVALID);
+    resolveSubmission(queuedProject, SubmissionState.INVALID);
 
     SubmissionReport report = new SubmissionReport();
 
@@ -290,9 +273,9 @@ public class ValidationQueueManagerService extends AbstractService {
 
     // resolving submission
     if(outcome == Outcome.PASSED) {
-      resolve(queuedProject, SubmissionState.VALID);
+      resolveSubmission(queuedProject, SubmissionState.VALID);
     } else {
-      resolve(queuedProject, SubmissionState.INVALID);
+      resolveSubmission(queuedProject, SubmissionState.INVALID);
     }
     setSubmissionReport(projectKey, report);
 
@@ -320,30 +303,52 @@ public class ValidationQueueManagerService extends AbstractService {
   public void handleUnexpectedException(QueuedProject project) {
     checkArgument(project != null);
     log.info("failed validation from unknown error - about to dequeue project key {}", project.getKey());
-    resolve(project, SubmissionState.ERROR);
+    resolveSubmission(project, SubmissionState.ERROR);
   }
 
   /**
-   * Resolution can happen in 4 manners:<br/>
+   * Submission resolution can happen in 4 manners:<br/>
    * - 1. cascading listener's onComplete(): VALID or INVALID<br/>
-   * - 2. catching of {@code FatalPlanningException} (typically a file-level error - see TODO about it): INVALID<br/>
+   * - 2. catching of {@code FilePresenceException} (typically a missing required file): INVALID<br/>
    * - 3. cascading listener's onStopping(): ERROR<br/>
    * - 4. catching of an unknown exception: ERROR<br/>
    */
-  private void resolve(QueuedProject project, SubmissionState state) {
+  private void resolveSubmission(QueuedProject project, SubmissionState state) {
     String key = project.getKey();
-    log.info("resolving {}", key);
+    log.info("Resolving {}", key);
     releaseService.resolve(key, state);
 
-    synchronized(mutex) {
-      checkState(synchronizedCount > 0); // by design
-      synchronizedCount--;
-    }
-
+    decrementParallelValidationCount();
     if(project.getEmails().isEmpty() == false) {
       this.email(project, state);
     }
-    log.info("resolved {}", key);
+    log.info("Resolved {}", key);
+  }
+
+  /**
+   * Determines if runnable and increments counter if it is the case.
+   * <p>
+   * Whether there is a spot available for validation to occur (increment and give green light) or whether the
+   * submission should remain in the queue.
+   * <p>
+   * Counterpart operation to <code>{@link ValidationQueueManagerService#decrementParallelValidationCount()}</code>
+   */
+  private synchronized boolean isRunnable() {
+    int original = parallelValidationCount.intValue();
+    if(original < MAX_VALIDATING) {
+      checkState(parallelValidationCount.incrementAndGet() <= MAX_VALIDATING, "by design: %s",
+          parallelValidationCount.intValue());
+    }
+    return original < parallelValidationCount.intValue();
+  }
+
+  /**
+   * Decrements the parallel validation counter.
+   * <p>
+   * Counterpart operation to <code>{@link ValidationQueueManagerService#isRunnable()}</code>
+   */
+  private synchronized void decrementParallelValidationCount() {
+    checkState(parallelValidationCount.decrementAndGet() >= 0);
   }
 
   private void email(QueuedProject project, SubmissionState state) {

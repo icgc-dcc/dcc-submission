@@ -1,6 +1,6 @@
 package org.icgc.dcc.validation;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public final class FilePresenceException extends Exception {
 
@@ -14,8 +14,7 @@ public final class FilePresenceException extends Exception {
   }
 
   public FilePresenceException(Plan plan) {
-    super(describe(plan));
-    checkArgument(plan != null);
+    super(describe(checkNotNull(plan)));
     this.plan = plan;
   }
 
