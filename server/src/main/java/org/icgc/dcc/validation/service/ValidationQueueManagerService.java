@@ -180,27 +180,29 @@ public class ValidationQueueManagerService extends AbstractService {
 
         NextRelease nextRelease = releaseService.getNextRelease();
         Release release = nextRelease.getRelease();
-        if(release == null) {
-          throw new ValidationServiceException("cannot access the next release");
-        } else if(release.getState() != ReleaseState.OPENED) {
-          log.info("Release was closed during validation; states not changed");
+        if(release == null || release.getState() != ReleaseState.OPENED) {
+          throw new ValidationServiceException("cannot access the release");
         } else {
           optionalNextProject = release.nextInQueue();
           if(optionalNextProject.isPresent()) {
-            QueuedProject nextProject = optionalNextProject.get();
-            String projectKey = nextProject.getKey();
-            log.info("next in queue {}", projectKey);
-
+            boolean run = false;
             synchronized(mutex) {
               if(synchronizedCount < MAX_VALIDATING) { // critical
                 synchronizedCount++; // critical
                 checkState(synchronizedCount <= MAX_VALIDATING); // by design
+                run = true;
               }
             }
 
-            releaseService.dequeueToValidating(nextProject);
-            Plan plan = validationService.prepareValidation(release, nextProject, new ValidationCascadeListener());
-            validationService.startValidation(plan); // non-blocking
+            if(run) {
+              QueuedProject nextProject = optionalNextProject.get();
+              String projectKey = nextProject.getKey();
+              log.info("next in queue {}", projectKey);
+
+              releaseService.dequeueToValidating(nextProject);
+              Plan plan = validationService.prepareValidation(release, nextProject, new ValidationCascadeListener());
+              validationService.startValidation(plan); // non-blocking
+            }
           }
         }
         return optionalNextProject;

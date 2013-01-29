@@ -305,7 +305,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
    */
   public void dequeueToValidating(QueuedProject nextProject) {
     String nextProjectKey = nextProject.getKey();
-    log.info("attempting to set {} to validating", nextProjectKey);
+    log.info("Attempting to set {} to validating", nextProjectKey);
 
     String nextReleaseName = null;
     SubmissionState expectedState = SubmissionState.QUEUED;
@@ -318,7 +318,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
       try {
         Release nextRelease = getNextRelease().getRelease();
         nextReleaseName = nextRelease.getName();
-        log.info("setting {} to validating for {}", new Object[] { nextProjectKey, nextReleaseName });
+        log.info("Dequeuing {} to validating for {}", new Object[] { nextProjectKey, nextReleaseName });
 
         // actually dequeue the project
         QueuedProject dequeuedProject = nextRelease.dequeueProject();
@@ -341,7 +341,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
         // update corresponding database entity
         updateRelease(nextReleaseName, nextRelease);
 
-        log.info("dequeued {} to validating state for {}", nextProjectKey, nextReleaseName);
+        log.info("Dequeued {} to validating state for {}", nextProjectKey, nextReleaseName);
         break;
       } catch(DccModelOptimisticLockException e) {
         attempts++;
