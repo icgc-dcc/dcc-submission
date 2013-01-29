@@ -296,6 +296,13 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     log.info("enqueued {} for {}", queuedProjects, nextReleaseName);
   }
 
+  /**
+   * Attempts to set the given project to VALIDATING.<br>
+   * <p>
+   * This method is robust enough to handle rare cases like when:<br>
+   * - the queue was emptied by an admin in another thread (TODO: complete, this is only partially supported now)<br>
+   * - the optimistic lock on Release cannot be obtained (retries a number of time before giving up)<br>
+   */
   public void dequeueToValidating(QueuedProject nextProject) {
     String nextProjectKey = nextProject.getKey();
     log.info("attempting to set {} to validating", nextProjectKey);
@@ -358,7 +365,8 @@ public class ReleaseService extends BaseMorphiaService<Release> {
    * - the queue was emptied by an admin in another thread (TODO: complete, this is only partially supported now)<br>
    * - the optimistic lock on Release cannot be obtained (retries a number of time before giving up)<br>
    */
-  public void resolve(String projectKey, SubmissionState destinationState) {
+  public void resolve(String projectKey, SubmissionState destinationState) { // TODO: avoid code duplication (see method
+                                                                             // above)
     checkArgument(SubmissionState.VALID == destinationState || SubmissionState.INVALID == destinationState
         || SubmissionState.ERROR == destinationState);
 
@@ -371,21 +379,25 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     int MAX_ATTEMPTS = 10; // 10 attempts should be sufficient to obtain a lock (otherwise the problem is probably not
                            // recoverable - deadlock or other)
     while(attempts < MAX_ATTEMPTS) {
+
       try {
         Release nextRelease = getNextRelease().getRelease();
         nextReleaseName = nextRelease.getName();
         log.info("resolving {} (as {}) for {}", new Object[] { projectKey, destinationState, nextReleaseName });
 
         Submission submission = getSubmissionByName(nextRelease, projectKey);
+        checkNotNull(submission); // checked in getSubmissionByName
+
         SubmissionState currentState = submission.getState();
-        if(submission == null || expectedState != currentState) {
-          throw new ReleaseException( // not really recoverable
+        if(expectedState != currentState) {
+          throw new ReleaseException( // not recoverable
               "project " + projectKey + " is not " + expectedState + " (" + currentState + " instead)");
         }
         submission.setState(destinationState);
 
         // update corresponding database entity
         updateRelease(nextReleaseName, nextRelease);
+
         log.info("resolved {} for {}", projectKey, nextReleaseName);
         break;
       } catch(DccModelOptimisticLockException e) {

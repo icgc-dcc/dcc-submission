@@ -90,7 +90,7 @@ public class ValidationService {
       throw new ValidationServiceException(String.format("no dictionary found with version %s, in release %s",
           dictionaryVersion, release.getName()));
     } else {
-      log.info("Preparing validation for project {}", qProject.getKey());
+      log.info("Preparing cascade for project {}", qProject.getKey());
 
       ReleaseFileSystem releaseFilesystem = dccFileSystem.getReleaseFilesystem(release);
 
@@ -109,7 +109,7 @@ public class ValidationService {
       Plan plan = planAndConnectCascade(qProject, cascadingStrategy, dictionary);
       plan.addCascaddeListener(listener, qProject);
 
-      log.info("Prepared validation for project {}", qProject.getKey());
+      log.info("Prepared cascade for project {}", qProject.getKey());
       return plan;
     }
   }
