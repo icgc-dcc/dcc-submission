@@ -189,15 +189,15 @@ public class ValidationInternalIntegrityTest {
 
     CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir, systemDir);
 
+    TestCascadeListener listener = new TestCascadeListener();
     Plan plan;
     try {
-      plan = validationService.planAndConnectCascade(QUEUED_PROJECT, cascadingStrategy, dictionary);
+      plan = validationService.planAndConnectCascade(QUEUED_PROJECT, cascadingStrategy, dictionary, listener);
     } catch(FilePresenceException e) {
       throw new RuntimeException();
     }
     Assert.assertEquals(1, plan.getCascade().getFlows().size());
 
-    TestCascadeListener listener = new TestCascadeListener();
     validationService.startCascade(plan.getCascade());
     while(listener.isRunning()) {
       Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);

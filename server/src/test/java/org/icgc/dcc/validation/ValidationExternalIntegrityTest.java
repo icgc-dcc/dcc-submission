@@ -125,7 +125,7 @@ public class ValidationExternalIntegrityTest { // TODO create base class for thi
   }
 
   @Test
-  public void test_validate_valid() throws IOException {
+  public void test_validate_valid() throws IOException, FilePresenceException {
     String content = validate(dictionary, ROOTDIR);
     Assert.assertTrue(content, content.isEmpty());
 
@@ -141,7 +141,7 @@ public class ValidationExternalIntegrityTest { // TODO create base class for thi
   }
 
   @Test
-  public void test_validate_invalidCompositeKeys() throws IOException {
+  public void test_validate_invalidCompositeKeys() throws IOException, FilePresenceException {
     FileSchema donor = getFileSchemaByName(dictionary, "donor");
     FileSchema specimen = getFileSchemaByName(dictionary, "specimen");
 
@@ -187,18 +187,18 @@ public class ValidationExternalIntegrityTest { // TODO create base class for thi
   }
 
   @Test(expected = FilePresenceException.class)
-  public void test_validate_missingFile() throws IOException {
+  public void test_validate_missingFile() throws IOException, FilePresenceException {
     testErrorType("fk_2");
   }
 
-  private void testErrorType(String errorType) throws IOException {
+  private void testErrorType(String errorType) throws IOException, FilePresenceException {
     String content = validate(dictionary, ROOTDIR + "/error/" + errorType);
     String expected =
         FileUtils.readFileToString(new File(this.getClass().getResource("/ref/" + errorType + ".json").getFile()));
     Assert.assertEquals(content, expected.trim(), content.trim());
   }
 
-  private String validate(Dictionary dictionary, String relative) throws IOException {
+  private String validate(Dictionary dictionary, String relative) throws IOException, FilePresenceException {
     String rootDirString = this.getClass().getResource(relative).getFile();
     String outputDirString = rootDirString + "/" + ".validation";
     System.err.println(outputDirString);
@@ -214,15 +214,10 @@ public class ValidationExternalIntegrityTest { // TODO create base class for thi
 
     CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir, systemDir);
 
-    Plan plan;
-    try {
-      plan = validationService.planAndConnectCascade(QUEUED_PROJECT, cascadingStrategy, dictionary);
-    } catch(FilePresenceException e) {
-      throw new RuntimeException();
-    }
+    TestCascadeListener listener = new TestCascadeListener();
+    Plan plan = validationService.planAndConnectCascade(QUEUED_PROJECT, cascadingStrategy, dictionary, listener);
     Assert.assertEquals(5, plan.getCascade().getFlows().size());
 
-    TestCascadeListener listener = new TestCascadeListener();
     validationService.startCascade(plan.getCascade());
     while(listener.isRunning()) {
       Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);

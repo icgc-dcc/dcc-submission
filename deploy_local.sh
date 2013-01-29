@@ -194,7 +194,7 @@ else
  echo "cd ${remote_server_dir?}"
  echo "nohup java -cp ${jar_file_name?} ${main_class?} ${mode?} >> ${log_file?} 2>&1 &"
  if [ "dev" == "${mode?}" ]; then read -p "must modify watch crontab to match the new log file (they are timestamped)"; fi
- echo "less +S ${log_file?}"
+ echo "less +F ${log_file?}"
  echo
 fi
 

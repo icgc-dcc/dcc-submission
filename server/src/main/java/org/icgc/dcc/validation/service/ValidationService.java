@@ -40,6 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cascading.cascade.Cascade;
+import cascading.cascade.CascadeListener;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Iterables;
@@ -81,8 +82,8 @@ public class ValidationService {
 
   }
 
-  Plan prepareValidation(final Release release, final QueuedProject qProject, final ValidationCascadeListener listener)
-      throws FilePresenceException {
+  Plan prepareValidation(final Release release, final QueuedProject qProject,
+      final ValidationCascadeListener validationCascadeListener) throws FilePresenceException {
 
     String dictionaryVersion = release.getDictionaryVersion();
     Dictionary dictionary = this.dictionaries.getFromVersion(dictionaryVersion);
@@ -106,8 +107,8 @@ public class ValidationService {
       log.info("systemDir = {} ", systemDir);
 
       CascadingStrategy cascadingStrategy = cascadingStrategyFactory.get(rootDir, outputDir, systemDir);
-      Plan plan = planAndConnectCascade(qProject, cascadingStrategy, dictionary);
-      plan.addCascaddeListener(listener, qProject);
+      Plan plan = planAndConnectCascade(qProject, cascadingStrategy, dictionary, validationCascadeListener);
+      validationCascadeListener.setPlan(plan);
 
       log.info("Prepared cascade for project {}", qProject.getKey());
       return plan;
@@ -116,7 +117,8 @@ public class ValidationService {
 
   @VisibleForTesting
   public Plan planAndConnectCascade(QueuedProject queuedProject, CascadingStrategy cascadingStrategy,
-      Dictionary dictionary) throws FilePresenceException { // TODO: separate plan and connect?
+      Dictionary dictionary, final CascadeListener cascadeListener) throws FilePresenceException { // TODO: separate
+                                                                                                   // plan and connect?
 
     log.info("Planning cascade for project {}", queuedProject.getKey());
     Plan plan = planner.plan(queuedProject, cascadingStrategy, dictionary);
@@ -133,7 +135,7 @@ public class ValidationService {
       throw new FilePresenceException(plan); // the queue manager will handle it
     }
 
-    return plan;
+    return plan.addCascaddeListener(cascadeListener, queuedProject);
   }
 
   /**

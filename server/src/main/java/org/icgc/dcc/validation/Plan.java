@@ -35,13 +35,13 @@ import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.report.Outcome;
 import org.icgc.dcc.validation.report.SchemaReport;
 import org.icgc.dcc.validation.report.SubmissionReport;
-import org.icgc.dcc.validation.service.ValidationQueueManagerService.ValidationCascadeListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cascading.cascade.Cascade;
 import cascading.cascade.CascadeConnector;
 import cascading.cascade.CascadeDef;
+import cascading.cascade.CascadeListener;
 import cascading.flow.Flow;
 
 import com.google.common.collect.ImmutableMap;
@@ -164,9 +164,9 @@ public class Plan {
     return System.currentTimeMillis() - startTime;
   }
 
-  public void addCascaddeListener(final ValidationCascadeListener listener, final QueuedProject qProject) {
+  public Plan addCascaddeListener(final CascadeListener listener, final QueuedProject qProject) {
     this.cascade.addListener(listener);
-    listener.setPlan(this);
+    return this;
   }
 
   public Cascade getCascade() {
