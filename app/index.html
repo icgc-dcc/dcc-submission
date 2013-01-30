@@ -1,58 +1,70 @@
 <!DOCTYPE html>
-<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
-<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
-<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
-    <head>
-        <meta charset="utf-8"/>
-        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
-        <title></title>
-        <meta name="description" content=""/>
-        <meta name="viewport" content="width=device-width"/>
+<!--[if lt IE 7]>
+<html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>
+<html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>
+<html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js"> <!--<![endif]-->
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <title></title>
+    <meta name="description" content=""/>
+    <meta name="viewport" content="width=device-width"/>
 
-        <link rel="stylesheet" href="styles/vendor/bootstrap.min.css"/>
-        <link rel="stylesheet" href="styles/vendor/font-awesome.min.css"/>
-        <!--[if IE 7]>
-        <link rel="stylesheet" href="styles/vendor/font-awesome-ie7.min.css"/>
-        <![endif]-->
-        <link rel="stylesheet" href="styles/main.css"/>
+    <link rel="stylesheet" href="styles/vendor/bootstrap.min.css"/>
+    <link rel="stylesheet" href="styles/vendor/font-awesome.min.css"/>
+    <!--[if IE 7]>
+    <link rel="stylesheet" href="styles/vendor/font-awesome-ie7.min.css"/>
+    <![endif]-->
+    <link rel="stylesheet" href="styles/main.css"/>
 
-    </head>
-    <body ng-app="app" ng-controller="ApplicationController">
-         
-        <!--[if lt IE 7]>
-            <p class="chromeframe">You are using an outdated browser. <a href="http://browsehappy.com/">Upgrade your browser today</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to better experience this site.</p>
-        <![endif]-->
-        
-        <!--[if lt IE 9]>
-            <script src="scripts/vendor/es5-shim.min.js"></script>
-            <script src="scripts/vendor/json3.min.js"></script>
-        <![endif]-->
+</head>
+<body ng-app="app" ng-controller="ApplicationController">
 
-        <!-- Add your site or application content here -->
-        <div ng-include="'views/common/header.html'"></div>
-        
-        <div class="container" ng-view></div>
+<!--[if lt IE 7]>
+<p class="chromeframe">You are using an outdated browser. <a href="http://browsehappy.com/">Upgrade your browser
+    today</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to better
+    experience this site.</p>
+<![endif]-->
 
-        <script src="scripts/vendor/jquery-1.9.0.min.js"></script>
-        <script src="scripts/vendor/bootstrap.min.js"></script>
-        <script src="scripts/vendor/angular.js"></script>
-        <script src="scripts/vendor/angular-ui.js"></script>
-        <script src="scripts/vendor/angular-resource.js"></script>
-        <script src="scripts/vendor/angular-sanitize.js"></script>
+<!--[if lt IE 9]>
+<script src="scripts/vendor/es5-shim.min.js"></script>
+<script src="scripts/vendor/json3.min.js"></script>
+<![endif]-->
 
-        <!-- build:js scripts/scripts.js -->
-        <script src="scripts/app.js"></script>
-        <script src="scripts/common/common.js"></script>
-        <script src="scripts/common/navigation.js"></script>
-        <!-- endbuild -->
+<!-- Add your site or application content here -->
+<div ng-include="'views/common/header.html'"></div>
 
-        <!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
-        <script>
-            var _gaq=[['_setAccount','UA-XXXXX-X'],['_trackPageview']];
-            (function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
-            g.src=('https:'==location.protocol?'//ssl':'//www')+'.google-analytics.com/ga.js';
-            s.parentNode.insertBefore(g,s)}(document,'script'));
-        </script>
-    </body>
+<div class="container" ng-view></div>
+
+<script src="scripts/vendor/jquery-1.9.0.min.js"></script>
+<script src="scripts/vendor/bootstrap.min.js"></script>
+<script src="scripts/vendor/holder.js"></script>
+<script src="scripts/vendor/angular.js"></script>
+<script src="scripts/vendor/angular-ui.js"></script>
+<script src="scripts/vendor/angular-resource.js"></script>
+<script src="scripts/vendor/angular-sanitize.js"></script>
+
+<!-- build:js scripts/scripts.js -->
+<script src="scripts/app.js"></script>
+<script src="scripts/common/common.js"></script>
+<script src="scripts/common/navigation.js"></script>
+<!-- endbuild -->
+
+<!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
+<script>
+    var _gaq = [
+        ['_setAccount', 'UA-XXXXX-X'],
+        ['_trackPageview']
+    ];
+    (function (d, t) {
+        var g = d.createElement(t), s = d.getElementsByTagName(t)[0];
+        g.src = ('https:' == location.protocol ? '//ssl' : '//www') + '.google-analytics.com/ga.js';
+        s.parentNode.insertBefore(g, s)
+    }(document, 'script'));
+</script>
+</body>
 </html>

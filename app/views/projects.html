@@ -1,0 +1,68 @@
+<div class="row">
+    <div class="span3">
+        <div class="well"><i class="icon-spinner icon-spin"></i> Facets</div>
+    </div>
+    <div class="span9">
+        <h1>Cancer Projects</h1>
+
+        <div class="row">
+            <div class="span4">
+                <div style="width:300px; height: 220px; background: #eee"></div>
+            </div>
+            <div class="span5">
+                <div style="width:380px; height: 220px; background: #eee"></div>
+            </div>
+        </div>
+        <table class="table table-bordered table-striped">
+            <thead>
+            <tr>
+                <th>Cancer Project</th>
+                <th>Primary Site</th>
+                <th>Release Country</th>
+                <th>Donors</th>
+                <th>SSM</th>
+                <th>CNSM</th>
+                <th>Gene Expression</th>
+                <th>DNA Methylation</th>
+                <th>Publications</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="project in projects">
+                <td><a href="#/projects/{{project.id}}">{{project.name}}</a></td>
+                <td>{{project.site}}</td>
+                <td>{{project.country}}</td>
+                <td>{{project.donors}}</td>
+                <td>{{project.ssm}}</td>
+                <td>{{project.cnsm}}</td>
+                <td>{{project.gene_expression}}</td>
+                <td>{{project.dna_methylation}}</td>
+                <td>
+                    <ul class="unstyled" ng-repeat="pmid in project.pubmed_id">
+                        <li><a href="http://www.ncbi.nlm.nih.gov/pubmed/{{pmid}}">pmid:{{pmid}}</a></li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td><a href="#/projects/PD_GE">Pediatric Brain Tumors - DKFZ, DE</a></td>
+                <td>Brain</td>
+                <td>Germany</td>
+                <td>121</td>
+                <td>121</td>
+                <td>4</td>
+                <td>0</td>
+                <td>0</td>
+                <td>
+                    <ul class="unstyled">
+                        <li><a href="http://www.ncbi.nlm.nih.gov/pubmed/22265402">pmid:22265402</a></li>
+                        <li><a href="http://www.ncbi.nlm.nih.gov/pubmed/22286061">pmid:22286061</a></li>
+                    </ul>
+                </td>
+            </tr>
+            <tr ui-if="!projects.length">
+                <td colspan="9"><i class="icon-spinner icon-spin"></i> Fetching projects...</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
