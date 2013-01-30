@@ -41,11 +41,6 @@
       <version>${jackson.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-annotations</artifactId>
-      <version>${jackson.version}</version>
-    </dependency>
-    <dependency>
       <groupId>com.github.fge</groupId>
       <artifactId>json-schema-validator</artifactId>
       <version>1.5.3</version>
@@ -55,7 +50,7 @@
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
-      <version>0.11.6</version>
+      <version>${lombok.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -159,7 +154,7 @@
               <goal>shade</goal>
             </goals>
           </execution>
-        </executions>
+        </executions>    <lombok.version>0.11.6</lombok.version>
       </plugin>
 
       <!-- Install - Code quality -->
@@ -218,6 +213,7 @@
     <jongo.version>0.3</jongo.version>
     <mongo.version>2.10.1</mongo.version>
     <jackson.version>2.1.2</jackson.version>
+    <lombok.version>0.11.6</lombok.version>
     <slf4j.version>1.6.1</slf4j.version>
     <logback.version>1.0.3</logback.version>
 
