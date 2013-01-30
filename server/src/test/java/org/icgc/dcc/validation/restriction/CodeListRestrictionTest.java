@@ -1,14 +1,9 @@
 package org.icgc.dcc.validation.restriction;
 
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.icgc.dcc.dictionary.DictionaryService;
 import org.icgc.dcc.dictionary.model.CodeList;
 import org.icgc.dcc.dictionary.model.Term;
 import org.icgc.dcc.validation.cascading.TupleState;
@@ -23,8 +18,6 @@ import cascading.tuple.TupleListCollector;
 
 public class CodeListRestrictionTest extends CascadingTestCase {
 
-  private DictionaryService mockDictionaries;
-
   private static final String FIELDNAME = "code";
 
   private static final String CODELISTNAME = "TestList";
@@ -33,19 +26,18 @@ public class CodeListRestrictionTest extends CascadingTestCase {
 
   private static final String VALUE1 = "X";
 
+  private CodeList codeList;
+
   public void setup_CodeListRestriction() {
-    this.mockDictionaries = mock(DictionaryService.class);
-    CodeList codeList = new CodeList(CODELISTNAME);
+    this.codeList = new CodeList(CODELISTNAME);
     Term term1 = new Term(CODE1, VALUE1, "");
     codeList.addTerm(term1);
-
-    when(this.mockDictionaries.getCodeList(anyString())).thenReturn(codeList);
   }
 
   @Test
   public void test_CodeListRestriction() {
     setup_CodeListRestriction();
-    CodeListRestriction restriction = new CodeListRestriction(FIELDNAME, CODELISTNAME, this.mockDictionaries);
+    CodeListRestriction restriction = new CodeListRestriction(FIELDNAME, codeList);
 
     assertEquals(String.format("codelist[%s:%s]", FIELDNAME, CODELISTNAME), restriction.describe());
   }
@@ -116,7 +108,7 @@ public class CodeListRestrictionTest extends CascadingTestCase {
     Set<String> values = new HashSet<String>();
     values.add(VALUE1);
 
-    InCodeListFunction function = new InCodeListFunction(CODELISTNAME, codes, values);
+    InCodeListFunction function = new InCodeListFunction(codes, values);
 
     Fields incoming = new Fields(FIELDNAME, "_state");
 

@@ -27,21 +27,33 @@ import org.apache.commons.io.FileUtils;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
  */
 public class CodeListConverterTest {
 
+  private static final Logger log = LoggerFactory.getLogger(CodeListConverterTest.class);
+
+  private static final String INPUT_DIR = "src/test/resources/converter/codec";
+
+  private static final String CURRENT_CODELISTS = "src/main/resources/codeList.json";
+
+  private static final String NEW_CODELISTS = "target/codeList.json";
+
   @Test
   public void test_codeListConverter_compareJSON() throws IOException {
 
     CodeListConverter clc = new CodeListConverter();
-    clc.readCodec("src/test/resources/converter/codec");
-    clc.saveToJSON("target/codeList.json");
+    log.info("current: " + CURRENT_CODELISTS);
+    log.info("new: " + NEW_CODELISTS);
+    clc.readCodec(INPUT_DIR);
+    clc.saveToJSON(NEW_CODELISTS);
 
-    File testFile = new File("target/codeList.json");
-    File refFile = new File("src/main/resources/codeList.json");
+    File testFile = new File(NEW_CODELISTS);
+    File refFile = new File(CURRENT_CODELISTS);
 
     ObjectMapper mapper = new ObjectMapper();
 
