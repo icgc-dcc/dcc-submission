@@ -1,38 +1,32 @@
 @font-face {
     font-family: 'OpenSansLight';
     src: url('fonts/opensans/OpenSans-Light-webfont.eot');
-    src: url('fonts/opensans/OpenSans-Light-webfont.eot?#iefix') format('embedded-opentype'),
-    url('fonts/opensans/OpenSans-Light-webfont.woff') format('woff'),
-    url('fonts/opensans/OpenSans-Light-webfont.ttf') format('truetype'),
-    url('fonts/opensans/OpenSans-Light-webfont.svg#OpenSansLight') format('svg');
+    src: url('fonts/opensans/OpenSans-Light-webfont.eot?#iefix') format('embedded-opentype'), url('fonts/opensans/OpenSans-Light-webfont.woff') format('woff'), url('fonts/opensans/OpenSans-Light-webfont.ttf') format('truetype'), url('fonts/opensans/OpenSans-Light-webfont.svg#OpenSansLight') format('svg');
     font-weight: normal;
     font-style: normal;
 
 }
+
 @font-face {
     font-family: 'OpenSansLight';
     src: url('fonts/opensans/OpenSans-LightItalic-webfont.eot');
-    src: url('fonts/opensans/OpenSans-LightItalic-webfont.eot?#iefix') format('embedded-opentype'),
-    url('fonts/opensans/OpenSans-LightItalic-webfont.woff') format('woff'),
-    url('fonts/opensans/OpenSans-LightItalic-webfont.ttf') format('truetype'),
-    url('fonts/opensans/OpenSans-LightItalic-webfont.svg#OpenSansLightItalic') format('svg');
+    src: url('fonts/opensans/OpenSans-LightItalic-webfont.eot?#iefix') format('embedded-opentype'), url('fonts/opensans/OpenSans-LightItalic-webfont.woff') format('woff'), url('fonts/opensans/OpenSans-LightItalic-webfont.ttf') format('truetype'), url('fonts/opensans/OpenSans-LightItalic-webfont.svg#OpenSansLightItalic') format('svg');
     font-weight: normal;
     font-style: italic;
 }
+
 @font-face {
     font-family: 'OpenSansLight';
     src: url('fonts/opensans/OpenSans-Semibold-webfont.eot');
-    src: url('fonts/opensans/OpenSans-Semibold-webfont.eot?#iefix') format('embedded-opentype'),
-    url('fonts/opensans/OpenSans-Semibold-webfont.woff') format('woff'),
-    url('fonts/opensans/OpenSans-Semibold-webfont.ttf') format('truetype'),
-    url('fonts/opensans/OpenSans-Semibold-webfont.svg#OpenSansSemibold') format('svg');
+    src: url('fonts/opensans/OpenSans-Semibold-webfont.eot?#iefix') format('embedded-opentype'), url('fonts/opensans/OpenSans-Semibold-webfont.woff') format('woff'), url('fonts/opensans/OpenSans-Semibold-webfont.ttf') format('truetype'), url('fonts/opensans/OpenSans-Semibold-webfont.svg#OpenSansSemibold') format('svg');
     font-weight: bold;
     font-style: normal;
 
 }
+
 body {
     font-family: OpenSansLight, sans-serif;
-    padding-top: 45px;
+    /*padding-top: 45px;*/
     padding-bottom: 40px;
 }
 
@@ -47,26 +41,32 @@ body {
 .subhead {
     text-align: center;
 }
+
 .subhead h1 {
     margin-top: 15px;
     font-size: 48px;
 }
+
 .subhead h1 small {
     margin-top: 11px;
     font-size: 22px;
 }
+
 h1 {
     font-size: 24px;
     line-height: 30px;
     font-weight: normal;
 }
+
 h1 small {
     font-size: 18px;
 }
+
 h2 {
     font-size: 21px;
     font-weight: normal;
 }
+
 h2 small {
     font-size: 16px;
 }
@@ -74,6 +74,7 @@ h2 small {
 .link {
     color: #6f98b8;
 }
+
 .link:hover {
     cursor: pointer;
     text-decoration: underline;
@@ -86,39 +87,23 @@ h2 small {
 .opened {
     color: #468847;
 }
+
 .invalid,
 .error {
     color: #b94a48;
 }
+
 .queued {
     color: #c09853;
 }
+
 .validating {
     color: #d0763e;
 }
+
 .label-validating {
     color: #fff;
     background: #d0763e;
-}
-
-#external-nav {
-    position: absolute;
-}
-#external-nav .navbar-inner {
-    padding: 0;
-    background: #6f99b8;
-    background: url("images/bkgd_header_top.png") no-repeat center -54px #567ea4;
-    border-bottom: 3px solid #31587c;
-}
-#external-nav .navbar-inner .brand {
-    color: #fff;
-}
-#external-nav .navbar-inner li a {
-    color: #ddd;
-    text-decoration: underline;
-}
-#external-nav .navbar-inner li a:hover {
-    text-decoration: none;
 }
 
 .brand a {
@@ -130,5 +115,5 @@ textarea.ng-invalid:focus {
     border-color: hsl(2, 81%, 55%);
     -webkit-box-shadow: 0 0 6px hsl(2, 82%, 85%);
     -moz-box-shadow: 0 0 6px #f8b9b7;
-    box-shadow: 0 0 6px hsl(2, 82%, 85%);   
+    box-shadow: 0 0 6px hsl(2, 82%, 85%);
 }

@@ -23,7 +23,7 @@ angular.module('app', [
 
 angular.module('app').config(['$routeProvider', '$locationProvider', function ($routeProvider, $locationProvider) {
   $routeProvider
-      .when('/', {templateUrl: 'views/main.html', controller: 'ApplicationController'})
+      .when('/', {templateUrl: 'views/home.html', controller: 'ApplicationController'})
       .when('/projects', {templateUrl: 'views/main.html', controller: 'ApplicationController'})
       .when('/search', {templateUrl: 'views/main.html', controller: 'ApplicationController'})
       .otherwise({redirectTo: '/'});
