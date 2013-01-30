@@ -60,9 +60,11 @@ import com.google.inject.Inject;
 
 @RunWith(GuiceJUnitRunner.class)
 @GuiceModules({ ValidationTestModule.class })
-public class ValidationExternalIntegrityTest {
+public class ValidationExternalIntegrityTest { // TODO create base class for this and ValidationInternalIntegrityTest
 
   private static final String ROOTDIR = "/integration/validation/external";
+
+  private static final QueuedProject QUEUED_PROJECT = new QueuedProject("dummyProject", null); // TODO: mock
 
   @Inject
   private DictionaryService dictionaryService;
@@ -123,8 +125,8 @@ public class ValidationExternalIntegrityTest {
   }
 
   @Test
-  public void test_validate_valid() throws IOException {
-    String content = validate(validationService, dictionary, ROOTDIR);
+  public void test_validate_valid() throws IOException, FilePresenceException {
+    String content = validate(dictionary, ROOTDIR);
     Assert.assertTrue(content, content.isEmpty());
 
     String donorTrim = getUnsortedFileContent(ROOTDIR, "/.validation/donor#donor_id-offset.tsv");
@@ -139,7 +141,7 @@ public class ValidationExternalIntegrityTest {
   }
 
   @Test
-  public void test_validate_invalidCompositeKeys() throws IOException {
+  public void test_validate_invalidCompositeKeys() throws IOException, FilePresenceException {
     FileSchema donor = getFileSchemaByName(dictionary, "donor");
     FileSchema specimen = getFileSchemaByName(dictionary, "specimen");
 
@@ -184,20 +186,19 @@ public class ValidationExternalIntegrityTest {
     return lines.toString();
   }
 
-  @Test(expected = FatalPlanningException.class)
-  public void test_validate_missingFile() throws IOException {
+  @Test(expected = FilePresenceException.class)
+  public void test_validate_missingFile() throws IOException, FilePresenceException {
     testErrorType("fk_2");
   }
 
-  private void testErrorType(String errorType) throws IOException {
-    String content = validate(validationService, dictionary, ROOTDIR + "/error/" + errorType);
+  private void testErrorType(String errorType) throws IOException, FilePresenceException {
+    String content = validate(dictionary, ROOTDIR + "/error/" + errorType);
     String expected =
         FileUtils.readFileToString(new File(this.getClass().getResource("/ref/" + errorType + ".json").getFile()));
     Assert.assertEquals(content, expected.trim(), content.trim());
   }
 
-  private String validate(ValidationService validationService, Dictionary dictionary, String relative)
-      throws IOException {
+  private String validate(Dictionary dictionary, String relative) throws IOException, FilePresenceException {
     String rootDirString = this.getClass().getResource(relative).getFile();
     String outputDirString = rootDirString + "/" + ".validation";
     System.err.println(outputDirString);
@@ -213,11 +214,11 @@ public class ValidationExternalIntegrityTest {
 
     CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir, systemDir);
 
-    Plan plan = validationService.planCascade(new QueuedProject("dummyProject", null), cascadingStrategy, dictionary);
+    TestCascadeListener listener = new TestCascadeListener();
+    Plan plan = validationService.planAndConnectCascade(QUEUED_PROJECT, cascadingStrategy, dictionary, listener);
     Assert.assertEquals(5, plan.getCascade().getFlows().size());
 
-    TestCascadeListener listener = new TestCascadeListener();
-    validationService.runCascade(plan.getCascade(), listener);
+    validationService.startCascade(plan.getCascade());
     while(listener.isRunning()) {
       Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
     }
