@@ -2,7 +2,6 @@ package org.icgc.dcc.validation.cascading;
 
 import java.beans.ConstructorProperties;
 
-import org.icgc.dcc.loader.utils.FieldsUtils;
 
 import cascading.tuple.Fields;
 import cascading.tuple.TupleEntry;
