@@ -154,7 +154,7 @@
               <goal>shade</goal>
             </goals>
           </execution>
-        </executions>    <lombok.version>0.11.6</lombok.version>
+        </executions>
       </plugin>
 
       <!-- Install - Code quality -->

@@ -1,7 +1,0 @@
-##########################################
-##	export created on Fri Jan 04 11:12:14 EST 2013
-##	host: localhost
-##	database: icgc-dev
-##	collection: CodeList
-##########################################
-indexes
