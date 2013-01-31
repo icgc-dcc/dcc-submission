@@ -25,6 +25,7 @@ angular.module('app.common.navigation.controllers').controller('NavigationContro
   $scope.navigation = [
     { title: 'Home', href: "#/"},
     { title: 'Projects', href: "#/projects"},
-    { title: 'Search', href: "#/search"}
+    { title: 'Advanced Search', href: "#/search"},
+    { title: 'Genome Browser', href: "#/browser"}
   ];
 }]);

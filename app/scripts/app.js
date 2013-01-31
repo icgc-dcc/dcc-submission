@@ -26,6 +26,10 @@ angular.module('app').config(['$routeProvider', '$locationProvider', function ($
       .when('/', {templateUrl: 'views/home.html', controller: 'ApplicationController'})
       .when('/projects', {templateUrl: 'views/projects.html', controller: 'ApplicationController'})
       .when('/projects/:project', {templateUrl: 'views/project.html', controller: 'ApplicationController'})
+      .when('/donors/:donor', {templateUrl: 'views/donor.html', controller: 'ApplicationController'})
+      .when('/genes/:gene', {templateUrl: 'views/gene.html', controller: 'ApplicationController'})
+      .when('/variants/:variant', {templateUrl: 'views/variant.html', controller: 'ApplicationController'})
+      .when('/browser', {templateUrl: 'views/browser.html', controller: 'ApplicationController'})
       .when('/search', {templateUrl: 'views/advanced.html', controller: 'ApplicationController'})
       .otherwise({redirectTo: '/'});
   //$locationProvider.html5Mode(true);
