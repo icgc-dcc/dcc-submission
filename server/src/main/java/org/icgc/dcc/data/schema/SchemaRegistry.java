@@ -36,7 +36,8 @@ public class SchemaRegistry {
   public SchemaRegistry() throws JsonParseException, JsonProcessingException, IOException {
     Schema.Parser p = new Schema.Parser();
 
-    for(String schemaName : ImmutableList.of("donor.json", "ssm.json")) {
+    // TODO: Make this dynamic
+    for(String schemaName : ImmutableList.of("donor.transform.json", "ssm.transform.json")) {
       Schema schema = p.parse(Resources.getResource("data-schema/" + schemaName).openStream());
       schemas.put(schema.getName().toLowerCase(), schema);
     }
