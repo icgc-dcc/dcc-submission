@@ -441,9 +441,6 @@
         <configuration>
           <argLine>-Xms256m -Xmx256m</argLine>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
-          <excludes>
-            <exclude>**/LoaderClusterIntegrationTest.java</exclude>
-          </excludes>
         </configuration>
       </plugin>
 

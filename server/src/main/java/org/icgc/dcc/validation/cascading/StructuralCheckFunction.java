@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.icgc.dcc.loader.utils.FieldsUtils;
 import org.icgc.dcc.validation.ValidationErrorCode;
 
 import cascading.flow.FlowProcess;
