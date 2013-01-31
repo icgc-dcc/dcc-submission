@@ -59,7 +59,7 @@ public class ReleaseServiceTest {
 
   private ReleaseFileSystem mockReleaseFileSystem;
 
-  final private String testDbName = "testDb";
+  final private String testDbName = "dcc-test";
 
   @Before
   public void setUp() {

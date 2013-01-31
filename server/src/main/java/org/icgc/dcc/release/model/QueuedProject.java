@@ -26,7 +26,7 @@ import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 
 @Embedded
-public class QueuedProject {
+public class QueuedProject { // TODO: rename as Queued is misleading (also applies to Validating)
 
   @NotBlank
   private String key;
