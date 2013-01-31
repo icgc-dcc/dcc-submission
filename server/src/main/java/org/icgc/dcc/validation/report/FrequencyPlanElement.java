@@ -140,7 +140,7 @@ public final class FrequencyPlanElement extends BaseStatsReportingPlanElement {
    * This also populates {@code FieldSummary}'s fields populated, missing and nulls, which collectively represent what
    * we refer to as "completeness".
    * <p>
-   * FIXME?: There is some logic in here that is redundant with that of {@code CompletenessBy}...
+   * FIXME?: There is some logic in here that is redundant with that of {@code CompletenessBy}... (see DCC-770)
    */
   @SuppressWarnings("rawtypes")
   public static class FrequencySummaryBuffer extends BaseOperation implements Buffer {
