@@ -72,6 +72,42 @@ public final class FrequencyPlanElement extends BaseStatsReportingPlanElement {
     return pipe;
   }
 
+  /**
+   * - keep only the field of interest "my_field" and "_state"<br/>
+   * - replace "_state" with boolean "missing?"<br/>
+   * - rename "my_field" to "value"<br/>
+   * - count by the combination of "value"+"missing?" and store results into "freq" (we need to keep track of "missing?"
+   * for completeness reporting...)<br/>
+   * - insert "my_field" as a value (instead of an {@code Fields} as it originally was)<br/>
+   * <br/>
+   * Output is like:
+   * <table>
+   * <tr>
+   * <td>"field"</td>
+   * <td>"value"</td>
+   * <td>"missing?"</td>
+   * <td>"freq"</td>
+   * </tr>
+   * <tr>
+   * <td>f1</td>
+   * <td>abc</td>
+   * <td>false</td>
+   * <td>5</td>
+   * </tr>
+   * <tr>
+   * <td>f1</td>
+   * <td>null</td>
+   * <td>true</td>
+   * <td>8</td>
+   * </tr>
+   * <tr>
+   * <td>f1</td>
+   * <td>def</td>
+   * <td>fasle</td>
+   * <td>4</td>
+   * </tr>
+   * </table>
+   */
   protected Pipe frequency(String field, Pipe pipe) {
     pipe = new Pipe(buildSubPipeName(FREQ + "_" + field), pipe);
     pipe = new Retain(pipe, new Fields(field).append(ValidationFields.STATE_FIELD));
@@ -100,6 +136,12 @@ public final class FrequencyPlanElement extends BaseStatsReportingPlanElement {
     }
   }
 
+  /**
+   * This also populates {@code FieldSummary}'s fields populated, missing and nulls, which collectively represent what
+   * we refer to as "completeness".
+   * <p>
+   * FIXME?: There is some logic in here that is redundant with that of {@code CompletenessBy}...
+   */
   @SuppressWarnings("rawtypes")
   public static class FrequencySummaryBuffer extends BaseOperation implements Buffer {
 
@@ -115,7 +157,7 @@ public final class FrequencyPlanElement extends BaseStatsReportingPlanElement {
       fs.field = bufferCall.getGroup().getString(0);
       while(tuples.hasNext()) {
         TupleEntry tuple = tuples.next();
-        String value = tuple.getString(0);
+        String value = tuple.getString(0); // TODO: use field names...
         Long frequency = tuple.getLong(1);
         if(value == null) {
           if(tuple.getBoolean(MISSING_FLAG)) {

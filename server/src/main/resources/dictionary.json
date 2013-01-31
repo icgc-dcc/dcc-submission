@@ -1,5 +1,5 @@
 {
-  "created" : 1359064382307,
+  "created" : 1359576511001,
   "files" : [ {
     "fields" : [ {
       "controlled" : false,
@@ -6261,7 +6261,7 @@
         },
         "type" : "required"
       } ],
-      "summaryType" : null,
+      "summaryType" : "UNIQUE_COUNT",
       "valueType" : "TEXT"
     }, {
       "controlled" : false,
@@ -6273,7 +6273,7 @@
         },
         "type" : "required"
       } ],
-      "summaryType" : null,
+      "summaryType" : "UNIQUE_COUNT",
       "valueType" : "TEXT"
     }, {
       "controlled" : false,
@@ -6285,7 +6285,7 @@
         },
         "type" : "required"
       } ],
-      "summaryType" : null,
+      "summaryType" : "UNIQUE_COUNT",
       "valueType" : "TEXT"
     }, {
       "controlled" : false,
@@ -7831,7 +7831,7 @@
     "role" : "SUBMISSION",
     "uniqueFields" : [ "analysis_id", "analyzed_sample_id" ]
   } ],
-  "lastUpdate" : 1359064382307,
+  "lastUpdate" : 1359576511001,
   "state" : "OPENED",
   "version" : "0.6c"
 }
