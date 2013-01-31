@@ -18,3 +18,14 @@
 'use strict';
 
 angular.module('app.common.resources.projects', []);
+
+angular.module('app.common.resources.projects').factory('Projects', ['$http', function ($http) {
+  return {
+    query: function () {
+      return $http.get('/ws/projects')
+    },
+    get: function (id) {
+      return $http.get('/ws/projects/' + id)
+    }
+  }
+}]);

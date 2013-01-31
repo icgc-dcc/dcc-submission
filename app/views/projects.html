@@ -28,38 +28,22 @@
             </tr>
             </thead>
             <tbody>
-            <tr ng-repeat="project in projects">
-                <td><a href="#/projects/{{project.id}}">{{project.name}}</a></td>
-                <td>{{project.site}}</td>
+            <tr ng-repeat="project in projects.data.data">
+                <td><a href="#/projects/{{project.project_key}}">{{project.project_name}}</a></td>
+                <td>{{project.primary_site}}</td>
                 <td>{{project.country}}</td>
-                <td>{{project.donors}}</td>
-                <td>{{project.ssm}}</td>
-                <td>{{project.cnsm}}</td>
-                <td>{{project.gene_expression}}</td>
-                <td>{{project.dna_methylation}}</td>
+                <td>{{project.total_donor_count}}</td>
+                <td>{{project.ssm_tested_donor_count}}</td>
+                <td>{{project.cnsm_tested_donor_count}}</td>
+                <td>{{project.exp_tested_donor_count}}</td>
+                <td>{{project.meth_tested_donor_count}}</td>
                 <td>
                     <ul class="unstyled" ng-repeat="pmid in project.pubmed_id">
                         <li><a href="http://www.ncbi.nlm.nih.gov/pubmed/{{pmid}}">pmid:{{pmid}}</a></li>
                     </ul>
                 </td>
             </tr>
-            <tr>
-                <td><a href="#/projects/PD_GE">Pediatric Brain Tumors - DKFZ, DE</a></td>
-                <td>Brain</td>
-                <td>Germany</td>
-                <td>121</td>
-                <td>121</td>
-                <td>4</td>
-                <td>0</td>
-                <td>0</td>
-                <td>
-                    <ul class="unstyled">
-                        <li><a href="http://www.ncbi.nlm.nih.gov/pubmed/22265402">pmid:22265402</a></li>
-                        <li><a href="http://www.ncbi.nlm.nih.gov/pubmed/22286061">pmid:22286061</a></li>
-                    </ul>
-                </td>
-            </tr>
-            <tr ui-if="!projects.length">
+            <tr ng-hide="projects.data.data.length">
                 <td colspan="9"><i class="icon-spinner icon-spin"></i> Fetching projects...</td>
             </tr>
             </tbody>

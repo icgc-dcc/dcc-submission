@@ -11,9 +11,8 @@ task "proxy", 'setup proxy', -> startServer()
 startServer = ->
   # Setup proxy to redirect /ws/* request to the DCC REST server  
   options =
-    router:
-      #"localhost/ws/": "***REMOVED***:5380/ws/"
-      "localhost/ws/": "localhost:5380/ws/"
+    router: #"localhost/ws/": "***REMOVED***:5380/ws/"
+      "localhost/ws/": "localhost:8080/"
       "localhost": "localhost:3501"
 
   httpProxy.createServer(options).listen 3502, ->

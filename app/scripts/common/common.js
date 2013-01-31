@@ -18,5 +18,6 @@
 'use strict';
 
 angular.module('app.common', [
-  'app.common.navigation'
+  'app.common.navigation',
+  'app.common.resources'
 ]);

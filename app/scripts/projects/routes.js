@@ -17,20 +17,26 @@
 
 'use strict';
 
-angular.module('app.common.resources.donors', []);
+angular.module('app.projects', ['app.projects.controllers', 'app.projects.services']);
 
-angular.module('app.common.resources.donors').factory('Donors', ['$http', function ($http) {
-  return {
-    query: function (callback) {
-      $http.get('/ws/donors').success(function (data) {
-        callback(data);
-      });
-    },
-    get: function (id, callback) {
-      $http.get('/ws/donors/' + id).success(function (data) {
-        callback(data);
-      });
-    }
-
-  }
+angular.module('app.projects').config(['$routeProvider', function ($routeProvider) {
+  $routeProvider
+      .when('/projects', {
+        templateUrl: 'views/projects.html',
+        controller: 'ProjectsController',
+        resolve: {
+          projects: ['ProjectsService', function (ProjectsService) {
+            return ProjectsService.query();
+          }]
+        }
+      })
+      .when('/projects/:project', {
+        templateUrl: 'views/project.html',
+        controller: 'ProjectController',
+        resolve: {
+          project: ['$route', 'ProjectsService', function ($route, ProjectsService) {
+            return ProjectsService.get($route.current.params.project);
+          }]
+        }
+      })
 }]);

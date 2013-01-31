@@ -19,13 +19,12 @@
 
 angular.module('app', [
   'app.controllers',
-  'app.common']);
+  'app.common',
+  'app.projects']);
 
 angular.module('app').config(['$routeProvider', '$locationProvider', function ($routeProvider, $locationProvider) {
   $routeProvider
       .when('/', {templateUrl: 'views/home.html', controller: 'ApplicationController'})
-      .when('/projects', {templateUrl: 'views/projects.html', controller: 'ApplicationController'})
-      .when('/projects/:project', {templateUrl: 'views/project.html', controller: 'ApplicationController'})
       .when('/donors/:donor', {templateUrl: 'views/donor.html', controller: 'ApplicationController'})
       .when('/genes/:gene', {templateUrl: 'views/gene.html', controller: 'ApplicationController'})
       .when('/variants/:variant', {templateUrl: 'views/variant.html', controller: 'ApplicationController'})
@@ -37,5 +36,12 @@ angular.module('app').config(['$routeProvider', '$locationProvider', function ($
 
 angular.module('app.controllers', []);
 
-angular.module('app.controllers').controller('ApplicationController', [ "$scope", function ($scope) {
+angular.module('app.controllers').controller('ApplicationController', [ "$scope", "$routeParams", "Projects", function ($scope, $routeParams, Projects) {
+  /*Projects.query(function (data) {
+   $scope.projects = data;
+   });
+   console.log($routeParams);
+   Projects.get($routeParams.project, function(data) {
+   $scope.project = data;
+   });*/
 }]);

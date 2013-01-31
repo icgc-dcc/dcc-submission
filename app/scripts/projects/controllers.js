@@ -16,21 +16,12 @@
  */
 
 'use strict';
+angular.module('app.projects.controllers', []);
 
-angular.module('app.common.resources.donors', []);
+angular.module('app.projects.controllers').controller('ProjectsController', [ "$scope", "projects", function ($scope, projects) {
+  $scope.projects = projects;
+}]);
 
-angular.module('app.common.resources.donors').factory('Donors', ['$http', function ($http) {
-  return {
-    query: function (callback) {
-      $http.get('/ws/donors').success(function (data) {
-        callback(data);
-      });
-    },
-    get: function (id, callback) {
-      $http.get('/ws/donors/' + id).success(function (data) {
-        callback(data);
-      });
-    }
-
-  }
+angular.module('app.projects.controllers').controller('ProjectController', [ "$scope", "project", function ($scope, project) {
+  $scope.project = project;
 }]);

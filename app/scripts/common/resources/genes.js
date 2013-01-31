@@ -18,3 +18,14 @@
 'use strict';
 
 angular.module('app.common.resources.genes', []);
+
+angular.module('app.common.resources.genes').factory('Genes', ['$http', function ($http) {
+  return {
+    get: function (callback) {
+      $http.get('/ws/genes').success(function (data) {
+        callback(data);
+      });
+    }
+  }
+}]);
+
