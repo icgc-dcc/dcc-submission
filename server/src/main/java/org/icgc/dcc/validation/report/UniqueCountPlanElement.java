@@ -100,9 +100,6 @@ public final class UniqueCountPlanElement extends BaseStatsReportingPlanElement 
     return pipe;
   }
 
-  /**
-   * 
-   */
   protected Pipe count(String fieldName, Pipe pipe) {
     pipe = new Pipe(buildSubPipeName(UCOUNT + "_" + fieldName), pipe);
 
@@ -111,9 +108,8 @@ public final class UniqueCountPlanElement extends BaseStatsReportingPlanElement 
     pipe = new GroupBy(pipe, VALUE_FIELDS); // the GroupBy is also used to uniquify here
 
     pipe =
-        // grouped by value, each group contains a list of _state
         new Every(pipe, ValidationFields.STATE_FIELD, new CompletenessAnnotationBuffer(fieldName),
-            VALUE_FIELDS.append(COMPLETENESS_TMP_FIELDS));
+            VALUE_FIELDS.append(COMPLETENESS_TMP_FIELDS)); // grouped by value, each group contains a list of _state
     pipe =
         new Each(pipe, new Insert(FIELD_FIELDS, fieldName), VALUE_FIELDS.append(COMPLETENESS_TMP_FIELDS).append(
             FIELD_FIELDS));
