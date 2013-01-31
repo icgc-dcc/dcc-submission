@@ -39,16 +39,16 @@ import com.mongodb.MongoURI;
 public class IntegrationTest {
 
   private JsonSchema schema;
-  
+
   @Before
   public void setUp() throws IOException {
     this.schema = getSchema();
   }
-  
+
   @Test
   public void testSystem() throws IOException {
     String bsonFile = "src/test/resources/heliotrope/genes.bson";
-    String uri = "mongodb://localhost/dcc-genes.Genes";
+    String uri = "mongodb://localhost/dcc-genome.Genes";
     Main.main("-f", bsonFile, "-d", uri);
 
     JsonNode gene = getGene(uri);
@@ -59,7 +59,7 @@ public class IntegrationTest {
 
   private ValidationReport validate(JsonNode gene) {
     ValidationReport report = schema.validate(gene);
-    
+
     return report;
   }
 
@@ -67,7 +67,7 @@ public class IntegrationTest {
     MongoCollection genes = getGenes(uri);
     JsonNode gene = genes.findOne().as(JsonNode.class);
     genes.getDBCollection().getDB().getMongo().close();
-    
+
     return gene;
   }
 
@@ -83,7 +83,7 @@ public class IntegrationTest {
     Mongo mongo = new Mongo(mongoUri);
     DB db = mongo.getDB(mongoUri.getDatabase());
     Jongo jongo = new Jongo(db);
-    
+
     return jongo;
   }
 
@@ -91,7 +91,7 @@ public class IntegrationTest {
     JsonNode schemaNode = JsonLoader.fromResource("/genes.schema.json");
     JsonSchemaFactory factory = JsonSchemaFactory.defaultFactory();
     JsonSchema schema = factory.fromSchema(schemaNode);
-    
+
     return schema;
   }
 
