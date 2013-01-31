@@ -65,22 +65,26 @@ public class SummaryPlanningVisitor extends ReportingFlowPlanningVisitor {
   private void collectElements(FileSchema fileSchema, Map<SummaryType, List<Field>> summaryTypeToFields) {
     for(SummaryType summaryType : summaryTypeToFields.keySet()) {
       List<Field> fields = summaryTypeToFields.get(summaryType);
+      FlowType flow = this.getFlow();
       if(summaryType == null) {
-        collect(new SummaryPlanElement.CompletenessPlanElement(fileSchema, fields, this.getFlow()));
+        collect(new SummaryPlanElement.CompletenessPlanElement(fileSchema, fields, flow));
         continue;
       }
       switch(summaryType) {
       case AVERAGE:
-        collect(new SummaryPlanElement.AveragePlanElement(fileSchema, fields, this.getFlow()));
+        collect(new SummaryPlanElement.AveragePlanElement(fileSchema, fields, flow));
         break;
       case MIN_MAX:
-        collect(new SummaryPlanElement.MinMaxPlanElement(fileSchema, fields, this.getFlow()));
+        collect(new SummaryPlanElement.MinMaxPlanElement(fileSchema, fields, flow));
         break;
       case FREQUENCY:
-        collect(new FrequencyPlanElement(fileSchema, fields, this.getFlow()));
+        collect(new FrequencyPlanElement(fileSchema, fields, flow));
+        break;
+      case UNIQUE_COUNT:
+        collect(new UniqueCountPlanElement(fileSchema, fields, flow));
         break;
       default:
-        collect(new SummaryPlanElement.CompletenessPlanElement(fileSchema, fields, this.getFlow()));
+        collect(new SummaryPlanElement.CompletenessPlanElement(fileSchema, fields, flow));
         break;
       }
     }

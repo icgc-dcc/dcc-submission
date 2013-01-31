@@ -120,7 +120,18 @@ abstract class BaseStatsReportingPlanElement implements ReportingPlanElement {
 
     public long populated;
 
-    public Map<String, Object> summary = Maps.newLinkedHashMap();
+    /**
+     * Depending on the summary type, the map will either contain:<br/>
+     * - aggregate types ("unique_count", "min", "max", ...) and their associate values, or<br/>
+     * - data values as keys and their associated frequency, or<br/>
+     * <br/>
+     * TODO: consider using 2 different variables instead, as their conceptually different? The only thing they have in
+     * common is that they're both displayed the same way <br/>
+     * TODO: rename as it's confusing: SummaryPlanElement uses this summary variable, yet the two "summary" notions here
+     * aren't exactly semantically equivalent (FrequencyPlanElement also uses that summary variable, yet isn't a
+     * SummaryPlanElement)
+     */
+    public Map<String, Object> summary = Maps.newLinkedHashMap(); //
 
     @Override
     public String toString() { // for testing only for now

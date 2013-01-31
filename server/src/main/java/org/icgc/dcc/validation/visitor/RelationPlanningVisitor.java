@@ -81,7 +81,7 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
     FileSchema currentSchema = getCurrentSchema();
     List<FileSchema> afferentStrictFileSchemata = currentSchema.getBidirectionalAfferentFileSchemata(dictionary);
     if(currentSchema.getRole() != FileSchemaRole.SYSTEM //
-        && isReAnnotatedFile(currentSchema.getName()) == false) { // skip checking relations in file to be-reannotated
+        && isReAnnotatedFile(currentSchema.getName()) == false) { // skip checking relations in file to be re-annotated
       collect(new RelationPlanElement(currentSchema, relation, afferentStrictFileSchemata));
     }
   }
@@ -94,8 +94,9 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
    */
   private boolean isReAnnotatedFile(String fileSchemaName) {
     final String REANNOTATED_FILE_SCHEMA_NAME = "ssm_s";
-    checkState(dictionary.fileSchemaNames() //
-        .contains(REANNOTATED_FILE_SCHEMA_NAME)); // make sure ssm_s hasn't been renamed
+    List<String> fileSchemaNames = dictionary.fileSchemaNames();
+    checkState(fileSchemaNames // make sure ssm_s hasn't been renamed
+        .contains(REANNOTATED_FILE_SCHEMA_NAME), "file schema names: %s", fileSchemaNames);
     return REANNOTATED_FILE_SCHEMA_NAME.equals(fileSchemaName);
   }
 

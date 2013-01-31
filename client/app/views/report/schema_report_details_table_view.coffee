@@ -51,6 +51,11 @@ module.exports = class SchemaReportDetailsTableView extends DataTableView
 
     sOut = "<dt>#{type}</dt>"
     for key, value of data.summary
+      key =
+        if key is 'unique_count'
+          "Unique Value Count"
+        else
+          key
       value =
         if key in ['stddev','avg']
           Number(value).toFixed(2)

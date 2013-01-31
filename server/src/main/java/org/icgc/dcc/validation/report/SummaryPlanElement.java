@@ -74,7 +74,10 @@ public abstract class SummaryPlanElement extends BaseStatsReportingPlanElement {
     // intermediate result (sum, count for average) and another pipe could then process this smaller set as done here.
     Fields constantField = new Fields("__constant__");
     pipe = new Each(pipe, new Insert(constantField, "1"), Fields.ALL);
-    pipe = new AggregateBy(pipe, constantField, Iterables.toArray(summaries, AggregateBy.class));
+    pipe = new AggregateBy(pipe, constantField, Iterables.toArray(summaries, AggregateBy.class)); // only one group
+                                                                                                  // emerges from
+                                                                                                  // grouping on
+                                                                                                  // "__constant__"
     pipe = new Discard(pipe, constantField);
     pipe = new Each(pipe, new SummaryFunction(fields, summaryFields()), REPORT_FIELDS);
     return pipe;
@@ -96,14 +99,59 @@ public abstract class SummaryPlanElement extends BaseStatsReportingPlanElement {
         CompletenessBy.POPULATED)));
   }
 
+  /**
+   * Returns a iterable of {@code AggregateBy} instances to be applied to every tuples in the one group that results in
+   * grouping on "__constant__"
+   * <p>
+   * See TODO about that __constant__ field.
+   */
   protected abstract Iterable<AggregateBy> collectAggregateBys(Field field);
 
+  /**
+   * Returns a list of aggregate types such as min, max, average and stddev (possibly empty).
+   */
   protected abstract Iterable<String> summaryFields();
 
   protected Pipe average(String field, Pipe pipe) {
     return pipe;
   }
 
+  /**
+   * Input contains only 1 tuple like:<br/>
+   * <br/>
+   * <table>
+   * <tr>
+   * <td>"f1#nulls"</td>
+   * <td>"f1#missing"</td>
+   * <td>...</td>
+   * <td>"f2#nulls"</td>
+   * <td>"f2#missing"</td>
+   * <td>...</td>
+   * <tr>
+   * <td>4</td>
+   * <td>5</td>
+   * <td>...</td>
+   * <td>0</td>
+   * <td>3</td>
+   * <td>...</td>
+   * </tr>
+   * </table>
+   * <br/>
+   * <br/>
+   * And output one tuple per data-field, each tuple having only one "report" {@code Fields} like:<br/>
+   * <br/>
+   * <table>
+   * <tr>
+   * <td>"report"</td>
+   * </tr>
+   * <tr>
+   * <td>{ "field": "f1", "nulls": 4, "missing": 5, ...}</td>
+   * </tr>
+   * <tr>
+   * <td>{ "field": "f2", "nulls": 0, "missing": 3, ...}</td>
+   * </tr>
+   * </table>
+   */
   @SuppressWarnings("rawtypes")
   public static class SummaryFunction extends BaseOperation implements Function {
 

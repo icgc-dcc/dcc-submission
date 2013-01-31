@@ -437,6 +437,13 @@ public class DictionaryConverter {
       field.setSummaryType(SummaryType.FREQUENCY);
     }
 
+    // for testing so that we have some (post-dictionary hand-off to Brett)
+    if("ssm_p".equals(fileSchema.getName())
+        && ("analysis_id".equals(field.getName()) || "analyzed_sample_id".equals(field.getName()) || "mutation_id"
+            .equals(field.getName()))) {
+      field.setSummaryType(SummaryType.UNIQUE_COUNT);
+    }
+
     field.setRestrictions(restrictions);
 
     return field;
