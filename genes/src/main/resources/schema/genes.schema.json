@@ -106,9 +106,9 @@
                "id":"length_amino_acid",
                "required":false
             },
-            "length_dna":{
+            "length_cds":{
                "type":"number",
-               "id":"length_dna",
+               "id":"length_cds",
                "required":false
             },
             "length":{

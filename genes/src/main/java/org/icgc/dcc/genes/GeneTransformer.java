@@ -117,7 +117,7 @@ public class GeneTransformer {
     transcript.put("is_canonical", node.path("isCanonical").asBoolean());
     transcript.put("length", node.path("length").asInt());
     transcript.put("length_amino_acid", node.path("lengthAminoAcid").asInt());
-    transcript.put("length_dna", node.path("lengthDNA").asInt());
+    transcript.put("length_cds", node.path("lengthDNA").asInt());
     transcript.put("number_of_exons", node.path("numberOfExons").asInt());
     transcript.put("start_exon", node.path("startExon").asInt());
     transcript.put("seq_exon_start", node.path("seqExonStart").asInt());
