@@ -46,7 +46,7 @@ public class IntegrationTest {
   }
 
   @Test
-  public void testSystem() throws IOException {
+  public void testLoader() throws IOException {
     String bsonFile = "src/test/resources/heliotrope/genes.bson";
     String uri = "mongodb://localhost/dcc-genome.Genes";
     Main.main("-f", bsonFile, "-d", uri);
@@ -63,7 +63,7 @@ public class IntegrationTest {
     return report;
   }
 
-  private JsonNode getGene(String uri) throws UnknownHostException {
+  private static JsonNode getGene(String uri) throws UnknownHostException {
     MongoCollection genes = getGenes(uri);
     JsonNode gene = genes.findOne().as(JsonNode.class);
     genes.getDBCollection().getDB().getMongo().close();
@@ -71,7 +71,7 @@ public class IntegrationTest {
     return gene;
   }
 
-  private MongoCollection getGenes(String uri) throws UnknownHostException {
+  private static MongoCollection getGenes(String uri) throws UnknownHostException {
     MongoURI mongoUri = new MongoURI(uri);
     Jongo jongo = getJongo(mongoUri);
     MongoCollection genes = jongo.getCollection(mongoUri.getCollection());
@@ -79,7 +79,7 @@ public class IntegrationTest {
     return genes;
   }
 
-  private Jongo getJongo(MongoURI mongoUri) throws UnknownHostException {
+  private static Jongo getJongo(MongoURI mongoUri) throws UnknownHostException {
     Mongo mongo = new Mongo(mongoUri);
     DB db = mongo.getDB(mongoUri.getDatabase());
     Jongo jongo = new Jongo(db);
@@ -87,7 +87,7 @@ public class IntegrationTest {
     return jongo;
   }
 
-  private JsonSchema getSchema() throws IOException {
+  private static JsonSchema getSchema() throws IOException {
     JsonNode schemaNode = JsonLoader.fromResource("/genes.schema.json");
     JsonSchemaFactory factory = JsonSchemaFactory.defaultFactory();
     JsonSchema schema = factory.fromSchema(schemaNode);

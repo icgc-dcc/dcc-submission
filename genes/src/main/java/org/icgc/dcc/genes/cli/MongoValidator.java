@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.genes.cli;
 
+import static java.lang.String.format;
+
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -32,17 +34,24 @@ public class MongoValidator implements IValueValidator<MongoURI> {
     try {
       Mongo mongo = new Mongo(mongoUri);
       try {
+        // Test connectivity
         Socket socket = mongo.getMongoOptions().socketFactory.createSocket();
         socket.connect(mongo.getAddress().getSocketAddress());
+        
+        // All good
         socket.close();
       } catch(IOException ex) {
-        throw new ParameterException("Invalid option: " + name + ": " + mongoUri + " is not accessible");
+        parameterException(name, mongoUri, "is not accessible");
       } finally {
         mongo.close();
       }
     } catch(UnknownHostException e) {
-      throw new ParameterException("Invalid option: " + name + ": " + mongoUri + " is not accessible");
+      parameterException(name, mongoUri, "host IP address could not be determined.");
     }
   }
 
+  private static void parameterException(String name, MongoURI mongoUri, String message) throws ParameterException {
+    throw new ParameterException(format("Invalid option: %s: %s %s", name, mongoUri, message));
+  }
+  
 }

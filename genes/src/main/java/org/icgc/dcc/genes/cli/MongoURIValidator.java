@@ -18,6 +18,7 @@
 package org.icgc.dcc.genes.cli;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static java.lang.String.format;
 
 import com.beust.jcommander.IParameterValidator;
 import com.beust.jcommander.ParameterException;
@@ -31,17 +32,21 @@ public class MongoURIValidator implements IParameterValidator {
       MongoURI mongoUri = new MongoURI(uri);
 
       String database = mongoUri.getDatabase();
-      if(isNullOrEmpty(database)) {
-        throw new ParameterException("Invalid option: " + name + ": uri must contain a database name");
+      if (isNullOrEmpty(database)) {
+        parameterException(name, "uri must contain a database name");
       }
 
       String collection = mongoUri.getCollection();
-      if(isNullOrEmpty(collection)) {
-        throw new ParameterException("Invalid option: " + name + ": uri must contain a collection name");
+      if (isNullOrEmpty(collection)) {
+        parameterException(name, "uri must contain a collection name");
       }
-    } catch(IllegalArgumentException e) {
-      throw new ParameterException("Invalid option: " + name + ": " + e.getMessage()
-          + ". See http://docs.mongodb.org/manual/reference/connection-string/ for more information.");
+    } catch (IllegalArgumentException e) {
+      parameterException(name, e.getMessage() + ". See http://docs.mongodb.org/manual/reference/connection-string/ for more information.");
     }
   }
+
+  private static void parameterException(String name, String message) throws ParameterException {
+    throw new ParameterException(format("Invalid option: %s: %s", name, message));
+  }
+
 }

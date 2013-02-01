@@ -17,6 +17,9 @@
  */
 package org.icgc.dcc.genes;
 
+import static java.lang.System.err;
+import static java.lang.System.out;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -49,15 +52,15 @@ public class Main {
 
         return;
       } else if(options.version) {
-        System.out.printf("ICGC DCC Gene Loader\nVersion %s\n", getVersion());
+        out.printf("ICGC DCC Gene Loader\nVersion %s\n", getVersion());
 
         return;
       }
 
       load();
     } catch(ParameterException pe) {
-      System.err.printf("dcc-genes: %s\n", pe.getMessage());
-      System.err.printf("Try '%s --help' for more information.\n", getProgramName());
+      err.printf("dcc-genes: %s\n", pe.getMessage());
+      err.printf("Try '%s --help' for more information.\n", getProgramName());
     }
   }
 

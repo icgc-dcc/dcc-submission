@@ -34,6 +34,8 @@ public class GeneTransformer {
 
   public JsonNode transform(JsonNode node) {
     ObjectNode result = mapper.createObjectNode();
+    
+    // Simple
     result.set("symbol", symbol(node));
     result.set("name", name(node));
     result.set("synonyms", synonyms(node));
@@ -43,6 +45,8 @@ public class GeneTransformer {
     result.set("end", location(node).path("txEnd"));
     result.set("ensembl_gene_id", id(node));
     result.set("canonical_transcript_id", canonicalTranscriptId(node));
+    
+    // Collection
     result.put("transcripts", transcripts(node));
 
     return result;
@@ -65,10 +69,12 @@ public class GeneTransformer {
     JsonNode synonyms = node.path("sections").path("description").path("data").path("synonyms");
 
     ArrayNode values = mapper.createArrayNode();
+    
+    // Project additional values
     for(JsonNode synonym : synonyms) {
       String value = synonym.asText();
-      final boolean unique = value.equals(symbol) == false;
-      if(unique) {
+      final boolean additional = value.equals(symbol) == false;
+      if(additional) {
         values.add(value);
       }
     }
@@ -88,6 +94,8 @@ public class GeneTransformer {
     JsonNode transcripts = node.path("sections").path("transcripts").path("data").path("records");
 
     ArrayNode values = mapper.createArrayNode();
+    
+    // Project transformed transcripts
     for(JsonNode record : transcripts) {
       values.add(transcript(record));
     }
@@ -97,6 +105,8 @@ public class GeneTransformer {
 
   private JsonNode transcript(JsonNode record) {
     ObjectNode transcript = mapper.createObjectNode();
+    
+    // Simple
     transcript.put("transcript_id", record.path("id").asText());
     transcript.put("transcript_name", record.path("name").asText());
     transcript.put("isCanonical", record.path("isCanonical").asBoolean());
@@ -109,6 +119,8 @@ public class GeneTransformer {
     transcript.put("seqExonEnd", record.path("seqExonEnd").asLong());
     transcript.put("endExon", record.path("endExon").asLong());
     transcript.put("translationId", record.path("translationId").asText());
+
+    // Collections
     transcript.put("exons", record.path("exons"));
     transcript.put("domains", domains(record));
 
@@ -122,7 +134,7 @@ public class GeneTransformer {
     for(JsonNode domain : domains) {
       final String gffSource = domain.path("gffSource").asText();
 
-      // Only add Pfam sources
+      // Only add "Pfam" sources - Junjun
       final boolean pFam = "Pfam".equals(gffSource);
       if(pFam) {
         arrayNode.add(domain);

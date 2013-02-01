@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.genes.cli;
 
+import static java.lang.String.format;
+
 import java.io.File;
 
 import com.beust.jcommander.IValueValidator;
@@ -26,11 +28,16 @@ public class FileValidator implements IValueValidator<File> {
 
   @Override
   public void validate(String name, File file) throws ParameterException {
-    if(file.exists() == false) {
-      throw new ParameterException("Invalid option: " + name + ": " + file.getAbsolutePath() + " does not exist");
+    if (file.exists() == false) {
+      parameterException(name, file, "does not exist");
     }
-    if(!file.isFile()) {
-      throw new ParameterException("Invalid option: " + name + ": " + file.getAbsolutePath() + " is not a file");
+    if (!file.isFile()) {
+      parameterException(name, file, "is not a file");
     }
   }
+
+  private static void parameterException(String name, File file, String message) throws ParameterException {
+    throw new ParameterException(format("Invalid option: %s: %s %s", name, file.getAbsolutePath(), message));
+  }
+  
 }
