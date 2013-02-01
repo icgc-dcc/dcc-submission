@@ -115,14 +115,14 @@ public class GeneTransformer {
     transcript.put("id", node.path("id").asText());
     transcript.put("name", node.path("name").asText());
     transcript.put("is_canonical", node.path("isCanonical").asBoolean());
-    transcript.put("length", node.path("length").asLong());
-    transcript.put("length_amino_acid", node.path("lengthAminoAcid").asLong());
-    transcript.put("length_dna", node.path("lengthDNA").asLong());
-    transcript.put("number_of_exons", node.path("numberOfExons").asLong());
-    transcript.put("start_exon", node.path("startExon").asLong());
-    transcript.put("seq_exon_start", node.path("seqExonStart").asLong());
-    transcript.put("seq_exon_end", node.path("seqExonEnd").asLong());
-    transcript.put("end_exon", node.path("endExon").asLong());
+    transcript.put("length", node.path("length").asInt());
+    transcript.put("length_amino_acid", node.path("lengthAminoAcid").asInt());
+    transcript.put("length_dna", node.path("lengthDNA").asInt());
+    transcript.put("number_of_exons", node.path("numberOfExons").asInt());
+    transcript.put("start_exon", node.path("startExon").asInt());
+    transcript.put("seq_exon_start", node.path("seqExonStart").asInt());
+    transcript.put("seq_exon_end", node.path("seqExonEnd").asInt());
+    transcript.put("end_exon", node.path("endExon").asInt());
     transcript.put("translation_id", node.path("translationId").asText());
 
     // Collections
@@ -157,8 +157,8 @@ public class GeneTransformer {
     domain.put("hit_name", node.path("hitName").asText());
     domain.put("gff_source", node.path("gffSource").asText());
     domain.put("description", node.path("description").asText());
-    domain.put("start", node.path("start").asLong());
-    domain.put("end", node.path("end").asLong());
+    domain.put("start", node.path("start").asInt());
+    domain.put("end", node.path("end").asInt());
 
     return domain;
   }
