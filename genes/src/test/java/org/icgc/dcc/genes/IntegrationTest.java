@@ -88,7 +88,7 @@ public class IntegrationTest {
   }
 
   private static JsonSchema getSchema() throws IOException {
-    JsonNode schemaNode = JsonLoader.fromResource("/genes.schema.json");
+    JsonNode schemaNode = JsonLoader.fromResource("/schema/genes.schema.json");
     JsonSchemaFactory factory = JsonSchemaFactory.defaultFactory();
     JsonSchema schema = factory.fromSchema(schemaNode);
 

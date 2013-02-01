@@ -36,6 +36,7 @@ public class GeneTransformer {
     ObjectNode result = mapper.createObjectNode();
     
     // Simple
+    result.set("id", id(node));
     result.set("symbol", symbol(node));
     result.set("name", name(node));
     result.set("synonyms", synonyms(node));
@@ -43,7 +44,6 @@ public class GeneTransformer {
     result.set("strand", location(node).path("strand"));
     result.set("start", location(node).path("txStart"));
     result.set("end", location(node).path("txEnd"));
-    result.set("ensembl_gene_id", id(node));
     result.set("canonical_transcript_id", canonicalTranscriptId(node));
     
     // Collection
