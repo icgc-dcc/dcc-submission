@@ -45,6 +45,11 @@
          "id":"symbol",
          "required":false
       },
+      "symbol":{
+         "type":"string",
+         "id":"description",
+         "required":false
+      },      
       "synonyms":{
          "type":"array",
          "id":"synonyms",
@@ -77,9 +82,9 @@
                   "$ref":"#/definitions/domain"
                }
             },
-            "endExon":{
+            "end_exon":{
                "type":"number",
-               "id":"endExon",
+               "id":"end_exon",
                "required":false
             },
             "exons":{
@@ -90,19 +95,19 @@
                   "$ref":"#/definitions/exon"
                }
             },
-            "isCanonical":{
+            "is_canonical":{
                "type":"boolean",
-               "id":"isCanonical",
+               "id":"is_canonical",
                "required":false
             },
-            "lengthAminoAcid":{
+            "length_amino_acid":{
                "type":"number",
-               "id":"lengthAminoAcid",
+               "id":"length_amino_acid",
                "required":false
             },
-            "lengthDNA":{
+            "length_dna":{
                "type":"number",
-               "id":"lengthDNA",
+               "id":"length_dna",
                "required":false
             },
             "length":{
@@ -110,39 +115,39 @@
                "id":"length",
                "required":false
             },
-            "numberOfExons":{
+            "number_of_exons":{
                "type":"number",
-               "id":"numberOfExons",
+               "id":"number_of_exons",
                "required":false
             },
-            "seqExonEnd":{
+            "seq_exon_end":{
                "type":"number",
-               "id":"seqExonEnd",
+               "id":"seq_exon_end",
                "required":false
             },
-            "seqExonStart":{
+            "seq_exon_start":{
                "type":"number",
-               "id":"seqExonStart",
+               "id":"seq_exon_start",
                "required":false
             },
-            "startExon":{
+            "start_exon":{
                "type":"number",
-               "id":"startExon",
+               "id":"start_exon",
                "required":false
             },
-            "transcript_id":{
+            "id":{
                "type":"string",
-               "id":"transcript_id",
+               "id":"id",
+               "required":true
+            },
+            "name":{
+               "type":"string",
+               "id":"name",
                "required":false
             },
-            "transcript_name":{
+            "translation_id":{
                "type":"string",
-               "id":"transcript_name",
-               "required":false
-            },
-            "translationId":{
-               "type":"string",
-               "id":"translationId",
+               "id":"translation_id",
                "required":false
             }
          }
@@ -151,9 +156,9 @@
          "type":"object",
          "required":false,
          "properties":{
-            "endPhase":{
+            "end_phase":{
                "type":"number",
-               "id":"endPhase",
+               "id":"end_phase",
                "required":false
             },
             "end":{
@@ -161,9 +166,9 @@
                "id":"end",
                "required":false
             },
-            "startPhase":{
+            "start_phase":{
                "type":"number",
-               "id":"startPhase",
+               "id":"start_phase",
                "required":false
             },
             "start":{
@@ -187,19 +192,19 @@
                "id":"end",
                "required":false
             },
-            "gffSource":{
+            "gff_source":{
                "type":"string",
-               "id":"gffSource",
+               "id":"gff_source",
                "required":false
             },
-            "hitName":{
+            "hit_name":{
                "type":"string",
-               "id":"hitName",
+               "id":"hit_name",
                "required":false
             },
-            "interproId":{
+            "interpro_id":{
                "type":"string",
-               "id":"interproId",
+               "id":"interpro_id",
                "required":false
             },
             "start":{
