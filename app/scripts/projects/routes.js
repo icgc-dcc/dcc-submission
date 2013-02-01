@@ -17,7 +17,7 @@
 
 'use strict';
 
-angular.module('app.projects', ['app.projects.controllers', 'app.projects.services']);
+angular.module('app.projects', ['app.projects.controllers']);
 
 angular.module('app.projects').config(['$routeProvider', function ($routeProvider) {
   $routeProvider

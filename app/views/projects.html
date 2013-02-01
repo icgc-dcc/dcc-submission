@@ -28,7 +28,7 @@
             </tr>
             </thead>
             <tbody>
-            <tr ng-repeat="project in projects.data.data">
+            <tr ng-repeat="project in projects.data">
                 <td><a href="#/projects/{{project.project_key}}">{{project.project_name}}</a></td>
                 <td>{{project.primary_site}}</td>
                 <td>{{project.country}}</td>
@@ -43,7 +43,7 @@
                     </ul>
                 </td>
             </tr>
-            <tr ng-hide="projects.data.data.length">
+            <tr ng-hide="projects.data.length">
                 <td colspan="9"><i class="icon-spinner icon-spin"></i> Fetching projects...</td>
             </tr>
             </tbody>

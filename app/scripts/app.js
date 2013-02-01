@@ -36,7 +36,7 @@ angular.module('app').config(['$routeProvider', '$locationProvider', function ($
 
 angular.module('app.controllers', []);
 
-angular.module('app.controllers').controller('ApplicationController', [ "$scope", "$routeParams", "Projects", function ($scope, $routeParams, Projects) {
+angular.module('app.controllers').controller('ApplicationController', [ "$scope", "$routeParams", function ($scope, $routeParams) {
   /*Projects.query(function (data) {
    $scope.projects = data;
    });

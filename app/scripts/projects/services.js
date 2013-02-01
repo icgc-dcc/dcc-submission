@@ -19,11 +19,18 @@
 
 angular.module('app.projects.services', ['app.projects.models']);
 
-angular.module('app.projects.services').service('ProjectsService', ['Projects', function (Projects) {
+angular.module('app.projects.services').service('ProjectsService', ['$q', 'Projects', function ($q, Projects) {
   this.query = function () {
     return Projects.query();
   };
-  this.get = function (id) {
-    return Projects.get(id);
+
+  this.get = function (params) {
+    var deferred, callback;
+    deferred = $q.defer();
+    callback = function (result) {
+      deferred.resolve(result);
+    };
+    Projects.get(params, callback);
+    return deferred.promise;
   };
 }]);

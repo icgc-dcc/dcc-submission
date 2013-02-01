@@ -20,14 +20,16 @@
 angular.module('app.projects.models', []);
 
 angular.module('app.projects.models').factory('Projects', ['$http', function ($http) {
-  var url = '/ws/projects/';
-
   return {
     query: function () {
-      return $http.get(url);
+      return $http.get('/ws/projects').then(function (response) {
+        return response.data;
+      });
     },
-    get: function (id) {
-      return $http.get(url + id);
+    get: function (project) {
+      return $http.get('/ws/projects/' + project).then(function (response) {
+        return response.data;
+      });
     }
   }
 }]);
