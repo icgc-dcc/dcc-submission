@@ -53,12 +53,13 @@
       "synonyms":{
          "type":"array",
          "id":"synonyms",
+         "required":false,
          "items":{
             "type":"string",
             "id":"0",
             "uniqueItems":true,
             "minItems":1,
-            "required":false
+            "required":true
          }
       },
       "transcripts":{
