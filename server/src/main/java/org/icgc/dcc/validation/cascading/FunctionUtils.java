@@ -88,7 +88,7 @@ public class FunctionUtils {
   /**
    * Simple function that logs the incoming tuple entries (useful for debugging).
    * <p>
-   * Example of call: <code>pipe = new Each(pipe, new CUtils.DummyFunction(), Fields.RESULTS);</code>
+   * Example of call: <code>pipe = new Each(pipe, new FunctionUtils.LogFunction("my_prefix"), Fields.RESULTS);</code>
    */
   @SuppressWarnings("rawtypes")
   public static class LogFunction extends BaseOperation implements cascading.operation.Function {
