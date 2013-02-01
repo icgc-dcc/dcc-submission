@@ -147,7 +147,7 @@ public class GeneTransformer {
     ObjectNode exon = mapper.createObjectNode();
 
     // Simple
-    exon.put("start", node.path("end").asInt());
+    exon.put("start", node.path("start").asInt());
     exon.put("start_phase", node.path("startPhase").asInt());
     exon.put("end", node.path("end").asInt());
     exon.put("end_phase", node.path("endPhase").asInt());
