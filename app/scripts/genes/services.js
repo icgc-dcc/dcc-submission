@@ -17,20 +17,14 @@
 
 'use strict';
 
-angular.module('app.common.resources.donors', []);
+angular.module('app.genes.services', ['app.genes.models']);
 
-angular.module('app.common.resources.donors').factory('Donors', ['$http', function ($http) {
-  return {
-    query: function (callback) {
-      $http.get('/ws/donors').success(function (data) {
-        callback(data);
-      });
-    },
-    get: function (id, callback) {
-      $http.get('/ws/donors/' + id).success(function (data) {
-        callback(data);
-      });
-    }
+angular.module('app.genes.services').service('GenesService', ['$q', 'Genes', function ($q, Genes) {
+  this.query = function () {
+    return Genes.query();
+  };
 
-  }
+  this.get = function (params) {
+    return Genes.get(params);
+  };
 }]);

@@ -35,7 +35,7 @@ angular.module('app.projects').config(['$routeProvider', function ($routeProvide
         controller: 'ProjectController',
         resolve: {
           project: ['$route', 'ProjectsService', function ($route, ProjectsService) {
-            return ProjectsService.get($route.current.params.project);
+            return ProjectsService.get({project: $route.current.params.project});
           }]
         }
       })

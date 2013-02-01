@@ -16,25 +16,12 @@
  */
 
 'use strict';
+angular.module('app.genes.controllers', ['app.genes.services']);
 
-angular.module('app', [
-  'app.controllers',
-  'app.common',
-  'app.projects',
-  'app.donors',
-  'app.genes',
-  'app.variants']);
-
-angular.module('app').config(['$routeProvider', '$locationProvider', function ($routeProvider, $locationProvider) {
-  $routeProvider
-      .when('/', {templateUrl: 'views/home.html', controller: 'ApplicationController'})
-      .when('/browser', {templateUrl: 'views/browser.html', controller: 'ApplicationController'})
-      .when('/search', {templateUrl: 'views/advanced.html', controller: 'ApplicationController'})
-      .otherwise({redirectTo: '/'});
-  //$locationProvider.html5Mode(true);
+angular.module('app.genes.controllers').controller('GenesController', [ "$scope", 'GenesService', "genes", function ($scope, GenesService, genes) {
+  $scope.genes = genes;
 }]);
 
-angular.module('app.controllers', []);
-
-angular.module('app.controllers').controller('ApplicationController', [ "$scope", "$routeParams", function ($scope, $routeParams) {
+angular.module('app.genes.controllers').controller('GeneController', [ "$scope", "gene", function ($scope, gene) {
+  $scope.gene = gene;
 }]);

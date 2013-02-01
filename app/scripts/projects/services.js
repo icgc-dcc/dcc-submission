@@ -25,12 +25,6 @@ angular.module('app.projects.services').service('ProjectsService', ['$q', 'Proje
   };
 
   this.get = function (params) {
-    var deferred, callback;
-    deferred = $q.defer();
-    callback = function (result) {
-      deferred.resolve(result);
-    };
-    Projects.get(params, callback);
-    return deferred.promise;
+    return Projects.get(params);
   };
 }]);

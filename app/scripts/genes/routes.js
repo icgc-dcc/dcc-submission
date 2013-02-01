@@ -17,4 +17,26 @@
 
 'use strict';
 
-angular.module('app.common.resources.variants', []);
+angular.module('app.genes', ['app.genes.controllers']);
+
+angular.module('app.genes').config(['$routeProvider', function ($routeProvider) {
+  $routeProvider
+      .when('/genes', {
+        templateUrl: 'views/genes.html',
+        controller: 'GenesController',
+        resolve: {
+          genes: ['GenesService', function (GenesService) {
+            return GenesService.query();
+          }]
+        }
+      })
+      .when('/genes/:gene', {
+        templateUrl: 'views/gene.html',
+        controller: 'GeneController',
+        resolve: {
+          gene: ['$route', 'GenesService', function ($route, GenesService) {
+            return GenesService.get({gene: $route.current.params.gene});
+          }]
+        }
+      })
+}]);

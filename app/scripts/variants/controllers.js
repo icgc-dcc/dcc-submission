@@ -16,25 +16,12 @@
  */
 
 'use strict';
+angular.module('app.variants.controllers', ['app.variants.services']);
 
-angular.module('app', [
-  'app.controllers',
-  'app.common',
-  'app.projects',
-  'app.donors',
-  'app.genes',
-  'app.variants']);
-
-angular.module('app').config(['$routeProvider', '$locationProvider', function ($routeProvider, $locationProvider) {
-  $routeProvider
-      .when('/', {templateUrl: 'views/home.html', controller: 'ApplicationController'})
-      .when('/browser', {templateUrl: 'views/browser.html', controller: 'ApplicationController'})
-      .when('/search', {templateUrl: 'views/advanced.html', controller: 'ApplicationController'})
-      .otherwise({redirectTo: '/'});
-  //$locationProvider.html5Mode(true);
+angular.module('app.variants.controllers').controller('VariantsController', [ "$scope", 'VariantsService', "variants", function ($scope, VariantsService, variants) {
+  $scope.variants = variants;
 }]);
 
-angular.module('app.controllers', []);
-
-angular.module('app.controllers').controller('ApplicationController', [ "$scope", "$routeParams", function ($scope, $routeParams) {
+angular.module('app.variants.controllers').controller('VariantController', [ "$scope", "variant", function ($scope, variant) {
+  $scope.variant = variant;
 }]);

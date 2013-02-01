@@ -18,7 +18,7 @@
 'use strict';
 angular.module('app.projects.controllers', ['app.projects.services']);
 
-angular.module('app.projects.controllers').controller('ProjectsController', [ "$scope", "projects", function ($scope, projects) {
+angular.module('app.projects.controllers').controller('ProjectsController', [ "$scope", 'ProjectsService', "projects", function ($scope, ProjectsService, projects) {
   $scope.projects = projects;
 }]);
 

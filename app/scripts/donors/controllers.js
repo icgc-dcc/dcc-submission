@@ -16,25 +16,12 @@
  */
 
 'use strict';
+angular.module('app.donors.controllers', ['app.donors.services']);
 
-angular.module('app', [
-  'app.controllers',
-  'app.common',
-  'app.projects',
-  'app.donors',
-  'app.genes',
-  'app.variants']);
-
-angular.module('app').config(['$routeProvider', '$locationProvider', function ($routeProvider, $locationProvider) {
-  $routeProvider
-      .when('/', {templateUrl: 'views/home.html', controller: 'ApplicationController'})
-      .when('/browser', {templateUrl: 'views/browser.html', controller: 'ApplicationController'})
-      .when('/search', {templateUrl: 'views/advanced.html', controller: 'ApplicationController'})
-      .otherwise({redirectTo: '/'});
-  //$locationProvider.html5Mode(true);
+angular.module('app.donors.controllers').controller('DonorsController', [ "$scope", 'DonorsService', "donors", function ($scope, DonorsService, donors) {
+  $scope.donors = donors;
 }]);
 
-angular.module('app.controllers', []);
-
-angular.module('app.controllers').controller('ApplicationController', [ "$scope", "$routeParams", function ($scope, $routeParams) {
+angular.module('app.donors.controllers').controller('DonorController', [ "$scope", "donor", function ($scope, donor) {
+  $scope.donor = donor;
 }]);

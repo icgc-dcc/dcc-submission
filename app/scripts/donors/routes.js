@@ -17,24 +17,26 @@
 
 'use strict';
 
-angular.module('app', [
-  'app.controllers',
-  'app.common',
-  'app.projects',
-  'app.donors',
-  'app.genes',
-  'app.variants']);
+angular.module('app.donors', ['app.donors.controllers']);
 
-angular.module('app').config(['$routeProvider', '$locationProvider', function ($routeProvider, $locationProvider) {
+angular.module('app.donors').config(['$routeProvider', function ($routeProvider) {
   $routeProvider
-      .when('/', {templateUrl: 'views/home.html', controller: 'ApplicationController'})
-      .when('/browser', {templateUrl: 'views/browser.html', controller: 'ApplicationController'})
-      .when('/search', {templateUrl: 'views/advanced.html', controller: 'ApplicationController'})
-      .otherwise({redirectTo: '/'});
-  //$locationProvider.html5Mode(true);
-}]);
-
-angular.module('app.controllers', []);
-
-angular.module('app.controllers').controller('ApplicationController', [ "$scope", "$routeParams", function ($scope, $routeParams) {
+      .when('/donors', {
+        templateUrl: 'views/donors.html',
+        controller: 'DonorsController',
+        resolve: {
+          donors: ['DonorsService', function (DonorsService) {
+            return DonorsService.query();
+          }]
+        }
+      })
+      .when('/donors/:donor', {
+        templateUrl: 'views/donor.html',
+        controller: 'DonorController',
+        resolve: {
+          donor: ['$route', 'DonorsService', function ($route, DonorsService) {
+            return DonorsService.get({donor: $route.current.params.donor});
+          }]
+        }
+      })
 }]);

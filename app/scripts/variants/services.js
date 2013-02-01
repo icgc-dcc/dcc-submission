@@ -17,15 +17,14 @@
 
 'use strict';
 
-angular.module('app.common.resources.genes', []);
+angular.module('app.variants.services', ['app.variants.models']);
 
-angular.module('app.common.resources.genes').factory('Genes', ['$http', function ($http) {
-  return {
-    get: function (callback) {
-      $http.get('/ws/genes').success(function (data) {
-        callback(data);
-      });
-    }
-  }
+angular.module('app.variants.services').service('VariantsService', ['$q', 'Variants', function ($q, Variants) {
+  this.query = function () {
+    return Variants.query();
+  };
+
+  this.get = function (params) {
+    return Variants.get(params);
+  };
 }]);
-

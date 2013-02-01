@@ -17,15 +17,26 @@
 
 'use strict';
 
-angular.module('app.common.resources.projects', []);
+angular.module('app.variants', ['app.variants.controllers']);
 
-angular.module('app.common.resources.projects').factory('Projects', ['$http', function ($http) {
-  return {
-    query: function () {
-      return $http.get('/ws/projects')
-    },
-    get: function (id) {
-      return $http.get('/ws/projects/' + id)
-    }
-  }
+angular.module('app.variants').config(['$routeProvider', function ($routeProvider) {
+  $routeProvider
+      .when('/variants', {
+        templateUrl: 'views/variants.html',
+        controller: 'VariantsController',
+        resolve: {
+          variants: ['VariantsService', function (VariantsService) {
+            return VariantsService.query();
+          }]
+        }
+      })
+      .when('/variants/:variant', {
+        templateUrl: 'views/variant.html',
+        controller: 'VariantController',
+        resolve: {
+          variant: ['$route', 'VariantsService', function ($route, VariantsService) {
+            return VariantsService.get({variant: $route.current.params.variant});
+          }]
+        }
+      })
 }]);

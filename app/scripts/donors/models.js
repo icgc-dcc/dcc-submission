@@ -17,9 +17,19 @@
 
 'use strict';
 
-angular.module('app.common.resources', [
-  'app.common.resources.projects',
-  'app.common.resources.donors',
-  'app.common.resources.genes',
-  'app.common.resources.variants'
-]);
+angular.module('app.donors.models', []);
+
+angular.module('app.donors.models').factory('Donors', ['$http', function ($http) {
+  return {
+    query: function () {
+      return $http.get('/ws/donors').then(function (response) {
+        return response.data;
+      });
+    },
+    get: function (params) {
+      return $http.get('/ws/donors/' + params.donor).then(function (response) {
+        return response.data.data;
+      });
+    }
+  }
+}]);
