@@ -66,7 +66,7 @@ public class GeneTransformer {
   }
 
   private JsonNode description(JsonNode node) {
-    return node.path("sections").path("description").path("data").path("description");
+    return node.path("sections").path("description").path("data").path("summary");
   }
 
   private ArrayNode synonyms(JsonNode node) {
@@ -126,10 +126,33 @@ public class GeneTransformer {
     transcript.put("translation_id", node.path("translationId").asText());
 
     // Collections
-    transcript.put("exons", node.path("exons"));
+    transcript.put("exons", exons(node));
     transcript.put("domains", domains(node));
 
     return transcript;
+  }
+
+  private JsonNode exons(JsonNode node) {
+    JsonNode values = node.path("exons");
+
+    ArrayNode exons = mapper.createArrayNode();
+    for(JsonNode value : values) {
+      exons.add(exon(value));
+    }
+
+    return exons;
+  }
+
+  private JsonNode exon(JsonNode node) {
+    ObjectNode exon = mapper.createObjectNode();
+
+    // Simple
+    exon.put("start", node.path("end").asInt());
+    exon.put("start_phase", node.path("startPhase").asInt());
+    exon.put("end", node.path("end").asInt());
+    exon.put("end_phase", node.path("endPhase").asInt());
+
+    return exon;
   }
 
   private JsonNode domains(JsonNode node) {
