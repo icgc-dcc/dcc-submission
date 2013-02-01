@@ -41,7 +41,7 @@ public class GeneTransformer {
     result.put("name", name(node));
     result.put("synonyms", synonyms(node));
     result.put("description", description(node));
-    result.put("chromosome", location(node).path("chromosome"));
+    result.put("chromosome", location(node).get("chromosome"));
     result.put("strand", asInteger(location(node).get("strand")));
     result.put("start", asInteger(location(node).get("txStart")));
     result.put("end", asInteger(location(node).get("txEnd")));
@@ -54,11 +54,11 @@ public class GeneTransformer {
   }
 
   private JsonNode id(JsonNode node) {
-    return node.path("id");
+    return node.get("id");
   }
 
   private JsonNode symbol(JsonNode node) {
-    return node.path("name");
+    return node.get("name");
   }
 
   private JsonNode name(JsonNode node) {
@@ -117,9 +117,9 @@ public class GeneTransformer {
     transcript.put("id", node.get("id"));
     transcript.put("name", node.get("name"));
     transcript.put("is_canonical", node.get("isCanonical"));
-    transcript.put("length", asInteger(node.path("length")));
-    transcript.put("length_amino_acid", asInteger(node.path("lengthAminoAcid")));
-    transcript.put("length_cds", asInteger(node.path("lengthDNA")));
+    transcript.put("length", asInteger(node.get("length")));
+    transcript.put("length_amino_acid", asInteger(node.get("lengthAminoAcid")));
+    transcript.put("length_cds", asInteger(node.get("lengthDNA")));
     transcript.put("number_of_exons", asInteger(node.get("numberOfExons")));
     transcript.put("start_exon", asInteger(node.get("startExon")));
     transcript.put("seq_exon_start", asInteger(node.get("seqExonStart")));
@@ -189,7 +189,7 @@ public class GeneTransformer {
   }
 
   private static Integer asInteger(JsonNode node) {
-    return node.isNull() ? null : node.asInt();
+    return node == null || node.isNull() ? null : node.asInt();
   }
 
 }
