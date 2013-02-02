@@ -24,9 +24,10 @@ import java.io.IOException;
 
 import lombok.SneakyThrows;
 
+import org.icgc.dcc.genes.mongodb.EmbeddedMongo;
 import org.jongo.Jongo;
 import org.jongo.MongoCollection;
-import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -38,21 +39,17 @@ import com.mongodb.DB;
 import com.mongodb.Mongo;
 import com.mongodb.MongoURI;
 
-public class IntegrationTest extends MongoIntegrationTest {
+public class IntegrationTest {
 
-  private JsonSchema schema;
+  private JsonSchema schema = getSchema();
 
-  @Before
-  public void setUp(){
-    super.setUp();
-    
-    this.schema = getSchema();
-  }
+  @Rule
+  public final EmbeddedMongo embeddedMongo = new EmbeddedMongo();
 
   @Test
   public void testLoader() throws IOException {
     String bsonFile = "src/test/resources/heliotrope/genes.bson";
-    String uri = "mongodb://localhost:" + getPort() + "/dcc-genome.Genes";
+    String uri = "mongodb://localhost:" + embeddedMongo.getPort() + "/dcc-genome.Genes";
     Main.main("-f", bsonFile, "-d", uri);
 
     JsonNode gene = getGene(uri);
@@ -84,7 +81,7 @@ public class IntegrationTest extends MongoIntegrationTest {
   }
 
   private Jongo getJongo(MongoURI mongoUri) {
-    Mongo mongo = getMongo();
+    Mongo mongo = embeddedMongo.getMongo();
     DB db = mongo.getDB(mongoUri.getDatabase());
     Jongo jongo = new Jongo(db);
 
