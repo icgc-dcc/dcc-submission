@@ -1,5 +1,7 @@
 package org.icgc.dcc.genes.mongodb;
 
+import java.util.logging.Logger;
+
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,14 +34,15 @@ public class EmbeddedMongo implements TestRule {
     return new Statement() {
       @Override
       public void evaluate() throws Throwable {
-        log.info("Starting Mongo...");
+        log.info("Starting embedded Mongo...");
         start();
+        log.info("Embedded Mongo started");
 
-        log.info("Executing...");
         base.evaluate();
 
-        log.info("Stopping Mongo...");
+        log.info("Stopping embedded Mongo...");
         stop();
+        log.info("Embedded Mongo stopped");
       }
     };
   }
@@ -54,12 +57,13 @@ public class EmbeddedMongo implements TestRule {
 
   @SneakyThrows
   private void start() {
-    // Configure
+    // Suppress logging
     System.setProperty("de.flapdoodle.embed.io.tmpdir", "target");
-    RuntimeConfig runtimeConfig = new RuntimeConfig();
+    RuntimeConfig runtimeConfig = RuntimeConfig.getInstance(Logger.getLogger(getClass().getName()));
     runtimeConfig.setProcessOutput(new ProcessOutput(new NullProcessor(), new NullProcessor(), new NullProcessor()));
     runtimeConfig.setTempDirFactory(new FixedPath("target"));
 
+    // Start mongo
     MongodStarter runtime = MongodStarter.getInstance(runtimeConfig);
     mongodConfig = new MongodConfig(Version.Main.V2_3);
     mongodExe = runtime.prepare(mongodConfig);
@@ -69,6 +73,7 @@ public class EmbeddedMongo implements TestRule {
 
   @SneakyThrows
   private void stop() {
+    // Stop mongo
     mongod.stop();
     mongodExe.stop();
   }
