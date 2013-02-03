@@ -375,11 +375,9 @@
     <slf4j.version>1.6.1</slf4j.version>
     <cdh.version>cdh4.1.2</cdh.version>
     <mina.version>0.6.0</mina.version>
-    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <elasticsearch.version>0.19.9</elasticsearch.version>
     <morphia.version>0.99.1-DCC</morphia.version>
     <shiro.version>1.2.0</shiro.version>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <logback.version>1.0.3</logback.version>
     <hadoop.version>2.0.0</hadoop.version>
     <hadoop-mr1-cdh.version>${hadoop.version}-mr1-${cdh.version}</hadoop-mr1-cdh.version>
