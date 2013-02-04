@@ -38,23 +38,6 @@ public class FunctionUtils {
     // Prevent construction
   }
 
-  public final static class PrefixFunction implements Function<Comparable<?>, String> {
-
-    private final String prefix;
-
-    private final String sep;
-
-    public PrefixFunction(String prefix, String sep) {
-      this.prefix = checkNotNull(prefix);
-      this.sep = checkNotNull(sep);
-    }
-
-    @Override
-    public String apply(Comparable<?> input) {
-      return FieldsUtils.prefix(prefix, sep, input.toString());
-    }
-  };
-
   public final static class AlternativePrefixFunction implements Function<Schema, String> {
 
     private final String prefix;
