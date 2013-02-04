@@ -1,0 +1,180 @@
+<div class="row">
+    <div class="span3">
+        <div class="well"><i class="icon-spinner icon-spin"></i> Facets</div>
+    </div>
+    <div class="span9">
+        <div class="row"><h1 class="span">Advanced Search</h1></div>
+
+
+        <div class="row">
+            <div class="span3">
+                <div style="width:220px; height: 220px; background: #eee"></div>
+            </div>
+            <div class="span3">
+                <div style="width:220px; height: 220px; background: #eee"></div>
+            </div>
+            <div class="span3">
+                <div style="width:220px; height: 220px; background: #eee"></div>
+            </div>
+        </div>
+
+        <div class="row">
+            <table class="table table-bordered table-striped">
+                <thead>
+                <tr>
+                    <th>Donor ID</th>
+                    <th>Primary Site</th>
+                    <th>Project</th>
+                    <th>Gender</th>
+                    <th>Age at Diagnosis</th>
+                    <th>Number of Genes affected by SSM</th>
+                    <th>SSM</th>
+                    <th>CNSM</th>
+                    <th>Expression</th>
+                    <th>Methylation</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="donor in donors">
+                    <td><a href="#/projects/{{donor.id}}">{{donor.name}}</a></td>
+                    <td>{{donor.site}}</td>
+                    <td>{{donor.country}}</td>
+                    <td>{{donor.donors}}</td>
+                    <td>{{donor.ssm}}</td>
+                    <td>{{donor.cnsm}}</td>
+                    <td>{{donor.gene_expression}}</td>
+                    <td>{{donor.dna_methylation}}</td>
+                    <td>
+                        <ul class="unstyled" ng-repeat="pmid in project.pubmed_id">
+                            <li><a href="http://www.ncbi.nlm.nih.gov/pubmed/{{pmid}}">pmid:{{pmid}}</a></li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td><a href="#/donors/LFS_MB1">LFS_MB1</a></td>
+                    <td>Brain</td>
+                    <td>Pediatric Brain Tumors - DKFZ, DE</td>
+                    <td>Female</td>
+                    <td style="text-align: center">11</td>
+                    <td style="text-align: right">1279</td>
+                    <td style="color:#006400; text-align: center"><i class="icon-ok-sign"></i></td>
+                    <td style="color:#006400; text-align: center"><i class="icon-ok-sign"></i></td>
+                    <td style="color:#8b0000; text-align: center"><i class="icon-remove-sign"></i></td>
+                    <td style="color:#8b0000; text-align: center"><i class="icon-remove-sign"></i></td>
+                </tr>
+                <tr ui-if="!projects.length">
+                    <td colspan="10"><i class="icon-spinner icon-spin"></i> Fetching projects...</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="row">
+            <table class="table table-bordered table-striped">
+                <thead>
+                <tr>
+                    <th>Gene Symbol</th>
+                    <th>Gene Name</th>
+                    <th>Chromosome</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Band</th>
+                    <th>Gene Type</th>
+                    <th>Number of Donors affected by SSM</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="gene in genes">
+                    <td><a href="#/genes/{{project.id}}">{{project.name}}</a></td>
+                    <td>{{project.site}}</td>
+                    <td>{{project.country}}</td>
+                    <td>{{project.donors}}</td>
+                    <td>{{project.ssm}}</td>
+                    <td>{{project.cnsm}}</td>
+                    <td>{{project.gene_expression}}</td>
+                    <td>{{project.dna_methylation}}</td>
+                    <td>
+                        <ul class="unstyled" ng-repeat="pmid in project.pubmed_id">
+                            <li><a href="http://www.ncbi.nlm.nih.gov/pubmed/{{pmid}}">pmid:{{pmid}}</a></li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td><a href="#/genes/KRAS">KRAS</a></td>
+                    <td>v-Ki-ras2 Kirsten rat sarcoma viral oncogene homolog</td>
+                    <td style="text-align: center">12</td>
+                    <td style="text-align: right">25357723</td>
+                    <td style="text-align: right">25403870</td>
+                    <td>p12.1</td>
+                    <td>protein_coding</td>
+                    <td style="text-align: right">43</td>
+                </tr>
+                <tr ui-if="!projects.length">
+                    <td colspan="8"><i class="icon-spinner icon-spin"></i> Fetching projects...</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="row">
+            <table class="table table-bordered table-striped">
+                <thead>
+                <tr>
+                    <th>Variant ID</th>
+                    <th>Project</th>
+                    <th>Gene Symbol</th>
+                    <th>Donor ID</th>
+                    <th>Type</th>
+                    <th>Chr</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Mutation</th>
+                    <th>Reference Genome Allele</th>
+                    <th>Tumour Genotype</th>
+                    <th>Consequence Type</th>
+                    <th>AA Mutation</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="project in projects">
+                    <td><a href="#/projects/{{project.id}}">{{project.name}}</a></td>
+                    <td>{{project.site}}</td>
+                    <td>{{project.country}}</td>
+                    <td>{{project.donors}}</td>
+                    <td>{{project.ssm}}</td>
+                    <td>{{project.cnsm}}</td>
+                    <td>{{project.gene_expression}}</td>
+                    <td>{{project.dna_methylation}}</td>
+                    <td>
+                        <ul class="unstyled" ng-repeat="pmid in project.pubmed_id">
+                            <li><a href="http://www.ncbi.nlm.nih.gov/pubmed/{{pmid}}">pmid:{{pmid}}</a></li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td><a href="#/variants/SSM:ana_1:LFS_MB4:ssm_8764">SSM:ana_1:LFS_MB4:ssm_8764</a></td>
+                    <td>Lymphocytic Leukemia - ISC/MICINN, ES</a></td>
+                    <td>ZNF668
+                        AC135050.1
+                    </td>
+                    <td>42</td>
+                    <td>single base substitution</td>
+                    <td style="text-align: center">16</td>
+                    <td style="text-align: right">31072822</td>
+                    <td style="text-align: right">31072822</td>
+                    <td style="text-align: center">A>C</td>
+                    <td style="text-align: center">A</td>
+                    <td style="text-align: center">M</td>
+                    <td>non_synonymous_coding
+                        downstream
+                    </td>
+                    <td style="text-align: center">T>P
+                        V>G
+                    </td>
+                </tr>
+                <tr ui-if="!projects.length">
+                    <td colspan="13"><i class="icon-spinner icon-spin"></i> Fetching projects...</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

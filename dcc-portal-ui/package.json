@@ -1,0 +1,9 @@
+{
+  "author": "Shane Wilson",
+  "name": "DCC-Data-Portal-Client",
+  "version": "0.0.1-SNAPSHOT",
+  "dependencies": {},
+  "devDependencies": {
+    "http-proxy": "0.8.7"
+  }
+}

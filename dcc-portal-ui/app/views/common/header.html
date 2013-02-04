@@ -1,0 +1,40 @@
+<div class="container">
+    <div class="subhead">
+        <div class="span3" style="margin-left: 0">
+            <a href="http://icgc.org" target="_blank">
+                <img alt="ICGC"
+                     class="pull-left"
+                     style="margin-top:9px"
+                     width="172"
+                     height="57"
+                     src="/styles/images/logo-icgc.png">
+            </a>
+        </div>
+        <div class="span6">
+            <h1 style="">Data Portal<br>
+                <small>Beta Release</small>
+            </h1>
+        </div>
+        <div class="span pull-right" style="margin-top:3px">
+            <a href="http://oicr.on.ca" target="_blank">
+                <img alt="OICR"
+                     width="112"
+                     height="75"
+                     src="/styles/images/logo-oicr.jpg">
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="container" ng-controller="NavigationController">
+    <div class="navbar">
+        <div class="navbar-inner">
+            <div class="container">
+                <ul class="nav" ng-repeat="n in navigation">
+                    <li><a class="" href="{{n.href}}">{{n.title}}</a></li>
+                </ul>
+            </div>
+        </div>
+        <!-- /navbar-inner -->
+    </div>
+</div>
