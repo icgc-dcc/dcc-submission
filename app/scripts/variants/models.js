@@ -22,12 +22,12 @@ angular.module('app.variants.models', []);
 angular.module('app.variants.models').factory('Variants', ['$http', function ($http) {
   return {
     query: function () {
-      return $http.get('/ws/variants').then(function (response) {
+      return $http.get('/ws/observations/').then(function (response) {
         return response.data;
       });
     },
     get: function (params) {
-      return $http.get('/ws/variants/' + params.variant).then(function (response) {
+      return $http.get('/ws/observations/' + params.variant).then(function (response) {
         return response.data.data;
       });
     }
