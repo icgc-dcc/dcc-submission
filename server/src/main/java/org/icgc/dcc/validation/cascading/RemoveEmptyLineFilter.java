@@ -22,13 +22,10 @@ import cascading.operation.BaseOperation;
 import cascading.operation.Filter;
 import cascading.operation.FilterCall;
 
-/**
- * 
- */
-public class RemoveEmptyLineFilter extends BaseOperation implements Filter {
+public class RemoveEmptyLineFilter extends BaseOperation<Void> implements Filter<Void> {
 
   @Override
-  public boolean isRemove(FlowProcess flowProcess, FilterCall filterCall) {
+  public boolean isRemove(@SuppressWarnings("rawtypes") FlowProcess flowProcess, FilterCall<Void> filterCall) {
     if(filterCall.getArguments().getString("line").isEmpty()) {
       return true;
     } else {
