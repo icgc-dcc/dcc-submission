@@ -22,13 +22,10 @@ import cascading.operation.BaseOperation;
 import cascading.operation.Filter;
 import cascading.operation.FilterCall;
 
-/**
- * 
- */
-public class RemoveHeaderFilter extends BaseOperation implements Filter {
+public class RemoveHeaderFilter extends BaseOperation<Void> implements Filter<Void> {
 
   @Override
-  public boolean isRemove(FlowProcess flowProcess, FilterCall filterCall) {
+  public boolean isRemove(@SuppressWarnings("rawtypes") FlowProcess flowProcess, FilterCall<Void> filterCall) {
     if(filterCall.getArguments().getLong(ValidationFields.OFFSET_FIELD_NAME) == 0) {
       return true;
     } else {

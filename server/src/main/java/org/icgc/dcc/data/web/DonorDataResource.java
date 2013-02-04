@@ -51,6 +51,7 @@ public class DonorDataResource extends SchemaDataResource {
     return collection("Observation").find(query);
   }
 
+  @SuppressWarnings("unused")
   private Iterable<String> geneId(DBObject observation) {
     @SuppressWarnings("unchecked")
     List<DBObject> affectedGenes = (List<DBObject>) observation.get("affectedGenes");
