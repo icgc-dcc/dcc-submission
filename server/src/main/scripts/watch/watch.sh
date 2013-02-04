@@ -13,7 +13,7 @@ log_file=${1?} && shift
 ignore_file=${1?} && shift
 send_ok=${1?} && shift
 email=${1?} && shift
-keyword=$2
+keyword=$1
 keyword=${keyword:=exception}
 
 echo
