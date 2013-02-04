@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.validation.cascading;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -26,7 +28,6 @@ import cascading.tuple.Fields;
 
 import com.google.common.collect.ImmutableList;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Utility class for working with cascading {@code Fields} objects.

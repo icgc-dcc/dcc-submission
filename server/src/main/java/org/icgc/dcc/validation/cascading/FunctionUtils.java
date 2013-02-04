@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.validation.cascading;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import org.icgc.dcc.data.schema.Schema;
 import org.icgc.dcc.data.schema.ValueSchema;
 
@@ -27,8 +29,6 @@ import cascading.tuple.Fields;
 import cascading.tuple.TupleEntry;
 
 import com.google.common.base.Function;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Utility class for working with cascading {@code Function} objects.
