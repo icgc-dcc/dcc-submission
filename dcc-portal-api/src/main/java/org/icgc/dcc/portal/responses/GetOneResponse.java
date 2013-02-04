@@ -15,16 +15,37 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc;
+package org.icgc.dcc.portal.responses;
 
-import org.icgc.dcc.portal.DataPortalService;
-import org.junit.Test;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import org.elasticsearch.action.get.GetResponse;
 
-public class DataPortalServiceTest {
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.IOException;
 
-  @Test
-  public void testMain() throws Exception {
-    DataPortalService.main("server", "settings.yml");
+@EqualsAndHashCode(callSuper = false)
+@Data
+public final class GetOneResponse extends BaseResponse {
+
+ private final JsonNode data;
+
+  public GetOneResponse(final GetResponse hit, final HttpServletRequest hsr) {
+	  super(hsr);
+	  this.data = extractData(hit);
   }
 
+  private JsonNode extractData(final GetResponse hit) {
+    try {
+      return new ObjectMapper().readValue(hit.getSourceAsString(), JsonNode.class);
+    } catch (IOException e) {
+      throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST)
+          .entity(new ErrorResponse(Response.Status.BAD_REQUEST, e)).type(MediaType.APPLICATION_JSON_TYPE).build());
+    }
+  }
 }

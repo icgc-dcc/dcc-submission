@@ -15,16 +15,32 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc;
+package org.icgc.dcc.portal.managers;
 
-import org.icgc.dcc.portal.DataPortalService;
-import org.junit.Test;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import com.yammer.dropwizard.lifecycle.Managed;
+import lombok.extern.slf4j.Slf4j;
+import org.elasticsearch.client.Client;
 
-public class DataPortalServiceTest {
+@Slf4j
+@Singleton
+public final class ElasticSearchClientManager implements Managed {
 
-  @Test
-  public void testMain() throws Exception {
-    DataPortalService.main("server", "settings.yml");
+  private final Client client;
+
+  @Inject
+  public ElasticSearchClientManager(Client client) {
+    this.client = client;
+  }
+
+  @Override
+  public void start() throws Exception {}
+
+  @Override
+  public void stop() throws Exception {
+    log.info("Closing ElasticSearch client...");
+    client.close();
   }
 
 }

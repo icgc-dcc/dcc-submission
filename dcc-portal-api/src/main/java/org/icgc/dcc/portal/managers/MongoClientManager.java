@@ -15,16 +15,32 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc;
+package org.icgc.dcc.portal.managers;
 
-import org.icgc.dcc.portal.DataPortalService;
-import org.junit.Test;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import com.mongodb.Mongo;
+import com.yammer.dropwizard.lifecycle.Managed;
+import lombok.extern.slf4j.Slf4j;
 
-public class DataPortalServiceTest {
+@Slf4j
+@Singleton
+public final class MongoClientManager implements Managed {
 
-  @Test
-  public void testMain() throws Exception {
-    DataPortalService.main("server", "settings.yml");
+  private final Mongo mongo;
+
+  @Inject
+  public MongoClientManager(Mongo mongo) {
+    this.mongo = mongo;
+  }
+
+  @Override
+  public void start() throws Exception {}
+
+  @Override
+  public void stop() throws Exception {
+    log.info("Closing MongoDB client...");
+    mongo.close();
   }
 
 }

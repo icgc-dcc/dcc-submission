@@ -15,16 +15,32 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc;
+package org.icgc.dcc.portal.responses;
 
-import org.icgc.dcc.portal.DataPortalService;
-import org.junit.Test;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
-public class DataPortalServiceTest {
+import javax.ws.rs.core.Response.StatusType;
+import java.io.IOException;
 
-  @Test
-  public void testMain() throws Exception {
-    DataPortalService.main("server", "settings.yml");
+@EqualsAndHashCode(callSuper = false)
+@Data
+public final class ErrorResponse {
+  private final ErrorEntity error;
+
+  public ErrorResponse(final StatusType badRequest, final IOException e) {
+    this.error = new ErrorEntity(badRequest, e);
   }
 
+  @Data
+  private static class ErrorEntity {
+    private final int code;
+
+    private final String message;
+
+    private ErrorEntity(final StatusType code, final IOException message) {
+      this.code = code.getStatusCode();
+      this.message = message.getMessage();
+    }
+  }
 }

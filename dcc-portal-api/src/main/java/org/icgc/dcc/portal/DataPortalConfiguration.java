@@ -15,16 +15,25 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc;
+package org.icgc.dcc.portal;
 
-import org.icgc.dcc.portal.DataPortalService;
-import org.junit.Test;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.yammer.dropwizard.config.Configuration;
+import lombok.Getter;
+import org.icgc.dcc.portal.configurations.ElasticSearchConfiguration;
+import org.icgc.dcc.portal.configurations.MongoDbConfiguration;
 
-public class DataPortalServiceTest {
+import javax.validation.Valid;
 
-  @Test
-  public void testMain() throws Exception {
-    DataPortalService.main("server", "settings.yml");
-  }
+@Getter
+public class DataPortalConfiguration extends Configuration {
+
+  @Valid
+  @JsonProperty
+  private MongoDbConfiguration mongo = new MongoDbConfiguration();
+
+  @Valid
+  @JsonProperty
+  private ElasticSearchConfiguration elastic = new ElasticSearchConfiguration();
 
 }

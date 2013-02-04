@@ -15,16 +15,31 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc;
+package org.icgc.dcc.portal.health;
 
-import org.icgc.dcc.portal.DataPortalService;
-import org.junit.Test;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import com.yammer.metrics.core.HealthCheck;
+import lombok.extern.slf4j.Slf4j;
+import org.elasticsearch.client.Client;
 
-public class DataPortalServiceTest {
+@Slf4j
+@Singleton
+public final class ElasticSearchHealthCheck extends HealthCheck {
+  private static final String CHECK_NAME = "elasticsearch";
 
-  @Test
-  public void testMain() throws Exception {
-    DataPortalService.main("server", "settings.yml");
+  private final Client client;
+
+  @Inject
+  public ElasticSearchHealthCheck(Client client) {
+    super(CHECK_NAME);
+    this.client = client;
   }
 
+  @Override
+  protected Result check() throws Exception {
+    log.info("Checking the Health of ElasticSearch");
+    client.admin().cluster().prepareHealth().execute().actionGet().getStatus().name();
+    return Result.healthy();
+  }
 }

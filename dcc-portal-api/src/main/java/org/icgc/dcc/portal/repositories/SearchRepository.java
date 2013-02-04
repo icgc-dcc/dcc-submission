@@ -15,16 +15,22 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc;
+package org.icgc.dcc.portal.repositories;
 
-import org.icgc.dcc.portal.DataPortalService;
-import org.junit.Test;
+import org.elasticsearch.action.get.GetResponse;
+import org.elasticsearch.search.SearchHits;
+import org.icgc.dcc.portal.core.Types;
+import org.icgc.dcc.portal.repositories.impl.SearchRepositoryImpl;
+import org.icgc.dcc.portal.search.SearchQuery;
 
-public class DataPortalServiceTest {
+public interface SearchRepository {
 
-  @Test
-  public void testMain() throws Exception {
-    DataPortalService.main("server", "settings.yml");
-  }
+  GetResponse getOne(final String id);
+
+  SearchHits getAll(final SearchQuery searchQuery);
+
+  SearchHits search(final String text, final int from, final int size);
+
+  SearchRepositoryImpl withType(final Types index);
 
 }

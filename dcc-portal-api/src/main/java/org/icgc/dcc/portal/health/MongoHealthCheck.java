@@ -15,16 +15,32 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc;
+package org.icgc.dcc.portal.health;
 
-import org.icgc.dcc.portal.DataPortalService;
-import org.junit.Test;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import com.mongodb.Mongo;
+import com.yammer.metrics.core.HealthCheck;
+import lombok.extern.slf4j.Slf4j;
 
-public class DataPortalServiceTest {
+@Slf4j
+@Singleton
+public final class MongoHealthCheck extends HealthCheck {
+  private static final String CHECK_NAME = "mongodb";
 
-  @Test
-  public void testMain() throws Exception {
-    DataPortalService.main("server", "settings.yml");
+  private final Mongo mongo;
+
+  @Inject
+  public MongoHealthCheck(Mongo mongo) {
+    super(CHECK_NAME);
+    this.mongo = mongo;
+  }
+
+  @Override
+  protected Result check() throws Exception {
+    log.info("Checking Health of MongoDB");
+    mongo.getDatabaseNames();
+    return Result.healthy();
   }
 
 }

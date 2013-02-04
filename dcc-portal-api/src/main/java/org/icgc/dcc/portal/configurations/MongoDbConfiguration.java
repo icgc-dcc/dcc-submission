@@ -15,16 +15,17 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc;
+package org.icgc.dcc.portal.configurations;
 
-import org.icgc.dcc.portal.DataPortalService;
-import org.junit.Test;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
 
-public class DataPortalServiceTest {
+@Getter
+public class MongoDbConfiguration {
+  @JsonProperty
+  private String uri = "mongodb://localhost";
 
-  @Test
-  public void testMain() throws Exception {
-    DataPortalService.main("server", "settings.yml");
-  }
+  @JsonProperty
+  private String db = "data-portal-local";
 
 }

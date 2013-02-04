@@ -15,16 +15,19 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc;
+package org.icgc.dcc.portal.core;
 
-import org.icgc.dcc.portal.DataPortalService;
-import org.junit.Test;
+public enum Types {
+  ALL("_all"), GENES("genes"), DONORS("donors"), OBSERVATIONS("obs"), PROJECTS("projects");
 
-public class DataPortalServiceTest {
+  private String type;
 
-  @Test
-  public void testMain() throws Exception {
-    DataPortalService.main("server", "settings.yml");
+  private Types(final String type) {
+    this.type = type;
+  }
+
+  public final String toString() {
+    return this.type;
   }
 
 }

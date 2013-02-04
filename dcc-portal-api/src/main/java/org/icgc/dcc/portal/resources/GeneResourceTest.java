@@ -15,16 +15,46 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc;
+package org.icgc.dcc.portal.resources;
 
-import org.icgc.dcc.portal.DataPortalService;
+import com.sun.jersey.api.client.WebResource;
+import com.yammer.dropwizard.testing.ResourceTest;
+import org.icgc.dcc.portal.repositories.impl.SearchRepositoryImpl;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
-public class DataPortalServiceTest {
+import javax.ws.rs.core.Response;
+
+import static org.fest.assertions.api.Assertions.assertThat;
+
+@RunWith(MockitoJUnitRunner.class)
+@SuppressWarnings("unchecked")
+public class GeneResourceTest extends ResourceTest {
+
+  @Mock
+  private SearchRepositoryImpl store;
+
+  @Override
+  protected final void setUpResources() throws Exception {
+    // when(store.search()).thenReturn();
+    addResource(new GeneResource(store));
+  }
 
   @Test
-  public void testMain() throws Exception {
-    DataPortalService.main("server", "settings.yml");
+  public final void testGetAll() throws Exception {
+    WebResource wr = client().resource("/genes");
+    assertThat(wr.get(Response.class).getStatus()).isEqualTo(Response.Status.OK.getStatusCode());
+
+    // verify(store).getAll();
+  }
+
+  // @Test
+  public final void testGetOne() throws Exception {
+    // assertThat(client().resource("/genes/1").get(Gene.class)).isEqualTo(gene1);
+
+    // verify(store).getOne("1");
   }
 
 }

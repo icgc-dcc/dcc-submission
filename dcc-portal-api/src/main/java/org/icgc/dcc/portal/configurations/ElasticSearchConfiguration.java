@@ -15,16 +15,22 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc;
+package org.icgc.dcc.portal.configurations;
 
-import org.icgc.dcc.portal.DataPortalService;
-import org.junit.Test;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
 
-public class DataPortalServiceTest {
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 
-  @Test
-  public void testMain() throws Exception {
-    DataPortalService.main("server", "settings.yml");
-  }
+@Getter
+public class ElasticSearchConfiguration {
+  @JsonProperty
+  private String host = "localhost";
+
+  @Min(1)
+  @Max(65535)
+  @JsonProperty
+  private int port = 9300;
 
 }
