@@ -1,6 +1,9 @@
 package org.icgc.dcc;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.icgc.dcc.config.ConfigModule;
 import org.icgc.dcc.core.CoreModule;
@@ -19,6 +22,7 @@ import org.icgc.dcc.web.WebModule;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
 public class Main {
@@ -28,12 +32,16 @@ public class Main {
   private static final String HADOOP_USER_NAME = "hdfs";
 
   private static enum CONFIG {
-    qa("application_qa"), dev("application_dev"), local("application");
+    qa("application_qa"), dev("application_dev"), local("application"), external(null);
 
     String filename;
 
     private CONFIG(String filename) {
       this.filename = filename;
+    }
+
+    public static String listValues() {
+      return Arrays.asList(CONFIG.values()).toString();
     }
   };
 
@@ -41,10 +49,10 @@ public class Main {
 
   public static void main(String[] args) throws IOException {
 
-    String config = (args != null && args.length > 0) ? CONFIG.valueOf(args[0]).filename : "application";
-    System.setProperty(HADOOP_USER_NAME_PARAM, HADOOP_USER_NAME); // see DCC-572
+    Config parsedConfig = loadConfig(args);
 
-    Main.injector = Guice.createInjector(new ConfigModule(ConfigFactory.load(config))//
+    System.setProperty(HADOOP_USER_NAME_PARAM, HADOOP_USER_NAME); // see DCC-572
+    Main.injector = Guice.createInjector(new ConfigModule(parsedConfig) //
         , new CoreModule()//
         , new HttpModule()//
         , new JerseyModule()//
@@ -70,6 +78,30 @@ public class Main {
     }, "Shutdown-thread"));
 
     injector.getInstance(DccRuntime.class).start();
+  }
+
+  private static Config loadConfig(String[] args) throws FileNotFoundException {
+    CONFIG configType;
+    try {
+      configType = (args != null && args.length > 0) ? CONFIG.valueOf(args[0]) : CONFIG.local;
+    } catch(IllegalArgumentException e) {
+      throw new IllegalArgumentException(args[0] + " is not a valid argument. Valid arguments are "
+          + CONFIG.listValues());
+    }
+    Config parsedConfig;
+    if(configType == CONFIG.external) {
+      if(args.length < 2) {
+        throw new IllegalArgumentException("The argument 'external' requires a filename as an additional parameter");
+      }
+      File configFile = new File(args[1]);
+      if(configFile.exists() == false) {
+        throw new FileNotFoundException(args[1]);
+      }
+      parsedConfig = ConfigFactory.parseFile(configFile).resolve();
+    } else {
+      parsedConfig = ConfigFactory.load(configType.filename);
+    }
+    return parsedConfig;
   }
 
   /**

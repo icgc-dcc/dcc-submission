@@ -3,10 +3,10 @@
 #
 # usage: ./deploy_local.sh my.dcc.server my_mode [optional flags...]
 # example:
-#  ./deploy_local.sh ***REMOVED*** dev # deploy on dev
-#  ./deploy_local.sh ***REMOVED*** dev false false # deploy on dev, don't skip mvn tests
-#  ./deploy_local.sh ***REMOVED*** dev false ignoreme true # deploy on dev, skip jar generation altogther (assumes there's an existing jar from a previous run)
-#  ./deploy_local.sh hwww-qa.oicr.on.ca dev true # prepare deployment on qa, skipping scp-ing the file
+#  src/main/scripts/deploy_local.sh ***REMOVED*** dev # deploy on dev
+#  src/main/scripts/deploy_local.sh ***REMOVED*** dev false false # deploy on dev, don't skip mvn tests
+#  src/main/scripts/deploy_local.sh ***REMOVED*** dev false ignoreme true # deploy on dev, skip jar generation altogther (assumes there's an existing jar from a previous run)
+#  src/main/scripts/deploy_local.sh hwww-qa.oicr.on.ca dev true # prepare deployment on qa, skipping scp-ing the file
 #
 # notes:
 # - this script is based on former https://wiki.oicr.on.ca/display/DCCSOFT/Standard+operating+procedures#Standardoperatingprocedures-SOPforDeployingtheserver (which also links to this script now)
@@ -27,8 +27,6 @@ dev_target_dir="${dev_server_dir?}/target"
 dev_client_dir="${dev_dir?}/client"
 dev_public_dir="${dev_client_dir?}/public"
 
-dev_server_deploy_script_name="remote_startup.sh"
-dev_server_deploy_script="${dev_dir?}/${dev_server_deploy_script_name?}"
 parent_pom_file="${dev_dir?}/pom.xml"
 server_pom_file="${dev_server_dir?}/pom.xml"
 
@@ -125,7 +123,6 @@ echo "building client files..."
 cp "${jar_file?}" "${local_server_dir?}/"
 cp -r "${dev_public_dir?}" "${local_client_dir?}"
 echo "${git_hash?}" > "${local_client_dir?}/git.md5" # DCC-555
-cp "${dev_server_deploy_script?}" "${local_working_dir?}/"
 
 echo -e "content:\n"
 find ${local_working_dir?}
@@ -167,36 +164,25 @@ echo "remote_log_dir=\"${remote_log_dir?}\""
 log_base="${artifact_id?}-${timestamp?}"
 log_file="${remote_log_dir?}/${log_base?}.log"
 
-if false; then # WIP
- echo && read -p "start server? [press Enter]"
- server_command="./${dev_server_deploy_script_name?} \"${timestamp?}\" \"${jar_file_name?}\" \"${log_file?}\" \"${remote_tmp_dir?}\" \"${remote_dir?}\" \"${remote_server_dir?}\" \"${remote_realm_file?}\""
- echo "server_command=\"${server_command?}\""
- sudo_command="sudo -u hdfs -i \"${server_command?}\""
- echo "sudo_command=\"${sudo_command?}\""
- screen_command="screen -S \"${sudo_command?}\""
- echo "screen_command=\"${screen_command?}\""
- echo "enter password to ssh and start server at ${server?}" && ssh ${username?}@${server?} "${sudo_command?}"
-else
- echo "==========================================================================="
- echo "please issue the following commands on ${server?}:"
- echo
- if ${skip_scp?}; then
-  echo "# copy ${local_working_dir?} to ${server?}:${remote_tmp_dir?}"
-  echo
- fi
- echo "ssh ${username:='your_user'}@${server?}"
- echo "sudo -u hdfs -i"
- echo
- echo "current_pid=\$(jps -lm | grep \"${main_class?} ${mode?}\" | awk '{print "'$1'"}') && read -p \"kill \$current_pid?\" && kill \$current_pid"
- echo "mv ${remote_dir?} ${backup_dir?}/dcc.${timestamp?}.bak"
- echo "cp -r ${remote_tmp_dir?} ${remote_dir?}"
- echo "cp ${remote_realm_file?} ${remote_server_dir?}/"
- echo "cd ${remote_server_dir?}"
- echo "nohup java -cp ${jar_file_name?} ${main_class?} ${mode?} >> ${log_file?} 2>&1 &"
- if [ "dev" == "${mode?}" ]; then read -p "must modify watch crontab to match the new log file (they are timestamped)"; fi
- echo "less +F ${log_file?}"
+echo "==========================================================================="
+echo "please issue the following commands on ${server?}:"
+echo
+if ${skip_scp?}; then
+ echo "# copy ${local_working_dir?} to ${server?}:${remote_tmp_dir?}"
  echo
 fi
+echo "ssh ${username:='your_user'}@${server?}"
+echo "sudo -u hdfs -i"
+echo
+echo "current_pid=\$(jps -lm | grep \"${main_class?} ${mode?}\" | awk '{print "'$1'"}') && read -p \"kill \$current_pid?\" && kill \$current_pid"
+echo "mv ${remote_dir?} ${backup_dir?}/dcc.${timestamp?}.bak"
+echo "cp -r ${remote_tmp_dir?} ${remote_dir?}"
+echo "cp ${remote_realm_file?} ${remote_server_dir?}/"
+echo "cd ${remote_server_dir?}"
+echo "nohup java -cp ${jar_file_name?} ${main_class?} ${mode?} >> ${log_file?} 2>&1 &"
+echo "less +F ${log_file?}"
+if [ "dev" == "${mode?}" ]; then read -p "must modify watch crontab to match the new log file (they are timestamped)"; fi
+echo
 
 # ===========================================================================
 
