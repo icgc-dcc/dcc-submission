@@ -209,8 +209,7 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
     }
   }
 
-  @SuppressWarnings("rawtypes")
-  static abstract class NoNullBufferBase extends BaseOperation implements Buffer {
+  static abstract class NoNullBufferBase extends BaseOperation<Void> implements Buffer<Void> {
 
     protected final String lhs;
 
@@ -263,7 +262,7 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
 
     private final int optionalSize;
 
-    private final transient Comparator[] tupleComparators;
+    private final transient Comparator<?>[] tupleComparators;
 
     ConditionalNoNullBuffer(String lhs, String rhs, String[] lhsFields, String[] rhsFields, String[] requiredLhsFields,
         String[] requiredRhsFields, String[] optionalLhsFields, String[] optionalRhsFields) {
@@ -279,7 +278,7 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
       this.optionalSize = optionalLhsFields.length;
       checkArgument(optionalSize > 0);
 
-      Comparator comparator = new Comparator() { // allows one side to be null
+      Comparator<Object> comparator = new Comparator<Object>() { // allows one side to be null
             @Override
             public int compare(Object object1, Object object2) {
               return object1 == null || object2 == null ? 0 : ((String) object1).compareTo(((String) object2));
@@ -292,8 +291,7 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public void operate(FlowProcess flowProcess, BufferCall bufferCall) {
+    public void operate(@SuppressWarnings("rawtypes") FlowProcess flowProcess, BufferCall<Void> bufferCall) {
       Iterator<TupleEntry> iter = bufferCall.getArgumentsIterator();
       TupleEntry group = bufferCall.getGroup();
 
@@ -374,8 +372,7 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
     }
 
     @Override
-    @SuppressWarnings("rawtypes")
-    public void operate(FlowProcess flowProcess, BufferCall bufferCall) {
+    public void operate(@SuppressWarnings("rawtypes") FlowProcess flowProcess, BufferCall<Void> bufferCall) {
       Iterator<TupleEntry> iter = bufferCall.getArgumentsIterator();
       while(iter.hasNext()) {
         TupleEntry entry = iter.next();

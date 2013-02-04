@@ -36,16 +36,17 @@ public class GeneTransformer {
     ObjectNode result = mapper.createObjectNode();
 
     // Simple
-    result.set("id", id(node));
-    result.set("symbol", symbol(node));
-    result.set("name", name(node));
-    result.set("synonyms", synonyms(node));
-    result.set("description", description(node));
-    result.set("chromosome", location(node).path("chromosome"));
-    result.set("strand", location(node).path("strand"));
-    result.set("start", location(node).path("txStart"));
-    result.set("end", location(node).path("txEnd"));
-    result.set("canonical_transcript_id", canonicalTranscriptId(node));
+    result.put("id", id(node));
+    result.put("symbol", symbol(node));
+    result.put("name", name(node));
+    result.put("biotype", biotype(node));
+    result.put("synonyms", synonyms(node));
+    result.put("description", description(node));
+    result.put("chromosome", location(node).get("chromosome"));
+    result.put("strand", asInteger(location(node).get("strand")));
+    result.put("start", asInteger(location(node).get("txStart")));
+    result.put("end", asInteger(location(node).get("txEnd")));
+    result.put("canonical_transcript_id", canonicalTranscriptId(node));
 
     // Collection
     result.put("transcripts", transcripts(node));
@@ -54,15 +55,21 @@ public class GeneTransformer {
   }
 
   private JsonNode id(JsonNode node) {
-    return node.path("id");
+    return node.get("id");
   }
 
   private JsonNode symbol(JsonNode node) {
-    return node.path("name");
+    return node.get("name");
+  }
+
+  private JsonNode biotype(JsonNode node) {
+    return node.path("biotype");
   }
 
   private JsonNode name(JsonNode node) {
-    return node.path("sections").path("description").path("data").path("fullName");
+    JsonNode fullName = node.path("sections").path("description").path("data").path("fullName");
+
+    return fullName.isNull() ? symbol(node) : fullName;
   }
 
   private JsonNode description(JsonNode node) {
@@ -112,18 +119,19 @@ public class GeneTransformer {
     ObjectNode transcript = mapper.createObjectNode();
 
     // Simple
-    transcript.put("id", node.path("id").asText());
-    transcript.put("name", node.path("name").asText());
-    transcript.put("is_canonical", node.path("isCanonical").asBoolean());
-    transcript.put("length", node.path("length").asInt());
-    transcript.put("length_amino_acid", node.path("lengthAminoAcid").asInt());
-    transcript.put("length_dna", node.path("lengthDNA").asInt());
-    transcript.put("number_of_exons", node.path("numberOfExons").asInt());
-    transcript.put("start_exon", node.path("startExon").asInt());
-    transcript.put("seq_exon_start", node.path("seqExonStart").asInt());
-    transcript.put("seq_exon_end", node.path("seqExonEnd").asInt());
-    transcript.put("end_exon", node.path("endExon").asInt());
-    transcript.put("translation_id", node.path("translationId").asText());
+    transcript.put("id", node.get("id"));
+    transcript.put("name", node.get("name"));
+    transcript.put("biotype", node.get("biotype"));
+    transcript.put("is_canonical", node.get("isCanonical"));
+    transcript.put("length", asInteger(node.get("length")));
+    transcript.put("length_amino_acid", asInteger(node.get("lengthAminoAcid")));
+    transcript.put("length_cds", asInteger(node.get("lengthDNA")));
+    transcript.put("number_of_exons", asInteger(node.get("numberOfExons")));
+    transcript.put("start_exon", asInteger(node.get("startExon")));
+    transcript.put("seq_exon_start", asInteger(node.get("seqExonStart")));
+    transcript.put("seq_exon_end", asInteger(node.get("seqExonEnd")));
+    transcript.put("end_exon", asInteger(node.get("endExon")));
+    transcript.put("translation_id", node.get("translationId"));
 
     // Collections
     transcript.put("exons", exons(node));
@@ -147,10 +155,10 @@ public class GeneTransformer {
     ObjectNode exon = mapper.createObjectNode();
 
     // Simple
-    exon.put("start", node.path("start").asInt());
-    exon.put("start_phase", node.path("startPhase").asInt());
-    exon.put("end", node.path("end").asInt());
-    exon.put("end_phase", node.path("endPhase").asInt());
+    exon.put("start", asInteger(node.get("start")));
+    exon.put("start_phase", asInteger(node.get("startPhase")));
+    exon.put("end", asInteger(node.get("end")));
+    exon.put("end_phase", asInteger(node.get("endPhase")));
 
     return exon;
   }
@@ -176,14 +184,18 @@ public class GeneTransformer {
     ObjectNode domain = mapper.createObjectNode();
 
     // Simple
-    domain.put("interpro_id", node.path("interproId").asText());
-    domain.put("hit_name", node.path("hitName").asText());
-    domain.put("gff_source", node.path("gffSource").asText());
-    domain.put("description", node.path("description").asText());
-    domain.put("start", node.path("start").asInt());
-    domain.put("end", node.path("end").asInt());
+    domain.put("interpro_id", node.get("interproId"));
+    domain.put("hit_name", node.get("hitName"));
+    domain.put("gff_source", node.get("gffSource"));
+    domain.put("description", node.get("description"));
+    domain.put("start", asInteger(node.get("start")));
+    domain.put("end", asInteger(node.get("end")));
 
     return domain;
+  }
+
+  private static Integer asInteger(JsonNode node) {
+    return node == null || node.isNull() ? null : node.asInt();
   }
 
 }

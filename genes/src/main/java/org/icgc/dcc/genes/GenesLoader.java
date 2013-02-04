@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.UnknownHostException;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import org.jongo.Jongo;
@@ -37,7 +38,8 @@ import com.mongodb.MongoURI;
 import de.undercouch.bson4jackson.BsonFactory;
 
 /**
- * Loads from Heliotrope {@code genes.bson} {@code mongodump} file into DCC gene database.
+ * Loads from Heliotrope {@code genes.bson} {@code mongodump} file into DCC gene
+ * database.
  */
 @Slf4j
 public class GenesLoader {
@@ -53,7 +55,8 @@ public class GenesLoader {
     this.mongoUri = mongoUri;
   }
 
-  public void load() throws IOException {
+  @SneakyThrows
+  public void load() {
     final MongoCollection genes = getTargetCollection(mongoUri);
     try {
       // Drop the current collection
@@ -100,11 +103,11 @@ public class GenesLoader {
   void eachGene(MappingIterator<JsonNode> iterator, GeneCallback callback) throws IOException {
     try {
       int insertCount = 0;
-      while(hasNext(iterator)) {
+      while (hasNext(iterator)) {
         JsonNode gene = iterator.next();
         callback.handle(gene);
 
-        if(++insertCount % 1000 == 0) {
+        if (++insertCount % 1000 == 0) {
           log.info("Processed {} genes", insertCount);
         }
       }
@@ -115,7 +118,8 @@ public class GenesLoader {
   }
 
   /**
-   * Wrapper method for working around with https://github.com/michel-kraemer/bson4jackson/issues/25
+   * Wrapper method for working around with
+   * https://github.com/michel-kraemer/bson4jackson/issues/25
    * 
    * @param iterator
    * @return
@@ -123,7 +127,7 @@ public class GenesLoader {
   boolean hasNext(MappingIterator<JsonNode> iterator) {
     try {
       return iterator.hasNextValue();
-    } catch(IOException e) {
+    } catch (IOException e) {
       // Erroneous bson4jackson exception?
       return false;
     }

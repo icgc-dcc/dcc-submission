@@ -37,12 +37,13 @@ public class HadoopJsonScheme extends TextLine {
   private transient ObjectMapper mapper = new ObjectMapper(new JsonFactory().disable(Feature.AUTO_CLOSE_TARGET))
       .configure(SerializationConfig.Feature.FAIL_ON_EMPTY_BEANS, false);
 
-  private transient ObjectWriter writer = mapper().defaultPrettyPrintingWriter();
+  private transient ObjectWriter writer = mapper().writerWithDefaultPrettyPrinter();
 
   public HadoopJsonScheme() {
 
   }
 
+  @SuppressWarnings({ "unchecked", "rawtypes" })
   @Override
   public void sink(FlowProcess<JobConf> flowProcess, SinkCall<Object[], OutputCollector> sinkCall) throws IOException {
     Object report = sinkCall.getOutgoingEntry().getTuple().getObject(0);
@@ -63,7 +64,7 @@ public class HadoopJsonScheme extends TextLine {
 
   private final ObjectWriter writer() {
     if(writer == null) {
-      writer = mapper().defaultPrettyPrintingWriter();
+      writer = mapper().writerWithDefaultPrettyPrinter();
     }
 
     return writer;

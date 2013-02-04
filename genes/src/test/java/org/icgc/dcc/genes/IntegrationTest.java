@@ -19,12 +19,15 @@ package org.icgc.dcc.genes;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
+import java.io.File;
 import java.io.IOException;
-import java.net.UnknownHostException;
 
+import lombok.SneakyThrows;
+
+import org.icgc.dcc.genes.mongodb.EmbeddedMongo;
 import org.jongo.Jongo;
 import org.jongo.MongoCollection;
-import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -38,17 +41,15 @@ import com.mongodb.MongoURI;
 
 public class IntegrationTest {
 
-  private JsonSchema schema;
+  private JsonSchema schema = getSchema();
 
-  @Before
-  public void setUp() throws IOException {
-    this.schema = getSchema();
-  }
+  @Rule
+  public final EmbeddedMongo embeddedMongo = new EmbeddedMongo();
 
   @Test
   public void testLoader() throws IOException {
     String bsonFile = "src/test/resources/heliotrope/genes.bson";
-    String uri = "mongodb://localhost/dcc-genome.Genes";
+    String uri = "mongodb://localhost:" + embeddedMongo.getPort() + "/dcc-genome.Genes";
     Main.main("-f", bsonFile, "-d", uri);
 
     JsonNode gene = getGene(uri);
@@ -63,7 +64,7 @@ public class IntegrationTest {
     return report;
   }
 
-  private static JsonNode getGene(String uri) throws UnknownHostException {
+  private JsonNode getGene(String uri) {
     MongoCollection genes = getGenes(uri);
     JsonNode gene = genes.findOne().as(JsonNode.class);
     genes.getDBCollection().getDB().getMongo().close();
@@ -71,7 +72,7 @@ public class IntegrationTest {
     return gene;
   }
 
-  private static MongoCollection getGenes(String uri) throws UnknownHostException {
+  private MongoCollection getGenes(String uri) {
     MongoURI mongoUri = new MongoURI(uri);
     Jongo jongo = getJongo(mongoUri);
     MongoCollection genes = jongo.getCollection(mongoUri.getCollection());
@@ -79,16 +80,17 @@ public class IntegrationTest {
     return genes;
   }
 
-  private static Jongo getJongo(MongoURI mongoUri) throws UnknownHostException {
-    Mongo mongo = new Mongo(mongoUri);
+  private Jongo getJongo(MongoURI mongoUri) {
+    Mongo mongo = embeddedMongo.getMongo();
     DB db = mongo.getDB(mongoUri.getDatabase());
     Jongo jongo = new Jongo(db);
 
     return jongo;
   }
 
-  private static JsonSchema getSchema() throws IOException {
-    JsonNode schemaNode = JsonLoader.fromResource("/schema/genes.schema.json");
+  @SneakyThrows
+  private JsonSchema getSchema() {
+    JsonNode schemaNode = JsonLoader.fromFile(new File("src/main/resources/schema/genes.schema.json"));
     JsonSchemaFactory factory = JsonSchemaFactory.defaultFactory();
     JsonSchema schema = factory.fromSchema(schemaNode);
 

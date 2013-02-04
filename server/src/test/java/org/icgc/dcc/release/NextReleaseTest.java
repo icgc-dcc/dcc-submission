@@ -215,6 +215,7 @@ public class NextReleaseTest {
     when(updates.set("releaseDate", release.getReleaseDate())).thenReturn(updates);
   }
 
+  @SuppressWarnings("unused")
   private Submission signOffSetUp() {
     Submission submission = mock(Submission.class);
     when(updates.set("submissions.$.state", SubmissionState.SIGNED_OFF)).thenReturn(updates);

@@ -140,6 +140,7 @@ public class ValidationErrorReport implements Serializable {
 
     private Map<ErrorParameterKey, Object> parameters;
 
+    @SuppressWarnings("unused")
     public ColumnErrorReport() {
     }
 
@@ -160,6 +161,7 @@ public class ValidationErrorReport implements Serializable {
       return this.count;
     }
 
+    @SuppressWarnings("unused")
     public Map<ErrorParameterKey, Object> getParameters() {
       return this.parameters;
     }
