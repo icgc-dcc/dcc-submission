@@ -39,6 +39,7 @@ public class GeneTransformer {
     result.put("id", id(node));
     result.put("symbol", symbol(node));
     result.put("name", name(node));
+    result.put("biotype", biotype(node));
     result.put("synonyms", synonyms(node));
     result.put("description", description(node));
     result.put("chromosome", location(node).get("chromosome"));
@@ -59,6 +60,10 @@ public class GeneTransformer {
 
   private JsonNode symbol(JsonNode node) {
     return node.get("name");
+  }
+
+  private JsonNode biotype(JsonNode node) {
+    return node.path("biotype");
   }
 
   private JsonNode name(JsonNode node) {
@@ -116,6 +121,7 @@ public class GeneTransformer {
     // Simple
     transcript.put("id", node.get("id"));
     transcript.put("name", node.get("name"));
+    transcript.put("biotype", node.get("biotype"));
     transcript.put("is_canonical", node.get("isCanonical"));
     transcript.put("length", asInteger(node.get("length")));
     transcript.put("length_amino_acid", asInteger(node.get("lengthAminoAcid")));
