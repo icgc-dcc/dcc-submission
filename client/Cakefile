@@ -16,8 +16,8 @@ startServer = ->
       "localhost/ws/": "localhost:5380/ws/"
       "localhost": "localhost:3333"
 
-  httpProxy.createServer(options).listen 3001, ->
-    timeLog "Development Server listening on http://localhost:3001...\n"
+  httpProxy.createServer(options).listen 3334, ->
+    timeLog "Development Server listening on http://localhost:3334...\n"
 
 
 timeLog = (message) -> process.stdout.write "#{bold}#{(new Date).toLocaleTimeString()}#{reset} - #{message}"

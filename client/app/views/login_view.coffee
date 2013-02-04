@@ -97,6 +97,6 @@ module.exports = class LoginView extends PageView
 
   afterRender: ->
     super
-    text_input = document.getElementById('#username')
+    text_input = document.getElementById('username')
     text_input.focus()
     text_input.select()

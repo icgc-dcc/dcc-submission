@@ -21,4 +21,4 @@ Start the proxy (in yet another console)
 	cd data-submission/client
 	cake proxy
 
-Point your browser to [http://localhost:3001/](http://localhost:3001/)
+Point your browser to [http://localhost:3334/](http://localhost:3334/)
