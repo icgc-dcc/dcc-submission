@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.validation.cascading;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import org.icgc.dcc.data.schema.Schema;
 import org.icgc.dcc.data.schema.ValueSchema;
 
@@ -30,6 +28,8 @@ import cascading.tuple.TupleEntry;
 
 import com.google.common.base.Function;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 /**
  * Utility class for working with cascading {@code Function} objects.
  */
@@ -37,23 +37,6 @@ public class FunctionUtils {
   private FunctionUtils() {
     // Prevent construction
   }
-
-  public final static class PrefixFunction implements Function<Comparable<?>, String> {
-
-    private final String prefix;
-
-    private final String sep;
-
-    public PrefixFunction(String prefix, String sep) {
-      this.prefix = checkNotNull(prefix);
-      this.sep = checkNotNull(sep);
-    }
-
-    @Override
-    public String apply(Comparable<?> input) {
-      return FieldsUtils.prefix(prefix, sep, input.toString());
-    }
-  };
 
   public final static class AlternativePrefixFunction implements Function<Schema, String> {
 
