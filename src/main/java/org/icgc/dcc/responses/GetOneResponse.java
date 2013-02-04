@@ -31,15 +31,15 @@ import org.elasticsearch.action.get.GetResponse;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-@Data
 @EqualsAndHashCode(callSuper = false)
-public final class SingleResponse extends BaseResponse {
+@Data
+public final class GetOneResponse extends BaseResponse {
 
-  private final JsonNode data;
+ private final JsonNode data;
 
-  public SingleResponse(final GetResponse hit, final HttpServletRequest hsr) {
-    super(hsr);
-    this.data = extractData(hit);
+  public GetOneResponse(final GetResponse hit, final HttpServletRequest hsr) {
+	  super(hsr);
+	  this.data = extractData(hit);
   }
 
   private JsonNode extractData(final GetResponse hit) {

@@ -25,11 +25,10 @@ import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode(callSuper = false)
 @Data
-public final class ErrorResponse extends BaseResponse {
+public final class ErrorResponse {
   private final ErrorEntity error;
 
   public ErrorResponse(final StatusType badRequest, final IOException e) {
-    super();
     this.error = new ErrorEntity(badRequest, e);
   }
 

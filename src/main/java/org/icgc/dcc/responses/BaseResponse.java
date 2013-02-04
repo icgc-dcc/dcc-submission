@@ -28,9 +28,7 @@ import com.google.common.collect.Lists;
 
 @Data
 @NoArgsConstructor
-public abstract class BaseResponse {
-
-  private static final String SELF = "_self";
+public class BaseResponse {
 
   private static final String URI_FORMAT = "%s://%s:%d%s";
 
@@ -42,8 +40,8 @@ public abstract class BaseResponse {
     this.addSelfLink(httpServletRequest);
   }
 
-  private void addSelfLink(HttpServletRequest httpServletRequest) {
-    this.addLink(SELF, httpServletRequest);
+  final void addSelfLink(HttpServletRequest httpServletRequest) {
+    this.addLink("_self", httpServletRequest);
   }
 
   public final void addLink(final String name, final HttpServletRequest hsr) {

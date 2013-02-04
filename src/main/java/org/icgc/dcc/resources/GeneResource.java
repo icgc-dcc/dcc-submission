@@ -47,8 +47,8 @@ import com.yammer.metrics.annotation.Timed;
 
 import org.icgc.dcc.core.Types;
 import org.icgc.dcc.repositories.SearchRepository;
-import org.icgc.dcc.responses.ManyResponse;
-import org.icgc.dcc.responses.SingleResponse;
+import org.icgc.dcc.responses.GetManyResponse;
+import org.icgc.dcc.responses.GetOneResponse;
 import org.icgc.dcc.search.SearchQuery;
 
 @Path("/genes")
@@ -77,7 +77,7 @@ public class GeneResource {
       @ApiParam(value = "Column to sort results on", required = false) @QueryParam("sort") String sort,
       @ApiParam(value = "Order to sort the column", allowableValues = "asc, desc", required = false) @QueryParam("order") String order) {
     SearchQuery searchQuery = new SearchQuery(from, size, sort, order);
-    ManyResponse response = new ManyResponse(store.getAll(searchQuery), httpServletRequest, searchQuery);
+    GetManyResponse response = new GetManyResponse(store.getAll(searchQuery), httpServletRequest, searchQuery);
 
     return Response.ok().entity(response).build();
   }
@@ -87,7 +87,7 @@ public class GeneResource {
   @ApiOperation(value = "Retrieves a filtered list of genes")
   public final Response filteredGetAll(@Valid SearchQuery searchQuery) {
     // TODO This is broken
-    ManyResponse response = new ManyResponse(store.getAll(searchQuery), httpServletRequest, searchQuery);
+    GetManyResponse response = new GetManyResponse(store.getAll(searchQuery), httpServletRequest, searchQuery);
 
     return Response.ok().entity(response).build();
   }
@@ -100,7 +100,7 @@ public class GeneResource {
       @ApiError(code = HttpStatus.NOT_FOUND_404, reason = "Gene not found")})
   public final Response getOne(@ApiParam(value = "ID of gene that needs to be fetched") @PathParam("id") String id)
       throws IOException {
-    SingleResponse response = new SingleResponse(store.getOne(id), httpServletRequest);
+    GetOneResponse response = new GetOneResponse(store.getOne(id), httpServletRequest);
 
     return Response.ok().entity(response).build();
   }

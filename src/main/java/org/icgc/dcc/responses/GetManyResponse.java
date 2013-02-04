@@ -33,37 +33,39 @@ import org.elasticsearch.search.SearchHits;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableList;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 
 import org.icgc.dcc.search.SearchQuery;
 
-@Data
 @EqualsAndHashCode(callSuper = false)
-public class ManyResponse extends BaseResponse {
-  private final ImmutableList<JsonNode> data;
+@Data
+public final class GetManyResponse extends BaseResponse{
+
+  private final JsonNode data;
 
   private final Pagination pagination;
 
-  public ManyResponse(final SearchHits hits, final HttpServletRequest httpServletRequest, SearchQuery searchQuery) {
-    super(httpServletRequest);
-    this.data = extractData(hits.getHits());
+	private final static ObjectMapper MAPPER = new ObjectMapper();
+	
+  public GetManyResponse(final SearchHits hits, final HttpServletRequest hsr, SearchQuery searchQuery) {
+	  super(hsr);
+	  this.data = extractData(hits.getHits());
     this.pagination = new Pagination(hits, searchQuery);
   }
 
-  private ImmutableList<JsonNode> extractData(final SearchHit... hits) {
-    ObjectMapper mapper = new ObjectMapper();
-    ImmutableList.Builder<JsonNode> list = ImmutableList.<JsonNode>builder();
-    for (SearchHit hit : hits) {
+  private JsonNode extractData(final SearchHit[] hits) {
+    ArrayNode arrayNode = MAPPER.createArrayNode();
+	  for (SearchHit hit : hits) {
       JsonNode node;
       try {
-        node = mapper.readValue(hit.getSourceAsString(), JsonNode.class);
+        node = MAPPER.readValue(hit.getSourceAsString(), JsonNode.class);
       } catch (IOException e) {
         throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST)
             .entity(new ErrorResponse(Response.Status.BAD_REQUEST, e)).type(MediaType.APPLICATION_JSON_TYPE).build());
       }
-      list.add(node);
+      arrayNode.add(node);
     }
-    return list.build();
+    return arrayNode;
   }
 
   @Data

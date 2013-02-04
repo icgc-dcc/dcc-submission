@@ -38,7 +38,7 @@ import com.wordnik.swagger.annotations.ApiParam;
 import com.yammer.metrics.annotation.Timed;
 
 import org.icgc.dcc.repositories.SearchRepository;
-import org.icgc.dcc.responses.ManyResponse;
+import org.icgc.dcc.responses.GetManyResponse;
 import org.icgc.dcc.search.SearchQuery;
 
 @Path("/search")
@@ -66,7 +66,7 @@ public class SearchResource {
       @ApiParam(value = "Start index of results", required = false) @QueryParam("from") @DefaultValue("1") int from,
       @ApiParam(value = "Number of results returned", allowableValues = "range[1,100]", required = false) @QueryParam("size") @DefaultValue("10") int size) {
     SearchQuery searchQuery = new SearchQuery(from, size);
-    ManyResponse response = new ManyResponse(store.search(text, from, size), httpServletRequest, searchQuery);
+    GetManyResponse response = new GetManyResponse(store.search(text, from, size), httpServletRequest, searchQuery);
 
     return Response.ok().entity(response).build();
   }

@@ -89,7 +89,7 @@ public class DataPortalService extends Service<DataPortalConfiguration> {
    * @return
    */
   private RedirectBundle createRedirectBundle() {
-    return new RedirectBundle(ImmutableMap.<String, String>builder().put("/", "/docs/").put("/docs", "/docs/").build());
+    return new RedirectBundle(ImmutableMap.<String, String>builder().put("/docs", "/docs/").build());
   }
 
   private static void logInfo(String... args) {
