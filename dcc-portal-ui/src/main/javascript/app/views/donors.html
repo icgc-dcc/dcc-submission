@@ -1,0 +1,55 @@
+<div class="row">
+    <div class="span3">
+        <div class="well"><i class="icon-spinner icon-spin"></i> Facets</div>
+    </div>
+    <div class="span9">
+        <div class="row"><h1 class="span">Donors</h1></div>
+        <div class="row">
+            <div class="span3">
+                <div style="width:220px; height: 220px; background: #eee"></div>
+            </div>
+            <div class="span3">
+                <div style="width:220px; height: 220px; background: #eee"></div>
+            </div>
+            <div class="span3">
+                <div style="width:220px; height: 220px; background: #eee"></div>
+            </div>
+        </div>
+        <table class="table table-bordered table-striped">
+            <thead>
+            <tr>
+                <th>Donor ID</th>
+                <th>Primary Site</th>
+                <th>Project</th>
+                <th>Gender</th>
+                <th>Age at Diagnosis</th>
+                <th>Number of Genes affected by SSM</th>
+                <th>SSM</th>
+                <th>CNSM</th>
+                <th>Expression</th>
+                <th>Methylation</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="donor in donors.data">
+                <td><a href="#/donors/{{donor.donor_id}}">{{donor.donor_id}}</a></td>
+                <td>{{donor.primary_site}}</td>
+                <td><a href="#/projects/{{donor.project_key}}">{{donor.project_name}}</a></td>
+                <td>{{donor.donor_sex}}</td>
+                <td>{{donor.donor_age_at_diagnosis}}</td>
+                <td>??</td>
+                <td>{{donor.has_ssm}}</td>
+                <td>{{donor.has_cnsm}}</td>
+                <td>{{donor.has_exp}}</td>
+                <td>{{donor.has_meth}}</td>
+                <td>
+                    <ul class="unstyled" ng-repeat="pmid in project.pubmed_id">
+                        <li><a href="http://www.ncbi.nlm.nih.gov/pubmed/{{pmid}}">pmid:{{pmid}}</a></li>
+                    </ul>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+    </div>
+</div>
