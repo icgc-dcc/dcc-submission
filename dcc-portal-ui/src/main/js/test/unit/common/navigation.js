@@ -18,7 +18,7 @@ describe('Common: Navigation', function () {
     }));
 
     it('should attach a list of navigation to the scope', function () {
-      expect(scope.navigation.length).toBe(3);
+      expect(scope.navigation.length).toBe(7);
     });
   });
 });
