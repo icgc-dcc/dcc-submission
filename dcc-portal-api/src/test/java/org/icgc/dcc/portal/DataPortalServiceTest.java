@@ -15,9 +15,8 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc;
+package org.icgc.dcc.portal;
 
-import org.icgc.dcc.portal.DataPortalService;
 import org.junit.Test;
 
 public class DataPortalServiceTest {
