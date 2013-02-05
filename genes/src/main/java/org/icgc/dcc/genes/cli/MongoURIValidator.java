@@ -32,16 +32,17 @@ public class MongoURIValidator implements IParameterValidator {
       MongoURI mongoUri = new MongoURI(uri);
 
       String database = mongoUri.getDatabase();
-      if (isNullOrEmpty(database)) {
+      if(isNullOrEmpty(database)) {
         parameterException(name, "uri must contain a database name");
       }
 
       String collection = mongoUri.getCollection();
-      if (isNullOrEmpty(collection)) {
+      if(isNullOrEmpty(collection)) {
         parameterException(name, "uri must contain a collection name");
       }
-    } catch (IllegalArgumentException e) {
-      parameterException(name, e.getMessage() + ". See http://docs.mongodb.org/manual/reference/connection-string/ for more information.");
+    } catch(IllegalArgumentException e) {
+      parameterException(name, e.getMessage()
+          + ". See http://docs.mongodb.org/manual/reference/connection-string/ for more information.");
     }
   }
 

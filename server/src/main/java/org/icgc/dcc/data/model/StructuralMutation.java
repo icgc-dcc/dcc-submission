@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.data.model;
 
-
 public class StructuralMutation extends SomaticObservation {
 
   public String chromosomeFromFlanking;

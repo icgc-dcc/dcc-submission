@@ -28,7 +28,6 @@ import cascading.tuple.Fields;
 
 import com.google.common.collect.ImmutableList;
 
-
 /**
  * Utility class for working with cascading {@code Fields} objects.
  * <p>

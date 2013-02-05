@@ -121,8 +121,8 @@ public abstract class BaseCascadingStrategy implements CascadingStrategy {
       return new Path(output, key.getName() + ".tsv");
     } else if(key.getSchema().getRole() == FileSchemaRole.SYSTEM) {
       return new Path(new Path(system, DccFileSystem.VALIDATION_DIRNAME), key.getName() + ".tsv"); // TODO: should use
-                                                                                                    // DccFileSystem
-                                                                                                    // abstraction
+                                                                                                   // DccFileSystem
+                                                                                                   // abstraction
     } else {
       throw new RuntimeException("undefined File Schema Role " + key.getSchema().getRole());
     }

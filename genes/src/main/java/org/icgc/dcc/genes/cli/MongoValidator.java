@@ -37,7 +37,7 @@ public class MongoValidator implements IValueValidator<MongoURI> {
         // Test connectivity
         Socket socket = mongo.getMongoOptions().socketFactory.createSocket();
         socket.connect(mongo.getAddress().getSocketAddress());
-        
+
         // All good
         socket.close();
       } catch(IOException ex) {
@@ -53,5 +53,5 @@ public class MongoValidator implements IValueValidator<MongoURI> {
   private static void parameterException(String name, MongoURI mongoUri, String message) throws ParameterException {
     throw new ParameterException(format("Invalid option: %s: %s %s", name, mongoUri, message));
   }
-  
+
 }

@@ -53,7 +53,6 @@ public class NextRelease extends BaseRelease {
     return getRelease().getQueuedProjectKeys();
   }
 
-
   public NextRelease release(final String nextReleaseName) throws InvalidStateException {
     checkArgument(nextReleaseName != null);
 

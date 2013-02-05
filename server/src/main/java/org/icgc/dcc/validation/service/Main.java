@@ -67,8 +67,9 @@ public class Main {
       ValidationService validationService = injector.getInstance(ValidationService.class);
       ValidationQueueManagerService validationQueueManagerService =
           injector.getInstance(ValidationQueueManagerService.class);
-      Plan plan = validationService.prepareValidation(release, new QueuedProject(projectKey, null),
-          validationQueueManagerService.new ValidationCascadeListener());
+      Plan plan =
+          validationService.prepareValidation(release, new QueuedProject(projectKey, null),
+              validationQueueManagerService.new ValidationCascadeListener());
       validationService.startValidation(plan);
     } else {
       log.info("there is no next release at the moment");

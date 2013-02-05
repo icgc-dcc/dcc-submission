@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.validation;
 
-
 public class ExternalFlowPlanningVisitor extends PlanningVisitor<ExternalPlanElement> {
 
   public ExternalFlowPlanningVisitor() {

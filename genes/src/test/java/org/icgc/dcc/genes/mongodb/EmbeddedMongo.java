@@ -25,8 +25,11 @@ import de.flapdoodle.embed.process.io.directories.FixedPath;
 public class EmbeddedMongo implements TestRule {
 
   private MongodExecutable mongodExe;
+
   private MongodProcess mongod;
+
   private MongodConfig mongodConfig;
+
   private Mongo mongo;
 
   @Override

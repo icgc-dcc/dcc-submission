@@ -28,8 +28,7 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 
 /**
- * Command line utility used to import Heliotrope genes.bson {@code mongodump}
- * file into DCC's MongoDB gene database.
+ * Command line utility used to import Heliotrope genes.bson {@code mongodump} file into DCC's MongoDB gene database.
  */
 @Slf4j
 public class Main {
@@ -47,18 +46,18 @@ public class Main {
     try {
       cli.parse(args);
 
-      if (options.help) {
+      if(options.help) {
         cli.usage();
 
         return;
-      } else if (options.version) {
+      } else if(options.version) {
         out.printf("ICGC DCC Gene Loader\nVersion %s\n", getVersion());
 
         return;
       }
 
       load();
-    } catch (ParameterException pe) {
+    } catch(ParameterException pe) {
       err.printf("dcc-genes: %s\n", pe.getMessage());
       err.printf("Try '%s --help' for more information.\n", getProgramName());
     }

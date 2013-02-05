@@ -26,24 +26,24 @@ import org.icgc.dcc.dictionary.model.ValueType;
  * 
  */
 public class ValueTypeConverter {
-	private final Map<String, ValueType> valueTypeMap = new HashMap<String, ValueType>();
+  private final Map<String, ValueType> valueTypeMap = new HashMap<String, ValueType>();
 
-	public ValueTypeConverter() {
-		// initialize map
-		this.valueTypeMap.put("INTEGER", ValueType.INTEGER);
-		this.valueTypeMap.put("FLOAT(3,2)", ValueType.DECIMAL);
-		this.valueTypeMap.put("FLOAT(5,2)", ValueType.DECIMAL);
-		this.valueTypeMap.put("TEXT", ValueType.TEXT);
-		this.valueTypeMap.put("VARCHAR(128)", ValueType.TEXT);
-		this.valueTypeMap.put("VARCHAR(1024)", ValueType.TEXT);
-		this.valueTypeMap.put("VARCHAR(16)", ValueType.TEXT);
-		this.valueTypeMap.put("VARCHAR(256)", ValueType.TEXT);
-		this.valueTypeMap.put("VARCHAR(32)", ValueType.TEXT);
-		this.valueTypeMap.put("VARCHAR(512)", ValueType.TEXT);
-		this.valueTypeMap.put("VARCHAR(64)", ValueType.TEXT);
-	}
+  public ValueTypeConverter() {
+    // initialize map
+    this.valueTypeMap.put("INTEGER", ValueType.INTEGER);
+    this.valueTypeMap.put("FLOAT(3,2)", ValueType.DECIMAL);
+    this.valueTypeMap.put("FLOAT(5,2)", ValueType.DECIMAL);
+    this.valueTypeMap.put("TEXT", ValueType.TEXT);
+    this.valueTypeMap.put("VARCHAR(128)", ValueType.TEXT);
+    this.valueTypeMap.put("VARCHAR(1024)", ValueType.TEXT);
+    this.valueTypeMap.put("VARCHAR(16)", ValueType.TEXT);
+    this.valueTypeMap.put("VARCHAR(256)", ValueType.TEXT);
+    this.valueTypeMap.put("VARCHAR(32)", ValueType.TEXT);
+    this.valueTypeMap.put("VARCHAR(512)", ValueType.TEXT);
+    this.valueTypeMap.put("VARCHAR(64)", ValueType.TEXT);
+  }
 
-	public Map<String, ValueType> getMap() {
-		return this.valueTypeMap;
-	}
+  public Map<String, ValueType> getMap() {
+    return this.valueTypeMap;
+  }
 }

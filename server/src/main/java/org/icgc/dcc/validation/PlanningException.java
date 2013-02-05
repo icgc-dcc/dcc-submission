@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.validation;
 
-
 public class PlanningException extends RuntimeException {
 
   public PlanningException() {

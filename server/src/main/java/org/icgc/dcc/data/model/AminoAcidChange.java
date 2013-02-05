@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.data.model;
 
-
 public class AminoAcidChange extends AffectsGene {
 
   public String type;

@@ -41,8 +41,8 @@ public enum ServerErrorCode { // TODO: migrate all (DCC-660)
   PROJECT_KEY_NOT_FOUND("ProjectKeyNotFound"), //
   ;
 
-  private String frontEndString; // TODO: see https://jira.oicr.on.ca/browse/DCC-660?focusedCommentId=44725&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-44725
-
+  private String frontEndString; // TODO: see
+                                 // https://jira.oicr.on.ca/browse/DCC-660?focusedCommentId=44725&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-44725
 
   private ServerErrorCode(String frontEndString) {
     this.frontEndString = frontEndString;
