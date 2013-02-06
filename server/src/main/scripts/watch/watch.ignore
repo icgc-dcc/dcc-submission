@@ -22,3 +22,4 @@ LzoCodec - Cannot load native-lzo without native-hadoop
 # mina warning: 
 ServerSession - Exception caught
 java.io.IOException: Broken pipe
+java.io.IOException: Connection reset by peer
