@@ -79,7 +79,7 @@ if [ "${mode?}" == "local" ]; then
  mode=""
 fi
 
-timestamp=$(date "+%y%m%d%H%M%S")
+timestamp="$(date '+%Y%m%d')T$(date '+%H%M%S')"
 echo "timestamp=\"${timestamp?}\""
 
 artifact_id=$(get_xml_value ${server_pom_file?} '//project/artifactId/text()')

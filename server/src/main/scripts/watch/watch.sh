@@ -3,12 +3,17 @@
 # monitors keyword appearing in production logs
 # 
 # install:
-#  hwww1-prod:/$ mkdir /tmp/watch && touch /tmp/watch/watch.ignore # put script under /tmp/watch (make sure to +x it)
+#  hwww1-prod:/$ mkdir /srv/webapp/logwatcher && touch /srv/webapp/logwatcher/watch.ignore # put script under /srv/webapp/logwatcher (make sure to +x it)
 #
 # cron: 
-#  00 * * * *	/tmp/watch/watch.sh /srv/webapp/dcc/log/dcc-server.log /tmp/watch/watch.ignore 0 "anthony.cros@oicr.on.ca;bob.tiernay@oicr.on.ca;shane.wilson@oicr.on.ca" # runs every hour and notifies upon failure
-#  00 08 * * *	/tmp/watch/watch.sh /srv/webapp/dcc/log/dcc-server.log /tmp/watch/watch.ignore 1 "anthony.cros@oicr.on.ca;bob.tiernay@oicr.on.ca;shane.wilson@oicr.on.ca" # runs every day and notifies no matter what
-#
+#  MAILTO=""
+# 
+#  00 * * * *     /srv/webapp/logwatcher/watch.sh /srv/webapp/dcc/log/dcc-server.log /srv/webapp/logwatcher/watch.ignore 0 "anthony.cros@oicr.on.ca,bob.tiernay@oicr.on.ca;shane.wilson@oicr.on.ca" exception # runs every hour and notifies upon failure
+#  30 08 * * *    /srv/webapp/logwatcher/watch.sh /srv/webapp/dcc/log/dcc-server.log /srv/webapp/logwatcher/watch.ignore 1 "anthony.cros@oicr.on.ca,bob.tiernay@oicr.on.ca;shane.wilson@oicr.on.ca" exception # runs every day and notifies no matter what
+# 
+#  30 * * * *     /srv/webapp/logwatcher/watch.sh /srv/webapp/dcc/log/dcc-server.log /srv/webapp/logwatcher/watch.ignore 0 "anthony.cros@oicr.on.ca,bob.tiernay@oicr.on.ca;shane.wilson@oicr.on.ca" error # runs every hour and notifies upon failure
+#  45 08 * * *    /srv/webapp/logwatcher/watch.sh /srv/webapp/dcc/log/dcc-server.log /srv/webapp/logwatcher/watch.ignore 1 "anthony.cros@oicr.on.ca,bob.tiernay@oicr.on.ca;shane.wilson@oicr.on.ca" error # runs every day and notifies no matter what
+
 log_file=${1?} && shift
 ignore_file=${1?} && shift
 send_ok=${1?} && shift

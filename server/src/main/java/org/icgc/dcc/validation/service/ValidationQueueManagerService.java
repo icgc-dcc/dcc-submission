@@ -397,7 +397,7 @@ public class ValidationQueueManagerService extends AbstractService {
         msg.addRecipients(Message.RecipientType.TO, addresses);
 
         Transport.send(msg);
-        log.error("Emails for {} sent to {}: ", project.getKey(), aCheck);
+        log.info("Emails for {} sent to {}: ", project.getKey(), aCheck);
 
       } catch(AddressException e) {
         log.error("an error occured while emailing: ", e);

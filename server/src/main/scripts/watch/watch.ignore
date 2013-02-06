@@ -1,18 +1,24 @@
-[ReplicaSetStatus:Updater] WARN  c.m.ReplicaSetStatus - Server seen down: hmongodb
+# ---------------------------------------------------------------------------
+## errors:
+
+"key":"io.mapfile.bloom.error.rate"
+"key":"io.skip.checksum.errors"
+is a possible heterogenous collection
+applying element [errors]
+errors.json
+
+# inconvenient:
+ValidationQueueManagerService - Emails for
+ShiroPasswordAuthenticator - Unknown error logging in 
+
+# concerning ones:
+GPLNativeCodeLoader - Could not load native gpl library
+java.lang.UnsatisfiedLinkError: no gplcompression in java.library.path
+LzoCodec - Cannot load native-lzo without native-hadoop
+
+# ---------------------------------------------------------------------------
+# exceptions:
+
+# mina warning: 
+ServerSession - Exception caught
 java.io.IOException: Broken pipe
-java.lang.IllegalStateException: Incorrect identification: bad line ending
-java.lang.IllegalStateException: Unable to negociate key exchange for item 1
-java.net.SocketException: Connection timed out
-org.apache.mina.core.write.WriteToClosedSessionException: null
-org.apache.sshd.common.SshException: Unsupported protocol version: SSH-
-WARN  o.a.s.s.s.ServerSession - Exception caught
-java.io.IOException: Connection reset by peer
-java.lang.IllegalStateException: Bad item length: 825503800
-java.lang.IllegalStateException: Bad item length: 825505841
-
-# happens when try and cd into something that doesn't exist (see item 2 in DCC-759)
-java.io.FileNotFoundException: File does not exist: /tmp/dcc_root_dir/ICGC12/
-
-# only seems to happen on dev
-INFO  o.a.s.c.k.FileKeyPairProvider - Unable to write key /tmp/dcc_root_dir/sshd.pem: java.io.FileNotFoundException: /tmp/dcc_root_dir/sshd.pem (No such file or directory)
-
