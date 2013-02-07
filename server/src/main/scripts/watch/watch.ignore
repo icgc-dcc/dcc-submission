@@ -24,6 +24,9 @@ ServerSession - Exception caught
 java.io.IOException: Broken pipe
 java.io.IOException: Connection reset by peer
 FileKeyPairProvider - Unable to write key /tmp/dcc_root_dir/sshd.pem: java.io.FileNotFoundException: /tmp/dcc_root_dir/sshd.pem (No such file or directory)
+ERROR o.i.d.s.HdfsSshFile - File system error
+/.validation is non empty
+org.apache.mina.core.write.WriteToClosedSessionException: null
 
 # grizzly warning:
 WARN  o.g.g.h.s.HttpHandler - service exception

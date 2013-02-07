@@ -49,7 +49,7 @@ echo -e "filter_condition:\n\n${filter_condition?}"
 echo
 
 # go through log file and search for keyword, while ignore list of known issues/already inspected timestamps
-last_offending_lines=$(grep -i ${keyword?} ${log_file?} | awk "${filter_condition?}" | sort -u | tail -n100) # TODO: var for 100
+last_offending_lines=$(cat ${log_file?} | awk '!/^[ \t]*$/' | grep -i ${keyword?} | awk "${filter_condition?}" | sort -u | tail -n100) # TODO: var for 100
 
 if [ -n "${last_offending_lines?}" ]; then
  # send email if there are offending lines
