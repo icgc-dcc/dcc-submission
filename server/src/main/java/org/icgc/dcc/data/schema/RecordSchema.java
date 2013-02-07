@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.data.schema;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import java.io.IOException;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -48,8 +46,6 @@ public class RecordSchema extends HasFileSchemaSchema {
 
   public RecordSchema(String name) {
     super(name, Type.RECORD);
-    // A record cannot be anonymous
-    checkArgument(name != null);
   }
 
   @Override
