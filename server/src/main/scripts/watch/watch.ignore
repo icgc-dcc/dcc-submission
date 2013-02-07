@@ -23,3 +23,4 @@ LzoCodec - Cannot load native-lzo without native-hadoop
 ServerSession - Exception caught
 java.io.IOException: Broken pipe
 java.io.IOException: Connection reset by peer
+FileKeyPairProvider - Unable to write key /tmp/dcc_root_dir/sshd.pem: java.io.FileNotFoundException: /tmp/dcc_root_dir/sshd.pem (No such file or directory)
