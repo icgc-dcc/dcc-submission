@@ -354,8 +354,8 @@ public class IntegrationTest {
   private void updateDictionary(String dictionaryResource, String dictionaryVersion, int expectedStatus)
       throws Exception {
     String dictionary = TestUtils.resourceToString(dictionaryResource);
-    String updatedSecondDictionary = dictionary.replace("Unique identifier for the donor", //
-        "Unique identifier for the donor (update" + ++dictionaryUpdateCount + ")");
+    String updatedSecondDictionary = dictionary.replace("Unique identifier for the donor", //
+        "Unique identifier for the donor (update" + ++dictionaryUpdateCount + ")");
     assertTrue(dictionary, dictionary.equals(updatedSecondDictionary) == false);
     Response response = TestUtils.put(client, DICTIONARIES_ENDPOINT + "/" + dictionaryVersion, updatedSecondDictionary);
     assertEquals(expectedStatus, response.getStatus());
