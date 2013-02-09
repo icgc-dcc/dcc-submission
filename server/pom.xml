@@ -7,7 +7,6 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
   <artifactId>dcc-server</artifactId>
-  <packaging>jar</packaging>
   <dependencies>
     <!-- REST -->
     <dependency>
@@ -173,14 +172,7 @@
     <dependency>
       <groupId>com.wordnik</groupId>
       <artifactId>mongo-admin-utils-distribution</artifactId>
-      <version>1.2.0</version>
       <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <artifactId>slf4j-log4j12</artifactId>
-          <groupId>org.slf4j</groupId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
     <!-- Testing - Cascading -->
@@ -263,11 +255,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.12</version>
-        <configuration>
-          <argLine>-Xms256m -Xmx256m</argLine>
-          <redirectTestOutputToFile>true</redirectTestOutputToFile>
-        </configuration>
       </plugin>
 
       <!-- Package -->
@@ -284,62 +271,12 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
-        <configuration>
-          <artifactSet>
-            <excludes>
-              <exclude>com.sun.jersey:*</exclude>
-            </excludes>
-          </artifactSet>
-          <filters>
-            <filter>
-              <artifact>*:*</artifact>
-              <excludes>
-                <exclude>META-INF/*.SF</exclude>
-                <exclude>META-INF/*.RSA</exclude>
-                <exclude>META-INF/*.INF</exclude>
-              </excludes>
-            </filter>
-          </filters>
-          <transformers>
-            <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
-            <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-              <mainClass>${main.class}</mainClass>
-            </transformer>
-          </transformers>
-        </configuration>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-
-      <!-- Install - Code quality -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-pmd-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>findbugs-maven-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>cobertura-maven-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-release-plugin</artifactId>
       </plugin>
 
       <!-- CLI execution -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
-        <version>1.2.1</version>
         <executions>
           <execution>
             <goals>
@@ -388,10 +325,10 @@
 
     <!-- Versions -->
     <jersey.version>2.0-m10</jersey.version>
-    <shiro.version>1.2.0</shiro.version>
     <hibernate-validator.version>4.3.1.Final</hibernate-validator.version>
     <mina.version>0.6.0</mina.version>
     <morphia.version>0.99.1-DCC</morphia.version>
     <querydsl.version>2.6.0</querydsl.version>
+    <shiro.version>1.2.0</shiro.version>
   </properties>
 </project>
