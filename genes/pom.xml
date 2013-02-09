@@ -10,35 +10,30 @@
   <artifactId>dcc-genes</artifactId>
   <packaging>jar</packaging>
   <dependencies>
-    <!-- CLI -->
+    <!-- Command line -->
     <dependency>
       <groupId>com.beust</groupId>
       <artifactId>jcommander</artifactId>
-      <version>${jcommander.version}</version>
     </dependency>
 
     <!-- Mongo -->
     <dependency>
       <groupId>org.jongo</groupId>
       <artifactId>jongo</artifactId>
-      <version>${jongo.version}</version>
     </dependency>
     <dependency>
       <groupId>org.mongodb</groupId>
       <artifactId>mongo-java-driver</artifactId>
-      <version>${mongo.version}</version>
     </dependency>
 
     <!-- JSON -->
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-core</artifactId>
-      <version>${jackson.version}</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <version>${jackson.version}</version>
     </dependency>
     <dependency>
       <groupId>com.github.fge</groupId>
@@ -50,7 +45,6 @@
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
-      <version>${lombok.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -119,34 +113,10 @@
         <artifactId>cobertura-maven-plugin</artifactId>
         <version>2.5.2</version>
       </plugin>
-
-      <!-- CLI execution -->
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>exec-maven-plugin</artifactId>
-        <version>1.2.1</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>java</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <mainClass>${main.class}</mainClass>
-        </configuration>
-      </plugin>
     </plugins>
   </build>
   <properties>
     <!-- Entry point -->
     <main.class>org.icgc.dcc.genes.Main</main.class>  
-  
-    <!-- Versions -->
-    <jcommander.version>1.30</jcommander.version>
-    <jongo.version>0.3</jongo.version>
-    <mongo.version>2.10.1</mongo.version>
-    <jackson.version>2.1.2</jackson.version>
-    <lombok.version>0.11.6</lombok.version>
   </properties>
 </project>

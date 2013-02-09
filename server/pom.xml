@@ -52,7 +52,6 @@
     <dependency>
       <groupId>org.mongodb</groupId>
       <artifactId>mongo-hadoop-core</artifactId>
-      <version>1.1.0-93d3667</version>
     </dependency>
     <dependency>
       <groupId>com.google.code.morphia</groupId>
@@ -415,6 +414,5 @@
     <mina.version>0.6.0</mina.version>
     <morphia.version>0.99.1-DCC</morphia.version>
     <querydsl.version>2.6.0</querydsl.version>
-    <elasticsearch.version>0.19.9</elasticsearch.version>
   </properties>
 </project>
