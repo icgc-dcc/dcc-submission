@@ -58,50 +58,11 @@
       <artifactId>guava</artifactId>
     </dependency>
 
-    <!-- Logging -->
-    <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-classic</artifactId>
-      <version>${logback.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>jcl-over-slf4j</artifactId>
-      <version>${slf4j.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>jul-to-slf4j</artifactId>
-      <version>${slf4j.version}</version>
-    </dependency>
-
     <!-- Testing - Mongo -->
     <dependency>
       <groupId>de.flapdoodle.embed</groupId>
       <artifactId>de.flapdoodle.embed.mongo</artifactId>
       <version>1.28</version>
-      <scope>test</scope>
-    </dependency>
-
-    <!-- Testing - Unit, mocking, assertions -->
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.easytesting</groupId>
-      <artifactId>fest-assert-core</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.easytesting</groupId>
-      <artifactId>fest-guava-assert</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -221,7 +182,5 @@
     <mongo.version>2.10.1</mongo.version>
     <jackson.version>2.1.2</jackson.version>
     <lombok.version>0.11.6</lombok.version>
-    <slf4j.version>1.6.1</slf4j.version>
-    <logback.version>1.0.3</logback.version>
   </properties>
 </project>

@@ -212,45 +212,6 @@
       <version>1.4.5</version>
     </dependency>
 
-    <!-- Logging -->
-    <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-classic</artifactId>
-      <version>${logback.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>jcl-over-slf4j</artifactId>
-      <version>${slf4j.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>jul-to-slf4j</artifactId>
-      <version>${slf4j.version}</version>
-    </dependency>
-
-    <!-- Testing - Unit, mocking, assertions -->
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.easytesting</groupId>
-      <artifactId>fest-assert-core</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.easytesting</groupId>
-      <artifactId>fest-guava-assert</artifactId>
-      <scope>test</scope>
-    </dependency>
-
     <!-- Testing - REST -->
     <dependency>
       <groupId>org.glassfish.jersey.test-framework</groupId>
@@ -587,7 +548,5 @@
     <hadoop-cdh.version>${hadoop.version}-${cdh.version}</hadoop-cdh.version>
     <hadoop-mr1-cdh.version>${hadoop.version}-mr1-${cdh.version}</hadoop-mr1-cdh.version>
     <elasticsearch.version>0.19.9</elasticsearch.version>
-    <slf4j.version>1.6.1</slf4j.version>
-    <logback.version>1.0.3</logback.version>
   </properties>
 </project>
