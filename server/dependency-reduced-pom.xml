@@ -125,7 +125,7 @@
           <transformers>
             <transformer />
             <transformer>
-              <mainClass>org.icgc.dcc.Main</mainClass>
+              <mainClass>${main.class}</mainClass>
             </transformer>
           </transformers>
         </configuration>
@@ -171,7 +171,7 @@
           </execution>
         </executions>
         <configuration>
-          <mainClass>org.icgc.dcc.Main</mainClass>
+          <mainClass>${main.class}</mainClass>
         </configuration>
       </plugin>
     </plugins>
@@ -381,6 +381,7 @@
     <logback.version>1.0.3</logback.version>
     <hadoop.version>2.0.0</hadoop.version>
     <hadoop-mr1-cdh.version>${hadoop.version}-mr1-${cdh.version}</hadoop-mr1-cdh.version>
+    <main.class>org.icgc.dcc.Main</main.class>
     <hibernate-validator.version>4.3.1.Final</hibernate-validator.version>
     <querydsl.version>2.6.0</querydsl.version>
     <hadoop-cdh.version>${hadoop.version}-${cdh.version}</hadoop-cdh.version>
