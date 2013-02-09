@@ -38,10 +38,6 @@
     </pluginManagement>
     <plugins>
       <plugin>
-        <artifactId>maven-release-plugin</artifactId>
-        <version>2.4</version>
-      </plugin>
-      <plugin>
         <groupId>com.mysema.maven</groupId>
         <artifactId>maven-apt-plugin</artifactId>
         <version>1.0.3</version>
@@ -61,29 +57,9 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
-        <version>1.7</version>
-        <executions>
-          <execution>
-            <id>add-source</id>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>add-source</goal>
-            </goals>
-            <configuration>
-              <sources>
-                <source>${project.build.directory}/generated-sources/java/</source>
-              </sources>
-            </configuration>
-          </execution>
-        </executions>
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.12</version>
-        <configuration>
-          <argLine>-Xms256m -Xmx256m</argLine>
-          <redirectTestOutputToFile>true</redirectTestOutputToFile>
-        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
@@ -97,72 +73,10 @@
       </plugin>
       <plugin>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>1.7.1</version>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <artifactSet>
-            <excludes>
-              <exclude>com.sun.jersey:*</exclude>
-            </excludes>
-          </artifactSet>
-          <filters>
-            <filter>
-              <artifact>*:*</artifact>
-              <excludes>
-                <exclude>META-INF/*.SF</exclude>
-                <exclude>META-INF/*.RSA</exclude>
-                <exclude>META-INF/*.INF</exclude>
-              </excludes>
-            </filter>
-          </filters>
-          <transformers>
-            <transformer />
-            <transformer>
-              <mainClass>${main.class}</mainClass>
-            </transformer>
-          </transformers>
-        </configuration>
-      </plugin>
-      <plugin>
-        <artifactId>maven-pmd-plugin</artifactId>
-        <version>2.7.1</version>
-        <configuration>
-          <targetJdk>1.6</targetJdk>
-          <rulesets>
-            <ruleset>/rulesets/basic.xml</ruleset>
-            <ruleset>/rulesets/unusedcode.xml</ruleset>
-            <ruleset>/rulesets/codesize.xml</ruleset>
-          </rulesets>
-          <excludeRoots>
-            <excludeRoot>${project.build.directory}/generated-sources/java/</excludeRoot>
-          </excludeRoots>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>findbugs-maven-plugin</artifactId>
-        <version>2.5.2</version>
-        <configuration>
-          <xmlOutput>true</xmlOutput>
-          <excludeFilterFile>${project.basedir}/src/main/tools/findbugs-exclude.xml</excludeFilterFile>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>cobertura-maven-plugin</artifactId>
-        <version>2.5.2</version>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
-        <version>1.2.1</version>
         <executions>
           <execution>
             <goals>
@@ -338,19 +252,13 @@
     </dependency>
   </dependencies>
   <properties>
-    <cascading.version>2.1.1</cascading.version>
-    <jersey.version>2.0-m10</jersey.version>
-    <cdh.version>cdh4.1.2</cdh.version>
-    <mina.version>0.6.0</mina.version>
-    <elasticsearch.version>0.19.9</elasticsearch.version>
-    <morphia.version>0.99.1-DCC</morphia.version>
     <shiro.version>1.2.0</shiro.version>
-    <hadoop.version>2.0.0</hadoop.version>
-    <hadoop-mr1-cdh.version>${hadoop.version}-mr1-${cdh.version}</hadoop-mr1-cdh.version>
+    <mina.version>0.6.0</mina.version>
+    <jersey.version>2.0-m10</jersey.version>
     <main.class>org.icgc.dcc.Main</main.class>
     <hibernate-validator.version>4.3.1.Final</hibernate-validator.version>
     <querydsl.version>2.6.0</querydsl.version>
-    <hadoop-cdh.version>${hadoop.version}-${cdh.version}</hadoop-cdh.version>
+    <morphia.version>0.99.1-DCC</morphia.version>
   </properties>
 </project>
 

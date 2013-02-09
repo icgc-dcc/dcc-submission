@@ -199,7 +199,6 @@
     <dependency>
       <groupId>com.google.code</groupId>
       <artifactId>externalsortinginjava</artifactId>
-      <version>0.1.1</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -234,21 +233,6 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
-        <version>1.7</version>
-        <executions>
-          <execution>
-            <id>add-source</id>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>add-source</goal>
-            </goals>
-            <configuration>
-              <sources>
-                <source>${project.build.directory}/generated-sources/java/</source>
-              </sources>
-            </configuration>
-          </execution>
-        </executions>
       </plugin>
 
       <!-- Test -->
