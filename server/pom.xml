@@ -302,47 +302,6 @@
       <id>internal</id>
       <url>http://seqwaremaven.oicr.on.ca/artifactory/dcc-dependencies</url>
     </repository>
-    <repository>
-      <id>morphia</id>
-      <url> http://morphia.googlecode.com/svn/mavenrepo/</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <!-- For CDH -->
-      <id>cloudera</id>
-      <url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <!-- For Cascading -->
-      <id>conjars.org</id>
-      <url>http://conjars.org/repo</url>
-    </repository>
-    <repository>
-      <id>oss.sonatype</id>
-      <url>http://oss.sonatype.org/content/repositories/releases/</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <!-- For com.hadoop.gplcompression -->
-      <id>twttr.com</id>
-      <url>http://maven.twttr.com/</url>
-    </repository>
   </repositories>
   <build>
     <plugins>
@@ -418,7 +377,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>1.7.1</version>
         <configuration>
           <artifactSet>
             <excludes>
@@ -532,9 +490,9 @@
     </pluginManagement>
   </build>
   <properties>
-     <!-- Entry point -->
-    <main.class>org.icgc.dcc.Main</main.class>   
-  
+    <!-- Entry point -->
+    <main.class>org.icgc.dcc.Main</main.class>
+
     <!-- Versions -->
     <jersey.version>2.0-m10</jersey.version>
     <shiro.version>1.2.0</shiro.version>

@@ -181,92 +181,8 @@
       <id>internal</id>
       <url>http://seqwaremaven.oicr.on.ca/artifactory/dcc-dependencies</url>
     </repository>
-    <repository>
-      <releases />
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-      <id>morphia</id>
-      <url>http://morphia.googlecode.com/svn/mavenrepo/</url>
-    </repository>
-    <repository>
-      <releases />
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-      <id>cloudera</id>
-      <url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
-    </repository>
-    <repository>
-      <id>conjars.org</id>
-      <url>http://conjars.org/repo</url>
-    </repository>
-    <repository>
-      <releases />
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-      <id>oss.sonatype</id>
-      <url>http://oss.sonatype.org/content/repositories/releases/</url>
-    </repository>
-    <repository>
-      <id>twttr.com</id>
-      <url>http://maven.twttr.com/</url>
-    </repository>
   </repositories>
   <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.10</version>
-      <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <artifactId>hamcrest-core</artifactId>
-          <groupId>org.hamcrest</groupId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
-      <version>1.9.0</version>
-      <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <artifactId>objenesis</artifactId>
-          <groupId>org.objenesis</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>hamcrest-core</artifactId>
-          <groupId>org.hamcrest</groupId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.easytesting</groupId>
-      <artifactId>fest-assert-core</artifactId>
-      <version>2.0M8</version>
-      <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <artifactId>fest-util</artifactId>
-          <groupId>org.easytesting</groupId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.easytesting</groupId>
-      <artifactId>fest-guava-assert</artifactId>
-      <version>1.0</version>
-      <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <artifactId>fest-util</artifactId>
-          <groupId>org.easytesting</groupId>
-        </exclusion>
-      </exclusions>
-    </dependency>
     <dependency>
       <groupId>org.glassfish.jersey.test-framework</groupId>
       <artifactId>jersey-test-framework-core</artifactId>
@@ -368,17 +284,67 @@
       <version>0.1.1</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.10</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>hamcrest-core</artifactId>
+          <groupId>org.hamcrest</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>1.9.0</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>objenesis</artifactId>
+          <groupId>org.objenesis</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>hamcrest-core</artifactId>
+          <groupId>org.hamcrest</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.easytesting</groupId>
+      <artifactId>fest-assert-core</artifactId>
+      <version>2.0M8</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>fest-util</artifactId>
+          <groupId>org.easytesting</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.easytesting</groupId>
+      <artifactId>fest-guava-assert</artifactId>
+      <version>1.0</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>fest-util</artifactId>
+          <groupId>org.easytesting</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
   </dependencies>
   <properties>
     <cascading.version>2.1.1</cascading.version>
     <jersey.version>2.0-m10</jersey.version>
-    <slf4j.version>1.6.1</slf4j.version>
     <cdh.version>cdh4.1.2</cdh.version>
     <mina.version>0.6.0</mina.version>
     <elasticsearch.version>0.19.9</elasticsearch.version>
     <morphia.version>0.99.1-DCC</morphia.version>
     <shiro.version>1.2.0</shiro.version>
-    <logback.version>1.0.3</logback.version>
     <hadoop.version>2.0.0</hadoop.version>
     <hadoop-mr1-cdh.version>${hadoop.version}-mr1-${cdh.version}</hadoop-mr1-cdh.version>
     <main.class>org.icgc.dcc.Main</main.class>
