@@ -51,15 +51,15 @@ public class Main {
 
         return;
       } else if(options.version) {
-        out.printf("ICGC DCC Gene Loader\nVersion %s\n", getVersion());
+        out.printf("ICGC DCC Gene Loader%nVersion %s%n", getVersion());
 
         return;
       }
 
       load();
     } catch(ParameterException pe) {
-      err.printf("dcc-genes: %s\n", pe.getMessage());
-      err.printf("Try '%s --help' for more information.\n", getProgramName());
+      err.printf("dcc-genes: %s%n", pe.getMessage());
+      err.printf("Try '%s --help' for more information.%n", getProgramName());
     }
   }
 

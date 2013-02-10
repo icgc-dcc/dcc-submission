@@ -257,7 +257,7 @@
         <artifactId>maven-shade-plugin</artifactId>
       </plugin>
 
-      <!-- Install -->
+      <!-- Verify -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>findbugs-maven-plugin</artifactId>
