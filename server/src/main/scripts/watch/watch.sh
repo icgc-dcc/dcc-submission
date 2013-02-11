@@ -54,13 +54,13 @@ last_offending_lines=$(cat ${log_file?} | awk '!/^[ \t]*$/' | grep -i ${keyword?
 if [ -n "${last_offending_lines?}" ]; then
  # send email if there are offending lines
  echo KO
- echo -e "${log_file?}\n\n${last_offending_lines?}\n\n(last 100 offending lines)" | mail -s "DCC watch - An exception was intercepted in production" ${email?}
+ echo -e "${log_file?}\n\n${last_offending_lines?}\n\n(last 100 offending lines)" | mail -s "${HOSTNAME?} - DCC watch - An exception was intercepted in production" ${email?}
  exit 1
 else
  # do nothing or send email to ensure script still runs periodically
  echo OK
  if [ "${send_ok?}" == "1" ]; then
-  echo -e "everything looks fine" | mail -s "DCC watch - OK" ${email?}
+  echo -e "everything looks fine" | mail -s "${HOSTNAME?} - DCC watch - OK" ${email?}
  fi
  exit
 fi
