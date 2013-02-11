@@ -1,6 +1,9 @@
 # ---------------------------------------------------------------------------
 ## errors:
 
+# dcc logs false positives
+errors=[TupleError{code=
+ERROR o.i.d.v.s.ValidationQueueManagerService - file errors (fatal planning errors)
 "key":"io.mapfile.bloom.error.rate"
 "key":"io.skip.checksum.errors"
 is a possible heterogenous collection
@@ -16,8 +19,14 @@ GPLNativeCodeLoader - Could not load native gpl library
 java.lang.UnsatisfiedLinkError: no gplcompression in java.library.path
 LzoCodec - Cannot load native-lzo without native-hadoop
 
+# real problem:
+java.io.IOException: unable to move file 
+
 # ---------------------------------------------------------------------------
 # exceptions:
+
+# dcc logs false positives
+INFO  o.i.d.v.s.ValidationService - plan has errors, throwing a FilePresenceException
 
 # mina warning: 
 ServerSession - Exception caught
@@ -31,4 +40,5 @@ org.apache.mina.core.write.WriteToClosedSessionException: null
 # grizzly warning:
 WARN  o.g.g.h.s.HttpHandler - service exception
 java.io.IOException: Connection closed
+
 
