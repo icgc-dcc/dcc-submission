@@ -36,6 +36,7 @@ import org.icgc.dcc.filesystem.SubmissionDirectory;
 import org.icgc.dcc.release.NextRelease;
 import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.Release;
+import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.security.UsernamePasswordAuthenticator;
 import org.junit.After;
 import org.junit.Before;
@@ -53,48 +54,29 @@ import com.typesafe.config.Config;
 @RunWith(MockitoJUnitRunner.class)
 public class SftpServerServiceTest {
 
-  @Rule
-  public TemporaryFolder tmp = new TemporaryFolder();
+  // @formatter:off
+  @Rule public TemporaryFolder tmp = new TemporaryFolder();
+  @Rule public SftpRule sftp = new SftpRule();
 
-  @Rule
-  public SftpRule sftp = new SftpRule();
+  @Mock Config config;
+  @Mock Subject subject;
+  @Mock UsernamePasswordAuthenticator passwordAuthenticator;
+  
+  @Mock Release release;
+  @Mock Submission submission;
+  @Mock Project project;
+  @Mock NextRelease nextRelease;
 
-  @Mock
-  Subject subject;
+  @Mock DccFileSystem fs;
+  @Mock SubmissionDirectory submissionDirectory;
+  @Mock ReleaseFileSystem releaseFileSystem;
 
-  @Mock
-  Release release;
-
-  @Mock
-  Project project;
-
-  @Mock
-  SubmissionDirectory submissionDirectory;
-
-  @Mock
-  NextRelease nextRelease;
-
-  @Mock
-  ReleaseFileSystem releaseFileSystem;
-
-  @Mock
-  Config config;
-
-  @Mock
-  UsernamePasswordAuthenticator passwordAuthenticator;
-
-  @Mock
-  DccFileSystem fs;
-
-  @Mock
-  ProjectService projectService;
-
-  @Mock
-  ReleaseService releaseService;
+  @Mock ProjectService projectService;
+  @Mock ReleaseService releaseService;
 
   SftpServerService service;
-
   File root;
+  // @formatter:on
 
   @Before
   public void setUp() throws IOException, JSchException {
@@ -115,10 +97,12 @@ public class SftpServerServiceTest {
 
     // Mock file system
     when(submissionDirectory.isReadOnly()).thenReturn(false);
+    when(submissionDirectory.getSubmission()).thenReturn(submission);
     when(fs.buildReleaseStringPath(any(Release.class))).thenReturn(root.getAbsolutePath());
     when(fs.getReleaseFilesystem(any(Release.class), any(Subject.class))).thenReturn(releaseFileSystem);
     when(fs.getFileSystem()).thenReturn(createFileSystem());
     when(releaseFileSystem.getDccFileSystem()).thenReturn(fs);
+    when(releaseFileSystem.getRelease()).thenReturn(release);
     when(releaseFileSystem.getSubmissionDirectory(project)).thenReturn(submissionDirectory);
 
     // Create an start CUT
@@ -130,8 +114,12 @@ public class SftpServerServiceTest {
 
   @Test
   public void testService() throws JSchException, SftpException {
+    // Create the simulated project directory
+    File projectDirectory = new File(root, "/project");
+    projectDirectory.mkdir();
+
     String content = "test";
-    String fileName = "file.txt";
+    String fileName = "/project/file.txt";
 
     sftp.put(content, fileName);
 
