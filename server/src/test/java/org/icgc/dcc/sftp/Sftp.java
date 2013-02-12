@@ -17,10 +17,6 @@
  */
 package org.icgc.dcc.sftp;
 
-import static com.google.common.base.Charsets.UTF_8;
-
-import java.io.ByteArrayInputStream;
-
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -29,9 +25,8 @@ import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
-import com.jcraft.jsch.SftpException;
 
-public class SftpRule implements TestRule {
+public class Sftp implements TestRule {
 
   private static final String SFTP_HOST = "127.0.0.1";
 
@@ -42,6 +37,15 @@ public class SftpRule implements TestRule {
   private Session session;
 
   private ChannelSftp sftpChannel;
+
+  private final String username;
+
+  private final String password;
+
+  public Sftp(String username, String password) {
+    this.username = username;
+    this.password = password;
+  }
 
   @Override
   public Statement apply(final Statement base, Description description) {
@@ -67,14 +71,18 @@ public class SftpRule implements TestRule {
     return SFTP_HOST;
   }
 
+  public ChannelSftp getChannel() {
+    return sftpChannel;
+  }
+
   public void connect() throws JSchException {
     if(sftpChannel != null && sftpChannel.isConnected()) {
       return;
     }
 
-    session = jsch.getSession("username", SFTP_HOST, SFTP_PORT);
+    session = jsch.getSession(username, SFTP_HOST, SFTP_PORT);
     session.setConfig("StrictHostKeyChecking", "no");
-    session.setPassword("password");
+    session.setPassword(password);
     session.connect();
 
     sftpChannel = (ChannelSftp) session.openChannel("sftp");
@@ -92,11 +100,6 @@ public class SftpRule implements TestRule {
 
     sftpChannel.exit();
     session.disconnect();
-  }
-
-  public void put(String content, String fileName) throws SftpException {
-    // Execute
-    sftpChannel.put(new ByteArrayInputStream(content.getBytes(UTF_8)), fileName);
   }
 
 }

@@ -17,13 +17,17 @@
  */
 package org.icgc.dcc.sftp;
 
+import static com.google.common.base.Charsets.UTF_8;
+import static java.lang.String.format;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.RawLocalFileSystem;
@@ -54,9 +58,11 @@ import com.typesafe.config.Config;
 @RunWith(MockitoJUnitRunner.class)
 public class SftpServerServiceTest {
 
+  private static final String PROJECT_NAME = "project1";
+
   // @formatter:off
   @Rule public TemporaryFolder tmp = new TemporaryFolder();
-  @Rule public SftpRule sftp = new SftpRule();
+  @Rule public Sftp sftp = new Sftp("username", "password");
 
   @Mock Config config;
   @Mock Subject subject;
@@ -93,17 +99,17 @@ public class SftpServerServiceTest {
     // Mock release / project
     when(nextRelease.getRelease()).thenReturn(release);
     when(releaseService.getNextRelease()).thenReturn(nextRelease);
-    when(projectService.getProject(anyString())).thenReturn(project);
+    when(projectService.getProject(PROJECT_NAME)).thenReturn(project);
 
     // Mock file system
-    when(submissionDirectory.isReadOnly()).thenReturn(false);
-    when(submissionDirectory.getSubmission()).thenReturn(submission);
-    when(fs.buildReleaseStringPath(any(Release.class))).thenReturn(root.getAbsolutePath());
-    when(fs.getReleaseFilesystem(any(Release.class), any(Subject.class))).thenReturn(releaseFileSystem);
+    when(fs.buildReleaseStringPath(release)).thenReturn(root.getAbsolutePath());
+    when(fs.getReleaseFilesystem(release, subject)).thenReturn(releaseFileSystem);
     when(fs.getFileSystem()).thenReturn(createFileSystem());
     when(releaseFileSystem.getDccFileSystem()).thenReturn(fs);
     when(releaseFileSystem.getRelease()).thenReturn(release);
     when(releaseFileSystem.getSubmissionDirectory(project)).thenReturn(submissionDirectory);
+    when(submissionDirectory.isReadOnly()).thenReturn(false);
+    when(submissionDirectory.getSubmission()).thenReturn(submission);
 
     // Create an start CUT
     service = new SftpServerService(config, passwordAuthenticator, fs, projectService, releaseService);
@@ -115,15 +121,30 @@ public class SftpServerServiceTest {
   @Test
   public void testService() throws JSchException, SftpException {
     // Create the simulated project directory
-    File projectDirectory = new File(root, "/project");
+    File projectDirectory = new File(root, "/" + PROJECT_NAME);
     projectDirectory.mkdir();
 
-    String content = "test";
-    String fileName = "/project/file.txt";
+    // Original file
+    String fileName = fileName(1);
+    String fileContent = "This is the content of the file";
+    File file = new File(root, fileName);
 
-    sftp.put(content, fileName);
+    // New file
+    String newFileName = fileName(2);
+    File newFile = new File(root, newFileName);
 
-    assertThat(new File(root, fileName)).exists();
+    // Put file
+    sftp.getChannel().put(inputStream(fileContent), fileName);
+    assertThat(file).exists().hasContent(fileContent);
+
+    // Rename file
+    sftp.getChannel().rename(fileName, newFileName);
+    assertThat(file).doesNotExist();
+    assertThat(newFile).exists().hasContent(fileContent);
+
+    // Remove file
+    sftp.getChannel().rm(newFileName);
+    assertThat(newFile).doesNotExist();
   }
 
   @After
@@ -136,6 +157,14 @@ public class SftpServerServiceTest {
     localFileSystem.setConf(new Configuration());
 
     return localFileSystem;
+  }
+
+  private static String fileName(int i) {
+    return format("/%s/file%s.txt", PROJECT_NAME, i);
+  }
+
+  private static InputStream inputStream(String text) {
+    return new ByteArrayInputStream(text.getBytes(UTF_8));
   }
 
 }

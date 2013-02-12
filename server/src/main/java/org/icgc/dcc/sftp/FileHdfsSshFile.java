@@ -131,7 +131,7 @@ class FileHdfsSshFile extends HdfsSshFile {
 
         this.directory.notifyModified();
         boolean success = this.fs.rename(path, destinationPath);
-        if(success) {
+        if(success == false) {
           throw new IOException(// must use IOException (see comments in
                                 // https://github.com/icgc-dcc/data-submission/pull/229)
               "unable to move file " + path.toUri() + " to " + destinationPath.toUri());
