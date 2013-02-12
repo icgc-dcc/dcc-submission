@@ -119,9 +119,11 @@ public class SftpServerServiceTest {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   public void testService() throws JSchException, SftpException {
     // Create the simulated project directory
-    File projectDirectory = new File(root, "/" + PROJECT_NAME);
+    String projectDirectoryName = "/" + PROJECT_NAME;
+    File projectDirectory = new File(root, projectDirectoryName);
     projectDirectory.mkdir();
 
     // Original file
@@ -133,18 +135,29 @@ public class SftpServerServiceTest {
     String newFileName = fileName(2);
     File newFile = new File(root, newFileName);
 
+    // Initial state
+    assertThat(sftp.getChannel().pwd()).isEqualTo("/");
+    assertThat(sftp.getChannel().ls(projectDirectoryName)).hasSize(0);
+
+    // Change directory
+    sftp.getChannel().cd(projectDirectoryName);
+    assertThat(sftp.getChannel().pwd()).isEqualTo(projectDirectoryName);
+
     // Put file
     sftp.getChannel().put(inputStream(fileContent), fileName);
     assertThat(file).exists().hasContent(fileContent);
+    assertThat(sftp.getChannel().ls(projectDirectoryName)).hasSize(1);
 
     // Rename file
     sftp.getChannel().rename(fileName, newFileName);
     assertThat(file).doesNotExist();
     assertThat(newFile).exists().hasContent(fileContent);
+    assertThat(sftp.getChannel().ls(projectDirectoryName)).hasSize(1);
 
     // Remove file
     sftp.getChannel().rm(newFileName);
     assertThat(newFile).doesNotExist();
+    assertThat(sftp.getChannel().ls(projectDirectoryName)).hasSize(0);
   }
 
   @After
