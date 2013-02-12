@@ -160,6 +160,16 @@ public class SftpServerServiceTest {
     assertThat(sftp.getChannel().ls(projectDirectoryName)).hasSize(0);
   }
 
+  @Test(expected = SftpException.class)
+  public void testRemoveNonExistentFile() throws SftpException {
+    sftp.getChannel().rm("/does/not/exist");
+  }
+
+  @Test(expected = SftpException.class)
+  public void testCdIntoNonExistent() throws SftpException {
+    sftp.getChannel().cd("/does/not/exist");
+  }
+
   @After
   public void tearDown() {
     service.stop();
