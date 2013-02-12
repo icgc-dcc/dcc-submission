@@ -58,6 +58,8 @@ import com.typesafe.config.Config;
 @RunWith(MockitoJUnitRunner.class)
 public class SftpServerServiceTest {
 
+  private static final String RELEASE_NAME = "release1";
+
   private static final String PROJECT_NAME = "project1";
 
   // @formatter:off
@@ -86,7 +88,7 @@ public class SftpServerServiceTest {
 
   @Before
   public void setUp() throws IOException, JSchException {
-    root = tmp.newFolder();
+    root = tmp.newFolder(RELEASE_NAME);
 
     // Mock configuration
     when(config.getInt("sftp.port")).thenReturn(sftp.getPort());
@@ -104,7 +106,7 @@ public class SftpServerServiceTest {
     // Mock file system
     when(fs.buildReleaseStringPath(release)).thenReturn(root.getAbsolutePath());
     when(fs.getReleaseFilesystem(release, subject)).thenReturn(releaseFileSystem);
-    when(fs.getFileSystem()).thenReturn(createFileSystem());
+    when(fs.getFileSystem()).thenReturn(fileSystem());
     when(releaseFileSystem.getDccFileSystem()).thenReturn(fs);
     when(releaseFileSystem.getRelease()).thenReturn(release);
     when(releaseFileSystem.getSubmissionDirectory(project)).thenReturn(submissionDirectory);
@@ -175,7 +177,7 @@ public class SftpServerServiceTest {
     service.stop();
   }
 
-  private static RawLocalFileSystem createFileSystem() {
+  private static RawLocalFileSystem fileSystem() {
     RawLocalFileSystem localFileSystem = new RawLocalFileSystem();
     localFileSystem.setConf(new Configuration());
 
