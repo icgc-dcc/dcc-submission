@@ -10,6 +10,8 @@
   </appender>
   
   <logger name="de.flapdoodle.embed" level="WARN"/>
+  <logger name="org.glassfish.jersey" level="WARN"/>
+  <logger name="org.hibernate.validator" level="WARN"/>
 
   <root level="info">
     <appender-ref ref="STDOUT" />
