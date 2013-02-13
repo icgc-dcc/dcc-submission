@@ -525,11 +525,6 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     }
   }
 
-  private Query<Dictionary> buildDictionaryVersionQuery2(String dictionaryVersion) {
-    Query<Dictionary> filter = this.datastore().createQuery(Dictionary.class).filter("version", dictionaryVersion);
-    return filter;
-  }
-
   private Query<Dictionary> buildDictionaryVersionQuery(String dictionaryVersion) {
     return this.datastore().createQuery(Dictionary.class) //
         .filter("version", dictionaryVersion);
