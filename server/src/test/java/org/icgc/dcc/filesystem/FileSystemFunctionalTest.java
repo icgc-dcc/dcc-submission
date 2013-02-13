@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.filesystem;
 
+import static org.fest.assertions.api.Assertions.assertThat;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.regex.Pattern;
@@ -98,10 +100,7 @@ public class FileSystemFunctionalTest extends FileSystemTest {
     log.info("releaseStringPath = " + releaseStringPath);
 
     Iterable<String> filenameList2 = HadoopUtils.toFilenameList(HadoopUtils.lsDir(fileSystem, releaseStringPath));
-    Assert.assertNotNull(filenameList2);
-    Assert.assertEquals(//
-        "[DBQ, SystemFiles]",//
-        filenameList2.toString());
+    assertThat(filenameList2).isNotNull().contains("DBQ", "SystemFiles");
     log.info("ls2 = " + filenameList2);
 
     log.info("ls = " + filenameList0);
