@@ -35,6 +35,7 @@ import org.apache.shiro.subject.Subject;
 import org.glassfish.grizzly.http.util.Header;
 import org.icgc.dcc.core.model.DccModelOptimisticLockException;
 import org.icgc.dcc.core.model.InvalidStateException;
+import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.release.NextRelease;
 import org.icgc.dcc.release.ReleaseException;
 import org.icgc.dcc.release.ReleaseService;
@@ -57,9 +58,30 @@ public class NextReleaseResource {
   private ReleaseService releaseService;
 
   @GET
-  public Response getNextRelease() {
+  public Response getNextRelease() { // FIXME: no security...!! (DCC-808)
     NextRelease nextRelease = releaseService.getNextRelease();
     return ResponseTimestamper.ok(nextRelease.getRelease()).build();
+  }
+
+  /**
+   * Returns the current dictionary.
+   * <p>
+   * More: <code>{@link ReleaseService#getNextDictionary()}</code>
+   */
+  @GET
+  @Path("dictionary")
+  public Response getDictionary(@Context Request req, @Context SecurityContext securityContext) {
+
+    // make sure user has access to at least one project
+    if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(AuthorizationPrivileges.PROJECT.getPrefix()) == false) {
+      ServerErrorResponseMessage error = new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED);
+      return Response.status(Status.UNAUTHORIZED).entity(error).build();
+    }
+
+    Dictionary dictionary = releaseService.getNextDictionary();
+
+    ResponseTimestamper.evaluate(req, dictionary);
+    return ResponseTimestamper.ok(dictionary).build();
   }
 
   @POST

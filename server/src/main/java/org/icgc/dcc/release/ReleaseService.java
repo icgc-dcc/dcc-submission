@@ -17,9 +17,6 @@
  */
 package org.icgc.dcc.release;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
-
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
@@ -40,6 +37,7 @@ import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.core.model.QProject;
 import org.icgc.dcc.core.morphia.BaseMorphiaService;
 import org.icgc.dcc.dictionary.model.Dictionary;
+import org.icgc.dcc.dictionary.model.DictionaryState;
 import org.icgc.dcc.dictionary.model.QDictionary;
 import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.filesystem.ReleaseFileSystem;
@@ -77,6 +75,10 @@ import com.google.inject.Inject;
 import com.mysema.query.mongodb.MongodbQuery;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
 import com.typesafe.config.Config;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 
 public class ReleaseService extends BaseMorphiaService<Release> {
 
@@ -174,6 +176,21 @@ public class ReleaseService extends BaseMorphiaService<Release> {
       throw new IllegalStateException("no next release");
     }
     return new NextRelease(dccLocking, nextRelease, morphia(), datastore(), this.fs);
+  }
+
+  /**
+   * Returns the current dictionary.
+   * <p>
+   * This is the dictionary, open or not, that the {@code NextRelease}'s {@code Release} points to.
+   */
+  public Dictionary getNextDictionary() {
+    NextRelease nextRelease = getNextRelease();
+    Release release = checkNotNull(nextRelease, "There are currently no open releases...").getRelease();
+    String version = checkNotNull(release).getDictionaryVersion();
+    Dictionary dictionary = getDictionaryFromVersion(checkNotNull(version));
+    checkState(checkNotNull(dictionary).getState() == DictionaryState.OPENED, "Current dictionary is not {}",
+        DictionaryState.OPENED);
+    return dictionary;
   }
 
   public List<HasRelease> list() {
@@ -506,6 +523,11 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     if(submission == null || submission.getState() != SubmissionState.NOT_VALIDATED || submission.getReport() != null) {
       throw new ReleaseException("resetting submission failed for project " + projectKey);
     }
+  }
+
+  private Query<Dictionary> buildDictionaryVersionQuery2(String dictionaryVersion) {
+    Query<Dictionary> filter = this.datastore().createQuery(Dictionary.class).filter("version", dictionaryVersion);
+    return filter;
   }
 
   private Query<Dictionary> buildDictionaryVersionQuery(String dictionaryVersion) {
