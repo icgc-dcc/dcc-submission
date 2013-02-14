@@ -22,6 +22,7 @@ import java.util.HashSet;
 
 import org.apache.shiro.authc.credential.PasswordMatcher;
 import org.apache.shiro.realm.Realm;
+import org.apache.shiro.realm.text.IniRealm;
 import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.core.UserService;
 import org.slf4j.Logger;
@@ -50,7 +51,7 @@ public class RealmProvider implements Provider<Collection<Realm>> {
     String shiroIniFilePath = this.config.getString(ShiroConfig.SHIRO_INI_FILE);
     log.debug("shiroIniFilePath = " + shiroIniFilePath);
 
-    DccIniRealm iniRealm = new DccIniRealm();
+    IniRealm iniRealm = new IniRealm();
     iniRealm.setResourcePath("file:" + shiroIniFilePath);// TODO: existing constant for that?
     iniRealm.init();
 

@@ -17,11 +17,8 @@
  */
 package org.icgc.dcc.shiro;
 
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -31,12 +28,19 @@ import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.core.UserService;
-import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.core.model.User;
+import org.icgc.dcc.web.Authorizations;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Lists;
+import static com.google.common.base.Preconditions.checkState;
 
-public class DccDbRealm extends AuthorizingRealm implements DccRealm {
+/**
+ * To dynamically add access to projects by their owners.
+ */
+public class DccDbRealm extends AuthorizingRealm {
+
+  private static final Logger log = LoggerFactory.getLogger(DccDbRealm.class);
 
   private final UserService users;
 
@@ -47,25 +51,22 @@ public class DccDbRealm extends AuthorizingRealm implements DccRealm {
     this.projects = projects;
   }
 
+  /**
+   * Dynamically adds permissions to projects which are owned by the connected user.
+   */
   @Override
   protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
     String username = (String) principals.getPrimaryPrincipal();
     User user = users.getUser(username);
-    SimpleAuthorizationInfo sai = new SimpleAuthorizationInfo(new HashSet<String>(user.getRoles()));
-    Set<String> stringPermissions = new HashSet<String>();
-    for(Project project : projects.getProjects()) {
-      if(project.hasUser(user.getName()) || CollectionUtils.containsAny(project.getGroups(), user.getRoles())) {
-        stringPermissions.add(AuthorizationPrivileges.projectViewPrivilege(project.getKey()));
-      }
-    }
-    sai.addStringPermissions(stringPermissions);
-
-    return sai;
+    Set<String> stringPermissions = Authorizations.stringPermissions(user, projects.getProjects());
+    log.debug("string permissions ro {} are: {}", username, stringPermissions);
+    return new SimpleAuthorizationInfo(stringPermissions);
   }
 
   @Override
   protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
-    // Authorization is currently only performed via the Shiro INI file, so this is not populated
+    checkState(false, "Authorization is currently only performed via the Shiro INI file, so this is not populated"); // TODO:
+                                                                                                                     // better?
     return null;
   }
 
@@ -73,14 +74,4 @@ public class DccDbRealm extends AuthorizingRealm implements DccRealm {
   public boolean supports(AuthenticationToken token) {
     return false;
   }
-
-  @Override
-  public Collection<String> getRoles(String username) {
-    User user = users.getUser(username);
-    if(user == null) {
-      return Lists.newArrayList();
-    }
-    return user.getRoles();
-  }
-
 }

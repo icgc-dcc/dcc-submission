@@ -33,22 +33,23 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 
+import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.core.UserService;
 import org.icgc.dcc.core.model.Feedback;
 import org.icgc.dcc.core.model.User;
 import org.icgc.dcc.security.UsernamePasswordAuthenticator;
-import org.icgc.dcc.shiro.AuthorizationPrivileges;
 import org.icgc.dcc.shiro.ShiroSecurityContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
+
+import static org.icgc.dcc.web.Authorizations.isOmnipotentUser;
+import static org.icgc.dcc.web.Authorizations.unauthorizedResponse;
 
 /**
  * Resource (REST end-points) for users.
@@ -62,22 +63,28 @@ public class UserResource {
   private UserService users;
 
   @Inject
+  private ProjectService projects;
+
+  @Inject
   private UsernamePasswordAuthenticator passwordAuthenticator;
 
   @GET
   @Path("self")
-  public Response getRoles(@Context HttpHeaders headers) {
+  public Response getRoles(@Context SecurityContext securityContext) {
+    /* no authorization check necessary */
 
-    String username = passwordAuthenticator.getCurrentUser();
+    String username = ((ShiroSecurityContext) securityContext) // TODO: there doesn't seem to be another way than using
+                                                               // toString...
+        .getSubject().getPrincipal().toString();
+    log.debug("Getting user: {}", username);
     User user = users.getUser(username);
-
     if(user == null) {
       user = new User();
       user.setUsername(username);
       users.saveUser(user);
     }
 
-    user.getRoles().addAll(this.passwordAuthenticator.getRoles());
+    user.getPermissions().addAll(Authorizations.stringPermissions(user, projects.getProjects()));
 
     return Response.ok(user).build();
   }
@@ -85,7 +92,10 @@ public class UserResource {
   @POST
   @Path("self")
   @Consumes("application/json")
-  public Response feedback(Feedback feedback, @Context Request req) { // TODO: merge with mail service (DCC-686)
+  public Response feedback(Feedback feedback) { // TODO: merge with mail service (DCC-686)
+    /* no authorization check necessary */
+
+    log.debug("Sending feedback email: {}", feedback);
     Properties props = new Properties();
     props.put("mail.smtp.host", "smtp.oicr.on.ca");
     Session session = Session.getDefaultInstance(props, null);
@@ -109,12 +119,11 @@ public class UserResource {
 
   @PUT
   @Path("unlock/{username}")
-  public Response unlock(@PathParam("username") String username, @Context Request req,
-      @Context SecurityContext securityContext) {
+  public Response unlock(@PathParam("username") String username, @Context SecurityContext securityContext) {
 
-    if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(AuthorizationPrivileges.ALL.getPrefix()) == false) {
-      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED))
-          .build();
+    log.info("Unlocking user: {}", username);
+    if(isOmnipotentUser(securityContext) == false) {
+      return unauthorizedResponse();
     }
 
     User user = users.getUser(username);
@@ -129,7 +138,7 @@ public class UserResource {
     }
 
     user = users.unlock(username);
-    log.info("user {} was unlocked", username);
+    log.info("User {} was unlocked", username);
 
     return ResponseTimestamper.ok(user).build();
   }

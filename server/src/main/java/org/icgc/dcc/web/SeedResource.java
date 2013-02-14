@@ -30,6 +30,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.SecurityContext;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -44,6 +45,14 @@ import org.icgc.dcc.release.model.Release;
 import com.google.code.morphia.Datastore;
 import com.google.inject.Inject;
 
+import static org.icgc.dcc.web.Authorizations.isOmnipotentUser;
+import static org.icgc.dcc.web.Authorizations.unauthorizedResponse;
+
+/**
+ * TODO: discard class: DCC-819 (was originally created in the context of DCC-135)
+ * <p>
+ * The integration test currently relies on it
+ */
 @Path("seed")
 public class SeedResource {
 
@@ -58,7 +67,13 @@ public class SeedResource {
 
   @POST
   @Path("users")
-  public Response seedUsers(@Valid User[] users, @DefaultValue("false") @QueryParam("delete") boolean delete) {
+  public Response seedUsers(@Context SecurityContext securityContext, @Valid User[] users,
+      @DefaultValue("false") @QueryParam("delete") boolean delete) {
+
+    if(isOmnipotentUser(securityContext) == false) {
+      return unauthorizedResponse();
+    }
+
     if(delete) {
       this.datastore.getCollection(User.class).drop();
     }
@@ -68,7 +83,12 @@ public class SeedResource {
 
   @POST
   @Path("projects")
-  public Response seedProjects(@Valid Project[] projects, @DefaultValue("false") @QueryParam("delete") boolean delete) {
+  public Response seedProjects(@Context SecurityContext securityContext, @Valid Project[] projects,
+      @DefaultValue("false") @QueryParam("delete") boolean delete) {
+    if(isOmnipotentUser(securityContext) == false) {
+      return unauthorizedResponse();
+    }
+
     if(delete) {
       this.datastore.getCollection(Project.class).drop();
     }
@@ -78,7 +98,12 @@ public class SeedResource {
 
   @POST
   @Path("releases")
-  public Response seedReleases(@Valid Release[] releases, @DefaultValue("false") @QueryParam("delete") boolean delete) {
+  public Response seedReleases(@Context SecurityContext securityContext, @Valid Release[] releases,
+      @DefaultValue("false") @QueryParam("delete") boolean delete) {
+    if(isOmnipotentUser(securityContext) == false) {
+      return unauthorizedResponse();
+    }
+
     if(delete) {
       this.datastore.getCollection(Release.class).drop();
     }
@@ -88,8 +113,13 @@ public class SeedResource {
 
   @POST
   @Path("dictionaries")
-  public Response seedDictionaries(@Valid Dictionary[] dictionaries,
+  public Response seedDictionaries(@Context SecurityContext securityContext, @Valid Dictionary[] dictionaries,
       @DefaultValue("false") @QueryParam("delete") boolean delete) {
+
+    if(isOmnipotentUser(securityContext) == false) {
+      return unauthorizedResponse();
+    }
+
     if(delete) {
       this.datastore.getCollection(Dictionary.class).drop();
     }
@@ -99,7 +129,12 @@ public class SeedResource {
 
   @POST
   @Path("codelists")
-  public Response seedCodeLists(@Valid CodeList[] codelists, @DefaultValue("false") @QueryParam("delete") boolean delete) {
+  public Response seedCodeLists(@Context SecurityContext securityContext, @Valid CodeList[] codelists,
+      @DefaultValue("false") @QueryParam("delete") boolean delete) {
+    if(isOmnipotentUser(securityContext) == false) {
+      return unauthorizedResponse();
+    }
+
     if(delete) {
       this.datastore.getCollection(CodeList.class).drop();
     }
@@ -109,7 +144,12 @@ public class SeedResource {
 
   @POST
   @Path("fs/{filepath: .*}")
-  public Response seedFileSystem(@PathParam("filepath") String filename, InputStream fileContents) {
+  public Response seedFileSystem(@Context SecurityContext securityContext, @PathParam("filepath") String filename,
+      InputStream fileContents) {
+    if(isOmnipotentUser(securityContext) == false) {
+      return unauthorizedResponse();
+    }
+
     FileSystem fs = this.dccfs.getFileSystem();
     org.apache.hadoop.fs.Path destinationPath =
         new org.apache.hadoop.fs.Path(dccfs.getRootStringPath() + "/" + filename);

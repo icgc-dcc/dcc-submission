@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.security;
 
-import java.util.List;
-
 import org.apache.shiro.subject.Subject;
 
 /**
@@ -27,14 +25,9 @@ import org.apache.shiro.subject.Subject;
 public interface UsernamePasswordAuthenticator {
 
   /**
-   * 
    * @return true when authentication succeeds, false otherwise.
    */
   public Subject authenticate(String username, char[] password, String host);
 
-  public String getCurrentUser();
-
   public Subject getSubject();
-
-  public List<String> getRoles();
 }

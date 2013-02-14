@@ -95,4 +95,10 @@ public class Project extends BaseEntity implements HasName {
   public boolean hasUser(String name) {
     return this.users != null && this.users.contains(name);
   }
+
+  @Override
+  public String toString() {
+    return "Project [key=" + key + ", name=" + name + ", users=" + users + ", groups=" + groups + "]";
+  }
+
 }
