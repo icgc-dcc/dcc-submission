@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>dcc-portal</artifactId>
+        <groupId>org.icgc.dcc</groupId>
+        <version>0.1.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.icgc.dcc</groupId>
+    <artifactId>dcc-portal-das</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+
+    <packaging>war</packaging>
+    <name>ICGC DCC DAS Server</name>
+    <description>
+        DAS Server for the DCC Data Portal
+    </description>
+
+    <repositories>
+        <repository>
+            <id>google-code-mydas</id>
+            <name>google-code-mydas</name>
+            <layout>default</layout>
+            <url>http://mydas.googlecode.com/svn/repository/</url>
+        </repository>
+    </repositories>
+    
+    <dependencies>
+        <!-- DAS -->
+        <dependency>
+            <groupId>uk.ac.ebi.mydas</groupId>
+            <artifactId>mydas</artifactId>
+            <version>1.6.7</version>
+        </dependency>
+        
+        <!-- Databases -->
+        <dependency>
+            <groupId>org.elasticsearch</groupId>
+            <artifactId>elasticsearch</artifactId>
+            <version>${elasticsearch.version}</version>
+        </dependency>
+        
+        <!-- Testing -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.10</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>1.9.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.easytesting</groupId>
+            <artifactId>fest-assert-core</artifactId>
+            <version>2.0M8</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.easytesting</groupId>
+            <artifactId>fest-guava-assert</artifactId>
+            <version>1.0</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- JSON -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+      
+       
+        <!-- Web -->
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+            <version>2.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mortbay.jetty</groupId>
+            <artifactId>jetty</artifactId>
+            <version>6.1.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>jetty</groupId>
+            <artifactId>jasper-compiler</artifactId>
+            <version>4.2.20RC0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>jetty</groupId>
+            <artifactId>jasper-runtime</artifactId>
+            <version>4.2.20RC0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>jetty</groupId>
+            <artifactId>servlet-api</artifactId>
+            <version>2.5-6.0.0beta6</version>
+            <scope>test</scope>
+        </dependency>      
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.6</source>
+                    <target>1.6</target>
+                </configuration>
+            </plugin>
+
+            <!-- The jetty plugin allows testing of the DAS service within the Maven build.
+             (Run using mvn jetty:run-war) -->
+            <plugin>
+                <groupId>org.mortbay.jetty</groupId>
+                <artifactId>maven-jetty-plugin</artifactId>
+                <configuration>
+                    <contextPath>/</contextPath>
+                    <connectors>
+                        <connector implementation="org.mortbay.jetty.nio.SelectChannelConnector">
+                            <port>9090</port>
+                            <maxIdleTime>60000</maxIdleTime>
+                        </connector>
+                    </connectors>
+                </configuration>
+            </plugin>
+        </plugins>
+        <finalName>MyDasTemplate</finalName>
+    </build>
+
+    <properties>
+        <!-- Versions -->
+        <elasticsearch.version>0.20.2</elasticsearch.version>
+        <jackson.version>2.1.2</jackson.version>
+    </properties>
+</project>
