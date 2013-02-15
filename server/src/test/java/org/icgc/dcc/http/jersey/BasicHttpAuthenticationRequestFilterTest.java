@@ -17,12 +17,6 @@
  */
 package org.icgc.dcc.http.jersey;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import java.io.IOException;
 
 import javax.ws.rs.container.ContainerRequestContext;
@@ -30,16 +24,27 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.core.UriInfo;
 
 import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.security.UsernamePasswordAuthenticator;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.common.net.HttpHeaders;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+@RunWith(MockitoJUnitRunner.class)
 public class BasicHttpAuthenticationRequestFilterTest {
 
   private Request mockRequest;
@@ -47,6 +52,9 @@ public class BasicHttpAuthenticationRequestFilterTest {
   private MultivaluedMap<String, String> mockHeaders;
 
   private ContainerRequestContext mockContext;
+
+  @Mock
+  private UriInfo mockUriInfo;
 
   private BasicHttpAuthenticationRequestFilter basicHttpAuthenticationRequestFilter;
 
@@ -75,6 +83,8 @@ public class BasicHttpAuthenticationRequestFilterTest {
     when(this.mockContext.getRequest()).thenReturn(this.mockRequest);
     when(this.mockContext.getHeaders()).thenReturn(this.mockHeaders);
     when(this.mockContext.getSecurityContext()).thenReturn(mockSecurityContext);
+    when(this.mockContext.getUriInfo()).thenReturn(mockUriInfo);
+    when(mockUriInfo.getPath()).thenReturn("/fake/path");
 
     when(this.usernamePasswordAuthenticator.authenticate("brett", "brettspasswd".toCharArray(), "")).thenReturn(
         mockSubject);
