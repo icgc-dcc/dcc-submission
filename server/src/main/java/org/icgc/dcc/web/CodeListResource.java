@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.web;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import java.util.List;
 
 import javax.validation.Valid;
@@ -43,11 +41,16 @@ import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 @Path("codeLists")
 public class CodeListResource {
   @Inject
   private DictionaryService dictionaries;
 
+  /**
+   * Open-access intentional (DCC-758)
+   */
   @GET
   public Response getCodeLists() {
     List<CodeList> codeLists = this.dictionaries.listCodeList();

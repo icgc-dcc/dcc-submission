@@ -66,18 +66,12 @@ public class NextReleaseResource {
   /**
    * Returns the current dictionary.
    * <p>
-   * More: <code>{@link ReleaseService#getNextDictionary()}</code>
+   * More: <code>{@link ReleaseService#getNextDictionary()}</code><br/>
+   * Open-access intentional (DCC-758)
    */
   @GET
   @Path("dictionary")
-  public Response getDictionary(@Context Request req, @Context SecurityContext securityContext) {
-
-    // make sure user has access to at least one project
-    if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(AuthorizationPrivileges.PROJECT.getPrefix()) == false) {
-      ServerErrorResponseMessage error = new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED);
-      return Response.status(Status.UNAUTHORIZED).entity(error).build();
-    }
-
+  public Response getDictionary(@Context Request req) {
     Dictionary dictionary = releaseService.getNextDictionary();
 
     ResponseTimestamper.evaluate(req, dictionary);

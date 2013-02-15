@@ -68,9 +68,9 @@ public class InjectModule extends AbstractModule {
       if(type instanceof Class) {
         return injector.getInstance((Class<?>) type);
       }
-      throw new IllegalStateException("don't know how to inject type " + type);
+      throw new IllegalStateException(String.format("don't know how to inject type $s (%s)", type,
+          type == null ? null : type.getClass()));
     }
-
   }
 
   public static final class GuiceModule extends AbstractBinder {

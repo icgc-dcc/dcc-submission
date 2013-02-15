@@ -55,7 +55,7 @@ public abstract class ResourceTest extends JerseyTest {
         (Module) new ShiroModule(), //
         (Module) new FileSystemModule());
 
-    modules.addAll(configureModule());
+    modules.addAll(configureModules());
 
     Injector injector = Guice.createInjector(modules);
 
@@ -76,7 +76,7 @@ public abstract class ResourceTest extends JerseyTest {
   /**
    * To be overriden if more modules are necessary (and to mock them for instance).
    */
-  protected Collection<? extends Module> configureModule() {
+  protected Collection<? extends Module> configureModules() {
     return ImmutableList.of(EMPTY_MODULE);
   }
 

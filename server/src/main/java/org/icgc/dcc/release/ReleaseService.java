@@ -188,7 +188,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     Release release = checkNotNull(nextRelease, "There are currently no open releases...").getRelease();
     String version = checkNotNull(release).getDictionaryVersion();
     Dictionary dictionary = getDictionaryFromVersion(checkNotNull(version));
-    checkState(checkNotNull(dictionary).getState() == DictionaryState.OPENED, "Current dictionary is not {}",
+    checkState(checkNotNull(dictionary).getState() == DictionaryState.OPENED, "Current dictionary is not %s",
         DictionaryState.OPENED);
     return dictionary;
   }
