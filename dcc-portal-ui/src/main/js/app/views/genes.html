@@ -1,23 +1,16 @@
-<!--
-  ~ Copyright 2013(c) The Ontario Institute for Cancer Research. All rights reserved.
-  ~  
-  ~ This program and the accompanying materials are made available under the terms of the GNU Public
-  ~ License v3.0. You should have received a copy of the GNU General Public License along with this
-  ~ program. If not, see <http://www.gnu.org/licenses/>.
-  ~  
-  ~ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
-  ~ IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
-  ~ FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
-  ~ CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-  ~ DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-  ~ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
-  ~ WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
-  ~ WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-  -->
-
 <div class="row">
     <div class="span3">
-        <div class="well"><i class="icon-spinner icon-spin"></i> Facets</div>
+        <ul class="nav nav-list" ng-controller="FacetsController" ng-repeat="(fname, facet) in genes.facets">
+            <li class="nav-header">{{fname}}</li>
+            <li>
+                <ul class="unstyled" ng-repeat="(tname, term) in facet.terms">
+                    <li><a href="" ng-click="toggleFilter(genes.type, fname, tname)">
+                        <i ng-hide="term.active" class="icon-check-empty"></i>
+                        <i ng-show="term.active" class="icon-check"></i>
+                        {{tname}} ({{term.count}})</a></li>
+                </ul>
+            </li>
+        </ul>
     </div>
     <div class="span9">
         <div class="row"><h1 class="span">Genes</h1></div>
@@ -46,7 +39,7 @@
             </tr>
             </thead>
             <tbody>
-            <tr ng-repeat="gene in genes.data">
+            <tr ng-repeat="gene in genes.hits">
                 <td><a href="#/genes/{{gene.ensembl_gene_id}}">{{gene.symbol}}</a></td>
 
                 <td>{{gene.description}}</td>

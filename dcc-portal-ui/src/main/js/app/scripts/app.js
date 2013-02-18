@@ -20,6 +20,7 @@
 angular.module('app', [
   'app.controllers',
   'app.common',
+  'app.facets',
   'app.projects',
   'app.donors',
   'app.genes',
@@ -32,6 +33,7 @@ angular.module('app').config(['$routeProvider', '$locationProvider', function ($
       .when('/search', {templateUrl: 'views/advanced.html', controller: 'ApplicationController'})
       .otherwise({redirectTo: '/'});
   //$locationProvider.html5Mode(true);
+  //$locationProvider.hashPrefix('!');
 }]);
 
 angular.module('app.controllers', []);

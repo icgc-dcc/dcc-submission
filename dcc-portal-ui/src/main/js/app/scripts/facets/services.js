@@ -1,10 +1,10 @@
 /*
  * Copyright 2013(c) The Ontario Institute for Cancer Research. All rights reserved.
- *  
+ *
  * This program and the accompanying materials are made available under the terms of the GNU Public
  * License v3.0. You should have received a copy of the GNU General Public License along with this
  * program. If not, see <http://www.gnu.org/licenses/>.
- *  
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
  * FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
@@ -17,15 +17,8 @@
 
 'use strict';
 
-angular.module('app.genes.services', ['app.genes.models']);
+angular.module('app.facets.services', []);
 
-angular.module('app.genes.services').service('GenesService', ['$q', 'Genes', function ($q, Genes) {
-
-  this.query = function () {
-    return Genes.query();
-  };
-
-  this.get = function (params) {
-    return Genes.get(params);
-  };
+angular.module('app.genes.services').service('FacetsService', [ function () {
 }]);
+

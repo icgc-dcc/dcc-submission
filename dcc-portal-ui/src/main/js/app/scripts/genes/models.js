@@ -22,9 +22,90 @@ angular.module('app.genes.models', []);
 angular.module('app.genes.models').factory('Genes', ['$http', function ($http) {
   return {
     query: function () {
-      return $http.get('/ws/genes').then(function (response) {
-        return response.data;
-      });
+      return {
+        type: 'genes',
+        hits: [
+          {
+            "symbol": "MAN2B2",
+            "gene_name": "ENSG00000013288",
+            "chromosome": 4,
+            "start": 6576902,
+            "end": 6625089,
+            "band": "p16.1",
+            "gene_type": "protein_coding",
+            "links": {
+              "self": {
+                "method": "GET",
+                "uri": "https://data-portal.icgc.org/ws/genes/ENSG00000013288"
+              }
+            }
+          },
+          {
+            "symbol": "CLDN11",
+            "gene_name": "ENSG00000013297",
+            "chromosome": 3,
+            "start": 170136653,
+            "end": 170578169,
+            "band": "q26.2",
+            "gene_type": "protein_coding",
+            "links": {
+              "self": {
+                "method": "GET",
+                "uri": "https://data-portal.icgc.org/ws/genes/ENSG00000013297"
+              }
+            }
+          },
+          {
+            "symbol": "ANGEL1",
+            "gene_name": "ENSG00000013523",
+            "chromosome": 14,
+            "start": 77253588,
+            "end": 77292589,
+            "band": "q24.3",
+            "gene_type": "protein_coding",
+            "links": {
+              "self": {
+                "method": "GET",
+                "uri": "https://data-portal.icgc.org/ws/genes/ENSG00000013523"
+              }
+            }
+          }
+        ],
+        facets: {
+          "gene_type": {
+            terms: {
+              "protein_coding": {count: Math.random()},
+              "pseudogene": {count: 30},
+              "miRNA": {count: 30},
+              "non_coding": {count: 30}
+            }
+          },
+          "gene_type2": {
+            terms: {
+              "protein_coding": {count: 30},
+              "pseudogene": {count: 30},
+              "miRNA": {count: 30},
+              "non_coding": {count: 30}
+            }
+          }
+        },
+        pagination: {
+          "count": 3,
+          "size": 3,
+          "from": 99,
+          "total": 300,
+          "page": 33,
+          "pages": 100,
+          "sort": "start",
+          "order": "asc",
+          "next": "https://data-portal.icgc.org/ws/genes?size=3&page=34",
+          "previous": "https://data-portal.icgc.org/ws/genes?size=3&page=32"
+        }
+      };
+
+      //return $http.get('/ws/genes').then(function (response) {
+      //  return response.data;
+      //});
     },
     get: function (params) {
       return $http.get('/ws/genes/' + params.gene).then(function (response) {
