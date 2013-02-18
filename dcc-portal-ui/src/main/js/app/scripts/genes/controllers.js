@@ -19,13 +19,15 @@
 angular.module('app.genes.controllers', ['app.genes.services']);
 
 angular.module('app.genes.controllers').controller('GenesController', [ "$scope", 'GenesService', "genes", function ($scope, GenesService, genes) {
+  console.log('GenesController');
+
   $scope.genes = genes;
 
-  //$scope.refresh = function () {
-  //  $scope.genes= GenesService.query();
-  //};
-  
-  //$scope.$on('toggleFilter', $scope.refresh);
+  $scope.refresh = function () {
+    $scope.genes = GenesService.query();
+  };
+
+  $scope.$on('toggleFilter', $scope.refresh);
 }]);
 
 angular.module('app.genes.controllers').controller('GeneController', [ "$scope", "gene", function ($scope, gene) {

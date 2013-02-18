@@ -30,7 +30,11 @@ angular.module('app').config(['$routeProvider', '$locationProvider', function ($
   $routeProvider
       .when('/', {templateUrl: 'views/home.html', controller: 'ApplicationController'})
       .when('/browser', {templateUrl: 'views/browser.html', controller: 'ApplicationController'})
-      .when('/search', {templateUrl: 'views/advanced.html', controller: 'ApplicationController'})
+      .when('/search', {
+        templateUrl: 'views/advanced.html',
+        controller: 'ApplicationController',
+        reloadOnSearch: false
+      })
       .otherwise({redirectTo: '/'});
   //$locationProvider.html5Mode(true);
   //$locationProvider.hashPrefix('!');
