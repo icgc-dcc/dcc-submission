@@ -24,12 +24,10 @@ import java.util.Set;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.shiro.authc.SimpleAccount;
 import org.apache.shiro.authz.AuthorizationInfo;
-import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.text.IniRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.core.model.Project;
-import org.icgc.dcc.web.Authorizations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,9 +45,6 @@ public class DccWrappingRealm extends IniRealm {
 
   public DccWrappingRealm(ProjectService projects) {
     this.projects = projects;
-
-    System.out.println(">>");
-
   }
 
   /**
@@ -57,26 +52,23 @@ public class DccWrappingRealm extends IniRealm {
    */
   @Override
   protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
-    String username = Authorizations.getUsername(principals.getPrimaryPrincipal());
-    log.debug("Putting together authorizations for user {}", username);
+    log.debug("Putting together authorizations for user {}", principals.getPrimaryPrincipal());
+    String username = super.getUsername(principals);
+    SimpleAccount simpleAccount = super.getUser(username); // this gives access to implementation of
+                                                           // AuthorizationInfo...
 
-    SimpleAccount simpleAccount = super.getUser(username);
-    Collection<String> iniRoles = simpleAccount.getRoles();
     Set<String> projectSpecificPermissions = buildProjectSpecificPermissions(username, simpleAccount.getRoles());
-    log.debug("Ini roles for user {}: {}", username, iniRoles);
-    log.debug("Project-specific permissions for user {} (dynamically added): {}", username, projectSpecificPermissions);
+    log.debug("Dynamically adding Project-specific permissions for user {}: {}", username, projectSpecificPermissions);
+    simpleAccount.addStringPermissions(projectSpecificPermissions);
 
-    SimpleAuthorizationInfo sai = new SimpleAuthorizationInfo(Sets.newHashSet(iniRoles));
-    sai.addStringPermissions(projectSpecificPermissions);
-
-    return sai;
+    return simpleAccount;
   }
 
   private Set<String> buildProjectSpecificPermissions(String username, Collection<String> roles) {
     Set<String> permissions = Sets.newLinkedHashSet();
     for(Project project : projects.getProjects()) {
       List<String> groups = Lists.newArrayList(project.getGroups());
-      groups.add("admin"); // FIXME?
+      groups.add("admin"); // FIXME: needed?
       if(project.hasUser(username) || CollectionUtils.containsAny(groups, roles)) {
         permissions.add(AuthorizationPrivileges.projectViewPrivilege(project.getKey()));
       }

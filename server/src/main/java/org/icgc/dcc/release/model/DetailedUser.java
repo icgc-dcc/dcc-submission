@@ -35,7 +35,7 @@ public class DetailedUser {
 
   public DetailedUser(String username, boolean admin) {
     this.username = checkNotNull(username);
-    this.roles = admin ? ImmutableList.of("admin") : ImmutableList.<String> of();
+    this.roles = admin ? ImmutableList.of("admin") : ImmutableList.<String> of(); // TODO: hardcoding
   }
 
   public String getUsername() {
@@ -46,4 +46,8 @@ public class DetailedUser {
     return roles;
   }
 
+  @Override
+  public String toString() {
+    return "DetailedUser [username=" + username + ", roles=" + roles + "]";
+  }
 }

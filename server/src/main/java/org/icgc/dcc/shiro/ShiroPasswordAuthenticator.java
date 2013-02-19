@@ -45,7 +45,7 @@ public class ShiroPasswordAuthenticator implements UsernamePasswordAuthenticator
 
   private static final Logger log = LoggerFactory.getLogger(ShiroPasswordAuthenticator.class);
 
-  private final SecurityManager securityManager;
+  private final SecurityManager securityManager; // TODO: must add because...
 
   private final UserService users;
 
