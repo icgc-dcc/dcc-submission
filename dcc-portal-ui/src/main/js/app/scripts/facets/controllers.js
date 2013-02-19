@@ -61,15 +61,11 @@ angular.module('app.facets.controllers').controller('FacetsController', [ "$scop
       if (currentFilters.hasOwnProperty(facet_name)) {
         // Compare terms with filters and set actives
         angular.forEach(facet.terms, function (term, term_name) {
-          if (currentFilters[facet_name].indexOf(term_name) !== -1) {
-            term.active = true;
-          } else {
-            term.active = false;
-          }
+          term.active = currentFilters[facet_name].indexOf(term_name) !== -1;
         });
       } else {
         facet.active = false;
-        angular.forEach(facet.terms, function (term, term_name) {
+        angular.forEach(facet.terms, function (term) {
           term.active = false;
         });
       }
