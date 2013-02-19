@@ -18,8 +18,11 @@
 package org.icgc.dcc.shiro;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.shiro.authc.SimpleAccount;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.text.IniRealm;
@@ -27,7 +30,10 @@ import org.apache.shiro.subject.PrincipalCollection;
 import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.web.Authorizations;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 /**
@@ -35,10 +41,15 @@ import com.google.common.collect.Sets;
  */
 public class DccWrappingRealm extends IniRealm {
 
+  private static final Logger log = LoggerFactory.getLogger(DccWrappingRealm.class);
+
   private final ProjectService projects;
 
   public DccWrappingRealm(ProjectService projects) {
     this.projects = projects;
+
+    System.out.println(">>");
+
   }
 
   /**
@@ -46,20 +57,30 @@ public class DccWrappingRealm extends IniRealm {
    */
   @Override
   protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
-    Collection<String> iniPermissions = super.getAuthorizationInfo(principals).getStringPermissions();
-    SimpleAuthorizationInfo sai = new SimpleAuthorizationInfo(Sets.newHashSet(iniPermissions));
     String username = Authorizations.getUsername(principals.getPrimaryPrincipal());
-    sai.addStringPermissions(buildProjectPermissions(username));
+    log.debug("Putting together authorizations for user {}", username);
+
+    SimpleAccount simpleAccount = super.getUser(username);
+    Collection<String> iniRoles = simpleAccount.getRoles();
+    Set<String> projectSpecificPermissions = buildProjectSpecificPermissions(username, simpleAccount.getRoles());
+    log.debug("Ini roles for user {}: {}", username, iniRoles);
+    log.debug("Project-specific permissions for user {} (dynamically added): {}", username, projectSpecificPermissions);
+
+    SimpleAuthorizationInfo sai = new SimpleAuthorizationInfo(Sets.newHashSet(iniRoles));
+    sai.addStringPermissions(projectSpecificPermissions);
+
     return sai;
   }
 
-  private Set<String> buildProjectPermissions(String username) {
-    Set<String> stringPermissions = Sets.newLinkedHashSet();
+  private Set<String> buildProjectSpecificPermissions(String username, Collection<String> roles) {
+    Set<String> permissions = Sets.newLinkedHashSet();
     for(Project project : projects.getProjects()) {
-      if(project.hasUser(username)) {
-        stringPermissions.add(AuthorizationPrivileges.projectViewPrivilege(project.getKey()));
+      List<String> groups = Lists.newArrayList(project.getGroups());
+      groups.add("admin"); // FIXME?
+      if(project.hasUser(username) || CollectionUtils.containsAny(groups, roles)) {
+        permissions.add(AuthorizationPrivileges.projectViewPrivilege(project.getKey()));
       }
     }
-    return stringPermissions;
+    return permissions;
   }
 }

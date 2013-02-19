@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.core.model;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.validation.constraints.Pattern;
@@ -27,6 +26,7 @@ import org.icgc.dcc.web.validator.NameValidator;
 
 import com.google.code.morphia.annotations.Entity;
 import com.google.code.morphia.annotations.Indexed;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 @Entity
@@ -85,7 +85,7 @@ public class Project extends BaseEntity implements HasName {
   }
 
   public List<String> getGroups() {
-    return groups == null ? new ArrayList<String>() : groups;
+    return groups == null ? ImmutableList.<String> of() : ImmutableList.copyOf(groups);
   }
 
   public void setGroups(List<String> groups) {

@@ -22,6 +22,7 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 
 import org.apache.shiro.subject.PrincipalCollection;
+import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.shiro.AuthorizationPrivileges;
 import org.icgc.dcc.shiro.ShiroSecurityContext;
 import org.slf4j.Logger;
@@ -44,7 +45,11 @@ public class Authorizations {
   }
 
   static boolean hasPrivilege(SecurityContext securityContext, String privilege) {
-    return ((ShiroSecurityContext) securityContext).getSubject().isPermitted(privilege);
+    ShiroSecurityContext shiroSecurityContext = (ShiroSecurityContext) securityContext;
+    Subject subject = shiroSecurityContext.getSubject();
+    log.debug("Checking that subject {} has privilege {}", subject.getPrincipal(), privilege);
+
+    return subject.isPermitted(privilege);
   }
 
   static boolean hasPrivilege(SecurityContext securityContext, AuthorizationPrivileges privilege) {

@@ -133,8 +133,9 @@ public class ShiroPasswordAuthenticator implements UsernamePasswordAuthenticator
     }
 
     if(subject.isAuthenticated()) {
-      // say who they are: print their identifying principal (in this case, a username):
-      users.resetUser(user); // Part of lockout hack
+      if(newUser == false) {
+        users.resetUser(user); // Part of lockout hack
+      }
       log.info("User [" + subject.getPrincipal() + "] logged in successfully.");
       return subject;
     } else {
