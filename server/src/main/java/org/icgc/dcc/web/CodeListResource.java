@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.web;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import java.util.List;
 
 import javax.validation.Valid;
@@ -36,15 +34,19 @@ import javax.ws.rs.core.SecurityContext;
 import org.icgc.dcc.dictionary.DictionaryService;
 import org.icgc.dcc.dictionary.model.CodeList;
 import org.icgc.dcc.dictionary.model.Term;
-import org.icgc.dcc.shiro.AuthorizationPrivileges;
-import org.icgc.dcc.shiro.ShiroSecurityContext;
+import org.mortbay.log.Log;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static org.icgc.dcc.web.Authorizations.isOmnipotentUser;
+import static org.icgc.dcc.web.Authorizations.unauthorizedResponse;
+
 @Path("codeLists")
 public class CodeListResource {
+
   @Inject
   private DictionaryService dictionaries;
 
@@ -59,11 +61,11 @@ public class CodeListResource {
 
   @POST
   public Response addCodeLists(@Valid List<CodeList> codeLists, @Context SecurityContext securityContext) {
-    if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
-        AuthorizationPrivileges.CODELIST_MODIFY.toString()) == false) {
-      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED))
-          .build();
+    Log.info("Adding codelists: {}", codeLists);
+    if(isOmnipotentUser(securityContext) == false) {
+      return unauthorizedResponse();
     }
+
     checkArgument(codeLists != null);
     this.dictionaries.addCodeList(codeLists);
     return Response.status(Status.CREATED).build();
@@ -71,7 +73,10 @@ public class CodeListResource {
 
   @GET
   @Path("{name}")
-  public Response getCodeList(@PathParam("name") String name) {
+  public Response getCodeList(@PathParam("name") String name, @Context SecurityContext securityContext) {
+    /* no authorization check necessary */
+
+    Log.debug("Getting codelist: {}", name);
     checkArgument(name != null);
     Optional<CodeList> optional = this.dictionaries.getCodeList(name);
     if(optional.isPresent() == false) {
@@ -85,11 +90,12 @@ public class CodeListResource {
   @Path("{name}")
   public Response updateCodeList(@PathParam("name") String name, @Valid CodeList newCodeList, @Context Request req,
       @Context SecurityContext securityContext) {
-    if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
-        AuthorizationPrivileges.CODELIST_MODIFY.toString()) == false) {
-      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED))
-          .build();
+
+    Log.info("Updating codelist: {} with {}", name, newCodeList);
+    if(isOmnipotentUser(securityContext) == false) {
+      return unauthorizedResponse();
     }
+
     checkArgument(name != null);
     checkArgument(newCodeList != null);
 
@@ -111,11 +117,12 @@ public class CodeListResource {
   @Path("{name}/terms")
   public Response addTerms(@PathParam("name") String name, @Valid List<Term> terms, @Context Request req,
       @Context SecurityContext securityContext) {
-    if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
-        AuthorizationPrivileges.CODELIST_MODIFY.toString()) == false) {
-      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED))
-          .build();
+
+    Log.info("Adding term {} to codelist {}", terms, name);
+    if(isOmnipotentUser(securityContext) == false) {
+      return unauthorizedResponse();
     }
+
     checkArgument(name != null);
     checkArgument(terms != null);
     Optional<CodeList> optional = this.dictionaries.getCodeList(name);

@@ -27,17 +27,13 @@ public class User extends BaseEntity implements HasName {
 
   protected String username;
 
-  protected List<String> roles = Lists.newArrayList();
+  protected List<String> permissions = Lists.newArrayList();
 
   protected String email;
 
   private int failedAttempts = 0;
 
   private static final int MAX_ATTEMPTS = 3;
-
-  public boolean hasRole(String role) {
-    return this.roles.contains(role);
-  }
 
   @Override
   public String getName() {
@@ -52,8 +48,8 @@ public class User extends BaseEntity implements HasName {
     this.username = username;
   }
 
-  public List<String> getRoles() {
-    return roles;
+  public List<String> getPermissions() {
+    return permissions;
   }
 
   public void incrementAttempts() {

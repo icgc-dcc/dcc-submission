@@ -17,18 +17,13 @@
  */
 package org.icgc.dcc.shiro;
 
-import java.util.Collection;
-import java.util.List;
-
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.UnavailableSecurityManagerException;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.authc.LockedAccountException;
 import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.authc.UsernamePasswordToken;
-import org.apache.shiro.mgt.DefaultSecurityManager;
-import org.apache.shiro.mgt.SecurityManager;
-import org.apache.shiro.realm.Realm;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
 import org.icgc.dcc.core.UserService;
@@ -37,7 +32,7 @@ import org.icgc.dcc.security.UsernamePasswordAuthenticator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Lists;
+import com.google.common.base.Throwables;
 import com.google.inject.Inject;
 
 /**
@@ -45,20 +40,19 @@ import com.google.inject.Inject;
  */
 public class ShiroPasswordAuthenticator implements UsernamePasswordAuthenticator {
 
-  private final SecurityManager securityManager;
+  private static final Logger log = LoggerFactory.getLogger(ShiroPasswordAuthenticator.class);
 
   private final UserService users;
 
   @Inject
-  public ShiroPasswordAuthenticator(SecurityManager securityManager, UserService users) {
-    this.securityManager = securityManager;
+  public ShiroPasswordAuthenticator(UserService users) {
     this.users = users;
   }
 
-  private static final Logger log = LoggerFactory.getLogger(ShiroPasswordAuthenticator.class);
-
   @Override
   public Subject authenticate(final String username, final char[] password, final String host) {
+    log.debug("Authenticating user {}", username);
+
     // This code block is meant as a temporary solution for the need to disable user access after three failed
     // authentication attempts. It should be removed when the crowd server is enabled
     User user = users.getUser(username);
@@ -72,7 +66,13 @@ public class ShiroPasswordAuthenticator implements UsernamePasswordAuthenticator
     UsernamePasswordToken token = new UsernamePasswordToken(username, password, false, host);
 
     ThreadContext.remove(); // TODO remove this once it is correctly done when the response is sent out
-    Subject currentUser = SecurityUtils.getSubject();
+    Subject currentUser = null;
+    try {
+      currentUser = SecurityUtils.getSubject();
+    } catch(UnavailableSecurityManagerException e) {
+      log.error("Failure to get the current Subject:", e);
+      Throwables.propagate(e);
+    }
 
     try {
       // attempt to login user
@@ -112,25 +112,7 @@ public class ShiroPasswordAuthenticator implements UsernamePasswordAuthenticator
   }
 
   @Override
-  public String getCurrentUser() {
-    return SecurityUtils.getSubject().getPrincipal().toString();
-  }
-
-  @Override
   public Subject getSubject() {
     return SecurityUtils.getSubject();
-  }
-
-  @Override
-  public List<String> getRoles() {
-    List<String> roles = Lists.newArrayList();
-
-    DefaultSecurityManager defaultSecurityManager = (DefaultSecurityManager) this.securityManager;
-    for(Realm realm : defaultSecurityManager.getRealms()) {
-      DccRealm dccRealm = (DccRealm) realm;
-      Collection<String> iniRealmRoles = dccRealm.getRoles(this.getCurrentUser());
-      roles.addAll(iniRealmRoles);
-    }
-    return roles;
   }
 }

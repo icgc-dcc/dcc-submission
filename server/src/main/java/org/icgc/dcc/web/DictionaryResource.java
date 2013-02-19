@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.web;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import java.util.List;
 
 import javax.validation.Valid;
@@ -37,36 +35,47 @@ import javax.ws.rs.core.UriBuilder;
 import org.icgc.dcc.dictionary.DictionaryService;
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.DictionaryState;
-import org.icgc.dcc.shiro.AuthorizationPrivileges;
-import org.icgc.dcc.shiro.ShiroSecurityContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static org.icgc.dcc.web.Authorizations.isOmnipotentUser;
+import static org.icgc.dcc.web.Authorizations.unauthorizedResponse;
+
 @Path("dictionaries")
 public class DictionaryResource {
+
+  private static final Logger log = LoggerFactory.getLogger(DictionaryResource.class);
+
   @Inject
   private DictionaryService dictionaries;
 
   @POST
-  public Response addDictionary(@Valid Dictionary d, @Context SecurityContext securityContext) {
-    if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
-        AuthorizationPrivileges.DICTIONARY_MODIFY.toString()) == false) {
-      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED))
-          .build();
+  public Response addDictionary(@Valid Dictionary dict, @Context SecurityContext securityContext) {
+
+    log.info("Adding dictionary: {}", dict == null ? null : dict.getVersion());
+    if(isOmnipotentUser(securityContext) == false) {
+      return unauthorizedResponse();
     }
-    checkArgument(d != null);
+
+    checkArgument(dict != null);
     if(this.dictionaries.list().isEmpty() == false) {
       return Response.status(Status.BAD_REQUEST)
           .entity(new ServerErrorResponseMessage(ServerErrorCode.ALREADY_INITIALIZED)).build();
     }
-    this.dictionaries.add(d);
+    this.dictionaries.add(dict);
 
-    return Response.created(UriBuilder.fromResource(DictionaryResource.class).path(d.getVersion()).build()).build();
+    return Response.created(UriBuilder.fromResource(DictionaryResource.class).path(dict.getVersion()).build()).build();
   }
 
   @GET
   public Response getDictionaries() {
+    /* no authorization check necessary */
+
+    log.debug("Getting dictionaries");
     List<Dictionary> dictionaries = this.dictionaries.list();
     if(dictionaries == null) {
       dictionaries = Lists.newArrayList();
@@ -77,23 +86,27 @@ public class DictionaryResource {
   @GET
   @Path("{version}")
   public Response getDictionary(@PathParam("version") String version) {
-    Dictionary d = this.dictionaries.getFromVersion(version);
-    if(d == null) {
+    /* no authorization check necessary */
+
+    log.debug("Getting dictionary: {}", version);
+    Dictionary dict = this.dictionaries.getFromVersion(version);
+    if(dict == null) {
       return Response.status(Status.NOT_FOUND)
           .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, version)).build();
     }
-    return ResponseTimestamper.ok(d).build();
+    return ResponseTimestamper.ok(dict).build();
   }
 
   @PUT
   @Path("{version}")
   public Response updateDictionary(@PathParam("version") String version, @Valid Dictionary newDictionary,
       @Context Request req, @Context SecurityContext securityContext) {
-    if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
-        AuthorizationPrivileges.DICTIONARY_MODIFY.toString()) == false) {
-      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED))
-          .build();
+
+    log.info("Updating dictionary: {} with {}", version, newDictionary == null ? null : newDictionary.getVersion());
+    if(isOmnipotentUser(securityContext) == false) {
+      return unauthorizedResponse();
     }
+
     Dictionary oldDictionary = this.dictionaries.getFromVersion(version);
     if(oldDictionary == null) {
       return Response.status(Status.NOT_FOUND)

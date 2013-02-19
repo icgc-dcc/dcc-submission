@@ -31,7 +31,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 
-import org.apache.shiro.subject.Subject;
 import org.glassfish.grizzly.http.util.Header;
 import org.icgc.dcc.core.model.DccModelOptimisticLockException;
 import org.icgc.dcc.core.model.InvalidStateException;
@@ -46,7 +45,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
+import com.google.common.net.HttpHeaders;
 import com.google.inject.Inject;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static org.icgc.dcc.web.Authorizations.hasPrivilege;
+import static org.icgc.dcc.web.Authorizations.hasReleaseClosePrivilege;
+import static org.icgc.dcc.web.Authorizations.hasReleaseViewPrivilege;
+import static org.icgc.dcc.web.Authorizations.unauthorizedResponse;
 
 @Path("nextRelease")
 public class NextReleaseResource {
@@ -57,27 +63,34 @@ public class NextReleaseResource {
   private ReleaseService releaseService;
 
   @GET
-  public Response getNextRelease() {
+  public Response getNextRelease(@Context SecurityContext securityContext) {
+    log.debug("Getting nextRelease");
+    if(hasReleaseViewPrivilege(securityContext) == false) {
+      return unauthorizedResponse();
+    }
     NextRelease nextRelease = releaseService.getNextRelease();
-    return ResponseTimestamper.ok(nextRelease.getRelease()).build();
+    Release release = nextRelease.getRelease(); // guaranteed not to be null
+    String name = release.getName();
+    return Response.status(Status.MOVED_PERMANENTLY).header(HttpHeaders.LOCATION, "/releases/" + name).build();
   }
 
   @POST
   public Response release(Release nextRelease, @Context Request req, @Context SecurityContext securityContext) {
+    log.info("releasing nextRelease, new release will be: {}", nextRelease);
+
     // TODO: this is intentionally not validated, since we're only currently using the name. This seems sketchy to me
     // --Jonathan
-    if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
-        AuthorizationPrivileges.RELEASE_CLOSE.getPrefix()) == false) {
-      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED))
-          .build();
+    if(hasReleaseClosePrivilege(securityContext) == false) {
+      return unauthorizedResponse();
     }
 
-    NextRelease oldRelease = releaseService.getNextRelease();
-    String oldReleaseName = oldRelease.getRelease().getName();
+    NextRelease oldRelease = releaseService.getNextRelease(); // guaranteed not null
+    Release release = oldRelease.getRelease();
+    String oldReleaseName = checkNotNull(release).getName();
     log.info("releasing {}", oldReleaseName);
 
     // Check the timestamp of the oldRelease, since that is the object being updated
-    ResponseTimestamper.evaluate(req, oldRelease.getRelease());
+    ResponseTimestamper.evaluate(req, release);
 
     NextRelease newRelease = null;
     try {
@@ -97,27 +110,20 @@ public class NextReleaseResource {
 
   @GET
   @Path("queue")
-  public Response getQueue() {
+  public Response getQueue() { // no authorization check needed (see DCC-808)
+    log.debug("Getting the queue for nextRelease");
     List<String> projectIds = releaseService.getNextRelease().getQueued();
-
-    return Response.ok(projectIds.toArray()).build();
+    return Response.ok(checkNotNull(projectIds).toArray()).build();
   }
 
   @POST
   @Path("queue")
-  public Response queue(@Valid List<QueuedProject> queuedProjects, @Context Request req,
-      @Context SecurityContext securityContext) {
-
-    Subject subject = ((ShiroSecurityContext) securityContext).getSubject();
+  public Response queue(@Valid List<QueuedProject> queuedProjects, @Context Request req) {
+    log.info("Enqueuing projects for nextRelease: {}", queuedProjects);
     List<String> projectKeys = Lists.newArrayList();
     for(QueuedProject qp : queuedProjects) {
       String projectKey = qp.getKey();
       projectKeys.add(projectKey);
-
-      if(subject.isPermitted(AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
-        return Response.status(Status.UNAUTHORIZED)
-            .entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED)).build();
-      }
     }
 
     Release nextRelease = this.releaseService.getNextRelease().getRelease();
@@ -146,10 +152,9 @@ public class NextReleaseResource {
   @DELETE
   @Path("queue")
   public Response removeAllQueued(@Context SecurityContext securityContext) {
-    if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
-        AuthorizationPrivileges.QUEUE_DELETE.getPrefix()) == false) {
-      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED))
-          .build();
+    log.info("emptying queue for nextRelease");
+    if(hasPrivilege(securityContext, AuthorizationPrivileges.QUEUE_DELETE) == false) {
+      return unauthorizedResponse();
     }
     this.releaseService.deleteQueuedRequest();
 
@@ -158,28 +163,25 @@ public class NextReleaseResource {
 
   @GET
   @Path("signed")
-  public Response getSignedOff() {
+  public Response getSignedOff() { // no authorization check needed (see DCC-808)
+    log.debug("Getting signed off projects for nextRelease");
     List<String> projectIds = this.releaseService.getSignedOff();
-
-    return Response.ok(projectIds).build();
+    return Response.ok(checkNotNull(projectIds).toArray()).build();
   }
 
   @POST
   @Path("signed")
   public Response signOff(List<String> projectKeys, @Context Request req, @Context SecurityContext securityContext) {
-    ShiroSecurityContext context = (ShiroSecurityContext) securityContext;
-    Subject subject = context.getSubject();
-    String user = context.getUserPrincipal().getName();
-
-    if(subject.isPermitted(AuthorizationPrivileges.RELEASE_SIGNOFF.getPrefix()) == false) {
-      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED))
-          .build();
+    log.info("Signing off projects {}", projectKeys);
+    if(hasPrivilege(securityContext, AuthorizationPrivileges.RELEASE_SIGNOFF) == false) {
+      return unauthorizedResponse();
     }
 
     Release nextRelease = this.releaseService.getNextRelease().getRelease();
     ResponseTimestamper.evaluate(req, nextRelease);
 
     try {
+      String user = ((ShiroSecurityContext) securityContext).getUserPrincipal().getName();
       this.releaseService.signOff(nextRelease, projectKeys, user);
     } catch(ReleaseException e) {
       ServerErrorCode code = ServerErrorCode.NO_SUCH_ENTITY;
@@ -202,11 +204,11 @@ public class NextReleaseResource {
   @PUT
   @Path("update")
   public Response update(@Valid Release release, @Context Request req, @Context SecurityContext securityContext) {
-    if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
-        AuthorizationPrivileges.RELEASE_MODIFY.getPrefix()) == false) {
-      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED))
-          .build();
+    log.info("Updating nextRelease with: {}", release);
+    if(hasPrivilege(securityContext, AuthorizationPrivileges.RELEASE_MODIFY) == false) {
+      return unauthorizedResponse();
     }
+
     if(release != null) {
       String name = release.getName();
 

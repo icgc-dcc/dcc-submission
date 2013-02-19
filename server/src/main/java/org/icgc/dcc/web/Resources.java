@@ -15,14 +15,31 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.shiro;
+package org.icgc.dcc.web;
 
-import java.util.Collection;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * 
+ * Utils method to bring together logic pertaining to resources.
  */
-public interface DccRealm {
+public class Resources {
 
-  public Collection<String> getRoles(String username);
+  private static final Logger log = LoggerFactory.getLogger(Resources.class);
+
+  static Response noSuchEntityResponse(String... names) {
+    return noSuchEntityResponse(false, names);
+  }
+
+  static Response noSuchEntityResponse(boolean important, String... names) {
+    ServerErrorResponseMessage errorMessage =
+        new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, (Object[]) names);
+    if(important) {
+      log.info("no such entity: {}", errorMessage);
+    }
+    return Response.status(Status.NOT_FOUND).entity(errorMessage).build();
+  }
 }
