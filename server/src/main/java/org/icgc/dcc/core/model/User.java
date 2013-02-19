@@ -17,19 +17,15 @@
  */
 package org.icgc.dcc.core.model;
 
-import java.util.List;
-
 import com.google.code.morphia.annotations.Entity;
-import com.google.common.collect.Lists;
 
+/**
+ * Do NOT save roles/permissions (or email for that matter)
+ */
 @Entity
 public class User extends BaseEntity implements HasName {
 
   protected String username;
-
-  protected List<String> permissions = Lists.newArrayList();
-
-  protected String email;
 
   private int failedAttempts = 0;
 
@@ -37,19 +33,23 @@ public class User extends BaseEntity implements HasName {
 
   @Override
   public String getName() {
-    return username;
+    return getUsername();
   }
 
-  public String getEmail() {
-    return this.email;
+  public String getUsername() {
+    return username;
   }
 
   public void setUsername(String username) {
     this.username = username;
   }
 
-  public List<String> getPermissions() {
-    return permissions;
+  public int getFailedAttempts() {
+    return failedAttempts;
+  }
+
+  public void setFailedAttempts(int failedAttempts) {
+    this.failedAttempts = failedAttempts;
   }
 
   public void incrementAttempts() {
@@ -62,5 +62,10 @@ public class User extends BaseEntity implements HasName {
 
   public void resetAttempts() {
     failedAttempts = 0;
+  }
+
+  @Override
+  public String toString() {
+    return "User [username=" + username + ", failedAttempts=" + failedAttempts + "]";
   }
 }

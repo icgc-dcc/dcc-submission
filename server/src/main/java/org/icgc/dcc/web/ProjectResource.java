@@ -67,11 +67,11 @@ public class ProjectResource {
 
     log.debug("Getting projects");
     Subject subject = ((ShiroSecurityContext) securityContext).getSubject();
-    List<Project> projectlist = projects.getFilteredProjects(subject);
-    if(projectlist == null) {
-      projectlist = Lists.newArrayList();
+    List<Project> projectList = projects.getFilteredProjects(subject);
+    if(projectList == null) { // TODO: use Optional (see DCC-820)
+      projectList = Lists.newArrayList();
     }
-    return Response.ok(projectlist).build();
+    return Response.ok(projectList).build();
   }
 
   @POST

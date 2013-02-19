@@ -37,15 +37,14 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 
-import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.core.UserService;
 import org.icgc.dcc.core.model.Feedback;
 import org.icgc.dcc.core.model.User;
-import org.icgc.dcc.security.UsernamePasswordAuthenticator;
-import org.icgc.dcc.shiro.ShiroSecurityContext;
+import org.icgc.dcc.release.model.DetailedUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Optional;
 import com.google.inject.Inject;
 
 import static org.icgc.dcc.web.Authorizations.isOmnipotentUser;
@@ -62,31 +61,12 @@ public class UserResource {
   @Inject
   private UserService users;
 
-  @Inject
-  private ProjectService projects;
-
-  @Inject
-  private UsernamePasswordAuthenticator passwordAuthenticator;
-
   @GET
   @Path("self")
-  public Response getRoles(@Context SecurityContext securityContext) {
-    /* no authorization check necessary */
-
-    String username = ((ShiroSecurityContext) securityContext) // TODO: there doesn't seem to be another way than using
-                                                               // toString...
-        .getSubject().getPrincipal().toString();
-    log.debug("Getting user: {}", username);
-    User user = users.getUser(username);
-    if(user == null) {
-      user = new User();
-      user.setUsername(username);
-      users.saveUser(user);
-    }
-
-    user.getPermissions().addAll(Authorizations.stringPermissions(user, projects.getProjects()));
-
-    return Response.ok(user).build();
+  public Response getResource(@Context SecurityContext securityContext) {
+    String username = Authorizations.getUsername(securityContext);
+    boolean admin = isOmnipotentUser(securityContext);
+    return Response.ok(new DetailedUser(username, admin)).build();
   }
 
   @POST
@@ -126,20 +106,20 @@ public class UserResource {
       return unauthorizedResponse();
     }
 
-    User user = users.getUser(username);
-    if(user == null) {
+    Optional<User> optionalUser = users.getUser(username);
+    if(optionalUser.isPresent() == false) {
       log.warn("unknown user {} provided", username);
       return Response.status(Status.BAD_REQUEST)
           .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, new Object[] { username })).build();
+    } else {
+      User user = optionalUser.get();
+      if(user.isLocked()) {
+        user = users.resetUser(user);
+        log.info("user {} was unlocked", username);
+      } else {
+        log.warn("user {} was not locked, aborting unlocking procedure", username);
+      }
+      return ResponseTimestamper.ok(user).build();
     }
-
-    if(user.isLocked() == false) {
-      log.warn("user {} was not locked, aborting unlocking procedure", username);
-    }
-
-    user = users.unlock(username);
-    log.info("User {} was unlocked", username);
-
-    return ResponseTimestamper.ok(user).build();
   }
 }

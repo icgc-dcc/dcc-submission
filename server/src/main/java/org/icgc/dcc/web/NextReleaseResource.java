@@ -52,6 +52,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static org.icgc.dcc.web.Authorizations.hasPrivilege;
 import static org.icgc.dcc.web.Authorizations.hasReleaseClosePrivilege;
 import static org.icgc.dcc.web.Authorizations.hasReleaseViewPrivilege;
+import static org.icgc.dcc.web.Authorizations.hasSpecificProjectPrivilege;
+import static org.icgc.dcc.web.Authorizations.isOmnipotentUser;
 import static org.icgc.dcc.web.Authorizations.unauthorizedResponse;
 
 @Path("nextRelease")
@@ -79,7 +81,7 @@ public class NextReleaseResource {
     log.info("releasing nextRelease, new release will be: {}", nextRelease);
 
     // TODO: this is intentionally not validated, since we're only currently using the name. This seems sketchy to me
-    // --Jonathan
+    // --Jonathan (DCC-759)
     if(hasReleaseClosePrivilege(securityContext) == false) {
       return unauthorizedResponse();
     }
@@ -111,6 +113,8 @@ public class NextReleaseResource {
   @GET
   @Path("queue")
   public Response getQueue() { // no authorization check needed (see DCC-808)
+    /* no authorization check necessary */
+
     log.debug("Getting the queue for nextRelease");
     List<String> projectIds = releaseService.getNextRelease().getQueued();
     return Response.ok(checkNotNull(projectIds).toArray()).build();
@@ -118,11 +122,17 @@ public class NextReleaseResource {
 
   @POST
   @Path("queue")
-  public Response queue(@Valid List<QueuedProject> queuedProjects, @Context Request req) {
+  public Response queue(@Valid List<QueuedProject> queuedProjects, @Context Request req,
+      @Context SecurityContext securityContext) {
+
     log.info("Enqueuing projects for nextRelease: {}", queuedProjects);
     List<String> projectKeys = Lists.newArrayList();
     for(QueuedProject qp : queuedProjects) {
       String projectKey = qp.getKey();
+      if(hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
+        return unauthorizedResponse();
+      }
+
       projectKeys.add(projectKey);
     }
 
@@ -152,8 +162,9 @@ public class NextReleaseResource {
   @DELETE
   @Path("queue")
   public Response removeAllQueued(@Context SecurityContext securityContext) {
+
     log.info("emptying queue for nextRelease");
-    if(hasPrivilege(securityContext, AuthorizationPrivileges.QUEUE_DELETE) == false) {
+    if(isOmnipotentUser(securityContext) == false) {
       return unauthorizedResponse();
     }
     this.releaseService.deleteQueuedRequest();
@@ -163,7 +174,9 @@ public class NextReleaseResource {
 
   @GET
   @Path("signed")
-  public Response getSignedOff() { // no authorization check needed (see DCC-808)
+  public Response getSignedOff() {
+    /* no authorization check needed (see DCC-808) */
+
     log.debug("Getting signed off projects for nextRelease");
     List<String> projectIds = this.releaseService.getSignedOff();
     return Response.ok(checkNotNull(projectIds).toArray()).build();
@@ -173,7 +186,7 @@ public class NextReleaseResource {
   @Path("signed")
   public Response signOff(List<String> projectKeys, @Context Request req, @Context SecurityContext securityContext) {
     log.info("Signing off projects {}", projectKeys);
-    if(hasPrivilege(securityContext, AuthorizationPrivileges.RELEASE_SIGNOFF) == false) {
+    if(hasPrivilege(securityContext, AuthorizationPrivileges.SUBMISSION_SIGNOFF) == false) {
       return unauthorizedResponse();
     }
 

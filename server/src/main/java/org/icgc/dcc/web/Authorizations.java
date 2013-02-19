@@ -17,24 +17,15 @@
  */
 package org.icgc.dcc.web;
 
-import java.util.List;
-import java.util.Set;
-
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.shiro.subject.PrincipalCollection;
-import org.icgc.dcc.core.model.Project;
-import org.icgc.dcc.core.model.User;
 import org.icgc.dcc.shiro.AuthorizationPrivileges;
-import org.icgc.dcc.shiro.DccDbRealm;
 import org.icgc.dcc.shiro.ShiroSecurityContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Sets;
 
 /**
  * Utils method to bring together logic pertaining to authorization checks.
@@ -42,6 +33,15 @@ import com.google.common.collect.Sets;
 public class Authorizations {
 
   private static final Logger log = LoggerFactory.getLogger(Authorizations.class);
+
+  public static String getUsername(Object principal) {
+    return principal.toString(); // TODO: there doesn't seem to be another way than using toString...
+  }
+
+  static String getUsername(SecurityContext securityContext) {
+    Object principal = ((ShiroSecurityContext) securityContext).getSubject().getPrincipal();
+    return getUsername(principal);
+  }
 
   static boolean hasPrivilege(SecurityContext securityContext, String privilege) {
     return ((ShiroSecurityContext) securityContext).getSubject().isPermitted(privilege);
@@ -81,15 +81,5 @@ public class Authorizations {
       log.info("unauthorized action: {}", errorMessage);
     }
     return Response.status(Status.UNAUTHORIZED).entity(errorMessage).build();
-  }
-
-  public static Set<String> stringPermissions(User user, List<Project> projects) { // TODO: move
-    Set<String> stringPermissions = Sets.newLinkedHashSet(user.getPermissions());
-    for(Project project : projects) {
-      if(project.hasUser(user.getName()) || CollectionUtils.containsAny(project.getGroups(), user.getPermissions())) {
-        stringPermissions.add(AuthorizationPrivileges.projectViewPrivilege(project.getKey()));
-      }
-    }
-    return stringPermissions;
   }
 }
