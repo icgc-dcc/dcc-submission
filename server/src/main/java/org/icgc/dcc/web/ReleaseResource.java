@@ -30,21 +30,27 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 
+import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.filesystem.SubmissionFile;
 import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.DetailedSubmission;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseView;
 import org.icgc.dcc.release.model.Submission;
-import org.icgc.dcc.shiro.AuthorizationPrivileges;
-import org.icgc.dcc.shiro.ShiroSecurityContext;
 import org.icgc.dcc.validation.report.FieldReport;
 import org.icgc.dcc.validation.report.SchemaReport;
 import org.icgc.dcc.validation.report.SubmissionReport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Optional;
 import com.google.inject.Inject;
+
+import static org.icgc.dcc.web.Authorizations.hasReleaseViewPrivilege;
+import static org.icgc.dcc.web.Authorizations.hasSpecificProjectPrivilege;
+import static org.icgc.dcc.web.Authorizations.isOmnipotentUser;
+import static org.icgc.dcc.web.Authorizations.unauthorizedResponse;
+import static org.icgc.dcc.web.Resources.noSuchEntityResponse;
 
 @Path("releases")
 public class ReleaseResource {
@@ -56,25 +62,38 @@ public class ReleaseResource {
 
   @GET
   public Response getResources(@Context SecurityContext securityContext) {
-    log.debug("getting releases");
-    List<Release> releases = this.releaseService.getReleases(((ShiroSecurityContext) securityContext).getSubject());
-    return Response.ok(releases).build();
+    log.debug("Getting (filtered) releases");
+    if(hasReleaseViewPrivilege(securityContext) == false) {
+      return unauthorizedResponse();
+    }
+
+    Subject subject = Authorizations.getShiroSubject(securityContext);
+    List<Release> filteredReleases = this.releaseService.getFilteredReleases(subject);
+    return Response.ok(filteredReleases).build();
   }
 
   @GET
   @Path("{name}")
   public Response getReleaseByName(@PathParam("name") String name, @Context SecurityContext securityContext) {
-    ReleaseView release = releaseService.getReleaseView(name, ((ShiroSecurityContext) securityContext).getSubject());
+    log.debug("Getting release using: {}", name);
 
-    if(release == null) {
-      return Response.status(Status.NOT_FOUND)
-          .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, name)).build();
+    Subject subject = Authorizations.getShiroSubject(securityContext);
+    Optional<ReleaseView> filteredReleaseView = // this handles authorization
+        releaseService.getFilteredReleaseView(name, subject);
+
+    if(filteredReleaseView.isPresent() == false) {
+      return noSuchEntityResponse(name);
     }
-    return Response.ok(release).build();
+    return Response.ok(filteredReleaseView.get()).build();
   }
 
   @PUT
-  public Response initialize(@Valid Release release, @Context Request req) {
+  public Response initialize(@Valid Release release, @Context Request req, @Context SecurityContext securityContext) {
+    log.info("Initializing releases with: {}", release);
+    if(isOmnipotentUser(securityContext) == false) {
+      return unauthorizedResponse();
+    }
+
     if(release != null) {
       ResponseTimestamper.evaluate(req, release);
 
@@ -91,58 +110,38 @@ public class ReleaseResource {
     }
   }
 
-  /*
-   * // web service for adding submission to release (testing use only)
-   * 
-   * @POST
-   * 
-   * @Consumes("application/json")
-   * 
-   * @Path("{name}") public Response addSubmission(@PathParam("name") String name, Submission submission) {
-   * checkArgument(submission != null);
-   * 
-   * UpdateOperations<Release> ops =
-   * this.releaseService.getDatastore().createUpdateOperations(Release.class).add("submissions", submission);
-   * 
-   * Query<Release> updateQuery =
-   * this.releaseService.getDatastore().createQuery(Release.class).field("name").equal(name);
-   * 
-   * this.releaseService.getDatastore().update(updateQuery, ops);
-   * 
-   * return Response.ok(submission).build(); }
-   */
-
   @GET
   @Path("{name}/submissions/{projectKey}")
-  public Response getSubmission(@PathParam("name") String name, @PathParam("projectKey") String projectKey,
+  public Response getSubmission(@PathParam("name") String releaseName, @PathParam("projectKey") String projectKey,
       @Context SecurityContext securityContext) {
-    if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
-        AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
-      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED))
-          .build();
-    }
-    DetailedSubmission submission = this.releaseService.getDetailedSubmission(name, projectKey);
 
-    if(submission == null) {
-      return Response.status(Status.NOT_FOUND)
-          .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, name, projectKey)).build();
+    log.debug("Getting detailed submission: {}.{}", releaseName, projectKey);
+    if(hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
+      return unauthorizedResponse();
     }
-    return Response.ok(submission).build();
+
+    DetailedSubmission detailedSubmission = // TODO: use Optional...
+        this.releaseService.getDetailedSubmission(releaseName, projectKey);
+    if(detailedSubmission == null) {
+      return noSuchEntityResponse(releaseName, projectKey);
+    }
+    return Response.ok(detailedSubmission).build();
   }
 
   @GET
   @Path("{name}/submissions/{projectKey}/report")
-  public Response getSubmissionReport(@PathParam("name") String name, @PathParam("projectKey") String projectKey,
-      @Context SecurityContext securityContext) {
-    if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
-        AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
-      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED))
-          .build();
+  public Response getSubmissionReport(@PathParam("name") String releaseName,
+      @PathParam("projectKey") String projectKey, @Context SecurityContext securityContext) {
+
+    log.debug("Getting submission report for: {}.{}", releaseName, projectKey);
+    if(hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
+      return unauthorizedResponse();
     }
-    Submission submission = this.releaseService.getSubmission(name, projectKey);
+
+    Submission submission = // TODO: use Optional...
+        this.releaseService.getSubmission(releaseName, projectKey);
     if(submission == null) {
-      return Response.status(Status.NOT_FOUND)
-          .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, name, projectKey)).build();
+      return noSuchEntityResponse(releaseName, projectKey);
     }
     SubmissionReport report = submission.getReport();
     return Response.ok(report).build();
@@ -150,64 +149,47 @@ public class ReleaseResource {
 
   @GET
   @Path("{name}/submissions/{projectKey}/report/{schema}")
-  public Response getSchemaReport(@PathParam("name") String name, @PathParam("projectKey") String projectKey,
+  public Response getSchemaReport(@PathParam("name") String releaseName, @PathParam("projectKey") String projectKey,
       @PathParam("schema") String schema, @Context SecurityContext securityContext) {
-    if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
-        AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
-      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED))
-          .build();
+
+    log.debug("Getting schema report for: {}.{}.{}", new Object[] { releaseName, projectKey, schema });
+    if(hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
+      return unauthorizedResponse();
     }
-    Submission submission = this.releaseService.getSubmission(name, projectKey);
-    if(submission == null) {
-      return Response.status(Status.NOT_FOUND)
-          .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, name, projectKey)).build();
+
+    Optional<SchemaReport> optionalSchemaReport = getSchemaReport(releaseName, projectKey, schema);
+    if(optionalSchemaReport.isPresent() == false) {
+      return noSuchEntityResponse(releaseName, projectKey, schema);
     }
-    SubmissionReport report = submission.getReport();
-    if(report == null) {
-      return Response.status(Status.NOT_FOUND)
-          .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, name, projectKey)).build();
-    }
-    SchemaReport schemaReport = report.getSchemaReport(schema);
-    if(schemaReport == null) {
-      return Response.status(Status.NOT_FOUND)
-          .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, schema)).build();
-    }
-    return Response.ok(schemaReport).build();
+    return Response.ok(optionalSchemaReport.get()).build();
   }
 
   @GET
   @Path("{name}/submissions/{projectKey}/report/{schema}/{field}")
-  public Response getFieldReport(@PathParam("name") String name, @PathParam("projectKey") String projectKey,
+  public Response getFieldReport(@PathParam("name") String releaseName, @PathParam("projectKey") String projectKey,
       @PathParam("schema") String schema, @PathParam("field") String field, @Context SecurityContext securityContext) {
-    if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
-        AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
-      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED))
-          .build();
+
+    log.debug("Getting field report for: {}.{}.{}.{}", new Object[] { releaseName, projectKey, schema, field });
+    if(hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
+      return unauthorizedResponse();
     }
-    Submission submission = this.releaseService.getSubmission(name, projectKey);
-    if(submission == null) {
-      return Response.status(Status.NOT_FOUND)
-          .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, name, projectKey)).build();
+
+    Optional<SchemaReport> optionalSchemaReport = getSchemaReport(releaseName, projectKey, schema);
+    if(optionalSchemaReport.isPresent() == false) {
+      return noSuchEntityResponse(releaseName, projectKey, schema);
     }
-    SubmissionReport report = submission.getReport();
-    if(report == null) {
-      return Response.status(Status.NOT_FOUND)
-          .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, name, projectKey)).build();
+
+    SchemaReport schemaReport = optionalSchemaReport.get();
+    Optional<FieldReport> optionalFieldReport = schemaReport.getFieldReport(field);
+    if(optionalFieldReport.isPresent() == false) {
+      return noSuchEntityResponse(releaseName, projectKey, schema);
     }
-    SchemaReport schemaReport = report.getSchemaReport(schema);
-    if(schemaReport == null) {
-      return Response.status(Status.NOT_FOUND)
-          .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, schema)).build();
-    }
-    if(schemaReport.getFieldReport(field).isPresent() == false) {
-      return Response.status(Status.NOT_FOUND)
-          .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, schema, field)).build();
-    }
-    FieldReport fieldReport = schemaReport.getFieldReport(field).get();
+
+    FieldReport fieldReport = optionalFieldReport.get();
     if(fieldReport == null) {
-      return Response.status(Status.NOT_FOUND)
-          .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, field)).build();
+      return noSuchEntityResponse(releaseName, projectKey, schema);
     }
+
     return Response.ok(fieldReport).build();
   }
 
@@ -215,18 +197,31 @@ public class ReleaseResource {
   @Path("{name}/submissions/{projectKey}/files")
   public Response getSubmissionFileList(@PathParam("name") String releaseName,
       @PathParam("projectKey") String projectKey, @Context SecurityContext securityContext) {
-    if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
-        AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
-      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED))
-          .build();
+
+    log.debug("Getting submission file list for release {} and project {}", releaseName, projectKey);
+    if(hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
+      return unauthorizedResponse();
     }
+
     Submission submission = this.releaseService.getSubmission(releaseName, projectKey);
-    if(submission == null) {
-      return Response.status(Status.NOT_FOUND)
-          .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, releaseName, projectKey)).build();
+    if(submission == null) { // TODO: use Optional...
+      return noSuchEntityResponse(releaseName, projectKey);
     }
 
     List<SubmissionFile> submissionFiles = this.releaseService.getSubmissionFiles(releaseName, projectKey);
     return Response.ok(submissionFiles).build();
+  }
+
+  private Optional<SchemaReport> getSchemaReport(String releaseName, String projectKey, String schema) {
+    Optional<SchemaReport> optional = Optional.absent();
+    Submission submission = this.releaseService.getSubmission(releaseName, projectKey);
+    if(submission != null) {
+      SubmissionReport report = submission.getReport();
+      if(report != null) {
+        SchemaReport schemaReport = report.getSchemaReport(schema);
+        optional = Optional.of(schemaReport);
+      }
+    }
+    return optional;
   }
 }

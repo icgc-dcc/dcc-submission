@@ -20,9 +20,12 @@ package org.icgc.dcc.core;
 import org.icgc.dcc.core.model.QUser;
 import org.icgc.dcc.core.model.User;
 import org.icgc.dcc.core.morphia.BaseMorphiaService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
+import com.google.common.base.Optional;
 import com.google.inject.Inject;
 
 /**
@@ -30,33 +33,46 @@ import com.google.inject.Inject;
  */
 public class UserService extends BaseMorphiaService<User> {
 
+  private static final Logger log = LoggerFactory.getLogger(UserService.class);
+
   @Inject
   public UserService(Morphia morphia, Datastore datastore) {
     super(morphia, datastore, QUser.user);
     registerModelClasses(User.class);
   }
 
-  public User getUser(String name) {
-    User user = this.where(QUser.user.username.eq(name)).singleResult();
-    if(user == null) {
-      user = new User();
-      user.setUsername(name);
-      saveUser(user);
-    }
+  public Optional<User> getUserByUsername(String username) {
+    User user = this.where(QUser.user.username.eq(username)).singleResult();
+    return user == null ? Optional.<User> absent() : Optional.of(user);
+  }
+
+  /**
+   * Saves the information pertaining to user that is relevant to the locking of users after too many failed attempts.
+   * NOT intended for saving roles/permissions and emails at the moment.
+   */
+  public User saveUser(User user) {
+    log.info("saving user {}", user);
+    datastore().save(user);
     return user;
   }
 
-  public String getUserEmail(String name) {
-    return this.getUser(name).getEmail();
+  public User reprimandUser(User user) {
+    user.incrementAttempts();
+    return updateUser(user);
   }
 
-  public void saveUser(User user) {
-    datastore().save(user);
+  public User resetUser(User user) {
+    user.resetAttempts();
+    return updateUser(user);
   }
 
-  public User unlock(String username) {
-    return datastore().findAndModify( //
-        datastore().createQuery(User.class).filter("username", username), //
-        datastore().createUpdateOperations(User.class).set("failedAttempts", 0));
+  /**
+   * Only updates the "failedAttempts" for now.
+   */
+  private User updateUser(User user) {
+    log.info("updating user {}", user);
+    return datastore().findAndModify( // this will ignore the optimistic lock (@Version)
+        datastore().createQuery(User.class).filter("username", user.getUsername()), //
+        datastore().createUpdateOperations(User.class).set("failedAttempts", user.getFailedAttempts()), false, false);
   }
 }

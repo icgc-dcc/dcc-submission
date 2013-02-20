@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.web;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import java.util.List;
 
 import javax.validation.Valid;
@@ -35,11 +33,12 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriBuilder;
 
+import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.core.model.QProject;
-import org.icgc.dcc.shiro.AuthorizationPrivileges;
-import org.icgc.dcc.shiro.ShiroSecurityContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.code.morphia.query.Query;
 import com.google.code.morphia.query.UpdateOperations;
@@ -47,24 +46,42 @@ import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.mongodb.MongoException.DuplicateKey;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static org.icgc.dcc.web.Authorizations.hasSpecificProjectPrivilege;
+import static org.icgc.dcc.web.Authorizations.isOmnipotentUser;
+import static org.icgc.dcc.web.Authorizations.unauthorizedResponse;
+import static org.icgc.dcc.web.Resources.noSuchEntityResponse;
+
 @Path("projects")
 public class ProjectResource {
+
+  private static final Logger log = LoggerFactory.getLogger(ProjectResource.class);
 
   @Inject
   private ProjectService projects;
 
   @GET
   public Response getProjects(@Context SecurityContext securityContext) {
-    List<Project> projectlist = projects.getProjects(((ShiroSecurityContext) securityContext).getSubject());
-    if(projectlist == null) {
-      projectlist = Lists.newArrayList();
+    /* Authorization is handled by the filtering of projects below */
+
+    log.debug("Getting projects");
+    Subject subject = Authorizations.getShiroSubject(securityContext);
+    List<Project> projectList = projects.getProjectsBySubject(subject);
+    if(projectList == null) { // TODO: use Optional (see DCC-820)
+      projectList = Lists.newArrayList();
     }
-    return Response.ok(projectlist).build();
+    return Response.ok(projectList).build();
   }
 
   @POST
   @Consumes("application/json")
-  public Response addProject(@Valid Project project) {
+  public Response addProject(@Context SecurityContext securityContext, @Valid Project project) {
+
+    log.info("Adding project {}", project);
+    if(isOmnipotentUser(securityContext) == false) {
+      return unauthorizedResponse();
+    }
+
     checkArgument(project != null);
     try {
       this.projects.addProject(project);
@@ -77,16 +94,16 @@ public class ProjectResource {
 
   @GET
   @Path("{projectKey}")
-  public Response getIt(@PathParam("projectKey") String projectKey, @Context SecurityContext securityContext) {
-    if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
-        AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
-      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED))
-          .build();
+  public Response getRessource(@PathParam("projectKey") String projectKey, @Context SecurityContext securityContext) {
+
+    log.debug("Getting project: {}", projectKey);
+    if(hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
+      return unauthorizedResponse();
     }
+
     Project project = projects.where(QProject.project.key.eq(projectKey)).uniqueResult();
-    if(project == null) {
-      return Response.status(Status.NOT_FOUND)
-          .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, projectKey)).build();
+    if(project == null) { // TODO: use Optional
+      return noSuchEntityResponse(projectKey);
     }
     return ResponseTimestamper.ok(project).build();
   }
@@ -95,12 +112,13 @@ public class ProjectResource {
   @Path("{projectKey}")
   public Response updateProject(@PathParam("projectKey") String projectKey, @Valid Project project,
       @Context Request req, @Context SecurityContext securityContext) {
-    if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
-        AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
-      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED))
-          .build();
+
+    log.info("Updating project {} with {}", projectKey, project);
+    if(isOmnipotentUser(securityContext) == false) {
+      return unauthorizedResponse();
     }
-    ResponseTimestamper.evaluate(req, project);
+
+    ResponseTimestamper.evaluate(req, project); // FIXME...
 
     // update project use morphia query
     UpdateOperations<Project> ops =
@@ -115,15 +133,15 @@ public class ProjectResource {
   @GET
   @Path("{projectKey}/releases")
   public Response getReleases(@PathParam("projectKey") String projectKey, @Context SecurityContext securityContext) {
-    if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(
-        AuthorizationPrivileges.projectViewPrivilege(projectKey)) == false) {
-      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED))
-          .build();
+
+    log.debug("Getting releases for project: {}", projectKey);
+    if(hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
+      return unauthorizedResponse();
     }
+
     Project project = projects.where(QProject.project.key.eq(projectKey)).uniqueResult();
     if(project == null) {
-      return Response.status(Status.NOT_FOUND)
-          .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, projectKey)).build();
+      return noSuchEntityResponse(projectKey);
     }
     return Response.ok(projects.getReleases(project)).build();
   }
