@@ -17,6 +17,7 @@
 
 package org.icgc.dcc.portal.repositories;
 
+import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.get.GetResponse;
@@ -24,56 +25,57 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.FilterBuilders;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.icgc.dcc.portal.core.Types;
 import org.icgc.dcc.portal.search.SearchQuery;
 
 @Slf4j
-public class SearchRepository implements ISearchRepository {
+public class GeneRepository implements IGeneRepository {
 
-  private final static String index = "icgc_test54"; // This should probably be set in a config
-  private final Types type;
+  private final static String INDEX = "icgc_test54"; // This should probably be set in a config
+
+  private final static Types TYPE = Types.GENES;
+
+  private static final String[] ALLOWED_FIELDS = ImmutableList.of("symbol", "description", "chromosome", "start",
+      "end", "band", "gene_type").toArray(new String[7]);
+
+  private final QueryBuilder query = buildQuery();
+
   private final Client client;
 
   @Inject
-  public SearchRepository(Client client) {
+  public GeneRepository(Client client) {
     this.client = client;
-    this.type = Types.ALL;
-  }
-
-  public SearchRepository(Client client, Types type) {
-    this.client = client;
-    this.type = type;
-  }
-
-  public final SearchRepository withType(Types type) {
-    return this.type.equals(type) ? this : new SearchRepository(this.client, type);
   }
 
   // Returns one hit
-  @Override
+  // @Override
   public final GetResponse getOne(final String id) {
-    return client.prepareGet(index, type.toString(), id).execute().actionGet();
+    return client.prepareGet(INDEX, TYPE.toString(), id).execute().actionGet();
   }
 
-  // Returns many hits by index
-  @Override
+  // Returns many hits
+  // @Override
   public final SearchResponse getAll(final SearchQuery searchQuery) {
-    return client.prepareSearch(index).setTypes(type.toString()).setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
+    return client.prepareSearch(INDEX).setTypes(TYPE.toString()).setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
         .setQuery(QueryBuilders.matchAllQuery()) //
         .setFilter(FilterBuilders.matchAllFilter()) //
         // .setFacets() //
-        // .setFrom(searchQuery.getFrom()) //
-        // .setSize(searchQuery.getSize()) //
-        // .addSort() //
-        // .addFields(searchQuery.getFields()) //
+        .setFrom(searchQuery.getFrom()) //
+        .setSize(searchQuery.getSize()) //
+        .addSort(searchQuery.getSort(), searchQuery.getOrder()) //
+        .addFields(ALLOWED_FIELDS) //
         .execute().actionGet();
   }
 
-  // Text search
-  @Override
-  public final SearchResponse search(final String text, final int from, final int size) {
-    return client.prepareSearch(index).setQuery(QueryBuilders.queryString(text)).setFrom(from).setSize(size).execute()
-        .actionGet();
+  private QueryBuilder buildQuery() {
+    return QueryBuilders //
+        .nestedQuery("donor", //
+            QueryBuilders.customScoreQuery(QueryBuilders.filteredQuery( //
+                QueryBuilders.matchAllQuery(), //
+                FilterBuilders.matchAllFilter() //
+                )).script("doc['donor.somatic_mutation'].value") //
+        ).scoreMode("total");
   }
 }

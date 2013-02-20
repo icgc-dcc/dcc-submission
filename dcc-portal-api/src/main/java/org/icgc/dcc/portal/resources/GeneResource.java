@@ -21,8 +21,7 @@ import com.wordnik.swagger.annotations.*;
 import com.yammer.metrics.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.http.HttpStatus;
-import org.icgc.dcc.portal.core.Types;
-import org.icgc.dcc.portal.repositories.SearchRepository;
+import org.icgc.dcc.portal.repositories.IGeneRepository;
 import org.icgc.dcc.portal.responses.GetManyResponse;
 import org.icgc.dcc.portal.responses.GetOneResponse;
 import org.icgc.dcc.portal.search.SearchQuery;
@@ -44,14 +43,14 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 @Slf4j
 public class GeneResource {
 
-  private final SearchRepository store;
+  private final IGeneRepository store;
 
   @Context
   private HttpServletRequest httpServletRequest;
 
   @Inject
-  public GeneResource(SearchRepository searchRepository) {
-    this.store = searchRepository.withType(Types.GENES);
+  public GeneResource(IGeneRepository store) {
+    this.store = store;
   }
 
   @GET
@@ -61,8 +60,10 @@ public class GeneResource {
       @ApiParam(value = "Start index of results", required = false) @QueryParam("from") @DefaultValue("1") int from,
       @ApiParam(value = "Number of results returned", allowableValues = "range[1,100]", required = false) @QueryParam("size") @DefaultValue("10") int size,
       @ApiParam(value = "Column to sort results on", required = false) @QueryParam("sort") String sort,
-      @ApiParam(value = "Order to sort the column", allowableValues = "asc, desc", required = false) @QueryParam("order") String order) {
-    SearchQuery searchQuery = new SearchQuery(from, size, sort, order);
+      @ApiParam(value = "Order to sort the column", allowableValues = "asc,desc", required = false) @QueryParam("order") String order,
+      @ApiParam(value = "Filter the search results", required = false) @QueryParam("filter") String filters,
+      @ApiParam(value = "Determine which field is used for scoring", required = false) @QueryParam("score") String score) {
+    SearchQuery searchQuery = new SearchQuery(filters, score, from, size, sort, order);
     GetManyResponse response = new GetManyResponse(store.getAll(searchQuery), httpServletRequest, searchQuery);
 
     return Response.ok().entity(response).build();

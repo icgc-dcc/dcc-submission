@@ -22,7 +22,7 @@ import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 import com.yammer.metrics.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
-import org.icgc.dcc.portal.repositories.SearchRepository;
+import org.icgc.dcc.portal.repositories.ISearchRepository;
 import org.icgc.dcc.portal.responses.GetManyResponse;
 import org.icgc.dcc.portal.search.SearchQuery;
 
@@ -41,13 +41,13 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 @Slf4j
 public class SearchResource {
 
-  private final SearchRepository store;
+  private final ISearchRepository store;
 
   @Context
   private HttpServletRequest httpServletRequest;
 
   @Inject
-  public SearchResource(SearchRepository searchRepository) {
+  public SearchResource(ISearchRepository searchRepository) {
     this.store = searchRepository;
   }
 

@@ -19,7 +19,7 @@ package org.icgc.dcc.portal.resources;
 
 import com.sun.jersey.api.client.WebResource;
 import com.yammer.dropwizard.testing.ResourceTest;
-import org.icgc.dcc.portal.repositories.impl.SearchRepositoryImpl;
+import org.icgc.dcc.portal.repositories.GeneRepository;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -34,7 +34,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 public class GeneResourceTest extends ResourceTest {
 
   @Mock
-  private SearchRepositoryImpl store;
+  private GeneRepository store;
 
   @Override
   protected final void setUpResources() throws Exception {
