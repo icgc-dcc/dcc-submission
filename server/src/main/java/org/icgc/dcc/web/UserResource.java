@@ -46,6 +46,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
 import com.google.inject.Inject;
+import com.typesafe.config.Config;
 
 import static org.icgc.dcc.web.Authorizations.isOmnipotentUser;
 import static org.icgc.dcc.web.Authorizations.unauthorizedResponse;
@@ -57,6 +58,9 @@ import static org.icgc.dcc.web.Authorizations.unauthorizedResponse;
 public class UserResource {
 
   private static final Logger log = LoggerFactory.getLogger(UserResource.class);
+
+  @Inject
+  private Config config;
 
   @Inject
   private UserService users;
@@ -85,7 +89,8 @@ public class UserResource {
 
       msg.setSubject(feedback.getSubject());
       msg.setText(feedback.getMessage());
-      msg.addRecipient(Message.RecipientType.TO, new InternetAddress("dcc@lists.oicr.on.ca"));
+      String recipient = config.getString("mail.support.email");
+      msg.addRecipient(Message.RecipientType.TO, new InternetAddress(recipient));
 
       Transport.send(msg);
     } catch(AddressException e) {
