@@ -146,7 +146,7 @@ public class NextReleaseResource {
     try {
       this.releaseService.queue(nextRelease, queuedProjects);
     } catch(ReleaseException e) {
-      log.error("ProjectKeyNotFound", e);
+      log.error("ProjectKeyNotFound", e); // FIXME: this isn't correct
       return Response.status(Status.BAD_REQUEST)
           .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, projectKeys)).build();
     } catch(InvalidStateException e) {

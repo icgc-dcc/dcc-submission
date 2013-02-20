@@ -40,8 +40,6 @@ import org.icgc.dcc.core.model.QProject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.code.morphia.query.Query;
-import com.google.code.morphia.query.UpdateOperations;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.mongodb.MongoException.DuplicateKey;
@@ -108,6 +106,9 @@ public class ProjectResource {
     return ResponseTimestamper.ok(project).build();
   }
 
+  /**
+   * Only updates the name (will ignore the rest)
+   */
   @PUT
   @Path("{projectKey}")
   public Response updateProject(@PathParam("projectKey") String projectKey, @Valid Project project,
@@ -121,11 +122,9 @@ public class ProjectResource {
     ResponseTimestamper.evaluate(req, project); // FIXME...
 
     // update project use morphia query
-    UpdateOperations<Project> ops =
-        projects.datastore().createUpdateOperations(Project.class).set("name", project.getName());
-    Query<Project> updateQuery = projects.datastore().createQuery(Project.class).field("key").equal(projectKey);
-
-    projects.datastore().update(updateQuery, ops);
+    projects.datastore().update( //
+        projects.datastore().createQuery(Project.class).field("key").equal(projectKey), //
+        projects.datastore().createUpdateOperations(Project.class).set("name", project.getName()));
 
     return ResponseTimestamper.ok(project).build();
   }
