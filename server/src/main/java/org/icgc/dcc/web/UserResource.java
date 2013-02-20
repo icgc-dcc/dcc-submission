@@ -106,7 +106,7 @@ public class UserResource {
       return unauthorizedResponse();
     }
 
-    Optional<User> optionalUser = users.getUser(username);
+    Optional<User> optionalUser = users.getUserByUsername(username);
     if(optionalUser.isPresent() == false) {
       log.warn("unknown user {} provided", username);
       return Response.status(Status.BAD_REQUEST)

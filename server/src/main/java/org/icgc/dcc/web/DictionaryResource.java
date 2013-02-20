@@ -38,10 +38,10 @@ import org.icgc.dcc.dictionary.model.DictionaryState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Lists.newArrayList;
 import static org.icgc.dcc.web.Authorizations.isOmnipotentUser;
 import static org.icgc.dcc.web.Authorizations.unauthorizedResponse;
 
@@ -56,12 +56,12 @@ public class DictionaryResource {
   @POST
   public Response addDictionary(@Valid Dictionary dict, @Context SecurityContext securityContext) {
 
-    log.info("Adding dictionary: {}", dict == null ? null : dict.getVersion());
+    checkArgument(dict != null);
+    log.info("Adding dictionary: {}", dict.getVersion());
     if(isOmnipotentUser(securityContext) == false) {
       return unauthorizedResponse();
     }
 
-    checkArgument(dict != null);
     if(this.dictionaries.list().isEmpty() == false) {
       return Response.status(Status.BAD_REQUEST)
           .entity(new ServerErrorResponseMessage(ServerErrorCode.ALREADY_INITIALIZED)).build();
@@ -78,7 +78,7 @@ public class DictionaryResource {
     log.debug("Getting dictionaries");
     List<Dictionary> dictionaries = this.dictionaries.list();
     if(dictionaries == null) {
-      dictionaries = Lists.newArrayList();
+      dictionaries = newArrayList();
     }
     return Response.ok(dictionaries).build();
   }

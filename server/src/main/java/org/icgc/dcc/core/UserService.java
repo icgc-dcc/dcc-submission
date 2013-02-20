@@ -41,11 +41,15 @@ public class UserService extends BaseMorphiaService<User> {
     registerModelClasses(User.class);
   }
 
-  public Optional<User> getUser(String username) {
+  public Optional<User> getUserByUsername(String username) {
     User user = this.where(QUser.user.username.eq(username)).singleResult();
     return user == null ? Optional.<User> absent() : Optional.of(user);
   }
 
+  /**
+   * Saves the information pertaining to user that is relevant to the locking of users after too many failed attempts.
+   * NOT intended for saving roles/permissions and emails at the moment.
+   */
   public User saveUser(User user) {
     log.info("saving user {}", user);
     datastore().save(user);

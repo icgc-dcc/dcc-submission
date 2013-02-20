@@ -63,7 +63,7 @@ public class ShiroPasswordAuthenticator implements UsernamePasswordAuthenticator
   public Subject authenticate(final String username, final char[] password, final String host) {
     log.debug("Authenticating user {}", username);
 
-    Optional<User> optionalUser = users.getUser(username);
+    Optional<User> optionalUser = users.getUserByUsername(username);
     boolean newUser = optionalUser.isPresent() == false;
 
     User user;
@@ -81,9 +81,6 @@ public class ShiroPasswordAuthenticator implements UsernamePasswordAuthenticator
       return null;
     }
     // END HACK
-
-    // build token from credentials
-    UsernamePasswordToken token = new UsernamePasswordToken(username, password, false, host);
 
     // @formatter:off
     /*
@@ -108,6 +105,8 @@ public class ShiroPasswordAuthenticator implements UsernamePasswordAuthenticator
       Throwables.propagate(e);
     }
 
+    // build token from credentials
+    UsernamePasswordToken token = new UsernamePasswordToken(username, password, false, host);
     try {
       // attempt to login user
       subject.login(token);
@@ -127,14 +126,14 @@ public class ShiroPasswordAuthenticator implements UsernamePasswordAuthenticator
     }
 
     if(newUser) {
-      users.saveUser(user); // do NOT save roles or permissions
+      users.saveUser(user);
     }
 
     if(subject.isAuthenticated()) {
       if(newUser == false) {
         users.resetUser(user); // Part of lockout hack
       }
-      log.info("User [" + subject.getPrincipal() + "] logged in successfully.");
+      log.info("User [{}] logged in successfully.", subject.getPrincipal());
       return subject;
     } else {
       // Hack

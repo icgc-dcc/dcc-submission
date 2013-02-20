@@ -17,10 +17,18 @@
  */
 package org.icgc.dcc.core.model;
 
+import org.icgc.dcc.shiro.DccWrappingRealm;
+
 import com.google.code.morphia.annotations.Entity;
 
 /**
- * Do NOT save roles/permissions (or email for that matter)
+ * This class/collection is only intended to persist the number of failed login attempts per user. It should not try to
+ * keep track of roles/permissions as it is the responsibility of <code>{@link DccWrappingRealm}</code> to do so.
+ * Keeping track of those permissions would require updates on <code>{@link Project}</code> to cascade down changes to
+ * this collection (a complexity we do not care for).
+ * <p>
+ * It is a workaround until the user management is fully figured out (https://jira.oicr.on.ca/browse/DCC-815 for Crowd
+ * integration)
  */
 @Entity
 public class User extends BaseEntity implements HasName {

@@ -97,7 +97,7 @@ public class ReleaseResource {
     if(release != null) {
       ResponseTimestamper.evaluate(req, release);
 
-      if(this.releaseService.list().isEmpty()) { // TODO: improve
+      if(this.releaseService.list().isEmpty()) {
         this.releaseService.createInitialRelease(release);
         return ResponseTimestamper.ok(release).build();
       } else {

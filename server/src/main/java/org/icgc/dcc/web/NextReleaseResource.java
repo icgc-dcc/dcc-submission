@@ -48,7 +48,6 @@ import com.google.common.net.HttpHeaders;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static org.icgc.dcc.web.Authorizations.hasReleaseClosePrivilege;
 import static org.icgc.dcc.web.Authorizations.hasReleaseModifyPrivilege;
 import static org.icgc.dcc.web.Authorizations.hasReleaseViewPrivilege;
@@ -93,7 +92,7 @@ public class NextReleaseResource {
 
     NextRelease oldRelease = releaseService.getNextRelease(); // guaranteed not null
     Release release = oldRelease.getRelease();
-    String oldReleaseName = checkNotNull(release).getName();
+    String oldReleaseName = release.getName();
     log.info("Releasing {}", oldReleaseName);
 
     // Check the timestamp of the oldRelease, since that is the object being updated
@@ -122,7 +121,7 @@ public class NextReleaseResource {
 
     log.debug("Getting the queue for nextRelease");
     List<String> projectIds = releaseService.getNextRelease().getQueued();
-    return Response.ok(checkNotNull(projectIds).toArray()).build();
+    return Response.ok(projectIds.toArray()).build();
   }
 
   @POST
@@ -184,7 +183,7 @@ public class NextReleaseResource {
 
     log.debug("Getting signed off projects for nextRelease");
     List<String> projectIds = this.releaseService.getSignedOff();
-    return Response.ok(checkNotNull(projectIds).toArray()).build();
+    return Response.ok(projectIds.toArray()).build();
   }
 
   @POST

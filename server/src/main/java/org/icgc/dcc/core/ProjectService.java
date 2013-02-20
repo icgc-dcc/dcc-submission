@@ -103,7 +103,7 @@ public class ProjectService extends BaseMorphiaService<Project> {
   /**
    * Returns a filtered list of projects based on authorizations for the given user.
    */
-  public List<Project> getFilteredProjects(Subject user) {
+  public List<Project> getProjectsBySubject(Subject user) {
     List<Project> filteredProjects = new ArrayList<Project>();
     for(Project project : this.getProjects()) {
       if(user.isPermitted(AuthorizationPrivileges.projectViewPrivilege(project.getKey()))) {

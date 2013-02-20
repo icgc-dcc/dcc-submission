@@ -27,7 +27,10 @@ import com.google.common.collect.Lists;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
- * For the front-end to be aware of the permissions. TODO: more
+ * A DTO corresponding to the <code>{@link User}</code> DAO and that allows the front-end to be aware of whether the
+ * connected user is admin or not.
+ * <p>
+ * TODO: front-end should be revisited to only expect a boolean (DCC-828)
  */
 public class DetailedUser {
 
