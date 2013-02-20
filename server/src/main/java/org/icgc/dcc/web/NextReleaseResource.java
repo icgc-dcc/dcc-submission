@@ -39,20 +39,21 @@ import org.icgc.dcc.release.ReleaseException;
 import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.QueuedProject;
 import org.icgc.dcc.release.model.Release;
-import org.icgc.dcc.shiro.AuthorizationPrivileges;
-import org.icgc.dcc.shiro.ShiroSecurityContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.net.HttpHeaders;
 import com.google.inject.Inject;
+import com.typesafe.config.Config;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.icgc.dcc.web.Authorizations.hasPrivilege;
 import static org.icgc.dcc.web.Authorizations.hasReleaseClosePrivilege;
+import static org.icgc.dcc.web.Authorizations.hasReleaseModifyPrivilege;
 import static org.icgc.dcc.web.Authorizations.hasReleaseViewPrivilege;
 import static org.icgc.dcc.web.Authorizations.hasSpecificProjectPrivilege;
+import static org.icgc.dcc.web.Authorizations.hasSubmissionSignoffPrivilege;
 import static org.icgc.dcc.web.Authorizations.isOmnipotentUser;
 import static org.icgc.dcc.web.Authorizations.unauthorizedResponse;
 
@@ -60,6 +61,9 @@ import static org.icgc.dcc.web.Authorizations.unauthorizedResponse;
 public class NextReleaseResource {
 
   private static final Logger log = LoggerFactory.getLogger(NextReleaseResource.class);
+
+  @Inject
+  private Config config;
 
   @Inject
   private ReleaseService releaseService;
@@ -72,8 +76,9 @@ public class NextReleaseResource {
     }
     NextRelease nextRelease = releaseService.getNextRelease();
     Release release = nextRelease.getRelease(); // guaranteed not to be null
-    String name = release.getName();
-    return Response.status(Status.MOVED_PERMANENTLY).header(HttpHeaders.LOCATION, "/releases/" + name).build();
+    String prefix = config.getString("http.ws.path");
+    String redirectionPath = Joiner.on("/").join(prefix, "releases", release.getName());
+    return Response.status(Status.MOVED_PERMANENTLY).header(HttpHeaders.LOCATION, redirectionPath).build();
   }
 
   @POST
@@ -186,7 +191,7 @@ public class NextReleaseResource {
   @Path("signed")
   public Response signOff(List<String> projectKeys, @Context Request req, @Context SecurityContext securityContext) {
     log.info("Signing off projects {}", projectKeys);
-    if(hasPrivilege(securityContext, AuthorizationPrivileges.SUBMISSION_SIGNOFF) == false) {
+    if(hasSubmissionSignoffPrivilege(securityContext) == false) {
       return unauthorizedResponse();
     }
 
@@ -194,8 +199,8 @@ public class NextReleaseResource {
     ResponseTimestamper.evaluate(req, nextRelease);
 
     try {
-      String user = ((ShiroSecurityContext) securityContext).getUserPrincipal().getName();
-      this.releaseService.signOff(nextRelease, projectKeys, user);
+      String username = Authorizations.getUsername(securityContext);
+      this.releaseService.signOff(nextRelease, projectKeys, username);
     } catch(ReleaseException e) {
       ServerErrorCode code = ServerErrorCode.NO_SUCH_ENTITY;
       log.error(code.getFrontEndString(), e);
@@ -218,7 +223,7 @@ public class NextReleaseResource {
   @Path("update")
   public Response update(@Valid Release release, @Context Request req, @Context SecurityContext securityContext) {
     log.info("Updating nextRelease with: {}", release);
-    if(hasPrivilege(securityContext, AuthorizationPrivileges.RELEASE_MODIFY) == false) {
+    if(hasReleaseModifyPrivilege(securityContext) == false) {
       return unauthorizedResponse();
     }
 

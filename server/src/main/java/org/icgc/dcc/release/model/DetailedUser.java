@@ -19,6 +19,8 @@ package org.icgc.dcc.release.model;
 
 import java.util.List;
 
+import org.icgc.dcc.web.Authorizations;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
@@ -35,7 +37,7 @@ public class DetailedUser {
 
   public DetailedUser(String username, boolean admin) {
     this.username = checkNotNull(username);
-    this.roles = admin ? ImmutableList.of("admin") : ImmutableList.<String> of(); // TODO: hardcoding
+    this.roles = admin ? ImmutableList.of(Authorizations.ADMIN_ROLE) : ImmutableList.<String> of();
   }
 
   public String getUsername() {

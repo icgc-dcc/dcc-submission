@@ -37,7 +37,6 @@ import org.icgc.dcc.release.model.DetailedSubmission;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseView;
 import org.icgc.dcc.release.model.Submission;
-import org.icgc.dcc.shiro.ShiroSecurityContext;
 import org.icgc.dcc.validation.report.FieldReport;
 import org.icgc.dcc.validation.report.SchemaReport;
 import org.icgc.dcc.validation.report.SubmissionReport;
@@ -68,7 +67,7 @@ public class ReleaseResource {
       return unauthorizedResponse();
     }
 
-    Subject subject = ((ShiroSecurityContext) securityContext).getSubject();
+    Subject subject = Authorizations.getShiroSubject(securityContext);
     List<Release> filteredReleases = this.releaseService.getFilteredReleases(subject);
     return Response.ok(filteredReleases).build();
   }
@@ -78,14 +77,14 @@ public class ReleaseResource {
   public Response getReleaseByName(@PathParam("name") String name, @Context SecurityContext securityContext) {
     log.debug("Getting release using: {}", name);
 
-    Subject subject = ((ShiroSecurityContext) securityContext).getSubject();
+    Subject subject = Authorizations.getShiroSubject(securityContext);
     Optional<ReleaseView> filteredReleaseView = // this handles authorization
         releaseService.getFilteredReleaseView(name, subject);
 
     if(filteredReleaseView.isPresent() == false) {
       return noSuchEntityResponse(name);
     }
-    return Response.ok(filteredReleaseView).build();
+    return Response.ok(filteredReleaseView.get()).build();
   }
 
   @PUT

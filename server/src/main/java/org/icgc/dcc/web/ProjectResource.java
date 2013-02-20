@@ -37,7 +37,6 @@ import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.core.model.QProject;
-import org.icgc.dcc.shiro.ShiroSecurityContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,7 +65,7 @@ public class ProjectResource {
     /* Authorization is handled by the filtering of projects below */
 
     log.debug("Getting projects");
-    Subject subject = ((ShiroSecurityContext) securityContext).getSubject();
+    Subject subject = Authorizations.getShiroSubject(securityContext);
     List<Project> projectList = projects.getFilteredProjects(subject);
     if(projectList == null) { // TODO: use Optional (see DCC-820)
       projectList = Lists.newArrayList();

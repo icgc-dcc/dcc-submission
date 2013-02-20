@@ -18,7 +18,6 @@
 package org.icgc.dcc.shiro;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -28,10 +27,10 @@ import org.apache.shiro.realm.text.IniRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.core.model.Project;
+import org.icgc.dcc.web.Authorizations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 /**
@@ -57,8 +56,11 @@ public class DccWrappingRealm extends IniRealm {
     SimpleAccount simpleAccount = super.getUser(username); // this gives access to implementation of
                                                            // AuthorizationInfo...
 
-    Set<String> projectSpecificPermissions = buildProjectSpecificPermissions(username, simpleAccount.getRoles());
-    log.debug("Dynamically adding Project-specific permissions for user {}: {}", username, projectSpecificPermissions);
+    Collection<String> iniRoles = simpleAccount.getRoles();
+    Set<String> projectSpecificPermissions = buildProjectSpecificPermissions(username, iniRoles);
+    log.debug(
+        "Dynamically adding Project-specific permissions for user {}: {}, top of existing roles from INI: {} ({})",
+        new Object[] { username, projectSpecificPermissions, iniRoles, simpleAccount.getObjectPermissions() });
     simpleAccount.addStringPermissions(projectSpecificPermissions);
 
     return simpleAccount;
@@ -67,12 +69,12 @@ public class DccWrappingRealm extends IniRealm {
   private Set<String> buildProjectSpecificPermissions(String username, Collection<String> roles) {
     Set<String> permissions = Sets.newLinkedHashSet();
     for(Project project : projects.getProjects()) {
-      List<String> groups = Lists.newArrayList(project.getGroups());
-      groups.add("admin"); // FIXME: needed?
-      if(project.hasUser(username) || CollectionUtils.containsAny(groups, roles)) {
+      if(Authorizations.hasAdminRole(roles) || project.hasUser(username)
+          || CollectionUtils.containsAny(project.getGroups(), roles)) {
         permissions.add(AuthorizationPrivileges.projectViewPrivilege(project.getKey()));
       }
     }
     return permissions;
   }
+
 }

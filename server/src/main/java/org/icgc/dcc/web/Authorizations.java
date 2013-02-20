@@ -17,10 +17,13 @@
  */
 package org.icgc.dcc.web;
 
+import java.util.Collection;
+
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 
+import org.apache.shiro.realm.SimpleAccountRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.shiro.AuthorizationPrivileges;
@@ -35,25 +38,42 @@ public class Authorizations {
 
   private static final Logger log = LoggerFactory.getLogger(Authorizations.class);
 
+  public static final String ADMIN_ROLE = "admin"; // TODO: hardcoded value..!! (DCC-759)
+
+  /**
+   * Returns the username from a "principal" {@code Object}. Using toString seems to be the only way (as used in Shiro's
+   * own classes: {@link SimpleAccountRealm#getUsername()} for instance)
+   */
   public static String getUsername(Object principal) {
-    return principal.toString(); // TODO: there doesn't seem to be another way than using toString...
+    return principal == null ? null : principal.toString();
   }
 
-  static String getUsername(SecurityContext securityContext) {
-    Object principal = ((ShiroSecurityContext) securityContext).getSubject().getPrincipal();
+  static String getUsername(SecurityContext securityContext) { // consider as alternative: ((ShiroSecurityContext)
+                                                               // securityContext).getUserPrincipal().getName();
+    Object principal = shiroSecurityContext(securityContext).getSubject().getPrincipal();
     return getUsername(principal);
   }
 
+  /**
+   * Casting seems to be the only way (TODO: investigate)
+   */
+  private static ShiroSecurityContext shiroSecurityContext(SecurityContext securityContext) {
+    return (ShiroSecurityContext) securityContext;
+  }
+
+  static Subject getShiroSubject(SecurityContext securityContext) {
+    return Authorizations.shiroSecurityContext(securityContext).getSubject();
+  }
+
+  public static boolean hasAdminRole(Collection<String> roles) {
+    return roles.contains(Authorizations.ADMIN_ROLE);
+  }
+
   static boolean hasPrivilege(SecurityContext securityContext, String privilege) {
-    ShiroSecurityContext shiroSecurityContext = (ShiroSecurityContext) securityContext;
-    Subject subject = shiroSecurityContext.getSubject();
+    Subject subject = shiroSecurityContext(securityContext).getSubject();
     log.debug("Checking that subject {} has privilege {}", subject.getPrincipal(), privilege);
 
     return subject.isPermitted(privilege);
-  }
-
-  static boolean hasPrivilege(SecurityContext securityContext, AuthorizationPrivileges privilege) {
-    return hasPrivilege(securityContext, privilege.getPrefix());
   }
 
   static boolean isOmnipotentUser(SecurityContext securityContext) {
@@ -66,6 +86,14 @@ public class Authorizations {
 
   static boolean hasReleaseClosePrivilege(SecurityContext securityContext) {
     return hasPrivilege(securityContext, AuthorizationPrivileges.RELEASE_CLOSE.getPrefix());
+  }
+
+  static boolean hasSubmissionSignoffPrivilege(SecurityContext securityContext) {
+    return hasPrivilege(securityContext, AuthorizationPrivileges.SUBMISSION_SIGNOFF.getPrefix());
+  }
+
+  static boolean hasReleaseModifyPrivilege(SecurityContext securityContext) {
+    return hasPrivilege(securityContext, AuthorizationPrivileges.RELEASE_MODIFY.getPrefix());
   }
 
   /**

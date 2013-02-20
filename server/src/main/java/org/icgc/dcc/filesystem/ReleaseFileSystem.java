@@ -27,6 +27,7 @@ import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.shiro.AuthorizationPrivileges;
+import org.icgc.dcc.web.Authorizations;
 import org.mortbay.log.Log;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -138,9 +139,8 @@ public class ReleaseFileSystem {
   }
 
   public boolean isSystemDirectory(Path path) {
-    return this.getSystemDirectory().getName().equals(path.getName()) && this.userSubject.hasRole("admin"); // FIXME:
-                                                                                                            // hardcoded
-                                                                                                            // value..!! (DCC-759)
+    return this.getSystemDirectory().getName().equals(path.getName())
+        && this.userSubject.hasRole(Authorizations.ADMIN_ROLE);
   }
 
   private boolean isApplication() {
