@@ -24,8 +24,6 @@ import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.authc.LockedAccountException;
 import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.authc.UsernamePasswordToken;
-import org.apache.shiro.mgt.DefaultSecurityManager;
-import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
 import org.icgc.dcc.core.UserService;
@@ -45,16 +43,16 @@ public class ShiroPasswordAuthenticator implements UsernamePasswordAuthenticator
 
   private static final Logger log = LoggerFactory.getLogger(ShiroPasswordAuthenticator.class);
 
-  private final SecurityManager securityManager; // TODO: must add because...
-
   private final UserService users;
 
+  /**
+   * Somehow MUST inject {@code org.apache.shiro.mgt.SecurityManager} here to avoid the error message:
+   * "HTTP/1.1 500 No SecurityManager accessible to the calling code, either bound to the org.apache.shiro.util.ThreadContext or as a vm static singleton.  This is an invalid application configuration."
+   * TODO: find out why (DCC-?)
+   */
   @Inject
-  public ShiroPasswordAuthenticator(SecurityManager securityManager, UserService users) {
+  public ShiroPasswordAuthenticator(org.apache.shiro.mgt.SecurityManager securityManager, UserService users) {
     this.users = users;
-    this.securityManager = securityManager;
-    DefaultSecurityManager defaultSecurityManager = (DefaultSecurityManager) this.securityManager;
-    defaultSecurityManager.getRealms();
   }
 
   /**
