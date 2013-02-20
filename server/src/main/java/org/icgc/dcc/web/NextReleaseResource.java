@@ -78,7 +78,7 @@ public class NextReleaseResource {
 
   @POST
   public Response release(Release nextRelease, @Context Request req, @Context SecurityContext securityContext) {
-    log.info("releasing nextRelease, new release will be: {}", nextRelease);
+    log.info("Releasing nextRelease, new release will be: {}", nextRelease);
 
     // TODO: this is intentionally not validated, since we're only currently using the name. This seems sketchy to me
     // --Jonathan (DCC-759)
@@ -89,7 +89,7 @@ public class NextReleaseResource {
     NextRelease oldRelease = releaseService.getNextRelease(); // guaranteed not null
     Release release = oldRelease.getRelease();
     String oldReleaseName = checkNotNull(release).getName();
-    log.info("releasing {}", oldReleaseName);
+    log.info("Releasing {}", oldReleaseName);
 
     // Check the timestamp of the oldRelease, since that is the object being updated
     ResponseTimestamper.evaluate(req, release);
@@ -97,7 +97,7 @@ public class NextReleaseResource {
     NextRelease newRelease = null;
     try {
       newRelease = oldRelease.release(nextRelease.getName());
-      log.info("released {}", oldReleaseName);
+      log.info("Released {}", oldReleaseName);
     } catch(ReleaseException e) {
       ServerErrorCode code = ServerErrorCode.RELEASE_EXCEPTION;
       log.error(code.getFrontEndString(), e);
@@ -163,7 +163,7 @@ public class NextReleaseResource {
   @Path("queue")
   public Response removeAllQueued(@Context SecurityContext securityContext) {
 
-    log.info("emptying queue for nextRelease");
+    log.info("Emptying queue for nextRelease");
     if(isOmnipotentUser(securityContext) == false) {
       return unauthorizedResponse();
     }

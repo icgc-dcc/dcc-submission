@@ -36,9 +36,6 @@ public class RealmProvider implements Provider<Collection<Realm>> {
   @Inject
   private Config config;
 
-  // @Inject
-  // private UserService users;
-
   @Inject
   private ProjectService projects;
 

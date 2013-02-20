@@ -73,7 +73,7 @@ public class CodeListResource {
 
   @GET
   @Path("{name}")
-  public Response getCodeList(@PathParam("name") String name, @Context SecurityContext securityContext) {
+  public Response getCodeList(@PathParam("name") String name) {
     /* no authorization check necessary */
 
     Log.debug("Getting codelist: {}", name);

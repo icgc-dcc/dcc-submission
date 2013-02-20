@@ -199,7 +199,7 @@ public class ReleaseResource {
   public Response getSubmissionFileList(@PathParam("name") String releaseName,
       @PathParam("projectKey") String projectKey, @Context SecurityContext securityContext) {
 
-    log.debug("");
+    log.debug("Getting submission file list for release {} and project {}", releaseName, projectKey);
     if(hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
       return unauthorizedResponse();
     }
