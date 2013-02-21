@@ -21,7 +21,6 @@ import java.io.File;
 
 import lombok.ToString;
 
-
 import com.beust.jcommander.Parameter;
 import com.mongodb.MongoURI;
 
@@ -36,7 +35,7 @@ public class Options {
   @Parameter(names = { "-f", "--file" }, required = true, validateValueWith = FileValidator.class, description = "Heliotrope genes.bson mongodump file (e.g. ~/genes.bson)")
   public File file;
 
-  @Parameter(names = { "-d", "--database" }, required = true, converter = MongoURIConverter.class, validateWith = MongoURIValidator.class, validateValueWith = MongoValidator.class, description = "DCC MongoDB database collection URI (e.g. mongodb://localhost/dcc-genome.Genes)")
+  @Parameter(names = { "-d", "--database" }, required = true, converter = MongoURIConverter.class, validateWith = MongoURIValidator.class, validateValueWith = MongoValidator.class, description = "DCC MongoDB database collection URI (e.g. mongodb://localhost/dcc-genome.Gene)")
   public MongoURI mongoUri;
 
   @Parameter(names = { "-v", "--version" }, help = true, description = "Show version information")
