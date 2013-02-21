@@ -33,7 +33,15 @@
                 <ul class="nav" ng-repeat="n in navigation">
                     <li><a class="" href="{{n.href}}">{{n.title}}</a></li>
                 </ul>
+                <ul class="nav pull-right" ng-controller="LoadingCtrl">
+                    <li ng-show="loading">
+                        <a><i class="icon-spinner icon-spin"></i></a>
+                    </li>
+                </ul>
+
             </div>
+
+
         </div>
         <!-- /navbar-inner -->
     </div>

@@ -43,5 +43,14 @@ angular.module('app').config(['$routeProvider', '$locationProvider', function ($
 
 angular.module('app.controllers', []);
 
-angular.module('app.controllers').controller('ApplicationController', [ "$scope", "$routeParams", function ($scope, $routeParams) {
+angular.module('app.controllers').controller('ApplicationController', [ "$rootScope", function ($rootScope) {
+  $rootScope.$on("$routeChangeStart", function (event, next, current) {
+    console.log("$routeChangeStart")
+  });
+  $rootScope.$on("$routeChangeSuccess", function (event, current, previous) {
+    console.log("$routeChangeSuccess")
+  });
+  $rootScope.$on("$routeChangeError", function (event, current, previous, rejection) {
+    console.log("$routeChangeError")
+  });
 }]);

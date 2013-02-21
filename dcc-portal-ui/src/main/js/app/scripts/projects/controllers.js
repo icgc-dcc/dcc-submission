@@ -22,7 +22,6 @@ angular.module('app.projects.controllers').controller('ProjectsController', [ "$
   $scope.projects = projects;
 
   $scope.refresh = function () {
-    $scope.projects.loading = true;
     ProjectsService.query().then(function (response) {
       $scope.projects = response;
     });
