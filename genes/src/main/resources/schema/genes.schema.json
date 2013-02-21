@@ -5,7 +5,7 @@
    "description":"Schema used to define and validate gene model documents",
    "type":"object",
    "properties":{
-      "id":{
+      "_id":{
          "type":"string",
          "id":"id",
          "required":true
