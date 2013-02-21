@@ -15,16 +15,12 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.genes;
+package org.icgc.dcc.genes.cli;
 
 import java.io.File;
 
 import lombok.ToString;
 
-import org.icgc.dcc.genes.cli.FileValidator;
-import org.icgc.dcc.genes.cli.MongoURIConverter;
-import org.icgc.dcc.genes.cli.MongoURIValidator;
-import org.icgc.dcc.genes.cli.MongoValidator;
 
 import com.beust.jcommander.Parameter;
 import com.mongodb.MongoURI;
