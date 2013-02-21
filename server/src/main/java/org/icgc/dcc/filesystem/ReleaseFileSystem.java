@@ -17,9 +17,6 @@
  */
 package org.icgc.dcc.filesystem;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.List;
 
 import org.apache.hadoop.fs.Path;
@@ -30,7 +27,11 @@ import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.shiro.AuthorizationPrivileges;
+import org.icgc.dcc.web.Authorizations;
 import org.mortbay.log.Log;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class ReleaseFileSystem {
 
@@ -138,7 +139,8 @@ public class ReleaseFileSystem {
   }
 
   public boolean isSystemDirectory(Path path) {
-    return this.getSystemDirectory().getName().equals(path.getName()) && this.userSubject.hasRole("admin");
+    return this.getSystemDirectory().getName().equals(path.getName())
+        && this.userSubject.hasRole(Authorizations.ADMIN_ROLE);
   }
 
   private boolean isApplication() {

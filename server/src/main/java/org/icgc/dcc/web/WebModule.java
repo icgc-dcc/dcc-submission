@@ -61,7 +61,7 @@ public class WebModule extends AbstractModule {
       config.addClasses(InvalidNameExceptionMapper.class);
       config.addClasses(DuplicateNameExceptionMapper.class);
       config.addClasses(UserResource.class);
-      config.addClasses(SeedResource.class); // TODO be sure to remove this from production environment
+      config.addClasses(SeedResource.class); // TODO be sure to remove this from production environment (see DCC-819)
     }
   }
 

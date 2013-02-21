@@ -18,69 +18,63 @@
 package org.icgc.dcc.shiro;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.shiro.authc.AuthenticationException;
-import org.apache.shiro.authc.AuthenticationInfo;
-import org.apache.shiro.authc.AuthenticationToken;
+import org.apache.shiro.authc.SimpleAccount;
 import org.apache.shiro.authz.AuthorizationInfo;
-import org.apache.shiro.authz.SimpleAuthorizationInfo;
-import org.apache.shiro.realm.AuthorizingRealm;
+import org.apache.shiro.realm.text.IniRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.icgc.dcc.core.ProjectService;
-import org.icgc.dcc.core.UserService;
 import org.icgc.dcc.core.model.Project;
-import org.icgc.dcc.core.model.User;
+import org.icgc.dcc.web.Authorizations;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
-public class DccDbRealm extends AuthorizingRealm implements DccRealm {
+/**
+ * Accesses user authentication and role authorizations from the realm.ini file.
+ */
+public class DccWrappingRealm extends IniRealm {
 
-  private final UserService users;
+  private static final Logger log = LoggerFactory.getLogger(DccWrappingRealm.class);
 
   private final ProjectService projects;
 
-  public DccDbRealm(UserService users, ProjectService projects) {
-    this.users = users;
+  public DccWrappingRealm(ProjectService projects) {
     this.projects = projects;
   }
 
+  /**
+   * TODO: <code>{@link DccRealm#getPermissions(String)}</code>
+   */
   @Override
   protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
-    String username = (String) principals.getPrimaryPrincipal();
-    User user = users.getUser(username);
-    SimpleAuthorizationInfo sai = new SimpleAuthorizationInfo(new HashSet<String>(user.getRoles()));
-    Set<String> stringPermissions = new HashSet<String>();
+    log.debug("Putting together authorizations for user {}", principals.getPrimaryPrincipal());
+    String username = super.getUsername(principals);
+    SimpleAccount simpleAccount = super.getUser(username); // this gives access to implementation of
+                                                           // AuthorizationInfo...
+
+    Collection<String> iniRoles = simpleAccount.getRoles();
+    Set<String> projectSpecificPermissions = buildProjectSpecificPermissions(username, iniRoles);
+    log.debug(
+        "Dynamically adding Project-specific permissions for user {}: {}, top of existing roles from INI: {} ({})",
+        new Object[] { username, projectSpecificPermissions, iniRoles, simpleAccount.getObjectPermissions() });
+    simpleAccount.addStringPermissions(projectSpecificPermissions);
+
+    return simpleAccount;
+  }
+
+  private Set<String> buildProjectSpecificPermissions(String username, Collection<String> roles) {
+    Set<String> permissions = Sets.newLinkedHashSet();
     for(Project project : projects.getProjects()) {
-      if(project.hasUser(user.getName()) || CollectionUtils.containsAny(project.getGroups(), user.getRoles())) {
-        stringPermissions.add(AuthorizationPrivileges.projectViewPrivilege(project.getKey()));
+      if(Authorizations.hasAdminRole(roles) || project.hasUser(username)
+          || CollectionUtils.containsAny(project.getGroups(), roles)) {
+        permissions.add(AuthorizationPrivileges.projectViewPrivilege(project.getKey()));
       }
     }
-    sai.addStringPermissions(stringPermissions);
-
-    return sai;
-  }
-
-  @Override
-  protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
-    // Authorization is currently only performed via the Shiro INI file, so this is not populated
-    return null;
-  }
-
-  @Override
-  public boolean supports(AuthenticationToken token) {
-    return false;
-  }
-
-  @Override
-  public Collection<String> getRoles(String username) {
-    User user = users.getUser(username);
-    if(user == null) {
-      return Lists.newArrayList();
-    }
-    return user.getRoles();
+    return permissions;
   }
 
 }

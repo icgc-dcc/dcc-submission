@@ -53,4 +53,10 @@ public class Feedback {
   public String getMessage() {
     return this.message;
   }
+
+  @Override
+  public String toString() {
+    return "Feedback [email=" + email + ", subject=" + subject + "]";
+  }
+
 }

@@ -33,8 +33,6 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
@@ -42,13 +40,16 @@ import javax.ws.rs.core.SecurityContext;
 import org.icgc.dcc.core.UserService;
 import org.icgc.dcc.core.model.Feedback;
 import org.icgc.dcc.core.model.User;
-import org.icgc.dcc.security.UsernamePasswordAuthenticator;
-import org.icgc.dcc.shiro.AuthorizationPrivileges;
-import org.icgc.dcc.shiro.ShiroSecurityContext;
+import org.icgc.dcc.release.model.DetailedUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Optional;
 import com.google.inject.Inject;
+import com.typesafe.config.Config;
+
+import static org.icgc.dcc.web.Authorizations.isOmnipotentUser;
+import static org.icgc.dcc.web.Authorizations.unauthorizedResponse;
 
 /**
  * Resource (REST end-points) for users.
@@ -59,33 +60,26 @@ public class UserResource {
   private static final Logger log = LoggerFactory.getLogger(UserResource.class);
 
   @Inject
-  private UserService users;
+  private Config config;
 
   @Inject
-  private UsernamePasswordAuthenticator passwordAuthenticator;
+  private UserService users;
 
   @GET
   @Path("self")
-  public Response getRoles(@Context HttpHeaders headers) {
-
-    String username = passwordAuthenticator.getCurrentUser();
-    User user = users.getUser(username);
-
-    if(user == null) {
-      user = new User();
-      user.setUsername(username);
-      users.saveUser(user);
-    }
-
-    user.getRoles().addAll(this.passwordAuthenticator.getRoles());
-
-    return Response.ok(user).build();
+  public Response getResource(@Context SecurityContext securityContext) {
+    String username = Authorizations.getUsername(securityContext);
+    boolean admin = isOmnipotentUser(securityContext);
+    return Response.ok(new DetailedUser(username, admin)).build();
   }
 
   @POST
   @Path("self")
   @Consumes("application/json")
-  public Response feedback(Feedback feedback, @Context Request req) { // TODO: merge with mail service (DCC-686)
+  public Response feedback(Feedback feedback) { // TODO: merge with mail service (DCC-686)
+    /* no authorization check necessary */
+
+    log.debug("Sending feedback email: {}", feedback);
     Properties props = new Properties();
     props.put("mail.smtp.host", "smtp.oicr.on.ca");
     Session session = Session.getDefaultInstance(props, null);
@@ -95,7 +89,8 @@ public class UserResource {
 
       msg.setSubject(feedback.getSubject());
       msg.setText(feedback.getMessage());
-      msg.addRecipient(Message.RecipientType.TO, new InternetAddress("dcc@lists.oicr.on.ca"));
+      String recipient = config.getString("mail.support.email");
+      msg.addRecipient(Message.RecipientType.TO, new InternetAddress(recipient));
 
       Transport.send(msg);
     } catch(AddressException e) {
@@ -109,28 +104,27 @@ public class UserResource {
 
   @PUT
   @Path("unlock/{username}")
-  public Response unlock(@PathParam("username") String username, @Context Request req,
-      @Context SecurityContext securityContext) {
+  public Response unlock(@PathParam("username") String username, @Context SecurityContext securityContext) {
 
-    if(((ShiroSecurityContext) securityContext).getSubject().isPermitted(AuthorizationPrivileges.ALL.getPrefix()) == false) {
-      return Response.status(Status.UNAUTHORIZED).entity(new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED))
-          .build();
+    log.info("Unlocking user: {}", username);
+    if(isOmnipotentUser(securityContext) == false) {
+      return unauthorizedResponse();
     }
 
-    User user = users.getUser(username);
-    if(user == null) {
+    Optional<User> optionalUser = users.getUserByUsername(username);
+    if(optionalUser.isPresent() == false) {
       log.warn("unknown user {} provided", username);
       return Response.status(Status.BAD_REQUEST)
           .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, new Object[] { username })).build();
+    } else {
+      User user = optionalUser.get();
+      if(user.isLocked()) {
+        user = users.resetUser(user);
+        log.info("user {} was unlocked", username);
+      } else {
+        log.warn("user {} was not locked, aborting unlocking procedure", username);
+      }
+      return ResponseTimestamper.ok(user).build();
     }
-
-    if(user.isLocked() == false) {
-      log.warn("user {} was not locked, aborting unlocking procedure", username);
-    }
-
-    user = users.unlock(username);
-    log.info("user {} was unlocked", username);
-
-    return ResponseTimestamper.ok(user).build();
   }
 }

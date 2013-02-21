@@ -18,9 +18,9 @@
 package org.icgc.dcc.web;
 
 public class ServerErrorResponseMessage {
-  public String code;
+  private final String code;
 
-  public Object[] parameters;
+  private final Object[] parameters;
 
   public ServerErrorResponseMessage(ServerErrorCode code, Object... parameters) {
     this.code = code.getFrontEndString();
@@ -30,5 +30,13 @@ public class ServerErrorResponseMessage {
   public ServerErrorResponseMessage(ServerErrorCode code) {
     this.code = code.getFrontEndString();
     this.parameters = new Object[0];
+  }
+
+  public String getCode() {
+    return code;
+  }
+
+  public Object[] getParameters() {
+    return parameters;
   }
 }
