@@ -20,6 +20,15 @@ angular.module('app.projects.controllers', ['app.projects.services']);
 
 angular.module('app.projects.controllers').controller('ProjectsController', [ "$scope", 'ProjectsService', "projects", function ($scope, ProjectsService, projects) {
   $scope.projects = projects;
+
+  $scope.refresh = function () {
+    $scope.projects.loading = true;
+    ProjectsService.query().then(function (response) {
+      $scope.projects = response;
+    });
+  };
+
+  $scope.$on('toggleFilter', $scope.refresh);
 }]);
 
 angular.module('app.projects.controllers').controller('ProjectController', [ "$scope", "project", function ($scope, project) {

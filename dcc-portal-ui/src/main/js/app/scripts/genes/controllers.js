@@ -19,8 +19,6 @@
 angular.module('app.genes.controllers', ['app.genes.services']);
 
 angular.module('app.genes.controllers').controller('GenesController', [ "$scope", 'GenesService', "genes", function ($scope, GenesService, genes) {
-  console.log('GenesController');
-
   $scope.genes = genes;
 
   $scope.refresh = function () {

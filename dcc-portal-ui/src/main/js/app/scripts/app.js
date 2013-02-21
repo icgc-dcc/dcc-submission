@@ -20,6 +20,7 @@
 angular.module('app', [
   'app.controllers',
   'app.common',
+  'app.http',
   'app.facets',
   'app.projects',
   'app.donors',

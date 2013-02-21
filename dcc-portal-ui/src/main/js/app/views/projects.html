@@ -1,6 +1,25 @@
 <div class="row">
     <div class="span3">
-        <div class="well"><i class="icon-spinner icon-spin"></i> Facets</div>
+        <div ng-controller="FacetsController">
+            <ul class="nav nav-list" ng-repeat="(facet_name, facet) in projects.facets">
+                <li ng-include data-src=" 'views/facets/term.html' "></li>
+            </ul>
+            <ul class="nav nav-list">
+                <li class="nav-header">
+                    <i ng-hide="facet.active" class="icon-check-empty"></i>
+                    <i ng-show="facet.active" class="icon-check"></i>
+                    Range Facet
+                </li>
+                <li class="form-inline">
+                    <input type="text" class="input-xmini" placeholder="From">
+                    <input type="text" class="input-xmini" placeholder="To">
+                    <button type="button" class="btn">Go</button>
+                </li>
+            </ul>
+            <ul class="nav nav-list" ng-hide="projects.facets">
+                <li><i class="icon-spinner icon-spin"></i> Fetching facets...</li>
+            </ul>
+        </div>
     </div>
     <div class="span9">
         <h1>Cancer Projects</h1>
@@ -28,22 +47,22 @@
             </tr>
             </thead>
             <tbody>
-            <tr ng-repeat="project in projects.data">
-                <td><a href="#/projects/{{project.project_key}}">{{project.project_name}}</a></td>
-                <td>{{project.primary_site}}</td>
-                <td>{{project.country}}</td>
-                <td>{{project.total_donor_count}}</td>
-                <td>{{project.ssm_tested_donor_count}}</td>
-                <td>{{project.cnsm_tested_donor_count}}</td>
-                <td>{{project.exp_tested_donor_count}}</td>
-                <td>{{project.meth_tested_donor_count}}</td>
+            <tr ng-repeat="project in projects.hits">
+                <td><a href="#/projects/{{project.fields.project_key}}">{{project.fields.project_name}}</a></td>
+                <td>{{project.fields.primary_site}}</td>
+                <td>{{project.fields.country}}</td>
+                <td>{{project.fields.total_donor_count}}</td>
+                <td>{{project.fields.ssm_tested_donor_count}}</td>
+                <td>{{project.fields.cnsm_tested_donor_count}}</td>
+                <td>{{project.fields.exp_tested_donor_count}}</td>
+                <td>{{project.fields.meth_tested_donor_count}}</td>
                 <td>
-                    <ul class="unstyled" ng-repeat="pmid in project.pubmed_id">
+                    <ul class="unstyled" ng-repeat="pmid in project.fields.pubmed_id">
                         <li><a href="http://www.ncbi.nlm.nih.gov/pubmed/{{pmid}}">pmid:{{pmid}}</a></li>
                     </ul>
                 </td>
             </tr>
-            <tr ng-hide="projects.data.length">
+            <tr ng-hide="projects.hits.length">
                 <td colspan="9"><i class="icon-spinner icon-spin"></i> Fetching projects...</td>
             </tr>
             </tbody>

@@ -21,68 +21,11 @@ angular.module('app.facets', ['app.facets.controllers']);
 
 angular.module('app.facets.controllers', ['app.facets.services']);
 
-angular.module('app.facets.controllers').controller('FacetsController', [ "$scope", "$location", function ($scope, $location) {
-  console.log('FacetsController');
-  // set filters using facet onclick
-  // >> should set facet to 'active'
-  // >> should update location.search 
-  // >> should update model url to use filter
-  // >> should refresh model data
-  // ^^^^ data is refeshed on every click
-  // state should remain on page refresh
-  // >> should update model url to use filter
-  // >> should set active facets using ?filters
-
-  var getCurrentSearch = function () {
-    return $location.search();
-  };
-
-  var jsonifyParams = function (string) {
-    return ('{"' + string + '"}')
-        .replace(/,/g, '","')
-        .replace(/:/g, '":')
-        .replace(/\[/g, '["')
-        .replace(/]"/g, '"]');
-  };
-
-  var getCurrentFilters = function () {
-    var cfParams;
-    cfParams = getCurrentSearch().filters || '';
-    return cfParams.length ? JSON.parse(jsonifyParams(cfParams)) : {};
-  };
-
-
-  var applyCurrentFilters = function () {
-    var currentFilters = getCurrentFilters();
-    // Compare facets with filters and set actives
-    angular.forEach($scope.facets, function (facet, facet_name) {
-      // Set facets as active
-      facet.active = true;
-      if (currentFilters.hasOwnProperty(facet_name)) {
-        // Compare terms with filters and set actives
-        angular.forEach(facet.terms, function (term, term_name) {
-          term.active = currentFilters[facet_name].indexOf(term_name) !== -1;
-        });
-      } else {
-        facet.active = false;
-        angular.forEach(facet.terms, function (term) {
-          term.active = false;
-        });
-      }
-    });
-  };
-  applyCurrentFilters();
-
-  // TODO is this even needed when setActive() is done?
-  var toggleActiveFilter = function (type, facet, term) {
-    var t = $scope[type].facets[facet].terms[term];
-    t.active = !t.active;
-  };
-
+angular.module('app.facets.controllers').controller('FacetsController', [ "$scope", "httpService", function ($scope, httpService) {
   var toggleUriFilters = function (facet, term) {
     var search, filters;
-    search = getCurrentSearch();
-    filters = getCurrentFilters();
+    search = httpService.getCurrentSearch();
+    filters = httpService.getCurrentFilters();
 
     // If this is a new facet filter
     if (!filters.hasOwnProperty(facet)) {
@@ -105,13 +48,12 @@ angular.module('app.facets.controllers').controller('FacetsController', [ "$scop
       delete search.filters;
     }
 
-    $location.search(search);
+    httpService.updateSearch(search)
   };
 
   // TODO toggle filter
   $scope.toggleFilter = function (facet, term) {
     toggleUriFilters(facet, term);
     $scope.$emit('toggleFilter');
-    applyCurrentFilters();
   };
 }]);
