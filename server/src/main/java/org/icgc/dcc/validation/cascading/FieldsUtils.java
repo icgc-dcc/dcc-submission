@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.validation.cascading;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -28,12 +26,16 @@ import cascading.tuple.Fields;
 
 import com.google.common.collect.ImmutableList;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 /**
  * Utility class for working with cascading {@code Fields} objects.
  * <p>
  * TODO: remove some redundant/obsolete methods
  */
-public final class FieldsUtils {
+public final class FieldsUtils { // TODO: move to core
+
+  private static final String DEFAULT_PREFIX_SEPARATOR = ".";
 
   private FieldsUtils() {
     // Prevent construction
@@ -94,6 +96,15 @@ public final class FieldsUtils {
       fieldNames.add(fields.get(i).toString());
     }
     return fieldNames;
+  }
+
+  public static Fields prefixedFields(String prefix, Fields fields) {
+    Fields prefixedFields = new Fields();
+    for(String fieldName : getFieldNames(fields)) {
+      String newFieldName = prefix(prefix, DEFAULT_PREFIX_SEPARATOR, fieldName);
+      prefixedFields = prefixedFields.append(new Fields(newFieldName));
+    }
+    return prefixedFields;
   }
 
   public static Fields prefixedFields(String prefix, String sep, String[] fields) {
