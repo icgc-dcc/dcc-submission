@@ -29,7 +29,31 @@ import com.beust.jcommander.Parameter;
 @ToString
 public class Options {
 
-  @Parameter(names = { "-v", "--version" }, help = true, description = "Show version information")
+  @Parameter(names = { "-j", "--jurisdiction" }, help = true, description = "Jurisdiction leading the project")
+  public String leadJurisdiction;
+
+  @Parameter(names = { "-t", "--tumour" }, help = true, description = "Tumour type")
+  public String tumourType;
+
+  @Parameter(names = { "-i", "--institution" }, help = true, description = "Institution submitting the data")
+  public String Institution;
+
+  @Parameter(names = { "-p", "--platform" }, help = true, description = "Platform or technology used in the analysis")
+  public String platform;
+
+  @Parameter(names = { "-r", "--rows" }, help = true, description = "Number of donors/rows")
+  public int rows;
+
+  @Parameter(names = { "-n", "--tempNumber" }, help = true, description = "Number of template files")
+  public int numberOfTemplateFiles;
+
+  @Parameter(names = { "-t", "--template" }, help = true, description = "Name of template file")
+  public int templateName;
+
+  @Parameter(names = { "-e", "--expFiles" }, help = true, description = "Experimental Files")
+  public String experimentalFile;
+
+  @Parameter(names = { "-v", "--version" }, help = true, description = "Show version")
   public boolean version;
 
   @Parameter(names = { "-h", "--help" }, help = true, description = "Show help information")

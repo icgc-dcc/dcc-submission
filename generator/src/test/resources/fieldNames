@@ -1,0 +1,36 @@
+mirna_m
+mirna_p
+ssm_s
+mirna_s
+stsm_s
+stsm_p
+meth_s
+stsm_m
+hsap_transcript
+mirna_mirbase
+hsap_gene
+cnsm_s
+sgv_m
+cnsm_p
+sgv_p
+cnsm_m
+exp_g
+ssm_p
+ssm_m
+jcn_p
+meth_p
+exp_m
+jcn_m
+meth_m
+
+Core Files:
+donor
+specimen
+sample
+
+Template files:
+surgery
+family
+biomarker
+exposure
+therapy

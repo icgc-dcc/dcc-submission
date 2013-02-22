@@ -17,13 +17,22 @@
  */
 package org.icgc.dcc.generator;
 
+import java.io.IOException;
+
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.JsonMappingException;
 import org.junit.Test;
 
-public class IntegrationTest {
+/**
+ * 
+ */
+public class DataGeneratorTest {
 
   @Test
-  public void testGenerator() {
-    Main.main();
+  public void thing() throws JsonParseException, JsonMappingException, IOException {
+    DataGenerator gen = new DataGenerator();
+    String[] x =
+        { "Australia", "Pancreatic Cancer", "Advanced Centre for Treatment, Research and Education in Cancer (Mumbai)", "PCR", "100", "3", "biomarker", "therapy", "family", "ssm" };
+    gen.main(x);
   }
-
 }

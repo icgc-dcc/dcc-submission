@@ -21,8 +21,12 @@ import static java.lang.System.err;
 import static java.lang.System.out;
 
 import java.io.File;
+import java.io.IOException;
 
 import lombok.extern.slf4j.Slf4j;
+
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.JsonMappingException;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
@@ -35,11 +39,11 @@ public class Main {
 
   private final Options options = new Options();
 
-  public static void main(String... args) {
+  public static void main(String... args) throws JsonParseException, JsonMappingException, IOException {
     new Main().run(args);
   }
 
-  private void run(String... args) {
+  private void run(String... args) throws JsonParseException, JsonMappingException, IOException {
     JCommander cli = new JCommander(options);
     cli.setProgramName(getProgramName());
 
@@ -56,18 +60,16 @@ public class Main {
         return;
       }
 
-      generate();
+      generate(args);
     } catch(ParameterException pe) {
       err.printf("dcc-generator: %s%n", pe.getMessage());
       err.printf("Try '%s --help' for more information.%n", getProgramName());
     }
   }
 
-  private void generate() {
-    DataGenerator generator = new DataGenerator();
-
+  private void generate(String[] args) throws JsonParseException, JsonMappingException, IOException {
     log.info("Generating data using: {}", options);
-    generator.generate();
+    DataGenerator.main(args);
     log.info("Finished generating!");
   }
 
