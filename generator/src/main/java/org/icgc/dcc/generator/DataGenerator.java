@@ -15,11 +15,8 @@ import java.util.Random;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
-import org.icgc.dcc.dictionary.model.CodeList;
 import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.FileSchema;
-import org.icgc.dcc.dictionary.model.Relation;
 import org.icgc.dcc.dictionary.model.ValueType;
 
 import com.google.common.io.Resources;
@@ -49,7 +46,7 @@ import com.google.common.io.Resources;
 public class DataGenerator {
   private final ObjectMapper mapper;
 
-  private final List<CodeList> codeList;
+  // private final List<CodeList> codeList;
 
   private final Random random;
 
@@ -77,8 +74,9 @@ public class DataGenerator {
     mapper = new ObjectMapper();
     dictionary =
         mapper.readValue(Resources.getResource("dictionary.json"), org.icgc.dcc.dictionary.model.Dictionary.class);
-    codeList = mapper.readValue(Resources.getResource("codeList.json"), new TypeReference<List<CodeList>>() {
-    });
+    /*
+     * codeList = mapper.readValue(Resources.getResource("codeList.json"), new TypeReference<List<CodeList>>() { });
+     */
     random = new Random();
     uniqueID = new ArrayList<ArrayList<String>>();
 
@@ -203,54 +201,6 @@ public class DataGenerator {
 
   }
 
-  public void createCoreFile(FileSchema schema, String featureType, String[] args, boolean core) throws IOException {
-    String fileName = generateFileName(schema, args, featureType, core);
-    File outputFile = new File("target/" + fileName);
-    outputFile.createNewFile();
-    Writer writer = new BufferedWriter(new FileWriter(outputFile));
-
-    for(String fieldName : schema.getFieldNames()) {
-      writer.write(fieldName + '\t');
-    }
-
-    writer.write("\n");
-    String output = null;
-
-    if(schema.getName().equals("donor")) {
-      for(int i = 0; i < Integer.parseInt(args[4]); i++) {
-        for(Field currentField : schema.getFields()) {
-          output = getFieldValue(schema, currentField);
-          writer.write(output + "/t");
-          for(String uniqueField: schema.getUniqueFields()){
-            if(currentField.getName().equals(uniqueField)){
-              for(ArrayList<String> primaryKeyArray: uniqueID){
-                if(primaryKeyArray.get(0).equals("donor")&&primaryKeyArray.get(1).equals(currentField.getName())){
-                  primaryKeyArray.add(output);
-                }
-              }
-            }
-          }
-        }
-        writer.write("/n");
-        
-        
-      }
-    } else if(schema.getName().equals("specimen")) {
-      for(int i = 0; i < Integer.parseInt(args[5]); i++) {
-        for(Field currentField : schema.getFields()) {
-          output = null;
-          for(Relation relation:schema.getRelations()){
-            for(String foreignField:relation.getFields()){
-              if(foreignField.equals(currentField.getName())){
-                for(ArrayList<String> foreign)
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
   public void createExpFile(FileSchema schema, String featureType, String[] args, boolean core) throws IOException {
     String fileName = null;
     if(core) {
@@ -268,77 +218,51 @@ public class DataGenerator {
 
     writer.write("\n");
     String output = null;
-    Integer iterate = null;
-    for(ArrayList<String> primaryKeyArray : uniqueID) {
-      try {
-        if(primaryKeyArray.get(0).equals(schema.getRelations().get(0).getOther())
-            && primaryKeyArray.get(1).equals(schema.getRelations().get(0).getOtherFields().get(0))) {
-          iterate = primaryKeyArray.size() - 2;
-        }
-      } catch(IndexOutOfBoundsException e) {
 
-      }
-    }
+    for(int i = 0; i < Integer.parseInt(args[4]); i++) {
+      for(Field currentField : schema.getFields()) {
+        output = null;
 
-    if(iterate == null) {
-      iterate = Integer.parseInt(args[4]);
-    }
-    System.out.println(iterate);
-    for(int i = 0; i < iterate; i++) {
-      // BiDirectionality check must be here somewhere. I don't think its logically possibly that one relationship be
-      // bidirectional and one not be of the same schema
-      int randomInt;
-      if(schema.getName().equals("donor")) {
-        randomInt = 1;
-      } else {
-        randomInt = randomIntGenerator(1, 5);
-      }
-      for(int x = 0; x < randomInt; x++) {
+        // See if the current field being populated is suppose to have a foreign key
+        for(int j = 0; j < schema.getRelations().size(); j++) {
+          int k = 0; // holds index of 'fields' array that matches current field
 
-        for(Field currentField : schema.getFields()) {
-          output = null;
+          // Above Comment. Iterates through fields
+          for(String foreignKeyField : schema.getRelations().get(j).getFields()) {
+            if(currentField.getName().equals(foreignKeyField)) {
 
-          // See if the current field being populated is suppose to have a foreign key
-          for(int j = 0; j < schema.getRelations().size(); j++) {
-            int k = 0; // holds index of 'fields' array that matches current field
+              // Find arraylist that carries primary keys of schema that relates to this fileschema
+              for(ArrayList<String> primaryKeyArray : uniqueID) {
+                if(primaryKeyArray.get(0).equals(schema.getRelations().get(j).getOther())
+                    && primaryKeyArray.get(1).equals(schema.getRelations().get(j).getOtherFields().get(k))) {
 
-            // Above Comment. Iterates through fields
-            for(String foreignKeyField : schema.getRelations().get(j).getFields()) {
-              if(currentField.getName().equals(foreignKeyField)) {
+                  try {
+                    output = primaryKeyArray.get(i + 2);
+                  } catch(IndexOutOfBoundsException e) {
 
-                // Find arraylist that carries primary keys of schema that relates to this fileschema
-                for(ArrayList<String> primaryKeyArray : uniqueID) {
-                  if(primaryKeyArray.get(0).equals(schema.getRelations().get(j).getOther())
-                      && primaryKeyArray.get(1).equals(schema.getRelations().get(j).getOtherFields().get(k))) {
-
-                    try {
-                      output = primaryKeyArray.get(i + 2);
-                    } catch(IndexOutOfBoundsException e) {
-
-                    }
                   }
                 }
               }
-              k++;
             }
+            k++;
           }
-
-          if(output == null) {
-            output = getFieldValue(schema, currentField);
-          }
-
-          if(isUniqueField(schema.getUniqueFields(), currentField.getName())) {
-            for(ArrayList<String> primaryKey : uniqueID) {
-              if(primaryKey.get(0).equals(schema.getName()) && primaryKey.get(1).equals(currentField.getName())) {
-                primaryKey.add(output);
-              }
-            }
-          }
-
-          writer.write(output + "\t");
         }
-        writer.write("\n");
+
+        if(output == null) {
+          output = getFieldValue(schema, currentField);
+        }
+
+        if(isUniqueField(schema.getUniqueFields(), currentField.getName())) {
+          for(ArrayList<String> primaryKey : uniqueID) {
+            if(primaryKey.get(0).equals(schema.getName()) && primaryKey.get(1).equals(currentField.getName())) {
+              primaryKey.add(output);
+            }
+          }
+        }
+
+        writer.write(output + "\t");
       }
+      writer.write("\n");
     }
     writer.close();
 
@@ -522,13 +446,13 @@ public class DataGenerator {
     }
 
     testDataGenerator.determineUniqueFields(testDataGenerator.getSchema("donor", files));
-    testDataGenerator.createCoreFile(testDataGenerator.getSchema("donor", files), "", args, true);
+    testDataGenerator.createExpFile(testDataGenerator.getSchema("donor", files), "", args, true);
 
     testDataGenerator.determineUniqueFields(testDataGenerator.getSchema("specimen", files));
-    testDataGenerator.createCoreFile(testDataGenerator.getSchema("specimen", files), "", args, true);
+    testDataGenerator.createExpFile(testDataGenerator.getSchema("specimen", files), "", args, true);
 
     testDataGenerator.determineUniqueFields(testDataGenerator.getSchema("sample", files));
-    testDataGenerator.createCoreFile(testDataGenerator.getSchema("sample", files), "", args, true);
+    testDataGenerator.createExpFile(testDataGenerator.getSchema("sample", files), "", args, true);
 
     for(int i = 6; i < 6 + Integer.parseInt(args[5]); i++) {
       testDataGenerator.determineUniqueFields(testDataGenerator.getSchema(args[i], files));
