@@ -15,17 +15,48 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.admin;
+package org.icgc.dcc.web;
 
-import org.icgc.dcc.core.AbstractDccModule;
+import static org.icgc.dcc.web.Authorizations.isOmnipotentUser;
+import static org.icgc.dcc.web.Authorizations.unauthorizedResponse;
 
-import com.google.inject.Singleton;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 
-public class AdminModule extends AbstractDccModule {
+import org.icgc.dcc.core.SystemService;
+import org.icgc.dcc.core.model.Status;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-  @Override
-  protected void configure() {
-    bind(AdminService.class).in(Singleton.class);
+import com.google.inject.Inject;
+
+/**
+ * Endpoint for system related operations.
+ * 
+ * @see http://stackoverflow.com/questions/2447722/rest-services-exposing-non-data-actions
+ */
+@Path("system")
+public class SystemResource {
+
+  private static final Logger log = LoggerFactory.getLogger(SystemResource.class);
+
+  @Inject
+  private SystemService system;
+
+  @GET
+  @Path("/status")
+  public Response getStatus(@Context SecurityContext securityContext) {
+    log.info("Getting status...");
+    if(isOmnipotentUser(securityContext) == false) {
+      return unauthorizedResponse();
+    }
+
+    Status status = system.getStatus();
+
+    return Response.ok(status).build();
   }
 
 }

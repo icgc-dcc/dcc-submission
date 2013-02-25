@@ -22,7 +22,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.icgc.dcc.admin.AdminModule;
 import org.icgc.dcc.config.ConfigModule;
 import org.icgc.dcc.core.CoreModule;
 import org.icgc.dcc.core.DccRuntime;
@@ -82,7 +81,6 @@ public class Main {
         , new SftpModule()//
 
         // Business modules
-        , new AdminModule()//
         , new DictionaryModule()//
         , new ReleaseModule()//
         , new ValidationModule());

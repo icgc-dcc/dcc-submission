@@ -15,43 +15,45 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.web;
+package org.icgc.dcc.core;
 
-import static org.icgc.dcc.web.Authorizations.isOmnipotentUser;
-import static org.icgc.dcc.web.Authorizations.unauthorizedResponse;
-
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
-
-import org.icgc.dcc.admin.AdminService;
 import org.icgc.dcc.core.model.Status;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.icgc.dcc.sftp.SftpServerService;
 
+import com.google.common.util.concurrent.Service.State;
 import com.google.inject.Inject;
 
-@Path("admin")
-public class AdminResource {
+public class SystemService {
 
-  private static final Logger log = LoggerFactory.getLogger(AdminResource.class);
+  private final SftpServerService sftpService;
 
   @Inject
-  private AdminService adminService;
+  private SystemService(SftpServerService sftpService) {
+    super();
+    this.sftpService = sftpService;
+  }
 
-  @GET
-  @Path("/status")
-  public Response getStatus(@Context SecurityContext securityContext) {
-    log.info("Getting status...");
-    if(isOmnipotentUser(securityContext) == false) {
-      return unauthorizedResponse();
-    }
+  public Status getStatus() {
+    int activeSftpSessions = sftpService.getActiveSessions();
+    Status status = new Status(activeSftpSessions);
 
-    Status status = adminService.getStatus();
+    return status;
+  }
 
-    return Response.ok(status).build();
+  public boolean isFtpEnabled() {
+    return sftpService.isRunning();
+  }
+
+  public State stopSftp() {
+    State state = sftpService.stopAndWait();
+
+    return state;
+  }
+
+  public State startSftp() {
+    State state = sftpService.startAndWait();
+
+    return state;
   }
 
 }

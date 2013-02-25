@@ -8,7 +8,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class AdminResourceTest extends ResourceTest {
+public class SystemResourceTest extends ResourceTest {
 
   SftpServerService service;
 
@@ -21,7 +21,7 @@ public class AdminResourceTest extends ResourceTest {
 
   @Test
   public void testStatus() {
-    Status status = target().path("admin").path("status").request(MIME_TYPE).get(Status.class);
+    Status status = target().path("system").path("status").request(MIME_TYPE).get(Status.class);
 
     assertThat(status.getActiveSftpSessions()).isEqualTo(0);
   }

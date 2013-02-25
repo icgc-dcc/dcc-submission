@@ -19,8 +19,8 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 import org.glassfish.jersey.test.inmemory.InMemoryTestContainerFactory;
 import org.glassfish.jersey.test.spi.TestContainerFactory;
-import org.icgc.dcc.admin.AdminModule;
 import org.icgc.dcc.config.ConfigModule;
+import org.icgc.dcc.core.CoreModule;
 import org.icgc.dcc.core.morphia.MorphiaModule;
 import org.icgc.dcc.dictionary.DictionaryModule;
 import org.icgc.dcc.filesystem.FileSystemModule;
@@ -55,6 +55,7 @@ public abstract class ResourceTest extends JerseyTest {
     List<Module> modules = newArrayList(//
         // Infrastructure modules
         (Module) new ConfigModule(ConfigFactory.load()), //
+        (Module) new CoreModule(), //
         (Module) new JerseyModule(), //
         (Module) new WebModule(), //
         (Module) new MorphiaModule(), //
@@ -63,7 +64,6 @@ public abstract class ResourceTest extends JerseyTest {
         (Module) new SftpModule(), //
 
         // Business modules
-        (Module) new AdminModule(), //
         (Module) new DictionaryModule(), //
         (Module) new ReleaseModule(), //
         (Module) new ValidationModule());
