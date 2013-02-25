@@ -2,7 +2,19 @@
     <div class="span3">
         <div ng-controller="FacetsController">
             <ul class="nav nav-list" ng-repeat="(facet_name, facet) in projects.facets">
-                <li ng-include data-src=" 'views/facets/term.html' "></li>
+                <li class="nav-header">
+                    <i ng-hide="facet.active" class="icon-check-empty"></i>
+                    <i ng-show="facet.active" class="icon-check"></i>
+                    {{facet_name}}
+                </li>
+                <li>
+                    <ul class="unstyled" ng-repeat="(term_name, term) in facet.terms">
+                        <li><a href="" ng-click="toggleFilter('projects', facet_name, term_name)">
+                            <i ng-hide="term.active" class="icon-check-empty"></i>
+                            <i ng-show="term.active" class="icon-check"></i>
+                            {{term_name}} ({{term.count}})</a></li>
+                    </ul>
+                </li>
             </ul>
             <ul class="nav nav-list">
                 <li class="nav-header">
@@ -16,8 +28,15 @@
                     <button type="button" class="btn">Go</button>
                 </li>
             </ul>
-            <ul class="nav nav-list" ng-hide="projects.facets">
-                <li><i class="icon-spinner icon-spin"></i> Fetching facets...</li>
+            <ul class="nav nav-list">
+                <li class="nav-header">
+                    <i ng-hide="facet.active" class="icon-check-empty"></i>
+                    <i ng-show="facet.active" class="icon-check"></i>
+                    Text Facet
+                </li>
+                <li class="form-inline">
+                    <input type="hidden" ui-select2="select2">
+                </li>
             </ul>
         </div>
     </div>

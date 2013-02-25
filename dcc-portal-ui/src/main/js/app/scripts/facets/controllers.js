@@ -51,9 +51,22 @@ angular.module('app.facets.controllers').controller('FacetsController', [ "$scop
     httpService.updateSearch(search)
   };
 
+  var toggleActiveFilter = function (type, facet, term) {
+    var t = $scope[type].facets[facet].terms[term];
+    t.active = !t.active;
+  };
+
   // TODO toggle filter
-  $scope.toggleFilter = function (facet, term) {
+  $scope.toggleFilter = function (type, facet, term) {
     toggleUriFilters(facet, term);
+    toggleActiveFilter(type, facet, term);
     $scope.$emit('toggleFilter');
+  };
+
+  $scope.select2 = {
+    width: "100%",
+    placeholder: "Search for a gene",
+    tags: ["blah"],
+    tokenSeparators: [",", " "]
   };
 }]);

@@ -18,6 +18,7 @@
 'use strict';
 
 angular.module('app', [
+  'ui.directives',
   'app.controllers',
   'app.common',
   'app.http',
