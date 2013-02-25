@@ -20,10 +20,14 @@ package org.icgc.dcc.sftp;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.IOException;
+import java.util.Date;
+import java.util.List;
 
+import org.apache.mina.core.session.IoSession;
 import org.apache.sshd.SshServer;
 import org.apache.sshd.common.NamedFactory;
 import org.apache.sshd.common.Session;
+import org.apache.sshd.common.session.AbstractSession;
 import org.apache.sshd.server.Command;
 import org.apache.sshd.server.FileSystemFactory;
 import org.apache.sshd.server.FileSystemView;
@@ -44,7 +48,7 @@ import com.google.inject.Inject;
 import com.typesafe.config.Config;
 
 /**
- * 
+ * Service abstraction to the SFTP sub-system.
  */
 public class SftpServerService extends AbstractService {
 
@@ -77,6 +81,24 @@ public class SftpServerService extends AbstractService {
     sshd.setSubsystemFactories(ImmutableList.<NamedFactory<Command>> of(new SftpSubsystem.Factory()));
   }
 
+  public int getActiveSessions() {
+    List<AbstractSession> activeSessions = sshd.getActiveSessions();
+
+    for(AbstractSession activeSession : activeSessions) {
+      // Shorthands
+      IoSession ioSession = activeSession.getIoSession();
+      String username = activeSession.getUsername();
+      long creationTime = ioSession.getCreationTime();
+      long lastWriteTime = ioSession.getLastWriteTime();
+
+      log.info("User with username '{}' has an active SFTP session created on '{}', last written to '{}': {}", //
+          new Object[] { username, new Date(creationTime), new Date(lastWriteTime), ioSession });
+
+    }
+
+    return activeSessions.size();
+  }
+
   @Override
   protected void doStart() {
     try {
@@ -101,4 +123,5 @@ public class SftpServerService extends AbstractService {
       notifyFailed(e);
     }
   }
+
 }
