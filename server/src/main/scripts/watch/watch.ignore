@@ -41,4 +41,21 @@ org.apache.mina.core.write.WriteToClosedSessionException: null
 WARN  o.g.g.h.s.HttpHandler - service exception
 java.io.IOException: Connection closed
 
+# ===========================================================================
+# see email "exception/error ignored" from 130220 on the softeng list:
+java.io.FileNotFoundException: File does not exist: /tmp/dcc_root_dir
+DefaultInternalFlowPlanner - missing corresponding file for
+Plan - no corresponding file for schema
+org.apache.sshd.common.SshException: Too may authentication failures
+Recipient address rejected: User unknown in relay recipient table
+javax.mail.SendFailedException: Invalid Addresses
+ValidationQueueManagerService - an error occured while emailing: 
+ is not NOT_VALIDATED (INVALID instead)
+ is not NOT_VALIDATED (VALID instead)
+ is not NOT_VALIDATED (QUEUED instead)
+ is not NOT_VALIDATED (VALIDATING instead)
+NextReleaseResource - InvalidState
+NextReleaseResource - ProjectKeyNotFound
+ReleaseException: there is no project 
+java.lang.IllegalStateException: Unable to negociate key exchange for item 1
 
