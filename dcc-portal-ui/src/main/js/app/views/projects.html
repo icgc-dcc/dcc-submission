@@ -23,9 +23,11 @@
                     Range Facet
                 </li>
                 <li class="form-inline">
-                    <input type="text" class="input-xmini" placeholder="From">
-                    <input type="text" class="input-xmini" placeholder="To">
-                    <button type="button" class="btn">Go</button>
+                    <input type="text" class="input-xmini" ng-model="from" placeholder="From">
+                    <input type="text" class="input-xmini" ng-model="to" placeholder="To">
+                    <button type="button" class="btn" ng-click="toggleRangeFilter('projects', 'range_facet', from, to)">
+                        Go
+                    </button>
                 </li>
             </ul>
             <ul class="nav nav-list">

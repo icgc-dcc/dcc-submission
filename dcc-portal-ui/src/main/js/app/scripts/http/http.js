@@ -169,8 +169,8 @@ angular.module('app.http.http').factory('http', ['$http', 'httpService', functio
   return {
     get: function (url) {
       return $http.get(url)
-          .then(extractData)
-          .then(setActiveFacets);
+          .then(extractData);
+      //.then(setActiveFacets);
     }
   };
 }]);

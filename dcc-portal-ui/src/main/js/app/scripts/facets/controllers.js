@@ -22,7 +22,7 @@ angular.module('app.facets', ['app.facets.controllers']);
 angular.module('app.facets.controllers', ['app.facets.services']);
 
 angular.module('app.facets.controllers').controller('FacetsController', [ "$scope", "httpService", function ($scope, httpService) {
-  var toggleUriFilters = function (facet, term) {
+  var toggleUriTermFilters = function (facet, term) {
     var search, filters;
     search = httpService.getCurrentSearch();
     filters = httpService.getCurrentFilters();
@@ -48,7 +48,28 @@ angular.module('app.facets.controllers').controller('FacetsController', [ "$scop
       delete search.filters;
     }
 
-    httpService.updateSearch(search)
+    httpService.updateSearch(search);
+  };
+
+  var addUriRangeFilters = function (facet, from, to) {
+    var search, filters;
+    search = httpService.getCurrentSearch();
+    filters = httpService.getCurrentFilters();
+    console.log(from, to);
+    filters[facet] = [from , to];
+
+    // If there are no more terms in that facet filter remove the facet
+    if (filters[facet].length === 0) {
+      delete filters[facet];
+    }
+    // If there are filters add them to the search query params
+    if (Object.keys(filters).length) {
+      search.filters = JSON.stringify(filters).replace(/[\{\}\"]/g, '');
+    } else {
+      delete search.filters;
+    }
+
+    httpService.updateSearch(search);
   };
 
   var toggleActiveFilter = function (type, facet, term) {
@@ -56,10 +77,14 @@ angular.module('app.facets.controllers').controller('FacetsController', [ "$scop
     t.active = !t.active;
   };
 
-  // TODO toggle filter
   $scope.toggleFilter = function (type, facet, term) {
-    toggleUriFilters(facet, term);
+    toggleUriTermFilters(facet, term);
     toggleActiveFilter(type, facet, term);
+    $scope.$emit('toggleFilter');
+  };
+
+  $scope.toggleRangeFilter = function (type, facet, from, to) {
+    addUriRangeFilters(facet, from, to);
     $scope.$emit('toggleFilter');
   };
 
