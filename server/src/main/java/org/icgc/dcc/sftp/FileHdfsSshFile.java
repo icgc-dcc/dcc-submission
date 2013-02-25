@@ -29,7 +29,7 @@ import com.google.common.base.Preconditions;
 /**
  * 
  */
-class FileHdfsSshFile extends HdfsSshFile {
+public class FileHdfsSshFile extends HdfsSshFile {
 
   private final BaseDirectoryHdfsSshFile directory;
 

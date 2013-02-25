@@ -20,11 +20,13 @@ import org.glassfish.jersey.test.JerseyTest;
 import org.glassfish.jersey.test.inmemory.InMemoryTestContainerFactory;
 import org.glassfish.jersey.test.spi.TestContainerFactory;
 import org.icgc.dcc.config.ConfigModule;
+import org.icgc.dcc.core.CoreModule;
 import org.icgc.dcc.core.morphia.MorphiaModule;
 import org.icgc.dcc.dictionary.DictionaryModule;
 import org.icgc.dcc.filesystem.FileSystemModule;
 import org.icgc.dcc.http.jersey.JerseyModule;
 import org.icgc.dcc.release.ReleaseModule;
+import org.icgc.dcc.sftp.SftpModule;
 import org.icgc.dcc.shiro.ShiroModule;
 import org.icgc.dcc.validation.ValidationModule;
 
@@ -41,6 +43,8 @@ public abstract class ResourceTest extends JerseyTest {
 
   protected static final String MIME_TYPE = APPLICATION_JSON;
 
+  protected Injector injector;
+
   @Override
   public TestContainerFactory getTestContainerFactory() {
     return new InMemoryTestContainerFactory();
@@ -49,19 +53,24 @@ public abstract class ResourceTest extends JerseyTest {
   @Override
   protected Application configure() {
     List<Module> modules = newArrayList(//
+        // Infrastructure modules
         (Module) new ConfigModule(ConfigFactory.load()), //
+        (Module) new CoreModule(), //
         (Module) new JerseyModule(), //
         (Module) new WebModule(), //
         (Module) new MorphiaModule(), //
         (Module) new ShiroModule(), //
         (Module) new FileSystemModule(), //
+        (Module) new SftpModule(), //
+
+        // Business modules
         (Module) new DictionaryModule(), //
         (Module) new ReleaseModule(), //
         (Module) new ValidationModule());
 
     modules.add(configureModule());
 
-    Injector injector = Guice.createInjector(modules);
+    injector = Guice.createInjector(modules);
 
     return injector.getInstance(ResourceConfig.class);
   }

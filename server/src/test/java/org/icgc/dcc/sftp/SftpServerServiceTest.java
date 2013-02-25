@@ -172,6 +172,17 @@ public class SftpServerServiceTest {
     sftp.getChannel().cd("/does/not/exist");
   }
 
+  @Test
+  public void testActiveSession() throws InterruptedException {
+    // Connected
+    assertThat(service.getActiveSessions()).isEqualTo(1);
+
+    // Disconnect
+    sftp.disconnect();
+    Thread.sleep(1000); // Allow for asynchronous disconnection latency
+    assertThat(service.getActiveSessions()).isEqualTo(0);
+  }
+
   @After
   public void tearDown() {
     service.stop();

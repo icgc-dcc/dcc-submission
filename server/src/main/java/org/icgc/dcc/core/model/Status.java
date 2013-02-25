@@ -15,33 +15,31 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core;
+package org.icgc.dcc.core.model;
 
-import java.util.logging.LogManager;
+import org.codehaus.jackson.annotate.JsonCreator;
+import org.codehaus.jackson.annotate.JsonProperty;
 
-import org.icgc.dcc.release.DccLocking;
-import org.slf4j.bridge.SLF4JBridgeHandler;
+public class Status {
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Singleton;
+  private final int activeSftpSessions;
 
-public class CoreModule extends AbstractModule {
+  @JsonCreator
+  public Status(@JsonProperty("activeSftpSessions") int activeSftpSessions) {
+    super();
+    this.activeSftpSessions = activeSftpSessions;
+  }
 
-  public CoreModule() {
-    // Reset java.util.logging settings
-    LogManager.getLogManager().reset();
-    // Redirect java.util.logging to SLF4J
-    SLF4JBridgeHandler.install();
+  /**
+   * @return the activeSftpSessions
+   */
+  public int getActiveSftpSessions() {
+    return activeSftpSessions;
   }
 
   @Override
-  protected void configure() {
-    bind(DccRuntime.class).in(Singleton.class);
-    bind(DccLocking.class).in(Singleton.class);
-
-    bind(SystemService.class).in(Singleton.class);
-    bind(ProjectService.class).in(Singleton.class);
-    bind(UserService.class).in(Singleton.class);
+  public String toString() {
+    return String.format("Status [activeSftpSessions=%s]", activeSftpSessions);
   }
 
 }

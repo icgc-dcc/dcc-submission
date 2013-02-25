@@ -17,31 +17,43 @@
  */
 package org.icgc.dcc.core;
 
-import java.util.logging.LogManager;
+import org.icgc.dcc.core.model.Status;
+import org.icgc.dcc.sftp.SftpServerService;
 
-import org.icgc.dcc.release.DccLocking;
-import org.slf4j.bridge.SLF4JBridgeHandler;
+import com.google.common.util.concurrent.Service.State;
+import com.google.inject.Inject;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Singleton;
+public class SystemService {
 
-public class CoreModule extends AbstractModule {
+  private final SftpServerService sftpService;
 
-  public CoreModule() {
-    // Reset java.util.logging settings
-    LogManager.getLogManager().reset();
-    // Redirect java.util.logging to SLF4J
-    SLF4JBridgeHandler.install();
+  @Inject
+  private SystemService(SftpServerService sftpService) {
+    super();
+    this.sftpService = sftpService;
   }
 
-  @Override
-  protected void configure() {
-    bind(DccRuntime.class).in(Singleton.class);
-    bind(DccLocking.class).in(Singleton.class);
+  public Status getStatus() {
+    int activeSftpSessions = sftpService.getActiveSessions();
+    Status status = new Status(activeSftpSessions);
 
-    bind(SystemService.class).in(Singleton.class);
-    bind(ProjectService.class).in(Singleton.class);
-    bind(UserService.class).in(Singleton.class);
+    return status;
+  }
+
+  public boolean isFtpEnabled() {
+    return sftpService.isRunning();
+  }
+
+  public State stopSftp() {
+    State state = sftpService.stopAndWait();
+
+    return state;
+  }
+
+  public State startSftp() {
+    State state = sftpService.startAndWait();
+
+    return state;
   }
 
 }
