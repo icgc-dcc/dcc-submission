@@ -36,7 +36,7 @@ public class GeneTransformer {
     ObjectNode result = mapper.createObjectNode();
 
     // Simple
-    result.put("_id", id(node));
+    result.put("_gene_id", id(node));
     result.put("symbol", symbol(node));
     result.put("name", name(node));
     result.put("biotype", biotype(node));
