@@ -17,14 +17,12 @@
  */
 package org.icgc.dcc.dictionary;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
-
 import java.util.List;
 
 import org.icgc.dcc.core.morphia.BaseMorphiaService;
 import org.icgc.dcc.dictionary.model.CodeList;
 import org.icgc.dcc.dictionary.model.Dictionary;
+import org.icgc.dcc.dictionary.model.DictionaryState;
 import org.icgc.dcc.dictionary.model.QCodeList;
 import org.icgc.dcc.dictionary.model.QDictionary;
 import org.icgc.dcc.dictionary.model.Term;
@@ -43,6 +41,9 @@ import com.google.code.morphia.query.UpdateOperations;
 import com.google.common.base.Optional;
 import com.google.inject.Inject;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 
 /**
  * Offers various CRUD operations pertaining to {@code Dictionary}
@@ -107,16 +108,29 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
     Dictionary newDictionary = dictionaryCloneVisitor.getDictionaryClone();
     newDictionary.setVersion(newVersion);
 
-    this.add(newDictionary);
+    this.addDictionary(newDictionary);
 
     return newDictionary;
   }
 
-  public void add(Dictionary dictionary) {
+  /**
+   * Add a new dictionary to the database after having ensured it provides enough information.
+   */
+  public void addDictionary(Dictionary dictionary) {
     checkArgument(dictionary != null);
+
     String version = dictionary.getVersion();
+    if(version == null) {
+      throw new DictionaryServiceException("New dictionary must specify a valid version");
+    }
+
     if(this.getFromVersion(version) != null) {
       throw new DictionaryServiceException("cannot add an existing dictionary: " + version);
+    }
+
+    if(DictionaryState.OPENED != dictionary.getState()) {
+      throw new DictionaryServiceException(String.format("New dictionary must be in OPENED state: %s instead",
+          dictionary.getState()));
     }
 
     datastore().save(dictionary);
@@ -155,8 +169,6 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
       throw new DictionaryServiceException("cannot perform update to non-existant codeList: " + name);
     }
 
-    CodeList codeList = optional.get();
-    codeList.setLabel(newCodeList.getLabel());
     Query<CodeList> updateQuery = datastore().createQuery(CodeList.class).filter("name" + " = ", name);
     checkState(updateQuery.countAll() == 1);
     UpdateOperations<CodeList> ops =
