@@ -21,8 +21,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
-import org.elasticsearch.index.query.FilterBuilder;
-import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.icgc.dcc.portal.responses.ErrorResponse;
@@ -46,7 +44,7 @@ public class SearchQuery {
   QueryBuilder query;
 
   @JsonProperty
-  FilterBuilder filters;
+  JsonNode filters;
 
   @JsonProperty
   String facets;
@@ -62,14 +60,13 @@ public class SearchQuery {
   int from;
 
   @Min(1)
-  @Max(100)
+  @Max(MAX_SIZE)
   @JsonProperty
   int size;
 
   @JsonProperty
   String sort;
 
-  // TODO param enum thing
   @JsonProperty
   SortOrder order;
 
@@ -97,7 +94,7 @@ public class SearchQuery {
     this.sort = sort;
     this.order = SortOrder.valueOf(order.toUpperCase());
 
-    this.filters = filters == null ? null : buildFilters(jsonifyString(filters));
+    this.filters = filters == null ? null : jsonifyString(filters);
     this.score = score;
   }
 
@@ -108,19 +105,11 @@ public class SearchQuery {
   }
 
   JsonNode jsonifyString(String filters) {
-    String json =
-        ("{\"" + filters + "\"}").replaceAll(",", "\",\"").replaceAll(":", "\":").replaceAll("\\[", "[\"")
-            .replaceAll("]\"", "\"]");
-
     try {
-      return new ObjectMapper().readValue(json, JsonNode.class);
+      return new ObjectMapper().readValue(filters, JsonNode.class);
     } catch (IOException e) {
       throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST)
           .entity(new ErrorResponse(Response.Status.BAD_REQUEST, e)).type(MediaType.APPLICATION_JSON_TYPE).build());
     }
-  }
-
-  FilterBuilder buildFilters(JsonNode filters) {
-    return FilterBuilders.matchAllFilter();
   }
 }

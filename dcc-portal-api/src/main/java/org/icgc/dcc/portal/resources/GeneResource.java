@@ -24,11 +24,10 @@ import org.eclipse.jetty.http.HttpStatus;
 import org.icgc.dcc.portal.repositories.IGeneRepository;
 import org.icgc.dcc.portal.responses.GetManyResponse;
 import org.icgc.dcc.portal.responses.GetOneResponse;
-import org.icgc.dcc.portal.search.SearchQuery;
+import org.icgc.dcc.portal.search.GeneSearchQuery;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
@@ -59,21 +58,11 @@ public class GeneResource {
   public final Response getAll(
       @ApiParam(value = "Start index of results", required = false) @QueryParam("from") @DefaultValue("1") int from,
       @ApiParam(value = "Number of results returned", allowableValues = "range[1,100]", required = false) @QueryParam("size") @DefaultValue("10") int size,
-      @ApiParam(value = "Column to sort results on", required = false) @QueryParam("sort") String sort,
-      @ApiParam(value = "Order to sort the column", allowableValues = "asc,desc", required = false) @QueryParam("order") String order,
+      @ApiParam(value = "Column to sort results on", defaultValue = "start", required = false) @QueryParam("sort") String sort,
+      @ApiParam(value = "Order to sort the column", defaultValue = "desc", allowableValues = "asc,desc", required = false) @QueryParam("order") String order,
       @ApiParam(value = "Filter the search results", required = false) @QueryParam("filter") String filters,
       @ApiParam(value = "Determine which field is used for scoring", required = false) @QueryParam("score") String score) {
-    SearchQuery searchQuery = new SearchQuery(filters, score, from, size, sort, order);
-    GetManyResponse response = new GetManyResponse(store.getAll(searchQuery), httpServletRequest, searchQuery);
-
-    return Response.ok().entity(response).build();
-  }
-
-  @POST
-  @Timed
-  @ApiOperation(value = "Retrieves a filtered list of genes")
-  public final Response filteredGetAll(@Valid SearchQuery searchQuery) {
-    // TODO This is broken
+    GeneSearchQuery searchQuery = new GeneSearchQuery(filters, score, from, size, sort, order);
     GetManyResponse response = new GetManyResponse(store.getAll(searchQuery), httpServletRequest, searchQuery);
 
     return Response.ok().entity(response).build();

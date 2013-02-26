@@ -20,11 +20,9 @@ package org.icgc.dcc.portal.responses;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.icgc.dcc.portal.search.SearchQuery;
 
@@ -42,41 +40,22 @@ import static java.lang.Math.floor;
 public final class GetManyResponse extends BaseResponse {
 
   private final static ObjectMapper MAPPER = new ObjectMapper();
-  private final JsonNode hits;
+  private JsonNode hits;
   private final JsonNode facets;
   private final Pagination pagination;
 
   public GetManyResponse(final SearchResponse response, final HttpServletRequest hsr, SearchQuery searchQuery) {
     super(hsr);
+    JsonNode jnResponse = null;
     try {
-      // TODO
-      System.out.println(MAPPER.readValue(response.toString(), JsonNode.class));
-      System.out.println(MAPPER.readValue(response.toString(), JsonNode.class).path("hits"));
-      System.out.println(MAPPER.readValue(response.toString(), JsonNode.class).path("hits").path("hits"));
-      System.out
-          .println(MAPPER.readValue(response.toString(), JsonNode.class).path("hits").path("hits").path("fields"));
+      jnResponse = MAPPER.readValue(response.toString(), JsonNode.class);
     } catch (IOException e) {
-      e.printStackTrace(); // To change body of catch statement use File | Settings | File
-                           // Templates.
+      throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST)
+          .entity(new ErrorResponse(Response.Status.BAD_REQUEST, e)).type(MediaType.APPLICATION_JSON_TYPE).build());
     }
-    this.hits = extractData(response.getHits().getHits());
-    this.facets = null;
+    this.hits = jnResponse.path("hits").path("hits");
+    this.facets = jnResponse.path("facets");
     this.pagination = new Pagination(response.getHits(), searchQuery);
-  }
-
-  private JsonNode extractData(final SearchHit[] hits) {
-    ArrayNode arrayNode = MAPPER.createArrayNode();
-    for (SearchHit hit : hits) {
-      JsonNode node;
-      try {
-        node = MAPPER.readValue(hit.getSourceAsString(), JsonNode.class);
-      } catch (IOException e) {
-        throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST)
-            .entity(new ErrorResponse(Response.Status.BAD_REQUEST, e)).type(MediaType.APPLICATION_JSON_TYPE).build());
-      }
-      arrayNode.add(node);
-    }
-    return arrayNode;
   }
 
   @Data
