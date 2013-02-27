@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
+import com.sun.tools.javac.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
@@ -44,6 +45,8 @@ public class GeneRepository implements IGeneRepository {
       "end", "band", "gene_type").toArray(new String[7]);
   private final Client client;
   private FilterBuilder filter;
+  private ObjectMapper mapper = new ObjectMapper();
+
 
   @Inject
   public GeneRepository(Client client) {
@@ -78,70 +81,120 @@ public class GeneRepository implements IGeneRepository {
     if (searchQuery.getFilters() == null) {
       return FilterBuilders.matchAllFilter();
     } else {
-      ObjectMapper mapper = new ObjectMapper();
-      ArrayList<FilterBuilder> fbs = new ArrayList<FilterBuilder>();
+      AndFilterBuilder fbs = FilterBuilders.andFilter();
 
       // Gene
       if (searchQuery.getFilters().has("gene")) {
         JsonNode gene = searchQuery.getFilters().path("gene");
-        // Gene List
-        if (gene.has("symbol")) {
-          if (gene.get("symbol").isArray()) {
-            ArrayList<String> symbols =
-                mapper.convertValue(gene.get("symbol"), new TypeReference<ArrayList<String>>() {});
-            fbs.add(FilterBuilders.termsFilter("symbol", symbols));
-          } else {
-            String symbol = mapper.convertValue(gene.get("symbol"), String.class);
-            fbs.add(FilterBuilders.termFilter("symbol", symbol));
+        for (String key : List.of("gene_type", "symbol")) {
+          if (gene.has(key)) {
+            fbs.add(buildTermFilter(gene, key));
           }
         }
 
         // Gene Location
         if (gene.has("location")) {
-          if (gene.get("location").isArray()) {
-            // TODO add all the location using else logic in an OR filter - !!! OR not AND since AND
-            // makes no sense for location
-          } else {
-            AndFilterBuilder locationFilter = FilterBuilders.andFilter();
-            String location = mapper.convertValue(gene.get("location"), String.class);
-            String[] parts = location.split(":");
-            locationFilter.add(FilterBuilders.termFilter("chromosome",
-                Integer.parseInt(parts[0].replaceAll("[a-zA-Z]", ""))));
-            String[] range = parts[1].split("-");
-            int start = range[0].equals("") ? 0 : Integer.parseInt(range[0].replaceAll(",", ""));
-            locationFilter.add(FilterBuilders.rangeFilter("start").gte(start));
-            if (range.length == 2) {
-              int end = Integer.parseInt(range[1].replaceAll(",", ""));
-              locationFilter.add(FilterBuilders.rangeFilter("end").lte(end));
-            }
-            fbs.add(locationFilter);
-          }
-        }
-
-        // Gene Type
-        if (gene.has("gene_type")) {
-          if (gene.get("gene_type").isArray()) {
-            ArrayList<String> geneTypes =
-                mapper.convertValue(gene.get("gene_type"), new TypeReference<ArrayList<String>>() {});
-            fbs.add(FilterBuilders.termsFilter("gene_type", geneTypes));
-          } else {
-            String geneType = mapper.convertValue(gene.get("gene_type"), String.class);
-            fbs.add(FilterBuilders.termFilter("gene_type", geneType));
-          }
+          fbs.add(buildChrLocationFilter(gene));
         }
       }
 
       // Donor
       if (searchQuery.getFilters().has("donor")) {
-        log.error("donor filters");
+        AndFilterBuilder donorAnd = FilterBuilders.andFilter();
+        JsonNode donor = searchQuery.getFilters().path("donor");
+        for (String key : List.of("project", "primary_site", "donor_id", "gender", "tumour", "vital_status",
+            "disease_status", "donor_release_type")) {
+          if (donor.has(key)) {
+            donorAnd.add(buildTermFilter(donor, key));
+          }
+        }
+        for (String key : List.of("age_at_diagnosis", "survival_time", "donor_release_interval")) {
+          if (donor.has(key)) {
+            donorAnd.add(buildRangeFilter(donor, key));
+          }
+        }
+
+        NestedFilterBuilder donorNested = FilterBuilders.nestedFilter("donor", donorAnd);
+        fbs.add(donorNested);
       }
 
       // Mutations
-      if (searchQuery.getFilters().has("obs")) {
-        log.error("obs filters");
+      if (searchQuery.getFilters().has("mutation")) {
+        AndFilterBuilder mutationAnd = FilterBuilders.andFilter();
+        JsonNode mutation = searchQuery.getFilters().path("mutation");
+        for (String key : List.of("project", "primary_site", "donor_id", "gender", "tumour", "vital_status",
+            "disease_status", "donor_release_type")) {
+          if (mutation.has(key)) {
+            mutationAnd.add(buildTermFilter(mutation, key));
+          }
+        }
+        if (mutation.has("location")) {
+          mutationAnd.add(buildChrLocationFilter(mutation));
+        }
+
+        NestedFilterBuilder mutationNested = FilterBuilders.nestedFilter("mutation", mutationAnd);
+        fbs.add(mutationNested);
       }
 
-      return FilterBuilders.andFilter(fbs.toArray(new FilterBuilder[fbs.size()]));
+      return fbs;
+    }
+  }
+
+  private FilterBuilder buildChrLocationFilter(JsonNode json) {
+    FilterBuilder chrLocFilter;
+    String location = "location";
+
+    if (json.get(location).isArray()) {
+      ArrayList<String> locations = mapper.convertValue(json.get(location), new TypeReference<ArrayList<String>>() {});
+      OrFilterBuilder manyChrLocations = FilterBuilders.orFilter();
+      for (String loc : locations) {
+        manyChrLocations.add(buildChrLocation(loc));
+      }
+      chrLocFilter = manyChrLocations;
+    } else {
+      String loc = mapper.convertValue(json.get(location), String.class);
+      chrLocFilter = buildChrLocation(loc);
+    }
+
+    return chrLocFilter;
+  }
+
+  private FilterBuilder buildChrLocation(String location) {
+    AndFilterBuilder locationFilter = FilterBuilders.andFilter();
+    String[] parts = location.split(":");
+    locationFilter.add(FilterBuilders.termFilter("chromosome", Integer.parseInt(parts[0].replaceAll("[a-zA-Z]", ""))));
+    if (parts.length == 2) {
+      String[] range = parts[1].split("-");
+      int start = range[0].equals("") ? 0 : Integer.parseInt(range[0].replaceAll(",", ""));
+      locationFilter.add(FilterBuilders.rangeFilter("start").gte(start));
+      if (range.length == 2) {
+        int end = Integer.parseInt(range[1].replaceAll(",", ""));
+        locationFilter.add(FilterBuilders.rangeFilter("end").lte(end));
+      }
+    }
+    return locationFilter;
+  }
+
+  private FilterBuilder buildRangeFilter(JsonNode json, String key) {
+    RangeFilterBuilder rangeFilter = FilterBuilders.rangeFilter(key);
+    String range = mapper.convertValue(json.get(key), String.class);
+    String[] parts = range.split("-");
+    int from = parts[0].equals("") ? 0 : Integer.parseInt(parts[0].replaceAll(",", ""));
+    rangeFilter.gte(from);
+    if (parts.length == 2) {
+      int to = Integer.parseInt(parts[1].replaceAll(",", ""));
+      rangeFilter.lte(to);
+    }
+    return rangeFilter;
+  }
+
+  private FilterBuilder buildTermFilter(JsonNode json, String key) {
+    if (json.get(key).isArray()) {
+      ArrayList<String> terms = mapper.convertValue(json.get(key), new TypeReference<ArrayList<String>>() {});
+      return FilterBuilders.termsFilter(key, terms);
+    } else {
+      String term = mapper.convertValue(json.get(key), String.class);
+      return FilterBuilders.termFilter(key, term);
     }
   }
 
