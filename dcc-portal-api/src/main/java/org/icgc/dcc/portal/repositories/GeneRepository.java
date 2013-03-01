@@ -65,7 +65,7 @@ public class GeneRepository implements IGeneRepository {
     this.filter = buildFilter(searchQuery);
     SearchRequestBuilder s =
         client.prepareSearch(INDEX).setTypes(TYPE.toString()).setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
-            .setQuery(buildQuery(searchQuery)) //
+            .setQuery(buildQuery()) //
             .setFilter(this.filter) //
             .setFrom(searchQuery.getFrom()) //
             .setSize(searchQuery.getSize()) //
@@ -81,78 +81,81 @@ public class GeneRepository implements IGeneRepository {
     if (searchQuery.getFilters() == null) {
       return FilterBuilders.matchAllFilter();
     } else {
-      AndFilterBuilder fbs = FilterBuilders.andFilter();
-
-      // Gene
-      if (searchQuery.getFilters().has("gene")) {
-        JsonNode gene = searchQuery.getFilters().path("gene");
-        for (String key : List.of("gene_type", "symbol")) {
-          if (gene.has(key)) {
-            fbs.add(buildTermFilter(gene, key));
-          }
-        }
-
-        // Gene Location
-        if (gene.has("location")) {
-          fbs.add(buildChrLocationFilter(gene));
-        }
+      JsonNode filters = searchQuery.getFilters();
+      AndFilterBuilder geneFilters = craftGeneFilters(filters);
+      if (filters.has("donor")) {
+        geneFilters.add(buildNestedFilter("donor", craftDonorFilters(filters)));
       }
-
-      // Donor
-      if (searchQuery.getFilters().has("donor")) {
-        AndFilterBuilder donorAnd = FilterBuilders.andFilter();
-        JsonNode donor = searchQuery.getFilters().path("donor");
-        for (String key : List.of("project", "primary_site", "donor_id", "gender", "tumour", "vital_status",
-            "disease_status", "donor_release_type")) {
-          if (donor.has(key)) {
-            donorAnd.add(buildTermFilter(donor, key));
-          }
-        }
-        for (String key : List.of("age_at_diagnosis", "survival_time", "donor_release_interval")) {
-          if (donor.has(key)) {
-            donorAnd.add(buildRangeFilter(donor, key));
-          }
-        }
-
-        NestedFilterBuilder donorNested = FilterBuilders.nestedFilter("donor", donorAnd);
-        fbs.add(donorNested);
+      if (filters.has("mutation")) {
+        geneFilters.add(buildNestedFilter("mutation", craftMutationFilters(filters)));
       }
-
-      // Mutations
-      if (searchQuery.getFilters().has("mutation")) {
-        AndFilterBuilder mutationAnd = FilterBuilders.andFilter();
-        JsonNode mutation = searchQuery.getFilters().path("mutation");
-        for (String key : List.of("project", "primary_site", "donor_id", "gender", "tumour", "vital_status",
-            "disease_status", "donor_release_type")) {
-          if (mutation.has(key)) {
-            mutationAnd.add(buildTermFilter(mutation, key));
-          }
-        }
-        if (mutation.has("location")) {
-          mutationAnd.add(buildChrLocationFilter(mutation));
-        }
-
-        NestedFilterBuilder mutationNested = FilterBuilders.nestedFilter("mutation", mutationAnd);
-        fbs.add(mutationNested);
-      }
-
-      return fbs;
+      return geneFilters;
     }
+  }
+
+  private NestedFilterBuilder buildNestedFilter(String key, AndFilterBuilder andFilters) {
+    return FilterBuilders.nestedFilter(key, andFilters);
+  }
+
+  private AndFilterBuilder craftMutationFilters(JsonNode filters) {
+    AndFilterBuilder mutationAnd = FilterBuilders.andFilter();
+    JsonNode mutation = filters.path("mutation");
+    for (String key : List.of("project", "primary_site", "donor_id", "gender", "tumour", "vital_status",
+        "disease_status", "donor_release_type")) {
+      if (mutation.has(key)) {
+        mutationAnd.add(buildTermFilter(mutation, key));
+      }
+    }
+    if (mutation.has("location")) {
+      mutationAnd.add(buildChrLocationFilter(mutation));
+    }
+    return mutationAnd;
+  }
+
+  private AndFilterBuilder craftDonorFilters(JsonNode filters) {
+    AndFilterBuilder donorAnd = FilterBuilders.andFilter();
+    JsonNode donor = filters.path("donor");
+    for (String key : List.of("project", "primary_site", "donor_id", "gender", "tumour", "vital_status",
+        "disease_status", "donor_release_type")) {
+      if (donor.has(key)) {
+        donorAnd.add(buildTermFilter(donor, key));
+      }
+    }
+    for (String key : List.of("age_at_diagnosis", "survival_time", "donor_release_interval")) {
+      if (donor.has(key)) {
+        donorAnd.add(buildRangeFilter(donor, key));
+      }
+    }
+    return donorAnd;
+  }
+
+  private AndFilterBuilder craftGeneFilters(JsonNode filters) {
+    AndFilterBuilder geneAnd = FilterBuilders.andFilter();
+    JsonNode gene = filters.path("gene");
+    for (String key : List.of("gene_type", "symbol")) {
+      if (gene.has(key)) {
+        geneAnd.add(buildTermFilter(gene, key));
+      }
+    }
+    if (gene.has("location")) {
+      geneAnd.add(buildChrLocationFilter(gene));
+    }
+    return geneAnd;
   }
 
   private FilterBuilder buildChrLocationFilter(JsonNode json) {
     FilterBuilder chrLocFilter;
-    String location = "location";
+    String LOCATION = "location";
 
-    if (json.get(location).isArray()) {
-      ArrayList<String> locations = mapper.convertValue(json.get(location), new TypeReference<ArrayList<String>>() {});
+    if (json.get(LOCATION).isArray()) {
+      ArrayList<String> locations = mapper.convertValue(json.get(LOCATION), new TypeReference<ArrayList<String>>() {});
       OrFilterBuilder manyChrLocations = FilterBuilders.orFilter();
       for (String loc : locations) {
         manyChrLocations.add(buildChrLocation(loc));
       }
       chrLocFilter = manyChrLocations;
     } else {
-      String loc = mapper.convertValue(json.get(location), String.class);
+      String loc = mapper.convertValue(json.get(LOCATION), String.class);
       chrLocFilter = buildChrLocation(loc);
     }
 
@@ -166,17 +169,17 @@ public class GeneRepository implements IGeneRepository {
     if (parts.length == 2) {
       String[] range = parts[1].split("-");
       int start = range[0].equals("") ? 0 : Integer.parseInt(range[0].replaceAll(",", ""));
-      locationFilter.add(FilterBuilders.rangeFilter("start").gte(start));
+      locationFilter.add(FilterBuilders.numericRangeFilter("start").gte(start));
       if (range.length == 2) {
         int end = Integer.parseInt(range[1].replaceAll(",", ""));
-        locationFilter.add(FilterBuilders.rangeFilter("end").lte(end));
+        locationFilter.add(FilterBuilders.numericRangeFilter("end").lte(end));
       }
     }
     return locationFilter;
   }
 
   private FilterBuilder buildRangeFilter(JsonNode json, String key) {
-    RangeFilterBuilder rangeFilter = FilterBuilders.rangeFilter(key);
+    NumericRangeFilterBuilder rangeFilter = FilterBuilders.numericRangeFilter(key);
     String range = mapper.convertValue(json.get(key), String.class);
     String[] parts = range.split("-");
     int from = parts[0].equals("") ? 0 : Integer.parseInt(parts[0].replaceAll(",", ""));
@@ -189,20 +192,23 @@ public class GeneRepository implements IGeneRepository {
   }
 
   private FilterBuilder buildTermFilter(JsonNode json, String key) {
+    FilterBuilder termFilter;
     if (json.get(key).isArray()) {
       ArrayList<String> terms = mapper.convertValue(json.get(key), new TypeReference<ArrayList<String>>() {});
-      return FilterBuilders.termsFilter(key, terms);
+      termFilter = FilterBuilders.termsFilter(key, terms);
     } else {
       String term = mapper.convertValue(json.get(key), String.class);
-      return FilterBuilders.termFilter(key, term);
+      termFilter = FilterBuilders.termFilter(key, term);
     }
+    return termFilter;
   }
 
-  private QueryBuilder buildQuery(SearchQuery searchQuery) {
+  private QueryBuilder buildQuery() {
     return QueryBuilders //
         .nestedQuery("donor", //
             QueryBuilders.customScoreQuery(QueryBuilders.filteredQuery( //
                 QueryBuilders.matchAllQuery(), //
+                // this.filter//
                 FilterBuilders.matchAllFilter()//
                 )).script("doc['donor.somatic_mutation'].value") //
         ).scoreMode("total");

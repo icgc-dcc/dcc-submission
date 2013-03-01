@@ -46,6 +46,7 @@ public final class GetManyResponse extends BaseResponse {
 
   public GetManyResponse(final SearchResponse response, final HttpServletRequest hsr, SearchQuery searchQuery) {
     super(hsr);
+    System.out.println(response);
     JsonNode jnResponse = null;
     try {
       jnResponse = MAPPER.readValue(response.toString(), JsonNode.class);
