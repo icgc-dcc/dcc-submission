@@ -17,13 +17,10 @@
 
 package org.icgc.dcc.portal.responses;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -33,10 +30,10 @@ public class BaseResponse {
 
   private static final String URI_FORMAT_WITH_QUERY = "%s://%s:%d%s?%s";
 
-  private final List<LinkedEntity> links = Lists.newArrayList();
+  // private final List<LinkedEntity> links = Lists.newArrayList();
 
   public BaseResponse(HttpServletRequest httpServletRequest) {
-    this.addSelfLink(httpServletRequest);
+    // this.addSelfLink(httpServletRequest);
   }
 
   final void addSelfLink(HttpServletRequest httpServletRequest) {
@@ -53,12 +50,12 @@ public class BaseResponse {
     } else {
       uri = String.format(URI_FORMAT, hsr.getScheme(), hsr.getServerName(), hsr.getLocalPort(), hsr.getRequestURI());
     }
-    this.links.add(new LinkedEntity(name, hsr.getMethod(), uri));
+    // this.links.add(new LinkedEntity(name, hsr.getMethod(), uri));
   }
 
-  public final ImmutableList<LinkedEntity> getLinks() {
-    return ImmutableList.copyOf(this.links);
-  }
+  // public final ImmutableList<LinkedEntity> getLinks() {
+  // return ImmutableList.copyOf(this.links);
+  // }
 
   @Data
   private static final class LinkedEntity {

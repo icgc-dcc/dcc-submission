@@ -73,7 +73,7 @@ public class GeneRepository implements IGeneRepository {
             .addFields(ALLOWED_FIELDS) //
             .addFacet(FacetBuilders.termsFacet("Gene Type").field("gene_type").global(true)); //
 
-    System.out.println(s);
+    // System.out.println(s);
     return s.execute().actionGet();
   }
 

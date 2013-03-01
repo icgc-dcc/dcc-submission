@@ -30,7 +30,7 @@ public class GeneSearchQuery extends SearchQuery {
     this.order = order != null ? SortOrder.valueOf(order.toUpperCase()) : SortOrder.DESC;
   }
 
-  public GeneSearchQuery(String filters, String score, int from, int size, String sort, String order) {
+  public GeneSearchQuery(String filters, String score, Integer from, int size, String sort, String order) {
     super(from, size);
     this.sort = sort;
     this.order = SortOrder.valueOf(order.toUpperCase());
