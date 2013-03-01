@@ -45,8 +45,8 @@ public final class GetManyResponse extends BaseResponse {
   private final Pagination pagination;
 
   public GetManyResponse(final SearchResponse response, final HttpServletRequest hsr, SearchQuery searchQuery) {
-    super(hsr);
-    System.out.println(response);
+    // super(hsr);
+    // System.out.println(response);
     JsonNode jnResponse = null;
     try {
       jnResponse = MAPPER.readValue(response.toString(), JsonNode.class);

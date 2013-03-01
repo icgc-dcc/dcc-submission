@@ -57,12 +57,12 @@ public class SearchQuery {
 
   @Min(1)
   @JsonProperty
-  int from;
+  Integer from;
 
   @Min(1)
   @Max(MAX_SIZE)
   @JsonProperty
-  int size;
+  Integer size;
 
   @JsonProperty
   String sort;
