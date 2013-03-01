@@ -22,7 +22,7 @@ import com.yammer.metrics.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.http.HttpStatus;
 import org.icgc.dcc.portal.core.Types;
-import org.icgc.dcc.portal.repositories.SearchRepository;
+import org.icgc.dcc.portal.repositories.ISearchRepository;
 import org.icgc.dcc.portal.responses.GetManyResponse;
 import org.icgc.dcc.portal.responses.GetOneResponse;
 import org.icgc.dcc.portal.search.SearchQuery;
@@ -44,13 +44,13 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 @Slf4j
 public class ObservationResource {
 
-  private final SearchRepository store;
+  private final ISearchRepository store;
 
   @Context
   private HttpServletRequest httpServletRequest;
 
   @Inject
-  public ObservationResource(SearchRepository searchRepository) {
+  public ObservationResource(ISearchRepository searchRepository) {
     this.store = searchRepository.withType(Types.OBSERVATIONS);
   }
 

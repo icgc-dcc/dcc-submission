@@ -22,7 +22,7 @@ import com.yammer.metrics.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.http.HttpStatus;
 import org.icgc.dcc.portal.core.Types;
-import org.icgc.dcc.portal.repositories.SearchRepository;
+import org.icgc.dcc.portal.repositories.ISearchRepository;
 import org.icgc.dcc.portal.responses.GetManyResponse;
 import org.icgc.dcc.portal.responses.GetOneResponse;
 import org.icgc.dcc.portal.search.SearchQuery;
@@ -44,13 +44,13 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 @Slf4j
 public class ProjectsResource {
 
-  private final SearchRepository store;
+  private final ISearchRepository store;
 
   @Context
   private HttpServletRequest httpServletRequest;
 
   @Inject
-  public ProjectsResource(SearchRepository searchRepository) {
+  public ProjectsResource(ISearchRepository searchRepository) {
     this.store = searchRepository.withType(Types.PROJECTS);
   }
 
@@ -86,7 +86,7 @@ public class ProjectsResource {
       @ApiError(code = HttpStatus.NOT_FOUND_404, reason = "Project not found")})
   public final Response getOne(@ApiParam(value = "ID of project that needs to be fetched") @PathParam("id") String id)
       throws IOException {
-	  
+
     GetOneResponse response = new GetOneResponse(store.getOne("release11::" + id), httpServletRequest);
 
     return Response.ok().entity(response).build();
