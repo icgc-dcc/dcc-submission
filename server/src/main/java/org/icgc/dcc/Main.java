@@ -70,6 +70,7 @@ public class Main {
 
     System.setProperty(HADOOP_USER_NAME_PARAM, HADOOP_USER_NAME); // see DCC-572
     Main.injector = Guice.createInjector(new ConfigModule(parsedConfig) //
+        // Infrastructure modules
         , new CoreModule()//
         , new HttpModule()//
         , new JerseyModule()//
@@ -78,6 +79,8 @@ public class Main {
         , new ShiroModule()//
         , new FileSystemModule()//
         , new SftpModule()//
+
+        // Business modules
         , new DictionaryModule()//
         , new ReleaseModule()//
         , new ValidationModule());

@@ -6,7 +6,6 @@
 #  src/main/scripts/deploy_local.sh ***REMOVED*** dev # deploy on dev
 #  src/main/scripts/deploy_local.sh ***REMOVED*** dev false false # deploy on dev, don't skip mvn tests
 #  src/main/scripts/deploy_local.sh ***REMOVED*** dev false ignoreme true # deploy on dev, skip jar generation altogther (assumes there's an existing jar from a previous run)
-#  src/main/scripts/deploy_local.sh hwww-qa.oicr.on.ca dev true # prepare deployment on qa, skipping scp-ing the file
 #
 # notes:
 # - this script is based on former https://wiki.oicr.on.ca/display/DCCSOFT/Standard+operating+procedures#Standardoperatingprocedures-SOPforDeployingtheserver (which also links to this script now)
@@ -74,7 +73,7 @@ skip_mvn=$5 && skip_mvn=${skip_mvn:="false"} && [ "${skip_mvn}" == "true" ] && s
 echo "server=\"${server?}\""
 echo "mode=\"${mode?}\""
 echo "skip_mvn=\"${skip_mvn?}\""
-valid_modes="local dev qa" && [ -n "$(echo "${valid_modes?}" | tr " " "\n" | awk '$0=="'"${mode?}"'"')" ] || { echo "ERROR: invalid mode: \"${mode?}\""; exit 1; }
+valid_modes="local dev" && [ -n "$(echo "${valid_modes?}" | tr " " "\n" | awk '$0=="'"${mode?}"'"')" ] || { echo "ERROR: invalid mode: \"${mode?}\""; exit 1; }
 if [ "${mode?}" == "local" ]; then
  mode=""
 fi
@@ -181,6 +180,7 @@ echo "cp ${remote_realm_file?} ${remote_server_dir?}/"
 echo "cd ${remote_server_dir?}"
 echo "nohup java -cp ${jar_file_name?} ${main_class?} ${mode?} >> ${log_file?} 2>&1 &"
 echo "less +F ${log_file?}"
+echo
 if [ "dev" == "${mode?}" ]; then read -p "must modify watch crontab to match the new log file (they are timestamped)"; fi
 echo
 

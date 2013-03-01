@@ -15,57 +15,45 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.data.model;
+package org.icgc.dcc.core;
 
-import java.util.Date;
-import java.util.List;
+import org.icgc.dcc.core.model.Status;
+import org.icgc.dcc.sftp.SftpServerService;
 
-import org.icgc.dcc.core.model.Timestamped;
-import org.icgc.dcc.data.web.HasKey;
+import com.google.common.util.concurrent.Service.State;
+import com.google.inject.Inject;
 
-import com.google.code.morphia.annotations.Entity;
-import com.google.code.morphia.annotations.Id;
+public class SystemService {
 
-@Entity
-public class Gene extends Timestamped implements HasKey {
+  private final SftpServerService sftpService;
 
-  @Id
-  public String name;
-
-  public String ensemblId;
-
-  public List<String> aliases;
-
-  public String description;
-
-  public String biotype;
-
-  public PhysicalLocation location;
-
-  public List<Transcript> transcripts;
-
-  public Gene() {
-    this.created = new Date();
-    this.lastUpdate = new Date();
+  @Inject
+  private SystemService(SftpServerService sftpService) {
+    super();
+    this.sftpService = sftpService;
   }
 
-  @Override
-  public Object getKey() {
-    return name;
+  public Status getStatus() {
+    int activeSftpSessions = sftpService.getActiveSessions();
+    Status status = new Status(activeSftpSessions);
+
+    return status;
   }
 
-  @Override
-  public boolean equals(Object obj) {
-    if(obj instanceof Gene == false) {
-      return false;
-    }
-    Gene rhs = (Gene) obj;
-    return name.equals(rhs.name);
+  public boolean isFtpEnabled() {
+    return sftpService.isRunning();
   }
 
-  @Override
-  public int hashCode() {
-    return name.hashCode();
+  public State stopSftp() {
+    State state = sftpService.stopAndWait();
+
+    return state;
+  }
+
+  public State startSftp() {
+    State state = sftpService.startAndWait();
+
+    return state;
   }
 
 }

@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.genes;
+package org.icgc.dcc.genes.transform;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -36,7 +36,7 @@ public class GeneTransformer {
     ObjectNode result = mapper.createObjectNode();
 
     // Simple
-    result.put("id", id(node));
+    result.put("_gene_id", id(node));
     result.put("symbol", symbol(node));
     result.put("name", name(node));
     result.put("biotype", biotype(node));

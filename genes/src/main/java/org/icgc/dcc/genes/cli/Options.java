@@ -15,15 +15,33 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.data.model;
+package org.icgc.dcc.genes.cli;
 
-import com.google.code.morphia.annotations.Embedded;
+import java.io.File;
 
-@Embedded
-public class Sample {
+import lombok.ToString;
 
-  public String id;
+import com.beust.jcommander.Parameter;
+import com.mongodb.MongoURI;
 
-  public String type; // blood, tumor, etc.
+/**
+ * Command line options.
+ * 
+ * @author btiernay
+ */
+@ToString
+public class Options {
+
+  @Parameter(names = { "-f", "--file" }, required = true, validateValueWith = FileValidator.class, description = "Heliotrope genes.bson mongodump file (e.g. ~/genes.bson)")
+  public File file;
+
+  @Parameter(names = { "-d", "--database" }, required = true, converter = MongoURIConverter.class, validateWith = MongoURIValidator.class, validateValueWith = MongoValidator.class, description = "DCC MongoDB database collection URI (e.g. mongodb://localhost/dcc-genome.Gene)")
+  public MongoURI mongoUri;
+
+  @Parameter(names = { "-v", "--version" }, help = true, description = "Show version information")
+  public boolean version;
+
+  @Parameter(names = { "-h", "--help" }, help = true, description = "Show help information")
+  public boolean help;
 
 }

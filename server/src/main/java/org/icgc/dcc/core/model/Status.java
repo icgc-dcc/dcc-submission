@@ -15,38 +15,31 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.genes;
+package org.icgc.dcc.core.model;
 
-import java.io.File;
+import org.codehaus.jackson.annotate.JsonCreator;
+import org.codehaus.jackson.annotate.JsonProperty;
 
-import lombok.ToString;
+public class Status {
 
-import org.icgc.dcc.genes.cli.FileValidator;
-import org.icgc.dcc.genes.cli.MongoURIConverter;
-import org.icgc.dcc.genes.cli.MongoURIValidator;
-import org.icgc.dcc.genes.cli.MongoValidator;
+  private final int activeSftpSessions;
 
-import com.beust.jcommander.Parameter;
-import com.mongodb.MongoURI;
+  @JsonCreator
+  public Status(@JsonProperty("activeSftpSessions") int activeSftpSessions) {
+    super();
+    this.activeSftpSessions = activeSftpSessions;
+  }
 
-/**
- * Command line options.
- * 
- * @author btiernay
- */
-@ToString
-public class Options {
+  /**
+   * @return the activeSftpSessions
+   */
+  public int getActiveSftpSessions() {
+    return activeSftpSessions;
+  }
 
-  @Parameter(names = { "-f", "--file" }, required = true, validateValueWith = FileValidator.class, description = "Heliotrope genes.bson mongodump file (e.g. ~/genes.bson)")
-  public File file;
-
-  @Parameter(names = { "-d", "--database" }, required = true, converter = MongoURIConverter.class, validateWith = MongoURIValidator.class, validateValueWith = MongoValidator.class, description = "DCC MongoDB database collection URI (e.g. mongodb://localhost/dcc-genome.Genes)")
-  public MongoURI mongoUri;
-
-  @Parameter(names = { "-v", "--version" }, help = true, description = "Show version information")
-  public boolean version;
-
-  @Parameter(names = { "-h", "--help" }, help = true, description = "Show help information")
-  public boolean help;
+  @Override
+  public String toString() {
+    return String.format("Status [activeSftpSessions=%s]", activeSftpSessions);
+  }
 
 }

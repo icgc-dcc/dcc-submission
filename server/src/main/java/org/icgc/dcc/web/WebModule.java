@@ -50,6 +50,7 @@ public class WebModule extends AbstractModule {
     public RootResources(ResourceConfig config) {
       config.register(ValidatingJacksonJsonProvider.class, MessageBodyReader.class, MessageBodyWriter.class);
 
+      config.addClasses(SystemResource.class);
       config.addClasses(ProjectResource.class);
       config.addClasses(ReleaseResource.class);
       config.addClasses(NextReleaseResource.class);

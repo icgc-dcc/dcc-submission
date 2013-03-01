@@ -1,6 +1,6 @@
 <configuration debug="false">
-  <property name="log.dir" value="logs" />
-  <property name="log.name" value="dcc-generator" />
+  <property name="log.dir" value="target/logs" />
+  <property name="log.name" value="dcc-core" />
   <property name="pattern" value="%date{ISO8601} [%thread] %-5level %logger{20} - %msg%n" />
 
   <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator">
