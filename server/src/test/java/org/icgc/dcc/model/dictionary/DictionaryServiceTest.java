@@ -114,7 +114,7 @@ public class DictionaryServiceTest {
   @Ignore
   @Test(expected = DictionaryServiceException.class)
   public void test_add_failOnExisting() {
-    dictionaryService.add(mockDictionary);
+    dictionaryService.addDictionary(mockDictionary);
   }
 
   @Ignore

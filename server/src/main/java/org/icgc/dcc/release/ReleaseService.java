@@ -359,11 +359,13 @@ public class ReleaseService extends BaseMorphiaService<Release> {
         // update release object
         Submission submission = getSubmissionByName(nextRelease, nextProjectKey); // can't be null
         SubmissionState currentState = submission.getState();
+        SubmissionState destinationState = SubmissionState.VALIDATING;
         if(expectedState != currentState) {
           throw new ReleaseException( // not recoverable
-              "Project " + nextProjectKey + " is not " + expectedState + " (" + currentState + " instead)");
+              "Project " + nextProjectKey + " is not " + expectedState + " (" + currentState
+                  + " instead), cannot set to " + destinationState);
         }
-        submission.setState(SubmissionState.VALIDATING);
+        submission.setState(destinationState);
 
         // update corresponding database entity
         updateRelease(nextReleaseName, nextRelease);
@@ -416,7 +418,8 @@ public class ReleaseService extends BaseMorphiaService<Release> {
         SubmissionState currentState = submission.getState();
         if(expectedState != currentState) {
           throw new ReleaseException( // not recoverable
-              "project " + projectKey + " is not " + expectedState + " (" + currentState + " instead)");
+              "project " + projectKey + " is not " + expectedState + " (" + currentState + " instead), cannot set to "
+                  + destinationState);
         }
         submission.setState(destinationState);
 
