@@ -1,11 +1,7 @@
 package org.icgc.dcc.web;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static com.google.inject.util.Modules.EMPTY_MODULE;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static org.glassfish.grizzly.http.util.Header.Authorization;
-
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 
 import javax.ws.rs.client.ClientRequestContext;
@@ -22,18 +18,22 @@ import org.glassfish.jersey.test.spi.TestContainerFactory;
 import org.icgc.dcc.config.ConfigModule;
 import org.icgc.dcc.core.CoreModule;
 import org.icgc.dcc.core.morphia.MorphiaModule;
-import org.icgc.dcc.dictionary.DictionaryModule;
 import org.icgc.dcc.filesystem.FileSystemModule;
 import org.icgc.dcc.http.jersey.JerseyModule;
-import org.icgc.dcc.release.ReleaseModule;
 import org.icgc.dcc.sftp.SftpModule;
 import org.icgc.dcc.shiro.ShiroModule;
 import org.icgc.dcc.validation.ValidationModule;
 
+import com.google.common.collect.ImmutableList;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.typesafe.config.ConfigFactory;
+
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.inject.util.Modules.EMPTY_MODULE;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static org.glassfish.grizzly.http.util.Header.Authorization;
 
 public abstract class ResourceTest extends JerseyTest {
 
@@ -64,11 +64,9 @@ public abstract class ResourceTest extends JerseyTest {
         (Module) new SftpModule(), //
 
         // Business modules
-        (Module) new DictionaryModule(), //
-        (Module) new ReleaseModule(), //
         (Module) new ValidationModule());
 
-    modules.add(configureModule());
+    modules.addAll(configureModules());
 
     injector = Guice.createInjector(modules);
 
@@ -86,8 +84,11 @@ public abstract class ResourceTest extends JerseyTest {
     });
   }
 
-  protected Module configureModule() {
-    return EMPTY_MODULE;
+  /**
+   * To be overriden if more modules are necessary (and to mock them for instance).
+   */
+  protected Collection<? extends Module> configureModules() {
+    return ImmutableList.of(EMPTY_MODULE);
   }
 
 }

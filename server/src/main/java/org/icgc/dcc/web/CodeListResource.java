@@ -50,6 +50,9 @@ public class CodeListResource {
   @Inject
   private DictionaryService dictionaries;
 
+  /**
+   * Open-access intentional (DCC-758)
+   */
   @GET
   public Response getCodeLists() {
     List<CodeList> codeLists = this.dictionaries.listCodeList();

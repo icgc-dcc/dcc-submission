@@ -37,6 +37,7 @@ import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.core.model.QProject;
 import org.icgc.dcc.core.morphia.BaseMorphiaService;
 import org.icgc.dcc.dictionary.model.Dictionary;
+import org.icgc.dcc.dictionary.model.DictionaryState;
 import org.icgc.dcc.dictionary.model.QDictionary;
 import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.filesystem.ReleaseFileSystem;
@@ -183,6 +184,21 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     Release nextRelease = this.query().where(QRelease.release.state.eq(ReleaseState.OPENED)).singleResult();
     return new NextRelease(dccLocking, checkNotNull(nextRelease, "There is no next release in the database."),
         morphia(), datastore(), this.fs);
+  }
+
+  /**
+   * Returns the current dictionary.
+   * <p>
+   * This is the dictionary, open or not, that the {@code NextRelease}'s {@code Release} points to.
+   */
+  public Dictionary getNextDictionary() {
+    NextRelease nextRelease = getNextRelease();
+    Release release = checkNotNull(nextRelease, "There are currently no open releases...").getRelease();
+    String version = checkNotNull(release).getDictionaryVersion();
+    Dictionary dictionary = getDictionaryFromVersion(checkNotNull(version));
+    checkState(checkNotNull(dictionary).getState() == DictionaryState.OPENED, "Current dictionary is not %s",
+        DictionaryState.OPENED);
+    return dictionary;
   }
 
   /**
