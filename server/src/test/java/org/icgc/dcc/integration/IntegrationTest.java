@@ -47,6 +47,9 @@ import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.ReleaseView;
 import org.icgc.dcc.release.model.SubmissionState;
+import org.icgc.dcc.sftp.SftpModule;
+import org.icgc.dcc.shiro.ShiroModule;
+import org.icgc.dcc.web.WebModule;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -61,7 +64,7 @@ import com.google.inject.Inject;
 import com.typesafe.config.ConfigFactory;
 
 @RunWith(GuiceJUnitRunner.class)
-@GuiceModules({ ConfigModule.class, CoreModule.class, HttpModule.class, JerseyModule.class, MorphiaModule.class, FileSystemModule.class })
+@GuiceModules({ ConfigModule.class, CoreModule.class, HttpModule.class, JerseyModule.class, MorphiaModule.class, FileSystemModule.class, SftpModule.class, WebModule.class, ShiroModule.class })
 public class IntegrationTest {
 
   private static final Logger log = LoggerFactory.getLogger(IntegrationTest.class);

@@ -50,6 +50,7 @@ public class WebModule extends AbstractModule {
     public RootResources(ResourceConfig config) {
       config.register(ValidatingJacksonJsonProvider.class, MessageBodyReader.class, MessageBodyWriter.class);
 
+      config.addClasses(SystemResource.class);
       config.addClasses(ProjectResource.class);
       config.addClasses(ReleaseResource.class);
       config.addClasses(NextReleaseResource.class);
@@ -61,7 +62,7 @@ public class WebModule extends AbstractModule {
       config.addClasses(InvalidNameExceptionMapper.class);
       config.addClasses(DuplicateNameExceptionMapper.class);
       config.addClasses(UserResource.class);
-      config.addClasses(SeedResource.class); // TODO be sure to remove this from production environment
+      config.addClasses(SeedResource.class); // TODO be sure to remove this from production environment (see DCC-819)
     }
   }
 

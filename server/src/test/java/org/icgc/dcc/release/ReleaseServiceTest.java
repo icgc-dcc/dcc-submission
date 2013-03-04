@@ -131,7 +131,7 @@ public class ReleaseServiceTest {
       // Create the releaseService and populate it with the initial release
       releaseService = new ReleaseService(dccLocking, morphia, datastore, fs, config);
       dictionaryService = new DictionaryService(morphia, datastore, mockDccFileSystem, releaseService);
-      dictionaryService.add(dictionary);
+      dictionaryService.addDictionary(dictionary);
       releaseService.createInitialRelease(release);
     } catch(UnknownHostException e) {
       e.printStackTrace();

@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
 /**
  * 
  */
-abstract class HdfsSshFile implements SshFile {
+public abstract class HdfsSshFile implements SshFile {
 
   protected static final Logger log = LoggerFactory.getLogger(HdfsSshFile.class);
 
@@ -127,6 +127,16 @@ abstract class HdfsSshFile implements SshFile {
       log.error("File system error", e);
     }
     return 0;
+  }
+
+  @Override
+  public String getOwner() {
+    try {
+      return fs.getFileStatus(path).getOwner();
+    } catch(IOException e) {
+      log.error("File system error", e);
+    }
+    return null;
   }
 
   @Override

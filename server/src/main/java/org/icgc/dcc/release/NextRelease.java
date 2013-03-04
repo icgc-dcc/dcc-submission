@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.release;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import java.util.List;
 
 import org.icgc.dcc.core.model.InvalidStateException;
@@ -46,6 +44,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
+
+import static com.google.common.base.Preconditions.checkArgument;
 
 public class NextRelease extends BaseRelease {
 
@@ -107,7 +107,7 @@ public class NextRelease extends BaseRelease {
 
       String dictionaryVersion = oldRelease.getDictionaryVersion();
       if(dictionaryVersion == null) {
-        errorMessage = "could not find a dictionary matching " + dictionaryVersion;
+        errorMessage = "could not find a dictionary matching null";
         log.error(errorMessage);
         throw new InvalidStateException(ServerErrorCode.RELEASE_MISSING_DICTIONARY, errorMessage); // TODO: new kind of
                                                                                                    // exception rather?

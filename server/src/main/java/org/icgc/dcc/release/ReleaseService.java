@@ -65,6 +65,7 @@ import com.google.code.morphia.Morphia;
 import com.google.code.morphia.query.Query;
 import com.google.code.morphia.query.UpdateOperations;
 import com.google.code.morphia.query.UpdateResults;
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -102,7 +103,11 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     registerModelClasses(Release.class);
   }
 
-  public List<Release> getReleases(Subject subject) {
+  /**
+   * Returns a list of {@code Release}s with their @{code Submission} filtered based on the user's privilege on
+   * projects.
+   */
+  public List<Release> getFilteredReleases(Subject subject) {
     log.debug("getting releases for {}", subject.getPrincipal());
 
     List<Release> releases = query().list();
@@ -155,27 +160,30 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     return release;
   }
 
-  public ReleaseView getReleaseView(String releaseName, Subject user) {
+  /**
+   * Optionally returns a {@code ReleaseView} matching the given name, and for which {@code Submission}s are filtered
+   * based on the user's privileges.
+   */
+  public Optional<ReleaseView> getFilteredReleaseView(String releaseName, Subject user) {
     Release release = this.query().where(QRelease.release.name.eq(releaseName)).uniqueResult();
-
-    if(release == null) {
-      return null;
+    Optional<ReleaseView> releaseView = Optional.absent();
+    if(release != null) {
+      // populate project name for submissions
+      List<Project> projects = this.getProjects(release, user);
+      List<Entry<String, String>> projectEntries = buildProjectEntries(projects);
+      Map<String, List<SubmissionFile>> submissionFilesMap = buildSubmissionFilesMap(releaseName, release);
+      releaseView = Optional.of(new ReleaseView(release, projectEntries, submissionFilesMap));
     }
-    // populate project name for submissions
-    List<Project> projects = this.getProjects(release, user);
-    List<Entry<String, String>> projectEntries = buildProjectEntries(projects);
-    Map<String, List<SubmissionFile>> submissionFilesMap = buildSubmissionFilesMap(releaseName, release);
-    ReleaseView releaseView = new ReleaseView(release, projectEntries, submissionFilesMap);
-
     return releaseView;
   }
 
+  /**
+   * Returns the {@code NextRelease} (guaranteed not to be null if returned).
+   */
   public NextRelease getNextRelease() throws IllegalReleaseStateException {
     Release nextRelease = this.query().where(QRelease.release.state.eq(ReleaseState.OPENED)).singleResult();
-    if(nextRelease == null) {
-      throw new IllegalStateException("no next release");
-    }
-    return new NextRelease(dccLocking, nextRelease, morphia(), datastore(), this.fs);
+    return new NextRelease(dccLocking, checkNotNull(nextRelease, "There is no next release in the database."),
+        morphia(), datastore(), this.fs);
   }
 
   /**
@@ -193,6 +201,9 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     return dictionary;
   }
 
+  /**
+   * Returns a non-null list of @{code HasRelease} (possibly empty)
+   */
   public List<HasRelease> list() {
     List<HasRelease> list = new ArrayList<HasRelease>();
 
@@ -227,7 +238,8 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   }
 
   public DetailedSubmission getDetailedSubmission(String releaseName, String projectKey) {
-    DetailedSubmission detailedSubmission = new DetailedSubmission(this.getSubmission(releaseName, projectKey));
+    Submission submission = this.getSubmission(releaseName, projectKey);
+    DetailedSubmission detailedSubmission = new DetailedSubmission(submission);
     detailedSubmission.setProjectName(this.getProject(projectKey).getName());
     detailedSubmission.setSubmissionFiles(getSubmissionFiles(releaseName, projectKey));
     return detailedSubmission;
@@ -363,11 +375,13 @@ public class ReleaseService extends BaseMorphiaService<Release> {
         // update release object
         Submission submission = getSubmissionByName(nextRelease, nextProjectKey); // can't be null
         SubmissionState currentState = submission.getState();
+        SubmissionState destinationState = SubmissionState.VALIDATING;
         if(expectedState != currentState) {
           throw new ReleaseException( // not recoverable
-              "Project " + nextProjectKey + " is not " + expectedState + " (" + currentState + " instead)");
+              "Project " + nextProjectKey + " is not " + expectedState + " (" + currentState
+                  + " instead), cannot set to " + destinationState);
         }
-        submission.setState(SubmissionState.VALIDATING);
+        submission.setState(destinationState);
 
         // update corresponding database entity
         updateRelease(nextReleaseName, nextRelease);
@@ -420,7 +434,8 @@ public class ReleaseService extends BaseMorphiaService<Release> {
         SubmissionState currentState = submission.getState();
         if(expectedState != currentState) {
           throw new ReleaseException( // not recoverable
-              "project " + projectKey + " is not " + expectedState + " (" + currentState + " instead)");
+              "project " + projectKey + " is not " + expectedState + " (" + currentState + " instead), cannot set to "
+                  + destinationState);
         }
         submission.setState(destinationState);
 

@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.genes;
 
+import static java.lang.String.format;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 import java.io.File;
@@ -41,18 +42,25 @@ import com.mongodb.MongoURI;
 
 public class IntegrationTest {
 
+  private final static String DATA_DIR = "src/test/resources/data";
+
   private final JsonSchema schema = getSchema();
 
   @Rule
   public final EmbeddedMongo embeddedMongo = new EmbeddedMongo();
 
   @Test
-  public void testLoader() throws IOException {
-    String bsonFile = "src/test/resources/heliotrope/genes.bson";
-    String uri = "mongodb://localhost:" + embeddedMongo.getPort() + "/dcc-genome.Genes";
-    Main.main("-f", bsonFile, "-d", uri);
+  public void testGenesLoader() throws IOException {
+    // To update genes.bson:
+    // mongorestore -d test -c Gene src/test/resources/data/genes.bson
+    // mongo
+    // mongodump -d test -c Gene -o - > src/test/resources/data/genes.bson
 
-    JsonNode gene = getGene(uri);
+    String bsonFile = DATA_DIR + "/genes.bson";
+    String mongoUri = getMongoUri();
+    Main.main("-f", bsonFile, "-d", mongoUri);
+
+    JsonNode gene = getGene(mongoUri);
     ValidationReport report = validate(gene);
 
     assertThat(report.getMessages()).isEmpty();
@@ -95,6 +103,10 @@ public class IntegrationTest {
     JsonSchema schema = factory.fromSchema(schemaNode);
 
     return schema;
+  }
+
+  private String getMongoUri() {
+    return format("mongodb://localhost:%s/dcc-genome.Genes", embeddedMongo.getPort());
   }
 
 }
