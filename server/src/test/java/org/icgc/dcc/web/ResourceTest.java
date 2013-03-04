@@ -18,10 +18,8 @@ import org.glassfish.jersey.test.spi.TestContainerFactory;
 import org.icgc.dcc.config.ConfigModule;
 import org.icgc.dcc.core.CoreModule;
 import org.icgc.dcc.core.morphia.MorphiaModule;
-import org.icgc.dcc.dictionary.DictionaryModule;
 import org.icgc.dcc.filesystem.FileSystemModule;
 import org.icgc.dcc.http.jersey.JerseyModule;
-import org.icgc.dcc.release.ReleaseModule;
 import org.icgc.dcc.sftp.SftpModule;
 import org.icgc.dcc.shiro.ShiroModule;
 import org.icgc.dcc.validation.ValidationModule;
@@ -66,8 +64,6 @@ public abstract class ResourceTest extends JerseyTest {
         (Module) new SftpModule(), //
 
         // Business modules
-        (Module) new DictionaryModule(), //
-        (Module) new ReleaseModule(), //
         (Module) new ValidationModule());
 
     modules.addAll(configureModules());
