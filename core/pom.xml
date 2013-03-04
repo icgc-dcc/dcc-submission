@@ -14,4 +14,16 @@
       <url>http://seqwaremaven.oicr.on.ca/artifactory/dcc-dependencies</url>
     </repository>
   </repositories>
+  <dependencies>
+      <!-- Utilities -->
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+    </dependency>
+  </dependencies>
 </project>
