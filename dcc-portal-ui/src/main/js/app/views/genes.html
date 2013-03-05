@@ -1,47 +1,9 @@
 <div class="row">
     <div class="span3">
         <ul class="nav nav-list" ng-controller="FacetsController">
-            <term-facet data-facet-name="gene_type" data-facet="genes.facets['gene_type']"></term-facet>
-            <li class="nav-header">
-                <i ng-hide="facet.active" class="icon-check-empty"></i>
-                <i ng-show="facet.active" class="icon-check"></i>
-                Gene list
-            </li>
-            <li class="form-inline">
-                <input type="hidden" uui-select2="select2">
-            </li>
-            <li class="nav-header">
-                <i ng-hide="facet.active" class="icon-check-empty"></i>
-                <i ng-show="facet.active" class="icon-check"></i>
-                Gene location
-            </li>
-            <li>
-                <input type="text" ng-model="location"/>
-                <button type="button" class="btn" ng-click="toggleRangeFilter('projects', 'range_facet', from, to)">
-                    Search
-                </button>
-            </li>
-            <li class="nav-header">
-                <i ng-hide="facet.active" class="icon-check-empty"></i>
-                <i ng-show="facet.active" class="icon-check"></i>
-                Gene type
-            </li>
-            <li>
-                <ul class="unstyled" ng-repeat="term in genes.facets['gene_type'].terms">
-                    <li><a href="" ng-click="toggleTermFilter('genes','gene_type',term.term)">
-                        <i ng-hide="term.active" class="icon-check-empty"></i>
-                        <i ng-show="term.active" class="icon-check"></i>
-                        {{term.term}} ({{term.count}})</a></li>
-                </ul>
-            </li>
-            <li class="nav-header">
-                <i ng-hide="facet.active" class="icon-check-empty"></i>
-                <i ng-show="facet.active" class="icon-check"></i>
-                Pathways
-            </li>
-            <li class="form-inline">
-                <input type="hidden" uui-select2="select2">
-            </li>
+            <term-facet facet-name="gene_type" facet="genes.facets['gene_type']"></term-facet>
+            <location-facet facet-name="gene_location" placeholder="Search for a gene location"></location-facet>
+            <multi-facet facet-name="gene_list" select2="geneList"></multi-facet>
         </ul>
     </div>
     <div class="span9">

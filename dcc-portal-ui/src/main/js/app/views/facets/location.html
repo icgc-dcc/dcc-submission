@@ -1,0 +1,12 @@
+<li class="nav-header">
+    <i ng-hide="location" class="icon-check-empty"></i>
+    <i ng-show="location" class="icon-check"></i>
+    {{facetName}}
+</li>
+<li>
+    <div ng-class="{'input-append': changed}">
+        <input type="text" ui-reset ng-model="location" ng-class="{'input-block-level': changed}"
+               placeholder="{{placeholder}}"/>
+        <button ng-show="changed" type="button" class="btn" ng-click="locationClick()">Search</button>
+    </div>
+</li>

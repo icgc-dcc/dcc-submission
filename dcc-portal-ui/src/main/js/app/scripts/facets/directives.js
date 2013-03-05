@@ -52,31 +52,93 @@ angular.module('app.facets.directives').directive('termFacet', ['$location', fun
         }
       }
 
-      function setActive(filters) {
-        console.log(JSON.parse(filters));
-        var facets = JSON.parse(filters);
-        for (var facet in facets) {
-          var terms = facets[facet];
-          for (var term in terms) {
-            console.log(terms[term]);
-            toggleTermActiveState(terms[term]);
-          }
-          setFacetActiveState();
+      function setActive(facets) {
+        var terms = facets[iAttrs.facetName];
+        for (var term in terms) {
+          toggleTermActiveState(terms[term]);
         }
+        setFacetActiveState();
       }
 
       scope.termClick = function (term) {
         // This is for immediate feedback
         toggleTermActiveState(term);
         setFacetActiveState();
+
         scope.$emit('termFilter', scope.facetName, term);
       };
 
 
       (function () {
         var filters = $location.search().filters || '';
-        console.log('here', filters);
-        if (filters) setActive(filters);
+        if (filters) setActive(JSON.parse(filters));
+      })();
+    }
+  };
+}]);
+
+angular.module('app.facets.directives').directive('locationFacet', ['$location', function ($location) {
+  return {
+    restrict: 'E',
+    scope: {
+      facetName: '@',
+      placeholder: '@'
+    },
+    templateUrl: '/views/facets/location.html',
+    link: function (scope, iElement, iAttrs) {
+      var oldLocation;
+
+      // Only show search button when value changed
+      scope.$watch('location', function (newLocation) {
+        // Empty input and reload
+        if (newLocation === null) {
+          scope.changed = false;
+          scope.locationClick();
+        } else {
+          var nL = newLocation || '';
+          var oL = oldLocation || '';
+          scope.changed = nL != oL;
+        }
+      });
+
+      // search on click
+      scope.locationClick = function () {
+        console.log('click?');
+        scope.$emit('locationFilter', scope.facetName, scope.location);
+      };
+
+      function setActive(facets) {
+        oldLocation = facets[iAttrs.facetName];
+        scope.location = facets[iAttrs.facetName];
+      }
+
+      // Preset value on reload
+      (function () {
+        var filters = $location.search().filters || '';
+        if (filters) setActive(JSON.parse(filters));
+      })();
+    }
+  };
+}]);
+
+angular.module('app.facets.directives').directive('multiFacet', ['$location', function ($location) {
+  return {
+    restrict: 'E',
+    scope: {
+      facetName: '@',
+      select2: '='
+    },
+    templateUrl: '/views/facets/multi.html',
+    link: function (scope, iElement, iAttrs) {
+
+      function setActive(facets) {
+
+      }
+
+      // Preset value on reload
+      (function () {
+        var filters = $location.search().filters || '';
+        if (filters) setActive(JSON.parse(filters));
       })();
     }
   };

@@ -29,17 +29,8 @@ angular.module('app.http.service').service('httpService', ['$location', function
     return $location.search();
   };
 
-  this.jsonifyParams = function (string) {
-    return ('{"' + string + '"}')
-        .replace(/,/g, '","')
-        .replace(/:/g, '":')
-        .replace(/\[/g, '["')
-        .replace(/]"/g, '"]');
-  };
-
   this.getCurrentFilters = function () {
     var cfParams = this.getCurrentSearch().filters || '';
-    //return cfParams.length ? JSON.parse(this.jsonifyParams(cfParams)) : {};
     return cfParams.length ? JSON.parse(cfParams) : {};
   };
 }]);

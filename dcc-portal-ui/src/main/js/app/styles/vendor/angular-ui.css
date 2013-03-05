@@ -28,12 +28,18 @@
 
 .ui-reset {
     position: absolute;
-    top: 0;
+    top: 3px;
     right: 0;
     z-index: 2;
     display: none;
-    height: 100%;
+
     cursor: pointer;
+    width: 14px;
+    height: 14px;
+    margin: 5px;
+    line-height: 14px;
+    vertical-align: text-top;
+    background: url("http://twitter.github.com/bootstrap/assets/img/glyphicons-halflings.png") no-repeat -48px -96px;
 }
 
 .ui-resetwrap:hover .ui-reset {

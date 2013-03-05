@@ -24,6 +24,7 @@ angular.module('app.facets.controllers', ['app.facets.services']);
 angular.module('app.facets.controllers').controller('FacetsController', [ "$scope", "httpService", function ($scope, httpService) {
   function toggleUriTermFilters(facet, term) {
     var search, filters;
+    console.log(facet, term);
     search = httpService.getCurrentSearch();
     filters = httpService.getCurrentFilters();
 
@@ -47,7 +48,7 @@ angular.module('app.facets.controllers').controller('FacetsController', [ "$scop
     } else {
       delete search.filters;
     }
-    console.log(search);
+
     httpService.updateSearch(search);
   }
 
@@ -63,7 +64,7 @@ angular.module('app.facets.controllers').controller('FacetsController', [ "$scop
     }
     // If there are filters add them to the search query params
     if (Object.keys(filters).length) {
-      search.filters = JSON.stringify(filters).replace(/[\{\}\"]/g, '');
+      search.filters = JSON.stringify(filters);
     } else {
       delete search.filters;
     }
@@ -71,25 +72,37 @@ angular.module('app.facets.controllers').controller('FacetsController', [ "$scop
     httpService.updateSearch(search);
   }
 
-  $scope.select2 = {
-    width: "100%",
-    placeholder: "Search for a gene",
-    tags: ["blah"],
-    tokenSeparators: [",", " "]
-  };
+  function addUriLocationFilters(facet, loc) {
+    var search, filters, location = loc || '';
+    search = httpService.getCurrentSearch();
+    filters = httpService.getCurrentFilters();
+    filters[facet] = location;
+
+    // If there are no more terms in that facet filter remove the facet
+    if (filters[facet].length === 0) {
+      delete filters[facet];
+    }
+    // If there are filters add them to the search query params
+    if (Object.keys(filters).length) {
+      search.filters = JSON.stringify(filters);
+    } else {
+      delete search.filters;
+    }
+
+    httpService.updateSearch(search);
+  }
 
   $scope.$on('termFilter', function (event, facet, term) {
     toggleUriTermFilters(facet, term);
-    $scope.$emit('toggleFilter');
+    //$scope.$emit('toggleFilter');
   });
   $scope.$on('rangeFilter', function (event, facet, from, to) {
     addUriRangeFilters(facet, from, to);
-    $scope.$emit('toggleFilter');
+    //$scope.$emit('toggleFilter');
   });
-  /*
-   $scope.$on('locationFilter', function(event, facet, location) {
-   addUriLocationFilters(facet, location);
-   $scope.$emit('toggleFilter');
-   });
-   */
+
+  $scope.$on('locationFilter', function (event, facet, location) {
+    addUriLocationFilters(facet, location);
+    //$scope.$emit('toggleFilter');
+  });
 }]);
