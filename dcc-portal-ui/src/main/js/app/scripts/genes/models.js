@@ -19,93 +19,256 @@
 
 angular.module('app.genes.models', []);
 
-angular.module('app.genes.models').factory('Genes', ['$http', function ($http) {
+angular.module('app.genes.models').factory('Genes', ['http', function ($http) {
   return {
     query: function () {
-      return {
-        type: 'genes',
-        hits: [
-          {
-            "symbol": "MAN2B2",
-            "gene_name": "ENSG00000013288",
-            "chromosome": 4,
-            "start": 6576902,
-            "end": 6625089,
-            "band": "p16.1",
-            "gene_type": "protein_coding",
-            "links": {
-              "self": {
-                "method": "GET",
-                "uri": "https://data-portal.icgc.org/ws/genes/ENSG00000013288"
-              }
+      return $http.get('/ws/genes').then(function () {
+        return {
+          "hits": [
+            {
+              "_index": "icgc_test54",
+              "_type": "genes",
+              "_id": "ENSG00000187939",
+              "_score": null,
+              "fields": {
+                "band": "p13.3",
+                "symbol": "DOC2B",
+                "start": Math.random(),
+                "description": "double C2-like domains, beta",
+                "chromosome": 17,
+                "gene_type": "protein_coding",
+                "end": 31427
+              },
+              "sort": [
+                6007
+              ]
+            },
+            {
+              "_index": "icgc_test54",
+              "_type": "genes",
+              "_id": "ENSG00000236875",
+              "_score": null,
+              "fields": {
+                "band": "p24.3",
+                "symbol": "XXyac-YRM2039.1.1",
+                "start": 11987,
+                "description": "",
+                "chromosome": 9,
+                "gene_type": "pseudogene",
+                "end": 14522
+              },
+              "sort": [
+                11987
+              ]
+            },
+            {
+              "_index": "icgc_test54",
+              "_type": "genes",
+              "_id": "ENSG00000251180",
+              "_score": null,
+              "fields": {
+                "band": "",
+                "symbol": "CU459201.1",
+                "start": 12836,
+                "description": "Novel protein (KIAA1671)",
+                "chromosome": "GL000242.1",
+                "gene_type": "protein_coding",
+                "end": 34543
+              },
+              "sort": [
+                12836
+              ]
+            },
+            {
+              "_index": "icgc_test54",
+              "_type": "genes",
+              "_id": "ENSG00000253620",
+              "_score": null,
+              "fields": {
+                "band": "p23.3",
+                "symbol": "AC144568.4.1",
+                "start": 14091,
+                "description": "",
+                "chromosome": 8,
+                "gene_type": "pseudogene",
+                "end": 14320
+              },
+              "sort": [
+                14091
+              ]
+            },
+            {
+              "_index": "icgc_test54",
+              "_type": "genes",
+              "_id": "ENSG00000227232",
+              "_score": null,
+              "fields": {
+                "band": "p36.33",
+                "symbol": "WASH7P",
+                "start": 14363,
+                "description": "WAS protein family homolog 7 pseudogene",
+                "chromosome": 1,
+                "gene_type": "pseudogene",
+                "end": 29806
+              },
+              "sort": [
+                14363
+              ]
+            },
+            {
+              "_index": "icgc_test54",
+              "_type": "genes",
+              "_id": "ENSG00000181404",
+              "_score": null,
+              "fields": {
+                "band": "p24.3",
+                "symbol": "XXyac-YRM2039.2.1",
+                "start": 14511,
+                "description": "",
+                "chromosome": 9,
+                "gene_type": "pseudogene",
+                "end": 29739
+              },
+              "sort": [
+                14511
+              ]
+            },
+            {
+              "_index": "icgc_test54",
+              "_type": "genes",
+              "_id": "ENSG00000244758",
+              "_score": null,
+              "fields": {
+                "band": "p22.3",
+                "symbol": "AC093627.6.1",
+                "start": 19757,
+                "description": "",
+                "chromosome": 7,
+                "gene_type": "lincRNA",
+                "end": 35479
+              },
+              "sort": [
+                19757
+              ]
+            },
+            {
+              "_index": "icgc_test54",
+              "_type": "genes",
+              "_id": "ENSG00000253896",
+              "_score": null,
+              "fields": {
+                "band": "p23.3",
+                "symbol": "AC144568.2.1",
+                "start": 22601,
+                "description": "Uncharacterized protein",
+                "chromosome": 8,
+                "gene_type": "protein_coding",
+                "end": 29428
+              },
+              "sort": [
+                22601
+              ]
+            },
+            {
+              "_index": "icgc_test54",
+              "_type": "genes",
+              "_id": "ENSG00000227518",
+              "_score": null,
+              "fields": {
+                "band": "p24.3",
+                "symbol": "MIR1302-10",
+                "start": 27657,
+                "description": "microRNA 1302-10",
+                "chromosome": 9,
+                "gene_type": "antisense",
+                "end": 30891
+              },
+              "sort": [
+                27657
+              ]
+            },
+            {
+              "_index": "icgc_test54",
+              "_type": "genes",
+              "_id": "ENSG00000243485",
+              "_score": null,
+              "fields": {
+                "band": "p36.33",
+                "symbol": "MIR1302-10",
+                "start": 29554,
+                "description": "microRNA 1302-10",
+                "chromosome": 1,
+                "gene_type": "antisense",
+                "end": 31109
+              },
+              "sort": [
+                29554
+              ]
+            }
+          ],
+          "facets": {
+            "gene_type": {
+              "_type": "terms",
+              "missing": 0,
+              "total": 46324,
+              "other": 2317,
+              "terms": [
+                {
+                  "term": "protein_coding",
+                  "count": Math.random()
+                },
+                {
+                  "term": "pseudogene",
+                  "count": 10538
+                },
+                {
+                  "term": "lincRNA",
+                  "count": 3647
+                },
+                {
+                  "term": "antisense",
+                  "count": 2883
+                },
+                {
+                  "term": "snRNA",
+                  "count": 1804
+                },
+                {
+                  "term": "miRNA",
+                  "count": 1645
+                },
+                {
+                  "term": "processed_transcript",
+                  "count": 1635
+                },
+                {
+                  "term": "snoRNA",
+                  "count": 1420
+                },
+                {
+                  "term": "misc_RNA",
+                  "count": 1109
+                },
+                {
+                  "term": "scRNA_pseudogene",
+                  "count": 737
+                }
+              ]
             }
           },
-          {
-            "symbol": "CLDN11",
-            "gene_name": "ENSG00000013297",
-            "chromosome": 3,
-            "start": 170136653,
-            "end": 170578169,
-            "band": "q26.2",
-            "gene_type": "protein_coding",
-            "links": {
-              "self": {
-                "method": "GET",
-                "uri": "https://data-portal.icgc.org/ws/genes/ENSG00000013297"
-              }
-            }
-          },
-          {
-            "symbol": "ANGEL1",
-            "gene_name": "ENSG00000013523",
-            "chromosome": 14,
-            "start": 77253588,
-            "end": 77292589,
-            "band": "q24.3",
-            "gene_type": "protein_coding",
-            "links": {
-              "self": {
-                "method": "GET",
-                "uri": "https://data-portal.icgc.org/ws/genes/ENSG00000013523"
-              }
-            }
+          "pagination": {
+            "count": 10,
+            "total": 46324,
+            "size": 10,
+            "from": 1,
+            "page": 1,
+            "pages": 4632,
+            "sort": "start",
+            "order": "asc"
           }
-        ],
-        facets: {
-          "gene_type": {
-            terms: {
-              "protein_coding": {count: Math.random()},
-              "pseudogene": {count: 30},
-              "miRNA": {count: 30},
-              "non_coding": {count: 30}
-            }
-          },
-          "gene_type2": {
-            terms: {
-              "protein_coding": {count: 30},
-              "pseudogene": {count: 30},
-              "miRNA": {count: 30},
-              "non_coding": {count: 30}
-            }
-          }
-        },
-        pagination: {
-          "count": 3,
-          "size": 3,
-          "from": 99,
-          "total": 300,
-          "page": 33,
-          "pages": 100,
-          "sort": "start",
-          "order": "asc",
-          "next": "https://data-portal.icgc.org/ws/genes?size=3&page=34",
-          "previous": "https://data-portal.icgc.org/ws/genes?size=3&page=32"
-        }
-      };
+        };
 
-      //return $http.get('/ws/genes').then(function (response) {
-      //  return response.data;
-      //});
+      });
     },
     get: function (params) {
       return $http.get('/ws/genes/' + params.gene).then(function (response) {

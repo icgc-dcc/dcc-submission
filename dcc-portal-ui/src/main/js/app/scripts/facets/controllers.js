@@ -17,12 +17,12 @@
 
 'use strict';
 
-angular.module('app.facets', ['app.facets.controllers']);
+angular.module('app.facets', ['app.facets.controllers', 'app.facets.directives']);
 
 angular.module('app.facets.controllers', ['app.facets.services']);
 
 angular.module('app.facets.controllers').controller('FacetsController', [ "$scope", "httpService", function ($scope, httpService) {
-  var toggleUriTermFilters = function (facet, term) {
+  function toggleUriTermFilters(facet, term) {
     var search, filters;
     search = httpService.getCurrentSearch();
     filters = httpService.getCurrentFilters();
@@ -31,7 +31,7 @@ angular.module('app.facets.controllers').controller('FacetsController', [ "$scop
     if (!filters.hasOwnProperty(facet)) {
       filters[facet] = [];
     }
-    // If this is a new term filter:
+    // If this is an existing term filter:
     if (filters[facet].indexOf(term) === -1) {
       filters[facet].push(term);
     } else {
@@ -43,19 +43,18 @@ angular.module('app.facets.controllers').controller('FacetsController', [ "$scop
     }
     // If there are filters add them to the search query params
     if (Object.keys(filters).length) {
-      search.filters = JSON.stringify(filters).replace(/[\{\}\"]/g, '');
+      search.filters = JSON.stringify(filters);//.replace(/[\{\}\"]/g, '');
     } else {
       delete search.filters;
     }
-
+    console.log(search);
     httpService.updateSearch(search);
-  };
+  }
 
-  var addUriRangeFilters = function (facet, from, to) {
+  function addUriRangeFilters(facet, from, to) {
     var search, filters;
     search = httpService.getCurrentSearch();
     filters = httpService.getCurrentFilters();
-    console.log(from, to);
     filters[facet] = [from , to];
 
     // If there are no more terms in that facet filter remove the facet
@@ -70,23 +69,7 @@ angular.module('app.facets.controllers').controller('FacetsController', [ "$scop
     }
 
     httpService.updateSearch(search);
-  };
-
-  var toggleActiveFilter = function (type, facet, term) {
-    var t = $scope[type].facets[facet].terms[term];
-    t.active = !t.active;
-  };
-
-  $scope.toggleFilter = function (type, facet, term) {
-    toggleUriTermFilters(facet, term);
-    toggleActiveFilter(type, facet, term);
-    $scope.$emit('toggleFilter');
-  };
-
-  $scope.toggleRangeFilter = function (type, facet, from, to) {
-    addUriRangeFilters(facet, from, to);
-    $scope.$emit('toggleFilter');
-  };
+  }
 
   $scope.select2 = {
     width: "100%",
@@ -94,4 +77,19 @@ angular.module('app.facets.controllers').controller('FacetsController', [ "$scop
     tags: ["blah"],
     tokenSeparators: [",", " "]
   };
+
+  $scope.$on('termFilter', function (event, facet, term) {
+    toggleUriTermFilters(facet, term);
+    $scope.$emit('toggleFilter');
+  });
+  $scope.$on('rangeFilter', function (event, facet, from, to) {
+    addUriRangeFilters(facet, from, to);
+    $scope.$emit('toggleFilter');
+  });
+  /*
+   $scope.$on('locationFilter', function(event, facet, location) {
+   addUriLocationFilters(facet, location);
+   $scope.$emit('toggleFilter');
+   });
+   */
 }]);

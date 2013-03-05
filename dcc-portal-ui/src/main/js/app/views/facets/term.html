@@ -1,13 +1,13 @@
 <li class="nav-header">
     <i ng-hide="facet.active" class="icon-check-empty"></i>
     <i ng-show="facet.active" class="icon-check"></i>
-    {{facet_name}}
+    {{facetName}}
 </li>
 <li>
-    <ul class="unstyled" ng-repeat="(term_name, term) in facet.terms">
-        <li><a href="" ng-click="toggleFilter(facet_name, term_name)">
+    <ul class="unstyled" ng-repeat="term in facet.terms">
+        <li><a href="" ng-click="termClick(term.term)">
             <i ng-hide="term.active" class="icon-check-empty"></i>
             <i ng-show="term.active" class="icon-check"></i>
-            {{term_name}} ({{term.count}})</a></li>
+            {{term.term}} ({{term.count}})</a></li>
     </ul>
 </li>

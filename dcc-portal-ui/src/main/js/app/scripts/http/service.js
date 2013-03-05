@@ -39,6 +39,7 @@ angular.module('app.http.service').service('httpService', ['$location', function
 
   this.getCurrentFilters = function () {
     var cfParams = this.getCurrentSearch().filters || '';
-    return cfParams.length ? JSON.parse(this.jsonifyParams(cfParams)) : {};
+    //return cfParams.length ? JSON.parse(this.jsonifyParams(cfParams)) : {};
+    return cfParams.length ? JSON.parse(cfParams) : {};
   };
 }]);

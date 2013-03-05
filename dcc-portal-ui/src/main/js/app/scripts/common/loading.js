@@ -61,8 +61,8 @@ mod.factory('onCompleteInterceptor', function (loadingService, delayedPromise) {
     // Normally we would just chain on to the promise but ...
     //return promise.then(decrementRequestCount, decrementRequestCount);
     // ... we are delaying the response by 2 secs to allow the loading to be seen.
-    //return promise.then(decrementRequestCount, decrementRequestCount);
-    return delayedPromise(promise, 1000).then(decrementRequestCount, decrementRequestCount);
+    return promise.then(decrementRequestCount, decrementRequestCount);
+    //return delayedPromise(promise, 1000).then(decrementRequestCount, decrementRequestCount);
   };
 });
 

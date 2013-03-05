@@ -24,7 +24,6 @@ angular.module('app.genes').config(['$routeProvider', function ($routeProvider) 
       .when('/genes', {
         templateUrl: 'views/genes.html',
         controller: 'GenesController',
-        reloadOnSearch: false,
         resolve: {
           genes: ['GenesService', function (GenesService) {
             return GenesService.query();

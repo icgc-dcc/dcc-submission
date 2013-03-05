@@ -71,7 +71,7 @@ public class GeneRepository implements IGeneRepository {
             .setSize(searchQuery.getSize()) //
             .addSort(searchQuery.getSort(), searchQuery.getOrder()) //
             .addFields(ALLOWED_FIELDS) //
-            .addFacet(FacetBuilders.termsFacet("Gene Type").field("gene_type").global(true)); //
+            .addFacet(FacetBuilders.termsFacet("gene_type").field("gene_type").global(true)); //
 
     // System.out.println(s);
     return s.execute().actionGet();

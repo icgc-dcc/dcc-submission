@@ -98,6 +98,8 @@ textarea.ng-invalid:focus {
 }
 
 /* Twitter Bootstrap Mods */
-.input-xmini {
-    width: 50px;
+.nav-list {
+    padding-left: 0;
+    padding-right: 0;
+    font-size: 12px;
 }

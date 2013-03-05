@@ -22,7 +22,9 @@ angular.module('app.genes.controllers').controller('GenesController', [ "$scope"
   $scope.genes = genes;
 
   $scope.refresh = function () {
-    $scope.genes = GenesService.query();
+    GenesService.query().then(function (response) {
+      $scope.genes = response;
+    });
   };
 
   $scope.$on('toggleFilter', $scope.refresh);

@@ -1,18 +1,46 @@
 <div class="row">
-    <div class="span3" ng-init="facets=genes.facets">
-        <ul class="nav nav-list" ng-controller="FacetsController" ng-repeat="(facet_name, facet) in facets">
+    <div class="span3">
+        <ul class="nav nav-list" ng-controller="FacetsController">
+            <term-facet data-facet-name="gene_type" data-facet="genes.facets['gene_type']"></term-facet>
             <li class="nav-header">
                 <i ng-hide="facet.active" class="icon-check-empty"></i>
                 <i ng-show="facet.active" class="icon-check"></i>
-                {{facet_name}}
+                Gene list
+            </li>
+            <li class="form-inline">
+                <input type="hidden" uui-select2="select2">
+            </li>
+            <li class="nav-header">
+                <i ng-hide="facet.active" class="icon-check-empty"></i>
+                <i ng-show="facet.active" class="icon-check"></i>
+                Gene location
             </li>
             <li>
-                <ul class="unstyled" ng-repeat="(term_name, term) in facet.terms">
-                    <li><a href="" ng-click="toggleFilter(facet_name, term_name)">
+                <input type="text" ng-model="location"/>
+                <button type="button" class="btn" ng-click="toggleRangeFilter('projects', 'range_facet', from, to)">
+                    Search
+                </button>
+            </li>
+            <li class="nav-header">
+                <i ng-hide="facet.active" class="icon-check-empty"></i>
+                <i ng-show="facet.active" class="icon-check"></i>
+                Gene type
+            </li>
+            <li>
+                <ul class="unstyled" ng-repeat="term in genes.facets['gene_type'].terms">
+                    <li><a href="" ng-click="toggleTermFilter('genes','gene_type',term.term)">
                         <i ng-hide="term.active" class="icon-check-empty"></i>
                         <i ng-show="term.active" class="icon-check"></i>
-                        {{term_name}} ({{term.count}})</a></li>
+                        {{term.term}} ({{term.count}})</a></li>
                 </ul>
+            </li>
+            <li class="nav-header">
+                <i ng-hide="facet.active" class="icon-check-empty"></i>
+                <i ng-show="facet.active" class="icon-check"></i>
+                Pathways
+            </li>
+            <li class="form-inline">
+                <input type="hidden" uui-select2="select2">
             </li>
         </ul>
     </div>
@@ -44,14 +72,13 @@
             </thead>
             <tbody>
             <tr ng-repeat="gene in genes.hits">
-                <td><a href="#/genes/{{gene.ensembl_gene_id}}">{{gene.symbol}}</a></td>
-
-                <td>{{gene.description}}</td>
-                <td>{{gene.chromosome}}</td>
-                <td>{{gene.start}}</td>
-                <td>{{gene.end}}</td>
-                <td>{{gene.band}}</td>
-                <td>{{gene.gene_type}}</td>
+                <td><a href="#/genes/{{gene.fields.ensembl_gene_id}}">{{gene.fields.symbol}}</a></td>
+                <td>{{gene.fields.description}}</td>
+                <td>{{gene.fields.chromosome}}</td>
+                <td>{{gene.fields.start}}</td>
+                <td>{{gene.fields.end}}</td>
+                <td>{{gene.fields.band}}</td>
+                <td>{{gene.fields.gene_type}}</td>
                 <td>??</td>
             </tr>
             </tbody>
