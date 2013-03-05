@@ -17,12 +17,10 @@
  */
 package org.icgc.dcc.validation.service;
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -31,13 +29,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.mail.Address;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.Transport;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
 
 import org.icgc.dcc.core.MailUtils;
 import org.icgc.dcc.release.NextRelease;
@@ -353,9 +346,6 @@ public class ValidationQueueManagerService extends AbstractService {
   }
 
   private void email(QueuedProject project, SubmissionState state) {
-    Properties props = new Properties();
-    props.put(MailUtils.SMTP_HOST, this.config.getString(MailUtils.SMTP_HOST));
-    Session session = Session.getDefaultInstance(props, null);
     Release release = releaseService.getNextRelease().getRelease();
 
     Set<Address> aCheck = Sets.newHashSet();
@@ -365,48 +355,12 @@ public class ValidationQueueManagerService extends AbstractService {
         Address a = new InternetAddress(email);
         aCheck.add(a);
       } catch(AddressException e) {
-        log.error("Illigal Address: " + e);
+        log.error("Illegal Address: " + e);
       }
     }
 
     if(aCheck.isEmpty() == false) {
-      try {
-        Message msg = new MimeMessage(session);
-        String fromEmail = this.config.getString(MailUtils.FROM);
-        msg.setFrom(new InternetAddress(fromEmail, fromEmail));
-
-        msg.setSubject(String.format(this.config.getString(MailUtils.SUBJECT), project.getKey(), state));
-        if(state == SubmissionState.ERROR) {
-          // send email to admin when Error occurs
-          Address adminEmailAdd = new InternetAddress(this.config.getString(MailUtils.ADMIN_RECIPIENT));
-          aCheck.add(adminEmailAdd);
-          msg.setText(String.format(this.config.getString(MailUtils.ERROR_BODY), project.getKey(), state));
-        } else if(state == SubmissionState.VALID) {
-          msg.setText(String.format(this.config.getString(MailUtils.VALID_BODY), project.getKey(), state,
-              release.getName(), project.getKey()));
-        } else if(state == SubmissionState.INVALID) {
-          msg.setText(String.format(this.config.getString(MailUtils.INVALID_BODY), project.getKey(), state,
-              release.getName(), project.getKey()));
-        }
-
-        Address[] addresses = new Address[aCheck.size()];
-
-        int i = 0;
-        for(Address email : aCheck) {
-          addresses[i++] = email;
-        }
-        msg.addRecipients(Message.RecipientType.TO, addresses);
-
-        Transport.send(msg);
-        log.info("Emails for {} sent to {}: ", project.getKey(), aCheck);
-
-      } catch(AddressException e) {
-        log.error("an error occured while emailing: ", e);
-      } catch(MessagingException e) {
-        log.error("an error occured while emailing: ", e);
-      } catch(UnsupportedEncodingException e) {
-        log.error("an error occured while emailing: ", e);
-      }
+      MailUtils.validationEndEmail(config, release.getName(), project.getKey(), state, aCheck);
     }
   }
 
