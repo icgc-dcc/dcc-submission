@@ -59,7 +59,7 @@ function get_xml_value() {
 is_linux || is_mac || { echo "ERROR: must be using Linux or Mac (Darwin)"; exit 1; }
 
 # check in data-submission directory
-[ -f "${parent_pom_file?}" ] && [ "$(get_xml_value ${parent_pom_file?} '//project/artifactId/text()')" == "dcc-parent" ] || { echo "ERROR: must be in data-submission dir"; exit 1; }
+[ -f "${parent_pom_file?}" ] && [ "$(get_xml_value ${parent_pom_file?} '//project/artifactId/text()')" == "dcc-submission" ] || { echo "ERROR: must be in data-submission dir"; exit 1; }
 
 
 # ===========================================================================
