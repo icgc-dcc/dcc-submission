@@ -17,10 +17,6 @@
  */
 package org.icgc.dcc.validation.service;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
-
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -43,6 +39,7 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
+import org.icgc.dcc.core.MailUtils;
 import org.icgc.dcc.release.NextRelease;
 import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.QueuedProject;
@@ -69,6 +66,10 @@ import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.AbstractService;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 
 /**
  * Manages validation queue that:<br>
@@ -353,7 +354,7 @@ public class ValidationQueueManagerService extends AbstractService {
 
   private void email(QueuedProject project, SubmissionState state) {
     Properties props = new Properties();
-    props.put("mail.smtp.host", this.config.getString("mail.smtp.host"));
+    props.put(MailUtils.SMTP_HOST, this.config.getString(MailUtils.SMTP_HOST));
     Session session = Session.getDefaultInstance(props, null);
     Release release = releaseService.getNextRelease().getRelease();
 
@@ -371,20 +372,20 @@ public class ValidationQueueManagerService extends AbstractService {
     if(aCheck.isEmpty() == false) {
       try {
         Message msg = new MimeMessage(session);
-        String fromEmail = this.config.getString("mail.from.email");
+        String fromEmail = this.config.getString(MailUtils.FROM);
         msg.setFrom(new InternetAddress(fromEmail, fromEmail));
 
-        msg.setSubject(String.format(this.config.getString("mail.subject"), project.getKey(), state));
+        msg.setSubject(String.format(this.config.getString(MailUtils.SUBJECT), project.getKey(), state));
         if(state == SubmissionState.ERROR) {
           // send email to admin when Error occurs
-          Address adminEmailAdd = new InternetAddress(this.config.getString("mail.admin.email"));
+          Address adminEmailAdd = new InternetAddress(this.config.getString(MailUtils.ADMIN_RECIPIENT));
           aCheck.add(adminEmailAdd);
-          msg.setText(String.format(this.config.getString("mail.error_body"), project.getKey(), state));
+          msg.setText(String.format(this.config.getString(MailUtils.ERROR_BODY), project.getKey(), state));
         } else if(state == SubmissionState.VALID) {
-          msg.setText(String.format(this.config.getString("mail.valid_body"), project.getKey(), state,
+          msg.setText(String.format(this.config.getString(MailUtils.VALID_BODY), project.getKey(), state,
               release.getName(), project.getKey()));
         } else if(state == SubmissionState.INVALID) {
-          msg.setText(String.format(this.config.getString("mail.invalid_body"), project.getKey(), state,
+          msg.setText(String.format(this.config.getString(MailUtils.INVALID_BODY), project.getKey(), state,
               release.getName(), project.getKey()));
         }
 

@@ -40,14 +40,34 @@ public class MailUtils { // TODO: DCC-686 - make it a service (inject Config)
 
   private static final Logger log = LoggerFactory.getLogger(MailUtils.class);
 
+  public static final String SMTP_HOST = "mail.smtp.host";
+
+  public static final String SMTP_SERVER = "smtp.oicr.on.ca";
+
+  public static final String SUBJECT = "mail.subject";
+
+  public static final String FROM = "mail.from.email";
+
+  public static final String ADMIN_RECIPIENT = "mail.admin.email";
+
+  public static final String SUPPORT_RECIPIENT = "mail.support.email";
+
+  public static final String SIGNOFF_BODY = "mail.signoff_body";
+
+  public static final String ERROR_BODY = "mail.error_body";
+
+  public static final String VALID_BODY = "mail.valid_body";
+
+  public static final String INVALID_BODY = "mail.invalid_body";
+
   public static void sendEmail(Config config, String subject, String text) {
     try {
       Properties props = new Properties();
-      props.put("mail.smtp.host", config.getString("mail.smtp.host"));
+      props.put(SMTP_HOST, config.getString(SMTP_HOST));
       Session session = Session.getDefaultInstance(props, null);
       Message msg = new MimeMessage(session);
-      msg.setFrom(new InternetAddress(config.getString("mail.from.email"), config.getString("mail.from.email")));
-      msg.addRecipient(Message.RecipientType.TO, new InternetAddress(config.getString("mail.support.email")));
+      msg.setFrom(new InternetAddress(config.getString(FROM), config.getString(FROM)));
+      msg.addRecipient(Message.RecipientType.TO, new InternetAddress(config.getString(SUPPORT_RECIPIENT)));
       msg.setSubject(subject);
       msg.setText(text);
       Transport.send(msg);

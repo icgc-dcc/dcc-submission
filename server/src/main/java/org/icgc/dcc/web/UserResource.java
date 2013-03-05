@@ -37,6 +37,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 
+import org.icgc.dcc.core.MailUtils;
 import org.icgc.dcc.core.UserService;
 import org.icgc.dcc.core.model.Feedback;
 import org.icgc.dcc.core.model.User;
@@ -81,7 +82,7 @@ public class UserResource {
 
     log.debug("Sending feedback email: {}", feedback);
     Properties props = new Properties();
-    props.put("mail.smtp.host", "smtp.oicr.on.ca");
+    props.put(MailUtils.SMTP_HOST, MailUtils.SMTP_SERVER);
     Session session = Session.getDefaultInstance(props, null);
     try {
       Message msg = new MimeMessage(session);
@@ -89,7 +90,7 @@ public class UserResource {
 
       msg.setSubject(feedback.getSubject());
       msg.setText(feedback.getMessage());
-      String recipient = config.getString("mail.support.email");
+      String recipient = config.getString(MailUtils.SUPPORT_RECIPIENT);
       msg.addRecipient(Message.RecipientType.TO, new InternetAddress(recipient));
 
       Transport.send(msg);

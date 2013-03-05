@@ -305,7 +305,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     // after sign off, send a email to DCC support
     MailUtils.sendEmail(this.config, //
         String.format("Signed off Projects: %s", projectKeys), //
-        String.format(config.getString("mail.signoff_body"), user, projectKeys, nextReleaseName));
+        String.format(config.getString(MailUtils.SIGNOFF_BODY), user, projectKeys, nextReleaseName));
 
     log.info("signed off {} for {}", projectKeys, nextReleaseName);
   }
