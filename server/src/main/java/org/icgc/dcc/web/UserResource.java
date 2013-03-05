@@ -17,15 +17,6 @@
  */
 package org.icgc.dcc.web;
 
-import java.util.Properties;
-
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -37,6 +28,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 
+import org.icgc.dcc.core.MailUtils;
 import org.icgc.dcc.core.UserService;
 import org.icgc.dcc.core.model.Feedback;
 import org.icgc.dcc.core.model.User;
@@ -80,24 +72,7 @@ public class UserResource {
     /* no authorization check necessary */
 
     log.debug("Sending feedback email: {}", feedback);
-    Properties props = new Properties();
-    props.put("mail.smtp.host", "smtp.oicr.on.ca");
-    Session session = Session.getDefaultInstance(props, null);
-    try {
-      Message msg = new MimeMessage(session);
-      msg.setFrom(new InternetAddress(feedback.getEmail()));
-
-      msg.setSubject(feedback.getSubject());
-      msg.setText(feedback.getMessage());
-      String recipient = config.getString("mail.support.email");
-      msg.addRecipient(Message.RecipientType.TO, new InternetAddress(recipient));
-
-      Transport.send(msg);
-    } catch(AddressException e) {
-      log.error("an error occured while emailing: " + e);
-    } catch(MessagingException e) {
-      log.error("an error occured while emailing: " + e);
-    }
+    MailUtils.feedbackEmail(config, feedback);
 
     return Response.ok().build();
   }

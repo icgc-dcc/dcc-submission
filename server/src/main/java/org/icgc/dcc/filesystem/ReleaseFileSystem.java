@@ -19,6 +19,7 @@ package org.icgc.dcc.filesystem;
 
 import java.util.List;
 
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.core.model.Project;
@@ -80,6 +81,8 @@ public class ReleaseFileSystem {
   }
 
   public void moveFrom(ReleaseFileSystem previous, List<Project> projects) {
+    FileSystem fileSystem = this.dccFileSystem.getFileSystem();
+
     for(Project project : projects) {
       SubmissionDirectory previousSubmissionDirectory = previous.getSubmissionDirectory(project);
       SubmissionDirectory newSubmissionDirectory = getSubmissionDirectory(project);
@@ -87,21 +90,22 @@ public class ReleaseFileSystem {
         String origin = previousSubmissionDirectory.getDataFilePath(filename);
         String destination = newSubmissionDirectory.getDataFilePath(filename);
         Log.info("moving {} to {} ", origin, destination);
-        HadoopUtils.mv(this.dccFileSystem.getFileSystem(), origin, destination);
+        HadoopUtils.mv(fileSystem, origin, destination);
       }
       // move .validation folder over
-      HadoopUtils.mv(this.dccFileSystem.getFileSystem(), previousSubmissionDirectory.getValidationDirPath(),
+      HadoopUtils.mv(fileSystem, previousSubmissionDirectory.getValidationDirPath(),
           newSubmissionDirectory.getValidationDirPath());
     }
 
     // also move System Files from previous releases
-    Path origin = previous.getSystemDirectory();
-    Path destination = this.getSystemDirectory();
-    HadoopUtils.mkdirs(this.dccFileSystem.getFileSystem(), destination.toString());
+    Path originDir = previous.getSystemDirectory();
+    Path destinationDir = this.getSystemDirectory();
+    HadoopUtils.mkdirs(fileSystem, destinationDir.toString());
 
-    List<Path> files = HadoopUtils.lsFile(this.dccFileSystem.getFileSystem(), origin.toString());
-    for(Path file : files) {
-      HadoopUtils.createSymlink(this.dccFileSystem.getFileSystem(), file, new Path(destination, file.getName()));
+    List<Path> files = HadoopUtils.lsFile(fileSystem, originDir.toString());
+    for(Path originFile : files) {
+      Path destinationFile = new Path(destinationDir, originFile.getName());
+      HadoopUtils.mv(fileSystem, originFile, destinationFile); // temporary solution until DCC-835 is done
     }
   }
 

@@ -303,9 +303,11 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     }
 
     // after sign off, send a email to DCC support
-    MailUtils.sendEmail(this.config, //
+    MailUtils.email(this.config, //
+        config.getString(MailUtils.NORMAL_FROM), //
+        config.getString(MailUtils.AUTOMATIC_SUPPORT_RECIPIENT), //
         String.format("Signed off Projects: %s", projectKeys), //
-        String.format(config.getString("mail.signoff_body"), user, projectKeys, nextReleaseName));
+        String.format(config.getString(MailUtils.SIGNOFF_BODY), user, projectKeys, nextReleaseName));
 
     log.info("signed off {} for {}", projectKeys, nextReleaseName);
   }
@@ -397,8 +399,11 @@ public class ReleaseService extends BaseMorphiaService<Release> {
       }
     }
     if(attempts >= MAX_ATTEMPTS) {
-      String message = String.format("failed to validate project %s (could never acquire lock)", nextProjectKey);
-      MailUtils.sendEmail(this.config, message, message);
+      String message =
+          String.format("failed to validate project %s, could never acquire lock: please contact %s", nextProjectKey,
+              config.getString(MailUtils.ADMIN_RECIPIENT));
+      MailUtils.email(this.config, config.getString(MailUtils.PROBLEM_FROM),
+          config.getString(MailUtils.ADMIN_RECIPIENT), message, message);
       throw new DccConcurrencyException(message);
     }
   }
@@ -453,8 +458,10 @@ public class ReleaseService extends BaseMorphiaService<Release> {
       }
     }
     if(attempts >= MAX_ATTEMPTS) {
-      String message = String.format("Failed to resolve project %s (could never acquire lock)", projectKey);
-      MailUtils.sendEmail(this.config, message, message);
+      String message = String.format("Failed to resolve project %s, could never acquire lock: please contact %s", projectKey,
+              config.getString(MailUtils.ADMIN_RECIPIENT));
+      MailUtils.email(this.config, config.getString(MailUtils.PROBLEM_FROM),
+          config.getString(MailUtils.ADMIN_RECIPIENT), message, message);
       throw new DccConcurrencyException(message);
     }
   }
