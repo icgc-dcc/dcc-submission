@@ -95,7 +95,7 @@ public class SearchQuery {
     this.sort = sort;
     this.order = SortOrder.valueOf(order.toUpperCase());
 
-    this.filters = filters == null ? null : jsonifyString(filters);
+    this.filters = filters == null ? new ObjectMapper().createObjectNode() : jsonifyString(filters);
     this.score = score;
   }
 

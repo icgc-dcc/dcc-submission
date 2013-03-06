@@ -15,31 +15,14 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc.portal.search;
+package org.icgc.dcc.portal.repositories;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import org.elasticsearch.search.sort.SortOrder;
+import org.elasticsearch.action.get.GetResponse;
+import org.elasticsearch.action.search.SearchResponse;
+import org.icgc.dcc.portal.search.SearchQuery;
 
-@EqualsAndHashCode(callSuper = false)
-@Data
-public class GeneSearchQuery extends SearchQuery {
+public interface IProjectRepository {
+  GetResponse getOne(final String id);
 
-  private static final String DEFAULT_SORT = "start";
-  private static final SortOrder DEFAULT_ORDER = SortOrder.ASC;
-
-  public GeneSearchQuery(final int from, final int size, final String sort, final String order) {
-    super(from, size);
-    this.sort = sort != null ? sort : DEFAULT_SORT;
-    this.order = order != null ? SortOrder.valueOf(order.toUpperCase()) : DEFAULT_ORDER;
-  }
-
-  public GeneSearchQuery(String filters, String score, Integer from, int size, String sort, String order) {
-    super(from, size);
-    this.sort = sort != null ? sort : DEFAULT_SORT;
-    this.order = order != null ? SortOrder.valueOf(order.toUpperCase()) : DEFAULT_ORDER;
-    this.filters = filters == null ? new ObjectMapper().createObjectNode() : jsonifyString(filters);
-    this.score = score;
-  }
+  SearchResponse getAll(final SearchQuery searchQuery);
 }

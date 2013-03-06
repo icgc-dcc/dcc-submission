@@ -24,18 +24,18 @@ import org.elasticsearch.search.sort.SortOrder;
 
 @EqualsAndHashCode(callSuper = false)
 @Data
-public class GeneSearchQuery extends SearchQuery {
+public class ProjectSearchQuery extends SearchQuery {
 
-  private static final String DEFAULT_SORT = "start";
-  private static final SortOrder DEFAULT_ORDER = SortOrder.ASC;
+  private static final String DEFAULT_SORT = "project_name";
+  private static final SortOrder DEFAULT_ORDER = SortOrder.DESC;
 
-  public GeneSearchQuery(final int from, final int size, final String sort, final String order) {
+  public ProjectSearchQuery(final int from, final int size, final String sort, final String order) {
     super(from, size);
     this.sort = sort != null ? sort : DEFAULT_SORT;
     this.order = order != null ? SortOrder.valueOf(order.toUpperCase()) : DEFAULT_ORDER;
   }
 
-  public GeneSearchQuery(String filters, String score, Integer from, int size, String sort, String order) {
+  public ProjectSearchQuery(String filters, String score, Integer from, int size, String sort, String order) {
     super(from, size);
     this.sort = sort != null ? sort : DEFAULT_SORT;
     this.order = order != null ? SortOrder.valueOf(order.toUpperCase()) : DEFAULT_ORDER;
