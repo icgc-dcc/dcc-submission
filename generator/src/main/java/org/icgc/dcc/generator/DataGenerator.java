@@ -1,9 +1,12 @@
 package org.icgc.dcc.generator;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Writer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -15,6 +18,8 @@ import java.util.Random;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.type.TypeReference;
+import org.icgc.dcc.dictionary.model.CodeList;
 import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.dictionary.model.ValueType;
@@ -44,51 +49,149 @@ import com.google.common.io.Resources;
  */
 
 public class DataGenerator {
-  private final ObjectMapper mapper;
+  /**
+   * 
+   */
+  public ObjectMapper mapper;
 
-  // private final List<CodeList> codeList;
+  /**
+   * 
+   */
+  public static List<CodeList> codeList;
 
-  private final Random random;
+  /**
+   * 
+   */
+  public static String DONOR_SCHEMA;
 
-  private ArrayList<String> uniqueString;
+  /**
+   * 
+   */
+  public static String tab;
 
-  private ArrayList<Integer> uniqueInt;
+  /**
+   * 
+   */
+  public static String newLine;
 
-  private ArrayList<Double> uniqueDecimal;
+  /**
+   * 
+   */
+  public Random random;
 
-  private final ArrayList<ArrayList<String>> uniqueID;
+  /**
+   * 
+   */
+  public ArrayList<String> donorID;
 
-  private final List<String> featureType;
+  /**
+   * 
+   */
+  public ArrayList<String> specimenID;
 
-  private final List<String> leadJurisdiction;
+  /**
+   * 
+   */
+  public ArrayList<String> sampleID;
 
-  private final List<String> tumourType;
+  /**
+   * 
+   */
+  public ArrayList<String> controlOne;
 
-  private final List<String> institution;
+  /**
+   * 
+   */
+  public ArrayList<String> controlTwo;
 
-  private final List<String> platform;
+  /**
+   * 
+   */
+  public ArrayList<String> uniqueString;
+
+  /**
+   * 
+   */
+  public Integer uniqueInt;
+
+  /**
+   * 
+   */
+  public Double uniqueDecimal;
+
+  /**
+   * 
+   */
+  public ArrayList<ArrayList<String>> uniqueID;
+
+  /**
+   * 
+   */
+  public static List<String> featureType;
+
+  /**
+   * 
+   */
+  public static List<String> leadJurisdiction;
+
+  /**
+   * 
+   */
+  public static List<String> tumourType;
+
+  /**
+   * 
+   */
+  public static List<String> institution;
+
+  /**
+   * 
+   */
+  public static List<String> platform;
+
+  // private final org.icgc.dcc.dictionary.model.CodeList codeList;
 
   private static org.icgc.dcc.dictionary.model.Dictionary dictionary;
 
-  public DataGenerator() throws JsonParseException, JsonMappingException, IOException {
+  public DataGenerator(Long seed) throws JsonParseException, JsonMappingException, IOException {
     mapper = new ObjectMapper();
     dictionary =
         mapper.readValue(Resources.getResource("dictionary.json"), org.icgc.dcc.dictionary.model.Dictionary.class);
-    /*
-     * codeList = mapper.readValue(Resources.getResource("codeList.json"), new TypeReference<List<CodeList>>() { });
-     */
-    random = new Random();
+
+    codeList = mapper.readValue(Resources.getResource("codeList.json"), new TypeReference<List<CodeList>>() {
+    });
+    random = new Random(seed);
+
     uniqueID = new ArrayList<ArrayList<String>>();
 
     uniqueString = new ArrayList<String>();
-    uniqueInt = new ArrayList<Integer>();
-    uniqueDecimal = new ArrayList<Double>();
+    uniqueInt = 0;
+    uniqueDecimal = 0.0;
 
-    /*
-     * donorID = new ArrayList<String>(); donorID.add("donor"); donorID.add("donor_id"); specimenID = new
-     * ArrayList<String>(); specimenID.add("specimen"); specimenID.add("specimen_id"); sampleID = new
-     * ArrayList<String>(); sampleID.add("sample"); sampleID.add("analyzed_sample_id");
-     */
+    donorID = new ArrayList<String>();
+    donorID.add("donor");
+    donorID.add("donor_id");
+
+    specimenID = new ArrayList<String>();
+    specimenID.add("specimen");
+    specimenID.add("specimen_id");
+
+    sampleID = new ArrayList<String>();
+    sampleID.add("sample");
+    sampleID.add("analyzed_sample_id");
+
+    // ArrayList to hold whether a sample is tumour or controlled
+    controlOne = new ArrayList<String>();
+    controlOne.add("sample");
+    controlOne.add("controlVariable");
+
+    controlTwo = new ArrayList<String>();
+    controlTwo.add("sample");
+    controlTwo.add("controlVariable");
+
+    uniqueID.add(donorID);
+    uniqueID.add(specimenID);
+    uniqueID.add(sampleID);
 
     featureType = Arrays.asList("ssm", "sgv", "cnsm", "cngv", "stsm", "stgv", "exp", "mirna", "jcn", "meth");
     leadJurisdiction =
@@ -201,75 +304,389 @@ public class DataGenerator {
 
   }
 
-  public void createExpFile(FileSchema schema, String featureType, String[] args, boolean core) throws IOException {
-    String fileName = null;
-    if(core) {
-      fileName = generateFileName(schema, args, featureType, core);
-    } else {
-      fileName = generateFileName(schema, args, featureType, core);
-    }
+  public void createFile(FileSchema schema, String[] args, String featureType) throws IOException {
+    boolean isCore = featureType.equals("core") ? true : false;
+    String fileName = generateFileName(schema, args, featureType, isCore);
     File outputFile = new File("target/" + fileName);
     outputFile.createNewFile();
     Writer writer = new BufferedWriter(new FileWriter(outputFile));
 
     for(String fieldName : schema.getFieldNames()) {
-      writer.write(fieldName + '\t');
+      writer.write(fieldName + tab);
     }
 
-    writer.write("\n");
-    String output = null;
+    writer.write(newLine);
 
-    for(int i = 0; i < Integer.parseInt(args[4]); i++) {
-      for(Field currentField : schema.getFields()) {
-        output = null;
+    if(isCore) {
+      createCoreFile(schema, args, writer);
+    } else if(featureType.substring(featureType.length() - 2).equals("m")) {
+      createMetaFile(schema, args, writer);
+    } else if(featureType.substring(featureType.length() - 2).equals("p")) {
+      createPrimaryFile(schema, args, writer);
+    } else if(featureType.substring(featureType.length() - 2).equals("g")) {
+      createPrimaryFile(schema, args, writer);
+    } else if(featureType.substring(featureType.length() - 2).equals("s")) {
+      if(schema.getName().equals("mirna_s")) {
+        createMirnaFile(schema, args, writer);
+      } else {
+        createSecondaryFile(schema, args, writer);
+      }
+    }
 
-        // See if the current field being populated is suppose to have a foreign key
-        for(int j = 0; j < schema.getRelations().size(); j++) {
-          int k = 0; // holds index of 'fields' array that matches current field
+    writer.close();
+    // Uniqueness is to each file
+    uniqueString.removeAll(uniqueString);
+    uniqueInt = 0;
+    uniqueDecimal = 0.0;
 
-          // Above Comment. Iterates through fields
-          for(String foreignKeyField : schema.getRelations().get(j).getFields()) {
-            if(currentField.getName().equals(foreignKeyField)) {
+  }
 
-              // Find arraylist that carries primary keys of schema that relates to this fileschema
-              for(ArrayList<String> primaryKeyArray : uniqueID) {
-                if(primaryKeyArray.get(0).equals(schema.getRelations().get(j).getOther())
-                    && primaryKeyArray.get(1).equals(schema.getRelations().get(j).getOtherFields().get(k))) {
+  public void createCoreFile(FileSchema schema, String[] args, Writer writer) throws IOException {
 
-                  try {
-                    output = primaryKeyArray.get(i + 2);
-                  } catch(IndexOutOfBoundsException e) {
+    int numberOfLines;
+    // check bidirectionality
+    if(schema.getName().equals(DONOR_SCHEMA)) {
+      numberOfLines = 1;
+    } else if(schema.getRelations().size() > 0 && schema.getRelations().get(0).isBidirectional()) {
+      numberOfLines = randomIntGenerator(1, 5);// Get 5 from arguments
+    } else {
+      numberOfLines = randomIntGenerator(0, 4);// Get 4 from arguments
+    }
 
-                  }
-                }
+    int numberOfIterations =
+        schema.getName().equals(DONOR_SCHEMA) ? numberOfIterations = Integer.parseInt(args[4]) : getForeignKey(schema,
+            schema.getRelations().get(0).getFields().get(0)).size() - 2;
+
+    for(int i = 0; i < numberOfIterations; i++) {
+      for(int j = 0; j < numberOfLines; j++) {
+        for(Field currentField : schema.getFields()) {
+          String output = null;
+          ArrayList<String> foreignKeyArray = getForeignKey(schema, currentField.getName());
+          if(foreignKeyArray != null) {
+            output = foreignKeyArray.get(i + 2);
+          } else {
+            output = getFieldValue(schema, currentField);
+          }
+
+          if(isUniqueField(schema.getUniqueFields(), currentField.getName())) {
+            getPrimaryKey(schema, currentField.getName()).add(output);
+          }
+
+          // Special case for sample, to add whether sample type is controlled or tumour
+          if(schema.getName().equals("sample") && currentField.getName().equals("analyzed_sample_type")) {
+            int x = randomIntGenerator(0, 1);
+            // Instead here you could check if output(which will be the value of analyzed_sample_type) = 'c' then
+            // control one or, if output = 't' then go to control two
+            if(x == 0) {
+              controlOne.add(getPrimaryKey(schema, "analyzed_sample_id").get(
+                  getPrimaryKey(schema, "analyzed_sample_id").size() - 1));
+            } else {
+              controlTwo.add(getPrimaryKey(schema, "analyzed_sample_id").get(
+                  getPrimaryKey(schema, "analyzed_sample_id").size() - 1));
+            }
+          }
+          writer.write(output + tab);
+        }
+        writer.write(newLine);
+      }
+      if(schema.getName().equals(DONOR_SCHEMA)) {
+        numberOfLines = 1;
+      } else if(schema.getRelations().size() > 0 && schema.getRelations().get(0).isBidirectional()) {
+        numberOfLines = randomIntGenerator(1, 5);// Get 5 from arguments
+      } else {
+        numberOfLines = randomIntGenerator(0, 4);// Get 4 from arguments
+      }
+    }
+  }
+
+  public void createMetaFile(FileSchema schema, String[] args, Writer writer) throws IOException {
+    // check bidirectionality
+    int numberOfLines =
+        (schema.getRelations().size() > 0 && schema.getRelations().get(0).isBidirectional()) ? randomIntGenerator(1, 5) : randomIntGenerator(
+            0, 4);
+
+    int numberOfIterations = getForeignKey(schema, schema.getRelations().get(0).getFields().get(0)).size() - 2;
+
+    for(int i = 0; i < numberOfIterations; i++) {
+      for(int j = 0; j < numberOfLines; j++) {
+        for(Field currentField : schema.getFields()) {
+          String output = null;
+
+          if(getForeignKey(schema, currentField.getName()) != null) {
+            if(!schema.getName().equals("exp_m") && !schema.getName().equals("jcn_m")
+                && !schema.getName().equals("mirna_m")) {
+              // Assuming that the relationship is bidirectional false in all m files,hence the generator
+              output =
+                  currentField.getName().equals("matched_sample_id") ? controlOne.get(randomIntGenerator(0,
+                      controlOne.size() - 1)) : controlTwo.get(randomIntGenerator(0, controlTwo.size() - 1));
+            } else {
+              output = getForeignKey(schema, currentField.getName()).get(i + 2);
+            }
+          } else {
+            output = getFieldValue(schema, currentField);
+          }
+
+          if(isUniqueField(schema.getUniqueFields(), currentField.getName())) {
+            for(ArrayList<String> primaryKey : uniqueID) {
+              if(primaryKey.get(0).equals(schema.getName()) && primaryKey.get(1).equals(currentField.getName())) {
+                primaryKey.add(output);
               }
             }
-            k++;
           }
-        }
 
-        if(output == null) {
-          output = getFieldValue(schema, currentField);
+          writer.write(output + tab);
         }
+        writer.write(newLine);
+      }
+      numberOfLines =
+          (schema.getRelations().size() > 0 && schema.getRelations().get(0).isBidirectional()) ? randomIntGenerator(1,
+              5) : randomIntGenerator(0, 4);
+    }
+  }
 
-        if(isUniqueField(schema.getUniqueFields(), currentField.getName())) {
-          for(ArrayList<String> primaryKey : uniqueID) {
-            if(primaryKey.get(0).equals(schema.getName()) && primaryKey.get(1).equals(currentField.getName())) {
-              primaryKey.add(output);
+  public void createPrimaryFile(FileSchema schema, String[] args, Writer writer) throws IOException {
+    int numberOfLines =
+        (schema.getRelations().size() > 0 && schema.getRelations().get(0).isBidirectional()) ? randomIntGenerator(1, 5) : randomIntGenerator(
+            0, 4);
+
+    int numberOfIterations = getForeignKey(schema, schema.getRelations().get(0).getFields().get(0)).size() - 2;
+
+    for(int i = 0; i < numberOfIterations; i++) {
+      for(int j = 0; j < numberOfLines; j++) {
+        for(Field currentField : schema.getFields()) {
+          String output = null;
+
+          ArrayList<String> foreignKeyArray = getForeignKey(schema, currentField.getName());
+
+          output = foreignKeyArray != null ? foreignKeyArray.get(i + 2) : getFieldValue(schema, currentField);
+
+          if(isUniqueField(schema.getUniqueFields(), currentField.getName())) {
+            getPrimaryKey(schema, currentField.getName()).add(output);
+            if(currentField.getName().equals("placement")) {
+              System.out.println(output);
+            }
+          }
+
+          writer.write(output + tab);
+        }
+        writer.write(newLine);
+      }
+      numberOfLines =
+          (schema.getRelations().size() > 0 && schema.getRelations().get(0).isBidirectional()) ? randomIntGenerator(1,
+              5) : randomIntGenerator(0, 4);
+    }
+  }
+
+  public void createMirnaFile(FileSchema schema, String[] args, Writer writer) throws IOException {
+    FileInputStream fis = null;
+    BufferedReader br = null;
+
+    fis = new FileInputStream("src/main/resources/mirna_mirbase.txt");
+    br = new BufferedReader(new InputStreamReader(fis));
+    int fieldIndexOne = getMirbaseIdIndex(schema, br);
+    fis.getChannel().position(0);
+    br = new BufferedReader(new InputStreamReader(fis));
+    int fieldIndexTwo = getMirnaSequenceIndex(schema, br);
+
+    int numberOfLines =
+        (schema.getRelations().size() > 0 && schema.getRelations().get(0).isBidirectional()) ? randomIntGenerator(1, 5) : randomIntGenerator(
+            0, 4);
+
+    // 18000 is a random number i just picked cause mirna has no relation to other files
+    for(int i = 0; i < 18000; i++) {
+      for(int j = 0; j < numberOfLines; j++) {
+
+        for(Field currentField : schema.getFields()) {
+          String output = null;
+
+          // Add system file fields
+          String line = br.readLine();
+
+          if(line != null) {
+            output = getSystemFileOutput(fieldIndexOne, fieldIndexTwo, currentField, output, line.split(tab));
+          } else {
+            fis.getChannel().position(0);
+            br = new BufferedReader(new InputStreamReader(fis));
+            output = getSystemFileOutput(fieldIndexOne, fieldIndexTwo, currentField, output, br.readLine().split(tab));
+          }
+
+          if(output == null) {
+            ArrayList<String> foreignKeyArray = getForeignKey(schema, currentField.getName());
+            output = foreignKeyArray != null ? foreignKeyArray.get(i + 2) : getFieldValue(schema, currentField);
+          }
+
+          writer.write(output + tab);
+        }
+        writer.write(newLine);
+      }
+      numberOfLines =
+          (schema.getRelations().size() > 0 && schema.getRelations().get(0).isBidirectional()) ? randomIntGenerator(1,
+              5) : randomIntGenerator(0, 4);
+    }
+    br.close();
+  }
+
+  public void createSecondaryFile(FileSchema schema, String[] args, Writer writer) throws IOException {
+    FileInputStream fis = null;
+    BufferedReader br = null;
+    fis = new FileInputStream("src/main/resources/hsapiens_gene_ensembl__transcript__main.txt");
+    br = new BufferedReader(new InputStreamReader(fis));
+    int fieldIndexOne = getGeneIndex(schema, br);
+    fis.getChannel().position(0);
+    br = new BufferedReader(new InputStreamReader(fis));
+    int fieldIndexTwo = getTranscriptIndex(schema, br);
+
+    int numberOfLines =
+        (schema.getRelations().size() > 0 && schema.getRelations().get(0).isBidirectional()) ? randomIntGenerator(1, 5) : randomIntGenerator(
+            0, 4);
+
+    int numberOfIterations = getForeignKey(schema, schema.getRelations().get(0).getFields().get(0)).size() - 2;
+
+    for(int i = 0; i < numberOfIterations; i++) {
+      for(int j = 0; j < numberOfLines; j++) {
+
+        for(Field currentField : schema.getFields()) {
+          String output = null;
+
+          // Add system file fields
+          String line = br.readLine();
+
+          if(line != null) {
+            output = getSystemFileOutput(fieldIndexOne, fieldIndexTwo, currentField, output, line.split(tab));
+          } else {
+            fis.getChannel().position(0);
+            br = new BufferedReader(new InputStreamReader(fis));
+            output = getSystemFileOutput(fieldIndexOne, fieldIndexTwo, currentField, output, br.readLine().split(tab));
+          }
+          if(output == null) {
+            ArrayList<String> foreignKeyArray = getForeignKey(schema, currentField.getName());
+            output = foreignKeyArray != null ? foreignKeyArray.get(i + 2) : getFieldValue(schema, currentField);
+          }
+
+          writer.write(output + tab);
+        }
+        writer.write(newLine);
+      }
+      numberOfLines =
+          (schema.getRelations().size() > 0 && schema.getRelations().get(0).isBidirectional()) ? randomIntGenerator(1,
+              5) : randomIntGenerator(0, 4);
+    }
+    br.close();
+
+  }
+
+  /*
+   * We can make this static
+   */
+  public String getSystemFileOutput(int fieldIndexOne, int fieldIndexTwo, Field currentField, String output,
+      String[] fields) {
+    if(currentField.getName().equals("xref_mirbase_id")) {
+      output = fields[fieldIndexOne];
+    } else if(currentField.getName().equals("mirna_seq")) {
+      output = fields[fieldIndexTwo];
+    } else if(currentField.getName().equals("gene_affected")) {
+      output = fields[fieldIndexOne];
+    } else if(currentField.getName().equals("transcript_affected")) {
+      output = fields[fieldIndexTwo];
+    }
+    return output;
+  }
+
+  /*
+   * We can make this static
+   */
+  public static int getGeneIndex(FileSchema schema, BufferedReader bf) throws IOException {
+    int indexOfGeneID;
+    String[] fields = bf.readLine().split(tab);
+
+    for(indexOfGeneID = 0; indexOfGeneID < fields.length; indexOfGeneID++) {
+      if(fields[indexOfGeneID].equals("gene_id_1020_key")) {
+        return indexOfGeneID;
+      }
+    }
+
+    return -1;
+  }
+
+  /*
+   * We can make this static
+   */
+  public static int getTranscriptIndex(FileSchema schema, BufferedReader br) throws IOException {
+    int indexOfTranscriptID;
+    String[] fields = br.readLine().split(tab);
+
+    for(indexOfTranscriptID = 0; indexOfTranscriptID < fields.length; indexOfTranscriptID++) {
+      if(fields[indexOfTranscriptID].equals("transcript_id_1064_key")) {
+        return indexOfTranscriptID;
+      }
+    }
+
+    return -1;
+  }
+
+  /*
+   * We can make this static
+   */
+  public static int getMirbaseIdIndex(FileSchema schema, BufferedReader br) throws IOException {
+    int indexOfMirbaseIdID;
+    String[] fields = br.readLine().split(tab);
+
+    for(indexOfMirbaseIdID = 0; indexOfMirbaseIdID < fields.length; indexOfMirbaseIdID++) {
+      if(fields[indexOfMirbaseIdID].equals("xref_mirbase_id")) {
+        return indexOfMirbaseIdID;
+      }
+    }
+
+    return -1;
+  }
+
+  /*
+   * We can make this static
+   */
+  public static int getMirnaSequenceIndex(FileSchema schema, BufferedReader br) throws IOException {
+    int indexOfMirnaSequence;
+    String[] fields = br.readLine().split(tab);
+
+    for(indexOfMirnaSequence = 0; indexOfMirnaSequence < fields.length; indexOfMirnaSequence++) {
+      if(fields[indexOfMirnaSequence].equals("mirna_seq")) {
+        return indexOfMirnaSequence;
+      }
+    }
+
+    return -1;
+
+  }
+
+  public ArrayList<String> getPrimaryKey(FileSchema schema, String currentField) {
+    for(ArrayList<String> primaryKeyArray : uniqueID) {
+      if(primaryKeyArray.get(0).equals(schema.getName()) && primaryKeyArray.get(1).equals(currentField)) {
+        return primaryKeyArray;
+      }
+    }
+    return null;
+  }
+
+  public ArrayList<String> getForeignKey(FileSchema schema, String currentField) {
+
+    for(int j = 0; j < schema.getRelations().size(); j++) {
+      int k = 0; // holds index of 'fields' array that matches current field
+
+      // Above Comment. Iterates through fields
+      for(String foreignKeyField : schema.getRelations().get(j).getFields()) {
+        if(currentField.equals(foreignKeyField)) {
+
+          // Find arraylist that carries primary keys of schema that relates to this fileschema
+          for(ArrayList<String> primaryKeyArray : uniqueID) {
+            if(primaryKeyArray.get(0).equals(schema.getRelations().get(j).getOther())
+                && primaryKeyArray.get(1).equals(schema.getRelations().get(j).getOtherFields().get(k))) {
+              return primaryKeyArray;
             }
           }
         }
-
-        writer.write(output + "\t");
+        k++;
       }
-      writer.write("\n");
     }
-    writer.close();
-
-    // Uniqueness is to each file
-    uniqueString = new ArrayList<String>();
-    uniqueInt = new ArrayList<Integer>();
-    uniqueDecimal = new ArrayList<Double>();
+    return null;
   }
 
   public String checkParameters(String[] args) {
@@ -317,18 +734,24 @@ public class DataGenerator {
 
   public String generateFileName(FileSchema schema, String[] args, String featureType, boolean core) {
     String dateStamp = new SimpleDateFormat("yyyyMMdd").format(Calendar.getInstance().getTime());
+    StringBuffer filename = null;
     if(core) {
-      return args[0] + "__" + args[1] + "__" + args[2] + "__" + schema.getName() + "__" + dateStamp + ".txt";
+      filename =
+          new StringBuffer(args[0] + "__" + args[1] + "__" + args[2] + "__" + schema.getName() + "__" + dateStamp
+              + ".txt");
     } else {
-      return featureType + "__" + args[0] + "__" + args[1] + "__" + args[2] + "__"
-          + schema.getName().substring(schema.getName().length() - 2, schema.getName().length()) + "__" + args[3]
-          + "__" + dateStamp + ".txt";
+      filename =
+          new StringBuffer(featureType + "__" + args[0] + "__" + args[1] + "__" + args[2] + "__"
+              + schema.getName().substring(schema.getName().length() - 1) + "__" + args[3] + "__" + dateStamp + ".txt");
     }
+    return filename.toString();
   }
 
   public void determineUniqueFields(FileSchema schema) {
     for(String uniqueField : schema.getUniqueFields()) {
       ArrayList<String> uniqueFieldArray = new ArrayList<String>();
+      System.out.println(schema.getName());
+      System.out.println(uniqueField);
       uniqueFieldArray.add(schema.getName());
       uniqueFieldArray.add(uniqueField);
       uniqueID.add(uniqueFieldArray);
@@ -341,22 +764,44 @@ public class DataGenerator {
       if(isUniqueField(schema.getUniqueFields(), field.getName())) {
         output = uniqueStringGenerator(10);
       } else {
-        output = randomStringGenerator(10);
+        output = codeListData(field, output);
+        if(output == null || output.trim().length() == 0) {
+          output = randomStringGenerator(10);
+        }
       }
     } else if(field.getValueType() == ValueType.INTEGER) {
       if(isUniqueField(schema.getUniqueFields(), field.getName())) {
-        output = Integer.toString(uniqueIntGenerator(0, 200));
+        output = Integer.toString(uniqueInt++);
       } else {
-        output = Integer.toString(randomIntGenerator(0, 200));
+        output = codeListData(field, output);
+        if(output == null || output.trim().length() == 0) {
+          output = Integer.toString(randomIntGenerator(0, 200));
+        }
       }
     } else if(field.getValueType() == ValueType.DECIMAL) {
       if(isUniqueField(schema.getUniqueFields(), field.getName())) {
-        output = Double.toString(uniqueDecimalGenerator(50));
+        output = Double.toString(uniqueDecimal + 0.1);
       } else {
-        output = Double.toString(randomDecimalGenerator(50));
+        output = codeListData(field, output);
+        if(output == null || output.trim().length() == 0) {
+          output = Double.toString(randomDecimalGenerator(50));
+        }
       }
     } else if(field.getValueType() == ValueType.DATETIME) {
-      output = Calendar.DAY_OF_MONTH + "/" + Calendar.MONTH + "/" + Calendar.YEAR;
+      return Calendar.DAY_OF_MONTH + "/" + Calendar.MONTH + "/" + Calendar.YEAR;
+    }
+    return output;
+  }
+
+  private String codeListData(Field field, String output) {
+    if(field.getRestriction("codelist").isPresent()) {
+      String codeListName = field.getRestriction("codelist").get().getConfig().getString("name");
+
+      for(CodeList codelist : codeList) {
+        if(codelist.getName().equals(codeListName)) {
+          output = codelist.getTerms().get(randomIntGenerator(0, codelist.getTerms().size() - 1)).getCode();
+        }
+      }
     }
     return output;
   }
@@ -382,7 +827,7 @@ public class DataGenerator {
   public String uniqueStringGenerator(int length) {
     StringBuilder sb = new StringBuilder();
     for(int i = 0; i < length; i++) {
-      char c = (char) ((Math.random() * (123 - 97)) + 97);
+      char c = (char) (random.nextDouble() * (123 - 97) + 97);
       sb.append(c);
     }
     for(String genString : uniqueString) {
@@ -392,29 +837,6 @@ public class DataGenerator {
     }
     uniqueString.add(sb.toString());
     return sb.toString();
-  }
-
-  public int uniqueIntGenerator(int start, int end) {
-    int randomInt = random.nextInt(end + 1) + start;
-    for(Integer genInt : uniqueInt) {
-      if(genInt.equals(randomInt)) {
-        return uniqueIntGenerator(start, end);
-      }
-    }
-    uniqueInt.add(randomInt);
-    return randomInt;
-
-  }
-
-  public double uniqueDecimalGenerator(double end) {
-    double randomDecimal = random.nextDouble() * end;
-    for(Double genDecimal : uniqueDecimal) {
-      if(genDecimal.equals(randomDecimal)) {
-        return uniqueDecimalGenerator(end);
-      }
-    }
-    uniqueDecimal.add(randomDecimal);
-    return randomDecimal;
   }
 
   public String randomStringGenerator(int length) {
@@ -436,43 +858,26 @@ public class DataGenerator {
 
   public static void main(String[] args) throws JsonParseException, JsonMappingException, IOException,
       IllegalArgumentException {
-    DataGenerator testDataGenerator = new DataGenerator();
+    DataGenerator test = new DataGenerator(Long.parseLong(args[6]));
 
     List<FileSchema> files = dictionary.getFiles();
 
-    String error = testDataGenerator.checkParameters(args);
-    if(error != null) {
-      throw new IllegalArgumentException(error);
-    }
+    test.determineUniqueFields(test.getSchema("donor", files));
+    test.createFile(test.getSchema("donor", files), args, "core");
 
-    testDataGenerator.determineUniqueFields(testDataGenerator.getSchema("donor", files));
-    testDataGenerator.createExpFile(testDataGenerator.getSchema("donor", files), "", args, true);
+    test.determineUniqueFields(test.getSchema("specimen", files));
+    test.createFile(test.getSchema("specimen", files), args, "core");
 
-    testDataGenerator.determineUniqueFields(testDataGenerator.getSchema("specimen", files));
-    testDataGenerator.createExpFile(testDataGenerator.getSchema("specimen", files), "", args, true);
+    test.determineUniqueFields(test.getSchema("sample", files));
+    test.createFile(test.getSchema("sample", files), args, "core");
 
-    testDataGenerator.determineUniqueFields(testDataGenerator.getSchema("sample", files));
-    testDataGenerator.createExpFile(testDataGenerator.getSchema("sample", files), "", args, true);
+    test.determineUniqueFields(test.getSchema(args[5] + "_m", files));
+    test.createFile(test.getSchema(args[5] + "_m", files), args, "ssm");
 
-    for(int i = 6; i < 6 + Integer.parseInt(args[5]); i++) {
-      testDataGenerator.determineUniqueFields(testDataGenerator.getSchema(args[i], files));
-      testDataGenerator.createExpFile(testDataGenerator.getSchema(args[i], files), "", args, true);
-    }
+    test.determineUniqueFields(test.getSchema(args[5] + "_p", files));
+    test.createFile(test.getSchema(args[5] + "_p", files), args, "ssm");
 
-    for(int i = 6 + Integer.parseInt(args[5]); i < args.length; i++) {
-      testDataGenerator.determineUniqueFields(testDataGenerator.getSchema(args[i] + "_m", files));
-      testDataGenerator.createExpFile(testDataGenerator.getSchema(args[i] + "_m", files), args[i], args, false);
-      if((testDataGenerator.getSchema(args[i] + "_p", files)) != null) {
-        testDataGenerator.determineUniqueFields(testDataGenerator.getSchema(args[i] + "_p", files));
-        testDataGenerator.createExpFile(testDataGenerator.getSchema(args[i] + "_p", files), args[i], args, false);
-      } else if((testDataGenerator.getSchema(args[i] + "_g", files)) != null) {
-        testDataGenerator.determineUniqueFields(testDataGenerator.getSchema(args[i] + "_g", files));
-        testDataGenerator.createExpFile(testDataGenerator.getSchema(args[i] + "_g", files), args[i], args, false);
-      }
-      if((testDataGenerator.getSchema(args[i] + "_s", files)) != null) {
-        testDataGenerator.determineUniqueFields(testDataGenerator.getSchema(args[i] + "_s", files));
-        testDataGenerator.createExpFile(testDataGenerator.getSchema(args[i] + "_s", files), args[i], args, false);
-      }
-    }
+    test.determineUniqueFields(test.getSchema(args[5] + "_s", files));
+    test.createFile(test.getSchema(args[5] + "_s", files), args, "ssm");
   }
 }

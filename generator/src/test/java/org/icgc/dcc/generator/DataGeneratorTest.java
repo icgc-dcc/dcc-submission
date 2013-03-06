@@ -30,8 +30,7 @@ public class DataGeneratorTest {
 
   @Test
   public void thing() throws JsonParseException, JsonMappingException, IOException {
-    String[] x =
-        { "Australia", "Pancreatic Cancer", "Advanced Centre for Treatment, Research and Education in Cancer (Mumbai)", "PCR", "100", "3", "biomarker", "therapy", "family", "ssm" };
+    String[] x = { "au", "01", "001", "1", "100", "ssm", "1234567" };
     DataGenerator.main(x);
   }
 }
