@@ -53,6 +53,7 @@ angular.module('app.facets.directives').directive('termFacet', ['$location', fun
       }
 
       function setActive(facets) {
+        // TODO - show activated terms that no longer have results -> current query
         var terms = facets[iAttrs.facetName];
         for (var term in terms) {
           toggleTermActiveState(terms[term]);
@@ -131,12 +132,15 @@ angular.module('app.facets.directives').directive('multiFacet', ['$location', fu
     templateUrl: '/views/facets/multi.html',
     link: function (scope, iElement, iAttrs) {
 
-      function setActive(facets) {
+      scope.init = function () {
+        console.log('ehre');
+      };
 
+      function setActive(facets) {
       }
 
       // Preset value on reload
-      (function () {
+      (function auto() {
         var filters = $location.search().filters || '';
         if (filters) setActive(JSON.parse(filters));
       })();

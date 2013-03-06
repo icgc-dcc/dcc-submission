@@ -45,6 +45,9 @@
                 <td>{{gene.fields.gene_type}}</td>
                 <td>??</td>
             </tr>
+            <tr ng-hide="genes.hits">
+                <td colspan="8">No results found</td>
+            </tr>
             </tbody>
         </table>
     </div>

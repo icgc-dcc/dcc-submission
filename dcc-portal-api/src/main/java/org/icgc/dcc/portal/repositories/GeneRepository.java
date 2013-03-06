@@ -65,34 +65,31 @@ public class GeneRepository implements IGeneRepository {
   public final SearchResponse getAll(final SearchQuery searchQuery) {
     this.filter = buildFilter(searchQuery.getFilters());
     SearchRequestBuilder s =
-        client.prepareSearch(INDEX).setTypes(TYPE.toString())
+        client
+            .prepareSearch(INDEX)
+            .setTypes(TYPE.toString())
             .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
             .setQuery(buildQuery())
-            //
             .setFilter(this.filter)
-            //
             .setFrom(searchQuery.getFrom())
-            //
             .setSize(searchQuery.getSize())
-            //
             .addSort(searchQuery.getSort(), searchQuery.getOrder())
-            //
             .addFields(ALLOWED_FIELDS)
-            //
             .addFacet(
                 FacetBuilders.termsFacet("gene_type").field("gene_type")
-                    .facetFilter(setFacetFilter("gene_type", searchQuery.getFilters())).global(true)) //
+                    .facetFilter(setFacetFilter("gene_type", searchQuery.getFilters())).size(Integer.MAX_VALUE)
+                    .global(true))
             .addFacet(
                 FacetBuilders.termsFacet("chromosome").field("chromosome")
-                    .facetFilter(setFacetFilter("chromosome", searchQuery.getFilters())).global(true)); //
-
-
+                    .facetFilter(setFacetFilter("chromosome", searchQuery.getFilters())).global(true));
     // System.out.println(s);
     return s.execute().actionGet();
   }
 
   private FilterBuilder setFacetFilter(String name, JsonNode filter) {
-    return buildFilter(((ObjectNode) filter.deepCopy()).remove(name));
+    JsonNode temp = filter.deepCopy();
+    ((ObjectNode) temp).remove(name);
+    return buildFilter(temp);
   }
 
   private FilterBuilder buildFilter(JsonNode filters) {
@@ -166,7 +163,6 @@ public class GeneRepository implements IGeneRepository {
     String LOCATION = "gene_location";
 
     if (json.get(LOCATION).isArray()) {
-      System.out.println("if?");
       ArrayList<String> locations = mapper.convertValue(json.get(LOCATION), new TypeReference<ArrayList<String>>() {});
       OrFilterBuilder manyChrLocations = FilterBuilders.orFilter();
       for (String loc : locations) {
@@ -174,7 +170,6 @@ public class GeneRepository implements IGeneRepository {
       }
       chrLocFilter = manyChrLocations;
     } else {
-      System.out.println("else?");
       String loc = mapper.convertValue(json.get(LOCATION), String.class);
       chrLocFilter = buildChrLocation(loc);
     }
