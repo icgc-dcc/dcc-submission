@@ -68,9 +68,7 @@ public class Main {
   }
 
   private void generate(String[] args) throws JsonParseException, JsonMappingException, IOException {
-    log.info("Generating data using: {}", options);
     DataGenerator.main(args);
-    log.info("Finished generating!");
   }
 
   private String getProgramName() {
