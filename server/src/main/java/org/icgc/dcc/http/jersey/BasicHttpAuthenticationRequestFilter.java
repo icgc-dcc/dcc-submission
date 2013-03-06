@@ -30,6 +30,7 @@ import javax.ws.rs.ext.Provider;
 
 import org.apache.shiro.codec.Base64;
 import org.apache.shiro.subject.Subject;
+import org.glassfish.grizzly.http.Method;
 import org.icgc.dcc.security.UsernamePasswordAuthenticator;
 import org.icgc.dcc.shiro.ShiroSecurityContext;
 import org.slf4j.Logger;
@@ -136,7 +137,9 @@ public class BasicHttpAuthenticationRequestFilter implements ContainerRequestFil
   private Optional<String> getOpenAccessPath(ContainerRequestContext context) {
     UriInfo uriInfo = context.getUriInfo();
     String path = uriInfo.getPath().replaceAll("/$", "");
-    return OPEN_ACCESS_PATHS.contains(path) ? Optional.of(path) : Optional.<String> absent();
+    boolean get = Method.GET.getMethodString().equals(context.getMethod());
+    boolean matches = OPEN_ACCESS_PATHS.contains(path);
+    return get && matches ? Optional.of(path) : Optional.<String> absent();
   }
 
   private Response createUnauthorizedResponse() {

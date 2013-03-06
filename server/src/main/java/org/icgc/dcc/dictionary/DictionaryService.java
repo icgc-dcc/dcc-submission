@@ -32,7 +32,8 @@ import org.icgc.dcc.filesystem.ReleaseFileSystem;
 import org.icgc.dcc.release.NextRelease;
 import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.Release;
-import org.mortbay.log.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
@@ -49,6 +50,8 @@ import static com.google.common.base.Preconditions.checkState;
  * Offers various CRUD operations pertaining to {@code Dictionary}
  */
 public class DictionaryService extends BaseMorphiaService<Dictionary> {
+
+  private static final Logger log = LoggerFactory.getLogger(DictionaryService.class);
 
   private final DccFileSystem fs;
 
@@ -141,12 +144,13 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
   }
 
   public void addCodeList(List<CodeList> codeLists) {
+    log.info("Saving codelists {}", codeLists);
     this.datastore().save(codeLists);
   }
 
   public Optional<CodeList> getCodeList(String name) {
     checkArgument(name != null);
-    Log.debug("retrieving codelist {}", name);
+    log.debug("retrieving codelist {}", name);
     CodeList codeList = this.queryCodeList().where(QCodeList.codeList.name.eq(name)).singleResult();
     return codeList == null ? Optional.<CodeList> absent() : Optional.<CodeList> of(codeList);
   }
