@@ -2,8 +2,10 @@
     <div class="span3">
         <ul class="nav nav-list" ng-controller="FacetsController">
             <term-facet facet-name="gene_type" facet="genes.facets['gene_type']"></term-facet>
+            <term-facet facet-name="chromosome" facet="genes.facets['chromosome']"></term-facet>
             <location-facet facet-name="gene_location" placeholder="Search for a gene location"></location-facet>
             <multi-facet facet-name="gene_list" select2="geneList"></multi-facet>
+            <multi-facet facet-name="pathways" select2="geneList"></multi-facet>
         </ul>
     </div>
     <div class="span9">

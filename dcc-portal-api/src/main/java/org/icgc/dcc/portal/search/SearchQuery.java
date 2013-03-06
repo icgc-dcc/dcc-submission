@@ -32,6 +32,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.io.IOException;
+import java.net.URLDecoder;
 
 @Data
 @XmlRootElement(name = "SearchQuery")
@@ -106,7 +107,7 @@ public class SearchQuery {
 
   JsonNode jsonifyString(String filters) {
     try {
-      return new ObjectMapper().readValue(filters, JsonNode.class);
+      return new ObjectMapper().readValue(URLDecoder.decode(filters, "UTF-8"), JsonNode.class);
     } catch (IOException e) {
       throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST)
           .entity(new ErrorResponse(Response.Status.BAD_REQUEST, e)).type(MediaType.APPLICATION_JSON_TYPE).build());

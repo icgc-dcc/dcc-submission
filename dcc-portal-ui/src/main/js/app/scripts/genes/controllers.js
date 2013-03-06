@@ -30,10 +30,7 @@ angular.module('app.genes.controllers').controller('GenesController', [ "$scope"
   $scope.geneList = {
     width: "100%",
     placeholder: "Search for gene symbols",
-    initSelection: function (e, cb) {
-      console.log('here', e);
-    },
-    tags: ["blah"],
+    tags: [],
     tokenSeparators: [",", " "]
   };
 

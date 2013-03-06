@@ -20,6 +20,7 @@ package org.icgc.dcc.portal.repositories;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
 import com.sun.tools.javac.util.List;
@@ -62,26 +63,42 @@ public class GeneRepository implements IGeneRepository {
   // Returns many hits
   // @Override
   public final SearchResponse getAll(final SearchQuery searchQuery) {
-    this.filter = buildFilter(searchQuery);
+    this.filter = buildFilter(searchQuery.getFilters());
     SearchRequestBuilder s =
-        client.prepareSearch(INDEX).setTypes(TYPE.toString()).setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
-            .setQuery(buildQuery()) //
-            .setFilter(this.filter) //
-            .setFrom(searchQuery.getFrom()) //
-            .setSize(searchQuery.getSize()) //
-            .addSort(searchQuery.getSort(), searchQuery.getOrder()) //
-            .addFields(ALLOWED_FIELDS) //
-            .addFacet(FacetBuilders.termsFacet("gene_type").field("gene_type").global(true)); //
+        client.prepareSearch(INDEX).setTypes(TYPE.toString())
+            .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
+            .setQuery(buildQuery())
+            //
+            .setFilter(this.filter)
+            //
+            .setFrom(searchQuery.getFrom())
+            //
+            .setSize(searchQuery.getSize())
+            //
+            .addSort(searchQuery.getSort(), searchQuery.getOrder())
+            //
+            .addFields(ALLOWED_FIELDS)
+            //
+            .addFacet(
+                FacetBuilders.termsFacet("gene_type").field("gene_type")
+                    .facetFilter(setFacetFilter("gene_type", searchQuery.getFilters())).global(true)) //
+            .addFacet(
+                FacetBuilders.termsFacet("chromosome").field("chromosome")
+                    .facetFilter(setFacetFilter("chromosome", searchQuery.getFilters())).global(true)); //
+
 
     // System.out.println(s);
     return s.execute().actionGet();
   }
 
-  private FilterBuilder buildFilter(SearchQuery searchQuery) {
-    if (searchQuery.getFilters() == null) {
+  private FilterBuilder setFacetFilter(String name, JsonNode filter) {
+    return buildFilter(((ObjectNode) filter.deepCopy()).remove(name));
+  }
+
+  private FilterBuilder buildFilter(JsonNode filters) {
+    if (filters == null) {
       return FilterBuilders.matchAllFilter();
     } else {
-      JsonNode filters = searchQuery.getFilters();
       AndFilterBuilder geneFilters = craftGeneFilters(filters);
       if (filters.has("donor")) {
         geneFilters.add(buildNestedFilter("donor", craftDonorFilters(filters)));
@@ -131,13 +148,14 @@ public class GeneRepository implements IGeneRepository {
 
   private AndFilterBuilder craftGeneFilters(JsonNode filters) {
     AndFilterBuilder geneAnd = FilterBuilders.andFilter();
-    JsonNode gene = filters.path("gene");
+    JsonNode gene = filters;// .path("gene");
+
     for (String key : List.of("gene_type", "symbol")) {
       if (gene.has(key)) {
         geneAnd.add(buildTermFilter(gene, key));
       }
     }
-    if (gene.has("location")) {
+    if (gene.has("gene_location")) {
       geneAnd.add(buildChrLocationFilter(gene));
     }
     return geneAnd;
@@ -145,9 +163,10 @@ public class GeneRepository implements IGeneRepository {
 
   private FilterBuilder buildChrLocationFilter(JsonNode json) {
     FilterBuilder chrLocFilter;
-    String LOCATION = "location";
+    String LOCATION = "gene_location";
 
     if (json.get(LOCATION).isArray()) {
+      System.out.println("if?");
       ArrayList<String> locations = mapper.convertValue(json.get(LOCATION), new TypeReference<ArrayList<String>>() {});
       OrFilterBuilder manyChrLocations = FilterBuilders.orFilter();
       for (String loc : locations) {
@@ -155,6 +174,7 @@ public class GeneRepository implements IGeneRepository {
       }
       chrLocFilter = manyChrLocations;
     } else {
+      System.out.println("else?");
       String loc = mapper.convertValue(json.get(LOCATION), String.class);
       chrLocFilter = buildChrLocation(loc);
     }

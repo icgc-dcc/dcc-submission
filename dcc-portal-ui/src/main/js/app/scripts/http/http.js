@@ -28,7 +28,10 @@ angular.module('app.http.http').factory('http', ['$http', 'httpService', functio
 
   return {
     get: function (url) {
-      return $http.get(url)
+      var filters = JSON.stringify(httpService.getCurrentFilters());
+      console.log(filters);
+      var query_url = filters ? url + '?filters=' + filters : url;
+      return $http.get(query_url)
           .then(extractData);
     }
   };

@@ -65,8 +65,8 @@ public class GeneResource {
       @ApiParam(value = "Start index of results", required = false) @QueryParam("from") @DefaultValue("1") IntParam from,
       @ApiParam(value = "Number of results returned", allowableValues = "range[1,100]", required = false) @QueryParam("size") @DefaultValue("10") IntParam size,
       @ApiParam(value = "Column to sort results on", defaultValue = "start", required = false) @QueryParam("sort") String sort,
-      @ApiParam(value = "Order to sort the column", defaultValue = "desc", allowableValues = "asc,desc", required = false) @QueryParam("order") String order,
-      @ApiParam(value = "Filter the search results", required = false) @QueryParam("filter") String filters,
+      @ApiParam(value = "Order to sort the column", defaultValue = "asc", allowableValues = "asc,desc", required = false) @QueryParam("order") String order,
+      @ApiParam(value = "Filter the search results", required = false) @QueryParam("filters") String filters,
       @ApiParam(value = "Select fields returned", required = false) @QueryParam("fields") String fields) {
     GeneSearchQuery searchQuery = new GeneSearchQuery(filters, fields, from.get(), size.get(), sort, order);
     SearchResponse results = store.getAll(searchQuery);
