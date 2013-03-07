@@ -73,7 +73,7 @@ public class Main {
   }
 
   public void generate(String[] args) throws JsonParseException, JsonMappingException, IOException {
-    String pathToConfigFile = args[0];
+    String pathToConfigFile = args[1];
 
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
     GeneratorConfig config = mapper.readValue(new File(pathToConfigFile), GeneratorConfig.class);

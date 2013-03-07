@@ -44,34 +44,28 @@ import com.google.common.io.Resources;
 
 public class DataGenerator {
 
-  /**
-   * 
-   */
+  public static final String TAB = "\t";;
+
+  public static final String NEW_LINE = "\n";;
+
+  public static String metaFileKey;
+
+  public static String primaryFileKey;
+
+  public static String secondaryFileKey;
+
+  public static String donorFileKey;
+
+  public static String specimenFileKey;
+
+  public static String sampleFileKey;
+
   public static ObjectMapper mapper;
 
-  /**
-   * 
-   */
   public static List<CodeList> codeList;
 
-  /**
-   * 
-   */
-  public static String tab;
-
-  /**
-   * 
-   */
-  public static String newLine;
-
-  /**
-   * 
-   */
   public static Random random;
 
-  /**
-   * 
-   */
   public static ArrayList<ArrayList<String>> listOfPrimaryKeys;
 
   private static List<FileSchema> fileSchemas;
@@ -92,10 +86,6 @@ public class DataGenerator {
     random = new Random(seed);
 
     listOfPrimaryKeys = new ArrayList<ArrayList<String>>();
-
-    newLine = "\n";
-    tab = "\t";
-
   }
 
   public static ArrayList<ArrayList<String>> getListOfPrimaryKeys() {

@@ -35,28 +35,17 @@ import org.icgc.dcc.dictionary.model.FileSchema;
  */
 public class SecondaryFileGenerator {
 
-  /**
-   * 
-   */
+  private static final String TAB = DataGenerator.TAB;
+
+  private static final String NEW_LINE = DataGenerator.NEW_LINE;
+
   public ArrayList<String> uniqueString;
 
-  /**
-   * 
-   */
   public Integer uniqueInteger;
 
-  /**
-   * 
-   */
   public Double uniqueDecimal;
 
-  private final String tab;
-
-  private final String newLine;
-
   public SecondaryFileGenerator() {
-    tab = DataGenerator.tab;
-    newLine = DataGenerator.tab;
     uniqueString = new ArrayList<String>();
     uniqueInteger = 0;
     uniqueDecimal = 0.0;
@@ -90,11 +79,11 @@ public class SecondaryFileGenerator {
           String line = br.readLine();
 
           if(line != null) {
-            output = getSystemFileOutput(fieldIndexOne, fieldIndexTwo, currentField, output, line.split(tab));
+            output = getSystemFileOutput(fieldIndexOne, fieldIndexTwo, currentField, output, line.split(TAB));
           } else {
             fis.getChannel().position(0);
             br = new BufferedReader(new InputStreamReader(fis));
-            output = getSystemFileOutput(fieldIndexOne, fieldIndexTwo, currentField, output, br.readLine().split(tab));
+            output = getSystemFileOutput(fieldIndexOne, fieldIndexTwo, currentField, output, br.readLine().split(TAB));
           }
 
           if(output == null) {
@@ -104,9 +93,9 @@ public class SecondaryFileGenerator {
                     currentField, uniqueString, uniqueInteger, uniqueDecimal);
           }
 
-          writer.write(output + tab);
+          writer.write(output + TAB);
         }
-        writer.write(newLine);
+        writer.write(NEW_LINE);
       }
       numberOfLines =
           (schema.getRelations().size() > 0 && schema.getRelations().get(0).isBidirectional()) ? DataGenerator
@@ -145,11 +134,11 @@ public class SecondaryFileGenerator {
           String line = br.readLine();
 
           if(line != null) {
-            output = getSystemFileOutput(fieldIndexOne, fieldIndexTwo, currentField, output, line.split(tab));
+            output = getSystemFileOutput(fieldIndexOne, fieldIndexTwo, currentField, output, line.split(TAB));
           } else {
             fis.getChannel().position(0);
             br = new BufferedReader(new InputStreamReader(fis));
-            output = getSystemFileOutput(fieldIndexOne, fieldIndexTwo, currentField, output, br.readLine().split(tab));
+            output = getSystemFileOutput(fieldIndexOne, fieldIndexTwo, currentField, output, br.readLine().split(TAB));
           }
           if(output == null) {
             ArrayList<String> foreignKeyArray = DataGenerator.getForeignKey(schema, currentField.getName());
@@ -158,9 +147,9 @@ public class SecondaryFileGenerator {
                     currentField, uniqueString, uniqueInteger, uniqueDecimal);
           }
 
-          writer.write(output + tab);
+          writer.write(output + TAB);
         }
-        writer.write(newLine);
+        writer.write(NEW_LINE);
       }
       numberOfLines =
           (schema.getRelations().size() > 0 && schema.getRelations().get(0).isBidirectional()) ? DataGenerator
@@ -172,7 +161,7 @@ public class SecondaryFileGenerator {
 
   public int getGeneIndex(FileSchema schema, BufferedReader bf) throws IOException {
     int indexOfGeneID;
-    String[] fields = bf.readLine().split(tab);
+    String[] fields = bf.readLine().split(TAB);
 
     for(indexOfGeneID = 0; indexOfGeneID < fields.length; indexOfGeneID++) {
       if(fields[indexOfGeneID].equals("gene_id_1020_key")) {
@@ -185,7 +174,7 @@ public class SecondaryFileGenerator {
 
   public int getTranscriptIndex(FileSchema schema, BufferedReader br) throws IOException {
     int indexOfTranscriptID;
-    String[] fields = br.readLine().split(tab);
+    String[] fields = br.readLine().split(TAB);
 
     for(indexOfTranscriptID = 0; indexOfTranscriptID < fields.length; indexOfTranscriptID++) {
       if(fields[indexOfTranscriptID].equals("transcript_id_1064_key")) {
@@ -198,7 +187,7 @@ public class SecondaryFileGenerator {
 
   public int getMirbaseIdIndex(FileSchema schema, BufferedReader br) throws IOException {
     int indexOfMirbaseIdID;
-    String[] fields = br.readLine().split(tab);
+    String[] fields = br.readLine().split(TAB);
 
     for(indexOfMirbaseIdID = 0; indexOfMirbaseIdID < fields.length; indexOfMirbaseIdID++) {
       if(fields[indexOfMirbaseIdID].equals("xref_mirbase_id")) {
@@ -211,7 +200,7 @@ public class SecondaryFileGenerator {
 
   public int getMirnaSequenceIndex(FileSchema schema, BufferedReader br) throws IOException {
     int indexOfMirnaSequence;
-    String[] fields = br.readLine().split(tab);
+    String[] fields = br.readLine().split(TAB);
 
     for(indexOfMirnaSequence = 0; indexOfMirnaSequence < fields.length; indexOfMirnaSequence++) {
       if(fields[indexOfMirnaSequence].equals("mirna_seq")) {
@@ -247,10 +236,10 @@ public class SecondaryFileGenerator {
     Writer writer = new BufferedWriter(new FileWriter(outputFile));
 
     for(String fieldName : schema.getFieldNames()) {
-      writer.write(fieldName + tab);
+      writer.write(fieldName + TAB);
     }
 
-    writer.write(newLine);
+    writer.write(NEW_LINE);
 
     if(schema.getName().equals("mirna_s")) {
       populateMirnaFile(schema, numberOfLinesPerPrimaryKey, writer);

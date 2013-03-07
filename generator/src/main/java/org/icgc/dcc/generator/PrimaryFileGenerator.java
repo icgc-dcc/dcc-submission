@@ -32,28 +32,17 @@ import org.icgc.dcc.dictionary.model.FileSchema;
  */
 public class PrimaryFileGenerator {
 
-  /**
-   * 
-   */
+  public static final String TAB = DataGenerator.TAB;
+
+  public static final String NEW_LINE = DataGenerator.NEW_LINE;
+
   public ArrayList<String> uniqueString;
 
-  /**
-   * 
-   */
   public Integer uniqueInteger;
 
-  /**
-   * 
-   */
-  public Double uniqueDecimal;
-
-  public String tab;
-
-  public String newLine;
+  public Double uniqueDecimal;;
 
   public PrimaryFileGenerator() {
-    tab = DataGenerator.tab;
-    newLine = DataGenerator.newLine;
     uniqueString = new ArrayList<String>();
     uniqueInteger = 0;
     uniqueDecimal = 0.0;
@@ -86,9 +75,9 @@ public class PrimaryFileGenerator {
             }
           }
 
-          writer.write(output + tab);
+          writer.write(output + TAB);
         }
-        writer.write(newLine);
+        writer.write(NEW_LINE);
       }
       numberOfLines =
           (schema.getRelations().size() > 0 && schema.getRelations().get(0).isBidirectional()) ? DataGenerator
@@ -107,10 +96,10 @@ public class PrimaryFileGenerator {
     Writer writer = new BufferedWriter(new FileWriter(outputFile));
 
     for(String fieldName : schema.getFieldNames()) {
-      writer.write(fieldName + tab);
+      writer.write(fieldName + TAB);
     }
 
-    writer.write(newLine);
+    writer.write(NEW_LINE);
 
     populateFile(schema, numberOfLinesPerPrimaryKey, writer);
 

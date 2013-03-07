@@ -32,55 +32,31 @@ import org.icgc.dcc.dictionary.model.FileSchema;
  */
 public class CoreFileGenerator {
 
-  /**
-   * 
-   */
   public static String DONOR_SCHEMA_NAME = "donor";
 
   public static String SAMPLE_SCHEMA_NAME = "sample";
 
-  private final String tab;
+  private final String TAB = DataGenerator.TAB;
 
-  private final String newLine;
+  private final String newLine = DataGenerator.NEW_LINE;
 
   private final ArrayList<String> tumourSampleTypeID;
 
   private final ArrayList<String> controlledSampleTypeID;
 
-  /**
-   * 
-   */
   public ArrayList<String> donorID;
 
-  /**
-   * 
-   */
   public ArrayList<String> specimenID;
 
-  /**
-   * 
-   */
   public ArrayList<String> sampleID;
 
-  /**
-   * 
-   */
   public ArrayList<String> uniqueString;
 
-  /**
-   * 
-   */
   public Integer uniqueInteger;
 
-  /**
-   * 
-   */
   public Double uniqueDecimal;
 
   public CoreFileGenerator() {
-    tab = DataGenerator.tab;
-    newLine = DataGenerator.newLine;
-
     this.donorID = new ArrayList<String>();
     donorID.add("donor");
     donorID.add("donor_id");
@@ -155,7 +131,7 @@ public class CoreFileGenerator {
               DataGenerator.getPrimaryKey(SAMPLE_SCHEMA_NAME, "controlledSampleTypeID").add(output);
             }
           }
-          writer.write(output + tab);
+          writer.write(output + TAB);
         }
         writer.write(newLine);
       }
@@ -180,7 +156,7 @@ public class CoreFileGenerator {
     Writer writer = new BufferedWriter(new FileWriter(outputFile));
 
     for(String fieldName : schema.getFieldNames()) {
-      writer.write(fieldName + tab);
+      writer.write(fieldName + TAB);
     }
 
     writer.write(newLine);

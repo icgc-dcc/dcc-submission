@@ -29,11 +29,8 @@ import com.beust.jcommander.Parameter;
 @ToString
 public class Options {
 
-  @Parameter(names = { "-c", "--config" }, help = true, description = "Path to configuration file")
+  @Parameter(names = { "-f", "--file" }, help = true, description = "Path to configuration file")
   public String pathToConfigFile;
-
-  @Parameter(names = { "-o", "--outputDir" }, help = true, description = "Output directory")
-  public String outputDirectory;
 
   @Parameter(names = { "-v", "--version" }, help = true, description = "Show version")
   public boolean version;

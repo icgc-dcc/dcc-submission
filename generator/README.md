@@ -12,20 +12,22 @@ From the command line:
 
 Example
 ---
+The config.yaml file is currently in the resources folder
 
 From the command line:
 
-	java -jar target/dcc-generator-<version>.jar -f ~/some/file
+	java -jar target/dcc-generator-<version>.jar -f ~/path/to/config/file
 
 Help
 ---
 
 From the command line, type `java -jar target/dcc-generator-<version>.jar --help`:
 
-	Usage: java -jar dcc-genes-<version>.jar [options]
+	Usage: java -jar dcc-generator-<version>.jar [options]
 	  Options:
 	  * -f, --file
-	       TODO
+	   	   Path to config.yaml file
+		   Default: false
 	    -h, --help
 	       Show help
 	       Default: false

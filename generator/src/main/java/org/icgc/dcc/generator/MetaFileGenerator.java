@@ -34,28 +34,17 @@ public class MetaFileGenerator {
 
   private final String SAMPLE_SCHEMA_NAME = "sample";
 
-  private final String tab;
+  private final String TAB = DataGenerator.TAB;
 
-  private final String newLine;
+  private final String NEW_LINE = DataGenerator.NEW_LINE;
 
-  /**
-   * 
-   */
   public ArrayList<String> uniqueString;
 
-  /**
-   * 
-   */
   public Integer uniqueInteger;
 
-  /**
-   * 
-   */
   public Double uniqueDecimal;
 
   public MetaFileGenerator() {
-    tab = DataGenerator.tab;
-    newLine = DataGenerator.tab;
     uniqueString = new ArrayList<String>();
     uniqueInteger = 0;
     uniqueDecimal = 0.0;
@@ -102,9 +91,9 @@ public class MetaFileGenerator {
             }
           }
 
-          writer.write(output + tab);
+          writer.write(output + TAB);
         }
-        writer.write(newLine);
+        writer.write(NEW_LINE);
       }
       numberOfLines =
           (schema.getRelations().size() > 0 && schema.getRelations().get(0).isBidirectional()) ? DataGenerator
@@ -123,10 +112,10 @@ public class MetaFileGenerator {
     Writer writer = new BufferedWriter(new FileWriter(outputFile));
 
     for(String fieldName : schema.getFieldNames()) {
-      writer.write(fieldName + tab);
+      writer.write(fieldName + TAB);
     }
 
-    writer.write(newLine);
+    writer.write(NEW_LINE);
 
     populateFile(schema, numberOfLinesPerPrimaryKey, writer);
 
