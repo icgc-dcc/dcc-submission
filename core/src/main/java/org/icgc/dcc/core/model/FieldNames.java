@@ -20,6 +20,12 @@ package org.icgc.dcc.core.model;
 public final class FieldNames {
 
   // @formatter:off
+  
+  /**
+   * Field names in the original input format.
+   */
+  public static final String DONOR_ID_FIELD = "donor_id";
+  
   /**
    * Project field names.
    */  
