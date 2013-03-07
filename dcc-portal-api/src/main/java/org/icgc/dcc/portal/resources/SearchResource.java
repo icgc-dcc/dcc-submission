@@ -59,7 +59,7 @@ public class SearchResource {
       @ApiParam(value = "Start index of results", required = false) @QueryParam("from") @DefaultValue("1") int from,
       @ApiParam(value = "Number of results returned", allowableValues = "range[1,100]", required = false) @QueryParam("size") @DefaultValue("10") int size) {
     SearchQuery searchQuery = new SearchQuery(from, size);
-    GetManyResponse response = new GetManyResponse(store.search(text, from, size), httpServletRequest, searchQuery);
+    GetManyResponse response = new GetManyResponse(store.search(text, from, size), searchQuery);
 
     return Response.ok().entity(response).build();
   }

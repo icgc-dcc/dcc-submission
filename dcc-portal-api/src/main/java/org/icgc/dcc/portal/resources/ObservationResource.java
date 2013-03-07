@@ -63,7 +63,7 @@ public class ObservationResource {
       @ApiParam(value = "Column to sort results on", required = false) @QueryParam("sort") String sort,
       @ApiParam(value = "Order to sort the column", allowableValues = "asc, desc", required = false) @QueryParam("order") String order) {
     SearchQuery searchQuery = new SearchQuery(from, size, sort, order);
-    GetManyResponse response = new GetManyResponse(store.getAll(searchQuery), httpServletRequest, searchQuery);
+    GetManyResponse response = new GetManyResponse(store.getAll(searchQuery), searchQuery);
 
     return Response.ok().entity(response).build();
   }
@@ -73,7 +73,7 @@ public class ObservationResource {
   @ApiOperation(value = "Retrieves a filtered list of observations")
   public final Response filteredGetAll(@Valid SearchQuery searchQuery) {
     // TODO This is broken
-    GetManyResponse response = new GetManyResponse(store.getAll(searchQuery), httpServletRequest, searchQuery);
+    GetManyResponse response = new GetManyResponse(store.getAll(searchQuery), searchQuery);
 
     return Response.ok().entity(response).build();
   }

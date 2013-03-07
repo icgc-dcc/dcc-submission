@@ -19,7 +19,9 @@ package org.icgc.dcc.portal.resources;
 
 import com.sun.jersey.api.client.WebResource;
 import com.yammer.dropwizard.testing.ResourceTest;
-import org.icgc.dcc.portal.repositories.GeneRepository;
+import org.elasticsearch.action.search.SearchResponse;
+import org.icgc.dcc.portal.repositories.IGeneRepository;
+import org.icgc.dcc.portal.search.GeneSearchQuery;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -28,17 +30,27 @@ import org.mockito.runners.MockitoJUnitRunner;
 import javax.ws.rs.core.Response;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 @SuppressWarnings("unchecked")
 public class GeneResourceTest extends ResourceTest {
 
   @Mock
-  private GeneRepository store;
+  private IGeneRepository store;
+
+  @Mock
+  private GeneSearchQuery searchQuery;
+
+  @Mock
+  private SearchResponse searchResponse;
 
   @Override
   protected final void setUpResources() throws Exception {
-    // when(store.search()).thenReturn();
+    when(searchResponse.toString()).thenReturn("{\"a\":[\"b\"]}");
+    when(store.getAll(any(GeneSearchQuery.class))).thenReturn(searchResponse);
     addResource(new GeneResource(store));
   }
 
@@ -47,7 +59,7 @@ public class GeneResourceTest extends ResourceTest {
     WebResource wr = client().resource("/genes");
     assertThat(wr.get(Response.class).getStatus()).isEqualTo(Response.Status.OK.getStatusCode());
 
-    // verify(store).getAll();
+    verify(store).getAll(searchQuery);
   }
 
   // @Test
@@ -56,5 +68,4 @@ public class GeneResourceTest extends ResourceTest {
 
     // verify(store).getOne("1");
   }
-
 }

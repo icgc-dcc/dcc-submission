@@ -30,12 +30,9 @@ import org.icgc.dcc.portal.responses.GetOneResponse;
 import org.icgc.dcc.portal.search.ProjectSearchQuery;
 
 import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
-import java.net.URI;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
@@ -48,8 +45,8 @@ public class ProjectsResource {
 
   private final IProjectRepository store;
 
-  @Context
-  private HttpServletRequest httpServletRequest;
+  // @Context
+  // private HttpServletRequest httpServletRequest;
 
   @Inject
   public ProjectsResource(IProjectRepository projectRepository) {
@@ -68,16 +65,16 @@ public class ProjectsResource {
       @ApiParam(value = "Select fields returned", required = false) @QueryParam("fields") String fields) {
     ProjectSearchQuery searchQuery = new ProjectSearchQuery(filters, fields, from.get(), size.get(), sort, order);
     SearchResponse results = store.getAll(searchQuery);
-    GetManyResponse response = new GetManyResponse(results, httpServletRequest, searchQuery);
+    GetManyResponse response = new GetManyResponse(results, searchQuery);
     String etag = Hashing.murmur3_128().hashString(response.toString()).toString();
-
-    if (httpServletRequest.getHeader("If-None-Match") != null
-        && httpServletRequest.getHeader("If-None-Match").replaceAll("\"", "").equals(etag)) {
-      return Response.notModified().header("X-ICGC-Version", "1")
-          .contentLocation(URI.create(httpServletRequest.getRequestURI())).build();
-    }
-
-    return Response.ok().header("X-ICGC-Version", "1").contentLocation(URI.create(httpServletRequest.getRequestURI()))
+    /*
+     * if (httpServletRequest.getHeader("If-None-Match") != null &&
+     * httpServletRequest.getHeader("If-None-Match").replaceAll("\"", "").equals(etag)) { return
+     * Response.notModified().header("X-ICGC-Version", "1")
+     * .contentLocation(URI.create(httpServletRequest.getRequestURI())).build(); }
+     */
+    return Response.ok().header("X-ICGC-Version", "1")
+    // .contentLocation(URI.create(httpServletRequest.getRequestURI()))
         .tag(etag).entity(response).build();
   }
 
@@ -90,7 +87,7 @@ public class ProjectsResource {
   public final Response getOne(@ApiParam(value = "ID of project that needs to be fetched") @PathParam("id") String id)
       throws IOException {
 
-    GetOneResponse response = new GetOneResponse(store.getOne("release11::" + id), httpServletRequest);
+    GetOneResponse response = new GetOneResponse(store.getOne("release11::" + id), null);
 
     return Response.ok().entity(response).build();
   }

@@ -31,12 +31,9 @@ import org.icgc.dcc.portal.responses.GetOneResponse;
 import org.icgc.dcc.portal.search.GeneSearchQuery;
 
 import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
-import java.net.URI;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
@@ -48,9 +45,6 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 public class GeneResource {
 
   private final IGeneRepository store;
-
-  @Context
-  private HttpServletRequest httpServletRequest;
 
   @Inject
   public GeneResource(IGeneRepository store) {
@@ -67,19 +61,21 @@ public class GeneResource {
       @ApiParam(value = "Column to sort results on", defaultValue = "start", required = false) @QueryParam("sort") String sort,
       @ApiParam(value = "Order to sort the column", defaultValue = "asc", allowableValues = "asc,desc", required = false) @QueryParam("order") String order,
       @ApiParam(value = "Filter the search results", required = false) @QueryParam("filters") String filters,
-      @ApiParam(value = "Select fields returned", required = false) @QueryParam("fields") String fields) {
+      @ApiParam(value = "Select fields returned", required = false) @QueryParam("fields") String fields,
+      @HeaderParam("If-None-Match") String oldEtag) {
     GeneSearchQuery searchQuery = new GeneSearchQuery(filters, fields, from.get(), size.get(), sort, order);
     SearchResponse results = store.getAll(searchQuery);
-    GetManyResponse response = new GetManyResponse(results, httpServletRequest, searchQuery);
+    GetManyResponse response = new GetManyResponse(results, searchQuery);
     String etag = Hashing.murmur3_128().hashString(response.toString()).toString();
 
-    if (httpServletRequest.getHeader("If-None-Match") != null
-        && httpServletRequest.getHeader("If-None-Match").replaceAll("\"", "").equals(etag)) {
+    if (oldEtag != null && oldEtag.replaceAll("\"", "").equals(etag)) {
       return Response.notModified().header("X-ICGC-Version", "1")
-          .contentLocation(URI.create(httpServletRequest.getRequestURI())).build();
+      // .contentLocation(URI.create(oldEtag.getRequestURI()))
+          .build();
     }
 
-    return Response.ok().header("X-ICGC-Version", "1").contentLocation(URI.create(httpServletRequest.getRequestURI()))
+    return Response.ok().header("X-ICGC-Version", "1")
+    // .contentLocation(URI.create(httpServletRequest.getRequestURI()))
         .tag(etag).entity(response).build();
   }
 
@@ -92,9 +88,8 @@ public class GeneResource {
       @ApiError(code = HttpStatus.NOT_FOUND_404, reason = "Gene not found")})
   public final Response getOne(@ApiParam(value = "ID of gene that needs to be fetched") @PathParam("id") String id)
       throws IOException {
-    GetOneResponse response = new GetOneResponse(store.getOne(id), httpServletRequest);
+    GetOneResponse response = new GetOneResponse(store.getOne(id), null);
 
     return Response.ok().entity(response).build();
   }
-
 }
