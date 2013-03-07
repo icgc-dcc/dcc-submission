@@ -52,6 +52,7 @@ import org.slf4j.LoggerFactory;
 
 import cascading.cascade.Cascade;
 import cascading.cascade.CascadeListener;
+import cascading.stats.CascadingStats.Status;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
@@ -60,9 +61,14 @@ import com.google.common.util.concurrent.AbstractService;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
 
+import static cascading.stats.CascadingStats.Status.FAILED;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static org.icgc.dcc.release.model.SubmissionState.ERROR;
+import static org.icgc.dcc.release.model.SubmissionState.INVALID;
+import static org.icgc.dcc.release.model.SubmissionState.VALID;
+import static org.icgc.dcc.validation.report.Outcome.PASSED;
 
 /**
  * Manages validation queue that:<br>
@@ -254,27 +260,34 @@ public class ValidationQueueManagerService extends AbstractService {
    */
   public void handleCompletedValidation(Plan plan) {
     checkArgument(plan != null);
-
     QueuedProject queuedProject = plan.getQueuedProject();
     checkNotNull(queuedProject);
     String projectKey = queuedProject.getKey();
-    log.info("Cascade finished normally for project {}", projectKey);
+    log.info("Cascade completed for project {}", projectKey);
 
-    log.info("Gathering report for project {}", projectKey);
-    SubmissionReport report = new SubmissionReport();
-    Outcome outcome = plan.collect(report);
-    log.info("Gathered report for project {}", projectKey);
-
-    // resolving submission
-    if(outcome == Outcome.PASSED) {
-      resolveSubmission(queuedProject, SubmissionState.VALID);
+    Status cascadeStatus = plan.getCascade().getCascadeStats().getStatus();
+    if(FAILED == cascadeStatus) { // Completion does not guarantee success (at least in current version of
+                                  // cascading)
+      log.error("Validation failed: cascade completed with a {} status; About to dequeue project key {}",
+          cascadeStatus, projectKey);
+      resolveSubmission(queuedProject, ERROR);
     } else {
-      resolveSubmission(queuedProject, SubmissionState.INVALID);
-    }
-    setSubmissionReport(projectKey, report);
+      log.info("Gathering report for project {}", projectKey);
+      SubmissionReport report = new SubmissionReport();
+      Outcome outcome = plan.collect(report);
+      log.info("Gathered report for project {}", projectKey);
 
-    log.info("Validation finished normally for project {}, time spent on validation is {} seconds", projectKey,
-        plan.getDuration() / 1000.0);
+      // resolving submission
+      if(outcome == PASSED) {
+        resolveSubmission(queuedProject, VALID);
+      } else {
+        resolveSubmission(queuedProject, INVALID);
+      }
+      setSubmissionReport(projectKey, report);
+
+      log.info("Validation finished normally for project {}, time spent on validation is {} seconds", projectKey,
+          plan.getDuration() / 1000.0);
+    }
   }
 
   private void setSubmissionReport(String projectKey, SubmissionReport report) {
@@ -394,7 +407,8 @@ public class ValidationQueueManagerService extends AbstractService {
 
     @Override
     public boolean onThrowable(Cascade cascade, Throwable throwable) {
-      log.debug("CascadeListener onThrowable");
+      log.error("CascadeListener onThrowable: {}", throwable);
+
       // No-op for now; false indicates that the throwable was not handled and needs to be re-thrown
       return false;
     }
