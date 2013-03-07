@@ -8,6 +8,7 @@
   </parent>
   <artifactId>dcc-generator</artifactId>
   <dependencies>
+    
     <!-- Command line -->
     <dependency>
       <groupId>com.beust</groupId>
@@ -40,8 +41,28 @@
           <artifactId>jul-to-slf4j</artifactId>
         </exclusion>
       </exclusions>
-    </dependency>    
+    </dependency>  
+	    
+    <!-- JSON -->
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-core</artifactId>
+        <version>${jackson-yaml.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+        <version>${jackson-yaml.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.dataformat</groupId>
+        <artifactId>jackson-dataformat-yaml</artifactId>
+        <version>${jackson-yaml.version}</version>
+      </dependency>
+         
   </dependencies>
+
+		
   <repositories>
     <!-- Parent pom bootstrap -->
     <repository>
@@ -49,6 +70,7 @@
       <url>http://seqwaremaven.oicr.on.ca/artifactory/dcc-dependencies</url>
     </repository>
   </repositories>
+  
   <build>
     <plugins>
       <!-- Package -->
@@ -61,8 +83,10 @@
       </plugin>
     </plugins>
   </build>
+  
   <properties>
     <!-- Entry point -->
     <main.class>org.icgc.dcc.generator.Main</main.class>
+    <jackson-yaml.version>2.1.3</jackson-yaml.version>
   </properties>
 </project>

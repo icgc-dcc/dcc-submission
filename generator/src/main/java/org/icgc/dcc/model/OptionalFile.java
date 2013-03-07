@@ -15,22 +15,23 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.generator;
+package org.icgc.dcc.model;
 
-import java.io.IOException;
+import lombok.Getter;
+import lombok.ToString;
 
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.junit.Test;
+import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
  * 
  */
-public class DataGeneratorTest {
+@Getter
+@ToString
+public class OptionalFile {
+  @JsonProperty
+  private String name;
 
-  @Test
-  public void thing() throws JsonParseException, JsonMappingException, IOException {
-    String[] x = { "au", "01", "001", "1", "100", "ssm", "1234567" };
-    DataGenerator.main(x);
-  }
+  @JsonProperty
+  private Integer numberOfLinesPerDonor;
+
 }

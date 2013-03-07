@@ -22,19 +22,24 @@ import static java.lang.System.out;
 
 import java.io.File;
 import java.io.IOException;
-
-import lombok.extern.slf4j.Slf4j;
+import java.util.List;
 
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
+import org.icgc.dcc.model.ExperimentalFile;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
 /**
- * Command line utility used to generate ICGC data sets.
+ * Command line utility used to generate ICGC data sets.s In DataGenerator there's a a static
+ * ArrayList<ArrayList<String>> called listOfPrimaryKeys. This ArrayList holds ArrayLists of primary keys for each file.
+ * To identify which File and Field an ArrayList (with in the ArrayList) is associated with, the first element holds the
+ * name of the associated FileSchema and the second element holds the name of the Field.
  */
-@Slf4j
+
 public class Main {
 
   private final Options options = new Options();
@@ -67,8 +72,57 @@ public class Main {
     }
   }
 
-  private void generate(String[] args) throws JsonParseException, JsonMappingException, IOException {
-    DataGenerator.main(args);
+  public void generate(String[] args) throws JsonParseException, JsonMappingException, IOException {
+    String pathToConfigFile = args[0];
+
+    ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+    GeneratorConfig config = mapper.readValue(new File(pathToConfigFile), GeneratorConfig.class);
+
+    String outputDirectory = config.getOutputDirectory();
+    Integer numberOfDonors = config.getNumberOfDonors();
+    Integer numberOfSpecimensPerDonor = config.getNumberOfSpecimensPerDonor();
+    Integer numberOfSamplesPerDonor = config.getNumberOfSamplesPerSpecimen();
+    String leadJurisdiction = config.getLeadJurisdiction();
+    Long tumourType = config.getTumourType();
+    Long institution = config.getInstitution();
+    Long platform = config.getPlatform();
+    Long seed = config.getSeed();
+
+    // ArrayList<OptionalFile> optionalFiles = config.getOptionalFiles();
+
+    List<ExperimentalFile> experimentalFiles = config.getExperimentalFiles();
+
+    DataGenerator test = new DataGenerator(outputDirectory, seed);
+    test.createCoreFile("donor", numberOfDonors, leadJurisdiction, institution, tumourType, platform);
+    test.createCoreFile("specimen", numberOfSamplesPerDonor, leadJurisdiction, institution, tumourType, platform);
+    test.createCoreFile("sample", numberOfSpecimensPerDonor, leadJurisdiction, institution, tumourType, platform);
+
+    // Create loop to create optionalFiles here
+
+    for(ExperimentalFile experimentalFile : experimentalFiles) {
+      String fileType = experimentalFile.getFileType();
+      String schemaName = experimentalFile.getName() + "_" + fileType;
+      Integer numberOfLines = experimentalFile.getNumberOfLinesPerForeignKey();
+
+      test.determineUniqueFields(DataGenerator.getSchema(schemaName));
+      if(fileType.equals("m")) {
+        test.createMetaFile(schemaName, numberOfLines, leadJurisdiction, institution, tumourType, platform);
+      } else if(fileType.equals("p")) {
+        test.createPrimaryFile(schemaName, numberOfLines, leadJurisdiction, institution, tumourType, platform);
+      } else if(fileType.equals("g")) {
+        test.createPrimaryFile(schemaName, numberOfLines, leadJurisdiction, institution, tumourType, platform);
+      } else if(fileType.equals("s")) {
+        test.createSecondaryFile(schemaName, numberOfLines, leadJurisdiction, institution, tumourType, platform);
+      }
+    }
+    /*
+     * Here make variables of all the config fields, and make an arraylist of ExperimentalFile objects and an arraylist
+     * of OptionalFile objects Make a method in DataGenerator for createCoreFile and createExpFile and createTempFile
+     * call the above three methods here using loops With in the createCoreFile and createExpFile and createTempFile,
+     * instantiate their respective objects (passing in UniqueID), and call the openFile method which will
+     * generateFileName open a stream and call the populateCoreFile, populateExpFile, populateTempFile Move on from
+     * there
+     */
   }
 
   private String getProgramName() {
