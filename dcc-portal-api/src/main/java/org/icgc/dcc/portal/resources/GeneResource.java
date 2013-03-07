@@ -17,23 +17,26 @@
 
 package org.icgc.dcc.portal.resources;
 
+import com.google.common.hash.Hashing;
 import com.wordnik.swagger.annotations.*;
+import com.yammer.dropwizard.jersey.caching.CacheControl;
+import com.yammer.dropwizard.jersey.params.IntParam;
 import com.yammer.metrics.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.http.HttpStatus;
-import org.icgc.dcc.portal.core.Types;
-import org.icgc.dcc.portal.repositories.SearchRepository;
+import org.elasticsearch.action.search.SearchResponse;
+import org.icgc.dcc.portal.repositories.IGeneRepository;
 import org.icgc.dcc.portal.responses.GetManyResponse;
 import org.icgc.dcc.portal.responses.GetOneResponse;
-import org.icgc.dcc.portal.search.SearchQuery;
+import org.icgc.dcc.portal.search.GeneSearchQuery;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.net.URI;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
@@ -44,43 +47,46 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 @Slf4j
 public class GeneResource {
 
-  private final SearchRepository store;
+  private final IGeneRepository store;
 
   @Context
   private HttpServletRequest httpServletRequest;
 
   @Inject
-  public GeneResource(SearchRepository searchRepository) {
-    this.store = searchRepository.withType(Types.GENES);
+  public GeneResource(IGeneRepository store) {
+    this.store = store;
   }
 
   @GET
   @Timed
+  // @CacheControl(maxAge = 6, maxAgeUnit = TimeUnit.HOURS)
   @ApiOperation(value = "Retrieves a list of genes")
   public final Response getAll(
-      @ApiParam(value = "Start index of results", required = false) @QueryParam("from") @DefaultValue("1") int from,
-      @ApiParam(value = "Number of results returned", allowableValues = "range[1,100]", required = false) @QueryParam("size") @DefaultValue("10") int size,
-      @ApiParam(value = "Column to sort results on", required = false) @QueryParam("sort") String sort,
-      @ApiParam(value = "Order to sort the column", allowableValues = "asc, desc", required = false) @QueryParam("order") String order) {
-    SearchQuery searchQuery = new SearchQuery(from, size, sort, order);
-    GetManyResponse response = new GetManyResponse(store.getAll(searchQuery), httpServletRequest, searchQuery);
+      @ApiParam(value = "Start index of results", required = false) @QueryParam("from") @DefaultValue("1") IntParam from,
+      @ApiParam(value = "Number of results returned", allowableValues = "range[1,100]", required = false) @QueryParam("size") @DefaultValue("10") IntParam size,
+      @ApiParam(value = "Column to sort results on", defaultValue = "start", required = false) @QueryParam("sort") String sort,
+      @ApiParam(value = "Order to sort the column", defaultValue = "asc", allowableValues = "asc,desc", required = false) @QueryParam("order") String order,
+      @ApiParam(value = "Filter the search results", required = false) @QueryParam("filters") String filters,
+      @ApiParam(value = "Select fields returned", required = false) @QueryParam("fields") String fields) {
+    GeneSearchQuery searchQuery = new GeneSearchQuery(filters, fields, from.get(), size.get(), sort, order);
+    SearchResponse results = store.getAll(searchQuery);
+    GetManyResponse response = new GetManyResponse(results, httpServletRequest, searchQuery);
+    String etag = Hashing.murmur3_128().hashString(response.toString()).toString();
 
-    return Response.ok().entity(response).build();
-  }
+    if (httpServletRequest.getHeader("If-None-Match") != null
+        && httpServletRequest.getHeader("If-None-Match").replaceAll("\"", "").equals(etag)) {
+      return Response.notModified().header("X-ICGC-Version", "1")
+          .contentLocation(URI.create(httpServletRequest.getRequestURI())).build();
+    }
 
-  @POST
-  @Timed
-  @ApiOperation(value = "Retrieves a filtered list of genes")
-  public final Response filteredGetAll(@Valid SearchQuery searchQuery) {
-    // TODO This is broken
-    GetManyResponse response = new GetManyResponse(store.getAll(searchQuery), httpServletRequest, searchQuery);
-
-    return Response.ok().entity(response).build();
+    return Response.ok().header("X-ICGC-Version", "1").contentLocation(URI.create(httpServletRequest.getRequestURI()))
+        .tag(etag).entity(response).build();
   }
 
   @Path("/{id}")
   @GET
   @Timed
+  @CacheControl(immutable = true)
   @ApiOperation(value = "Find a gene by id", notes = "If a gene does not exist with the specified id an error will be returned")
   @ApiErrors(value = {@ApiError(code = HttpStatus.BAD_REQUEST_400, reason = "Invalid ID supplied"),
       @ApiError(code = HttpStatus.NOT_FOUND_404, reason = "Gene not found")})

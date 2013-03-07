@@ -18,8 +18,11 @@
 'use strict';
 
 angular.module('app', [
+  'ui.directives',
   'app.controllers',
   'app.common',
+  'app.http',
+  'app.facets',
   'app.projects',
   'app.donors',
   'app.genes',
@@ -29,12 +32,26 @@ angular.module('app').config(['$routeProvider', '$locationProvider', function ($
   $routeProvider
       .when('/', {templateUrl: 'views/home.html', controller: 'ApplicationController'})
       .when('/browser', {templateUrl: 'views/browser.html', controller: 'ApplicationController'})
-      .when('/search', {templateUrl: 'views/advanced.html', controller: 'ApplicationController'})
+      .when('/search', {
+        templateUrl: 'views/advanced.html',
+        controller: 'ApplicationController',
+        reloadOnSearch: false
+      })
       .otherwise({redirectTo: '/'});
   //$locationProvider.html5Mode(true);
+  //$locationProvider.hashPrefix('!');
 }]);
 
 angular.module('app.controllers', []);
 
-angular.module('app.controllers').controller('ApplicationController', [ "$scope", "$routeParams", function ($scope, $routeParams) {
+angular.module('app.controllers').controller('ApplicationController', [ "$rootScope", function ($rootScope) {
+  $rootScope.$on("$routeChangeStart", function (event, next, current) {
+    console.log("$routeChangeStart")
+  });
+  $rootScope.$on("$routeChangeSuccess", function (event, current, previous) {
+    console.log("$routeChangeSuccess")
+  });
+  $rootScope.$on("$routeChangeError", function (event, current, previous, rejection) {
+    console.log("$routeChangeError")
+  });
 }]);

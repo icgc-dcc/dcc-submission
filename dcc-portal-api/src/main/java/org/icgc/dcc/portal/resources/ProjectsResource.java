@@ -17,23 +17,25 @@
 
 package org.icgc.dcc.portal.resources;
 
+import com.google.common.hash.Hashing;
 import com.wordnik.swagger.annotations.*;
+import com.yammer.dropwizard.jersey.params.IntParam;
 import com.yammer.metrics.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.http.HttpStatus;
-import org.icgc.dcc.portal.core.Types;
-import org.icgc.dcc.portal.repositories.SearchRepository;
+import org.elasticsearch.action.search.SearchResponse;
+import org.icgc.dcc.portal.repositories.IProjectRepository;
 import org.icgc.dcc.portal.responses.GetManyResponse;
 import org.icgc.dcc.portal.responses.GetOneResponse;
-import org.icgc.dcc.portal.search.SearchQuery;
+import org.icgc.dcc.portal.search.ProjectSearchQuery;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.net.URI;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
@@ -44,38 +46,39 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 @Slf4j
 public class ProjectsResource {
 
-  private final SearchRepository store;
+  private final IProjectRepository store;
 
   @Context
   private HttpServletRequest httpServletRequest;
 
   @Inject
-  public ProjectsResource(SearchRepository searchRepository) {
-    this.store = searchRepository.withType(Types.PROJECTS);
+  public ProjectsResource(IProjectRepository projectRepository) {
+    this.store = projectRepository;
   }
 
   @GET
   @Timed
-  @ApiOperation(value = "Retrieves a list of projects")
+  @ApiOperation(value = "Retrieves a list of genes")
   public final Response getAll(
-      @ApiParam(value = "Start index of results", required = false) @QueryParam("from") @DefaultValue("1") int from,
-      @ApiParam(value = "Number of results returned", allowableValues = "range[1,100]", required = false) @QueryParam("size") @DefaultValue("10") int size,
-      @ApiParam(value = "Column to sort results on", required = false) @QueryParam("sort") String sort,
-      @ApiParam(value = "Order to sort the column", allowableValues = "asc, desc", required = false) @QueryParam("order") String order) {
-    SearchQuery searchQuery = new SearchQuery(from, size, sort, order);
-    GetManyResponse response = new GetManyResponse(store.getAll(searchQuery), httpServletRequest, searchQuery);
+      @ApiParam(value = "Start index of results", required = false) @QueryParam("from") @DefaultValue("1") IntParam from,
+      @ApiParam(value = "Number of results returned", allowableValues = "range[1,100]", required = false) @QueryParam("size") @DefaultValue("10") IntParam size,
+      @ApiParam(value = "Column to sort results on", defaultValue = "project_name", required = false) @QueryParam("sort") String sort,
+      @ApiParam(value = "Order to sort the column", defaultValue = "asc", allowableValues = "asc,desc", required = false) @QueryParam("order") String order,
+      @ApiParam(value = "Filter the search results", required = false) @QueryParam("filters") String filters,
+      @ApiParam(value = "Select fields returned", required = false) @QueryParam("fields") String fields) {
+    ProjectSearchQuery searchQuery = new ProjectSearchQuery(filters, fields, from.get(), size.get(), sort, order);
+    SearchResponse results = store.getAll(searchQuery);
+    GetManyResponse response = new GetManyResponse(results, httpServletRequest, searchQuery);
+    String etag = Hashing.murmur3_128().hashString(response.toString()).toString();
 
-    return Response.ok().entity(response).build();
-  }
+    if (httpServletRequest.getHeader("If-None-Match") != null
+        && httpServletRequest.getHeader("If-None-Match").replaceAll("\"", "").equals(etag)) {
+      return Response.notModified().header("X-ICGC-Version", "1")
+          .contentLocation(URI.create(httpServletRequest.getRequestURI())).build();
+    }
 
-  @POST
-  @Timed
-  @ApiOperation(value = "Retrieves a filtered list of projects")
-  public final Response filteredGetAll(@Valid SearchQuery searchQuery) {
-    // TODO This is broken
-    GetManyResponse response = new GetManyResponse(store.getAll(searchQuery), httpServletRequest, searchQuery);
-
-    return Response.ok().entity(response).build();
+    return Response.ok().header("X-ICGC-Version", "1").contentLocation(URI.create(httpServletRequest.getRequestURI()))
+        .tag(etag).entity(response).build();
   }
 
   @Path("/{id}")
@@ -86,7 +89,7 @@ public class ProjectsResource {
       @ApiError(code = HttpStatus.NOT_FOUND_404, reason = "Project not found")})
   public final Response getOne(@ApiParam(value = "ID of project that needs to be fetched") @PathParam("id") String id)
       throws IOException {
-	  
+
     GetOneResponse response = new GetOneResponse(store.getOne("release11::" + id), httpServletRequest);
 
     return Response.ok().entity(response).build();

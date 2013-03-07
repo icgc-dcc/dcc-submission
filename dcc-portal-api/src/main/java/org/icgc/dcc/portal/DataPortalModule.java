@@ -28,8 +28,7 @@ import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.icgc.dcc.portal.configurations.ElasticSearchConfiguration;
 import org.icgc.dcc.portal.configurations.MongoDbConfiguration;
-import org.icgc.dcc.portal.repositories.SearchRepository;
-import org.icgc.dcc.portal.repositories.impl.SearchRepositoryImpl;
+import org.icgc.dcc.portal.repositories.*;
 import org.jongo.Jongo;
 
 import java.net.UnknownHostException;
@@ -63,6 +62,8 @@ public class DataPortalModule extends AbstractModule {
 
   @Override
   protected final void configure() {
-    bind(SearchRepository.class).to(SearchRepositoryImpl.class).in(Singleton.class);
+    bind(ISearchRepository.class).to(SearchRepository.class).in(Singleton.class);
+    bind(IProjectRepository.class).to(ProjectRepository.class).in(Singleton.class);
+    bind(IGeneRepository.class).to(GeneRepository.class).in(Singleton.class);
   }
 }

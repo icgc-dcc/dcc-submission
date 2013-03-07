@@ -20,6 +20,21 @@ angular.module('app.genes.controllers', ['app.genes.services']);
 
 angular.module('app.genes.controllers').controller('GenesController', [ "$scope", 'GenesService', "genes", function ($scope, GenesService, genes) {
   $scope.genes = genes;
+
+  $scope.refresh = function () {
+    GenesService.query().then(function (response) {
+      $scope.genes = response;
+    });
+  };
+
+  $scope.geneList = {
+    width: "100%",
+    placeholder: "Search for gene symbols",
+    tags: [],
+    tokenSeparators: [",", " "]
+  };
+
+  $scope.$on('toggleFilter', $scope.refresh);
 }]);
 
 angular.module('app.genes.controllers').controller('GeneController', [ "$scope", "gene", function ($scope, gene) {

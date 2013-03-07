@@ -8929,7 +8929,7 @@
          *    - **withCredentials** - `{boolean}` - whether to to set the `withCredentials` flag on the
          *      XHR object. See {@link https://developer.mozilla.org/en/http_access_control#section_5
          *      requests with credentials} for more information.
-         *    - **responseType** - `{string}` - see {@link
+         *    - **responseType** - `{string}` - see {@link}
          *      https://developer.mozilla.org/en-US/docs/DOM/XMLHttpRequest#responseType requestType}.
          *
          * @returns {HttpPromise} Returns a {@link ng.$q promise} object with the

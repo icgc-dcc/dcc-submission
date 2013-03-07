@@ -1,23 +1,12 @@
-<!--
-  ~ Copyright 2013(c) The Ontario Institute for Cancer Research. All rights reserved.
-  ~  
-  ~ This program and the accompanying materials are made available under the terms of the GNU Public
-  ~ License v3.0. You should have received a copy of the GNU General Public License along with this
-  ~ program. If not, see <http://www.gnu.org/licenses/>.
-  ~  
-  ~ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
-  ~ IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
-  ~ FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
-  ~ CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-  ~ DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-  ~ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
-  ~ WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
-  ~ WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-  -->
-
 <div class="row">
     <div class="span3">
-        <div class="well"><i class="icon-spinner icon-spin"></i> Facets</div>
+        <ul class="nav nav-list" ng-controller="FacetsController">
+            <term-facet facet-name="gene_type" facet="genes.facets['gene_type']"></term-facet>
+            <term-facet facet-name="chromosome" facet="genes.facets['chromosome']"></term-facet>
+            <location-facet facet-name="gene_location" placeholder="Search for a gene location"></location-facet>
+            <multi-facet facet-name="gene_list" select2="geneList"></multi-facet>
+            <multi-facet facet-name="pathways" select2="geneList"></multi-facet>
+        </ul>
     </div>
     <div class="span9">
         <div class="row"><h1 class="span">Genes</h1></div>
@@ -46,16 +35,18 @@
             </tr>
             </thead>
             <tbody>
-            <tr ng-repeat="gene in genes.data">
-                <td><a href="#/genes/{{gene.ensembl_gene_id}}">{{gene.symbol}}</a></td>
-
-                <td>{{gene.description}}</td>
-                <td>{{gene.chromosome}}</td>
-                <td>{{gene.start}}</td>
-                <td>{{gene.end}}</td>
-                <td>{{gene.band}}</td>
-                <td>{{gene.gene_type}}</td>
+            <tr ng-repeat="gene in genes.hits">
+                <td><a href="#/genes/{{gene.fields.ensembl_gene_id}}">{{gene.fields.symbol}}</a></td>
+                <td>{{gene.fields.description}}</td>
+                <td>{{gene.fields.chromosome}}</td>
+                <td>{{gene.fields.start}}</td>
+                <td>{{gene.fields.end}}</td>
+                <td>{{gene.fields.band}}</td>
+                <td>{{gene.fields.gene_type}}</td>
                 <td>??</td>
+            </tr>
+            <tr ng-hide="genes.hits">
+                <td colspan="8">No results found</td>
             </tr>
             </tbody>
         </table>

@@ -19,12 +19,10 @@
 
 angular.module('app.genes.models', []);
 
-angular.module('app.genes.models').factory('Genes', ['$http', function ($http) {
+angular.module('app.genes.models').factory('Genes', ['http', function ($http) {
   return {
     query: function () {
-      return $http.get('/ws/genes').then(function (response) {
-        return response.data;
-      });
+      return $http.get('/ws/genes');
     },
     get: function (params) {
       return $http.get('/ws/genes/' + params.gene).then(function (response) {

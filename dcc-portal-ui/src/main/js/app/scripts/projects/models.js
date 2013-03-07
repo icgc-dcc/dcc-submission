@@ -19,16 +19,14 @@
 
 angular.module('app.projects.models', []);
 
-angular.module('app.projects.models').factory('Projects', ['$http', function ($http) {
+angular.module('app.projects.models').factory('Projects', ['http', function (http) {
   return {
     query: function () {
-      return $http.get('/ws/projects').then(function (response) {
-        return response.data;
-      });
+      return http.get('/ws/projects');
     },
     get: function (params) {
-      return $http.get('/ws/projects/' + params.project).then(function (response) {
-        return response.data.data;
+      return http.get('/ws/projects/' + params.project).then(function (response) {
+        return response;
       });
     }
   }

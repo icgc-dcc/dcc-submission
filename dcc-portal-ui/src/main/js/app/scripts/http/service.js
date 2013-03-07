@@ -1,10 +1,10 @@
 /*
  * Copyright 2013(c) The Ontario Institute for Cancer Research. All rights reserved.
- *  
+ *
  * This program and the accompanying materials are made available under the terms of the GNU Public
  * License v3.0. You should have received a copy of the GNU General Public License along with this
  * program. If not, see <http://www.gnu.org/licenses/>.
- *  
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
  * FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
@@ -17,7 +17,20 @@
 
 'use strict';
 
-angular.module('app.common', [
-  'app.common.navigation',
-  'app.common.loading'
-]);
+angular.module('app.http.service', []);
+
+angular.module('app.http.service').service('httpService', ['$location', function ($location) {
+
+  this.updateSearch = function (search) {
+    $location.search(search);
+  };
+
+  this.getCurrentSearch = function () {
+    return $location.search();
+  };
+
+  this.getCurrentFilters = function () {
+    var cfParams = this.getCurrentSearch().filters || '';
+    return cfParams.length ? JSON.parse(cfParams) : {};
+  };
+}]);

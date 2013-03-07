@@ -20,6 +20,7 @@
 angular.module('app.genes.services', ['app.genes.models']);
 
 angular.module('app.genes.services').service('GenesService', ['$q', 'Genes', function ($q, Genes) {
+
   this.query = function () {
     return Genes.query();
   };

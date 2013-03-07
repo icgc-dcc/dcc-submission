@@ -1,0 +1,8 @@
+<li class="nav-header">
+    <i ng-hide="facet.active" class="icon-check-empty"></i>
+    <i ng-show="facet.active" class="icon-check"></i>
+    {{facetName}}
+</li>
+<li class="form-inline">
+    <input id="{{facetName}}" type="hidden" ui-select2="select2" initSelection="init">
+</li>

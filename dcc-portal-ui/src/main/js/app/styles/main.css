@@ -85,32 +85,6 @@ h3 {
     text-decoration: underline;
 }
 
-/* Status Text Colours */
-.signed,
-.signed_off,
-.valid,
-.opened {
-    color: #468847;
-}
-
-.invalid,
-.error {
-    color: #b94a48;
-}
-
-.queued {
-    color: #c09853;
-}
-
-.validating {
-    color: #d0763e;
-}
-
-.label-validating {
-    color: #fff;
-    background: #d0763e;
-}
-
 .brand a {
     color: #333;
 }
@@ -121,4 +95,11 @@ textarea.ng-invalid:focus {
     -webkit-box-shadow: 0 0 6px hsl(2, 82%, 85%);
     -moz-box-shadow: 0 0 6px #f8b9b7;
     box-shadow: 0 0 6px hsl(2, 82%, 85%);
+}
+
+/* Twitter Bootstrap Mods */
+.nav-list {
+    padding-left: 0;
+    padding-right: 0;
+    font-size: 12px;
 }
