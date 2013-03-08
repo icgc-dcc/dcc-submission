@@ -17,35 +17,36 @@
 
 package org.icgc.dcc.portal.responses;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.elasticsearch.action.get.GetResponse;
+import org.elasticsearch.index.get.GetField;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.io.IOException;
+import java.util.Map;
 
 @EqualsAndHashCode(callSuper = false)
 @Data
-public final class GetOneResponse extends BaseResponse {
+public final class GetOneResponse {
 
- private final JsonNode data;
+  private final String id;
+  private final String type;
+  private final ImmutableList<ResponseHitField> fields;
 
-  public GetOneResponse(final GetResponse hit, final HttpServletRequest hsr) {
-	  super(hsr);
-	  this.data = extractData(hit);
+  public GetOneResponse(GetResponse hit) {
+    this.id = hit.getId();
+    this.type = hit.getType();
+    this.fields = buildGetHitFields(hit.getFields());
   }
 
-  private JsonNode extractData(final GetResponse hit) {
-    try {
-      return new ObjectMapper().readValue(hit.getSourceAsString(), JsonNode.class);
-    } catch (IOException e) {
-      throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST)
-          .entity(new ErrorResponse(Response.Status.BAD_REQUEST, e)).type(MediaType.APPLICATION_JSON_TYPE).build());
+  private ImmutableList<ResponseHitField> buildGetHitFields(Map<String, GetField> fields) {
+    ImmutableList.Builder<ResponseHitField> l = new ImmutableList.Builder<ResponseHitField>();
+    for (GetField field : fields.values()) {
+      String name = field.getName();
+      Object value = field.getValues().toArray()[0];
+      ResponseHitField rhf = new ResponseHitField(name, value);
+      l.add(rhf);
     }
+    return l.build();
   }
 }

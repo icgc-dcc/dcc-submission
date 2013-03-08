@@ -86,7 +86,7 @@ public class DonorResource {
       @ApiError(code = HttpStatus.NOT_FOUND_404, reason = "Donor not found")})
   public final Response getOne(@ApiParam(value = "ID of donor that needs to be fetched") @PathParam("id") String id)
       throws IOException {
-    GetOneResponse response = new GetOneResponse(store.getOne(id), httpServletRequest);
+    GetOneResponse response = new GetOneResponse(store.getOne(id));
 
     return Response.ok().entity(response).build();
   }

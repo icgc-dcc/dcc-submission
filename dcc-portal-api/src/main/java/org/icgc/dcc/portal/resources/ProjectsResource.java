@@ -87,7 +87,7 @@ public class ProjectsResource {
   public final Response getOne(@ApiParam(value = "ID of project that needs to be fetched") @PathParam("id") String id)
       throws IOException {
 
-    GetOneResponse response = new GetOneResponse(store.getOne("release11::" + id), null);
+    GetOneResponse response = new GetOneResponse(store.getOne("release11::" + id));
 
     return Response.ok().entity(response).build();
   }
