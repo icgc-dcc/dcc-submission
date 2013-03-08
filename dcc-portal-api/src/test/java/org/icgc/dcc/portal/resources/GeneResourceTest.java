@@ -17,9 +17,14 @@
 
 package org.icgc.dcc.portal.resources;
 
-import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.client.ClientResponse;
 import com.yammer.dropwizard.testing.ResourceTest;
+import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.index.get.GetField;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.facet.Facets;
 import org.icgc.dcc.portal.repositories.IGeneRepository;
 import org.icgc.dcc.portal.search.GeneSearchQuery;
 import org.junit.Test;
@@ -27,7 +32,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import javax.ws.rs.core.Response;
+import java.util.HashMap;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
@@ -35,37 +40,56 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-@SuppressWarnings("unchecked")
+// @SuppressWarnings("unchecked")
 public class GeneResourceTest extends ResourceTest {
+
+  private final static String RESOURCE = "/genes";
 
   @Mock
   private IGeneRepository store;
 
   @Mock
-  private GeneSearchQuery searchQuery;
+  private SearchResponse searchResponse;
 
   @Mock
-  private SearchResponse searchResponse;
+  private SearchHit searchHit;
+
+  @Mock
+  private SearchHits searchHits;
+
+  @Mock
+  private Facets searchFacets;
+
+  @Mock
+  private GetResponse getResponse;
 
   @Override
   protected final void setUpResources() throws Exception {
-    when(searchResponse.toString()).thenReturn("{\"a\":[\"b\"]}");
-    when(store.getAll(any(GeneSearchQuery.class))).thenReturn(searchResponse);
     addResource(new GeneResource(store));
   }
 
-  @Test
-  public final void testGetAll() throws Exception {
-    WebResource wr = client().resource("/genes");
-    assertThat(wr.get(Response.class).getStatus()).isEqualTo(Response.Status.OK.getStatusCode());
 
-    verify(store).getAll(searchQuery);
+  @Test
+  public final void test_getMany() throws Exception {
+    when(store.getAll(any(GeneSearchQuery.class))).thenReturn(searchResponse);
+    when(searchResponse.getHits()).thenReturn(searchHits);
+    when(searchHits.getHits()).thenReturn(new SearchHit[] {searchHit});
+    when(searchResponse.getFacets()).thenReturn(searchFacets);
+
+    ClientResponse response = client().resource(RESOURCE).get(ClientResponse.class);
+    verify(store).getAll(any(GeneSearchQuery.class));
+    assertThat(response.getStatus()).isEqualTo(ClientResponse.Status.OK.getStatusCode());
   }
 
-  // @Test
-  public final void testGetOne() throws Exception {
-    // assertThat(client().resource("/genes/1").get(Gene.class)).isEqualTo(gene1);
+  @Test
+  public final void test_getOne() throws Exception {
+    when(store.getOne(any(String.class))).thenReturn(getResponse);
+    when(getResponse.getId()).thenReturn("ENSG00000187939");
+    when(getResponse.getType()).thenReturn("genes");
+    when(getResponse.getFields()).thenReturn(new HashMap<String, GetField>());
 
-    // verify(store).getOne("1");
+    ClientResponse response = client().resource(RESOURCE).path("ENSG00000187939").get(ClientResponse.class);
+    verify(store).getOne(any(String.class));
+    assertThat(response.getStatus()).isEqualTo(ClientResponse.Status.OK.getStatusCode());
   }
 }
