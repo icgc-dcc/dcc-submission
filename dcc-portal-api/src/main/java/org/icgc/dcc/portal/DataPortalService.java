@@ -20,6 +20,7 @@ package org.icgc.dcc.portal;
 import com.bazaarvoice.dropwizard.redirect.RedirectBundle;
 import com.google.common.collect.ImmutableMap;
 import com.hubspot.dropwizard.guice.GuiceBundle;
+import com.sun.jersey.api.core.ResourceConfig;
 import com.yammer.dropwizard.Service;
 import com.yammer.dropwizard.config.Bootstrap;
 import com.yammer.dropwizard.config.Environment;
@@ -61,6 +62,8 @@ public class DataPortalService extends Service<DataPortalConfiguration> {
 
   @Override
   public final void run(DataPortalConfiguration configuration, Environment environment) throws Exception {
+    environment.setJerseyProperty(ResourceConfig.PROPERTY_CONTAINER_RESPONSE_FILTERS,
+        "org.icgc.dcc.portal.responses.EtagFilter");
     logInfo(args);
   }
 

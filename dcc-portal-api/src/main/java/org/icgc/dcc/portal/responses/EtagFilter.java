@@ -25,9 +25,9 @@ import com.sun.jersey.spi.container.ContainerResponseFilter;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response;
 
-public class ResponseEtagFilter implements ContainerResponseFilter {
+public class EtagFilter implements ContainerResponseFilter {
 
-  // TODO Not the best place for this - probably in config file? or pulled from maven?
+  // TODO Not the best place for this - probably in config file?
   private static final String API_VERSION_HEADER = "X-ICGC-Version";
   private static final String VERSION = "1";
 
@@ -37,27 +37,26 @@ public class ResponseEtagFilter implements ContainerResponseFilter {
     EntityTag etag = generateETag(entity);
     Response.ResponseBuilder rb = containerRequest.evaluatePreconditions(etag);
 
-    Response response = isModified(rb) ? modifiedResponse(containerResponse) : notModifiedResponse(rb);
+    Response response = isModified(rb) ? modifiedResponse(containerResponse, etag) : notModifiedResponse(rb);
 
     containerResponse.setResponse(response);
     return containerResponse;
-  }
-
-  private Response notModifiedResponse(Response.ResponseBuilder rb) {
-    return rb.header(API_VERSION_HEADER, VERSION).build();
-  }
-
-  private boolean isModified(Response.ResponseBuilder rb) {
-    return rb != null;
   }
 
   private EntityTag generateETag(Object entity) {
     return new EntityTag(Hashing.murmur3_128().hashString(entity.toString()).toString());
   }
 
-  private Response modifiedResponse(ContainerResponse containerResponse) {
-    return Response.status(containerResponse.getStatusType()).header(API_VERSION_HEADER, VERSION)
-        .tag(containerResponse.getHttpHeaders().get("If-None-Match").toString()).entity(containerResponse.getEntity())
-        .build();
+  private boolean isModified(Response.ResponseBuilder rb) {
+    return rb == null;
+  }
+
+  private Response notModifiedResponse(Response.ResponseBuilder rb) {
+    return rb.header(API_VERSION_HEADER, VERSION).build();
+  }
+
+  private Response modifiedResponse(ContainerResponse containerResponse, EntityTag etag) {
+    return Response.status(containerResponse.getStatusType()).header(API_VERSION_HEADER, VERSION).tag(etag)
+        .entity(containerResponse.getEntity()).build();
   }
 }
