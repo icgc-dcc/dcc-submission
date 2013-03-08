@@ -8,6 +8,13 @@
   </parent>
   <artifactId>dcc-server</artifactId>
   <dependencies>
+    <!-- DCC -->
+    <dependency>
+      <groupId>org.icgc.dcc</groupId>
+      <artifactId>dcc-core</artifactId>
+      <version>1.3-SNAPSHOT</version>
+    </dependency>
+
     <!-- REST -->
     <dependency>
       <groupId>org.glassfish.jersey.containers</groupId>
