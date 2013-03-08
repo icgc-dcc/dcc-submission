@@ -17,16 +17,10 @@
  */
 package org.icgc.dcc.validation.service;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
-
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -35,14 +29,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.mail.Address;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.Transport;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
 
+import org.icgc.dcc.core.MailUtils;
 import org.icgc.dcc.release.NextRelease;
 import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.QueuedProject;
@@ -62,6 +52,7 @@ import org.slf4j.LoggerFactory;
 
 import cascading.cascade.Cascade;
 import cascading.cascade.CascadeListener;
+import cascading.stats.CascadingStats.Status;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
@@ -69,6 +60,15 @@ import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.AbstractService;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
+
+import static cascading.stats.CascadingStats.Status.FAILED;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+import static org.icgc.dcc.release.model.SubmissionState.ERROR;
+import static org.icgc.dcc.release.model.SubmissionState.INVALID;
+import static org.icgc.dcc.release.model.SubmissionState.VALID;
+import static org.icgc.dcc.validation.report.Outcome.PASSED;
 
 /**
  * Manages validation queue that:<br>
@@ -260,27 +260,34 @@ public class ValidationQueueManagerService extends AbstractService {
    */
   public void handleCompletedValidation(Plan plan) {
     checkArgument(plan != null);
-
     QueuedProject queuedProject = plan.getQueuedProject();
     checkNotNull(queuedProject);
     String projectKey = queuedProject.getKey();
-    log.info("Cascade finished normally for project {}", projectKey);
+    log.info("Cascade completed for project {}", projectKey);
 
-    log.info("Gathering report for project {}", projectKey);
-    SubmissionReport report = new SubmissionReport();
-    Outcome outcome = plan.collect(report);
-    log.info("Gathered report for project {}", projectKey);
-
-    // resolving submission
-    if(outcome == Outcome.PASSED) {
-      resolveSubmission(queuedProject, SubmissionState.VALID);
+    Status cascadeStatus = plan.getCascade().getCascadeStats().getStatus();
+    if(FAILED == cascadeStatus) { // Completion does not guarantee success (at least in current version of
+                                  // cascading)
+      log.error("Validation failed: cascade completed with a {} status; About to dequeue project key {}",
+          cascadeStatus, projectKey);
+      resolveSubmission(queuedProject, ERROR);
     } else {
-      resolveSubmission(queuedProject, SubmissionState.INVALID);
-    }
-    setSubmissionReport(projectKey, report);
+      log.info("Gathering report for project {}", projectKey);
+      SubmissionReport report = new SubmissionReport();
+      Outcome outcome = plan.collect(report);
+      log.info("Gathered report for project {}", projectKey);
 
-    log.info("Validation finished normally for project {}, time spent on validation is {} seconds", projectKey,
-        plan.getDuration() / 1000.0);
+      // resolving submission
+      if(outcome == PASSED) {
+        resolveSubmission(queuedProject, VALID);
+      } else {
+        resolveSubmission(queuedProject, INVALID);
+      }
+      setSubmissionReport(projectKey, report);
+
+      log.info("Validation finished normally for project {}, time spent on validation is {} seconds", projectKey,
+          plan.getDuration() / 1000.0);
+    }
   }
 
   private void setSubmissionReport(String projectKey, SubmissionReport report) {
@@ -352,9 +359,6 @@ public class ValidationQueueManagerService extends AbstractService {
   }
 
   private void email(QueuedProject project, SubmissionState state) {
-    Properties props = new Properties();
-    props.put("mail.smtp.host", this.config.getString("mail.smtp.host"));
-    Session session = Session.getDefaultInstance(props, null);
     Release release = releaseService.getNextRelease().getRelease();
 
     Set<Address> aCheck = Sets.newHashSet();
@@ -364,48 +368,12 @@ public class ValidationQueueManagerService extends AbstractService {
         Address a = new InternetAddress(email);
         aCheck.add(a);
       } catch(AddressException e) {
-        log.error("Illigal Address: " + e);
+        log.error("Illegal Address: " + e);
       }
     }
 
     if(aCheck.isEmpty() == false) {
-      try {
-        Message msg = new MimeMessage(session);
-        String fromEmail = this.config.getString("mail.from.email");
-        msg.setFrom(new InternetAddress(fromEmail, fromEmail));
-
-        msg.setSubject(String.format(this.config.getString("mail.subject"), project.getKey(), state));
-        if(state == SubmissionState.ERROR) {
-          // send email to admin when Error occurs
-          Address adminEmailAdd = new InternetAddress(this.config.getString("mail.admin.email"));
-          aCheck.add(adminEmailAdd);
-          msg.setText(String.format(this.config.getString("mail.error_body"), project.getKey(), state));
-        } else if(state == SubmissionState.VALID) {
-          msg.setText(String.format(this.config.getString("mail.valid_body"), project.getKey(), state,
-              release.getName(), project.getKey()));
-        } else if(state == SubmissionState.INVALID) {
-          msg.setText(String.format(this.config.getString("mail.invalid_body"), project.getKey(), state,
-              release.getName(), project.getKey()));
-        }
-
-        Address[] addresses = new Address[aCheck.size()];
-
-        int i = 0;
-        for(Address email : aCheck) {
-          addresses[i++] = email;
-        }
-        msg.addRecipients(Message.RecipientType.TO, addresses);
-
-        Transport.send(msg);
-        log.info("Emails for {} sent to {}: ", project.getKey(), aCheck);
-
-      } catch(AddressException e) {
-        log.error("an error occured while emailing: ", e);
-      } catch(MessagingException e) {
-        log.error("an error occured while emailing: ", e);
-      } catch(UnsupportedEncodingException e) {
-        log.error("an error occured while emailing: ", e);
-      }
+      MailUtils.validationEndEmail(config, release.getName(), project.getKey(), state, aCheck);
     }
   }
 
@@ -439,7 +407,8 @@ public class ValidationQueueManagerService extends AbstractService {
 
     @Override
     public boolean onThrowable(Cascade cascade, Throwable throwable) {
-      log.debug("CascadeListener onThrowable");
+      log.error("CascadeListener onThrowable: {}", throwable);
+
       // No-op for now; false indicates that the throwable was not handled and needs to be re-thrown
       return false;
     }

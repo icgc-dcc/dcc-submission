@@ -15,68 +15,38 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.dictionary.model;
+package org.icgc.dcc.core.model;
 
-import java.io.Serializable;
+import java.util.List;
+import java.util.Set;
 
-import org.hibernate.validator.constraints.NotBlank;
-import org.hibernate.validator.constraints.URL;
-
-import com.google.code.morphia.annotations.Embedded;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 /**
- * Describes a controlled term as part of a {@code CodeList}, which is simply a code (usually integer or integer-looking
- * string) associated with a value, and a URI as reference for the controlled term
+ * Utilities for working with ICGC feature types.
  */
-@Embedded
-public class Term implements Serializable {
+public final class FeatureTypes {
 
-  @NotBlank
-  private String code;
+  /** From the ICGC Submission Manual */
+  private static final List<String> FEATURE_TYPES = ImmutableList.of("ssm", "sgv", "cnsm", "cngv", "stsm", "stgv",
+      "exp", "mirna", "jcn", "meth");
 
-  @NotBlank
-  private String value;
+  /** Subset of {@link #FEATURE_TYPES} that relates to somatic mutations */
+  private static final List<String> SOMATIC_FEATURE_TYPES = ImmutableList.of("ssm", "cnsm", "stsm");
 
-  @URL
-  private String uri;
+  private static final Set<String> SOMATIC_FEATURE_TYPES_SET = ImmutableSet.copyOf(SOMATIC_FEATURE_TYPES);
 
-  public Term() {
-    super();
+  public static List<String> getTypes() {
+    return FEATURE_TYPES;
   }
 
-  public Term(String code, String value, String uri) {
-    this();
-    this.code = code;
-    this.value = value;
-    this.uri = uri;
+  public static List<String> getSomaticTypes() {
+    return SOMATIC_FEATURE_TYPES;
   }
 
-  public String getCode() {
-    return code;
+  public static boolean isSomaticType(String type) {
+    return SOMATIC_FEATURE_TYPES_SET.contains(type);
   }
 
-  public void setCode(String code) {
-    this.code = code;
-  }
-
-  public String getValue() {
-    return value;
-  }
-
-  public void setValue(String value) {
-    this.value = value;
-  }
-
-  public String getUri() {
-    return uri;
-  }
-
-  public void setUri(String uri) {
-    this.uri = uri;
-  }
-
-  @Override
-  public String toString() {
-    return "Term [code=" + code + ", value=" + value + ", uri=" + uri + "]";
-  }
 }

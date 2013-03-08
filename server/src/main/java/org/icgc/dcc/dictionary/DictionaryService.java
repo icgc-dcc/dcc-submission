@@ -17,14 +17,12 @@
  */
 package org.icgc.dcc.dictionary;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
-
 import java.util.List;
 
 import org.icgc.dcc.core.morphia.BaseMorphiaService;
 import org.icgc.dcc.dictionary.model.CodeList;
 import org.icgc.dcc.dictionary.model.Dictionary;
+import org.icgc.dcc.dictionary.model.DictionaryState;
 import org.icgc.dcc.dictionary.model.QCodeList;
 import org.icgc.dcc.dictionary.model.QDictionary;
 import org.icgc.dcc.dictionary.model.Term;
@@ -34,7 +32,8 @@ import org.icgc.dcc.filesystem.ReleaseFileSystem;
 import org.icgc.dcc.release.NextRelease;
 import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.Release;
-import org.mortbay.log.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
@@ -44,10 +43,15 @@ import com.google.common.base.Optional;
 import com.google.inject.Inject;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
+
 /**
  * Offers various CRUD operations pertaining to {@code Dictionary}
  */
 public class DictionaryService extends BaseMorphiaService<Dictionary> {
+
+  private static final Logger log = LoggerFactory.getLogger(DictionaryService.class);
 
   private final DccFileSystem fs;
 
@@ -107,16 +111,29 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
     Dictionary newDictionary = dictionaryCloneVisitor.getDictionaryClone();
     newDictionary.setVersion(newVersion);
 
-    this.add(newDictionary);
+    this.addDictionary(newDictionary);
 
     return newDictionary;
   }
 
-  public void add(Dictionary dictionary) {
+  /**
+   * Add a new dictionary to the database after having ensured it provides enough information.
+   */
+  public void addDictionary(Dictionary dictionary) {
     checkArgument(dictionary != null);
+
     String version = dictionary.getVersion();
+    if(version == null) {
+      throw new DictionaryServiceException("New dictionary must specify a valid version");
+    }
+
     if(this.getFromVersion(version) != null) {
       throw new DictionaryServiceException("cannot add an existing dictionary: " + version);
+    }
+
+    if(DictionaryState.OPENED != dictionary.getState()) {
+      throw new DictionaryServiceException(String.format("New dictionary must be in OPENED state: %s instead",
+          dictionary.getState()));
     }
 
     datastore().save(dictionary);
@@ -127,12 +144,13 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
   }
 
   public void addCodeList(List<CodeList> codeLists) {
+    log.info("Saving codelists {}", codeLists);
     this.datastore().save(codeLists);
   }
 
   public Optional<CodeList> getCodeList(String name) {
     checkArgument(name != null);
-    Log.debug("retrieving codelist {}", name);
+    log.debug("retrieving codelist {}", name);
     CodeList codeList = this.queryCodeList().where(QCodeList.codeList.name.eq(name)).singleResult();
     return codeList == null ? Optional.<CodeList> absent() : Optional.<CodeList> of(codeList);
   }
@@ -155,8 +173,6 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
       throw new DictionaryServiceException("cannot perform update to non-existant codeList: " + name);
     }
 
-    CodeList codeList = optional.get();
-    codeList.setLabel(newCodeList.getLabel());
     Query<CodeList> updateQuery = datastore().createQuery(CodeList.class).filter("name" + " = ", name);
     checkState(updateQuery.countAll() == 1);
     UpdateOperations<CodeList> ops =
