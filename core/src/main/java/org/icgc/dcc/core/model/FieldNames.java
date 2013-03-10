@@ -43,7 +43,7 @@ public final class FieldNames {
    */
   public static final String DONOR_ID = "_donor_id";
   public static final String DONOR_SUMMARY = "_summary";
-  public static final String DONOR_GENES = "genes";
+  public static final String DONOR_GENES = "gene";
   public static final String DONOR_GENE_GENE_ID = "_gene_id";
   public static final String DONOR_GENE_SUMMARY = "_summary";
   public static final String DONOR_PROJECT_ID = "_project_id";
@@ -77,6 +77,10 @@ public final class FieldNames {
   public static final String OBSERVATION_CONSEQUENCES = "consequence";
   public static final String OBSERVATION_CONSEQUENCES_GENE_ID = "_gene_id";
   public static final String OBSERVATION_CONSEQUENCES_TRANSCRIPT_ID = "_transcript_id";
+  
+  public static String getPartitionTypeFieldName(String type) {
+    return type;
+  }
 
   /**
    * Mutation field names.
