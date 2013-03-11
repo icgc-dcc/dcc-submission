@@ -20,7 +20,7 @@ package org.icgc.dcc.portal.responses;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import org.elasticsearch.search.SearchHits;
-import org.icgc.dcc.portal.search.SearchQuery;
+import org.icgc.dcc.portal.request.RequestSearchQuery;
 
 import static java.lang.Math.ceil;
 import static java.lang.Math.floor;
@@ -37,14 +37,14 @@ public class ResponsePagination {
   private final String sort;
   private final String order;
 
-  public ResponsePagination(final SearchHits hits, final SearchQuery searchQuery) {
+  public ResponsePagination(final SearchHits hits, final RequestSearchQuery requestSearchQuery) {
     this.count = hits.getHits().length;
     this.total = hits.getTotalHits();
-    this.size = searchQuery.getSize();
-    this.from = searchQuery.getFrom() + 1;
-    this.sort = searchQuery.getSort();
-    this.order = searchQuery.getOrder().toString().toLowerCase();
-    this.page = (int) (floor(from / size) + 1);
-    this.pages = (int) ceil(total / size);
+    this.size = requestSearchQuery.getSize();
+    this.from = requestSearchQuery.getFrom() + 1;
+    this.sort = requestSearchQuery.getSort();
+    this.order = requestSearchQuery.getOrder();
+    this.page = this.size == 0 ? 1 : (int) (floor(from / size) + 1);
+    this.pages = this.size == 0 ? 1 : (int) ceil(total / size);
   }
 }

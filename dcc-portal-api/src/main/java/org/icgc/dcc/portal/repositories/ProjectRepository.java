@@ -32,8 +32,9 @@ import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.*;
 import org.elasticsearch.search.facet.FacetBuilders;
+import org.elasticsearch.search.sort.SortOrder;
 import org.icgc.dcc.portal.core.Types;
-import org.icgc.dcc.portal.search.SearchQuery;
+import org.icgc.dcc.portal.request.RequestSearchQuery;
 
 import java.util.ArrayList;
 
@@ -62,8 +63,8 @@ public class ProjectRepository implements IProjectRepository {
 
   // Returns many hits
   // @Override
-  public final SearchResponse getAll(final SearchQuery searchQuery) {
-    this.filter = buildFilter(searchQuery.getFilters());
+  public final SearchResponse getAll(final RequestSearchQuery requestSearchQuery) {
+    this.filter = buildFilter(requestSearchQuery.getFilters());
     SearchRequestBuilder s =
         client
             .prepareSearch(INDEX)
@@ -71,25 +72,25 @@ public class ProjectRepository implements IProjectRepository {
             .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
             .setQuery(buildQuery())
             .setFilter(this.filter)
-            .setFrom(searchQuery.getFrom())
-            .setSize(searchQuery.getSize())
-            .addSort(searchQuery.getSort(), searchQuery.getOrder())
+            .setFrom(requestSearchQuery.getFrom())
+            .setSize(requestSearchQuery.getSize())
+            .addSort(requestSearchQuery.getSort(), SortOrder.valueOf(requestSearchQuery.getOrder()))
             .addFields(ALLOWED_FIELDS)
             .addFacet(
                 FacetBuilders.termsFacet("project_name").field("project_name")
-                    .facetFilter(setFacetFilter("project_name", searchQuery.getFilters())).size(Integer.MAX_VALUE)
-                    .global(true))
+                    .facetFilter(setFacetFilter("project_name", requestSearchQuery.getFilters()))
+                    .size(Integer.MAX_VALUE).global(true))
             .addFacet(
                 FacetBuilders.termsFacet("primary_site").field("primary_site")
-                    .facetFilter(setFacetFilter("primary_site", searchQuery.getFilters())).size(Integer.MAX_VALUE)
-                    .global(true))
+                    .facetFilter(setFacetFilter("primary_site", requestSearchQuery.getFilters()))
+                    .size(Integer.MAX_VALUE).global(true))
             .addFacet(
                 FacetBuilders.termsFacet("country").field("country")
-                    .facetFilter(setFacetFilter("country", searchQuery.getFilters())).size(Integer.MAX_VALUE)
+                    .facetFilter(setFacetFilter("country", requestSearchQuery.getFilters())).size(Integer.MAX_VALUE)
                     .global(true))
             .addFacet(
                 FacetBuilders.termsFacet("available_profiling_data").field("available_profiling_data")
-                    .facetFilter(setFacetFilter("available_profiling_data", searchQuery.getFilters()))
+                    .facetFilter(setFacetFilter("available_profiling_data", requestSearchQuery.getFilters()))
                     .size(Integer.MAX_VALUE).global(true));
     // System.out.println(s);
     return s.execute().actionGet();

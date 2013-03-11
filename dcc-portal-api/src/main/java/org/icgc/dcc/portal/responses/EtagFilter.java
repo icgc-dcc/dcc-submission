@@ -28,6 +28,8 @@ import javax.ws.rs.core.Response;
 public class EtagFilter implements ContainerResponseFilter {
 
   // TODO Not the best place for this - probably in config file?
+  // Also Version stuff shouldn't go in the ETag filter
+  // Could probably make another filter that adds all the extra header info
   private static final String API_VERSION_HEADER = "X-ICGC-Version";
   private static final String VERSION = "1";
 

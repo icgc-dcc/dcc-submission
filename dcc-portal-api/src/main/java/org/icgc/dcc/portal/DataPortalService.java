@@ -26,6 +26,7 @@ import com.yammer.dropwizard.config.Bootstrap;
 import com.yammer.dropwizard.config.Environment;
 import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.portal.bundles.SwaggerBundle;
+import org.icgc.dcc.portal.responses.EtagFilter;
 
 import java.io.File;
 import java.lang.management.ManagementFactory;
@@ -62,8 +63,7 @@ public class DataPortalService extends Service<DataPortalConfiguration> {
 
   @Override
   public final void run(DataPortalConfiguration configuration, Environment environment) throws Exception {
-    environment.setJerseyProperty(ResourceConfig.PROPERTY_CONTAINER_RESPONSE_FILTERS,
-        "org.icgc.dcc.portal.responses.EtagFilter");
+    environment.setJerseyProperty(ResourceConfig.PROPERTY_CONTAINER_RESPONSE_FILTERS, EtagFilter.class.getName());
     logInfo(args);
   }
 

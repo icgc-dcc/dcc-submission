@@ -15,31 +15,37 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc.portal.search;
+package org.icgc.dcc.portal.results;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import org.elasticsearch.search.sort.SortOrder;
+import org.elasticsearch.action.get.GetResponse;
+import org.elasticsearch.index.get.GetField;
+import org.icgc.dcc.portal.responses.ResponseHitField;
 
-@EqualsAndHashCode(callSuper = false)
+import java.util.Map;
+
 @Data
-public class GeneSearchQuery extends SearchQuery {
+public class GetResults {
 
-  private static final String DEFAULT_SORT = "start";
-  private static final SortOrder DEFAULT_ORDER = SortOrder.ASC;
+  private final String id;
+  private final String type;
+  private final ImmutableList<ResponseHitField> fields;
 
-  public GeneSearchQuery(final int from, final int size, final String sort, final String order) {
-    super(from, size);
-    this.sort = sort != null ? sort : DEFAULT_SORT;
-    this.order = order != null ? SortOrder.valueOf(order.toUpperCase()) : DEFAULT_ORDER;
+  public GetResults(GetResponse hit) {
+    this.id = hit.getId();
+    this.type = hit.getType();
+    this.fields = buildGetHitFields(hit.getFields());
   }
 
-  public GeneSearchQuery(String filters, String score, Integer from, int size, String sort, String order) {
-    super(from, size);
-    this.sort = sort != null ? sort : DEFAULT_SORT;
-    this.order = order != null ? SortOrder.valueOf(order.toUpperCase()) : DEFAULT_ORDER;
-    this.filters = filters == null ? new ObjectMapper().createObjectNode() : jsonifyString(filters);
-    this.score = score;
+  private ImmutableList<ResponseHitField> buildGetHitFields(Map<String, GetField> fields) {
+    ImmutableList.Builder<ResponseHitField> l = new ImmutableList.Builder<ResponseHitField>();
+    for (GetField field : fields.values()) {
+      String name = field.getName();
+      Object value = field.getValues().toArray()[0];
+      ResponseHitField rhf = new ResponseHitField(name, value);
+      l.add(rhf);
+    }
+    return l.build();
   }
 }

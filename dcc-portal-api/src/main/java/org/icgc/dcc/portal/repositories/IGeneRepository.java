@@ -17,12 +17,12 @@
 
 package org.icgc.dcc.portal.repositories;
 
-import org.elasticsearch.action.get.GetResponse;
-import org.elasticsearch.action.search.SearchResponse;
-import org.icgc.dcc.portal.search.SearchQuery;
+import org.icgc.dcc.portal.request.RequestSearchQuery;
+import org.icgc.dcc.portal.results.GetResults;
+import org.icgc.dcc.portal.results.SearchResults;
 
 public interface IGeneRepository {
-  GetResponse getOne(final String id);
+  GetResults get(final String id);
 
-  SearchResponse getAll(final SearchQuery searchQuery);
+  SearchResults search(final RequestSearchQuery requestSearchQuery);
 }

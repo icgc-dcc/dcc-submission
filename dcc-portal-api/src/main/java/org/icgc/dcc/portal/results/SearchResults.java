@@ -15,7 +15,7 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc.portal.responses;
+package org.icgc.dcc.portal.results;
 
 import com.google.common.collect.ImmutableList;
 import lombok.Data;
@@ -23,29 +23,28 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.facet.Facet;
 import org.elasticsearch.search.facet.Facets;
-import org.elasticsearch.search.facet.terms.TermsFacet;
-import org.icgc.dcc.portal.search.SearchQuery;
+import org.icgc.dcc.portal.request.RequestSearchQuery;
+import org.icgc.dcc.portal.responses.ResponseFacet;
+import org.icgc.dcc.portal.responses.ResponseHit;
+import org.icgc.dcc.portal.responses.ResponsePagination;
 
 @Data
-public final class GetManyResponse {
+public class SearchResults {
 
   private final ImmutableList<ResponseHit> hits;
   private final ImmutableList<ResponseFacet> facets;
   private final ResponsePagination pagination;
 
-  public GetManyResponse(final SearchResponse response, final SearchQuery searchQuery) {
-    // System.out.println(response);
+  public SearchResults(final SearchResponse response, final RequestSearchQuery requestSearchQuery) {
     this.hits = buildResponseHits(response.getHits().getHits());
     this.facets = buildResponseFacets(response.getFacets());
-    this.pagination = new ResponsePagination(response.getHits(), searchQuery);
+    this.pagination = new ResponsePagination(response.getHits(), requestSearchQuery);
   }
 
   private ImmutableList<ResponseFacet> buildResponseFacets(Facets facets) {
     ImmutableList.Builder<ResponseFacet> lb = new ImmutableList.Builder<ResponseFacet>();
     for (Facet facet : facets.facets()) {
-      // TODO if I don't cast it I cannot get access to the term data
-      // works for now because we only return term facets
-      lb.add(new ResponseFacet((TermsFacet) facet));
+      lb.add(new ResponseFacet(facet));
     }
     return lb.build();
   }

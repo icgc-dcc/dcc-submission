@@ -15,38 +15,24 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc.portal.resources;
+package org.icgc.dcc.portal.core;
 
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.yammer.metrics.annotation.Timed;
-import lombok.extern.slf4j.Slf4j;
-import org.icgc.dcc.portal.responses.GetOneResponse;
+import com.google.common.collect.ImmutableList;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
+public enum AllowedFields {
+  GENES(ImmutableList.of("symbol", "description", "chromosome", "start", "end", "band", "gene_type"));
 
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+  private ImmutableList<String> fields;
 
-@Path("/")
-@Produces(APPLICATION_JSON)
-@Consumes(APPLICATION_JSON)
-@Slf4j
-public class RootResource {
+  AllowedFields(ImmutableList<String> fields) {
+    this.fields = fields;
+  }
 
-  @Context
-  private HttpServletRequest httpServletRequest;
+  public final String toString() {
+    return this.fields.toString();
+  }
 
-  @GET
-  @Timed
-  @ApiOperation(value = "Retrieves a list of donors")
-  public final Response getInfo() {
-    GetOneResponse response = new GetOneResponse(null);
-
-    return Response.ok().entity(response).build();
+  public final String[] toArray() {
+    return this.fields.toArray(new String[this.fields.size()]);
   }
 }

@@ -24,15 +24,12 @@ import com.yammer.metrics.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.http.HttpStatus;
 import org.icgc.dcc.portal.repositories.IGeneRepository;
-import org.icgc.dcc.portal.responses.GetManyResponse;
-import org.icgc.dcc.portal.responses.GetOneResponse;
-import org.icgc.dcc.portal.search.GeneSearchQuery;
+import org.icgc.dcc.portal.request.RequestSearchQuery;
+import org.icgc.dcc.portal.results.GetResults;
+import org.icgc.dcc.portal.results.SearchResults;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 
@@ -45,8 +42,9 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 @Slf4j
 public class GeneResource {
 
-  @Context
-  private HttpHeaders headers;
+  private static final String DEFAULT_SORT = "start";
+
+  private static final String DEFAULT_ORDER = "asc";
 
   private final IGeneRepository store;
 
@@ -57,31 +55,22 @@ public class GeneResource {
 
   @GET
   @Timed
-  // @CacheControl(maxAge = 6, maxAgeUnit = TimeUnit.HOURS)
   @ApiOperation(value = "Retrieves a list of genes")
-  public final Response getAll(
-      @Context Request request,
+  public final Response query(
       @ApiParam(value = "Start index of results", required = false) @QueryParam("from") @DefaultValue("1") IntParam from,
       @ApiParam(value = "Number of results returned", allowableValues = "range[1,100]", required = false) @QueryParam("size") @DefaultValue("10") IntParam size,
-      @ApiParam(value = "Column to sort results on", defaultValue = "start", required = false) @QueryParam("sort") String sort,
-      @ApiParam(value = "Order to sort the column", defaultValue = "asc", allowableValues = "asc,desc", required = false) @QueryParam("order") String order,
+      @ApiParam(value = "Column to sort results on", defaultValue = DEFAULT_SORT, required = false) @QueryParam("sort") String sort,
+      @ApiParam(value = "Order to sort the column", defaultValue = DEFAULT_ORDER, allowableValues = "asc,desc", required = false) @QueryParam("order") String order,
       @ApiParam(value = "Filter the search results", required = false) @QueryParam("filters") String filters,
       @ApiParam(value = "Select fields returned", required = false) @QueryParam("fields") String fields) {
-    GeneSearchQuery searchQuery = new GeneSearchQuery(filters, fields, from.get(), size.get(), sort, order);
+    String s = sort != null ? sort : DEFAULT_SORT;
+    String o = order != null ? order : DEFAULT_ORDER;
 
-    GetManyResponse results = new GetManyResponse(store.getAll(searchQuery), searchQuery);
-    /*
-     * EntityTag etag = new
-     * EntityTag(Hashing.murmur3_128().hashString(results.toString()).toString());
-     * Response.ResponseBuilder rb = request.evaluatePreconditions(etag); if (rb != null) { return
-     * rb.build(); } /* if (oldEtag != null && oldEtag.replaceAll("\"", "").equals(etag)) { return
-     * Response.notModified().header("X-ICGC-Version", "1") //
-     * .contentLocation(URI.create(oldEtag.getRequestURI())) .build(); }
-     */
+    RequestSearchQuery requestSearchQuery = new RequestSearchQuery(filters, fields, from.get(), size.get(), s, o);
+
+    SearchResults results = store.search(requestSearchQuery);
+
     return Response.ok().entity(results).build();
-    // .header("X-ICGC-Version", "1")
-    // .contentLocation(URI.create(httpServletRequest.getRequestURI()))
-    // .tag(etag).entity(results).build();
   }
 
   @Path("/{id}")
@@ -91,9 +80,9 @@ public class GeneResource {
   @ApiOperation(value = "Find a gene by id", notes = "If a gene does not exist with the specified id an error will be returned")
   @ApiErrors(value = {@ApiError(code = HttpStatus.BAD_REQUEST_400, reason = "Invalid ID supplied"),
       @ApiError(code = HttpStatus.NOT_FOUND_404, reason = "Gene not found")})
-  public final Response getOne(@ApiParam(value = "ID of gene that needs to be fetched") @PathParam("id") String id)
+  public final Response get(@ApiParam(value = "ID of gene that needs to be fetched") @PathParam("id") String id)
       throws IOException {
-    GetOneResponse response = new GetOneResponse(store.getOne(id));
+    GetResults response = store.get(id);
 
     return Response.ok().entity(response).build();
   }

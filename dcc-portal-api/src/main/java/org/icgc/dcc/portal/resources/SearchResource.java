@@ -22,9 +22,7 @@ import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 import com.yammer.metrics.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
-import org.icgc.dcc.portal.repositories.ISearchRepository;
-import org.icgc.dcc.portal.responses.GetManyResponse;
-import org.icgc.dcc.portal.search.SearchQuery;
+import org.icgc.dcc.portal.repositories.IFuzzyRepository;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -34,20 +32,20 @@ import javax.ws.rs.core.Response;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
-@Path("/search")
+@Path("/text")
 @Produces(APPLICATION_JSON)
 @Consumes(APPLICATION_JSON)
-@Api(value = "/search", description = "Text search")
+@Api(value = "/text", description = "Text text")
 @Slf4j
 public class SearchResource {
 
-  private final ISearchRepository store;
+  private final IFuzzyRepository store;
 
   @Context
   private HttpServletRequest httpServletRequest;
 
   @Inject
-  public SearchResource(ISearchRepository searchRepository) {
+  public SearchResource(IFuzzyRepository searchRepository) {
     this.store = searchRepository;
   }
 
@@ -55,12 +53,12 @@ public class SearchResource {
   @Timed
   @ApiOperation(value = "Search")
   public final Response search(
-      @ApiParam(value = "Term to search") @QueryParam("text") @DefaultValue("*") String text,
+      @ApiParam(value = "Term to text") @QueryParam("text") @DefaultValue("*") String text,
       @ApiParam(value = "Start index of results", required = false) @QueryParam("from") @DefaultValue("1") int from,
       @ApiParam(value = "Number of results returned", allowableValues = "range[1,100]", required = false) @QueryParam("size") @DefaultValue("10") int size) {
-    SearchQuery searchQuery = new SearchQuery(from, size);
-    GetManyResponse response = new GetManyResponse(store.search(text, from, size), searchQuery);
+    // RequestSearchQuery searchQuery = new RequestSearchQuery(from, size);
+    // SearchResults response = new SearchResults(store.fuzzy(fuzzy, from, size), searchQuery);
 
-    return Response.ok().entity(response).build();
+    return Response.ok().build();// .entity(response).build();
   }
 }

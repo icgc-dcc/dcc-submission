@@ -15,14 +15,14 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc.portal.search;
+package org.icgc.dcc.portal.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
 import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.search.sort.SortOrder;
 import org.icgc.dcc.portal.responses.ErrorResponse;
 
 import javax.validation.constraints.Max;
@@ -35,10 +35,11 @@ import java.io.IOException;
 import java.net.URLDecoder;
 
 @Data
-@XmlRootElement(name = "SearchQuery")
-public class SearchQuery {
+@XmlRootElement(name = "RequestSearchQuery")
+public class RequestSearchQuery {
 
   static final int DEFAULT_SIZE = 10;
+
   static final int MAX_SIZE = 100;
 
   @JsonProperty
@@ -53,9 +54,6 @@ public class SearchQuery {
   @JsonProperty
   String[] fields;
 
-  @JsonProperty
-  String score;
-
   @Min(1)
   @JsonProperty
   Integer from;
@@ -69,45 +67,27 @@ public class SearchQuery {
   String sort;
 
   @JsonProperty
-  SortOrder order;
+  String order;
 
-  public SearchQuery(final int from, final int size) {
+  public RequestSearchQuery(String filters, String fields, int from, int size, String sort, String order) {
     // Save as 1-index
     this.from = from < 1 ? 1 : from;
     // Prevent massive requests
-    this.size = size == 0 ? DEFAULT_SIZE : size > MAX_SIZE ? MAX_SIZE : size;
-  }
-
-  public SearchQuery(final int from, final int size, final String sort, final String order) {
-    // Save as 1-index
-    this.from = from < 1 ? 1 : from;
-    // Prevent massive requests
-    this.size = size == 0 ? DEFAULT_SIZE : size > MAX_SIZE ? MAX_SIZE : size;
+    this.size = size < 1 ? DEFAULT_SIZE : size > MAX_SIZE ? MAX_SIZE : size;
     this.sort = sort;
-    this.order = SortOrder.valueOf(order.toUpperCase());
+    this.order = order.toUpperCase();
+
+    this.filters =
+        (filters == null || filters.equals("")) ? new ObjectMapper().createObjectNode() : jsonifyString(filters);
+    this.fields = (fields == null || fields.equals("")) ? new String[] {} : fields.split(",\\ ?");
   }
 
-  public SearchQuery(String filters, String score, int from, int size, String sort, String order) {
-    // Save as 1-index
-    this.from = from < 1 ? 1 : from;
-    // Prevent massive requests
-    this.size = size == 0 ? DEFAULT_SIZE : size > MAX_SIZE ? MAX_SIZE : size;
-    this.sort = sort;
-    this.order = SortOrder.valueOf(order.toUpperCase());
-
-    this.filters = filters == null ? new ObjectMapper().createObjectNode() : jsonifyString(filters);
-    this.score = score;
-  }
-
-  // For the user this.from should be 1-index, but ES is 0-index
-  // Set here instead of cstr so it works with both get and post
-  public final int getFrom() {
-    return this.from == 0 ? 0 : this.from - 1;
-  }
-
-  JsonNode jsonifyString(String filters) {
+  private JsonNode jsonifyString(String filters) {
+    String wrappedFilters = filters.replaceFirst("^\\{?", "{").replaceFirst("}?$", "}");
     try {
-      return new ObjectMapper().readValue(URLDecoder.decode(filters, "UTF-8"), JsonNode.class);
+      return new ObjectMapper().configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true)
+          .configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true)
+          .readValue(URLDecoder.decode(wrappedFilters, "UTF-8"), JsonNode.class);
     } catch (IOException e) {
       throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST)
           .entity(new ErrorResponse(Response.Status.BAD_REQUEST, e)).type(MediaType.APPLICATION_JSON_TYPE).build());
