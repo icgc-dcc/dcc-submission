@@ -15,17 +15,15 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc.portal.responses;
+package org.icgc.dcc.portal.filters;
 
-import com.google.common.hash.Hashing;
 import com.sun.jersey.spi.container.ContainerRequest;
 import com.sun.jersey.spi.container.ContainerResponse;
 import com.sun.jersey.spi.container.ContainerResponseFilter;
 
-import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response;
 
-public class EtagFilter implements ContainerResponseFilter {
+public class VersionFilter implements ContainerResponseFilter {
 
   // TODO Not the best place for this - probably in config file?
   // Also Version stuff shouldn't go in the ETag filter
@@ -35,30 +33,12 @@ public class EtagFilter implements ContainerResponseFilter {
 
   @Override
   public ContainerResponse filter(ContainerRequest containerRequest, ContainerResponse containerResponse) {
-    Object entity = containerResponse.getEntity();
-    EntityTag etag = generateETag(entity);
-    Response.ResponseBuilder rb = containerRequest.evaluatePreconditions(etag);
-
-    Response response = isModified(rb) ? modifiedResponse(containerResponse, etag) : notModifiedResponse(rb);
-
+    Response response = addVersionHeader(containerResponse.getResponse());
     containerResponse.setResponse(response);
     return containerResponse;
   }
 
-  private EntityTag generateETag(Object entity) {
-    return new EntityTag(Hashing.murmur3_128().hashString(entity.toString()).toString());
-  }
-
-  private boolean isModified(Response.ResponseBuilder rb) {
-    return rb == null;
-  }
-
-  private Response notModifiedResponse(Response.ResponseBuilder rb) {
-    return rb.header(API_VERSION_HEADER, VERSION).build();
-  }
-
-  private Response modifiedResponse(ContainerResponse containerResponse, EntityTag etag) {
-    return Response.status(containerResponse.getStatusType()).header(API_VERSION_HEADER, VERSION).tag(etag)
-        .entity(containerResponse.getEntity()).build();
+  private Response addVersionHeader(Response r) {
+    return Response.fromResponse(r).header(API_VERSION_HEADER, VERSION).build();
   }
 }
