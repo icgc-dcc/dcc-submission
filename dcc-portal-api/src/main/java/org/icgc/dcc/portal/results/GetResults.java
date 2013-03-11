@@ -36,7 +36,7 @@ public class GetResults {
   public GetResults(GetResponse hit) {
     this.id = hit.getId();
     this.type = hit.getType();
-    this.fields = buildGetHitFields(hit.getFields());
+    this.fields = hit.getFields() == null ? null : buildGetHitFields(hit.getFields());
   }
 
   private ObjectNode buildGetHitFields(Map<String, GetField> fields) {

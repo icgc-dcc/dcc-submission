@@ -24,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.http.HttpStatus;
 import org.icgc.dcc.portal.repositories.IGeneRepository;
 import org.icgc.dcc.portal.request.RequestSearchQuery;
+import org.icgc.dcc.portal.responses.ErrorResponse;
 import org.icgc.dcc.portal.results.GetResults;
 import org.icgc.dcc.portal.results.SearchResults;
 
@@ -82,6 +83,11 @@ public class GeneResource {
   public final Response get(@ApiParam(value = "ID of gene that needs to be fetched") @PathParam("id") String id)
       throws IOException {
     GetResults response = store.get(id);
+
+    if (response.getFields() == null) {
+      return Response.status(Response.Status.NOT_FOUND)
+          .entity(new ErrorResponse(Response.Status.NOT_FOUND, "Gene " + id + " not found.")).build();
+    }
 
     return Response.ok().entity(response).build();
   }

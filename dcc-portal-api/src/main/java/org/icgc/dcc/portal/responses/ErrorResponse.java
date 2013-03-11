@@ -18,29 +18,23 @@
 package org.icgc.dcc.portal.responses;
 
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 import javax.ws.rs.core.Response.StatusType;
 import java.io.IOException;
 
-@EqualsAndHashCode(callSuper = false)
 @Data
 public final class ErrorResponse {
-  private final ErrorEntity error;
+  private final int code;
 
-  public ErrorResponse(final StatusType badRequest, final IOException e) {
-    this.error = new ErrorEntity(badRequest, e);
+  private final String message;
+
+  public ErrorResponse(StatusType code, IOException e) {
+    this.code = code.getStatusCode();
+    this.message = e.getMessage();
   }
 
-  @Data
-  private static class ErrorEntity {
-    private final int code;
-
-    private final String message;
-
-    private ErrorEntity(final StatusType code, final IOException message) {
-      this.code = code.getStatusCode();
-      this.message = message.getMessage();
-    }
+  public ErrorResponse(StatusType code, String message) {
+    this.code = code.getStatusCode();
+    this.message = message;
   }
 }

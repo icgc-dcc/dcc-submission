@@ -39,7 +39,7 @@ public class ResponseHit {
     this.id = hit.getId();
     this.type = hit.getType();
     this.score = Float.isNaN(hit.getScore()) ? 0.0f : hit.getScore();
-    this.fields = buildSearchHitFields(hit.getFields());
+    this.fields = hit.getFields() == null ? null : buildSearchHitFields(hit.getFields());
   }
 
   private ObjectNode buildSearchHitFields(Map<String, SearchHitField> fields) {
