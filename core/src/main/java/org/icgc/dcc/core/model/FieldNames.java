@@ -92,7 +92,6 @@ public final class FieldNames {
   public static final String MUTATION_TRANSCRIPTS = "transcript";
   public static final String MUTATION_TRANSCRIPTS_GENE = "gene";
   public static final String MUTATION_TRANSCRIPTS_CONSEQUENCE = "consequence";
-  // @formatter:off
   
   /**
    * Aggregate field names.
@@ -106,19 +105,20 @@ public final class FieldNames {
   public static final String TOTAL_SAMPLE_COUNT = "_total_sample_count";
   public static final String TESTED_DONOR_COUNT_SUFFIX = "_tested_donor_count";
   public static final String AFFECTED_DONOR_COUNT = "_affected_donor_count";
+  // @formatter:on
 
   public static String getTypeExistsFieldName(String type) {
     return SYNTHETIC_PREFIX + type + TYPE_EXISTS_SUFFIX;
   }
-  
+
   public static String getTypeCountFieldName(String type) {
     return SYNTHETIC_PREFIX + type + TYPE_COUNT_SUFFIX;
   }
-  
+
   public static String getTestedTypeCountFieldName(String type) {
     return SYNTHETIC_PREFIX + type + TESTED_DONOR_COUNT_SUFFIX;
   }
-  
+
   private FieldNames() {
     // Prevent construction
   }
