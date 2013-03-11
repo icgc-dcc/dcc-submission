@@ -18,7 +18,6 @@
 package org.icgc.dcc.portal.resources;
 
 import com.wordnik.swagger.annotations.*;
-import com.yammer.dropwizard.jersey.caching.CacheControl;
 import com.yammer.dropwizard.jersey.params.IntParam;
 import com.yammer.metrics.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
@@ -76,7 +75,7 @@ public class GeneResource {
   @Path("/{id}")
   @GET
   @Timed
-  @CacheControl(immutable = true)
+  // @CacheControl(immutable = true)
   @ApiOperation(value = "Find a gene by id", notes = "If a gene does not exist with the specified id an error will be returned")
   @ApiErrors(value = {@ApiError(code = HttpStatus.BAD_REQUEST_400, reason = "Invalid ID supplied"),
       @ApiError(code = HttpStatus.NOT_FOUND_404, reason = "Gene not found")})

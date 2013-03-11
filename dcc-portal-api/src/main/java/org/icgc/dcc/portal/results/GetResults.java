@@ -17,11 +17,12 @@
 
 package org.icgc.dcc.portal.results;
 
-import com.google.common.collect.ImmutableList;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Data;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.index.get.GetField;
-import org.icgc.dcc.portal.responses.ResponseHitField;
 
 import java.util.Map;
 
@@ -30,7 +31,7 @@ public class GetResults {
 
   private final String id;
   private final String type;
-  private final ImmutableList<ResponseHitField> fields;
+  private final ObjectNode fields;
 
   public GetResults(GetResponse hit) {
     this.id = hit.getId();
@@ -38,14 +39,13 @@ public class GetResults {
     this.fields = buildGetHitFields(hit.getFields());
   }
 
-  private ImmutableList<ResponseHitField> buildGetHitFields(Map<String, GetField> fields) {
-    ImmutableList.Builder<ResponseHitField> l = new ImmutableList.Builder<ResponseHitField>();
+  private ObjectNode buildGetHitFields(Map<String, GetField> fields) {
+    ObjectNode jNode = new ObjectMapper().createObjectNode();
     for (GetField field : fields.values()) {
       String name = field.getName();
-      Object value = field.getValues().toArray()[0];
-      ResponseHitField rhf = new ResponseHitField(name, value);
-      l.add(rhf);
+      Object value = field.getValue();
+      jNode.set(name, new ObjectMapper().convertValue(value, JsonNode.class));
     }
-    return l.build();
+    return jNode;
   }
 }

@@ -44,14 +44,14 @@ public class GeneResourceTest extends ResourceTest {
   }
 
   @Test
-  public final void test_getMany() {
+  public final void test_Search() {
     ClientResponse response = client().resource(RESOURCE).get(ClientResponse.class);
     verify(store).search(any(RequestSearchQuery.class));
     assertThat(response.getStatus()).isEqualTo(ClientResponse.Status.OK.getStatusCode());
   }
 
   @Test
-  public final void test_getOne() {
+  public final void test_Get() {
     ClientResponse response = client().resource(RESOURCE).path("id").get(ClientResponse.class);
     verify(store).get(any(String.class));
     assertThat(response.getStatus()).isEqualTo(ClientResponse.Status.OK.getStatusCode());

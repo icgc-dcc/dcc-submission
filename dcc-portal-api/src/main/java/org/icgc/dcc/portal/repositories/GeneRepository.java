@@ -54,7 +54,7 @@ public class GeneRepository implements IGeneRepository {
   }
 
   private GetRequestBuilder buildGetRequest(String id) {
-    return client.prepareGet(INDEX, TYPE.toString(), id);
+    return client.prepareGet(INDEX, TYPE.toString(), id).setFields(ALLOWED_FIELDS.toArray());
   }
 
   public final SearchResults search(final RequestSearchQuery requestSearchQuery) {

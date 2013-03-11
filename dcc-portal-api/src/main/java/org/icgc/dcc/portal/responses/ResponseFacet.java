@@ -56,7 +56,7 @@ public class ResponseFacet {
 
   @Data
   private class Term {
-    private final String name;
-    private final int value;
+    private final String term;
+    private final int count;
   }
 }
