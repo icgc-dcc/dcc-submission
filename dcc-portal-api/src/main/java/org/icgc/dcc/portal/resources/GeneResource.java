@@ -77,6 +77,7 @@ public class GeneResource {
   @GET
   @Timed
   // @CacheControl(immutable = true)
+  // @ResourceFilters(GetNotFoundResourceFilter.class)
   @ApiOperation(value = "Find a gene by id", notes = "If a gene does not exist with the specified id an error will be returned")
   @ApiErrors(value = {@ApiError(code = HttpStatus.BAD_REQUEST_400, reason = "Invalid ID supplied"),
       @ApiError(code = HttpStatus.NOT_FOUND_404, reason = "Gene not found")})
