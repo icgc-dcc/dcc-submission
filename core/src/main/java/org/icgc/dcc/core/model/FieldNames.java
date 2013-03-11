@@ -42,18 +42,26 @@ public final class FieldNames {
    * Donor field names.
    */
   public static final String DONOR_ID = "_donor_id";
-  public static final String DONOR_GENES = "genes";
-  public static final String DONOR_PROJECT_ID = "_project_id";
   public static final String DONOR_SUMMARY = "_summary";
-
+  public static final String DONOR_GENES = "genes";
+  public static final String DONOR_GENE_GENE_ID = "_gene_id";
+  public static final String DONOR_GENE_SUMMARY = "_summary";
+  public static final String DONOR_PROJECT_ID = "_project_id";
+  public static final String DONOR_SPECIMEN = "specimen";
+  public static final String DONOR_SPECIMEN_ID = "_specimen_id";
+  public static final String DONOR_SAMPLE = "sample";
+  public static final String DONOR_SAMPLE_ID = "_sample_id";
+  
   /**
    * Gene field names.
    */  
   public static final String GENE_ID = "_gene_id";
   public static final String GENE_DONORS = "donor";
   public static final String GENE_DONOR_DONOR_ID = "_donor_id";
+  public static final String GENE_DONOR_SUMMARY = "_summary";
   public static final String GENE_PROJECTS = "project";
   public static final String GENE_PROJECT_PROJECT_ID = "_project_id";
+  public static final String GENE_PROJECT_SUMMARY = "_summary";
   public static final String GENE_TRANSCRIPTS = "transcripts";
   public static final String GENE_TRANSCRIPTS_TRANSCRIPT_ID = "id";
 
@@ -81,7 +89,32 @@ public final class FieldNames {
   public static final String MUTATION_TRANSCRIPTS_GENE = "gene";
   public static final String MUTATION_TRANSCRIPTS_CONSEQUENCE = "consequence";
   // @formatter:off
+  
+  /**
+   * Aggregate field names.
+   */    
+  public static final String SYNTHETIC_PREFIX = "_";
+  public static final String TYPE_COUNT_SUFFIX =  "_count";
+  public static final String TYPE_EXISTS_SUFFIX = "_exists";  
+  public static final String AVAILABLE_DATA_TYPES = "_available_data_type";
+  public static final String TOTAL_DONOR_COUNT = "_total_donor_count";
+  public static final String TOTAL_SPECIMEN_COUNT = "_total_specimen_count";
+  public static final String TOTAL_SAMPLE_COUNT = "_total_sample_count";
+  public static final String TESTED_DONOR_COUNT_SUFFIX = "_tested_donor_count";
+  public static final String AFFECTED_DONOR_COUNT = "_affected_donor_count";
 
+  public static String getTypeExistsFieldName(String type) {
+    return SYNTHETIC_PREFIX + type + TYPE_EXISTS_SUFFIX;
+  }
+  
+  public static String getTypeCountFieldName(String type) {
+    return SYNTHETIC_PREFIX + type + TYPE_COUNT_SUFFIX;
+  }
+  
+  public static String getTestedTypeCountFieldName(String type) {
+    return SYNTHETIC_PREFIX + type + TESTED_DONOR_COUNT_SUFFIX;
+  }
+  
   private FieldNames() {
     // Prevent construction
   }
