@@ -57,9 +57,22 @@ public class RequestSearchQueryTest {
   }
 
   @Test
-  public final void test_From_WhenIsLessThanOne() {
+  public final void test_From_WhenZero() {
     RequestSearchQuery requestSearchQuery = new RequestSearchQuery(null, null, 0, 0, "", "");
-    assertThat(requestSearchQuery.getFrom()).isEqualTo(1);
+    assertThat(requestSearchQuery.getFrom()).isEqualTo(0);
+  }
+
+  @Test
+  public final void test_From_WhenOne() {
+    RequestSearchQuery requestSearchQuery = new RequestSearchQuery(null, null, 1, 0, "", "");
+    assertThat(requestSearchQuery.getFrom()).isEqualTo(0);
+  }
+
+  @Test
+  public final void test_From_WhenGreaterThanOne() {
+    int from = 5;
+    RequestSearchQuery requestSearchQuery = new RequestSearchQuery(null, null, from, 0, "", "");
+    assertThat(requestSearchQuery.getFrom()).isEqualTo(from - 1);
   }
 
   @Test

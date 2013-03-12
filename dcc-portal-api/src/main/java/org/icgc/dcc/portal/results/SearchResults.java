@@ -18,6 +18,7 @@
 package org.icgc.dcc.portal.results;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import lombok.Data;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.search.SearchHit;
@@ -32,7 +33,7 @@ import org.icgc.dcc.portal.responses.ResponsePagination;
 public class SearchResults {
 
   private final ImmutableList<ResponseHit> hits;
-  private final ImmutableList<ResponseFacet> facets;
+  private final ImmutableMap<String, ResponseFacet> facets;
   private final ResponsePagination pagination;
 
   public SearchResults(final SearchResponse response, final RequestSearchQuery requestSearchQuery) {
@@ -41,12 +42,12 @@ public class SearchResults {
     this.pagination = new ResponsePagination(response.getHits(), requestSearchQuery);
   }
 
-  private ImmutableList<ResponseFacet> buildResponseFacets(Facets facets) {
-    ImmutableList.Builder<ResponseFacet> lb = new ImmutableList.Builder<ResponseFacet>();
+  private ImmutableMap<String, ResponseFacet> buildResponseFacets(Facets facets) {
+    ImmutableMap.Builder<String, ResponseFacet> mb = new ImmutableMap.Builder<String, ResponseFacet>();
     for (Facet facet : facets.facets()) {
-      lb.add(new ResponseFacet(facet));
+      mb.put(facet.getName(), new ResponseFacet(facet));
     }
-    return lb.build();
+    return mb.build();
   }
 
   private ImmutableList<ResponseHit> buildResponseHits(SearchHit[] hits) {

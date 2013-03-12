@@ -70,8 +70,8 @@ public class RequestSearchQuery {
   String order;
 
   public RequestSearchQuery(String filters, String fields, int from, int size, String sort, String order) {
-    // Save as 1-index
-    this.from = from < 1 ? 1 : from;
+    // Save as 0-base index where 0 and 1 are 0
+    this.from = from < 2 ? 0 : from - 1;
     // Prevent massive requests
     this.size = size < 1 ? DEFAULT_SIZE : size > MAX_SIZE ? MAX_SIZE : size;
     this.sort = sort;

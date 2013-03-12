@@ -26,7 +26,6 @@ import java.util.List;
 
 @Data
 public class ResponseFacet {
-  private final String name;
   private final String type;
   private final long missing;
   private final long total;
@@ -35,7 +34,6 @@ public class ResponseFacet {
 
   public ResponseFacet(Facet f) {
     TermsFacet facet = (TermsFacet) f;
-    this.name = facet.getName();
     this.type = facet.getType();
     this.missing = facet.getMissingCount();
     this.total = facet.getTotalCount();
