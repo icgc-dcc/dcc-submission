@@ -26,7 +26,7 @@ import java.util.List;
 
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
-import org.icgc.dcc.model.ExperimentalFile;
+import org.icgc.dcc.generator.model.ExperimentalFile;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
@@ -34,7 +34,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
 /**
- * Command line utility used to generate ICGC data sets.s In DataGenerator there's a a static
+ * Command line utility used to generate ICGC data sets. In DataGenerator there's a a static
  * ArrayList<ArrayList<String>> called listOfPrimaryKeys. This ArrayList holds ArrayLists of primary keys for each file.
  * To identify which File and Field an ArrayList (with in the ArrayList) is associated with, the first element holds the
  * name of the associated FileSchema and the second element holds the name of the Field.
@@ -43,6 +43,20 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 public class Main {
 
   private final Options options = new Options();
+
+  private static final String DONOR_SCHEMA_NAME = "donor";
+
+  private static final String SAMPLE_SCHEMA_NAME = "sample";
+
+  private static final String SPECIMEN_SCHEMA_NAME = "specimen";
+
+  private static final String META_FILE_TYPE = "m";
+
+  private static final String PRIMARY_FILE_TYPE = "p";
+
+  private static final String EXPRESSION_PRIMARY_FILE_TYPE = "g";
+
+  private static final String SECONDARY_FILE_TYPE = "s";
 
   public static void main(String... args) throws JsonParseException, JsonMappingException, IOException {
     new Main().run(args);
@@ -73,7 +87,7 @@ public class Main {
   }
 
   public void generate(String[] args) throws JsonParseException, JsonMappingException, IOException {
-    String pathToConfigFile = args[1];
+    String pathToConfigFile = args[0];
 
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
     GeneratorConfig config = mapper.readValue(new File(pathToConfigFile), GeneratorConfig.class);
@@ -83,9 +97,9 @@ public class Main {
     Integer numberOfSpecimensPerDonor = config.getNumberOfSpecimensPerDonor();
     Integer numberOfSamplesPerDonor = config.getNumberOfSamplesPerSpecimen();
     String leadJurisdiction = config.getLeadJurisdiction();
-    Long tumourType = config.getTumourType();
-    Long institution = config.getInstitution();
-    Long platform = config.getPlatform();
+    String tumourType = config.getTumourType();
+    String institution = config.getInstitution();
+    String platform = config.getPlatform();
     Long seed = config.getSeed();
 
     // ArrayList<OptionalFile> optionalFiles = config.getOptionalFiles();
@@ -93,9 +107,11 @@ public class Main {
     List<ExperimentalFile> experimentalFiles = config.getExperimentalFiles();
 
     DataGenerator test = new DataGenerator(outputDirectory, seed);
-    test.createCoreFile("donor", numberOfDonors, leadJurisdiction, institution, tumourType, platform);
-    test.createCoreFile("specimen", numberOfSamplesPerDonor, leadJurisdiction, institution, tumourType, platform);
-    test.createCoreFile("sample", numberOfSpecimensPerDonor, leadJurisdiction, institution, tumourType, platform);
+    test.createCoreFile(DONOR_SCHEMA_NAME, numberOfDonors, leadJurisdiction, institution, tumourType, platform);
+    test.createCoreFile(SPECIMEN_SCHEMA_NAME, numberOfSamplesPerDonor, leadJurisdiction, institution, tumourType,
+        platform);
+    test.createCoreFile(SAMPLE_SCHEMA_NAME, numberOfSpecimensPerDonor, leadJurisdiction, institution, tumourType,
+        platform);
 
     // Create loop to create optionalFiles here
 
@@ -105,13 +121,13 @@ public class Main {
       Integer numberOfLines = experimentalFile.getNumberOfLinesPerForeignKey();
 
       test.determineUniqueFields(DataGenerator.getSchema(schemaName));
-      if(fileType.equals("m")) {
+      if(fileType.equals(META_FILE_TYPE)) {
         test.createMetaFile(schemaName, numberOfLines, leadJurisdiction, institution, tumourType, platform);
-      } else if(fileType.equals("p")) {
+      } else if(fileType.equals(PRIMARY_FILE_TYPE)) {
         test.createPrimaryFile(schemaName, numberOfLines, leadJurisdiction, institution, tumourType, platform);
-      } else if(fileType.equals("g")) {
+      } else if(fileType.equals(EXPRESSION_PRIMARY_FILE_TYPE)) {
         test.createPrimaryFile(schemaName, numberOfLines, leadJurisdiction, institution, tumourType, platform);
-      } else if(fileType.equals("s")) {
+      } else if(fileType.equals(SECONDARY_FILE_TYPE)) {
         test.createSecondaryFile(schemaName, numberOfLines, leadJurisdiction, institution, tumourType, platform);
       }
     }

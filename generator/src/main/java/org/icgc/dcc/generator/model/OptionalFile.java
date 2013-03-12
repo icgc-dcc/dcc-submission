@@ -15,53 +15,23 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.generator;
-
-import java.util.ArrayList;
-import java.util.List;
+package org.icgc.dcc.generator.model;
 
 import lombok.Getter;
 import lombok.ToString;
 
 import org.codehaus.jackson.annotate.JsonProperty;
-import org.icgc.dcc.generator.model.ExperimentalFile;
-import org.icgc.dcc.generator.model.OptionalFile;
 
+/**
+ * 
+ */
 @Getter
 @ToString
-public class GeneratorConfig {
+public class OptionalFile {
+  @JsonProperty
+  private String name;
 
   @JsonProperty
-  private String outputDirectory;
-
-  @JsonProperty
-  private Integer numberOfDonors;
-
-  @JsonProperty
-  private Integer numberOfSpecimensPerDonor;
-
-  @JsonProperty
-  private Integer numberOfSamplesPerSpecimen;
-
-  @JsonProperty
-  private String leadJurisdiction;
-
-  @JsonProperty
-  private String tumourType;
-
-  @JsonProperty
-  private String institution;
-
-  @JsonProperty
-  private String platform;
-
-  @JsonProperty
-  private Long seed;
-
-  @JsonProperty
-  private ArrayList<OptionalFile> optionalFiles;
-
-  @JsonProperty
-  private List<ExperimentalFile> experimentalFiles;
+  private Integer numberOfLinesPerDonor;
 
 }

@@ -1,0 +1,19 @@
+outputDirectory: target/
+numberOfDonors: 100
+numberOfSpecimensPerDonor: 5
+numberOfSamplesPerSpecimen: 5
+leadJurisdiction: au
+tumourType: 01
+institution: 001
+platform: 1	
+seed: 1234567
+experimentalFiles:
+ - name: ssm
+   fileType: m
+   numberOfLinesPerForeignKey: 5
+ - name: ssm
+   fileType: p
+   numberOfLinesPerForeignKey: 5
+ - name: ssm
+   fileType: s
+   numberOfLinesPerForeignKey: 5

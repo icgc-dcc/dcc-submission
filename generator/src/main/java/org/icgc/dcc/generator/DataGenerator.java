@@ -25,6 +25,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Random;
 
+import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -46,36 +47,32 @@ public class DataGenerator {
 
   public static final String TAB = "\t";;
 
-  public static final String NEW_LINE = "\n";;
+  public static final String NEW_LINE = "\n";
 
-  public static String metaFileKey;
+  private static final String DATE_FORMAT = "yyyymmdd";
 
-  public static String primaryFileKey;
+  private static final String SEPERATOR = "__";
 
-  public static String secondaryFileKey;
+  private static final String FILE_EXTENSION = ".txt";
 
-  public static String donorFileKey;
+  private static final String DATE = new SimpleDateFormat(DATE_FORMAT).format(Calendar.getInstance().getTime());
 
-  public static String specimenFileKey;
+  private static String OUTPUT_DIRECTORY;
 
-  public static String sampleFileKey;
+  private static ObjectMapper mapper = new ObjectMapper();
 
-  public static ObjectMapper mapper;
+  private static List<CodeList> codeList;
 
-  public static List<CodeList> codeList;
+  private static Random random;
 
-  public static Random random;
-
-  public static ArrayList<ArrayList<String>> listOfPrimaryKeys;
+  private static List<List<String>> listOfPrimaryKeys = new ArrayList<List<String>>();
 
   private static List<FileSchema> fileSchemas;
 
-  private static String outputDirectory;
-
   public DataGenerator(String outputDirectory, Long seed) throws JsonParseException, JsonMappingException, IOException {
-    mapper = new ObjectMapper();
 
-    DataGenerator.outputDirectory = outputDirectory;
+    OUTPUT_DIRECTORY = outputDirectory;
+
     fileSchemas =
         mapper.readValue(Resources.getResource("dictionary.json"), org.icgc.dcc.dictionary.model.Dictionary.class)
             .getFiles();
@@ -85,61 +82,64 @@ public class DataGenerator {
 
     random = new Random(seed);
 
-    listOfPrimaryKeys = new ArrayList<ArrayList<String>>();
   }
 
-  public static ArrayList<ArrayList<String>> getListOfPrimaryKeys() {
+  public static List<List<String>> getListOfPrimaryKeys() {
     return listOfPrimaryKeys;
   }
 
   public void createCoreFile(String schemaName, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
-      Long institution, Long tumourType, Long platform) throws IOException {
+      String institution, String tumourType, String platform) throws IOException {
+    FileSchema schema = getSchema(schemaName);
+    determineUniqueFields(schema);
     CoreFileGenerator cgf = new CoreFileGenerator();
-    cgf.createFile(getSchema(schemaName), numberOfLinesPerPrimaryKey, leadJurisdiction, institution, tumourType,
-        platform);
+    cgf.createFile(schema, numberOfLinesPerPrimaryKey, leadJurisdiction, institution, tumourType, platform);
   }
 
   public void createMetaFile(String schemaName, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
-      Long institution, Long tumourType, Long platform) throws IOException {
+      String institution, String tumourType, String platform) throws IOException {
+    FileSchema schema = getSchema(schemaName);
+    determineUniqueFields(schema);
     MetaFileGenerator mfg = new MetaFileGenerator();
-    mfg.createFile(getSchema(schemaName), numberOfLinesPerPrimaryKey, leadJurisdiction, institution, tumourType,
-        platform);
+    mfg.createFile(schema, numberOfLinesPerPrimaryKey, leadJurisdiction, institution, tumourType, platform);
   }
 
   public void createPrimaryFile(String schemaName, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
-      Long institution, Long tumourType, Long platform) throws IOException {
+      String institution, String tumourType, String platform) throws IOException {
+    FileSchema schema = getSchema(schemaName);
+    determineUniqueFields(schema);
     PrimaryFileGenerator pfg = new PrimaryFileGenerator();
-    pfg.createFile(getSchema(schemaName), numberOfLinesPerPrimaryKey, leadJurisdiction, institution, tumourType,
-        platform);
+    pfg.createFile(schema, numberOfLinesPerPrimaryKey, leadJurisdiction, institution, tumourType, platform);
   }
 
   public void createSecondaryFile(String schemaName, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
-      Long institution, Long tumourType, Long platform) throws IOException {
+      String institution, String tumourType, String platform) throws IOException {
+    FileSchema schema = getSchema(schemaName);
+    determineUniqueFields(schema);
     SecondaryFileGenerator sfg = new SecondaryFileGenerator();
-    sfg.createFile(getSchema(schemaName), numberOfLinesPerPrimaryKey, leadJurisdiction, institution, tumourType,
-        platform);
+    sfg.createFile(schema, numberOfLinesPerPrimaryKey, leadJurisdiction, institution, tumourType, platform);
   }
 
-  public static ArrayList<String> getPrimaryKey(String schemaName, String currentField) {
-    for(ArrayList<String> primaryKeyArray : listOfPrimaryKeys) {
-      if(primaryKeyArray.get(0).equals(schemaName) && primaryKeyArray.get(1).equals(currentField)) {
+  public static List<String> getPrimaryKey(String schemaName, String currentFieldName) {
+    for(List<String> primaryKeyArray : listOfPrimaryKeys) {
+      if(primaryKeyArray.get(0).equals(schemaName) && primaryKeyArray.get(1).equals(currentFieldName)) {
         return primaryKeyArray;
       }
     }
     return null;
   }
 
-  public static ArrayList<String> getForeignKey(FileSchema schema, String currentField) {
+  public static List<String> getForeignKey(FileSchema schema, String currentFieldName) {
 
     for(int j = 0; j < schema.getRelations().size(); j++) {
       int k = 0; // holds index of 'fields' array that matches current field
 
       // Above Comment. Iterates through fields
       for(String foreignKeyField : schema.getRelations().get(j).getFields()) {
-        if(currentField.equals(foreignKeyField)) {
+        if(currentFieldName.equals(foreignKeyField)) {
 
-          // Find arraylist that carries primary keys of schema that relates to this fileschema
-          for(ArrayList<String> primaryKeyArray : listOfPrimaryKeys) {
+          // Find list that carries primary keys of schema that relates to this fileschema
+          for(List<String> primaryKeyArray : listOfPrimaryKeys) {
             if(primaryKeyArray.get(0).equals(schema.getRelations().get(j).getOther())
                 && primaryKeyArray.get(1).equals(schema.getRelations().get(j).getOtherFields().get(k))) {
               return primaryKeyArray;
@@ -156,64 +156,61 @@ public class DataGenerator {
     return null;
   }
 
-  public static String generateFileName(String schemaName, String leadJurisdiction, Long institution, Long tumourType,
-      Long platform, boolean isCore) {
-    String dateStamp = new SimpleDateFormat("yyyyMMdd").format(Calendar.getInstance().getTime());
-    String filename = null;
+  public static String generateFileName(String schemaName, String leadJurisdiction, String institution,
+      String tumourType, String platform, boolean isCore) {
     if(isCore) {
-      filename =
-          new String(DataGenerator.outputDirectory + leadJurisdiction + "__" + tumourType + "__" + institution + "__"
-              + schemaName + "__" + dateStamp + ".txt");
+      return String.format(OUTPUT_DIRECTORY + leadJurisdiction + SEPERATOR + tumourType + SEPERATOR + institution
+          + SEPERATOR + schemaName + SEPERATOR + DATE + FILE_EXTENSION);
     } else {
-      filename =
-          new String(DataGenerator.outputDirectory + schemaName.substring(0, schemaName.length() - 2) + "__"
-              + leadJurisdiction + "__" + tumourType + "__" + institution + "__"
-              + schemaName.charAt(schemaName.length() - 1) + "__" + platform + "__" + dateStamp + ".txt");
+      String fileType = schemaName.substring(0, schemaName.length() - 2);
+      return String.format(OUTPUT_DIRECTORY + fileType + SEPERATOR + leadJurisdiction + SEPERATOR + tumourType
+          + SEPERATOR + institution + SEPERATOR + schemaName.charAt(schemaName.length() - 1) + SEPERATOR + platform
+          + SEPERATOR + DATE + FILE_EXTENSION);
     }
-    return filename;
   }
 
   public void determineUniqueFields(FileSchema schema) {
     for(String uniqueField : schema.getUniqueFields()) {
-      ArrayList<String> uniqueFieldArray = new ArrayList<String>();
+      List<String> uniqueFieldArray = new ArrayList<String>();
       uniqueFieldArray.add(schema.getName());
       uniqueFieldArray.add(uniqueField);
       listOfPrimaryKeys.add(uniqueFieldArray);
     }
   }
 
-  public static String getFieldValue(FileSchema schema, Field field, ArrayList<String> uniqueString, Integer uniqueInt,
-      Double uniqueDecimal) {
+  public static String getFieldValue(List<String> uniqueFields, Field field, List<String> uniqueString,
+      Integer uniqueInt, Double uniqueDecimal) {
+
     String output = "";
     if(field.getValueType() == ValueType.TEXT) {
-      if(isUniqueField(schema.getUniqueFields(), field.getName())) {
+      if(isUniqueField(uniqueFields, field.getName())) {
         output = uniqueStringGenerator(10, uniqueString);
       } else {
         output = codeListData(field);
-        if(output == null || output.trim().length() == 0) {
+        if(StringUtils.isBlank(output)) {
           output = randomStringGenerator(10);
         }
       }
     } else if(field.getValueType() == ValueType.INTEGER) {
-      if(isUniqueField(schema.getUniqueFields(), field.getName())) {
+      if(isUniqueField(uniqueFields, field.getName())) {
         output = Integer.toString(uniqueInt++);
       } else {
         output = codeListData(field);
-        if(output == null || output.trim().length() == 0) {
+        if(StringUtils.isBlank(output)) {
           output = Integer.toString(randomIntGenerator(0, 200));
         }
       }
     } else if(field.getValueType() == ValueType.DECIMAL) {
-      if(DataGenerator.isUniqueField(schema.getUniqueFields(), field.getName())) {
+      if(isUniqueField(uniqueFields, field.getName())) {
         output = Double.toString(uniqueDecimal + 0.1);
       } else {
         output = codeListData(field);
-        if(output == null || output.trim().length() == 0) {
+        if(StringUtils.isBlank(output)) {
           output = Double.toString(DataGenerator.randomDecimalGenerator(50));
         }
       }
     } else if(field.getValueType() == ValueType.DATETIME) {
-      return Calendar.DAY_OF_MONTH + "/" + Calendar.MONTH + "/" + Calendar.YEAR;
+      output = String.format(Calendar.DAY_OF_MONTH + "/" + Calendar.MONTH + "/" + Calendar.YEAR);
     }
     return output;
   }
@@ -234,7 +231,7 @@ public class DataGenerator {
   }
 
   public static FileSchema getSchema(String schemaName) {
-    for(FileSchema schema : DataGenerator.fileSchemas) {
+    for(FileSchema schema : fileSchemas) {
       if(schema.getName().equals(schemaName)) {
         return schema;
       }
@@ -251,7 +248,7 @@ public class DataGenerator {
     return false;
   }
 
-  public static String uniqueStringGenerator(int length, ArrayList<String> uniqueString) {
+  public static String uniqueStringGenerator(int length, List<String> uniqueString) {
     StringBuilder sb = new StringBuilder();
     for(int i = 0; i < length; i++) {
       char c = (char) (random.nextDouble() * (123 - 97) + 97);

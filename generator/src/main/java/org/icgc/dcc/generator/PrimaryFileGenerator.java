@@ -23,6 +23,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.List;
+
+import lombok.Cleanup;
 
 import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.FileSchema;
@@ -36,23 +39,14 @@ public class PrimaryFileGenerator {
 
   public static final String NEW_LINE = DataGenerator.NEW_LINE;
 
-  public ArrayList<String> uniqueString;
+  public List<String> uniqueString = new ArrayList<String>();
 
-  public Integer uniqueInteger;
+  public Integer uniqueInteger = 0;
 
-  public Double uniqueDecimal;;
-
-  public PrimaryFileGenerator() {
-    uniqueString = new ArrayList<String>();
-    uniqueInteger = 0;
-    uniqueDecimal = 0.0;
-  }
+  public Double uniqueDecimal = 0.0;
 
   public void populateFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, Writer writer) throws IOException {
-    int numberOfLines =
-        (schema.getRelations().size() > 0 && schema.getRelations().get(0).isBidirectional()) ? DataGenerator
-            .randomIntGenerator(1, numberOfLinesPerPrimaryKey) : DataGenerator.randomIntGenerator(0,
-            numberOfLinesPerPrimaryKey);
+    int numberOfLines = calculateNumberOfLines(schema, numberOfLinesPerPrimaryKey);
 
     int numberOfIterations =
         DataGenerator.getForeignKey(schema, schema.getRelations().get(0).getFields().get(0)).size() - 2;
@@ -61,39 +55,47 @@ public class PrimaryFileGenerator {
       for(int j = 0; j < numberOfLines; j++) {
         for(Field currentField : schema.getFields()) {
           String output = null;
-
-          ArrayList<String> foreignKeyArray = DataGenerator.getForeignKey(schema, currentField.getName());
+          String currentFieldName = currentField.getName();
+          List<String> foreignKeyArray = DataGenerator.getForeignKey(schema, currentFieldName);
 
           output =
-              foreignKeyArray != null ? foreignKeyArray.get(i + 2) : DataGenerator.getFieldValue(schema, currentField,
-                  uniqueString, uniqueInteger, uniqueDecimal);
+              foreignKeyArray != null ? foreignKeyArray.get(i + 2) : DataGenerator.getFieldValue(
+                  schema.getUniqueFields(), currentField, uniqueString, uniqueInteger, uniqueDecimal);
 
-          if(DataGenerator.isUniqueField(schema.getUniqueFields(), currentField.getName())) {
-            DataGenerator.getPrimaryKey(schema.getName(), currentField.getName()).add(output);
-            if(currentField.getName().equals("placement")) {
-              System.out.println(output);
-            }
+          if(DataGenerator.isUniqueField(schema.getUniqueFields(), currentFieldName)) {
+            DataGenerator.getPrimaryKey(schema.getName(), currentFieldName).add(output);
           }
 
           writer.write(output + TAB);
         }
         writer.write(NEW_LINE);
       }
-      numberOfLines =
-          (schema.getRelations().size() > 0 && schema.getRelations().get(0).isBidirectional()) ? DataGenerator
-              .randomIntGenerator(1, numberOfLinesPerPrimaryKey) : DataGenerator.randomIntGenerator(0,
-              numberOfLinesPerPrimaryKey);
+      numberOfLines = calculateNumberOfLines(schema, numberOfLinesPerPrimaryKey);
+    }
+  }
+
+  /**
+   * @param schema
+   * @param numberOfLinesPerPrimaryKey
+   * @return
+   */
+  private int calculateNumberOfLines(FileSchema schema, Integer numberOfLinesPerPrimaryKey) {
+    if(schema.getRelations().size() > 0 && schema.getRelations().get(0).isBidirectional()) {
+      return DataGenerator.randomIntGenerator(1, numberOfLinesPerPrimaryKey);
+    } else {
+      return DataGenerator.randomIntGenerator(0, numberOfLinesPerPrimaryKey);
     }
   }
 
   public void createFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
-      Long institution, Long tumourType, Long platform) throws IOException {
+      String institution, String tumourType, String platform) throws IOException {
     boolean isCore = false;
     String fileUrl =
         DataGenerator.generateFileName(schema.getName(), leadJurisdiction, institution, tumourType, platform, isCore);
     File outputFile = new File(fileUrl);
     outputFile.createNewFile();
-    Writer writer = new BufferedWriter(new FileWriter(outputFile));
+    @Cleanup
+    BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile));
 
     for(String fieldName : schema.getFieldNames()) {
       writer.write(fieldName + TAB);
@@ -104,9 +106,5 @@ public class PrimaryFileGenerator {
     populateFile(schema, numberOfLinesPerPrimaryKey, writer);
 
     writer.close();
-
-    uniqueString.removeAll(uniqueString);
-    uniqueInteger = 0;
-    uniqueDecimal = 0.0;
   }
 }

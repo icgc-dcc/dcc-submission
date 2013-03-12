@@ -17,51 +17,22 @@
  */
 package org.icgc.dcc.generator;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
 
-import lombok.Getter;
-import lombok.ToString;
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.junit.Test;
 
-import org.codehaus.jackson.annotate.JsonProperty;
-import org.icgc.dcc.generator.model.ExperimentalFile;
-import org.icgc.dcc.generator.model.OptionalFile;
+/**
+ * 
+ */
+public class MainTest {
 
-@Getter
-@ToString
-public class GeneratorConfig {
-
-  @JsonProperty
-  private String outputDirectory;
-
-  @JsonProperty
-  private Integer numberOfDonors;
-
-  @JsonProperty
-  private Integer numberOfSpecimensPerDonor;
-
-  @JsonProperty
-  private Integer numberOfSamplesPerSpecimen;
-
-  @JsonProperty
-  private String leadJurisdiction;
-
-  @JsonProperty
-  private String tumourType;
-
-  @JsonProperty
-  private String institution;
-
-  @JsonProperty
-  private String platform;
-
-  @JsonProperty
-  private Long seed;
-
-  @JsonProperty
-  private ArrayList<OptionalFile> optionalFiles;
-
-  @JsonProperty
-  private List<ExperimentalFile> experimentalFiles;
+  @Test
+  public void test() throws JsonParseException, JsonMappingException, IOException {
+    String[] x = { "src/main/resources/config.yaml" };
+    Main main = new Main();
+    main.generate(x);
+  }
 
 }

@@ -21,8 +21,11 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import lombok.Cleanup;
 
 import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.FileSchema;
@@ -32,141 +35,136 @@ import org.icgc.dcc.dictionary.model.FileSchema;
  */
 public class CoreFileGenerator {
 
-  public static String DONOR_SCHEMA_NAME = "donor";
+  private static final String DONOR_SCHEMA_NAME = "donor";
 
-  public static String SAMPLE_SCHEMA_NAME = "sample";
+  private static final String SAMPLE_SCHEMA_NAME = "sample";
 
-  private final String TAB = DataGenerator.TAB;
+  private static final String TAB = DataGenerator.TAB;
 
-  private final String newLine = DataGenerator.NEW_LINE;
+  private static final String NEW_LINE = DataGenerator.NEW_LINE;
 
-  private final ArrayList<String> tumourSampleTypeID;
+  private static final String tumourFieldKey = "tumourSampleTypeID";
 
-  private final ArrayList<String> controlledSampleTypeID;
+  private static final String controlFieldKey = "controlledSampleTypeID";
 
-  public ArrayList<String> donorID;
+  private static final String sampleTypeFieldName = "analyzed_sample_id";
 
-  public ArrayList<String> specimenID;
+  private final List<String> tumourSampleTypeID = new ArrayList<String>(Arrays.asList("sample", "tumourSampleTypeID"));
 
-  public ArrayList<String> sampleID;
+  private final List<String> controlledSampleTypeID = new ArrayList<String>(Arrays.asList("sample",
+      "controlledSampleTypeID"));
 
-  public ArrayList<String> uniqueString;
+  private final List<String> donorID = new ArrayList<String>(Arrays.asList("donor", "donor_id"));
 
-  public Integer uniqueInteger;
+  private final List<String> specimenID = new ArrayList<String>(Arrays.asList("specimen", "specimen_id"));
 
-  public Double uniqueDecimal;
+  private final List<String> sampleID = new ArrayList<String>(Arrays.asList("sample", "analyzed_sample_id"));
+
+  private final List<String> uniqueString = new ArrayList<String>();
+
+  private final Integer uniqueInteger = 0;
+
+  private final Double uniqueDecimal = 0.0;
 
   public CoreFileGenerator() {
-    this.donorID = new ArrayList<String>();
-    donorID.add("donor");
-    donorID.add("donor_id");
-
-    this.specimenID = new ArrayList<String>();
-    specimenID.add("specimen");
-    specimenID.add("specimen_id");
-
-    this.sampleID = new ArrayList<String>();
-    sampleID.add("sample");
-    sampleID.add("analyzed_sample_id");
-
-    this.tumourSampleTypeID = new ArrayList<String>();
-    tumourSampleTypeID.add("sample");
-    tumourSampleTypeID.add("tumourSampleTypeID");
-
-    this.controlledSampleTypeID = new ArrayList<String>();
-    controlledSampleTypeID.add("sample");
-    controlledSampleTypeID.add("controlledSampleTypeID");
-
     DataGenerator.getListOfPrimaryKeys().add(donorID);
     DataGenerator.getListOfPrimaryKeys().add(specimenID);
     DataGenerator.getListOfPrimaryKeys().add(sampleID);
     DataGenerator.getListOfPrimaryKeys().add(tumourSampleTypeID);
     DataGenerator.getListOfPrimaryKeys().add(controlledSampleTypeID);
-
-    uniqueString = new ArrayList<String>();
-    uniqueInteger = 0;
-    uniqueDecimal = 0.0;
   }
 
-  public void populateFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, Writer writer) throws IOException {
-    int numberOfPrimaryKeyValues = 0;
-    int numberOfLinesPerKey = 0;
-    if(schema.getName().equals(DONOR_SCHEMA_NAME)) {
-      numberOfPrimaryKeyValues = numberOfLinesPerPrimaryKey;
-      numberOfLinesPerKey = 1;
-
-    } else {
-      numberOfPrimaryKeyValues =
-          DataGenerator.getForeignKey(schema, schema.getRelations().get(0).getFields().get(0)).size() - 2;
-      numberOfLinesPerKey =
-          (schema.getRelations().size() > 0 && schema.getRelations().get(0).isBidirectional()) ? DataGenerator
-              .randomIntGenerator(1, numberOfLinesPerPrimaryKey) : DataGenerator.randomIntGenerator(0,
-              numberOfLinesPerPrimaryKey);
-    }
+  public void populateFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, BufferedWriter writer)
+      throws IOException {
+    int numberOfPrimaryKeyValues = calcuateNumberOfPrimaryKeyValues(schema, numberOfLinesPerPrimaryKey);
+    int numberOfLinesPerKey = calculateNumberOfLinesPerKey(schema, numberOfLinesPerPrimaryKey);
 
     for(int i = 0; i < numberOfPrimaryKeyValues; i++) {
       for(int j = 0; j < numberOfLinesPerKey; j++) {
         for(Field currentField : schema.getFields()) {
           String output = null;
-          ArrayList<String> foreignKeyArray = DataGenerator.getForeignKey(schema, currentField.getName());
-          if(foreignKeyArray != null) {
+          List<String> foreignKeyArray = DataGenerator.getForeignKey(schema, currentField.getName());
 
+          if(foreignKeyArray != null) {
             output = foreignKeyArray.get(i + 2);
           } else {
-            output = DataGenerator.getFieldValue(schema, currentField, uniqueString, uniqueInteger, uniqueDecimal);
+            output =
+                DataGenerator.getFieldValue(schema.getUniqueFields(), currentField, uniqueString, uniqueInteger,
+                    uniqueDecimal);
           }
 
           if(DataGenerator.isUniqueField(schema.getUniqueFields(), currentField.getName())) {
             DataGenerator.getPrimaryKey(schema.getName(), currentField.getName()).add(output);
           }
           // Special case for sample, to add whether sample type is controlled or tumour
-          if(schema.getName().equals(SAMPLE_SCHEMA_NAME) && currentField.getName().equals("analyzed_sample_type")) {
+          if(schema.getName().equals(SAMPLE_SCHEMA_NAME) && currentField.getName().equals(sampleTypeFieldName)) {
 
             int x = DataGenerator.randomIntGenerator(0, 1);
             // Instead here you could check if output(which will be the value of analyzed_sample_type) = 'c' then
             // control one or, if output = 't' then go to control two
             if(x == 0) {
-              DataGenerator.getPrimaryKey(SAMPLE_SCHEMA_NAME, "tumourSampleTypeID").add(output);
+              DataGenerator.getPrimaryKey(SAMPLE_SCHEMA_NAME, tumourFieldKey).add(output);
             } else {
-              DataGenerator.getPrimaryKey(SAMPLE_SCHEMA_NAME, "controlledSampleTypeID").add(output);
+              DataGenerator.getPrimaryKey(SAMPLE_SCHEMA_NAME, controlFieldKey).add(output);
             }
           }
           writer.write(output + TAB);
         }
-        writer.write(newLine);
+        writer.write(NEW_LINE);
       }
-      if(schema.getName().equals(DONOR_SCHEMA_NAME)) {
-        numberOfLinesPerKey = 1;
-      } else {
-        numberOfLinesPerKey =
-            (schema.getRelations().size() > 0 && schema.getRelations().get(0).isBidirectional()) ? DataGenerator
-                .randomIntGenerator(1, numberOfLinesPerPrimaryKey) : DataGenerator.randomIntGenerator(0,
-                numberOfLinesPerPrimaryKey);
-      }
+      numberOfLinesPerKey = calculateNumberOfLinesPerKey(schema, numberOfLinesPerPrimaryKey);
+    }
+  }
+
+  /**
+   * @param schema
+   * @param numberOfLinesPerPrimaryKey
+   * @return
+   */
+  private int calcuateNumberOfPrimaryKeyValues(FileSchema schema, Integer numberOfLinesPerPrimaryKey) {
+    int numberOfPrimaryKeyValues;
+    if(schema.getName().equals(DONOR_SCHEMA_NAME)) {
+      numberOfPrimaryKeyValues = numberOfLinesPerPrimaryKey;
+    } else {
+      numberOfPrimaryKeyValues =
+          DataGenerator.getForeignKey(schema, schema.getRelations().get(0).getFields().get(0)).size() - 2;
+    }
+    return numberOfPrimaryKeyValues;
+  }
+
+  /**
+   * @param schema
+   * @param numberOfLinesPerPrimaryKey
+   * @return
+   */
+  private int calculateNumberOfLinesPerKey(FileSchema schema, Integer numberOfLinesPerPrimaryKey) {
+    if(schema.getName().equals(DONOR_SCHEMA_NAME)) {
+      return 1;
+    } else if(schema.getRelations().size() > 0 && schema.getRelations().get(0).isBidirectional()) {
+      return DataGenerator.randomIntGenerator(1, numberOfLinesPerPrimaryKey);
+    } else {
+      return DataGenerator.randomIntGenerator(0, numberOfLinesPerPrimaryKey);
     }
   }
 
   public void createFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
-      Long institution, Long tumourType, Long platform) throws IOException {
+      String institution, String tumourType, String platform) throws IOException {
     boolean isCore = true;
     String fileUrl =
         DataGenerator.generateFileName(schema.getName(), leadJurisdiction, institution, tumourType, platform, isCore);
     File outputFile = new File(fileUrl);
     outputFile.createNewFile();
-    Writer writer = new BufferedWriter(new FileWriter(outputFile));
+    @Cleanup
+    BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile));
 
     for(String fieldName : schema.getFieldNames()) {
       writer.write(fieldName + TAB);
     }
 
-    writer.write(newLine);
+    writer.write(NEW_LINE);
 
     populateFile(schema, numberOfLinesPerPrimaryKey, writer);
 
     writer.close();
-
-    uniqueString.removeAll(uniqueString);
-    uniqueInteger = 0;
-    uniqueDecimal = 0.0;
   }
 }

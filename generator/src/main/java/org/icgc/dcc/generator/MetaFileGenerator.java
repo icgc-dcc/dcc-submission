@@ -23,6 +23,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.List;
+
+import lombok.Cleanup;
+import lombok.extern.java.Log;
 
 import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.FileSchema;
@@ -30,6 +34,7 @@ import org.icgc.dcc.dictionary.model.FileSchema;
 /**
  * 
  */
+@Log
 public class MetaFileGenerator {
 
   private final String SAMPLE_SCHEMA_NAME = "sample";
@@ -38,24 +43,26 @@ public class MetaFileGenerator {
 
   private final String NEW_LINE = DataGenerator.NEW_LINE;
 
-  public ArrayList<String> uniqueString;
+  private final String NonSystemMetaFileExpression = "exp_m";
 
-  public Integer uniqueInteger;
+  private final String NonSystemMetaFileJunction = "jcn_m";
 
-  public Double uniqueDecimal;
+  private final String NonSystemMetaFileMirna = "mirna_m";
 
-  public MetaFileGenerator() {
-    uniqueString = new ArrayList<String>();
-    uniqueInteger = 0;
-    uniqueDecimal = 0.0;
-  }
+  private static final String tumourFieldKey = "tumourSampleTypeID";
 
-  public void populateFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, Writer writer) throws IOException {
-    // check bidirectionality
-    int numberOfLines =
-        (schema.getRelations().size() > 0 && schema.getRelations().get(0).isBidirectional()) ? DataGenerator
-            .randomIntGenerator(1, numberOfLinesPerPrimaryKey) : DataGenerator.randomIntGenerator(0,
-            numberOfLinesPerPrimaryKey);
+  private static final String controlFieldKey = "controlledSampleTypeID";
+
+  private static final String matchedSampleFieldName = "matched_sample_id";
+
+  private final List<String> uniqueString = new ArrayList<String>();
+
+  private final Integer uniqueInteger = 0;
+
+  private final Double uniqueDecimal = 0.0;
+
+  private void populateFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, Writer writer) throws IOException {
+    int numberOfLines = calculateNumberOfLines(schema, numberOfLinesPerPrimaryKey);
 
     int numberOfIterations =
         DataGenerator.getForeignKey(schema, schema.getRelations().get(0).getFields().get(0)).size() - 2;
@@ -64,28 +71,29 @@ public class MetaFileGenerator {
       for(int j = 0; j < numberOfLines; j++) {
         for(Field currentField : schema.getFields()) {
           String output = null;
+          String currentFieldName = currentField.getName();
+          // Is it a foreign key? if so then the only foreign key for a metafile is the matched/analyzed type from
+          // sample and therefore add accordingly.
+          if(DataGenerator.getForeignKey(schema, currentFieldName) != null) {
+            boolean isNotMetaExpressionFile = !schema.getName().equals(NonSystemMetaFileExpression);
+            boolean isNotMetaJunctionFile = !schema.getName().equals(NonSystemMetaFileJunction);
+            boolean isNotMetaMirnaFile = !schema.getName().equals(NonSystemMetaFileMirna);
 
-          if(DataGenerator.getForeignKey(schema, currentField.getName()) != null) {
-            if(!schema.getName().equals("exp_m") && !schema.getName().equals("jcn_m")
-                && !schema.getName().equals("mirna_m")) {
-              // Assuming that the relationship is bidirectional false in all m files,hence the generator
-              output =
-                  currentField.getName().equals("matched_sample_id") ? DataGenerator.getPrimaryKey(SAMPLE_SCHEMA_NAME,
-                      "tumourSampleTypeID").get(
-                      DataGenerator.randomIntGenerator(0,
-                          DataGenerator.getPrimaryKey(SAMPLE_SCHEMA_NAME, "tumourSampleTypeID").size() - 1)) : DataGenerator
-                      .getPrimaryKey(SAMPLE_SCHEMA_NAME, "tumourSampleTypeID").get(
-                          DataGenerator.getPrimaryKey(SAMPLE_SCHEMA_NAME, "tumourSampleTypeID").size() - 1);
+            if(isNotMetaExpressionFile && isNotMetaJunctionFile && isNotMetaMirnaFile) {
+
+              output = getSampleType(currentFieldName);
             } else {
-              output = DataGenerator.getForeignKey(schema, currentField.getName()).get(i + 2);
+              output = DataGenerator.getForeignKey(schema, currentFieldName).get(i + 2);
             }
           } else {
-            output = DataGenerator.getFieldValue(schema, currentField, uniqueString, uniqueInteger, uniqueDecimal);
+            output =
+                DataGenerator.getFieldValue(schema.getUniqueFields(), currentField, uniqueString, uniqueInteger,
+                    uniqueDecimal);
           }
 
-          if(DataGenerator.isUniqueField(schema.getUniqueFields(), currentField.getName())) {
-            for(ArrayList<String> primaryKey : DataGenerator.getListOfPrimaryKeys()) {
-              if(primaryKey.get(0).equals(schema.getName()) && primaryKey.get(1).equals(currentField.getName())) {
+          if(DataGenerator.isUniqueField(schema.getUniqueFields(), currentFieldName)) {
+            for(List<String> primaryKey : DataGenerator.getListOfPrimaryKeys()) {
+              if(primaryKey.get(0).equals(schema.getName()) && primaryKey.get(1).equals(currentFieldName)) {
                 primaryKey.add(output);
               }
             }
@@ -95,21 +103,49 @@ public class MetaFileGenerator {
         }
         writer.write(NEW_LINE);
       }
-      numberOfLines =
-          (schema.getRelations().size() > 0 && schema.getRelations().get(0).isBidirectional()) ? DataGenerator
-              .randomIntGenerator(1, numberOfLinesPerPrimaryKey) : DataGenerator.randomIntGenerator(0,
-              numberOfLinesPerPrimaryKey);
+      numberOfLines = calculateNumberOfLines(schema, numberOfLinesPerPrimaryKey);
+    }
+  }
+
+  /**
+   * @param schema
+   * @param numberOfLinesPerPrimaryKey
+   * @return
+   */
+  private int calculateNumberOfLines(FileSchema schema, Integer numberOfLinesPerPrimaryKey) {
+    if(schema.getRelations().size() > 0 && schema.getRelations().get(0).isBidirectional()) {
+      return DataGenerator.randomIntGenerator(1, numberOfLinesPerPrimaryKey);
+    } else {
+      return DataGenerator.randomIntGenerator(0, numberOfLinesPerPrimaryKey);
+    }
+  }
+
+  /**
+   * @param currentField
+   * @return
+   */
+  private String getSampleType(String currentFieldName) {
+    if(currentFieldName.equals(matchedSampleFieldName)) {
+      List<String> tumourTypeIDs = DataGenerator.getPrimaryKey(SAMPLE_SCHEMA_NAME, tumourFieldKey);
+      Integer randomInteger = DataGenerator.randomIntGenerator(2, tumourTypeIDs.size() - 3);
+      log.info(tumourTypeIDs.get(randomInteger));
+      return tumourTypeIDs.get(randomInteger);
+    } else {
+      List<String> controlTypeIDs = DataGenerator.getPrimaryKey(SAMPLE_SCHEMA_NAME, controlFieldKey);
+      Integer randomInteger = DataGenerator.randomIntGenerator(2, controlTypeIDs.size() - 3);
+      return controlTypeIDs.get(randomInteger);
     }
   }
 
   public void createFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
-      Long institution, Long tumourType, Long platform) throws IOException {
+      String institution, String tumourType, String platform) throws IOException {
     boolean isCore = false;
-    String fileUrl =
+    String fileURL =
         DataGenerator.generateFileName(schema.getName(), leadJurisdiction, institution, tumourType, platform, isCore);
-    File outputFile = new File(fileUrl);
+    File outputFile = new File(fileURL);
     outputFile.createNewFile();
-    Writer writer = new BufferedWriter(new FileWriter(outputFile));
+    @Cleanup
+    BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile));
 
     for(String fieldName : schema.getFieldNames()) {
       writer.write(fieldName + TAB);
@@ -120,9 +156,5 @@ public class MetaFileGenerator {
     populateFile(schema, numberOfLinesPerPrimaryKey, writer);
 
     writer.close();
-
-    uniqueString.removeAll(uniqueString);
-    uniqueInteger = 0;
-    uniqueDecimal = 0.0;
   }
 }
