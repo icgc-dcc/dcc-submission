@@ -17,51 +17,14 @@
  */
 package org.icgc.dcc.core.model;
 
-import java.util.List;
-import java.util.Set;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-
 /**
- * Utilities for working with ICGC feature types.
+ * Contains names for file schemata (eg. "ssm_p", "cnsm_s", "exp_g", "N/A", ...)
  */
-public final class FeatureTypes {
+public class FileSchemaNames {
 
-  /** From the ICGC Submission Manual */
-  private static final List<String> FEATURE_TYPES = ImmutableList.of("ssm", "sgv", "cnsm", "cngv", "stsm", "stgv",
-      "exp", "mirna", "jcn", "meth", "pexp");
-
-  /** Subset of {@link #FEATURE_TYPES} that relates to somatic mutations */
-  private static final List<String> SOMATIC_FEATURE_TYPES = ImmutableList.of("ssm", "cnsm", "stsm");
-
-  private static final Set<String> SOMATIC_FEATURE_TYPES_SET = ImmutableSet.copyOf(SOMATIC_FEATURE_TYPES);
-
-  /** Subset of {@link #FEATURE_TYPES} that relates to survey-based features */
-  private static final List<String> SURVEY_FEATURE_TYPES = ImmutableList.of("exp", "mirna", "jcn", "meth", "pexp");
-
-  public static List<String> getTypes() {
-    return FEATURE_TYPES;
-  }
-
-  public static List<String> getSomaticTypes() {
-    return SOMATIC_FEATURE_TYPES;
-  }
-
-  public static List<String> getArrayTypes() {
-    return SURVEY_FEATURE_TYPES;
-  }
-
-  public static boolean isType(String type) {
-    return FEATURE_TYPES.contains(type);
-  }
-
-  public static boolean isSomaticType(String type) {
-    return SOMATIC_FEATURE_TYPES_SET.contains(type);
-  }
-
-  public static boolean isSurveyType(String type) {
-    return SURVEY_FEATURE_TYPES.contains(type);
-  }
+  /**
+   * Used as placeholder in the loader for imported fields.
+   */
+  public static final String NOT_APPLICABLE = "N/A";
 
 }

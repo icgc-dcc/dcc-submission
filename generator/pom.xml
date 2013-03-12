@@ -7,6 +7,13 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
   <artifactId>dcc-generator</artifactId>
+  <repositories>
+    <!-- Parent pom bootstrap -->
+    <repository>
+      <id>internal</id>
+      <url>http://seqwaremaven.oicr.on.ca/artifactory/dcc-dependencies</url>
+    </repository>
+  </repositories>
   <dependencies>
     <!-- Command line -->
     <dependency>
@@ -40,15 +47,8 @@
           <artifactId>jul-to-slf4j</artifactId>
         </exclusion>
       </exclusions>
-    </dependency>    
+    </dependency>
   </dependencies>
-  <repositories>
-    <!-- Parent pom bootstrap -->
-    <repository>
-      <id>internal</id>
-      <url>http://seqwaremaven.oicr.on.ca/artifactory/dcc-dependencies</url>
-    </repository>
-  </repositories>
   <build>
     <plugins>
       <!-- Package -->

@@ -21,6 +21,7 @@ import java.beans.ConstructorProperties;
 
 import cascading.tuple.Fields;
 import cascading.tuple.TupleEntry;
+import static org.icgc.dcc.core.cascading.Fields2.concat;
 
 /**
  * An extension of {@code Fields} that always includes the {@code TupleState} field.
@@ -43,7 +44,7 @@ public class ValidationFields extends Fields {
   @SuppressWarnings("rawtypes")
   @ConstructorProperties({ "fields" })
   public ValidationFields(Comparable... fields) {
-    super(FieldsUtils.concat(fields, STATE_FIELD_NAME));
+    super(concat(fields, STATE_FIELD_NAME));
   }
 
 }
