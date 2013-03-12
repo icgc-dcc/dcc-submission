@@ -15,24 +15,25 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc.portal.filters;
+package org.icgc.dcc.portal.core;
 
-import com.sun.jersey.spi.container.*;
+import com.google.common.collect.ImmutableList;
 
-public class GetNotFoundResourceFilter implements ResourceFilter, ContainerResponseFilter {
+public enum TermFilters {
+  GENES(ImmutableList.of("gene_type", "symbol")), DONOR(ImmutableList.of("project", "primary_site", "donor_id",
+      "gender", "tumour", "vital_status", "disease_status", "donor_release_type")), MUTATION(ImmutableList.of(""));
 
-  @Override
-  public ContainerRequestFilter getRequestFilter() {
-    return null; // To change body of implemented methods use File | Settings | File Templates.
+  private ImmutableList<String> filters;
+
+  TermFilters(ImmutableList<String> filters) {
+    this.filters = filters;
   }
 
-  @Override
-  public ContainerResponseFilter getResponseFilter() {
-    return this;
+  public final String toString() {
+    return this.filters.toString();
   }
 
-  @Override
-  public ContainerResponse filter(ContainerRequest request, ContainerResponse response) {
-    return response;
+  public final ImmutableList<String> toList() {
+    return this.filters;
   }
 }

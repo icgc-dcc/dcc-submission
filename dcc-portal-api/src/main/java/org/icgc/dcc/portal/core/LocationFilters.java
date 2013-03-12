@@ -15,24 +15,19 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc.portal.filters;
+package org.icgc.dcc.portal.core;
 
-import com.sun.jersey.spi.container.*;
+public enum LocationFilters {
+  GENE("gene_location"), MUTATION("location");
 
-public class GetNotFoundResourceFilter implements ResourceFilter, ContainerResponseFilter {
+  private String type;
 
-  @Override
-  public ContainerRequestFilter getRequestFilter() {
-    return null; // To change body of implemented methods use File | Settings | File Templates.
+  private LocationFilters(final String type) {
+    this.type = type;
   }
 
-  @Override
-  public ContainerResponseFilter getResponseFilter() {
-    return this;
+  public final String toString() {
+    return this.type;
   }
 
-  @Override
-  public ContainerResponse filter(ContainerRequest request, ContainerResponse response) {
-    return response;
-  }
 }

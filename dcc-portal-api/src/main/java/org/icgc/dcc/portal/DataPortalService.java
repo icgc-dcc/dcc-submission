@@ -20,6 +20,7 @@ package org.icgc.dcc.portal;
 import com.bazaarvoice.dropwizard.redirect.RedirectBundle;
 import com.google.common.collect.ImmutableMap;
 import com.hubspot.dropwizard.guice.GuiceBundle;
+import com.sun.jersey.api.container.filter.LoggingFilter;
 import com.sun.jersey.api.core.ResourceConfig;
 import com.sun.tools.javac.util.List;
 import com.yammer.dropwizard.Service;
@@ -87,7 +88,11 @@ public class DataPortalService extends Service<DataPortalConfiguration> {
   @Override
   public final void run(DataPortalConfiguration configuration, Environment environment) throws Exception {
     environment.setJerseyProperty(ResourceConfig.PROPERTY_CONTAINER_RESPONSE_FILTERS,
-        List.of(EtagFilter.class.getName(), VersionFilter.class.getName()));
+        List.of(LoggingFilter.class.getName(), EtagFilter.class.getName(), VersionFilter.class.getName()));
+    environment.setJerseyProperty(ResourceConfig.PROPERTY_CONTAINER_REQUEST_FILTERS,
+        List.of(LoggingFilter.class.getName()));
+    // environment.setJerseyProperty(ResourceConfig.PROPERTY_RESOURCE_FILTER_FACTORIES,
+    // List.of(GetNotFoundResourceFilter.class.getName()));
     logInfo(args);
   }
 

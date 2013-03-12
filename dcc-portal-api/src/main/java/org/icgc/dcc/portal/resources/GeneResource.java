@@ -79,10 +79,8 @@ public class GeneResource {
   // @CacheControl(immutable = true)
   // @ResourceFilters(GetNotFoundResourceFilter.class)
   @ApiOperation(value = "Find a gene by id", notes = "If a gene does not exist with the specified id an error will be returned")
-  @ApiErrors(value = {@ApiError(code = HttpStatus.BAD_REQUEST_400, reason = "Invalid ID supplied"),
-      @ApiError(code = HttpStatus.NOT_FOUND_404, reason = "Gene not found")})
-  public final Response get(@ApiParam(value = "ID of gene that needs to be fetched") @PathParam("id") String id)
-      throws IOException {
+  @ApiErrors(value = {@ApiError(code = HttpStatus.NOT_FOUND_404, reason = "Gene not found")})
+  public final Response get(@ApiParam(value = "Gene ID") @PathParam("id") String id) throws IOException {
     GetResults response = store.get(id);
 
     if (response.getFields() == null) {

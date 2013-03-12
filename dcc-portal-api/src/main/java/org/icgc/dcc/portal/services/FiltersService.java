@@ -20,12 +20,27 @@ package org.icgc.dcc.portal.services;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sun.tools.javac.util.List;
 import org.elasticsearch.index.query.*;
+import org.icgc.dcc.portal.core.LocationFilters;
+import org.icgc.dcc.portal.core.RangeFilters;
+import org.icgc.dcc.portal.core.TermFilters;
 
 import java.util.ArrayList;
 
 public class FiltersService {
+
+  private static enum Path {
+    GENE("gene"), DONOR("donor"), MUTATION("mutation");
+    private String type;
+
+    private Path(final String type) {
+      this.type = type;
+    }
+
+    public final String toString() {
+      return this.type;
+    }
+  }
 
   private static ObjectMapper MAPPER = new ObjectMapper();
 
@@ -35,29 +50,27 @@ public class FiltersService {
 
   public static AndFilterBuilder craftMutationFilters(JsonNode filters) {
     AndFilterBuilder mutationAnd = FilterBuilders.andFilter();
-    JsonNode mutation = filters.path("mutation");
-    for (String key : List.of("project", "primary_site", "donor_id", "gender", "tumour", "vital_status",
-        "disease_status", "donor_release_type")) {
+    JsonNode mutation = filters.path(Path.MUTATION.name());
+    for (String key : TermFilters.MUTATION.toList()) {
       if (mutation.has(key)) {
         mutationAnd.add(buildTermFilter(mutation, key));
       }
     }
-    if (mutation.has("location")) {
-      mutationAnd.add(buildChrLocationFilter(mutation));
+    if (mutation.has(LocationFilters.MUTATION.name())) {
+      mutationAnd.add(buildChrLocationFilter(mutation, LocationFilters.MUTATION.name()));
     }
     return mutationAnd;
   }
 
   public static AndFilterBuilder craftDonorFilters(JsonNode filters) {
     AndFilterBuilder donorAnd = FilterBuilders.andFilter();
-    JsonNode donor = filters.path("donor");
-    for (String key : List.of("project", "primary_site", "donor_id", "gender", "tumour", "vital_status",
-        "disease_status", "donor_release_type")) {
+    JsonNode donor = filters.path(Path.DONOR.name());
+    for (String key : TermFilters.DONOR.toList()) {
       if (donor.has(key)) {
         donorAnd.add(buildTermFilter(donor, key));
       }
     }
-    for (String key : List.of("age_at_diagnosis", "survival_time", "donor_release_interval")) {
+    for (String key : RangeFilters.DONOR.toList()) {
       if (donor.has(key)) {
         donorAnd.add(buildRangeFilter(donor, key));
       }
@@ -67,32 +80,31 @@ public class FiltersService {
 
   public static AndFilterBuilder craftGeneFilters(JsonNode filters) {
     AndFilterBuilder geneAnd = FilterBuilders.andFilter();
-    JsonNode gene = filters;// .path("gene");
+    JsonNode gene = filters.path(Path.GENE.name());
 
-    for (String key : List.of("gene_type", "symbol")) {
+    for (String key : TermFilters.GENES.toList()) {
       if (gene.has(key)) {
         geneAnd.add(buildTermFilter(gene, key));
       }
     }
-    if (gene.has("gene_location")) {
-      geneAnd.add(buildChrLocationFilter(gene));
+    if (gene.has(LocationFilters.GENE.name())) {
+      geneAnd.add(buildChrLocationFilter(gene, LocationFilters.GENE.name()));
     }
     return geneAnd;
   }
 
-  private static FilterBuilder buildChrLocationFilter(JsonNode json) {
+  private static FilterBuilder buildChrLocationFilter(JsonNode json, String location) {
     FilterBuilder chrLocFilter;
-    String LOCATION = "gene_location";
 
-    if (json.get(LOCATION).isArray()) {
-      ArrayList<String> locations = MAPPER.convertValue(json.get(LOCATION), new TypeReference<ArrayList<String>>() {});
+    if (json.get(location).isArray()) {
+      ArrayList<String> locations = MAPPER.convertValue(json.get(location), new TypeReference<ArrayList<String>>() {});
       OrFilterBuilder manyChrLocations = FilterBuilders.orFilter();
       for (String loc : locations) {
         manyChrLocations.add(buildChrLocation(loc));
       }
       chrLocFilter = manyChrLocations;
     } else {
-      String loc = MAPPER.convertValue(json.get(LOCATION), String.class);
+      String loc = MAPPER.convertValue(json.get(location), String.class);
       chrLocFilter = buildChrLocation(loc);
     }
 
