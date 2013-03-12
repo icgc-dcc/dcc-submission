@@ -26,7 +26,12 @@
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
     </dependency>
-
+    <dependency>
+      <groupId>com.google.code</groupId>
+      <artifactId>externalsortinginjava</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    
     <!-- Testing - Unit, mocking, assertions -->
     <dependency>
       <groupId>junit</groupId>
@@ -63,7 +68,7 @@
       <groupId>com.wordnik</groupId>
       <artifactId>mongo-admin-utils-distribution</artifactId>
       <scope>compile</scope>
-    </dependency>
+    </dependency> <!-- to dump dbs -->
     <dependency>
       <groupId>de.flapdoodle.embed</groupId>
       <artifactId>de.flapdoodle.embed.mongo</artifactId>
