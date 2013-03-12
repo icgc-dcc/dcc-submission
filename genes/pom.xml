@@ -16,14 +16,6 @@
   </repositories>
   <dependencies>
 
-    <!-- DCC Test -->
-    <dependency>
-      <groupId>org.icgc.dcc</groupId>
-      <artifactId>dcc-test</artifactId>
-      <version>1.3-SNAPSHOT</version>
-      <scope>test</scope>
-    </dependency>
-
     <!-- Command line -->
     <dependency>
       <groupId>com.beust</groupId>
@@ -68,6 +60,13 @@
       <artifactId>guava</artifactId>
     </dependency>
 
+    <!-- Testing - DCC -->
+    <dependency>
+      <groupId>org.icgc.dcc</groupId>
+      <artifactId>dcc-test</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
   <build>
     <plugins>
