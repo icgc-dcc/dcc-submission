@@ -37,6 +37,7 @@ public class SearchResults {
   private final ResponsePagination pagination;
 
   public SearchResults(final SearchResponse response, final RequestSearchQuery requestSearchQuery) {
+    System.out.println(response);
     this.hits = buildResponseHits(response.getHits().getHits());
     this.facets = buildResponseFacets(response.getFacets());
     this.pagination = new ResponsePagination(response.getHits(), requestSearchQuery);
