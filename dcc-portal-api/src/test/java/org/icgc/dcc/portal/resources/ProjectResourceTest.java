@@ -19,7 +19,7 @@ package org.icgc.dcc.portal.resources;
 
 import com.sun.jersey.api.client.ClientResponse;
 import com.yammer.dropwizard.testing.ResourceTest;
-import org.icgc.dcc.portal.repositories.IGeneRepository;
+import org.icgc.dcc.portal.repositories.IProjectRepository;
 import org.icgc.dcc.portal.request.RequestSearchQuery;
 import org.icgc.dcc.portal.results.GetResults;
 import org.junit.Test;
@@ -34,19 +34,19 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class GeneResourceTest extends ResourceTest {
+public class ProjectResourceTest extends ResourceTest {
 
-  private final static String RESOURCE = "/genes";
+  private final static String RESOURCE = "/projects";
 
   @Mock
-  private IGeneRepository store;
+  private IProjectRepository store;
 
   @Mock
   private GetResults getResults;
 
   @Override
   protected final void setUpResources() {
-    addResource(new GeneResource(store));
+    addResource(new ProjectResource(store));
   }
 
   @Test
@@ -63,7 +63,7 @@ public class GeneResourceTest extends ResourceTest {
 
     ClientResponse response = client().resource(RESOURCE).path("UNKNOWN_ID").get(ClientResponse.class);
 
-    verify(store).get(anyString());
+    verify(store).get(any(String.class));
     assertThat(response.getStatus()).isEqualTo(ClientResponse.Status.NOT_FOUND.getStatusCode());
   }
 }

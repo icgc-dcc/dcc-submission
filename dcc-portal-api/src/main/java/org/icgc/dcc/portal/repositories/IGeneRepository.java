@@ -17,12 +17,4 @@
 
 package org.icgc.dcc.portal.repositories;
 
-import org.icgc.dcc.portal.request.RequestSearchQuery;
-import org.icgc.dcc.portal.results.GetResults;
-import org.icgc.dcc.portal.results.SearchResults;
-
-public interface IGeneRepository {
-  GetResults get(final String id);
-
-  SearchResults search(final RequestSearchQuery requestSearchQuery);
-}
+public interface IGeneRepository extends IRepository {}

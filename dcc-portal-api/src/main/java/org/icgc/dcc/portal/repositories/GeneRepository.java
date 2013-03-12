@@ -53,9 +53,7 @@ public class GeneRepository implements IGeneRepository {
     this.client = client;
   }
 
-  private GetRequestBuilder buildGetRequest(String id) {
-    return client.prepareGet(INDEX, TYPE.toString(), id).setFields(ALLOWED_FIELDS.toArray());
-  }
+
 
   public final SearchResults search(final RequestSearchQuery requestSearchQuery) {
     this.filter = buildFilters(requestSearchQuery.getFilters());
@@ -67,6 +65,10 @@ public class GeneRepository implements IGeneRepository {
   public final GetResults get(final String id) {
     GetRequestBuilder g = buildGetRequest(id);
     return new GetResults(g.execute().actionGet());
+  }
+
+  private GetRequestBuilder buildGetRequest(String id) {
+    return client.prepareGet(INDEX, TYPE.toString(), id).setFields(ALLOWED_FIELDS.toArray());
   }
 
   private SearchRequestBuilder buildSearchRequest(final RequestSearchQuery requestSearchQuery) {

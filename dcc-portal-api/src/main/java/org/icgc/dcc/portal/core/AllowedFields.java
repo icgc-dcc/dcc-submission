@@ -17,22 +17,18 @@
 
 package org.icgc.dcc.portal.core;
 
-import com.google.common.collect.ImmutableList;
-
 public enum AllowedFields {
-  GENES(ImmutableList.of("symbol", "description", "chromosome", "start", "end", "band", "gene_type"));
+  GENES(new String[] {"symbol", "description", "chromosome", "start", "end", "band", "gene_type"}), PROJECT(
+      new String[] {"project_name", "primary_site", "country", "total_donor_count", "ssm_tested_donor_count",
+          "cnsm_tested_donor_count", "exp_tested_donor_count", "meth_tested_donor_count", "pubmed_id"});
 
-  private ImmutableList<String> fields;
+  private String[] fields;
 
-  AllowedFields(ImmutableList<String> fields) {
+  AllowedFields(String[] fields) {
     this.fields = fields;
   }
 
-  public final String toString() {
-    return this.fields.toString();
-  }
-
   public final String[] toArray() {
-    return this.fields.toArray(new String[this.fields.size()]);
+    return this.fields;
   }
 }

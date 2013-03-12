@@ -43,7 +43,7 @@ public class ResponsePagination {
     this.size = requestSearchQuery.getSize();
     this.from = requestSearchQuery.getFrom() + 1;
     this.sort = requestSearchQuery.getSort();
-    this.order = requestSearchQuery.getOrder();
+    this.order = requestSearchQuery.getOrder().toLowerCase();
     this.page = this.size == 0 ? 1 : (int) (floor(from / size) + 1);
     this.pages = this.size == 0 ? 1 : (int) ceil(total / size);
   }

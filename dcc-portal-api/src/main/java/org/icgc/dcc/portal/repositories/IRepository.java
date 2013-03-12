@@ -15,26 +15,14 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc.portal.core;
+package org.icgc.dcc.portal.repositories;
 
-import com.google.common.collect.ImmutableList;
+import org.icgc.dcc.portal.request.RequestSearchQuery;
+import org.icgc.dcc.portal.results.GetResults;
+import org.icgc.dcc.portal.results.SearchResults;
 
-public enum TermFilters {
-  GENES(ImmutableList.of("gene_type", "symbol")), DONOR(ImmutableList.of("project", "primary_site", "donor_id",
-      "gender", "tumour", "vital_status", "disease_status", "donor_release_type")), MUTATION(ImmutableList.of("")), PROJECT(
-      ImmutableList.of("project_name", "primary_site", "country", "available_profiling_data"));
+public interface IRepository {
+  GetResults get(final String id);
 
-  private ImmutableList<String> filters;
-
-  TermFilters(ImmutableList<String> filters) {
-    this.filters = filters;
-  }
-
-  public final String toString() {
-    return this.filters.toString();
-  }
-
-  public final ImmutableList<String> toList() {
-    return this.filters;
-  }
+  SearchResults search(final RequestSearchQuery requestSearchQuery);
 }

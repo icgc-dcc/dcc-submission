@@ -17,12 +17,4 @@
 
 package org.icgc.dcc.portal.repositories;
 
-import org.elasticsearch.action.get.GetResponse;
-import org.elasticsearch.action.search.SearchResponse;
-import org.icgc.dcc.portal.request.RequestSearchQuery;
-
-public interface IProjectRepository {
-  GetResponse getOne(final String id);
-
-  SearchResponse getAll(final RequestSearchQuery requestSearchQuery);
-}
+public interface IProjectRepository extends IRepository {}

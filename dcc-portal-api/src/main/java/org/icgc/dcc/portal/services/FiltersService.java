@@ -48,6 +48,16 @@ public class FiltersService {
     return FilterBuilders.nestedFilter(key, andFilters);
   }
 
+  public static AndFilterBuilder craftProjectFilters(JsonNode filters) {
+    AndFilterBuilder mutationAnd = FilterBuilders.andFilter();
+    for (String key : TermFilters.PROJECT.toList()) {
+      if (filters.has(key)) {
+        mutationAnd.add(buildTermFilter(filters, key));
+      }
+    }
+    return mutationAnd;
+  }
+
   public static AndFilterBuilder craftMutationFilters(JsonNode filters) {
     AndFilterBuilder mutationAnd = FilterBuilders.andFilter();
     JsonNode mutation = filters.path(Path.MUTATION.name());

@@ -22,7 +22,7 @@ import com.yammer.dropwizard.jersey.params.IntParam;
 import com.yammer.metrics.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.http.HttpStatus;
-import org.icgc.dcc.portal.repositories.IGeneRepository;
+import org.icgc.dcc.portal.repositories.IProjectRepository;
 import org.icgc.dcc.portal.request.RequestSearchQuery;
 import org.icgc.dcc.portal.responses.ErrorResponse;
 import org.icgc.dcc.portal.results.GetResults;
@@ -35,27 +35,27 @@ import java.io.IOException;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
-@Path("/genes")
+@Path("/projects")
 @Produces(APPLICATION_JSON)
 @Consumes(APPLICATION_JSON)
-@Api(value = "/genes", description = "Operations about genes")
+@Api(value = "/projects", description = "Operations about projects")
 @Slf4j
-public class GeneResource {
+public class ProjectResource {
 
-  private static final String DEFAULT_SORT = "start";
+  private static final String DEFAULT_SORT = "project_name";
 
   private static final String DEFAULT_ORDER = "asc";
 
-  private final IGeneRepository store;
+  private final IProjectRepository store;
 
   @Inject
-  public GeneResource(IGeneRepository store) {
+  public ProjectResource(IProjectRepository store) {
     this.store = store;
   }
 
   @GET
   @Timed
-  @ApiOperation(value = "Retrieves a list of genes")
+  @ApiOperation(value = "Retrieves a list of projects")
   public final Response query(
       @ApiParam(value = "Start index of results", required = false) @QueryParam("from") @DefaultValue("1") IntParam from,
       @ApiParam(value = "Number of results returned", allowableValues = "range[1,100]", required = false) @QueryParam("size") @DefaultValue("10") IntParam size,
@@ -78,16 +78,16 @@ public class GeneResource {
   @Timed
   // @CacheControl(immutable = true)
   // @ResourceFilters(GetNotFoundResourceFilter.class)
-  @ApiOperation(value = "Find a gene by id", notes = "If a gene does not exist with the specified id an error will be returned")
-  @ApiErrors(value = {@ApiError(code = HttpStatus.NOT_FOUND_404, reason = "Gene not found")})
-  public final Response get(@ApiParam(value = "Gene ID") @PathParam("id") String id) throws IOException {
-    GetResults results = store.get(id);
+  @ApiOperation(value = "Find a project by id", notes = "If a project does not exist with the specified id an error will be returned")
+  @ApiErrors(value = {@ApiError(code = HttpStatus.NOT_FOUND_404, reason = "Project not found")})
+  public final Response get(@ApiParam(value = "Project ID") @PathParam("id") String id) throws IOException {
+    GetResults response = store.get(id);
 
-    if (results.getFields() == null) {
+    if (response.getFields() == null) {
       return Response.status(Response.Status.NOT_FOUND)
-          .entity(new ErrorResponse(Response.Status.NOT_FOUND, "Gene " + id + " not found.")).build();
+          .entity(new ErrorResponse(Response.Status.NOT_FOUND, "Project " + id + " not found.")).build();
     }
 
-    return Response.ok().entity(results).build();
+    return Response.ok().entity(response).build();
   }
 }
