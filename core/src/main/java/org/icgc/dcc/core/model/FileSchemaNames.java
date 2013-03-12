@@ -15,68 +15,16 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.dictionary.model;
-
-import java.io.Serializable;
-
-import org.hibernate.validator.constraints.NotBlank;
-import org.hibernate.validator.constraints.URL;
-
-import com.google.code.morphia.annotations.Embedded;
+package org.icgc.dcc.core.model;
 
 /**
- * Describes a controlled term as part of a {@code CodeList}, which is simply a code (usually integer or integer-looking
- * string) associated with a value, and a URI as reference for the controlled term
+ * Contains names for file schemata (eg. "ssm_p", "cnsm_s", "exp_g", "N/A", ...)
  */
-@Embedded
-public class Term implements Serializable {
+public class FileSchemaNames {
 
-  @NotBlank
-  private String code;
+  /**
+   * Used as placeholder in the loader for imported fields.
+   */
+  public static final String NOT_APPLICABLE = "N/A";
 
-  @NotBlank
-  private String value;
-
-  @URL
-  private String uri;
-
-  public Term() {
-    super();
-  }
-
-  public Term(String code, String value, String uri) {
-    this();
-    this.code = code;
-    this.value = value;
-    this.uri = uri;
-  }
-
-  public String getCode() {
-    return code;
-  }
-
-  public void setCode(String code) {
-    this.code = code;
-  }
-
-  public String getValue() {
-    return value;
-  }
-
-  public void setValue(String value) {
-    this.value = value;
-  }
-
-  public String getUri() {
-    return uri;
-  }
-
-  public void setUri(String uri) {
-    this.uri = uri;
-  }
-
-  @Override
-  public String toString() {
-    return "Term [code=" + code + ", value=" + value + ", uri=" + uri + "]";
-  }
 }

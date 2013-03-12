@@ -98,6 +98,11 @@ public class HadoopUtils {
     }
   }
 
+  /**
+   * This does not work on HDFS as of yet (see DCC-835).
+   * @deprecated
+   */
+  @Deprecated
   public static void createSymlink(FileSystem fileSystem, Path origin, Path destination) {
 
     try {
@@ -108,16 +113,20 @@ public class HadoopUtils {
   }
 
   public static void mv(FileSystem fileSystem, String origin, String destination) {
+    Path originPath = new Path(origin);
+    Path destinationPath = new Path(destination);
+    mv(fileSystem, originPath, destinationPath);
+  }
+
+  public static void mv(FileSystem fileSystem, Path originPath, Path destinationPath) {
     boolean rename;
     try {
-      Path originPath = new Path(origin);
-      Path destinationPath = new Path(destination);
       rename = fileSystem.rename(originPath, destinationPath);
     } catch(IOException e) {
       throw new HdfsException(e);
     }
     if(!rename) {
-      throw new HdfsException(String.format("could not rename %s to %s", origin, destination));
+      throw new HdfsException(String.format("could not rename %s to %s", originPath, destinationPath));
     }
   }
 

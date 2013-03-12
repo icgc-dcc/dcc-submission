@@ -1,6 +1,6 @@
 <configuration debug="false">
-  <property name="log.dir" value="/srv/webapp/dcc/server/logs" />
-  <property name="log.name" value="dcc-server" />
+  <property name="log.dir" value="target/logs" />
+  <property name="log.name" value="dcc-test" />
   <property name="pattern" value="%date{ISO8601} [%thread] %-5level %logger{20} - %msg%n" />
 
   <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator">
@@ -13,7 +13,6 @@
     </encoder>
   </appender>
 
-  <!-- 
   <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
     <File>${log.dir}/${log.name}.log</File>
     <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
@@ -23,15 +22,9 @@
       <pattern>${pattern}</pattern>
     </encoder>
   </appender>
-  -->
-  
+
   <root level="info">
     <appender-ref ref="STDOUT" />
-    <!-- 
-    TODO: Enable when we can redirect console to /srv/webapp/dcc/server/logs/console.log
-    Also need to consider if logging to a file at the above location will work with MapReduce.
-    We may need to do something special to disable file appender with cascading.
     <appender-ref ref="FILE" />
-     -->
   </root>
 </configuration>

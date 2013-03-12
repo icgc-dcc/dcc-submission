@@ -15,68 +15,39 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.dictionary.model;
-
-import java.io.Serializable;
-
-import org.hibernate.validator.constraints.NotBlank;
-import org.hibernate.validator.constraints.URL;
-
-import com.google.code.morphia.annotations.Embedded;
+package org.icgc.dcc.core.model;
 
 /**
- * Describes a controlled term as part of a {@code CodeList}, which is simply a code (usually integer or integer-looking
- * string) associated with a value, and a URI as reference for the controlled term
+ * Represents a collection in the the MongoDB data model.
  */
-@Embedded
-public class Term implements Serializable {
+public enum ReleaseCollection {
 
-  @NotBlank
-  private String code;
+  OBSERVATION("Observation", FieldNames.OBSERVATION_ID), //
+  DONOR("Donor", FieldNames.DONOR_ID), //
+  GENE("Gene", FieldNames.GENE_ID), //
+  PROJECT("Project", FieldNames.PROJECT_ID), //
+  MUTATION("Mutation", FieldNames.MUTATION_ID);
 
-  @NotBlank
-  private String value;
+  final private String name;
 
-  @URL
-  private String uri;
+  final private String key;
 
-  public Term() {
-    super();
+  private ReleaseCollection(String name, String key) {
+    this.name = name;
+    this.key = key;
   }
 
-  public Term(String code, String value, String uri) {
-    this();
-    this.code = code;
-    this.value = value;
-    this.uri = uri;
+  public String getName() {
+    return name;
   }
 
-  public String getCode() {
-    return code;
-  }
-
-  public void setCode(String code) {
-    this.code = code;
-  }
-
-  public String getValue() {
-    return value;
-  }
-
-  public void setValue(String value) {
-    this.value = value;
-  }
-
-  public String getUri() {
-    return uri;
-  }
-
-  public void setUri(String uri) {
-    this.uri = uri;
+  public String getKey() {
+    return key;
   }
 
   @Override
   public String toString() {
-    return "Term [code=" + code + ", value=" + value + ", uri=" + uri + "]";
+    return getName();
   }
+
 }

@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.validation.cascading;
+package org.icgc.dcc.core.cascading;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,13 +31,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  * Utility class for working with cascading {@code Fields} objects.
  * <p>
- * TODO: remove some redundant/obsolete methods
+ * TODO: remove some redundant/obsolete methods + make this a decorator instead
  */
-public final class FieldsUtils { // TODO: move to core
+public final class Fields2 {
 
   private static final String DEFAULT_PREFIX_SEPARATOR = ".";
 
-  private FieldsUtils() {
+  private Fields2() {
     // Prevent construction
   }
 

@@ -34,6 +34,7 @@ import javax.ws.rs.core.SecurityContext;
 import org.glassfish.grizzly.http.util.Header;
 import org.icgc.dcc.core.model.DccModelOptimisticLockException;
 import org.icgc.dcc.core.model.InvalidStateException;
+import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.release.NextRelease;
 import org.icgc.dcc.release.ReleaseException;
 import org.icgc.dcc.release.ReleaseService;
@@ -73,11 +74,27 @@ public class NextReleaseResource {
     if(hasReleaseViewPrivilege(securityContext) == false) {
       return unauthorizedResponse();
     }
+
     NextRelease nextRelease = releaseService.getNextRelease();
     Release release = nextRelease.getRelease(); // guaranteed not to be null
     String prefix = config.getString("http.ws.path");
     String redirectionPath = Joiner.on("/").join(prefix, "releases", release.getName());
     return Response.status(Status.MOVED_PERMANENTLY).header(HttpHeaders.LOCATION, redirectionPath).build();
+  }
+
+  /**
+   * Returns the current dictionary.
+   * <p>
+   * More: <code>{@link ReleaseService#getNextDictionary()}</code><br/>
+   * Open-access intentional (DCC-758)
+   */
+  @GET
+  @Path("dictionary")
+  public Response getDictionary(@Context Request req) {
+    Dictionary dictionary = releaseService.getNextDictionary();
+
+    ResponseTimestamper.evaluate(req, dictionary);
+    return ResponseTimestamper.ok(dictionary).build();
   }
 
   @POST
