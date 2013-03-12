@@ -35,6 +35,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public final class Fields2 {
 
+  private static final String DEFAULT_PREFIX_SEPARATOR = ".";
+
   private Fields2() {
     // Prevent construction
   }
@@ -94,6 +96,15 @@ public final class Fields2 {
       fieldNames.add(fields.get(i).toString());
     }
     return fieldNames;
+  }
+
+  public static Fields prefixedFields(String prefix, Fields fields) {
+    Fields prefixedFields = new Fields();
+    for(String fieldName : getFieldNames(fields)) {
+      String newFieldName = prefix(prefix, DEFAULT_PREFIX_SEPARATOR, fieldName);
+      prefixedFields = prefixedFields.append(new Fields(newFieldName));
+    }
+    return prefixedFields;
   }
 
   public static Fields prefixedFields(String prefix, String sep, String[] fields) {
