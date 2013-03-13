@@ -145,6 +145,15 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
 
   public void addCodeList(List<CodeList> codeLists) {
     log.info("Saving codelists {}", codeLists);
+
+    for(CodeList codeList : codeLists) {
+      checkArgument(codeList != null);
+      String name = codeList.getName();
+      if(getCodeList(name).isPresent()) {
+        throw new DictionaryServiceException("Aborting codelist addition: cannot add existing codeList: " + name);
+      }
+    }
+
     this.datastore().save(codeLists);
   }
 
@@ -155,22 +164,12 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
     return codeList == null ? Optional.<CodeList> absent() : Optional.<CodeList> of(codeList);
   }
 
-  public CodeList createCodeList(String name) {
-    checkArgument(name != null);
-    CodeList codeList = new CodeList(name);
-    if(getCodeList(name) != null) {
-      throw new DictionaryServiceException("cannot create existant codeList: " + name);
-    }
-    datastore().save(codeList);
-    return codeList;
-  }
-
   public void updateCodeList(CodeList newCodeList) {
     checkArgument(newCodeList != null);
     String name = newCodeList.getName();
     Optional<CodeList> optional = this.getCodeList(name);
     if(optional.isPresent() == false) {
-      throw new DictionaryServiceException("cannot perform update to non-existant codeList: " + name);
+      throw new DictionaryServiceException("Cannot perform update to non-existant codeList: " + name);
     }
 
     Query<CodeList> updateQuery = datastore().createQuery(CodeList.class).filter("name" + " = ", name);
