@@ -15,36 +15,48 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc.portal.responses;
+package org.icgc.dcc.portal.results;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.Data;
-import org.elasticsearch.search.SearchHits;
-import org.icgc.dcc.portal.request.RequestSearchQuery;
+import org.elasticsearch.search.SearchHit;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
-import static java.lang.Math.ceil;
-import static java.lang.Math.floor;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
-@Data
-@JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class ResponsePagination {
-  private final int count;
-  private final long total;
-  private final int size;
-  private final int from;
-  private final int page;
-  private final int pages;
-  private final String sort;
-  private final String order;
+@RunWith(MockitoJUnitRunner.class)
+public class ResultsHitTest {
 
-  public ResponsePagination(final SearchHits hits, final RequestSearchQuery requestSearchQuery) {
-    this.count = hits.getHits().length;
-    this.total = hits.getTotalHits();
-    this.size = requestSearchQuery.getSize();
-    this.from = requestSearchQuery.getFrom() + 1;
-    this.sort = requestSearchQuery.getSort();
-    this.order = requestSearchQuery.getOrder().toLowerCase();
-    this.page = this.size == 0 ? 1 : (int) (floor(from / size) + 1);
-    this.pages = this.size == 0 ? 1 : (int) ceil(total / size);
+  @Mock
+  SearchHit searchHit;
+
+  @Test
+  public final void test_Score_WhenHitScoreNaN() {
+    when(searchHit.getScore()).thenReturn(Float.NaN);
+
+    ResultsHit resultsHit = new ResultsHit(searchHit);
+
+    // Score should default to 0
+    assertThat(resultsHit.getScore()).isEqualTo(0.0f);
+  }
+
+  @Test
+  public final void test_Score_WhenHitHasScore() {
+    when(searchHit.getScore()).thenReturn(0.75f);
+
+    ResultsHit resultsHit = new ResultsHit(searchHit);
+
+    assertThat(resultsHit.getScore()).isEqualTo(0.75f);
+  }
+
+  @Test
+  public final void test_Score_WhenHitFieldsAreNull() {
+    when(searchHit.getFields()).thenReturn(null);
+
+    ResultsHit resultsHit = new ResultsHit(searchHit);
+
+    assertThat(resultsHit.getFields()).isNull();
   }
 }

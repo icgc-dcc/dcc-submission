@@ -15,46 +15,12 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc.portal.responses;
+package org.icgc.dcc.portal.results;
 
-import com.google.common.collect.ImmutableList;
 import lombok.Data;
-import org.elasticsearch.search.facet.Facet;
-import org.elasticsearch.search.facet.terms.TermsFacet;
-
-import java.util.List;
 
 @Data
-public class ResponseFacet {
-  private final String type;
-  private final long missing;
-  private final long total;
-  private final long other;
-  private final ImmutableList<Term> terms;
-
-  public ResponseFacet(Facet f) {
-    TermsFacet facet = (TermsFacet) f;
-    this.type = facet.getType();
-    this.missing = facet.getMissingCount();
-    this.total = facet.getTotalCount();
-    this.other = facet.getOtherCount();
-    this.terms = buildTerms(facet.getEntries());
-  }
-
-  private ImmutableList<Term> buildTerms(List<? extends TermsFacet.Entry> entries) {
-    ImmutableList.Builder<Term> l = new ImmutableList.Builder<Term>();
-    for (TermsFacet.Entry entry : entries) {
-      String name = entry.getTerm();
-      int value = entry.getCount();
-      Term term = new Term(name, value);
-      l.add(term);
-    }
-    return l.build();
-  }
-
-  @Data
-  private class Term {
-    private final String term;
-    private final int count;
-  }
+public class ResultsHitField {
+  private final String name;
+  private final Object value;
 }

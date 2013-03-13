@@ -15,12 +15,35 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc.portal.responses;
+package org.icgc.dcc.portal.results;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
+import org.elasticsearch.search.SearchHits;
+import org.icgc.dcc.portal.request.RequestSearchQuery;
+
+import static java.lang.Math.floor;
 
 @Data
-public class ResponseHitField {
-  private final String name;
-  private final Object value;
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
+public class ResultsPagination {
+  private final int count;
+  private final long total;
+  private final int size;
+  private final int from;
+  private final int page;
+  private final long pages;
+  private final String sort;
+  private final String order;
+
+  public ResultsPagination(final SearchHits hits, final RequestSearchQuery requestSearchQuery) {
+    this.count = hits.getHits().length;
+    this.total = hits.getTotalHits();
+    this.size = requestSearchQuery.getSize();
+    this.from = requestSearchQuery.getFrom() + 1;
+    this.sort = requestSearchQuery.getSort();
+    this.order = requestSearchQuery.getOrder().toLowerCase();
+    this.page = (int) floor(from / size) + 1;
+    this.pages = (total + size - 1) / size;
+  }
 }

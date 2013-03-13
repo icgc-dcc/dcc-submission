@@ -15,27 +15,46 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc.portal.responses;
+package org.icgc.dcc.portal.results;
 
+import com.google.common.collect.ImmutableList;
 import lombok.Data;
+import org.elasticsearch.search.facet.Facet;
+import org.elasticsearch.search.facet.terms.TermsFacet;
 
-import javax.ws.rs.core.Response.StatusType;
-import java.io.IOException;
+import java.util.List;
 
 @Data
-// TODO this should be a builder/wrapper around response not just an entity
-public final class ErrorResponse {
-  private final int code;
+public class ResultsFacet {
+  private final String type;
+  private final long missing;
+  private final long total;
+  private final long other;
+  private final ImmutableList<Term> terms;
 
-  private final String message;
-
-  public ErrorResponse(StatusType code, IOException e) {
-    this.code = code.getStatusCode();
-    this.message = e.getMessage();
+  public ResultsFacet(Facet f) {
+    TermsFacet facet = (TermsFacet) f;
+    this.type = facet.getType();
+    this.missing = facet.getMissingCount();
+    this.total = facet.getTotalCount();
+    this.other = facet.getOtherCount();
+    this.terms = buildTerms(facet.getEntries());
   }
 
-  public ErrorResponse(StatusType code, String message) {
-    this.code = code.getStatusCode();
-    this.message = message;
+  private ImmutableList<Term> buildTerms(List<? extends TermsFacet.Entry> entries) {
+    ImmutableList.Builder<Term> l = new ImmutableList.Builder<Term>();
+    for (TermsFacet.Entry entry : entries) {
+      String name = entry.getTerm();
+      int value = entry.getCount();
+      Term term = new Term(name, value);
+      l.add(term);
+    }
+    return l.build();
+  }
+
+  @Data
+  private class Term {
+    private final String term;
+    private final int count;
   }
 }

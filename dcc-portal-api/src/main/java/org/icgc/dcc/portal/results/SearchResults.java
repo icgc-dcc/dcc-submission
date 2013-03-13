@@ -25,36 +25,33 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.facet.Facet;
 import org.elasticsearch.search.facet.Facets;
 import org.icgc.dcc.portal.request.RequestSearchQuery;
-import org.icgc.dcc.portal.responses.ResponseFacet;
-import org.icgc.dcc.portal.responses.ResponseHit;
-import org.icgc.dcc.portal.responses.ResponsePagination;
 
 @Data
 public class SearchResults {
 
-  private final ImmutableList<ResponseHit> hits;
-  private final ImmutableMap<String, ResponseFacet> facets;
-  private final ResponsePagination pagination;
+  private final ImmutableList<ResultsHit> hits;
+  private final ImmutableMap<String, ResultsFacet> facets;
+  private final ResultsPagination pagination;
 
   public SearchResults(final SearchResponse response, final RequestSearchQuery requestSearchQuery) {
     System.out.println(response);
     this.hits = buildResponseHits(response.getHits().getHits());
     this.facets = buildResponseFacets(response.getFacets());
-    this.pagination = new ResponsePagination(response.getHits(), requestSearchQuery);
+    this.pagination = new ResultsPagination(response.getHits(), requestSearchQuery);
   }
 
-  private ImmutableMap<String, ResponseFacet> buildResponseFacets(Facets facets) {
-    ImmutableMap.Builder<String, ResponseFacet> mb = new ImmutableMap.Builder<String, ResponseFacet>();
+  private ImmutableMap<String, ResultsFacet> buildResponseFacets(Facets facets) {
+    ImmutableMap.Builder<String, ResultsFacet> mb = new ImmutableMap.Builder<String, ResultsFacet>();
     for (Facet facet : facets.facets()) {
-      mb.put(facet.getName(), new ResponseFacet(facet));
+      mb.put(facet.getName(), new ResultsFacet(facet));
     }
     return mb.build();
   }
 
-  private ImmutableList<ResponseHit> buildResponseHits(SearchHit[] hits) {
-    ImmutableList.Builder<ResponseHit> lb = new ImmutableList.Builder<ResponseHit>();
+  private ImmutableList<ResultsHit> buildResponseHits(SearchHit[] hits) {
+    ImmutableList.Builder<ResultsHit> lb = new ImmutableList.Builder<ResultsHit>();
     for (SearchHit hit : hits) {
-      lb.add(new ResponseHit(hit));
+      lb.add(new ResultsHit(hit));
     }
     return lb.build();
   }

@@ -15,7 +15,7 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc.portal.responses;
+package org.icgc.dcc.portal.results;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -30,16 +30,20 @@ import static org.icgc.dcc.portal.core.JsonUtils.MAPPER;
 
 @Data
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class ResponseHit {
+public class ResultsHit {
   private final String id;
+
   private final String type;
+
   private final Float score;
+
   private final ObjectNode fields;
 
-  public ResponseHit(SearchHit hit) {
+  public ResultsHit(SearchHit hit) {
     this.id = hit.getId();
     this.type = hit.getType();
     this.score = Float.isNaN(hit.getScore()) ? 0.0f : hit.getScore();
+    // hit.getFields() will be null when 'get'ting an id that does not exists
     this.fields = hit.getFields() == null ? null : buildSearchHitFields(hit.getFields());
   }
 
