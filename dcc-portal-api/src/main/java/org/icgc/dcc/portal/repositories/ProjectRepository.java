@@ -36,7 +36,7 @@ import org.icgc.dcc.portal.core.Types;
 import org.icgc.dcc.portal.request.RequestSearchQuery;
 import org.icgc.dcc.portal.results.GetResults;
 import org.icgc.dcc.portal.results.SearchResults;
-import org.icgc.dcc.portal.services.FiltersService;
+import org.icgc.dcc.portal.services.FilterService;
 
 @Slf4j
 public class ProjectRepository implements IProjectRepository {
@@ -130,7 +130,7 @@ public class ProjectRepository implements IProjectRepository {
     if (filters == null) {
       return FilterBuilders.matchAllFilter();
     } else {
-      return FiltersService.craftProjectFilters(filters);
+      return FilterService.createProjectFilters(filters);
     }
   }
 }

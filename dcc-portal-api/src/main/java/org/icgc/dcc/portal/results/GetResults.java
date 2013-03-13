@@ -18,13 +18,14 @@
 package org.icgc.dcc.portal.results;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Data;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.index.get.GetField;
 
 import java.util.Map;
+
+import static org.icgc.dcc.portal.core.JsonUtils.MAPPER;
 
 @Data
 public class GetResults {
@@ -40,11 +41,12 @@ public class GetResults {
   }
 
   private ObjectNode buildGetHitFields(Map<String, GetField> fields) {
-    ObjectNode jNode = new ObjectMapper().createObjectNode();
+    ObjectNode jNode = MAPPER.createObjectNode();
     for (GetField field : fields.values()) {
       String name = field.getName();
       Object value = field.getValue();
-      jNode.set(name, new ObjectMapper().convertValue(value, JsonNode.class));
+      jNode.putPOJO(name, MAPPER.convertValue(value, JsonNode.class));
+      // jNode.set(name, MAPPER.convertValue(value, JsonNode.class));
     }
     return jNode;
   }

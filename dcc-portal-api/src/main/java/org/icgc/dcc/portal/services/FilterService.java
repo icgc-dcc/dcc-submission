@@ -19,15 +19,19 @@ package org.icgc.dcc.portal.services;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.elasticsearch.index.query.*;
 import org.icgc.dcc.portal.core.LocationFilters;
 import org.icgc.dcc.portal.core.RangeFilters;
 import org.icgc.dcc.portal.core.TermFilters;
 
 import java.util.ArrayList;
+import java.util.List;
 
-public class FiltersService {
+import static org.icgc.dcc.portal.core.JsonUtils.MAPPER;
+
+public class FilterService {
+
+  private static final TypeReference<ArrayList<String>> TYPE_REF = new TypeReference<ArrayList<String>>() {};
 
   private static enum Path {
     GENE("gene"), DONOR("donor"), MUTATION("mutation");
@@ -42,15 +46,13 @@ public class FiltersService {
     }
   }
 
-  private static ObjectMapper MAPPER = new ObjectMapper();
-
   public static NestedFilterBuilder buildNestedFilter(String key, AndFilterBuilder andFilters) {
     return FilterBuilders.nestedFilter(key, andFilters);
   }
 
-  public static AndFilterBuilder craftProjectFilters(JsonNode filters) {
+  public static AndFilterBuilder createProjectFilters(JsonNode filters) {
     AndFilterBuilder mutationAnd = FilterBuilders.andFilter();
-    for (String key : TermFilters.PROJECT.toList()) {
+    for (String key : TermFilters.PROJECT.fields()) {
       if (filters.has(key)) {
         mutationAnd.add(buildTermFilter(filters, key));
       }
@@ -58,10 +60,10 @@ public class FiltersService {
     return mutationAnd;
   }
 
-  public static AndFilterBuilder craftMutationFilters(JsonNode filters) {
+  public static AndFilterBuilder createMutationFilters(JsonNode filters) {
     AndFilterBuilder mutationAnd = FilterBuilders.andFilter();
     JsonNode mutation = filters.path(Path.MUTATION.name());
-    for (String key : TermFilters.MUTATION.toList()) {
+    for (String key : TermFilters.MUTATION.fields()) {
       if (mutation.has(key)) {
         mutationAnd.add(buildTermFilter(mutation, key));
       }
@@ -72,15 +74,15 @@ public class FiltersService {
     return mutationAnd;
   }
 
-  public static AndFilterBuilder craftDonorFilters(JsonNode filters) {
+  public static AndFilterBuilder createDonorFilters(JsonNode filters) {
     AndFilterBuilder donorAnd = FilterBuilders.andFilter();
     JsonNode donor = filters.path(Path.DONOR.name());
-    for (String key : TermFilters.DONOR.toList()) {
+    for (String key : TermFilters.DONOR.fields()) {
       if (donor.has(key)) {
         donorAnd.add(buildTermFilter(donor, key));
       }
     }
-    for (String key : RangeFilters.DONOR.toList()) {
+    for (String key : RangeFilters.DONOR.fields()) {
       if (donor.has(key)) {
         donorAnd.add(buildRangeFilter(donor, key));
       }
@@ -88,11 +90,11 @@ public class FiltersService {
     return donorAnd;
   }
 
-  public static AndFilterBuilder craftGeneFilters(JsonNode filters) {
+  public static AndFilterBuilder createGeneFilters(JsonNode filters) {
     AndFilterBuilder geneAnd = FilterBuilders.andFilter();
     JsonNode gene = filters.path(Path.GENE.name());
 
-    for (String key : TermFilters.GENES.toList()) {
+    for (String key : TermFilters.GENES.fields()) {
       if (gene.has(key)) {
         geneAnd.add(buildTermFilter(gene, key));
       }
@@ -153,7 +155,7 @@ public class FiltersService {
   private static FilterBuilder buildTermFilter(JsonNode json, String key) {
     FilterBuilder termFilter;
     if (json.get(key).isArray()) {
-      ArrayList<String> terms = MAPPER.convertValue(json.get(key), new TypeReference<ArrayList<String>>() {});
+      List<String> terms = MAPPER.convertValue(json.get(key), TYPE_REF);
       termFilter = FilterBuilders.termsFilter(key, terms);
     } else {
       String term = MAPPER.convertValue(json.get(key), String.class);

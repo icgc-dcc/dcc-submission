@@ -18,13 +18,12 @@
 package org.icgc.dcc.portal.core;
 
 public enum AllowedFields {
-  GENES(new String[] {"symbol", "description", "chromosome", "start", "end", "band", "gene_type"}), PROJECT(
-      new String[] {"project_name", "primary_site", "country", "total_donor_count", "ssm_tested_donor_count",
-          "cnsm_tested_donor_count", "exp_tested_donor_count", "meth_tested_donor_count", "pubmed_id"});
-
+  GENES("symbol", "description", "chromosome", "start", "end", "band", "gene_type"), PROJECT("project_name",
+      "primary_site", "country", "total_donor_count", "ssm_tested_donor_count", "cnsm_tested_donor_count",
+      "exp_tested_donor_count", "meth_tested_donor_count", "pubmed_id");
   private String[] fields;
 
-  AllowedFields(String[] fields) {
+  AllowedFields(String... fields) {
     this.fields = fields;
   }
 

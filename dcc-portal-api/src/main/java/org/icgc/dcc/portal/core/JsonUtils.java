@@ -17,22 +17,32 @@
 
 package org.icgc.dcc.portal.core;
 
-import com.google.common.collect.ImmutableList;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.icgc.dcc.portal.responses.ErrorResponse;
 
-public enum RangeFilters {
-  DONOR(ImmutableList.of("age_at_diagnosis", "survival_time", "donor_release_interval"));
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.IOException;
+import java.net.URLDecoder;
 
-  private ImmutableList<String> filters;
+public final class JsonUtils {
+  public static ObjectMapper MAPPER = new ObjectMapper();
 
-  RangeFilters(ImmutableList<String> filters) {
-    this.filters = filters;
+  private JsonUtils() {}
+
+  public static JsonNode readRequestString(String filters) {
+    String wrappedFilters = filters.replaceFirst("^\\{?", "{").replaceFirst("}?$", "}");
+    try {
+      return MAPPER.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true)
+          .configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true)
+          .readValue(URLDecoder.decode(wrappedFilters, "UTF-8"), JsonNode.class);
+    } catch (IOException e) {
+      throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST)
+          .entity(new ErrorResponse(Response.Status.BAD_REQUEST, e)).type(MediaType.APPLICATION_JSON_TYPE).build());
+    }
   }
 
-  public final String toString() {
-    return this.filters.toString();
-  }
-
-  public final ImmutableList<String> fields() {
-    return this.filters;
-  }
 }

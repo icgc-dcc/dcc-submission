@@ -17,14 +17,13 @@
 
 package org.icgc.dcc.portal.resources;
 
+import com.google.inject.Inject;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 import com.yammer.metrics.annotation.Timed;
-import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.portal.repositories.IFuzzyRepository;
 
-import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -36,7 +35,6 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 @Produces(APPLICATION_JSON)
 @Consumes(APPLICATION_JSON)
 @Api(value = "/text", description = "Text text")
-@Slf4j
 public class SearchResource {
 
   private final IFuzzyRepository store;

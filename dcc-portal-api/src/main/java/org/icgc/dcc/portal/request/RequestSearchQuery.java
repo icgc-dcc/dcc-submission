@@ -18,21 +18,17 @@
 package org.icgc.dcc.portal.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Strings;
 import lombok.Data;
 import org.elasticsearch.index.query.QueryBuilder;
-import org.icgc.dcc.portal.responses.ErrorResponse;
+import org.icgc.dcc.portal.core.JsonUtils;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.io.IOException;
-import java.net.URLDecoder;
+
+import static org.icgc.dcc.portal.core.JsonUtils.MAPPER;
 
 @Data
 @XmlRootElement(name = "RequestSearchQuery")
@@ -77,20 +73,7 @@ public class RequestSearchQuery {
     this.sort = sort;
     this.order = order.toUpperCase();
 
-    this.filters =
-        (filters == null || filters.equals("")) ? new ObjectMapper().createObjectNode() : jsonifyString(filters);
-    this.fields = (fields == null || fields.equals("")) ? new String[] {} : fields.split(",\\ ?");
-  }
-
-  private JsonNode jsonifyString(String filters) {
-    String wrappedFilters = filters.replaceFirst("^\\{?", "{").replaceFirst("}?$", "}");
-    try {
-      return new ObjectMapper().configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true)
-          .configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true)
-          .readValue(URLDecoder.decode(wrappedFilters, "UTF-8"), JsonNode.class);
-    } catch (IOException e) {
-      throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST)
-          .entity(new ErrorResponse(Response.Status.BAD_REQUEST, e)).type(MediaType.APPLICATION_JSON_TYPE).build());
-    }
+    this.filters = Strings.isNullOrEmpty(filters) ? MAPPER.createObjectNode() : JsonUtils.readRequestString(filters);
+    this.fields = Strings.isNullOrEmpty(fields) ? new String[] {} : fields.split(",\\ ?");
   }
 }

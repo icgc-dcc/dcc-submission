@@ -23,7 +23,6 @@ public enum TermFilters {
   GENES(ImmutableList.of("gene_type", "symbol")), DONOR(ImmutableList.of("project", "primary_site", "donor_id",
       "gender", "tumour", "vital_status", "disease_status", "donor_release_type")), MUTATION(ImmutableList.of("")), PROJECT(
       ImmutableList.of("project_name", "primary_site", "country", "available_profiling_data"));
-
   private ImmutableList<String> filters;
 
   TermFilters(ImmutableList<String> filters) {
@@ -34,7 +33,7 @@ public enum TermFilters {
     return this.filters.toString();
   }
 
-  public final ImmutableList<String> toList() {
+  public final ImmutableList<String> fields() {
     return this.filters;
   }
 }

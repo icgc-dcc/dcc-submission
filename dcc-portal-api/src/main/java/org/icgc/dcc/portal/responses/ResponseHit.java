@@ -19,13 +19,14 @@ package org.icgc.dcc.portal.responses;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Data;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHitField;
 
 import java.util.Map;
+
+import static org.icgc.dcc.portal.core.JsonUtils.MAPPER;
 
 @Data
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -43,11 +44,11 @@ public class ResponseHit {
   }
 
   private ObjectNode buildSearchHitFields(Map<String, SearchHitField> fields) {
-    ObjectNode jNode = new ObjectMapper().createObjectNode();
+    ObjectNode jNode = MAPPER.createObjectNode();
     for (SearchHitField field : fields.values()) {
       String name = field.getName();
       Object value = field.getValue();
-      jNode.set(name, new ObjectMapper().convertValue(value, JsonNode.class));
+      jNode.set(name, MAPPER.convertValue(value, JsonNode.class));
     }
     return jNode;
   }

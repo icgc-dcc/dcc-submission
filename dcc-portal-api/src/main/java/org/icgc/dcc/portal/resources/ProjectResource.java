@@ -17,6 +17,7 @@
 
 package org.icgc.dcc.portal.resources;
 
+import com.google.inject.Inject;
 import com.wordnik.swagger.annotations.*;
 import com.yammer.dropwizard.jersey.params.IntParam;
 import com.yammer.metrics.annotation.Timed;
@@ -28,7 +29,6 @@ import org.icgc.dcc.portal.responses.ErrorResponse;
 import org.icgc.dcc.portal.results.GetResults;
 import org.icgc.dcc.portal.results.SearchResults;
 
-import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import java.io.IOException;

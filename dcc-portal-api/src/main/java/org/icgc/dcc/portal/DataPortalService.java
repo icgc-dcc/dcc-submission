@@ -18,22 +18,24 @@
 package org.icgc.dcc.portal;
 
 import com.bazaarvoice.dropwizard.redirect.RedirectBundle;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.hubspot.dropwizard.guice.GuiceBundle;
 import com.sun.jersey.api.container.filter.LoggingFilter;
 import com.sun.jersey.api.core.ResourceConfig;
-import com.sun.tools.javac.util.List;
 import com.yammer.dropwizard.Service;
 import com.yammer.dropwizard.config.Bootstrap;
 import com.yammer.dropwizard.config.Environment;
 import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.portal.bundles.SwaggerBundle;
 import org.icgc.dcc.portal.filters.EtagFilter;
+import org.icgc.dcc.portal.filters.GetNotFoundResourceFilter;
 import org.icgc.dcc.portal.filters.VersionFilter;
 
 import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+import java.util.List;
 
 import static org.apache.commons.lang.StringUtils.join;
 import static org.apache.commons.lang.StringUtils.repeat;
@@ -52,10 +54,10 @@ public class DataPortalService extends Service<DataPortalConfiguration> {
   }
 
   private static void logInfo(String... args) {
-    DataPortalService.log.info(repeat("=", 60));
-    DataPortalService.log.info("{} {}", APPLICATION_NAME.toUpperCase().replace(DASH, SPACE), getVersion());
-    DataPortalService.log.info(" > {}", formatArguments(args));
-    DataPortalService.log.info(repeat("=", 60));
+    log.info(repeat("=", 60));
+    log.info("{} {}", APPLICATION_NAME.toUpperCase().replace(DASH, SPACE), getVersion());
+    log.info(" > {}", formatArguments(args));
+    log.info(repeat("=", 60));
   }
 
   private static String getVersion() {
@@ -72,7 +74,7 @@ public class DataPortalService extends Service<DataPortalConfiguration> {
 
   private static String formatArguments(String... args) {
     RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
-    java.util.List<String> inputArguments = runtime.getInputArguments();
+    List<String> inputArguments = runtime.getInputArguments();
 
     return String.format("java %s -jar %s %s", join(inputArguments, SPACE), getJarName(), join(args, SPACE));
   }
@@ -88,11 +90,11 @@ public class DataPortalService extends Service<DataPortalConfiguration> {
   @Override
   public final void run(DataPortalConfiguration configuration, Environment environment) throws Exception {
     environment.setJerseyProperty(ResourceConfig.PROPERTY_CONTAINER_RESPONSE_FILTERS,
-        List.of(LoggingFilter.class.getName(), EtagFilter.class.getName(), VersionFilter.class.getName()));
+        ImmutableList.of(LoggingFilter.class.getName(), EtagFilter.class.getName(), VersionFilter.class.getName()));
     environment.setJerseyProperty(ResourceConfig.PROPERTY_CONTAINER_REQUEST_FILTERS,
-        List.of(LoggingFilter.class.getName()));
-    // environment.setJerseyProperty(ResourceConfig.PROPERTY_RESOURCE_FILTER_FACTORIES,
-    // List.of(GetNotFoundResourceFilter.class.getName()));
+        ImmutableList.of(LoggingFilter.class.getName()));
+    environment.setJerseyProperty(ResourceConfig.PROPERTY_RESOURCE_FILTER_FACTORIES,
+        ImmutableList.of(GetNotFoundResourceFilter.class.getName()));
     logInfo(args);
   }
 

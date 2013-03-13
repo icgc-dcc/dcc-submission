@@ -33,7 +33,7 @@ import org.icgc.dcc.portal.core.Types;
 import org.icgc.dcc.portal.request.RequestSearchQuery;
 import org.icgc.dcc.portal.results.GetResults;
 import org.icgc.dcc.portal.results.SearchResults;
-import org.icgc.dcc.portal.services.FiltersService;
+import org.icgc.dcc.portal.services.FilterService;
 
 @Slf4j
 public class GeneRepository implements IGeneRepository {
@@ -109,12 +109,12 @@ public class GeneRepository implements IGeneRepository {
     if (filters == null) {
       return FilterBuilders.matchAllFilter();
     } else {
-      AndFilterBuilder geneFilters = FiltersService.craftGeneFilters(filters);
+      AndFilterBuilder geneFilters = FilterService.createGeneFilters(filters);
       if (filters.has("donor")) {
-        geneFilters.add(FiltersService.buildNestedFilter("donor", FiltersService.craftDonorFilters(filters)));
+        geneFilters.add(FilterService.buildNestedFilter("donor", FilterService.createDonorFilters(filters)));
       }
       if (filters.has("mutation")) {
-        geneFilters.add(FiltersService.buildNestedFilter("mutation", FiltersService.craftMutationFilters(filters)));
+        geneFilters.add(FilterService.buildNestedFilter("mutation", FilterService.createMutationFilters(filters)));
       }
       return geneFilters;
     }

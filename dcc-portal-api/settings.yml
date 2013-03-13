@@ -1,7 +1,7 @@
 # Mongo URI
 mongo:
   uri: "mongodb://localhost"
-  db: "data-portal-local"
+  db: "dcc-portal-local"
 
 # ElasticSearch host
 elastic:
