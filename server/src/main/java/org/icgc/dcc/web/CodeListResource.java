@@ -148,6 +148,6 @@ public class CodeListResource {
       this.dictionaries.addTerm(name, term);
     }
 
-    return ResponseTimestamper.ok(codeList).build();
+    return Response.status(Status.CREATED).build();
   }
 }

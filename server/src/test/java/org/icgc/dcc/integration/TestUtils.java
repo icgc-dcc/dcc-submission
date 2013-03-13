@@ -38,7 +38,7 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 
 /**
- * Utils class for integration test (to help un-clutter it).
+ * Utils class for integration test (to help un-clutter it). TODO: should probably make decorator for Client instead
  */
 public final class TestUtils {
 

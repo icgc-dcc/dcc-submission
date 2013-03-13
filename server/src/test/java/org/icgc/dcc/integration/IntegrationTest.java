@@ -17,10 +17,6 @@
  */
 package org.icgc.dcc.integration;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -63,6 +59,10 @@ import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.inject.Inject;
 import com.typesafe.config.ConfigFactory;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 @RunWith(GuiceJUnitRunner.class)
 @GuiceModules({ ConfigModule.class, CoreModule.class, HttpModule.class, JerseyModule.class, MorphiaModule.class, FileSystemModule.class, SftpModule.class, WebModule.class, ShiroModule.class })
 public class IntegrationTest {
@@ -90,6 +90,8 @@ public class IntegrationTest {
   private static final String SEED_DICTIONARIES_ENDPOINT = SEED_ENDPOINT + "/dictionaries";
 
   private static final String DICTIONARIES_ENDPOINT = "/dictionaries";
+
+  private static final String CODELISTS_ENDPOINT = "/codeLists";
 
   private static final String PROJECTS_ENDPOINT = "/projects";
 
@@ -225,6 +227,10 @@ public class IntegrationTest {
       enqueueProjects(); // triggers validations
       checkValidations(); // will poll until all validated
 
+      // Tests codelists
+      addOffendingCodeLists();
+      addValidCodeLists();
+
       // release
       releaseInitialRelease();
       checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, ReleaseState.COMPLETED, //
@@ -313,6 +319,26 @@ public class IntegrationTest {
     checkEmptyFile(DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/specimen.internal#errors.json");
     checkEmptyFile(DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/specimen.external#errors.json");
     // TODO add more
+  }
+
+  private void addOffendingCodeLists() throws IOException {
+
+    // Ensure codelist is present
+    Response response = TestUtils.get(client, CODELISTS_ENDPOINT);
+    assertEquals(200, response.getStatus());
+    final String CODELIST_NAME = "appendix_B10";
+    assertTrue(TestUtils.asString(response).contains("\"" + CODELIST_NAME + "\""));
+
+    // Attempt to add it again
+    response =
+        TestUtils.post(client, CODELISTS_ENDPOINT, "[{\"name\": \"someName\"}, {\"name\": \"" + CODELIST_NAME + "\"}]");
+    assertEquals(500, response.getStatus());
+  }
+
+  private void addValidCodeLists() throws IOException {
+    Response response =
+        TestUtils.post(client, CODELISTS_ENDPOINT, "[{\"name\": \"someName\"}, {\"name\": \"someNewName\"}]");
+    assertEquals(201, response.getStatus());
   }
 
   private void checkValidatedSubmission(String project, SubmissionState expectedSubmissionState) throws Exception {
