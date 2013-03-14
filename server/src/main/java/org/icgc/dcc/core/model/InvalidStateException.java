@@ -25,12 +25,23 @@ import org.icgc.dcc.web.ServerErrorCode;
 public class InvalidStateException extends Exception {
   private final ServerErrorCode code;
 
+  private final Object state; // may not be provided (for now)
+
   public InvalidStateException(ServerErrorCode code, String message) {
+    this(code, message, null);
+  }
+
+  public InvalidStateException(ServerErrorCode code, String message, Object state) {
     super(message);
     this.code = code;
+    this.state = state;
   }
 
   public ServerErrorCode getCode() {
     return code;
+  }
+
+  public Object getState() {
+    return state;
   }
 }

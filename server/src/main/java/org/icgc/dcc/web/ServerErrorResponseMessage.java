@@ -22,14 +22,13 @@ public class ServerErrorResponseMessage {
 
   private final Object[] parameters;
 
+  public ServerErrorResponseMessage(ServerErrorCode code) {
+    this(code, new Object[0]);
+  }
+
   public ServerErrorResponseMessage(ServerErrorCode code, Object... parameters) {
     this.code = code.getFrontEndString();
     this.parameters = parameters;
-  }
-
-  public ServerErrorResponseMessage(ServerErrorCode code) {
-    this.code = code.getFrontEndString();
-    this.parameters = new Object[0];
   }
 
   public String getCode() {

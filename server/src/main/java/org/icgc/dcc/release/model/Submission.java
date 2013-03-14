@@ -32,7 +32,7 @@ import com.google.common.base.Objects;
 public class Submission implements Serializable {
 
   @NotBlank
-  protected String projectKey;
+  protected String projectKey; // TODO: make those private, DetailedSubmission shouldn't extend Submission (DCC-721)
 
   @NotBlank
   protected String projectName;
