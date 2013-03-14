@@ -458,7 +458,8 @@ public class ReleaseService extends BaseMorphiaService<Release> {
       }
     }
     if(attempts >= MAX_ATTEMPTS) {
-      String message = String.format("Failed to resolve project %s, could never acquire lock: please contact %s", projectKey,
+      String message =
+          String.format("Failed to resolve project %s, could never acquire lock: please contact %s", projectKey,
               config.getString(MailUtils.ADMIN_RECIPIENT));
       MailUtils.email(this.config, config.getString(MailUtils.PROBLEM_FROM),
           config.getString(MailUtils.ADMIN_RECIPIENT), message, message);
@@ -673,7 +674,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     if(expectedState != currentState) {
       errorMessage = "project " + projectKey + " is not " + expectedState + " (" + currentState + " instead)";
       log.error(errorMessage);
-      throw new InvalidStateException(ServerErrorCode.INVALID_STATE, errorMessage);
+      throw new InvalidStateException(ServerErrorCode.INVALID_STATE, errorMessage, currentState);
     }
     return submission;
   }

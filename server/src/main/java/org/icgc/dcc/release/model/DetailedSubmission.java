@@ -25,6 +25,7 @@ import javax.validation.Valid;
 import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.filesystem.SubmissionFile;
 
+// TODO: DetailedSubmission shouldn't extend Submission (DCC-721)
 public class DetailedSubmission extends Submission {
   @NotBlank
   private String projectName;
