@@ -15,25 +15,23 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc.portal.core;
+package org.icgc.dcc.portal.models;
+
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
-public enum TermFilters {
-  GENES(ImmutableList.of("gene_type", "symbol")), DONOR(ImmutableList.of("project", "primary_site", "donor_id",
-      "gender", "tumour", "vital_status", "disease_status", "donor_release_type")), MUTATION(ImmutableList.of("")), PROJECT(
-      ImmutableList.of("project_name", "primary_site", "country", "available_profiling_data"));
-  private ImmutableList<String> filters;
+public final class Mutation {
+  public static final String NAME = "mutation";
 
-  TermFilters(ImmutableList<String> filters) {
-    this.filters = filters;
-  }
+  public static String[] FIELDS = new String[] {};
 
-  public final String toString() {
-    return this.filters.toString();
-  }
+  public static String INDEX = "icgc_demo";
 
-  public final ImmutableList<String> fields() {
-    return this.filters;
-  }
+  public static String TYPE = "mutations";
+
+  public static ImmutableMap<String, ImmutableList<String>> FACETS = ImmutableMap.of("terms", ImmutableList.of(""));
+
+  public static ImmutableMap<String, ImmutableList<String>> FILTERS = ImmutableMap.of("terms", ImmutableList.of(""),
+      "ranges", ImmutableList.of(""), "locations", ImmutableList.of("location"));
 }

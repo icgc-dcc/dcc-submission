@@ -26,9 +26,7 @@ import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.facet.FacetBuilders;
-import org.icgc.dcc.portal.core.AllowedFields;
-import org.icgc.dcc.portal.core.Indexes;
-import org.icgc.dcc.portal.core.Types;
+import org.icgc.dcc.portal.models.Project;
 import org.icgc.dcc.portal.request.RequestSearchQuery;
 import org.icgc.dcc.portal.services.FilterService;
 
@@ -36,41 +34,27 @@ public class ProjectRepository extends BaseRepository {
 
   @Inject
   public ProjectRepository(Client client) {
-    super(client, Indexes.PROJECTS, Types.PROJECTS, AllowedFields.PROJECT);
+    super(client, Project.INDEX, Project.TYPE, Project.FIELDS);
   }
 
-  // different
-  SearchRequestBuilder addFacets(SearchRequestBuilder s, RequestSearchQuery requestSearchQuery) {
-    return s
-        .addFacet(
-            FacetBuilders.termsFacet("project_name").field("project_name")
-                .facetFilter(setFacetFilter("project_name", requestSearchQuery.getFilters())).size(Integer.MAX_VALUE)
-                .global(true))
-        .addFacet(
-            FacetBuilders.termsFacet("primary_site").field("primary_site")
-                .facetFilter(setFacetFilter("primary_site", requestSearchQuery.getFilters())).size(Integer.MAX_VALUE)
-                .global(true))
-        .addFacet(
-            FacetBuilders.termsFacet("country").field("country")
-                .facetFilter(setFacetFilter("country", requestSearchQuery.getFilters())).size(Integer.MAX_VALUE)
-                .global(true))
-        .addFacet(
-            FacetBuilders.termsFacet("available_profiling_data").field("available_profiling_data")
-                .facetFilter(setFacetFilter("available_profiling_data", requestSearchQuery.getFilters()))
-                .size(Integer.MAX_VALUE).global(true));
-  }
-
-  // different
   QueryBuilder buildQuery() {
     return QueryBuilders.matchAllQuery();
   }
 
-  // different
   FilterBuilder buildFilters(JsonNode filters) {
     if (filters == null) {
       return FilterBuilders.matchAllFilter();
     } else {
-      return FilterService.createProjectFilters(filters);
+      return FilterService.buildFilters(Project.FILTERS, filters);
     }
   }
+
+  SearchRequestBuilder addFacets(SearchRequestBuilder s, RequestSearchQuery requestSearchQuery) {
+    for (String facet : Project.FACETS.get("terms")) {
+      s.addFacet(FacetBuilders.termsFacet(facet).field(facet)
+          .facetFilter(setFacetFilter(facet, requestSearchQuery.getFilters())).size(Integer.MAX_VALUE).global(true));
+    }
+    return s;
+  }
+
 }

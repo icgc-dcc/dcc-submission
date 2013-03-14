@@ -15,19 +15,24 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc.portal.core;
+package org.icgc.dcc.portal.models;
 
-public enum Types {
-  ALL("_all"), GENES("genes"), DONORS("donors"), OBSERVATIONS("obs"), PROJECTS("projects");
 
-  private String type;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
-  private Types(final String type) {
-    this.type = type;
-  }
+public final class Gene {
+  public static String[] FIELDS = new String[] {"symbol", "description", "chromosome", "start", "end", "band",
+      "gene_type"};
 
-  public final String type() {
-    return this.type;
-  }
+  public static String INDEX = "icgc_demo";
 
+  public static String TYPE = "genes";
+
+  public static ImmutableMap<String, ImmutableList<String>> FACETS = ImmutableMap.of("terms",
+      ImmutableList.of("gene_type"));
+
+  public static ImmutableMap<String, ImmutableList<String>> FILTERS = ImmutableMap.of("terms",
+      ImmutableList.of("gene_type", "symbol"), "ranges", ImmutableList.of(""), "locations",
+      ImmutableList.of("gene_location"));
 }

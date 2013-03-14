@@ -19,10 +19,9 @@ package org.icgc.dcc.portal.services;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import org.elasticsearch.index.query.*;
-import org.icgc.dcc.portal.core.LocationFilters;
-import org.icgc.dcc.portal.core.RangeFilters;
-import org.icgc.dcc.portal.core.TermFilters;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,76 +32,28 @@ public class FilterService {
 
   private static final TypeReference<ArrayList<String>> TYPE_REF = new TypeReference<ArrayList<String>>() {};
 
-  private static enum Path {
-    GENE("gene"), DONOR("donor"), MUTATION("mutation");
-    private String type;
-
-    private Path(final String type) {
-      this.type = type;
-    }
-
-    public final String toString() {
-      return this.type;
-    }
-  }
-
   public static NestedFilterBuilder buildNestedFilter(String key, AndFilterBuilder andFilters) {
     return FilterBuilders.nestedFilter(key, andFilters);
   }
 
-  public static AndFilterBuilder createProjectFilters(JsonNode filters) {
-    AndFilterBuilder mutationAnd = FilterBuilders.andFilter();
-    for (String key : TermFilters.PROJECT.fields()) {
+  public static AndFilterBuilder buildFilters(ImmutableMap<String, ImmutableList<String>> modelFilters, JsonNode filters) {
+    AndFilterBuilder andFilter = FilterBuilders.andFilter();
+    for (String key : modelFilters.get("terms")) {
       if (filters.has(key)) {
-        mutationAnd.add(buildTermFilter(filters, key));
+        andFilter.add(buildTermFilter(filters, key));
       }
     }
-    return mutationAnd;
-  }
-
-  public static AndFilterBuilder createMutationFilters(JsonNode filters) {
-    AndFilterBuilder mutationAnd = FilterBuilders.andFilter();
-    JsonNode mutation = filters.path(Path.MUTATION.name());
-    for (String key : TermFilters.MUTATION.fields()) {
-      if (mutation.has(key)) {
-        mutationAnd.add(buildTermFilter(mutation, key));
+    for (String key : modelFilters.get("locations")) {
+      if (filters.has(key)) {
+        andFilter.add(buildChrLocationFilter(filters, key));
       }
     }
-    if (mutation.has(LocationFilters.MUTATION.name())) {
-      mutationAnd.add(buildChrLocationFilter(mutation, LocationFilters.MUTATION.name()));
-    }
-    return mutationAnd;
-  }
-
-  public static AndFilterBuilder createDonorFilters(JsonNode filters) {
-    AndFilterBuilder donorAnd = FilterBuilders.andFilter();
-    JsonNode donor = filters.path(Path.DONOR.name());
-    for (String key : TermFilters.DONOR.fields()) {
-      if (donor.has(key)) {
-        donorAnd.add(buildTermFilter(donor, key));
+    for (String key : modelFilters.get("ranges")) {
+      if (filters.has(key)) {
+        andFilter.add(buildRangeFilter(filters, key));
       }
     }
-    for (String key : RangeFilters.DONOR.fields()) {
-      if (donor.has(key)) {
-        donorAnd.add(buildRangeFilter(donor, key));
-      }
-    }
-    return donorAnd;
-  }
-
-  public static AndFilterBuilder createGeneFilters(JsonNode filters) {
-    AndFilterBuilder geneAnd = FilterBuilders.andFilter();
-    JsonNode gene = filters.path(Path.GENE.name());
-
-    for (String key : TermFilters.GENES.fields()) {
-      if (gene.has(key)) {
-        geneAnd.add(buildTermFilter(gene, key));
-      }
-    }
-    if (gene.has(LocationFilters.GENE.name())) {
-      geneAnd.add(buildChrLocationFilter(gene, LocationFilters.GENE.name()));
-    }
-    return geneAnd;
+    return andFilter;
   }
 
   private static FilterBuilder buildChrLocationFilter(JsonNode json, String location) {
@@ -112,18 +63,18 @@ public class FilterService {
       ArrayList<String> locations = MAPPER.convertValue(json.get(location), new TypeReference<ArrayList<String>>() {});
       OrFilterBuilder manyChrLocations = FilterBuilders.orFilter();
       for (String loc : locations) {
-        manyChrLocations.add(buildChrLocation(loc));
+        manyChrLocations.add(parseChrLocation(loc));
       }
       chrLocFilter = manyChrLocations;
     } else {
       String loc = MAPPER.convertValue(json.get(location), String.class);
-      chrLocFilter = buildChrLocation(loc);
+      chrLocFilter = parseChrLocation(loc);
     }
 
     return chrLocFilter;
   }
 
-  private static FilterBuilder buildChrLocation(String location) {
+  private static FilterBuilder parseChrLocation(String location) {
     AndFilterBuilder locationFilter = FilterBuilders.andFilter();
     String[] parts = location.split(":");
     locationFilter.add(FilterBuilders.termFilter("chromosome", Integer.parseInt(parts[0].replaceAll("[a-zA-Z]", ""))));

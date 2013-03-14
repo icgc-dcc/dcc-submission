@@ -24,9 +24,9 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.*;
 import org.elasticsearch.search.facet.FacetBuilders;
-import org.icgc.dcc.portal.core.AllowedFields;
-import org.icgc.dcc.portal.core.Indexes;
-import org.icgc.dcc.portal.core.Types;
+import org.icgc.dcc.portal.models.Donor;
+import org.icgc.dcc.portal.models.Gene;
+import org.icgc.dcc.portal.models.Mutation;
 import org.icgc.dcc.portal.request.RequestSearchQuery;
 import org.icgc.dcc.portal.services.FilterService;
 
@@ -35,19 +35,12 @@ public class GeneRepository extends BaseRepository {
 
   @Inject
   public GeneRepository(Client client) {
-    super(client, Indexes.GENES, Types.GENES, AllowedFields.GENES);
-  }
-
-  SearchRequestBuilder addFacets(SearchRequestBuilder s, RequestSearchQuery requestSearchQuery) {
-    return s
-        .addFacet(FacetBuilders.termsFacet("gene_type").field("gene_type")
-            .facetFilter(setFacetFilter("gene_type", requestSearchQuery.getFilters())).size(Integer.MAX_VALUE)
-            .global(true));
+    super(client, Gene.INDEX, Gene.TYPE, Gene.FIELDS);
   }
 
   QueryBuilder buildQuery() {
     return QueryBuilders //
-        .nestedQuery("donor", //
+        .nestedQuery(Donor.NAME, //
             QueryBuilders.customScoreQuery(QueryBuilders.filteredQuery( //
                 QueryBuilders.matchAllQuery(), //
                 // this.filter//
@@ -60,15 +53,24 @@ public class GeneRepository extends BaseRepository {
     if (filters == null) {
       return FilterBuilders.matchAllFilter();
     } else {
-      AndFilterBuilder geneFilters = FilterService.createGeneFilters(filters);
-      if (filters.has("donor")) {
-        geneFilters.add(FilterService.buildNestedFilter("donor", FilterService.createDonorFilters(filters)));
+      AndFilterBuilder geneFilters = FilterService.buildFilters(Gene.FILTERS, filters);
+      if (filters.has(Donor.NAME)) {
+        geneFilters
+            .add(FilterService.buildNestedFilter(Donor.NAME, FilterService.buildFilters(Donor.FILTERS, filters)));
       }
-      if (filters.has("mutation")) {
-        geneFilters.add(FilterService.buildNestedFilter("mutation", FilterService.createMutationFilters(filters)));
+      if (filters.has(Mutation.NAME)) {
+        geneFilters.add(FilterService.buildNestedFilter(Mutation.NAME,
+            FilterService.buildFilters(Mutation.FILTERS, filters)));
       }
       return geneFilters;
     }
   }
 
+  SearchRequestBuilder addFacets(SearchRequestBuilder s, RequestSearchQuery requestSearchQuery) {
+    for (String facet : Gene.FACETS.get("terms")) {
+      s.addFacet(FacetBuilders.termsFacet(facet).field(facet)
+          .facetFilter(setFacetFilter(facet, requestSearchQuery.getFilters())).size(Integer.MAX_VALUE).global(true));
+    }
+    return s;
+  }
 }

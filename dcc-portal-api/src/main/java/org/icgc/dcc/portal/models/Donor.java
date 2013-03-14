@@ -15,24 +15,25 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc.portal.core;
+package org.icgc.dcc.portal.models;
+
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
-public enum RangeFilters {
-  DONOR(ImmutableList.of("age_at_diagnosis", "survival_time", "donor_release_interval"));
+public final class Donor {
+  public static final String NAME = "donor";
 
-  private ImmutableList<String> filters;
+  public static String[] FIELDS = new String[] {};
 
-  RangeFilters(ImmutableList<String> filters) {
-    this.filters = filters;
-  }
+  public static String INDEX = "icgc_demo";
 
-  public final String toString() {
-    return this.filters.toString();
-  }
+  public static String TYPE = "donors";
 
-  public final ImmutableList<String> fields() {
-    return this.filters;
-  }
+  public static ImmutableMap<String, ImmutableList<String>> FACETS = ImmutableMap.of("terms", ImmutableList.of(""));
+
+  public static ImmutableMap<String, ImmutableList<String>> FILTERS = ImmutableMap.of("terms", ImmutableList
+      .of("project", "primary_site", "donor_id", "gender", "tumour", "vital_status", "disease_status",
+          "donor_release_type"), "ranges", ImmutableList.of("age_at_diagnosis", "survival_time",
+      "donor_release_interval"), "locations", ImmutableList.of(""));
 }

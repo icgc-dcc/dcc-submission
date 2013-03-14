@@ -28,9 +28,6 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.FilterBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.sort.SortOrder;
-import org.icgc.dcc.portal.core.AllowedFields;
-import org.icgc.dcc.portal.core.Indexes;
-import org.icgc.dcc.portal.core.Types;
 import org.icgc.dcc.portal.request.RequestSearchQuery;
 import org.icgc.dcc.portal.results.FindAllResults;
 import org.icgc.dcc.portal.results.FindResults;
@@ -51,11 +48,11 @@ public abstract class BaseRepository {
   private QueryBuilder query;
 
   @Inject
-  public BaseRepository(Client client, Indexes index, Types type, AllowedFields fields) {
+  public BaseRepository(Client client, String index, String type, String[] fields) {
     this.client = client;
-    this.index = index.index();
-    this.type = type.type();
-    this.allowedFields = fields.fields();
+    this.index = index;
+    this.type = type;
+    this.allowedFields = fields;
   }
 
   public final FindResults find(String id) {
