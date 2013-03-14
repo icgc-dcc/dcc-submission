@@ -17,21 +17,24 @@
 
 package org.icgc.dcc.portal.resources;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.jersey.api.client.ClientResponse;
 import com.yammer.dropwizard.testing.ResourceTest;
-import org.icgc.dcc.portal.repositories.IGeneRepository;
+import org.icgc.dcc.portal.repositories.BaseRepository;
+import org.icgc.dcc.portal.repositories.GeneRepository;
 import org.icgc.dcc.portal.request.RequestSearchQuery;
-import org.icgc.dcc.portal.results.GetResults;
+import org.icgc.dcc.portal.results.FindAllResults;
+import org.icgc.dcc.portal.results.FindResults;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import static com.sun.jersey.api.client.ClientResponse.Status.NOT_FOUND;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class GeneResourceTest extends ResourceTest {
@@ -39,10 +42,22 @@ public class GeneResourceTest extends ResourceTest {
   private final static String RESOURCE = "/genes";
 
   @Mock
-  private IGeneRepository store;
+  private BaseRepository baseStore;
 
   @Mock
-  private GetResults getResults;
+  private GeneRepository store;
+
+  @Mock
+  private RequestSearchQuery requestSearchQuery;
+
+  @Mock
+  private FindResults findResults;
+
+  @Mock
+  private FindAllResults findAllResults;
+
+  @Mock
+  private JsonNode jsonNode;
 
   @Override
   protected final void setUpResources() {
@@ -53,17 +68,15 @@ public class GeneResourceTest extends ResourceTest {
   public final void test_Search() {
     ClientResponse response = client().resource(RESOURCE).get(ClientResponse.class);
 
-    verify(store).search(any(RequestSearchQuery.class));
+    verify(store).findAll(any(RequestSearchQuery.class));
     assertThat(response.getStatus()).isEqualTo(ClientResponse.Status.OK.getStatusCode());
   }
 
   @Test
   public final void test_Get_404() {
-    when(store.get(anyString())).thenReturn(getResults);
-
     ClientResponse response = client().resource(RESOURCE).path("UNKNOWN_ID").get(ClientResponse.class);
 
-    verify(store).get(anyString());
-    assertThat(response.getStatus()).isEqualTo(ClientResponse.Status.NOT_FOUND.getStatusCode());
+    verify(store).find(anyString());
+    assertThat(response.getStatus()).isEqualTo(NOT_FOUND.getStatusCode());
   }
 }

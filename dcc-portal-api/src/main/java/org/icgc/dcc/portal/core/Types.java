@@ -26,7 +26,7 @@ public enum Types {
     this.type = type;
   }
 
-  public final String toString() {
+  public final String type() {
     return this.type;
   }
 

@@ -18,83 +18,30 @@
 package org.icgc.dcc.portal.repositories;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
-import lombok.extern.slf4j.Slf4j;
-import org.elasticsearch.action.get.GetRequestBuilder;
 import org.elasticsearch.action.search.SearchRequestBuilder;
-import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.FilterBuilder;
 import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.facet.FacetBuilders;
-import org.elasticsearch.search.sort.SortOrder;
 import org.icgc.dcc.portal.core.AllowedFields;
+import org.icgc.dcc.portal.core.Indexes;
 import org.icgc.dcc.portal.core.Types;
 import org.icgc.dcc.portal.request.RequestSearchQuery;
-import org.icgc.dcc.portal.results.GetResults;
-import org.icgc.dcc.portal.results.SearchResults;
 import org.icgc.dcc.portal.services.FilterService;
 
-@Slf4j
-public class ProjectRepository implements IProjectRepository {
+public class ProjectRepository extends BaseRepository {
 
-  // same now but might be different later
-  private final static String INDEX = "icgc_test54"; // This should probably be set in a config
-
-  // different
-  private final static Types TYPE = Types.PROJECTS;
-
-  // different
-  private static final AllowedFields ALLOWED_FIELDS = AllowedFields.PROJECT;
-
-  // same
-  private final Client client;
-
-  // same
-  private FilterBuilder filter;
-
-  // same
   @Inject
   public ProjectRepository(Client client) {
-    this.client = client;
-  }
-
-  // same
-  public final GetResults get(final String id) {
-    GetRequestBuilder g = buildGetRequest(id);
-    return new GetResults(g.execute().actionGet());
-  }
-
-  // same
-  public final SearchResults search(final RequestSearchQuery requestSearchQuery) {
-    this.filter = buildFilters(requestSearchQuery.getFilters());
-    SearchRequestBuilder s = buildSearchRequest(requestSearchQuery);
-    System.out.println(s);
-    return new SearchResults(s.execute().actionGet(), requestSearchQuery);
-  }
-
-  // same
-  private GetRequestBuilder buildGetRequest(String id) {
-    return client.prepareGet(INDEX, TYPE.toString(), id).setFields(ALLOWED_FIELDS.toArray());
+    super(client, Indexes.PROJECTS, Types.PROJECTS, AllowedFields.PROJECT);
   }
 
   // different
-  public final SearchRequestBuilder buildSearchRequest(final RequestSearchQuery requestSearchQuery) {
-    return client
-        // same
-        .prepareSearch(INDEX)
-        .setTypes(TYPE.toString())
-        .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
-        .setQuery(buildQuery())
-        .setFilter(this.filter)
-        .setFrom(requestSearchQuery.getFrom())
-        .setSize(requestSearchQuery.getSize())
-        .addSort(requestSearchQuery.getSort(), SortOrder.valueOf(requestSearchQuery.getOrder()))
-        .addFields(ALLOWED_FIELDS.toArray())
-        // different
+  SearchRequestBuilder addFacets(SearchRequestBuilder s, RequestSearchQuery requestSearchQuery) {
+    return s
         .addFacet(
             FacetBuilders.termsFacet("project_name").field("project_name")
                 .facetFilter(setFacetFilter("project_name", requestSearchQuery.getFilters())).size(Integer.MAX_VALUE)
@@ -114,19 +61,12 @@ public class ProjectRepository implements IProjectRepository {
   }
 
   // different
-  private QueryBuilder buildQuery() {
+  QueryBuilder buildQuery() {
     return QueryBuilders.matchAllQuery();
   }
 
-  // same
-  private FilterBuilder setFacetFilter(String name, JsonNode filter) {
-    JsonNode temp = filter.deepCopy();
-    ((ObjectNode) temp).remove(name);
-    return buildFilters(temp);
-  }
-
   // different
-  private FilterBuilder buildFilters(JsonNode filters) {
+  FilterBuilder buildFilters(JsonNode filters) {
     if (filters == null) {
       return FilterBuilders.matchAllFilter();
     } else {

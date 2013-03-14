@@ -19,14 +19,15 @@ package org.icgc.dcc.portal.resources;
 
 import com.sun.jersey.api.client.ClientResponse;
 import com.yammer.dropwizard.testing.ResourceTest;
-import org.icgc.dcc.portal.repositories.IProjectRepository;
+import org.icgc.dcc.portal.repositories.ProjectRepository;
 import org.icgc.dcc.portal.request.RequestSearchQuery;
-import org.icgc.dcc.portal.results.GetResults;
+import org.icgc.dcc.portal.results.FindResults;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import static com.sun.jersey.api.client.ClientResponse.Status.NOT_FOUND;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -39,10 +40,10 @@ public class ProjectResourceTest extends ResourceTest {
   private final static String RESOURCE = "/projects";
 
   @Mock
-  private IProjectRepository store;
+  private ProjectRepository store;
 
   @Mock
-  private GetResults getResults;
+  private FindResults findResults;
 
   @Override
   protected final void setUpResources() {
@@ -53,17 +54,17 @@ public class ProjectResourceTest extends ResourceTest {
   public final void test_Search() {
     ClientResponse response = client().resource(RESOURCE).get(ClientResponse.class);
 
-    verify(store).search(any(RequestSearchQuery.class));
+    verify(store).findAll(any(RequestSearchQuery.class));
     assertThat(response.getStatus()).isEqualTo(ClientResponse.Status.OK.getStatusCode());
   }
 
   @Test
   public final void test_Get_404() {
-    when(store.get(anyString())).thenReturn(getResults);
+    when(store.find(anyString())).thenReturn(findResults);
 
     ClientResponse response = client().resource(RESOURCE).path("UNKNOWN_ID").get(ClientResponse.class);
 
-    verify(store).get(any(String.class));
-    assertThat(response.getStatus()).isEqualTo(ClientResponse.Status.NOT_FOUND.getStatusCode());
+    verify(store).find(any(String.class));
+    assertThat(response.getStatus()).isEqualTo(NOT_FOUND.getStatusCode());
   }
 }

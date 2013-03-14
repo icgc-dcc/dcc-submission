@@ -15,12 +15,39 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc.portal.repositories;
+package org.icgc.dcc.portal.results;
 
-import org.elasticsearch.action.search.SearchResponse;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import lombok.Data;
+import org.elasticsearch.action.get.GetResponse;
+import org.elasticsearch.index.get.GetField;
 
-public interface IFuzzyRepository {
+import java.util.Map;
 
-  SearchResponse fuzzy(final String text, final int from, final int size);
+import static org.icgc.dcc.portal.core.JsonUtils.MAPPER;
 
+@Data
+public class FindResults {
+
+  private final String id;
+  private final String type;
+  private final ObjectNode fields;
+
+  public FindResults(GetResponse hit) {
+    this.id = hit.getId();
+    this.type = hit.getType();
+    this.fields = hit.getFields() == null ? null : buildGetHitFields(hit.getFields());
+  }
+
+  private ObjectNode buildGetHitFields(Map<String, GetField> fields) {
+    ObjectNode jNode = MAPPER.createObjectNode();
+    for (GetField field : fields.values()) {
+      String name = field.getName();
+      Object value = field.getValue();
+      jNode.putPOJO(name, MAPPER.convertValue(value, JsonNode.class));
+      // jNode.set(name, MAPPER.convertValue(value, JsonNode.class));
+    }
+    return jNode;
+  }
 }

@@ -21,7 +21,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
 import lombok.Data;
-import org.elasticsearch.index.query.QueryBuilder;
 import org.icgc.dcc.portal.core.JsonUtils;
 
 import javax.validation.constraints.Max;
@@ -39,13 +38,7 @@ public class RequestSearchQuery {
   static final int MAX_SIZE = 100;
 
   @JsonProperty
-  QueryBuilder query;
-
-  @JsonProperty
   JsonNode filters;
-
-  @JsonProperty
-  String facets;
 
   @JsonProperty
   String[] fields;

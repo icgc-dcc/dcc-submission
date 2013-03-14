@@ -27,7 +27,7 @@ public enum AllowedFields {
     this.fields = fields;
   }
 
-  public final String[] toArray() {
+  public final String[] fields() {
     return this.fields;
   }
 }

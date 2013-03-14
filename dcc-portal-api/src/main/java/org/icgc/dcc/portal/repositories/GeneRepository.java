@@ -18,77 +18,34 @@
 package org.icgc.dcc.portal.repositories;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
-import org.elasticsearch.action.get.GetRequestBuilder;
 import org.elasticsearch.action.search.SearchRequestBuilder;
-import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.*;
 import org.elasticsearch.search.facet.FacetBuilders;
-import org.elasticsearch.search.sort.SortOrder;
 import org.icgc.dcc.portal.core.AllowedFields;
+import org.icgc.dcc.portal.core.Indexes;
 import org.icgc.dcc.portal.core.Types;
 import org.icgc.dcc.portal.request.RequestSearchQuery;
-import org.icgc.dcc.portal.results.GetResults;
-import org.icgc.dcc.portal.results.SearchResults;
 import org.icgc.dcc.portal.services.FilterService;
 
 @Slf4j
-public class GeneRepository implements IGeneRepository {
-
-  private final static String INDEX = "icgc_test54"; // This should probably be set in a config
-
-  private final static Types TYPE = Types.GENES;
-
-  private static final AllowedFields ALLOWED_FIELDS = AllowedFields.GENES;
-
-  private final Client client;
-
-  private FilterBuilder filter;
+public class GeneRepository extends BaseRepository {
 
   @Inject
   public GeneRepository(Client client) {
-    this.client = client;
+    super(client, Indexes.GENES, Types.GENES, AllowedFields.GENES);
   }
 
-
-
-  public final SearchResults search(final RequestSearchQuery requestSearchQuery) {
-    this.filter = buildFilters(requestSearchQuery.getFilters());
-    SearchRequestBuilder s = buildSearchRequest(requestSearchQuery);
-    System.out.println(s);
-    return new SearchResults(s.execute().actionGet(), requestSearchQuery);
+  SearchRequestBuilder addFacets(SearchRequestBuilder s, RequestSearchQuery requestSearchQuery) {
+    return s
+        .addFacet(FacetBuilders.termsFacet("gene_type").field("gene_type")
+            .facetFilter(setFacetFilter("gene_type", requestSearchQuery.getFilters())).size(Integer.MAX_VALUE)
+            .global(true));
   }
 
-  public final GetResults get(final String id) {
-    GetRequestBuilder g = buildGetRequest(id);
-    return new GetResults(g.execute().actionGet());
-  }
-
-  private GetRequestBuilder buildGetRequest(String id) {
-    return client.prepareGet(INDEX, TYPE.toString(), id).setFields(ALLOWED_FIELDS.toArray());
-  }
-
-  private SearchRequestBuilder buildSearchRequest(final RequestSearchQuery requestSearchQuery) {
-    return client
-        .prepareSearch(INDEX)
-        .setTypes(TYPE.toString())
-        .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
-        .setQuery(buildQuery())
-        .setFilter(this.filter)
-        .setFrom(requestSearchQuery.getFrom())
-        .setSize(requestSearchQuery.getSize())
-        .addSort(requestSearchQuery.getSort(), SortOrder.valueOf(requestSearchQuery.getOrder()))
-        .addFields(ALLOWED_FIELDS.toArray())
-        .addFacet(
-            FacetBuilders.termsFacet("gene_type").field("gene_type")
-                .facetFilter(setFacetFilter("gene_type", requestSearchQuery.getFilters())).size(Integer.MAX_VALUE)
-                .global(true));
-  }
-
-  private QueryBuilder buildQuery() {
+  QueryBuilder buildQuery() {
     return QueryBuilders //
         .nestedQuery("donor", //
             QueryBuilders.customScoreQuery(QueryBuilders.filteredQuery( //
@@ -99,13 +56,7 @@ public class GeneRepository implements IGeneRepository {
         ).scoreMode("total");
   }
 
-  private FilterBuilder setFacetFilter(String name, JsonNode filter) {
-    JsonNode temp = filter.deepCopy();
-    ((ObjectNode) temp).remove(name);
-    return buildFilters(temp);
-  }
-
-  private FilterBuilder buildFilters(JsonNode filters) {
+  FilterBuilder buildFilters(JsonNode filters) {
     if (filters == null) {
       return FilterBuilders.matchAllFilter();
     } else {

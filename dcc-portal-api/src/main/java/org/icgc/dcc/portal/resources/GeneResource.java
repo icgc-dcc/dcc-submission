@@ -23,11 +23,11 @@ import com.yammer.dropwizard.jersey.params.IntParam;
 import com.yammer.metrics.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.http.HttpStatus;
-import org.icgc.dcc.portal.repositories.IGeneRepository;
+import org.icgc.dcc.portal.repositories.GeneRepository;
 import org.icgc.dcc.portal.request.RequestSearchQuery;
 import org.icgc.dcc.portal.responses.ErrorResponse;
-import org.icgc.dcc.portal.results.GetResults;
-import org.icgc.dcc.portal.results.SearchResults;
+import org.icgc.dcc.portal.results.FindAllResults;
+import org.icgc.dcc.portal.results.FindResults;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
@@ -46,17 +46,17 @@ public class GeneResource {
 
   private static final String DEFAULT_ORDER = "asc";
 
-  private final IGeneRepository store;
+  private final GeneRepository store;
 
   @Inject
-  public GeneResource(IGeneRepository store) {
+  public GeneResource(GeneRepository store) {
     this.store = store;
   }
 
   @GET
   @Timed
   @ApiOperation(value = "Retrieves a list of genes")
-  public final Response query(
+  public final Response findAll(
       @ApiParam(value = "Start index of results", required = false) @QueryParam("from") @DefaultValue("1") IntParam from,
       @ApiParam(value = "Number of results returned", allowableValues = "range[1,100]", required = false) @QueryParam("size") @DefaultValue("10") IntParam size,
       @ApiParam(value = "Column to sort results on", defaultValue = DEFAULT_SORT, required = false) @QueryParam("sort") String sort,
@@ -68,7 +68,7 @@ public class GeneResource {
 
     RequestSearchQuery requestSearchQuery = new RequestSearchQuery(filters, fields, from.get(), size.get(), s, o);
 
-    SearchResults results = store.search(requestSearchQuery);
+    FindAllResults results = store.findAll(requestSearchQuery);
 
     return Response.ok().entity(results).build();
   }
@@ -80,8 +80,8 @@ public class GeneResource {
   // @ResourceFilters(GetNotFoundResourceFilter.class)
   @ApiOperation(value = "Find a gene by id", notes = "If a gene does not exist with the specified id an error will be returned")
   @ApiErrors(value = {@ApiError(code = HttpStatus.NOT_FOUND_404, reason = "Gene not found")})
-  public final Response get(@ApiParam(value = "Gene ID") @PathParam("id") String id) throws IOException {
-    GetResults results = store.get(id);
+  public final Response find(@ApiParam(value = "Gene ID") @PathParam("id") String id) throws IOException {
+    FindResults results = store.find(id);
 
     if (results.getFields() == null) {
       return Response.status(Response.Status.NOT_FOUND)

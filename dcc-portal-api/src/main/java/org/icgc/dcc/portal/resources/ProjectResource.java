@@ -23,11 +23,11 @@ import com.yammer.dropwizard.jersey.params.IntParam;
 import com.yammer.metrics.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.http.HttpStatus;
-import org.icgc.dcc.portal.repositories.IProjectRepository;
+import org.icgc.dcc.portal.repositories.ProjectRepository;
 import org.icgc.dcc.portal.request.RequestSearchQuery;
 import org.icgc.dcc.portal.responses.ErrorResponse;
-import org.icgc.dcc.portal.results.GetResults;
-import org.icgc.dcc.portal.results.SearchResults;
+import org.icgc.dcc.portal.results.FindAllResults;
+import org.icgc.dcc.portal.results.FindResults;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
@@ -46,10 +46,10 @@ public class ProjectResource {
 
   private static final String DEFAULT_ORDER = "asc";
 
-  private final IProjectRepository store;
+  private final ProjectRepository store;
 
   @Inject
-  public ProjectResource(IProjectRepository store) {
+  public ProjectResource(ProjectRepository store) {
     this.store = store;
   }
 
@@ -68,7 +68,7 @@ public class ProjectResource {
 
     RequestSearchQuery requestSearchQuery = new RequestSearchQuery(filters, fields, from.get(), size.get(), s, o);
 
-    SearchResults results = store.search(requestSearchQuery);
+    FindAllResults results = store.findAll(requestSearchQuery);
 
     return Response.ok().entity(results).build();
   }
@@ -81,7 +81,7 @@ public class ProjectResource {
   @ApiOperation(value = "Find a project by id", notes = "If a project does not exist with the specified id an error will be returned")
   @ApiErrors(value = {@ApiError(code = HttpStatus.NOT_FOUND_404, reason = "Project not found")})
   public final Response get(@ApiParam(value = "Project ID") @PathParam("id") String id) throws IOException {
-    GetResults response = store.get(id);
+    FindResults response = store.find(id);
 
     if (response.getFields() == null) {
       return Response.status(Response.Status.NOT_FOUND)

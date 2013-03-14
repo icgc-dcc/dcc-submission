@@ -24,7 +24,7 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.QueryBuilders;
 
 @Slf4j
-public class FuzzyRepository implements IFuzzyRepository {
+public class FuzzyRepository {
 
   private final static String INDEX = "icgc_test54"; // This should probably be set in a config
 

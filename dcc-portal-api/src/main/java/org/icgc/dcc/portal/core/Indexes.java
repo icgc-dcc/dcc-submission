@@ -15,6 +15,18 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc.portal.repositories;
+package org.icgc.dcc.portal.core;
 
-public interface IProjectRepository extends IRepository {}
+public enum Indexes {
+  GENES("icgc_demo"), PROJECTS("icgc_demo");
+
+  private String index;
+
+  private Indexes(final String index) {
+    this.index = index;
+  }
+
+  public final String index() {
+    return this.index;
+  }
+}

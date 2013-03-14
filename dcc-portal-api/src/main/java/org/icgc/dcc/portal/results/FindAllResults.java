@@ -27,13 +27,13 @@ import org.elasticsearch.search.facet.Facets;
 import org.icgc.dcc.portal.request.RequestSearchQuery;
 
 @Data
-public class SearchResults {
+public class FindAllResults {
 
   private final ImmutableList<ResultsHit> hits;
   private final ImmutableMap<String, ResultsFacet> facets;
   private final ResultsPagination pagination;
 
-  public SearchResults(final SearchResponse response, final RequestSearchQuery requestSearchQuery) {
+  public FindAllResults(final SearchResponse response, final RequestSearchQuery requestSearchQuery) {
     System.out.println(response);
     this.hits = buildResponseHits(response.getHits().getHits());
     this.facets = buildResponseFacets(response.getFacets());
