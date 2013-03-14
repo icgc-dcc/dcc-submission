@@ -15,23 +15,51 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.model;
+package org.icgc.dcc.generator.model;
 
-import lombok.Getter;
-import lombok.ToString;
+import java.util.List;
 
-import org.codehaus.jackson.annotate.JsonProperty;
+import org.icgc.dcc.dictionary.model.Term;
 
 /**
  * 
  */
-@Getter
-@ToString
-public class OptionalFile {
-  @JsonProperty
-  private String name;
+public class CodeListTerm {
+  private String fieldName;
 
-  @JsonProperty
-  private Integer numberOfLinesPerDonor;
+  private List<Term> terms;
+
+  public CodeListTerm(String fieldName, List<Term> terms) {
+    this.fieldName = fieldName;
+    this.terms = terms;
+  }
+
+  /**
+   * @return the fieldName
+   */
+  public String getFieldName() {
+    return fieldName;
+  }
+
+  /**
+   * @param fieldName the fieldName to set
+   */
+  public void setFieldName(String fieldName) {
+    this.fieldName = fieldName;
+  }
+
+  /**
+   * @return the terms
+   */
+  public List<Term> getTerms() {
+    return terms;
+  }
+
+  /**
+   * @param terms the terms to set
+   */
+  public void setTerms(List<Term> terms) {
+    this.terms = terms;
+  }
 
 }

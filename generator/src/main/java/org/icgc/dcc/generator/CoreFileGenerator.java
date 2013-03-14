@@ -27,8 +27,15 @@ import java.util.List;
 
 import lombok.Cleanup;
 
+import org.icgc.dcc.dictionary.model.CodeList;
 import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.FileSchema;
+import org.icgc.dcc.dictionary.model.Relation;
+import org.icgc.dcc.dictionary.model.Restriction;
+import org.icgc.dcc.dictionary.model.Term;
+import org.icgc.dcc.generator.model.CodeListTerm;
+
+import com.google.common.base.Optional;
 
 /**
  * 
@@ -60,11 +67,11 @@ public class CoreFileGenerator {
 
   private final List<String> sampleID = new ArrayList<String>(Arrays.asList("sample", "analyzed_sample_id"));
 
-  private final List<String> uniqueString = new ArrayList<String>();
-
   private final Integer uniqueInteger = 0;
 
   private final Double uniqueDecimal = 0.0;
+
+  private final List<CodeListTerm> codeListArrayList = new ArrayList<CodeListTerm>();
 
   public CoreFileGenerator() {
     DataGenerator.getListOfPrimaryKeys().add(donorID);
@@ -76,25 +83,26 @@ public class CoreFileGenerator {
 
   public void populateFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, BufferedWriter writer)
       throws IOException {
-    int numberOfPrimaryKeyValues = calcuateNumberOfPrimaryKeyValues(schema, numberOfLinesPerPrimaryKey);
-    int numberOfLinesPerKey = calculateNumberOfLinesPerKey(schema, numberOfLinesPerPrimaryKey);
-
+    List<Relation> relations = schema.getRelations();
+    int numberOfPrimaryKeyValues = calcuateNumberOfPrimaryKeyValues(schema, numberOfLinesPerPrimaryKey, relations);
+    int numberOfLinesPerKey = calculateNumberOfLinesPerKey(schema, numberOfLinesPerPrimaryKey, relations);
+    String schemaName = schema.getName();
     for(int i = 0; i < numberOfPrimaryKeyValues; i++) {
       for(int j = 0; j < numberOfLinesPerKey; j++) {
+        int k = 0;
         for(Field currentField : schema.getFields()) {
           String output = null;
-          List<String> foreignKeyArray = DataGenerator.getForeignKey(schema, currentField.getName());
+          String currentFieldName = currentField.getName();
+          List<String> foreignKeyArray = DataGenerator.getForeignKey(schema, currentFieldName);
 
           if(foreignKeyArray != null) {
             output = foreignKeyArray.get(i + 2);
           } else {
-            output =
-                DataGenerator.getFieldValue(schema.getUniqueFields(), currentField, uniqueString, uniqueInteger,
-                    uniqueDecimal);
+            output = getFieldValue(schema, schemaName, k, currentField, currentFieldName);
           }
 
           if(DataGenerator.isUniqueField(schema.getUniqueFields(), currentField.getName())) {
-            DataGenerator.getPrimaryKey(schema.getName(), currentField.getName()).add(output);
+            DataGenerator.getPrimaryKey(schemaName, currentField.getName()).add(output);
           }
           // Special case for sample, to add whether sample type is controlled or tumour
           if(schema.getName().equals(SAMPLE_SCHEMA_NAME) && currentField.getName().equals(sampleTypeFieldName)) {
@@ -112,22 +120,48 @@ public class CoreFileGenerator {
         }
         writer.write(NEW_LINE);
       }
-      numberOfLinesPerKey = calculateNumberOfLinesPerKey(schema, numberOfLinesPerPrimaryKey);
+      numberOfLinesPerKey = calculateNumberOfLinesPerKey(schema, numberOfLinesPerPrimaryKey, relations);
     }
   }
 
   /**
    * @param schema
-   * @param numberOfLinesPerPrimaryKey
+   * @param schemaName
+   * @param k
+   * @param currentField
+   * @param currentFieldName
    * @return
    */
-  private int calcuateNumberOfPrimaryKeyValues(FileSchema schema, Integer numberOfLinesPerPrimaryKey) {
+  private String getFieldValue(FileSchema schema, String schemaName, int k, Field currentField, String currentFieldName) {
+    String output = null;
+    if(codeListArrayList.size() > 0 && k < codeListArrayList.size()) {
+      CodeListTerm codeListTerm = codeListArrayList.get(k);
+      if(codeListTerm.getFieldName().equals(currentFieldName)) {
+        List<Term> terms = codeListTerm.getTerms();
+        output = terms.get(DataGenerator.randomIntGenerator(0, terms.size() - 1)).getCode();
+        k++;
+      }
+    }
+    if(output == null) {
+      output =
+          DataGenerator.getFieldValue(schema.getUniqueFields(), schemaName, currentField, uniqueInteger, uniqueDecimal);
+    }
+    return output;
+  }
+
+  /**
+   * @param schema
+   * @param numberOfLinesPerPrimaryKey
+   * @param relations
+   * @return
+   */
+  private int calcuateNumberOfPrimaryKeyValues(FileSchema schema, Integer numberOfLinesPerPrimaryKey,
+      List<Relation> relations) {
     int numberOfPrimaryKeyValues;
     if(schema.getName().equals(DONOR_SCHEMA_NAME)) {
       numberOfPrimaryKeyValues = numberOfLinesPerPrimaryKey;
     } else {
-      numberOfPrimaryKeyValues =
-          DataGenerator.getForeignKey(schema, schema.getRelations().get(0).getFields().get(0)).size() - 2;
+      numberOfPrimaryKeyValues = DataGenerator.getForeignKey(schema, relations.get(0).getFields().get(0)).size() - 2;
     }
     return numberOfPrimaryKeyValues;
   }
@@ -135,12 +169,14 @@ public class CoreFileGenerator {
   /**
    * @param schema
    * @param numberOfLinesPerPrimaryKey
+   * @param relations
    * @return
    */
-  private int calculateNumberOfLinesPerKey(FileSchema schema, Integer numberOfLinesPerPrimaryKey) {
+  private int calculateNumberOfLinesPerKey(FileSchema schema, Integer numberOfLinesPerPrimaryKey,
+      List<Relation> relations) {
     if(schema.getName().equals(DONOR_SCHEMA_NAME)) {
       return 1;
-    } else if(schema.getRelations().size() > 0 && schema.getRelations().get(0).isBidirectional()) {
+    } else if(relations.size() > 0 && relations.get(0).isBidirectional()) {
       return DataGenerator.randomIntGenerator(1, numberOfLinesPerPrimaryKey);
     } else {
       return DataGenerator.randomIntGenerator(0, numberOfLinesPerPrimaryKey);
@@ -161,6 +197,18 @@ public class CoreFileGenerator {
       writer.write(fieldName + TAB);
     }
 
+    for(Field field : schema.getFields()) {
+      Optional<Restriction> restriction = field.getRestriction("codelist");
+      if(restriction.isPresent()) {
+        String codeListName = restriction.get().getConfig().getString("name");
+        for(CodeList codelist : DataGenerator.codeList) {
+          if(codelist.getName().equals(codeListName)) {
+            CodeListTerm term = new CodeListTerm(field.getName(), codelist.getTerms());
+            codeListArrayList.add(term);
+          }
+        }
+      }
+    }
     writer.write(NEW_LINE);
 
     populateFile(schema, numberOfLinesPerPrimaryKey, writer);

@@ -1,7 +1,7 @@
 outputDirectory: target/
-numberOfDonors: 100
-numberOfSpecimensPerDonor: 5
-numberOfSamplesPerSpecimen: 5
+numberOfDonors: 7000
+numberOfSpecimensPerDonor: 2
+numberOfSamplesPerSpecimen: 2
 leadJurisdiction: au
 tumourType: 01
 institution: 001
@@ -10,10 +10,10 @@ seed: 1234567
 experimentalFiles:
  - name: ssm
    fileType: m
-   numberOfLinesPerForeignKey: 5
+   numberOfLinesPerForeignKey: 4
  - name: ssm
    fileType: p
-   numberOfLinesPerForeignKey: 5
+   numberOfLinesPerForeignKey: 4
  - name: ssm
    fileType: s
-   numberOfLinesPerForeignKey: 5
+   numberOfLinesPerForeignKey: 4

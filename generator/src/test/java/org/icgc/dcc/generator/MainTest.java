@@ -27,12 +27,10 @@ import org.junit.Test;
  * 
  */
 public class MainTest {
-
   @Test
   public void test() throws JsonParseException, JsonMappingException, IOException {
     String[] x = { "src/main/resources/config.yaml" };
     Main main = new Main();
     main.generate(x);
   }
-
 }

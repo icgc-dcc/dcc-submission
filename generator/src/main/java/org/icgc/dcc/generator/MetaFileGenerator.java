@@ -26,15 +26,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 import lombok.Cleanup;
-import lombok.extern.java.Log;
 
+import org.icgc.dcc.dictionary.model.CodeList;
 import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.FileSchema;
+import org.icgc.dcc.dictionary.model.Relation;
+import org.icgc.dcc.dictionary.model.Restriction;
+import org.icgc.dcc.dictionary.model.Term;
+import org.icgc.dcc.generator.model.CodeListTerm;
+
+import com.google.common.base.Optional;
 
 /**
  * 
  */
-@Log
 public class MetaFileGenerator {
 
   private final String SAMPLE_SCHEMA_NAME = "sample";
@@ -55,45 +60,48 @@ public class MetaFileGenerator {
 
   private static final String matchedSampleFieldName = "matched_sample_id";
 
-  private final List<String> uniqueString = new ArrayList<String>();
-
   private final Integer uniqueInteger = 0;
 
   private final Double uniqueDecimal = 0.0;
 
-  private void populateFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, Writer writer) throws IOException {
-    int numberOfLines = calculateNumberOfLines(schema, numberOfLinesPerPrimaryKey);
+  private final List<CodeListTerm> codeListArrayList = new ArrayList<CodeListTerm>();
 
-    int numberOfIterations =
-        DataGenerator.getForeignKey(schema, schema.getRelations().get(0).getFields().get(0)).size() - 2;
+  private void populateFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, Writer writer) throws IOException {
+    List<Relation> relations = schema.getRelations();
+
+    int numberOfLines = calculateNumberOfLines(schema, numberOfLinesPerPrimaryKey, relations);
+
+    int numberOfIterations = DataGenerator.getForeignKey(schema, relations.get(0).getFields().get(0)).size() - 2;
+
+    String schemaName = schema.getName();
 
     for(int i = 0; i < numberOfIterations; i++) {
       for(int j = 0; j < numberOfLines; j++) {
+        int k = 0;
         for(Field currentField : schema.getFields()) {
           String output = null;
           String currentFieldName = currentField.getName();
           // Is it a foreign key? if so then the only foreign key for a metafile is the matched/analyzed type from
           // sample and therefore add accordingly.
-          if(DataGenerator.getForeignKey(schema, currentFieldName) != null) {
-            boolean isNotMetaExpressionFile = !schema.getName().equals(NonSystemMetaFileExpression);
-            boolean isNotMetaJunctionFile = !schema.getName().equals(NonSystemMetaFileJunction);
-            boolean isNotMetaMirnaFile = !schema.getName().equals(NonSystemMetaFileMirna);
+
+          List<String> foreignKeyArray = DataGenerator.getForeignKey(schema, currentFieldName);
+          if(foreignKeyArray != null) {
+            boolean isNotMetaExpressionFile = !schemaName.equals(NonSystemMetaFileExpression);
+            boolean isNotMetaJunctionFile = !schemaName.equals(NonSystemMetaFileJunction);
+            boolean isNotMetaMirnaFile = !schemaName.equals(NonSystemMetaFileMirna);
 
             if(isNotMetaExpressionFile && isNotMetaJunctionFile && isNotMetaMirnaFile) {
-
               output = getSampleType(currentFieldName);
             } else {
-              output = DataGenerator.getForeignKey(schema, currentFieldName).get(i + 2);
+              output = foreignKeyArray.get(i + 2);
             }
           } else {
-            output =
-                DataGenerator.getFieldValue(schema.getUniqueFields(), currentField, uniqueString, uniqueInteger,
-                    uniqueDecimal);
+            output = getFieldValue(schema, schemaName, k, currentField, currentFieldName);
           }
 
           if(DataGenerator.isUniqueField(schema.getUniqueFields(), currentFieldName)) {
             for(List<String> primaryKey : DataGenerator.getListOfPrimaryKeys()) {
-              if(primaryKey.get(0).equals(schema.getName()) && primaryKey.get(1).equals(currentFieldName)) {
+              if(primaryKey.get(0).equals(schemaName) && primaryKey.get(1).equals(currentFieldName)) {
                 primaryKey.add(output);
               }
             }
@@ -103,17 +111,18 @@ public class MetaFileGenerator {
         }
         writer.write(NEW_LINE);
       }
-      numberOfLines = calculateNumberOfLines(schema, numberOfLinesPerPrimaryKey);
+      numberOfLines = calculateNumberOfLines(schema, numberOfLinesPerPrimaryKey, relations);
     }
   }
 
   /**
    * @param schema
    * @param numberOfLinesPerPrimaryKey
+   * @param relations
    * @return
    */
-  private int calculateNumberOfLines(FileSchema schema, Integer numberOfLinesPerPrimaryKey) {
-    if(schema.getRelations().size() > 0 && schema.getRelations().get(0).isBidirectional()) {
+  private int calculateNumberOfLines(FileSchema schema, Integer numberOfLinesPerPrimaryKey, List<Relation> relations) {
+    if(relations.size() > 0 && relations.get(0).isBidirectional()) {
       return DataGenerator.randomIntGenerator(1, numberOfLinesPerPrimaryKey);
     } else {
       return DataGenerator.randomIntGenerator(0, numberOfLinesPerPrimaryKey);
@@ -128,13 +137,37 @@ public class MetaFileGenerator {
     if(currentFieldName.equals(matchedSampleFieldName)) {
       List<String> tumourTypeIDs = DataGenerator.getPrimaryKey(SAMPLE_SCHEMA_NAME, tumourFieldKey);
       Integer randomInteger = DataGenerator.randomIntGenerator(2, tumourTypeIDs.size() - 3);
-      log.info(tumourTypeIDs.get(randomInteger));
       return tumourTypeIDs.get(randomInteger);
     } else {
       List<String> controlTypeIDs = DataGenerator.getPrimaryKey(SAMPLE_SCHEMA_NAME, controlFieldKey);
       Integer randomInteger = DataGenerator.randomIntGenerator(2, controlTypeIDs.size() - 3);
       return controlTypeIDs.get(randomInteger);
     }
+  }
+
+  /**
+   * @param schema
+   * @param schemaName
+   * @param k
+   * @param currentField
+   * @param currentFieldName
+   * @return
+   */
+  private String getFieldValue(FileSchema schema, String schemaName, int k, Field currentField, String currentFieldName) {
+    String output = null;
+    if(codeListArrayList.size() > 0 && k < codeListArrayList.size()) {
+      CodeListTerm codeListTerm = codeListArrayList.get(k);
+      if(codeListTerm.getFieldName().equals(currentFieldName)) {
+        List<Term> terms = codeListTerm.getTerms();
+        output = terms.get(DataGenerator.randomIntGenerator(0, terms.size() - 1)).getCode();
+        k++;
+      }
+    }
+    if(output == null) {
+      output =
+          DataGenerator.getFieldValue(schema.getUniqueFields(), schemaName, currentField, uniqueInteger, uniqueDecimal);
+    }
+    return output;
   }
 
   public void createFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
@@ -149,6 +182,21 @@ public class MetaFileGenerator {
 
     for(String fieldName : schema.getFieldNames()) {
       writer.write(fieldName + TAB);
+    }
+
+    // I could make an object that stores the terms as a set and a field that stores the name of the corresponding field
+    // Store a list of those objects in a hashset
+    for(Field field : schema.getFields()) {
+      Optional<Restriction> restriction = field.getRestriction("codelist");
+      if(restriction.isPresent()) {
+        String codeListName = restriction.get().getConfig().getString("name");
+        for(CodeList codelist : DataGenerator.codeList) {
+          if(codelist.getName().equals(codeListName)) {
+            CodeListTerm term = new CodeListTerm(field.getName(), codelist.getTerms());
+            codeListArrayList.add(term);
+          }
+        }
+      }
     }
 
     writer.write(NEW_LINE);
