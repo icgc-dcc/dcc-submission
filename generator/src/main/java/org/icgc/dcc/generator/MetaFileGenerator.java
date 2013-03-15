@@ -133,6 +133,7 @@ public class MetaFileGenerator {
    * @param currentField
    * @return
    */
+
   private String getSampleType(String currentFieldName) {
     if(currentFieldName.equals(matchedSampleFieldName)) {
       List<String> tumourTypeIDs = DataGenerator.getPrimaryKey(SAMPLE_SCHEMA_NAME, tumourFieldKey);
@@ -156,11 +157,12 @@ public class MetaFileGenerator {
   private String getFieldValue(FileSchema schema, String schemaName, int k, Field currentField, String currentFieldName) {
     String output = null;
     if(codeListArrayList.size() > 0 && k < codeListArrayList.size()) {
-      CodeListTerm codeListTerm = codeListArrayList.get(k);
-      if(codeListTerm.getFieldName().equals(currentFieldName)) {
-        List<Term> terms = codeListTerm.getTerms();
-        output = terms.get(DataGenerator.randomIntGenerator(0, terms.size() - 1)).getCode();
-        k++;
+      for(CodeListTerm codeListTerm : codeListArrayList) {
+        if(codeListTerm.getFieldName().equals(currentFieldName)) {
+          List<Term> terms = codeListTerm.getTerms();
+          output = terms.get(DataGenerator.randomIntGenerator(0, terms.size() - 1)).getCode();
+
+        }
       }
     }
     if(output == null) {
@@ -184,8 +186,19 @@ public class MetaFileGenerator {
       writer.write(fieldName + TAB);
     }
 
-    // I could make an object that stores the terms as a set and a field that stores the name of the corresponding field
-    // Store a list of those objects in a hashset
+    populateCodeListArray(schema);
+
+    writer.write(NEW_LINE);
+
+    populateFile(schema, numberOfLinesPerPrimaryKey, writer);
+
+    writer.close();
+  }
+
+  /**
+   * @param schema
+   */
+  private void populateCodeListArray(FileSchema schema) {
     for(Field field : schema.getFields()) {
       Optional<Restriction> restriction = field.getRestriction("codelist");
       if(restriction.isPresent()) {
@@ -198,11 +211,5 @@ public class MetaFileGenerator {
         }
       }
     }
-
-    writer.write(NEW_LINE);
-
-    populateFile(schema, numberOfLinesPerPrimaryKey, writer);
-
-    writer.close();
   }
 }

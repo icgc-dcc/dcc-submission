@@ -92,15 +92,14 @@ public class DataGenerator {
     uniqueId = 0L;
     FileSchema schema = getSchema(schemaName);
     determineUniqueFields(schema);
-    CoreFileGenerator cgf = new CoreFileGenerator();
-    cgf.createFile(schema, numberOfLinesPerPrimaryKey, leadJurisdiction, institution, tumourType, platform);
+    CoreFileGenerator.createFile(schema, numberOfLinesPerPrimaryKey, leadJurisdiction, institution, tumourType,
+        platform);
   }
 
   public void createMetaFile(String schemaName, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
       String institution, String tumourType, String platform) throws IOException {
     uniqueId = 0L;
     FileSchema schema = getSchema(schemaName);
-    determineUniqueFields(schema);
     MetaFileGenerator mfg = new MetaFileGenerator();
     mfg.createFile(schema, numberOfLinesPerPrimaryKey, leadJurisdiction, institution, tumourType, platform);
   }
@@ -109,7 +108,6 @@ public class DataGenerator {
       String institution, String tumourType, String platform) throws IOException {
     uniqueId = 0L;
     FileSchema schema = getSchema(schemaName);
-    determineUniqueFields(schema);
     PrimaryFileGenerator pfg = new PrimaryFileGenerator();
     pfg.createFile(schema, numberOfLinesPerPrimaryKey, leadJurisdiction, institution, tumourType, platform);
   }
@@ -118,7 +116,6 @@ public class DataGenerator {
       String institution, String tumourType, String platform) throws IOException {
     uniqueId = 0L;
     FileSchema schema = getSchema(schemaName);
-    determineUniqueFields(schema);
     SecondaryFileGenerator sfg = new SecondaryFileGenerator();
     sfg.createFile(schema, numberOfLinesPerPrimaryKey, leadJurisdiction, institution, tumourType, platform);
   }
@@ -137,7 +134,6 @@ public class DataGenerator {
       int k = 0;
       for(String foreignKeyField : relation.getFields()) {
         if(currentFieldName.equals(foreignKeyField)) {
-
           // Find list that carries primary keys of schema that relates to this fileschema
           for(List<String> primaryKeyArray : listOfPrimaryKeys) {
             if(primaryKeyArray.get(0).equals(relation.getOther())
@@ -242,5 +238,4 @@ public class DataGenerator {
   public static String randomDecimalGenerator(double end) {
     return df.format(random.nextDouble() * end);
   }
-
 }

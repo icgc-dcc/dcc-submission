@@ -275,11 +275,11 @@ public class SecondaryFileGenerator {
   private String getFieldValue(FileSchema schema, String schemaName, int k, Field currentField, String currentFieldName) {
     String output = null;
     if(codeListArrayList.size() > 0 && k < codeListArrayList.size()) {
-      CodeListTerm codeListTerm = codeListArrayList.get(k);
-      if(codeListTerm.getFieldName().equals(currentFieldName)) {
-        List<Term> terms = codeListTerm.getTerms();
-        output = terms.get(DataGenerator.randomIntGenerator(0, terms.size() - 1)).getCode();
-        k++;
+      for(CodeListTerm codeListTerm : codeListArrayList) {
+        if(codeListTerm.getFieldName().equals(currentFieldName)) {
+          List<Term> terms = codeListTerm.getTerms();
+          output = terms.get(DataGenerator.randomIntGenerator(0, terms.size() - 1)).getCode();
+        }
       }
     }
     if(output == null) {
@@ -303,6 +303,23 @@ public class SecondaryFileGenerator {
       writer.write(fieldName + TAB);
     }
 
+    populateCodeListArray(schema);
+
+    writer.write(NEW_LINE);
+
+    if(schema.getName().equals(SECONDARY_MIRNA_SCHEMA_NAME)) {
+      populateMirnaFile(schema, numberOfLinesPerPrimaryKey, writer);
+    } else {
+      populateSecondaryFile(schema, numberOfLinesPerPrimaryKey, writer);
+    }
+
+    writer.close();
+  }
+
+  /**
+   * @param schema
+   */
+  private void populateCodeListArray(FileSchema schema) {
     for(Field field : schema.getFields()) {
       Optional<Restriction> restriction = field.getRestriction("codelist");
       if(restriction.isPresent()) {
@@ -315,15 +332,5 @@ public class SecondaryFileGenerator {
         }
       }
     }
-
-    writer.write(NEW_LINE);
-
-    if(schema.getName().equals(SECONDARY_MIRNA_SCHEMA_NAME)) {
-      populateMirnaFile(schema, numberOfLinesPerPrimaryKey, writer);
-    } else {
-      populateSecondaryFile(schema, numberOfLinesPerPrimaryKey, writer);
-    }
-
-    writer.close();
   }
 }

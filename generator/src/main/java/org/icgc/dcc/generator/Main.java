@@ -101,18 +101,54 @@ public class Main {
     String institution = config.getInstitution();
     String platform = config.getPlatform();
     Long seed = config.getSeed();
-
-    String[] errors = DataGenerator.checkParameters(leadJurisdiction, tumourType, institution, platform);
-    if(errors.length > 0) {
-      for(int i = 0; i < errors.length; i++) {
-        out.println(errors[i]);
-      }
-      return;
-    }
     // ArrayList<OptionalFile> optionalFiles = config.getOptionalFiles();
-
     List<ExperimentalFile> experimentalFiles = config.getExperimentalFiles();
 
+    boolean errorsTrue = checkParameters(leadJurisdiction, tumourType, institution, platform);
+    if(errorsTrue) {
+      return;
+    }
+
+    generateFiles(outputDirectory, numberOfDonors, numberOfSpecimensPerDonor, numberOfSamplesPerDonor,
+        leadJurisdiction, tumourType, institution, platform, seed, experimentalFiles);
+  }
+
+  /**
+   * @param leadJurisdiction
+   * @param tumourType
+   * @param institution
+   * @param platform
+   */
+  private boolean checkParameters(String leadJurisdiction, String tumourType, String institution, String platform) {
+    boolean errorsTrue = false;
+    String[] errors = DataGenerator.checkParameters(leadJurisdiction, tumourType, institution, platform);
+    for(int i = 0; i < errors.length; i++) {
+      if(errors[i] != null) {
+        errorsTrue = true;
+        out.println(errors[i]);
+      }
+    }
+    return errorsTrue;
+  }
+
+  /**
+   * @param outputDirectory
+   * @param numberOfDonors
+   * @param numberOfSpecimensPerDonor
+   * @param numberOfSamplesPerDonor
+   * @param leadJurisdiction
+   * @param tumourType
+   * @param institution
+   * @param platform
+   * @param seed
+   * @param experimentalFiles
+   * @throws JsonParseException
+   * @throws JsonMappingException
+   * @throws IOException
+   */
+  private void generateFiles(String outputDirectory, Integer numberOfDonors, Integer numberOfSpecimensPerDonor,
+      Integer numberOfSamplesPerDonor, String leadJurisdiction, String tumourType, String institution, String platform,
+      Long seed, List<ExperimentalFile> experimentalFiles) throws JsonParseException, JsonMappingException, IOException {
     DataGenerator test = new DataGenerator(outputDirectory, seed);
     test.createCoreFile(DONOR_SCHEMA_NAME, numberOfDonors, leadJurisdiction, institution, tumourType, platform);
     test.createCoreFile(SPECIMEN_SCHEMA_NAME, numberOfSamplesPerDonor, leadJurisdiction, institution, tumourType,

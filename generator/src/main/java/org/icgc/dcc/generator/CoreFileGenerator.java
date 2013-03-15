@@ -56,33 +56,24 @@ public class CoreFileGenerator {
 
   private static final String sampleTypeFieldName = "analyzed_sample_id";
 
-  private final List<String> tumourSampleTypeID = new ArrayList<String>(Arrays.asList("sample", "tumourSampleTypeID"));
+  private final static List<String> tumourSampleTypeID = new ArrayList<String>(Arrays.asList("sample",
+      "tumourSampleTypeID"));
 
-  private final List<String> controlledSampleTypeID = new ArrayList<String>(Arrays.asList("sample",
+  private final static List<String> controlledSampleTypeID = new ArrayList<String>(Arrays.asList("sample",
       "controlledSampleTypeID"));
 
-  private final List<String> donorID = new ArrayList<String>(Arrays.asList("donor", "donor_id"));
+  private static Integer uniqueInteger = 0;
 
-  private final List<String> specimenID = new ArrayList<String>(Arrays.asList("specimen", "specimen_id"));
+  private static Double uniqueDecimal = 0.0;
 
-  private final List<String> sampleID = new ArrayList<String>(Arrays.asList("sample", "analyzed_sample_id"));
+  private final static List<CodeListTerm> codeListArrayList = new ArrayList<CodeListTerm>();
 
-  private final Integer uniqueInteger = 0;
-
-  private final Double uniqueDecimal = 0.0;
-
-  private final List<CodeListTerm> codeListArrayList = new ArrayList<CodeListTerm>();
-
-  public CoreFileGenerator() {
-    DataGenerator.getListOfPrimaryKeys().add(donorID);
-    DataGenerator.getListOfPrimaryKeys().add(specimenID);
-    DataGenerator.getListOfPrimaryKeys().add(sampleID);
-    DataGenerator.getListOfPrimaryKeys().add(tumourSampleTypeID);
-    DataGenerator.getListOfPrimaryKeys().add(controlledSampleTypeID);
-  }
-
-  public void populateFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, BufferedWriter writer)
+  public static void populateFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, BufferedWriter writer)
       throws IOException {
+    if(schema.getName().equals("sample")) {
+      DataGenerator.getListOfPrimaryKeys().add(tumourSampleTypeID);
+      DataGenerator.getListOfPrimaryKeys().add(controlledSampleTypeID);
+    }
     List<Relation> relations = schema.getRelations();
     int numberOfPrimaryKeyValues = calcuateNumberOfPrimaryKeyValues(schema, numberOfLinesPerPrimaryKey, relations);
     int numberOfLinesPerKey = calculateNumberOfLinesPerKey(schema, numberOfLinesPerPrimaryKey, relations);
@@ -93,6 +84,7 @@ public class CoreFileGenerator {
         for(Field currentField : schema.getFields()) {
           String output = null;
           String currentFieldName = currentField.getName();
+
           List<String> foreignKeyArray = DataGenerator.getForeignKey(schema, currentFieldName);
 
           if(foreignKeyArray != null) {
@@ -132,14 +124,15 @@ public class CoreFileGenerator {
    * @param currentFieldName
    * @return
    */
-  private String getFieldValue(FileSchema schema, String schemaName, int k, Field currentField, String currentFieldName) {
+  private static String getFieldValue(FileSchema schema, String schemaName, int k, Field currentField,
+      String currentFieldName) {
     String output = null;
     if(codeListArrayList.size() > 0 && k < codeListArrayList.size()) {
-      CodeListTerm codeListTerm = codeListArrayList.get(k);
-      if(codeListTerm.getFieldName().equals(currentFieldName)) {
-        List<Term> terms = codeListTerm.getTerms();
-        output = terms.get(DataGenerator.randomIntGenerator(0, terms.size() - 1)).getCode();
-        k++;
+      for(CodeListTerm codeListTerm : codeListArrayList) {
+        if(codeListTerm.getFieldName().equals(currentFieldName)) {
+          List<Term> terms = codeListTerm.getTerms();
+          output = terms.get(DataGenerator.randomIntGenerator(0, terms.size() - 1)).getCode();
+        }
       }
     }
     if(output == null) {
@@ -155,7 +148,7 @@ public class CoreFileGenerator {
    * @param relations
    * @return
    */
-  private int calcuateNumberOfPrimaryKeyValues(FileSchema schema, Integer numberOfLinesPerPrimaryKey,
+  private static int calcuateNumberOfPrimaryKeyValues(FileSchema schema, Integer numberOfLinesPerPrimaryKey,
       List<Relation> relations) {
     int numberOfPrimaryKeyValues;
     if(schema.getName().equals(DONOR_SCHEMA_NAME)) {
@@ -172,7 +165,7 @@ public class CoreFileGenerator {
    * @param relations
    * @return
    */
-  private int calculateNumberOfLinesPerKey(FileSchema schema, Integer numberOfLinesPerPrimaryKey,
+  private static int calculateNumberOfLinesPerKey(FileSchema schema, Integer numberOfLinesPerPrimaryKey,
       List<Relation> relations) {
     if(schema.getName().equals(DONOR_SCHEMA_NAME)) {
       return 1;
@@ -183,7 +176,7 @@ public class CoreFileGenerator {
     }
   }
 
-  public void createFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
+  public static void createFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
       String institution, String tumourType, String platform) throws IOException {
     boolean isCore = true;
     String fileUrl =
@@ -197,6 +190,21 @@ public class CoreFileGenerator {
       writer.write(fieldName + TAB);
     }
 
+    populateCodeListArray(schema);
+
+    writer.write(NEW_LINE);
+
+    populateFile(schema, numberOfLinesPerPrimaryKey, writer);
+
+    writer.close();
+    uniqueInteger = 0;
+    uniqueDecimal = 0.0;
+  }
+
+  /**
+   * @param schema
+   */
+  private static void populateCodeListArray(FileSchema schema) {
     for(Field field : schema.getFields()) {
       Optional<Restriction> restriction = field.getRestriction("codelist");
       if(restriction.isPresent()) {
@@ -209,10 +217,6 @@ public class CoreFileGenerator {
         }
       }
     }
-    writer.write(NEW_LINE);
-
-    populateFile(schema, numberOfLinesPerPrimaryKey, writer);
-
-    writer.close();
   }
+
 }

@@ -1,5 +1,5 @@
 #This is where all the files are added
-outputDirectory: target/
+outputDirectory: /home/azad/Desktop/
 numberOfDonors: 500
 numberOfSpecimensPerDonor: 4
 numberOfSamplesPerSpecimen: 4
@@ -8,14 +8,14 @@ tumourType: 01
 institution: 001
 platform: 1	
 seed: 1234567
-//This is an array of all the experimental files. Append to the Array as necessary. Append in order (i.e. first meta, then primary, then secondary)
+#This is an array of all the experimental files. Append to the Array as necessary. Append in order (i.e. first meta, then primary, then secondary)
 experimentalFiles:
  - name: ssm
    fileType: m
    numberOfLinesPerForeignKey: 3
  - name: ssm
    fileType: p
-   numberOfLinesPerForeignKey: 2000
+   numberOfLinesPerForeignKey: 5
  - name: ssm
    fileType: s
    numberOfLinesPerForeignKey: 6
