@@ -75,4 +75,8 @@ public class Term implements Serializable {
     this.uri = uri;
   }
 
+  @Override
+  public String toString() {
+    return "Term [code=" + code + ", value=" + value + ", uri=" + uri + "]";
+  }
 }

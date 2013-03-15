@@ -13,6 +13,7 @@
     </encoder>
   </appender>
 
+  <!-- 
   <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
     <File>${log.dir}/${log.name}.log</File>
     <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
@@ -22,7 +23,8 @@
       <pattern>${pattern}</pattern>
     </encoder>
   </appender>
-
+  -->
+  
   <root level="info">
     <appender-ref ref="STDOUT" />
     <!-- 

@@ -15,9 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.validation.cascading;
-
-import static com.google.common.base.Preconditions.checkNotNull;
+package org.icgc.dcc.core.cascading;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,14 +26,18 @@ import cascading.tuple.Fields;
 
 import com.google.common.collect.ImmutableList;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 /**
  * Utility class for working with cascading {@code Fields} objects.
  * <p>
- * TODO: remove some redundant/obsolete methods
+ * TODO: remove some redundant/obsolete methods + make this a decorator instead
  */
-public final class FieldsUtils {
+public final class Fields2 {
 
-  private FieldsUtils() {
+  private static final String DEFAULT_PREFIX_SEPARATOR = ".";
+
+  private Fields2() {
     // Prevent construction
   }
 
@@ -94,6 +96,15 @@ public final class FieldsUtils {
       fieldNames.add(fields.get(i).toString());
     }
     return fieldNames;
+  }
+
+  public static Fields prefixedFields(String prefix, Fields fields) {
+    Fields prefixedFields = new Fields();
+    for(String fieldName : getFieldNames(fields)) {
+      String newFieldName = prefix(prefix, DEFAULT_PREFIX_SEPARATOR, fieldName);
+      prefixedFields = prefixedFields.append(new Fields(newFieldName));
+    }
+    return prefixedFields;
   }
 
   public static Fields prefixedFields(String prefix, String sep, String[] fields) {

@@ -37,9 +37,11 @@ public class CoreModule extends AbstractModule {
   @Override
   protected void configure() {
     bind(DccRuntime.class).in(Singleton.class);
+    bind(DccLocking.class).in(Singleton.class);
+
+    bind(SystemService.class).in(Singleton.class);
     bind(ProjectService.class).in(Singleton.class);
     bind(UserService.class).in(Singleton.class);
-    bind(DccLocking.class).in(Singleton.class);
   }
 
 }

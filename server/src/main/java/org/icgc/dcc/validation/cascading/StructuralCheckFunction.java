@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.validation.cascading;
 
-import static com.google.common.base.Preconditions.checkState;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -36,6 +34,10 @@ import cascading.tuple.TupleEntry;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+
+import static com.google.common.base.Preconditions.checkState;
+import static org.icgc.dcc.core.cascading.Fields2.buildSortedList;
+import static org.icgc.dcc.core.cascading.Fields2.indicesOf;
 
 /**
  * Checks structural aspects of an input data file (header, format, ...)
@@ -73,11 +75,11 @@ public class StructuralCheckFunction extends BaseOperation implements Function {
     Fields adjustedFields = headerFields.subtract(extraFields); // existing valid fields first
     Fields missingFields = dictionaryFields.subtract(adjustedFields);
     adjustedFields = adjustedFields.append(missingFields); // then missing fields to be emulated
-    checkState(FieldsUtils.buildSortedList(dictionaryFields)//
-        .equals(FieldsUtils.buildSortedList(adjustedFields))); // worth checking; order may differ but nothing else
+    checkState(buildSortedList(dictionaryFields)//
+        .equals(buildSortedList(adjustedFields))); // worth checking; order may differ but nothing else
     fieldDeclaration = adjustedFields.append(ValidationFields.STATE_FIELD); // lastly state
 
-    unknownHeaderIndices = FieldsUtils.indicesOf(headerFields, extraFields);
+    unknownHeaderIndices = indicesOf(headerFields, extraFields);
   }
 
   @Override

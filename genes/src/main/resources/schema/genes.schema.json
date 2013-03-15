@@ -5,9 +5,9 @@
    "description":"Schema used to define and validate gene model documents",
    "type":"object",
    "properties":{
-      "_id":{
+      "_gene_id":{
          "type":"string",
-         "id":"id",
+         "id":"_gene_id",
          "required":true
       },  
       "canonical_transcript_id":{
