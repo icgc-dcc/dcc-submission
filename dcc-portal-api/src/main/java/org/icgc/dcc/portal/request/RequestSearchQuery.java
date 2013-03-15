@@ -72,10 +72,15 @@ public class RequestSearchQuery {
   public static final class Builder {
 
     private JsonNode filters = MAPPER.createObjectNode();
+
     private String[] fields = {};
+
     private int from = 0;
+
     private int size = 0;
+
     private String sort = "";
+
     private String order = "";
 
     public RequestSearchQuery build() {

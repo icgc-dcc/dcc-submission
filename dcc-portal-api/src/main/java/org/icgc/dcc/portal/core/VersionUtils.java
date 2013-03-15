@@ -15,28 +15,19 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc.portal.filters;
+package org.icgc.dcc.portal.core;
 
-import com.sun.jersey.spi.container.ContainerRequest;
-import com.sun.jersey.spi.container.ContainerResponse;
-import com.sun.jersey.spi.container.ContainerResponseFilter;
-import org.icgc.dcc.portal.core.VersionUtils;
+import org.icgc.dcc.portal.DataPortalService;
 
-import javax.ws.rs.core.Response;
+public class VersionUtils {
 
-public class VersionFilter implements ContainerResponseFilter {
+  private static String implementationVersion = DataPortalService.class.getPackage().getImplementationVersion();
 
-  // TODO Not the best place for this - probably in config file?
-  private static final String API_VERSION_HEADER = "X-ICGC-Version";
-
-  @Override
-  public ContainerResponse filter(ContainerRequest containerRequest, ContainerResponse containerResponse) {
-    Response response = addVersionHeader(containerResponse.getResponse());
-    containerResponse.setResponse(response);
-    return containerResponse;
+  public static String getVersion() {
+    return implementationVersion == null ? "" : "v" + implementationVersion;
   }
 
-  private Response addVersionHeader(Response r) {
-    return Response.fromResponse(r).header(API_VERSION_HEADER, VersionUtils.getMajorVersion()).build();
+  public static String getMajorVersion() {
+    return getVersion().split(".", 1)[0];
   }
 }

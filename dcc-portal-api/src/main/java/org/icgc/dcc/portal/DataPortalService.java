@@ -28,6 +28,7 @@ import com.yammer.dropwizard.config.Bootstrap;
 import com.yammer.dropwizard.config.Environment;
 import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.portal.bundles.SwaggerBundle;
+import org.icgc.dcc.portal.core.VersionUtils;
 import org.icgc.dcc.portal.filters.EtagFilter;
 import org.icgc.dcc.portal.filters.GetNotFoundResourceFilter;
 import org.icgc.dcc.portal.filters.VersionFilter;
@@ -55,14 +56,9 @@ public class DataPortalService extends Service<DataPortalConfiguration> {
 
   private static void logInfo(String... args) {
     log.info(repeat("=", 60));
-    log.info("{} {}", APPLICATION_NAME.toUpperCase().replace(DASH, SPACE), getVersion());
+    log.info("{} {}", APPLICATION_NAME.toUpperCase().replace(DASH, SPACE), VersionUtils.getVersion());
     log.info(" > {}", formatArguments(args));
     log.info(repeat("=", 60));
-  }
-
-  private static String getVersion() {
-    String implementationVersion = DataPortalService.class.getPackage().getImplementationVersion();
-    return implementationVersion == null ? "" : "v" + implementationVersion;
   }
 
   private static String getJarName() {
