@@ -15,6 +15,12 @@
     </repository>
   </repositories>
   <dependencies>
+    <!-- DCC -->
+    <dependency>
+      <groupId>org.icgc.dcc</groupId>
+      <artifactId>dcc-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>  
 
     <!-- Utilities -->
     <dependency>

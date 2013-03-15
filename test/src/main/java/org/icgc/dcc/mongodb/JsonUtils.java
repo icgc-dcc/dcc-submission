@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.mongodb;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -39,13 +41,12 @@ import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.MappingIterator;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.icgc.dcc.core.util.MapUtils;
 
 import com.google.code.externalsorting.ExternalSort;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Files;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * General test utilities for working with JSON objects.; TODO: rename to MongoUtils

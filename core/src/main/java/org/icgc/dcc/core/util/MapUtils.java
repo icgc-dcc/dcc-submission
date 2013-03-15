@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.mongodb;
+package org.icgc.dcc.core.util;
 
 import java.io.IOException;
 import java.util.List;
@@ -23,16 +23,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
-
 import com.google.common.collect.Maps;
 
 public class MapUtils {
 
   @SuppressWarnings("unchecked")
-  public static TreeMap<String, Object> asTreeMap(Map<String, Object> map) throws IOException, JsonParseException,
-      JsonMappingException {
+  public static TreeMap<String, Object> asTreeMap(Map<String, Object> map) throws IOException {
     TreeMap<String, Object> treeMap = Maps.newTreeMap();
     for(Entry<String, Object> entry : map.entrySet()) {
       String key = entry.getKey();
