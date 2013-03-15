@@ -19,6 +19,7 @@ package org.icgc.dcc.portal.repositories;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import lombok.Data;
 import org.elasticsearch.action.get.GetRequestBuilder;
@@ -39,7 +40,7 @@ public abstract class BaseRepository {
 
   private final String type;
 
-  private final String[] allowedFields;
+  private final String[] fields;
 
   private final Client client;
 
@@ -52,7 +53,7 @@ public abstract class BaseRepository {
     this.client = client;
     this.index = index;
     this.type = type;
-    this.allowedFields = fields;
+    this.fields = fields;
   }
 
   public final FindResults find(String id) {
@@ -69,7 +70,7 @@ public abstract class BaseRepository {
   }
 
   private GetRequestBuilder buildGetRequest(String id) {
-    return getClient().prepareGet(getIndex(), getType(), id).setFields(getAllowedFields());
+    return getClient().prepareGet(getIndex(), getType(), id).setFields(getFields());
   }
 
   private SearchRequestBuilder buildSearchRequest(RequestSearchQuery requestSearchQuery) {
@@ -77,7 +78,13 @@ public abstract class BaseRepository {
         .setQuery(getQuery()).setFilter(getFilter()).setFrom(requestSearchQuery.getFrom())
         .setSize(requestSearchQuery.getSize())
         .addSort(requestSearchQuery.getSort(), SortOrder.valueOf(requestSearchQuery.getOrder()))
-        .addFields(getAllowedFields());
+        .addFields(allowedFields(requestSearchQuery.getFields()));
+  }
+
+  private String[] allowedFields(String[] searchedFields) {
+    Sets.SetView<String> intersection =
+        Sets.intersection(Sets.newHashSet(getFields()), Sets.newHashSet(searchedFields));
+    return intersection.toArray(new String[intersection.size()]);
   }
 
   FilterBuilder setFacetFilter(String name, JsonNode filter) {
