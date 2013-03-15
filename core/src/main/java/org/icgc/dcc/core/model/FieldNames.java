@@ -26,7 +26,7 @@ public final class FieldNames {
   public static final String MONGO_INTERNAL_ID_FIELD = "_id";
   
   /**
-   * The non-surrogate version of _project_key (formerly known as "project_key").
+   * The non-surrogate version of _project_id (formerly known as "project_key").
    */
   public static final String PROJECT_ID_FIELD = "project_id";
   
