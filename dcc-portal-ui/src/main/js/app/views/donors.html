@@ -1,7 +1,13 @@
 <div class="row">
     <div class="span3">
-        <div class="well"><i class="icon-spinner icon-spin"></i> Facets</div>
+        <ul class="nav nav-list" ng-controller="FacetsController">
+            <term-facet facet-name="project_name" facet="donors.facets['project_name']"></term-facet>
+            <term-facet facet-name="donor_sex" facet="donors.facets['donor_sex']"></term-facet>
+            <term-facet facet-name="donor_tumour_stage_at_diagnosis"
+                        facet="donors.facets['donor_tumour_stage_at_diagnosis']"></term-facet>
+        </ul>
     </div>
+
     <div class="span9">
         <div class="row"><h1 class="span">Donors</h1></div>
         <div class="row">
@@ -31,22 +37,17 @@
             </tr>
             </thead>
             <tbody>
-            <tr ng-repeat="donor in donors.data">
-                <td><a href="#/donors/{{donor.donor_id}}">{{donor.donor_id}}</a></td>
-                <td>{{donor.primary_site}}</td>
-                <td><a href="#/projects/{{donor.project_key}}">{{donor.project_name}}</a></td>
-                <td>{{donor.donor_sex}}</td>
-                <td>{{donor.donor_age_at_diagnosis}}</td>
-                <td>??</td>
-                <td>{{donor.has_ssm}}</td>
-                <td>{{donor.has_cnsm}}</td>
-                <td>{{donor.has_exp}}</td>
-                <td>{{donor.has_meth}}</td>
-                <td>
-                    <ul class="unstyled" ng-repeat="pmid in project.pubmed_id">
-                        <li><a href="http://www.ncbi.nlm.nih.gov/pubmed/{{pmid}}">pmid:{{pmid}}</a></li>
-                    </ul>
-                </td>
+            <tr ng-repeat="donor in donors.hits">
+                <td><a href="#/donors/{{donor.id}}">{{donor.fields.donor_id}}</a></td>
+                <td>{{donor.fields.primary_site}}</td>
+                <td><a href="{{donor.fields.project_key}}">{{donor.fields.project_name}}</a></td>
+                <td>{{donor.fields.donor_sex}}</td>
+                <td>{{donor.fields.donor_age_at_diagnosis}}</td>
+                <td>{{donor.score}}</td>
+                <td>{{donor.fields.has_ssm}}</td>
+                <td>{{donor.fields.has_cnsm}}</td>
+                <td>{{donor.fields.has_meth}}</td>
+                <td>{{donor.fields.has_exp}}</td>
             </tr>
             </tbody>
         </table>

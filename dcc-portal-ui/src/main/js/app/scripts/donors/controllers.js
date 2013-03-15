@@ -18,10 +18,16 @@
 'use strict';
 angular.module('app.donors.controllers', ['app.donors.services']);
 
-angular.module('app.donors.controllers').controller('DonorsController', [ "$scope", 'DonorsService', "donors", function ($scope, DonorsService, donors) {
+angular.module('app.donors.controllers').controller('DonorsController', [ "$scope", 'donors', function ($scope, donors) {
   $scope.donors = donors;
 }]);
 
 angular.module('app.donors.controllers').controller('DonorController', [ "$scope", "donor", function ($scope, donor) {
   $scope.donor = donor;
+}]);
+
+angular.module('app.donors.controllers').controller('EmbDonorsController', [ "$scope", 'DonorsService', function ($scope, DonorsService) {
+  DonorsService.query().then(function (response) {
+    $scope.donors = response;
+  });
 }]);

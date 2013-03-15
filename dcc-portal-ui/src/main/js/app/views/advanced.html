@@ -1,6 +1,16 @@
 <div class="row">
     <div class="span3">
-        <div class="well"><i class="icon-spinner icon-spin"></i> Facets</div>
+        <tabs>
+            <pane heading="Donors">
+                <ul class="nav nav-list" ng-controller="FacetsController">
+                    <term-facet facet-name="project_name" facet="donors.facets['project_name']"></term-facet>
+                    <term-facet facet-name="donor_sex" facet="donors.facets['donor_sex']"></term-facet>
+                    <term-facet facet-name="donor_tumour_stage_at_diagnosis"
+                                facet="donors.facets['donor_tumour_stage_at_diagnosis']"></term-facet>
+                </ul>
+            </pane>
+        </tabs>
+
     </div>
     <div class="span9">
         <div class="row"><h1 class="span">Advanced Search</h1></div>
@@ -35,35 +45,17 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr ng-repeat="donor in donors">
-                    <td><a href="#/projects/{{donor.id}}">{{donor.name}}</a></td>
-                    <td>{{donor.site}}</td>
-                    <td>{{donor.country}}</td>
-                    <td>{{donor.donors}}</td>
-                    <td>{{donor.ssm}}</td>
-                    <td>{{donor.cnsm}}</td>
-                    <td>{{donor.gene_expression}}</td>
-                    <td>{{donor.dna_methylation}}</td>
-                    <td>
-                        <ul class="unstyled" ng-repeat="pmid in project.pubmed_id">
-                            <li><a href="http://www.ncbi.nlm.nih.gov/pubmed/{{pmid}}">pmid:{{pmid}}</a></li>
-                        </ul>
-                    </td>
-                </tr>
-                <tr>
-                    <td><a href="#/donors/LFS_MB1">LFS_MB1</a></td>
-                    <td>Brain</td>
-                    <td>Pediatric Brain Tumors - DKFZ, DE</td>
-                    <td>Female</td>
-                    <td style="text-align: center">11</td>
-                    <td style="text-align: right">1279</td>
-                    <td style="color:#006400; text-align: center"><i class="icon-ok-sign"></i></td>
-                    <td style="color:#006400; text-align: center"><i class="icon-ok-sign"></i></td>
-                    <td style="color:#8b0000; text-align: center"><i class="icon-remove-sign"></i></td>
-                    <td style="color:#8b0000; text-align: center"><i class="icon-remove-sign"></i></td>
-                </tr>
-                <tr ui-if="!projects.length">
-                    <td colspan="10"><i class="icon-spinner icon-spin"></i> Fetching projects...</td>
+                <tr ng-repeat="donor in donors.hits">
+                    <td><a href="#/donors/{{donor.id}}">{{donor.fields.donor_id}}</a></td>
+                    <td>{{donor.fields.primary_site}}</td>
+                    <td><a href="{{donor.fields.project_key}}">{{donor.fields.project_name}}</a></td>
+                    <td>{{donor.fields.donor_sex}}</td>
+                    <td>{{donor.fields.donor_age_at_diagnosis}}</td>
+                    <td>{{donor.score}}</td>
+                    <td>{{donor.fields.has_ssm}}</td>
+                    <td>{{donor.fields.has_cnsm}}</td>
+                    <td>{{donor.fields.has_meth}}</td>
+                    <td>{{donor.fields.has_exp}}</td>
                 </tr>
                 </tbody>
             </table>

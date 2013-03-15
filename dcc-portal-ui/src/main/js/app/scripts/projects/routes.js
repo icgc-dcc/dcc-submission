@@ -34,8 +34,14 @@ angular.module('app.projects').config(['$routeProvider', function ($routeProvide
         templateUrl: 'views/project.html',
         controller: 'ProjectController',
         resolve: {
-          project: ['$route', 'ProjectsService', function ($route, ProjectsService) {
+          project: ['$route', 'ProjectsService', 'DonorsService', function ($route, ProjectsService) {
             return ProjectsService.get({project: $route.current.params.project});
+          }],
+          donors: ['$route', 'DonorsService', function ($route, DonorsService) {
+            return DonorsService.query();
+          }],
+          genes: ['$route', 'GenesService', function ($route, GenesService) {
+            return GenesService.query();
           }]
         }
       })
