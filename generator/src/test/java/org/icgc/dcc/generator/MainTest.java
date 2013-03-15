@@ -17,13 +17,20 @@
  */
 package org.icgc.dcc.generator;
 
+import java.io.IOException;
+
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.JsonMappingException;
 import org.junit.Test;
 
-public class IntegrationTest {
-
+/**
+ * 
+ */
+public class MainTest {
   @Test
-  public void testGenerator() {
-    Main.main();
+  public void test() throws JsonParseException, JsonMappingException, IOException {
+    String[] x = { "src/main/conf/config.yaml" };
+    Main main = new Main();
+    main.generate(x);
   }
-
 }
