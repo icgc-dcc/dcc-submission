@@ -22,6 +22,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import javax.ws.rs.WebApplicationException;
+
 import static org.fest.assertions.api.Assertions.assertThat;
 
 
@@ -33,119 +35,119 @@ public class RequestSearchQueryTest {
 
   @Test
   public final void test_Instantiation() {
-    RequestSearchQuery requestSearchQuery = new RequestSearchQuery(null, null, 0, 0, "", "");
+    RequestSearchQuery requestSearchQuery = RequestSearchQuery.builder().build();
     assertThat(requestSearchQuery).isNotNull();
   }
 
   @Test
   public final void test_Size_WhenLessThanOne() {
-    RequestSearchQuery requestSearchQuery = new RequestSearchQuery(null, null, 0, 0, "", "");
+    RequestSearchQuery requestSearchQuery = RequestSearchQuery.builder().size(0).build();
     assertThat(requestSearchQuery.getSize()).isEqualTo(RequestSearchQuery.DEFAULT_SIZE);
   }
 
   @Test
   public final void test_Size_WhenGreaterThanZero() {
-    RequestSearchQuery requestSearchQuery = new RequestSearchQuery(null, null, 0, 1, "", "");
+    RequestSearchQuery requestSearchQuery = RequestSearchQuery.builder().size(1).build();
     assertThat(requestSearchQuery.getSize()).isEqualTo(1);
   }
 
   @Test
   public final void test_Size_WhenGreaterThanMaxSize() {
-    RequestSearchQuery requestSearchQuery =
-        new RequestSearchQuery(null, null, 0, RequestSearchQuery.MAX_SIZE + 1, "", "");
+    RequestSearchQuery requestSearchQuery = RequestSearchQuery.builder().size(RequestSearchQuery.MAX_SIZE + 1).build();
     assertThat(requestSearchQuery.getSize()).isEqualTo(RequestSearchQuery.MAX_SIZE);
   }
 
   @Test
   public final void test_From_WhenZero() {
-    RequestSearchQuery requestSearchQuery = new RequestSearchQuery(null, null, 0, 0, "", "");
+    RequestSearchQuery requestSearchQuery = RequestSearchQuery.builder().from(0).build();
     assertThat(requestSearchQuery.getFrom()).isEqualTo(0);
   }
 
   @Test
   public final void test_From_WhenOne() {
-    RequestSearchQuery requestSearchQuery = new RequestSearchQuery(null, null, 1, 0, "", "");
+    RequestSearchQuery requestSearchQuery = RequestSearchQuery.builder().from(1).build();
     assertThat(requestSearchQuery.getFrom()).isEqualTo(0);
   }
 
   @Test
   public final void test_From_WhenGreaterThanOne() {
     int from = 5;
-    RequestSearchQuery requestSearchQuery = new RequestSearchQuery(null, null, from, 0, "", "");
+    RequestSearchQuery requestSearchQuery = RequestSearchQuery.builder().from(5).build();
     assertThat(requestSearchQuery.getFrom()).isEqualTo(from - 1);
   }
 
   @Test
   public final void test_Filters_WhenNull() {
-    RequestSearchQuery requestSearchQuery = new RequestSearchQuery(null, null, 5, 0, "", "");
+    RequestSearchQuery requestSearchQuery = RequestSearchQuery.builder().filters(null).build();
     assertThat(requestSearchQuery.getFilters().toString()).isEqualTo("{}");
   }
 
   @Test
   public final void test_Filters_WhenAnEmptyString() {
-    RequestSearchQuery requestSearchQuery = new RequestSearchQuery("", null, 0, 0, "", "");
+    RequestSearchQuery requestSearchQuery = RequestSearchQuery.builder().filters("").build();
     assertThat(requestSearchQuery.getFilters().toString()).isEqualTo("{}");
   }
 
   @Test
   public final void test_Filters_WhenWrappedInBrackets() {
     RequestSearchQuery requestSearchQuery =
-        new RequestSearchQuery("{'key1':'value1', 'key2':'value2'}", null, 0, 0, "", "");
+        RequestSearchQuery.builder().filters("{'key1':'value1', 'key2':'value2'}").build();
     assertThat(requestSearchQuery.getFilters().toString()).isEqualTo("{\"key1\":\"value1\",\"key2\":\"value2\"}");
   }
 
   @Test
   public final void test_Filters_WhenSingleQuoted() {
     RequestSearchQuery requestSearchQuery =
-        new RequestSearchQuery("'key1':'value1', 'key2':'value2'", null, 0, 0, "", "");
+        RequestSearchQuery.builder().filters("'key1':'value1', 'key2':'value2'").build();
     assertThat(requestSearchQuery.getFilters().toString()).isEqualTo("{\"key1\":\"value1\",\"key2\":\"value2\"}");
   }
 
   @Test
   public final void test_When_Filters_WhenDoubleQuoted() {
     RequestSearchQuery requestSearchQuery =
-        new RequestSearchQuery("\"key1\":\"value1\", \"key2\":\"value2\"", null, 0, 0, "", "");
+        RequestSearchQuery.builder().filters("\"key1\":\"value1\", \"key2\":\"value2\"").build();
     assertThat(requestSearchQuery.getFilters().toString()).isEqualTo("{\"key1\":\"value1\",\"key2\":\"value2\"}");
   }
 
   @Test
   public final void test_Filters_WhenKeysAreUnQuoted() {
-    RequestSearchQuery requestSearchQuery = new RequestSearchQuery("key1:'value1', key2:'value2'", null, 0, 0, "", "");
+    RequestSearchQuery requestSearchQuery =
+        RequestSearchQuery.builder().filters("key1:'value1', key2:'value2'").build();
     assertThat(requestSearchQuery.getFilters().toString()).isEqualTo("{\"key1\":\"value1\",\"key2\":\"value2\"}");
   }
 
   @Test
   public final void test_Filters_WhenValueIsArray() {
-    RequestSearchQuery requestSearchQuery = new RequestSearchQuery("key1:['value1', 'value2']", null, 0, 0, "", "");
+    RequestSearchQuery requestSearchQuery = RequestSearchQuery.builder().filters("key1:['value1', 'value2']").build();
     assertThat(requestSearchQuery.getFilters().toString()).isEqualTo("{\"key1\":[\"value1\",\"value2\"]}");
   }
 
-  @Test(expected = javax.ws.rs.WebApplicationException.class)
+  @Test(expected = WebApplicationException.class)
   public final void test_Filters_FailsWithUnQuotedValues() {
-    new RequestSearchQuery("{\"key1\":value1, \"key2\":value2}", null, 0, 0, "", "");
+    RequestSearchQuery.builder().filters("{\"key1\":value1, \"key2\":value2}").build();
   }
 
   @Test
   public final void test_Fields_WhenNull() {
-    RequestSearchQuery requestSearchQuery = new RequestSearchQuery(null, null, 0, 0, "", "");
+    RequestSearchQuery requestSearchQuery = RequestSearchQuery.builder().fields(null).build();
     assertThat(requestSearchQuery.getFields()).isEqualTo(new String[] {});
   }
 
   @Test
   public final void test_Fields_WhenAnEmptyString() {
-    RequestSearchQuery requestSearchQuery = new RequestSearchQuery(null, "", 0, 0, "", "");
+    RequestSearchQuery requestSearchQuery = RequestSearchQuery.builder().fields("").build();
     assertThat(requestSearchQuery.getFields()).isEqualTo(new String[] {});
   }
 
   @Test
   public final void test_Fields_WithOneField() {
-    RequestSearchQuery requestSearchQuery = new RequestSearchQuery(null, "field1", 5, 0, "", "");
+    RequestSearchQuery requestSearchQuery = RequestSearchQuery.builder().fields("field1").build();
     assertThat(requestSearchQuery.getFields()).isEqualTo(new String[] {"field1"});
   }
 
   @Test
   public final void test_Fields_WithManyFields() {
-    RequestSearchQuery requestSearchQuery = new RequestSearchQuery(null, "field1, field2", 5, 0, "", "");
+    RequestSearchQuery requestSearchQuery = RequestSearchQuery.builder().fields("field1,field2").build();
     assertThat(requestSearchQuery.getFields()).isEqualTo(new String[] {"field1", "field2"});
   }
 }
