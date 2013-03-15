@@ -15,27 +15,25 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.generator;
+package org.icgc.dcc.generator.model;
 
+import lombok.Getter;
 import lombok.ToString;
 
-import com.beust.jcommander.Parameter;
+import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
- * Command line options.
  * 
- * @author btiernay
  */
+@Getter
 @ToString
-public class Options {
+public class ExperimentalFile {
+  @JsonProperty
+  private String name;
 
-  @Parameter(names = { "-f", "--file" }, help = true, description = "Path to configuration file")
-  public String pathToConfigFile;
+  @JsonProperty
+  private String fileType;
 
-  @Parameter(names = { "-v", "--version" }, help = true, description = "Show version")
-  public boolean version;
-
-  @Parameter(names = { "-h", "--help" }, help = true, description = "Show help information")
-  public boolean help;
-
+  @JsonProperty
+  private Integer numberOfLinesPerForeignKey;
 }
