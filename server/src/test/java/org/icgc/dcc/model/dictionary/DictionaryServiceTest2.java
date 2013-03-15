@@ -15,27 +15,62 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.web;
+package org.icgc.dcc.model.dictionary;
 
-public class ServerErrorResponseMessage {
-  private final String code;
+import org.icgc.dcc.dictionary.DictionaryService;
+import org.icgc.dcc.dictionary.DictionaryServiceException;
+import org.icgc.dcc.dictionary.model.CodeList;
+import org.icgc.dcc.filesystem.DccFileSystem;
+import org.icgc.dcc.release.ReleaseService;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
-  private final Object[] parameters;
+import com.google.code.morphia.Datastore;
+import com.google.code.morphia.Morphia;
+import com.google.common.collect.Lists;
 
-  public ServerErrorResponseMessage(ServerErrorCode code) {
-    this(code, new Object[0]);
+import static org.mockito.Mockito.when;
+
+@RunWith(MockitoJUnitRunner.class)
+public class DictionaryServiceTest2 {
+
+  private DictionaryService dictionaryService;
+
+  @Mock
+  private Morphia morphia;
+
+  @Mock
+  private Datastore datastore;
+
+  @Mock
+  private DccFileSystem dccFileSystem;
+
+  @Mock
+  private ReleaseService releaseService;
+
+  @Mock
+  private CodeList codeList1;
+
+  @Mock
+  private CodeList codeList2;
+
+  @Before
+  public void setUp() {
+    this.dictionaryService = new DictionaryService(morphia, datastore, dccFileSystem, releaseService);
+
+    // TODO: use partial mocking in order to mock queryCodeList() that has a constructor call (and is used by methods we
+    // want to test) - DCC-897
+
+    when(codeList1.getName()).thenReturn("codeList1");
+    when(codeList2.getName()).thenReturn("codeList2");
   }
 
-  public ServerErrorResponseMessage(ServerErrorCode code, Object... parameters) {
-    this.code = code.getFrontEndString();
-    this.parameters = parameters;
-  }
-
-  public String getCode() {
-    return code;
-  }
-
-  public Object[] getParameters() {
-    return parameters;
+  @Test(expected = DictionaryServiceException.class)
+  public void test_addCodeList_failOnUnexisting() {
+    dictionaryService.addCodeList(Lists.newArrayList(codeList1, codeList2));
+    // TODO: verifies
   }
 }

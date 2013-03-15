@@ -113,7 +113,7 @@ public class CodeListResource {
     ResponseTimestamper.evaluate(req, optional.get());
     this.dictionaries.updateCodeList(newCodeList);
 
-    return ResponseTimestamper.ok(newCodeList).build();
+    return Response.status(Status.NO_CONTENT).build(); // DCC-820: add ResponseTimestamper back here?
   }
 
   @POST
@@ -148,6 +148,6 @@ public class CodeListResource {
       this.dictionaries.addTerm(name, term);
     }
 
-    return ResponseTimestamper.ok(codeList).build();
+    return Response.status(Status.CREATED).build();
   }
 }

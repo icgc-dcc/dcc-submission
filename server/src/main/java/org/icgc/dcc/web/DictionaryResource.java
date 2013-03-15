@@ -125,6 +125,6 @@ public class DictionaryResource {
     ResponseTimestamper.evaluate(req, oldDictionary);
     this.dictionaries.update(newDictionary);
 
-    return ResponseTimestamper.ok(newDictionary).build();
+    return Response.status(Status.NO_CONTENT).build(); // http://stackoverflow.com/questions/797834/should-a-restful-put-operation-return-something
   }
 }

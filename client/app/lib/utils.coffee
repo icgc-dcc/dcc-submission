@@ -159,7 +159,7 @@ found on host #{host}"
     state is "COMPLETED"
 
   date: (date) ->
-    moment(date).format("YYYY-MM-DD")
+    moment(date).format("YYYY-MM-DD HH:mm:ss")
 
   fileSize: (fs) ->
     sizes = ['B', 'KB', 'MB', 'GB', 'TB']

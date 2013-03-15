@@ -17,10 +17,6 @@
  */
 package org.icgc.dcc.integration;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -49,6 +45,7 @@ import org.icgc.dcc.release.model.ReleaseView;
 import org.icgc.dcc.release.model.SubmissionState;
 import org.icgc.dcc.sftp.SftpModule;
 import org.icgc.dcc.shiro.ShiroModule;
+import org.icgc.dcc.web.ServerErrorCode;
 import org.icgc.dcc.web.WebModule;
 import org.junit.After;
 import org.junit.Before;
@@ -62,6 +59,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.inject.Inject;
 import com.typesafe.config.ConfigFactory;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(GuiceJUnitRunner.class)
 @GuiceModules({ ConfigModule.class, CoreModule.class, HttpModule.class, JerseyModule.class, MorphiaModule.class, FileSystemModule.class, SftpModule.class, WebModule.class, ShiroModule.class })
@@ -90,6 +91,8 @@ public class IntegrationTest {
   private static final String SEED_DICTIONARIES_ENDPOINT = SEED_ENDPOINT + "/dictionaries";
 
   private static final String DICTIONARIES_ENDPOINT = "/dictionaries";
+
+  private static final String CODELISTS_ENDPOINT = "/codeLists";
 
   private static final String PROJECTS_ENDPOINT = "/projects";
 
@@ -221,9 +224,16 @@ public class IntegrationTest {
 
       // validate
       updateDictionary( // dictionary is OPENED
-          FIRST_DICTIONARY_RESOURCE, FIRST_DICTIONARY_VERSION, Status.OK.getStatusCode());
-      enqueueProjects(); // triggers validations
+          FIRST_DICTIONARY_RESOURCE, FIRST_DICTIONARY_VERSION, Status.NO_CONTENT.getStatusCode());
+      enqueueProjects(PROJECTS_TO_ENQUEUE, Status.NO_CONTENT); // triggers validations
       checkValidations(); // will poll until all validated
+
+      // Test that only NOT_VALIDATED projects can be enqueued
+      enqueueProjects(PROJECTS_TO_ENQUEUE, Status.BAD_REQUEST);
+
+      // Tests codelists
+      addOffendingCodeLists();
+      addValidCodeLists();
 
       // release
       releaseInitialRelease();
@@ -237,7 +247,7 @@ public class IntegrationTest {
       updateDictionary( // dictionary is CLOSED
           FIRST_DICTIONARY_RESOURCE, FIRST_DICTIONARY_VERSION, Status.BAD_REQUEST.getStatusCode());
       updateDictionary( // dictionary is OPENED
-          SECOND_DICTIONARY_RESOURCE, SECOND_DICTIONARY_VERSION, Status.OK.getStatusCode());
+          SECOND_DICTIONARY_RESOURCE, SECOND_DICTIONARY_VERSION, Status.NO_CONTENT.getStatusCode());
 
       // update release
       updateRelease(UPDATED_INITIAL_RELEASE_RESOURCE);
@@ -255,7 +265,7 @@ public class IntegrationTest {
 
   private void createInitialRelease() throws Exception {
     Response response = TestUtils.put(client, RELEASES_ENDPOINT, TestUtils.resourceToString(INITIAL_RELEASE_RESOURCE));
-    assertEquals(200, response.getStatus());
+    assertEquals(Status.OK.getStatusCode(), response.getStatus());
 
     Release release = TestUtils.asRelease(response);
     assertEquals(INITITAL_RELEASE_NAME, release.getName());
@@ -265,7 +275,7 @@ public class IntegrationTest {
       List<SubmissionState> expectedSubmissionStates) throws Exception {
 
     Response response = TestUtils.get(client, RELEASES_ENDPOINT + "/" + releaseName);
-    assertEquals(200, response.getStatus());
+    assertEquals(Status.OK.getStatusCode(), response.getStatus());
 
     ReleaseView releaseView = TestUtils.asReleaseView(response);
     assertNotNull(releaseView);
@@ -282,27 +292,31 @@ public class IntegrationTest {
 
   private void addProjects() throws IOException {
     Response response1 = TestUtils.post(client, PROJECTS_ENDPOINT, PROJECT1);
-    assertEquals(201, response1.getStatus());
+    assertEquals(Status.CREATED.getStatusCode(), response1.getStatus());
 
     Response response2 = TestUtils.post(client, PROJECTS_ENDPOINT, PROJECT2);
-    assertEquals(201, response2.getStatus());
+    assertEquals(Status.CREATED.getStatusCode(), response2.getStatus());
 
     Response response3 = TestUtils.post(client, PROJECTS_ENDPOINT, PROJECT3);
-    assertEquals(201, response3.getStatus());
+    assertEquals(Status.CREATED.getStatusCode(), response3.getStatus());
   }
 
-  private void enqueueProjects() throws Exception {
+  private void enqueueProjects(String projectsToEnqueue, Status expectedStatus) throws Exception {
     Response response = TestUtils.get(client, QUEUE_ENDPOINT);
-    assertEquals(200, response.getStatus());
+    assertEquals(Status.OK.getStatusCode(), response.getStatus());
     assertEquals("[]", TestUtils.asString(response));
 
-    response = TestUtils.post(client, QUEUE_ENDPOINT, PROJECTS_TO_ENQUEUE);
-    assertEquals(200, response.getStatus());
+    response = TestUtils.post(client, QUEUE_ENDPOINT, projectsToEnqueue);
+    assertEquals(expectedStatus.getStatusCode(), response.getStatus());
+    if(expectedStatus != Status.NO_CONTENT) {
+      assertEquals("{\"code\":\"" + ServerErrorCode.INVALID_STATE.getFrontEndString() + "\",\"parameters\":[\""
+          + SubmissionState.VALID + "\"]}", TestUtils.asString(response));
+    }
   }
 
   private void checkValidations() throws Exception {
     Response response = TestUtils.get(client, INITIAL_RELEASE_ENDPOINT);
-    assertEquals(200, response.getStatus());
+    assertEquals(Status.OK.getStatusCode(), response.getStatus());
 
     checkValidatedSubmission(PROJECT1_NAME, SubmissionState.VALID);
     checkValidatedSubmission(PROJECT2_NAME, SubmissionState.INVALID);
@@ -315,13 +329,33 @@ public class IntegrationTest {
     // TODO add more
   }
 
+  private void addOffendingCodeLists() throws IOException {
+
+    // Ensure codelist is present
+    Response response = TestUtils.get(client, CODELISTS_ENDPOINT);
+    assertEquals(Status.OK.getStatusCode(), response.getStatus());
+    final String CODELIST_NAME = "appendix_B10";
+    assertTrue(TestUtils.asString(response).contains("\"" + CODELIST_NAME + "\""));
+
+    // Attempt to add it again
+    response =
+        TestUtils.post(client, CODELISTS_ENDPOINT, "[{\"name\": \"someName\"}, {\"name\": \"" + CODELIST_NAME + "\"}]");
+    assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
+  }
+
+  private void addValidCodeLists() throws IOException {
+    Response response =
+        TestUtils.post(client, CODELISTS_ENDPOINT, "[{\"name\": \"someName\"}, {\"name\": \"someNewName\"}]");
+    assertEquals(Status.CREATED.getStatusCode(), response.getStatus());
+  }
+
   private void checkValidatedSubmission(String project, SubmissionState expectedSubmissionState) throws Exception {
     DetailedSubmission detailedSubmission;
     do {
       Uninterruptibles.sleepUninterruptibly(2, TimeUnit.SECONDS);
 
       Response response = TestUtils.get(client, INITIAL_RELEASE_SUBMISSIONS_ENDPOINT + "/" + project);
-      assertEquals(200, response.getStatus());
+      assertEquals(Status.OK.getStatusCode(), response.getStatus());
 
       detailedSubmission = TestUtils.asDetailedSubmission(response);
     } while(detailedSubmission.getState() == SubmissionState.QUEUED
@@ -339,19 +373,19 @@ public class IntegrationTest {
   private void releaseInitialRelease() {
     // attempts releasing (expect failure)
     Response response = TestUtils.post(client, NEXT_RELEASE_ENPOINT, SECOND_RELEASE);
-    assertEquals(400, response.getStatus()); // no signed off projects
+    assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus()); // no signed off projects
 
     // sign off
     response = TestUtils.post(client, SIGNOFF_ENDPOINT, PROJECT_TO_SIGN_OFF);
-    assertEquals(200, response.getStatus());
+    assertEquals(Status.OK.getStatusCode(), response.getStatus());
 
     // attempt releasing again
     response = TestUtils.post(client, NEXT_RELEASE_ENPOINT, SECOND_RELEASE);
-    assertEquals(200, response.getStatus());
+    assertEquals(Status.OK.getStatusCode(), response.getStatus());
 
     // attempt releasing one too many times
     response = TestUtils.post(client, NEXT_RELEASE_ENPOINT, SECOND_RELEASE);
-    assertEquals(400, response.getStatus());
+    assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
   }
 
   private void updateDictionary(String dictionaryResource, String dictionaryVersion, int expectedStatus)
@@ -367,7 +401,7 @@ public class IntegrationTest {
   private void updateRelease(String updatedReleaseRelPath) throws Exception {
     Response response =
         TestUtils.put(client, UPDATE_RELEASE_ENDPOINT, TestUtils.resourceToString(updatedReleaseRelPath));
-    assertEquals(200, response.getStatus());
+    assertEquals(Status.OK.getStatusCode(), response.getStatus());
 
     Release release = TestUtils.asRelease(response);
     assertEquals(NEXT_RELEASE_NAME, release.getName());

@@ -17,11 +17,6 @@
  */
 package org.icgc.dcc.model.dictionary;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import org.icgc.dcc.dictionary.DictionaryService;
 import org.icgc.dcc.dictionary.DictionaryServiceException;
 import org.icgc.dcc.dictionary.model.CodeList;
@@ -38,6 +33,11 @@ import com.google.code.morphia.Morphia;
 import com.google.code.morphia.query.Query;
 import com.mysema.query.mongodb.MongodbQuery;
 import com.mysema.query.types.Predicate;
+
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class DictionaryServiceTest {
 
