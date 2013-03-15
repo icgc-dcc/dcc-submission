@@ -66,7 +66,9 @@ public class ProjectResource {
     String s = sort != null ? sort : DEFAULT_SORT;
     String o = order != null ? order : DEFAULT_ORDER;
 
-    RequestSearchQuery requestSearchQuery = new RequestSearchQuery(filters, fields, from.get(), size.get(), s, o);
+    RequestSearchQuery requestSearchQuery =
+        RequestSearchQuery.builder().filters(filters).fields(fields).from(from.get()).size(size.get()).sort(s).order(o)
+            .build();
 
     FindAllResults results = store.findAll(requestSearchQuery);
 

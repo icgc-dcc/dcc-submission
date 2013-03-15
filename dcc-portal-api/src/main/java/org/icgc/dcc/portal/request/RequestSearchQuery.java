@@ -20,7 +20,11 @@ package org.icgc.dcc.portal.request;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 import org.icgc.dcc.portal.core.JsonUtils;
 
 import javax.validation.constraints.Max;
@@ -30,6 +34,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import static org.icgc.dcc.portal.core.JsonUtils.MAPPER;
 
 @Data
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @XmlRootElement(name = "RequestSearchQuery")
 public class RequestSearchQuery {
 
@@ -58,15 +63,55 @@ public class RequestSearchQuery {
   @JsonProperty
   String order;
 
-  public RequestSearchQuery(String filters, String fields, int from, int size, String sort, String order) {
-    // Save as 0-base index where 0 and 1 are 0
-    this.from = from < 2 ? 0 : from - 1;
-    // Prevent massive requests
-    this.size = size < 1 ? DEFAULT_SIZE : size > MAX_SIZE ? MAX_SIZE : size;
-    this.sort = sort;
-    this.order = order.toUpperCase();
+  public static Builder builder() {
+    return new Builder();
+  }
 
-    this.filters = Strings.isNullOrEmpty(filters) ? MAPPER.createObjectNode() : JsonUtils.readRequestString(filters);
-    this.fields = Strings.isNullOrEmpty(fields) ? new String[] {} : fields.split(",\\ ?");
+  @Accessors(fluent = true)
+  @NoArgsConstructor
+  public static final class Builder {
+
+    private JsonNode filters = MAPPER.createObjectNode();
+    private String[] fields = {};
+    private int from = 0;
+    private int size = 0;
+    private String sort = "";
+    private String order = "";
+
+    public RequestSearchQuery build() {
+      return new RequestSearchQuery(filters, fields, from, size, sort, order);
+    }
+
+    public Builder filters(String filters) {
+      this.filters = Strings.isNullOrEmpty(filters) ? this.filters : JsonUtils.readRequestString(filters);
+      return this;
+    }
+
+    public Builder fields(String fields) {
+      this.fields = Strings.isNullOrEmpty(fields) ? this.fields : fields.split(",\\ ?");
+      return this;
+    }
+
+    public Builder from(int from) {
+      // Save as 0-base index where 0 and 1 are 0
+      this.from = from < 2 ? 0 : from - 1;
+      return this;
+    }
+
+    public Builder size(int size) {
+      // Prevent massive requests
+      this.size = size < 1 ? DEFAULT_SIZE : size > MAX_SIZE ? MAX_SIZE : size;
+      return this;
+    }
+
+    public Builder sort(String sort) {
+      this.sort = sort;
+      return this;
+    }
+
+    public Builder order(String order) {
+      this.order = order.toUpperCase();
+      return this;
+    }
   }
 }

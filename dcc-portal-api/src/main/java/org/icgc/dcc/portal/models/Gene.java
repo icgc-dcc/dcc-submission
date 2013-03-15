@@ -22,17 +22,16 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 public final class Gene {
-  public static String[] FIELDS = new String[] {"symbol", "description", "chromosome", "start", "end", "band",
-      "gene_type"};
+  public static final String[] FIELDS = {"symbol", "description", "chromosome", "start", "end", "band", "gene_type"};
 
-  public static String INDEX = "icgc_demo";
+  public static final String INDEX = "icgc_demo";
 
-  public static String TYPE = "genes";
+  public static final String TYPE = "genes";
 
-  public static ImmutableMap<String, ImmutableList<String>> FACETS = ImmutableMap.of("terms",
+  public static final ImmutableMap<String, ImmutableList<String>> FACETS = ImmutableMap.of("terms",
       ImmutableList.of("gene_type"));
 
-  public static ImmutableMap<String, ImmutableList<String>> FILTERS = ImmutableMap.of("terms",
+  public static final ImmutableMap<String, ImmutableList<String>> FILTERS = ImmutableMap.of("terms",
       ImmutableList.of("gene_type", "symbol"), "ranges", ImmutableList.of(""), "locations",
       ImmutableList.of("gene_location"));
 }

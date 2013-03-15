@@ -19,6 +19,7 @@ package org.icgc.dcc.portal.services;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.elasticsearch.index.query.*;
@@ -30,13 +31,19 @@ import static org.icgc.dcc.portal.core.JsonUtils.MAPPER;
 
 public class FilterService {
 
+
   private static final TypeReference<ArrayList<String>> TYPE_REF = new TypeReference<ArrayList<String>>() {};
+
+  private static final String RANGE_SPLIT = "-";
+
+  private static final String CHR_SPLIT = ":";
 
   public static NestedFilterBuilder buildNestedFilter(String key, AndFilterBuilder andFilters) {
     return FilterBuilders.nestedFilter(key, andFilters);
   }
 
-  public static AndFilterBuilder buildFilters(ImmutableMap<String, ImmutableList<String>> modelFilters, JsonNode filters) {
+  public static AndFilterBuilder buildAndFilters(ImmutableMap<String, ImmutableList<String>> modelFilters,
+      JsonNode filters) {
     AndFilterBuilder andFilter = FilterBuilders.andFilter();
     for (String key : modelFilters.get("terms")) {
       if (filters.has(key)) {
@@ -76,14 +83,14 @@ public class FilterService {
 
   private static FilterBuilder parseChrLocation(String location) {
     AndFilterBuilder locationFilter = FilterBuilders.andFilter();
-    String[] parts = location.split(":");
-    locationFilter.add(FilterBuilders.termFilter("chromosome", Integer.parseInt(parts[0].replaceAll("[a-zA-Z]", ""))));
+    String[] parts = location.split(CHR_SPLIT);
+    locationFilter.add(FilterBuilders.termFilter("chromosome", parseChromosome(parts[0])));
     if (parts.length == 2) {
-      String[] range = parts[1].split("-");
-      int start = range[0].equals("") ? 0 : Integer.parseInt(range[0].replaceAll(",", ""));
+      String[] range = parts[1].split(RANGE_SPLIT);
+      int start = Strings.isNullOrEmpty(range[0]) ? 0 : parseLocation(range[0]);
       locationFilter.add(FilterBuilders.numericRangeFilter("start").gte(start));
       if (range.length == 2) {
-        int end = Integer.parseInt(range[1].replaceAll(",", ""));
+        int end = parseLocation(range[1]);
         locationFilter.add(FilterBuilders.numericRangeFilter("end").lte(end));
       }
     }
@@ -93,11 +100,11 @@ public class FilterService {
   private static FilterBuilder buildRangeFilter(JsonNode json, String key) {
     NumericRangeFilterBuilder rangeFilter = FilterBuilders.numericRangeFilter(key);
     String range = MAPPER.convertValue(json.get(key), String.class);
-    String[] parts = range.split("-");
-    int from = parts[0].equals("") ? 0 : Integer.parseInt(parts[0].replaceAll(",", ""));
+    String[] parts = range.split(RANGE_SPLIT);
+    int from = Strings.isNullOrEmpty(parts[0]) ? 0 : parseLocation(parts[0]);
     rangeFilter.gte(from);
     if (parts.length == 2) {
-      int to = Integer.parseInt(parts[1].replaceAll(",", ""));
+      int to = parseLocation(parts[1]);
       rangeFilter.lte(to);
     }
     return rangeFilter;
@@ -113,6 +120,14 @@ public class FilterService {
       termFilter = FilterBuilders.termFilter(key, term);
     }
     return termFilter;
+  }
+
+  private static int parseLocation(String loc) {
+    return Integer.parseInt(loc.replaceAll(",", ""));
+  }
+
+  private static int parseChromosome(String chr) {
+    return Integer.parseInt(chr.replaceAll("[a-zA-Z]", ""));
   }
 
 }

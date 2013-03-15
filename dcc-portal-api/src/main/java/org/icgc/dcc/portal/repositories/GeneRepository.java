@@ -53,14 +53,14 @@ public class GeneRepository extends BaseRepository {
     if (filters == null) {
       return FilterBuilders.matchAllFilter();
     } else {
-      AndFilterBuilder geneFilters = FilterService.buildFilters(Gene.FILTERS, filters);
+      AndFilterBuilder geneFilters = FilterService.buildAndFilters(Gene.FILTERS, filters);
       if (filters.has(Donor.NAME)) {
-        geneFilters
-            .add(FilterService.buildNestedFilter(Donor.NAME, FilterService.buildFilters(Donor.FILTERS, filters)));
+        geneFilters.add(FilterService.buildNestedFilter(Donor.NAME,
+            FilterService.buildAndFilters(Donor.FILTERS, filters)));
       }
       if (filters.has(Mutation.NAME)) {
         geneFilters.add(FilterService.buildNestedFilter(Mutation.NAME,
-            FilterService.buildFilters(Mutation.FILTERS, filters)));
+            FilterService.buildAndFilters(Mutation.FILTERS, filters)));
       }
       return geneFilters;
     }

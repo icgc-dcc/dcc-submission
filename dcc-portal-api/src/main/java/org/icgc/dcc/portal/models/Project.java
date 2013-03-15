@@ -22,18 +22,18 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 public final class Project {
-  public static String[] FIELDS = new String[] {"project_name", "primary_site", "country", "total_donor_count",
+  public static final String[] FIELDS = {"project_name", "primary_site", "country", "total_donor_count",
       "ssm_tested_donor_count", "cnsm_tested_donor_count", "exp_tested_donor_count", "meth_tested_donor_count",
       "pubmed_id"};
 
-  public static String INDEX = "icgc_demo";
+  public static final String INDEX = "icgc_demo";
 
-  public static String TYPE = "projects";
+  public static final String TYPE = "projects";
 
-  public static ImmutableMap<String, ImmutableList<String>> FACETS = ImmutableMap.of("terms",
+  public static final ImmutableMap<String, ImmutableList<String>> FACETS = ImmutableMap.of("terms",
       ImmutableList.of("project_name", "primary_site", "country", "available_profiling_data"));
 
-  public static ImmutableMap<String, ImmutableList<String>> FILTERS = ImmutableMap.of("terms",
+  public static final ImmutableMap<String, ImmutableList<String>> FILTERS = ImmutableMap.of("terms",
       ImmutableList.of("project_name", "primary_site", "country", "available_profiling_data"), "ranges",
       ImmutableList.of(""), "locations", ImmutableList.of(""));
 }

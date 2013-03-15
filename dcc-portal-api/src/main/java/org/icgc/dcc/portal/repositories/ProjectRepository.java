@@ -45,7 +45,7 @@ public class ProjectRepository extends BaseRepository {
     if (filters == null) {
       return FilterBuilders.matchAllFilter();
     } else {
-      return FilterService.buildFilters(Project.FILTERS, filters);
+      return FilterService.buildAndFilters(Project.FILTERS, filters);
     }
   }
 

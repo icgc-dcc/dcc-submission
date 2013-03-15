@@ -24,15 +24,16 @@ import com.google.common.collect.ImmutableMap;
 public final class Donor {
   public static final String NAME = "donor";
 
-  public static String[] FIELDS = new String[] {};
+  public static final String[] FIELDS = {};
 
-  public static String INDEX = "icgc_demo";
+  public static final String INDEX = "icgc_demo";
 
-  public static String TYPE = "donors";
+  public static final String TYPE = "donors";
 
-  public static ImmutableMap<String, ImmutableList<String>> FACETS = ImmutableMap.of("terms", ImmutableList.of(""));
+  public static final ImmutableMap<String, ImmutableList<String>> FACETS = ImmutableMap.of("terms",
+      ImmutableList.of(""));
 
-  public static ImmutableMap<String, ImmutableList<String>> FILTERS = ImmutableMap.of("terms", ImmutableList
+  public static final ImmutableMap<String, ImmutableList<String>> FILTERS = ImmutableMap.of("terms", ImmutableList
       .of("project", "primary_site", "donor_id", "gender", "tumour", "vital_status", "disease_status",
           "donor_release_type"), "ranges", ImmutableList.of("age_at_diagnosis", "survival_time",
       "donor_release_interval"), "locations", ImmutableList.of(""));
