@@ -234,6 +234,7 @@ public class IntegrationTest {
       // Tests codelists
       addOffendingCodeLists();
       addValidCodeLists();
+      addCodeListTerm();
 
       // release
       releaseInitialRelease();
@@ -346,6 +347,13 @@ public class IntegrationTest {
   private void addValidCodeLists() throws IOException {
     Response response =
         TestUtils.post(client, CODELISTS_ENDPOINT, "[{\"name\": \"someName\"}, {\"name\": \"someNewName\"}]");
+    assertEquals(Status.CREATED.getStatusCode(), response.getStatus());
+  }
+
+  private void addCodeListTerm() {
+    Response response =
+        TestUtils.post(client, CODELISTS_ENDPOINT + "/someName/terms",
+            "[{\"code\": \"88\", \"value\": \"v88\"}, {\"code\": \"99\", \"value\": \"v99\"}]");
     assertEquals(Status.CREATED.getStatusCode(), response.getStatus());
   }
 

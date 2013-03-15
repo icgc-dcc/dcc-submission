@@ -20,6 +20,7 @@ package org.icgc.dcc.dictionary.model;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import javax.validation.Valid;
 
@@ -29,6 +30,7 @@ import org.icgc.dcc.core.model.BaseEntity;
 import org.icgc.dcc.core.model.HasName;
 import org.icgc.dcc.dictionary.visitor.DictionaryElement;
 import org.icgc.dcc.dictionary.visitor.DictionaryVisitor;
+import org.icgc.dcc.validation.restriction.CodeListRestriction;
 
 import com.google.code.morphia.annotations.Entity;
 import com.google.code.morphia.annotations.Indexed;
@@ -36,8 +38,12 @@ import com.google.code.morphia.annotations.PrePersist;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.mongodb.BasicDBObject;
+
+import static com.google.common.collect.Sets.newLinkedHashSet;
 
 /**
  * Describes a dictionary that contains {@code FileSchema}ta and that may be used by some releases
@@ -147,5 +153,26 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
 
   public void addFile(FileSchema file) {
     this.files.add(file);
+  }
+
+  @JsonIgnore
+  public Set<String> getCodeListNames() { // TODO: add corresponding unit test(s) - see DCC-905
+    Set<String> codeListNames = newLinkedHashSet();
+    for(FileSchema fileSchema : getFiles()) { // TODO: use visitor instead
+      for(Field field : fileSchema.getFields()) {
+        for(Restriction restriction : field.getRestrictions()) {
+          if(restriction.getType().equals(CodeListRestriction.NAME)) {
+            BasicDBObject config = restriction.getConfig();
+            String codeListName = config.getString(CodeListRestriction.FIELD);
+            codeListNames.add(codeListName);
+          }
+        }
+      }
+    }
+    return ImmutableSet.copyOf(codeListNames);
+  }
+
+  public boolean usesCodeList(final String codeListName) {
+    return getCodeListNames().contains(codeListName);
   }
 }

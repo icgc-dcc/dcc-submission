@@ -111,11 +111,15 @@ public class ReleaseFileSystem {
 
   public void emptyValidationFolders() {
     for(String projectKey : release.getProjectKeys()) {
-      String validationStringPath = this.dccFileSystem.buildValidationDirStringPath(release, projectKey);
-      dccFileSystem.removeDirIfExist(validationStringPath);
-      dccFileSystem.createDirIfDoesNotExist(validationStringPath);
-      Log.info("emptied directory {} for project {} ", validationStringPath, projectKey);
+      emptyValidationFolder(projectKey);
     }
+  }
+
+  public void emptyValidationFolder(String projectKey) {
+    String validationStringPath = this.dccFileSystem.buildValidationDirStringPath(release, projectKey);
+    dccFileSystem.removeDirIfExist(validationStringPath);
+    dccFileSystem.createDirIfDoesNotExist(validationStringPath);
+    Log.info("emptied directory {} for project {} ", validationStringPath, projectKey);
   }
 
   public boolean isReadOnly() {

@@ -111,7 +111,7 @@ public class DictionaryResource {
     if(oldDictionary == null) {
       return Response.status(Status.NOT_FOUND)
           .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, version)).build();
-    } else if(oldDictionary.getState() != DictionaryState.OPENED) {
+    } else if(oldDictionary.getState() != DictionaryState.OPENED) { // TODO: move check to dictionaries.update() instead
       return Response.status(Status.BAD_REQUEST)
           .entity(new ServerErrorResponseMessage(ServerErrorCode.RESOURCE_CLOSED, version)).build();
     } else if(newDictionary.getVersion() == null) {

@@ -89,6 +89,7 @@ public class CodeList extends BaseEntity implements HasName {
     return terms.contains(term);
   }
 
+  // TODO: lombokify below
   @Override
   public String toString() {
     return "CodeList [name=" + name + ", label=" + label + ", terms=" + terms + "]";
