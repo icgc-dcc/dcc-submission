@@ -22,7 +22,6 @@ import com.google.inject.Inject;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.FilterBuilder;
-import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.facet.FacetBuilders;
@@ -42,11 +41,8 @@ public class ProjectRepository extends BaseRepository {
   }
 
   FilterBuilder buildFilters(JsonNode filters) {
-    if (filters == null) {
-      return FilterBuilders.matchAllFilter();
-    } else {
-      return FilterService.buildAndFilters(Project.FILTERS, filters);
-    }
+    return FilterService.buildAndFilters(Project.FILTERS, filters);
+
   }
 
   SearchRequestBuilder addFacets(SearchRequestBuilder s, RequestSearchQuery requestSearchQuery) {

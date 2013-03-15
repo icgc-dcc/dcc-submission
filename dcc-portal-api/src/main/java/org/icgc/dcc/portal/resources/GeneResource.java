@@ -78,8 +78,6 @@ public class GeneResource {
   @Path("/{id}")
   @GET
   @Timed
-  // @CacheControl(immutable = true)
-  // @ResourceFilters(GetNotFoundResourceFilter.class)
   @ApiOperation(value = "Find a gene by id", notes = "If a gene does not exist with the specified id an error will be returned")
   @ApiErrors(value = {@ApiError(code = HttpStatus.NOT_FOUND_404, reason = "Gene not found")})
   public final Response find(@ApiParam(value = "Gene ID") @PathParam("id") String id) throws IOException {

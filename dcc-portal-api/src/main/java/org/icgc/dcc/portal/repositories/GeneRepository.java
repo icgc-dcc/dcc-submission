@@ -50,20 +50,16 @@ public class GeneRepository extends BaseRepository {
   }
 
   FilterBuilder buildFilters(JsonNode filters) {
-    if (filters == null) {
-      return FilterBuilders.matchAllFilter();
-    } else {
-      AndFilterBuilder geneFilters = FilterService.buildAndFilters(Gene.FILTERS, filters);
-      if (filters.has(Donor.NAME)) {
-        geneFilters.add(FilterService.buildNestedFilter(Donor.NAME,
-            FilterService.buildAndFilters(Donor.FILTERS, filters)));
-      }
-      if (filters.has(Mutation.NAME)) {
-        geneFilters.add(FilterService.buildNestedFilter(Mutation.NAME,
-            FilterService.buildAndFilters(Mutation.FILTERS, filters)));
-      }
-      return geneFilters;
+    AndFilterBuilder geneFilters = FilterService.buildAndFilters(Gene.FILTERS, filters);
+    if (filters.has(Donor.NAME)) {
+      geneFilters
+          .add(FilterService.buildNestedFilter(Donor.NAME, FilterService.buildAndFilters(Donor.FILTERS, filters)));
     }
+    if (filters.has(Mutation.NAME)) {
+      geneFilters.add(FilterService.buildNestedFilter(Mutation.NAME,
+          FilterService.buildAndFilters(Mutation.FILTERS, filters)));
+    }
+    return geneFilters;
   }
 
   SearchRequestBuilder addFacets(SearchRequestBuilder s, RequestSearchQuery requestSearchQuery) {

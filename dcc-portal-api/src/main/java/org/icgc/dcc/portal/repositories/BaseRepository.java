@@ -27,11 +27,14 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.FilterBuilder;
+import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.icgc.dcc.portal.request.RequestSearchQuery;
 import org.icgc.dcc.portal.results.FindAllResults;
 import org.icgc.dcc.portal.results.FindResults;
+
+import static org.icgc.dcc.portal.core.JsonUtils.MAPPER;
 
 @Data
 public abstract class BaseRepository {
@@ -62,11 +65,20 @@ public abstract class BaseRepository {
   }
 
   public final FindAllResults findAll(RequestSearchQuery requestSearchQuery) {
-    setFilter(buildFilters(requestSearchQuery.getFilters()));
+    setFilter(buildRequestFilters(requestSearchQuery.getFilters()));
     setQuery(buildQuery());
     SearchRequestBuilder s = buildSearchRequest(requestSearchQuery);
     s = addFacets(s, requestSearchQuery);
+    System.out.println(s);
     return new FindAllResults(s.execute().actionGet(), requestSearchQuery);
+  }
+
+  private FilterBuilder buildRequestFilters(JsonNode filters) {
+    if (filters.equals(MAPPER.createObjectNode())) {
+      return FilterBuilders.matchAllFilter();
+    } else {
+      return buildFilters(filters);
+    }
   }
 
   private GetRequestBuilder buildGetRequest(String id) {
@@ -82,15 +94,19 @@ public abstract class BaseRepository {
   }
 
   private String[] allowedFields(String[] searchedFields) {
-    Sets.SetView<String> intersection =
-        Sets.intersection(Sets.newHashSet(getFields()), Sets.newHashSet(searchedFields));
-    return intersection.toArray(new String[intersection.size()]);
+    if (searchedFields.length != 0) {
+      Sets.SetView<String> intersection =
+          Sets.intersection(Sets.newHashSet(getFields()), Sets.newHashSet(searchedFields));
+      return intersection.toArray(new String[intersection.size()]);
+    }
+
+    return getFields();
   }
 
   FilterBuilder setFacetFilter(String name, JsonNode filter) {
     JsonNode temp = filter.deepCopy();
     ((ObjectNode) temp).remove(name);
-    return buildFilters(temp);
+    return buildRequestFilters(temp);
   }
 
   abstract SearchRequestBuilder addFacets(SearchRequestBuilder searchRequestBuilder,

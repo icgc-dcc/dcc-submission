@@ -22,6 +22,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 public final class Gene {
+  public static final String NAME = "gene";
+
   public static final String[] FIELDS = {"symbol", "description", "chromosome", "start", "end", "band", "gene_type"};
 
   public static final String INDEX = "icgc_demo";

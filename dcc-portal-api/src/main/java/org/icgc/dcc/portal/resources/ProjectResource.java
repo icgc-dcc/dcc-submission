@@ -78,8 +78,6 @@ public class ProjectResource {
   @Path("/{id}")
   @GET
   @Timed
-  // @CacheControl(immutable = true)
-  // @ResourceFilters(GetNotFoundResourceFilter.class)
   @ApiOperation(value = "Find a project by id", notes = "If a project does not exist with the specified id an error will be returned")
   @ApiErrors(value = {@ApiError(code = HttpStatus.NOT_FOUND_404, reason = "Project not found")})
   public final Response get(@ApiParam(value = "Project ID") @PathParam("id") String id) throws IOException {
