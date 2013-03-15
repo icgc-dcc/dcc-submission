@@ -152,7 +152,7 @@ public class DataGenerator {
     return null;
   }
 
-  public String[] checkParameters(String leadJurisdiction, String tumourType, String institute, String platform) {
+  public static String[] checkParameters(String leadJurisdiction, String tumourType, String institution, String platform) {
     String[] error = new String[4];
     if(leadJurisdiction.length() != 2) {
       error[0] = "The lead jurisdiction is invalid";
@@ -160,10 +160,10 @@ public class DataGenerator {
     if(Integer.parseInt(tumourType) > 31 || Integer.parseInt(tumourType) < 1) {
       error[1] = "The tumour type is invalid";
     }
-    if(Integer.parseInt(institute) > 98 || Integer.parseInt(institute) < 1) {
+    if(Integer.parseInt(institution) > 98 || Integer.parseInt(institution) < 1) {
       error[2] = "The insitute is invalid";
     }
-    if(Integer.parseInt(platform) > 75 || Integer.parseInt(institute) < 1) {
+    if(Integer.parseInt(platform) > 75 || Integer.parseInt(institution) < 1) {
       error[3] = "The platform is invalid";
     }
     return error;

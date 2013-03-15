@@ -102,6 +102,13 @@ public class Main {
     String platform = config.getPlatform();
     Long seed = config.getSeed();
 
+    String[] errors = DataGenerator.checkParameters(leadJurisdiction, tumourType, institution, platform);
+    if(errors.length > 0) {
+      for(int i = 0; i < errors.length; i++) {
+        out.println(errors[i]);
+      }
+      return;
+    }
     // ArrayList<OptionalFile> optionalFiles = config.getOptionalFiles();
 
     List<ExperimentalFile> experimentalFiles = config.getExperimentalFiles();
@@ -112,8 +119,6 @@ public class Main {
         platform);
     test.createCoreFile(SAMPLE_SCHEMA_NAME, numberOfSpecimensPerDonor, leadJurisdiction, institution, tumourType,
         platform);
-
-    // Create loop to create optionalFiles here
 
     for(ExperimentalFile experimentalFile : experimentalFiles) {
       String fileType = experimentalFile.getFileType();
@@ -131,14 +136,6 @@ public class Main {
         test.createSecondaryFile(schemaName, numberOfLines, leadJurisdiction, institution, tumourType, platform);
       }
     }
-    /*
-     * Here make variables of all the config fields, and make an arraylist of ExperimentalFile objects and an arraylist
-     * of OptionalFile objects Make a method in DataGenerator for createCoreFile and createExpFile and createTempFile
-     * call the above three methods here using loops With in the createCoreFile and createExpFile and createTempFile,
-     * instantiate their respective objects (passing in UniqueID), and call the openFile method which will
-     * generateFileName open a stream and call the populateCoreFile, populateExpFile, populateTempFile Move on from
-     * there
-     */
   }
 
   private String getProgramName() {
