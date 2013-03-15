@@ -34,7 +34,7 @@ public class FindAllResults {
   private final ResultsPagination pagination;
 
   public FindAllResults(final SearchResponse response, final RequestSearchQuery requestSearchQuery) {
-    System.out.println(response);
+    // System.out.println(response);
     this.hits = buildResponseHits(response.getHits().getHits());
     this.facets = buildResponseFacets(response.getFacets());
     this.pagination = new ResultsPagination(response.getHits(), requestSearchQuery);
