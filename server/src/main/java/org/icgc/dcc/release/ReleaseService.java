@@ -549,7 +549,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   public void resetSubmission(final String releaseName, final String projectKey) {
     log.info("resetting submission for project {}", projectKey);
 
-    // Reset state and report in database (TODO: queue + currently validating)
+    // Reset state and report in database (TODO: queue + currently validating? - DCC-906)
     Release release = datastore().findAndModify( //
         datastore().createQuery(Release.class) //
             .filter("name = ", releaseName) //
@@ -561,6 +561,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     Submission submission = release.getSubmission(projectKey);
     if(submission == null || submission.getState() != SubmissionState.NOT_VALIDATED || submission.getReport() != null) {
       // TODO: DCC-902 (optimistic lock potential problem: what if this actually happens? - add a retry?)
+      log.error("If you see this, then DCC-902 MUST be addressed.");
       throw new ReleaseException("Resetting submission failed for project " + projectKey);
     }
 
