@@ -22,6 +22,7 @@ import java.io.File;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
+import org.jongo.Jongo;
 import org.jongo.MongoCollection;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -48,7 +49,7 @@ public class MongoImporter extends BaseMongoImportExport {
   private static final ObjectReader READER = MAPPER.reader(JsonNode.class);
 
   public MongoImporter(File sourceDirectory, DB targetDatabase) {
-    super(sourceDirectory, targetDatabase);
+    super(sourceDirectory, new Jongo(targetDatabase));
   }
 
   @Override
