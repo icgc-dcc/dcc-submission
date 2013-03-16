@@ -15,27 +15,51 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.generator;
+package org.icgc.dcc.generator.model;
 
-import lombok.ToString;
+import java.util.List;
 
-import com.beust.jcommander.Parameter;
+import org.icgc.dcc.dictionary.model.Term;
 
 /**
- * Command line options.
  * 
- * @author btiernay
  */
-@ToString
-public class Options {
+public class CodeListTerm {
+  private String fieldName;
 
-  @Parameter(names = { "-f", "--file" }, help = true, description = "Path to configuration file")
-  public String pathToConfigFile;
+  private List<Term> terms;
 
-  @Parameter(names = { "-v", "--version" }, help = true, description = "Show version")
-  public boolean version;
+  public CodeListTerm(String fieldName, List<Term> terms) {
+    this.fieldName = fieldName;
+    this.terms = terms;
+  }
 
-  @Parameter(names = { "-h", "--help" }, help = true, description = "Show help information")
-  public boolean help;
+  /**
+   * @return the fieldName
+   */
+  public String getFieldName() {
+    return fieldName;
+  }
+
+  /**
+   * @param fieldName the fieldName to set
+   */
+  public void setFieldName(String fieldName) {
+    this.fieldName = fieldName;
+  }
+
+  /**
+   * @return the terms
+   */
+  public List<Term> getTerms() {
+    return terms;
+  }
+
+  /**
+   * @param terms the terms to set
+   */
+  public void setTerms(List<Term> terms) {
+    this.terms = terms;
+  }
 
 }

@@ -17,25 +17,51 @@
  */
 package org.icgc.dcc.generator;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import lombok.Getter;
 import lombok.ToString;
 
-import com.beust.jcommander.Parameter;
+import org.codehaus.jackson.annotate.JsonProperty;
+import org.icgc.dcc.generator.model.ExperimentalFile;
+import org.icgc.dcc.generator.model.OptionalFile;
 
-/**
- * Command line options.
- * 
- * @author btiernay
- */
+@Getter
 @ToString
-public class Options {
+public class GeneratorConfig {
 
-  @Parameter(names = { "-f", "--file" }, help = true, description = "Path to configuration file")
-  public String pathToConfigFile;
+  @JsonProperty
+  private String outputDirectory;
 
-  @Parameter(names = { "-v", "--version" }, help = true, description = "Show version")
-  public boolean version;
+  @JsonProperty
+  private Integer numberOfDonors;
 
-  @Parameter(names = { "-h", "--help" }, help = true, description = "Show help information")
-  public boolean help;
+  @JsonProperty
+  private Integer numberOfSpecimensPerDonor;
+
+  @JsonProperty
+  private Integer numberOfSamplesPerSpecimen;
+
+  @JsonProperty
+  private String leadJurisdiction;
+
+  @JsonProperty
+  private String tumourType;
+
+  @JsonProperty
+  private String institution;
+
+  @JsonProperty
+  private String platform;
+
+  @JsonProperty
+  private Long seed;
+
+  @JsonProperty
+  private ArrayList<OptionalFile> optionalFiles;
+
+  @JsonProperty
+  private List<ExperimentalFile> experimentalFiles;
 
 }
