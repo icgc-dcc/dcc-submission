@@ -15,22 +15,33 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.generator;
+package org.icgc.dcc.generator.config;
 
-import java.io.IOException;
+import java.io.File;
 
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.junit.Test;
+import lombok.Delegate;
+import lombok.SneakyThrows;
+import lombok.experimental.Value;
 
-/**
- * 
- */
-public class MainTest {
-  @Test
-  public void test() throws JsonParseException, JsonMappingException, IOException {
-    String[] x = { "src/main/conf/config.yaml" };
-    Main main = new Main();
-    main.generate(x);
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+
+@Value
+public class GeneratorConfigFile {
+
+  private static final ObjectMapper MAPPER = new ObjectMapper(new YAMLFactory());
+
+  @Delegate
+  File file;
+
+  @SneakyThrows
+  public GeneratorConfig read() {
+    return MAPPER.readValue(file, GeneratorConfig.class);
   }
+
+  @SneakyThrows
+  public void write(GeneratorConfig config) {
+    MAPPER.writeValue(file, config);
+  }
+
 }

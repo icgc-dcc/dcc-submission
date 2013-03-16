@@ -16,7 +16,7 @@
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc.generator;
+package org.icgc.dcc.generator.core;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
