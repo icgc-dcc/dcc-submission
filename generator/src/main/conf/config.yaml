@@ -1,14 +1,19 @@
-#This is where all the files are added
-outputDirectory: /home/azad/Desktop/
+# This is where all the files are generated to
+outputDirectory: target/
+
+# TODO: Add comments
 numberOfDonors: 500
 numberOfSpecimensPerDonor: 4
 numberOfSamplesPerSpecimen: 4
 leadJurisdiction: au
 tumourType: 01
 institution: 001
-platform: 1	
+platform: 1
+
+# This is to ensure consistent results across runs
 seed: 1234567
-#This is an array of all the experimental files. Append to the Array as necessary. Append in order (i.e. first meta, then primary, then secondary)
+
+# This is an array of all the experimental files. Append to the Array as necessary. Append in order (i.e. first meta, then primary, then secondary)
 experimentalFiles:
  - name: ssm
    fileType: m
