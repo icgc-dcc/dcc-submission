@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.generator;
+package org.icgc.dcc.generator.core;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -40,33 +40,21 @@ import com.google.common.base.Optional;
 /**
  * 
  */
-public class MetaFileGenerator {
+public class PrimaryFileGenerator {
 
-  private final String SAMPLE_SCHEMA_NAME = "sample";
+  public static final String TAB = DataGenerator.TAB;
 
-  private final String TAB = DataGenerator.TAB;
+  public static final String NEW_LINE = DataGenerator.NEW_LINE;
 
-  private final String NEW_LINE = DataGenerator.NEW_LINE;
+  public Long uniqueId = 0L;
 
-  private final String NonSystemMetaFileExpression = "exp_m";
+  public Integer uniqueInteger = 0;
 
-  private final String NonSystemMetaFileJunction = "jcn_m";
-
-  private final String NonSystemMetaFileMirna = "mirna_m";
-
-  private static final String tumourFieldKey = "tumourSampleTypeID";
-
-  private static final String controlFieldKey = "controlledSampleTypeID";
-
-  private static final String matchedSampleFieldName = "matched_sample_id";
-
-  private final Integer uniqueInteger = 0;
-
-  private final Double uniqueDecimal = 0.0;
+  public Double uniqueDecimal = 0.0;
 
   private final List<CodeListTerm> codeListArrayList = new ArrayList<CodeListTerm>();
 
-  private void populateFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, Writer writer) throws IOException {
+  public void populateFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, Writer writer) throws IOException {
     List<Relation> relations = schema.getRelations();
 
     int numberOfLines = calculateNumberOfLines(schema, numberOfLinesPerPrimaryKey, relations);
@@ -74,37 +62,22 @@ public class MetaFileGenerator {
     int numberOfIterations = DataGenerator.getForeignKey(schema, relations.get(0).getFields().get(0)).size() - 2;
 
     String schemaName = schema.getName();
-
     for(int i = 0; i < numberOfIterations; i++) {
       for(int j = 0; j < numberOfLines; j++) {
         int k = 0;
         for(Field currentField : schema.getFields()) {
           String output = null;
           String currentFieldName = currentField.getName();
-          // Is it a foreign key? if so then the only foreign key for a metafile is the matched/analyzed type from
-          // sample and therefore add accordingly.
-
           List<String> foreignKeyArray = DataGenerator.getForeignKey(schema, currentFieldName);
-          if(foreignKeyArray != null) {
-            boolean isNotMetaExpressionFile = !schemaName.equals(NonSystemMetaFileExpression);
-            boolean isNotMetaJunctionFile = !schemaName.equals(NonSystemMetaFileJunction);
-            boolean isNotMetaMirnaFile = !schemaName.equals(NonSystemMetaFileMirna);
 
-            if(isNotMetaExpressionFile && isNotMetaJunctionFile && isNotMetaMirnaFile) {
-              output = getSampleType(currentFieldName);
-            } else {
-              output = foreignKeyArray.get(i + 2);
-            }
+          if(foreignKeyArray != null) {
+            output = foreignKeyArray.get(i + 2);
           } else {
             output = getFieldValue(schema, schemaName, k, currentField, currentFieldName);
           }
 
           if(DataGenerator.isUniqueField(schema.getUniqueFields(), currentFieldName)) {
-            for(List<String> primaryKey : DataGenerator.getListOfPrimaryKeys()) {
-              if(primaryKey.get(0).equals(schemaName) && primaryKey.get(1).equals(currentFieldName)) {
-                primaryKey.add(output);
-              }
-            }
+            DataGenerator.getPrimaryKey(schemaName, currentFieldName).add(output);
           }
 
           writer.write(output + TAB);
@@ -112,37 +85,6 @@ public class MetaFileGenerator {
         writer.write(NEW_LINE);
       }
       numberOfLines = calculateNumberOfLines(schema, numberOfLinesPerPrimaryKey, relations);
-    }
-  }
-
-  /**
-   * @param schema
-   * @param numberOfLinesPerPrimaryKey
-   * @param relations
-   * @return
-   */
-  private int calculateNumberOfLines(FileSchema schema, Integer numberOfLinesPerPrimaryKey, List<Relation> relations) {
-    if(relations.size() > 0 && relations.get(0).isBidirectional()) {
-      return DataGenerator.randomIntGenerator(1, numberOfLinesPerPrimaryKey);
-    } else {
-      return DataGenerator.randomIntGenerator(0, numberOfLinesPerPrimaryKey);
-    }
-  }
-
-  /**
-   * @param currentField
-   * @return
-   */
-
-  private String getSampleType(String currentFieldName) {
-    if(currentFieldName.equals(matchedSampleFieldName)) {
-      List<String> tumourTypeIDs = DataGenerator.getPrimaryKey(SAMPLE_SCHEMA_NAME, tumourFieldKey);
-      Integer randomInteger = DataGenerator.randomIntGenerator(2, tumourTypeIDs.size() - 3);
-      return tumourTypeIDs.get(randomInteger);
-    } else {
-      List<String> controlTypeIDs = DataGenerator.getPrimaryKey(SAMPLE_SCHEMA_NAME, controlFieldKey);
-      Integer randomInteger = DataGenerator.randomIntGenerator(2, controlTypeIDs.size() - 3);
-      return controlTypeIDs.get(randomInteger);
     }
   }
 
@@ -172,12 +114,26 @@ public class MetaFileGenerator {
     return output;
   }
 
+  /**
+   * @param schema
+   * @param numberOfLinesPerPrimaryKey
+   * @param relations
+   * @return
+   */
+  private int calculateNumberOfLines(FileSchema schema, Integer numberOfLinesPerPrimaryKey, List<Relation> relations) {
+    if(relations.size() > 0 && relations.get(0).isBidirectional()) {
+      return DataGenerator.randomIntGenerator(1, numberOfLinesPerPrimaryKey);
+    } else {
+      return DataGenerator.randomIntGenerator(0, numberOfLinesPerPrimaryKey);
+    }
+  }
+
   public void createFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
       String institution, String tumourType, String platform) throws IOException {
     boolean isCore = false;
-    String fileURL =
+    String fileUrl =
         DataGenerator.generateFileName(schema.getName(), leadJurisdiction, institution, tumourType, platform, isCore);
-    File outputFile = new File(fileURL);
+    File outputFile = new File(fileUrl);
     outputFile.createNewFile();
     @Cleanup
     BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile));

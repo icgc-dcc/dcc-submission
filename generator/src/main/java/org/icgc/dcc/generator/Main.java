@@ -21,17 +21,17 @@ import static java.lang.System.err;
 import static java.lang.System.out;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.List;
 
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.icgc.dcc.generator.model.ExperimentalFile;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+
+import org.icgc.dcc.generator.cli.Options;
+import org.icgc.dcc.generator.config.GeneratorConfig;
+import org.icgc.dcc.generator.config.GeneratorConfigFile;
+import org.icgc.dcc.generator.service.GeneratorService;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
 /**
  * Command line utility used to generate ICGC data sets. In DataGenerator there's a a static
@@ -40,29 +40,17 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
  * name of the associated FileSchema and the second element holds the name of the Field.
  */
 
+@Slf4j
 public class Main {
 
   private final Options options = new Options();
 
-  private static final String DONOR_SCHEMA_NAME = "donor";
-
-  private static final String SAMPLE_SCHEMA_NAME = "sample";
-
-  private static final String SPECIMEN_SCHEMA_NAME = "specimen";
-
-  private static final String META_FILE_TYPE = "m";
-
-  private static final String PRIMARY_FILE_TYPE = "p";
-
-  private static final String EXPRESSION_PRIMARY_FILE_TYPE = "g";
-
-  private static final String SECONDARY_FILE_TYPE = "s";
-
-  public static void main(String... args) throws JsonParseException, JsonMappingException, IOException {
+  public static void main(String... args) {
     new Main().run(args);
   }
 
-  private void run(String... args) throws JsonParseException, JsonMappingException, IOException {
+  @SneakyThrows
+  private void run(String... args) {
     JCommander cli = new JCommander(options);
     cli.setProgramName(getProgramName());
 
@@ -79,99 +67,26 @@ public class Main {
         return;
       }
 
-      generate(args);
+      GeneratorConfig config = read(options.config);
+      generate(config);
     } catch(ParameterException pe) {
       err.printf("dcc-generator: %s%n", pe.getMessage());
       err.printf("Try '%s --help' for more information.%n", getProgramName());
     }
   }
 
-  public void generate(String[] args) throws JsonParseException, JsonMappingException, IOException {
-    String pathToConfigFile = args[0];
-
-    ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-    GeneratorConfig config = mapper.readValue(new File(pathToConfigFile), GeneratorConfig.class);
-
-    String outputDirectory = config.getOutputDirectory();
-    Integer numberOfDonors = config.getNumberOfDonors();
-    Integer numberOfSpecimensPerDonor = config.getNumberOfSpecimensPerDonor();
-    Integer numberOfSamplesPerDonor = config.getNumberOfSamplesPerSpecimen();
-    String leadJurisdiction = config.getLeadJurisdiction();
-    String tumourType = config.getTumourType();
-    String institution = config.getInstitution();
-    String platform = config.getPlatform();
-    Long seed = config.getSeed();
-    // ArrayList<OptionalFile> optionalFiles = config.getOptionalFiles();
-    List<ExperimentalFile> experimentalFiles = config.getExperimentalFiles();
-
-    boolean errorsTrue = checkParameters(leadJurisdiction, tumourType, institution, platform);
-    if(errorsTrue) {
-      return;
-    }
-
-    generateFiles(outputDirectory, numberOfDonors, numberOfSpecimensPerDonor, numberOfSamplesPerDonor,
-        leadJurisdiction, tumourType, institution, platform, seed, experimentalFiles);
+  @SneakyThrows
+  private GeneratorConfig read(File file) {
+    return new GeneratorConfigFile(file).read();
   }
 
-  /**
-   * @param leadJurisdiction
-   * @param tumourType
-   * @param institution
-   * @param platform
-   */
-  private boolean checkParameters(String leadJurisdiction, String tumourType, String institution, String platform) {
-    boolean errorsTrue = false;
-    String[] errors = DataGenerator.checkParameters(leadJurisdiction, tumourType, institution, platform);
-    for(int i = 0; i < errors.length; i++) {
-      if(errors[i] != null) {
-        errorsTrue = true;
-        out.println(errors[i]);
-      }
-    }
-    return errorsTrue;
-  }
+  private void generate(GeneratorConfig config) {
+    log.info("Generating using: {}", options);
+    GeneratorService service = new GeneratorService();
 
-  /**
-   * @param outputDirectory
-   * @param numberOfDonors
-   * @param numberOfSpecimensPerDonor
-   * @param numberOfSamplesPerDonor
-   * @param leadJurisdiction
-   * @param tumourType
-   * @param institution
-   * @param platform
-   * @param seed
-   * @param experimentalFiles
-   * @throws JsonParseException
-   * @throws JsonMappingException
-   * @throws IOException
-   */
-  private void generateFiles(String outputDirectory, Integer numberOfDonors, Integer numberOfSpecimensPerDonor,
-      Integer numberOfSamplesPerDonor, String leadJurisdiction, String tumourType, String institution, String platform,
-      Long seed, List<ExperimentalFile> experimentalFiles) throws JsonParseException, JsonMappingException, IOException {
-    DataGenerator test = new DataGenerator(outputDirectory, seed);
-    test.createCoreFile(DONOR_SCHEMA_NAME, numberOfDonors, leadJurisdiction, institution, tumourType, platform);
-    test.createCoreFile(SPECIMEN_SCHEMA_NAME, numberOfSamplesPerDonor, leadJurisdiction, institution, tumourType,
-        platform);
-    test.createCoreFile(SAMPLE_SCHEMA_NAME, numberOfSpecimensPerDonor, leadJurisdiction, institution, tumourType,
-        platform);
-
-    for(ExperimentalFile experimentalFile : experimentalFiles) {
-      String fileType = experimentalFile.getFileType();
-      String schemaName = experimentalFile.getName() + "_" + fileType;
-      Integer numberOfLines = experimentalFile.getNumberOfLinesPerForeignKey();
-
-      test.determineUniqueFields(DataGenerator.getSchema(schemaName));
-      if(fileType.equals(META_FILE_TYPE)) {
-        test.createMetaFile(schemaName, numberOfLines, leadJurisdiction, institution, tumourType, platform);
-      } else if(fileType.equals(PRIMARY_FILE_TYPE)) {
-        test.createPrimaryFile(schemaName, numberOfLines, leadJurisdiction, institution, tumourType, platform);
-      } else if(fileType.equals(EXPRESSION_PRIMARY_FILE_TYPE)) {
-        test.createPrimaryFile(schemaName, numberOfLines, leadJurisdiction, institution, tumourType, platform);
-      } else if(fileType.equals(SECONDARY_FILE_TYPE)) {
-        test.createSecondaryFile(schemaName, numberOfLines, leadJurisdiction, institution, tumourType, platform);
-      }
-    }
+    log.info("Generating: config = {}", config);
+    service.generate(config);
+    log.info("Finished generating");
   }
 
   private String getProgramName() {

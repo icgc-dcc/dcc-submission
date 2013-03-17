@@ -15,53 +15,29 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.generator;
+package org.icgc.dcc.generator.cli;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.File;
 
-import lombok.Getter;
 import lombok.ToString;
 
-import org.codehaus.jackson.annotate.JsonProperty;
-import org.icgc.dcc.generator.model.ExperimentalFile;
-import org.icgc.dcc.generator.model.OptionalFile;
+import com.beust.jcommander.Parameter;
 
-@Getter
+/**
+ * Command line options.
+ * 
+ * @author btiernay
+ */
 @ToString
-public class GeneratorConfig {
+public class Options {
 
-  @JsonProperty
-  private String outputDirectory;
+  @Parameter(names = { "-c", "--config" }, required = true, validateValueWith = FileValidator.class, description = "Configuration file (e.g. ./config.yaml)")
+  public File config;
 
-  @JsonProperty
-  private Integer numberOfDonors;
+  @Parameter(names = { "-v", "--version" }, help = true, description = "Show version")
+  public boolean version;
 
-  @JsonProperty
-  private Integer numberOfSpecimensPerDonor;
-
-  @JsonProperty
-  private Integer numberOfSamplesPerSpecimen;
-
-  @JsonProperty
-  private String leadJurisdiction;
-
-  @JsonProperty
-  private String tumourType;
-
-  @JsonProperty
-  private String institution;
-
-  @JsonProperty
-  private String platform;
-
-  @JsonProperty
-  private Long seed;
-
-  @JsonProperty
-  private ArrayList<OptionalFile> optionalFiles;
-
-  @JsonProperty
-  private List<ExperimentalFile> experimentalFiles;
+  @Parameter(names = { "-h", "--help" }, help = true, description = "Show help information")
+  public boolean help;
 
 }
