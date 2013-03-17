@@ -23,9 +23,10 @@ import java.util.List;
 import lombok.Getter;
 import lombok.ToString;
 
-import org.codehaus.jackson.annotate.JsonProperty;
 import org.icgc.dcc.generator.model.ExperimentalFile;
 import org.icgc.dcc.generator.model.OptionalFile;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Getter
 @ToString
