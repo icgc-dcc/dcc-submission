@@ -17,15 +17,13 @@
  */
 package org.icgc.dcc.generator.core;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import lombok.Cleanup;
@@ -38,7 +36,9 @@ import org.icgc.dcc.dictionary.model.Restriction;
 import org.icgc.dcc.dictionary.model.Term;
 import org.icgc.dcc.generator.model.CodeListTerm;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
+import com.google.common.io.Resources;
 
 /**
  * 
@@ -49,9 +49,9 @@ public class SecondaryFileGenerator {
 
   private static final String NEW_LINE = DataGenerator.NEW_LINE;
 
-  private static final String MIRNA_MIRBASE_FILE_URL = "src/main/resources/Mirna_MirbaseSystemFile.txt";
+  private static final String MIRNA_MIRBASE_FILE = "Mirna_MirbaseSystemFile.txt";
 
-  private static final String HSAPIENS_SYSTEM_FILE_URL = "src/main/resources/HsapSystemFile.txt";
+  private static final String HSAPIENS_SYSTEM_FILE = "HsapSystemFile.txt";
 
   private static final String SECONDARY_MIRNA_SCHEMA_NAME = "mirna_s";
 
@@ -75,10 +75,10 @@ public class SecondaryFileGenerator {
 
   public void populateMirnaFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, Writer writer)
       throws IOException {
-    @Cleanup
-    FileInputStream inputStream = new FileInputStream(MIRNA_MIRBASE_FILE_URL);
-    @Cleanup
-    BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF8"));
+
+    List<String> lines = Resources.readLines(Resources.getResource(MIRNA_MIRBASE_FILE), Charsets.UTF_8);
+    Iterator<String> iterator = lines.iterator();
+
     String schemaName = schema.getName();
     List<Relation> relations = schema.getRelations();
     int numberOfIterations = DataGenerator.getForeignKey(schema, relations.get(0).getFields().get(0)).size() - 2;
@@ -92,13 +92,13 @@ public class SecondaryFileGenerator {
           String output = null;
           String currentFieldName = currentField.getName();
           // Add system file fields
-          String line = reader.readLine();
           // Checks to see that end of file hasn't been reached
-          if(line != null) {
+          if(iterator.hasNext()) {
+            String line = iterator.next();
             output = getSystemFileOutput(currentField.getName(), line);
           } else { // Reset the reader to beginning of file and repeate
-            resetReader(inputStream, reader);
-            line = reader.readLine();
+            iterator = lines.iterator();
+            String line = iterator.next();
             output = getSystemFileOutput(currentField.getName(), line);
           }
 
@@ -132,15 +132,13 @@ public class SecondaryFileGenerator {
       }
       numberOfLines = calculateNumberOfLines(schema, numberOfLinesPerPrimaryKey, relations);
     }
-    reader.close();
   }
 
   public void populateSecondaryFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, Writer writer)
       throws IOException {
-    @Cleanup
-    FileInputStream inputStream = new FileInputStream(HSAPIENS_SYSTEM_FILE_URL);
-    @Cleanup
-    BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF8"));
+
+    List<String> lines = Resources.readLines(Resources.getResource(HSAPIENS_SYSTEM_FILE), Charsets.UTF_8);
+    Iterator<String> iterator = lines.iterator();
 
     List<Relation> relations = schema.getRelations();
     int numberOfLines = calculateNumberOfLines(schema, numberOfLinesPerPrimaryKey, relations);
@@ -155,14 +153,13 @@ public class SecondaryFileGenerator {
           String currentFieldName = currentField.getName();
 
           // Add system file fields
-          String line = reader.readLine();
-
-          if(line != null) {
+          if(iterator.hasNext()) {
+            String line = iterator.next();
             output = getSystemFileOutput(currentFieldName, line);
           } else {
             // End of file reached. Reset reader and readline
-            resetReader(inputStream, reader);
-            line = reader.readLine();
+            iterator = lines.iterator();
+            String line = iterator.next();
             output = getSystemFileOutput(currentField.getName(), line);
           }
           if(output == null) {
@@ -180,17 +177,6 @@ public class SecondaryFileGenerator {
       }
       numberOfLines = calculateNumberOfLines(schema, numberOfLinesPerPrimaryKey, relations);
     }
-    reader.close();
-  }
-
-  /**
-   * @param inputStream
-   * @return
-   * @throws IOException
-   */
-  private void resetReader(FileInputStream inputStream, BufferedReader reader) throws IOException {
-    inputStream.getChannel().position(0);
-    reader = new BufferedReader(new InputStreamReader(inputStream));
   }
 
   /**
