@@ -24,16 +24,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
+import lombok.SneakyThrows;
+
 import org.icgc.dcc.dictionary.model.CodeList;
 import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.dictionary.model.Relation;
 import org.icgc.dcc.dictionary.model.ValueType;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
 
 /**
@@ -68,7 +68,8 @@ public class DataGenerator {
 
   private static List<FileSchema> fileSchemas;
 
-  public DataGenerator(String outputDirectory, Long seed) throws JsonParseException, JsonMappingException, IOException {
+  @SneakyThrows
+  public DataGenerator(String outputDirectory, Long seed) {
 
     OUTPUT_DIRECTORY = outputDirectory;
 
