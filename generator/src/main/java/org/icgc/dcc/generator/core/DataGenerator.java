@@ -74,9 +74,6 @@ public class DataGenerator {
 
   private static Random random;
 
-  public DataGenerator() {
-  }
-
   @SneakyThrows
   public static void init(String outputDirectory, Long seed) {
     fileSchemas =
@@ -95,7 +92,7 @@ public class DataGenerator {
     return listOfPrimaryKeys;
   }
 
-  public void createCoreFile(String schemaName, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
+  public static void createCoreFile(String schemaName, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
       String institution, String tumourType, String platform) throws IOException {
     FileSchema schema = getSchema(schemaName);
     determineUniqueFields(schema);
@@ -103,22 +100,22 @@ public class DataGenerator {
     cfg.createFile(schema, numberOfLinesPerPrimaryKey, leadJurisdiction, institution, tumourType, platform);
   }
 
-  public void createMetaFile(String schemaName, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
+  public static void createMetaFile(String schemaName, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
       String institution, String tumourType, String platform) throws IOException {
     FileSchema schema = getSchema(schemaName);
     MetaFileGenerator mfg = new MetaFileGenerator();
     mfg.createFile(schema, numberOfLinesPerPrimaryKey, leadJurisdiction, institution, tumourType, platform);
   }
 
-  public void createPrimaryFile(String schemaName, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
+  public static void createPrimaryFile(String schemaName, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
       String institution, String tumourType, String platform) throws IOException {
     FileSchema schema = getSchema(schemaName);
     PrimaryFileGenerator pfg = new PrimaryFileGenerator();
     pfg.createFile(schema, numberOfLinesPerPrimaryKey, leadJurisdiction, institution, tumourType, platform);
   }
 
-  public void createSecondaryFile(String schemaName, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
-      String institution, String tumourType, String platform) throws IOException {
+  public static void createSecondaryFile(String schemaName, Integer numberOfLinesPerPrimaryKey,
+      String leadJurisdiction, String institution, String tumourType, String platform) throws IOException {
     FileSchema schema = getSchema(schemaName);
     SecondaryFileGenerator sfg = new SecondaryFileGenerator();
     sfg.createFile(schema, numberOfLinesPerPrimaryKey, leadJurisdiction, institution, tumourType, platform);
@@ -183,7 +180,7 @@ public class DataGenerator {
     }
   }
 
-  public void determineUniqueFields(FileSchema schema) {
+  public static void determineUniqueFields(FileSchema schema) {
     for(String uniqueField : schema.getUniqueFields()) {
       List<String> uniqueFieldArray = new ArrayList<String>();
       uniqueFieldArray.add(schema.getName());

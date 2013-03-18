@@ -71,29 +71,30 @@ public class GeneratorService {
       Integer numberOfSamplesPerDonor, String leadJurisdiction, String tumourType, String institution, String platform,
       Long seed, List<ExperimentalFile> experimentalFiles) throws JsonParseException, JsonMappingException, IOException {
 
-    DataGenerator test = new DataGenerator();
     DataGenerator.init(outputDirectory, seed);
 
-    test.createCoreFile(DONOR_SCHEMA_NAME, numberOfDonors, leadJurisdiction, institution, tumourType, platform);
-    test.createCoreFile(SPECIMEN_SCHEMA_NAME, numberOfSamplesPerDonor, leadJurisdiction, institution, tumourType,
-        platform);
-    test.createCoreFile(SAMPLE_SCHEMA_NAME, numberOfSpecimensPerDonor, leadJurisdiction, institution, tumourType,
-        platform);
+    DataGenerator
+        .createCoreFile(DONOR_SCHEMA_NAME, numberOfDonors, leadJurisdiction, institution, tumourType, platform);
+    DataGenerator.createCoreFile(SPECIMEN_SCHEMA_NAME, numberOfSamplesPerDonor, leadJurisdiction, institution,
+        tumourType, platform);
+    DataGenerator.createCoreFile(SAMPLE_SCHEMA_NAME, numberOfSpecimensPerDonor, leadJurisdiction, institution,
+        tumourType, platform);
 
     for(ExperimentalFile experimentalFile : experimentalFiles) {
       String fileType = experimentalFile.getFileType();
       String schemaName = experimentalFile.getName() + "_" + fileType;
       Integer numberOfLines = experimentalFile.getNumberOfLinesPerForeignKey();
 
-      test.determineUniqueFields(DataGenerator.getSchema(schemaName));
+      DataGenerator.determineUniqueFields(DataGenerator.getSchema(schemaName));
       if(fileType.equals(META_FILE_TYPE)) {
-        test.createMetaFile(schemaName, numberOfLines, leadJurisdiction, institution, tumourType, platform);
+        DataGenerator.createMetaFile(schemaName, numberOfLines, leadJurisdiction, institution, tumourType, platform);
       } else if(fileType.equals(PRIMARY_FILE_TYPE)) {
-        test.createPrimaryFile(schemaName, numberOfLines, leadJurisdiction, institution, tumourType, platform);
+        DataGenerator.createPrimaryFile(schemaName, numberOfLines, leadJurisdiction, institution, tumourType, platform);
       } else if(fileType.equals(EXPRESSION_PRIMARY_FILE_TYPE)) {
-        test.createPrimaryFile(schemaName, numberOfLines, leadJurisdiction, institution, tumourType, platform);
+        DataGenerator.createPrimaryFile(schemaName, numberOfLines, leadJurisdiction, institution, tumourType, platform);
       } else if(fileType.equals(SECONDARY_FILE_TYPE)) {
-        test.createSecondaryFile(schemaName, numberOfLines, leadJurisdiction, institution, tumourType, platform);
+        DataGenerator.createSecondaryFile(schemaName, numberOfLines, leadJurisdiction, institution, tumourType,
+            platform);
       }
     }
   }
