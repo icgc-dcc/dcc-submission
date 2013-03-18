@@ -20,7 +20,17 @@
       <groupId>org.icgc.dcc</groupId>
       <artifactId>dcc-core</artifactId>
       <version>${project.version}</version>
-    </dependency>  
+    </dependency>
+
+    <!-- JSON -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+    </dependency>
 
     <!-- Utilities -->
     <dependency>
@@ -37,7 +47,7 @@
       <artifactId>externalsortinginjava</artifactId>
       <scope>compile</scope>
     </dependency>
-    
+
     <!-- Testing - Unit, mocking, assertions -->
     <dependency>
       <groupId>junit</groupId>
