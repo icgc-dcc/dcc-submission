@@ -44,10 +44,6 @@ import com.google.common.io.Resources;
 
 public class DataGenerator {
 
-  private static final String CODELIST_FILE_NAME = "codeList.json";
-
-  private static final String DICTIONARY_FILE_NAME = "dictionary.json";
-
   public static final String TAB = "\t";
 
   public static final String NEW_LINE = "\n";;
@@ -61,6 +57,10 @@ public class DataGenerator {
   private static final String CONSTANT_DATE = "20130313";
 
   private static final DecimalFormat df = new DecimalFormat("#.00");
+
+  private static final String CODELIST_FILE_NAME = "codeList.json";
+
+  private static final String DICTIONARY_FILE_NAME = "dictionary.json";
 
   private static String outputDirectory;
 
