@@ -70,8 +70,10 @@ public class GeneratorService {
   private void generateFiles(String outputDirectory, Integer numberOfDonors, Integer numberOfSpecimensPerDonor,
       Integer numberOfSamplesPerDonor, String leadJurisdiction, String tumourType, String institution, String platform,
       Long seed, List<ExperimentalFile> experimentalFiles) throws JsonParseException, JsonMappingException, IOException {
+
     DataGenerator test = new DataGenerator();
     DataGenerator.init(outputDirectory, seed);
+
     test.createCoreFile(DONOR_SCHEMA_NAME, numberOfDonors, leadJurisdiction, institution, tumourType, platform);
     test.createCoreFile(SPECIMEN_SCHEMA_NAME, numberOfSamplesPerDonor, leadJurisdiction, institution, tumourType,
         platform);

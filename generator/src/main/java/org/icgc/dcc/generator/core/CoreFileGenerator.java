@@ -19,14 +19,16 @@ package org.icgc.dcc.generator.core;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import lombok.Cleanup;
 
+import org.apache.hadoop.fs.FileAlreadyExistsException;
 import org.icgc.dcc.dictionary.model.CodeList;
 import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.FileSchema;
@@ -56,23 +58,26 @@ public class CoreFileGenerator {
 
   private static final String sampleTypeFieldName = "analyzed_sample_id";
 
-  private final static List<String> tumourSampleTypeID = new ArrayList<String>(Arrays.asList("sample",
-      "tumourSampleTypeID"));
+  private Integer uniqueInteger;
 
-  private final static List<String> controlledSampleTypeID = new ArrayList<String>(Arrays.asList("sample",
-      "controlledSampleTypeID"));
+  private Double uniqueDecimal;
 
-  private static Integer uniqueInteger = 0;
+  private final Long uniqueId;
 
-  private static Double uniqueDecimal = 0.0;
+  public CoreFileGenerator() {
+    uniqueInteger = 0;
+    uniqueDecimal = 0.0;
+    uniqueId = 0L;
+  }
 
   private final static List<CodeListTerm> codeListArrayList = new ArrayList<CodeListTerm>();
 
-  public static void populateFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, BufferedWriter writer)
+  public void populateFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, BufferedWriter writer)
       throws IOException {
     if(schema.getName().equals("sample")) {
-      DataGenerator.getListOfPrimaryKeys().add(tumourSampleTypeID);
-      DataGenerator.getListOfPrimaryKeys().add(controlledSampleTypeID);
+      DataGenerator.getListOfPrimaryKeys().add(new ArrayList<String>(Arrays.asList("sample", "tumourSampleTypeID")));
+      DataGenerator.getListOfPrimaryKeys()
+          .add(new ArrayList<String>(Arrays.asList("sample", "controlledSampleTypeID")));
     }
     List<Relation> relations = schema.getRelations();
     int numberOfPrimaryKeyValues = calcuateNumberOfPrimaryKeyValues(schema, numberOfLinesPerPrimaryKey, relations);
@@ -124,8 +129,7 @@ public class CoreFileGenerator {
    * @param currentFieldName
    * @return
    */
-  private static String getFieldValue(FileSchema schema, String schemaName, int k, Field currentField,
-      String currentFieldName) {
+  private String getFieldValue(FileSchema schema, String schemaName, int k, Field currentField, String currentFieldName) {
     String output = null;
     if(codeListArrayList.size() > 0 && k < codeListArrayList.size()) {
       for(CodeListTerm codeListTerm : codeListArrayList) {
@@ -137,7 +141,8 @@ public class CoreFileGenerator {
     }
     if(output == null) {
       output =
-          DataGenerator.getFieldValue(schema.getUniqueFields(), schemaName, currentField, uniqueInteger, uniqueDecimal);
+          DataGenerator.getFieldValue(schema.getUniqueFields(), schemaName, currentField, uniqueId, uniqueInteger,
+              uniqueDecimal);
     }
     return output;
   }
@@ -176,15 +181,21 @@ public class CoreFileGenerator {
     }
   }
 
-  public static void createFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
+  public void createFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
       String institution, String tumourType, String platform) throws IOException {
+
     boolean isCore = true;
+
     String fileUrl =
         DataGenerator.generateFileName(schema.getName(), leadJurisdiction, institution, tumourType, platform, isCore);
+
     File outputFile = new File(fileUrl);
-    outputFile.createNewFile();
+    if(!outputFile.createNewFile()) {
+      throw new FileAlreadyExistsException("A File with the name: " + fileUrl + " already exists");
+    }
+
     @Cleanup
-    BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile));
+    BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile), "UTF-8"));
 
     for(String fieldName : schema.getFieldNames()) {
       writer.write(fieldName + TAB);

@@ -19,14 +19,16 @@ package org.icgc.dcc.generator.core;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
 import lombok.Cleanup;
 
+import org.apache.hadoop.fs.FileAlreadyExistsException;
 import org.icgc.dcc.dictionary.model.CodeList;
 import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.FileSchema;
@@ -42,17 +44,17 @@ import com.google.common.base.Optional;
  */
 public class MetaFileGenerator {
 
-  private final String SAMPLE_SCHEMA_NAME = "sample";
+  private static final String SAMPLE_SCHEMA_NAME = "sample";
 
-  private final String TAB = DataGenerator.TAB;
+  private static final String TAB = DataGenerator.TAB;
 
-  private final String NEW_LINE = DataGenerator.NEW_LINE;
+  private static final String NEW_LINE = DataGenerator.NEW_LINE;
 
-  private final String NonSystemMetaFileExpression = "exp_m";
+  private static final String NonSystemMetaFileExpression = "exp_m";
 
-  private final String NonSystemMetaFileJunction = "jcn_m";
+  private static final String NonSystemMetaFileJunction = "jcn_m";
 
-  private final String NonSystemMetaFileMirna = "mirna_m";
+  private static final String NonSystemMetaFileMirna = "mirna_m";
 
   private static final String tumourFieldKey = "tumourSampleTypeID";
 
@@ -60,11 +62,20 @@ public class MetaFileGenerator {
 
   private static final String matchedSampleFieldName = "matched_sample_id";
 
-  private final Integer uniqueInteger = 0;
+  private final Long uniqueId;
 
-  private final Double uniqueDecimal = 0.0;
+  private final Integer uniqueInteger;
 
-  private final List<CodeListTerm> codeListArrayList = new ArrayList<CodeListTerm>();
+  private final Double uniqueDecimal;
+
+  private final List<CodeListTerm> codeListArrayList;
+
+  public MetaFileGenerator() {
+    uniqueId = 0L;
+    uniqueInteger = 0;
+    uniqueDecimal = 0.0;
+    codeListArrayList = new ArrayList<CodeListTerm>();
+  }
 
   private void populateFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, Writer writer) throws IOException {
     List<Relation> relations = schema.getRelations();
@@ -167,20 +178,27 @@ public class MetaFileGenerator {
     }
     if(output == null) {
       output =
-          DataGenerator.getFieldValue(schema.getUniqueFields(), schemaName, currentField, uniqueInteger, uniqueDecimal);
+          DataGenerator.getFieldValue(schema.getUniqueFields(), schemaName, currentField, uniqueId, uniqueInteger,
+              uniqueDecimal);
     }
     return output;
   }
 
   public void createFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
       String institution, String tumourType, String platform) throws IOException {
+
     boolean isCore = false;
-    String fileURL =
+
+    String fileUrl =
         DataGenerator.generateFileName(schema.getName(), leadJurisdiction, institution, tumourType, platform, isCore);
-    File outputFile = new File(fileURL);
-    outputFile.createNewFile();
+
+    File outputFile = new File(fileUrl);
+    if(!outputFile.createNewFile()) {
+      throw new FileAlreadyExistsException("A File with the name: " + fileUrl + " already exists");
+    }
+
     @Cleanup
-    BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile));
+    BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile), "UTF-8"));
 
     for(String fieldName : schema.getFieldNames()) {
       writer.write(fieldName + TAB);

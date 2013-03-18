@@ -52,8 +52,6 @@ public class DataGenerator {
 
   private static final int UPPER_LIMIT_FOR_TEXT_FIELD = 1000000000;
 
-  private static Long uniqueId = 0L;
-
   public static final String TAB = "\t";
 
   public static final String NEW_LINE = "\n";
@@ -70,27 +68,27 @@ public class DataGenerator {
 
   public static List<CodeList> codeList;
 
-  private static Random random;
-
   private static List<List<String>> listOfPrimaryKeys = new ArrayList<List<String>>();
 
   private static List<FileSchema> fileSchemas = new ArrayList<FileSchema>();
 
-  @SneakyThrows
-  public DataGenerator() {
+  private static Random random;
 
+  public DataGenerator() {
+  }
+
+  @SneakyThrows
+  public static void init(String outputDirectory, Long seed) {
     fileSchemas =
         mapper.readValue(Resources.getResource(DICTIONARY_FILE_NAME), org.icgc.dcc.dictionary.model.Dictionary.class)
             .getFiles();
 
     codeList = mapper.readValue(Resources.getResource(CODELIST_FILE_NAME), new TypeReference<List<CodeList>>() {
     });
-
-  }
-
-  public static void init(String outputDirectory, Long seed) {
     OUTPUT_DIRECTORY = outputDirectory;
+
     random = new Random(seed);
+
   }
 
   public static List<List<String>> getListOfPrimaryKeys() {
@@ -99,16 +97,14 @@ public class DataGenerator {
 
   public void createCoreFile(String schemaName, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
       String institution, String tumourType, String platform) throws IOException {
-    uniqueId = 0L;
     FileSchema schema = getSchema(schemaName);
     determineUniqueFields(schema);
-    CoreFileGenerator.createFile(schema, numberOfLinesPerPrimaryKey, leadJurisdiction, institution, tumourType,
-        platform);
+    CoreFileGenerator cfg = new CoreFileGenerator();
+    cfg.createFile(schema, numberOfLinesPerPrimaryKey, leadJurisdiction, institution, tumourType, platform);
   }
 
   public void createMetaFile(String schemaName, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
       String institution, String tumourType, String platform) throws IOException {
-    uniqueId = 0L;
     FileSchema schema = getSchema(schemaName);
     MetaFileGenerator mfg = new MetaFileGenerator();
     mfg.createFile(schema, numberOfLinesPerPrimaryKey, leadJurisdiction, institution, tumourType, platform);
@@ -116,7 +112,6 @@ public class DataGenerator {
 
   public void createPrimaryFile(String schemaName, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
       String institution, String tumourType, String platform) throws IOException {
-    uniqueId = 0L;
     FileSchema schema = getSchema(schemaName);
     PrimaryFileGenerator pfg = new PrimaryFileGenerator();
     pfg.createFile(schema, numberOfLinesPerPrimaryKey, leadJurisdiction, institution, tumourType, platform);
@@ -124,7 +119,6 @@ public class DataGenerator {
 
   public void createSecondaryFile(String schemaName, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
       String institution, String tumourType, String platform) throws IOException {
-    uniqueId = 0L;
     FileSchema schema = getSchema(schemaName);
     SecondaryFileGenerator sfg = new SecondaryFileGenerator();
     sfg.createFile(schema, numberOfLinesPerPrimaryKey, leadJurisdiction, institution, tumourType, platform);
@@ -198,8 +192,8 @@ public class DataGenerator {
     }
   }
 
-  public static String getFieldValue(List<String> list, String schemaName, Field field, Integer uniqueInt,
-      Double uniqueDecimal) {
+  public static String getFieldValue(List<String> list, String schemaName, Field field, Long uniqueId,
+      Integer uniqueInt, Double uniqueDecimal) {
 
     String output = null;
     if(field.getValueType() == ValueType.TEXT) {

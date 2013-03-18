@@ -19,8 +19,9 @@ package org.icgc.dcc.generator.core;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -28,6 +29,7 @@ import java.util.List;
 
 import lombok.Cleanup;
 
+import org.apache.hadoop.fs.FileAlreadyExistsException;
 import org.icgc.dcc.dictionary.model.CodeList;
 import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.FileSchema;
@@ -67,9 +69,17 @@ public class SecondaryFileGenerator {
 
   private static final String SECONDARY_TRANSCRIPT_FIELD_NAME = "transcript_affected";
 
-  public static Integer uniqueInteger = 0;
+  private final Long uniqueId;
 
-  public static Double uniqueDecimal = 0.0;
+  private final Integer uniqueInteger;
+
+  private final Double uniqueDecimal;
+
+  public SecondaryFileGenerator() {
+    uniqueId = 0L;
+    uniqueInteger = 0;
+    uniqueDecimal = 0.0;
+  }
 
   private final List<CodeListTerm> codeListArrayList = new ArrayList<CodeListTerm>();
 
@@ -254,20 +264,27 @@ public class SecondaryFileGenerator {
     }
     if(output == null) {
       output =
-          DataGenerator.getFieldValue(schema.getUniqueFields(), schemaName, currentField, uniqueInteger, uniqueDecimal);
+          DataGenerator.getFieldValue(schema.getUniqueFields(), schemaName, currentField, uniqueId, uniqueInteger,
+              uniqueDecimal);
     }
     return output;
   }
 
   public void createFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
       String institution, String tumourType, String platform) throws IOException {
+
     boolean isCore = false;
-    String fileURL =
+
+    String fileUrl =
         DataGenerator.generateFileName(schema.getName(), leadJurisdiction, institution, tumourType, platform, isCore);
-    File outputFile = new File(fileURL);
-    outputFile.createNewFile();
+
+    File outputFile = new File(fileUrl);
+    if(!outputFile.createNewFile()) {
+      throw new FileAlreadyExistsException("A File with the name: " + fileUrl + " already exists");
+    }
+
     @Cleanup
-    BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile));
+    BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile), "UTF-8"));
 
     for(String fieldName : schema.getFieldNames()) {
       writer.write(fieldName + TAB);
