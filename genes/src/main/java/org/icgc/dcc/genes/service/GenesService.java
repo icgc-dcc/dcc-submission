@@ -18,7 +18,9 @@
 package org.icgc.dcc.genes.service;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.UnknownHostException;
 
 import lombok.AllArgsConstructor;
@@ -50,20 +52,17 @@ public class GenesService {
   private final GeneTransformer transformer = new GeneTransformer();
 
   @NonNull
-  private final File bsonFile;
-
-  @NonNull
   private final MongoURI mongoUri;
 
   @SneakyThrows
-  public void load() {
+  public void load(InputStream inputStream) {
     final MongoCollection genes = getTargetCollection(mongoUri);
     try {
       // Drop the current collection
       genes.drop();
 
       // Open BSON file stream
-      MappingIterator<JsonNode> iterator = getSourceIterator(bsonFile);
+      MappingIterator<JsonNode> iterator = getSourceIterator(inputStream);
 
       // Transform and save
       eachGene(iterator, new GeneCallback() {
@@ -80,6 +79,11 @@ public class GenesService {
     }
   }
 
+  @SneakyThrows
+  public void load(File file) {
+    load(new FileInputStream(file));
+  }
+
   MongoCollection getTargetCollection(MongoURI mongoUri) throws UnknownHostException {
     String database = mongoUri.getDatabase();
     String collection = mongoUri.getCollection();
@@ -93,9 +97,9 @@ public class GenesService {
     return genes;
   }
 
-  MappingIterator<JsonNode> getSourceIterator(File bsonFile) throws IOException, JsonProcessingException {
+  MappingIterator<JsonNode> getSourceIterator(InputStream inputStream) throws IOException, JsonProcessingException {
     ObjectMapper mapper = new ObjectMapper(new BsonFactory());
-    MappingIterator<JsonNode> iterator = mapper.reader(JsonNode.class).readValues(bsonFile);
+    MappingIterator<JsonNode> iterator = mapper.reader(JsonNode.class).readValues(inputStream);
 
     return iterator;
   }
