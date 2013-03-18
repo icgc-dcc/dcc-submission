@@ -24,6 +24,7 @@ angular.module('app.advanced').config(['$routeProvider', function ($routeProvide
       .when('/search', {
         templateUrl: 'views/advanced.html',
         controller: 'AdvancedController',
+        reloadOnSearch: false,
         resolve: {
           donors: ['$route', 'DonorsService', function ($route, DonorsService) {
             return DonorsService.query();

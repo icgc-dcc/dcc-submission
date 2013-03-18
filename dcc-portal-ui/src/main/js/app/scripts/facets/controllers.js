@@ -100,15 +100,15 @@ angular.module('app.facets.controllers').controller('FacetsController', [ "$scop
 
   $scope.$on('termFilter', function (event, type, facet, term) {
     toggleUriTermFilters(type, facet, term);
-    //$scope.$emit('toggleFilter');
+    $scope.$emit('refresh');
   });
   $scope.$on('rangeFilter', function (event, facet, from, to) {
     addUriRangeFilters(facet, from, to);
-    //$scope.$emit('toggleFilter');
+    $scope.$emit('refresh');
   });
 
   $scope.$on('locationFilter', function (event, facet, location) {
     addUriLocationFilters(facet, location);
-    //$scope.$emit('toggleFilter');
+    $scope.$emit('refresh');
   });
 }]);

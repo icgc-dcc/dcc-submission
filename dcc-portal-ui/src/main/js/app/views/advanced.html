@@ -10,7 +10,7 @@
                     <lmulti-facet facet-name="pathways" select2="geneList"></lmulti-facet>
                 </ul>
             </pane>
-            <pane active=true heading="Donors">
+            <pane heading="Donors">
                 <ul class="nav nav-list" ng-controller="FacetsController">
                     <term-facet type="donor" facet-name="project_name"
                                 facet="donors.facets['project_name']"></term-facet>
@@ -24,7 +24,7 @@
     <div class="span9">
         <div class="row-fluid"><h1 class="span">Advanced Search</h1></div>
         <tabs>
-            <pane heading="Genes">
+            <pane count="genes.pagination.total" heading="Genes">
                 <div class="row-fluid">
                     <div class="span4">
                         <div style="width:220px; height: 220px; background: #eee"></div>
@@ -59,7 +59,7 @@
                         <td>{{gene.fields.end}}</td>
                         <td>{{gene.fields.band}}</td>
                         <td>{{gene.fields.gene_type}}</td>
-                        <td>??</td>
+                        <td>{{gene.score}}</td>
                     </tr>
                     <tr ng-hide="genes.hits">
                         <td colspan="8">No results found</td>
@@ -67,7 +67,7 @@
                     </tbody>
                 </table>
             </pane>
-            <pane heading="Donors">
+            <pane count="donors.pagination.total" heading="Donors">
                 <div class="row-fluid">
                     <div class="span4">
                         <div style="width:220px; height: 220px; background: #eee"></div>

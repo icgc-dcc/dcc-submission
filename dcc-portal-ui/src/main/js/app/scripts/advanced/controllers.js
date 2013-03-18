@@ -19,9 +19,21 @@
 
 angular.module('app.advanced.controllers', []);
 
-angular.module('app.advanced.controllers').controller('AdvancedController', [ "$scope", 'donors', 'genes', function ($scope, donors, genes) {
+angular.module('app.advanced.controllers').controller('AdvancedController', [ "$scope", 'donors', 'genes', 'DonorsService', 'GenesService', function ($scope, donors, genes, DonorsService, GenesService) {
   $scope.donors = donors;
   $scope.genes = genes;
+
+  $scope.refresh = function () {
+    console.log('refresh');
+    GenesService.query().then(function (response) {
+      $scope.genes = response;
+    });
+    DonorsService.query().then(function (response) {
+      $scope.donors = response;
+    });
+  };
+
+  $scope.$on('refresh', $scope.refresh);
 }]);
 
 

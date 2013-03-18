@@ -24,6 +24,7 @@ angular.module('app.projects').config(['$routeProvider', function ($routeProvide
       .when('/projects', {
         templateUrl: 'views/projects.html',
         controller: 'ProjectsController',
+        reloadOnSearch: false,
         resolve: {
           projects: ['ProjectsService', function (ProjectsService) {
             return ProjectsService.query();
