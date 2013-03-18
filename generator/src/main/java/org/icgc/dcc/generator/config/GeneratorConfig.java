@@ -15,55 +15,54 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.dictionary.model;
+package org.icgc.dcc.generator.config;
 
-import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.icgc.dcc.dictionary.visitor.DictionaryElement;
-import org.icgc.dcc.dictionary.visitor.DictionaryVisitor;
+import lombok.Getter;
+import lombok.ToString;
 
-import com.google.code.morphia.annotations.Embedded;
-import com.mongodb.BasicDBObject;
+import org.icgc.dcc.generator.model.ExperimentalFile;
+import org.icgc.dcc.generator.model.OptionalFile;
 
-/**
- * Describes a restriction that applies to some {@code Field}(s)
- * 
- * TODO: possibly to some file schemata too in the future
- */
-@Embedded
-public class Restriction implements DictionaryElement, Serializable {
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-  public static final String CONFIG_VALUE_SEPARATOR = ","; // simple key-value pair for now, so the value can hold a
-                                                           // comma-separated list of values
+@Getter
+@ToString
+public class GeneratorConfig {
 
-  private String type; // TODO: enforce provided (DCC-904)
+  @JsonProperty
+  private String outputDirectory;
 
-  // TODO: enforce that if codelist, a name is provided (DCC-904)
-  private BasicDBObject config;
+  @JsonProperty
+  private Integer numberOfDonors;
 
-  public Restriction() {
-    super();
-  }
+  @JsonProperty
+  private Integer numberOfSpecimensPerDonor;
 
-  @Override
-  public void accept(DictionaryVisitor dictionaryVisitor) {
-    dictionaryVisitor.visit(this);
-  }
+  @JsonProperty
+  private Integer numberOfSamplesPerSpecimen;
 
-  public String getType() {
-    return type;
-  }
+  @JsonProperty
+  private String leadJurisdiction;
 
-  public void setType(String type) {
-    this.type = type;
-  }
+  @JsonProperty
+  private String tumourType;
 
-  public BasicDBObject getConfig() {
-    return config;
-  }
+  @JsonProperty
+  private String institution;
 
-  public void setConfig(BasicDBObject config) {
-    this.config = config;
-  }
+  @JsonProperty
+  private String platform;
+
+  @JsonProperty
+  private Long seed;
+
+  @JsonProperty
+  private ArrayList<OptionalFile> optionalFiles;
+
+  @JsonProperty
+  private List<ExperimentalFile> experimentalFiles;
 
 }

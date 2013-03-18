@@ -143,6 +143,9 @@ public class IntegrationTest {
   private static final String PROJECTS_TO_ENQUEUE =
       "[{\"key\": \"project1\", \"emails\": [\"a@a.ca\"]}, {\"key\": \"project2\", \"emails\": [\"a@a.ca\"]}, {\"key\": \"project3\", \"emails\": [\"a@a.ca\"]}]";
 
+  private static final String PROJECTS_TO_ENQUEUE2 =
+      "[{\"key\": \"project2\", \"emails\": [\"a@a.ca\"]}, {\"key\": \"project3\", \"emails\": [\"a@a.ca\"]}]";
+
   private static final String FS_DIR = "src/test/resources/integrationtest/fs";
 
   private static final String SYSTEM_FILES_DIR = "src/test/resources/integrationtest/fs/SystemFiles";
@@ -234,6 +237,14 @@ public class IntegrationTest {
       // Tests codelists
       addOffendingCodeLists();
       addValidCodeLists();
+      addCodeListTerm();
+      enqueueProjects(PROJECTS_TO_ENQUEUE2, Status.NO_CONTENT); // reenqueue them since they have been reset by adding
+                                                                // the term
+      Uninterruptibles.sleepUninterruptibly(30, TimeUnit.SECONDS);
+      // TODO: make it such that adding a term fixed one of the submissions
+      checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, ReleaseState.OPENED, //
+          Arrays.<SubmissionState> asList( //
+              SubmissionState.VALID, SubmissionState.INVALID, SubmissionState.INVALID));
 
       // release
       releaseInitialRelease();
@@ -349,6 +360,22 @@ public class IntegrationTest {
     assertEquals(Status.CREATED.getStatusCode(), response.getStatus());
   }
 
+  private void addCodeListTerm() throws Exception {
+    checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, ReleaseState.OPENED, //
+        Arrays.<SubmissionState> asList( //
+            SubmissionState.VALID, SubmissionState.INVALID, SubmissionState.INVALID));
+
+    Response response = // 1: deceased, 2: alive
+        TestUtils.post(client, CODELISTS_ENDPOINT + "/dr__donor_vital_status/terms",
+            "[{\"code\": \"3\", \"value\": \"new value 1\"}, {\"code\": \"4\", \"value\": \"new value 2\"}]");
+    assertEquals(Status.CREATED.getStatusCode(), response.getStatus());
+
+    // Only the INVALID ones should have been reset (DCC-851)
+    checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, ReleaseState.OPENED, //
+        Arrays.<SubmissionState> asList( //
+            SubmissionState.VALID, SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED));
+  }
+
   private void checkValidatedSubmission(String project, SubmissionState expectedSubmissionState) throws Exception {
     DetailedSubmission detailedSubmission;
     do {
@@ -381,7 +408,7 @@ public class IntegrationTest {
 
     // attempt releasing again
     response = TestUtils.post(client, NEXT_RELEASE_ENPOINT, SECOND_RELEASE);
-    assertEquals(Status.OK.getStatusCode(), response.getStatus());
+    assertEquals(TestUtils.asString(response), Status.OK.getStatusCode(), response.getStatus());
 
     // attempt releasing one too many times
     response = TestUtils.post(client, NEXT_RELEASE_ENPOINT, SECOND_RELEASE);

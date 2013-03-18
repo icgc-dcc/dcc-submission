@@ -17,25 +17,13 @@
  */
 package org.icgc.dcc.generator;
 
-import lombok.ToString;
+import org.junit.Test;
 
-import com.beust.jcommander.Parameter;
+public class IntegrationTest {
 
-/**
- * Command line options.
- * 
- * @author btiernay
- */
-@ToString
-public class Options {
-
-  @Parameter(names = { "-f", "--file" }, help = true, description = "Path to configuration file")
-  public String pathToConfigFile;
-
-  @Parameter(names = { "-v", "--version" }, help = true, description = "Show version")
-  public boolean version;
-
-  @Parameter(names = { "-h", "--help" }, help = true, description = "Show help information")
-  public boolean help;
+  @Test
+  public void test() {
+    Main.main("-c", "src/main/conf/config.yaml");
+  }
 
 }

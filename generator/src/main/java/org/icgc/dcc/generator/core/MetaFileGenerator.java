@@ -15,14 +15,14 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.generator;
+package org.icgc.dcc.generator.core;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import lombok.Cleanup;
@@ -40,79 +40,109 @@ import com.google.common.base.Optional;
 /**
  * 
  */
-public class CoreFileGenerator {
+public class MetaFileGenerator {
 
-  private static final String DONOR_SCHEMA_NAME = "donor";
+  private final String SAMPLE_SCHEMA_NAME = "sample";
 
-  private static final String SAMPLE_SCHEMA_NAME = "sample";
+  private final String TAB = DataGenerator.TAB;
 
-  private static final String TAB = DataGenerator.TAB;
+  private final String NEW_LINE = DataGenerator.NEW_LINE;
 
-  private static final String NEW_LINE = DataGenerator.NEW_LINE;
+  private final String NonSystemMetaFileExpression = "exp_m";
+
+  private final String NonSystemMetaFileJunction = "jcn_m";
+
+  private final String NonSystemMetaFileMirna = "mirna_m";
 
   private static final String tumourFieldKey = "tumourSampleTypeID";
 
   private static final String controlFieldKey = "controlledSampleTypeID";
 
-  private static final String sampleTypeFieldName = "analyzed_sample_id";
+  private static final String matchedSampleFieldName = "matched_sample_id";
 
-  private final static List<String> tumourSampleTypeID = new ArrayList<String>(Arrays.asList("sample",
-      "tumourSampleTypeID"));
+  private final Integer uniqueInteger = 0;
 
-  private final static List<String> controlledSampleTypeID = new ArrayList<String>(Arrays.asList("sample",
-      "controlledSampleTypeID"));
+  private final Double uniqueDecimal = 0.0;
 
-  private static Integer uniqueInteger = 0;
+  private final List<CodeListTerm> codeListArrayList = new ArrayList<CodeListTerm>();
 
-  private static Double uniqueDecimal = 0.0;
-
-  private final static List<CodeListTerm> codeListArrayList = new ArrayList<CodeListTerm>();
-
-  public static void populateFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, BufferedWriter writer)
-      throws IOException {
-    if(schema.getName().equals("sample")) {
-      DataGenerator.getListOfPrimaryKeys().add(tumourSampleTypeID);
-      DataGenerator.getListOfPrimaryKeys().add(controlledSampleTypeID);
-    }
+  private void populateFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, Writer writer) throws IOException {
     List<Relation> relations = schema.getRelations();
-    int numberOfPrimaryKeyValues = calcuateNumberOfPrimaryKeyValues(schema, numberOfLinesPerPrimaryKey, relations);
-    int numberOfLinesPerKey = calculateNumberOfLinesPerKey(schema, numberOfLinesPerPrimaryKey, relations);
+
+    int numberOfLines = calculateNumberOfLines(schema, numberOfLinesPerPrimaryKey, relations);
+
+    int numberOfIterations = DataGenerator.getForeignKey(schema, relations.get(0).getFields().get(0)).size() - 2;
+
     String schemaName = schema.getName();
-    for(int i = 0; i < numberOfPrimaryKeyValues; i++) {
-      for(int j = 0; j < numberOfLinesPerKey; j++) {
+
+    for(int i = 0; i < numberOfIterations; i++) {
+      for(int j = 0; j < numberOfLines; j++) {
         int k = 0;
         for(Field currentField : schema.getFields()) {
           String output = null;
           String currentFieldName = currentField.getName();
+          // Is it a foreign key? if so then the only foreign key for a metafile is the matched/analyzed type from
+          // sample and therefore add accordingly.
 
           List<String> foreignKeyArray = DataGenerator.getForeignKey(schema, currentFieldName);
-
           if(foreignKeyArray != null) {
-            output = foreignKeyArray.get(i + 2);
+            boolean isNotMetaExpressionFile = !schemaName.equals(NonSystemMetaFileExpression);
+            boolean isNotMetaJunctionFile = !schemaName.equals(NonSystemMetaFileJunction);
+            boolean isNotMetaMirnaFile = !schemaName.equals(NonSystemMetaFileMirna);
+
+            if(isNotMetaExpressionFile && isNotMetaJunctionFile && isNotMetaMirnaFile) {
+              output = getSampleType(currentFieldName);
+            } else {
+              output = foreignKeyArray.get(i + 2);
+            }
           } else {
             output = getFieldValue(schema, schemaName, k, currentField, currentFieldName);
           }
 
-          if(DataGenerator.isUniqueField(schema.getUniqueFields(), currentField.getName())) {
-            DataGenerator.getPrimaryKey(schemaName, currentField.getName()).add(output);
-          }
-          // Special case for sample, to add whether sample type is controlled or tumour
-          if(schema.getName().equals(SAMPLE_SCHEMA_NAME) && currentField.getName().equals(sampleTypeFieldName)) {
-
-            int x = DataGenerator.randomIntGenerator(0, 1);
-            // Instead here you could check if output(which will be the value of analyzed_sample_type) = 'c' then
-            // control one or, if output = 't' then go to control two
-            if(x == 0) {
-              DataGenerator.getPrimaryKey(SAMPLE_SCHEMA_NAME, tumourFieldKey).add(output);
-            } else {
-              DataGenerator.getPrimaryKey(SAMPLE_SCHEMA_NAME, controlFieldKey).add(output);
+          if(DataGenerator.isUniqueField(schema.getUniqueFields(), currentFieldName)) {
+            for(List<String> primaryKey : DataGenerator.getListOfPrimaryKeys()) {
+              if(primaryKey.get(0).equals(schemaName) && primaryKey.get(1).equals(currentFieldName)) {
+                primaryKey.add(output);
+              }
             }
           }
+
           writer.write(output + TAB);
         }
         writer.write(NEW_LINE);
       }
-      numberOfLinesPerKey = calculateNumberOfLinesPerKey(schema, numberOfLinesPerPrimaryKey, relations);
+      numberOfLines = calculateNumberOfLines(schema, numberOfLinesPerPrimaryKey, relations);
+    }
+  }
+
+  /**
+   * @param schema
+   * @param numberOfLinesPerPrimaryKey
+   * @param relations
+   * @return
+   */
+  private int calculateNumberOfLines(FileSchema schema, Integer numberOfLinesPerPrimaryKey, List<Relation> relations) {
+    if(relations.size() > 0 && relations.get(0).isBidirectional()) {
+      return DataGenerator.randomIntGenerator(1, numberOfLinesPerPrimaryKey);
+    } else {
+      return DataGenerator.randomIntGenerator(0, numberOfLinesPerPrimaryKey);
+    }
+  }
+
+  /**
+   * @param currentField
+   * @return
+   */
+
+  private String getSampleType(String currentFieldName) {
+    if(currentFieldName.equals(matchedSampleFieldName)) {
+      List<String> tumourTypeIDs = DataGenerator.getPrimaryKey(SAMPLE_SCHEMA_NAME, tumourFieldKey);
+      Integer randomInteger = DataGenerator.randomIntGenerator(2, tumourTypeIDs.size() - 3);
+      return tumourTypeIDs.get(randomInteger);
+    } else {
+      List<String> controlTypeIDs = DataGenerator.getPrimaryKey(SAMPLE_SCHEMA_NAME, controlFieldKey);
+      Integer randomInteger = DataGenerator.randomIntGenerator(2, controlTypeIDs.size() - 3);
+      return controlTypeIDs.get(randomInteger);
     }
   }
 
@@ -124,14 +154,14 @@ public class CoreFileGenerator {
    * @param currentFieldName
    * @return
    */
-  private static String getFieldValue(FileSchema schema, String schemaName, int k, Field currentField,
-      String currentFieldName) {
+  private String getFieldValue(FileSchema schema, String schemaName, int k, Field currentField, String currentFieldName) {
     String output = null;
     if(codeListArrayList.size() > 0 && k < codeListArrayList.size()) {
       for(CodeListTerm codeListTerm : codeListArrayList) {
         if(codeListTerm.getFieldName().equals(currentFieldName)) {
           List<Term> terms = codeListTerm.getTerms();
           output = terms.get(DataGenerator.randomIntGenerator(0, terms.size() - 1)).getCode();
+
         }
       }
     }
@@ -142,46 +172,12 @@ public class CoreFileGenerator {
     return output;
   }
 
-  /**
-   * @param schema
-   * @param numberOfLinesPerPrimaryKey
-   * @param relations
-   * @return
-   */
-  private static int calcuateNumberOfPrimaryKeyValues(FileSchema schema, Integer numberOfLinesPerPrimaryKey,
-      List<Relation> relations) {
-    int numberOfPrimaryKeyValues;
-    if(schema.getName().equals(DONOR_SCHEMA_NAME)) {
-      numberOfPrimaryKeyValues = numberOfLinesPerPrimaryKey;
-    } else {
-      numberOfPrimaryKeyValues = DataGenerator.getForeignKey(schema, relations.get(0).getFields().get(0)).size() - 2;
-    }
-    return numberOfPrimaryKeyValues;
-  }
-
-  /**
-   * @param schema
-   * @param numberOfLinesPerPrimaryKey
-   * @param relations
-   * @return
-   */
-  private static int calculateNumberOfLinesPerKey(FileSchema schema, Integer numberOfLinesPerPrimaryKey,
-      List<Relation> relations) {
-    if(schema.getName().equals(DONOR_SCHEMA_NAME)) {
-      return 1;
-    } else if(relations.size() > 0 && relations.get(0).isBidirectional()) {
-      return DataGenerator.randomIntGenerator(1, numberOfLinesPerPrimaryKey);
-    } else {
-      return DataGenerator.randomIntGenerator(0, numberOfLinesPerPrimaryKey);
-    }
-  }
-
-  public static void createFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
+  public void createFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
       String institution, String tumourType, String platform) throws IOException {
-    boolean isCore = true;
-    String fileUrl =
+    boolean isCore = false;
+    String fileURL =
         DataGenerator.generateFileName(schema.getName(), leadJurisdiction, institution, tumourType, platform, isCore);
-    File outputFile = new File(fileUrl);
+    File outputFile = new File(fileURL);
     outputFile.createNewFile();
     @Cleanup
     BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile));
@@ -197,14 +193,12 @@ public class CoreFileGenerator {
     populateFile(schema, numberOfLinesPerPrimaryKey, writer);
 
     writer.close();
-    uniqueInteger = 0;
-    uniqueDecimal = 0.0;
   }
 
   /**
    * @param schema
    */
-  private static void populateCodeListArray(FileSchema schema) {
+  private void populateCodeListArray(FileSchema schema) {
     for(Field field : schema.getFields()) {
       Optional<Restriction> restriction = field.getRestriction("codelist");
       if(restriction.isPresent()) {
@@ -218,5 +212,4 @@ public class CoreFileGenerator {
       }
     }
   }
-
 }

@@ -15,55 +15,29 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.dictionary.model;
+package org.icgc.dcc.generator.cli;
 
-import java.io.Serializable;
+import static java.lang.String.format;
 
-import org.icgc.dcc.dictionary.visitor.DictionaryElement;
-import org.icgc.dcc.dictionary.visitor.DictionaryVisitor;
+import java.io.File;
 
-import com.google.code.morphia.annotations.Embedded;
-import com.mongodb.BasicDBObject;
+import com.beust.jcommander.IValueValidator;
+import com.beust.jcommander.ParameterException;
 
-/**
- * Describes a restriction that applies to some {@code Field}(s)
- * 
- * TODO: possibly to some file schemata too in the future
- */
-@Embedded
-public class Restriction implements DictionaryElement, Serializable {
-
-  public static final String CONFIG_VALUE_SEPARATOR = ","; // simple key-value pair for now, so the value can hold a
-                                                           // comma-separated list of values
-
-  private String type; // TODO: enforce provided (DCC-904)
-
-  // TODO: enforce that if codelist, a name is provided (DCC-904)
-  private BasicDBObject config;
-
-  public Restriction() {
-    super();
-  }
+public class FileValidator implements IValueValidator<File> {
 
   @Override
-  public void accept(DictionaryVisitor dictionaryVisitor) {
-    dictionaryVisitor.visit(this);
+  public void validate(String name, File file) throws ParameterException {
+    if(file.exists() == false) {
+      parameterException(name, file, "does not exist");
+    }
+    if(file.isFile() == false) {
+      parameterException(name, file, "is not a file");
+    }
   }
 
-  public String getType() {
-    return type;
-  }
-
-  public void setType(String type) {
-    this.type = type;
-  }
-
-  public BasicDBObject getConfig() {
-    return config;
-  }
-
-  public void setConfig(BasicDBObject config) {
-    this.config = config;
+  private static void parameterException(String name, File file, String message) throws ParameterException {
+    throw new ParameterException(format("Invalid option: %s: %s %s", name, file.getAbsolutePath(), message));
   }
 
 }
