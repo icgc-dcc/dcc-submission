@@ -89,6 +89,9 @@ public class CodeListResource {
     return ResponseTimestamper.ok(optional.get()).build();
   }
 
+  /**
+   * NOTE: If allow more than updating label at some point, must reset Submission states...
+   */
   @PUT
   @Path("{name}")
   public Response updateCodeList(@PathParam("name") String name, @Valid CodeList newCodeList, @Context Request req,
