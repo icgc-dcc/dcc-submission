@@ -23,7 +23,7 @@ import static java.lang.System.out;
 import java.io.File;
 
 import org.icgc.dcc.genes.cli.Options;
-import org.icgc.dcc.genes.loader.GenesLoader;
+import org.icgc.dcc.genes.service.GenesService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -67,7 +67,7 @@ public class Main {
   }
 
   private void load() {
-    GenesLoader loader = new GenesLoader(options.file, options.mongoUri);
+    GenesService loader = new GenesService(options.file, options.mongoUri);
 
     log.info("Loading gene model using: {}", options);
     loader.load();
