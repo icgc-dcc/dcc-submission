@@ -44,9 +44,17 @@ import com.google.common.io.Resources;
 
 public class DataGenerator {
 
+  private static final String CODELIST_FILE_NAME = "codeList.json";
+
+  private static final String DICTIONARY_FILE_NAME = "dictionary.json";
+
+  private static final String CONSTANT_DATE = "20130313";
+
+  private static final int UPPER_LIMIT_FOR_TEXT_FIELD = 1000000000;
+
   private static Long uniqueId = 0L;
 
-  public static final String TAB = "\t";;
+  public static final String TAB = "\t";
 
   public static final String NEW_LINE = "\n";
 
@@ -66,22 +74,23 @@ public class DataGenerator {
 
   private static List<List<String>> listOfPrimaryKeys = new ArrayList<List<String>>();
 
-  private static List<FileSchema> fileSchemas;
+  private static List<FileSchema> fileSchemas = new ArrayList<FileSchema>();
 
   @SneakyThrows
-  public DataGenerator(String outputDirectory, Long seed) {
-
-    OUTPUT_DIRECTORY = outputDirectory;
+  public DataGenerator() {
 
     fileSchemas =
-        mapper.readValue(Resources.getResource("dictionary.json"), org.icgc.dcc.dictionary.model.Dictionary.class)
+        mapper.readValue(Resources.getResource(DICTIONARY_FILE_NAME), org.icgc.dcc.dictionary.model.Dictionary.class)
             .getFiles();
 
-    codeList = mapper.readValue(Resources.getResource("codeList.json"), new TypeReference<List<CodeList>>() {
+    codeList = mapper.readValue(Resources.getResource(CODELIST_FILE_NAME), new TypeReference<List<CodeList>>() {
     });
 
-    random = new Random(seed);
+  }
 
+  public static void init(String outputDirectory, Long seed) {
+    OUTPUT_DIRECTORY = outputDirectory;
+    random = new Random(seed);
   }
 
   public static List<List<String>> getListOfPrimaryKeys() {
@@ -149,33 +158,34 @@ public class DataGenerator {
     return null;
   }
 
-  public static String[] checkParameters(String leadJurisdiction, String tumourType, String institution, String platform) {
-    String[] error = new String[4];
+  public static List<String> checkParameters(String leadJurisdiction, String tumourType, String institution,
+      String platform) {
+    List<String> errors = new ArrayList<String>();
     if(leadJurisdiction.length() != 2) {
-      error[0] = "The lead jurisdiction is invalid";
+      errors.add("The lead jurisdiction is invalid");
     }
     if(Integer.parseInt(tumourType) > 31 || Integer.parseInt(tumourType) < 1) {
-      error[1] = "The tumour type is invalid";
+      errors.add("The tumour type is invalid");
     }
     if(Integer.parseInt(institution) > 98 || Integer.parseInt(institution) < 1) {
-      error[2] = "The insitute is invalid";
+      errors.add("The insitute is invalid");
     }
     if(Integer.parseInt(platform) > 75 || Integer.parseInt(institution) < 1) {
-      error[3] = "The platform is invalid";
+      errors.add("The platform is invalid");
     }
-    return error;
+    return errors;
   }
 
   public static String generateFileName(String schemaName, String leadJurisdiction, String institution,
       String tumourType, String platform, boolean isCore) {
     if(isCore) {
-      return String.format(OUTPUT_DIRECTORY + leadJurisdiction + SEPERATOR + tumourType + SEPERATOR + institution
-          + SEPERATOR + schemaName + SEPERATOR + "20130313" + FILE_EXTENSION);
+      return String.format(DataGenerator.OUTPUT_DIRECTORY + leadJurisdiction + SEPERATOR + tumourType + SEPERATOR
+          + institution + SEPERATOR + schemaName + SEPERATOR + CONSTANT_DATE + FILE_EXTENSION);
     } else {
       String fileType = schemaName.substring(0, schemaName.length() - 2);
       return String.format(OUTPUT_DIRECTORY + fileType + SEPERATOR + leadJurisdiction + SEPERATOR + tumourType
           + SEPERATOR + institution + SEPERATOR + schemaName.charAt(schemaName.length() - 1) + SEPERATOR + platform
-          + SEPERATOR + "20130313" + FILE_EXTENSION);
+          + SEPERATOR + CONSTANT_DATE + FILE_EXTENSION);
     }
   }
 
@@ -196,11 +206,12 @@ public class DataGenerator {
       if(isUniqueField(list, field.getName())) {
         output = schemaName + Long.toString(uniqueId++);
       } else {
-        output = Integer.toString(randomIntGenerator(0, 1000000000));
+        output = Integer.toString(randomIntGenerator(0, UPPER_LIMIT_FOR_TEXT_FIELD));
       }
     } else if(field.getValueType() == ValueType.INTEGER) {
       if(isUniqueField(list, field.getName())) {
-        output = Integer.toString(uniqueInt++);
+        int tempInt = uniqueInt + 1;
+        output = Integer.toString(tempInt);
       } else {
         output = Integer.toString(randomIntGenerator(0, 200));
       }
@@ -211,7 +222,7 @@ public class DataGenerator {
         output = DataGenerator.randomDecimalGenerator(50);
       }
     } else if(field.getValueType() == ValueType.DATETIME) {
-      output = "20130313";
+      output = CONSTANT_DATE;
     }
     return output;
   }
