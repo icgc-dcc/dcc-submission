@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.generator.service;
 
-import static java.lang.System.out;
-
 import java.io.IOException;
 import java.util.List;
 
@@ -60,31 +58,20 @@ public class GeneratorService {
     // ArrayList<OptionalFile> optionalFiles = config.getOptionalFiles();
     List<ExperimentalFile> experimentalFiles = config.getExperimentalFiles();
 
-    boolean errorsTrue = checkParameters(leadJurisdiction, tumourType, institution, platform);
-    if(errorsTrue) {
-      return;
+    List<String> errors = DataGenerator.checkParameters(leadJurisdiction, tumourType, institution, platform);
+    for(String error : errors) {
+      throw new Exception(error); // Does this end the whole program?
     }
 
     generateFiles(outputDirectory, numberOfDonors, numberOfSpecimensPerDonor, numberOfSamplesPerDonor,
         leadJurisdiction, tumourType, institution, platform, seed, experimentalFiles);
   }
 
-  private boolean checkParameters(String leadJurisdiction, String tumourType, String institution, String platform) {
-    boolean errorsTrue = false;
-    String[] errors = DataGenerator.checkParameters(leadJurisdiction, tumourType, institution, platform);
-    for(int i = 0; i < errors.length; i++) {
-      if(errors[i] != null) {
-        errorsTrue = true;
-        out.println(errors[i]);
-      }
-    }
-    return errorsTrue;
-  }
-
   private void generateFiles(String outputDirectory, Integer numberOfDonors, Integer numberOfSpecimensPerDonor,
       Integer numberOfSamplesPerDonor, String leadJurisdiction, String tumourType, String institution, String platform,
       Long seed, List<ExperimentalFile> experimentalFiles) throws JsonParseException, JsonMappingException, IOException {
-    DataGenerator test = new DataGenerator(outputDirectory, seed);
+    DataGenerator test = new DataGenerator();
+    DataGenerator.init(outputDirectory, seed);
     test.createCoreFile(DONOR_SCHEMA_NAME, numberOfDonors, leadJurisdiction, institution, tumourType, platform);
     test.createCoreFile(SPECIMEN_SCHEMA_NAME, numberOfSamplesPerDonor, leadJurisdiction, institution, tumourType,
         platform);
