@@ -214,12 +214,21 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
         datastore.createUpdateOperations(CodeList.class).add("terms", term));
 
     // Reset INVALID submissions if applicable
-    Release openedRelease = releases.getNextRelease().getRelease();
-    String currentDictionaryVersion = openedRelease.getDictionaryVersion();
-    Dictionary currentDictionary = getFromVersion(currentDictionaryVersion);
+    Release openRelease = releases.getNextRelease().getRelease();
+    Dictionary currentDictionary = getCurrentDictionary(openRelease);
     if(currentDictionary.usesCodeList(codeListName)) {
-      releases.resetSubmissions(openedRelease.getName(), openedRelease.getInvalidProjectKeys());
+      releases.resetSubmissions(openRelease.getName(), openRelease.getInvalidProjectKeys());
     }
+  }
+
+  public Dictionary getCurrentDictionary() {
+    Release openRelease = releases.getNextRelease().getRelease();
+    return getCurrentDictionary(openRelease);
+  }
+
+  public Dictionary getCurrentDictionary(Release openRelease) {
+    String currentDictionaryVersion = openRelease.getDictionaryVersion();
+    return getFromVersion(currentDictionaryVersion);
   }
 
   private Query<Dictionary> buildDictionaryVersionQuery(Dictionary dictionary) {

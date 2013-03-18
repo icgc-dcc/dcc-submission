@@ -111,11 +111,11 @@ public class ReleaseFileSystem {
 
   public void emptyValidationFolders() {
     for(String projectKey : release.getProjectKeys()) {
-      emptyValidationFolder(projectKey);
+      resetValidationFolder(projectKey);
     }
   }
 
-  public void emptyValidationFolder(String projectKey) {
+  public void resetValidationFolder(String projectKey) {
     String validationStringPath = this.dccFileSystem.buildValidationDirStringPath(release, projectKey);
     dccFileSystem.removeDirIfExist(validationStringPath);
     dccFileSystem.createDirIfDoesNotExist(validationStringPath);

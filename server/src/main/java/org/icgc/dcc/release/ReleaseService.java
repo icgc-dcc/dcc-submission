@@ -325,7 +325,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     this.dbUpdateSubmissions(release.getName(), release.getQueue(), projectKeys, newState); // FIXME: DCC-901
     for(String projectKey : projectKeys) { // See spec at
                                            // https://wiki.oicr.on.ca/display/DCCSOFT/Concurrency#Concurrency-Submissionstatesresetting
-      emptyValidationFolder(projectKey, release);
+      resetValidationFolder(projectKey, release);
     }
   }
 
@@ -566,15 +566,15 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     }
 
     // Empty .validation dir else cascade may not rerun
-    emptyValidationFolder(projectKey, release); // TODO: see note in method javadoc
+    resetValidationFolder(projectKey, release); // TODO: see note in method javadoc
   }
 
   /**
    * TODO: only taken out of resetSubmission() until DCC-901 is done (to allow code that calls deprecated methods
    * instead of resetSubmission() to still be able to empty those directories)
    */
-  private void emptyValidationFolder(final String projectKey, Release release) {
-    fs.getReleaseFilesystem(release).emptyValidationFolder(projectKey);
+  private void resetValidationFolder(final String projectKey, Release release) {
+    fs.getReleaseFilesystem(release).resetValidationFolder(projectKey);
   }
 
   private Query<Dictionary> buildDictionaryVersionQuery(String dictionaryVersion) {
@@ -644,7 +644,12 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     UpdateOperations<Release> ops = datastore().createUpdateOperations(Release.class).disableValidation()//
         .set("submissions.$.report", report);
 
-    datastore().update(updateQuery, ops);
+    UpdateResults<Release> update = datastore().update(updateQuery, ops);
+    int updatedCount = update.getUpdatedCount();
+    if(updatedCount != 1) { // Only to help diagnosis for now, we're unsure when that happens (DCC-848)
+      log.error("Setting submission reports {} failed for {}.{}", new Object[] { (report == null ? null : report
+          .getSchemaReports().size()), releaseName, projectKey });
+    }
   }
 
   public void removeSubmissionReport(String releaseName, String projectKey) {
