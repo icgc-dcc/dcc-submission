@@ -19,25 +19,25 @@ package org.icgc.dcc.mongodb;
 
 import java.io.File;
 
+import lombok.AllArgsConstructor;
+
 import org.jongo.Jongo;
 
 import com.google.common.base.Joiner;
-import com.mongodb.DB;
 
+@AllArgsConstructor
 public abstract class BaseMongoImportExport {
 
   private static final String EXTENSION_SEPARATOR = ".";
 
   private static final String FILE_EXTENSION = "json";
 
+  // TODO: @NotNull
+  // @NotNull
   protected final File directory;
 
+  // @NotNull
   protected final Jongo jongo;
-
-  protected BaseMongoImportExport(File directory, DB targetDatabase) {
-    this.directory = directory;
-    this.jongo = new Jongo(targetDatabase);
-  }
 
   protected abstract void execute();
 
