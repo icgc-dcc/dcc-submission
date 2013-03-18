@@ -21,9 +21,6 @@ import java.util.List;
 
 import org.icgc.dcc.dictionary.model.Term;
 
-/**
- * 
- */
 public class CodeListTerm {
   private String fieldName;
 

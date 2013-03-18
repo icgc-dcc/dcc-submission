@@ -19,13 +19,10 @@ package org.icgc.dcc.generator.service;
 
 import static java.lang.System.out;
 
-import java.io.IOException;
 import java.util.List;
 
 import lombok.SneakyThrows;
 
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
 import org.icgc.dcc.generator.config.GeneratorConfig;
 import org.icgc.dcc.generator.core.DataGenerator;
 import org.icgc.dcc.generator.model.ExperimentalFile;
@@ -81,9 +78,10 @@ public class GeneratorService {
     return errorsTrue;
   }
 
+  @SneakyThrows
   private void generateFiles(String outputDirectory, Integer numberOfDonors, Integer numberOfSpecimensPerDonor,
       Integer numberOfSamplesPerDonor, String leadJurisdiction, String tumourType, String institution, String platform,
-      Long seed, List<ExperimentalFile> experimentalFiles) throws JsonParseException, JsonMappingException, IOException {
+      Long seed, List<ExperimentalFile> experimentalFiles) {
     DataGenerator test = new DataGenerator(outputDirectory, seed);
     test.createCoreFile(DONOR_SCHEMA_NAME, numberOfDonors, leadJurisdiction, institution, tumourType, platform);
     test.createCoreFile(SPECIMEN_SCHEMA_NAME, numberOfSamplesPerDonor, leadJurisdiction, institution, tumourType,
