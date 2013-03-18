@@ -63,132 +63,11 @@ public class CoreFileGenerator {
 
   private final static List<CodeListTerm> codeListArrayList = new ArrayList<CodeListTerm>();
 
-  private final Integer uniqueInteger;
+  private final Long uniqueId = 0L;
 
-  private final Double uniqueDecimal;
+  private final Integer uniqueInteger = 0;
 
-  private final Long uniqueId;
-
-  public CoreFileGenerator() {
-    uniqueInteger = 0;
-    uniqueDecimal = 0.0;
-    uniqueId = 0L;
-  }
-
-  public void populateFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, BufferedWriter writer)
-      throws IOException {
-
-    String schemaName = schema.getName();
-    List<Relation> relations = schema.getRelations();
-
-    int numberOfPrimaryKeyValues = calcuateNumberOfPrimaryKeyValues(schema, numberOfLinesPerPrimaryKey, relations);
-    int numberOfLinesPerKey = calculateNumberOfLinesPerKey(schema, numberOfLinesPerPrimaryKey, relations);
-
-    if(schemaName.equals(SAMPLE_SCHEMA_NAME)) {
-      DataGenerator.getListOfPrimaryKeys().add(
-          new ArrayList<String>(Arrays.asList(SAMPLE_SCHEMA_NAME, TUMOUR_PRIMARY_KEY_FIELD_IDENTIFIER)));
-
-      DataGenerator.getListOfPrimaryKeys().add(
-          new ArrayList<String>(Arrays.asList(SAMPLE_SCHEMA_NAME, CONTROL_PRIMARY_KEY_FIELD_IDENTIFIER)));
-    }
-
-    for(int i = 0; i < numberOfPrimaryKeyValues; i++) {
-      for(int j = 0; j < numberOfLinesPerKey; j++) {
-        int k = 0;
-        for(Field field : schema.getFields()) {
-          String output = null;
-          String fieldName = field.getName();
-
-          List<String> foreignKeyArray = DataGenerator.getForeignKey(schema, fieldName);
-
-          if(foreignKeyArray != null) {
-            output = foreignKeyArray.get(i + 2);
-          } else {
-            output = getFieldValue(schema, schemaName, k, field, fieldName);
-          }
-
-          if(DataGenerator.isUniqueField(schema.getUniqueFields(), field.getName())) {
-            DataGenerator.getPrimaryKey(schemaName, field.getName()).add(output);
-          }
-          // Special case for sample, to add whether sample type is controlled or tumour
-          if(schema.getName().equals(SAMPLE_SCHEMA_NAME) && field.getName().equals(SAMPLE_TYPE_FIELD_NAME)) {
-
-            int x = DataGenerator.randomIntGenerator(0, 1);
-            // Instead here you could check if output(which will be the value of analyzed_sample_type) = 'c' then
-            // control one or, if output = 't' then go to control two
-            if(x == 0) {
-              DataGenerator.getPrimaryKey(SAMPLE_SCHEMA_NAME, TUMOUR_PRIMARY_KEY_FIELD_IDENTIFIER).add(output);
-            } else {
-              DataGenerator.getPrimaryKey(SAMPLE_SCHEMA_NAME, CONTROL_PRIMARY_KEY_FIELD_IDENTIFIER).add(output);
-            }
-          }
-          writer.write(output + TAB);
-        }
-        writer.write(NEW_LINE);
-      }
-      numberOfLinesPerKey = calculateNumberOfLinesPerKey(schema, numberOfLinesPerPrimaryKey, relations);
-    }
-  }
-
-  /**
-   * @param schema
-   * @param schemaName
-   * @param k
-   * @param currentField
-   * @param currentFieldName
-   * @return
-   */
-  private String getFieldValue(FileSchema schema, String schemaName, int k, Field currentField, String currentFieldName) {
-    String output = null;
-    if(codeListArrayList.size() > 0 && k < codeListArrayList.size()) {
-      for(CodeListTerm codeListTerm : codeListArrayList) {
-        if(codeListTerm.getFieldName().equals(currentFieldName)) {
-          List<Term> terms = codeListTerm.getTerms();
-          output = terms.get(DataGenerator.randomIntGenerator(0, terms.size() - 1)).getCode();
-        }
-      }
-    }
-    if(output == null) {
-      output =
-          DataGenerator.getFieldValue(schema.getUniqueFields(), schemaName, currentField, uniqueId, uniqueInteger,
-              uniqueDecimal);
-    }
-    return output;
-  }
-
-  /**
-   * @param schema
-   * @param numberOfLinesPerPrimaryKey
-   * @param relations
-   * @return
-   */
-  private static int calcuateNumberOfPrimaryKeyValues(FileSchema schema, Integer numberOfLinesPerPrimaryKey,
-      List<Relation> relations) {
-    int numberOfPrimaryKeyValues;
-    if(schema.getName().equals(DONOR_SCHEMA_NAME)) {
-      numberOfPrimaryKeyValues = numberOfLinesPerPrimaryKey;
-    } else {
-      numberOfPrimaryKeyValues = DataGenerator.getForeignKey(schema, relations.get(0).getFields().get(0)).size() - 2;
-    }
-    return numberOfPrimaryKeyValues;
-  }
-
-  /**
-   * @param schema
-   * @param numberOfLinesPerPrimaryKey
-   * @param relations
-   * @return
-   */
-  private static int calculateNumberOfLinesPerKey(FileSchema schema, Integer numberOfLinesPerPrimaryKey,
-      List<Relation> relations) {
-    if(schema.getName().equals(DONOR_SCHEMA_NAME)) {
-      return 1;
-    } else if(relations.size() > 0 && relations.get(0).isBidirectional()) {
-      return DataGenerator.randomIntGenerator(1, numberOfLinesPerPrimaryKey);
-    } else {
-      return DataGenerator.randomIntGenerator(0, numberOfLinesPerPrimaryKey);
-    }
-  }
+  private final Double uniqueDecimal = 0.0;
 
   public void createFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
       String institution, String tumourType, String platform) throws IOException {
@@ -237,6 +116,122 @@ public class CoreFileGenerator {
         }
       }
     }
+  }
+
+  public void populateFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, BufferedWriter writer)
+      throws IOException {
+
+    String schemaName = schema.getName();
+    List<Relation> relations = schema.getRelations();
+
+    int numberOfPrimaryKeyValues = calcuateNumberOfPrimaryKeyValues(schema, numberOfLinesPerPrimaryKey, relations);
+    int numberOfLinesPerKey = calculateNumberOfLinesPerKey(schema, numberOfLinesPerPrimaryKey, relations);
+
+    if(schemaName.equals(SAMPLE_SCHEMA_NAME)) {
+      DataGenerator.getListOfPrimaryKeys().add(
+          new ArrayList<String>(Arrays.asList(SAMPLE_SCHEMA_NAME, TUMOUR_PRIMARY_KEY_FIELD_IDENTIFIER)));
+
+      DataGenerator.getListOfPrimaryKeys().add(
+          new ArrayList<String>(Arrays.asList(SAMPLE_SCHEMA_NAME, CONTROL_PRIMARY_KEY_FIELD_IDENTIFIER)));
+    }
+
+    for(int i = 0; i < numberOfPrimaryKeyValues; i++) {
+      for(int j = 0; j < numberOfLinesPerKey; j++) {
+        int indexOfCodeListArray = 0;
+        for(Field field : schema.getFields()) {
+          String output = null;
+          String fieldName = field.getName();
+
+          List<String> foreignKeyArray = DataGenerator.getForeignKey(schema, fieldName);
+
+          if(foreignKeyArray != null) {
+            output = foreignKeyArray.get(i + 2);
+          } else {
+            output = getFieldValue(schema, schemaName, indexOfCodeListArray, field, fieldName);
+          }
+
+          if(DataGenerator.isUniqueField(schema.getUniqueFields(), field.getName())) {
+            DataGenerator.getPrimaryKey(schemaName, field.getName()).add(output);
+          }
+          // Special case for sample, to add whether sample type is controlled or tumour
+          if(schema.getName().equals(SAMPLE_SCHEMA_NAME) && field.getName().equals(SAMPLE_TYPE_FIELD_NAME)) {
+
+            int x = DataGenerator.randomIntGenerator(0, 1);
+            // Instead here you could check if output(which will be the value of analyzed_sample_type) = 'c' then
+            // control one or, if output = 't' then go to control two
+            if(x == 0) {
+              DataGenerator.getPrimaryKey(SAMPLE_SCHEMA_NAME, TUMOUR_PRIMARY_KEY_FIELD_IDENTIFIER).add(output);
+            } else {
+              DataGenerator.getPrimaryKey(SAMPLE_SCHEMA_NAME, CONTROL_PRIMARY_KEY_FIELD_IDENTIFIER).add(output);
+            }
+          }
+          writer.write(output + TAB);
+        }
+        writer.write(NEW_LINE);
+      }
+      numberOfLinesPerKey = calculateNumberOfLinesPerKey(schema, numberOfLinesPerPrimaryKey, relations);
+    }
+  }
+
+  /**
+   * @param schema
+   * @param numberOfLinesPerPrimaryKey
+   * @param relations
+   * @return
+   */
+  private static int calcuateNumberOfPrimaryKeyValues(FileSchema schema, Integer numberOfLinesPerPrimaryKey,
+      List<Relation> relations) {
+    int numberOfPrimaryKeyValues;
+    if(schema.getName().equals(DONOR_SCHEMA_NAME)) {
+      numberOfPrimaryKeyValues = numberOfLinesPerPrimaryKey;
+    } else {
+      numberOfPrimaryKeyValues = DataGenerator.getForeignKey(schema, relations.get(0).getFields().get(0)).size() - 2;
+    }
+    return numberOfPrimaryKeyValues;
+  }
+
+  /**
+   * @param schema
+   * @param numberOfLinesPerPrimaryKey
+   * @param relations
+   * @return
+   */
+  private static int calculateNumberOfLinesPerKey(FileSchema schema, Integer numberOfLinesPerPrimaryKey,
+      List<Relation> relations) {
+    if(schema.getName().equals(DONOR_SCHEMA_NAME)) {
+      return 1;
+    } else if(relations.size() > 0 && relations.get(0).isBidirectional()) {
+      return DataGenerator.randomIntGenerator(1, numberOfLinesPerPrimaryKey);
+    } else {
+      return DataGenerator.randomIntGenerator(0, numberOfLinesPerPrimaryKey);
+    }
+  }
+
+  /**
+   * @param schema
+   * @param schemaName
+   * @param indexOfCodeListArray
+   * @param currentField
+   * @param currentFieldName
+   * @return
+   */
+  private String getFieldValue(FileSchema schema, String schemaName, int indexOfCodeListArray, Field currentField,
+      String currentFieldName) {
+    String output = null;
+    if(codeListArrayList.size() > 0 && indexOfCodeListArray < codeListArrayList.size()) {
+      for(CodeListTerm codeListTerm : codeListArrayList) {
+        if(codeListTerm.getFieldName().equals(currentFieldName)) {
+          List<Term> terms = codeListTerm.getTerms();
+          output = terms.get(DataGenerator.randomIntGenerator(0, terms.size() - 1)).getCode();
+        }
+      }
+    }
+    if(output == null) {
+      output =
+          DataGenerator.getFieldValue(schema.getUniqueFields(), schemaName, currentField, uniqueId, uniqueInteger,
+              uniqueDecimal);
+    }
+    return output;
   }
 
 }

@@ -59,81 +59,6 @@ public class PrimaryFileGenerator {
 
   private final Double uniqueDecimal = 0.0;
 
-  public void populateFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, Writer writer) throws IOException {
-    List<Relation> relations = schema.getRelations();
-
-    int numberOfLines = calculateNumberOfLines(schema, numberOfLinesPerPrimaryKey, relations);
-
-    int numberOfIterations = DataGenerator.getForeignKey(schema, relations.get(0).getFields().get(0)).size() - 2;
-
-    String schemaName = schema.getName();
-    for(int i = 0; i < numberOfIterations; i++) {
-      for(int j = 0; j < numberOfLines; j++) {
-        int k = 0;
-        for(Field field : schema.getFields()) {
-          String output = null;
-          String fieldName = field.getName();
-          List<String> foreignKeyArray = DataGenerator.getForeignKey(schema, fieldName);
-
-          if(foreignKeyArray != null) {
-            output = foreignKeyArray.get(i + 2);
-          } else {
-            output = getFieldValue(schema, schemaName, k, field, fieldName);
-          }
-
-          if(DataGenerator.isUniqueField(schema.getUniqueFields(), fieldName)) {
-            DataGenerator.getPrimaryKey(schemaName, fieldName).add(output);
-          }
-
-          writer.write(output + TAB);
-        }
-        writer.write(NEW_LINE);
-      }
-      numberOfLines = calculateNumberOfLines(schema, numberOfLinesPerPrimaryKey, relations);
-    }
-  }
-
-  /**
-   * @param schema
-   * @param schemaName
-   * @param k
-   * @param currentField
-   * @param currentFieldName
-   * @return
-   */
-  private String getFieldValue(FileSchema schema, String schemaName, int k, Field currentField, String currentFieldName) {
-    String output = null;
-    if(codeListArrayList.size() > 0 && k < codeListArrayList.size()) {
-      for(CodeListTerm codeListTerm : codeListArrayList) {
-        if(codeListTerm.getFieldName().equals(currentFieldName)) {
-          List<Term> terms = codeListTerm.getTerms();
-          output = terms.get(DataGenerator.randomIntGenerator(0, terms.size() - 1)).getCode();
-
-        }
-      }
-    }
-    if(output == null) {
-      output =
-          DataGenerator.getFieldValue(schema.getUniqueFields(), schemaName, currentField, uniqueId, uniqueInteger,
-              uniqueDecimal);
-    }
-    return output;
-  }
-
-  /**
-   * @param schema
-   * @param numberOfLinesPerPrimaryKey
-   * @param relations
-   * @return
-   */
-  private int calculateNumberOfLines(FileSchema schema, Integer numberOfLinesPerPrimaryKey, List<Relation> relations) {
-    if(relations.size() > 0 && relations.get(0).isBidirectional()) {
-      return DataGenerator.randomIntGenerator(1, numberOfLinesPerPrimaryKey);
-    } else {
-      return DataGenerator.randomIntGenerator(0, numberOfLinesPerPrimaryKey);
-    }
-  }
-
   public void createFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
       String institution, String tumourType, String platform) throws IOException {
 
@@ -181,4 +106,81 @@ public class PrimaryFileGenerator {
       }
     }
   }
+
+  public void populateFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, Writer writer) throws IOException {
+    List<Relation> relations = schema.getRelations();
+
+    int numberOfLines = calculateNumberOfLines(schema, numberOfLinesPerPrimaryKey, relations);
+
+    int numberOfIterations = DataGenerator.getForeignKey(schema, relations.get(0).getFields().get(0)).size() - 2;
+
+    String schemaName = schema.getName();
+    for(int i = 0; i < numberOfIterations; i++) {
+      for(int j = 0; j < numberOfLines; j++) {
+        int indexOfCodeListArray = 0;
+        for(Field field : schema.getFields()) {
+          String output = null;
+          String fieldName = field.getName();
+          List<String> foreignKeyArray = DataGenerator.getForeignKey(schema, fieldName);
+
+          if(foreignKeyArray != null) {
+            output = foreignKeyArray.get(i + 2);
+          } else {
+            output = getFieldValue(schema, schemaName, indexOfCodeListArray, field, fieldName);
+          }
+
+          if(DataGenerator.isUniqueField(schema.getUniqueFields(), fieldName)) {
+            DataGenerator.getPrimaryKey(schemaName, fieldName).add(output);
+          }
+
+          writer.write(output + TAB);
+        }
+        writer.write(NEW_LINE);
+      }
+      numberOfLines = calculateNumberOfLines(schema, numberOfLinesPerPrimaryKey, relations);
+    }
+  }
+
+  /**
+   * @param schema
+   * @param numberOfLinesPerPrimaryKey
+   * @param relations
+   * @return
+   */
+  private int calculateNumberOfLines(FileSchema schema, Integer numberOfLinesPerPrimaryKey, List<Relation> relations) {
+    if(relations.size() > 0 && relations.get(0).isBidirectional()) {
+      return DataGenerator.randomIntGenerator(1, numberOfLinesPerPrimaryKey);
+    } else {
+      return DataGenerator.randomIntGenerator(0, numberOfLinesPerPrimaryKey);
+    }
+  }
+
+  /**
+   * @param schema
+   * @param schemaName
+   * @param indexOfCodeListArray
+   * @param currentField
+   * @param currentFieldName
+   * @return
+   */
+  private String getFieldValue(FileSchema schema, String schemaName, int indexOfCodeListArray, Field currentField,
+      String currentFieldName) {
+    String output = null;
+    if(codeListArrayList.size() > 0 && indexOfCodeListArray < codeListArrayList.size()) {
+      for(CodeListTerm codeListTerm : codeListArrayList) {
+        if(codeListTerm.getFieldName().equals(currentFieldName)) {
+          List<Term> terms = codeListTerm.getTerms();
+          output = terms.get(DataGenerator.randomIntGenerator(0, terms.size() - 1)).getCode();
+
+        }
+      }
+    }
+    if(output == null) {
+      output =
+          DataGenerator.getFieldValue(schema.getUniqueFields(), schemaName, currentField, uniqueId, uniqueInteger,
+              uniqueDecimal);
+    }
+    return output;
+  }
+
 }

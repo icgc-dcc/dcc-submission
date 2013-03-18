@@ -67,16 +67,58 @@ public class MetaFileGenerator {
 
   private final List<CodeListTerm> codeListArrayList = new ArrayList<CodeListTerm>();
 
-  private final Long uniqueId;
+  private final Long uniqueId = 0L;
 
-  private final Integer uniqueInteger;
+  private final Integer uniqueInteger = 0;
 
-  private final Double uniqueDecimal;
+  private final Double uniqueDecimal = 0.0;
 
-  public MetaFileGenerator() {
-    uniqueId = 0L;
-    uniqueInteger = 0;
-    uniqueDecimal = 0.0;
+  public void createFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
+      String institution, String tumourType, String platform) throws IOException {
+
+    boolean isCore = false;
+
+    String fileUrl =
+        DataGenerator.generateFileName(schema.getName(), leadJurisdiction, institution, tumourType, platform, isCore);
+
+    File outputFile = new File(fileUrl);
+    if(!outputFile.createNewFile()) {
+      throw new FileAlreadyExistsException("A File with the name: " + fileUrl + " already exists");
+    }
+
+    @Cleanup
+    BufferedWriter writer =
+        new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile), Charsets.UTF_8));
+
+    for(String fieldName : schema.getFieldNames()) {
+      writer.write(fieldName + TAB);
+    }
+
+    populateCodeListArray(schema);
+
+    writer.write(NEW_LINE);
+
+    populateFile(schema, numberOfLinesPerPrimaryKey, writer);
+
+    writer.close();
+  }
+
+  /**
+   * @param schema
+   */
+  private void populateCodeListArray(FileSchema schema) {
+    for(Field field : schema.getFields()) {
+      Optional<Restriction> restriction = field.getRestriction(CODELIST_RESTRICTION_NAME);
+      if(restriction.isPresent()) {
+        String codeListName = restriction.get().getConfig().getString("name");
+        for(CodeList codelist : DataGenerator.codeList) {
+          if(codelist.getName().equals(codeListName)) {
+            CodeListTerm term = new CodeListTerm(field.getName(), codelist.getTerms());
+            codeListArrayList.add(term);
+          }
+        }
+      }
+    }
   }
 
   private void populateFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, Writer writer) throws IOException {
@@ -88,7 +130,7 @@ public class MetaFileGenerator {
 
     for(int i = 0; i < numberOfIterations; i++) {
       for(int j = 0; j < numberOfLines; j++) {
-        int k = 0;
+        int indexOfCodeListArray = 0;
         for(Field field : schema.getFields()) {
           String output = null;
           String fieldName = field.getName();
@@ -107,7 +149,7 @@ public class MetaFileGenerator {
               output = foreignKeyArray.get(i + 2);
             }
           } else {
-            output = getFieldValue(schema, schemaName, k, field, fieldName);
+            output = getFieldValue(schema, schemaName, indexOfCodeListArray, field, fieldName);
           }
 
           if(DataGenerator.isUniqueField(schema.getUniqueFields(), fieldName)) {
@@ -161,14 +203,15 @@ public class MetaFileGenerator {
   /**
    * @param schema
    * @param schemaName
-   * @param k
+   * @param indexOfCodeListArray
    * @param currentField
    * @param currentFieldName
    * @return
    */
-  private String getFieldValue(FileSchema schema, String schemaName, int k, Field currentField, String currentFieldName) {
+  private String getFieldValue(FileSchema schema, String schemaName, int indexOfCodeListArray, Field currentField,
+      String currentFieldName) {
     String output = null;
-    if(codeListArrayList.size() > 0 && k < codeListArrayList.size()) {
+    if(codeListArrayList.size() > 0 && indexOfCodeListArray < codeListArrayList.size()) {
       for(CodeListTerm codeListTerm : codeListArrayList) {
         if(codeListTerm.getFieldName().equals(currentFieldName)) {
           List<Term> terms = codeListTerm.getTerms();
@@ -185,51 +228,4 @@ public class MetaFileGenerator {
     return output;
   }
 
-  public void createFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
-      String institution, String tumourType, String platform) throws IOException {
-
-    boolean isCore = false;
-
-    String fileUrl =
-        DataGenerator.generateFileName(schema.getName(), leadJurisdiction, institution, tumourType, platform, isCore);
-
-    File outputFile = new File(fileUrl);
-    if(!outputFile.createNewFile()) {
-      throw new FileAlreadyExistsException("A File with the name: " + fileUrl + " already exists");
-    }
-
-    @Cleanup
-    BufferedWriter writer =
-        new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile), Charsets.UTF_8));
-
-    for(String fieldName : schema.getFieldNames()) {
-      writer.write(fieldName + TAB);
-    }
-
-    populateCodeListArray(schema);
-
-    writer.write(NEW_LINE);
-
-    populateFile(schema, numberOfLinesPerPrimaryKey, writer);
-
-    writer.close();
-  }
-
-  /**
-   * @param schema
-   */
-  private void populateCodeListArray(FileSchema schema) {
-    for(Field field : schema.getFields()) {
-      Optional<Restriction> restriction = field.getRestriction(CODELIST_RESTRICTION_NAME);
-      if(restriction.isPresent()) {
-        String codeListName = restriction.get().getConfig().getString("name");
-        for(CodeList codelist : DataGenerator.codeList) {
-          if(codelist.getName().equals(codeListName)) {
-            CodeListTerm term = new CodeListTerm(field.getName(), codelist.getTerms());
-            codeListArrayList.add(term);
-          }
-        }
-      }
-    }
-  }
 }

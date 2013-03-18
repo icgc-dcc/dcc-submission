@@ -207,7 +207,7 @@ public class DataGenerator {
     String fieldName = field.getName();
     if(field.getValueType() == ValueType.TEXT) {
       if(isUniqueField(list, fieldName)) {
-        output = schemaName + Long.toString(uniqueId++);
+        output = schemaName + Long.toString(uniqueId += 1);
       } else {
         output = Integer.toString(randomIntGenerator(0, UPPER_LIMIT_FOR_TEXT_FIELD_INTEGER));
       }
