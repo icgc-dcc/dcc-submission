@@ -37,6 +37,7 @@ import org.icgc.dcc.dictionary.model.Restriction;
 import org.icgc.dcc.dictionary.model.Term;
 import org.icgc.dcc.generator.model.CodeListTerm;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
 
 /**
@@ -44,23 +45,27 @@ import com.google.common.base.Optional;
  */
 public class CoreFileGenerator {
 
-  private static final String DONOR_SCHEMA_NAME = "donor";
-
-  private static final String SAMPLE_SCHEMA_NAME = "sample";
+  private static final String CODELIST_RESTRICTION_NAME = "codelist";
 
   private static final String TAB = DataGenerator.TAB;
 
   private static final String NEW_LINE = DataGenerator.NEW_LINE;
 
-  private static final String tumourFieldKey = "tumourSampleTypeID";
+  private static final String DONOR_SCHEMA_NAME = "donor";
 
-  private static final String controlFieldKey = "controlledSampleTypeID";
+  private static final String SAMPLE_SCHEMA_NAME = "sample";
 
-  private static final String sampleTypeFieldName = "analyzed_sample_id";
+  private static final String TUMOUR_PRIMARY_KEY_FIELD_IDENTIFIER = "tumourSampleTypeID";
 
-  private Integer uniqueInteger;
+  private static final String CONTROL_PRIMARY_KEY_FIELD_IDENTIFIER = "controlledSampleTypeID";
 
-  private Double uniqueDecimal;
+  private static final String SAMPLE_TYPE_FIELD_NAME = "analyzed_sample_id";
+
+  private final static List<CodeListTerm> codeListArrayList = new ArrayList<CodeListTerm>();
+
+  private final Integer uniqueInteger;
+
+  private final Double uniqueDecimal;
 
   private final Long uniqueId;
 
@@ -70,47 +75,51 @@ public class CoreFileGenerator {
     uniqueId = 0L;
   }
 
-  private final static List<CodeListTerm> codeListArrayList = new ArrayList<CodeListTerm>();
-
   public void populateFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, BufferedWriter writer)
       throws IOException {
-    if(schema.getName().equals("sample")) {
-      DataGenerator.getListOfPrimaryKeys().add(new ArrayList<String>(Arrays.asList("sample", "tumourSampleTypeID")));
-      DataGenerator.getListOfPrimaryKeys()
-          .add(new ArrayList<String>(Arrays.asList("sample", "controlledSampleTypeID")));
-    }
+
+    String schemaName = schema.getName();
     List<Relation> relations = schema.getRelations();
+
     int numberOfPrimaryKeyValues = calcuateNumberOfPrimaryKeyValues(schema, numberOfLinesPerPrimaryKey, relations);
     int numberOfLinesPerKey = calculateNumberOfLinesPerKey(schema, numberOfLinesPerPrimaryKey, relations);
-    String schemaName = schema.getName();
+
+    if(schemaName.equals(SAMPLE_SCHEMA_NAME)) {
+      DataGenerator.getListOfPrimaryKeys().add(
+          new ArrayList<String>(Arrays.asList(SAMPLE_SCHEMA_NAME, TUMOUR_PRIMARY_KEY_FIELD_IDENTIFIER)));
+
+      DataGenerator.getListOfPrimaryKeys().add(
+          new ArrayList<String>(Arrays.asList(SAMPLE_SCHEMA_NAME, CONTROL_PRIMARY_KEY_FIELD_IDENTIFIER)));
+    }
+
     for(int i = 0; i < numberOfPrimaryKeyValues; i++) {
       for(int j = 0; j < numberOfLinesPerKey; j++) {
         int k = 0;
-        for(Field currentField : schema.getFields()) {
+        for(Field field : schema.getFields()) {
           String output = null;
-          String currentFieldName = currentField.getName();
+          String fieldName = field.getName();
 
-          List<String> foreignKeyArray = DataGenerator.getForeignKey(schema, currentFieldName);
+          List<String> foreignKeyArray = DataGenerator.getForeignKey(schema, fieldName);
 
           if(foreignKeyArray != null) {
             output = foreignKeyArray.get(i + 2);
           } else {
-            output = getFieldValue(schema, schemaName, k, currentField, currentFieldName);
+            output = getFieldValue(schema, schemaName, k, field, fieldName);
           }
 
-          if(DataGenerator.isUniqueField(schema.getUniqueFields(), currentField.getName())) {
-            DataGenerator.getPrimaryKey(schemaName, currentField.getName()).add(output);
+          if(DataGenerator.isUniqueField(schema.getUniqueFields(), field.getName())) {
+            DataGenerator.getPrimaryKey(schemaName, field.getName()).add(output);
           }
           // Special case for sample, to add whether sample type is controlled or tumour
-          if(schema.getName().equals(SAMPLE_SCHEMA_NAME) && currentField.getName().equals(sampleTypeFieldName)) {
+          if(schema.getName().equals(SAMPLE_SCHEMA_NAME) && field.getName().equals(SAMPLE_TYPE_FIELD_NAME)) {
 
             int x = DataGenerator.randomIntGenerator(0, 1);
             // Instead here you could check if output(which will be the value of analyzed_sample_type) = 'c' then
             // control one or, if output = 't' then go to control two
             if(x == 0) {
-              DataGenerator.getPrimaryKey(SAMPLE_SCHEMA_NAME, tumourFieldKey).add(output);
+              DataGenerator.getPrimaryKey(SAMPLE_SCHEMA_NAME, TUMOUR_PRIMARY_KEY_FIELD_IDENTIFIER).add(output);
             } else {
-              DataGenerator.getPrimaryKey(SAMPLE_SCHEMA_NAME, controlFieldKey).add(output);
+              DataGenerator.getPrimaryKey(SAMPLE_SCHEMA_NAME, CONTROL_PRIMARY_KEY_FIELD_IDENTIFIER).add(output);
             }
           }
           writer.write(output + TAB);
@@ -195,7 +204,8 @@ public class CoreFileGenerator {
     }
 
     @Cleanup
-    BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile), "UTF-8"));
+    BufferedWriter writer =
+        new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile), Charsets.UTF_8));
 
     for(String fieldName : schema.getFieldNames()) {
       writer.write(fieldName + TAB);
@@ -208,8 +218,7 @@ public class CoreFileGenerator {
     populateFile(schema, numberOfLinesPerPrimaryKey, writer);
 
     writer.close();
-    uniqueInteger = 0;
-    uniqueDecimal = 0.0;
+
   }
 
   /**
@@ -217,7 +226,7 @@ public class CoreFileGenerator {
    */
   private static void populateCodeListArray(FileSchema schema) {
     for(Field field : schema.getFields()) {
-      Optional<Restriction> restriction = field.getRestriction("codelist");
+      Optional<Restriction> restriction = field.getRestriction(CODELIST_RESTRICTION_NAME);
       if(restriction.isPresent()) {
         String codeListName = restriction.get().getConfig().getString("name");
         for(CodeList codelist : DataGenerator.codeList) {

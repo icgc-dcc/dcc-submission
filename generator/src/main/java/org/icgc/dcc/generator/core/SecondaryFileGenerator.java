@@ -51,6 +51,8 @@ public class SecondaryFileGenerator {
 
   private static final String NEW_LINE = DataGenerator.NEW_LINE;
 
+  private static final String CODELIST_RESTRICTION_NAME = "codelist";
+
   private static final String MIRNA_MIRBASE_FILE_NAME = "Mirna_MirbaseSystemFile.txt";
 
   private static final String HSAPIENS_SYSTEM_FILE_NAME = "HsapSystemFile.txt";
@@ -65,6 +67,8 @@ public class SecondaryFileGenerator {
 
   private static final String SECONDARY_TRANSCRIPT_FIELD_NAME = "transcript_affected";
 
+  private final List<CodeListTerm> codeListArrayList = new ArrayList<CodeListTerm>();
+
   private final Long uniqueId;
 
   private final Integer uniqueInteger;
@@ -76,8 +80,6 @@ public class SecondaryFileGenerator {
     uniqueInteger = 0;
     uniqueDecimal = 0.0;
   }
-
-  private final List<CodeListTerm> codeListArrayList = new ArrayList<CodeListTerm>();
 
   public void populateSecondaryFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, Writer writer)
       throws IOException {
@@ -98,26 +100,26 @@ public class SecondaryFileGenerator {
     for(int i = 0; i < numberOfIterations; i++) {
       for(int j = 0; j < numberOfLines; j++) {
         int k = 0;
-        for(Field currentField : schema.getFields()) {
-          String currentFieldName = currentField.getName();
+        for(Field field : schema.getFields()) {
+          String fieldName = field.getName();
           String output = null;
 
           // Add system file fields
           if(iterator.hasNext()) {
             String line = iterator.next();
-            output = getSystemFileOutput(currentFieldName, line);
+            output = getSystemFileOutput(fieldName, line);
           } else {
             // End of file reached. Reset reader and readline
             iterator = lines.iterator();
             String line = iterator.next();
-            output = getSystemFileOutput(currentField.getName(), line);
+            output = getSystemFileOutput(field.getName(), line);
           }
           if(output == null) {
-            List<String> foreignKeyArray = DataGenerator.getForeignKey(schema, currentFieldName);
+            List<String> foreignKeyArray = DataGenerator.getForeignKey(schema, fieldName);
             if(foreignKeyArray != null) {
               output = foreignKeyArray.get(i + 2);
             } else {
-              output = getFieldValue(schema, schemaName, k, currentField, currentFieldName);
+              output = getFieldValue(schema, schemaName, k, field, fieldName);
             }
           }
 
@@ -199,7 +201,8 @@ public class SecondaryFileGenerator {
     }
 
     @Cleanup
-    BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile), "UTF-8"));
+    BufferedWriter writer =
+        new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile), Charsets.UTF_8));
 
     for(String fieldName : schema.getFieldNames()) {
       writer.write(fieldName + TAB);
@@ -219,7 +222,7 @@ public class SecondaryFileGenerator {
    */
   private void populateCodeListArray(FileSchema schema) {
     for(Field field : schema.getFields()) {
-      Optional<Restriction> restriction = field.getRestriction("codelist");
+      Optional<Restriction> restriction = field.getRestriction(CODELIST_RESTRICTION_NAME);
       if(restriction.isPresent()) {
         String codeListName = restriction.get().getConfig().getString("name");
         for(CodeList codelist : DataGenerator.codeList) {

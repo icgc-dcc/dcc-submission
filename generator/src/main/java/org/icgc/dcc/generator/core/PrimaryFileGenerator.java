@@ -37,6 +37,7 @@ import org.icgc.dcc.dictionary.model.Restriction;
 import org.icgc.dcc.dictionary.model.Term;
 import org.icgc.dcc.generator.model.CodeListTerm;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
 
 /**
@@ -48,13 +49,15 @@ public class PrimaryFileGenerator {
 
   private static final String NEW_LINE = DataGenerator.NEW_LINE;
 
+  private static final String CODELIST_RESTRICTION_NAME = "codelist";
+
+  private final List<CodeListTerm> codeListArrayList = new ArrayList<CodeListTerm>();
+
   private final Long uniqueId = 0L;
 
   private final Integer uniqueInteger = 0;
 
   private final Double uniqueDecimal = 0.0;
-
-  private final List<CodeListTerm> codeListArrayList = new ArrayList<CodeListTerm>();
 
   public void populateFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, Writer writer) throws IOException {
     List<Relation> relations = schema.getRelations();
@@ -67,19 +70,19 @@ public class PrimaryFileGenerator {
     for(int i = 0; i < numberOfIterations; i++) {
       for(int j = 0; j < numberOfLines; j++) {
         int k = 0;
-        for(Field currentField : schema.getFields()) {
+        for(Field field : schema.getFields()) {
           String output = null;
-          String currentFieldName = currentField.getName();
-          List<String> foreignKeyArray = DataGenerator.getForeignKey(schema, currentFieldName);
+          String fieldName = field.getName();
+          List<String> foreignKeyArray = DataGenerator.getForeignKey(schema, fieldName);
 
           if(foreignKeyArray != null) {
             output = foreignKeyArray.get(i + 2);
           } else {
-            output = getFieldValue(schema, schemaName, k, currentField, currentFieldName);
+            output = getFieldValue(schema, schemaName, k, field, fieldName);
           }
 
-          if(DataGenerator.isUniqueField(schema.getUniqueFields(), currentFieldName)) {
-            DataGenerator.getPrimaryKey(schemaName, currentFieldName).add(output);
+          if(DataGenerator.isUniqueField(schema.getUniqueFields(), fieldName)) {
+            DataGenerator.getPrimaryKey(schemaName, fieldName).add(output);
           }
 
           writer.write(output + TAB);
@@ -145,7 +148,8 @@ public class PrimaryFileGenerator {
     }
 
     @Cleanup
-    BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile), "UTF-8"));
+    BufferedWriter writer =
+        new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile), Charsets.UTF_8));
 
     for(String fieldName : schema.getFieldNames()) {
       writer.write(fieldName + TAB);
@@ -165,7 +169,7 @@ public class PrimaryFileGenerator {
    */
   private void populateCodeListArray(FileSchema schema) {
     for(Field field : schema.getFields()) {
-      Optional<Restriction> restriction = field.getRestriction("codelist");
+      Optional<Restriction> restriction = field.getRestriction(CODELIST_RESTRICTION_NAME);
       if(restriction.isPresent()) {
         String codeListName = restriction.get().getConfig().getString("name");
         for(CodeList codelist : DataGenerator.codeList) {

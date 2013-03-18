@@ -48,29 +48,29 @@ public class DataGenerator {
 
   private static final String DICTIONARY_FILE_NAME = "dictionary.json";
 
-  private static final String CONSTANT_DATE = "20130313";
-
-  private static final int UPPER_LIMIT_FOR_TEXT_FIELD = 1000000000;
-
   public static final String TAB = "\t";
 
-  public static final String NEW_LINE = "\n";
-
-  private static final DecimalFormat df = new DecimalFormat("#.00");
+  public static final String NEW_LINE = "\n";;
 
   private static final String SEPERATOR = "__";
 
   private static final String FILE_EXTENSION = ".txt";
 
-  private static String OUTPUT_DIRECTORY;
+  private static final int UPPER_LIMIT_FOR_TEXT_FIELD_INTEGER = 1000000000;
+
+  private static final String CONSTANT_DATE = "20130313";
+
+  private static final DecimalFormat df = new DecimalFormat("#.00");
+
+  private static String outputDirectory;
 
   private static ObjectMapper mapper = new ObjectMapper();
 
   public static List<CodeList> codeList;
 
-  private static List<List<String>> listOfPrimaryKeys = new ArrayList<List<String>>();
+  private static List<FileSchema> fileSchemas;
 
-  private static List<FileSchema> fileSchemas = new ArrayList<FileSchema>();
+  private static List<List<String>> listOfPrimaryKeys = new ArrayList<List<String>>();
 
   private static Random random;
 
@@ -82,7 +82,7 @@ public class DataGenerator {
 
     codeList = mapper.readValue(Resources.getResource(CODELIST_FILE_NAME), new TypeReference<List<CodeList>>() {
     });
-    OUTPUT_DIRECTORY = outputDirectory;
+    DataGenerator.outputDirectory = outputDirectory;
 
     random = new Random(seed);
 
@@ -122,28 +122,36 @@ public class DataGenerator {
   }
 
   public static List<String> getPrimaryKey(String schemaName, String currentFieldName) {
-    for(List<String> primaryKeyArray : listOfPrimaryKeys) {
-      if(primaryKeyArray.get(0).equals(schemaName) && primaryKeyArray.get(1).equals(currentFieldName)) {
-        return primaryKeyArray;
+    for(List<String> primaryKeyArrayList : listOfPrimaryKeys) {
+      String primaryKeySchemaIdentifier = primaryKeyArrayList.get(0);
+      String primaryKeyFieldIdentifier = primaryKeyArrayList.get(1);
+
+      if(primaryKeySchemaIdentifier.equals(schemaName) && primaryKeyFieldIdentifier.equals(currentFieldName)) {
+        return primaryKeyArrayList;
       }
     }
     return null;
   }
 
-  public static List<String> getForeignKey(FileSchema schema, String currentFieldName) {
+  // Go through all the fields that are populated by a forieng key once in each file, and then do an if statement before
+  // calling getForeignKey, that would decrease the number of times this method is called
+  public static List<String> getForeignKey(FileSchema schema, String fieldName) {
     for(Relation relation : schema.getRelations()) {
-      int k = 0;
-      for(String foreignKeyField : relation.getFields()) {
-        if(currentFieldName.equals(foreignKeyField)) {
+      int relatedFieldNameCounter = 0;// The name of the field from the foreign schema
+      for(String linkedFieldName : relation.getFields()) {
+        if(fieldName.equals(linkedFieldName)) {
           // Find list that carries primary keys of schema that relates to this fileschema
-          for(List<String> primaryKeyArray : listOfPrimaryKeys) {
-            if(primaryKeyArray.get(0).equals(relation.getOther())
-                && primaryKeyArray.get(1).equals(relation.getOtherFields().get(k))) {
-              return primaryKeyArray;
+          for(List<String> primaryKeyArrayList : listOfPrimaryKeys) {
+            String primaryKeySchemaIdentifier = primaryKeyArrayList.get(0);
+            String primaryKeyFieldIdentifier = primaryKeyArrayList.get(1);
+
+            if(primaryKeySchemaIdentifier.equals(relation.getOther())
+                && primaryKeyFieldIdentifier.equals(relation.getOtherFields().get(relatedFieldNameCounter))) {
+              return primaryKeyArrayList;
             }
           }
         }
-        k++;
+        relatedFieldNameCounter++;
       }
     }
     return null;
@@ -170,11 +178,11 @@ public class DataGenerator {
   public static String generateFileName(String schemaName, String leadJurisdiction, String institution,
       String tumourType, String platform, boolean isCore) {
     if(isCore) {
-      return String.format(DataGenerator.OUTPUT_DIRECTORY + leadJurisdiction + SEPERATOR + tumourType + SEPERATOR
+      return String.format(DataGenerator.outputDirectory + leadJurisdiction + SEPERATOR + tumourType + SEPERATOR
           + institution + SEPERATOR + schemaName + SEPERATOR + CONSTANT_DATE + FILE_EXTENSION);
     } else {
       String fileType = schemaName.substring(0, schemaName.length() - 2);
-      return String.format(OUTPUT_DIRECTORY + fileType + SEPERATOR + leadJurisdiction + SEPERATOR + tumourType
+      return String.format(outputDirectory + fileType + SEPERATOR + leadJurisdiction + SEPERATOR + tumourType
           + SEPERATOR + institution + SEPERATOR + schemaName.charAt(schemaName.length() - 1) + SEPERATOR + platform
           + SEPERATOR + CONSTANT_DATE + FILE_EXTENSION);
     }
@@ -182,9 +190,12 @@ public class DataGenerator {
 
   public static void determineUniqueFields(FileSchema schema) {
     for(String uniqueField : schema.getUniqueFields()) {
+      String primaryKeySchemaIdentifier = schema.getName();
+      String primaryKeyFieldIdentifier = uniqueField;
+
       List<String> uniqueFieldArray = new ArrayList<String>();
-      uniqueFieldArray.add(schema.getName());
-      uniqueFieldArray.add(uniqueField);
+      uniqueFieldArray.add(primaryKeySchemaIdentifier);
+      uniqueFieldArray.add(primaryKeyFieldIdentifier);
       listOfPrimaryKeys.add(uniqueFieldArray);
     }
   }
@@ -193,21 +204,21 @@ public class DataGenerator {
       Integer uniqueInt, Double uniqueDecimal) {
 
     String output = null;
+    String fieldName = field.getName();
     if(field.getValueType() == ValueType.TEXT) {
-      if(isUniqueField(list, field.getName())) {
+      if(isUniqueField(list, fieldName)) {
         output = schemaName + Long.toString(uniqueId++);
       } else {
-        output = Integer.toString(randomIntGenerator(0, UPPER_LIMIT_FOR_TEXT_FIELD));
+        output = Integer.toString(randomIntGenerator(0, UPPER_LIMIT_FOR_TEXT_FIELD_INTEGER));
       }
     } else if(field.getValueType() == ValueType.INTEGER) {
-      if(isUniqueField(list, field.getName())) {
-        int tempInt = uniqueInt + 1;
-        output = Integer.toString(tempInt);
+      if(isUniqueField(list, fieldName)) {
+        output = Integer.toString(uniqueInt + 1);
       } else {
         output = Integer.toString(randomIntGenerator(0, 200));
       }
     } else if(field.getValueType() == ValueType.DECIMAL) {
-      if(isUniqueField(list, field.getName())) {
+      if(isUniqueField(list, fieldName)) {
         output = Double.toString(uniqueDecimal + 0.1);
       } else {
         output = DataGenerator.randomDecimalGenerator(50);
