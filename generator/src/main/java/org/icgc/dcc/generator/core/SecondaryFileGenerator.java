@@ -61,10 +61,6 @@ public class SecondaryFileGenerator {
 
   private static final String MIRNA_SEQUENCE_ID_FIELD_NAME = "mirna_seq";
 
-  private static final String HSAPIENS_GENE_FIELD_NAME = "gene_id_1020_key";
-
-  private static final String HSAPIENS_TRANSCRIPT_FIELD_NAME = "transcript_id_1064_key";
-
   private static final String SECONDARY_GENE_FIELD_NAME = "gene_affected";
 
   private static final String SECONDARY_TRANSCRIPT_FIELD_NAME = "transcript_affected";
@@ -83,68 +79,28 @@ public class SecondaryFileGenerator {
 
   private final List<CodeListTerm> codeListArrayList = new ArrayList<CodeListTerm>();
 
-  public void populateMirnaFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, Writer writer)
-      throws IOException {
-
-    List<String> lines = Resources.readLines(Resources.getResource(MIRNA_MIRBASE_FILE_NAME), Charsets.UTF_8);
-    Iterator<String> iterator = lines.iterator();
-
-    String schemaName = schema.getName();
-    List<Relation> relations = schema.getRelations();
-    int numberOfIterations = DataGenerator.getForeignKey(schema, relations.get(0).getFields().get(0)).size() - 2;
-    int numberOfLines = calculateNumberOfLines(schema, numberOfLinesPerPrimaryKey, relations);
-
-    for(int i = 0; i < numberOfIterations; i++) {
-      for(int j = 0; j < numberOfLines; j++) {
-        int k = 0;
-        for(Field currentField : schema.getFields()) {
-          String output = null;
-          String currentFieldName = currentField.getName();
-
-          // Add system file fields
-          if(iterator.hasNext()) {
-            String line = iterator.next();
-            output = getSystemFileOutput(currentField.getName(), line);
-          } else { // Reset the reader to beginning of file and repeat
-            iterator = lines.iterator();
-            String line = iterator.next();
-            output = getSystemFileOutput(currentField.getName(), line);
-          }
-
-          if(output == null) {
-            List<String> foreignKeyArray = DataGenerator.getForeignKey(schema, currentFieldName);
-            if(foreignKeyArray != null) {
-              output = foreignKeyArray.get(i + 2);
-            } else {
-              output = getFieldValue(schema, schemaName, k, currentField, currentFieldName);
-            }
-          }
-
-          writer.write(output + TAB);
-        }
-        writer.write(NEW_LINE);
-      }
-      numberOfLines = calculateNumberOfLines(schema, numberOfLinesPerPrimaryKey, relations);
-    }
-  }
-
   public void populateSecondaryFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, Writer writer)
       throws IOException {
+    String schemaName = schema.getName();
+    List<Relation> relations = schema.getRelations();
 
-    List<String> lines = Resources.readLines(Resources.getResource(HSAPIENS_SYSTEM_FILE_NAME), Charsets.UTF_8);
+    List<String> lines = null;
+    if(schemaName.equals(SECONDARY_MIRNA_SCHEMA_NAME)) {
+      lines = Resources.readLines(Resources.getResource(MIRNA_MIRBASE_FILE_NAME), Charsets.UTF_8);
+    } else {
+      lines = Resources.readLines(Resources.getResource(HSAPIENS_SYSTEM_FILE_NAME), Charsets.UTF_8);
+    }
     Iterator<String> iterator = lines.iterator();
 
-    List<Relation> relations = schema.getRelations();
     int numberOfLines = calculateNumberOfLines(schema, numberOfLinesPerPrimaryKey, relations);
-
     int numberOfIterations = DataGenerator.getForeignKey(schema, relations.get(0).getFields().get(0)).size() - 2;
-    String schemaName = schema.getName();
+
     for(int i = 0; i < numberOfIterations; i++) {
       for(int j = 0; j < numberOfLines; j++) {
         int k = 0;
         for(Field currentField : schema.getFields()) {
-          String output = null;
           String currentFieldName = currentField.getName();
+          String output = null;
 
           // Add system file fields
           if(iterator.hasNext()) {
@@ -188,47 +144,6 @@ public class SecondaryFileGenerator {
     } else {
       return DataGenerator.randomIntGenerator(0, numberOfLinesPerPrimaryKey);
     }
-  }
-
-  public int getGeneIndex(FileSchema schema, String[] fields) throws IOException {
-    for(int indexOfGeneID = 0; indexOfGeneID < fields.length; indexOfGeneID++) {
-      if(fields[indexOfGeneID].equals(HSAPIENS_GENE_FIELD_NAME)) {
-        return indexOfGeneID;
-      }
-    }
-
-    return -1;
-  }
-
-  public int getTranscriptIndex(FileSchema schema, String[] fields) throws IOException {
-    for(int indexOfTranscriptID = 0; indexOfTranscriptID < fields.length; indexOfTranscriptID++) {
-      if(fields[indexOfTranscriptID].equals(HSAPIENS_TRANSCRIPT_FIELD_NAME)) {
-        return indexOfTranscriptID;
-      }
-    }
-
-    return -1;
-  }
-
-  public int getMirbaseIdIndex(FileSchema schema, String[] fields) throws IOException {
-    for(int indexOfMirbaseIdID = 0; indexOfMirbaseIdID < fields.length; indexOfMirbaseIdID++) {
-      if(fields[indexOfMirbaseIdID].equals(MIRBASE_ID_FIELD_NAME)) {
-        return indexOfMirbaseIdID;
-      }
-    }
-
-    return -1;
-  }
-
-  public int getMirnaSequenceIndex(FileSchema schema, String[] fields) throws IOException {
-    for(int indexOfMirnaSequence = 0; indexOfMirnaSequence < fields.length; indexOfMirnaSequence++) {
-      if(fields[indexOfMirnaSequence].equals(MIRNA_SEQUENCE_ID_FIELD_NAME)) {
-        return indexOfMirnaSequence;
-      }
-    }
-
-    return -1;
-
   }
 
   public String getSystemFileOutput(String currentFieldName, String line) {
@@ -294,11 +209,7 @@ public class SecondaryFileGenerator {
 
     writer.write(NEW_LINE);
 
-    if(schema.getName().equals(SECONDARY_MIRNA_SCHEMA_NAME)) {
-      populateMirnaFile(schema, numberOfLinesPerPrimaryKey, writer);
-    } else {
-      populateSecondaryFile(schema, numberOfLinesPerPrimaryKey, writer);
-    }
+    populateSecondaryFile(schema, numberOfLinesPerPrimaryKey, writer);
 
     writer.close();
   }
