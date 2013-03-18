@@ -20,11 +20,8 @@ package org.icgc.dcc.generator.model;
 import lombok.Getter;
 import lombok.ToString;
 
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-/**
- * 
- */
 @Getter
 @ToString
 public class OptionalFile {
