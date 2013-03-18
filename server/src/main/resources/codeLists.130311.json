@@ -1,0 +1,3279 @@
+[
+   {
+      "created" : 1347981138637,
+      "lastUpdate" : 1347981138637,
+      "terms" : [
+         {
+            "value" : "no treatment",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "chemotherapy",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "radiation therapy",
+            "uri" : null,
+            "code" : "3"
+         },
+         {
+            "value" : "combined chemo+radiation therapy",
+            "uri" : null,
+            "code" : "4"
+         },
+         {
+            "value" : "immunotherapy",
+            "uri" : null,
+            "code" : "5"
+         },
+         {
+            "value" : "combined chemo+immunotherapy",
+            "uri" : null,
+            "code" : "6"
+         },
+         {
+            "value" : "surgery",
+            "uri" : null,
+            "code" : "7"
+         },
+         {
+            "value" : "other therapy",
+            "uri" : null,
+            "code" : "8"
+         }
+      ],
+      "name" : "specimen__specimen_donor_treatment_type",
+      "label" : null
+   },
+   {
+      "created" : 1347981138657,
+      "lastUpdate" : 1347981138657,
+      "terms" : [
+         {
+            "value" : "anastomosis site",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "bone",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "brain",
+            "uri" : null,
+            "code" : "3"
+         },
+         {
+            "value" : "lung",
+            "uri" : null,
+            "code" : "4"
+         },
+         {
+            "value" : "liver",
+            "uri" : null,
+            "code" : "5"
+         },
+         {
+            "value" : "peritoneum",
+            "uri" : null,
+            "code" : "6"
+         },
+         {
+            "value" : "other",
+            "uri" : null,
+            "code" : "7"
+         }
+      ],
+      "name" : "pancreatic_cancer__therapy__site_radiated",
+      "label" : null
+   },
+   {
+      "created" : 1347981138657,
+      "lastUpdate" : 1347981138657,
+      "terms" : [
+         {
+            "value" : "complete response",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "partial response",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "disease progression",
+            "uri" : null,
+            "code" : "3"
+         },
+         {
+            "value" : "stable disease",
+            "uri" : null,
+            "code" : "4"
+         }
+      ],
+      "name" : "dr_therapy__therapy_response",
+      "label" : null
+   },
+   {
+      "created" : 1347981138657,
+      "lastUpdate" : 1347981138657,
+      "terms" : [
+         {
+            "value" : "validated",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "not tested",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "not valid",
+            "uri" : null,
+            "code" : "3"
+         }
+      ],
+      "name" : "meth_p__validation_status",
+      "label" : null
+   },
+   {
+      "created" : 1347981138657,
+      "lastUpdate" : 1347981138657,
+      "terms" : [
+         {
+            "value" : "no",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "yes",
+            "uri" : null,
+            "code" : "2"
+         }
+      ],
+      "name" : "specimen__tumour_confirmed",
+      "label" : null
+   },
+   {
+      "created" : 1347981138657,
+      "lastUpdate" : 1347981138657,
+      "terms" : [
+         {
+            "value" : "GRCh37",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "NCBI36",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "GRCh37.p1",
+            "uri" : null,
+            "code" : "3"
+         },
+         {
+            "value" : "GRCh37.p2",
+            "uri" : null,
+            "code" : "4"
+         },
+         {
+            "value" : "GRCh37.p3",
+            "uri" : null,
+            "code" : "5"
+         },
+         {
+            "value" : "GRCh37.p4",
+            "uri" : null,
+            "code" : "6"
+         },
+         {
+            "value" : "GRCh37.p5",
+            "uri" : null,
+            "code" : "7"
+         }
+      ],
+      "name" : "appendix_B10",
+      "label" : null
+   },
+   {
+      "created" : 1347981138658,
+      "lastUpdate" : 1347981138658,
+      "terms" : [
+         {
+            "value" : "cerebellar",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "cerebral cortex",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "brain stem",
+            "uri" : null,
+            "code" : "3"
+         },
+         {
+            "value" : "optic tract",
+            "uri" : null,
+            "code" : "4"
+         },
+         {
+            "value" : "thalamus",
+            "uri" : null,
+            "code" : "5"
+         },
+         {
+            "value" : "hypothalamus",
+            "uri" : null,
+            "code" : "6"
+         },
+         {
+            "value" : "others",
+            "uri" : null,
+            "code" : "7"
+         }
+      ],
+      "name" : "ped_brain__surgery__procedure_site__ped_brain",
+      "label" : null
+   },
+   {
+      "created" : 1347981138658,
+      "lastUpdate" : 1347981138658,
+      "terms" : [
+         {
+            "value" : "distant",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "local",
+            "uri" : null,
+            "code" : "2"
+         }
+      ],
+      "name" : "pancreatic_cancer__therapy__recurrence_type",
+      "label" : null
+   },
+   {
+      "created" : 1347981138658,
+      "lastUpdate" : 1347981138658,
+      "terms" : [
+         {
+            "value" : "primary tumour",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "tumour local recurrence",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "tumour metastasis to local lymph node",
+            "uri" : null,
+            "code" : "3"
+         },
+         {
+            "value" : "tumour metastasis to distant location",
+            "uri" : null,
+            "code" : "4"
+         },
+         {
+            "value" : "peripheral blood",
+            "uri" : null,
+            "code" : "5"
+         },
+         {
+            "value" : "bone marrow",
+            "uri" : null,
+            "code" : "6"
+         },
+         {
+            "value" : "lymph node",
+            "uri" : null,
+            "code" : "7"
+         },
+         {
+            "value" : "normal control (tissue adjacent to primary)",
+            "uri" : null,
+            "code" : "8"
+         },
+         {
+            "value" : "normal control (blood)",
+            "uri" : null,
+            "code" : "9"
+         },
+         {
+            "value" : "normal control (other)",
+            "uri" : null,
+            "code" : "10"
+         },
+         {
+            "value" : "tumour (other)",
+            "uri" : null,
+            "code" : "11"
+         }
+      ],
+      "name" : "specimen__specimen_type",
+      "label" : null
+   },
+   {
+      "created" : 1347981138658,
+      "lastUpdate" : 1347981138658,
+      "terms" : [
+         {
+            "value" : "complete remission",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "partial remission",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "progression",
+            "uri" : null,
+            "code" : "3"
+         },
+         {
+            "value" : "relapse",
+            "uri" : null,
+            "code" : "4"
+         },
+         {
+            "value" : "stable",
+            "uri" : null,
+            "code" : "5"
+         }
+      ],
+      "name" : "dr__disease_status_last_followup",
+      "label" : null
+   },
+   {
+      "created" : 1347981138658,
+      "lastUpdate" : 1347981138658,
+      "terms" : [
+         {
+            "value" : "Normal blood",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "Leukemic blood",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "Normal control adjacent to primary",
+            "uri" : null,
+            "code" : "3"
+         },
+         {
+            "value" : "Normal control from non-tumour site",
+            "uri" : null,
+            "code" : "4"
+         },
+         {
+            "value" : "Control from cell line derived from normal tissue",
+            "uri" : null,
+            "code" : "5"
+         },
+         {
+            "value" : "Normal mouse host",
+            "uri" : null,
+            "code" : "6"
+         },
+         {
+            "value" : "Primary tumour",
+            "uri" : null,
+            "code" : "7"
+         },
+         {
+            "value" : "Mouse xenograft derived from tumour",
+            "uri" : null,
+            "code" : "8"
+         },
+         {
+            "value" : "Cell line derived from tumour",
+            "uri" : null,
+            "code" : "9"
+         },
+         {
+            "value" : "Cell line derived from xenograft",
+            "uri" : null,
+            "code" : "10"
+         },
+         {
+            "value" : "Other (specify)",
+            "uri" : null,
+            "code" : "11"
+         }
+      ],
+      "name" : "sp__analyzed_sample_type",
+      "label" : null
+   },
+   {
+      "created" : 1347981138658,
+      "lastUpdate" : 1347981138658,
+      "terms" : [
+         {
+            "value" : "resectable",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "borderline resectable",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "peritoneal dissemination",
+            "uri" : null,
+            "code" : "3"
+         },
+         {
+            "value" : "liver metastasis",
+            "uri" : null,
+            "code" : "4"
+         },
+         {
+            "value" : "metastasis to other sites",
+            "uri" : null,
+            "code" : "5"
+         },
+         {
+            "value" : "ascites",
+            "uri" : null,
+            "code" : "6"
+         },
+         {
+            "value" : "metastasis to distant lymph nodes",
+            "uri" : null,
+            "code" : "7"
+         },
+         {
+            "value" : "other",
+            "uri" : null,
+            "code" : "8"
+         }
+      ],
+      "name" : "pancreatic_cancer__surgery__intraoperative_findings",
+      "label" : null
+   },
+   {
+      "created" : 1347981138658,
+      "lastUpdate" : 1347981138658,
+      "terms" : [
+         {
+            "value" : "pancreatic head",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "uncinate process",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "pancreatic body",
+            "uri" : null,
+            "code" : "3"
+         },
+         {
+            "value" : "pancreatic tail",
+            "uri" : null,
+            "code" : "4"
+         }
+      ],
+      "name" : "pancreatic_cancer__surgery__procedure_site__pancreatic_cancer",
+      "label" : null
+   },
+   {
+      "created" : 1347981138658,
+      "lastUpdate" : 1347981138658,
+      "terms" : [
+         {
+            "value" : "validated",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "not tested",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "not valid",
+            "uri" : null,
+            "code" : "3"
+         }
+      ],
+      "name" : "mirna_p__validation_status",
+      "label" : null
+   },
+   {
+      "created" : 1347981138659,
+      "lastUpdate" : 1347981138659,
+      "terms" : [
+         {
+            "value" : "annotated",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "not annotated",
+            "uri" : null,
+            "code" : "2"
+         }
+      ],
+      "name" : "cnsm_p__is_annotated",
+      "label" : null
+   },
+   {
+      "created" : 1347981138659,
+      "lastUpdate" : 1347981138659,
+      "terms" : [
+         {
+            "value" : "local recurrence",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "distant recurrence/metastasis",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "progression (liquid tumours)",
+            "uri" : null,
+            "code" : "3"
+         }
+      ],
+      "name" : "dr__donor_relapse_type",
+      "label" : null
+   },
+   {
+      "created" : 1347981138659,
+      "lastUpdate" : 1347981138659,
+      "terms" : [
+         {
+            "value" : "yes",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "no",
+            "uri" : null,
+            "code" : "2"
+         }
+      ],
+      "name" : "yes_no",
+      "label" : null
+   },
+   {
+      "created" : 1347981138659,
+      "lastUpdate" : 1347981138659,
+      "terms" : [
+         {
+            "value" : "adjuvant",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "neoadjuvant",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "palliative",
+            "uri" : null,
+            "code" : "3"
+         }
+      ],
+      "name" : "pancreatic_cancer__therapy__intent",
+      "label" : null
+   },
+   {
+      "created" : 1347981138659,
+      "lastUpdate" : 1347981138659,
+      "terms" : [
+         {
+            "value" : "gain",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "loss",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "copy neutral LOH",
+            "uri" : null,
+            "code" : "3"
+         },
+         {
+            "value" : "copy neutral",
+            "uri" : null,
+            "code" : "4"
+         },
+         {
+            "value" : "hemizygous del LOH",
+            "uri" : null,
+            "code" : "5"
+         },
+         {
+            "value" : "amp LOH",
+            "uri" : null,
+            "code" : "6"
+         }
+      ],
+      "name" : "cnsm_p__mutation_type",
+      "label" : null
+   },
+   {
+      "created" : 1347981138659,
+      "lastUpdate" : 1347981138659,
+      "terms" : [
+         {
+            "value" : "present",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "absent",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "indeterminate",
+            "uri" : null,
+            "code" : "3"
+         }
+      ],
+      "name" : "pancreatic_cancer__surgery__perineural_invasion",
+      "label" : null
+   },
+   {
+      "created" : 1347981138659,
+      "lastUpdate" : 1347981138659,
+      "terms" : [
+         {
+            "value" : "single base substitution",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "insertion of <=200bp",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "deletion of <=200bp",
+            "uri" : null,
+            "code" : "3"
+         },
+         {
+            "value" : "multiple base substitution (>=2bp and <=200bp)",
+            "uri" : null,
+            "code" : "4"
+         }
+      ],
+      "name" : "ssm_p__mutation_type",
+      "label" : null
+   },
+   {
+      "created" : 1347981138659,
+      "lastUpdate" : 1347981138659,
+      "terms" : [
+         {
+            "value" : "1",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "-1",
+            "uri" : null,
+            "code" : "-1"
+         }
+      ],
+      "name" : "ssm_p__refsnp_strand",
+      "label" : null
+   },
+   {
+      "created" : 1347981138659,
+      "lastUpdate" : 1347981138659,
+      "terms" : [
+         {
+            "value" : "yes",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "no",
+            "uri" : null,
+            "code" : "2"
+         }
+      ],
+      "name" : "jcn_p__is_novel_splice_form",
+      "label" : null
+   },
+   {
+      "created" : 1347981138659,
+      "lastUpdate" : 1347981138659,
+      "terms" : [
+         {
+            "value" : "1",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "-1",
+            "uri" : null,
+            "code" : "-1"
+         }
+      ],
+      "name" : "stsm_p__chr_to_strand",
+      "label" : null
+   },
+   {
+      "created" : 1347981138659,
+      "lastUpdate" : 1347981138659,
+      "terms" : [
+         {
+            "value" : "smoking",
+            "uri" : null,
+            "code" : "smoking"
+         },
+         {
+            "value" : "alcohol",
+            "uri" : null,
+            "code" : "alcohol"
+         }
+      ],
+      "name" : "pancreatic_cancer__exposure__exposure_type",
+      "label" : null
+   },
+   {
+      "created" : 1347981138659,
+      "lastUpdate" : 1347981138659,
+      "terms" : [
+         {
+            "value" : "ambiguous",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "absent",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "present",
+            "uri" : null,
+            "code" : "3"
+         }
+      ],
+      "name" : "dr_biomarkers__biomarker_positive",
+      "label" : null
+   },
+   {
+      "created" : 1347981138660,
+      "lastUpdate" : 1347981138660,
+      "terms" : [
+         {
+            "value" : "high grade serous",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "endometriod",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "clear cell",
+            "uri" : null,
+            "code" : "3"
+         },
+         {
+            "value" : "MMMT",
+            "uri" : null,
+            "code" : "4"
+         },
+         {
+            "value" : "low grade serous",
+            "uri" : null,
+            "code" : "5"
+         },
+         {
+            "value" : "other",
+            "uri" : null,
+            "code" : "6"
+         }
+      ],
+      "name" : "benneel_ovary__specimen_histotype_subclassification",
+      "label" : null
+   },
+   {
+      "created" : 1347981138660,
+      "lastUpdate" : 1347981138660,
+      "terms" : [
+         {
+            "value" : "male",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "female",
+            "uri" : null,
+            "code" : "2"
+         }
+      ],
+      "name" : "dr__donor_sex",
+      "label" : null
+   },
+   {
+      "created" : 1347981138660,
+      "lastUpdate" : 1347981138660,
+      "terms" : [
+         {
+            "value" : "R0 - no apparent residual disease.",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "R1 - microscopic residual disease.",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "R2 - gross residual disease.",
+            "uri" : null,
+            "code" : "3"
+         }
+      ],
+      "name" : "dr_surgical_procedures__resection_status",
+      "label" : null
+   },
+   {
+      "created" : 1347981138660,
+      "lastUpdate" : 1347981138660,
+      "terms" : [
+         {
+            "value" : "GRCh37",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "NCBI36",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "GRCh37.p1",
+            "uri" : null,
+            "code" : "3"
+         },
+         {
+            "value" : "GRCh37.p2",
+            "uri" : null,
+            "code" : "4"
+         },
+         {
+            "value" : "GRCh37.p3",
+            "uri" : null,
+            "code" : "5"
+         }
+      ],
+      "name" : "mirna_m__gene_build_version",
+      "label" : null
+   },
+   {
+      "created" : 1347981138660,
+      "lastUpdate" : 1347981138660,
+      "terms" : [
+         {
+            "value" : "validated",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "not tested",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "not valid",
+            "uri" : null,
+            "code" : "3"
+         }
+      ],
+      "name" : "ssm_p__validation_status",
+      "label" : null
+   },
+   {
+      "created" : 1347981138660,
+      "lastUpdate" : 1347981138660,
+      "terms" : [
+         {
+            "value" : "1",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "1",
+            "uri" : null,
+            "code" : "-1"
+         }
+      ],
+      "name" : "meth_p__chromosome_strand",
+      "label" : null
+   },
+   {
+      "created" : 1347981138660,
+      "lastUpdate" : 1347981138660,
+      "terms" : [
+         {
+            "value" : "1",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "-1",
+            "uri" : null,
+            "code" : "-1"
+         }
+      ],
+      "name" : "jcn_p__exon1_strand",
+      "label" : null
+   },
+   {
+      "created" : 1347981138660,
+      "lastUpdate" : 1347981138660,
+      "terms" : [
+         {
+            "value" : "1",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "-1",
+            "uri" : null,
+            "code" : "-1"
+         }
+      ],
+      "name" : "exp_g__gene_strand",
+      "label" : null
+   },
+   {
+      "created" : 1347981138660,
+      "lastUpdate" : 1347981138660,
+      "terms" : [
+         {
+            "value" : "maternal",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "paternal",
+            "uri" : null,
+            "code" : "2"
+         }
+      ],
+      "name" : "pancreatic_cancer__family__bond",
+      "label" : null
+   },
+   {
+      "created" : 1347981138660,
+      "lastUpdate" : 1347981138660,
+      "terms" : [
+         {
+            "value" : "validated",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "not tested",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "not valid",
+            "uri" : null,
+            "code" : "3"
+         }
+      ],
+      "name" : "stsm_p__validation_status",
+      "label" : null
+   },
+   {
+      "created" : 1347981138660,
+      "lastUpdate" : 1347981138660,
+      "terms" : [
+         {
+            "value" : "5 FLUOROURACIL [5FU]",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "LEUKOVORIN",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "GEMCITABINE [GEMZAR]",
+            "uri" : null,
+            "code" : "3"
+         },
+         {
+            "value" : "ERLOTINIB [TARCEVA]",
+            "uri" : null,
+            "code" : "4"
+         },
+         {
+            "value" : "other",
+            "uri" : null,
+            "code" : "5"
+         }
+      ],
+      "name" : "pancreatic_cancer__therapy__agents",
+      "label" : null
+   },
+   {
+      "created" : 1347981138660,
+      "lastUpdate" : 1347981138660,
+      "terms" : [
+         {
+            "value" : "surgical resection of primary",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "surgical resection of local recurrence",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "surgical resection of distant recurrence (metastasis)",
+            "uri" : null,
+            "code" : "3"
+         },
+         {
+            "value" : "lymph node dissection performed at time of resection of primary.",
+            "uri" : null,
+            "code" : "4"
+         },
+         {
+            "value" : "biopsy of primary",
+            "uri" : null,
+            "code" : "5"
+         },
+         {
+            "value" : "biopsy of local recurrence",
+            "uri" : null,
+            "code" : "6"
+         },
+         {
+            "value" : "biopsy of distant recurrence.",
+            "uri" : null,
+            "code" : "7"
+         },
+         {
+            "value" : "other",
+            "uri" : null,
+            "code" : "8"
+         }
+      ],
+      "name" : "dr_surgical_procedures__procedure_type",
+      "label" : null
+   },
+   {
+      "created" : 1347981138661,
+      "lastUpdate" : 1347981138661,
+      "terms" : [
+         {
+            "value" : "homozygous",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "heterozygous",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "hemizygous",
+            "uri" : null,
+            "code" : "3"
+         },
+         {
+            "value" : "nullizygous",
+            "uri" : null,
+            "code" : "4"
+         }
+      ],
+      "name" : "stsm_p__zygosity",
+      "label" : null
+   },
+   {
+      "created" : 1347981138661,
+      "lastUpdate" : 1347981138661,
+      "terms" : [
+         {
+            "value" : "alive",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "deceased",
+            "uri" : null,
+            "code" : "2"
+         }
+      ],
+      "name" : "dr__donor_vital_status",
+      "label" : null
+   },
+   {
+      "created" : 1347981138661,
+      "lastUpdate" : 1347981138661,
+      "terms" : [
+         {
+            "value" : "canonical",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "non-canonical",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "U12",
+            "uri" : null,
+            "code" : "3"
+         }
+      ],
+      "name" : "jcn_p__junction_type",
+      "label" : null
+   },
+   {
+      "created" : 1347981138661,
+      "lastUpdate" : 1347981138661,
+      "terms" : [
+         {
+            "value" : "present, unspecified",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "absent",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "distal CBD",
+            "uri" : null,
+            "code" : "3"
+         },
+         {
+            "value" : "peripancreatic soft tissue",
+            "uri" : null,
+            "code" : "4"
+         },
+         {
+            "value" : "wall of duodenum",
+            "uri" : null,
+            "code" : "5"
+         }
+      ],
+      "name" : "pancreatic_cancer__surgery__extent_of_local_spread",
+      "label" : null
+   },
+   {
+      "created" : 1347981138661,
+      "lastUpdate" : 1347981138661,
+      "terms" : [
+         {
+            "value" : "abutment (<180 degree contact)",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "encasement",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "no involvement",
+            "uri" : null,
+            "code" : "3"
+         }
+      ],
+      "name" : "pancreatic_cancer__surgery__state_of_sma",
+      "label" : null
+   },
+   {
+      "created" : 1347981138661,
+      "lastUpdate" : 1347981138661,
+      "terms" : [
+         {
+            "value" : "1",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "-1",
+            "uri" : null,
+            "code" : "-1"
+         }
+      ],
+      "name" : "stsm_p__chr_from_strand",
+      "label" : null
+   },
+   {
+      "created" : 1347981138661,
+      "lastUpdate" : 1347981138661,
+      "terms" : [
+         {
+            "value" : "involved",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "not involved",
+            "uri" : null,
+            "code" : "2"
+         }
+      ],
+      "name" : "involved_notinvolved",
+      "label" : null
+   },
+   {
+      "created" : 1347981138661,
+      "lastUpdate" : 1347981138661,
+      "terms" : [
+         {
+            "value" : "annotated",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "not annotated",
+            "uri" : null,
+            "code" : "2"
+         }
+      ],
+      "name" : "mirna_p__is_annotated",
+      "label" : null
+   },
+   {
+      "created" : 1347981138661,
+      "lastUpdate" : 1347981138661,
+      "terms" : [
+         {
+            "value" : "yes",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "no",
+            "uri" : null,
+            "code" : "2"
+         }
+      ],
+      "name" : "jcn_p__is_fusion_gene",
+      "label" : null
+   },
+   {
+      "created" : 1347981138661,
+      "lastUpdate" : 1347981138661,
+      "terms" : [
+         {
+            "value" : "brca1",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "brca2",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "none",
+            "uri" : null,
+            "code" : "3"
+         }
+      ],
+      "name" : "benneel_ovary__brca_mutation",
+      "label" : null
+   },
+   {
+      "created" : 1347981138661,
+      "lastUpdate" : 1347981138661,
+      "terms" : [
+         {
+            "value" : "validated",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "not tested",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "not valid",
+            "uri" : null,
+            "code" : "3"
+         }
+      ],
+      "name" : "exp_g__validation_status",
+      "label" : null
+   },
+   {
+      "created" : 1347981138662,
+      "lastUpdate" : 1347981138662,
+      "terms" : [
+         {
+            "value" : "male",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "female",
+            "uri" : null,
+            "code" : "2"
+         }
+      ],
+      "name" : "dr_family_history__relationship_sex",
+      "label" : null
+   },
+   {
+      "created" : 1347981138662,
+      "lastUpdate" : 1347981138662,
+      "terms" : [
+         {
+            "value" : "1",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "-1",
+            "uri" : null,
+            "code" : "-1"
+         }
+      ],
+      "name" : "jcn_p__exon2_strand",
+      "label" : null
+   },
+   {
+      "created" : 1347981138662,
+      "lastUpdate" : 1347981138662,
+      "terms" : [
+         {
+            "value" : "3prime_utr",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "5prime_utr",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "upstream",
+            "uri" : null,
+            "code" : "3"
+         },
+         {
+            "value" : "downstream",
+            "uri" : null,
+            "code" : "4"
+         },
+         {
+            "value" : "essential_splice_site,3prime_utr",
+            "uri" : null,
+            "code" : "5"
+         },
+         {
+            "value" : "essential_splice_site,5prime_utr",
+            "uri" : null,
+            "code" : "6"
+         },
+         {
+            "value" : "essential_splice_site,intronic",
+            "uri" : null,
+            "code" : "7"
+         },
+         {
+            "value" : "essential_splice_site,non_synonymous_coding",
+            "uri" : null,
+            "code" : "8"
+         },
+         {
+            "value" : "essential_splice_site,stop_lost",
+            "uri" : null,
+            "code" : "9"
+         },
+         {
+            "value" : "essential_splice_site,synonymous_coding",
+            "uri" : null,
+            "code" : "10"
+         },
+         {
+            "value" : "frameshift_coding",
+            "uri" : null,
+            "code" : "11"
+         },
+         {
+            "value" : "frameshift_coding,splice_site",
+            "uri" : null,
+            "code" : "12"
+         },
+         {
+            "value" : "intergenic",
+            "uri" : null,
+            "code" : "13"
+         },
+         {
+            "value" : "intronic",
+            "uri" : null,
+            "code" : "14"
+         },
+         {
+            "value" : "non_synonymous_coding",
+            "uri" : null,
+            "code" : "15"
+         },
+         {
+            "value" : "non_synonymous_coding,splice_site",
+            "uri" : null,
+            "code" : "16"
+         },
+         {
+            "value" : "splice_site,3prime_utr",
+            "uri" : null,
+            "code" : "17"
+         },
+         {
+            "value" : "splice_site,5prime_utr",
+            "uri" : null,
+            "code" : "18"
+         },
+         {
+            "value" : "splice_site,intronic",
+            "uri" : null,
+            "code" : "19"
+         },
+         {
+            "value" : "splice_site,synonymous_coding",
+            "uri" : null,
+            "code" : "20"
+         },
+         {
+            "value" : "stop_gained",
+            "uri" : null,
+            "code" : "21"
+         },
+         {
+            "value" : "stop_gained,splice_site",
+            "uri" : null,
+            "code" : "22"
+         },
+         {
+            "value" : "stop_lost",
+            "uri" : null,
+            "code" : "23"
+         },
+         {
+            "value" : "stop_lost,splice_site",
+            "uri" : null,
+            "code" : "24"
+         },
+         {
+            "value" : "synonymous_coding",
+            "uri" : null,
+            "code" : "25"
+         },
+         {
+            "value" : "utr",
+            "uri" : null,
+            "code" : "26"
+         },
+         {
+            "value" : "splice_site",
+            "uri" : null,
+            "code" : "27"
+         },
+         {
+            "value" : "noncoding_rna",
+            "uri" : null,
+            "code" : "28"
+         },
+         {
+            "value" : "complex_indel",
+            "uri" : null,
+            "code" : "29"
+         },
+         {
+            "value" : "regulatory_region",
+            "uri" : null,
+            "code" : "30"
+         },
+         {
+            "value" : "inframe_indel",
+            "uri" : null,
+            "code" : "31"
+         },
+         {
+            "value" : "start_lost",
+            "uri" : null,
+            "code" : "32"
+         },
+         {
+            "value" : "ambiguous",
+            "uri" : null,
+            "code" : "33"
+         },
+         {
+            "value" : "complex_substitution",
+            "uri" : null,
+            "code" : "34"
+         }
+      ],
+      "name" : "appendix_B7",
+      "label" : null
+   },
+   {
+      "created" : 1347981138662,
+      "lastUpdate" : 1347981138662,
+      "terms" : [
+         {
+            "value" : "frozen, liquid nitrogen",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "frozen, -70 freezer",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "frozen, vapor phase",
+            "uri" : null,
+            "code" : "3"
+         },
+         {
+            "value" : "RNA later frozen",
+            "uri" : null,
+            "code" : "4"
+         },
+         {
+            "value" : "paraffin block",
+            "uri" : null,
+            "code" : "5"
+         },
+         {
+            "value" : "cut slide",
+            "uri" : null,
+            "code" : "6"
+         },
+         {
+            "value" : "other",
+            "uri" : null,
+            "code" : "7"
+         }
+      ],
+      "name" : "specimen__specimen_storage",
+      "label" : null
+   },
+   {
+      "created" : 1347981138662,
+      "lastUpdate" : 1347981138662,
+      "terms" : [
+         {
+            "value" : "cryopreservation in liquid nitrogen (dead tissue)",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "cryopreservation in dry ice (dead tissue)",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "cryopreservation of live cells in liquid nitrogen",
+            "uri" : null,
+            "code" : "3"
+         },
+         {
+            "value" : "cryopreservation, other",
+            "uri" : null,
+            "code" : "4"
+         },
+         {
+            "value" : "formalin fixed, unbuffered",
+            "uri" : null,
+            "code" : "5"
+         },
+         {
+            "value" : "formalin fixed, buffered",
+            "uri" : null,
+            "code" : "6"
+         },
+         {
+            "value" : "formalin fixed & paraffin embedded",
+            "uri" : null,
+            "code" : "7"
+         },
+         {
+            "value" : "fresh",
+            "uri" : null,
+            "code" : "8"
+         },
+         {
+            "value" : "other technique",
+            "uri" : null,
+            "code" : "9"
+         }
+      ],
+      "name" : "specimen__specimen_processing",
+      "label" : null
+   },
+   {
+      "created" : 1347981138663,
+      "lastUpdate" : 1347981138663,
+      "terms" : [
+         {
+            "value" : "Copy number change",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "FISH",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "Flow-sorted chromosome evidence",
+            "uri" : null,
+            "code" : "3"
+         },
+         {
+            "value" : "Paired sequence either side of breakpoint",
+            "uri" : null,
+            "code" : "4"
+         },
+         {
+            "value" : "Partner breakpoint found",
+            "uri" : null,
+            "code" : "5"
+         },
+         {
+            "value" : "PCR product across breakpoint",
+            "uri" : null,
+            "code" : "6"
+         },
+         {
+            "value" : "Protein evidence",
+            "uri" : null,
+            "code" : "7"
+         },
+         {
+            "value" : "Seen in multiple samples",
+            "uri" : null,
+            "code" : "8"
+         },
+         {
+            "value" : "Sequence across breakpoint",
+            "uri" : null,
+            "code" : "9"
+         }
+      ],
+      "name" : "stsm_p__evidence",
+      "label" : null
+   },
+   {
+      "created" : 1347981138664,
+      "lastUpdate" : 1347981138664,
+      "terms" : [
+         {
+            "value" : "validated",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "not tested",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "not valid",
+            "uri" : null,
+            "code" : "3"
+         }
+      ],
+      "name" : "cnsm_p__validation_status",
+      "label" : null
+   },
+   {
+      "created" : 1347981138664,
+      "lastUpdate" : 1347981138664,
+      "terms" : [
+         {
+            "value" : "1",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "2",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "3",
+            "uri" : null,
+            "code" : "3"
+         },
+         {
+            "value" : "4",
+            "uri" : null,
+            "code" : "4"
+         },
+         {
+            "value" : "5",
+            "uri" : null,
+            "code" : "5"
+         },
+         {
+            "value" : "6",
+            "uri" : null,
+            "code" : "6"
+         },
+         {
+            "value" : "7",
+            "uri" : null,
+            "code" : "7"
+         },
+         {
+            "value" : "8",
+            "uri" : null,
+            "code" : "8"
+         },
+         {
+            "value" : "9",
+            "uri" : null,
+            "code" : "9"
+         },
+         {
+            "value" : "10",
+            "uri" : null,
+            "code" : "10"
+         },
+         {
+            "value" : "11",
+            "uri" : null,
+            "code" : "11"
+         },
+         {
+            "value" : "12",
+            "uri" : null,
+            "code" : "12"
+         },
+         {
+            "value" : "13",
+            "uri" : null,
+            "code" : "13"
+         },
+         {
+            "value" : "14",
+            "uri" : null,
+            "code" : "14"
+         },
+         {
+            "value" : "15",
+            "uri" : null,
+            "code" : "15"
+         },
+         {
+            "value" : "16",
+            "uri" : null,
+            "code" : "16"
+         },
+         {
+            "value" : "17",
+            "uri" : null,
+            "code" : "17"
+         },
+         {
+            "value" : "18",
+            "uri" : null,
+            "code" : "18"
+         },
+         {
+            "value" : "19",
+            "uri" : null,
+            "code" : "19"
+         },
+         {
+            "value" : "20",
+            "uri" : null,
+            "code" : "20"
+         },
+         {
+            "value" : "21",
+            "uri" : null,
+            "code" : "21"
+         },
+         {
+            "value" : "22",
+            "uri" : null,
+            "code" : "22"
+         },
+         {
+            "value" : "X",
+            "uri" : null,
+            "code" : "23"
+         },
+         {
+            "value" : "Y",
+            "uri" : null,
+            "code" : "24"
+         },
+         {
+            "value" : "MT",
+            "uri" : null,
+            "code" : "25"
+         },
+         {
+            "value" : "c5_H2",
+            "uri" : null,
+            "code" : "26"
+         },
+         {
+            "value" : "c6_COX",
+            "uri" : null,
+            "code" : "27"
+         },
+         {
+            "value" : "c6_QBL",
+            "uri" : null,
+            "code" : "28"
+         },
+         {
+            "value" : "NT_113870",
+            "uri" : null,
+            "code" : "29"
+         },
+         {
+            "value" : "NT_113871",
+            "uri" : null,
+            "code" : "30"
+         },
+         {
+            "value" : "NT_113872",
+            "uri" : null,
+            "code" : "31"
+         },
+         {
+            "value" : "NT_113874",
+            "uri" : null,
+            "code" : "32"
+         },
+         {
+            "value" : "NT_113878",
+            "uri" : null,
+            "code" : "33"
+         },
+         {
+            "value" : "NT_113880",
+            "uri" : null,
+            "code" : "34"
+         },
+         {
+            "value" : "NT_113881",
+            "uri" : null,
+            "code" : "35"
+         },
+         {
+            "value" : "NT_113884",
+            "uri" : null,
+            "code" : "36"
+         },
+         {
+            "value" : "NT_113885",
+            "uri" : null,
+            "code" : "37"
+         },
+         {
+            "value" : "NT_113886",
+            "uri" : null,
+            "code" : "38"
+         },
+         {
+            "value" : "NT_113888",
+            "uri" : null,
+            "code" : "39"
+         },
+         {
+            "value" : "NT_113889",
+            "uri" : null,
+            "code" : "40"
+         },
+         {
+            "value" : "NT_113890",
+            "uri" : null,
+            "code" : "41"
+         },
+         {
+            "value" : "NT_113898",
+            "uri" : null,
+            "code" : "42"
+         },
+         {
+            "value" : "NT_113899",
+            "uri" : null,
+            "code" : "43"
+         },
+         {
+            "value" : "NT_113901",
+            "uri" : null,
+            "code" : "44"
+         },
+         {
+            "value" : "NT_113902",
+            "uri" : null,
+            "code" : "45"
+         },
+         {
+            "value" : "NT_113903",
+            "uri" : null,
+            "code" : "46"
+         },
+         {
+            "value" : "NT_113906",
+            "uri" : null,
+            "code" : "47"
+         },
+         {
+            "value" : "NT_113908",
+            "uri" : null,
+            "code" : "48"
+         },
+         {
+            "value" : "NT_113909",
+            "uri" : null,
+            "code" : "49"
+         },
+         {
+            "value" : "NT_113910",
+            "uri" : null,
+            "code" : "50"
+         },
+         {
+            "value" : "NT_113911",
+            "uri" : null,
+            "code" : "51"
+         },
+         {
+            "value" : "NT_113912",
+            "uri" : null,
+            "code" : "52"
+         },
+         {
+            "value" : "NT_113915",
+            "uri" : null,
+            "code" : "53"
+         },
+         {
+            "value" : "NT_113916",
+            "uri" : null,
+            "code" : "54"
+         },
+         {
+            "value" : "NT_113917",
+            "uri" : null,
+            "code" : "55"
+         },
+         {
+            "value" : "NT_113923",
+            "uri" : null,
+            "code" : "56"
+         },
+         {
+            "value" : "NT_113924",
+            "uri" : null,
+            "code" : "57"
+         },
+         {
+            "value" : "NT_113925",
+            "uri" : null,
+            "code" : "58"
+         },
+         {
+            "value" : "NT_113926",
+            "uri" : null,
+            "code" : "59"
+         },
+         {
+            "value" : "NT_113927",
+            "uri" : null,
+            "code" : "60"
+         },
+         {
+            "value" : "NT_113929",
+            "uri" : null,
+            "code" : "61"
+         },
+         {
+            "value" : "NT_113930",
+            "uri" : null,
+            "code" : "62"
+         },
+         {
+            "value" : "NT_113931",
+            "uri" : null,
+            "code" : "63"
+         },
+         {
+            "value" : "NT_113932",
+            "uri" : null,
+            "code" : "64"
+         },
+         {
+            "value" : "NT_113933",
+            "uri" : null,
+            "code" : "65"
+         },
+         {
+            "value" : "NT_113934",
+            "uri" : null,
+            "code" : "66"
+         },
+         {
+            "value" : "NT_113935",
+            "uri" : null,
+            "code" : "67"
+         },
+         {
+            "value" : "NT_113936",
+            "uri" : null,
+            "code" : "68"
+         },
+         {
+            "value" : "NT_113937",
+            "uri" : null,
+            "code" : "69"
+         },
+         {
+            "value" : "NT_113939",
+            "uri" : null,
+            "code" : "70"
+         },
+         {
+            "value" : "NT_113943",
+            "uri" : null,
+            "code" : "71"
+         },
+         {
+            "value" : "NT_113944",
+            "uri" : null,
+            "code" : "72"
+         },
+         {
+            "value" : "NT_113946",
+            "uri" : null,
+            "code" : "73"
+         },
+         {
+            "value" : "NT_113949",
+            "uri" : null,
+            "code" : "74"
+         },
+         {
+            "value" : "NT_113951",
+            "uri" : null,
+            "code" : "75"
+         },
+         {
+            "value" : "NT_113953",
+            "uri" : null,
+            "code" : "76"
+         },
+         {
+            "value" : "NT_113954",
+            "uri" : null,
+            "code" : "77"
+         },
+         {
+            "value" : "NT_113956",
+            "uri" : null,
+            "code" : "78"
+         },
+         {
+            "value" : "NT_113957",
+            "uri" : null,
+            "code" : "79"
+         },
+         {
+            "value" : "NT_113958",
+            "uri" : null,
+            "code" : "80"
+         },
+         {
+            "value" : "NT_113960",
+            "uri" : null,
+            "code" : "81"
+         },
+         {
+            "value" : "NT_113961",
+            "uri" : null,
+            "code" : "82"
+         },
+         {
+            "value" : "NT_113962",
+            "uri" : null,
+            "code" : "83"
+         },
+         {
+            "value" : "NT_113963",
+            "uri" : null,
+            "code" : "84"
+         },
+         {
+            "value" : "NT_113964",
+            "uri" : null,
+            "code" : "85"
+         },
+         {
+            "value" : "NT_113965",
+            "uri" : null,
+            "code" : "86"
+         },
+         {
+            "value" : "NT_113966",
+            "uri" : null,
+            "code" : "87"
+         },
+         {
+            "value" : "HSCHR17_1",
+            "uri" : null,
+            "code" : "88"
+         },
+         {
+            "value" : "HSCHR17_RANDOM_CTG2",
+            "uri" : null,
+            "code" : "89"
+         },
+         {
+            "value" : "HSCHR17_RANDOM_CTG3",
+            "uri" : null,
+            "code" : "90"
+         },
+         {
+            "value" : "HSCHR19_RANDOM_CTG2",
+            "uri" : null,
+            "code" : "91"
+         },
+         {
+            "value" : "HSCHR1_RANDOM_CTG12",
+            "uri" : null,
+            "code" : "92"
+         },
+         {
+            "value" : "HSCHR1_RANDOM_CTG5",
+            "uri" : null,
+            "code" : "93"
+         },
+         {
+            "value" : "HSCHR4_RANDOM_CTG2",
+            "uri" : null,
+            "code" : "94"
+         },
+         {
+            "value" : "HSCHR4_RANDOM_CTG3",
+            "uri" : null,
+            "code" : "95"
+         },
+         {
+            "value" : "HSCHR6_MHC_APD",
+            "uri" : null,
+            "code" : "96"
+         },
+         {
+            "value" : "HSCHR6_MHC_COX",
+            "uri" : null,
+            "code" : "97"
+         },
+         {
+            "value" : "HSCHR6_MHC_DBB",
+            "uri" : null,
+            "code" : "98"
+         },
+         {
+            "value" : "HSCHR6_MHC_MANN",
+            "uri" : null,
+            "code" : "99"
+         },
+         {
+            "value" : "HSCHR6_MHC_MCF",
+            "uri" : null,
+            "code" : "100"
+         },
+         {
+            "value" : "HSCHR6_MHC_QBL",
+            "uri" : null,
+            "code" : "101"
+         },
+         {
+            "value" : "HSCHR6_MHC_SSTO",
+            "uri" : null,
+            "code" : "102"
+         },
+         {
+            "value" : "HSCHR7_RANDOM_CTG1",
+            "uri" : null,
+            "code" : "103"
+         },
+         {
+            "value" : "HSCHR8_RANDOM_CTG1",
+            "uri" : null,
+            "code" : "104"
+         },
+         {
+            "value" : "HSCHR8_RANDOM_CTG4",
+            "uri" : null,
+            "code" : "105"
+         },
+         {
+            "value" : "HSCHR9_RANDOM_CTG2",
+            "uri" : null,
+            "code" : "106"
+         },
+         {
+            "value" : "HSCHR9_RANDOM_CTG4",
+            "uri" : null,
+            "code" : "107"
+         },
+         {
+            "value" : "HSCHR9_RANDOM_CTG5",
+            "uri" : null,
+            "code" : "108"
+         },
+         {
+            "value" : "HSCHRUN_RANDOM_CTG1",
+            "uri" : null,
+            "code" : "109"
+         },
+         {
+            "value" : "HSCHRUN_RANDOM_CTG10",
+            "uri" : null,
+            "code" : "110"
+         },
+         {
+            "value" : "HSCHRUN_RANDOM_CTG11",
+            "uri" : null,
+            "code" : "111"
+         },
+         {
+            "value" : "HSCHRUN_RANDOM_CTG13",
+            "uri" : null,
+            "code" : "112"
+         },
+         {
+            "value" : "HSCHRUN_RANDOM_CTG14",
+            "uri" : null,
+            "code" : "113"
+         },
+         {
+            "value" : "HSCHRUN_RANDOM_CTG15",
+            "uri" : null,
+            "code" : "114"
+         },
+         {
+            "value" : "HSCHRUN_RANDOM_CTG16",
+            "uri" : null,
+            "code" : "115"
+         },
+         {
+            "value" : "HSCHRUN_RANDOM_CTG17",
+            "uri" : null,
+            "code" : "116"
+         },
+         {
+            "value" : "HSCHRUN_RANDOM_CTG2",
+            "uri" : null,
+            "code" : "117"
+         },
+         {
+            "value" : "HSCHRUN_RANDOM_CTG20",
+            "uri" : null,
+            "code" : "118"
+         },
+         {
+            "value" : "HSCHRUN_RANDOM_CTG21",
+            "uri" : null,
+            "code" : "119"
+         },
+         {
+            "value" : "HSCHRUN_RANDOM_CTG22",
+            "uri" : null,
+            "code" : "120"
+         },
+         {
+            "value" : "HSCHRUN_RANDOM_CTG23",
+            "uri" : null,
+            "code" : "121"
+         },
+         {
+            "value" : "HSCHRUN_RANDOM_CTG26",
+            "uri" : null,
+            "code" : "122"
+         },
+         {
+            "value" : "HSCHRUN_RANDOM_CTG29",
+            "uri" : null,
+            "code" : "123"
+         },
+         {
+            "value" : "HSCHRUN_RANDOM_CTG3",
+            "uri" : null,
+            "code" : "124"
+         },
+         {
+            "value" : "HSCHRUN_RANDOM_CTG30",
+            "uri" : null,
+            "code" : "125"
+         },
+         {
+            "value" : "HSCHRUN_RANDOM_CTG31",
+            "uri" : null,
+            "code" : "126"
+         },
+         {
+            "value" : "HSCHRUN_RANDOM_CTG32",
+            "uri" : null,
+            "code" : "127"
+         },
+         {
+            "value" : "HSCHRUN_RANDOM_CTG33",
+            "uri" : null,
+            "code" : "128"
+         },
+         {
+            "value" : "HSCHRUN_RANDOM_CTG34",
+            "uri" : null,
+            "code" : "129"
+         },
+         {
+            "value" : "HSCHRUN_RANDOM_CTG35",
+            "uri" : null,
+            "code" : "130"
+         },
+         {
+            "value" : "HSCHRUN_RANDOM_CTG36",
+            "uri" : null,
+            "code" : "131"
+         },
+         {
+            "value" : "HSCHRUN_RANDOM_CTG4",
+            "uri" : null,
+            "code" : "132"
+         },
+         {
+            "value" : "HSCHRUN_RANDOM_CTG40",
+            "uri" : null,
+            "code" : "133"
+         },
+         {
+            "value" : "HSCHRUN_RANDOM_CTG5",
+            "uri" : null,
+            "code" : "134"
+         },
+         {
+            "value" : "HSCHRUN_RANDOM_CTG6",
+            "uri" : null,
+            "code" : "135"
+         },
+         {
+            "value" : "HSCHRUN_RANDOM_CTG9",
+            "uri" : null,
+            "code" : "136"
+         },
+         {
+            "value" : "HSCHR4_1",
+            "uri" : null,
+            "code" : "137"
+         }
+      ],
+      "name" : "appendix_B6",
+      "label" : null
+   },
+   {
+      "created" : 1347981138665,
+      "lastUpdate" : 1347981138665,
+      "terms" : [
+         {
+            "value" : "EGA",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "dbSNP",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "TCGA",
+            "uri" : null,
+            "code" : "3"
+         },
+         {
+            "value" : "CGHub",
+            "uri" : null,
+            "code" : "4"
+         },
+         {
+            "value" : "GEO",
+            "uri" : null,
+            "code" : "5"
+         }
+      ],
+      "name" : "appendix_B12",
+      "label" : null
+   },
+   {
+      "created" : 1347981138665,
+      "lastUpdate" : 1347981138665,
+      "terms" : [
+         {
+            "value" : "abutment (<180 degree contact)",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "encasement",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "no involvement",
+            "uri" : null,
+            "code" : "3"
+         }
+      ],
+      "name" : "pancreatic_cancer__surgery__state_of_pv_smv",
+      "label" : null
+   },
+   {
+      "created" : 1347981138665,
+      "lastUpdate" : 1347981138665,
+      "terms" : [
+         {
+            "value" : "annotated",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "not annotated",
+            "uri" : null,
+            "code" : "2"
+         }
+      ],
+      "name" : "ssm_p__is_annotated",
+      "label" : null
+   },
+   {
+      "created" : 1347981138665,
+      "lastUpdate" : 1347981138665,
+      "terms" : [
+         {
+            "value" : "deletion",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "tandem duplication",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "inversion",
+            "uri" : null,
+            "code" : "3"
+         },
+         {
+            "value" : "inverted duplication - head-to-head",
+            "uri" : null,
+            "code" : "4"
+         },
+         {
+            "value" : "inverted duplication - tail-to-tail",
+            "uri" : null,
+            "code" : "5"
+         },
+         {
+            "value" : "insertion",
+            "uri" : null,
+            "code" : "6"
+         },
+         {
+            "value" : "intrachromosomal rearrangement with inverted orientation",
+            "uri" : null,
+            "code" : "7"
+         },
+         {
+            "value" : "intrachromosomal rearrangement with non-inverted orientation",
+            "uri" : null,
+            "code" : "8"
+         },
+         {
+            "value" : "fold-back inversion",
+            "uri" : null,
+            "code" : "9"
+         },
+         {
+            "value" : "complex intrachromosomal rearrangement",
+            "uri" : null,
+            "code" : "10"
+         },
+         {
+            "value" : "reciprocal translocation",
+            "uri" : null,
+            "code" : "11"
+         },
+         {
+            "value" : "unbalanced translocation",
+            "uri" : null,
+            "code" : "12"
+         },
+         {
+            "value" : "interchromosomal insertion",
+            "uri" : null,
+            "code" : "13"
+         },
+         {
+            "value" : "interchromosomal rearrangement - unknown type",
+            "uri" : null,
+            "code" : "14"
+         },
+         {
+            "value" : "complex interchromosomal rearrangement",
+            "uri" : null,
+            "code" : "15"
+         },
+         {
+            "value" : "intrachromosomal amplicon-to-amplicon",
+            "uri" : null,
+            "code" : "16"
+         },
+         {
+            "value" : "intrachromosomal amplicon-to-nonamplified dna",
+            "uri" : null,
+            "code" : "17"
+         },
+         {
+            "value" : "interchromosomal amplicon-to-amplicon",
+            "uri" : null,
+            "code" : "18"
+         },
+         {
+            "value" : "interchromosomal amplicon-to-nonamplified dna",
+            "uri" : null,
+            "code" : "19"
+         },
+         {
+            "value" : "extrachromosomal",
+            "uri" : null,
+            "code" : "20"
+         }
+      ],
+      "name" : "appendix_B9",
+      "label" : null
+   },
+   {
+      "created" : 1347981138665,
+      "lastUpdate" : 1347981138665,
+      "terms" : [
+         {
+            "value" : "1",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "-1",
+            "uri" : null,
+            "code" : "-1"
+         }
+      ],
+      "name" : "ssm_p__chromosome_strand",
+      "label" : null
+   },
+   {
+      "created" : 1347981138665,
+      "lastUpdate" : 1347981138665,
+      "terms" : [
+         {
+            "value" : "1",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "-1",
+            "uri" : null,
+            "code" : "-1"
+         }
+      ],
+      "name" : "mirna_s__chromosome_strand",
+      "label" : null
+   },
+   {
+      "created" : 1347981138666,
+      "lastUpdate" : 1347981138666,
+      "terms" : [
+         {
+            "value" : "annotated",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "not annotated",
+            "uri" : null,
+            "code" : "2"
+         }
+      ],
+      "name" : "exp_g__is_annotated",
+      "label" : null
+   },
+   {
+      "created" : 1347981138666,
+      "lastUpdate" : 1347981138666,
+      "terms" : [
+         {
+            "value" : "no",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "yes",
+            "uri" : null,
+            "code" : "2"
+         }
+      ],
+      "name" : "specimen__specimen_available",
+      "label" : null
+   },
+   {
+      "created" : 1347981138666,
+      "lastUpdate" : 1347981138666,
+      "terms" : [
+         {
+            "value" : "curative",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "exploratory",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "staging",
+            "uri" : null,
+            "code" : "3"
+         },
+         {
+            "value" : "palliative",
+            "uri" : null,
+            "code" : "4"
+         },
+         {
+            "value" : "other",
+            "uri" : null,
+            "code" : "5"
+         }
+      ],
+      "name" : "pancreatic_cancer__surgery__intent",
+      "label" : null
+   },
+   {
+      "created" : 1347981138666,
+      "lastUpdate" : 1347981138666,
+      "terms" : [
+         {
+            "value" : "naïve",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "neoadjuvant",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "recurrence",
+            "uri" : null,
+            "code" : "3"
+         }
+      ],
+      "name" : "benneel_ovary__specimen_treatment_status",
+      "label" : null
+   },
+   {
+      "created" : 1347981138666,
+      "lastUpdate" : 1347981138666,
+      "terms" : [
+         {
+            "value" : "sibling",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "parent",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "grandparent",
+            "uri" : null,
+            "code" : "3"
+         },
+         {
+            "value" : "uncle/aunt",
+            "uri" : null,
+            "code" : "4"
+         },
+         {
+            "value" : "cousin",
+            "uri" : null,
+            "code" : "5"
+         },
+         {
+            "value" : "other",
+            "uri" : null,
+            "code" : "6"
+         }
+      ],
+      "name" : "dr_family_history__relationship_type",
+      "label" : null
+   },
+   {
+      "created" : 1347981138666,
+      "lastUpdate" : 1347981138666,
+      "terms" : [
+         {
+            "value" : "complete response",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "partial response",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "progressive disease",
+            "uri" : null,
+            "code" : "3"
+         },
+         {
+            "value" : "stable",
+            "uri" : null,
+            "code" : "4"
+         },
+         {
+            "value" : "other",
+            "uri" : null,
+            "code" : "5"
+         }
+      ],
+      "name" : "pancreatic_cancer__therapy__objective_response",
+      "label" : null
+   },
+   {
+      "created" : 1347981138666,
+      "lastUpdate" : 1347981138666,
+      "terms" : [
+         {
+            "value" : "yes",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "no",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "not determined",
+            "uri" : null,
+            "code" : "3"
+         },
+         {
+            "value" : "pending",
+            "uri" : null,
+            "code" : "4"
+         }
+      ],
+      "name" : "benneel_ovary__in_vivo_xenograft",
+      "label" : null
+   },
+   {
+      "created" : 1347981138666,
+      "lastUpdate" : 1347981138666,
+      "terms" : [
+         {
+            "value" : "1",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "-1",
+            "uri" : null,
+            "code" : "-1"
+         }
+      ],
+      "name" : "jcn_p__gene_strand",
+      "label" : null
+   },
+   {
+      "created" : 1347981138666,
+      "lastUpdate" : 1347981138666,
+      "terms" : [
+         {
+            "value" : "present",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "absent",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "indeterminate",
+            "uri" : null,
+            "code" : "3"
+         }
+      ],
+      "name" : "pancreatic_cancer__surgery__lymphovascular_invasion",
+      "label" : null
+   },
+   {
+      "created" : 1347981138666,
+      "lastUpdate" : 1347981138666,
+      "terms" : [
+         {
+            "value" : "validated",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "not tested",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "not valid",
+            "uri" : null,
+            "code" : "3"
+         }
+      ],
+      "name" : "jcn_p__validation_status",
+      "label" : null
+   },
+   {
+      "created" : 1347981138662,
+      "lastUpdate" : 1347981138662,
+      "terms" : [
+         {
+            "value" : "PCR",
+            "uri" : null,
+            "code" : "1"
+         },
+         {
+            "value" : "qPCR",
+            "uri" : null,
+            "code" : "2"
+         },
+         {
+            "value" : "capillary sequencing",
+            "uri" : null,
+            "code" : "3"
+         },
+         {
+            "value" : "SOLiD sequencing",
+            "uri" : null,
+            "code" : "4"
+         },
+         {
+            "value" : "Illumina GA sequencing",
+            "uri" : null,
+            "code" : "5"
+         },
+         {
+            "value" : "454 sequencing",
+            "uri" : null,
+            "code" : "6"
+         },
+         {
+            "value" : "Helicos sequencing",
+            "uri" : null,
+            "code" : "7"
+         },
+         {
+            "value" : "Affymetrix Genome-Wide Human SNP Array 6.0",
+            "uri" : null,
+            "code" : "8"
+         },
+         {
+            "value" : "Affymetrix Genome-Wide Human SNP Array 5.0",
+            "uri" : null,
+            "code" : "9"
+         },
+         {
+            "value" : "Affymetrix Mapping 100K Array Set",
+            "uri" : null,
+            "code" : "10"
+         },
+         {
+            "value" : "Affymetrix Mapping 500K Array Set",
+            "uri" : null,
+            "code" : "11"
+         },
+         {
+            "value" : "Affymetrix Mapping 10K 2.0 Array Set",
+            "uri" : null,
+            "code" : "12"
+         },
+         {
+            "value" : "Affymetrix EMET Plus Premier Pack",
+            "uri" : null,
+            "code" : "13"
+         },
+         {
+            "value" : "Agilent Whole Human Genome Oligo Microarray Kit",
+            "uri" : null,
+            "code" : "14"
+         },
+         {
+            "value" : "Agilent Human Genome 244A",
+            "uri" : null,
+            "code" : "15"
+         },
+         {
+            "value" : "Agilent Human Genome 105A",
+            "uri" : null,
+            "code" : "16"
+         },
+         {
+            "value" : "Agilent Human CNV Association 2x105K",
+            "uri" : null,
+            "code" : "17"
+         },
+         {
+            "value" : "Agilent Human Genome 44K",
+            "uri" : null,
+            "code" : "18"
+         },
+         {
+            "value" : "Agilent Human CGH 1x1M",
+            "uri" : null,
+            "code" : "19"
+         },
+         {
+            "value" : "Agilent Human CGH 2x400K",
+            "uri" : null,
+            "code" : "20"
+         },
+         {
+            "value" : "Agilent Human CGH 4x180K",
+            "uri" : null,
+            "code" : "21"
+         },
+         {
+            "value" : "Agilent Human CGH 8x60K",
+            "uri" : null,
+            "code" : "22"
+         },
+         {
+            "value" : "Agilent Human CNV 2x400K",
+            "uri" : null,
+            "code" : "23"
+         },
+         {
+            "value" : "Agilent Human miRNA Microarray Kit (v2)",
+            "uri" : null,
+            "code" : "24"
+         },
+         {
+            "value" : "Agilent Human CpG Island Microarray Kit",
+            "uri" : null,
+            "code" : "25"
+         },
+         {
+            "value" : "Agilent Human Promoter ChIP-on-chip Microarray Set",
+            "uri" : null,
+            "code" : "26"
+         },
+         {
+            "value" : "Agilent Human SpliceArray",
+            "uri" : null,
+            "code" : "27"
+         },
+         {
+            "value" : "Illumina human1m-duo",
+            "uri" : null,
+            "code" : "28"
+         },
+         {
+            "value" : "Illumina human660w-quad",
+            "uri" : null,
+            "code" : "29"
+         },
+         {
+            "value" : "Illumina humancytosnp-12",
+            "uri" : null,
+            "code" : "30"
+         },
+         {
+            "value" : "Illumina human510s-duo",
+            "uri" : null,
+            "code" : "31"
+         },
+         {
+            "value" : "Illumina humanmethylation27",
+            "uri" : null,
+            "code" : "32"
+         },
+         {
+            "value" : "Illumina goldengate methylation",
+            "uri" : null,
+            "code" : "33"
+         },
+         {
+            "value" : "Illumina HumanHT-12 v4.0 beadchip",
+            "uri" : null,
+            "code" : "34"
+         },
+         {
+            "value" : "Illumina HumanWG-6 v3.0 beadchip",
+            "uri" : null,
+            "code" : "35"
+         },
+         {
+            "value" : "Illumina HumanRef-8 v3.0 beadchip",
+            "uri" : null,
+            "code" : "36"
+         },
+         {
+            "value" : "Illumina microRNA Expression Profiling Panel",
+            "uri" : null,
+            "code" : "37"
+         },
+         {
+            "value" : "Illumina humanht-16",
+            "uri" : null,
+            "code" : "38"
+         },
+         {
+            "value" : "Illumina humanht-17",
+            "uri" : null,
+            "code" : "39"
+         },
+         {
+            "value" : "Nimblegen Human CGH 3x720 Whole-Genome v3.0 Array",
+            "uri" : null,
+            "code" : "40"
+         },
+         {
+            "value" : "Nimblegen Human CGH 2.1M Whole-Genome v2.0D Array",
+            "uri" : null,
+            "code" : "41"
+         },
+         {
+            "value" : "Nimblegen Gene Expression 385K",
+            "uri" : null,
+            "code" : "42"
+         },
+         {
+            "value" : "Nimblegen Gene Expression 4x72K",
+            "uri" : null,
+            "code" : "43"
+         },
+         {
+            "value" : "Nimblegen Gene Expression 12x135K",
+            "uri" : null,
+            "code" : "44"
+         },
+         {
+            "value" : "Nimblegen Human Methylation 2.1M Whole-Genome sets",
+            "uri" : null,
+            "code" : "45"
+         },
+         {
+            "value" : "Nimblegen Human Methylation 385K Whole-Genome sets",
+            "uri" : null,
+            "code" : "46"
+         },
+         {
+            "value" : "Nimblegen CGS",
+            "uri" : null,
+            "code" : "47"
+         },
+         {
+            "value" : "Illumina Human1M OmniQuad chip",
+            "uri" : null,
+            "code" : "48"
+         },
+         {
+            "value" : "PCR and capillary sequencing",
+            "uri" : null,
+            "code" : "49"
+         },
+         {
+            "value" : "Custom-designed gene expression array",
+            "uri" : null,
+            "code" : "50"
+         },
+         {
+            "value" : "Affymetrix HT Human Genome U133A Array Plate Set",
+            "uri" : null,
+            "code" : "51"
+         },
+         {
+            "value" : "Agilent 244K Custom Gene Expression G4502A-07-1",
+            "uri" : null,
+            "code" : "52"
+         },
+         {
+            "value" : "Agilent 244K Custom Gene Expression G4502A-07-2",
+            "uri" : null,
+            "code" : "53"
+         },
+         {
+            "value" : "Agilent 244K Custom Gene Expression G4502A-07-3",
+            "uri" : null,
+            "code" : "54"
+         },
+         {
+            "value" : "Agilent Human Genome CGH Custom Microaary 2x415K",
+            "uri" : null,
+            "code" : "55"
+         },
+         {
+            "value" : "Affymetrix Human U133 Plus PM",
+            "uri" : null,
+            "code" : "56"
+         },
+         {
+            "value" : "Affymetrix Human U133 Plus 2.0",
+            "uri" : null,
+            "code" : "57"
+         },
+         {
+            "value" : "Affymetrix Human Exon 1.0 ST",
+            "uri" : null,
+            "code" : "58"
+         },
+         {
+            "value" : "Almac Human CRC",
+            "uri" : null,
+            "code" : "59"
+         },
+         {
+            "value" : "Illumina HiSeq",
+            "uri" : null,
+            "code" : "60"
+         },
+         {
+            "value" : "Affymetrix Human MIP 330K",
+            "uri" : null,
+            "code" : "61"
+         },
+         {
+            "value" : "Affymetrix Human Gene 1.0 ST",
+            "uri" : null,
+            "code" : "62"
+         },
+         {
+            "value" : "Illumina Human Omni1-Quad beadchip",
+            "uri" : null,
+            "code" : "63"
+         },
+         {
+            "value" : "Sequenom MassARRAY",
+            "uri" : null,
+            "code" : "64"
+         },
+         {
+            "value" : "Custom-designed cDNA array",
+            "uri" : null,
+            "code" : "65"
+         },
+         {
+            "value" : "Illumina HumanHap550",
+            "uri" : null,
+            "code" : "66"
+         },
+         {
+            "value" : "Ion Torrent PGM",
+            "uri" : null,
+            "code" : "67"
+         },
+         {
+            "value" : "Illumina GoldenGate Methylation Cancer Panel I",
+            "uri" : null,
+            "code" : "68"
+         },
+         {
+            "value" : "Illumina Infinium HumanMethylation450",
+            "uri" : null,
+            "code" : "69"
+         },
+         {
+            "value" : "Agilent 8 x 15K Human miRNA-specific microarray",
+            "uri" : null,
+            "code" : "70"
+         },
+         {
+            "value" : "M.D. Anderson Reverse Phase Protein Array Core",
+            "uri" : null,
+            "code" : "71"
+         },
+         {
+            "value" : "Microsatellite Instability Analysis",
+            "uri" : null,
+            "code" : "72"
+         },
+         {
+            "value" : "Agilent 244K Custom Gene Expression G4502A-07",
+            "uri" : null,
+            "code" : "73"
+         },
+         {
+            "value" : "Illumina HumanCNV370-Duo v1.0 BeadChip",
+            "uri" : null,
+            "code" : "74"
+         },
+         {
+            "value" : "Illumina HumanOmniExpress BeadChip",
+            "uri" : null,
+            "code" : "75"
+         }
+      ],
+      "name" : "appendix_B5",
+      "label" : "Analysis and Validation Platforms"
+   }
+]

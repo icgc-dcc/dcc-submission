@@ -50,6 +50,9 @@ public class CodeListResource {
   @Inject
   private DictionaryService dictionaries;
 
+  /**
+   * Open-access intentional (DCC-758)
+   */
   @GET
   public Response getCodeLists() {
     List<CodeList> codeLists = this.dictionaries.listCodeList();
@@ -86,6 +89,9 @@ public class CodeListResource {
     return ResponseTimestamper.ok(optional.get()).build();
   }
 
+  /**
+   * NOTE: If allow more than updating label at some point, must reset Submission states...
+   */
   @PUT
   @Path("{name}")
   public Response updateCodeList(@PathParam("name") String name, @Valid CodeList newCodeList, @Context Request req,
@@ -110,7 +116,7 @@ public class CodeListResource {
     ResponseTimestamper.evaluate(req, optional.get());
     this.dictionaries.updateCodeList(newCodeList);
 
-    return ResponseTimestamper.ok(newCodeList).build();
+    return Response.status(Status.NO_CONTENT).build(); // DCC-820: add ResponseTimestamper back here?
   }
 
   @POST
@@ -145,6 +151,6 @@ public class CodeListResource {
       this.dictionaries.addTerm(name, term);
     }
 
-    return ResponseTimestamper.ok(codeList).build();
+    return Response.status(Status.CREATED).build();
   }
 }

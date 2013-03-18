@@ -22,6 +22,9 @@ import static java.lang.System.out;
 
 import java.io.File;
 
+import org.icgc.dcc.genes.cli.Options;
+import org.icgc.dcc.genes.loader.GenesLoader;
+
 import lombok.extern.slf4j.Slf4j;
 
 import com.beust.jcommander.JCommander;

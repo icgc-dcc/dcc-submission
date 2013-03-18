@@ -17,14 +17,6 @@
  */
 package org.icgc.dcc.release;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -39,7 +31,6 @@ import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.dictionary.DictionaryService;
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.filesystem.DccFileSystem;
-import org.icgc.dcc.filesystem.ReleaseFileSystem;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.release.model.SubmissionState;
@@ -53,6 +44,13 @@ import com.google.common.base.Throwables;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
 import com.typesafe.config.Config;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class ReleaseServiceTest {
 
@@ -72,10 +70,6 @@ public class ReleaseServiceTest {
 
   private Config config;
 
-  private DccFileSystem mockDccFileSystem;
-
-  private ReleaseFileSystem mockReleaseFileSystem;
-
   final private String testDbName = "dcc-test";
 
   @Before
@@ -88,12 +82,8 @@ public class ReleaseServiceTest {
       datastore = morphia.createDatastore(mongo, testDbName);
       dccLocking = mock(DccLocking.class);
       fs = mock(DccFileSystem.class);
-      mockReleaseFileSystem = mock(ReleaseFileSystem.class);
-      mockDccFileSystem = mock(DccFileSystem.class);
 
       config = mock(Config.class);
-
-      when(fs.getReleaseFilesystem(any(Release.class))).thenReturn(mockReleaseFileSystem);
 
       // Clear out the test database before each test
       datastore.delete(datastore.createQuery(Dictionary.class));
@@ -130,8 +120,8 @@ public class ReleaseServiceTest {
 
       // Create the releaseService and populate it with the initial release
       releaseService = new ReleaseService(dccLocking, morphia, datastore, fs, config);
-      dictionaryService = new DictionaryService(morphia, datastore, mockDccFileSystem, releaseService);
-      dictionaryService.add(dictionary);
+      dictionaryService = new DictionaryService(morphia, datastore, releaseService);
+      dictionaryService.addDictionary(dictionary);
       releaseService.createInitialRelease(release);
     } catch(UnknownHostException e) {
       e.printStackTrace();

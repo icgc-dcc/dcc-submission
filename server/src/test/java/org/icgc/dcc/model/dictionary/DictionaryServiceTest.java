@@ -17,17 +17,11 @@
  */
 package org.icgc.dcc.model.dictionary;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import org.icgc.dcc.dictionary.DictionaryService;
 import org.icgc.dcc.dictionary.DictionaryServiceException;
 import org.icgc.dcc.dictionary.model.CodeList;
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.Term;
-import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.release.ReleaseService;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -38,6 +32,11 @@ import com.google.code.morphia.Morphia;
 import com.google.code.morphia.query.Query;
 import com.mysema.query.mongodb.MongodbQuery;
 import com.mysema.query.types.Predicate;
+
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class DictionaryServiceTest {
 
@@ -57,8 +56,6 @@ public class DictionaryServiceTest {
 
   private DictionaryService dictionaryService;
 
-  private DccFileSystem mockDccFileSystem;
-
   private ReleaseService mockReleaseService;
 
   @Before
@@ -72,7 +69,6 @@ public class DictionaryServiceTest {
     mockCodeList = mock(CodeList.class);
     mockTerm = mock(Term.class);
     mockQuery = mock(Query.class);
-    mockDccFileSystem = mock(DccFileSystem.class);
     mockReleaseService = mock(ReleaseService.class);
 
     when(mockDictionary.getVersion()).thenReturn("abc");
@@ -84,7 +80,7 @@ public class DictionaryServiceTest {
     when(mockMongodbQuery.where(any(Predicate.class))).thenReturn(mockMongodbQuery);
     when(mockMongodbQuery.singleResult()).thenReturn(null).thenReturn(mockDictionary).thenReturn(mockDictionary);
 
-    this.dictionaryService = new DictionaryService(mockMorphia, mockDatastore, mockDccFileSystem, mockReleaseService);
+    this.dictionaryService = new DictionaryService(mockMorphia, mockDatastore, mockReleaseService);
   }
 
   @Test(expected = DictionaryServiceException.class)
@@ -114,7 +110,7 @@ public class DictionaryServiceTest {
   @Ignore
   @Test(expected = DictionaryServiceException.class)
   public void test_add_failOnExisting() {
-    dictionaryService.add(mockDictionary);
+    dictionaryService.addDictionary(mockDictionary);
   }
 
   @Ignore

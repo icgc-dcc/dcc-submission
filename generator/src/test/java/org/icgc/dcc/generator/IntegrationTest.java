@@ -22,8 +22,8 @@ import org.junit.Test;
 public class IntegrationTest {
 
   @Test
-  public void testGenerator() {
-    Main.main();
+  public void test() {
+    Main.main("-c", "src/main/conf/config.yaml");
   }
 
 }

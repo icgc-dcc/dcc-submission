@@ -156,9 +156,9 @@ class RootHdfsSshFile extends HdfsSshFile {
   }
 
   public void systemFilesNotifyModified() {
-    // TODO: not very effiecient now, need to combine the query into one
     for(Submission submission : this.rfs.getRelease().getSubmissions()) {
-      this.releases.resetSubmission(this.rfs.getRelease().getName(), submission.getProjectKey());
+      this.releases.resetSubmission( // TODO: DCC-903 (only if open release uses it)
+          this.rfs.getRelease().getName(), submission.getProjectKey());
     }
   }
 }

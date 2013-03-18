@@ -17,9 +17,6 @@
  */
 package org.icgc.dcc.release.model;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
-
 import java.util.Date;
 import java.util.List;
 
@@ -38,8 +35,15 @@ import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Lists.newArrayList;
+import static org.icgc.dcc.release.model.ReleaseState.OPENED;
+import static org.icgc.dcc.release.model.SubmissionState.INVALID;
 
 /**
  * Not meant to be used in a hash for now (override hashCode if so)
@@ -68,13 +72,13 @@ public class Release extends BaseEntity implements HasName {
 
   public Release() {
     super();
-    this.setState(ReleaseState.OPENED);
+    this.setState(OPENED);
   }
 
   public Release(String name) {
     super();
     this.setName(name);
-    this.setState(ReleaseState.OPENED);
+    this.setState(OPENED);
   }
 
   @Override
@@ -114,6 +118,17 @@ public class Release extends BaseEntity implements HasName {
         return input.getProjectKey();
       }
     });
+  }
+
+  @JsonIgnore
+  public List<String> getInvalidProjectKeys() {
+    List<String> invalidProjectKeys = newArrayList();
+    for(Submission submission : getSubmissions()) {
+      if(submission.getState() == INVALID) {
+        invalidProjectKeys.add(submission.getProjectKey());
+      }
+    }
+    return ImmutableList.copyOf(invalidProjectKeys);
   }
 
   public Submission getSubmission(final String projectKey) {

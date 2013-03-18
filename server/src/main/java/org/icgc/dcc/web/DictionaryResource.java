@@ -53,20 +53,17 @@ public class DictionaryResource {
   @Inject
   private DictionaryService dictionaries;
 
+  /**
+   * See {@link DictionaryService#addDictionary(Dictionary)} for details.
+   */
   @POST
   public Response addDictionary(@Valid Dictionary dict, @Context SecurityContext securityContext) {
-
-    checkArgument(dict != null);
-    log.info("Adding dictionary: {}", dict.getVersion());
+    log.info("Adding dictionary: {}", dict == null ? null : dict.getVersion());
     if(isOmnipotentUser(securityContext) == false) {
       return unauthorizedResponse();
     }
 
-    if(this.dictionaries.list().isEmpty() == false) {
-      return Response.status(Status.BAD_REQUEST)
-          .entity(new ServerErrorResponseMessage(ServerErrorCode.ALREADY_INITIALIZED)).build();
-    }
-    this.dictionaries.add(dict);
+    this.dictionaries.addDictionary(dict);
 
     return Response.created(UriBuilder.fromResource(DictionaryResource.class).path(dict.getVersion()).build()).build();
   }
@@ -101,8 +98,11 @@ public class DictionaryResource {
   @Path("{version}")
   public Response updateDictionary(@PathParam("version") String version, @Valid Dictionary newDictionary,
       @Context Request req, @Context SecurityContext securityContext) {
+    checkArgument(version != null);
+    checkArgument(newDictionary != null);
+    checkArgument(newDictionary.getVersion() != null);
 
-    log.info("Updating dictionary: {} with {}", version, newDictionary == null ? null : newDictionary.getVersion());
+    log.info("Updating dictionary: {} with {}", version, newDictionary.getVersion());
     if(isOmnipotentUser(securityContext) == false) {
       return unauthorizedResponse();
     }
@@ -111,7 +111,7 @@ public class DictionaryResource {
     if(oldDictionary == null) {
       return Response.status(Status.NOT_FOUND)
           .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, version)).build();
-    } else if(oldDictionary.getState() != DictionaryState.OPENED) {
+    } else if(oldDictionary.getState() != DictionaryState.OPENED) { // TODO: move check to dictionaries.update() instead
       return Response.status(Status.BAD_REQUEST)
           .entity(new ServerErrorResponseMessage(ServerErrorCode.RESOURCE_CLOSED, version)).build();
     } else if(newDictionary.getVersion() == null) {
@@ -125,6 +125,6 @@ public class DictionaryResource {
     ResponseTimestamper.evaluate(req, oldDictionary);
     this.dictionaries.update(newDictionary);
 
-    return ResponseTimestamper.ok(newDictionary).build();
+    return Response.status(Status.NO_CONTENT).build(); // http://stackoverflow.com/questions/797834/should-a-restful-put-operation-return-something
   }
 }

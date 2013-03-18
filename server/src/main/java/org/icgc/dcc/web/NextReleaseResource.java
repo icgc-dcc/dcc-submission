@@ -34,6 +34,7 @@ import javax.ws.rs.core.SecurityContext;
 import org.glassfish.grizzly.http.util.Header;
 import org.icgc.dcc.core.model.DccModelOptimisticLockException;
 import org.icgc.dcc.core.model.InvalidStateException;
+import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.release.NextRelease;
 import org.icgc.dcc.release.ReleaseException;
 import org.icgc.dcc.release.ReleaseService;
@@ -73,11 +74,27 @@ public class NextReleaseResource {
     if(hasReleaseViewPrivilege(securityContext) == false) {
       return unauthorizedResponse();
     }
+
     NextRelease nextRelease = releaseService.getNextRelease();
     Release release = nextRelease.getRelease(); // guaranteed not to be null
     String prefix = config.getString("http.ws.path");
     String redirectionPath = Joiner.on("/").join(prefix, "releases", release.getName());
     return Response.status(Status.MOVED_PERMANENTLY).header(HttpHeaders.LOCATION, redirectionPath).build();
+  }
+
+  /**
+   * Returns the current dictionary.
+   * <p>
+   * More: <code>{@link ReleaseService#getNextDictionary()}</code><br/>
+   * Open-access intentional (DCC-758)
+   */
+  @GET
+  @Path("dictionary")
+  public Response getDictionary(@Context Request req) {
+    Dictionary dictionary = releaseService.getNextDictionary();
+
+    ResponseTimestamper.evaluate(req, dictionary);
+    return ResponseTimestamper.ok(dictionary).build();
   }
 
   @POST
@@ -120,8 +137,10 @@ public class NextReleaseResource {
     /* no authorization check necessary */
 
     log.debug("Getting the queue for nextRelease");
-    List<String> projectIds = releaseService.getNextRelease().getQueued();
-    return Response.ok(projectIds.toArray()).build();
+    NextRelease nextRelease = releaseService.getNextRelease();
+    List<String> projectIds = nextRelease.getQueued(); // TODO: ensure cannot be null (DCC-820)
+    Object[] projectIdArray = projectIds.toArray();
+    return Response.ok(projectIdArray).build();
   }
 
   @POST
@@ -151,8 +170,9 @@ public class NextReleaseResource {
           .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, projectKeys)).build();
     } catch(InvalidStateException e) {
       ServerErrorCode code = e.getCode();
+      Object offendingState = e.getState();
       log.error(code.getFrontEndString(), e);
-      return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage(code)).build();
+      return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage(code, offendingState)).build();
     } catch(DccModelOptimisticLockException e) { // not very likely
       ServerErrorCode code = ServerErrorCode.UNAVAILABLE;
       log.error(code.getFrontEndString(), e);
@@ -160,7 +180,7 @@ public class NextReleaseResource {
           .header(Header.RetryAfter.toString(), 3) //
           .entity(new ServerErrorResponseMessage(code)).build();
     }
-    return Response.ok().build();
+    return Response.status(Status.NO_CONTENT).build();
   }
 
   @DELETE

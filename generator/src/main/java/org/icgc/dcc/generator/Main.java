@@ -22,14 +22,24 @@ import static java.lang.System.out;
 
 import java.io.File;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+
+import org.icgc.dcc.generator.cli.Options;
+import org.icgc.dcc.generator.config.GeneratorConfig;
+import org.icgc.dcc.generator.config.GeneratorConfigFile;
+import org.icgc.dcc.generator.service.GeneratorService;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 
 /**
- * Command line utility used to generate ICGC data sets.
+ * Command line utility used to generate ICGC data sets. In DataGenerator there's a a static
+ * ArrayList<ArrayList<String>> called listOfPrimaryKeys. This ArrayList holds ArrayLists of primary keys for each file.
+ * To identify which File and Field an ArrayList (with in the ArrayList) is associated with, the first element holds the
+ * name of the associated FileSchema and the second element holds the name of the Field.
  */
+
 @Slf4j
 public class Main {
 
@@ -39,6 +49,7 @@ public class Main {
     new Main().run(args);
   }
 
+  @SneakyThrows
   private void run(String... args) {
     JCommander cli = new JCommander(options);
     cli.setProgramName(getProgramName());
@@ -56,19 +67,26 @@ public class Main {
         return;
       }
 
-      generate();
+      GeneratorConfig config = read(options.config);
+      generate(config);
     } catch(ParameterException pe) {
       err.printf("dcc-generator: %s%n", pe.getMessage());
       err.printf("Try '%s --help' for more information.%n", getProgramName());
     }
   }
 
-  private void generate() {
-    DataGenerator generator = new DataGenerator();
+  @SneakyThrows
+  private GeneratorConfig read(File file) {
+    return new GeneratorConfigFile(file).read();
+  }
 
-    log.info("Generating data using: {}", options);
-    generator.generate();
-    log.info("Finished generating!");
+  private void generate(GeneratorConfig config) {
+    log.info("Generating using: {}", options);
+    GeneratorService service = new GeneratorService();
+
+    log.info("Generating: config = {}", config);
+    service.generate(config);
+    log.info("Finished generating");
   }
 
   private String getProgramName() {

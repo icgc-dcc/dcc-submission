@@ -72,8 +72,9 @@ module.exports = class ReleaseController extends BaseController
         if Chaplin.mediator.user
           Chaplin.mediator.publish 'notify',
             "Submission #{params.submission} not found.",
-            'error'
-          Chaplin.mediator.publish '!startupController', 'release', 'show'
+            "error"
+          Chaplin.mediator.publish '!startupController',
+            'release', 'show'
             release: params.release
 
   report: (params) ->
@@ -91,6 +92,7 @@ module.exports = class ReleaseController extends BaseController
           Chaplin.mediator.publish 'notify',
             "File #{params.report} not found.",
             'error'
-          Chaplin.mediator.publish '!startupController', 'release', 'submission'
+          Chaplin.mediator.publish '!startupController',
+            'release', 'submission'
             release: params.release
             submission: params.submission

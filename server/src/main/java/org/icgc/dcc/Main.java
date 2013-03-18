@@ -35,6 +35,8 @@ import org.icgc.dcc.sftp.SftpModule;
 import org.icgc.dcc.shiro.ShiroModule;
 import org.icgc.dcc.validation.ValidationModule;
 import org.icgc.dcc.web.WebModule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Guice;
@@ -43,6 +45,7 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
 public class Main {
+  private static final Logger log = LoggerFactory.getLogger(Main.class);
 
   private static final String HADOOP_USER_NAME_PARAM = "HADOOP_USER_NAME";
 
@@ -70,6 +73,7 @@ public class Main {
 
     System.setProperty(HADOOP_USER_NAME_PARAM, HADOOP_USER_NAME); // see DCC-572
     Main.injector = Guice.createInjector(new ConfigModule(parsedConfig) //
+        // Infrastructure modules
         , new CoreModule()//
         , new HttpModule()//
         , new JerseyModule()//
@@ -78,6 +82,8 @@ public class Main {
         , new ShiroModule()//
         , new FileSystemModule()//
         , new SftpModule()//
+
+        // Business modules
         , new DictionaryModule()//
         , new ReleaseModule()//
         , new ValidationModule());
@@ -105,12 +111,14 @@ public class Main {
       throw new IllegalArgumentException(args[0] + " is not a valid argument. Valid arguments are "
           + CONFIG.listValues());
     }
+    log.info("Using config type {}", configType);
     Config parsedConfig;
     if(configType == CONFIG.external) {
       if(args.length < 2) {
         throw new IllegalArgumentException("The argument 'external' requires a filename as an additional parameter");
       }
       File configFile = new File(args[1]);
+      log.info("Using config file {}", configFile.getAbsoluteFile());
       if(configFile.exists() == false) {
         throw new FileNotFoundException(args[1]);
       }

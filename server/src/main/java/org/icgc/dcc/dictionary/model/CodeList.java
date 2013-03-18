@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.dictionary.model;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,6 +27,8 @@ import org.icgc.dcc.core.model.BaseEntity;
 import org.icgc.dcc.core.model.HasName;
 
 import com.google.code.morphia.annotations.Entity;
+
+import static com.google.common.base.Preconditions.checkArgument;
 
 /**
  * Describes a list of codes (see {@code Term})
@@ -87,5 +87,11 @@ public class CodeList extends BaseEntity implements HasName {
 
   public boolean containsTerm(Term term) {
     return terms.contains(term);
+  }
+
+  // TODO: lombokify below
+  @Override
+  public String toString() {
+    return "CodeList [name=" + name + ", label=" + label + ", terms=" + terms + "]";
   }
 }
