@@ -1264,9 +1264,11 @@ angular.module('ui.bootstrap.tabs', [])
         restrict: 'EA',
         transclude: true,
         scope: {
-          heading: '@'
+          heading: '@',
+          count: '='
         },
         link: function (scope, element, attrs, tabsCtrl) {
+          console.log("pane", attrs);
           var getSelected, setSelected;
           scope.selected = false;
           if (attrs.active) {
@@ -1840,7 +1842,7 @@ angular.module("template/tabs/tabs.html", []).run(["$templateCache", function ($
       "<div class=\"tabbable\">" +
           "  <ul class=\"nav nav-tabs\">" +
           "    <li ng-repeat=\"pane in panes\" ng-class=\"{active:pane.selected}\">" +
-          "      <a href=\"\" ng-click=\"select(pane)\">{{pane.heading}}</a>" +
+          "      <a href=\"\" ng-click=\"select(pane)\"><span ng-show=pane.count>({{pane.count}})</span> {{pane.heading}}</a>" +
           "    </li>" +
           "  </ul>" +
           "  <div class=\"tab-content\" ng-transclude></div>" +
