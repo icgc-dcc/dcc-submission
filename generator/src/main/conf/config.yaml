@@ -1,7 +1,7 @@
 # Directory in which all the files are generated
 outputDirectory: target/
 
-# Number Of donors that participated in the project
+# Number Of donors that participated in the project (approximately 500 for a given project)
 numberOfDonors: 500
 
 # Number Of speciments per donor (ranges on average from 2 - 4)
@@ -35,6 +35,7 @@ experimentalFiles:
    numberOfLinesPerForeignKey: 3
  - name: ssm
    fileType: p
+   # Approximately 2000 for a given project
    numberOfLinesPerForeignKey: 3
  - name: ssm
    fileType: s
