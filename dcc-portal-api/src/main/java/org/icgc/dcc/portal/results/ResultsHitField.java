@@ -15,13 +15,12 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc.portal;
+package org.icgc.dcc.portal.results;
 
-public class DataPortalServiceTest {
+import lombok.Data;
 
-  // @Test
-  public void testMain() throws Exception {
-    DataPortalService.main("server", "settings.yml");
-  }
-
+@Data
+public class ResultsHitField {
+  private final String name;
+  private final Object value;
 }

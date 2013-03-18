@@ -15,14 +15,25 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc.portal.repositories;
+package org.icgc.dcc.portal.models;
 
-import org.elasticsearch.action.get.GetResponse;
-import org.elasticsearch.action.search.SearchResponse;
-import org.icgc.dcc.portal.search.SearchQuery;
 
-public interface IGeneRepository {
-  GetResponse getOne(final String id);
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
-  SearchResponse getAll(final SearchQuery searchQuery);
+public final class Gene {
+  public static final String NAME = "gene";
+
+  public static final String[] FIELDS = {"symbol", "description", "chromosome", "start", "end", "band", "gene_type"};
+
+  public static final String INDEX = "icgc_demo";
+
+  public static final String TYPE = "genes";
+
+  public static final ImmutableMap<String, ImmutableList<String>> FACETS = ImmutableMap.of("terms",
+      ImmutableList.of("gene_type"));
+
+  public static final ImmutableMap<String, ImmutableList<String>> FILTERS = ImmutableMap.of("terms",
+      ImmutableList.of("gene_type", "symbol"), "ranges", ImmutableList.of(""), "locations",
+      ImmutableList.of("gene_location"));
 }

@@ -15,31 +15,24 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc.portal.search;
+package org.icgc.dcc.portal.models;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import org.elasticsearch.search.sort.SortOrder;
 
-@EqualsAndHashCode(callSuper = false)
-@Data
-public class GeneSearchQuery extends SearchQuery {
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
-  private static final String DEFAULT_SORT = "start";
-  private static final SortOrder DEFAULT_ORDER = SortOrder.ASC;
+public final class Mutation {
+  public static final String NAME = "mutation";
 
-  public GeneSearchQuery(final int from, final int size, final String sort, final String order) {
-    super(from, size);
-    this.sort = sort != null ? sort : DEFAULT_SORT;
-    this.order = order != null ? SortOrder.valueOf(order.toUpperCase()) : DEFAULT_ORDER;
-  }
+  public static final String[] FIELDS = {};
 
-  public GeneSearchQuery(String filters, String score, Integer from, int size, String sort, String order) {
-    super(from, size);
-    this.sort = sort != null ? sort : DEFAULT_SORT;
-    this.order = order != null ? SortOrder.valueOf(order.toUpperCase()) : DEFAULT_ORDER;
-    this.filters = filters == null ? new ObjectMapper().createObjectNode() : jsonifyString(filters);
-    this.score = score;
-  }
+  public static final String INDEX = "icgc_demo";
+
+  public static final String TYPE = "mutations";
+
+  public static final ImmutableMap<String, ImmutableList<String>> FACETS = ImmutableMap.of("terms",
+      ImmutableList.of(""));
+
+  public static final ImmutableMap<String, ImmutableList<String>> FILTERS = ImmutableMap.of("terms",
+      ImmutableList.of(""), "ranges", ImmutableList.of(""), "locations", ImmutableList.of("location"));
 }

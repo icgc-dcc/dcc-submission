@@ -30,6 +30,17 @@ angular.module('app.projects.controllers').controller('ProjectsController', [ "$
   $scope.$on('toggleFilter', $scope.refresh);
 }]);
 
-angular.module('app.projects.controllers').controller('ProjectController', [ "$scope", "project", function ($scope, project) {
+// pulling in a resource that it doesn't declare - maybe should move away from 
+// module approach? ---- or put the tables in another controller?
+angular.module('app.projects.controllers').controller('ProjectController', [ "$scope", "project", "GenesService", "DonorsService", function ($scope, project, GenesService, DonorsService) {
   $scope.project = project;
+  GenesService.query().then(function (response) {
+    $scope.genes = response;
+  });
+  //DonorsService.query().then(function (response) {
+  //  $scope.donors = response;
+  //});
+  //MutationsService.query().then(function (response) {
+  //  $scope.mutaions = response;
+  //});
 }]);

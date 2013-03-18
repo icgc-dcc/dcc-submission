@@ -15,13 +15,28 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc.portal;
+package org.icgc.dcc.portal.filters;
 
-public class DataPortalServiceTest {
+import com.sun.jersey.spi.container.ContainerRequest;
+import com.sun.jersey.spi.container.ContainerResponse;
+import com.sun.jersey.spi.container.ContainerResponseFilter;
+import org.icgc.dcc.portal.core.VersionUtils;
 
-  // @Test
-  public void testMain() throws Exception {
-    DataPortalService.main("server", "settings.yml");
+import javax.ws.rs.core.Response;
+
+public class VersionFilter implements ContainerResponseFilter {
+
+  // TODO Not the best place for this - probably in config file?
+  private static final String API_VERSION_HEADER = "X-ICGC-Version";
+
+  @Override
+  public ContainerResponse filter(ContainerRequest containerRequest, ContainerResponse containerResponse) {
+    Response response = addVersionHeader(containerResponse.getResponse());
+    containerResponse.setResponse(response);
+    return containerResponse;
   }
 
+  private Response addVersionHeader(Response r) {
+    return Response.fromResponse(r).header(API_VERSION_HEADER, VersionUtils.getMajorVersion()).build();
+  }
 }

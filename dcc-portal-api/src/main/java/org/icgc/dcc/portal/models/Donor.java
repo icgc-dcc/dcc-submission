@@ -15,19 +15,27 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc.portal.core;
+package org.icgc.dcc.portal.models;
 
-public enum Types {
-  ALL("_all"), GENES("genes"), DONORS("donors"), OBSERVATIONS("obs"), PROJECTS("projects");
 
-  private String type;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
-  private Types(final String type) {
-    this.type = type;
-  }
+public final class Donor {
+  public static final String NAME = "donor";
 
-  public final String toString() {
-    return this.type;
-  }
+  public static final String[] FIELDS = {"donor_id", "primary_site", "project_name", "project_key", "donor_sex",
+      "donor_age_at_diagnosis", "donor_tumour_stage_at_diagnosis", "has_ssm", "has_cnsm", "has_exp", "has_meth"};
 
+  public static final String INDEX = "icgc_demo";
+
+  public static final String TYPE = "donors";
+
+  public static final ImmutableMap<String, ImmutableList<String>> FACETS = ImmutableMap.of("terms",
+      ImmutableList.of("project_name", "donor_sex", "donor_tumour_stage_at_diagnosis"));
+
+  public static final ImmutableMap<String, ImmutableList<String>> FILTERS = ImmutableMap.of("terms", ImmutableList
+      .of("project", "primary_site", "donor_id", "gender", "tumour", "vital_status", "disease_status",
+          "donor_release_type"), "ranges", ImmutableList.of("age_at_diagnosis", "survival_time",
+      "donor_release_interval"), "locations", ImmutableList.of(""));
 }

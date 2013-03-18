@@ -15,13 +15,48 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc.portal;
+package org.icgc.dcc.portal.results;
 
-public class DataPortalServiceTest {
+import org.elasticsearch.search.SearchHit;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
-  // @Test
-  public void testMain() throws Exception {
-    DataPortalService.main("server", "settings.yml");
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
+
+@RunWith(MockitoJUnitRunner.class)
+public class ResultsHitTest {
+
+  @Mock
+  SearchHit searchHit;
+
+  @Test
+  public final void test_Score_WhenHitScoreNaN() {
+    when(searchHit.getScore()).thenReturn(Float.NaN);
+
+    ResultsHit resultsHit = new ResultsHit(searchHit);
+
+    // Score should default to 0
+    assertThat(resultsHit.getScore()).isEqualTo(0.0f);
   }
 
+  @Test
+  public final void test_Score_WhenHitHasScore() {
+    when(searchHit.getScore()).thenReturn(0.75f);
+
+    ResultsHit resultsHit = new ResultsHit(searchHit);
+
+    assertThat(resultsHit.getScore()).isEqualTo(0.75f);
+  }
+
+  @Test
+  public final void test_Score_WhenHitFieldsAreNull() {
+    when(searchHit.getFields()).thenReturn(null);
+
+    ResultsHit resultsHit = new ResultsHit(searchHit);
+
+    assertThat(resultsHit.getFields()).isNull();
+  }
 }

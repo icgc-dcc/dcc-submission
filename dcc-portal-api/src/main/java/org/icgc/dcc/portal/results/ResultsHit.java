@@ -15,37 +15,45 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc.portal.responses;
+package org.icgc.dcc.portal.results;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import org.elasticsearch.action.get.GetResponse;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHitField;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.io.IOException;
+import java.util.Map;
 
-@EqualsAndHashCode(callSuper = false)
+import static org.icgc.dcc.portal.core.JsonUtils.MAPPER;
+
 @Data
-public final class GetOneResponse extends BaseResponse {
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
+public class ResultsHit {
+  private final String id;
 
- private final JsonNode data;
+  private final String type;
 
-  public GetOneResponse(final GetResponse hit, final HttpServletRequest hsr) {
-	  super(hsr);
-	  this.data = extractData(hit);
+  private final Float score;
+
+  private final ObjectNode fields;
+
+  public ResultsHit(SearchHit hit) {
+    this.id = hit.getId();
+    this.type = hit.getType();
+    this.score = Float.isNaN(hit.getScore()) ? 0.0f : hit.getScore();
+    // hit.getFields() will be null when 'get'ting an id that does not exists
+    this.fields = hit.getFields() == null ? null : buildSearchHitFields(hit.getFields());
   }
 
-  private JsonNode extractData(final GetResponse hit) {
-    try {
-      return new ObjectMapper().readValue(hit.getSourceAsString(), JsonNode.class);
-    } catch (IOException e) {
-      throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST)
-          .entity(new ErrorResponse(Response.Status.BAD_REQUEST, e)).type(MediaType.APPLICATION_JSON_TYPE).build());
+  private ObjectNode buildSearchHitFields(Map<String, SearchHitField> fields) {
+    ObjectNode jNode = MAPPER.createObjectNode();
+    for (SearchHitField field : fields.values()) {
+      String name = field.getName();
+      Object value = field.getValue();
+      jNode.set(name, MAPPER.convertValue(value, JsonNode.class));
     }
+    return jNode;
   }
 }

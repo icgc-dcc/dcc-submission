@@ -15,13 +15,19 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc.portal;
+package org.icgc.dcc.portal.core;
 
-public class DataPortalServiceTest {
+import org.icgc.dcc.portal.DataPortalService;
 
-  // @Test
-  public void testMain() throws Exception {
-    DataPortalService.main("server", "settings.yml");
+public class VersionUtils {
+
+  private static String implementationVersion = DataPortalService.class.getPackage().getImplementationVersion();
+
+  public static String getVersion() {
+    return implementationVersion == null ? "" : "v" + implementationVersion;
   }
 
+  public static String getMajorVersion() {
+    return getVersion().split(".", 1)[0];
+  }
 }

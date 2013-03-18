@@ -15,13 +15,24 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc.portal;
+package org.icgc.dcc.portal.filters;
 
-public class DataPortalServiceTest {
+import com.sun.jersey.spi.container.*;
 
-  // @Test
-  public void testMain() throws Exception {
-    DataPortalService.main("server", "settings.yml");
+public class GetNotFoundResourceFilter implements ResourceFilter, ContainerResponseFilter {
+
+  @Override
+  public ContainerRequestFilter getRequestFilter() {
+    return null; // To change body of implemented methods use File | Settings | File Templates.
   }
 
+  @Override
+  public ContainerResponseFilter getResponseFilter() {
+    return this;
+  }
+
+  @Override
+  public ContainerResponse filter(ContainerRequest request, ContainerResponse response) {
+    return response;
+  }
 }

@@ -20,36 +20,44 @@ package org.icgc.dcc.portal.resources;
 import com.google.inject.Inject;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
-import com.yammer.metrics.annotation.Timed;
-import org.icgc.dcc.portal.repositories.FuzzyRepository;
+import lombok.extern.slf4j.Slf4j;
+import org.icgc.dcc.portal.health.ElasticSearchHealthCheck;
+import org.icgc.dcc.portal.health.MongoHealthCheck;
 
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
+import java.util.HashMap;
+import java.util.Map;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
-@Path("/text")
+@Path("/system")
 @Produces(APPLICATION_JSON)
 @Consumes(APPLICATION_JSON)
-@Api(value = "/text", description = "Text text")
-public class SearchResource {
+@Api(value = "/system", description = "Operations about system status")
+@Slf4j
+public class SystemResource {
 
-  private final FuzzyRepository store;
+  private final ElasticSearchHealthCheck esHealth;
+
+  private MongoHealthCheck mongoHealthCheck;
 
   @Inject
-  public SearchResource(FuzzyRepository searchRepository) {
-    this.store = searchRepository;
+  public SystemResource(ElasticSearchHealthCheck esHealth, MongoHealthCheck mongoHealthCheck) {
+    this.esHealth = esHealth;
+    this.mongoHealthCheck = mongoHealthCheck;
   }
 
   @GET
-  @Timed
-  @ApiOperation(value = "Search")
-  public final Response search(
-      @ApiParam(value = "Term to text") @QueryParam("text") @DefaultValue("*") String text,
-      @ApiParam(value = "Start index of results", required = false) @QueryParam("from") @DefaultValue("1") int from,
-      @ApiParam(value = "Number of results returned", allowableValues = "range[1,100]", required = false) @QueryParam("size") @DefaultValue("10") int size) {
+  @ApiOperation(value = "Retrieves system status information")
+  public final Response status() {
+    Map<String, Object> results = new HashMap<String, Object>();
+    results.put("elastic_search", esHealth.execute());
+    results.put("mongo", mongoHealthCheck.execute());
 
-    return Response.ok().build();
+    return Response.ok().entity(results).build();
   }
 }

@@ -17,21 +17,19 @@
 
 package org.icgc.dcc.portal.resources;
 
+import com.google.inject.Inject;
 import com.wordnik.swagger.annotations.*;
+import com.yammer.dropwizard.jersey.params.IntParam;
 import com.yammer.metrics.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.http.HttpStatus;
-import org.icgc.dcc.portal.core.Types;
-import org.icgc.dcc.portal.repositories.ISearchRepository;
-import org.icgc.dcc.portal.responses.GetManyResponse;
-import org.icgc.dcc.portal.responses.GetOneResponse;
-import org.icgc.dcc.portal.search.SearchQuery;
+import org.icgc.dcc.portal.repositories.DonorRepository;
+import org.icgc.dcc.portal.request.RequestSearchQuery;
+import org.icgc.dcc.portal.responses.ErrorResponse;
+import org.icgc.dcc.portal.results.FindAllResults;
+import org.icgc.dcc.portal.results.FindResults;
 
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 
@@ -40,55 +38,56 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 @Path("/donors")
 @Produces(APPLICATION_JSON)
 @Consumes(APPLICATION_JSON)
-@Api(value = "/donors", description = "Operations about genes")
+@Api(value = "/donors", description = "Operations about donors")
 @Slf4j
 public class DonorResource {
 
-  private final ISearchRepository store;
+  private static final String DEFAULT_SORT = "_score";
 
-  @Context
-  private HttpServletRequest httpServletRequest;
+  private static final String DEFAULT_ORDER = "des";
+
+  private final DonorRepository store;
 
   @Inject
-  public DonorResource(ISearchRepository searchRepository) {
-    this.store = searchRepository.withType(Types.DONORS);
+  public DonorResource(DonorRepository store) {
+    this.store = store;
   }
 
   @GET
   @Timed
   @ApiOperation(value = "Retrieves a list of donors")
-  public final Response getAll(
-      @ApiParam(value = "Start index of results", required = false) @QueryParam("from") @DefaultValue("1") int from,
-      @ApiParam(value = "Number of results returned", allowableValues = "range[1,100]", required = false) @QueryParam("size") @DefaultValue("10") int size,
-      @ApiParam(value = "Column to sort results on", required = false) @QueryParam("sort") String sort,
-      @ApiParam(value = "Order to sort the column", allowableValues = "asc, desc", required = false) @QueryParam("order") String order) {
-    SearchQuery searchQuery = new SearchQuery(from, size, sort, order);
-    GetManyResponse response = new GetManyResponse(store.getAll(searchQuery), httpServletRequest, searchQuery);
+  public final Response findAll(
+      @ApiParam(value = "Start index of results", required = false) @QueryParam("from") @DefaultValue("1") IntParam from,
+      @ApiParam(value = "Number of results returned", allowableValues = "range[1,100]", required = false) @QueryParam("size") @DefaultValue("10") IntParam size,
+      @ApiParam(value = "Column to sort results on", defaultValue = DEFAULT_SORT, required = false) @QueryParam("sort") String sort,
+      @ApiParam(value = "Order to sort the column", defaultValue = DEFAULT_ORDER, allowableValues = "asc,desc", required = false) @QueryParam("order") String order,
+      @ApiParam(value = "Filter the search results", required = false) @QueryParam("filters") String filters,
+      @ApiParam(value = "Select fields returned", required = false) @QueryParam("fields") String fields) {
+    String s = sort != null ? sort : DEFAULT_SORT;
+    String o = order != null ? order : DEFAULT_ORDER;
 
-    return Response.ok().entity(response).build();
-  }
+    RequestSearchQuery requestSearchQuery =
+        RequestSearchQuery.builder().filters(filters).fields(fields).from(from.get()).size(size.get()).sort(s).order(o)
+            .build();
 
-  @POST
-  @Timed
-  @ApiOperation(value = "Retrieves a filtered list of donors")
-  public final Response filteredGetAll(@Valid SearchQuery searchQuery) {
-    // TODO This is broken
-    GetManyResponse response = new GetManyResponse(store.getAll(searchQuery), httpServletRequest, searchQuery);
+    FindAllResults results = store.findAll(requestSearchQuery);
 
-    return Response.ok().entity(response).build();
+    return Response.ok().entity(results).build();
   }
 
   @Path("/{id}")
   @GET
   @Timed
-  @ApiOperation(value = "Find a donor by id", notes = "If a donor does not exist with the specified id an error will be returned")
-  @ApiErrors(value = {@ApiError(code = HttpStatus.BAD_REQUEST_400, reason = "Invalid ID supplied"),
-      @ApiError(code = HttpStatus.NOT_FOUND_404, reason = "Donor not found")})
-  public final Response getOne(@ApiParam(value = "ID of donor that needs to be fetched") @PathParam("id") String id)
-      throws IOException {
-    GetOneResponse response = new GetOneResponse(store.getOne(id), httpServletRequest);
+  @ApiOperation(value = "Find a gene by id", notes = "If a donor does not exist with the specified id an error will be returned")
+  @ApiErrors(value = {@ApiError(code = HttpStatus.NOT_FOUND_404, reason = "Donor not found")})
+  public final Response find(@ApiParam(value = "Donor ID") @PathParam("id") String id) throws IOException {
+    FindResults results = store.find(id);
 
-    return Response.ok().entity(response).build();
+    if (results.getFields() == null) {
+      return Response.status(Response.Status.NOT_FOUND)
+          .entity(new ErrorResponse(Response.Status.NOT_FOUND, "Donor " + id + " not found.")).build();
+    }
+
+    return Response.ok().entity(results).build();
   }
-
 }

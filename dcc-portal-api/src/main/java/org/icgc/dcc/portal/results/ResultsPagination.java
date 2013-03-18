@@ -15,21 +15,35 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc.portal.repositories;
+package org.icgc.dcc.portal.results;
 
-import org.elasticsearch.action.get.GetResponse;
-import org.elasticsearch.action.search.SearchResponse;
-import org.icgc.dcc.portal.core.Types;
-import org.icgc.dcc.portal.search.SearchQuery;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.Data;
+import org.elasticsearch.search.SearchHits;
+import org.icgc.dcc.portal.request.RequestSearchQuery;
 
-public interface ISearchRepository {
+import static java.lang.Math.floor;
 
-  GetResponse getOne(final String id);
+@Data
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
+public class ResultsPagination {
+  private final int count;
+  private final long total;
+  private final int size;
+  private final int from;
+  private final int page;
+  private final long pages;
+  private final String sort;
+  private final String order;
 
-  SearchResponse getAll(final SearchQuery searchQuery);
-
-  SearchResponse search(final String text, final int from, final int size);
-
-  SearchRepository withType(final Types index);
-
+  public ResultsPagination(final SearchHits hits, final RequestSearchQuery requestSearchQuery) {
+    this.count = hits.getHits().length;
+    this.total = hits.getTotalHits();
+    this.size = requestSearchQuery.getSize();
+    this.from = requestSearchQuery.getFrom() + 1;
+    this.sort = requestSearchQuery.getSort();
+    this.order = requestSearchQuery.getOrder().toLowerCase();
+    this.page = (int) floor(from / size) + 1;
+    this.pages = (total + size - 1) / size;
+  }
 }

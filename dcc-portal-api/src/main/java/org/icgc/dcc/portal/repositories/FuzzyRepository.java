@@ -17,12 +17,26 @@
 
 package org.icgc.dcc.portal.repositories;
 
-import org.elasticsearch.action.get.GetResponse;
+import com.google.inject.Inject;
+import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.search.SearchResponse;
-import org.icgc.dcc.portal.search.SearchQuery;
+import org.elasticsearch.client.Client;
+import org.elasticsearch.index.query.QueryBuilders;
 
-public interface IProjectRepository {
-  GetResponse getOne(final String id);
+@Slf4j
+public class FuzzyRepository {
 
-  SearchResponse getAll(final SearchQuery searchQuery);
+  private final static String INDEX = "icgc_test54"; // This should probably be set in a config
+
+  private final Client client;
+
+  @Inject
+  public FuzzyRepository(Client client) {
+    this.client = client;
+  }
+
+  public final SearchResponse fuzzy(final String text, final int from, final int size) {
+    return client.prepareSearch(INDEX).setQuery(QueryBuilders.queryString(text)).setFrom(from).setSize(size).execute()
+        .actionGet();
+  }
 }

@@ -15,27 +15,34 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc.portal.responses;
+package org.icgc.dcc.portal.core;
 
-import lombok.Data;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.icgc.dcc.portal.responses.ErrorResponse;
 
-import javax.ws.rs.core.Response.StatusType;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.net.URLDecoder;
 
-@Data
-// TODO this should be a builder/wrapper around response not just an entity
-public final class ErrorResponse {
-  private final int code;
+public final class JsonUtils {
+  public static ObjectMapper MAPPER = new ObjectMapper();
 
-  private final String message;
+  private JsonUtils() {}
 
-  public ErrorResponse(StatusType code, IOException e) {
-    this.code = code.getStatusCode();
-    this.message = e.getMessage();
+  public static JsonNode readRequestString(String filters) {
+    String wrappedFilters = filters.replaceFirst("^\\{?", "{").replaceFirst("}?$", "}");
+    try {
+      return MAPPER.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true)
+          .configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true)
+          .readValue(URLDecoder.decode(wrappedFilters, "UTF-8"), JsonNode.class);
+    } catch (IOException e) {
+      throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST)
+          .entity(new ErrorResponse(Response.Status.BAD_REQUEST, e)).type(MediaType.APPLICATION_JSON_TYPE).build());
+    }
   }
 
-  public ErrorResponse(StatusType code, String message) {
-    this.code = code.getStatusCode();
-    this.message = message;
-  }
 }

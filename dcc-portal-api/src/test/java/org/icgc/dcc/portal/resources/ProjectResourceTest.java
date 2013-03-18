@@ -17,13 +17,10 @@
 
 package org.icgc.dcc.portal.resources;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.jersey.api.client.ClientResponse;
 import com.yammer.dropwizard.testing.ResourceTest;
-import org.icgc.dcc.portal.repositories.BaseRepository;
-import org.icgc.dcc.portal.repositories.GeneRepository;
+import org.icgc.dcc.portal.repositories.ProjectRepository;
 import org.icgc.dcc.portal.request.RequestSearchQuery;
-import org.icgc.dcc.portal.results.FindAllResults;
 import org.icgc.dcc.portal.results.FindResults;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,33 +32,22 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class GeneResourceTest extends ResourceTest {
+public class ProjectResourceTest extends ResourceTest {
 
-  private final static String RESOURCE = "/genes";
-
-  @Mock
-  private BaseRepository baseStore;
+  private final static String RESOURCE = "/projects";
 
   @Mock
-  private GeneRepository store;
-
-  @Mock
-  private RequestSearchQuery requestSearchQuery;
+  private ProjectRepository store;
 
   @Mock
   private FindResults findResults;
 
-  @Mock
-  private FindAllResults findAllResults;
-
-  @Mock
-  private JsonNode jsonNode;
-
   @Override
   protected final void setUpResources() {
-    addResource(new GeneResource(store));
+    addResource(new ProjectResource(store));
   }
 
   @Test
@@ -74,9 +60,11 @@ public class GeneResourceTest extends ResourceTest {
 
   @Test
   public final void test_Get_404() {
+    when(store.find(anyString())).thenReturn(findResults);
+
     ClientResponse response = client().resource(RESOURCE).path("UNKNOWN_ID").get(ClientResponse.class);
 
-    verify(store).find(anyString());
+    verify(store).find(any(String.class));
     assertThat(response.getStatus()).isEqualTo(NOT_FOUND.getStatusCode());
   }
 }

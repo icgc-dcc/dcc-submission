@@ -19,38 +19,54 @@ package org.icgc.dcc.portal.repositories;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
+import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.index.query.FilterBuilder;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.*;
 import org.elasticsearch.search.facet.FacetBuilders;
-import org.icgc.dcc.portal.models.Project;
+import org.icgc.dcc.portal.models.Donor;
+import org.icgc.dcc.portal.models.Gene;
+import org.icgc.dcc.portal.models.Mutation;
 import org.icgc.dcc.portal.request.RequestSearchQuery;
 import org.icgc.dcc.portal.services.FilterService;
 
-public class ProjectRepository extends BaseRepository {
+@Slf4j
+public class DonorRepository extends BaseRepository {
 
   @Inject
-  public ProjectRepository(Client client) {
-    super(client, Project.INDEX, Project.TYPE, Project.FIELDS);
+  public DonorRepository(Client client) {
+    super(client, Donor.INDEX, Donor.TYPE, Donor.FIELDS);
   }
 
   QueryBuilder buildQuery() {
-    return QueryBuilders.matchAllQuery();
+    return QueryBuilders //
+        .nestedQuery(Gene.NAME, //
+            QueryBuilders.customScoreQuery(QueryBuilders.filteredQuery( //
+                QueryBuilders.matchAllQuery(), //
+                // this.filter//
+                FilterBuilders.matchAllFilter()//
+                )).script("doc['gene.somatic_mutation'].value") //
+        ).scoreMode("total");
   }
 
   FilterBuilder buildFilters(JsonNode filters) {
-    return FilterService.buildAndFilters(Project.FILTERS, filters);
-
+    AndFilterBuilder geneFilters = FilterService.buildAndFilters(Donor.FILTERS, filters);
+    if (filters.has(Donor.NAME)) {
+      geneFilters
+          .add(FilterService.buildNestedFilter(Donor.NAME, FilterService.buildAndFilters(Gene.FILTERS, filters)));
+    }
+    if (filters.has(Mutation.NAME)) {
+      geneFilters.add(FilterService.buildNestedFilter(Mutation.NAME,
+          FilterService.buildAndFilters(Mutation.FILTERS, filters)));
+    }
+    return geneFilters;
   }
 
   SearchRequestBuilder addFacets(SearchRequestBuilder s, RequestSearchQuery requestSearchQuery) {
-    for (String facet : Project.FACETS.get("terms")) {
+    for (String facet : Donor.FACETS.get("terms")) {
       s.addFacet(FacetBuilders.termsFacet(facet).field(facet)
           .facetFilter(setFacetFilter(facet, requestSearchQuery.getFilters())).size(Integer.MAX_VALUE).global(true));
     }
     return s;
   }
-
 }

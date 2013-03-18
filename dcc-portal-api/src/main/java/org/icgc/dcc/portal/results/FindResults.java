@@ -15,31 +15,39 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc.portal.search;
+package org.icgc.dcc.portal.results;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import org.elasticsearch.search.sort.SortOrder;
+import org.elasticsearch.action.get.GetResponse;
+import org.elasticsearch.index.get.GetField;
 
-@EqualsAndHashCode(callSuper = false)
+import java.util.Map;
+
+import static org.icgc.dcc.portal.core.JsonUtils.MAPPER;
+
 @Data
-public class ProjectSearchQuery extends SearchQuery {
+public class FindResults {
 
-  private static final String DEFAULT_SORT = "project_name";
-  private static final SortOrder DEFAULT_ORDER = SortOrder.DESC;
+  private final String id;
+  private final String type;
+  private final ObjectNode fields;
 
-  public ProjectSearchQuery(final int from, final int size, final String sort, final String order) {
-    super(from, size);
-    this.sort = sort != null ? sort : DEFAULT_SORT;
-    this.order = order != null ? SortOrder.valueOf(order.toUpperCase()) : DEFAULT_ORDER;
+  public FindResults(GetResponse hit) {
+    this.id = hit.getId();
+    this.type = hit.getType();
+    this.fields = hit.getFields() == null ? null : buildGetHitFields(hit.getFields());
   }
 
-  public ProjectSearchQuery(String filters, String score, Integer from, int size, String sort, String order) {
-    super(from, size);
-    this.sort = sort != null ? sort : DEFAULT_SORT;
-    this.order = order != null ? SortOrder.valueOf(order.toUpperCase()) : DEFAULT_ORDER;
-    this.filters = filters == null ? new ObjectMapper().createObjectNode() : jsonifyString(filters);
-    this.score = score;
+  private ObjectNode buildGetHitFields(Map<String, GetField> fields) {
+    ObjectNode jNode = MAPPER.createObjectNode();
+    for (GetField field : fields.values()) {
+      String name = field.getName();
+      Object value = field.getValue();
+      jNode.putPOJO(name, MAPPER.convertValue(value, JsonNode.class));
+      // jNode.set(name, MAPPER.convertValue(value, JsonNode.class));
+    }
+    return jNode;
   }
 }

@@ -35,7 +35,7 @@
             </thead>
             <tbody>
             <tr ng-repeat="project in projects.hits">
-                <td><a href="#/projects/{{project.fields.project_key}}">{{project.fields.project_name}}</a></td>
+                <td><a href="#/projects/{{project.id}}">{{project.fields.project_name}}</a></td>
                 <td>{{project.fields.primary_site}}</td>
                 <td>{{project.fields.country}}</td>
                 <td>{{project.fields.total_donor_count}}</td>
@@ -50,7 +50,7 @@
                 </td>
             </tr>
             <tr ng-hide="projects.hits.length">
-                <td colspan="9"><i class="icon-spinner icon-spin"></i> Fetching projects...</td>
+                <td colspan="9">No Projects found.</td>
             </tr>
             </tbody>
         </table>

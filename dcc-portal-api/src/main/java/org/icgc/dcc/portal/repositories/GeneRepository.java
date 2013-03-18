@@ -17,215 +17,56 @@
 
 package org.icgc.dcc.portal.repositories;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
-import com.sun.tools.javac.util.List;
 import lombok.extern.slf4j.Slf4j;
-import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.*;
 import org.elasticsearch.search.facet.FacetBuilders;
-import org.icgc.dcc.portal.core.Types;
-import org.icgc.dcc.portal.search.SearchQuery;
-
-import java.util.ArrayList;
+import org.icgc.dcc.portal.models.Donor;
+import org.icgc.dcc.portal.models.Gene;
+import org.icgc.dcc.portal.models.Mutation;
+import org.icgc.dcc.portal.request.RequestSearchQuery;
+import org.icgc.dcc.portal.services.FilterService;
 
 @Slf4j
-public class GeneRepository implements IGeneRepository {
-
-  private final static String INDEX = "icgc_test54"; // This should probably be set in a config
-  private final static Types TYPE = Types.GENES;
-  private static final String[] ALLOWED_FIELDS = ImmutableList.of("symbol", "description", "chromosome", "start",
-      "end", "band", "gene_type").toArray(new String[7]);
-  private final Client client;
-  private FilterBuilder filter;
-  private ObjectMapper mapper = new ObjectMapper();
-
+public class GeneRepository extends BaseRepository {
 
   @Inject
   public GeneRepository(Client client) {
-    this.client = client;
+    super(client, Gene.INDEX, Gene.TYPE, Gene.FIELDS);
   }
 
-  // Returns one hit
-  // @Override
-  public final GetResponse getOne(final String id) {
-    return client.prepareGet(INDEX, TYPE.toString(), id).execute().actionGet();
-  }
-
-  // Returns many hits
-  // @Override
-  public final SearchResponse getAll(final SearchQuery searchQuery) {
-    this.filter = buildFilter(searchQuery.getFilters());
-    SearchRequestBuilder s =
-        client
-            .prepareSearch(INDEX)
-            .setTypes(TYPE.toString())
-            .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
-            .setQuery(buildQuery())
-            .setFilter(this.filter)
-            .setFrom(searchQuery.getFrom())
-            .setSize(searchQuery.getSize())
-            .addSort(searchQuery.getSort(), searchQuery.getOrder())
-            .addFields(ALLOWED_FIELDS)
-            .addFacet(
-                FacetBuilders.termsFacet("gene_type").field("gene_type")
-                    .facetFilter(setFacetFilter("gene_type", searchQuery.getFilters())).size(Integer.MAX_VALUE)
-                    .global(true))
-            .addFacet(
-                FacetBuilders.termsFacet("chromosome").field("chromosome")
-                    .facetFilter(setFacetFilter("chromosome", searchQuery.getFilters())).global(true));
-    // System.out.println(s);
-    return s.execute().actionGet();
-  }
-
-  private FilterBuilder setFacetFilter(String name, JsonNode filter) {
-    JsonNode temp = filter.deepCopy();
-    ((ObjectNode) temp).remove(name);
-    return buildFilter(temp);
-  }
-
-  private FilterBuilder buildFilter(JsonNode filters) {
-    if (filters == null) {
-      return FilterBuilders.matchAllFilter();
-    } else {
-      AndFilterBuilder geneFilters = craftGeneFilters(filters);
-      if (filters.has("donor")) {
-        geneFilters.add(buildNestedFilter("donor", craftDonorFilters(filters)));
-      }
-      if (filters.has("mutation")) {
-        geneFilters.add(buildNestedFilter("mutation", craftMutationFilters(filters)));
-      }
-      return geneFilters;
-    }
-  }
-
-  private NestedFilterBuilder buildNestedFilter(String key, AndFilterBuilder andFilters) {
-    return FilterBuilders.nestedFilter(key, andFilters);
-  }
-
-  private AndFilterBuilder craftMutationFilters(JsonNode filters) {
-    AndFilterBuilder mutationAnd = FilterBuilders.andFilter();
-    JsonNode mutation = filters.path("mutation");
-    for (String key : List.of("project", "primary_site", "donor_id", "gender", "tumour", "vital_status",
-        "disease_status", "donor_release_type")) {
-      if (mutation.has(key)) {
-        mutationAnd.add(buildTermFilter(mutation, key));
-      }
-    }
-    if (mutation.has("location")) {
-      mutationAnd.add(buildChrLocationFilter(mutation));
-    }
-    return mutationAnd;
-  }
-
-  private AndFilterBuilder craftDonorFilters(JsonNode filters) {
-    AndFilterBuilder donorAnd = FilterBuilders.andFilter();
-    JsonNode donor = filters.path("donor");
-    for (String key : List.of("project", "primary_site", "donor_id", "gender", "tumour", "vital_status",
-        "disease_status", "donor_release_type")) {
-      if (donor.has(key)) {
-        donorAnd.add(buildTermFilter(donor, key));
-      }
-    }
-    for (String key : List.of("age_at_diagnosis", "survival_time", "donor_release_interval")) {
-      if (donor.has(key)) {
-        donorAnd.add(buildRangeFilter(donor, key));
-      }
-    }
-    return donorAnd;
-  }
-
-  private AndFilterBuilder craftGeneFilters(JsonNode filters) {
-    AndFilterBuilder geneAnd = FilterBuilders.andFilter();
-    JsonNode gene = filters;// .path("gene");
-
-    for (String key : List.of("gene_type", "symbol")) {
-      if (gene.has(key)) {
-        geneAnd.add(buildTermFilter(gene, key));
-      }
-    }
-    if (gene.has("gene_location")) {
-      geneAnd.add(buildChrLocationFilter(gene));
-    }
-    return geneAnd;
-  }
-
-  private FilterBuilder buildChrLocationFilter(JsonNode json) {
-    FilterBuilder chrLocFilter;
-    String LOCATION = "gene_location";
-
-    if (json.get(LOCATION).isArray()) {
-      ArrayList<String> locations = mapper.convertValue(json.get(LOCATION), new TypeReference<ArrayList<String>>() {});
-      OrFilterBuilder manyChrLocations = FilterBuilders.orFilter();
-      for (String loc : locations) {
-        manyChrLocations.add(buildChrLocation(loc));
-      }
-      chrLocFilter = manyChrLocations;
-    } else {
-      String loc = mapper.convertValue(json.get(LOCATION), String.class);
-      chrLocFilter = buildChrLocation(loc);
-    }
-
-    return chrLocFilter;
-  }
-
-  private FilterBuilder buildChrLocation(String location) {
-    AndFilterBuilder locationFilter = FilterBuilders.andFilter();
-    String[] parts = location.split(":");
-    locationFilter.add(FilterBuilders.termFilter("chromosome", Integer.parseInt(parts[0].replaceAll("[a-zA-Z]", ""))));
-    if (parts.length == 2) {
-      String[] range = parts[1].split("-");
-      int start = range[0].equals("") ? 0 : Integer.parseInt(range[0].replaceAll(",", ""));
-      locationFilter.add(FilterBuilders.numericRangeFilter("start").gte(start));
-      if (range.length == 2) {
-        int end = Integer.parseInt(range[1].replaceAll(",", ""));
-        locationFilter.add(FilterBuilders.numericRangeFilter("end").lte(end));
-      }
-    }
-    return locationFilter;
-  }
-
-  private FilterBuilder buildRangeFilter(JsonNode json, String key) {
-    NumericRangeFilterBuilder rangeFilter = FilterBuilders.numericRangeFilter(key);
-    String range = mapper.convertValue(json.get(key), String.class);
-    String[] parts = range.split("-");
-    int from = parts[0].equals("") ? 0 : Integer.parseInt(parts[0].replaceAll(",", ""));
-    rangeFilter.gte(from);
-    if (parts.length == 2) {
-      int to = Integer.parseInt(parts[1].replaceAll(",", ""));
-      rangeFilter.lte(to);
-    }
-    return rangeFilter;
-  }
-
-  private FilterBuilder buildTermFilter(JsonNode json, String key) {
-    FilterBuilder termFilter;
-    if (json.get(key).isArray()) {
-      ArrayList<String> terms = mapper.convertValue(json.get(key), new TypeReference<ArrayList<String>>() {});
-      termFilter = FilterBuilders.termsFilter(key, terms);
-    } else {
-      String term = mapper.convertValue(json.get(key), String.class);
-      termFilter = FilterBuilders.termFilter(key, term);
-    }
-    return termFilter;
-  }
-
-  private QueryBuilder buildQuery() {
+  QueryBuilder buildQuery() {
     return QueryBuilders //
-        .nestedQuery("donor", //
+        .nestedQuery(Donor.NAME, //
             QueryBuilders.customScoreQuery(QueryBuilders.filteredQuery( //
                 QueryBuilders.matchAllQuery(), //
                 // this.filter//
                 FilterBuilders.matchAllFilter()//
                 )).script("doc['donor.somatic_mutation'].value") //
         ).scoreMode("total");
+  }
+
+  FilterBuilder buildFilters(JsonNode filters) {
+    AndFilterBuilder geneFilters = FilterService.buildAndFilters(Gene.FILTERS, filters);
+    if (filters.has(Donor.NAME)) {
+      geneFilters
+          .add(FilterService.buildNestedFilter(Donor.NAME, FilterService.buildAndFilters(Donor.FILTERS, filters)));
+    }
+    if (filters.has(Mutation.NAME)) {
+      geneFilters.add(FilterService.buildNestedFilter(Mutation.NAME,
+          FilterService.buildAndFilters(Mutation.FILTERS, filters)));
+    }
+    return geneFilters;
+  }
+
+  SearchRequestBuilder addFacets(SearchRequestBuilder s, RequestSearchQuery requestSearchQuery) {
+    for (String facet : Gene.FACETS.get("terms")) {
+      s.addFacet(FacetBuilders.termsFacet(facet).field(facet)
+          .facetFilter(setFacetFilter(facet, requestSearchQuery.getFilters())).size(Integer.MAX_VALUE).global(true));
+    }
+    return s;
   }
 }

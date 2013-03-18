@@ -28,7 +28,6 @@ import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.icgc.dcc.portal.configurations.ElasticSearchConfiguration;
 import org.icgc.dcc.portal.configurations.MongoDbConfiguration;
-import org.icgc.dcc.portal.repositories.*;
 import org.jongo.Jongo;
 
 import java.net.UnknownHostException;
@@ -54,7 +53,7 @@ public class DataPortalModule extends AbstractModule {
   @Provides
   @Singleton
   public final Client elasticClient(DataPortalConfiguration dpc) {
-    // TrasportClient is thread-safe so @Singleton is appropriate
+    // TransportClient is thread-safe so @Singleton is appropriate
     ElasticSearchConfiguration configuration = dpc.getElastic();
     return new TransportClient().addTransportAddress(new InetSocketTransportAddress(configuration.getHost(),
         configuration.getPort()));
@@ -62,8 +61,6 @@ public class DataPortalModule extends AbstractModule {
 
   @Override
   protected final void configure() {
-    bind(ISearchRepository.class).to(SearchRepository.class).in(Singleton.class);
-    bind(IProjectRepository.class).to(ProjectRepository.class).in(Singleton.class);
-    bind(IGeneRepository.class).to(GeneRepository.class).in(Singleton.class);
+    // Guice bindings go here
   }
 }
