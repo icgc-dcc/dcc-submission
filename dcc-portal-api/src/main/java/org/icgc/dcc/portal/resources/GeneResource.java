@@ -42,9 +42,9 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 @Slf4j
 public class GeneResource {
 
-  private static final String DEFAULT_SORT = "start";
+  private static final String DEFAULT_SORT = "_score";
 
-  private static final String DEFAULT_ORDER = "asc";
+  private static final String DEFAULT_ORDER = "desc";
 
   private final GeneRepository store;
 

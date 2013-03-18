@@ -58,11 +58,11 @@ public class DonorRepository extends BaseRepository {
     }
     if (filters.has(Gene.NAME)) {
       donorFilters
-          .add(FilterService.buildNestedFilter(Gene.NAME, FilterService.buildAndFilters(Gene.FILTERS, filters)));
+          .add(FilterService.buildNestedFilter(Gene.NAME, FilterService.buildAndFilters(Gene.FILTERS, filters.get(Gene.NAME))));
     }
     if (filters.has(Mutation.NAME)) {
       donorFilters.add(FilterService.buildNestedFilter(Mutation.NAME,
-          FilterService.buildAndFilters(Mutation.FILTERS, filters)));
+          FilterService.buildAndFilters(Mutation.FILTERS, filters.get(Mutation.NAME))));
     }
     return donorFilters;
   }
