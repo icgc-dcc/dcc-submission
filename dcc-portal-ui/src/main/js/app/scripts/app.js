@@ -19,6 +19,7 @@
 
 angular.module('app', [
   'ui.directives',
+  'ui.bootstrap',
   'app.controllers',
   'app.common',
   'app.http',

@@ -30,9 +30,8 @@ mod.factory('loadingService', function () {
 });
 
 mod.factory('onStartInterceptor', function (loadingService) {
-  console.log('onStartInterceptor');
+  //console.log('onStartInterceptor');
   return function (data, headersGetter) {
-    console.log(headersGetter());
     loadingService.requestCount++;
     return data;
   };

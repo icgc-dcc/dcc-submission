@@ -1,172 +1,118 @@
-<div class="row">
+<div class="row-fluid">
     <div class="span3">
         <tabs>
-            <pane heading="Donors">
+            <pane heading="Genes">
                 <ul class="nav nav-list" ng-controller="FacetsController">
-                    <term-facet facet-name="project_name" facet="donors.facets['project_name']"></term-facet>
-                    <term-facet facet-name="donor_sex" facet="donors.facets['donor_sex']"></term-facet>
-                    <term-facet facet-name="donor_tumour_stage_at_diagnosis"
+                    <term-facet type="gene" facet-name="gene_type" facet="genes.facets['gene_type']"></term-facet>
+                    <location-facet facet-name="gene_location"
+                                    placeholder="Search for a gene location"></location-facet>
+                    <lmulti-facet facet-name="gene_list" select2="geneList"></lmulti-facet>
+                    <lmulti-facet facet-name="pathways" select2="geneList"></lmulti-facet>
+                </ul>
+            </pane>
+            <pane active=true heading="Donors">
+                <ul class="nav nav-list" ng-controller="FacetsController">
+                    <term-facet type="donor" facet-name="project_name"
+                                facet="donors.facets['project_name']"></term-facet>
+                    <term-facet type="donor" facet-name="donor_sex" facet="donors.facets['donor_sex']"></term-facet>
+                    <term-facet type="donor" facet-name="donor_tumour_stage_at_diagnosis"
                                 facet="donors.facets['donor_tumour_stage_at_diagnosis']"></term-facet>
                 </ul>
             </pane>
         </tabs>
-
     </div>
     <div class="span9">
-        <div class="row"><h1 class="span">Advanced Search</h1></div>
+        <div class="row-fluid"><h1 class="span">Advanced Search</h1></div>
+        <tabs>
+            <pane heading="Genes">
+                <div class="row-fluid">
+                    <div class="span4">
+                        <div style="width:220px; height: 220px; background: #eee"></div>
+                    </div>
+                    <div class="span4">
+                        <div style="width:220px; height: 220px; background: #eee"></div>
+                    </div>
+                    <div class="span4">
+                        <div style="width:220px; height: 220px; background: #eee"></div>
+                    </div>
+                </div>
 
+                <table class="table table-bordered table-striped">
+                    <thead>
+                    <tr>
+                        <th>Gene Symbol</th>
+                        <th>Gene Name</th>
+                        <th>Chromosome</th>
+                        <th>Start</th>
+                        <th>End</th>
+                        <th>Band</th>
+                        <th>Gene Type</th>
+                        <th>Number of Donors affected by SSM</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr ng-repeat="gene in genes.hits">
+                        <td><a href="#/genes/{{gene.id}}">{{gene.fields.symbol}}</a></td>
+                        <td>{{gene.fields.description}}</td>
+                        <td>{{gene.fields.chromosome}}</td>
+                        <td>{{gene.fields.start}}</td>
+                        <td>{{gene.fields.end}}</td>
+                        <td>{{gene.fields.band}}</td>
+                        <td>{{gene.fields.gene_type}}</td>
+                        <td>??</td>
+                    </tr>
+                    <tr ng-hide="genes.hits">
+                        <td colspan="8">No results found</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </pane>
+            <pane heading="Donors">
+                <div class="row-fluid">
+                    <div class="span4">
+                        <div style="width:220px; height: 220px; background: #eee"></div>
+                    </div>
+                    <div class="span4">
+                        <div style="width:220px; height: 220px; background: #eee"></div>
+                    </div>
+                    <div class="span4">
+                        <div style="width:220px; height: 220px; background: #eee"></div>
+                    </div>
+                </div>
 
-        <div class="row">
-            <div class="span3">
-                <div style="width:220px; height: 220px; background: #eee"></div>
-            </div>
-            <div class="span3">
-                <div style="width:220px; height: 220px; background: #eee"></div>
-            </div>
-            <div class="span3">
-                <div style="width:220px; height: 220px; background: #eee"></div>
-            </div>
-        </div>
-
-        <div class="row">
-            <table class="table table-bordered table-striped">
-                <thead>
-                <tr>
-                    <th>Donor ID</th>
-                    <th>Primary Site</th>
-                    <th>Project</th>
-                    <th>Gender</th>
-                    <th>Age at Diagnosis</th>
-                    <th>Number of Genes affected by SSM</th>
-                    <th>SSM</th>
-                    <th>CNSM</th>
-                    <th>Expression</th>
-                    <th>Methylation</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr ng-repeat="donor in donors.hits">
-                    <td><a href="#/donors/{{donor.id}}">{{donor.fields.donor_id}}</a></td>
-                    <td>{{donor.fields.primary_site}}</td>
-                    <td><a href="{{donor.fields.project_key}}">{{donor.fields.project_name}}</a></td>
-                    <td>{{donor.fields.donor_sex}}</td>
-                    <td>{{donor.fields.donor_age_at_diagnosis}}</td>
-                    <td>{{donor.score}}</td>
-                    <td>{{donor.fields.has_ssm}}</td>
-                    <td>{{donor.fields.has_cnsm}}</td>
-                    <td>{{donor.fields.has_meth}}</td>
-                    <td>{{donor.fields.has_exp}}</td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-        <div class="row">
-            <table class="table table-bordered table-striped">
-                <thead>
-                <tr>
-                    <th>Gene Symbol</th>
-                    <th>Gene Name</th>
-                    <th>Chromosome</th>
-                    <th>Start</th>
-                    <th>End</th>
-                    <th>Band</th>
-                    <th>Gene Type</th>
-                    <th>Number of Donors affected by SSM</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr ng-repeat="gene in genes">
-                    <td><a href="#/genes/{{project.id}}">{{project.name}}</a></td>
-                    <td>{{project.site}}</td>
-                    <td>{{project.country}}</td>
-                    <td>{{project.donors}}</td>
-                    <td>{{project.ssm}}</td>
-                    <td>{{project.cnsm}}</td>
-                    <td>{{project.gene_expression}}</td>
-                    <td>{{project.dna_methylation}}</td>
-                    <td>
-                        <ul class="unstyled" ng-repeat="pmid in project.pubmed_id">
-                            <li><a href="http://www.ncbi.nlm.nih.gov/pubmed/{{pmid}}">pmid:{{pmid}}</a></li>
-                        </ul>
-                    </td>
-                </tr>
-                <tr>
-                    <td><a href="#/genes/KRAS">KRAS</a></td>
-                    <td>v-Ki-ras2 Kirsten rat sarcoma viral oncogene homolog</td>
-                    <td style="text-align: center">12</td>
-                    <td style="text-align: right">25357723</td>
-                    <td style="text-align: right">25403870</td>
-                    <td>p12.1</td>
-                    <td>protein_coding</td>
-                    <td style="text-align: right">43</td>
-                </tr>
-                <tr ui-if="!projects.length">
-                    <td colspan="8"><i class="icon-spinner icon-spin"></i> Fetching projects...</td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-        <div class="row">
-            <table class="table table-bordered table-striped">
-                <thead>
-                <tr>
-                    <th>Variant ID</th>
-                    <th>Project</th>
-                    <th>Gene Symbol</th>
-                    <th>Donor ID</th>
-                    <th>Type</th>
-                    <th>Chr</th>
-                    <th>Start</th>
-                    <th>End</th>
-                    <th>Mutation</th>
-                    <th>Reference Genome Allele</th>
-                    <th>Tumour Genotype</th>
-                    <th>Consequence Type</th>
-                    <th>AA Mutation</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr ng-repeat="project in projects">
-                    <td><a href="#/projects/{{project.id}}">{{project.name}}</a></td>
-                    <td>{{project.site}}</td>
-                    <td>{{project.country}}</td>
-                    <td>{{project.donors}}</td>
-                    <td>{{project.ssm}}</td>
-                    <td>{{project.cnsm}}</td>
-                    <td>{{project.gene_expression}}</td>
-                    <td>{{project.dna_methylation}}</td>
-                    <td>
-                        <ul class="unstyled" ng-repeat="pmid in project.pubmed_id">
-                            <li><a href="http://www.ncbi.nlm.nih.gov/pubmed/{{pmid}}">pmid:{{pmid}}</a></li>
-                        </ul>
-                    </td>
-                </tr>
-                <tr>
-                    <td><a href="#/variants/SSM:ana_1:LFS_MB4:ssm_8764">SSM:ana_1:LFS_MB4:ssm_8764</a></td>
-                    <td>Lymphocytic Leukemia - ISC/MICINN, ES</a></td>
-                    <td>ZNF668
-                        AC135050.1
-                    </td>
-                    <td>42</td>
-                    <td>single base substitution</td>
-                    <td style="text-align: center">16</td>
-                    <td style="text-align: right">31072822</td>
-                    <td style="text-align: right">31072822</td>
-                    <td style="text-align: center">A>C</td>
-                    <td style="text-align: center">A</td>
-                    <td style="text-align: center">M</td>
-                    <td>non_synonymous_coding
-                        downstream
-                    </td>
-                    <td style="text-align: center">T>P
-                        V>G
-                    </td>
-                </tr>
-                <tr ui-if="!projects.length">
-                    <td colspan="13"><i class="icon-spinner icon-spin"></i> Fetching projects...</td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
+                <div class="row-fluid">
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                        <tr>
+                            <th>Donor ID</th>
+                            <th>Primary Site</th>
+                            <th>Project</th>
+                            <th>Gender</th>
+                            <th>Age at Diagnosis</th>
+                            <th>Number of Genes affected by SSM</th>
+                            <th>SSM</th>
+                            <th>CNSM</th>
+                            <th>Expression</th>
+                            <th>Methylation</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat="donor in donors.hits">
+                            <td><a href="#/donors/{{donor.id}}">{{donor.fields.donor_id}}</a></td>
+                            <td>{{donor.fields.primary_site}}</td>
+                            <td><a href="{{donor.fields.project_key}}">{{donor.fields.project_name}}</a></td>
+                            <td>{{donor.fields.donor_sex}}</td>
+                            <td>{{donor.fields.donor_age_at_diagnosis}}</td>
+                            <td>{{donor.score}}</td>
+                            <td>{{donor.fields.has_ssm}}</td>
+                            <td>{{donor.fields.has_cnsm}}</td>
+                            <td>{{donor.fields.has_meth}}</td>
+                            <td>{{donor.fields.has_exp}}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </pane>
+        </tabs>
     </div>
 </div>

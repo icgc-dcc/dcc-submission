@@ -25,9 +25,7 @@ angular.module('app.projects.models').factory('Projects', ['http', function (htt
       return http.get('/ws/projects');
     },
     get: function (params) {
-      return http.get('/ws/projects/' + params.project).then(function (response) {
-        return response;
-      });
+      return http.get('/ws/projects/' + params.project);
     }
   }
 }]);

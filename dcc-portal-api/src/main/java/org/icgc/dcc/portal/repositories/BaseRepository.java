@@ -103,14 +103,16 @@ public abstract class BaseRepository {
     return getFields();
   }
 
-  FilterBuilder setFacetFilter(String name, JsonNode filter) {
+  FilterBuilder setFacetFilter(String type, String facet, JsonNode filter) {
     JsonNode temp = filter.deepCopy();
-    ((ObjectNode) temp).remove(name);
+    if (temp.has(type)) {
+      ((ObjectNode) temp.get(type)).remove(facet);
+    }
     return buildRequestFilters(temp);
   }
 
   abstract SearchRequestBuilder addFacets(SearchRequestBuilder searchRequestBuilder,
-      RequestSearchQuery requestSearchQuery);
+                                          RequestSearchQuery requestSearchQuery);
 
   abstract QueryBuilder buildQuery();
 

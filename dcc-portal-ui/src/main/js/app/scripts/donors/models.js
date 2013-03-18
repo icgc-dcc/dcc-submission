@@ -25,9 +25,7 @@ angular.module('app.donors.models').factory('Donors', ['http', function (http) {
       return http.get('/ws/donors');
     },
     get: function (params) {
-      return http.get('/ws/donors/' + params.donor).then(function (response) {
-        return response;
-      });
+      return http.get('/ws/donors/' + params.donor);
     }
   }
 }]);

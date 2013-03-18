@@ -22,6 +22,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 public final class Project {
+  public static final String NAME = "project";
+
   public static final String[] FIELDS = {"project_name", "primary_site", "country", "total_donor_count",
       "ssm_tested_donor_count", "cnsm_tested_donor_count", "exp_tested_donor_count", "meth_tested_donor_count",
       "pubmed_id"};

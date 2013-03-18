@@ -21,9 +21,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.index.query.FilterBuilder;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.*;
 import org.elasticsearch.search.facet.FacetBuilders;
 import org.icgc.dcc.portal.models.Project;
 import org.icgc.dcc.portal.request.RequestSearchQuery;
@@ -41,14 +39,20 @@ public class ProjectRepository extends BaseRepository {
   }
 
   FilterBuilder buildFilters(JsonNode filters) {
-    return FilterService.buildAndFilters(Project.FILTERS, filters);
+    AndFilterBuilder projectFilters = FilterBuilders.andFilter();
 
+    if (filters.has(Project.NAME)) {
+      projectFilters
+          .add(FilterService.buildAndFilters(Project.FILTERS, filters.get(Project.NAME)));
+    }
+
+    return projectFilters;
   }
 
   SearchRequestBuilder addFacets(SearchRequestBuilder s, RequestSearchQuery requestSearchQuery) {
     for (String facet : Project.FACETS.get("terms")) {
       s.addFacet(FacetBuilders.termsFacet(facet).field(facet)
-          .facetFilter(setFacetFilter(facet, requestSearchQuery.getFilters())).size(Integer.MAX_VALUE).global(true));
+          .facetFilter(setFacetFilter(Project.NAME, facet, requestSearchQuery.getFilters())).size(Integer.MAX_VALUE).global(true));
     }
     return s;
   }

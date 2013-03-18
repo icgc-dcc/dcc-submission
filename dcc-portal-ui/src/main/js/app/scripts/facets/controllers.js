@@ -22,25 +22,31 @@ angular.module('app.facets', ['app.facets.controllers', 'app.facets.directives']
 angular.module('app.facets.controllers', ['app.facets.services']);
 
 angular.module('app.facets.controllers').controller('FacetsController', [ "$scope", "httpService", function ($scope, httpService) {
-  function toggleUriTermFilters(facet, term) {
+  function toggleUriTermFilters(type, facet, term) {
     var search, filters;
-    console.log(facet, term);
     search = httpService.getCurrentSearch();
     filters = httpService.getCurrentFilters();
-
     // If this is a new facet filter
-    if (!filters.hasOwnProperty(facet)) {
-      filters[facet] = [];
+    if (!filters.hasOwnProperty(type)) {
+      filters[type] = {};
+    }
+    // If this is a new facet filter
+    if (!filters[type].hasOwnProperty(facet)) {
+      filters[type][facet] = [];
     }
     // If this is an existing term filter:
-    if (filters[facet].indexOf(term) === -1) {
-      filters[facet].push(term);
+    if (filters[type][facet].indexOf(term) === -1) {
+      filters[type][facet].push(term);
     } else {
-      filters[facet].splice(filters[facet].indexOf(term), 1);
+      filters[type][facet].splice(filters[type][facet].indexOf(term), 1);
     }
     // If there are no more terms in that facet filter remove the facet
-    if (filters[facet].length === 0) {
-      delete filters[facet];
+    if (filters[type][facet].length === 0) {
+      delete filters[type][facet];
+    }
+    // If there are no more terms in that facet type remove the facet
+    if (Object.keys(filters[type]).length === 0) {
+      delete filters[type];
     }
     // If there are filters add them to the search query params
     if (Object.keys(filters).length) {
@@ -92,8 +98,8 @@ angular.module('app.facets.controllers').controller('FacetsController', [ "$scop
     httpService.updateSearch(search);
   }
 
-  $scope.$on('termFilter', function (event, facet, term) {
-    toggleUriTermFilters(facet, term);
+  $scope.$on('termFilter', function (event, type, facet, term) {
+    toggleUriTermFilters(type, facet, term);
     //$scope.$emit('toggleFilter');
   });
   $scope.$on('rangeFilter', function (event, facet, from, to) {
