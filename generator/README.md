@@ -3,6 +3,10 @@ ICGC DCC Data Generator
 
 TODO
 
+Description
+---
+
+A test data generator that generates artificial data for testing purposes. The data is valid when passed through the validator.
 Build
 ---
 
@@ -25,7 +29,7 @@ From the command line, type `java -jar target/dcc-generator-<version>.jar --help
 
 	Usage: java -jar dcc-generator-<version>.jar [options]
 	  Options:
-	  * -f, --file
+	  * -c, --config
 	   	   Path to config.yaml file
 		   Default: false
 	    -h, --help
