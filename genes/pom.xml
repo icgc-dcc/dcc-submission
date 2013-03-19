@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.icgc.dcc</groupId>
     <artifactId>dcc-submission</artifactId>
-    <version>1.3-SNAPSHOT</version>
+    <version>1.4-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <artifactId>dcc-genes</artifactId>
@@ -20,7 +20,7 @@
     <dependency>
       <groupId>org.icgc.dcc</groupId>
       <artifactId>dcc-test</artifactId>
-      <version>1.3-SNAPSHOT</version>
+      <version>1.4-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
 

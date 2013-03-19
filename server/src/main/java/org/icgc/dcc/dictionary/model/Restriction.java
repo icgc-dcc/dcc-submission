@@ -36,8 +36,9 @@ public class Restriction implements DictionaryElement, Serializable {
   public static final String CONFIG_VALUE_SEPARATOR = ","; // simple key-value pair for now, so the value can hold a
                                                            // comma-separated list of values
 
-  private String type;
+  private String type; // TODO: enforce provided (DCC-904)
 
+  // TODO: enforce that if codelist, a name is provided (DCC-904)
   private BasicDBObject config;
 
   public Restriction() {
