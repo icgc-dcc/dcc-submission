@@ -134,7 +134,7 @@ public class PrimaryFileGenerator {
     for(int i = 0; i < numberOfIterations; i++) {
       for(int j = 0; j < numberOfLines; j++) {
         int nextTabIndex = 0;
-        String line = lines.get(DataGenerator.randomIntGenerator(0, 499999));// This read in the file
+        String line = lines.get(DataGenerator.randomIntGenerator(0, lines.size() - 1));// This read in the file
         for(Field field : schema.getFields()) {
           String output = null;
           String fieldName = field.getName();
