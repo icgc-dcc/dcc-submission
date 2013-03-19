@@ -18,6 +18,7 @@
 package org.icgc.dcc.generator.service;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import lombok.SneakyThrows;
@@ -27,6 +28,7 @@ import org.codehaus.jackson.map.JsonMappingException;
 import org.icgc.dcc.generator.config.GeneratorConfig;
 import org.icgc.dcc.generator.core.DataGenerator;
 import org.icgc.dcc.generator.model.ExperimentalFile;
+import org.icgc.dcc.generator.model.OptionalFile;
 
 public class GeneratorService {
 
@@ -55,7 +57,7 @@ public class GeneratorService {
     String institution = config.getInstitution();
     String platform = config.getPlatform();
     Long seed = config.getSeed();
-    // ArrayList<OptionalFile> optionalFiles = config.getOptionalFiles();
+    ArrayList<OptionalFile> optionalFiles = config.getOptionalFiles();
     List<ExperimentalFile> experimentalFiles = config.getExperimentalFiles();
 
     List<String> errors = DataGenerator.checkParameters(leadJurisdiction, tumourType, institution, platform);
@@ -64,12 +66,13 @@ public class GeneratorService {
     }
 
     generateFiles(outputDirectory, numberOfDonors, numberOfSpecimensPerDonor, numberOfSamplesPerDonor,
-        leadJurisdiction, tumourType, institution, platform, seed, experimentalFiles);
+        leadJurisdiction, tumourType, institution, platform, seed, optionalFiles, experimentalFiles);
   }
 
   private void generateFiles(String outputDirectory, Integer numberOfDonors, Integer numberOfSpecimensPerDonor,
       Integer numberOfSamplesPerDonor, String leadJurisdiction, String tumourType, String institution, String platform,
-      Long seed, List<ExperimentalFile> experimentalFiles) throws JsonParseException, JsonMappingException, IOException {
+      Long seed, ArrayList<OptionalFile> optionalFiles, List<ExperimentalFile> experimentalFiles)
+      throws JsonParseException, JsonMappingException, IOException {
 
     DataGenerator.init(outputDirectory, seed);
 
@@ -80,6 +83,14 @@ public class GeneratorService {
     DataGenerator.createCoreFile(SAMPLE_SCHEMA_NAME, numberOfSpecimensPerDonor, leadJurisdiction, institution,
         tumourType, platform);
 
+    for(OptionalFile optionalFile : optionalFiles) {
+      String schemaName = optionalFile.getName();
+      Integer numberOfLinesPerDonor = optionalFile.getNumberOfLinesPerDonor();
+
+      DataGenerator.determineUniqueFields(DataGenerator.getSchema(schemaName));
+      DataGenerator.createTemplateFile(schemaName, numberOfLinesPerDonor, leadJurisdiction, institution, tumourType,
+          platform);
+    }
     for(ExperimentalFile experimentalFile : experimentalFiles) {
       String fileType = experimentalFile.getFileType();
       String schemaName = experimentalFile.getName() + "_" + fileType;
@@ -98,5 +109,4 @@ public class GeneratorService {
       }
     }
   }
-
 }

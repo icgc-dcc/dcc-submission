@@ -19,13 +19,15 @@
 package org.icgc.dcc.generator.core;
 
 import java.io.IOException;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 import lombok.SneakyThrows;
 
+import org.apache.commons.lang.mutable.MutableDouble;
+import org.apache.commons.lang.mutable.MutableInt;
+import org.apache.commons.lang.mutable.MutableLong;
 import org.icgc.dcc.dictionary.model.CodeList;
 import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.FileSchema;
@@ -56,7 +58,7 @@ public class DataGenerator {
 
   private static final String CONSTANT_DATE = "20130313";
 
-  private static final DecimalFormat df = new DecimalFormat("#.00");
+  // private static final DecimalFormat df = new DecimalFormat("#.00");
 
   private static final String CODELIST_FILE_NAME = "codeList.json";
 
@@ -98,6 +100,13 @@ public class DataGenerator {
     determineUniqueFields(schema);
     CoreFileGenerator cfg = new CoreFileGenerator();
     cfg.createFile(schema, numberOfLinesPerPrimaryKey, leadJurisdiction, institution, tumourType, platform);
+  }
+
+  public static void createTemplateFile(String schemaName, Integer numberOfLinesPerDonor, String leadJurisdiction,
+      String institution, String tumourType, String platform) throws IOException {
+    FileSchema schema = getSchema(schemaName);
+    TemplateFileGenerator tfg = new TemplateFileGenerator();
+    tfg.createFile(schema, numberOfLinesPerDonor, leadJurisdiction, institution, tumourType, platform);
   }
 
   public static void createMetaFile(String schemaName, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
@@ -200,26 +209,29 @@ public class DataGenerator {
     }
   }
 
-  public static String getFieldValue(List<String> list, String schemaName, Field field, Long uniqueId,
-      Integer uniqueInt, Double uniqueDecimal) {
+  public static String getFieldValue(List<String> list, String schemaName, Field field, MutableLong uniqueId,
+      MutableInt uniqueInteger, MutableDouble uniqueDecimal) {
 
     String output = null;
     String fieldName = field.getName();
     if(field.getValueType() == ValueType.TEXT) {
       if(isUniqueField(list, fieldName)) {
-        output = schemaName + Long.toString(uniqueId += 1);
+        uniqueId.increment();
+        output = schemaName + String.valueOf(uniqueId);
       } else {
         output = Integer.toString(randomIntGenerator(0, UPPER_LIMIT_FOR_TEXT_FIELD_INTEGER));
       }
     } else if(field.getValueType() == ValueType.INTEGER) {
       if(isUniqueField(list, fieldName)) {
-        output = Integer.toString(uniqueInt + 1);
+        uniqueInteger.increment();
+        output = schemaName + String.valueOf(uniqueInteger);
       } else {
         output = Integer.toString(randomIntGenerator(0, 200));
       }
     } else if(field.getValueType() == ValueType.DECIMAL) {
       if(isUniqueField(list, fieldName)) {
-        output = Double.toString(uniqueDecimal + 0.1);
+        uniqueDecimal.add(0.1);
+        output = schemaName + String.valueOf(uniqueDecimal);
       } else {
         output = DataGenerator.randomDecimalGenerator(50);
       }
@@ -250,6 +262,7 @@ public class DataGenerator {
   }
 
   public static String randomDecimalGenerator(double end) {
-    return df.format(random.nextDouble() * end);
+    return Double.toString(random.nextDouble() * end);
   }
+
 }

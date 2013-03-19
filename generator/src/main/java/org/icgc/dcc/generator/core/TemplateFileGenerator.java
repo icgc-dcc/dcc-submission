@@ -46,25 +46,10 @@ import com.google.common.base.Optional;
 /**
  * 
  */
-public class MetaFileGenerator {
-
+public class TemplateFileGenerator {
   private static final String TAB = DataGenerator.TAB;
 
   private static final String NEW_LINE = DataGenerator.NEW_LINE;
-
-  private static final String SAMPLE_SCHEMA_NAME = "sample";
-
-  private static final String NON_SYSTEM_META_FILE_EXPRESSION = "exp_m";
-
-  private static final String NON_SYSTEM_META_FILE_JUNCTION = "jcn_m";
-
-  private static final String NON_SYSTEM_META_FILE_MIRNA = "mirna_m";
-
-  private static final String TUMOUR_PRIMARY_KEY_FIELD_IDENTIFIER = "tumourSampleTypeID";
-
-  private static final String CONTROL_PRIMARY_KEY_FIELD_IDENTIFIER = "controlledSampleTypeID";
-
-  private static final String MATCHED_SAMPLE_FIELD_NAME = "matched_sample_id";
 
   private static final String CODELIST_RESTRICTION_NAME = "codelist";
 
@@ -79,7 +64,7 @@ public class MetaFileGenerator {
   public void createFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
       String institution, String tumourType, String platform) throws IOException {
 
-    boolean isCore = false;
+    boolean isCore = true;
 
     String fileUrl =
         DataGenerator.generateFileName(schema.getName(), leadJurisdiction, institution, tumourType, platform, isCore);
@@ -124,7 +109,7 @@ public class MetaFileGenerator {
     }
   }
 
-  private void populateFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, Writer writer) throws IOException {
+  private void populateFile(FileSchema schema, int numberOfLinesPerPrimaryKey, Writer writer) throws IOException {
     String schemaName = schema.getName();
     List<Relation> relations = schema.getRelations();
 
@@ -136,30 +121,16 @@ public class MetaFileGenerator {
         for(Field field : schema.getFields()) {
           String output = null;
           String fieldName = field.getName();
-          // Is it a foreign key? if so then the only foreign key for a metafile is the matched/analyzed type from
-          // sample and therefore add accordingly.
 
           List<String> foreignKeyArray = DataGenerator.getForeignKey(schema, fieldName);
           if(foreignKeyArray != null) {
-            boolean isNotMetaExpressionFile = !schemaName.equals(NON_SYSTEM_META_FILE_EXPRESSION);
-            boolean isNotMetaJunctionFile = !schemaName.equals(NON_SYSTEM_META_FILE_JUNCTION);
-            boolean isNotMetaMirnaFile = !schemaName.equals(NON_SYSTEM_META_FILE_MIRNA);
-
-            if(isNotMetaExpressionFile && isNotMetaJunctionFile && isNotMetaMirnaFile) {
-              output = getSampleType(fieldName);
-            } else {
-              output = foreignKeyArray.get(i + 2);
-            }
+            output = foreignKeyArray.get(i + 2);
           } else {
             output = getFieldValue(schema, schemaName, field, fieldName);
           }
 
           if(DataGenerator.isUniqueField(schema.getUniqueFields(), fieldName)) {
-            for(List<String> primaryKey : DataGenerator.getListOfPrimaryKeys()) {
-              if(primaryKey.get(0).equals(schemaName) && primaryKey.get(1).equals(fieldName)) {
-                primaryKey.add(output);
-              }
-            }
+            DataGenerator.getPrimaryKey(schemaName, fieldName).add(output);
           }
 
           writer.write(output + TAB);
@@ -181,24 +152,6 @@ public class MetaFileGenerator {
       return DataGenerator.randomIntGenerator(1, numberOfLinesPerPrimaryKey);
     } else {
       return DataGenerator.randomIntGenerator(0, numberOfLinesPerPrimaryKey);
-    }
-  }
-
-  /**
-   * @param currentField
-   * @return
-   */
-
-  private String getSampleType(String currentFieldName) {
-    if(currentFieldName.equals(MATCHED_SAMPLE_FIELD_NAME)) {
-      List<String> tumourTypeIDs = DataGenerator.getPrimaryKey(SAMPLE_SCHEMA_NAME, TUMOUR_PRIMARY_KEY_FIELD_IDENTIFIER);
-      Integer randomInteger = DataGenerator.randomIntGenerator(2, tumourTypeIDs.size() - 3);
-      return tumourTypeIDs.get(randomInteger);
-    } else {
-      List<String> controlTypeIDs =
-          DataGenerator.getPrimaryKey(SAMPLE_SCHEMA_NAME, CONTROL_PRIMARY_KEY_FIELD_IDENTIFIER);
-      Integer randomInteger = DataGenerator.randomIntGenerator(2, controlTypeIDs.size() - 3);
-      return controlTypeIDs.get(randomInteger);
     }
   }
 
@@ -228,5 +181,4 @@ public class MetaFileGenerator {
     }
     return output;
   }
-
 }

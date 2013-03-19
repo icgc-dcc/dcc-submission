@@ -25,6 +25,29 @@ platform: 1
 # This is to ensure consistent results across runs
 seed: 1234567
 
+# This is an array of all the optional files. Append/Unappend the array as necessary
+optionalFiles:
+   # Name of the experimental file
+ - name: surgery
+   # Number of lines for each entry in the donor file
+   numberOfLinesPerDonor: 3
+   # Name of the experimental file
+ - name: exposure
+   # Number of lines for each entry in the donor file
+   numberOfLinesPerDonor: 3
+   # Name of the experimental file
+ - name: family
+   # Number of lines for each entry in the donor file
+   numberOfLinesPerDonor: 3
+   # Name of the experimental file
+ - name: biomarker
+   # Number of lines for each entry in the donor file
+   numberOfLinesPerDonor: 3
+   # Name of the experimental file
+ - name: therapy
+   # Number of lines for each entry in the donor file
+   numberOfLinesPerDonor: 3
+
 # This is an array of all the experimental files. Append to the Array as necessary. Append in order (i.e. first meta, then primary, then secondary)
 experimentalFiles:
    # Name of the experimental file
@@ -36,7 +59,7 @@ experimentalFiles:
  - name: ssm
    fileType: p
    # Approximately 2000 for a given project
-   numberOfLinesPerForeignKey: 3
+   numberOfLinesPerForeignKey: 10
  - name: ssm
    fileType: s
    numberOfLinesPerForeignKey: 3

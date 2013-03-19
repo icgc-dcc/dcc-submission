@@ -28,6 +28,9 @@ import java.util.List;
 
 import lombok.Cleanup;
 
+import org.apache.commons.lang.mutable.MutableDouble;
+import org.apache.commons.lang.mutable.MutableInt;
+import org.apache.commons.lang.mutable.MutableLong;
 import org.apache.hadoop.fs.FileAlreadyExistsException;
 import org.icgc.dcc.dictionary.model.CodeList;
 import org.icgc.dcc.dictionary.model.Field;
@@ -63,11 +66,11 @@ public class CoreFileGenerator {
 
   private final static List<CodeListTerm> codeListArrayList = new ArrayList<CodeListTerm>();
 
-  private final Long uniqueId = 0L;
+  private final MutableLong uniqueId = new MutableLong(0L);
 
-  private final Integer uniqueInteger = 0;
+  private final MutableInt uniqueInteger = new MutableInt(0);
 
-  private final Double uniqueDecimal = 0.0;
+  private final MutableDouble uniqueDecimal = new MutableDouble(0.0);
 
   public void createFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
       String institution, String tumourType, String platform) throws IOException {
@@ -137,7 +140,6 @@ public class CoreFileGenerator {
 
     for(int i = 0; i < numberOfPrimaryKeyValues; i++) {
       for(int j = 0; j < numberOfLinesPerKey; j++) {
-        int indexOfCodeListArray = 0;
         for(Field field : schema.getFields()) {
           String output = null;
           String fieldName = field.getName();
@@ -147,7 +149,7 @@ public class CoreFileGenerator {
           if(foreignKeyArray != null) {
             output = foreignKeyArray.get(i + 2);
           } else {
-            output = getFieldValue(schema, schemaName, indexOfCodeListArray, field, fieldName);
+            output = getFieldValue(schema, schemaName, field, fieldName);
           }
 
           if(DataGenerator.isUniqueField(schema.getUniqueFields(), field.getName())) {
@@ -215,10 +217,9 @@ public class CoreFileGenerator {
    * @param currentFieldName
    * @return
    */
-  private String getFieldValue(FileSchema schema, String schemaName, int indexOfCodeListArray, Field currentField,
-      String currentFieldName) {
+  private String getFieldValue(FileSchema schema, String schemaName, Field currentField, String currentFieldName) {
     String output = null;
-    if(codeListArrayList.size() > 0 && indexOfCodeListArray < codeListArrayList.size()) {
+    if(codeListArrayList.size() > 0) {
       for(CodeListTerm codeListTerm : codeListArrayList) {
         if(codeListTerm.getFieldName().equals(currentFieldName)) {
           List<Term> terms = codeListTerm.getTerms();
