@@ -15,51 +15,37 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.mongodb;
+package org.icgc.dcc.test.json;
 
-import static org.icgc.dcc.test.json.JsonNodes.MAPPER;
-
-import java.io.File;
-
+import static com.fasterxml.jackson.core.JsonParser.Feature.ALLOW_COMMENTS;
+import static com.fasterxml.jackson.core.JsonParser.Feature.ALLOW_SINGLE_QUOTES;
+import static com.fasterxml.jackson.core.JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES;
 import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
-
-import org.jongo.Jongo;
-import org.jongo.MongoCollection;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.MappingIterator;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.mongodb.DB;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-@Slf4j
-public class MongoImporter extends BaseMongoImportExport {
+public class JsonNodes {
 
-  private static final ObjectReader READER = MAPPER.reader(JsonNode.class);
+  /**
+   * Allow for more liberal JSON strings to simplify literals with constants, etc.
+   */
+  public static final ObjectMapper MAPPER = new ObjectMapper() //
+      .configure(ALLOW_UNQUOTED_FIELD_NAMES, true) //
+      .configure(ALLOW_SINGLE_QUOTES, true) //
+      .configure(ALLOW_COMMENTS, true);
 
-  public MongoImporter(File sourceDirectory, DB targetDatabase) {
-    super(sourceDirectory, new Jongo(targetDatabase));
-  }
-
-  @Override
+  /**
+   * Utility method that returns a {@code JsonNode} given a JSON String.
+   * <p>
+   * The name and use is inspired by jQuery's {@code $} function.
+   * 
+   * @param json
+   * @return
+   */
   @SneakyThrows
-  public void execute() {
-    for(File collectionFile : directory.listFiles()) {
-      String collectionName = getCollectionName(collectionFile);
-      MongoCollection collection = jongo.getCollection(collectionName);
-
-      log.info("Importing to '{}' from '{}'...", collection, collectionFile);
-      importCollection(collectionFile, collection);
-    }
+  public static JsonNode $(String json) {
+    return MAPPER.readTree(json);
   }
 
-  @SneakyThrows
-  private void importCollection(File collectionFile, MongoCollection collection) {
-    MappingIterator<JsonNode> iterator = READER.readValues(collectionFile);
-
-    while(iterator.hasNext()) {
-      JsonNode object = iterator.next();
-      collection.save(object);
-    }
-  }
 }
