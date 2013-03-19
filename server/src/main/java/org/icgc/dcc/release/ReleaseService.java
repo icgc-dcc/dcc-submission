@@ -37,7 +37,6 @@ import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.core.model.QProject;
 import org.icgc.dcc.core.morphia.BaseMorphiaService;
 import org.icgc.dcc.dictionary.model.Dictionary;
-import org.icgc.dcc.dictionary.model.DictionaryState;
 import org.icgc.dcc.dictionary.model.QDictionary;
 import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.filesystem.ReleaseFileSystem;
@@ -196,8 +195,6 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     Release release = checkNotNull(nextRelease, "There are currently no open releases...").getRelease();
     String version = checkNotNull(release).getDictionaryVersion();
     Dictionary dictionary = getDictionaryFromVersion(checkNotNull(version));
-    checkState(checkNotNull(dictionary).getState() == DictionaryState.OPENED, "Current dictionary is not %s",
-        DictionaryState.OPENED);
     return dictionary;
   }
 
