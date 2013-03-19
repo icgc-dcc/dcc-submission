@@ -94,7 +94,7 @@ public final class FieldNames {
    * Mutation field names.
    */  
   public static final String MUTATION_ID = "_mutation_id";
-  public static final String MUTATION_OBSERVATIONS = "ssm_observation";
+  public static final String MUTATION_OBSERVATIONS = "ssm_occurrence";
   public static final String MUTATION_OBSERVATION_DONOR = "donor";
   public static final String MUTATION_OBSERVATION_PROJECT = "project";
   public static final String MUTATION_TRANSCRIPTS = "transcript";
