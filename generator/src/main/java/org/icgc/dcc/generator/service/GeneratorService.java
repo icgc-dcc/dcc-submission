@@ -60,10 +60,7 @@ public class GeneratorService {
     ArrayList<OptionalFile> optionalFiles = config.getOptionalFiles();
     List<ExperimentalFile> experimentalFiles = config.getExperimentalFiles();
 
-    List<String> errors = DataGenerator.checkParameters(leadJurisdiction, tumourType, institution, platform);
-    for(String error : errors) {
-      throw new Exception(error); // Does this end the whole program?
-    }
+    DataGenerator.checkParameters(leadJurisdiction, tumourType, institution, platform);
 
     generateFiles(outputDirectory, numberOfDonors, numberOfSpecimensPerDonor, numberOfSamplesPerDonor,
         leadJurisdiction, tumourType, institution, platform, seed, optionalFiles, experimentalFiles);

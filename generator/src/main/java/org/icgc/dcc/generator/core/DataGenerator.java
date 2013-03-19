@@ -166,22 +166,21 @@ public class DataGenerator {
     return null;
   }
 
-  public static List<String> checkParameters(String leadJurisdiction, String tumourType, String institution,
-      String platform) {
-    List<String> errors = new ArrayList<String>();
+  public static void checkParameters(String leadJurisdiction, String tumourType, String institution, String platform)
+      throws Exception {
+
     if(leadJurisdiction.length() != 2) {
-      errors.add("The lead jurisdiction is invalid");
+      throw new Exception("The lead jurisdiction is invalid");
     }
     if(Integer.parseInt(tumourType) > 31 || Integer.parseInt(tumourType) < 1) {
-      errors.add("The tumour type is invalid");
+      throw new Exception("The tumour type is invalid");
     }
     if(Integer.parseInt(institution) > 98 || Integer.parseInt(institution) < 1) {
-      errors.add("The insitute is invalid");
+      throw new Exception("The insitute is invalid");
     }
     if(Integer.parseInt(platform) > 75 || Integer.parseInt(institution) < 1) {
-      errors.add("The platform is invalid");
+      throw new Exception("The platform is invalid");
     }
-    return errors;
   }
 
   public static String generateFileName(String schemaName, String leadJurisdiction, String institution,
