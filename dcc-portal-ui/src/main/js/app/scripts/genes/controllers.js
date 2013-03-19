@@ -34,9 +34,24 @@ angular.module('app.genes.controllers').controller('GenesController', [ "$scope"
     tokenSeparators: [",", " "]
   };
 
-  $scope.$on('toggleFilter', $scope.refresh);
+  $scope.$on('refresh', $scope.refresh);
 }]);
 
 angular.module('app.genes.controllers').controller('GeneController', [ "$scope", "gene", function ($scope, gene) {
   $scope.gene = gene;
+}]);
+
+angular.module('app.genes.controllers').controller('EmbGenesController', [ "$scope", 'GenesService', function ($scope, GenesService) {
+  GenesService.embQuery($scope.project.id, {}).then(function (response) {
+    $scope.genes = response;
+  });
+
+  $scope.refresh = function () {
+    console.log('refresh');
+    GenesService.query().then(function (response) {
+      $scope.genes = response;
+    });
+  };
+
+  $scope.$on('refresh', $scope.refresh);
 }]);

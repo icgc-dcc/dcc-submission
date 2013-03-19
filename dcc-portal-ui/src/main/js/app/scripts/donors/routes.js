@@ -21,15 +21,6 @@ angular.module('app.donors', ['app.donors.controllers']);
 
 angular.module('app.donors').config(['$routeProvider', function ($routeProvider) {
   $routeProvider
-      .when('/donors', {
-        templateUrl: 'views/donors.html',
-        controller: 'DonorsController',
-        resolve: {
-          donors: ['DonorsService', function (DonorsService) {
-            return DonorsService.query();
-          }]
-        }
-      })
       .when('/donors/:donor', {
         templateUrl: 'views/donor.html',
         controller: 'DonorController',

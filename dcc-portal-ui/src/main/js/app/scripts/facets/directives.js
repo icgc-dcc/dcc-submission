@@ -24,10 +24,16 @@ angular.module('app.facets.directives').directive('termFacet', ['$location', fun
     restrict: 'E',
     scope: {
       facetName: '@',
+      type: '@',
       facet: '='
     },
     templateUrl: '/views/facets/term.html',
     link: function (scope, iElement, iAttrs) {
+      scope.$watch('facet', function (newValue, oldValue) {
+        if (newValue !== oldValue) {
+          refresh();
+        }
+      });
 
       function setFacetActiveState() {
         var terms = scope.facet.terms;
@@ -65,15 +71,20 @@ angular.module('app.facets.directives').directive('termFacet', ['$location', fun
         // This is for immediate feedback
         toggleTermActiveState(term);
         setFacetActiveState();
-
-        scope.$emit('termFilter', scope.facetName, term);
+        scope.$emit('termFilter', scope.type, scope.facetName, term);
       };
 
 
-      (function () {
-        var filters = $location.search().filters || '';
-        if (filters) setActive(JSON.parse(filters));
-      })();
+      var refresh = function () {
+        console.log('refresh?');
+        var filters = $location.search().filters || '{}';
+        var f = JSON.parse(filters);
+        var r;
+        r = f.hasOwnProperty(iAttrs.type) ? f[iAttrs.type] : f;
+        if (filters) setActive(r);
+      };
+
+      refresh();
     }
   };
 }]);

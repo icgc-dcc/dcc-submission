@@ -27,4 +27,8 @@ angular.module('app.donors.services').service('DonorsService', ['$q', 'Donors', 
   this.get = function (params) {
     return Donors.get(params);
   };
+
+  this.embQuery = function (params) {
+    return Donors.embQuery(params);
+  };
 }]);

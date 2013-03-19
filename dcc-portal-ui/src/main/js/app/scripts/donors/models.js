@@ -19,17 +19,16 @@
 
 angular.module('app.donors.models', []);
 
-angular.module('app.donors.models').factory('Donors', ['$http', function ($http) {
+angular.module('app.donors.models').factory('Donors', ['http', function (http) {
   return {
     query: function () {
-      return $http.get('/ws/donors').then(function (response) {
-        return response.data;
-      });
+      return http.query('/ws/donors');
     },
     get: function (params) {
-      return $http.get('/ws/donors/' + params.donor).then(function (response) {
-        return response.data.data;
-      });
+      return http.get('/ws/donors/' + params.donor);
+    },
+    embQuery: function (params) {
+      return http.embQuery('/ws/donors', params);
     }
   }
 }]);

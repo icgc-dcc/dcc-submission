@@ -30,7 +30,7 @@ mod.factory('loadingService', function () {
 });
 
 mod.factory('onStartInterceptor', function (loadingService) {
-  console.log('onStartInterceptor');
+  //console.log('onStartInterceptor');
   return function (data, headersGetter) {
     loadingService.requestCount++;
     return data;
@@ -52,7 +52,7 @@ mod.factory('delayedPromise', function ($q, $timeout) {
 });
 
 mod.factory('onCompleteInterceptor', function (loadingService, delayedPromise) {
-  console.log('onStartInterceptor');
+  //console.log('onStartInterceptor');
   return function (promise) {
     var decrementRequestCount = function (response) {
       loadingService.requestCount--;
@@ -61,8 +61,8 @@ mod.factory('onCompleteInterceptor', function (loadingService, delayedPromise) {
     // Normally we would just chain on to the promise but ...
     //return promise.then(decrementRequestCount, decrementRequestCount);
     // ... we are delaying the response by 2 secs to allow the loading to be seen.
-    return promise.then(decrementRequestCount, decrementRequestCount);
     //return delayedPromise(promise, 1000).then(decrementRequestCount, decrementRequestCount);
+    return promise.then(decrementRequestCount, decrementRequestCount);
   };
 });
 
@@ -81,6 +81,6 @@ mod.controller('LoadingCtrl', function ($scope, loadingService) {
       },
       function (value) {
         $scope.loading = value;
-        console.log("Loading... ", $scope.loading);
+        //console.log("Loading... ", $scope.loading);
       });
 });

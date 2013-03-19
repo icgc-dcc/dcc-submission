@@ -1,4 +1,191 @@
+<!--
+  ~ Copyright 2013(c) The Ontario Institute for Cancer Research. All rights reserved.
+  ~
+  ~ This program and the accompanying materials are made available under the terms of the GNU Public
+  ~ License v3.0. You should have received a copy of the GNU General Public License along with this
+  ~ program. If not, see <http://www.gnu.org/licenses/>.
+  ~
+  ~ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
+  ~ IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+  ~ FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+  ~ CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+  ~ DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+  ~ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+  ~ WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
+  ~ WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  -->
+
 <h1>
     <small>DONOR</small>
-    LFS_MB1
+    {{donor.id}}
 </h1>
+<div class="row-fluid">
+    <div class="span6">
+        <table class="table table-bordered table-striped table-condensed">
+            <tr>
+                <td>Donor ID</td>
+                <td>{{donor.id}}</td>
+            </tr>
+            <tr>
+                <td>Submitter Donor ID name</td>
+                <td>??</td>
+            </tr>
+            <tr>
+                <td>Cancer Project</td>
+                <td><a href="{{donor.fields.project_key}}">{{donor.fields.project_name}}</a></td>
+            </tr>
+            <tr>
+                <td>Cancer Primary Site</td>
+                <td>{{donor.fields.primary_site}}</td>
+            </tr>
+            <tr>
+                <td>Gender</td>
+                <td>{{donor.fields.donor_sex}}</td>
+            </tr>
+            <tr>
+                <td>Tumour stage at diagnosis</td>
+                <td>{{donor.fields.donor_tumour_stage_at_diagnosis}}</td>
+            </tr>
+            <tr>
+                <td>Donor vital status</td>
+                <td>{{donor.fields.donor_}}</td>
+            </tr>
+            <tr>
+                <td>Donor survival time</td>
+                <td>{{donor.fields.donor_}}</td>
+            </tr>
+        </table>
+    </div>
+    <div class="span6">
+        <table class="table table-bordered table-striped table-condensed">
+            <tr>
+                <td>Clinical Data</td>
+                <td colspan="4">??</td>
+            </tr>
+            <tr>
+                <td>Small mutations</td>
+                <td>Somatic</td>
+                <td>??</td>
+                <td>Germline</td>
+                <td>??</td>
+            </tr>
+            <tr>
+                <td>Copy number alterations</td>
+                <td>Somatic</td>
+                <td>??</td>
+                <td>Germline</td>
+                <td>??</td>
+            </tr>
+            <tr>
+                <td>Structural rearrangements</td>
+                <td>Somatic</td>
+                <td>10,000</td>
+                <td>Germline</td>
+                <td>10,000</td>
+            </tr>
+            <tr>
+                <td>DNA methylation</td>
+                <td colspan="4">??</td>
+            </tr>
+            <tr>
+                <td>Gene expression</td>
+                <td colspan="4">??</td>
+            </tr>
+            <tr>
+                <td>miRNA</td>
+                <td colspan="4">??</td>
+            </tr>
+            <tr>
+                <td>Exon junction</td>
+                <td colspan="4">??</td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<div class="row-fluid">
+    <h2>Clinical Data</h2>
+</div>
+<div class="row-fluid">
+    <div class="span6">
+        <table class="table table-bordered table-striped table-condensed">
+            <tr>
+                <td>Age at enrollment</td>
+                <td>??</td>
+            </tr>
+            <tr>
+                <td>Age at last followup</td>
+                <td>??</td>
+            </tr>
+            <tr>
+                <td>Diagnosis ICD-10 code</td>
+                <td>??</td>
+            </tr>
+            <tr>
+                <td>Disease status at last followup</td>
+                <td>??</td>
+            </tr>
+            <tr>
+                <td>Interval of last followup</td>
+                <td>??</td>
+            </tr>
+        </table>
+    </div>
+    <div class="span6">
+        <table class="table table-bordered table-striped table-condensed">
+            <tr>
+                <td>Tumour stage at diagnosis</td>
+                <td>??</td>
+            </tr>
+            <tr>
+                <td>Tumour staging system at diagnosis</td>
+                <td>??</td>
+            </tr>
+            <tr>
+                <td>Tumour stage at diagnosis supplemental</td>
+                <td>??</td>
+            </tr>
+            <tr>
+                <td>Relapse type</td>
+                <td>??</td>
+            </tr>
+            <tr>
+                <td>Relapse interval</td>
+                <td>??</td>
+            </tr>
+        </table>
+    </div>
+</div>
+<div class="row-fluid">
+    <h2>Mutations</h2>
+    <table class="table table-bordered table-striped table-condensed">
+        <thead>
+        <tr>
+            <th>Mutation ID</th>
+            <th>DNA Change</th>
+            <th>Type</th>
+            <th>Gene</th>
+            <th>AA Change</th>
+            <th>Consequence</th>
+            <th>Other affected donor in the same project</th>
+            <th>Validation Status</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="mutation in mutations.hits">
+            <td><a href="#/genes/{{gene.fields.ensembl_gene_id}}">{{gene.fields.symbol}}</a></td>
+            <td>??</td>
+            <td>??</td>
+            <td>??</td>
+            <td>??</td>
+            <td>??</td>
+            <td>??</td>
+            <td>??</td>
+            <td>??</td>
+        </tr>
+        <tr ui-if="!mutations.hits">
+            <td colspan="10"><i class="icon-spinner icon-spin"></i> Fetching mutations...</td>
+        </tr>
+        </tbody>
+    </table>
+</div>

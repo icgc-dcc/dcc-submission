@@ -45,27 +45,32 @@ public class DonorRepository extends BaseRepository {
                 QueryBuilders.matchAllQuery(), //
                 // this.filter//
                 FilterBuilders.matchAllFilter()//
-                )).script("doc['gene.somatic_mutation'].value") //
+            )).script("doc['gene.somatic_mutation'].value") //
         ).scoreMode("total");
   }
 
   FilterBuilder buildFilters(JsonNode filters) {
-    AndFilterBuilder geneFilters = FilterService.buildAndFilters(Donor.FILTERS, filters);
+    AndFilterBuilder donorFilters = FilterBuilders.andFilter();
+
     if (filters.has(Donor.NAME)) {
-      geneFilters
-          .add(FilterService.buildNestedFilter(Donor.NAME, FilterService.buildAndFilters(Gene.FILTERS, filters)));
+      donorFilters
+          .add(FilterService.buildAndFilters(Donor.FILTERS, filters.get(Donor.NAME)));
+    }
+    if (filters.has(Gene.NAME)) {
+      donorFilters
+          .add(FilterService.buildNestedFilter(Gene.NAME, FilterService.buildAndFilters(Gene.FILTERS, filters.get(Gene.NAME))));
     }
     if (filters.has(Mutation.NAME)) {
-      geneFilters.add(FilterService.buildNestedFilter(Mutation.NAME,
-          FilterService.buildAndFilters(Mutation.FILTERS, filters)));
+      donorFilters.add(FilterService.buildNestedFilter(Mutation.NAME,
+          FilterService.buildAndFilters(Mutation.FILTERS, filters.get(Mutation.NAME))));
     }
-    return geneFilters;
+    return donorFilters;
   }
 
   SearchRequestBuilder addFacets(SearchRequestBuilder s, RequestSearchQuery requestSearchQuery) {
     for (String facet : Donor.FACETS.get("terms")) {
       s.addFacet(FacetBuilders.termsFacet(facet).field(facet)
-          .facetFilter(setFacetFilter(facet, requestSearchQuery.getFilters())).size(Integer.MAX_VALUE).global(true));
+          .facetFilter(setFacetFilter(Donor.NAME, facet, requestSearchQuery.getFilters())).size(Integer.MAX_VALUE).global(true));
     }
     return s;
   }

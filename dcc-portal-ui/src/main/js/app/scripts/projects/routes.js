@@ -24,6 +24,7 @@ angular.module('app.projects').config(['$routeProvider', function ($routeProvide
       .when('/projects', {
         templateUrl: 'views/projects.html',
         controller: 'ProjectsController',
+        reloadOnSearch: false,
         resolve: {
           projects: ['ProjectsService', function (ProjectsService) {
             return ProjectsService.query();
@@ -34,9 +35,15 @@ angular.module('app.projects').config(['$routeProvider', function ($routeProvide
         templateUrl: 'views/project.html',
         controller: 'ProjectController',
         resolve: {
-          project: ['$route', 'ProjectsService', function ($route, ProjectsService) {
+          project: ['$route', 'ProjectsService', 'DonorsService', function ($route, ProjectsService) {
             return ProjectsService.get({project: $route.current.params.project});
           }]
+          //donors: ['$route', 'DonorsService', function ($route, DonorsService) {
+          //  return DonorsService.embQuery({donor:{project_key: $route.current.params.project}});
+          //}],
+          //genes: ['$route', 'GenesService', function ($route, GenesService) {
+          //  return GenesService.query();
+          //}]
         }
       })
 }]);

@@ -28,12 +28,22 @@ angular.module('app.http.http').factory('http', ['$http', 'httpService', functio
 
   return {
     get: function (url) {
+      return $http.get(url).then(extractData);
+    },
+    query: function (url) {
       var filters = JSON.stringify(httpService.getCurrentFilters());
 
       var query_url = filters != "{}" ? url + '?filters=' + filters : url;
 
-      return $http.get(query_url)
-          .then(extractData);
+      return $http.get(query_url).then(extractData);
+    },
+    embQuery: function (url, param) {
+      console.log(param);
+      var filters = JSON.stringify(param);
+
+      var query_url = filters != "{}" ? url + '?filters=' + filters : url;
+      console.log(query_url);
+      return $http.get(query_url).then(extractData);
     }
   };
 }]);

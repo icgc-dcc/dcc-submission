@@ -28,4 +28,9 @@ angular.module('app.genes.services').service('GenesService', ['$q', 'Genes', fun
   this.get = function (params) {
     return Genes.get(params);
   };
+
+  this.embQuery = function (project, params) {
+    return Genes.embQuery(project, params);
+  };
+
 }]);

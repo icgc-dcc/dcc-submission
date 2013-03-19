@@ -18,10 +18,24 @@
 'use strict';
 angular.module('app.donors.controllers', ['app.donors.services']);
 
-angular.module('app.donors.controllers').controller('DonorsController', [ "$scope", 'DonorsService', "donors", function ($scope, DonorsService, donors) {
+angular.module('app.donors.controllers').controller('DonorsController', [ "$scope", 'donors', 'DonorsService', function ($scope, donors, DonorsService) {
   $scope.donors = donors;
+
+  $scope.refresh = function () {
+    DonorsService.query().then(function (response) {
+      $scope.donors = response;
+    });
+  };
+
+  $scope.$on('refresh', $scope.refresh);
 }]);
 
 angular.module('app.donors.controllers').controller('DonorController', [ "$scope", "donor", function ($scope, donor) {
   $scope.donor = donor;
+}]);
+
+angular.module('app.donors.controllers').controller('EmbDonorsController', [ "$scope", 'DonorsService', function ($scope, DonorsService) {
+  DonorsService.embQuery({donor: {project_name: $scope.project.fields.project_name}}).then(function (response) {
+    $scope.donors = response;
+  });
 }]);

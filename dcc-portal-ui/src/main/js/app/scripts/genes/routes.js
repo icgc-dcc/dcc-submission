@@ -21,15 +21,6 @@ angular.module('app.genes', ['app.genes.controllers']);
 
 angular.module('app.genes').config(['$routeProvider', function ($routeProvider) {
   $routeProvider
-      .when('/genes', {
-        templateUrl: 'views/genes.html',
-        controller: 'GenesController',
-        resolve: {
-          genes: ['GenesService', function (GenesService) {
-            return GenesService.query();
-          }]
-        }
-      })
       .when('/genes/:gene', {
         templateUrl: 'views/gene.html',
         controller: 'GeneController',

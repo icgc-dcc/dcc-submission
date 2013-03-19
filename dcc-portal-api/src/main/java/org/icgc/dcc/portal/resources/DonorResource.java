@@ -44,7 +44,7 @@ public class DonorResource {
 
   private static final String DEFAULT_SORT = "_score";
 
-  private static final String DEFAULT_ORDER = "des";
+  private static final String DEFAULT_ORDER = "desc";
 
   private final DonorRepository store;
 
