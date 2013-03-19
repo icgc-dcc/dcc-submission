@@ -34,10 +34,12 @@ public class ProjectRepository extends BaseRepository {
     super(client, Project.INDEX, Project.TYPE, Project.FIELDS);
   }
 
+  @Override
   QueryBuilder buildQuery() {
     return QueryBuilders.matchAllQuery();
   }
 
+  @Override
   FilterBuilder buildFilters(JsonNode filters) {
     AndFilterBuilder projectFilters = FilterBuilders.andFilter();
 
@@ -49,6 +51,12 @@ public class ProjectRepository extends BaseRepository {
     return projectFilters;
   }
 
+  @Override
+  FilterBuilder buildScoreFilters(JsonNode filters) {
+    return null;
+  }
+
+  @Override
   SearchRequestBuilder addFacets(SearchRequestBuilder s, RequestSearchQuery requestSearchQuery) {
     for (String facet : Project.FACETS.get("terms")) {
       s.addFacet(FacetBuilders.termsFacet(facet).field(facet)
@@ -56,5 +64,4 @@ public class ProjectRepository extends BaseRepository {
     }
     return s;
   }
-
 }
