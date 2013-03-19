@@ -35,7 +35,7 @@ angular.module('app.donors.controllers').controller('DonorController', [ "$scope
 }]);
 
 angular.module('app.donors.controllers').controller('EmbDonorsController', [ "$scope", 'DonorsService', function ($scope, DonorsService) {
-  DonorsService.query().then(function (response) {
+  DonorsService.embQuery({donor: {project_name: $scope.project.fields.project_name}}).then(function (response) {
     $scope.donors = response;
   });
 }]);

@@ -42,14 +42,9 @@ angular.module('app.genes.controllers').controller('GeneController', [ "$scope",
 }]);
 
 angular.module('app.genes.controllers').controller('EmbGenesController', [ "$scope", 'GenesService', function ($scope, GenesService) {
-  console.log('emb', $scope.genes);
-  if (!$scope.genes) {
-    GenesService.query().then(function (response) {
-      console.log('here?');
-      $scope.genes = response;
-      console.log('res', $scope.genes);
-    });
-  }
+  GenesService.embQuery($scope.project.id, {}).then(function (response) {
+    $scope.genes = response;
+  });
 
   $scope.refresh = function () {
     console.log('refresh');

@@ -37,13 +37,13 @@ angular.module('app.projects').config(['$routeProvider', function ($routeProvide
         resolve: {
           project: ['$route', 'ProjectsService', 'DonorsService', function ($route, ProjectsService) {
             return ProjectsService.get({project: $route.current.params.project});
-          }],
-          donors: ['$route', 'DonorsService', function ($route, DonorsService) {
-            return DonorsService.query();
-          }],
-          genes: ['$route', 'GenesService', function ($route, GenesService) {
-            return GenesService.query();
           }]
+          //donors: ['$route', 'DonorsService', function ($route, DonorsService) {
+          //  return DonorsService.embQuery({donor:{project_key: $route.current.params.project}});
+          //}],
+          //genes: ['$route', 'GenesService', function ($route, GenesService) {
+          //  return GenesService.query();
+          //}]
         }
       })
 }]);

@@ -22,10 +22,13 @@ angular.module('app.donors.models', []);
 angular.module('app.donors.models').factory('Donors', ['http', function (http) {
   return {
     query: function () {
-      return http.get('/ws/donors');
+      return http.query('/ws/donors');
     },
     get: function (params) {
       return http.get('/ws/donors/' + params.donor);
+    },
+    embQuery: function (params) {
+      return http.embQuery('/ws/donors', params);
     }
   }
 }]);

@@ -30,8 +30,8 @@ angular.module('app.projects.controllers').controller('ProjectsController', [ "$
   $scope.$on('refresh', $scope.refresh);
 }]);
 
-angular.module('app.projects.controllers').controller('ProjectController', [ "$scope", "project", "donors", "genes", function ($scope, project, donors, genes) {
+angular.module('app.projects.controllers').controller('ProjectController', [ "$scope", "project", function ($scope, project) {
   $scope.project = project;
-  $scope.donors = donors;
-  $scope.genes = genes;
+  //$scope.donors = donors;
+  //$scope.genes = genes;
 }]);
