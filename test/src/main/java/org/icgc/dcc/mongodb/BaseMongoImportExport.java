@@ -15,29 +15,37 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.genes.cli;
-
-import static java.lang.String.format;
+package org.icgc.dcc.mongodb;
 
 import java.io.File;
 
-import com.beust.jcommander.IValueValidator;
-import com.beust.jcommander.ParameterException;
+import lombok.AllArgsConstructor;
 
-public class FileValidator implements IValueValidator<File> {
+import org.jongo.Jongo;
 
-  @Override
-  public void validate(String name, File file) throws ParameterException {
-    if(file.exists() == false) {
-      parameterException(name, file, "does not exist");
-    }
-    if(file.isFile() == false) {
-      parameterException(name, file, "is not a file");
-    }
+import com.google.common.base.Joiner;
+
+@AllArgsConstructor
+public abstract class BaseMongoImportExport {
+
+  private static final String EXTENSION_SEPARATOR = ".";
+
+  private static final String FILE_EXTENSION = "json";
+
+  // TODO: @NotNull
+  // @NotNull
+  protected final File directory;
+
+  // @NotNull
+  protected final Jongo jongo;
+
+  protected abstract void execute();
+
+  protected static String getCollectionName(File collectionFile) {
+    return collectionFile.getName().replaceAll("\\" + EXTENSION_SEPARATOR + FILE_EXTENSION, "");
   }
 
-  private static void parameterException(String name, File file, String message) throws ParameterException {
-    throw new ParameterException(format("Invalid option: %s: %s %s", name, file.getAbsolutePath(), message));
+  protected static String getFileName(String collectionName) {
+    return Joiner.on(EXTENSION_SEPARATOR).join(collectionName, FILE_EXTENSION);
   }
-
 }

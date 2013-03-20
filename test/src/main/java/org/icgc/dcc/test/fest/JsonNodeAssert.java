@@ -15,29 +15,46 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.genes.cli;
+package org.icgc.dcc.test.fest;
 
+import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
 import static java.lang.String.format;
+import junit.framework.ComparisonFailure;
+import lombok.SneakyThrows;
 
-import java.io.File;
+import org.fest.assertions.api.AbstractAssert;
 
-import com.beust.jcommander.IValueValidator;
-import com.beust.jcommander.ParameterException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class FileValidator implements IValueValidator<File> {
+public class JsonNodeAssert extends AbstractAssert<JsonNodeAssert, JsonNode> {
 
-  @Override
-  public void validate(String name, File file) throws ParameterException {
-    if(file.exists() == false) {
-      parameterException(name, file, "does not exist");
-    }
-    if(file.isFile() == false) {
-      parameterException(name, file, "is not a file");
-    }
+  private static ObjectMapper MAPPER = new ObjectMapper().enable(INDENT_OUTPUT);;
+
+  public JsonNodeAssert(JsonNode actual) {
+    super(actual, JsonNodeAssert.class);
   }
 
-  private static void parameterException(String name, File file, String message) throws ParameterException {
-    throw new ParameterException(format("Invalid option: %s: %s %s", name, file.getAbsolutePath(), message));
+  public static JsonNodeAssert assertThat(JsonNode actual) {
+    return new JsonNodeAssert(actual);
+  }
+
+  @Override
+  public JsonNodeAssert isEqualTo(JsonNode expected) {
+    if(!actual.equals(expected)) {
+      String expectedJson = toString(expected);
+      String actualJson = toString(actual);
+      String errorMessage = format("Expected JsonNode to be%n%s%nbut was%n%s", expectedJson, actualJson);
+
+      throw new ComparisonFailure(errorMessage, expectedJson, actualJson);
+    }
+
+    return this;
+  }
+
+  @SneakyThrows
+  String toString(JsonNode jsonNode) {
+    return MAPPER.writeValueAsString(jsonNode);
   }
 
 }

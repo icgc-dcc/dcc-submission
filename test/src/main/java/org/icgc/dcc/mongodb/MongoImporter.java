@@ -15,80 +15,51 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.genes;
+package org.icgc.dcc.mongodb;
 
-import static java.lang.System.err;
-import static java.lang.System.out;
+import static org.icgc.dcc.test.json.JsonNodes.MAPPER;
 
 import java.io.File;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.genes.cli.Options;
-import org.icgc.dcc.genes.service.GenesService;
+import org.jongo.Jongo;
+import org.jongo.MongoCollection;
 
-import com.beust.jcommander.JCommander;
-import com.beust.jcommander.ParameterException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.MappingIterator;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.mongodb.DB;
 
-/**
- * Command line utility used to import Heliotrope genes.bson {@code mongodump} file into DCC's MongoDB gene database.
- */
 @Slf4j
-public class Main {
+public class MongoImporter extends BaseMongoImportExport {
 
-  private final Options options = new Options();
+  private static final ObjectReader READER = MAPPER.reader(JsonNode.class);
 
-  public static void main(String... args) {
-    new Main().run(args);
+  public MongoImporter(File sourceDirectory, DB targetDatabase) {
+    super(sourceDirectory, new Jongo(targetDatabase));
   }
 
-  private void run(String... args) {
-    JCommander cli = new JCommander(options);
-    cli.setProgramName(getProgramName());
+  @Override
+  @SneakyThrows
+  public void execute() {
+    for(File collectionFile : directory.listFiles()) {
+      String collectionName = getCollectionName(collectionFile);
+      MongoCollection collection = jongo.getCollection(collectionName);
 
-    try {
-      cli.parse(args);
-
-      if(options.help) {
-        cli.usage();
-
-        return;
-      } else if(options.version) {
-        out.printf("ICGC DCC Gene Loader%nVersion %s%n", getVersion());
-
-        return;
-      }
-
-      load();
-    } catch(ParameterException pe) {
-      err.printf("dcc-genes: %s%n", pe.getMessage());
-      err.printf("Try '%s --help' for more information.%n", getProgramName());
+      log.info("Importing to '{}' from '{}'...", collection, collectionFile);
+      importCollection(collectionFile, collection);
     }
   }
 
-  private void load() {
-    GenesService loader = new GenesService(options.mongoUri);
+  @SneakyThrows
+  private void importCollection(File collectionFile, MongoCollection collection) {
+    MappingIterator<JsonNode> iterator = READER.readValues(collectionFile);
 
-    log.info("Loading gene model using: {}", options);
-    loader.load(options.file);
-    log.info("Finished loading!");
+    while(iterator.hasNext()) {
+      JsonNode object = iterator.next();
+      collection.save(object);
+    }
   }
-
-  private String getProgramName() {
-    return "java -jar " + getJarName();
-  }
-
-  private String getVersion() {
-    String version = getClass().getPackage().getImplementationVersion();
-
-    return version == null ? "" : version;
-  }
-
-  private String getJarName() {
-    String jarPath = getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
-    File jarFile = new File(jarPath);
-
-    return jarFile.getName();
-  }
-
 }

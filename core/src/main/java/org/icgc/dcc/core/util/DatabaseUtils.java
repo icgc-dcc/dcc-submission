@@ -15,29 +15,27 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.genes.cli;
+package org.icgc.dcc.core.util;
 
 import static java.lang.String.format;
 
-import java.io.File;
+/**
+ * Common utilities for working with DCC databases.
+ */
+public final class DatabaseUtils {
 
-import com.beust.jcommander.IValueValidator;
-import com.beust.jcommander.ParameterException;
-
-public class FileValidator implements IValueValidator<File> {
-
-  @Override
-  public void validate(String name, File file) throws ParameterException {
-    if(file.exists() == false) {
-      parameterException(name, file, "does not exist");
-    }
-    if(file.isFile() == false) {
-      parameterException(name, file, "is not a file");
-    }
+  /**
+   * Creates a release database name from a supplied release name.
+   * 
+   * @param releaseName
+   * @return
+   */
+  public static String releaseDatabaseName(String releaseName) {
+    return format("%s-%s", "dcc-release", releaseName);
   }
 
-  private static void parameterException(String name, File file, String message) throws ParameterException {
-    throw new ParameterException(format("Invalid option: %s: %s %s", name, file.getAbsolutePath(), message));
+  private DatabaseUtils() {
+    // Prevent construction
   }
 
 }

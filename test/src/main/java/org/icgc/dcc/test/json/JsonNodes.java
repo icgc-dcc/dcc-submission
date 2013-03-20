@@ -15,29 +15,37 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.genes.cli;
+package org.icgc.dcc.test.json;
 
-import static java.lang.String.format;
+import static com.fasterxml.jackson.core.JsonParser.Feature.ALLOW_COMMENTS;
+import static com.fasterxml.jackson.core.JsonParser.Feature.ALLOW_SINGLE_QUOTES;
+import static com.fasterxml.jackson.core.JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES;
+import lombok.SneakyThrows;
 
-import java.io.File;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-import com.beust.jcommander.IValueValidator;
-import com.beust.jcommander.ParameterException;
+public class JsonNodes {
 
-public class FileValidator implements IValueValidator<File> {
+  /**
+   * Allow for more liberal JSON strings to simplify literals with constants, etc.
+   */
+  public static final ObjectMapper MAPPER = new ObjectMapper() //
+      .configure(ALLOW_UNQUOTED_FIELD_NAMES, true) //
+      .configure(ALLOW_SINGLE_QUOTES, true) //
+      .configure(ALLOW_COMMENTS, true);
 
-  @Override
-  public void validate(String name, File file) throws ParameterException {
-    if(file.exists() == false) {
-      parameterException(name, file, "does not exist");
-    }
-    if(file.isFile() == false) {
-      parameterException(name, file, "is not a file");
-    }
-  }
-
-  private static void parameterException(String name, File file, String message) throws ParameterException {
-    throw new ParameterException(format("Invalid option: %s: %s %s", name, file.getAbsolutePath(), message));
+  /**
+   * Utility method that returns a {@code JsonNode} given a JSON String.
+   * <p>
+   * The name and use is inspired by jQuery's {@code $} function.
+   * 
+   * @param json
+   * @return
+   */
+  @SneakyThrows
+  public static JsonNode $(String json) {
+    return MAPPER.readTree(json);
   }
 
 }

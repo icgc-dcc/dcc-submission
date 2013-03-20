@@ -19,15 +19,7 @@
     <dependency>
       <groupId>org.icgc.dcc</groupId>
       <artifactId>dcc-core</artifactId>
-      <version>1.4-SNAPSHOT</version>
-    </dependency>
-
-    <!-- DCC Test -->
-    <dependency>
-      <groupId>org.icgc.dcc</groupId>
-      <artifactId>dcc-test</artifactId>
-      <version>1.4-SNAPSHOT</version>
-      <scope>test</scope>
+      <version>${project.version}</version>
     </dependency>
 
     <!-- REST -->
@@ -194,6 +186,14 @@
           <groupId>com.googlecode.guava-osgi</groupId>
         </exclusion>
       </exclusions>
+    </dependency>
+
+    <!-- Testing - DCC -->
+    <dependency>
+      <groupId>org.icgc.dcc</groupId>
+      <artifactId>dcc-test</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
     </dependency>
 
     <!-- Testing - SFTP -->

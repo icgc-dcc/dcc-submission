@@ -67,6 +67,19 @@ public class GeneratorService {
         leadJurisdiction, tumourType, institution, platform, seed, optionalFiles, experimentalFiles);
   }
 
+  private boolean checkParameters(String leadJurisdiction, String tumourType, String institution, String platform) {
+    boolean errorsTrue = false;
+    String[] errors = DataGenerator.checkParameters(leadJurisdiction, tumourType, institution, platform);
+    for(int i = 0; i < errors.length; i++) {
+      if(errors[i] != null) {
+        errorsTrue = true;
+        out.println(errors[i]);
+      }
+    }
+    return errorsTrue;
+  }
+
+  @SneakyThrows
   private void generateFiles(String outputDirectory, Integer numberOfDonors, Integer numberOfSpecimensPerDonor,
       Integer numberOfSamplesPerDonor, String leadJurisdiction, String tumourType, String institution, String platform,
       Long seed, ArrayList<OptionalFile> optionalFiles, List<ExperimentalFile> experimentalFiles)

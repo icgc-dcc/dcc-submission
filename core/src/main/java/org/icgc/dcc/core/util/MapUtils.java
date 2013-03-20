@@ -15,29 +15,43 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.genes.cli;
+package org.icgc.dcc.core.util;
 
-import static java.lang.String.format;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
 
-import java.io.File;
+import com.google.common.collect.Maps;
 
-import com.beust.jcommander.IValueValidator;
-import com.beust.jcommander.ParameterException;
+public class MapUtils {
 
-public class FileValidator implements IValueValidator<File> {
-
-  @Override
-  public void validate(String name, File file) throws ParameterException {
-    if(file.exists() == false) {
-      parameterException(name, file, "does not exist");
+  @SuppressWarnings("unchecked")
+  public static TreeMap<String, Object> asTreeMap(Map<String, Object> map) throws IOException {
+    TreeMap<String, Object> treeMap = Maps.newTreeMap();
+    for(Entry<String, Object> entry : map.entrySet()) {
+      String key = entry.getKey();
+      Object value = entry.getValue();
+      if(value instanceof Map) {
+        Map<String, Object> subMap = (Map<String, Object>) value;
+        treeMap.put(key, asTreeMap(subMap));
+      } else if(value instanceof List) {
+        Map<String, Object> bufferMap = Maps.newTreeMap(); // so as to order it
+        for(Object item : (List<Object>) value) {
+          if(item instanceof Map) {
+            TreeMap<String, Object> subSubMap = asTreeMap((Map<String, Object>) item);
+            bufferMap.put(subSubMap.toString(), subSubMap);
+          } else {
+            bufferMap.put(item.toString(), item); // TODO: can it be null?
+          }
+        }
+        treeMap.put(key, bufferMap.values());
+      } else {
+        treeMap.put(key, value); // possibly null
+      }
     }
-    if(file.isFile() == false) {
-      parameterException(name, file, "is not a file");
-    }
-  }
-
-  private static void parameterException(String name, File file, String message) throws ParameterException {
-    throw new ParameterException(format("Invalid option: %s: %s %s", name, file.getAbsolutePath(), message));
+    return treeMap;
   }
 
 }
