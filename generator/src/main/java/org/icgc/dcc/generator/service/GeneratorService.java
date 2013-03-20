@@ -23,12 +23,13 @@ import java.util.List;
 
 import lombok.SneakyThrows;
 
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
 import org.icgc.dcc.generator.config.GeneratorConfig;
 import org.icgc.dcc.generator.core.DataGenerator;
 import org.icgc.dcc.generator.model.ExperimentalFile;
 import org.icgc.dcc.generator.model.OptionalFile;
+
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 
 public class GeneratorService {
 
