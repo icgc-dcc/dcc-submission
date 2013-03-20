@@ -1,0 +1,13 @@
+<div ui-if="active" style="color: #333" class="alert alert-block alert-success">
+    <span ng-repeat="(facet,terms) in filters">
+        <span ng-repeat="(term,values) in terms">
+            <span style="font-weight: bold;font-size:12px;text-transform: uppercase">{{term}}</span>
+            <span ng-repeat="v in values">
+                <span style="font-weight: bold; color: #006400" ui-if="!$first"> OR </span>
+                <a href="">{{v}} [x]</a>
+            </span>
+            <span ui-if="!$last" style="font-weight: bold; color: olive"> AND </span>
+        </span>
+        <span ui-if="!$last" style="font-weight: bold; color: olive"> AND </span>
+    </span>
+</div>

@@ -71,6 +71,7 @@ angular.module('app.facets.directives').directive('termFacet', ['$location', fun
         // This is for immediate feedback
         toggleTermActiveState(term);
         setFacetActiveState();
+        //
         scope.$emit('termFilter', scope.type, scope.facetName, term);
       };
 
@@ -155,6 +156,35 @@ angular.module('app.facets.directives').directive('multiFacet', ['$location', fu
         var filters = $location.search().filters || '';
         if (filters) setActive(JSON.parse(filters));
       })();
+    }
+  };
+}]);
+
+angular.module('app.facets.directives').directive('currentSelection', ['$location', function ($location) {
+  return {
+    restrict: 'E',
+    templateUrl: '/views/facets/current.html',
+    link: function (scope, iElement, iAttrs) {
+      scope.$watch(function () {
+        return $location.search().filters
+      }, function () {
+        refresh();
+      });
+
+      var refresh = function () {
+        var filters = $location.search().filters || '{}';
+        scope.filters = JSON.parse(filters);
+        scope.active = Object.keys(scope.filters).length
+      };
+
+      scope.termClick = function (term) {
+        // This is for immediate feedback
+        toggleTermActiveState(term);
+        setFacetActiveState();
+        scope.$emit('termFilter', scope.type, scope.facetName, term);
+      };
+
+      refresh();
     }
   };
 }]);
