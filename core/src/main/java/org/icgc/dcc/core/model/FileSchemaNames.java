@@ -17,14 +17,78 @@
  */
 package org.icgc.dcc.core.model;
 
+import static org.icgc.dcc.core.model.FeatureTypes.CNGV_TYPE;
+import static org.icgc.dcc.core.model.FeatureTypes.CNSM_TYPE;
+import static org.icgc.dcc.core.model.FeatureTypes.EXP_TYPE;
+import static org.icgc.dcc.core.model.FeatureTypes.JCN_TYPE;
+import static org.icgc.dcc.core.model.FeatureTypes.METH_TYPE;
+import static org.icgc.dcc.core.model.FeatureTypes.MIRNA_TYPE;
+import static org.icgc.dcc.core.model.FeatureTypes.PEXP_TYPE;
+import static org.icgc.dcc.core.model.FeatureTypes.SGV_TYPE;
+import static org.icgc.dcc.core.model.FeatureTypes.SSM_TYPE;
+import static org.icgc.dcc.core.model.FeatureTypes.STGV_TYPE;
+import static org.icgc.dcc.core.model.FeatureTypes.STSM_TYPE;
+
 /**
  * Contains names for file schemata (eg. "ssm_p", "cnsm_s", "exp_g", "N/A", ...)
  */
 public class FileSchemaNames {
+
+  private static final String META_SUFFIX = "_m";
+
+  private static final String PRIMARY_SUFFIX = "_p";
+
+  private static final String SECONDARY_SUFFIX = "_s";
+
+  private static final String GENE_SUFFIX = "_g";
 
   /**
    * Used as placeholder in the loader for imported fields.
    */
   public static final String NOT_APPLICABLE = "N/A";
 
+  // @formatter:off
+  public static final String SSM_M = SSM_TYPE + META_SUFFIX;
+  public static final String SSM_P = SSM_TYPE + PRIMARY_SUFFIX;
+  public static final String SSM_S = SSM_TYPE + SECONDARY_SUFFIX;
+  
+  public static final String CNSM_M = CNSM_TYPE + META_SUFFIX;
+  public static final String CNSM_P = CNSM_TYPE + PRIMARY_SUFFIX;
+  public static final String CNSM_S = CNSM_TYPE + SECONDARY_SUFFIX;
+  
+  public static final String STSM_M = STSM_TYPE + META_SUFFIX;
+  public static final String STSM_P = STSM_TYPE + PRIMARY_SUFFIX;
+  public static final String STSM_S = STSM_TYPE + SECONDARY_SUFFIX;
+
+  public static final String SGV_M = SGV_TYPE + META_SUFFIX;
+  public static final String SGV_P = SGV_TYPE + PRIMARY_SUFFIX;
+  public static final String SGV_S = SGV_TYPE + SECONDARY_SUFFIX;
+  
+  public static final String CNGV_M = CNGV_TYPE + META_SUFFIX;
+  public static final String CNGV_P = CNGV_TYPE + PRIMARY_SUFFIX;
+  public static final String CNGV_S = CNGV_TYPE + SECONDARY_SUFFIX;
+  
+  public static final String STGV_M = STGV_TYPE + META_SUFFIX;
+  public static final String STGV_P = STGV_TYPE + PRIMARY_SUFFIX;
+  public static final String STGV_S = STGV_TYPE + SECONDARY_SUFFIX;
+  
+  public static final String PEXP_M = PEXP_TYPE + META_SUFFIX;
+  public static final String PEXP_P = PEXP_TYPE + PRIMARY_SUFFIX;
+  public static final String PEXP_S = PEXP_TYPE + SECONDARY_SUFFIX;
+  
+  public static final String METH_M = METH_TYPE + META_SUFFIX;
+  public static final String METH_P = METH_TYPE + PRIMARY_SUFFIX;
+  public static final String METH_S = METH_TYPE + SECONDARY_SUFFIX;
+
+  public static final String MIRNA_M = MIRNA_TYPE + META_SUFFIX;
+  public static final String MIRNA_P = MIRNA_TYPE + PRIMARY_SUFFIX;
+  public static final String MIRNA_S = MIRNA_TYPE + SECONDARY_SUFFIX;
+
+  public static final String JCN_M = JCN_TYPE + META_SUFFIX;
+  public static final String JCN_P = JCN_TYPE + PRIMARY_SUFFIX;
+  public static final String JCN_S = JCN_TYPE + SECONDARY_SUFFIX;
+
+  public static final String EXP_M = EXP_TYPE + META_SUFFIX;
+  public static final String EXP_G = EXP_TYPE + GENE_SUFFIX;
+  // @formatter:on
 }

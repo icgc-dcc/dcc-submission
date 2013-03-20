@@ -25,20 +25,45 @@ import com.google.common.collect.ImmutableSet;
 
 /**
  * Utilities for working with ICGC feature types.
+ * <p>
+ * For clinical file types, see {@link FileTypes} instead.
  */
 public final class FeatureTypes {
 
+  public static final String SSM_TYPE = "ssm";
+
+  public static final String CNSM_TYPE = "cnsm";
+
+  public static final String STSM_TYPE = "stsm";
+
+  public static final String SGV_TYPE = "sgv";
+
+  public static final String CNGV_TYPE = "cngv";
+
+  public static final String STGV_TYPE = "stgv";
+
+  public static final String PEXP_TYPE = "pexp";
+
+  public static final String EXP_TYPE = "exp";
+
+  public static final String METH_TYPE = "meth";
+
+  public static final String MIRNA_TYPE = "mirna";
+
+  public static final String JCN_TYPE = "jcn";
+
   /** From the ICGC Submission Manual */
-  private static final List<String> FEATURE_TYPES = ImmutableList.of("ssm", "sgv", "cnsm", "cngv", "stsm", "stgv",
-      "exp", "mirna", "jcn", "meth", "pexp");
+  private static final List<String> FEATURE_TYPES = ImmutableList.of(SSM_TYPE, SGV_TYPE, CNSM_TYPE, CNGV_TYPE,
+      STSM_TYPE, STGV_TYPE, EXP_TYPE, MIRNA_TYPE, JCN_TYPE, METH_TYPE, PEXP_TYPE);
 
   /** Subset of {@link #FEATURE_TYPES} that relates to somatic mutations */
-  private static final List<String> SOMATIC_FEATURE_TYPES = ImmutableList.of("ssm", "cnsm", "stsm");
+  private static final List<String> SOMATIC_FEATURE_TYPES = ImmutableList.of(SSM_TYPE, CNSM_TYPE, STSM_TYPE);
 
   private static final Set<String> SOMATIC_FEATURE_TYPES_SET = ImmutableSet.copyOf(SOMATIC_FEATURE_TYPES);
 
   /** Subset of {@link #FEATURE_TYPES} that relates to survey-based features */
-  private static final List<String> SURVEY_FEATURE_TYPES = ImmutableList.of("exp", "mirna", "jcn", "meth", "pexp");
+  private static final List<String> SURVEY_FEATURE_TYPES = ImmutableList.of(EXP_TYPE, MIRNA_TYPE, JCN_TYPE, METH_TYPE,
+      PEXP_TYPE);
 
   public static List<String> getTypes() {
     return FEATURE_TYPES;
