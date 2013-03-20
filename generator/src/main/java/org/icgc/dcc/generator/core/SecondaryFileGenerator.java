@@ -56,7 +56,7 @@ public class SecondaryFileGenerator {
 
   private static final String CODELIST_RESTRICTION_NAME = "codelist";
 
-  private static final String MIRNA_MIRBASE_FILE_NAME = "/org/icgc/dcc/generator/Mirna_MirbaseSystemFile.txt";
+  private static final String MIRNA_MIRBASE_FILE_NAME = "org/icgc/dcc/generator/Mirna_MirbaseSystemFile.txt";
 
   private static final String HSAPIENS_SYSTEM_FILE_NAME = "org/icgc/dcc/generator/HsapSystemFile.txt";
 
