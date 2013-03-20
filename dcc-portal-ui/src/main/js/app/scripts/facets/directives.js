@@ -95,6 +95,7 @@ angular.module('app.facets.directives').directive('locationFacet', ['$location',
     restrict: 'E',
     scope: {
       facetName: '@',
+      type: '@',
       placeholder: '@'
     },
     templateUrl: '/views/facets/location.html',
@@ -116,13 +117,13 @@ angular.module('app.facets.directives').directive('locationFacet', ['$location',
 
       // search on click
       scope.locationClick = function () {
-        console.log('click?');
-        scope.$emit('locationFilter', scope.facetName, scope.location);
+        scope.$emit('locationFilter', scope.type, scope.facetName, scope.location);
       };
 
       function setActive(facets) {
-        oldLocation = facets[iAttrs.facetName];
-        scope.location = facets[iAttrs.facetName];
+        console.log(facets, iAttrs.type, iAttrs.facetName);
+        oldLocation = facets[iAttrs.type][iAttrs.facetName];
+        scope.location = facets[iAttrs.type][iAttrs.facetName];
       }
 
       // Preset value on reload

@@ -78,15 +78,29 @@ angular.module('app.facets.controllers').controller('FacetsController', [ "$scop
     httpService.updateSearch(search);
   }
 
-  function addUriLocationFilters(facet, loc) {
-    var search, filters, location = loc || '';
+  function addUriLocationFilters(type, facet, loc) {
+    var search, filters, location = loc;
     search = httpService.getCurrentSearch();
     filters = httpService.getCurrentFilters();
-    filters[facet] = location;
+
+    // If this is a new facet filter
+    if (!filters.hasOwnProperty(type)) {
+      filters[type] = {};
+    }
+
+    if (location) {
+      filters[type][facet] = [location];
+    } else {
+      filters[type][facet] = [];
+    }
 
     // If there are no more terms in that facet filter remove the facet
-    if (filters[facet].length === 0) {
-      delete filters[facet];
+    if (filters[type][facet].length === 0) {
+      delete filters[type][facet];
+    }
+    // If there are no more terms in that facet type remove the facet
+    if (Object.keys(filters[type]).length === 0) {
+      delete filters[type];
     }
     // If there are filters add them to the search query params
     if (Object.keys(filters).length) {
@@ -107,8 +121,8 @@ angular.module('app.facets.controllers').controller('FacetsController', [ "$scop
     $scope.$emit('refresh');
   });
 
-  $scope.$on('locationFilter', function (event, facet, location) {
-    addUriLocationFilters(facet, location);
+  $scope.$on('locationFilter', function (event, type, facet, location) {
+    addUriLocationFilters(type, facet, location);
     $scope.$emit('refresh');
   });
 }]);
