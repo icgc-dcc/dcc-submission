@@ -178,11 +178,16 @@ angular.module('app.facets.directives').directive('currentSelection', ['$locatio
         scope.active = Object.keys(scope.filters).length
       };
 
-      scope.termClick = function (term) {
-        // This is for immediate feedback
-        toggleTermActiveState(term);
-        setFacetActiveState();
-        scope.$emit('termFilter', scope.type, scope.facetName, term);
+      scope.removeTerm = function (type, facetName, term) {
+        scope.$broadcast('removeTermFilter', type, facetName, term);
+      };
+
+      scope.removeFacet = function (type, facetName) {
+        scope.$broadcast('removeFacet', type, facetName);
+      };
+
+      scope.removeAll = function () {
+        scope.$broadcast('removeAll');
       };
 
       refresh();

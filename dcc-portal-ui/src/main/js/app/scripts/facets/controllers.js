@@ -112,6 +112,68 @@ angular.module('app.facets.controllers').controller('FacetsController', [ "$scop
     httpService.updateSearch(search);
   }
 
+  function removeTerm(type, facet, term) {
+    var search, filters;
+    search = httpService.getCurrentSearch();
+    filters = httpService.getCurrentFilters();
+
+    if (filters.hasOwnProperty(type)) {
+      if (filters[type].hasOwnProperty(facet)) {
+        if (filters[type][facet].indexOf(term) !== -1) {
+          filters[type][facet].splice(filters[type][facet].indexOf(term), 1);
+          // If there are no more terms in that facet filter remove the facet
+          if (filters[type][facet].length === 0) {
+            delete filters[type][facet];
+          }
+          // If there are no more terms in that facet type remove the facet
+          if (Object.keys(filters[type]).length === 0) {
+            delete filters[type];
+          }
+          // If there are filters add them to the search query params
+          if (Object.keys(filters).length) {
+            search.filters = JSON.stringify(filters);//.replace(/[\{\}\"]/g, '');
+          } else {
+            delete search.filters;
+          }
+
+          httpService.updateSearch(search);
+        }
+      }
+    }
+  }
+
+  function removeFacet(type, facet) {
+    var search, filters;
+    search = httpService.getCurrentSearch();
+    filters = httpService.getCurrentFilters();
+
+    if (filters.hasOwnProperty(type)) {
+      if (filters[type].hasOwnProperty(facet)) {
+        delete filters[type][facet];
+
+        // If there are no more terms in that facet type remove the facet
+        if (Object.keys(filters[type]).length === 0) {
+          delete filters[type];
+        }
+        // If there are filters add them to the search query params
+        if (Object.keys(filters).length) {
+          search.filters = JSON.stringify(filters);//.replace(/[\{\}\"]/g, '');
+        } else {
+          delete search.filters;
+        }
+
+        httpService.updateSearch(search);
+      }
+    }
+  }
+
+  function removeAll() {
+    var search;
+    search = httpService.getCurrentSearch();
+    delete search.filters;
+    httpService.updateSearch(search);
+  }
+
   $scope.$on('termFilter', function (event, type, facet, term) {
     toggleUriTermFilters(type, facet, term);
     $scope.$emit('refresh');
@@ -120,9 +182,21 @@ angular.module('app.facets.controllers').controller('FacetsController', [ "$scop
     addUriRangeFilters(facet, from, to);
     $scope.$emit('refresh');
   });
-
   $scope.$on('locationFilter', function (event, type, facet, location) {
     addUriLocationFilters(type, facet, location);
+    $scope.$emit('refresh');
+  });
+
+  $scope.$on('removeTermFilter', function (event, type, facet, term) {
+    removeTerm(type, facet, term);
+    $scope.$emit('refresh');
+  });
+  $scope.$on('removeFacet', function (event, type, facet) {
+    removeFacet(type, facet);
+    $scope.$emit('refresh');
+  });
+  $scope.$on('removeAll', function (event) {
+    removeAll();
     $scope.$emit('refresh');
   });
 }]);

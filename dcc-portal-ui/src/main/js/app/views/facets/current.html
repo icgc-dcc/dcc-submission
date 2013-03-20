@@ -1,13 +1,16 @@
 <div ui-if="active" style="color: #333" class="alert alert-block alert-success">
-    <span ng-repeat="(facet,terms) in filters">
-        <span ng-repeat="(term,values) in terms">
-            <span style="font-weight: bold;font-size:12px;text-transform: uppercase">{{term}}</span>
-            <span ng-repeat="v in values">
+    <span ng-repeat="(type_name,type) in filters">
+        <span ng-repeat="(facet,terms) in type">
+            <span ng-click="removeFacet(type_name, facet)"
+                  style="font-weight: bold;font-size:12px;text-transform: uppercase">{{facet}}</span>
+            <span ng-repeat="term in terms">
                 <span style="font-weight: bold; color: #006400" ui-if="!$first"> OR </span>
-                <a href="">{{v}} [x]</a>
+                <a ng-click="removeTerm(type_name,facet,term)" href="">{{term}} [x]</a>
             </span>
             <span ui-if="!$last" style="font-weight: bold; color: olive"> AND </span>
         </span>
         <span ui-if="!$last" style="font-weight: bold; color: olive"> AND </span>
     </span>
+
+    <button class="btn" ng-click="removeAll()"> Remove all filters</button>
 </div>
