@@ -24,9 +24,6 @@ import cascading.operation.FunctionCall;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
-
-import com.google.common.base.Optional;
-
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -63,12 +60,12 @@ public class FunctionUtils {
   }
 
   /**
-   * Adds the "icgc_id" (= "project_key.donor_id") field for every incoming tuple.
+   * Clone a Field (possibly transforming its value).
    * <p>
-   * "donor_id" is not known at planning time.
+   * TODO: rename to account for other types of Transformable
    */
   @SuppressWarnings("rawtypes")
-  public static class InsertFunction extends BaseOperation implements Function {
+  public static class CloneField extends BaseOperation implements Function {
 
     /**
      * Very basic for now, possibly offer more overloadings for transform()
@@ -79,25 +76,30 @@ public class FunctionUtils {
 
     private final Fields originalField;
 
-    private final Optional<Transformable> transformable;
+    private final Transformable transformable;
 
-    public InsertFunction(Fields originalField, Fields newField) {
-      this(originalField, newField, null);
+    public CloneField(Fields originalField, Fields newField) {
+      this(originalField, newField, new Transformable() {
+        @Override
+        public String tranform(String value) {
+          return value;
+        }
+      });
     }
 
-    public InsertFunction(Fields originalField, Fields newField, Transformable transformable) {
+    public CloneField(Fields originalField, Fields newField, Transformable transformable) {
       super(0, newField);
       checkArgument(originalField != null && originalField.size() == 1);
       checkArgument(newField != null && newField.size() == 1);
       this.originalField = checkNotNull(originalField);
-      this.transformable = transformable == null ? Optional.<Transformable> absent() : Optional.of(transformable);
+      this.transformable = checkNotNull(transformable);
     }
 
     @Override
     public void operate(FlowProcess flowProcess, FunctionCall functionCall) {
       TupleEntry entry = functionCall.getArguments();
       String value = entry.getString(originalField);
-      String newValue = transformable.isPresent() ? transformable.get().tranform(value) : value;
+      String newValue = transformable.tranform(value);
       functionCall.getOutputCollector().add(new Tuple(newValue));
     }
   }
