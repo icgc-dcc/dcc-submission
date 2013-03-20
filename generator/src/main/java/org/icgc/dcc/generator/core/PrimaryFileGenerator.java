@@ -60,7 +60,7 @@ public class PrimaryFileGenerator {
 
   private static final String SSM_SCHEMA_NAME = "ssm_p";
 
-  private static final String SIMULATED_DATA_FILE_URL = "ssmp_simulated.txt";
+  private static final String SIMULATED_DATA_FILE_URL = "org/icgc/dcc/generator/ssmp_simulated.txt";
 
   private final List<CodeListTerm> codeListArrayList = new ArrayList<CodeListTerm>();
 

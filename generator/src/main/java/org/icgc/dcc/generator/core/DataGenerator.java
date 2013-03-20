@@ -29,6 +29,7 @@ import org.apache.commons.lang.mutable.MutableDouble;
 import org.apache.commons.lang.mutable.MutableInt;
 import org.apache.commons.lang.mutable.MutableLong;
 import org.icgc.dcc.dictionary.model.CodeList;
+import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.dictionary.model.Relation;
@@ -78,9 +79,7 @@ public class DataGenerator {
 
   @SneakyThrows
   public static void init(String outputDirectory, Long seed) {
-    fileSchemas =
-        mapper.readValue(Resources.getResource(DICTIONARY_FILE_NAME), org.icgc.dcc.dictionary.model.Dictionary.class)
-            .getFiles();
+    fileSchemas = mapper.readValue(Resources.getResource(DICTIONARY_FILE_NAME), Dictionary.class).getFiles();
 
     codeList = mapper.readValue(Resources.getResource(CODELIST_FILE_NAME), new TypeReference<List<CodeList>>() {
     });
