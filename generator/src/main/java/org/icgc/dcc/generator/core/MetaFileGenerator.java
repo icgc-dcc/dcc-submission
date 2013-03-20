@@ -19,14 +19,19 @@ package org.icgc.dcc.generator.core;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
 import lombok.Cleanup;
 
+import org.apache.commons.lang.mutable.MutableDouble;
+import org.apache.commons.lang.mutable.MutableInt;
+import org.apache.commons.lang.mutable.MutableLong;
+import org.apache.hadoop.fs.FileAlreadyExistsException;
 import org.icgc.dcc.dictionary.model.CodeList;
 import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.FileSchema;
@@ -35,6 +40,7 @@ import org.icgc.dcc.dictionary.model.Restriction;
 import org.icgc.dcc.dictionary.model.Term;
 import org.icgc.dcc.generator.model.CodeListTerm;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
 
 /**
@@ -42,66 +48,115 @@ import com.google.common.base.Optional;
  */
 public class MetaFileGenerator {
 
-  private final String SAMPLE_SCHEMA_NAME = "sample";
+  private static final String TAB = DataGenerator.TAB;
 
-  private final String TAB = DataGenerator.TAB;
+  private static final String NEW_LINE = DataGenerator.NEW_LINE;
 
-  private final String NEW_LINE = DataGenerator.NEW_LINE;
+  private static final String SAMPLE_SCHEMA_NAME = "sample";
 
-  private final String NonSystemMetaFileExpression = "exp_m";
+  private static final String NON_SYSTEM_META_FILE_EXPRESSION = "exp_m";
 
-  private final String NonSystemMetaFileJunction = "jcn_m";
+  private static final String NON_SYSTEM_META_FILE_JUNCTION = "jcn_m";
 
-  private final String NonSystemMetaFileMirna = "mirna_m";
+  private static final String NON_SYSTEM_META_FILE_MIRNA = "mirna_m";
 
-  private static final String tumourFieldKey = "tumourSampleTypeID";
+  private static final String TUMOUR_PRIMARY_KEY_FIELD_IDENTIFIER = "tumourSampleTypeID";
 
-  private static final String controlFieldKey = "controlledSampleTypeID";
+  private static final String CONTROL_PRIMARY_KEY_FIELD_IDENTIFIER = "controlledSampleTypeID";
 
-  private static final String matchedSampleFieldName = "matched_sample_id";
+  private static final String MATCHED_SAMPLE_FIELD_NAME = "matched_sample_id";
 
-  private final Integer uniqueInteger = 0;
-
-  private final Double uniqueDecimal = 0.0;
+  private static final String CODELIST_RESTRICTION_NAME = "codelist";
 
   private final List<CodeListTerm> codeListArrayList = new ArrayList<CodeListTerm>();
 
+  private final MutableLong uniqueId = new MutableLong(0L);
+
+  private final MutableInt uniqueInteger = new MutableInt(0);
+
+  private final MutableDouble uniqueDecimal = new MutableDouble(0.0);
+
+  public void createFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
+      String institution, String tumourType, String platform) throws IOException {
+
+    boolean isCore = false;
+
+    String fileUrl =
+        DataGenerator.generateFileName(schema.getName(), leadJurisdiction, institution, tumourType, platform, isCore);
+
+    File outputFile = new File(fileUrl);
+    if(!outputFile.createNewFile()) {
+      throw new FileAlreadyExistsException("A File with the name: " + fileUrl + " already exists");
+    }
+
+    @Cleanup
+    BufferedWriter writer =
+        new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile), Charsets.UTF_8));
+
+    for(String fieldName : schema.getFieldNames()) {
+      writer.write(fieldName + TAB);
+    }
+
+    populateCodeListArray(schema);
+
+    writer.write(NEW_LINE);
+
+    populateFile(schema, numberOfLinesPerPrimaryKey, writer);
+
+    writer.close();
+  }
+
+  /**
+   * @param schema
+   */
+  private void populateCodeListArray(FileSchema schema) {
+    for(Field field : schema.getFields()) {
+      Optional<Restriction> restriction = field.getRestriction(CODELIST_RESTRICTION_NAME);
+      if(restriction.isPresent()) {
+        String codeListName = restriction.get().getConfig().getString("name");
+        for(CodeList codelist : DataGenerator.codeList) {
+          if(codelist.getName().equals(codeListName)) {
+            CodeListTerm term = new CodeListTerm(field.getName(), codelist.getTerms());
+            codeListArrayList.add(term);
+          }
+        }
+      }
+    }
+  }
+
   private void populateFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, Writer writer) throws IOException {
+    String schemaName = schema.getName();
     List<Relation> relations = schema.getRelations();
 
-    int numberOfLines = calculateNumberOfLines(schema, numberOfLinesPerPrimaryKey, relations);
-
     int numberOfIterations = DataGenerator.getForeignKey(schema, relations.get(0).getFields().get(0)).size() - 2;
-
-    String schemaName = schema.getName();
+    int numberOfLines = calculateNumberOfLines(schema, numberOfLinesPerPrimaryKey, relations);
 
     for(int i = 0; i < numberOfIterations; i++) {
       for(int j = 0; j < numberOfLines; j++) {
-        int k = 0;
-        for(Field currentField : schema.getFields()) {
+        for(Field field : schema.getFields()) {
           String output = null;
-          String currentFieldName = currentField.getName();
+          String fieldName = field.getName();
           // Is it a foreign key? if so then the only foreign key for a metafile is the matched/analyzed type from
           // sample and therefore add accordingly.
 
-          List<String> foreignKeyArray = DataGenerator.getForeignKey(schema, currentFieldName);
+          List<String> foreignKeyArray = DataGenerator.getForeignKey(schema, fieldName);
           if(foreignKeyArray != null) {
-            boolean isNotMetaExpressionFile = !schemaName.equals(NonSystemMetaFileExpression);
-            boolean isNotMetaJunctionFile = !schemaName.equals(NonSystemMetaFileJunction);
-            boolean isNotMetaMirnaFile = !schemaName.equals(NonSystemMetaFileMirna);
+            boolean isNotMetaExpressionFile = !schemaName.equals(NON_SYSTEM_META_FILE_EXPRESSION);
+            boolean isNotMetaJunctionFile = !schemaName.equals(NON_SYSTEM_META_FILE_JUNCTION);
+            boolean isNotMetaMirnaFile = !schemaName.equals(NON_SYSTEM_META_FILE_MIRNA);
 
             if(isNotMetaExpressionFile && isNotMetaJunctionFile && isNotMetaMirnaFile) {
-              output = getSampleType(currentFieldName);
+              output = getSampleType(fieldName);
             } else {
               output = foreignKeyArray.get(i + 2);
             }
           } else {
-            output = getFieldValue(schema, schemaName, k, currentField, currentFieldName);
+            output = getFieldValue(schema, schemaName, field, fieldName);
           }
 
-          if(DataGenerator.isUniqueField(schema.getUniqueFields(), currentFieldName)) {
+          if(DataGenerator.isUniqueField(schema.getUniqueFields(), fieldName)) {
             for(List<String> primaryKey : DataGenerator.getListOfPrimaryKeys()) {
-              if(primaryKey.get(0).equals(schemaName) && primaryKey.get(1).equals(currentFieldName)) {
+              if(primaryKey.get(0).equals(schemaName) && primaryKey.get(1).equals(fieldName)) {
                 primaryKey.add(output);
               }
             }
@@ -135,12 +190,13 @@ public class MetaFileGenerator {
    */
 
   private String getSampleType(String currentFieldName) {
-    if(currentFieldName.equals(matchedSampleFieldName)) {
-      List<String> tumourTypeIDs = DataGenerator.getPrimaryKey(SAMPLE_SCHEMA_NAME, tumourFieldKey);
+    if(currentFieldName.equals(MATCHED_SAMPLE_FIELD_NAME)) {
+      List<String> tumourTypeIDs = DataGenerator.getPrimaryKey(SAMPLE_SCHEMA_NAME, TUMOUR_PRIMARY_KEY_FIELD_IDENTIFIER);
       Integer randomInteger = DataGenerator.randomIntGenerator(2, tumourTypeIDs.size() - 3);
       return tumourTypeIDs.get(randomInteger);
     } else {
-      List<String> controlTypeIDs = DataGenerator.getPrimaryKey(SAMPLE_SCHEMA_NAME, controlFieldKey);
+      List<String> controlTypeIDs =
+          DataGenerator.getPrimaryKey(SAMPLE_SCHEMA_NAME, CONTROL_PRIMARY_KEY_FIELD_IDENTIFIER);
       Integer randomInteger = DataGenerator.randomIntGenerator(2, controlTypeIDs.size() - 3);
       return controlTypeIDs.get(randomInteger);
     }
@@ -149,14 +205,14 @@ public class MetaFileGenerator {
   /**
    * @param schema
    * @param schemaName
-   * @param k
+   * @param indexOfCodeListArray
    * @param currentField
    * @param currentFieldName
    * @return
    */
-  private String getFieldValue(FileSchema schema, String schemaName, int k, Field currentField, String currentFieldName) {
+  private String getFieldValue(FileSchema schema, String schemaName, Field currentField, String currentFieldName) {
     String output = null;
-    if(codeListArrayList.size() > 0 && k < codeListArrayList.size()) {
+    if(codeListArrayList.size() > 0) {
       for(CodeListTerm codeListTerm : codeListArrayList) {
         if(codeListTerm.getFieldName().equals(currentFieldName)) {
           List<Term> terms = codeListTerm.getTerms();
@@ -167,49 +223,10 @@ public class MetaFileGenerator {
     }
     if(output == null) {
       output =
-          DataGenerator.getFieldValue(schema.getUniqueFields(), schemaName, currentField, uniqueInteger, uniqueDecimal);
+          DataGenerator.getFieldValue(schema.getUniqueFields(), schemaName, currentField, uniqueId, uniqueInteger,
+              uniqueDecimal);
     }
     return output;
   }
 
-  public void createFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
-      String institution, String tumourType, String platform) throws IOException {
-    boolean isCore = false;
-    String fileURL =
-        DataGenerator.generateFileName(schema.getName(), leadJurisdiction, institution, tumourType, platform, isCore);
-    File outputFile = new File(fileURL);
-    outputFile.createNewFile();
-    @Cleanup
-    BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile));
-
-    for(String fieldName : schema.getFieldNames()) {
-      writer.write(fieldName + TAB);
-    }
-
-    populateCodeListArray(schema);
-
-    writer.write(NEW_LINE);
-
-    populateFile(schema, numberOfLinesPerPrimaryKey, writer);
-
-    writer.close();
-  }
-
-  /**
-   * @param schema
-   */
-  private void populateCodeListArray(FileSchema schema) {
-    for(Field field : schema.getFields()) {
-      Optional<Restriction> restriction = field.getRestriction("codelist");
-      if(restriction.isPresent()) {
-        String codeListName = restriction.get().getConfig().getString("name");
-        for(CodeList codelist : DataGenerator.codeList) {
-          if(codelist.getName().equals(codeListName)) {
-            CodeListTerm term = new CodeListTerm(field.getName(), codelist.getTerms());
-            codeListArrayList.add(term);
-          }
-        }
-      }
-    }
-  }
 }

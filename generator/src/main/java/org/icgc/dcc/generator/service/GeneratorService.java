@@ -17,8 +17,8 @@
  */
 package org.icgc.dcc.generator.service;
 
-import static java.lang.System.out;
-
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import lombok.SneakyThrows;
@@ -26,6 +26,10 @@ import lombok.SneakyThrows;
 import org.icgc.dcc.generator.config.GeneratorConfig;
 import org.icgc.dcc.generator.core.DataGenerator;
 import org.icgc.dcc.generator.model.ExperimentalFile;
+import org.icgc.dcc.generator.model.OptionalFile;
+
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 
 public class GeneratorService {
 
@@ -54,16 +58,13 @@ public class GeneratorService {
     String institution = config.getInstitution();
     String platform = config.getPlatform();
     Long seed = config.getSeed();
-    // ArrayList<OptionalFile> optionalFiles = config.getOptionalFiles();
+    ArrayList<OptionalFile> optionalFiles = config.getOptionalFiles();
     List<ExperimentalFile> experimentalFiles = config.getExperimentalFiles();
 
-    boolean errorsTrue = checkParameters(leadJurisdiction, tumourType, institution, platform);
-    if(errorsTrue) {
-      return;
-    }
+    DataGenerator.checkParameters(leadJurisdiction, tumourType, institution, platform);
 
     generateFiles(outputDirectory, numberOfDonors, numberOfSpecimensPerDonor, numberOfSamplesPerDonor,
-        leadJurisdiction, tumourType, institution, platform, seed, experimentalFiles);
+        leadJurisdiction, tumourType, institution, platform, seed, optionalFiles, experimentalFiles);
   }
 
   private boolean checkParameters(String leadJurisdiction, String tumourType, String institution, String platform) {
@@ -81,30 +82,42 @@ public class GeneratorService {
   @SneakyThrows
   private void generateFiles(String outputDirectory, Integer numberOfDonors, Integer numberOfSpecimensPerDonor,
       Integer numberOfSamplesPerDonor, String leadJurisdiction, String tumourType, String institution, String platform,
-      Long seed, List<ExperimentalFile> experimentalFiles) {
-    DataGenerator test = new DataGenerator(outputDirectory, seed);
-    test.createCoreFile(DONOR_SCHEMA_NAME, numberOfDonors, leadJurisdiction, institution, tumourType, platform);
-    test.createCoreFile(SPECIMEN_SCHEMA_NAME, numberOfSamplesPerDonor, leadJurisdiction, institution, tumourType,
-        platform);
-    test.createCoreFile(SAMPLE_SCHEMA_NAME, numberOfSpecimensPerDonor, leadJurisdiction, institution, tumourType,
-        platform);
+      Long seed, ArrayList<OptionalFile> optionalFiles, List<ExperimentalFile> experimentalFiles)
+      throws JsonParseException, JsonMappingException, IOException {
 
+    DataGenerator.init(outputDirectory, seed);
+
+    DataGenerator
+        .createCoreFile(DONOR_SCHEMA_NAME, numberOfDonors, leadJurisdiction, institution, tumourType, platform);
+    DataGenerator.createCoreFile(SPECIMEN_SCHEMA_NAME, numberOfSamplesPerDonor, leadJurisdiction, institution,
+        tumourType, platform);
+    DataGenerator.createCoreFile(SAMPLE_SCHEMA_NAME, numberOfSpecimensPerDonor, leadJurisdiction, institution,
+        tumourType, platform);
+
+    for(OptionalFile optionalFile : optionalFiles) {
+      String schemaName = optionalFile.getName();
+      Integer numberOfLinesPerDonor = optionalFile.getNumberOfLinesPerDonor();
+
+      DataGenerator.determineUniqueFields(DataGenerator.getSchema(schemaName));
+      DataGenerator.createTemplateFile(schemaName, numberOfLinesPerDonor, leadJurisdiction, institution, tumourType,
+          platform);
+    }
     for(ExperimentalFile experimentalFile : experimentalFiles) {
       String fileType = experimentalFile.getFileType();
       String schemaName = experimentalFile.getName() + "_" + fileType;
       Integer numberOfLines = experimentalFile.getNumberOfLinesPerForeignKey();
 
-      test.determineUniqueFields(DataGenerator.getSchema(schemaName));
+      DataGenerator.determineUniqueFields(DataGenerator.getSchema(schemaName));
       if(fileType.equals(META_FILE_TYPE)) {
-        test.createMetaFile(schemaName, numberOfLines, leadJurisdiction, institution, tumourType, platform);
+        DataGenerator.createMetaFile(schemaName, numberOfLines, leadJurisdiction, institution, tumourType, platform);
       } else if(fileType.equals(PRIMARY_FILE_TYPE)) {
-        test.createPrimaryFile(schemaName, numberOfLines, leadJurisdiction, institution, tumourType, platform);
+        DataGenerator.createPrimaryFile(schemaName, numberOfLines, leadJurisdiction, institution, tumourType, platform);
       } else if(fileType.equals(EXPRESSION_PRIMARY_FILE_TYPE)) {
-        test.createPrimaryFile(schemaName, numberOfLines, leadJurisdiction, institution, tumourType, platform);
+        DataGenerator.createPrimaryFile(schemaName, numberOfLines, leadJurisdiction, institution, tumourType, platform);
       } else if(fileType.equals(SECONDARY_FILE_TYPE)) {
-        test.createSecondaryFile(schemaName, numberOfLines, leadJurisdiction, institution, tumourType, platform);
+        DataGenerator.createSecondaryFile(schemaName, numberOfLines, leadJurisdiction, institution, tumourType,
+            platform);
       }
     }
   }
-
 }

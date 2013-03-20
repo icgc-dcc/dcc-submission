@@ -19,14 +19,17 @@
 package org.icgc.dcc.generator.core;
 
 import java.io.IOException;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 import lombok.SneakyThrows;
 
+import org.apache.commons.lang.mutable.MutableDouble;
+import org.apache.commons.lang.mutable.MutableInt;
+import org.apache.commons.lang.mutable.MutableLong;
 import org.icgc.dcc.dictionary.model.CodeList;
+import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.dictionary.model.Relation;
@@ -44,41 +47,43 @@ import com.google.common.io.Resources;
 
 public class DataGenerator {
 
-  private static Long uniqueId = 0L;
+  public static final String TAB = "\t";
 
-  public static final String TAB = "\t";;
-
-  public static final String NEW_LINE = "\n";
-
-  private static final DecimalFormat df = new DecimalFormat("#.00");
+  public static final String NEW_LINE = "\n";;
 
   private static final String SEPERATOR = "__";
 
   private static final String FILE_EXTENSION = ".txt";
 
-  private static String OUTPUT_DIRECTORY;
+  private static final int UPPER_LIMIT_FOR_TEXT_FIELD_INTEGER = 1000000000;
+
+  private static final String CONSTANT_DATE = "20130313";
+
+  // private static final DecimalFormat df = new DecimalFormat("#.00");
+
+  private static final String CODELIST_FILE_NAME = "codeList.json";
+
+  private static final String DICTIONARY_FILE_NAME = "dictionary.json";
+
+  private static String outputDirectory;
 
   private static ObjectMapper mapper = new ObjectMapper();
 
   public static List<CodeList> codeList;
 
-  private static Random random;
+  private static List<FileSchema> fileSchemas;
 
   private static List<List<String>> listOfPrimaryKeys = new ArrayList<List<String>>();
 
-  private static List<FileSchema> fileSchemas;
+  private static Random random;
 
   @SneakyThrows
-  public DataGenerator(String outputDirectory, Long seed) {
+  public static void init(String outputDirectory, Long seed) {
+    fileSchemas = mapper.readValue(Resources.getResource(DICTIONARY_FILE_NAME), Dictionary.class).getFiles();
 
-    OUTPUT_DIRECTORY = outputDirectory;
-
-    fileSchemas =
-        mapper.readValue(Resources.getResource("dictionary.json"), org.icgc.dcc.dictionary.model.Dictionary.class)
-            .getFiles();
-
-    codeList = mapper.readValue(Resources.getResource("codeList.json"), new TypeReference<List<CodeList>>() {
+    codeList = mapper.readValue(Resources.getResource(CODELIST_FILE_NAME), new TypeReference<List<CodeList>>() {
     });
+    DataGenerator.outputDirectory = outputDirectory;
 
     random = new Random(seed);
 
@@ -88,130 +93,148 @@ public class DataGenerator {
     return listOfPrimaryKeys;
   }
 
-  public void createCoreFile(String schemaName, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
+  public static void createCoreFile(String schemaName, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
       String institution, String tumourType, String platform) throws IOException {
-    uniqueId = 0L;
     FileSchema schema = getSchema(schemaName);
     determineUniqueFields(schema);
-    CoreFileGenerator.createFile(schema, numberOfLinesPerPrimaryKey, leadJurisdiction, institution, tumourType,
-        platform);
+    CoreFileGenerator cfg = new CoreFileGenerator();
+    cfg.createFile(schema, numberOfLinesPerPrimaryKey, leadJurisdiction, institution, tumourType, platform);
   }
 
-  public void createMetaFile(String schemaName, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
+  public static void createTemplateFile(String schemaName, Integer numberOfLinesPerDonor, String leadJurisdiction,
       String institution, String tumourType, String platform) throws IOException {
-    uniqueId = 0L;
+    FileSchema schema = getSchema(schemaName);
+    TemplateFileGenerator tfg = new TemplateFileGenerator();
+    tfg.createFile(schema, numberOfLinesPerDonor, leadJurisdiction, institution, tumourType, platform);
+  }
+
+  public static void createMetaFile(String schemaName, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
+      String institution, String tumourType, String platform) throws IOException {
     FileSchema schema = getSchema(schemaName);
     MetaFileGenerator mfg = new MetaFileGenerator();
     mfg.createFile(schema, numberOfLinesPerPrimaryKey, leadJurisdiction, institution, tumourType, platform);
   }
 
-  public void createPrimaryFile(String schemaName, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
+  public static void createPrimaryFile(String schemaName, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
       String institution, String tumourType, String platform) throws IOException {
-    uniqueId = 0L;
     FileSchema schema = getSchema(schemaName);
     PrimaryFileGenerator pfg = new PrimaryFileGenerator();
     pfg.createFile(schema, numberOfLinesPerPrimaryKey, leadJurisdiction, institution, tumourType, platform);
   }
 
-  public void createSecondaryFile(String schemaName, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
-      String institution, String tumourType, String platform) throws IOException {
-    uniqueId = 0L;
+  public static void createSecondaryFile(String schemaName, Integer numberOfLinesPerPrimaryKey,
+      String leadJurisdiction, String institution, String tumourType, String platform) throws IOException {
     FileSchema schema = getSchema(schemaName);
     SecondaryFileGenerator sfg = new SecondaryFileGenerator();
     sfg.createFile(schema, numberOfLinesPerPrimaryKey, leadJurisdiction, institution, tumourType, platform);
   }
 
   public static List<String> getPrimaryKey(String schemaName, String currentFieldName) {
-    for(List<String> primaryKeyArray : listOfPrimaryKeys) {
-      if(primaryKeyArray.get(0).equals(schemaName) && primaryKeyArray.get(1).equals(currentFieldName)) {
-        return primaryKeyArray;
+    for(List<String> primaryKeyArrayList : listOfPrimaryKeys) {
+      String primaryKeySchemaIdentifier = primaryKeyArrayList.get(0);
+      String primaryKeyFieldIdentifier = primaryKeyArrayList.get(1);
+
+      if(primaryKeySchemaIdentifier.equals(schemaName) && primaryKeyFieldIdentifier.equals(currentFieldName)) {
+        return primaryKeyArrayList;
       }
     }
     return null;
   }
 
-  public static List<String> getForeignKey(FileSchema schema, String currentFieldName) {
+  // Go through all the fields that are populated by a forieng key once in each file, and then do an if statement before
+  // calling getForeignKey, that would decrease the number of times this method is called
+  public static List<String> getForeignKey(FileSchema schema, String fieldName) {
     for(Relation relation : schema.getRelations()) {
-      int k = 0;
-      for(String foreignKeyField : relation.getFields()) {
-        if(currentFieldName.equals(foreignKeyField)) {
+      int relatedFieldNameCounter = 0;// The name of the field from the foreign schema
+      for(String linkedFieldName : relation.getFields()) {
+        if(fieldName.equals(linkedFieldName)) {
           // Find list that carries primary keys of schema that relates to this fileschema
-          for(List<String> primaryKeyArray : listOfPrimaryKeys) {
-            if(primaryKeyArray.get(0).equals(relation.getOther())
-                && primaryKeyArray.get(1).equals(relation.getOtherFields().get(k))) {
-              return primaryKeyArray;
+          for(List<String> primaryKeyArrayList : listOfPrimaryKeys) {
+            String primaryKeySchemaIdentifier = primaryKeyArrayList.get(0);
+            String primaryKeyFieldIdentifier = primaryKeyArrayList.get(1);
+
+            if(primaryKeySchemaIdentifier.equals(relation.getOther())
+                && primaryKeyFieldIdentifier.equals(relation.getOtherFields().get(relatedFieldNameCounter))) {
+              return primaryKeyArrayList;
             }
           }
         }
-        k++;
+        relatedFieldNameCounter++;
       }
     }
     return null;
   }
 
-  public static String[] checkParameters(String leadJurisdiction, String tumourType, String institution, String platform) {
-    String[] error = new String[4];
+  public static void checkParameters(String leadJurisdiction, String tumourType, String institution, String platform)
+      throws Exception {
+
     if(leadJurisdiction.length() != 2) {
-      error[0] = "The lead jurisdiction is invalid";
+      throw new Exception("The lead jurisdiction is invalid");
     }
     if(Integer.parseInt(tumourType) > 31 || Integer.parseInt(tumourType) < 1) {
-      error[1] = "The tumour type is invalid";
+      throw new Exception("The tumour type is invalid");
     }
     if(Integer.parseInt(institution) > 98 || Integer.parseInt(institution) < 1) {
-      error[2] = "The insitute is invalid";
+      throw new Exception("The insitute is invalid");
     }
     if(Integer.parseInt(platform) > 75 || Integer.parseInt(institution) < 1) {
-      error[3] = "The platform is invalid";
+      throw new Exception("The platform is invalid");
     }
-    return error;
   }
 
   public static String generateFileName(String schemaName, String leadJurisdiction, String institution,
       String tumourType, String platform, boolean isCore) {
     if(isCore) {
-      return String.format(OUTPUT_DIRECTORY + leadJurisdiction + SEPERATOR + tumourType + SEPERATOR + institution
-          + SEPERATOR + schemaName + SEPERATOR + "20130313" + FILE_EXTENSION);
+      return String.format(DataGenerator.outputDirectory + leadJurisdiction + SEPERATOR + tumourType + SEPERATOR
+          + institution + SEPERATOR + schemaName + SEPERATOR + CONSTANT_DATE + FILE_EXTENSION);
     } else {
       String fileType = schemaName.substring(0, schemaName.length() - 2);
-      return String.format(OUTPUT_DIRECTORY + fileType + SEPERATOR + leadJurisdiction + SEPERATOR + tumourType
+      return String.format(outputDirectory + fileType + SEPERATOR + leadJurisdiction + SEPERATOR + tumourType
           + SEPERATOR + institution + SEPERATOR + schemaName.charAt(schemaName.length() - 1) + SEPERATOR + platform
-          + SEPERATOR + "20130313" + FILE_EXTENSION);
+          + SEPERATOR + CONSTANT_DATE + FILE_EXTENSION);
     }
   }
 
-  public void determineUniqueFields(FileSchema schema) {
+  public static void determineUniqueFields(FileSchema schema) {
     for(String uniqueField : schema.getUniqueFields()) {
+      String primaryKeySchemaIdentifier = schema.getName();
+      String primaryKeyFieldIdentifier = uniqueField;
+
       List<String> uniqueFieldArray = new ArrayList<String>();
-      uniqueFieldArray.add(schema.getName());
-      uniqueFieldArray.add(uniqueField);
+      uniqueFieldArray.add(primaryKeySchemaIdentifier);
+      uniqueFieldArray.add(primaryKeyFieldIdentifier);
       listOfPrimaryKeys.add(uniqueFieldArray);
     }
   }
 
-  public static String getFieldValue(List<String> list, String schemaName, Field field, Integer uniqueInt,
-      Double uniqueDecimal) {
+  public static String getFieldValue(List<String> list, String schemaName, Field field, MutableLong uniqueId,
+      MutableInt uniqueInteger, MutableDouble uniqueDecimal) {
 
     String output = null;
+    String fieldName = field.getName();
     if(field.getValueType() == ValueType.TEXT) {
-      if(isUniqueField(list, field.getName())) {
-        output = schemaName + Long.toString(uniqueId++);
+      if(isUniqueField(list, fieldName)) {
+        uniqueId.increment();
+        output = schemaName + String.valueOf(uniqueId);
       } else {
-        output = Integer.toString(randomIntGenerator(0, 1000000000));
+        output = Integer.toString(randomIntGenerator(0, UPPER_LIMIT_FOR_TEXT_FIELD_INTEGER));
       }
     } else if(field.getValueType() == ValueType.INTEGER) {
-      if(isUniqueField(list, field.getName())) {
-        output = Integer.toString(uniqueInt++);
+      if(isUniqueField(list, fieldName)) {
+        uniqueInteger.increment();
+        output = schemaName + String.valueOf(uniqueInteger);
       } else {
         output = Integer.toString(randomIntGenerator(0, 200));
       }
     } else if(field.getValueType() == ValueType.DECIMAL) {
-      if(isUniqueField(list, field.getName())) {
-        output = Double.toString(uniqueDecimal + 0.1);
+      if(isUniqueField(list, fieldName)) {
+        uniqueDecimal.add(0.1);
+        output = schemaName + String.valueOf(uniqueDecimal);
       } else {
         output = DataGenerator.randomDecimalGenerator(50);
       }
     } else if(field.getValueType() == ValueType.DATETIME) {
-      output = "20130313";
+      output = CONSTANT_DATE;
     }
     return output;
   }
@@ -237,6 +260,7 @@ public class DataGenerator {
   }
 
   public static String randomDecimalGenerator(double end) {
-    return df.format(random.nextDouble() * end);
+    return Double.toString(random.nextDouble() * end);
   }
+
 }

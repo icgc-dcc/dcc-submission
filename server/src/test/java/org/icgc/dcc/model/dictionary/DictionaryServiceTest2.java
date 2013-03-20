@@ -20,7 +20,6 @@ package org.icgc.dcc.model.dictionary;
 import org.icgc.dcc.dictionary.DictionaryService;
 import org.icgc.dcc.dictionary.DictionaryServiceException;
 import org.icgc.dcc.dictionary.model.CodeList;
-import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.release.ReleaseService;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,9 +45,6 @@ public class DictionaryServiceTest2 {
   private Datastore datastore;
 
   @Mock
-  private DccFileSystem dccFileSystem;
-
-  @Mock
   private ReleaseService releaseService;
 
   @Mock
@@ -59,7 +55,7 @@ public class DictionaryServiceTest2 {
 
   @Before
   public void setUp() {
-    this.dictionaryService = new DictionaryService(morphia, datastore, dccFileSystem, releaseService);
+    this.dictionaryService = new DictionaryService(morphia, datastore, releaseService);
 
     // TODO: use partial mocking in order to mock queryCodeList() that has a constructor call (and is used by methods we
     // want to test) - DCC-897

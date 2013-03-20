@@ -37,7 +37,6 @@ import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.core.model.QProject;
 import org.icgc.dcc.core.morphia.BaseMorphiaService;
 import org.icgc.dcc.dictionary.model.Dictionary;
-import org.icgc.dcc.dictionary.model.DictionaryState;
 import org.icgc.dcc.dictionary.model.QDictionary;
 import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.filesystem.ReleaseFileSystem;
@@ -196,8 +195,6 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     Release release = checkNotNull(nextRelease, "There are currently no open releases...").getRelease();
     String version = checkNotNull(release).getDictionaryVersion();
     Dictionary dictionary = getDictionaryFromVersion(checkNotNull(version));
-    checkState(checkNotNull(dictionary).getState() == DictionaryState.OPENED, "Current dictionary is not %s",
-        DictionaryState.OPENED);
     return dictionary;
   }
 
@@ -319,10 +316,14 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     Release release = getNextRelease().getRelease();
     List<String> projectKeys = release.getQueuedProjectKeys(); // TODO: what if nextrelease changes in the meantime?
 
-    updateSubmisions(projectKeys, newState);
+    updateSubmisions(projectKeys, newState); // FIXME: DCC-901
     release.emptyQueue();
 
-    this.dbUpdateSubmissions(release.getName(), release.getQueue(), projectKeys, newState);
+    this.dbUpdateSubmissions(release.getName(), release.getQueue(), projectKeys, newState); // FIXME: DCC-901
+    for(String projectKey : projectKeys) { // See spec at
+                                           // https://wiki.oicr.on.ca/display/DCCSOFT/Concurrency#Concurrency-Submissionstatesresetting
+      resetValidationFolder(projectKey, release);
+    }
   }
 
   public void queue(Release nextRelease, List<QueuedProject> queuedProjects) //
@@ -468,7 +469,9 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   }
 
   /**
-   * Does not allow to update submissions, {@code ProjectService.addProject()} must be used instead
+   * Does not allow to update submissions per se, {@code ProjectService.addProject()} must be used instead.
+   * <p>
+   * This MUST reset submission states.
    */
   public Release update(Release updatedRelease) { // This method is not included in NextRelease because of its
                                                   // dependence on methods from NextRelease (we may reconsider in the
@@ -503,37 +506,47 @@ public class ReleaseService extends BaseMorphiaService<Release> {
           + updatedDictionaryVersion);
     }
 
-    // only TWO parameters can be updated for now (though updating the dictionary resets all the submission states)
+    // only TWO parameters can be updated for now (though specifying another dictionary resets all the submission
+    // states)
     oldRelease.setName(updatedName);
     oldRelease.setDictionaryVersion(updatedDictionaryVersion);
     ArrayList<String> oldProjectKeys = Lists.newArrayList(oldRelease.getProjectKeys());
-    if(sameDictionary == false) {
+    if(sameDictionary == false) { // TODO: use resetSubmission() instead (DCC-901)!
       oldRelease.emptyQueue();
       updateSubmisions(oldProjectKeys, SubmissionState.NOT_VALIDATED);
     }
 
-    Query<Release> updateQuery = datastore().createQuery(Release.class)//
-        .filter("name = ", oldName);
-    UpdateOperations<Release> ops =
-        datastore().createUpdateOperations(Release.class).set("name", updatedName)
-            .set("dictionaryVersion", updatedDictionaryVersion);
-    datastore().update(updateQuery, ops);
-    if(sameDictionary == false) {
-      dbUpdateSubmissions( // TODO: refactor with redundant code in resetSubmissions()?
-          updatedName, oldRelease.getQueue(), oldProjectKeys, SubmissionState.NOT_VALIDATED);
+    Datastore datastore = datastore();
+    datastore.update( //
+        datastore.createQuery(Release.class) //
+            .filter("name = ", oldName), //
+        datastore.createUpdateOperations(Release.class) //
+            .set("name", updatedName) //
+            .set("dictionaryVersion", updatedDictionaryVersion));
+    if(sameDictionary == false) { // TODO: use resetSubmission() instead (DCC-901)!
+      dbUpdateSubmissions(updatedName, oldRelease.getQueue(), oldProjectKeys, SubmissionState.NOT_VALIDATED);
     }
 
     return oldRelease;
   }
 
-  public void resetSubmissions(final Release release) {
-    for(Submission submission : release.getSubmissions()) {
-      resetSubmission(release.getName(), submission.getProjectKey());
+  public void resetSubmissions(final String releaseName, final Iterable<String> projectKeys) {
+    for(String projectKey : projectKeys) {
+      resetSubmission(releaseName, projectKey);
     }
   }
 
+  /**
+   * Resets submission to NOT_VALIDATED and empty report.
+   * <p>
+   * Note that one must also empty the .validation directory for cascading to re-run fully.
+   * <p>
+   * see DCC-901
+   */
   public void resetSubmission(final String releaseName, final String projectKey) {
     log.info("resetting submission for project {}", projectKey);
+
+    // Reset state and report in database (TODO: queue + currently validating? - DCC-906)
     Release release = datastore().findAndModify( //
         datastore().createQuery(Release.class) //
             .filter("name = ", releaseName) //
@@ -544,8 +557,21 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
     Submission submission = release.getSubmission(projectKey);
     if(submission == null || submission.getState() != SubmissionState.NOT_VALIDATED || submission.getReport() != null) {
-      throw new ReleaseException("resetting submission failed for project " + projectKey);
+      // TODO: DCC-902 (optimistic lock potential problem: what if this actually happens? - add a retry?)
+      log.error("If you see this, then DCC-902 MUST be addressed.");
+      throw new ReleaseException("Resetting submission failed for project " + projectKey);
     }
+
+    // Empty .validation dir else cascade may not rerun
+    resetValidationFolder(projectKey, release); // TODO: see note in method javadoc
+  }
+
+  /**
+   * TODO: only taken out of resetSubmission() until DCC-901 is done (to allow code that calls deprecated methods
+   * instead of resetSubmission() to still be able to empty those directories)
+   */
+  private void resetValidationFolder(final String projectKey, Release release) {
+    fs.getReleaseFilesystem(release).resetValidationFolder(projectKey);
   }
 
   private Query<Dictionary> buildDictionaryVersionQuery(String dictionaryVersion) {
@@ -553,7 +579,12 @@ public class ReleaseService extends BaseMorphiaService<Release> {
         .filter("version", dictionaryVersion);
   }
 
-  // TODO: should also take care of updating the queue, as the two should always go together
+  /**
+   * TODO: should also take care of updating the queue, as the two should always go together
+   * <p>
+   * deprecation: see DCC-901
+   */
+  @Deprecated
   private void updateSubmisions(List<String> projectKeys, final SubmissionState state) {
     final String releaseName = getNextRelease().getRelease().getName();
     for(String projectKey : projectKeys) {
@@ -567,7 +598,10 @@ public class ReleaseService extends BaseMorphiaService<Release> {
    * Always update queue and submission states together (else state may be inconsistent)
    * <p>
    * TODO: should probably revisit all this as it is not very clean
+   * <p>
+   * deprecation: see DCC-901
    */
+  @Deprecated
   private void dbUpdateSubmissions(String currentReleaseName, List<QueuedProject> queue, List<String> projectKeys,
       SubmissionState newState) {
     checkArgument(currentReleaseName != null);
@@ -607,7 +641,12 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     UpdateOperations<Release> ops = datastore().createUpdateOperations(Release.class).disableValidation()//
         .set("submissions.$.report", report);
 
-    datastore().update(updateQuery, ops);
+    UpdateResults<Release> update = datastore().update(updateQuery, ops);
+    int updatedCount = update.getUpdatedCount();
+    if(updatedCount != 1) { // Only to help diagnosis for now, we're unsure when that happens (DCC-848)
+      log.error("Setting submission reports {} failed for {}.{}", new Object[] { (report == null ? null : report
+          .getSchemaReports().size()), releaseName, projectKey });
+    }
   }
 
   public void removeSubmissionReport(String releaseName, String projectKey) {
