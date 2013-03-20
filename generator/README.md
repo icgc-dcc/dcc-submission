@@ -1,8 +1,6 @@
 ICGC DCC Data Generator
 ===
 
-TODO
-
 Description
 ---
 
@@ -20,7 +18,7 @@ The config.yaml file is currently in the resources folder
 
 From the command line:
 
-	java -jar target/dcc-generator-<version>.jar -f ~/path/to/config/file
+	java -jar target/dcc-generator-<version>.jar -c ~/path/to/config/file
 
 Help
 ---
