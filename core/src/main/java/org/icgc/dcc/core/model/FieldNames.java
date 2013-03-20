@@ -25,6 +25,8 @@ public final class FieldNames {
    */
   public static final String MONGO_INTERNAL_ID_FIELD = "_id";
   
+  public static final String PROJECT_ID_FIELD = "project_id";
+  
   /**
    * Field names in the original input format.
    */
