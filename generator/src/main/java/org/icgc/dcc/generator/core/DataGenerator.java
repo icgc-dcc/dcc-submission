@@ -61,9 +61,9 @@ public class DataGenerator {
 
   // private static final DecimalFormat df = new DecimalFormat("#.00");
 
-  private static final String CODELIST_FILE_NAME = "codeList.json";
+  private static final String CODELIST_FILE_NAME = "org/icgc/dcc/generator/codeLists.json";
 
-  private static final String DICTIONARY_FILE_NAME = "dictionary.json";
+  private static final String DICTIONARY_FILE_NAME = "org/icgc/dcc/generator/dictionary.json";
 
   private static String outputDirectory;
 
