@@ -1,5 +1,4 @@
 <div class="row">
-    <div class="span"></div>
     <div class="span">
         <h1 id="summary">
             <small>PROJECT</small>
@@ -10,7 +9,7 @@
                 <table class="table table-bordered table-striped table-condensed">
                     <tr>
                         <td>Project ID</td>
-                        <td>{{project.id}}</td>
+                        <td>{{project.fields.project_key}}</td>
                     </tr>
                     <tr>
                         <td>Project name</td>
@@ -100,7 +99,7 @@
                 </thead>
                 <tbody>
                 <tr ng-repeat="donor in donors.hits">
-                    <td><a href="#/donors/{{donor.id}}">{{donor.fields.project_name}}</a></td>
+                    <td><a href="#/donors/{{donor.id}}">{{donor.id}}</a></td>
                     <td>{{donor.fields.donor_sex}}</td>
                     <td>{{donor.fields.donor_age_at_diagnosis}}</td>
                     <td>{{donor.fields.donor_tumour_stage_at_diagnosis}}</td>
@@ -126,10 +125,10 @@
             <table class="table table-bordered table-striped table-condensed">
                 <thead>
                 <tr>
-                    <th>Gene</th>
-                    <th>Number of affected donors</th>
-                    <th>Number of donors tested</th>
-                    <th>Percentage of mutated donors</th>
+                    <th>gene</th>
+                    <th>affected donors</th>
+                    <th>donors tested</th>
+                    <th>percentage affected</th>
                     <th>MulSig score (Q-value)</th>
                     <th>Number of mutations</th>
                     <th>Number of mutation occurrences</th>
@@ -138,9 +137,11 @@
                 <tbody>
                 <tr ng-repeat="gene in genes.hits">
                     <td><a href="#/genes/{{gene.id}}">{{gene.fields.symbol}}</a></td>
-                    <td>??</td>
-                    <td>??</td>
-                    <td>??</td>
+                    <td ng-init="i=gene.fields['project.project_name'].indexOf(project.fields.project_name)">
+                        {{ad=gene.fields['project.affected_donor_count'][i]}}
+                    </td>
+                    <td>{{td=gene.fields['project.total_donor_count'][i]}}</td>
+                    <td>{{ad/td * 100 | number:2}} %</td>
                     <td>??</td>
                     <td>??</td>
                     <td>??</td>

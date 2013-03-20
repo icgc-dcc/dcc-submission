@@ -42,7 +42,7 @@ angular.module('app.genes.controllers').controller('GeneController', [ "$scope",
 }]);
 
 angular.module('app.genes.controllers').controller('EmbGenesController', [ "$scope", 'GenesService', function ($scope, GenesService) {
-  GenesService.embQuery($scope.project.id, {}).then(function (response) {
+  GenesService.embQuery($scope.project.fields.project_key, {}).then(function (response) {
     $scope.genes = response;
   });
 

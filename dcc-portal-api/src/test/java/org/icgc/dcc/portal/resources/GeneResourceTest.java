@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.sun.jersey.api.client.ClientResponse;
 import com.yammer.dropwizard.testing.ResourceTest;
 import org.icgc.dcc.portal.repositories.BaseRepository;
+import org.icgc.dcc.portal.repositories.GeneProjectRepository;
 import org.icgc.dcc.portal.repositories.GeneRepository;
 import org.icgc.dcc.portal.request.RequestSearchQuery;
 import org.icgc.dcc.portal.results.FindAllResults;
@@ -48,6 +49,9 @@ public class GeneResourceTest extends ResourceTest {
   private GeneRepository store;
 
   @Mock
+  private GeneProjectRepository gp;
+
+  @Mock
   private RequestSearchQuery requestSearchQuery;
 
   @Mock
@@ -61,7 +65,7 @@ public class GeneResourceTest extends ResourceTest {
 
   @Override
   protected final void setUpResources() {
-    addResource(new GeneResource(store));
+    addResource(new GeneResource(store, gp));
   }
 
   @Test

@@ -22,7 +22,7 @@ angular.module('app.genes.models', []);
 angular.module('app.genes.models').factory('Genes', ['http', function (http) {
   return {
     query: function () {
-      return http.get('/ws/genes');
+      return http.query('/ws/genes');
     },
     get: function (params) {
       return http.get('/ws/genes/' + params.gene);

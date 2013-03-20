@@ -71,6 +71,7 @@ angular.module('app.facets.directives').directive('termFacet', ['$location', fun
         // This is for immediate feedback
         toggleTermActiveState(term);
         setFacetActiveState();
+        //
         scope.$emit('termFilter', scope.type, scope.facetName, term);
       };
 
@@ -94,6 +95,7 @@ angular.module('app.facets.directives').directive('locationFacet', ['$location',
     restrict: 'E',
     scope: {
       facetName: '@',
+      type: '@',
       placeholder: '@'
     },
     templateUrl: '/views/facets/location.html',
@@ -115,13 +117,13 @@ angular.module('app.facets.directives').directive('locationFacet', ['$location',
 
       // search on click
       scope.locationClick = function () {
-        console.log('click?');
-        scope.$emit('locationFilter', scope.facetName, scope.location);
+        scope.$emit('locationFilter', scope.type, scope.facetName, scope.location);
       };
 
       function setActive(facets) {
-        oldLocation = facets[iAttrs.facetName];
-        scope.location = facets[iAttrs.facetName];
+        console.log(facets, iAttrs.type, iAttrs.facetName);
+        oldLocation = facets[iAttrs.type][iAttrs.facetName];
+        scope.location = facets[iAttrs.type][iAttrs.facetName];
       }
 
       // Preset value on reload
@@ -155,6 +157,40 @@ angular.module('app.facets.directives').directive('multiFacet', ['$location', fu
         var filters = $location.search().filters || '';
         if (filters) setActive(JSON.parse(filters));
       })();
+    }
+  };
+}]);
+
+angular.module('app.facets.directives').directive('currentSelection', ['$location', function ($location) {
+  return {
+    restrict: 'E',
+    templateUrl: '/views/facets/current.html',
+    link: function (scope, iElement, iAttrs) {
+      scope.$watch(function () {
+        return $location.search().filters
+      }, function () {
+        refresh();
+      });
+
+      var refresh = function () {
+        var filters = $location.search().filters || '{}';
+        scope.filters = JSON.parse(filters);
+        scope.active = Object.keys(scope.filters).length
+      };
+
+      scope.removeTerm = function (type, facetName, term) {
+        scope.$broadcast('removeTermFilter', type, facetName, term);
+      };
+
+      scope.removeFacet = function (type, facetName) {
+        scope.$broadcast('removeFacet', type, facetName);
+      };
+
+      scope.removeAll = function () {
+        scope.$broadcast('removeAll');
+      };
+
+      refresh();
     }
   };
 }]);

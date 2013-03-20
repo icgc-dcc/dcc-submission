@@ -17,6 +17,7 @@
 
 package org.icgc.dcc.portal.results;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import lombok.Data;
@@ -27,16 +28,19 @@ import org.elasticsearch.search.facet.Facets;
 import org.icgc.dcc.portal.request.RequestSearchQuery;
 
 @Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class FindAllResults {
 
   private final ImmutableList<ResultsHit> hits;
+
   private final ImmutableMap<String, ResultsFacet> facets;
+
   private final ResultsPagination pagination;
 
   public FindAllResults(final SearchResponse response, final RequestSearchQuery requestSearchQuery) {
     // System.out.println(response);
     this.hits = buildResponseHits(response.getHits().getHits());
-    this.facets = buildResponseFacets(response.getFacets());
+    this.facets = response.getFacets() != null ? buildResponseFacets(response.getFacets()) : null;
     this.pagination = new ResultsPagination(response.getHits(), requestSearchQuery);
   }
 

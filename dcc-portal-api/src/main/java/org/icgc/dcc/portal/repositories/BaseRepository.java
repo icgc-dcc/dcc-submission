@@ -47,7 +47,9 @@ public abstract class BaseRepository {
 
   private final Client client;
 
-  private FilterBuilder filter;
+  private FilterBuilder filters;
+
+  private FilterBuilder scoreFilters;
 
   private QueryBuilder query;
 
@@ -65,7 +67,8 @@ public abstract class BaseRepository {
   }
 
   public final FindAllResults findAll(RequestSearchQuery requestSearchQuery) {
-    setFilter(buildRequestFilters(requestSearchQuery.getFilters()));
+    setFilters(buildRequestFilters(requestSearchQuery.getFilters()));
+    setScoreFilters(buildScoreFilters(requestSearchQuery.getFilters()));
     setQuery(buildQuery());
     SearchRequestBuilder s = buildSearchRequest(requestSearchQuery);
     s = addFacets(s, requestSearchQuery);
@@ -87,7 +90,7 @@ public abstract class BaseRepository {
 
   private SearchRequestBuilder buildSearchRequest(RequestSearchQuery requestSearchQuery) {
     return getClient().prepareSearch(getIndex()).setTypes(getType()).setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
-        .setQuery(getQuery()).setFilter(getFilter()).setFrom(requestSearchQuery.getFrom())
+        .setQuery(getQuery()).setFilter(getFilters()).setFrom(requestSearchQuery.getFrom())
         .setSize(requestSearchQuery.getSize())
         .addSort(requestSearchQuery.getSort(), SortOrder.valueOf(requestSearchQuery.getOrder()))
         .addFields(allowedFields(requestSearchQuery.getFields()));
@@ -117,4 +120,6 @@ public abstract class BaseRepository {
   abstract QueryBuilder buildQuery();
 
   abstract FilterBuilder buildFilters(JsonNode filters);
+
+  abstract FilterBuilder buildScoreFilters(JsonNode filters);
 }

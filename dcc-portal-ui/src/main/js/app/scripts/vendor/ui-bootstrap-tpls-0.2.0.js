@@ -1268,7 +1268,6 @@ angular.module('ui.bootstrap.tabs', [])
           count: '='
         },
         link: function (scope, element, attrs, tabsCtrl) {
-          console.log("pane", attrs);
           var getSelected, setSelected;
           scope.selected = false;
           if (attrs.active) {

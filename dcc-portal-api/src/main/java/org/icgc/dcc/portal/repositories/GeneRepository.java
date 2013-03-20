@@ -38,17 +38,30 @@ public class GeneRepository extends BaseRepository {
     super(client, Gene.INDEX, Gene.TYPE, Gene.FIELDS);
   }
 
+  @Override
   QueryBuilder buildQuery() {
     return QueryBuilders //
         .nestedQuery(Donor.NAME, //
             QueryBuilders.customScoreQuery(QueryBuilders.filteredQuery( //
                 QueryBuilders.matchAllQuery(), //
-                // this.filter//
-                FilterBuilders.matchAllFilter()//
+                getScoreFilters() //
             )).script("doc['donor.somatic_mutation'].value") //
         ).scoreMode("total");
   }
 
+  @Override
+  FilterBuilder buildScoreFilters(JsonNode filters) {
+    if (filters.has(Donor.NAME)) {
+      AndFilterBuilder scoreFilters = FilterBuilders.andFilter();
+      scoreFilters
+          .add(FilterService.buildNestedFilter(Donor.NAME, FilterService.buildAndFilters(Donor.FILTERS, filters.get(Donor.NAME))));
+      return scoreFilters;
+    }
+
+    return FilterBuilders.matchAllFilter();
+  }
+
+  @Override
   FilterBuilder buildFilters(JsonNode filters) {
     AndFilterBuilder geneFilters = FilterBuilders.andFilter();
 
@@ -66,6 +79,7 @@ public class GeneRepository extends BaseRepository {
     }
     return geneFilters;
   }
+
 
   SearchRequestBuilder addFacets(SearchRequestBuilder s, RequestSearchQuery requestSearchQuery) {
     for (String facet : Gene.FACETS.get("terms")) {
