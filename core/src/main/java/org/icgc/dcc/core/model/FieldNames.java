@@ -25,6 +25,9 @@ public final class FieldNames {
    */
   public static final String MONGO_INTERNAL_ID_FIELD = "_id";
   
+  /**
+   * The non-surrogate version of _project_id (formerly known as "project_key").
+   */
   public static final String PROJECT_ID_FIELD = "project_id";
   
   /**
@@ -56,7 +59,7 @@ public final class FieldNames {
   public static final String DONOR_SPECIMEN_ID = "_specimen_id";
   public static final String DONOR_SAMPLE = "sample";
   public static final String DONOR_SAMPLE_ID = "_sample_id";
-  
+
   /**
    * Gene field names.
    */  
@@ -78,10 +81,12 @@ public final class FieldNames {
   public static final String OBSERVATION_TYPE = "_type";
   public static final String OBSERVATION_DONOR = "donor";
   public static final String OBSERVATION_DONOR_ID = "_donor_id";
-  public static final String OBSERVATION_GENES = "gene";
+  public static final String OBSERVATION_CONSEQUENCE_TYPES = "consequence_type";
   public static final String OBSERVATION_CONSEQUENCES = "consequence";
-  public static final String OBSERVATION_CONSEQUENCES_GENE_ID = "_gene_id";
+  public static final String OBSERVATION_CONSEQUENCES_CONSEQUENCE_TYPE = "consequence_type";
   public static final String OBSERVATION_CONSEQUENCES_TRANSCRIPT_ID = "_transcript_id";
+  public static final String OBSERVATION_CONSEQUENCES_GENE_ID = "_gene_id";
+  public static final String OBSERVATION_CONSEQUENCES_GENE = "gene";
   
   public static String getPartitionTypeFieldName(String type) {
     return type;
@@ -91,7 +96,7 @@ public final class FieldNames {
    * Mutation field names.
    */  
   public static final String MUTATION_ID = "_mutation_id";
-  public static final String MUTATION_OBSERVATIONS = "ssm_observation";
+  public static final String MUTATION_OBSERVATIONS = "ssm_occurrence";
   public static final String MUTATION_OBSERVATION_DONOR = "donor";
   public static final String MUTATION_OBSERVATION_PROJECT = "project";
   public static final String MUTATION_TRANSCRIPTS = "transcript";

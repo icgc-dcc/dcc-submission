@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.release;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import java.io.Serializable;
 import java.util.List;
 
@@ -32,6 +30,8 @@ import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
 import com.google.common.collect.ImmutableList;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
+
+import static com.google.common.base.Preconditions.checkArgument;
 
 public abstract class BaseRelease implements HasRelease, Serializable {
 
@@ -65,6 +65,9 @@ public abstract class BaseRelease implements HasRelease, Serializable {
         QProject.project.key.in(ImmutableList.copyOf(getRelease().getProjectKeys()))).list();
   }
 
+  /**
+   * Returns the {@code Release} (guaranteed not to be null).
+   */
   @Override
   public Release getRelease() {
     return release;

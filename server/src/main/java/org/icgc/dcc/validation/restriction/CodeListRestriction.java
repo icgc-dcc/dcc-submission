@@ -52,9 +52,15 @@ import com.google.inject.Inject;
 
 public class CodeListRestriction implements InternalPlanElement {
 
+  /**
+   * Name of the restriction.
+   */
   public static final String NAME = "codelist";
 
-  public static final String FIELD = "name";
+  /**
+   * Name of the codelist used by the restriction.
+   */
+  public static final String FIELD = "name"; // TODO: rename
 
   private final String field;
 

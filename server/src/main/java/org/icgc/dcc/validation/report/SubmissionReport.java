@@ -22,15 +22,22 @@ import java.util.List;
 
 import com.google.code.morphia.annotations.Embedded;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Lists.newArrayList;
+
 @Embedded
 public class SubmissionReport implements Serializable {
-  protected List<SchemaReport> schemaReports;
+  protected List<SchemaReport> schemaReports = newArrayList();
 
+  /**
+   * Guaranteed to return non-null list.
+   */
   public List<SchemaReport> getSchemaReports() {
     return schemaReports;
   }
 
   public void setSchemaReports(List<SchemaReport> schemaReports) {
+    checkArgument(schemaReports != null);
     this.schemaReports = schemaReports;
   }
 

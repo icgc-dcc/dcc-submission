@@ -31,7 +31,7 @@ public class FileValidator implements IValueValidator<File> {
     if(file.exists() == false) {
       parameterException(name, file, "does not exist");
     }
-    if(!file.isFile()) {
+    if(file.isFile() == false) {
       parameterException(name, file, "is not a file");
     }
   }

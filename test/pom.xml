@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.icgc.dcc</groupId>
     <artifactId>dcc-submission</artifactId>
-    <version>1.3-SNAPSHOT</version>
+    <version>1.4-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <artifactId>dcc-test</artifactId>
@@ -15,6 +15,22 @@
     </repository>
   </repositories>
   <dependencies>
+    <!-- DCC -->
+    <dependency>
+      <groupId>org.icgc.dcc</groupId>
+      <artifactId>dcc-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <!-- JSON -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+    </dependency>
 
     <!-- Utilities -->
     <dependency>
@@ -25,6 +41,11 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.google.code</groupId>
+      <artifactId>externalsortinginjava</artifactId>
+      <scope>compile</scope>
     </dependency>
 
     <!-- Testing - Unit, mocking, assertions -->
@@ -63,7 +84,7 @@
       <groupId>com.wordnik</groupId>
       <artifactId>mongo-admin-utils-distribution</artifactId>
       <scope>compile</scope>
-    </dependency>
+    </dependency> <!-- to dump dbs -->
     <dependency>
       <groupId>de.flapdoodle.embed</groupId>
       <artifactId>de.flapdoodle.embed.mongo</artifactId>

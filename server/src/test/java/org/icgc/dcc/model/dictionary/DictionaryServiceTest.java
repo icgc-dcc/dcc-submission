@@ -22,7 +22,6 @@ import org.icgc.dcc.dictionary.DictionaryServiceException;
 import org.icgc.dcc.dictionary.model.CodeList;
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.Term;
-import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.release.ReleaseService;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -57,8 +56,6 @@ public class DictionaryServiceTest {
 
   private DictionaryService dictionaryService;
 
-  private DccFileSystem mockDccFileSystem;
-
   private ReleaseService mockReleaseService;
 
   @Before
@@ -72,7 +69,6 @@ public class DictionaryServiceTest {
     mockCodeList = mock(CodeList.class);
     mockTerm = mock(Term.class);
     mockQuery = mock(Query.class);
-    mockDccFileSystem = mock(DccFileSystem.class);
     mockReleaseService = mock(ReleaseService.class);
 
     when(mockDictionary.getVersion()).thenReturn("abc");
@@ -84,7 +80,7 @@ public class DictionaryServiceTest {
     when(mockMongodbQuery.where(any(Predicate.class))).thenReturn(mockMongodbQuery);
     when(mockMongodbQuery.singleResult()).thenReturn(null).thenReturn(mockDictionary).thenReturn(mockDictionary);
 
-    this.dictionaryService = new DictionaryService(mockMorphia, mockDatastore, mockDccFileSystem, mockReleaseService);
+    this.dictionaryService = new DictionaryService(mockMorphia, mockDatastore, mockReleaseService);
   }
 
   @Test(expected = DictionaryServiceException.class)
