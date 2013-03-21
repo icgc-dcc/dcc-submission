@@ -78,6 +78,58 @@ public class SecondaryFileGenerator {
 
   private final MutableDouble uniqueDecimal = new MutableDouble(0.0);
 
+  public void createFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
+      String institution, String tumourType, String platform) throws IOException {
+
+    boolean isCore = false;
+
+    String fileUrl =
+        DataGenerator.generateFileName(schema.getName(), leadJurisdiction, institution, tumourType, platform, isCore);
+    File outputFile = new File(fileUrl);
+    if(!outputFile.createNewFile()) {
+      throw new FileAlreadyExistsException("A File with the name: " + fileUrl + " already exists");
+    }
+    @Cleanup
+    BufferedWriter writer =
+        new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile), Charsets.UTF_8));
+
+    int counterForFieldNames = 0;
+    for(String fieldName : schema.getFieldNames()) {
+      if(counterForFieldNames == schema.getFields().size() - 1) {
+        writer.write(fieldName);
+      } else {
+        writer.write(fieldName + TAB);
+      }
+      counterForFieldNames++;
+    }
+
+    populateCodeListArray(schema);
+
+    writer.write(NEW_LINE);
+
+    populateSecondaryFile(schema, numberOfLinesPerPrimaryKey, writer);
+
+    writer.close();
+  }
+
+  /**
+   * @param schema
+   */
+  private void populateCodeListArray(FileSchema schema) {
+    for(Field field : schema.getFields()) {
+      Optional<Restriction> restriction = field.getRestriction(CODELIST_RESTRICTION_NAME);
+      if(restriction.isPresent()) {
+        String codeListName = restriction.get().getConfig().getString("name");
+        for(CodeList codelist : DataGenerator.codeList) {
+          if(codelist.getName().equals(codeListName)) {
+            CodeListTerm term = new CodeListTerm(field.getName(), codelist.getTerms());
+            codeListArrayList.add(term);
+          }
+        }
+      }
+    }
+  }
+
   public void populateSecondaryFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, Writer writer)
       throws IOException {
     String schemaName = schema.getName();
@@ -96,6 +148,7 @@ public class SecondaryFileGenerator {
 
     for(int i = 0; i < numberOfIterations; i++) {
       for(int j = 0; j < numberOfLines; j++) {
+        int counterForFields = 0;
         for(Field field : schema.getFields()) {
           String fieldName = field.getName();
           String output = null;
@@ -120,7 +173,12 @@ public class SecondaryFileGenerator {
             }
           }
 
-          writer.write(output + TAB);
+          if(schema.getFields().size() - 1 == counterForFields) {
+            writer.write(output);
+          } else {
+            writer.write(output + TAB);
+          }
+          counterForFields++;
         }
         writer.write(NEW_LINE);
       }
@@ -184,51 +242,4 @@ public class SecondaryFileGenerator {
     return output;
   }
 
-  public void createFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
-      String institution, String tumourType, String platform) throws IOException {
-
-    boolean isCore = false;
-
-    String fileUrl =
-        DataGenerator.generateFileName(schema.getName(), leadJurisdiction, institution, tumourType, platform, isCore);
-
-    File outputFile = new File(fileUrl);
-    if(!outputFile.createNewFile()) {
-      throw new FileAlreadyExistsException("A File with the name: " + fileUrl + " already exists");
-    }
-
-    @Cleanup
-    BufferedWriter writer =
-        new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile), Charsets.UTF_8));
-
-    for(String fieldName : schema.getFieldNames()) {
-      writer.write(fieldName + TAB);
-    }
-
-    populateCodeListArray(schema);
-
-    writer.write(NEW_LINE);
-
-    populateSecondaryFile(schema, numberOfLinesPerPrimaryKey, writer);
-
-    writer.close();
-  }
-
-  /**
-   * @param schema
-   */
-  private void populateCodeListArray(FileSchema schema) {
-    for(Field field : schema.getFields()) {
-      Optional<Restriction> restriction = field.getRestriction(CODELIST_RESTRICTION_NAME);
-      if(restriction.isPresent()) {
-        String codeListName = restriction.get().getConfig().getString("name");
-        for(CodeList codelist : DataGenerator.codeList) {
-          if(codelist.getName().equals(codeListName)) {
-            CodeListTerm term = new CodeListTerm(field.getName(), codelist.getTerms());
-            codeListArrayList.add(term);
-          }
-        }
-      }
-    }
-  }
 }

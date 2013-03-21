@@ -89,8 +89,14 @@ public class CoreFileGenerator {
     BufferedWriter writer =
         new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile), Charsets.UTF_8));
 
+    int counterForFieldNames = 0;
     for(String fieldName : schema.getFieldNames()) {
-      writer.write(fieldName + TAB);
+      if(counterForFieldNames == schema.getFields().size() - 1) {
+        writer.write(fieldName);
+      } else {
+        writer.write(fieldName + TAB);
+      }
+      counterForFieldNames++;
     }
 
     populateCodeListArray(schema);
@@ -140,6 +146,7 @@ public class CoreFileGenerator {
 
     for(int i = 0; i < numberOfPrimaryKeyValues; i++) {
       for(int j = 0; j < numberOfLinesPerKey; j++) {
+        int counterForFields = 0;
         for(Field field : schema.getFields()) {
           String output = null;
           String fieldName = field.getName();
@@ -167,7 +174,12 @@ public class CoreFileGenerator {
               DataGenerator.getPrimaryKey(SAMPLE_SCHEMA_NAME, CONTROL_PRIMARY_KEY_FIELD_IDENTIFIER).add(output);
             }
           }
-          writer.write(output + TAB);
+          if(schema.getFields().size() - 1 == counterForFields) {
+            writer.write(output);
+          } else {
+            writer.write(output + TAB);
+          }
+          counterForFields++;
         }
         writer.write(NEW_LINE);
       }

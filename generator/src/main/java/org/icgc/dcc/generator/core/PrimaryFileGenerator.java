@@ -88,8 +88,14 @@ public class PrimaryFileGenerator {
     BufferedWriter writer =
         new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile), Charsets.UTF_8));
 
+    int counterForFieldNames = 0;
     for(String fieldName : schema.getFieldNames()) {
-      writer.write(fieldName + TAB);
+      if(counterForFieldNames == schema.getFields().size() - 1) {
+        writer.write(fieldName);
+      } else {
+        writer.write(fieldName + TAB);
+      }
+      counterForFieldNames++;
     }
 
     populateCodeListArray(schema);
@@ -133,6 +139,7 @@ public class PrimaryFileGenerator {
 
     for(int i = 0; i < numberOfIterations; i++) {
       for(int j = 0; j < numberOfLines; j++) {
+        int counterForFields = 0;
         int nextTabIndex = 0;
         String line = lines.get(DataGenerator.randomIntGenerator(0, lines.size() - 1));// This read in the file
         for(Field field : schema.getFields()) {
@@ -155,7 +162,12 @@ public class PrimaryFileGenerator {
             DataGenerator.getPrimaryKey(schemaName, fieldName).add(output);
           }
 
-          writer.write(output + TAB);
+          if(schema.getFields().size() - 1 == counterForFields) {
+            writer.write(output);
+          } else {
+            writer.write(output + TAB);
+          }
+          counterForFields++;
         }
         writer.write(NEW_LINE);
       }
