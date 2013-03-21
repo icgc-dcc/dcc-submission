@@ -35,36 +35,36 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class GeneratorConfig {
 
   @JsonProperty
-  private String outputDirectory;
+  private String outputDirectory = "target/";
 
   @JsonProperty
-  private final Integer numberOfDonors = 500;
+  private Integer numberOfDonors = 500;
 
   @JsonProperty
-  private final Integer numberOfSpecimensPerDonor = 2;
+  private Integer numberOfSpecimensPerDonor = 2;
 
   @JsonProperty
-  private final Integer numberOfSamplesPerSpecimen = 2;
+  private Integer numberOfSamplesPerSpecimen = 2;
 
   @JsonProperty
-  private final String leadJurisdiction = "au";
+  private String leadJurisdiction = "au";
 
   @JsonProperty
-  private final String tumourType = "01";
+  private String tumourType = "01";
 
   @JsonProperty
-  private final String institution = "001";
+  private String institution = "001";
 
   @JsonProperty
-  private final String platform = "1";
+  private String platform = "1";
 
   @JsonProperty
   private Long seed;
 
   @JsonProperty
-  private final ArrayList<OptionalFile> optionalFiles = newArrayList();
+  private ArrayList<OptionalFile> optionalFiles = newArrayList();
 
   @JsonProperty
-  private final List<ExperimentalFile> experimentalFiles = newArrayList();
+  private List<ExperimentalFile> experimentalFiles = newArrayList();
 
 }

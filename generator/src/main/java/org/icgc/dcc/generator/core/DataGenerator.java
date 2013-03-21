@@ -85,7 +85,11 @@ public class DataGenerator {
     });
     DataGenerator.outputDirectory = outputDirectory;
 
-    random = new Random(seed);
+    if(seed != null) {
+      random = new Random(seed);
+    } else {
+      random = new Random();
+    }
 
   }
 
