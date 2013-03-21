@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.mongodb;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import java.io.File;
 
 import lombok.SneakyThrows;
@@ -44,7 +46,6 @@ public class MongoExporter extends BaseMongoImportExport {
   @Override
   @SneakyThrows
   public void execute() {
-
     for(String collectionName : jongo.getDatabase().getCollectionNames()) {
       MongoCollection collection = jongo.getCollection(collectionName);
       String fileName = getFileName(collectionName);
@@ -57,14 +58,15 @@ public class MongoExporter extends BaseMongoImportExport {
 
   @SneakyThrows
   private void exportCollection(File collectionFile, MongoCollection collection) {
-
     Files.createParentDirs(collectionFile);
-    collectionFile.delete();
-    collectionFile.createNewFile();
+    checkState(collectionFile.delete(), "Collection file not deleted: %s", collectionFile);
+    checkState(collectionFile.createNewFile(), "Collection file not created: %s", collectionFile);
+
     ObjectMapper mapper = new ObjectMapper();
     for(JsonNode jsonNode : collection.find().as(JsonNode.class)) {
       String json = mapper.writeValueAsString(jsonNode) + System.getProperty("line.separator");
       Files.append(json, collectionFile, Charsets.UTF_8);
     }
   }
+
 }

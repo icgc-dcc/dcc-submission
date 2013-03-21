@@ -17,15 +17,22 @@
  */
 package org.icgc.dcc.mongodb;
 
+import static com.google.common.base.Charsets.UTF_8;
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.io.Files.copy;
 import static org.junit.Assert.assertEquals;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -46,7 +53,6 @@ import org.icgc.dcc.core.util.MapUtils;
 import com.google.code.externalsorting.ExternalSort;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
-import com.google.common.io.Files;
 
 /**
  * General test utilities for working with JSON objects.; TODO: rename to MongoUtils
@@ -147,13 +153,14 @@ public final class JsonUtils {
 
     {
       @Cleanup
-      FileReader fileReader = new FileReader(file);
+      Reader reader = new InputStreamReader(new FileInputStream(file), UTF_8);
       @Cleanup
-      BufferedReader bufferedReader = new BufferedReader(fileReader);
+      BufferedReader bufferedReader = new BufferedReader(reader);
+
       @Cleanup
-      FileWriter fileWriter = new FileWriter(format);
+      Writer writer = new OutputStreamWriter(new FileOutputStream(format), UTF_8);
       @Cleanup
-      BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+      BufferedWriter bufferedWriter = new BufferedWriter(writer);
 
       String line = null;
       ObjectMapper mapper = new ObjectMapper();
@@ -166,9 +173,9 @@ public final class JsonUtils {
     File sort = new File(file.getAbsolutePath() + ".sort");
     ExternalSort.main(new String[] { format.getAbsolutePath(), sort.getAbsolutePath() });
 
-    Files.copy(sort, file);
-    format.delete();
-    sort.delete();
+    copy(sort, file);
+    checkState(format.delete(), "JSON format file not deleted: %s", format);
+    checkState(sort.delete(), "JSON sort file not deleted: %s", sort);
   }
 
   private static void processLine(ObjectMapper mapper, BufferedWriter bufferedWriter, Map<String, Object> map)
