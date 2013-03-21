@@ -163,7 +163,7 @@ angular.module('app.facets.directives').directive('multiFacet', ['$location', fu
 
 angular.module('app.facets.directives').directive('currentSelection', ['$location', function ($location) {
   return {
-    restrict: 'E',
+    restrict: 'A',
     templateUrl: '/views/facets/current.html',
     link: function (scope, iElement, iAttrs) {
       scope.$watch(function () {

@@ -1,6 +1,4 @@
-<li class="nav-header">
-    <i ng-hide="facet.active" class="icon-check-empty"></i>
-    <i ng-show="facet.active" class="icon-check"></i>
+<li class="nav-header" ng-class="{active:facet.active}">
     {{facetName}}
 </li>
 <li>
