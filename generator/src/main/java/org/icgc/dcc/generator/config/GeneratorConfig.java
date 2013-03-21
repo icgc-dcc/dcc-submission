@@ -38,25 +38,25 @@ public class GeneratorConfig {
   private String outputDirectory;
 
   @JsonProperty
-  private Integer numberOfDonors;
+  private final Integer numberOfDonors = 500;
 
   @JsonProperty
-  private Integer numberOfSpecimensPerDonor;
+  private final Integer numberOfSpecimensPerDonor = 2;
 
   @JsonProperty
-  private Integer numberOfSamplesPerSpecimen;
+  private final Integer numberOfSamplesPerSpecimen = 2;
 
   @JsonProperty
-  private String leadJurisdiction;
+  private final String leadJurisdiction = "au";
 
   @JsonProperty
-  private String tumourType;
+  private final String tumourType = "01";
 
   @JsonProperty
-  private String institution;
+  private final String institution = "001";
 
   @JsonProperty
-  private String platform;
+  private final String platform = "1";
 
   @JsonProperty
   private Long seed;
