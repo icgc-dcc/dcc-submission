@@ -60,7 +60,7 @@ public class SftpServerServiceTest {
 
   private static final String RELEASE_NAME = "release1";
 
-  private static final String PROJECT_NAME = "project1";
+  private static final String PROJECT_KEY = "project1";
 
   // @formatter:off
   @Rule public TemporaryFolder tmp = new TemporaryFolder();
@@ -99,9 +99,10 @@ public class SftpServerServiceTest {
     when(passwordAuthenticator.getSubject()).thenReturn(subject);
 
     // Mock release / project
+    when(project.getKey()).thenReturn(PROJECT_KEY);
     when(nextRelease.getRelease()).thenReturn(release);
     when(releaseService.getNextRelease()).thenReturn(nextRelease);
-    when(projectService.getProject(PROJECT_NAME)).thenReturn(project);
+    when(projectService.getProject(PROJECT_KEY)).thenReturn(project);
 
     // Mock file system
     when(fs.buildReleaseStringPath(release)).thenReturn(root.getAbsolutePath());
@@ -109,7 +110,7 @@ public class SftpServerServiceTest {
     when(fs.getFileSystem()).thenReturn(fileSystem());
     when(releaseFileSystem.getDccFileSystem()).thenReturn(fs);
     when(releaseFileSystem.getRelease()).thenReturn(release);
-    when(releaseFileSystem.getSubmissionDirectory(project)).thenReturn(submissionDirectory);
+    when(releaseFileSystem.getSubmissionDirectory(PROJECT_KEY)).thenReturn(submissionDirectory);
     when(submissionDirectory.isReadOnly()).thenReturn(false);
     when(submissionDirectory.getSubmission()).thenReturn(submission);
 
@@ -124,7 +125,7 @@ public class SftpServerServiceTest {
   @SuppressWarnings("unchecked")
   public void testService() throws JSchException, SftpException {
     // Create the simulated project directory
-    String projectDirectoryName = "/" + PROJECT_NAME;
+    String projectDirectoryName = "/" + PROJECT_KEY;
     File projectDirectory = new File(root, projectDirectoryName);
     projectDirectory.mkdir();
 
@@ -196,7 +197,7 @@ public class SftpServerServiceTest {
   }
 
   private static String fileName(int i) {
-    return format("/%s/file%s.txt", PROJECT_NAME, i);
+    return format("/%s/file%s.txt", PROJECT_KEY, i);
   }
 
   private static InputStream inputStream(String text) {

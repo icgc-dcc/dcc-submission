@@ -30,7 +30,7 @@ public class FileHdfsSshFileTest {
 
   private static final String RELEASE_NAME = "release1";
 
-  private static final String PROJECT_NAME = "project1";
+  private static final String PROJECT_KEY = "project1";
 
   @Rule
   public TemporaryFolder tmp = new TemporaryFolder();
@@ -55,14 +55,15 @@ public class FileHdfsSshFileTest {
   public void setUp() throws IOException {
     // Create the simulated project directory
     File root = tmp.newFolder(RELEASE_NAME);
-    String projectDirectoryName = "/" + PROJECT_NAME;
+    String projectDirectoryName = "/" + PROJECT_KEY;
     File projectDirectory = new File(root, projectDirectoryName);
     projectDirectory.mkdir();    
     
     // Mock release / project
+    when(project.getKey()).thenReturn(PROJECT_KEY);
     when(nextRelease.getRelease()).thenReturn(release);
     when(releaseService.getNextRelease()).thenReturn(nextRelease);
-    when(projectService.getProject(PROJECT_NAME)).thenReturn(project);
+    when(projectService.getProject(PROJECT_KEY)).thenReturn(project);
 
     // Mock file system
     when(fs.buildReleaseStringPath(release)).thenReturn(root.getAbsolutePath());
@@ -70,12 +71,12 @@ public class FileHdfsSshFileTest {
     when(fs.getFileSystem()).thenReturn(createFileSystem());
     when(releaseFileSystem.getDccFileSystem()).thenReturn(fs);
     when(releaseFileSystem.getRelease()).thenReturn(release);
-    when(releaseFileSystem.getSubmissionDirectory(project)).thenReturn(submissionDirectory);
+    when(releaseFileSystem.getSubmissionDirectory(PROJECT_KEY)).thenReturn(submissionDirectory);
     when(submissionDirectory.isReadOnly()).thenReturn(false);
     when(submissionDirectory.getSubmission()).thenReturn(submission);    
     
     RootHdfsSshFile rootDirectory = new RootHdfsSshFile(releaseFileSystem, projectService, releaseService);
-    String directoryName = PROJECT_NAME;
+    String directoryName = PROJECT_KEY;
     directory = new SubmissionDirectoryHdfsSshFile(rootDirectory, directoryName);
   }
   
