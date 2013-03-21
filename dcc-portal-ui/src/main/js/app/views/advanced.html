@@ -47,14 +47,14 @@
                     <table class="table table-bordered table-striped span">
                         <thead>
                         <tr>
-                            <th>Gene Symbol</th>
-                            <th>Gene Name</th>
+                            <th>Symbol</th>
+                            <th>Name</th>
                             <th>Chromosome</th>
                             <th>Start</th>
                             <th>End</th>
                             <th>Band</th>
                             <th>Gene Type</th>
-                            <th>Number of Donors affected by SSM</th>
+                            <th>Donors affected by SSM</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -97,7 +97,7 @@
                             <th>Project</th>
                             <th>Gender</th>
                             <th>Age at Diagnosis</th>
-                            <th>Number of Genes affected by SSM</th>
+                            <th>Genes affected by SSM</th>
                             <th>SSM</th>
                             <th>CNSM</th>
                             <th>Expression</th>
@@ -112,12 +112,12 @@
                             <td>{{donor.fields.donor_sex}}</td>
                             <td>{{donor.fields.donor_age_at_diagnosis}}</td>
                             <td>{{donor.score}}</td>
-                            <td>{{donor.fields.has_ssm}}</td>
-                            <td>{{donor.fields.has_cnsm}}</td>
-                            <td>{{donor.fields.has_meth}}</td>
-                            <td>{{donor.fields.has_exp}}</td>
+                            <td><i class="{{donor.fields.has_ssm && 'icon-ok' || 'icon-remove'}}"></i></td>
+                            <td><i class="{{donor.fields.has_cnsm && 'icon-ok' || 'icon-remove'}}"></i></td>
+                            <td><i class="{{donor.fields.has_meth && 'icon-ok' || 'icon-remove'}}"></i></td>
+                            <td><i class="{{donor.fields.has_exp && 'icon-ok' || 'icon-remove or'}}"></i></td>
                         </tr>
-                        <tr ng-hide="donor.hits">
+                        <tr ng-hide="donors.hits">
                             <td colspan="10">No results found.</td>
                         </tr>
                         </tbody>

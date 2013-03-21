@@ -159,6 +159,7 @@ textarea.ng-invalid:focus {
 }
 
 #current-group {
+    padding-bottom: 15px;
     margin-bottom: 25px;
     color: #333;
     background: hsl(103, 47%, 97%);
