@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.generator.config;
 
+import static com.google.common.collect.Lists.newArrayList;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -60,9 +62,9 @@ public class GeneratorConfig {
   private Long seed;
 
   @JsonProperty
-  private ArrayList<OptionalFile> optionalFiles;
+  private final ArrayList<OptionalFile> optionalFiles = newArrayList();
 
   @JsonProperty
-  private List<ExperimentalFile> experimentalFiles;
+  private final List<ExperimentalFile> experimentalFiles = newArrayList();
 
 }
