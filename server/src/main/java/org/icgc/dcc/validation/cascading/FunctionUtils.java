@@ -19,9 +19,13 @@ package org.icgc.dcc.validation.cascading;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
+import cascading.operation.Function;
 import cascading.operation.FunctionCall;
 import cascading.tuple.Fields;
+import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Utility class for working with cascading {@code Function} objects.
@@ -52,6 +56,51 @@ public class FunctionUtils {
       TupleEntry entry = functionCall.getArguments();
       System.out.println(prefix + "\t" + TupleEntryUtils.toJson(entry));
       functionCall.getOutputCollector().add(entry);
+    }
+  }
+
+  /**
+   * Clone a Field (possibly transforming its value).
+   * <p>
+   * TODO: rename to account for other types of Transformable
+   */
+  @SuppressWarnings("rawtypes")
+  public static class CloneField extends BaseOperation implements Function {
+
+    /**
+     * Very basic for now, possibly offer more overloadings for transform()
+     */
+    public interface Transformable {
+      String tranform(String value);
+    }
+
+    private final Fields originalField;
+
+    private final Transformable transformable;
+
+    public CloneField(Fields originalField, Fields newField) {
+      this(originalField, newField, new Transformable() {
+        @Override
+        public String tranform(String value) {
+          return value;
+        }
+      });
+    }
+
+    public CloneField(Fields originalField, Fields newField, Transformable transformable) {
+      super(0, newField);
+      checkArgument(originalField != null && originalField.size() == 1);
+      checkArgument(newField != null && newField.size() == 1);
+      this.originalField = checkNotNull(originalField);
+      this.transformable = checkNotNull(transformable);
+    }
+
+    @Override
+    public void operate(FlowProcess flowProcess, FunctionCall functionCall) {
+      TupleEntry entry = functionCall.getArguments();
+      String value = entry.getString(originalField);
+      String newValue = transformable.tranform(value);
+      functionCall.getOutputCollector().add(new Tuple(newValue));
     }
   }
 }
