@@ -1,90 +1,95 @@
 <div class="row">
-    <current-selection class="span"></current-selection>
-</div>
-<div class="row-fluid">
     <div class="span3">
-        <tabs>
-            <pane heading="Genes">
-                <ul class="nav nav-list" ng-controller="FacetsController">
-                    <term-facet type="gene" facet-name="gene_type" facet="genes.facets['gene_type']"></term-facet>
-                    <location-facet type="gene" facet-name="gene_location"
-                                    placeholder="Search for a gene location"></location-facet>
-                    <lmulti-facet facet-name="gene_list" select2="geneList"></lmulti-facet>
-                    <lmulti-facet facet-name="pathways" select2="geneList"></lmulti-facet>
-                </ul>
-            </pane>
-            <pane heading="Donors">
-                <ul class="nav nav-list" ng-controller="FacetsController">
-                    <term-facet type="donor" facet-name="project_name"
-                                facet="donors.facets['project_name']"></term-facet>
-                    <term-facet type="donor" facet-name="donor_sex" facet="donors.facets['donor_sex']"></term-facet>
-                    <term-facet type="donor" facet-name="donor_tumour_stage_at_diagnosis"
-                                facet="donors.facets['donor_tumour_stage_at_diagnosis']"></term-facet>
-                </ul>
-            </pane>
-        </tabs>
+        <div current-selection class="sidebar"></div>
+        <div id="facets" class="sidebar">
+            <div class="facet-header facets"><span>Filter Search</span></div>
+
+            <tabs>
+                <pane heading="Genes">
+                    <ul class="nav nav-list" ng-controller="FacetsController">
+                        <term-facet type="gene" facet-name="gene_type" facet="genes.facets['gene_type']"></term-facet>
+                        <location-facet type="gene" facet-name="gene_location"
+                                        placeholder="Search for a gene location"></location-facet>
+                        <lmulti-facet facet-name="gene_list" select2="geneList"></lmulti-facet>
+                        <lmulti-facet facet-name="pathways" select2="geneList"></lmulti-facet>
+                    </ul>
+                </pane>
+                <pane heading="Donors">
+                    <ul class="nav nav-list" ng-controller="FacetsController">
+                        <term-facet type="donor" facet-name="project_name"
+                                    facet="donors.facets['project_name']"></term-facet>
+                        <term-facet type="donor" facet-name="donor_sex" facet="donors.facets['donor_sex']"></term-facet>
+                        <term-facet type="donor" facet-name="donor_tumour_stage_at_diagnosis"
+                                    facet="donors.facets['donor_tumour_stage_at_diagnosis']"></term-facet>
+                    </ul>
+                </pane>
+            </tabs>
+        </div>
     </div>
+
     <div class="span9">
-        <div class="row-fluid"><h1 class="span">Advanced Search</h1></div>
+        <div class="row"><h1 class="span">Advanced Search</h1></div>
         <tabs>
             <pane count="genes.pagination.total" heading="Genes">
-                <div class="row-fluid">
-                    <div class="span4">
+                <div class="row">
+                    <div class="span3">
                         <div style="width:220px; height: 220px; background: #eee"></div>
                     </div>
-                    <div class="span4">
+                    <div class="span3">
                         <div style="width:220px; height: 220px; background: #eee"></div>
                     </div>
-                    <div class="span4">
+                    <div class="span3">
                         <div style="width:220px; height: 220px; background: #eee"></div>
                     </div>
                 </div>
 
-                <table class="table table-bordered table-striped">
-                    <thead>
-                    <tr>
-                        <th>Gene Symbol</th>
-                        <th>Gene Name</th>
-                        <th>Chromosome</th>
-                        <th>Start</th>
-                        <th>End</th>
-                        <th>Band</th>
-                        <th>Gene Type</th>
-                        <th>Number of Donors affected by SSM</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr ng-repeat="gene in genes.hits">
-                        <td><a href="#/genes/{{gene.id}}">{{gene.fields.symbol}}</a></td>
-                        <td>{{gene.fields.description}}</td>
-                        <td>{{gene.fields.chromosome}}</td>
-                        <td>{{gene.fields.start}}</td>
-                        <td>{{gene.fields.end}}</td>
-                        <td>{{gene.fields.band}}</td>
-                        <td>{{gene.fields.gene_type}}</td>
-                        <td>{{gene.score}}</td>
-                    </tr>
-                    <tr ng-hide="genes.hits">
-                        <td colspan="8">No results found</td>
-                    </tr>
-                    </tbody>
-                </table>
+                <div class="row">
+                    <table class="table table-bordered table-striped span">
+                        <thead>
+                        <tr>
+                            <th>Gene Symbol</th>
+                            <th>Gene Name</th>
+                            <th>Chromosome</th>
+                            <th>Start</th>
+                            <th>End</th>
+                            <th>Band</th>
+                            <th>Gene Type</th>
+                            <th>Number of Donors affected by SSM</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat="gene in genes.hits">
+                            <td><a href="#/genes/{{gene.id}}">{{gene.fields.symbol}}</a></td>
+                            <td>{{gene.fields.description}}</td>
+                            <td>{{gene.fields.chromosome}}</td>
+                            <td>{{gene.fields.start}}</td>
+                            <td>{{gene.fields.end}}</td>
+                            <td>{{gene.fields.band}}</td>
+                            <td>{{gene.fields.gene_type}}</td>
+                            <td>{{gene.score}}</td>
+                        </tr>
+                        <tr ng-hide="genes.hits">
+                            <td colspan="8">No results found. <a href="">Reset filters to try again.</a></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
             </pane>
             <pane count="donors.pagination.total" heading="Donors">
-                <div class="row-fluid">
-                    <div class="span4">
+                <div class="row">
+                    <div class="span3">
                         <div style="width:220px; height: 220px; background: #eee"></div>
                     </div>
-                    <div class="span4">
+                    <div class="span3">
                         <div style="width:220px; height: 220px; background: #eee"></div>
                     </div>
-                    <div class="span4">
+                    <div class="span3">
                         <div style="width:220px; height: 220px; background: #eee"></div>
                     </div>
                 </div>
 
-                <div class="row-fluid">
-                    <table class="table table-bordered table-striped">
+                <div class="row">
+                    <table class="table table-bordered table-striped span">
                         <thead>
                         <tr>
                             <th>Donor ID</th>
@@ -111,6 +116,9 @@
                             <td>{{donor.fields.has_cnsm}}</td>
                             <td>{{donor.fields.has_meth}}</td>
                             <td>{{donor.fields.has_exp}}</td>
+                        </tr>
+                        <tr ng-hide="donor.hits">
+                            <td colspan="10">No results found.</td>
                         </tr>
                         </tbody>
                     </table>

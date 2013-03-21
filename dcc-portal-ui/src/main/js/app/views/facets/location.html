@@ -1,11 +1,9 @@
-<li class="nav-header">
-    <i ng-hide="location" class="icon-check-empty"></i>
-    <i ng-show="location" class="icon-check"></i>
+<li class="nav-header" ng-class="{active:facet.active}">
     {{facetName}}
 </li>
 <li>
     <div ng-class="{'input-append': changed}">
-        <input type="text" ui-reset ng-model="location" ng-class="{'input-block-level': changed}"
+        <input type="text" ui-reset ng-model="location" ng-class="{'loc': !changed, 'ap-loc': changed}"
                placeholder="{{placeholder}}"/>
         <button ng-show="changed" type="button" class="btn" ng-click="locationClick()">Search</button>
     </div>
