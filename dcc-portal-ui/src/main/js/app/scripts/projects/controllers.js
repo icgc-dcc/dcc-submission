@@ -16,14 +16,30 @@
  */
 
 'use strict';
+
 angular.module('app.projects.controllers', ['app.projects.services']);
 
 angular.module('app.projects.controllers').controller('ProjectsController', [ "$scope", 'ProjectsService', "projects", function ($scope, ProjectsService, projects) {
   $scope.projects = projects;
 
+  var termFacets2HCpie = function (hits) {
+    var r = [];
+
+    for (var i = 0; i < hits.length; ++i) {
+      console.log(hits[i]);
+      r.push({name: hits[i].fields.project_name, y: hits[i].fields.total_donor_count})
+    }
+
+    return r;
+  };
+
+  $scope.cdata = termFacets2HCpie(projects.hits);
+
+  //[{term: 'blah', count:3}] > [{name: y:}]
   $scope.refresh = function () {
     ProjectsService.query().then(function (response) {
       $scope.projects = response;
+      $scope.cdata = termFacets2HCpie(response.hits);
     });
   };
 
