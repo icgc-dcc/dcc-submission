@@ -111,7 +111,7 @@ public class GenesService {
         JsonNode gene = iterator.next();
         callback.handle(gene);
 
-        if(++insertCount % 1000 == 0) {
+        if(++insertCount % 5000 == 0) {
           log.info("Processed {} genes", insertCount);
         }
       }
