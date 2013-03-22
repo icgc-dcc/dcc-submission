@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.core.cascading;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -25,8 +27,6 @@ import java.util.List;
 import cascading.tuple.Fields;
 
 import com.google.common.collect.ImmutableList;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Utility class for working with cascading {@code Fields} objects.
@@ -39,6 +39,42 @@ public final class Fields2 {
 
   private Fields2() {
     // Prevent construction
+  }
+
+  public static Fields argumentSelector(String... fieldNames) {
+    return new Fields(fieldNames);
+  }
+
+  public static Fields outputSelector(String... fieldNames) {
+    return new Fields(fieldNames);
+  }
+
+  public static Fields declaredFields(String... fieldNames) {
+    return new Fields(fieldNames);
+  }
+
+  public static Fields uniqueFields(String... fieldNames) {
+    return new Fields(fieldNames);
+  }
+
+  public static Fields discardFields(String... fieldNames) {
+    return new Fields(fieldNames);
+  }
+
+  public static Fields lhsFields(String... fieldNames) {
+    return new Fields(fieldNames);
+  }
+
+  public static Fields rhsFields(String... fieldNames) {
+    return new Fields(fieldNames);
+  }
+
+  public static Fields groupFields(String... fieldNames) {
+    return new Fields(fieldNames);
+  }
+
+  public static Fields sortFields(String... fieldNames) {
+    return new Fields(fieldNames);
   }
 
   /**
