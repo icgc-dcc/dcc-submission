@@ -15,62 +15,35 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.generator.config;
-
-import static com.google.common.collect.Lists.newArrayList;
+package org.icgc.dcc.generator.model;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import lombok.Getter;
-import lombok.ToString;
+/**
+ * 
+ */
+public class PrimaryKey {
+  private final String schemaIdentifier;
 
-import org.icgc.dcc.generator.model.ExperimentalFile;
-import org.icgc.dcc.generator.model.OptionalFile;
+  private final String fieldIdentifier;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+  private final List<String> primaryKeys = new ArrayList<String>();
 
-@Getter
-@ToString
-public class GeneratorConfig {
+  public PrimaryKey(String schemaIdentifier, String fieldIdentifier) {
+    this.schemaIdentifier = schemaIdentifier;
+    this.fieldIdentifier = fieldIdentifier;
+  }
 
-  @JsonProperty
-  private String outputDirectory = "target/";
+  public String getSchemaIdentifier() {
+    return this.schemaIdentifier;
+  }
 
-  @JsonProperty
-  private String dictionaryUrl = "org/icgc/dcc/generator/dictionary.json";
+  public String getFieldIdentifier() {
+    return this.fieldIdentifier;
+  }
 
-  @JsonProperty
-  private String codeListUrl = "org/icgc/dcc/generator/codeLists.json";
-
-  @JsonProperty
-  private Integer numberOfDonors = 500;
-
-  @JsonProperty
-  private Integer numberOfSpecimensPerDonor = 2;
-
-  @JsonProperty
-  private Integer numberOfSamplesPerSpecimen = 2;
-
-  @JsonProperty
-  private String leadJurisdiction = "au";
-
-  @JsonProperty
-  private String tumourType = "01";
-
-  @JsonProperty
-  private String institution = "001";
-
-  @JsonProperty
-  private String platform = "1";
-
-  @JsonProperty
-  private Long seed;
-
-  @JsonProperty
-  private ArrayList<OptionalFile> optionalFiles = newArrayList();
-
-  @JsonProperty
-  private List<ExperimentalFile> experimentalFiles = newArrayList();
-
+  public List<String> getPrimaryKeyList() {
+    return this.primaryKeys;
+  }
 }

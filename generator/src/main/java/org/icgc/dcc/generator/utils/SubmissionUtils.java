@@ -15,62 +15,40 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.generator.config;
+package org.icgc.dcc.generator.utils;
 
-import static com.google.common.collect.Lists.newArrayList;
+/**
+ * 
+ */
+public class SubmissionUtils {
 
-import java.util.ArrayList;
-import java.util.List;
+  private static final String CONSTANT_DATE = "20130313";
 
-import lombok.Getter;
-import lombok.ToString;
+  private static final String SEPERATOR = "__";
 
-import org.icgc.dcc.generator.model.ExperimentalFile;
-import org.icgc.dcc.generator.model.OptionalFile;
+  private static final String FILE_EXTENSION = ".txt";
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+  public static String generateCoreFileUrl(String outputDirectory, String schemaName, String leadJurisdiction,
+      String institution, String tumourType, String platform) {
 
-@Getter
-@ToString
-public class GeneratorConfig {
+    return outputDirectory + leadJurisdiction + SEPERATOR + tumourType + SEPERATOR + institution + SEPERATOR
+        + schemaName + SEPERATOR + CONSTANT_DATE + FILE_EXTENSION;
+  }
 
-  @JsonProperty
-  private String outputDirectory = "target/";
+  public static String generateOptionalFileUrl(String outputDirectory, String schemaName, String leadJurisdiction,
+      String institution, String tumourType, String platform) {
 
-  @JsonProperty
-  private String dictionaryUrl = "org/icgc/dcc/generator/dictionary.json";
+    return outputDirectory + leadJurisdiction + SEPERATOR + tumourType + SEPERATOR + institution + SEPERATOR
+        + schemaName + SEPERATOR + CONSTANT_DATE + FILE_EXTENSION;
+  }
 
-  @JsonProperty
-  private String codeListUrl = "org/icgc/dcc/generator/codeLists.json";
+  public static String generateExperimentalFileUrl(String outputDirectory, String schemaName, String leadJurisdiction,
+      String institution, String tumourType, String platform) {
+    String fileName = schemaName.substring(0, schemaName.length() - 2);
+    char fileType = schemaName.charAt(schemaName.length() - 1);
 
-  @JsonProperty
-  private Integer numberOfDonors = 500;
-
-  @JsonProperty
-  private Integer numberOfSpecimensPerDonor = 2;
-
-  @JsonProperty
-  private Integer numberOfSamplesPerSpecimen = 2;
-
-  @JsonProperty
-  private String leadJurisdiction = "au";
-
-  @JsonProperty
-  private String tumourType = "01";
-
-  @JsonProperty
-  private String institution = "001";
-
-  @JsonProperty
-  private String platform = "1";
-
-  @JsonProperty
-  private Long seed;
-
-  @JsonProperty
-  private ArrayList<OptionalFile> optionalFiles = newArrayList();
-
-  @JsonProperty
-  private List<ExperimentalFile> experimentalFiles = newArrayList();
+    return outputDirectory + fileName + SEPERATOR + leadJurisdiction + SEPERATOR + tumourType + SEPERATOR + institution
+        + SEPERATOR + fileType + SEPERATOR + platform + SEPERATOR + CONSTANT_DATE + FILE_EXTENSION;
+  }
 
 }

@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Set;
 
 import lombok.Cleanup;
-import lombok.extern.java.Log;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.lang.mutable.MutableDouble;
 import org.apache.commons.lang.mutable.MutableInt;
@@ -43,26 +43,27 @@ import org.icgc.dcc.dictionary.model.Relation;
 import org.icgc.dcc.dictionary.model.Restriction;
 import org.icgc.dcc.dictionary.model.Term;
 import org.icgc.dcc.generator.model.CodeListTerm;
+import org.icgc.dcc.generator.utils.ResourceWrapper;
+import org.icgc.dcc.generator.utils.SubmissionUtils;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
 import com.google.common.io.Resources;
 
-/**
- * 
- */
-@Log
+@Slf4j
 public class PrimaryFileGenerator {
 
-  private static final String TAB = DataGenerator.TAB;
+  private static final String TAB = "\t";
 
-  private static final String NEW_LINE = DataGenerator.NEW_LINE;
+  private static final String NEW_LINE = "\n";
 
   private static final String CODELIST_RESTRICTION_NAME = "codelist";
 
   private static final String SSM_SCHEMA_NAME = "ssm_p";
 
   private static final String SIMULATED_DATA_FILE_URL = "org/icgc/dcc/generator/ssmp_simulated.txt";
+
+  private DataGenerator datagen;
 
   private final List<CodeListTerm> codeListArrayList = new ArrayList<CodeListTerm>();
 
@@ -75,20 +76,23 @@ public class PrimaryFileGenerator {
 
   private final MutableDouble uniqueDecimal = new MutableDouble(0.0);
 
-  public void createFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, String leadJurisdiction,
-      String institution, String tumourType, String platform) throws IOException {
+  public void createFile(DataGenerator datagen, FileSchema schema, Integer numberOfLinesPerPrimaryKey,
+      String leadJurisdiction, String institution, String tumourType, String platform) throws IOException {
 
-    boolean isCore = false;
+    this.datagen = datagen;
 
     String fileUrl =
-        DataGenerator.generateFileName(schema.getName(), leadJurisdiction, institution, tumourType, platform, isCore);
+        SubmissionUtils.generateExperimentalFileUrl(datagen.getOutputDirectory(), schema.getName(), leadJurisdiction,
+            institution, tumourType, platform);
     File outputFile = new File(fileUrl);
     if(!outputFile.createNewFile()) {
       throw new FileAlreadyExistsException("A File with the name: " + fileUrl + " already exists");
     }
+
+    FileOutputStream fos = new FileOutputStream(outputFile);
+    OutputStreamWriter osw = new OutputStreamWriter(fos, Charsets.UTF_8);
     @Cleanup
-    BufferedWriter writer =
-        new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile), Charsets.UTF_8));
+    BufferedWriter writer = new BufferedWriter(osw);
 
     int counterForFieldNames = 0;
     for(String fieldName : schema.getFieldNames()) {
@@ -104,7 +108,9 @@ public class PrimaryFileGenerator {
 
     writer.write(NEW_LINE);
 
+    log.info("Populating " + schema.getName() + " file");
     populateFile(schema, numberOfLinesPerPrimaryKey, writer);
+    log.info("Finished populating " + schema.getName() + " file");
 
     writer.close();
   }
@@ -117,7 +123,7 @@ public class PrimaryFileGenerator {
       Optional<Restriction> restriction = field.getRestriction(CODELIST_RESTRICTION_NAME);
       if(restriction.isPresent()) {
         String codeListName = restriction.get().getConfig().getString("name");
-        for(CodeList codelist : DataGenerator.codeList) {
+        for(CodeList codelist : ResourceWrapper.getCodeLists()) {
           if(codelist.getName().equals(codeListName)) {
             CodeListTerm term = new CodeListTerm(field.getName(), codelist.getTerms());
             codeListArrayList.add(term);
@@ -137,21 +143,21 @@ public class PrimaryFileGenerator {
     }
 
     int numberOfLines = calculateNumberOfLines(schema, numberOfLinesPerPrimaryKey, relations);
-    int numberOfIterations = DataGenerator.getForeignKey(schema, relations.get(0).getFields().get(0)).size() - 2;
+    int numberOfIterations =
+        DataGenerator.getForeignKey(datagen, schema, relations.get(0).getFields().get(0)).size() - 2;
 
     for(int i = 0; i < numberOfIterations; i++) {
       for(int j = 0; j < numberOfLines; j++) {
         int counterForFields = 0;
         int nextTabIndex = 0;
-        String line = lines.get(DataGenerator.randomIntGenerator(0, lines.size() - 1));// This read in the file
+        String line = lines.get(datagen.randomIntGenerator(0, lines.size() - 1));// This read in the file
         for(Field field : schema.getFields()) {
           String output = null;
           String fieldName = field.getName();
-          List<String> foreignKeyArray = DataGenerator.getForeignKey(schema, fieldName);
+          List<String> foreignKeyArray = DataGenerator.getForeignKey(datagen, schema, fieldName);
 
           if(foreignKeyArray != null) {
-            output = foreignKeyArray.get(i + 2);
-            log.info(fieldName + " " + output);
+            output = foreignKeyArray.get(i);
           } else {
             if(schemaName.equals(SSM_SCHEMA_NAME) && simulatedData.contains(fieldName)) {// This prints out if true
               output = line.substring(nextTabIndex, line.indexOf(TAB, nextTabIndex));
@@ -161,8 +167,8 @@ public class PrimaryFileGenerator {
             }
           }
 
-          if(DataGenerator.isUniqueField(schema.getUniqueFields(), fieldName)) {
-            DataGenerator.getPrimaryKey(schemaName, fieldName).add(output);
+          if(ResourceWrapper.isUniqueField(schema.getUniqueFields(), fieldName)) {
+            DataGenerator.getPrimaryKey(datagen, schemaName, fieldName).add(output);
           }
 
           if(schema.getFields().size() - 1 == counterForFields) {
@@ -186,9 +192,9 @@ public class PrimaryFileGenerator {
    */
   private int calculateNumberOfLines(FileSchema schema, Integer numberOfLinesPerPrimaryKey, List<Relation> relations) {
     if(relations.size() > 0 && relations.get(0).isBidirectional()) {
-      return DataGenerator.randomIntGenerator(1, numberOfLinesPerPrimaryKey);
+      return datagen.randomIntGenerator(1, numberOfLinesPerPrimaryKey);
     } else {
-      return DataGenerator.randomIntGenerator(0, numberOfLinesPerPrimaryKey);
+      return datagen.randomIntGenerator(0, numberOfLinesPerPrimaryKey);
     }
   }
 
@@ -206,17 +212,16 @@ public class PrimaryFileGenerator {
       for(CodeListTerm codeListTerm : codeListArrayList) {
         if(codeListTerm.getFieldName().equals(currentFieldName)) {
           List<Term> terms = codeListTerm.getTerms();
-          output = terms.get(DataGenerator.randomIntGenerator(0, terms.size() - 1)).getCode();
+          output = terms.get(datagen.randomIntGenerator(0, terms.size() - 1)).getCode();
 
         }
       }
     }
     if(output == null) {
       output =
-          DataGenerator.getFieldValue(schema.getUniqueFields(), schemaName, currentField, uniqueId, uniqueInteger,
-              uniqueDecimal);
+          DataGenerator.generateFieldValue(datagen, schema.getUniqueFields(), schemaName, currentField, uniqueId,
+              uniqueInteger, uniqueDecimal);
     }
     return output;
   }
-
 }
