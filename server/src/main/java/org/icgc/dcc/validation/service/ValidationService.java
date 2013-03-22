@@ -22,7 +22,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.ProjectService;
-import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.dictionary.DictionaryService;
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.filesystem.DccFileSystem;
@@ -57,8 +56,6 @@ public class ValidationService {
 
   private final DccFileSystem dccFileSystem;
 
-  private final ProjectService projectService;
-
   private final DictionaryService dictionaries;
 
   private final CascadingStrategyFactory cascadingStrategyFactory;
@@ -75,7 +72,6 @@ public class ValidationService {
     checkArgument(cascadingStrategyFactory != null);
 
     this.dccFileSystem = dccFileSystem;
-    this.projectService = projectService;
     this.planner = planner;
     this.dictionaries = dictionaries;
     this.cascadingStrategyFactory = cascadingStrategyFactory;
@@ -95,8 +91,7 @@ public class ValidationService {
 
       ReleaseFileSystem releaseFilesystem = dccFileSystem.getReleaseFilesystem(release);
 
-      Project project = projectService.getProject(qProject.getKey());
-      SubmissionDirectory submissionDirectory = releaseFilesystem.getSubmissionDirectory(project);
+      SubmissionDirectory submissionDirectory = releaseFilesystem.getSubmissionDirectory(qProject.getKey());
 
       Path rootDir = new Path(submissionDirectory.getSubmissionDirPath());
       Path outputDir = new Path(submissionDirectory.getValidationDirPath());

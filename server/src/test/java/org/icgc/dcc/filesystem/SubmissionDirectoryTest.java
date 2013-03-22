@@ -55,14 +55,12 @@ public class SubmissionDirectoryTest extends FileSystemTest {
     when(this.mockFileSystem.listStatus(any(Path.class))).thenReturn(new FileStatus[] {});
     when(this.mockFileSystem.create(any(Path.class))).thenReturn(this.mockFSDataOutputStream);
 
-    when(this.mockDccFileSystem.buildProjectStringPath(this.mockRelease, this.mockProject.getKey())).thenReturn(
-        ROOT_DIR);
-    when(this.mockDccFileSystem.buildFileStringPath(this.mockRelease, this.mockProject.getKey(), FILENAME_1))
-        .thenReturn(FILEPATH_1);
+    when(this.mockDccFileSystem.buildProjectStringPath(this.mockRelease, PROJECT_KEY)).thenReturn(ROOT_DIR);
+    when(this.mockDccFileSystem.buildFileStringPath(this.mockRelease, PROJECT_KEY, FILENAME_1)).thenReturn(FILEPATH_1);
     when(this.mockDccFileSystem.getFileSystem()).thenReturn(this.mockFileSystem);
 
     this.submissionDirectory =
-        new SubmissionDirectory(this.mockDccFileSystem, this.mockRelease, this.mockProject, this.mockSubmission);
+        new SubmissionDirectory(this.mockDccFileSystem, this.mockRelease, PROJECT_KEY, this.mockSubmission);
   }
 
   @Test

@@ -17,11 +17,12 @@
  */
 package org.icgc.dcc.release;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Lists.newArrayList;
+
 import java.util.List;
 
 import org.icgc.dcc.core.model.InvalidStateException;
-import org.icgc.dcc.core.model.Project;
-import org.icgc.dcc.core.model.QProject;
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.DictionaryState;
 import org.icgc.dcc.filesystem.DccFileSystem;
@@ -41,11 +42,7 @@ import com.google.code.morphia.Morphia;
 import com.google.code.morphia.query.Query;
 import com.google.code.morphia.query.UpdateOperations;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.mysema.query.mongodb.morphia.MorphiaQuery;
-
-import static com.google.common.base.Preconditions.checkArgument;
 
 public class NextRelease extends BaseRelease {
 
@@ -202,15 +199,14 @@ public class NextRelease extends BaseRelease {
     return false;
   }
 
-  private ImmutableList<Project> getProjectsToMove(final Release oldRelease) {
-    List<Project> projects = Lists.newArrayList();
+  private ImmutableList<String> getProjectsToMove(final Release oldRelease) {
+    List<String> projectsKeys = newArrayList();
     for(Submission submission : oldRelease.getSubmissions()) {
       if(submission.getState() != SubmissionState.SIGNED_OFF) {
-        Project project = projectFromKey(submission.getProjectKey());
-        projects.add(project);
+        projectsKeys.add(submission.getProjectKey());
       }
     }
-    return ImmutableList.<Project> copyOf(projects);
+    return ImmutableList.<String> copyOf(projectsKeys);
   }
 
   private Release forName(final String nextReleaseName) { // TODO: put in ReleaseService?
@@ -225,8 +221,4 @@ public class NextRelease extends BaseRelease {
     return datastore().createUpdateOperations(Release.class);
   }
 
-  private Project projectFromKey(final String projectKey) { // TODO: move to project service?
-    return new MorphiaQuery<Project>(morphia(), datastore(), QProject.project).where(
-        QProject.project.key.eq(projectKey)).singleResult();
-  }
 }

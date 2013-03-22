@@ -58,9 +58,9 @@ public class MongoExporter extends BaseMongoImportExport {
   private void exportCollection(File collectionFile, MongoCollection collection) {
     Files.createParentDirs(collectionFile);
     if(collectionFile.exists()) {
-      collectionFile.delete();
+      checkState(collectionFile.delete(), "Collection file not deleted: %s", collectionFile);
     }
-    collectionFile.createNewFile();
+    checkState(collectionFile.createNewFile(), "Collection file not created: %s", collectionFile);
 
     ObjectMapper mapper = new ObjectMapper();
     for(JsonNode jsonNode : collection.find().as(JsonNode.class)) {

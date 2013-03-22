@@ -25,6 +25,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.sshd.server.SshFile;
 import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.core.ProjectServiceException;
+import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.filesystem.DccFileSystemException;
 import org.icgc.dcc.filesystem.ReleaseFileSystem;
 import org.icgc.dcc.filesystem.SubmissionDirectory;
@@ -122,7 +123,8 @@ class RootHdfsSshFile extends HdfsSshFile {
 
   public SubmissionDirectory getSubmissionDirectory(String directoryName) {
     try {
-      return this.rfs.getSubmissionDirectory(this.projects.getProject(directoryName));
+      final Project project = this.projects.getProject(directoryName);
+      return this.rfs.getSubmissionDirectory(project.getKey());
     } catch(RuntimeException e) {
       // Ideally we would rethrow as a FileNotFound or IOException, but Mina's interface won't let us.
       // Instead we put it as null so it can be used to indicate that the directory doesn't exist later
