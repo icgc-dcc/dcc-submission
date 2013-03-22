@@ -21,7 +21,7 @@ angular.module('highcharts', ['highcharts.directives']);
 
 angular.module('highcharts.directives', []);
 
-angular.module('highcharts.directives').directive('chart', function () {
+angular.module('highcharts.directives').directive('chart', function ($rootScope) {
   return {
     restrict: 'E',
     replace: true,
@@ -29,7 +29,7 @@ angular.module('highcharts.directives').directive('chart', function () {
       items: '='
     },
     template: '<div id="container" style="margin: 0 auto">not working</div>',
-    link: function (scope, element, attrs) {
+    controller: function ($scope, $attrs, $rootScope) {
       var renderChart = function (settings) {
         new Highcharts.Chart(settings);
       };
@@ -37,19 +37,15 @@ angular.module('highcharts.directives').directive('chart', function () {
       var chartsDefaults = {
         chart: {
           renderTo: 'container',
-          type: attrs.type || null,
-          height: attrs.height || null,
-          width: attrs.width || null,
+          type: $attrs.type || null,
+          height: $attrs.height || null,
+          width: $attrs.width || null,
           plotBackgroundColor: null,
           plotBorderWidth: null,
           plotShadow: false
         },
         title: {
           text: 'Donor Distribution'
-        },
-        tooltip: {
-          pointFormat: '{series.name}: <b>{point.percentage}</b>',
-          percentageDecimals: 0
         },
         plotOptions: {
           pie: {
@@ -63,6 +59,11 @@ angular.module('highcharts.directives').directive('chart', function () {
               formatter: function () {
                 return '<b>' + this.point.name + '</b>';
               }
+            },
+            events: {
+              click: function (event) {
+                $rootScope.$broadcast('termFilter', event.point.type, event.point.facet, event.point.name);
+              }
             }
           }
         },
@@ -70,12 +71,12 @@ angular.module('highcharts.directives').directive('chart', function () {
           {
             type: 'pie',
             name: 'Donors',
-            data: scope.items
+            data: $scope.items
           }
         ]
       };
 
-      scope.$watch("items", function (newValue, oldValue) {
+      $scope.$watch("items", function (newValue, oldValue) {
         if (!newValue) return;
         if (angular.equals(newValue, oldValue)) return;
 

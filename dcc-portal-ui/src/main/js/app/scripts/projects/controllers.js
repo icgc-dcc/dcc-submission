@@ -27,7 +27,12 @@ angular.module('app.projects.controllers').controller('ProjectsController', [ "$
 
     for (var i = 0; i < hits.length; ++i) {
       console.log(hits[i]);
-      r.push({name: hits[i].fields.project_name, y: hits[i].fields.total_donor_count})
+      r.push({
+        name: hits[i].fields.project_name,
+        y: hits[i].fields.total_donor_count,
+        type: "project",
+        facet: "project_name"
+      })
     }
 
     return r;
