@@ -20,6 +20,7 @@ package org.icgc.dcc.mongodb;
 import static org.icgc.dcc.test.json.JsonNodes.MAPPER;
 
 import java.io.File;
+import java.net.URL;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -48,13 +49,13 @@ public class MongoImporter extends BaseMongoImportExport {
       String collectionName = getCollectionName(collectionFile);
       MongoCollection collection = jongo.getCollection(collectionName);
 
-      log.info("Importing to '{}' from '{}'...", collection, collectionFile);
       importCollection(collectionFile, collection);
     }
   }
 
   @SneakyThrows
   private void importCollection(File collectionFile, MongoCollection collection) {
+    log.info("Importing to '{}' from '{}'...", collection, collectionFile);
     MappingIterator<JsonNode> iterator = READER.readValues(collectionFile);
 
     while(iterator.hasNext()) {
@@ -62,4 +63,19 @@ public class MongoImporter extends BaseMongoImportExport {
       collection.save(object);
     }
   }
+
+  @SneakyThrows
+  public void importCollection(URL collectionFile) {
+    String collectionName = getCollectionName(new File(collectionFile.getFile()));
+    MongoCollection collection = jongo.getCollection(collectionName);
+
+    log.info("Importing to '{}' from '{}'...", collection, collectionFile);
+    MappingIterator<JsonNode> iterator = READER.readValues(collectionFile);
+
+    while(iterator.hasNext()) {
+      JsonNode object = iterator.next();
+      collection.save(object);
+    }
+  }
+
 }

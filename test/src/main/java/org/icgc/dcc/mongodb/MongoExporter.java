@@ -33,9 +33,6 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import com.mongodb.DB;
 
-/**
- * FIXME: DUPLICATED FROM AGGREGATOR!!!
- */
 @Slf4j
 public class MongoExporter extends BaseMongoImportExport {
 
