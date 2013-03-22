@@ -17,6 +17,10 @@
  */
 package org.icgc.dcc.release;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
@@ -75,10 +79,6 @@ import com.google.inject.Inject;
 import com.mysema.query.mongodb.MongodbQuery;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
 import com.typesafe.config.Config;
-
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
 
 public class ReleaseService extends BaseMorphiaService<Release> {
 
@@ -295,7 +295,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     ReleaseFileSystem releaseFS = this.fs.getReleaseFilesystem(nextRelease);
     List<Project> projects = this.getProjects(projectKeys);
     for(Project project : projects) {
-      SubmissionDirectory submissionDirectory = releaseFS.getSubmissionDirectory(project);
+      SubmissionDirectory submissionDirectory = releaseFS.getSubmissionDirectory(project.getKey());
       submissionDirectory.removeSubmissionDir();
     }
 

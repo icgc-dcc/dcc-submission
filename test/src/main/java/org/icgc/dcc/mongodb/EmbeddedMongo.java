@@ -85,7 +85,7 @@ public class EmbeddedMongo implements TestRule {
 
     // Start mongo
     MongodStarter runtime = MongodStarter.getInstance(runtimeConfig);
-    mongodConfig = new MongodConfig(Version.Main.V2_2);
+    mongodConfig = new MongodConfig(Version.Main.V2_3);
     mongodExe = runtime.prepare(mongodConfig);
     mongod = mongodExe.start();
     mongo = new Mongo("localhost", mongodConfig.net().getPort());

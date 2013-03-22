@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
@@ -37,21 +36,21 @@ public class SubmissionDirectory {
 
   private final Release release;
 
-  private final Project project;
+  private final String projectKey;
 
   private final Submission submission;
 
-  public SubmissionDirectory(DccFileSystem dccFileSystem, Release release, Project project, Submission submission) {
+  public SubmissionDirectory(DccFileSystem dccFileSystem, Release release, String projectKey, Submission submission) {
     super();
 
     checkArgument(dccFileSystem != null);
     checkArgument(release != null);
-    checkArgument(project != null);
+    checkArgument(projectKey != null);
     checkArgument(submission != null);
 
     this.dccFileSystem = dccFileSystem;
     this.release = release;
-    this.project = project;
+    this.projectKey = projectKey;
     this.submission = submission;
   }
 
@@ -68,13 +67,13 @@ public class SubmissionDirectory {
   }
 
   public String addFile(String filename, InputStream data) {
-    String filepath = this.dccFileSystem.buildFileStringPath(this.release, this.project.getKey(), filename);
+    String filepath = this.dccFileSystem.buildFileStringPath(this.release, this.projectKey, filename);
     HadoopUtils.touch(this.dccFileSystem.getFileSystem(), filepath, data);
     return filepath;
   }
 
   public String deleteFile(String filename) {
-    String filepath = this.dccFileSystem.buildFileStringPath(this.release, this.project.getKey(), filename);
+    String filepath = this.dccFileSystem.buildFileStringPath(this.release, this.projectKey, filename);
     HadoopUtils.rm(this.dccFileSystem.getFileSystem(), filepath);
     return filepath;
   }
@@ -86,19 +85,19 @@ public class SubmissionDirectory {
   }
 
   public String getProjectKey() {
-    return this.project.getKey();
+    return this.projectKey;
   }
 
   public String getSubmissionDirPath() {
-    return dccFileSystem.buildProjectStringPath(release, project.getKey());
+    return dccFileSystem.buildProjectStringPath(release, projectKey);
   }
 
   public String getValidationDirPath() {
-    return dccFileSystem.buildValidationDirStringPath(release, project.getKey());
+    return dccFileSystem.buildValidationDirStringPath(release, projectKey);
   }
 
   public String getDataFilePath(String filename) {
-    return dccFileSystem.buildFileStringPath(release, project.getKey(), filename);
+    return dccFileSystem.buildFileStringPath(release, projectKey, filename);
   }
 
   public Submission getSubmission() {

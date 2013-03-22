@@ -118,7 +118,7 @@ public class FileSystemFunctionalTest extends FileSystemTest {
     Assert.assertFalse(releaseReadOnly);
     log.info("release read only = " + releaseReadOnly);
 
-    SubmissionDirectory mySubmissionDirectory = myReleaseFilesystem.getSubmissionDirectory(this.mockProject);
+    SubmissionDirectory mySubmissionDirectory = myReleaseFilesystem.getSubmissionDirectory(PROJECT_KEY);
     Assert.assertNotNull(mySubmissionDirectory);
 
     boolean submissionReadOnly = mySubmissionDirectory.isReadOnly();
