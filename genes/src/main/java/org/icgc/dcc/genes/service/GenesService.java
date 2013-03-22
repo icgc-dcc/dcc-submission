@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.net.UnknownHostException;
 
 import lombok.AllArgsConstructor;
+import lombok.Cleanup;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -81,7 +82,9 @@ public class GenesService {
 
   @SneakyThrows
   public void load(File file) {
-    load(new FileInputStream(file));
+    @Cleanup
+    InputStream inputStream = new FileInputStream(file);
+    load(inputStream);
   }
 
   MongoCollection getTargetCollection(MongoURI mongoUri) throws UnknownHostException {
