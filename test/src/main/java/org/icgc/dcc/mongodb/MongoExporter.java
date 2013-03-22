@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.mongodb;
 
-import static com.google.common.base.Preconditions.checkState;
-
 import java.io.File;
 
 import lombok.SneakyThrows;
