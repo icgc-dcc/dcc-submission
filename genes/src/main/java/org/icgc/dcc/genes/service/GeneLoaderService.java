@@ -24,7 +24,6 @@ import java.io.InputStream;
 import java.net.UnknownHostException;
 
 import lombok.AllArgsConstructor;
-import lombok.Cleanup;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -48,7 +47,7 @@ import de.undercouch.bson4jackson.BsonFactory;
  */
 @Slf4j
 @AllArgsConstructor
-public class GenesService {
+public class GeneLoaderService {
 
   private final GeneTransformer transformer = new GeneTransformer();
 
@@ -82,9 +81,12 @@ public class GenesService {
 
   @SneakyThrows
   public void load(File file) {
-    @Cleanup
     InputStream inputStream = new FileInputStream(file);
-    load(inputStream);
+    try {
+      load(inputStream);
+    } finally {
+      inputStream.close();
+    }
   }
 
   MongoCollection getTargetCollection(MongoURI mongoUri) throws UnknownHostException {
@@ -115,7 +117,7 @@ public class GenesService {
         callback.handle(gene);
 
         if(++insertCount % 10000 == 0) {
-          log.info("Processed {} genes", insertCount);
+          log.info("Loaded {} genes", insertCount);
         }
       }
       log.info("Finished processing {} gene(s) total", insertCount);
