@@ -56,6 +56,8 @@ public class GeneLoaderService {
 
   @SneakyThrows
   public void load(InputStream inputStream) {
+    log.info("Loading gene model from {} into {}...", inputStream, mongoUri);
+
     final MongoCollection genes = getTargetCollection(mongoUri);
     try {
       // Drop the current collection
