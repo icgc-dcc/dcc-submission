@@ -17,6 +17,11 @@
  */
 package org.icgc.dcc.validation.cascading;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import java.io.Serializable;
+
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
 import cascading.operation.Function;
@@ -24,13 +29,12 @@ import cascading.operation.FunctionCall;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Utility class for working with cascading {@code Function} objects.
  */
-public class FunctionUtils {
+public abstract class FunctionUtils {
+
   private FunctionUtils() {
     // Prevent construction
   }
@@ -41,7 +45,7 @@ public class FunctionUtils {
    * Example of call: <code>pipe = new Each(pipe, new FunctionUtils.LogFunction("my_prefix"), Fields.RESULTS);</code>
    */
   @SuppressWarnings("rawtypes")
-  public static class LogFunction extends BaseOperation implements cascading.operation.Function {
+  public static class LogFunction extends BaseOperation implements Function {
 
     private final String prefix;
 
@@ -70,7 +74,7 @@ public class FunctionUtils {
     /**
      * Very basic for now, possibly offer more overloadings for transform()
      */
-    public interface Transformable {
+    public interface Transformable extends Serializable {
       String tranform(String value);
     }
 
@@ -103,4 +107,5 @@ public class FunctionUtils {
       functionCall.getOutputCollector().add(new Tuple(newValue));
     }
   }
+
 }

@@ -20,10 +20,14 @@ package org.icgc.dcc.test.es;
 import static com.fasterxml.jackson.core.JsonGenerator.Feature.AUTO_CLOSE_TARGET;
 import static com.fasterxml.jackson.databind.SerializationFeature.FLUSH_AFTER_WRITE_VALUE;
 import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
+import static com.google.common.base.Charsets.UTF_8;
 
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -70,7 +74,7 @@ public class ElasticSearchExporter {
       log.info("Exporting {}...", exportFile);
 
       @Cleanup
-      FileWriter writer = new FileWriter(exportFile);
+      Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(exportFile), UTF_8));
 
       SearchHits hits = getSearchHits(typeName);
       for(SearchHit hit : hits) {
