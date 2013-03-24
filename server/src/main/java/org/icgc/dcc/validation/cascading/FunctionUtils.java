@@ -19,6 +19,9 @@ package org.icgc.dcc.validation.cascading;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+
+import java.io.Serializable;
+
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
 import cascading.operation.Function;
@@ -71,7 +74,7 @@ public abstract class FunctionUtils {
     /**
      * Very basic for now, possibly offer more overloadings for transform()
      */
-    public interface Transformable {
+    public interface Transformable extends Serializable {
       String tranform(String value);
     }
 
