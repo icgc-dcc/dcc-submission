@@ -150,11 +150,10 @@ public class SecondaryFileGenerator {
       for(int j = 0; j < numberOfLines; j++) {
         int counterForFields = 0;
 
-        // Add system file fields
+        // Get net line, cycling around if needed
         if(!iterator.hasNext()) {
           iterator = lines.iterator();
         }
-
         String line = iterator.next();
 
         for(Field field : schema.getFields()) {
