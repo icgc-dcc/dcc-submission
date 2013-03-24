@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.mongodb;
+package org.icgc.dcc.test.mongodb;
 
 import static com.google.common.base.Preconditions.checkState;
 
@@ -33,9 +33,6 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import com.mongodb.DB;
 
-/**
- * FIXME: DUPLICATED FROM AGGREGATOR!!!
- */
 @Slf4j
 public class MongoExporter extends BaseMongoImportExport {
 

@@ -15,87 +15,84 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.genes.mongodb;
+package org.icgc.dcc.test.es;
 
-import java.util.logging.Logger;
-
-import lombok.SneakyThrows;
+import static org.elasticsearch.common.settings.ImmutableSettings.settingsBuilder;
 import lombok.extern.slf4j.Slf4j;
 
+import org.elasticsearch.client.Client;
+import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.node.Node;
+import org.elasticsearch.node.NodeBuilder;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
-import com.mongodb.Mongo;
-
-import de.flapdoodle.embed.mongo.MongodExecutable;
-import de.flapdoodle.embed.mongo.MongodProcess;
-import de.flapdoodle.embed.mongo.MongodStarter;
-import de.flapdoodle.embed.mongo.config.MongodConfig;
-import de.flapdoodle.embed.mongo.config.RuntimeConfig;
-import de.flapdoodle.embed.mongo.distribution.Version;
-import de.flapdoodle.embed.process.config.io.ProcessOutput;
-import de.flapdoodle.embed.process.io.NullProcessor;
-import de.flapdoodle.embed.process.io.directories.FixedPath;
-
 @Slf4j
-public class EmbeddedMongo implements TestRule {
+public class EmbeddedElasticSearch implements TestRule {
 
-  private MongodExecutable mongodExe;
+  private Node node;
 
-  private MongodProcess mongod;
-
-  private MongodConfig mongodConfig;
-
-  private Mongo mongo;
+  private Client client;
 
   @Override
   public Statement apply(final Statement base, Description description) {
     return new Statement() {
       @Override
       public void evaluate() throws Throwable {
-        log.info("Starting embedded Mongo...");
+        log.info("Starting embedded ElasticSearch...");
         start();
-        log.info("Embedded Mongo started");
+        log.info("Embedded ElasticSearch started");
 
         base.evaluate();
 
-        log.info("Stopping embedded Mongo...");
+        log.info("Stopping embedded ElasticSearch...");
         stop();
-        log.info("Embedded Mongo stopped");
+        log.info("Embedded ElasticSearch stopped");
       }
     };
   }
 
   public int getPort() {
-    return mongodConfig.net().getPort();
+    return 9300;
   }
 
-  public Mongo getMongo() {
-    return mongo;
+  public Client getClient() {
+    return client;
   }
 
-  @SneakyThrows
   private void start() {
-    // Suppress logging
-    System.setProperty("de.flapdoodle.embed.io.tmpdir", "target");
-    RuntimeConfig runtimeConfig = RuntimeConfig.getInstance(Logger.getLogger(getClass().getName()));
-    runtimeConfig.setProcessOutput(new ProcessOutput(new NullProcessor(), new NullProcessor(), new NullProcessor()));
-    runtimeConfig.setTempDirFactory(new FixedPath("target"));
+    // Build settings
+    Settings settings = settingsBuilder()//
+        // .put("node.local", true)//
+        .put("node.name", "node-test")//
+        .put("node.data", true)//
+        .put("index.store.type", "memory")//
+        .put("index.store.fs.memory.enabled", "true")//
+        .put("index.number_of_shards", "1")//
+        .put("index.number_of_replicas", "0")//
+        .put("gateway.type", "none")//
+        .put("path.data", "target/elasticsearch-test/data")//
+        .put("path.work", "target/elasticsearch-test/work")//
+        .put("path.logs", "target/elasticsearch-test/logs")//
+        .put("cluster.routing.schedule", "50ms") //
+        .build();
 
-    // Start mongo
-    MongodStarter runtime = MongodStarter.getInstance(runtimeConfig);
-    mongodConfig = new MongodConfig(Version.Main.V2_2);
-    mongodExe = runtime.prepare(mongodConfig);
-    mongod = mongodExe.start();
-    mongo = new Mongo("localhost", mongodConfig.net().getPort());
+    node = NodeBuilder.nodeBuilder().settings(settings).node();
+    client = node.client();
+
+    // Wait for Yellow status
+    client.admin().cluster() //
+        .prepareHealth() //
+        .setWaitForYellowStatus() //
+        .setTimeout(TimeValue.timeValueMinutes(1)) //
+        .execute() //
+        .actionGet(); //
   }
 
-  @SneakyThrows
   private void stop() {
-    // Stop mongo
-    mongod.stop();
-    mongodExe.stop();
+    node.stop();
   }
 
 }

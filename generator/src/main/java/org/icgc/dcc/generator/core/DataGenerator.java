@@ -44,7 +44,6 @@ import com.google.common.io.Resources;
  * FileSchemas and the static listOfPrimaryKeys From here the openFile methods of CreateCore/Meta/Primary/SecondaryFile
  * classes is called
  */
-
 public class DataGenerator {
 
   public static final String TAB = "\t";
