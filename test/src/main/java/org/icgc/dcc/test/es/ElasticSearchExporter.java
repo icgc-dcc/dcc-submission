@@ -82,8 +82,8 @@ public class ElasticSearchExporter {
   }
 
   private Set<String> getTypeNames() {
-    ClusterState cs =
-        esClient.admin().cluster().prepareState().setFilterIndices(indexName).execute().actionGet().getState();
+    ClusterState cs = esClient.admin().cluster().prepareState() //
+        .setFilterIndices(indexName).execute().actionGet().getState();
     IndexMetaData imd = cs.getMetaData().index(indexName);
     ImmutableSet<String> types = imd.getMappings().keySet();
 
@@ -98,10 +98,11 @@ public class ElasticSearchExporter {
   }
 
   private SearchHits getSearchHits(String typeName) throws InterruptedException, ExecutionException {
-    SearchResponse searchResponse = esClient.prepareSearch(indexName).setTypes(typeName).execute().get();
-    SearchHits hits = searchResponse.hits();
+    SearchResponse searchResponse = esClient.prepareSearch(indexName) //
+        .setTypes(typeName) //
+        .setSize(Integer.MAX_VALUE).execute().get();
 
-    return hits;
+    return searchResponse.hits();
   }
 
 }
