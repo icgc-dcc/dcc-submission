@@ -100,7 +100,7 @@ public class ElasticSearchExporter {
   private SearchHits getSearchHits(String typeName) throws InterruptedException, ExecutionException {
     SearchResponse searchResponse = esClient.prepareSearch(indexName) //
         .setTypes(typeName) //
-        .setSize(Integer.MAX_VALUE).execute().get();
+        .setSize(100).execute().get();
 
     return searchResponse.hits();
   }
