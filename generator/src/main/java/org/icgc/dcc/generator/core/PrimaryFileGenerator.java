@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Set;
 
 import lombok.Cleanup;
-import lombok.extern.java.Log;
 
 import org.apache.commons.lang.mutable.MutableDouble;
 import org.apache.commons.lang.mutable.MutableInt;
@@ -51,7 +50,6 @@ import com.google.common.io.Resources;
 /**
  * 
  */
-@Log
 public class PrimaryFileGenerator {
 
   private static final String TAB = DataGenerator.TAB;
@@ -151,7 +149,6 @@ public class PrimaryFileGenerator {
 
           if(foreignKeyArray != null) {
             output = foreignKeyArray.get(i + 2);
-            log.info(fieldName + " " + output);
           } else {
             if(schemaName.equals(SSM_SCHEMA_NAME) && simulatedData.contains(fieldName)) {// This prints out if true
               output = line.substring(nextTabIndex, line.indexOf(TAB, nextTabIndex));
