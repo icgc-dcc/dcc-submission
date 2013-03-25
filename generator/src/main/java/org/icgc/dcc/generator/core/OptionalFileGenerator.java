@@ -66,8 +66,9 @@ public class OptionalFileGenerator {
 
   private final MutableDouble uniqueDecimal = new MutableDouble(0.0);
 
-  public void createFile(DataGenerator datagen, FileSchema schema, Integer numberOfLinesPerPrimaryKey,
-      String leadJurisdiction, String institution, String tumourType, String platform) throws IOException {
+  public void createFile(DataGenerator datagen, ResourceWrapper resourceWrapper, FileSchema schema,
+      Integer numberOfLinesPerPrimaryKey, String leadJurisdiction, String institution, String tumourType,
+      String platform) throws IOException {
 
     this.datagen = datagen;
 

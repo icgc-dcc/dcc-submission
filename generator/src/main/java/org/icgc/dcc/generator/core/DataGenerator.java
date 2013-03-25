@@ -18,7 +18,9 @@
 
 package org.icgc.dcc.generator.core;
 
-import java.util.ArrayList;
+import static com.google.common.collect.Lists.newArrayList;
+
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
@@ -27,12 +29,17 @@ import lombok.SneakyThrows;
 import org.apache.commons.lang.mutable.MutableDouble;
 import org.apache.commons.lang.mutable.MutableInt;
 import org.apache.commons.lang.mutable.MutableLong;
+import org.icgc.dcc.dictionary.model.CodeList;
 import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.dictionary.model.Relation;
+import org.icgc.dcc.dictionary.model.Restriction;
 import org.icgc.dcc.dictionary.model.ValueType;
+import org.icgc.dcc.generator.model.CodeListTerm;
 import org.icgc.dcc.generator.model.PrimaryKey;
 import org.icgc.dcc.generator.utils.ResourceWrapper;
+
+import com.google.common.base.Optional;
 
 /**
  * This File contains a static methods used by CreateCore/Meta/Primary/SecondaryFile Classes It holds the CodeList,
@@ -41,11 +48,13 @@ import org.icgc.dcc.generator.utils.ResourceWrapper;
  */
 public class DataGenerator {
 
+  static final String CODELIST_RESTRICTION_NAME = "codelist";
+
   static final String CONSTANT_DATE = "20130313";
 
   private static final int UPPER_LIMIT_FOR_TEXT_TYPE_FIELD_INTEGER = 1000000000;
 
-  private final List<PrimaryKey> listOfPrimaryKeys = new ArrayList<PrimaryKey>();
+  private final List<PrimaryKey> primaryKeys = newArrayList();
 
   private Random random;
 
@@ -57,8 +66,8 @@ public class DataGenerator {
     this.random = (seed == null) ? new Random() : new Random(seed);
   }
 
-  public List<PrimaryKey> getListOfPrimaryKeys() {
-    return this.listOfPrimaryKeys;
+  public List<PrimaryKey> getPrimaryKeys() {
+    return this.primaryKeys;
   }
 
   public int randomIntGenerator(int start, int end) {
@@ -79,12 +88,31 @@ public class DataGenerator {
       String fieldIdentifier = uniqueFieldName;
 
       PrimaryKey pk = new PrimaryKey(schemaIdentifier, fieldIdentifier);
-      this.listOfPrimaryKeys.add(pk);
+      this.primaryKeys.add(pk);
+    }
+  }
+
+  void populateTermList(ResourceWrapper resourceWrapper, FileSchema schema, List<CodeListTerm> codeListTerms) {
+    for(Field field : schema.getFields()) {
+      Optional<Restriction> restriction = field.getRestriction(CODELIST_RESTRICTION_NAME);
+      if(restriction.isPresent()) {
+        String codeListName = restriction.get().getConfig().getString("name");
+        Iterator<CodeList> iterator = resourceWrapper.getCodeLists();
+
+        while(iterator.hasNext()) {
+          CodeList codeList = iterator.next();
+
+          if(codeList.getName().equals(codeListName)) {
+            CodeListTerm term = new CodeListTerm(field.getName(), codeList.getTerms());
+            codeListTerms.add(term);
+          }
+        }
+      }
     }
   }
 
   public static List<String> getPrimaryKeys(DataGenerator datagen, String schemaName, String fieldName) {
-    for(PrimaryKey primaryKey : datagen.getListOfPrimaryKeys()) {
+    for(PrimaryKey primaryKey : datagen.getPrimaryKeys()) {
       String primaryKeySchemaIdentifier = primaryKey.getSchemaIdentifier();
       String primaryKeyFieldIdentifier = primaryKey.getFieldIdentifier();
 
@@ -104,7 +132,7 @@ public class DataGenerator {
         if(primaryKeyFieldName.equals(fieldName)) {
 
           for(String foreignKeyFieldName : relation.getOtherFields()) {
-            for(PrimaryKey primaryKey : datagen.getListOfPrimaryKeys()) {
+            for(PrimaryKey primaryKey : datagen.getPrimaryKeys()) {
               String primaryKeySchemaIdentifier = primaryKey.getSchemaIdentifier();
               String primaryKeyFieldIdentifier = primaryKey.getFieldIdentifier();
               String relatedFileSchemaIdentifier = relation.getOther();
@@ -122,28 +150,28 @@ public class DataGenerator {
     return null;
   }
 
-  public static String generateFieldValue(DataGenerator datagen, List<String> list, String schemaName, Field field,
-      MutableLong uniqueId, MutableInt uniqueInteger, MutableDouble uniqueDecimal) {
+  public static String generateFieldValue(DataGenerator datagen, ResourceWrapper resourceWrapper, List<String> list,
+      String schemaName, Field field, MutableLong uniqueId, MutableInt uniqueInteger, MutableDouble uniqueDecimal) {
     String output = null;
     String fieldName = field.getName();
     ValueType fieldValueType = field.getValueType();
 
     if(fieldValueType == ValueType.TEXT) {
-      if(ResourceWrapper.isUniqueField(list, fieldName)) {
+      if(resourceWrapper.isUniqueField(list, fieldName)) {
         uniqueId.increment();
         output = schemaName + String.valueOf(uniqueId);
       } else {
         output = Integer.toString(datagen.randomIntGenerator(0, UPPER_LIMIT_FOR_TEXT_TYPE_FIELD_INTEGER));
       }
     } else if(fieldValueType == ValueType.INTEGER) {
-      if(ResourceWrapper.isUniqueField(list, fieldName)) {
+      if(resourceWrapper.isUniqueField(list, fieldName)) {
         uniqueInteger.increment();
         output = schemaName + String.valueOf(uniqueInteger);
       } else {
         output = Integer.toString(datagen.randomIntGenerator(0, 200));
       }
     } else if(fieldValueType == ValueType.DECIMAL) {
-      if(ResourceWrapper.isUniqueField(list, fieldName)) {
+      if(resourceWrapper.isUniqueField(list, fieldName)) {
         uniqueDecimal.add(0.1);
         output = schemaName + String.valueOf(uniqueDecimal);
       } else {

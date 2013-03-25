@@ -18,6 +18,7 @@
 package org.icgc.dcc.generator.core;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Lists.newArrayList;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -26,7 +27,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -36,19 +36,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.mutable.MutableDouble;
 import org.apache.commons.lang.mutable.MutableInt;
 import org.apache.commons.lang.mutable.MutableLong;
-import org.icgc.dcc.dictionary.model.CodeList;
 import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.dictionary.model.Relation;
-import org.icgc.dcc.dictionary.model.Restriction;
 import org.icgc.dcc.dictionary.model.Term;
 import org.icgc.dcc.generator.model.CodeListTerm;
 import org.icgc.dcc.generator.utils.ResourceWrapper;
 import org.icgc.dcc.generator.utils.SubmissionUtils;
 
-import com.fasterxml.jackson.databind.MappingIterator;
 import com.google.common.base.Charsets;
-import com.google.common.base.Optional;
 import com.google.common.io.Resources;
 
 @Slf4j
@@ -57,8 +53,6 @@ public class SecondaryFileGenerator {
   private static final String TAB = "\t";
 
   private static final String NEW_LINE = "\n";
-
-  private static final String CODELIST_RESTRICTION_NAME = "codelist";
 
   private static final String MIRNA_MIRBASE_FILE_NAME = "org/icgc/dcc/generator/Mirna_MirbaseSystemFile.txt";
 
@@ -76,7 +70,7 @@ public class SecondaryFileGenerator {
 
   private DataGenerator datagen;
 
-  private final List<CodeListTerm> codeListArrayList = new ArrayList<CodeListTerm>();
+  private final List<CodeListTerm> codeListTerms = newArrayList();
 
   private final MutableLong uniqueId = new MutableLong(0L);
 
@@ -84,8 +78,9 @@ public class SecondaryFileGenerator {
 
   private final MutableDouble uniqueDecimal = new MutableDouble(0.0);
 
-  public void createFile(DataGenerator datagen, FileSchema schema, Integer linesPerForeignKey, String leadJurisdiction,
-      String institution, String tumourType, String platform) throws IOException {
+  public void createFile(DataGenerator datagen, ResourceWrapper resourceWrapper, FileSchema schema,
+      Integer linesPerForeignKey, String leadJurisdiction, String institution, String tumourType, String platform)
+      throws IOException {
 
     this.datagen = datagen;
 
@@ -94,26 +89,15 @@ public class SecondaryFileGenerator {
 
     populateFileHeader(schema, writer);
 
-    populateCodeListArray(schema);
+    datagen.populateTermList(resourceWrapper, schema, codeListTerms);
 
     log.info("Populating " + schema.getName() + " file");
-    populateFile(schema, linesPerForeignKey, writer);
+    populateFile(resourceWrapper, schema, linesPerForeignKey, writer);
     log.info("Finished populating " + schema.getName() + " file");
 
     writer.close();
   }
 
-  /**
-   * @param datagen
-   * @param schema
-   * @param leadJurisdiction
-   * @param institution
-   * @param tumourType
-   * @param platform
-   * @return
-   * @throws IOException
-   * @throws FileNotFoundException
-   */
   private BufferedWriter prepareFile(DataGenerator datagen, FileSchema schema, String leadJurisdiction,
       String institution, String tumourType, String platform) throws IOException, FileNotFoundException {
     // File building
@@ -131,11 +115,6 @@ public class SecondaryFileGenerator {
     return new BufferedWriter(osw);
   }
 
-  /**
-   * @param schema
-   * @param writer
-   * @throws IOException
-   */
   private void populateFileHeader(FileSchema schema, BufferedWriter writer) throws IOException {
     // Output field names (eliminate trailing tabs)
     int counterForFieldNames = 0;
@@ -150,27 +129,8 @@ public class SecondaryFileGenerator {
     writer.write(NEW_LINE);
   }
 
-  /**
-   * @param schema
-   */
-  private void populateCodeListArray(FileSchema schema) {
-    for(Field field : schema.getFields()) {
-      Optional<Restriction> restriction = field.getRestriction(CODELIST_RESTRICTION_NAME);
-      if(restriction.isPresent()) {
-        String codeListName = restriction.get().getConfig().getString("name");
-        MappingIterator<CodeList> iterator = ResourceWrapper.getCodeLists();
-        while(iterator.hasNext()) {
-          CodeList codeList = iterator.next();
-          if(codeList.getName().equals(codeListName)) {
-            CodeListTerm term = new CodeListTerm(field.getName(), codeList.getTerms());
-            codeListArrayList.add(term);
-          }
-        }
-      }
-    }
-  }
-
-  public void populateFile(FileSchema schema, Integer linesPerForeignKey, Writer writer) throws IOException {
+  public void populateFile(ResourceWrapper resourceWrapper, FileSchema schema, Integer linesPerForeignKey, Writer writer)
+      throws IOException {
     String schemaName = schema.getName();
     List<Relation> relations = schema.getRelations();
 
@@ -191,7 +151,7 @@ public class SecondaryFileGenerator {
         String line = iterator.next();
 
         for(Field field : schema.getFields()) {
-          String output = getFieldValue(schema, schemaName, foreignKeyEntry, line, field);
+          String output = getFieldValue(resourceWrapper, schema, schemaName, foreignKeyEntry, line, field);
 
           // Output field value (eliminate trailing tabs)
           if(schema.getFields().size() - 1 == counterForFields) {
@@ -208,11 +168,6 @@ public class SecondaryFileGenerator {
     }
   }
 
-  /**
-   * @param schemaName
-   * @return
-   * @throws IOException
-   */
   private List<String> readSystemFiles(String schemaName) throws IOException {
     // Read in system files
     List<String> lines = null;
@@ -224,15 +179,8 @@ public class SecondaryFileGenerator {
     return lines;
   }
 
-  /**
-   * @param schema
-   * @param schemaName
-   * @param i
-   * @param line
-   * @param field
-   * @return
-   */
-  private String getFieldValue(FileSchema schema, String schemaName, int i, String line, Field field) {
+  private String getFieldValue(ResourceWrapper resourceWrapper, FileSchema schema, String schemaName, int i,
+      String line, Field field) {
     String fieldName = field.getName();
 
     // populate output with systemfile value if current field is to be populated with a system file value
@@ -247,8 +195,8 @@ public class SecondaryFileGenerator {
       }
       if(output == null) {
         output =
-            DataGenerator.generateFieldValue(datagen, schema.getUniqueFields(), schemaName, field, uniqueId,
-                uniqueInteger, uniqueDecimal);
+            DataGenerator.generateFieldValue(datagen, resourceWrapper, schema.getUniqueFields(), schemaName, field,
+                uniqueId, uniqueInteger, uniqueDecimal);
       }
     }
     return output;
@@ -256,9 +204,6 @@ public class SecondaryFileGenerator {
 
   /**
    * Calculates the number Of non-repetitive entries (with regards to the foreign key fields) to be inserted in the file
-   * @param schema
-   * @param relations
-   * @return
    */
   private int calculatedLengthOfForeignKeys(FileSchema schema, List<Relation> relations) {
     Relation randomRelation = relations.get(0);
@@ -269,10 +214,6 @@ public class SecondaryFileGenerator {
 
   /**
    * Calculates the number of times a file entry repeats with regards to the foreign key
-   * @param schema
-   * @param linesPerForeignKey
-   * @param relations
-   * @return
    */
   private int calculateNumberOfLinesPerForeignKey(FileSchema schema, Integer linesPerForeignKey,
       List<Relation> relations) {
@@ -296,18 +237,10 @@ public class SecondaryFileGenerator {
     return null;
   }
 
-  /**
-   * @param schema
-   * @param schemaName
-   * @param indexOfCodeListArray
-   * @param currentField
-   * @param currentFieldName
-   * @return
-   */
   private String getCodeListValue(FileSchema schema, String schemaName, Field currentField, String currentFieldName) {
     String output = null;
-    if(codeListArrayList.size() > 0) {
-      for(CodeListTerm codeListTerm : codeListArrayList) {
+    if(codeListTerms.size() > 0) {
+      for(CodeListTerm codeListTerm : codeListTerms) {
         if(codeListTerm.getFieldName().equals(currentFieldName)) {
           List<Term> terms = codeListTerm.getTerms();
           output = terms.get(datagen.randomIntGenerator(0, terms.size() - 1)).getCode();

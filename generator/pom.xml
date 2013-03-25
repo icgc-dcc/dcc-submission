@@ -28,6 +28,12 @@
       <artifactId>lombok</artifactId>
       <scope>provided</scope>
     </dependency>
+    
+    <dependency>
+      <groupId>commons-lang</groupId>
+      <artifactId>commons-lang</artifactId>
+      <version>2.3</version>
+    </dependency>   
 
 	<!-- Resources -->
 	<dependency>
@@ -70,14 +76,9 @@
       <groupId>com.fasterxml.jackson.dataformat</groupId>
       <artifactId>jackson-dataformat-yaml</artifactId>
     </dependency>
-
-    <!-- Utilities -->
-    <dependency>
-      <groupId>commons-lang</groupId>
-      <artifactId>commons-lang</artifactId>
-      <version>2.3</version>
-    </dependency>
+             
   </dependencies>
+  
   <build>
     <plugins>
       <!-- Package -->

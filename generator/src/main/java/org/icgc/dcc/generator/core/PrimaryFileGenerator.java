@@ -18,6 +18,7 @@
 package org.icgc.dcc.generator.core;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Lists.newArrayList;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -26,7 +27,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -38,19 +38,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.mutable.MutableDouble;
 import org.apache.commons.lang.mutable.MutableInt;
 import org.apache.commons.lang.mutable.MutableLong;
-import org.icgc.dcc.dictionary.model.CodeList;
 import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.dictionary.model.Relation;
-import org.icgc.dcc.dictionary.model.Restriction;
 import org.icgc.dcc.dictionary.model.Term;
 import org.icgc.dcc.generator.model.CodeListTerm;
 import org.icgc.dcc.generator.utils.ResourceWrapper;
 import org.icgc.dcc.generator.utils.SubmissionUtils;
 
-import com.fasterxml.jackson.databind.MappingIterator;
 import com.google.common.base.Charsets;
-import com.google.common.base.Optional;
 import com.google.common.io.Resources;
 
 @Slf4j
@@ -60,15 +56,13 @@ public class PrimaryFileGenerator {
 
   private static final String NEW_LINE = "\n";
 
-  private static final String CODELIST_RESTRICTION_NAME = "codelist";
-
   private static final String SSM_SCHEMA_NAME = "ssm_p";
 
   private static final String SIMULATED_DATA_FILE_URL = "org/icgc/dcc/generator/ssmp_simulated.txt";
 
   private DataGenerator datagen;
 
-  private final List<CodeListTerm> codeListArrayList = new ArrayList<CodeListTerm>();
+  private final List<CodeListTerm> codeListTerms = newArrayList();
 
   private final Set<String> simulatedData = new HashSet<String>(Arrays.asList("mutation_type", "chromosome",
       "chromosome_start", "chromosome_end", "reference_genome_allele", "control_genotype", "tumour_genotype mutation"));
@@ -79,8 +73,9 @@ public class PrimaryFileGenerator {
 
   private final MutableDouble uniqueDecimal = new MutableDouble(0.0);
 
-  public void createFile(DataGenerator datagen, FileSchema schema, Integer linesPerForeignKey, String leadJurisdiction,
-      String institution, String tumourType, String platform) throws IOException {
+  public void createFile(DataGenerator datagen, ResourceWrapper resourceWrapper, FileSchema schema,
+      Integer linesPerForeignKey, String leadJurisdiction, String institution, String tumourType, String platform)
+      throws IOException {
 
     this.datagen = datagen;
 
@@ -90,20 +85,15 @@ public class PrimaryFileGenerator {
     // Output field names (eliminate trailing tab)
     populateFileHeader(schema, writer);
 
-    populateCodeListArray(schema);
+    datagen.populateTermList(resourceWrapper, schema, codeListTerms);
 
-    log.info("Populating " + schema.getName() + " file");
-    populateFile(schema, linesPerForeignKey, writer);
-    log.info("Finished populating " + schema.getName() + " file");
+    log.info("Populating {} file", schema.getName());
+    populateFile(resourceWrapper, schema, linesPerForeignKey, writer);
+    log.info("Finished populating {}", schema.getName());
 
     writer.close();
   }
 
-  /**
-   * @param schema
-   * @param writer
-   * @throws IOException
-   */
   private void populateFileHeader(FileSchema schema, BufferedWriter writer) throws IOException {
     int counterForFieldNames = 0;
     for(String fieldName : schema.getFieldNames()) {
@@ -117,17 +107,6 @@ public class PrimaryFileGenerator {
     writer.write(NEW_LINE);
   }
 
-  /**
-   * @param datagen
-   * @param schema
-   * @param leadJurisdiction
-   * @param institution
-   * @param tumourType
-   * @param platform
-   * @return
-   * @throws IOException
-   * @throws FileNotFoundException
-   */
   private BufferedWriter prepareFile(DataGenerator datagen, FileSchema schema, String leadJurisdiction,
       String institution, String tumourType, String platform) throws IOException, FileNotFoundException {
     // File building
@@ -145,27 +124,8 @@ public class PrimaryFileGenerator {
     return new BufferedWriter(osw);
   }
 
-  /**
-   * @param schema
-   */
-  private void populateCodeListArray(FileSchema schema) {
-    for(Field field : schema.getFields()) {
-      Optional<Restriction> restriction = field.getRestriction(CODELIST_RESTRICTION_NAME);
-      if(restriction.isPresent()) {
-        String codeListName = restriction.get().getConfig().getString("name");
-        MappingIterator<CodeList> iterator = ResourceWrapper.getCodeLists();
-        while(iterator.hasNext()) {
-          CodeList codeList = iterator.next();
-          if(codeList.getName().equals(codeListName)) {
-            CodeListTerm term = new CodeListTerm(field.getName(), codeList.getTerms());
-            codeListArrayList.add(term);
-          }
-        }
-      }
-    }
-  }
-
-  public void populateFile(FileSchema schema, Integer linesPerForeignKey, Writer writer) throws IOException {
+  public void populateFile(ResourceWrapper resourceWrapper, FileSchema schema, Integer linesPerForeignKey, Writer writer)
+      throws IOException {
     String schemaName = schema.getName();
     List<Relation> relations = schema.getRelations();
 
@@ -184,7 +144,8 @@ public class PrimaryFileGenerator {
         String line = lines.get(datagen.randomIntGenerator(0, lines.size() - 1));// This read in the file
 
         for(Field field : schema.getFields()) {
-          String output = getFieldValue(schema, schemaName, foreignKeyEntry, nextTabIndex, line, field);
+          String output =
+              getFieldValue(resourceWrapper, schema, schemaName, foreignKeyEntry, nextTabIndex, line, field);
 
           // Write output, eliminate trailing tabs
           if(schema.getFields().size() - 1 == counterForFields) {
@@ -200,17 +161,8 @@ public class PrimaryFileGenerator {
     }
   }
 
-  /**
-   * @param schema
-   * @param schemaName
-   * @param foreignKeyEntry
-   * @param nextTabIndex
-   * @param line
-   * @param field
-   * @return
-   */
-  private String getFieldValue(FileSchema schema, String schemaName, int foreignKeyEntry, MutableInt nextTabIndex,
-      String line, Field field) {
+  private String getFieldValue(ResourceWrapper resourceWrapper, FileSchema schema, String schemaName,
+      int foreignKeyEntry, MutableInt nextTabIndex, String line, Field field) {
     String output = null;
     String fieldName = field.getName();
 
@@ -228,12 +180,12 @@ public class PrimaryFileGenerator {
     }
     if(output == null) {
       output =
-          DataGenerator.generateFieldValue(datagen, schema.getUniqueFields(), schemaName, field, uniqueId,
-              uniqueInteger, uniqueDecimal);
+          DataGenerator.generateFieldValue(datagen, resourceWrapper, schema.getUniqueFields(), schemaName, field,
+              uniqueId, uniqueInteger, uniqueDecimal);
     }
 
     // Add output to primary keys if it is to be used as a foreign key else where
-    if(ResourceWrapper.isUniqueField(schema.getUniqueFields(), fieldName)) {
+    if(resourceWrapper.isUniqueField(schema.getUniqueFields(), fieldName)) {
       DataGenerator.getPrimaryKeys(datagen, schemaName, fieldName).add(output);
     }
     return output;
@@ -241,9 +193,6 @@ public class PrimaryFileGenerator {
 
   /**
    * Calculates the number Of non-repetitive entries (with regards to the foreign key fields) to be inserted in the file
-   * @param schema
-   * @param relations
-   * @return
    */
   private int calculateLengthOfForeignKeys(FileSchema schema, List<Relation> relations) {
     Relation randomRelation = relations.get(0);
@@ -254,10 +203,6 @@ public class PrimaryFileGenerator {
 
   /**
    * Calculates the number of times a file entry repeats with regards to the foreign key
-   * @param schema
-   * @param linesPerForeignKey
-   * @param relations
-   * @return
    */
   private int calculateNumberOfLinesPerForeignKey(FileSchema schema, Integer linesPerForeignKey,
       List<Relation> relations) {
@@ -268,18 +213,10 @@ public class PrimaryFileGenerator {
     }
   }
 
-  /**
-   * @param schema
-   * @param schemaName
-   * @param indexOfCodeListArray
-   * @param currentField
-   * @param currentFieldName
-   * @return
-   */
   private String getCodeListValue(FileSchema schema, String schemaName, Field currentField, String currentFieldName) {
     String output = null;
-    if(codeListArrayList.size() > 0) {
-      for(CodeListTerm codeListTerm : codeListArrayList) {
+    if(codeListTerms.size() > 0) {
+      for(CodeListTerm codeListTerm : codeListTerms) {
         if(codeListTerm.getFieldName().equals(currentFieldName)) {
           List<Term> terms = codeListTerm.getTerms();
           output = terms.get(datagen.randomIntGenerator(0, terms.size() - 1)).getCode();

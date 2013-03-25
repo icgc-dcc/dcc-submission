@@ -19,6 +19,7 @@ package org.icgc.dcc.generator.utils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 
 import lombok.extern.slf4j.Slf4j;
@@ -38,62 +39,55 @@ import com.google.common.io.Resources;
 
 @Slf4j
 public class ResourceWrapper {
-  private static List<FileSchema> fileSchemas;
+  private List<FileSchema> fileSchemas;
 
-  private static MappingIterator<CodeList> codeList;
+  private MappingIterator<CodeList> codeList;
 
-  private static ObjectMapper mapper = new ObjectMapper();
+  private static final ObjectMapper mapper = new ObjectMapper();
 
   private static final ObjectReader READER = mapper.reader(CodeList.class);
 
-  /**
-   * @param dictionaryFile
-   * @param codeListFile
-   * @throws JsonParseException
-   * @throws JsonMappingException
-   * @throws IOException
-   * @throws JsonProcessingException
-   */
-  public static void initResources(File dictionaryFile, File codeListFile) throws JsonParseException,
-      JsonMappingException, IOException, JsonProcessingException {
+  public ResourceWrapper(File dictionaryFile, File codeListFile) throws JsonParseException, JsonMappingException,
+      IOException, JsonProcessingException {
     if(dictionaryFile != null) {
-      ResourceWrapper.initDictionary(dictionaryFile);
+      initDictionary(dictionaryFile);
     } else {
-      ResourceWrapper.initDictionary();
+      initDictionary();
     }
+
     if(codeListFile != null) {
-      ResourceWrapper.initCodeLists(codeListFile);
+      initCodeLists(codeListFile);
     } else {
-      ResourceWrapper.initCodeLists();
+      initCodeLists();
     }
   }
 
-  public static void initDictionary(File dictionaryFile) throws JsonParseException, JsonMappingException, IOException {
-    log.info("Initializing dictionary: " + dictionaryFile.getName());
+  public void initDictionary(File dictionaryFile) throws JsonParseException, JsonMappingException, IOException {
+    log.info("Initializing dictionary: {}", dictionaryFile.getName());
     fileSchemas = mapper.readValue(dictionaryFile, Dictionary.class).getFiles();
   }
 
-  public static void initDictionary() throws JsonParseException, JsonMappingException, IOException {
+  public void initDictionary() throws JsonParseException, JsonMappingException, IOException {
     log.info("Initializing dictionary: Dictionary.json");
     fileSchemas =
         mapper.readValue(Resources.getResource("org/icgc/dcc/resources/Dictionary.json"), Dictionary.class).getFiles();
   }
 
-  public static void initCodeLists(File codeListFile) throws JsonParseException, JsonMappingException, IOException {
-    log.info("Initializing codelist: " + codeListFile.getName());
+  public void initCodeLists(File codeListFile) throws JsonParseException, JsonMappingException, IOException {
+    log.info("Initializing codelist: {}", codeListFile.getName());
     codeList = READER.readValues(codeListFile);
   }
 
-  public static void initCodeLists() throws JsonProcessingException, IOException {
+  public void initCodeLists() throws JsonProcessingException, IOException {
     log.info("Initializing codelist: CodeList.json");
     codeList = READER.readValues(Resources.getResource("org/icgc/dcc/resources/CodeList.json"));
   }
 
-  public static MappingIterator<CodeList> getCodeLists() {
+  public Iterator<CodeList> getCodeLists() {
     return codeList;
   }
 
-  public static FileSchema getSchema(DataGenerator datagen, String schemaName) {
+  public FileSchema getSchema(DataGenerator datagen, String schemaName) {
     for(FileSchema schema : fileSchemas) {
       if(schema.getName().equals(schemaName)) {
         return schema;
@@ -102,11 +96,8 @@ public class ResourceWrapper {
     return null;
   }
 
-  public static boolean isUniqueField(List<String> list, String fieldName) {
-    if(list.contains(fieldName)) {
-      return true;
-    }
-    return false;
+  public boolean isUniqueField(List<String> list, String fieldName) {
+    return list.contains(fieldName);
   }
 
 }
