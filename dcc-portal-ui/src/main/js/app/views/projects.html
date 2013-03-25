@@ -18,13 +18,13 @@
         <h1>Cancer Projects</h1>
 
         <div class="row">
-            <div class="span4">
-                <div style="width:300px; height: 220px; background: #eee">
-                    <chart items='cdata' type="pie" height="220"></chart>
-                </div>
+            <div class="span3">
+                <chart items='cdata' label='Donors' title="Donor Distribution" type="pie" height="220"></chart>
+
             </div>
-            <div class="span5">
-                <div style="width:380px; height: 220px; background: #eee"></div>
+            <div class="span6">
+                <stacked xaxis='stxdata' series="stsdata" height="220"></stacked>
+
             </div>
         </div>
         <table class="table table-bordered table-striped">

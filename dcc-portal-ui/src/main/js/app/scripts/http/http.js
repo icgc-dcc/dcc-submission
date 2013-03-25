@@ -39,9 +39,11 @@ angular.module('app.http.http').factory('http', ['$http', 'httpService', functio
     },
     embQuery: function (url, param) {
       console.log(param);
-      var filters = JSON.stringify(param);
-
-      var query_url = filters != "{}" ? url + '?filters=' + filters : url;
+      var filters, query_url = url;
+      if (param) {
+        filters = JSON.stringify(param);
+        query_url = url + '?filters=' + filters;
+      }
       console.log(query_url);
       return $http.get(query_url).then(extractData);
     }

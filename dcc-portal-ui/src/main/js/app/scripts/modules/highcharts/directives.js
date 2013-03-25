@@ -21,7 +21,7 @@ angular.module('highcharts', ['highcharts.directives']);
 
 angular.module('highcharts.directives', []);
 
-angular.module('highcharts.directives').directive('chart', function ($rootScope) {
+angular.module('highcharts.directives').directive('chart', function () {
   return {
     restrict: 'E',
     replace: true,
@@ -29,14 +29,14 @@ angular.module('highcharts.directives').directive('chart', function ($rootScope)
       items: '='
     },
     template: '<div id="container" style="margin: 0 auto">not working</div>',
-    controller: function ($scope, $attrs, $rootScope) {
+    link: function ($scope, $element, $attrs) {
       var renderChart = function (settings) {
         new Highcharts.Chart(settings);
       };
 
       var chartsDefaults = {
         chart: {
-          renderTo: 'container',
+          renderTo: $element[0],
           type: $attrs.type || null,
           height: $attrs.height || null,
           width: $attrs.width || null,
@@ -45,32 +45,47 @@ angular.module('highcharts.directives').directive('chart', function ($rootScope)
           plotShadow: false
         },
         title: {
-          text: 'Donor Distribution'
+          text: $attrs.title
         },
         plotOptions: {
           pie: {
+            innerSize: 100,
             allowPointSelect: true,
             animation: true,
             cursor: 'pointer',
+            showInLegend: false,
             dataLabels: {
               enabled: false,
               color: '#000000',
               connectorColor: '#000000',
+              distance: 1,
+              zIndex: 2,
+              //overflow: "justify",
               formatter: function () {
-                return '<b>' + this.point.name + '</b>';
-              }
-            },
-            events: {
-              click: function (event) {
-                $rootScope.$broadcast('termFilter', event.point.type, event.point.facet, event.point.name);
+                return this.point.y + '<b>(' + this.point.percentage.toFixed(2) + '% )</b>';
               }
             }
           }
         },
+        tooltip: {
+          formatter: function () {
+            return '<div style="border: 1px solid ' + this.point.color + '" class="hc-tooltip">' +
+                this.point.name + "<br>" + "Donors: <strong>" + this.point.y + "</strong>" +
+                '</div>';
+          },
+          useHTML: true,
+          shared: false,
+          borderRadius: 0,
+          borderWidth: 0,
+          shadow: false,
+          enabled: true,
+          backgroundColor: 'none',
+          zIndex: 100000
+        },
         series: [
           {
             type: 'pie',
-            name: 'Donors',
+            name: $attrs.label,
             data: $scope.items
           }
         ]
@@ -89,10 +104,104 @@ angular.module('highcharts.directives').directive('chart', function ($rootScope)
         newSettings.series = [
           {
             type: 'pie',
-            name: 'Donors',
+            name: $attrs.label,
             data: newValue
           }
         ];
+        renderChart(newSettings);
+      });
+
+      renderChart(chartsDefaults);
+    }
+  }
+});
+
+angular.module('highcharts.directives').directive('stacked', function () {
+  return {
+    restrict: 'E',
+    replace: true,
+    scope: {
+      xaxis: '=',
+      series: '='
+    },
+    template: '<div id="container" style="margin: 0 auto">not working</div>',
+    link: function ($scope, $element, $attrs) {
+      console.log($scope, $element, $attrs);
+      var renderChart = function (settings) {
+        new Highcharts.Chart(settings);
+      };
+
+      var chartsDefaults = {
+        chart: {
+          renderTo: $element[0],
+          type: 'column',
+          height: $attrs.height || null,
+          width: $attrs.width || null,
+          plotBackgroundColor: null,
+          plotBorderWidth: null,
+          plotShadow: false
+        },
+        title: {
+          text: 'Stacked column chart'
+        },
+        xAxis: {
+          categories: $scope.xaxis //['Apples', 'Oranges', 'Pears', 'Grapes', 'Bananas']
+        },
+        yAxis: {
+          min: 0,
+          title: {
+            text: 'Total fruit consumption'
+          },
+          stackLabels: {
+            enabled: true,
+            style: {
+              fontWeight: 'bold',
+              color: (Highcharts.theme && Highcharts.theme.textColor) || 'gray'
+            }
+          }
+        },
+        legend: {
+          enabled: false,
+          align: 'right',
+          x: 0,
+          verticalAlign: 'top',
+          y: 20,
+          floating: true,
+          backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColorSolid) || 'white',
+          borderColor: '#CCC',
+          borderWidth: 1,
+          shadow: false
+        },
+        tooltip: {
+          formatter: function () {
+            return '<b>' + this.x + '</b><br/>' +
+                this.series.name + ': ' + this.y + '<br/>' +
+                'Total: ' + this.point.stackTotal;
+          }
+        },
+        plotOptions: {
+          column: {
+            stacking: 'normal',
+            dataLabels: {
+              enabled: true,
+              color: (Highcharts.theme && Highcharts.theme.dataLabelsColor) || 'white'
+            }
+          }
+        },
+        series: $scope.series
+      };
+
+      $scope.$watch("items", function (newValue, oldValue) {
+        if (!newValue) return;
+        if (angular.equals(newValue, oldValue)) return;
+
+        // We need deep copy in order to NOT override original chart object.
+        // This allows us to override chart data member and still the keep
+        // our original renderTo will be the same
+        var deepCopy = true;
+        var newSettings = {};
+        $.extend(deepCopy, newSettings, chartsDefaults);
+        newSettings.series = newValue;
         renderChart(newSettings);
       });
 

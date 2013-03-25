@@ -28,7 +28,9 @@ angular.module('app.genes.models').factory('Genes', ['http', function (http) {
       return http.get('/ws/genes/' + params.gene);
     },
     embQuery: function (project, params) {
-      return http.embQuery('/ws/genes/project/' + project, params);
+      var u = '/ws/genes/projects/';
+      var url = project ? u + project : u;
+      return http.embQuery(url, params);
     }
   }
 }]);

@@ -77,7 +77,6 @@ angular.module('app.facets.directives').directive('termFacet', ['$location', fun
 
 
       var refresh = function () {
-        console.log('refresh?');
         var filters = $location.search().filters || '{}';
         var f = JSON.parse(filters);
         var r;
@@ -122,14 +121,19 @@ angular.module('app.facets.directives').directive('locationFacet', ['$location',
 
       function setActive(facets) {
         console.log(facets, iAttrs.type, iAttrs.facetName);
-        oldLocation = facets[iAttrs.type][iAttrs.facetName];
-        scope.location = facets[iAttrs.type][iAttrs.facetName];
+        if (facets.hasOwnProperty(iAttrs.type)) {
+          oldLocation = facets[iAttrs.type][iAttrs.facetName];
+          scope.location = facets[iAttrs.type][iAttrs.facetName];
+        }
       }
 
       // Preset value on reload
       (function () {
-        var filters = $location.search().filters || '';
-        if (filters) setActive(JSON.parse(filters));
+        var filters = $location.search().filters || '{}';
+        var f = JSON.parse(filters);
+        var r;
+        r = f.hasOwnProperty(iAttrs.type) ? f[iAttrs.type] : null;
+        if (r) setActive(r);
       })();
     }
   };

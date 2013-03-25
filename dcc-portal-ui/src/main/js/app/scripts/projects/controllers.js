@@ -19,14 +19,11 @@
 
 angular.module('app.projects.controllers', ['app.projects.services']);
 
-angular.module('app.projects.controllers').controller('ProjectsController', [ "$scope", 'ProjectsService', "projects", function ($scope, ProjectsService, projects) {
-  $scope.projects = projects;
-
-  var termFacets2HCpie = function (hits) {
+angular.module('app.projects.controllers').controller('ProjectsController', [ "$scope", 'ProjectsService', "GenesService", "projects", "gp", function ($scope, ProjectsService, GenesService, projects, gp) {
+  var hits2HCpie = function (hits) {
     var r = [];
 
     for (var i = 0; i < hits.length; ++i) {
-      console.log(hits[i]);
       r.push({
         name: hits[i].fields.project_name,
         y: hits[i].fields.total_donor_count,
@@ -38,13 +35,49 @@ angular.module('app.projects.controllers').controller('ProjectsController', [ "$
     return r;
   };
 
-  $scope.cdata = termFacets2HCpie(projects.hits);
+  // TODO rework using fields
 
-  //[{term: 'blah', count:3}] > [{name: y:}]
+  var hits2HCstacked = function (hits) {
+    var xaxis = [];
+    var series = {};
+    var r = [];
+
+    for (var i = 0; i < hits.length; ++i) {
+      var hit = hits[i];
+      //xaxis.push(hit.fields.symbol);
+      series[hit.fields.symbol] = {};
+      for (var y = 0; y < hit.fields['project.project_name'].length; ++y) {
+        var project = hit.fields['project.project_name'][y];
+        var count = hit.fields['project.affected_donor_count'][y];
+        if (series.hasOwnProperty(project) == false) {
+          series[project] = [];
+        }
+        series[project].push(count);
+      }
+    }
+
+    for (var s in series) {
+      r.push({name: s, data: series[s]})
+    }
+
+    return {
+      x: xaxis,
+      s: r
+    }
+  };
+
+  $scope.projects = projects;
+  $scope.gp = gp;
+
+  $scope.cdata = hits2HCpie(projects.hits);
+  var st = hits2HCstacked(gp.hits);
+  $scope.stxdata = st.x;
+  $scope.stsdata = st.s;
+
   $scope.refresh = function () {
     ProjectsService.query().then(function (response) {
       $scope.projects = response;
-      $scope.cdata = termFacets2HCpie(response.hits);
+      $scope.cdata = hits2HCpie(response.hits);
     });
   };
 

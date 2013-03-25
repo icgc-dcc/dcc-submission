@@ -20,16 +20,39 @@
 angular.module('app.advanced.controllers', []);
 
 angular.module('app.advanced.controllers').controller('AdvancedController', [ "$scope", 'donors', 'genes', 'DonorsService', 'GenesService', function ($scope, donors, genes, DonorsService, GenesService) {
+  var termFacets2HCpie = function (type, facet, terms) {
+    var r = [];
+    for (var i = 0; i < terms.length; ++i) {
+      r.push({
+        name: terms[i].term,
+        y: terms[i].count,
+        type: type,
+        facet: facet
+      })
+    }
+
+    return r;
+  };
+
   $scope.donors = donors;
   $scope.genes = genes;
 
+  $scope.cdata_genes_gt = termFacets2HCpie("gene", "gene_type", genes.facets.gene_type.terms);
+  $scope.cdata_donors_p = termFacets2HCpie("donor", "project_name", donors.facets.project_name.terms);
+  $scope.cdata_donors_ps = termFacets2HCpie("donor", "primary_site", donors.facets.primary_site.terms);
+  $scope.cdata_donors_t = termFacets2HCpie("donor", "donor_tumour_stage_at_diagnosis", donors.facets.donor_tumour_stage_at_diagnosis.terms);
+
   $scope.refresh = function () {
-    console.log('refresh');
     GenesService.query().then(function (response) {
       $scope.genes = response;
+      $scope.cdata_genes_gt = termFacets2HCpie("gene", "gene_type", response.facets.gene_type.terms);
     });
     DonorsService.query().then(function (response) {
       $scope.donors = response;
+      $scope.cdata_donors_p = termFacets2HCpie("donor", "project_name", response.facets.project_name.terms);
+      $scope.cdata_donors_ps = termFacets2HCpie("donor", "primary_site", response.facets.primary_site.terms);
+      $scope.cdata_donors_t = termFacets2HCpie("donor", "donor_tumour_stage_at_diagnosis", response.facets.donor_tumour_stage_at_diagnosis.terms);
+
     });
   };
 

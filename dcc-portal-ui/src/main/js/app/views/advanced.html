@@ -26,20 +26,17 @@
             </tabs>
         </div>
     </div>
-
     <div class="span9">
         <div class="row"><h1 class="span">Advanced Search</h1></div>
         <tabs>
             <pane count="genes.pagination.total" heading="Genes">
                 <div class="row">
                     <div class="span3">
-                        <div style="width:220px; height: 220px; background: #eee"></div>
+                        <chart items='cdata_genes_gt' title="Gene Types" label="Genes" type="pie" height="220"
+                               width="220"></chart>
                     </div>
-                    <div class="span3">
-                        <div style="width:220px; height: 220px; background: #eee"></div>
-                    </div>
-                    <div class="span3">
-                        <div style="width:220px; height: 220px; background: #eee"></div>
+                    <div class="span6">
+                        <div style="width:440px; height: 220px; background: #eee"></div>
                     </div>
                 </div>
 
@@ -78,13 +75,16 @@
             <pane count="donors.pagination.total" heading="Donors">
                 <div class="row">
                     <div class="span3">
-                        <div style="width:220px; height: 220px; background: #eee"></div>
+                        <chart items='cdata_donors_p' title="Donor Distribution" label="Donors" type="pie" height="220"
+                               width="220"></chart>
                     </div>
                     <div class="span3">
-                        <div style="width:220px; height: 220px; background: #eee"></div>
+                        <chart items='cdata_donors_ps' title="Primary Site" label="Donors" type="pie" height="220"
+                               width="220"></chart>
                     </div>
                     <div class="span3">
-                        <div style="width:220px; height: 220px; background: #eee"></div>
+                        <chart items='cdata_donors_t' title="Tumour Stage" label="Donors" type="pie" height="220"
+                               width="220"></chart>
                     </div>
                 </div>
 

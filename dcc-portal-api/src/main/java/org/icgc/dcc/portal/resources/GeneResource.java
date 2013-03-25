@@ -94,7 +94,28 @@ public class GeneResource {
     return Response.ok().entity(results).build();
   }
 
-  @Path("/project/{id}")
+  @Path("/projects")
+  @GET
+  @Timed
+  @ApiOperation(value = "Find a gene data by project")
+  public final Response findByProjects(
+      @ApiParam(value = "Start index of results", required = false) @QueryParam("from") @DefaultValue("1") IntParam from,
+      @ApiParam(value = "Number of results returned", allowableValues = "range[1,100]", required = false) @QueryParam("size") @DefaultValue("10") IntParam size,
+      @ApiParam(value = "Column to sort results on", defaultValue = DEFAULT_SORT, required = false) @QueryParam("sort") String sort,
+      @ApiParam(value = "Order to sort the column", defaultValue = DEFAULT_ORDER, allowableValues = "asc,desc", required = false) @QueryParam("order") String order) {
+    String s = sort != null ? sort : DEFAULT_SORT;
+    String o = order != null ? order : DEFAULT_ORDER;
+
+    RequestSearchQuery requestSearchQuery =
+        RequestSearchQuery.builder().from(from.get()).size(size.get()).sort(s).order(o)
+            .build();
+
+    FindAllResults results = gp.findAll(requestSearchQuery);
+
+    return Response.ok().entity(results).build();
+  }
+
+  @Path("/projects/{id}")
   @GET
   @Timed
   @ApiOperation(value = "Find a gene data by project")
@@ -106,7 +127,7 @@ public class GeneResource {
     String s = sort != null ? sort : DEFAULT_SORT;
     String o = order != null ? order : DEFAULT_ORDER;
     String filters = "{'project': {'project_key': '" + id + "'}}";
-    System.out.println(filters);
+
     RequestSearchQuery requestSearchQuery =
         RequestSearchQuery.builder().filters(filters).from(from.get()).size(size.get()).sort(s).order(o)
             .build();
