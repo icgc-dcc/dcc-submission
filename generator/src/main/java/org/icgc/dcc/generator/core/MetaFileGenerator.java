@@ -152,29 +152,7 @@ public class MetaFileGenerator {
       for(int foreignKeyEntryLineNumber = 0; foreignKeyEntryLineNumber < numberOfLinesPerForeignKey; foreignKeyEntryLineNumber++) {
         int counterForFields = 0;
         for(Field field : schema.getFields()) {
-          String output = null;
-          String fieldName = field.getName();
-
-          // Output foreign key if current field is to be populated by a foreign key
-          List<String> foreignKeyArray = DataGenerator.getForeignKeys(datagen, schema, fieldName);
-          if(foreignKeyArray != null) {
-            boolean isNotMetaExpressionFile = !schemaName.equals(NON_SYSTEM_META_FILE_EXPRESSION);
-            boolean isNotMetaJunctionFile = !schemaName.equals(NON_SYSTEM_META_FILE_JUNCTION);
-            boolean isNotMetaMirnaFile = !schemaName.equals(NON_SYSTEM_META_FILE_MIRNA);
-
-            if(isNotMetaExpressionFile && isNotMetaJunctionFile && isNotMetaMirnaFile) {
-              output = getSampleType(fieldName);
-            } else {
-              output = foreignKeyArray.get(foreignKeyEntry);
-            }
-          } else {
-            output = getFieldValue(schema, schemaName, field, fieldName);
-          }
-
-          // Add the output to the corresponding Primary Key if this primary key is a foreign key else where
-          if(ResourceWrapper.isUniqueField(schema.getUniqueFields(), fieldName)) {
-            DataGenerator.getPrimaryKeys(datagen, schemaName, fieldName).add(output);
-          }
+          String output = getFieldValue(schema, schemaName, foreignKeyEntry, field);
 
           // Eliminate trailing tab
           if(schema.getFields().size() - 1 == counterForFields) {
@@ -182,12 +160,52 @@ public class MetaFileGenerator {
           } else {
             writer.write(output + TAB);
           }
+
           counterForFields++;
         }
         writer.write(NEW_LINE);
       }
       numberOfLinesPerForeignKey = calculateNumberOfLinesPerForeignKey(schema, linesPerForeignKey, relations);
     }
+  }
+
+  /**
+   * @param schema
+   * @param schemaName
+   * @param foreignKeyEntry
+   * @param field
+   * @return
+   */
+  private String getFieldValue(FileSchema schema, String schemaName, int foreignKeyEntry, Field field) {
+    String output = null;
+    String fieldName = field.getName();
+
+    // Output foreign key if current field is to be populated by a foreign key
+    List<String> foreignKeyArray = DataGenerator.getForeignKeys(datagen, schema, fieldName);
+    if(foreignKeyArray != null) {
+      boolean isNotMetaExpressionFile = !schemaName.equals(NON_SYSTEM_META_FILE_EXPRESSION);
+      boolean isNotMetaJunctionFile = !schemaName.equals(NON_SYSTEM_META_FILE_JUNCTION);
+      boolean isNotMetaMirnaFile = !schemaName.equals(NON_SYSTEM_META_FILE_MIRNA);
+
+      if(isNotMetaExpressionFile && isNotMetaJunctionFile && isNotMetaMirnaFile) {
+        output = getSampleType(fieldName);
+      } else {
+        output = foreignKeyArray.get(foreignKeyEntry);
+      }
+    } else {
+      output = getCodeListValue(schema, schemaName, field, fieldName);
+    }
+    if(output == null) {
+      output =
+          DataGenerator.generateFieldValue(datagen, schema.getUniqueFields(), schemaName, field, uniqueId,
+              uniqueInteger, uniqueDecimal);
+    }
+
+    // Add the output to the corresponding Primary Key if this primary key is a foreign key else where
+    if(ResourceWrapper.isUniqueField(schema.getUniqueFields(), fieldName)) {
+      DataGenerator.getPrimaryKeys(datagen, schemaName, fieldName).add(output);
+    }
+    return output;
   }
 
   /**
@@ -246,7 +264,7 @@ public class MetaFileGenerator {
    * @param currentFieldName
    * @return
    */
-  private String getFieldValue(FileSchema schema, String schemaName, Field currentField, String currentFieldName) {
+  private String getCodeListValue(FileSchema schema, String schemaName, Field currentField, String currentFieldName) {
     String output = null;
     if(!codeListArrayList.isEmpty()) {
       for(CodeListTerm codeListTerm : codeListArrayList) {
@@ -257,11 +275,7 @@ public class MetaFileGenerator {
         }
       }
     }
-    if(output == null) {
-      output =
-          DataGenerator.generateFieldValue(datagen, schema.getUniqueFields(), schemaName, currentField, uniqueId,
-              uniqueInteger, uniqueDecimal);
-    }
+
     return output;
   }
 

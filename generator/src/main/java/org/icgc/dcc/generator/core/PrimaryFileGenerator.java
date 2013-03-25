@@ -153,30 +153,11 @@ public class PrimaryFileGenerator {
     for(int foreignKeyEntry = 0; foreignKeyEntry < lengthOfForeignKeys; foreignKeyEntry++) {
       for(int foreignKeyEntryLineNumber = 0; foreignKeyEntryLineNumber < numberOfLinesPerForeignKey; foreignKeyEntryLineNumber++) {
         int counterForFields = 0;
-        int nextTabIndex = 0;
+        MutableInt nextTabIndex = new MutableInt(0);
         String line = lines.get(datagen.randomIntGenerator(0, lines.size() - 1));// This read in the file
 
         for(Field field : schema.getFields()) {
-          String output = null;
-          String fieldName = field.getName();
-
-          // Output foreign key if current field is to be populated with one
-          List<String> foreignKeyArray = DataGenerator.getForeignKeys(datagen, schema, fieldName);
-          if(foreignKeyArray != null) {
-            output = foreignKeyArray.get(foreignKeyEntry);
-          } else {
-            if(schemaName.equals(SSM_SCHEMA_NAME) && simulatedData.contains(fieldName)) {// This prints out if true
-              output = line.substring(nextTabIndex, line.indexOf(TAB, nextTabIndex));
-              nextTabIndex += output.length() + 1;
-            } else {
-              output = getFieldValue(schema, schemaName, field, fieldName);
-            }
-          }
-
-          // Add output to primary keys if it is to be used as a foreign key else where
-          if(ResourceWrapper.isUniqueField(schema.getUniqueFields(), fieldName)) {
-            DataGenerator.getPrimaryKeys(datagen, schemaName, fieldName).add(output);
-          }
+          String output = getFieldValue(schema, schemaName, foreignKeyEntry, nextTabIndex, line, field);
 
           // Write output, eliminate trailing tabs
           if(schema.getFields().size() - 1 == counterForFields) {
@@ -190,6 +171,45 @@ public class PrimaryFileGenerator {
       }
       numberOfLinesPerForeignKey = calculateNumberOfLinesPerForeignKey(schema, linesPerForeignKey, relations);
     }
+  }
+
+  /**
+   * @param schema
+   * @param schemaName
+   * @param foreignKeyEntry
+   * @param nextTabIndex
+   * @param line
+   * @param field
+   * @return
+   */
+  private String getFieldValue(FileSchema schema, String schemaName, int foreignKeyEntry, MutableInt nextTabIndex,
+      String line, Field field) {
+    String output = null;
+    String fieldName = field.getName();
+
+    // Output foreign key if current field is to be populated with one
+    List<String> foreignKeyArray = DataGenerator.getForeignKeys(datagen, schema, fieldName);
+    if(foreignKeyArray != null) {
+      output = foreignKeyArray.get(foreignKeyEntry);
+    } else {
+      if(schemaName.equals(SSM_SCHEMA_NAME) && simulatedData.contains(fieldName)) {// This prints out if true
+        output = line.substring(nextTabIndex.intValue(), line.indexOf(TAB, nextTabIndex.intValue()));
+        nextTabIndex.add(output.length() + 1);
+      } else {
+        output = getCodeListValue(schema, schemaName, field, fieldName);
+      }
+    }
+    if(output == null) {
+      output =
+          DataGenerator.generateFieldValue(datagen, schema.getUniqueFields(), schemaName, field, uniqueId,
+              uniqueInteger, uniqueDecimal);
+    }
+
+    // Add output to primary keys if it is to be used as a foreign key else where
+    if(ResourceWrapper.isUniqueField(schema.getUniqueFields(), fieldName)) {
+      DataGenerator.getPrimaryKeys(datagen, schemaName, fieldName).add(output);
+    }
+    return output;
   }
 
   /**
@@ -229,7 +249,7 @@ public class PrimaryFileGenerator {
    * @param currentFieldName
    * @return
    */
-  private String getFieldValue(FileSchema schema, String schemaName, Field currentField, String currentFieldName) {
+  private String getCodeListValue(FileSchema schema, String schemaName, Field currentField, String currentFieldName) {
     String output = null;
     if(codeListArrayList.size() > 0) {
       for(CodeListTerm codeListTerm : codeListArrayList) {
@@ -239,11 +259,6 @@ public class PrimaryFileGenerator {
 
         }
       }
-    }
-    if(output == null) {
-      output =
-          DataGenerator.generateFieldValue(datagen, schema.getUniqueFields(), schemaName, currentField, uniqueId,
-              uniqueInteger, uniqueDecimal);
     }
     return output;
   }

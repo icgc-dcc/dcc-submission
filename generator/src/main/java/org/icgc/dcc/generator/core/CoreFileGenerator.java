@@ -147,57 +147,95 @@ public class CoreFileGenerator {
     int lengthOfForeignKeys = calcuateLengthOfForeignKeys(schema, linesPerForeignKey, relations);
     int numberOfLinesPerForeignKey = calculateNumberOfLinesPerForeingKey(schema, linesPerForeignKey, relations);
 
+    addSamplePrimaryKeys(schemaName);
+
+    for(int foreignKeyEntry = 0; foreignKeyEntry < lengthOfForeignKeys; foreignKeyEntry++) {
+      for(int foreignKeyEntryLineNumber = 0; foreignKeyEntryLineNumber < numberOfLinesPerForeignKey; foreignKeyEntryLineNumber++) {
+        int counterForFields = 0;
+        for(Field field : schema.getFields()) {
+          String output = getFieldValue(schema, writer, schemaName, foreignKeyEntry, counterForFields, field);
+
+          if(schema.getFields().size() - 1 == counterForFields) {
+            writer.write(output);
+          } else {
+            writer.write(output + TAB);
+          }
+
+          counterForFields++;
+        }
+        writer.write(NEW_LINE);
+      }
+      numberOfLinesPerForeignKey = calculateNumberOfLinesPerForeingKey(schema, linesPerForeignKey, relations);
+    }
+  }
+
+  /**
+   * @param schema
+   * @param writer
+   * @param schemaName
+   * @param foreignKeyEntry
+   * @param counterForFields
+   * @param field
+   * @throws IOException
+   */
+  private String getFieldValue(FileSchema schema, BufferedWriter writer, String schemaName, int foreignKeyEntry,
+      int counterForFields, Field field) throws IOException {
+    String output = null;
+    String fieldName = field.getName();
+
+    // Output foreign key if current field is to be populated a foreign key
+    List<String> foreignKeys = DataGenerator.getForeignKeys(datagen, schema, fieldName);
+    if(foreignKeys != null) {
+      output = foreignKeys.get(foreignKeyEntry);
+    }
+
+    if(output == null) {
+      output = getCodeListValue(schema, schemaName, field, fieldName);
+    }
+    if(output == null) {
+      output =
+          DataGenerator.generateFieldValue(datagen, schema.getUniqueFields(), schemaName, field, uniqueId,
+              uniqueInteger, uniqueDecimal);
+    }
+
+    // Add the output to the corresponding Primary Key if this primary key is a foreign key else where
+    if(ResourceWrapper.isUniqueField(schema.getUniqueFields(), fieldName)) {
+      DataGenerator.getPrimaryKeys(datagen, schemaName, fieldName).add(output);
+    }
+
+    // Special case for sample, to add whether sample type is controlled or tumor
+    addOutputToSamplePrimaryKeys(schema, field, output);
+
+    // Eliminate trailing tab
+    return output;
+  }
+
+  /**
+   * @param schema
+   * @param field
+   * @param output
+   */
+  private void addOutputToSamplePrimaryKeys(FileSchema schema, Field field, String output) {
+    if(schema.getName().equals(SAMPLE_SCHEMA_NAME) && field.getName().equals(SAMPLE_TYPE_FIELD_NAME)) {
+      int x = datagen.randomIntGenerator(0, 1);
+      if(x == 0) {
+        DataGenerator.getPrimaryKeys(datagen, SAMPLE_SCHEMA_NAME, TUMOUR_PRIMARY_KEY_FIELD_IDENTIFIER).add(output);
+      } else {
+        DataGenerator.getPrimaryKeys(datagen, SAMPLE_SCHEMA_NAME, CONTROL_PRIMARY_KEY_FIELD_IDENTIFIER).add(output);
+      }
+    }
+  }
+
+  /**
+   * @param schemaName
+   */
+  private void addSamplePrimaryKeys(String schemaName) {
     if(schemaName.equals(SAMPLE_SCHEMA_NAME)) {
       PrimaryKey tumourPrimaryKey = new PrimaryKey(SAMPLE_SCHEMA_NAME, TUMOUR_PRIMARY_KEY_FIELD_IDENTIFIER);
       datagen.getListOfPrimaryKeys().add(tumourPrimaryKey);
 
       PrimaryKey controlPrimaryKey = new PrimaryKey(SAMPLE_SCHEMA_NAME, CONTROL_PRIMARY_KEY_FIELD_IDENTIFIER);
       datagen.getListOfPrimaryKeys().add(controlPrimaryKey);
-    }
-
-    for(int foreignKeyEntry = 0; foreignKeyEntry < lengthOfForeignKeys; foreignKeyEntry++) {
-      for(int foreignKeyEntryLineNumber = 0; foreignKeyEntryLineNumber < numberOfLinesPerForeignKey; foreignKeyEntryLineNumber++) {
-        int counterForFields = 0;
-        for(Field field : schema.getFields()) {
-          String output = null;
-          String fieldName = field.getName();
-
-          // Output foreign key if current field is to be populated a foreign key
-          List<String> foreignKeys = DataGenerator.getForeignKeys(datagen, schema, fieldName);
-          if(foreignKeys != null) {
-            output = foreignKeys.get(foreignKeyEntry);
-          } else {
-            output = getFieldValue(schema, schemaName, field, fieldName);
-          }
-
-          // Add the output to the corresponding Primary Key if this primary key is a foreign key else where
-          if(ResourceWrapper.isUniqueField(schema.getUniqueFields(), fieldName)) {
-            DataGenerator.getPrimaryKeys(datagen, schemaName, fieldName).add(output);
-          }
-
-          // Special case for sample, to add whether sample type is controlled or tumor
-          if(schema.getName().equals(SAMPLE_SCHEMA_NAME) && field.getName().equals(SAMPLE_TYPE_FIELD_NAME)) {
-            int x = datagen.randomIntGenerator(0, 1);
-            if(x == 0) {
-              DataGenerator.getPrimaryKeys(datagen, SAMPLE_SCHEMA_NAME, TUMOUR_PRIMARY_KEY_FIELD_IDENTIFIER)
-                  .add(output);
-            } else {
-              DataGenerator.getPrimaryKeys(datagen, SAMPLE_SCHEMA_NAME, CONTROL_PRIMARY_KEY_FIELD_IDENTIFIER).add(
-                  output);
-            }
-          }
-
-          // Eliminate trailing tab
-          if(schema.getFields().size() - 1 == counterForFields) {
-            writer.write(output);
-          } else {
-            writer.write(output + TAB);
-          }
-          counterForFields++;
-        }
-        writer.write(NEW_LINE);
-      }
-      numberOfLinesPerForeignKey = calculateNumberOfLinesPerForeingKey(schema, linesPerForeignKey, relations);
     }
   }
 
@@ -247,7 +285,7 @@ public class CoreFileGenerator {
    * @param fieldName
    * @return
    */
-  private String getFieldValue(FileSchema schema, String schemaName, Field currentField, String fieldName) {
+  private String getCodeListValue(FileSchema schema, String schemaName, Field currentField, String fieldName) {
     String output = null;
     if(!codeListTerms.isEmpty()) {
       for(CodeListTerm codeListTerm : codeListTerms) {
@@ -256,11 +294,6 @@ public class CoreFileGenerator {
           output = terms.get(datagen.randomIntGenerator(0, terms.size() - 1)).getCode();
         }
       }
-    }
-    if(output == null) {
-      output =
-          DataGenerator.generateFieldValue(datagen, schema.getUniqueFields(), schemaName, currentField, uniqueId,
-              uniqueInteger, uniqueDecimal);
     }
     return output;
   }
