@@ -46,6 +46,28 @@ public class ResourceWrapper {
 
   private static final ObjectReader READER = mapper.reader(CodeList.class);
 
+  /**
+   * @param dictionaryFile
+   * @param codeListFile
+   * @throws JsonParseException
+   * @throws JsonMappingException
+   * @throws IOException
+   * @throws JsonProcessingException
+   */
+  public static void initResources(File dictionaryFile, File codeListFile) throws JsonParseException,
+      JsonMappingException, IOException, JsonProcessingException {
+    if(dictionaryFile != null) {
+      ResourceWrapper.initDictionary(dictionaryFile);
+    } else {
+      ResourceWrapper.initDictionary();
+    }
+    if(codeListFile != null) {
+      ResourceWrapper.initCodeLists(codeListFile);
+    } else {
+      ResourceWrapper.initCodeLists();
+    }
+  }
+
   public static void initDictionary(File dictionaryFile) throws JsonParseException, JsonMappingException, IOException {
     log.info("Initializing dictionary: " + dictionaryFile.getName());
     fileSchemas = mapper.readValue(dictionaryFile, Dictionary.class).getFiles();

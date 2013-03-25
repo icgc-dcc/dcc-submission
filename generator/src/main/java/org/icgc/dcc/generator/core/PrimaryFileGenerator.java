@@ -78,11 +78,12 @@ public class PrimaryFileGenerator {
 
   private final MutableDouble uniqueDecimal = new MutableDouble(0.0);
 
-  public void createFile(DataGenerator datagen, FileSchema schema, Integer numberOfLinesPerPrimaryKey,
-      String leadJurisdiction, String institution, String tumourType, String platform) throws IOException {
+  public void createFile(DataGenerator datagen, FileSchema schema, Integer linesPerForeignKey, String leadJurisdiction,
+      String institution, String tumourType, String platform) throws IOException {
 
     this.datagen = datagen;
 
+    // File building
     String fileUrl =
         SubmissionUtils.generateExperimentalFileUrl(datagen.getOutputDirectory(), schema.getName(), leadJurisdiction,
             institution, tumourType, platform);
@@ -90,11 +91,13 @@ public class PrimaryFileGenerator {
     checkArgument(!outputFile.exists(), "A file with the name '%s' already exists.", fileUrl);
     outputFile.createNewFile();
 
+    // Prepare file writer
     FileOutputStream fos = new FileOutputStream(outputFile);
     OutputStreamWriter osw = new OutputStreamWriter(fos, Charsets.UTF_8);
     @Cleanup
     BufferedWriter writer = new BufferedWriter(osw);
 
+    // Output field names (eliminate trailing tab)
     int counterForFieldNames = 0;
     for(String fieldName : schema.getFieldNames()) {
       if(counterForFieldNames == schema.getFields().size() - 1) {
@@ -104,13 +107,12 @@ public class PrimaryFileGenerator {
       }
       counterForFieldNames++;
     }
+    writer.write(NEW_LINE);
 
     populateCodeListArray(schema);
 
-    writer.write(NEW_LINE);
-
     log.info("Populating " + schema.getName() + " file");
-    populateFile(schema, numberOfLinesPerPrimaryKey, writer);
+    populateFile(schema, linesPerForeignKey, writer);
     log.info("Finished populating " + schema.getName() + " file");
 
     writer.close();
@@ -136,7 +138,7 @@ public class PrimaryFileGenerator {
     }
   }
 
-  public void populateFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, Writer writer) throws IOException {
+  public void populateFile(FileSchema schema, Integer linesPerForeignKey, Writer writer) throws IOException {
     String schemaName = schema.getName();
     List<Relation> relations = schema.getRelations();
 
@@ -145,24 +147,23 @@ public class PrimaryFileGenerator {
       lines = Resources.readLines(Resources.getResource(SIMULATED_DATA_FILE_URL), Charsets.UTF_8);
     }
 
-    int numberOfLines = calculateNumberOfLines(schema, numberOfLinesPerPrimaryKey, relations);
-    int numberOfIterations =
-        DataGenerator.getForeignKey(datagen, schema, relations.get(0).getFields().get(0)).size() - 2;
+    int lengthOfForeignKeys = calculateLengthOfForeignKeys(schema, relations);
+    int numberOfLinesPerForeignKey = calculateNumberOfLinesPerForeignKey(schema, linesPerForeignKey, relations);
 
-    for(int i = 0; i < numberOfIterations; i++) {
-      for(int j = 0; j < numberOfLines; j++) {
+    for(int foreignKeyEntry = 0; foreignKeyEntry < lengthOfForeignKeys; foreignKeyEntry++) {
+      for(int foreignKeyEntryLineNumber = 0; foreignKeyEntryLineNumber < numberOfLinesPerForeignKey; foreignKeyEntryLineNumber++) {
         int counterForFields = 0;
         int nextTabIndex = 0;
         String line = lines.get(datagen.randomIntGenerator(0, lines.size() - 1));// This read in the file
+
         for(Field field : schema.getFields()) {
           String output = null;
           String fieldName = field.getName();
-          List<String> foreignKeyArray = DataGenerator.getForeignKey(datagen, schema, fieldName);
 
+          // Output foreign key if current field is to be populated with one
+          List<String> foreignKeyArray = DataGenerator.getForeignKeys(datagen, schema, fieldName);
           if(foreignKeyArray != null) {
-
-            output = foreignKeyArray.get(i);
-
+            output = foreignKeyArray.get(foreignKeyEntry);
           } else {
             if(schemaName.equals(SSM_SCHEMA_NAME) && simulatedData.contains(fieldName)) {// This prints out if true
               output = line.substring(nextTabIndex, line.indexOf(TAB, nextTabIndex));
@@ -172,10 +173,12 @@ public class PrimaryFileGenerator {
             }
           }
 
+          // Add output to primary keys if it is to be used as a foreign key else where
           if(ResourceWrapper.isUniqueField(schema.getUniqueFields(), fieldName)) {
-            DataGenerator.getPrimaryKey(datagen, schemaName, fieldName).add(output);
+            DataGenerator.getPrimaryKeys(datagen, schemaName, fieldName).add(output);
           }
 
+          // Write output, eliminate trailing tabs
           if(schema.getFields().size() - 1 == counterForFields) {
             writer.write(output);
           } else {
@@ -185,21 +188,36 @@ public class PrimaryFileGenerator {
         }
         writer.write(NEW_LINE);
       }
-      numberOfLines = calculateNumberOfLines(schema, numberOfLinesPerPrimaryKey, relations);
+      numberOfLinesPerForeignKey = calculateNumberOfLinesPerForeignKey(schema, linesPerForeignKey, relations);
     }
   }
 
   /**
+   * Calculates the number Of non-repetitive entries (with regards to the foreign key fields) to be inserted in the file
    * @param schema
-   * @param numberOfLinesPerPrimaryKey
    * @param relations
    * @return
    */
-  private int calculateNumberOfLines(FileSchema schema, Integer numberOfLinesPerPrimaryKey, List<Relation> relations) {
+  private int calculateLengthOfForeignKeys(FileSchema schema, List<Relation> relations) {
+    Relation randomRelation = relations.get(0);
+    String relatedFieldName = randomRelation.getFields().get(0);
+    int lengthOfForeignKeys = DataGenerator.getForeignKeys(datagen, schema, relatedFieldName).size() - 2;
+    return lengthOfForeignKeys;
+  }
+
+  /**
+   * Calculates the number of times a file entry repeats with regards to the foreign key
+   * @param schema
+   * @param linesPerForeignKey
+   * @param relations
+   * @return
+   */
+  private int calculateNumberOfLinesPerForeignKey(FileSchema schema, Integer linesPerForeignKey,
+      List<Relation> relations) {
     if(relations.size() > 0 && relations.get(0).isBidirectional()) {
-      return datagen.randomIntGenerator(1, numberOfLinesPerPrimaryKey);
+      return datagen.randomIntGenerator(1, linesPerForeignKey);
     } else {
-      return datagen.randomIntGenerator(0, numberOfLinesPerPrimaryKey);
+      return datagen.randomIntGenerator(0, linesPerForeignKey);
     }
   }
 

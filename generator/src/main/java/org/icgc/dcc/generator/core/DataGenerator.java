@@ -43,7 +43,7 @@ public class DataGenerator {
 
   static final String CONSTANT_DATE = "20130313";
 
-  private static final int UPPER_LIMIT_FOR_TEXT_FIELD_INTEGER = 1000000000;
+  private static final int UPPER_LIMIT_FOR_TEXT_TYPE_FIELD_INTEGER = 1000000000;
 
   private final List<PrimaryKey> listOfPrimaryKeys = new ArrayList<PrimaryKey>();
 
@@ -83,7 +83,7 @@ public class DataGenerator {
     }
   }
 
-  public static List<String> getPrimaryKey(DataGenerator datagen, String schemaName, String fieldName) {
+  public static List<String> getPrimaryKeys(DataGenerator datagen, String schemaName, String fieldName) {
     for(PrimaryKey primaryKey : datagen.getListOfPrimaryKeys()) {
       String primaryKeySchemaIdentifier = primaryKey.getSchemaIdentifier();
       String primaryKeyFieldIdentifier = primaryKey.getFieldIdentifier();
@@ -97,7 +97,7 @@ public class DataGenerator {
 
   // Go through all the fields that are populated by a foreign key once in each file, and then do an if statement before
   // calling getForeignKey, that would decrease the number of times this method is called
-  public static List<String> getForeignKey(DataGenerator datagen, FileSchema schema, String fieldName) {
+  public static List<String> getForeignKeys(DataGenerator datagen, FileSchema schema, String fieldName) {
     for(Relation relation : schema.getRelations()) {
 
       for(String primaryKeyFieldName : relation.getFields()) {
@@ -133,7 +133,7 @@ public class DataGenerator {
         uniqueId.increment();
         output = schemaName + String.valueOf(uniqueId);
       } else {
-        output = Integer.toString(datagen.randomIntGenerator(0, UPPER_LIMIT_FOR_TEXT_FIELD_INTEGER));
+        output = Integer.toString(datagen.randomIntGenerator(0, UPPER_LIMIT_FOR_TEXT_TYPE_FIELD_INTEGER));
       }
     } else if(fieldValueType == ValueType.INTEGER) {
       if(ResourceWrapper.isUniqueField(list, fieldName)) {

@@ -38,7 +38,6 @@ import org.icgc.dcc.generator.model.OptionalFile;
 import org.icgc.dcc.generator.utils.ResourceWrapper;
 
 import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
 @Slf4j
@@ -77,7 +76,7 @@ public class GeneratorService {
     checkParameters(leadJurisdiction, tumourType, institution, platform);
 
     log.info("Initializing Dictionary and CodeList files");
-    initResources(dictionaryFile, codeListFile);
+    ResourceWrapper.initResources(dictionaryFile, codeListFile);
 
     generateFiles(outputDirectory, numberOfDonors, numberOfSpecimensPerDonor, numberOfSamplesPerSpecimen,
         leadJurisdiction, tumourType, institution, platform, seed, optionalFiles, experimentalFiles);
@@ -144,34 +143,12 @@ public class GeneratorService {
     }
   }
 
-  /**
-   * @param dictionaryFile
-   * @param codeListFile
-   * @throws JsonParseException
-   * @throws JsonMappingException
-   * @throws IOException
-   * @throws JsonProcessingException
-   */
-  private void initResources(File dictionaryFile, File codeListFile) throws JsonParseException, JsonMappingException,
-      IOException, JsonProcessingException {
-    if(dictionaryFile != null) {
-      ResourceWrapper.initDictionary(dictionaryFile);
-    } else {
-      ResourceWrapper.initDictionary();
-    }
-    if(codeListFile != null) {
-      ResourceWrapper.initCodeLists(codeListFile);
-    } else {
-      ResourceWrapper.initCodeLists();
-    }
-  }
-
-  private static void createCoreFile(DataGenerator datagen, String schemaName, Integer numberOfLinesPerPrimaryKey,
+  private static void createCoreFile(DataGenerator datagen, String schemaName, Integer linesPerForeignKey,
       String leadJurisdiction, String institution, String tumourType, String platform) throws IOException {
     log.info("Creating " + schemaName + " file");
     datagen.buildPrimaryKey(ResourceWrapper.getSchema(datagen, schemaName));
     FileSchema schema = ResourceWrapper.getSchema(datagen, schemaName);
-    new CoreFileGenerator().createFile(datagen, schema, numberOfLinesPerPrimaryKey, leadJurisdiction, institution,
+    new CoreFileGenerator().createFile(datagen, schema, linesPerForeignKey, leadJurisdiction, institution,
         tumourType, platform);
   }
 
@@ -183,27 +160,27 @@ public class GeneratorService {
         tumourType, platform);
   }
 
-  private static void createMetaFile(DataGenerator datagen, String schemaName, Integer numberOfLinesPerForeignKey,
+  private static void createMetaFile(DataGenerator datagen, String schemaName, Integer linesPerForeignKey,
       String leadJurisdiction, String institution, String tumourType, String platform) throws IOException {
     log.info("Creating " + schemaName + " file");
     FileSchema schema = ResourceWrapper.getSchema(datagen, schemaName);
-    new MetaFileGenerator().createFile(datagen, schema, numberOfLinesPerForeignKey, leadJurisdiction, institution,
+    new MetaFileGenerator().createFile(datagen, schema, linesPerForeignKey, leadJurisdiction, institution,
         tumourType, platform);
   }
 
-  private static void createPrimaryFile(DataGenerator datagen, String schemaName, Integer numberOfLinesPerForeignKey,
+  private static void createPrimaryFile(DataGenerator datagen, String schemaName, Integer linesPerForeignKey,
       String leadJurisdiction, String institution, String tumourType, String platform) throws IOException {
     log.info("Creating " + schemaName + " file");
     FileSchema schema = ResourceWrapper.getSchema(datagen, schemaName);
-    new PrimaryFileGenerator().createFile(datagen, schema, numberOfLinesPerForeignKey, leadJurisdiction, institution,
+    new PrimaryFileGenerator().createFile(datagen, schema, linesPerForeignKey, leadJurisdiction, institution,
         tumourType, platform);
   }
 
-  private static void createSecondaryFile(DataGenerator datagen, String schemaName, Integer numberOfLinesPerForeignKey,
+  private static void createSecondaryFile(DataGenerator datagen, String schemaName, Integer linesPerForeignKey,
       String leadJurisdiction, String institution, String tumourType, String platform) throws IOException {
     log.info("Creating " + schemaName + " file");
     FileSchema schema = ResourceWrapper.getSchema(datagen, schemaName);
-    new SecondaryFileGenerator().createFile(datagen, schema, numberOfLinesPerForeignKey, leadJurisdiction, institution,
+    new SecondaryFileGenerator().createFile(datagen, schema, linesPerForeignKey, leadJurisdiction, institution,
         tumourType, platform);
   }
 }

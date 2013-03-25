@@ -41,7 +41,6 @@ import org.icgc.dcc.dictionary.model.Relation;
 import org.icgc.dcc.dictionary.model.Restriction;
 import org.icgc.dcc.dictionary.model.Term;
 import org.icgc.dcc.generator.model.CodeListTerm;
-import org.icgc.dcc.generator.model.PrimaryKey;
 import org.icgc.dcc.generator.utils.ResourceWrapper;
 import org.icgc.dcc.generator.utils.SubmissionUtils;
 
@@ -82,11 +81,12 @@ public class MetaFileGenerator {
 
   private DataGenerator datagen;
 
-  public void createFile(DataGenerator datagen, FileSchema schema, Integer numberOfLinesPerPrimaryKey,
-      String leadJurisdiction, String institution, String tumourType, String platform) throws IOException {
+  public void createFile(DataGenerator datagen, FileSchema schema, Integer linesPerForeignKey, String leadJurisdiction,
+      String institution, String tumourType, String platform) throws IOException {
 
     this.datagen = datagen;
 
+    // File building
     String fileUrl =
         SubmissionUtils.generateExperimentalFileUrl(datagen.getOutputDirectory(), schema.getName(), leadJurisdiction,
             institution, tumourType, platform);
@@ -94,11 +94,13 @@ public class MetaFileGenerator {
     checkArgument(!outputFile.exists(), "A file with the name '%s' already exists.", fileUrl);
     outputFile.createNewFile();
 
+    // Prepare file writer
     FileOutputStream fos = new FileOutputStream(outputFile);
     OutputStreamWriter osw = new OutputStreamWriter(fos, Charsets.UTF_8);
     @Cleanup
     BufferedWriter writer = new BufferedWriter(osw);
 
+    // Output field names (eliminate trailing tab)
     int counterForFieldNames = 0;
     for(String fieldName : schema.getFieldNames()) {
       if(counterForFieldNames == schema.getFields().size() - 1) {
@@ -108,14 +110,14 @@ public class MetaFileGenerator {
       }
       counterForFieldNames++;
     }
+    writer.write(NEW_LINE);
 
     populateCodeListArray(schema);
 
-    writer.write(NEW_LINE);
-
     log.info("Populating " + schema.getName() + " file");
-    populateFile(schema, numberOfLinesPerPrimaryKey, writer);
+    populateFile(schema, linesPerForeignKey, writer);
     log.info("Finished populating " + schema.getName() + " file");
+
     writer.close();
   }
 
@@ -139,24 +141,22 @@ public class MetaFileGenerator {
     }
   }
 
-  private void populateFile(FileSchema schema, Integer numberOfLinesPerPrimaryKey, Writer writer) throws IOException {
+  private void populateFile(FileSchema schema, Integer linesPerForeignKey, Writer writer) throws IOException {
     String schemaName = schema.getName();
     List<Relation> relations = schema.getRelations();
 
-    int numberOfIterations =
-        DataGenerator.getForeignKey(datagen, schema, relations.get(0).getFields().get(0)).size() - 2;
-    int numberOfLines = calculateNumberOfLines(schema, numberOfLinesPerPrimaryKey, relations);
+    int lengthOfForeignKeys = calculatedLengthOfForeignKeys(schema, relations);
+    int numberOfLinesPerForeignKey = calculateNumberOfLinesPerForeignKey(schema, linesPerForeignKey, relations);
 
-    for(int i = 0; i < numberOfIterations; i++) {
-      for(int j = 0; j < numberOfLines; j++) {
+    for(int foreignKeyEntry = 0; foreignKeyEntry < lengthOfForeignKeys; foreignKeyEntry++) {
+      for(int foreignKeyEntryLineNumber = 0; foreignKeyEntryLineNumber < numberOfLinesPerForeignKey; foreignKeyEntryLineNumber++) {
         int counterForFields = 0;
         for(Field field : schema.getFields()) {
           String output = null;
           String fieldName = field.getName();
-          // Is it a foreign key? if so then the only foreign key for a metafile is the matched/analyzed type from
-          // sample and therefore add accordingly.
 
-          List<String> foreignKeyArray = DataGenerator.getForeignKey(datagen, schema, fieldName);
+          // Output foreign key if current field is to be populated by a foreign key
+          List<String> foreignKeyArray = DataGenerator.getForeignKeys(datagen, schema, fieldName);
           if(foreignKeyArray != null) {
             boolean isNotMetaExpressionFile = !schemaName.equals(NON_SYSTEM_META_FILE_EXPRESSION);
             boolean isNotMetaJunctionFile = !schemaName.equals(NON_SYSTEM_META_FILE_JUNCTION);
@@ -165,21 +165,18 @@ public class MetaFileGenerator {
             if(isNotMetaExpressionFile && isNotMetaJunctionFile && isNotMetaMirnaFile) {
               output = getSampleType(fieldName);
             } else {
-              output = foreignKeyArray.get(i);
+              output = foreignKeyArray.get(foreignKeyEntry);
             }
           } else {
             output = getFieldValue(schema, schemaName, field, fieldName);
           }
 
+          // Add the output to the corresponding Primary Key if this primary key is a foreign key else where
           if(ResourceWrapper.isUniqueField(schema.getUniqueFields(), fieldName)) {
-            for(PrimaryKey primaryKey : datagen.getListOfPrimaryKeys()) {
-              if(primaryKey.getSchemaIdentifier().equals(schemaName)
-                  && primaryKey.getFieldIdentifier().equals(fieldName)) {
-                primaryKey.getPrimaryKeyList().add(output);
-              }
-            }
+            DataGenerator.getPrimaryKeys(datagen, schemaName, fieldName).add(output);
           }
 
+          // Eliminate trailing tab
           if(schema.getFields().size() - 1 == counterForFields) {
             writer.write(output);
           } else {
@@ -189,21 +186,36 @@ public class MetaFileGenerator {
         }
         writer.write(NEW_LINE);
       }
-      numberOfLines = calculateNumberOfLines(schema, numberOfLinesPerPrimaryKey, relations);
+      numberOfLinesPerForeignKey = calculateNumberOfLinesPerForeignKey(schema, linesPerForeignKey, relations);
     }
   }
 
   /**
+   * Calculates the number Of non-repetitive entries (with regards to the foreign key fields) to be inserted in the file
    * @param schema
-   * @param numberOfLinesPerPrimaryKey
    * @param relations
    * @return
    */
-  private int calculateNumberOfLines(FileSchema schema, Integer numberOfLinesPerPrimaryKey, List<Relation> relations) {
+  private int calculatedLengthOfForeignKeys(FileSchema schema, List<Relation> relations) {
+    Relation randomRelation = relations.get(0);
+    String relatedFieldName = randomRelation.getFields().get(0);
+    int lengthOfForeignKeys = DataGenerator.getForeignKeys(datagen, schema, relatedFieldName).size() - 2;
+    return lengthOfForeignKeys;
+  }
+
+  /**
+   * Calculates the number of times a file entry repeats with regards to the foreign key
+   * @param schema
+   * @param linesPerForeignKey
+   * @param relations
+   * @return
+   */
+  private int calculateNumberOfLinesPerForeignKey(FileSchema schema, Integer linesPerForeignKey,
+      List<Relation> relations) {
     if(relations.size() > 0 && relations.get(0).isBidirectional()) {
-      return datagen.randomIntGenerator(1, numberOfLinesPerPrimaryKey);
+      return datagen.randomIntGenerator(1, linesPerForeignKey);
     } else {
-      return datagen.randomIntGenerator(0, numberOfLinesPerPrimaryKey);
+      return datagen.randomIntGenerator(0, linesPerForeignKey);
     }
   }
 
@@ -215,12 +227,12 @@ public class MetaFileGenerator {
   private String getSampleType(String currentFieldName) {
     if(currentFieldName.equals(MATCHED_SAMPLE_FIELD_NAME)) {
       List<String> tumourTypeIDs =
-          DataGenerator.getPrimaryKey(datagen, SAMPLE_SCHEMA_NAME, TUMOUR_PRIMARY_KEY_FIELD_IDENTIFIER);
+          DataGenerator.getPrimaryKeys(datagen, SAMPLE_SCHEMA_NAME, TUMOUR_PRIMARY_KEY_FIELD_IDENTIFIER);
       Integer randomInteger = datagen.randomIntGenerator(2, tumourTypeIDs.size() - 3);
       return tumourTypeIDs.get(randomInteger);
     } else {
       List<String> controlTypeIDs =
-          DataGenerator.getPrimaryKey(datagen, SAMPLE_SCHEMA_NAME, CONTROL_PRIMARY_KEY_FIELD_IDENTIFIER);
+          DataGenerator.getPrimaryKeys(datagen, SAMPLE_SCHEMA_NAME, CONTROL_PRIMARY_KEY_FIELD_IDENTIFIER);
       Integer randomInteger = datagen.randomIntGenerator(2, controlTypeIDs.size() - 3);
       return controlTypeIDs.get(randomInteger);
     }
@@ -236,7 +248,7 @@ public class MetaFileGenerator {
    */
   private String getFieldValue(FileSchema schema, String schemaName, Field currentField, String currentFieldName) {
     String output = null;
-    if(codeListArrayList.size() > 0) {
+    if(!codeListArrayList.isEmpty()) {
       for(CodeListTerm codeListTerm : codeListArrayList) {
         if(codeListTerm.getFieldName().equals(currentFieldName)) {
           List<Term> terms = codeListTerm.getTerms();

@@ -129,7 +129,7 @@ public class OptionalFileGenerator {
     List<Relation> relations = schema.getRelations();
 
     int numberOfIterations =
-        DataGenerator.getForeignKey(datagen, schema, relations.get(0).getFields().get(0)).size() - 2;
+        DataGenerator.getForeignKeys(datagen, schema, relations.get(0).getFields().get(0)).size() - 2;
     int numberOfLines = calculateNumberOfLines(schema, numberOfLinesPerPrimaryKey, relations);
 
     for(int i = 0; i < numberOfIterations; i++) {
@@ -139,7 +139,7 @@ public class OptionalFileGenerator {
           String output = null;
           String fieldName = field.getName();
 
-          List<String> foreignKeyArray = DataGenerator.getForeignKey(datagen, schema, fieldName);
+          List<String> foreignKeyArray = DataGenerator.getForeignKeys(datagen, schema, fieldName);
           if(foreignKeyArray != null) {
             output = foreignKeyArray.get(i);
           } else {
@@ -147,7 +147,7 @@ public class OptionalFileGenerator {
           }
 
           if(ResourceWrapper.isUniqueField(schema.getUniqueFields(), fieldName)) {
-            DataGenerator.getPrimaryKey(datagen, schemaName, fieldName).add(output);
+            DataGenerator.getPrimaryKeys(datagen, schemaName, fieldName).add(output);
           }
           if(schema.getFields().size() - 1 == counterForFields) {
             writer.write(output);
