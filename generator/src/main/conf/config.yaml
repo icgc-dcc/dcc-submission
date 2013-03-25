@@ -1,6 +1,12 @@
 # Directory in which all the files are generated
 outputDirectory: target/
 
+# Directory in which dictionary can be found in
+dictionaryUrl: org/icgc/dcc/generator/dictionary.json
+
+# Directory in which code lists can be found in
+codeListUrl: org/icgc/dcc/generator/codeLists.json
+
 # Number Of donors that participated in the project (approximately 500 for a given project)
 numberOfDonors: 500
 
