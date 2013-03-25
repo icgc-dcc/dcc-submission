@@ -157,20 +157,16 @@ public class SecondaryFileGenerator {
     for(int i = 0; i < numberOfIterations; i++) {
       for(int j = 0; j < numberOfLines; j++) {
         int counterForFields = 0;
+
+        // Get net line, cycling around if needed
+        if(!iterator.hasNext()) {
+          iterator = lines.iterator();
+        }
+        String line = iterator.next();
+
         for(Field field : schema.getFields()) {
           String fieldName = field.getName();
-          String output = null;
-
-          // Add system file fields
-          if(iterator.hasNext()) {
-            String line = iterator.next();
-            output = getSystemFileOutput(fieldName, line);
-          } else {
-            // End of file reached. Reset reader and readline
-            iterator = lines.iterator();
-            String line = iterator.next();
-            output = getSystemFileOutput(field.getName(), line);
-          }
+          String output = getSystemFileOutput(fieldName, line);
 
           if(output == null) {
             List<String> foreignKeyArray = DataGenerator.getForeignKey(datagen, schema, fieldName);

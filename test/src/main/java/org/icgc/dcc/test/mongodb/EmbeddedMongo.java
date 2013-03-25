@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.mongodb;
+package org.icgc.dcc.test.mongodb;
 
 import java.util.logging.Logger;
 
@@ -85,7 +85,7 @@ public class EmbeddedMongo implements TestRule {
 
     // Start mongo
     MongodStarter runtime = MongodStarter.getInstance(runtimeConfig);
-    mongodConfig = new MongodConfig(Version.Main.V2_2);
+    mongodConfig = new MongodConfig(Version.Main.V2_3);
     mongodExe = runtime.prepare(mongodConfig);
     mongod = mongodExe.start();
     mongo = new Mongo("localhost", mongodConfig.net().getPort());

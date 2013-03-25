@@ -25,7 +25,7 @@ import java.io.IOException;
 
 import lombok.SneakyThrows;
 
-import org.icgc.dcc.genes.mongodb.EmbeddedMongo;
+import org.icgc.dcc.test.mongodb.EmbeddedMongo;
 import org.jongo.Jongo;
 import org.jongo.MongoCollection;
 import org.junit.Rule;
