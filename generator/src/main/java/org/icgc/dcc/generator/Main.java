@@ -66,9 +66,8 @@ public class Main {
 
         return;
       }
-
       GeneratorConfig config = read(options.config);
-      generate(config);
+      generate(config, options.dictionary, options.codeList);
     } catch(ParameterException pe) {
       err.printf("dcc-generator: %s%n", pe.getMessage());
       err.printf("Try '%s --help' for more information.%n", getProgramName());
@@ -80,12 +79,12 @@ public class Main {
     return new GeneratorConfigFile(file).read();
   }
 
-  private void generate(GeneratorConfig config) {
+  private void generate(GeneratorConfig config, File dictionary, File codeList) {
     log.info("Generating using: {}", options);
     GeneratorService service = new GeneratorService();
 
     log.info("Generating: config = {}", config);
-    service.generate(config);
+    service.generate(config, dictionary, codeList);
     log.info("Finished generating");
   }
 

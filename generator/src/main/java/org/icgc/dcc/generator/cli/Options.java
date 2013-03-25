@@ -34,6 +34,12 @@ public class Options {
   @Parameter(names = { "-c", "--config" }, required = true, validateValueWith = FileValidator.class, description = "Configuration file (e.g. ./config.yaml)")
   public File config;
 
+  @Parameter(names = { "-d", "--dictionary" }, required = false, validateValueWith = FileValidator.class, description = "Dictionary file (e.g. ./Dictionary.json)")
+  public File dictionary;
+
+  @Parameter(names = { "-k", "--codeList" }, required = false, validateValueWith = FileValidator.class, description = "CodeList file (e.g. ./CodeList.json)")
+  public File codeList;
+
   @Parameter(names = { "-v", "--version" }, help = true, description = "Show version")
   public boolean version;
 

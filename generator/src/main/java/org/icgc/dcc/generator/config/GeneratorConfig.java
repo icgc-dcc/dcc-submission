@@ -38,10 +38,10 @@ public class GeneratorConfig {
   private String outputDirectory = "target/";
 
   @JsonProperty
-  private String dictionaryUrl = "org/icgc/dcc/generator/dictionary.json";
+  private String dictionaryUrl = "org/icgc/dcc/resources/dictionary.json";
 
   @JsonProperty
-  private String codeListUrl = "org/icgc/dcc/generator/codeLists.json";
+  private String codeListUrl = "org/icgc/dcc/resources/codeLists.json";
 
   @JsonProperty
   private Integer numberOfDonors = 500;

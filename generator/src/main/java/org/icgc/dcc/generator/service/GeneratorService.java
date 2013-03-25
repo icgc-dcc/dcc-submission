@@ -59,11 +59,9 @@ public class GeneratorService {
   private static final String SECONDARY_FILE_TYPE = "s";
 
   @SneakyThrows
-  public void generate(GeneratorConfig config) {
+  public void generate(GeneratorConfig config, File dictionaryFile, File codeListFile) {
     // Retrieve all configuration parameters
     String outputDirectory = config.getOutputDirectory();
-    String dictionaryUrl = config.getDictionaryUrl();
-    String codeListUrl = config.getCodeListUrl();
     Integer numberOfDonors = config.getNumberOfDonors();
     Integer numberOfSpecimensPerDonor = config.getNumberOfSpecimensPerDonor();
     Integer numberOfSamplesPerSpecimen = config.getNumberOfSamplesPerSpecimen();
@@ -79,7 +77,7 @@ public class GeneratorService {
     checkParameters(leadJurisdiction, tumourType, institution, platform);
 
     log.info("Initializing Dictionary and CodeList files");
-    initResources(dictionaryUrl, codeListUrl);
+    initResources(dictionaryFile, codeListFile);
 
     generateFiles(outputDirectory, numberOfDonors, numberOfSpecimensPerDonor, numberOfSamplesPerSpecimen,
         leadJurisdiction, tumourType, institution, platform, seed, optionalFiles, experimentalFiles);
@@ -147,23 +145,21 @@ public class GeneratorService {
   }
 
   /**
-   * @param dictionaryUrl
-   * @param codeListUrl
+   * @param dictionaryFile
+   * @param codeListFile
    * @throws JsonParseException
    * @throws JsonMappingException
    * @throws IOException
    * @throws JsonProcessingException
    */
-  private void initResources(String dictionaryUrl, String codeListUrl) throws JsonParseException, JsonMappingException,
+  private void initResources(File dictionaryFile, File codeListFile) throws JsonParseException, JsonMappingException,
       IOException, JsonProcessingException {
-    File dictionaryFile = new File(dictionaryUrl);
-    File codeListFile = new File(codeListUrl);
-    if(dictionaryFile.exists()) {
+    if(dictionaryFile != null) {
       ResourceWrapper.initDictionary(dictionaryFile);
     } else {
       ResourceWrapper.initDictionary();
     }
-    if(codeListFile.exists()) {
+    if(codeListFile != null) {
       ResourceWrapper.initCodeLists(codeListFile);
     } else {
       ResourceWrapper.initCodeLists();
