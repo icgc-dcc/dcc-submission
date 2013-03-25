@@ -30,10 +30,7 @@ import java.util.List;
 import java.util.Set;
 
 import lombok.Cleanup;
-<<<<<<< HEAD
 import lombok.extern.slf4j.Slf4j;
-=======
->>>>>>> 5fb074f48c2aaa31ffd3a6350adad7984d04a581
 
 import org.apache.commons.lang.mutable.MutableDouble;
 import org.apache.commons.lang.mutable.MutableInt;
