@@ -29,8 +29,8 @@ angular.module('app.projects').config(['$routeProvider', function ($routeProvide
           projects: ['ProjectsService', function (ProjectsService) {
             return ProjectsService.query();
           }],
-          gp: ['GenesService', function (GenesService) {
-            return GenesService.embQuery();
+          gp: ['GenesProjectsService', function (GenesProjectsService) {
+            return GenesProjectsService.query();
           }]
         }
       })

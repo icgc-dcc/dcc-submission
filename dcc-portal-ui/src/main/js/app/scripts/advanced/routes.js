@@ -31,6 +31,9 @@ angular.module('app.advanced').config(['$routeProvider', function ($routeProvide
           }],
           genes: ['$route', 'GenesService', function ($route, GenesService) {
             return GenesService.query();
+          }],
+          gp: ['GenesProjectsService', function (GenesProjectsService) {
+            return GenesProjectsService.query();
           }]
         }
       })

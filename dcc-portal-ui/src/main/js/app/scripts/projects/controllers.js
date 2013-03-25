@@ -19,65 +19,20 @@
 
 angular.module('app.projects.controllers', ['app.projects.services']);
 
-angular.module('app.projects.controllers').controller('ProjectsController', [ "$scope", 'ProjectsService', "GenesService", "projects", "gp", function ($scope, ProjectsService, GenesService, projects, gp) {
-  var hits2HCpie = function (hits) {
-    var r = [];
-
-    for (var i = 0; i < hits.length; ++i) {
-      r.push({
-        name: hits[i].fields.project_name,
-        y: hits[i].fields.total_donor_count,
-        type: "project",
-        facet: "project_name"
-      })
-    }
-
-    return r;
-  };
-
-  // TODO rework using fields
-
-  var hits2HCstacked = function (hits) {
-    var xaxis = [];
-    var series = {};
-    var r = [];
-
-    for (var i = 0; i < hits.length; ++i) {
-      var hit = hits[i];
-      xaxis.push(hit.fields.symbol);
-      //series[hit.fields.symbol] = {};
-      for (var y = 0; y < hit.fields['project.project_name'].length; ++y) {
-        var project = hit.fields['project.project_name'][y];
-        var count = hit.fields['project.affected_donor_count'][y];
-        if (series.hasOwnProperty(project) == false) {
-          series[project] = [];
-        }
-        series[project].push({x: i, y: count});
-      }
-    }
-
-    for (var s in series) {
-      r.push({name: s, data: series[s]})
-    }
-
-    return {
-      x: xaxis,
-      s: r
-    }
-  };
-
+angular.module('app.projects.controllers').controller('ProjectsController', [ "$scope", 'ProjectsService', "GenesProjectsService", "projects", "gp", "HighchartsService", function ($scope, ProjectsService, GenesProjectsService, projects, gp, HighchartsService) {
   $scope.projects = projects;
   $scope.gp = gp;
 
-  $scope.cdata = hits2HCpie(projects.hits);
-  var st = hits2HCstacked(gp.hits);
-  $scope.stxdata = st.x;
-  $scope.stsdata = st.s;
+  $scope.cdata = HighchartsService.hits2HCpie("project", "project_name", projects.hits, "total_donor_count");
+  $scope.stdata = HighchartsService.hits2HCstacked(gp.hits, 'project.project_name', 'project.affected_donor_count');
 
   $scope.refresh = function () {
     ProjectsService.query().then(function (response) {
       $scope.projects = response;
-      $scope.cdata = hits2HCpie(response.hits);
+      $scope.cdata = HighchartsService.hits2HCpie("project", "project_name", response.hits, "total_donor_count");
+    });
+    GenesProjectsService.query().then(function (response) {
+      $scope.stdata = HighchartsService.hits2HCstacked(response.hits, 'project.project_name', 'project.affected_donor_count');
     });
   };
 

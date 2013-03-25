@@ -34,3 +34,14 @@ angular.module('app.genes.models').factory('Genes', ['http', function (http) {
     }
   }
 }]);
+
+angular.module('app.genes.models').factory('GenesProjects', ['http', function (http) {
+  return {
+    query: function () {
+      return http.query('/ws/genes/projects');
+    },
+    get: function (params) {
+      return http.get('/ws/genes/projects/' + params.gene);
+    }
+  }
+}]);

@@ -38,13 +38,13 @@ angular.module('app.http.http').factory('http', ['$http', 'httpService', functio
       return $http.get(query_url).then(extractData);
     },
     embQuery: function (url, param) {
-      console.log(param);
+      //  console.log(param);
       var filters, query_url = url;
-      if (param) {
-        filters = JSON.stringify(param);
-        query_url = url + '?filters=' + filters;
-      }
-      console.log(query_url);
+      //  if (param) {
+      filters = JSON.stringify(param);
+      query_url = url + '?filters=' + filters;
+      //  }
+      //  console.log(query_url);
       return $http.get(query_url).then(extractData);
     }
   };

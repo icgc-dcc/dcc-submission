@@ -17,7 +17,7 @@
 
 'use strict';
 
-angular.module('highcharts', ['highcharts.directives']);
+angular.module('highcharts', ['highcharts.directives', 'highcharts.services']);
 
 angular.module('highcharts.directives', []);
 
@@ -121,8 +121,7 @@ angular.module('highcharts.directives').directive('stacked', function () {
     restrict: 'E',
     replace: true,
     scope: {
-      xaxis: '=',
-      series: '='
+      items: '='
     },
     template: '<div id="container" style="margin: 0 auto">not working</div>',
     link: function ($scope, $element, $attrs) {
@@ -142,15 +141,15 @@ angular.module('highcharts.directives').directive('stacked', function () {
           plotShadow: false
         },
         title: {
-          text: 'Stacked column chart'
+          text: 'Top 30 Affected Genes'
         },
         xAxis: {
-          categories: $scope.xaxis //['Apples', 'Oranges', 'Pears', 'Grapes', 'Bananas']
+          categories: $scope.items.x //['Apples', 'Oranges', 'Pears', 'Grapes', 'Bananas']
         },
         yAxis: {
           min: 0,
           title: {
-            text: 'Total fruit consumption'
+            text: 'Number of Donors Affected'
           },
           stackLabels: {
             enabled: true,
@@ -188,10 +187,11 @@ angular.module('highcharts.directives').directive('stacked', function () {
             }
           }
         },
-        series: $scope.series
+        series: $scope.items.s
       };
 
       $scope.$watch("items", function (newValue, oldValue) {
+        console.log("New Value: ", newValue.s);
         if (!newValue) return;
         if (angular.equals(newValue, oldValue)) return;
 
@@ -201,9 +201,10 @@ angular.module('highcharts.directives').directive('stacked', function () {
         var deepCopy = true;
         var newSettings = {};
         $.extend(deepCopy, newSettings, chartsDefaults);
-        newSettings.series = newValue;
+        //newSettings.xAxis= newValue.x;
+        //newSettings.series = newValue.s;
         renderChart(newSettings);
-      });
+      }, true);
 
       renderChart(chartsDefaults);
     }

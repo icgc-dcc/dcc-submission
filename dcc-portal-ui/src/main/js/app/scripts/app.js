@@ -20,7 +20,7 @@
 angular.module('app', [
   'ui.directives',
   'ui.bootstrap',
-  'highcharts.directives',
+  'highcharts',
   'app.controllers',
   'app.common',
   'app.http',
