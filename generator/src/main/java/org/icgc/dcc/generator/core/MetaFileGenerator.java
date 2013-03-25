@@ -21,6 +21,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -86,6 +87,52 @@ public class MetaFileGenerator {
 
     this.datagen = datagen;
 
+    @Cleanup
+    BufferedWriter writer = prepareFile(datagen, schema, leadJurisdiction, institution, tumourType, platform);
+
+    // Output field names (eliminate trailing tab)
+    populateFileHeader(schema, writer);
+
+    populateCodeListArray(schema);
+
+    log.info("Populating " + schema.getName() + " file");
+    populateFile(schema, linesPerForeignKey, writer);
+    log.info("Finished populating " + schema.getName() + " file");
+
+    writer.close();
+  }
+
+  /**
+   * @param schema
+   * @param writer
+   * @throws IOException
+   */
+  private void populateFileHeader(FileSchema schema, BufferedWriter writer) throws IOException {
+    int counterForFieldNames = 0;
+    for(String fieldName : schema.getFieldNames()) {
+      if(counterForFieldNames == schema.getFields().size() - 1) {
+        writer.write(fieldName);
+      } else {
+        writer.write(fieldName + TAB);
+      }
+      counterForFieldNames++;
+    }
+    writer.write(NEW_LINE);
+  }
+
+  /**
+   * @param datagen
+   * @param schema
+   * @param leadJurisdiction
+   * @param institution
+   * @param tumourType
+   * @param platform
+   * @return
+   * @throws IOException
+   * @throws FileNotFoundException
+   */
+  private BufferedWriter prepareFile(DataGenerator datagen, FileSchema schema, String leadJurisdiction,
+      String institution, String tumourType, String platform) throws IOException, FileNotFoundException {
     // File building
     String fileUrl =
         SubmissionUtils.generateExperimentalFileUrl(datagen.getOutputDirectory(), schema.getName(), leadJurisdiction,
@@ -99,26 +146,7 @@ public class MetaFileGenerator {
     OutputStreamWriter osw = new OutputStreamWriter(fos, Charsets.UTF_8);
     @Cleanup
     BufferedWriter writer = new BufferedWriter(osw);
-
-    // Output field names (eliminate trailing tab)
-    int counterForFieldNames = 0;
-    for(String fieldName : schema.getFieldNames()) {
-      if(counterForFieldNames == schema.getFields().size() - 1) {
-        writer.write(fieldName);
-      } else {
-        writer.write(fieldName + TAB);
-      }
-      counterForFieldNames++;
-    }
-    writer.write(NEW_LINE);
-
-    populateCodeListArray(schema);
-
-    log.info("Populating " + schema.getName() + " file");
-    populateFile(schema, linesPerForeignKey, writer);
-    log.info("Finished populating " + schema.getName() + " file");
-
-    writer.close();
+    return writer;
   }
 
   /**

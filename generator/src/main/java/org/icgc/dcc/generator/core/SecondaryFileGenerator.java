@@ -21,6 +21,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -87,7 +88,33 @@ public class SecondaryFileGenerator {
       String institution, String tumourType, String platform) throws IOException {
 
     this.datagen = datagen;
+    @Cleanup
+    BufferedWriter writer = prepareFile(datagen, schema, leadJurisdiction, institution, tumourType, platform);
 
+    populateFileHeader(schema, writer);
+
+    populateCodeListArray(schema);
+
+    log.info("Populating " + schema.getName() + " file");
+    populateFile(schema, linesPerForeignKey, writer);
+    log.info("Finished populating " + schema.getName() + " file");
+
+    writer.close();
+  }
+
+  /**
+   * @param datagen
+   * @param schema
+   * @param leadJurisdiction
+   * @param institution
+   * @param tumourType
+   * @param platform
+   * @return
+   * @throws IOException
+   * @throws FileNotFoundException
+   */
+  private BufferedWriter prepareFile(DataGenerator datagen, FileSchema schema, String leadJurisdiction,
+      String institution, String tumourType, String platform) throws IOException, FileNotFoundException {
     // File building
     String fileUrl =
         SubmissionUtils.generateExperimentalFileUrl(datagen.getOutputDirectory(), schema.getName(), leadJurisdiction,
@@ -99,9 +126,17 @@ public class SecondaryFileGenerator {
     // Prepare file writer
     FileOutputStream fos = new FileOutputStream(outputFile);
     OutputStreamWriter osw = new OutputStreamWriter(fos, Charsets.UTF_8);
-    @Cleanup
     BufferedWriter writer = new BufferedWriter(osw);
 
+    return writer;
+  }
+
+  /**
+   * @param schema
+   * @param writer
+   * @throws IOException
+   */
+  private void populateFileHeader(FileSchema schema, BufferedWriter writer) throws IOException {
     // Output field names (eliminate trailing tabs)
     int counterForFieldNames = 0;
     for(String fieldName : schema.getFieldNames()) {
@@ -113,14 +148,6 @@ public class SecondaryFileGenerator {
       counterForFieldNames++;
     }
     writer.write(NEW_LINE);
-
-    populateCodeListArray(schema);
-
-    log.info("Populating " + schema.getName() + " file");
-    populateFile(schema, linesPerForeignKey, writer);
-    log.info("Finished populating " + schema.getName() + " file");
-
-    writer.close();
   }
 
   /**
