@@ -15,7 +15,9 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.mongodb;
+package org.icgc.dcc.test.mongodb;
+
+import static com.google.common.base.Preconditions.checkState;
 
 import java.io.File;
 
@@ -31,9 +33,6 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import com.mongodb.DB;
 
-/**
- * FIXME: DUPLICATED FROM AGGREGATOR!!!
- */
 @Slf4j
 public class MongoExporter extends BaseMongoImportExport {
 
@@ -58,9 +57,9 @@ public class MongoExporter extends BaseMongoImportExport {
   private void exportCollection(File collectionFile, MongoCollection collection) {
     Files.createParentDirs(collectionFile);
     if(collectionFile.exists()) {
-      collectionFile.delete();
+      checkState(collectionFile.delete(), "Collection file not deleted: %s", collectionFile);
     }
-    collectionFile.createNewFile();
+    checkState(collectionFile.createNewFile(), "Collection file not created: %s", collectionFile);
 
     ObjectMapper mapper = new ObjectMapper();
     for(JsonNode jsonNode : collection.find().as(JsonNode.class)) {

@@ -47,7 +47,7 @@ import de.undercouch.bson4jackson.BsonFactory;
  */
 @Slf4j
 @AllArgsConstructor
-public class GenesService {
+public class GeneLoaderService {
 
   private final GeneTransformer transformer = new GeneTransformer();
 
@@ -56,6 +56,8 @@ public class GenesService {
 
   @SneakyThrows
   public void load(InputStream inputStream) {
+    log.info("Loading gene model from {} into {}...", inputStream, mongoUri);
+
     final MongoCollection genes = getTargetCollection(mongoUri);
     try {
       // Drop the current collection
@@ -81,7 +83,12 @@ public class GenesService {
 
   @SneakyThrows
   public void load(File file) {
-    load(new FileInputStream(file));
+    InputStream inputStream = new FileInputStream(file);
+    try {
+      load(inputStream);
+    } finally {
+      inputStream.close();
+    }
   }
 
   MongoCollection getTargetCollection(MongoURI mongoUri) throws UnknownHostException {
@@ -111,8 +118,8 @@ public class GenesService {
         JsonNode gene = iterator.next();
         callback.handle(gene);
 
-        if(++insertCount % 1000 == 0) {
-          log.info("Processed {} genes", insertCount);
+        if(++insertCount % 10000 == 0) {
+          log.info("Loaded {} genes", insertCount);
         }
       }
       log.info("Finished processing {} gene(s) total", insertCount);

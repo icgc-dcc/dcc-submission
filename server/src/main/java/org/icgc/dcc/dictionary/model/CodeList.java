@@ -49,6 +49,7 @@ public class CodeList extends BaseEntity implements HasName {
     terms = new ArrayList<Term>();
   }
 
+  // TODO: DCC-904 - validation: ensure no value is a code (find reference to ticket in CodeListRestriction and SubmissionFileSchemeHelper to find out why)
   public CodeList(String name) {
     this();
     this.name = name;

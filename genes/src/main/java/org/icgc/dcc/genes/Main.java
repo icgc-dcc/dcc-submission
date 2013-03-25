@@ -25,7 +25,7 @@ import java.io.File;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.genes.cli.Options;
-import org.icgc.dcc.genes.service.GenesService;
+import org.icgc.dcc.genes.service.GeneLoaderService;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
@@ -67,7 +67,7 @@ public class Main {
   }
 
   private void load() {
-    GenesService loader = new GenesService(options.mongoUri);
+    GeneLoaderService loader = new GeneLoaderService(options.mongoUri);
 
     log.info("Loading gene model using: {}", options);
     loader.load(options.file);
