@@ -175,15 +175,15 @@ angular.module('highcharts.directives').directive('stacked', function () {
         tooltip: {
           formatter: function () {
             return '<b>' + this.x + '</b><br/>' +
-                this.series.name + ': ' + this.y + '<br/>' +
-                'Total: ' + this.point.stackTotal;
+                this.series.name + '<br/>' +
+                'Donors: ' + this.y + ' <strong>(' + this.point.percentage.toFixed(2) + '%)</strong>';
           }
         },
         plotOptions: {
           column: {
             stacking: 'normal',
             dataLabels: {
-              enabled: true,
+              enabled: false,
               color: (Highcharts.theme && Highcharts.theme.dataLabelsColor) || 'white'
             }
           }

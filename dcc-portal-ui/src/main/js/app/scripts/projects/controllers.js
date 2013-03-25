@@ -44,15 +44,15 @@ angular.module('app.projects.controllers').controller('ProjectsController', [ "$
 
     for (var i = 0; i < hits.length; ++i) {
       var hit = hits[i];
-      //xaxis.push(hit.fields.symbol);
-      series[hit.fields.symbol] = {};
+      xaxis.push(hit.fields.symbol);
+      //series[hit.fields.symbol] = {};
       for (var y = 0; y < hit.fields['project.project_name'].length; ++y) {
         var project = hit.fields['project.project_name'][y];
         var count = hit.fields['project.affected_donor_count'][y];
         if (series.hasOwnProperty(project) == false) {
           series[project] = [];
         }
-        series[project].push(count);
+        series[project].push({x: i, y: count});
       }
     }
 

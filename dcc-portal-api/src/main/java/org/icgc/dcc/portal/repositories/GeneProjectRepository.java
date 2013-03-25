@@ -49,7 +49,9 @@ public class GeneProjectRepository extends BaseRepository {
             QueryBuilders.customScoreQuery(QueryBuilders.filteredQuery( //
                 QueryBuilders.matchAllQuery(), //
                 getScoreFilters()
-            )).script("doc['project.affected_donor_count'].value/doc['project.total_donor_count'].value") //
+            )).script("doc['project.affected_donor_count'].value"
+                //    "/doc['project.total_donor_count'].value"
+            ) //
         ).scoreMode("total");
   }
 
