@@ -17,6 +17,13 @@
  */
 package org.icgc.dcc.release;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -45,13 +52,6 @@ import com.mongodb.Mongo;
 import com.mongodb.MongoException;
 import com.typesafe.config.Config;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 public class ReleaseServiceTest {
 
   private DccLocking dccLocking;
@@ -70,7 +70,7 @@ public class ReleaseServiceTest {
 
   private Config config;
 
-  final private String testDbName = "dcc-test";
+  private final static String testDbName = "dcc-test";
 
   @Before
   public void setUp() {
