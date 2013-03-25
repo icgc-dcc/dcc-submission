@@ -1,6 +1,12 @@
 # Directory in which all the files are generated
 outputDirectory: target/
 
+# Directory in which dictionary can be found in
+dictionaryUrl: 
+
+# Directory in which code lists can be found in
+codeListUrl:
+
 # Number Of donors that participated in the project (approximately 500 for a given project)
 numberOfDonors: 500
 

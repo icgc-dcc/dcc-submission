@@ -52,7 +52,7 @@ public class DataGenerator {
   private String outputDirectory;
 
   @SneakyThrows
-  public DataGenerator(String outputDirectory, String dictionaryUrl, String codeListUrl, Long seed) {
+  public DataGenerator(String outputDirectory, Long seed) {
     this.outputDirectory = outputDirectory;
     this.random = (seed == null) ? new Random() : new Random(seed);
   }

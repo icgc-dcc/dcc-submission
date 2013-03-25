@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.generator.service;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +38,7 @@ import org.icgc.dcc.generator.model.OptionalFile;
 import org.icgc.dcc.generator.utils.ResourceWrapper;
 
 import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
 @Slf4j
@@ -76,9 +78,11 @@ public class GeneratorService {
     log.info("Checking validity of parameters");
     checkParameters(leadJurisdiction, tumourType, institution, platform);
 
-    generateFiles(outputDirectory, dictionaryUrl, codeListUrl, numberOfDonors, numberOfSpecimensPerDonor,
-        numberOfSamplesPerSpecimen, leadJurisdiction, tumourType, institution, platform, seed, optionalFiles,
-        experimentalFiles);
+    log.info("Initializing Dictionary and CodeList files");
+    initResources(dictionaryUrl, codeListUrl);
+
+    generateFiles(outputDirectory, numberOfDonors, numberOfSpecimensPerDonor, numberOfSamplesPerSpecimen,
+        leadJurisdiction, tumourType, institution, platform, seed, optionalFiles, experimentalFiles);
   }
 
   public static void checkParameters(String leadJurisdiction, String tumourType, String institution, String platform)
@@ -98,15 +102,12 @@ public class GeneratorService {
   }
 
   @SneakyThrows
-  private void generateFiles(String outputDirectory, String dictionaryUrl, String codeListUrl, Integer numberOfDonors,
-      Integer numberOfSpecimensPerDonor, Integer numberOfSamplesPerSpecimen, String leadJurisdiction,
-      String tumourType, String institution, String platform, Long seed, ArrayList<OptionalFile> optionalFiles,
-      List<ExperimentalFile> experimentalFiles) throws JsonParseException, JsonMappingException, IOException {
+  private void generateFiles(String outputDirectory, Integer numberOfDonors, Integer numberOfSpecimensPerDonor,
+      Integer numberOfSamplesPerSpecimen, String leadJurisdiction, String tumourType, String institution,
+      String platform, Long seed, ArrayList<OptionalFile> optionalFiles, List<ExperimentalFile> experimentalFiles)
+      throws JsonParseException, JsonMappingException, IOException {
 
-    DataGenerator datagen = new DataGenerator(outputDirectory, dictionaryUrl, codeListUrl, seed);
-
-    ResourceWrapper.initDictionary((dictionaryUrl == null) ? "org/icgc/dcc/generator/dictionary.json" : dictionaryUrl);
-    ResourceWrapper.initCodeLists((codeListUrl == null) ? "org/icgc/dcc/generator/codeLists.json" : codeListUrl);
+    DataGenerator datagen = new DataGenerator(outputDirectory, seed);
 
     // Generate all core files
     createCoreFile(datagen, DONOR_SCHEMA_NAME, numberOfDonors, leadJurisdiction, institution, tumourType, platform);
@@ -142,6 +143,30 @@ public class GeneratorService {
       } else if(fileType.equals(SECONDARY_FILE_TYPE)) {
         createSecondaryFile(datagen, schemaName, numberOfLines, leadJurisdiction, institution, tumourType, platform);
       }
+    }
+  }
+
+  /**
+   * @param dictionaryUrl
+   * @param codeListUrl
+   * @throws JsonParseException
+   * @throws JsonMappingException
+   * @throws IOException
+   * @throws JsonProcessingException
+   */
+  private void initResources(String dictionaryUrl, String codeListUrl) throws JsonParseException, JsonMappingException,
+      IOException, JsonProcessingException {
+    File dictionaryFile = new File(dictionaryUrl);
+    File codeListFile = new File(codeListUrl);
+    if(dictionaryFile.exists()) {
+      ResourceWrapper.initDictionary(dictionaryFile);
+    } else {
+      ResourceWrapper.initDictionary();
+    }
+    if(codeListFile.exists()) {
+      ResourceWrapper.initCodeLists(codeListFile);
+    } else {
+      ResourceWrapper.initCodeLists();
     }
   }
 

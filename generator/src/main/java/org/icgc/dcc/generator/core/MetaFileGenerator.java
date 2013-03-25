@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.generator.core;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -32,7 +34,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.mutable.MutableDouble;
 import org.apache.commons.lang.mutable.MutableInt;
 import org.apache.commons.lang.mutable.MutableLong;
-import org.apache.hadoop.fs.FileAlreadyExistsException;
 import org.icgc.dcc.dictionary.model.CodeList;
 import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.FileSchema;
@@ -44,6 +45,7 @@ import org.icgc.dcc.generator.model.PrimaryKey;
 import org.icgc.dcc.generator.utils.ResourceWrapper;
 import org.icgc.dcc.generator.utils.SubmissionUtils;
 
+import com.fasterxml.jackson.databind.MappingIterator;
 import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
 
@@ -89,9 +91,8 @@ public class MetaFileGenerator {
         SubmissionUtils.generateExperimentalFileUrl(datagen.getOutputDirectory(), schema.getName(), leadJurisdiction,
             institution, tumourType, platform);
     File outputFile = new File(fileUrl);
-    if(!outputFile.createNewFile()) {
-      throw new FileAlreadyExistsException("A File with the name: " + fileUrl + " already exists");
-    }
+    checkArgument(!outputFile.exists(), "A file with the name '%s' already exists.", fileUrl);
+    outputFile.createNewFile();
 
     FileOutputStream fos = new FileOutputStream(outputFile);
     OutputStreamWriter osw = new OutputStreamWriter(fos, Charsets.UTF_8);
@@ -126,9 +127,11 @@ public class MetaFileGenerator {
       Optional<Restriction> restriction = field.getRestriction(CODELIST_RESTRICTION_NAME);
       if(restriction.isPresent()) {
         String codeListName = restriction.get().getConfig().getString("name");
-        for(CodeList codelist : ResourceWrapper.getCodeLists()) {
-          if(codelist.getName().equals(codeListName)) {
-            CodeListTerm term = new CodeListTerm(field.getName(), codelist.getTerms());
+        MappingIterator<CodeList> iterator = ResourceWrapper.getCodeLists();
+        while(iterator.hasNext()) {
+          CodeList codeList = iterator.next();
+          if(codeList.getName().equals(codeListName)) {
+            CodeListTerm term = new CodeListTerm(field.getName(), codeList.getTerms());
             codeListArrayList.add(term);
           }
         }

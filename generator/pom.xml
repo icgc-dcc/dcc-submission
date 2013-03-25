@@ -29,6 +29,13 @@
       <scope>provided</scope>
     </dependency>
 
+	<!-- Resources -->
+	<dependency>
+	    <groupId>org.icgc.dcc</groupId>
+	    <artifactId>dcc-resources</artifactId>
+	    <version>0.6c0</version>
+	</dependency>
+	
     <!-- DCC -->
     <dependency>
       <groupId>org.icgc.dcc</groupId>
