@@ -88,6 +88,7 @@ public class SecondaryFileGenerator {
       String institution, String tumourType, String platform) throws IOException {
 
     this.datagen = datagen;
+
     @Cleanup
     BufferedWriter writer = prepareFile(datagen, schema, leadJurisdiction, institution, tumourType, platform);
 
@@ -126,9 +127,8 @@ public class SecondaryFileGenerator {
     // Prepare file writer
     FileOutputStream fos = new FileOutputStream(outputFile);
     OutputStreamWriter osw = new OutputStreamWriter(fos, Charsets.UTF_8);
-    BufferedWriter writer = new BufferedWriter(osw);
 
-    return writer;
+    return new BufferedWriter(osw);
   }
 
   /**
@@ -199,6 +199,7 @@ public class SecondaryFileGenerator {
           } else {
             writer.write(output + TAB);
           }
+
           counterForFields++;
         }
         writer.write(NEW_LINE);

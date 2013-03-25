@@ -88,7 +88,7 @@ public class CoreFileGenerator {
 
     populateFileHeader(schema, writer);
 
-    populateTermList(schema);
+    populateTermList(schema, writer);
 
     log.info("Populating " + schema.getName() + " file");
     populateFile(schema, linesPerForeignKey, writer);
@@ -140,15 +140,15 @@ public class CoreFileGenerator {
     // Prepare file writer
     FileOutputStream fos = new FileOutputStream(outputFile);
     OutputStreamWriter osw = new OutputStreamWriter(fos, Charsets.UTF_8);
-    @Cleanup
-    BufferedWriter writer = new BufferedWriter(osw);
-    return writer;
+
+    return new BufferedWriter(osw);
   }
 
   /**
    * @param schema
+   * @param writer
    */
-  private void populateTermList(FileSchema schema) {
+  private void populateTermList(FileSchema schema, BufferedWriter writer) {
     for(Field field : schema.getFields()) {
       Optional<Restriction> restriction = field.getRestriction(CODELIST_RESTRICTION_NAME);
       if(restriction.isPresent()) {

@@ -144,9 +144,8 @@ public class MetaFileGenerator {
     // Prepare file writer
     FileOutputStream fos = new FileOutputStream(outputFile);
     OutputStreamWriter osw = new OutputStreamWriter(fos, Charsets.UTF_8);
-    @Cleanup
-    BufferedWriter writer = new BufferedWriter(osw);
-    return writer;
+
+    return new BufferedWriter(osw);
   }
 
   /**
