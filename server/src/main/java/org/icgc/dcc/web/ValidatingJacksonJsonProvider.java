@@ -163,7 +163,7 @@ public class ValidatingJacksonJsonProvider implements MessageBodyReader<Object>,
     return Response.status(UNPROCESSABLE_ENTITY).entity(msg).type(MediaType.TEXT_PLAIN_TYPE).build();
   }
 
-  private class CollectionWrapper<T> {
+  private static class CollectionWrapper<T> {
     @Valid
     private final Collection<T> collection;
 

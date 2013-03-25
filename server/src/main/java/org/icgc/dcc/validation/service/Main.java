@@ -104,6 +104,10 @@ public class Main {
             Iterables.filter(releaseService.getCompletedReleases(), new Predicate<CompletedRelease>() {
               @Override
               public boolean apply(CompletedRelease input) {
+                if(input == null) {
+                  return false;
+                }
+
                 return releaseName.equals(input.getRelease().getName());
               }
             });
