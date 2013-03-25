@@ -121,7 +121,7 @@ public class ValidationErrorReport implements Serializable {
       for(ColumnErrorReport column : this.columns) {
         List<Long> newLines = Lists.newLinkedList();
         for(Long oldLine : column.getLines()) {
-          newLines.add(byteToLine.get(oldLine).longValue());
+          newLines.add(byteToLine.get(oldLine));
         }
         column.setLines(newLines);
       }

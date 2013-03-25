@@ -37,15 +37,15 @@ import com.google.common.collect.ObjectArrays;
  */
 public class RelationPlanningVisitorTest extends CascadingTestCase {
 
-  private final String lhs = "referencing";
+  private final static String lhs = "referencing";
 
-  private final String rhs = "referenced";
+  private final static String rhs = "referenced";
 
-  private final String[] lhsFields = { "offset", "fk1", "fk2", "fk3" };
+  private final static String[] lhsFields = { "offset", "fk1", "fk2", "fk3" };
 
-  private final String[] rhsFields = { "pk1", "pk2", "pk3" };
+  private final static String[] rhsFields = { "pk1", "pk2", "pk3" };
 
-  private final Fields inputFields = new Fields(ObjectArrays.concat(lhsFields, rhsFields, String.class));
+  private final static Fields inputFields = new Fields(ObjectArrays.concat(lhsFields, rhsFields, String.class));
 
   @Test
   public void test_operate_valid() {
