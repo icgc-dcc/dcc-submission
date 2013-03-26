@@ -46,6 +46,10 @@ public class ResourceWrapper {
 
   private static final ObjectReader READER = MAPPER.reader(CodeList.class);
 
+  private static final String codeListUrl = "org/icgc/dcc/resources/CodeList.json";
+
+  private static final String dictionaryUrl = "org/icgc/dcc/resources/CodeList.json";
+
   public ResourceWrapper(File dictionaryFile, File codeListFile) throws JsonParseException, JsonMappingException,
       IOException, JsonProcessingException {
     if(dictionaryFile != null) {
@@ -68,8 +72,7 @@ public class ResourceWrapper {
 
   private void initDictionary() throws JsonParseException, JsonMappingException, IOException {
     log.info("Initializing dictionary: Dictionary.json");
-    fileSchemas =
-        MAPPER.readValue(Resources.getResource("org/icgc/dcc/resources/Dictionary.json"), Dictionary.class).getFiles();
+    fileSchemas = MAPPER.readValue(Resources.getResource(dictionaryUrl), Dictionary.class).getFiles();
   }
 
   private void initCodeLists(File codeListFile) throws JsonParseException, JsonMappingException, IOException {
@@ -79,7 +82,7 @@ public class ResourceWrapper {
 
   private void initCodeLists() throws JsonProcessingException, IOException {
     log.info("Initializing codelist: CodeList.json");
-    codeList = READER.readValues(Resources.getResource("org/icgc/dcc/resources/CodeList.json"));
+    codeList = READER.readValues(Resources.getResource(codeListUrl));
   }
 
   public Iterator<CodeList> getCodeLists() {

@@ -19,6 +19,7 @@ package org.icgc.dcc.generator.core;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -27,8 +28,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -64,8 +63,8 @@ public class PrimaryFileGenerator {
 
   private final List<CodeListTerm> codeListTerms = newArrayList();
 
-  private final Set<String> simulatedData = new HashSet<String>(Arrays.asList("mutation_type", "chromosome",
-      "chromosome_start", "chromosome_end", "reference_genome_allele", "control_genotype", "tumour_genotype mutation"));
+  private final Set<String> simulatedData = newHashSet("mutation_type", "chromosome", "chromosome_start",
+      "chromosome_end", "reference_genome_allele", "control_genotype", "tumour_genotype mutation");
 
   private final MutableLong uniqueId = new MutableLong(0L);
 

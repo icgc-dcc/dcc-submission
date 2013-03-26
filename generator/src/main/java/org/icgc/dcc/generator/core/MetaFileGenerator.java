@@ -90,9 +90,9 @@ public class MetaFileGenerator {
 
     datagen.populateTermList(resourceWrapper, schema, codeListTerms);
 
-    log.info("Populating " + schema.getName() + " file");
+    log.info("Populating {} file", schema.getName());
     populateFile(resourceWrapper, schema, linesPerForeignKey, writer);
-    log.info("Finished populating " + schema.getName() + " file");
+    log.info("Finished populating {} file ", schema.getName());
 
     writer.close();
   }
