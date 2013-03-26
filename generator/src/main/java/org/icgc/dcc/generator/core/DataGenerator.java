@@ -99,12 +99,11 @@ public class DataGenerator {
         String codeListName = restriction.get().getConfig().getString("name");
         List<CodeList> codeLists = resourceWrapper.getCodeLists();
         Iterator<CodeList> cl = codeLists.iterator();
-        // log.info(codeListName);
+        log.info(codeListName);
         while(cl.hasNext()) {
           CodeList codeList = cl.next();
 
           if(codeList.getName().equals(codeListName)) {
-            log.info(codeList.getName());
             CodeListTerm term = new CodeListTerm(field.getName(), codeList.getTerms());
             codeListTerms.add(term);
           }
@@ -129,24 +128,23 @@ public class DataGenerator {
   // calling getForeignKey, that would decrease the number of times this method is called
   public static List<String> getForeignKeys(DataGenerator datagen, FileSchema schema, String fieldName) {
     for(Relation relation : schema.getRelations()) {
-
+      int k = 0;
       for(String primaryKeyFieldName : relation.getFields()) {
         if(primaryKeyFieldName.equals(fieldName)) {
 
-          for(String foreignKeyFieldName : relation.getOtherFields()) {
-            for(PrimaryKey primaryKey : datagen.getPrimaryKeys()) {
-              String primaryKeySchemaIdentifier = primaryKey.getSchemaIdentifier();
-              String primaryKeyFieldIdentifier = primaryKey.getFieldIdentifier();
-              String relatedFileSchemaIdentifier = relation.getOther();
-              String relatedFieldIdentifier = foreignKeyFieldName;
+          for(PrimaryKey primaryKey : datagen.getPrimaryKeys()) {
+            String primaryKeySchemaIdentifier = primaryKey.getSchemaIdentifier();
+            String primaryKeyFieldIdentifier = primaryKey.getFieldIdentifier();
+            String relatedFileSchemaIdentifier = relation.getOther();
+            String relatedFieldIdentifier = relation.getOtherFields().get(k);// foreignKeyFieldName;
 
-              if(primaryKeySchemaIdentifier.equals(relatedFileSchemaIdentifier)
-                  && primaryKeyFieldIdentifier.equals(relatedFieldIdentifier)) {
-                return primaryKey.getPrimaryKeys();
-              }
+            if(primaryKeySchemaIdentifier.equals(relatedFileSchemaIdentifier)
+                && primaryKeyFieldIdentifier.equals(relatedFieldIdentifier)) {
+              return primaryKey.getPrimaryKeys();
             }
           }
         }
+        k++;
       }
     }
     return null;

@@ -88,12 +88,13 @@ public class SecondaryFileGenerator {
     File outputFile = generateFileName(datagen, schema, leadJurisdiction, institution, tumourType, platform);
     @Cleanup
     Writer writer = buildFileWriter(outputFile);
-
-    populateFileHeader(schema, writer);
+    datagen.populateTermList(resourceWrapper, schema, codeListTerms);
+    log.info(String.valueOf(codeListTerms.size()));
 
     datagen.populateTermList(resourceWrapper, schema, codeListTerms);
 
     log.info("Populating {} file", schema.getName());
+    populateFileHeader(schema, writer);
     populateFile(resourceWrapper, schema, linesPerForeignKey, writer);
     log.info("Finished populating {} file ", schema.getName());
   }
@@ -110,7 +111,7 @@ public class SecondaryFileGenerator {
     String schemaName = schema.getName();
     String expName = schemaName.substring(0, schemaName.length() - 2);
     String expType = schemaName.substring(schemaName.length() - 1);
-    List<String> fileNameTokens = newArrayList(expName, leadJurisdiction, institution, tumourType, expType, platform);
+    List<String> fileNameTokens = newArrayList(expName, leadJurisdiction, tumourType, institution, expType, platform);
     String fileName = SubmissionFileUtils.generateFileName(datagen.getOutputDirectory(), fileNameTokens);
     File outputFile = new File(fileName);
     checkArgument(outputFile.exists() == false, "A file with the name '%s' already exists.", fileName);
@@ -211,7 +212,7 @@ public class SecondaryFileGenerator {
   private int calculatedLengthOfForeignKeys(FileSchema schema, List<Relation> relations) {
     Relation randomRelation = relations.get(0);
     String relatedFieldName = randomRelation.getFields().get(0);
-    int lengthOfForeignKeys = DataGenerator.getForeignKeys(datagen, schema, relatedFieldName).size() - 2;
+    int lengthOfForeignKeys = DataGenerator.getForeignKeys(datagen, schema, relatedFieldName).size();
     return lengthOfForeignKeys;
   }
 

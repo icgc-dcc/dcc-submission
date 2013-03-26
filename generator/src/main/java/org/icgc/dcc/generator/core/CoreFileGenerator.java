@@ -80,7 +80,7 @@ public class CoreFileGenerator {
   public void createFile(ResourceWrapper resourceWrapper, FileSchema schema, Integer linesPerForeignKey,
       String leadJurisdiction, String institution, String tumourType, String platform) throws IOException {
 
-    File outputFile = generateFileName(datagen, schema, leadJurisdiction, institution, tumourType, platform);
+    File outputFile = generateFileName(datagen, schema, leadJurisdiction, institution, tumourType);
     @Cleanup
     Writer writer = buildFileWriter(outputFile);
 
@@ -113,8 +113,8 @@ public class CoreFileGenerator {
   }
 
   private File generateFileName(DataGenerator datagen, FileSchema schema, String leadJurisdiction, String institution,
-      String tumourType, String platform) throws IOException {
-    List<String> fileNameTokens = newArrayList(schema.getName(), leadJurisdiction, institution, tumourType, platform);
+      String tumourType) throws IOException {
+    List<String> fileNameTokens = newArrayList(leadJurisdiction, tumourType, institution, schema.getName());
     String fileName = SubmissionFileUtils.generateFileName(datagen.getOutputDirectory(), fileNameTokens);
     File outputFile = new File(fileName);
     checkArgument(outputFile.exists() == false, "A file with the name '%s' already exists.", fileName);
@@ -219,7 +219,7 @@ public class CoreFileGenerator {
     } else {
       Relation randomRelation = relations.get(0);
       String relatedFieldName = randomRelation.getFields().get(0);
-      lengthOfForeingKeys = DataGenerator.getForeignKeys(datagen, schema, relatedFieldName).size() - 2;
+      lengthOfForeingKeys = DataGenerator.getForeignKeys(datagen, schema, relatedFieldName).size();
     }
     return lengthOfForeingKeys;
   }
