@@ -83,8 +83,9 @@ public class MetaFileGenerator {
   public void createFile(ResourceWrapper resourceWrapper, FileSchema schema, Integer linesPerForeignKey,
       String leadJurisdiction, String institution, String tumourType, String platform) throws IOException {
 
+    File outputFile = generateFileName(datagen, schema, leadJurisdiction, institution, tumourType, platform);
     @Cleanup
-    Writer writer = prepareFile(datagen, schema, leadJurisdiction, institution, tumourType, platform);
+    Writer writer = buildFileWriter(outputFile);
 
     // Output field names (eliminate trailing tab)
     populateFileHeader(resourceWrapper, schema, writer);
@@ -109,21 +110,24 @@ public class MetaFileGenerator {
     writer.write(LINE_SEPERATOR);
   }
 
-  private Writer prepareFile(DataGenerator datagen, FileSchema schema, String leadJurisdiction, String institution,
-      String tumourType, String platform) throws IOException, FileNotFoundException {
-    // File building
-    String fileUrl =
-        SubmissionFileUtils.generateExperimentalFileUrl(datagen.getOutputDirectory(), schema.getName(),
-            leadJurisdiction, institution, tumourType, platform);
-    File outputFile = new File(fileUrl);
-    checkArgument(outputFile.exists() == false, "A file with the name '%s' already exists.", fileUrl);
-    outputFile.createNewFile();
-
-    // Prepare file writer
+  private Writer buildFileWriter(File outputFile) throws FileNotFoundException {
     FileOutputStream fos = new FileOutputStream(outputFile);
     OutputStreamWriter osw = new OutputStreamWriter(fos, Charsets.UTF_8);
 
     return new BufferedWriter(osw);
+  }
+
+  private File generateFileName(DataGenerator datagen, FileSchema schema, String leadJurisdiction, String institution,
+      String tumourType, String platform) throws IOException {
+    String schemaName = schema.getName();
+    String expName = schemaName.substring(0, schemaName.length() - 2);
+    String expType = schemaName.substring(schemaName.length() - 1);
+    List<String> fileNameTokens = newArrayList(expName, leadJurisdiction, institution, tumourType, expType, platform);
+    String fileName = SubmissionFileUtils.generateFileName(datagen.getOutputDirectory(), fileNameTokens);
+    File outputFile = new File(fileName);
+    checkArgument(outputFile.exists() == false, "A file with the name '%s' already exists.", fileName);
+    outputFile.createNewFile();
+    return outputFile;
   }
 
   private void populateFile(ResourceWrapper resourceWrapper, FileSchema schema, Integer linesPerForeignKey,

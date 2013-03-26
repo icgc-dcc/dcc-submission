@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Random;
 
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.lang.mutable.MutableDouble;
 import org.apache.commons.lang.mutable.MutableInt;
@@ -46,6 +47,7 @@ import com.google.common.base.Optional;
  * FileSchemas and the static listOfPrimaryKeys From here the openFile methods of CreateCore/Meta/Primary/SecondaryFile
  * classes is called
  */
+@Slf4j
 public class DataGenerator {
 
   static final String CODELIST_RESTRICTION_NAME = "codelist";
@@ -95,12 +97,14 @@ public class DataGenerator {
       Optional<Restriction> restriction = field.getRestriction(CODELIST_RESTRICTION_NAME);
       if(restriction.isPresent()) {
         String codeListName = restriction.get().getConfig().getString("name");
-        Iterator<CodeList> iterator = resourceWrapper.getCodeLists();
-
-        while(iterator.hasNext()) {
-          CodeList codeList = iterator.next();
+        List<CodeList> codeLists = resourceWrapper.getCodeLists();
+        Iterator<CodeList> cl = codeLists.iterator();
+        // log.info(codeListName);
+        while(cl.hasNext()) {
+          CodeList codeList = cl.next();
 
           if(codeList.getName().equals(codeListName)) {
+            log.info(codeList.getName());
             CodeListTerm term = new CodeListTerm(field.getName(), codeList.getTerms());
             codeListTerms.add(term);
           }

@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.generator.utils;
 
+import java.util.List;
+
 import com.google.common.base.Joiner;
 
 /**
@@ -32,26 +34,9 @@ public class SubmissionFileUtils {
 
   private static final Joiner joiner = Joiner.on(FILE_NAME_TOKEN_SEPARATOR).skipNulls();
 
-  public static String generateCoreFileUrl(String outputDirectory, String schemaName, String leadJurisdiction,
-      String institution, String tumourType, String platform) {
-    return outputDirectory + joiner.join(leadJurisdiction, tumourType, institution, schemaName, CONSTANT_DATE)
-        + FILE_EXTENSION;
-  }
-
-  public static String generateOptionalFileUrl(String outputDirectory, String schemaName, String leadJurisdiction,
-      String institution, String tumourType, String platform) {
-    return outputDirectory + joiner.join(leadJurisdiction, tumourType, institution, schemaName, CONSTANT_DATE)
-        + FILE_EXTENSION;
-  }
-
-  public static String generateExperimentalFileUrl(String outputDirectory, String schemaName, String leadJurisdiction,
-      String institution, String tumourType, String platform) {
-    String fileName = schemaName.substring(0, schemaName.length() - 2);
-    char fileType = schemaName.charAt(schemaName.length() - 1);
-
-    return outputDirectory
-        + joiner.join(fileName, leadJurisdiction, tumourType, institution, fileType, platform, CONSTANT_DATE)
-        + FILE_EXTENSION;
+  public static String generateFileName(String outputDirectory, List<String> fileNameTokens) {
+    fileNameTokens.add(CONSTANT_DATE);
+    return outputDirectory + joiner.join(fileNameTokens) + FILE_EXTENSION;
   }
 
 }

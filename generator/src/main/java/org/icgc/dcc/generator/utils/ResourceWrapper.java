@@ -34,13 +34,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.google.common.collect.Lists;
 import com.google.common.io.Resources;
 
 @Slf4j
 public class ResourceWrapper {
   private List<FileSchema> fileSchemas;
 
-  private Iterator<CodeList> codeList;
+  private List<CodeList> codeList;
 
   private static final ObjectMapper MAPPER = new ObjectMapper();
 
@@ -71,21 +72,23 @@ public class ResourceWrapper {
   }
 
   private void initDictionary() throws JsonParseException, JsonMappingException, IOException {
-    log.info("Initializing dictionary: {}", Resources.getResource(CODE_LIST_URL));
+    log.info("Initializing dictionary: {}", Resources.getResource(DICTIONARY_URL));
     fileSchemas = MAPPER.readValue(Resources.getResource(DICTIONARY_URL), Dictionary.class).getFiles();
   }
 
   private void initCodeLists(File codeListFile) throws JsonParseException, JsonMappingException, IOException {
     log.info("Initializing codelist: {}", codeListFile.getAbsolutePath());
-    codeList = READER.readValues(codeListFile);
+    Iterator<CodeList> cl = READER.readValues(codeListFile);
+    codeList = Lists.newArrayList(cl);
   }
 
   private void initCodeLists() throws JsonProcessingException, IOException {
     log.info("Initializing codelist: {}", Resources.getResource(CODE_LIST_URL));
-    codeList = READER.readValues(Resources.getResource(CODE_LIST_URL));
+    Iterator<CodeList> cl = READER.readValues(Resources.getResource(CODE_LIST_URL));
+    codeList = Lists.newArrayList(cl);
   }
 
-  public Iterator<CodeList> getCodeLists() {
+  public List<CodeList> getCodeLists() {
     return codeList;
   }
 

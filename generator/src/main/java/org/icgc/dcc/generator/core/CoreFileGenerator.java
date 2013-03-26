@@ -80,20 +80,19 @@ public class CoreFileGenerator {
   public void createFile(ResourceWrapper resourceWrapper, FileSchema schema, Integer linesPerForeignKey,
       String leadJurisdiction, String institution, String tumourType, String platform) throws IOException {
 
+    File outputFile = generateFileName(datagen, schema, leadJurisdiction, institution, tumourType, platform);
     @Cleanup
-    Writer writer = prepareFile(datagen, schema, leadJurisdiction, institution, tumourType, platform);
-
-    populateFileHeader(schema, writer);
+    Writer writer = buildFileWriter(outputFile);
 
     datagen.populateTermList(resourceWrapper, schema, codeListTerms);
 
     log.info("Populating {} file", schema.getName());
+    populateFileHeader(schema, writer);
     populateFile(resourceWrapper, schema, linesPerForeignKey, writer);
     log.info("Finished populating {} file", schema.getName());
   }
 
   private void populateFileHeader(FileSchema schema, Writer writer) throws IOException {
-    // Output field names (eliminate trailing tab)
     int counterForFieldNames = 0;
     for(String fieldName : schema.getFieldNames()) {
       if(counterForFieldNames == schema.getFields().size() - 1) {
@@ -106,21 +105,22 @@ public class CoreFileGenerator {
     writer.write(LINE_SEPERATOR);
   }
 
-  private Writer prepareFile(DataGenerator datagen, FileSchema schema, String leadJurisdiction, String institution,
-      String tumourType, String platform) throws IOException, FileNotFoundException {
-    // File building
-    String fileUrl =
-        SubmissionFileUtils.generateCoreFileUrl(datagen.getOutputDirectory(), schema.getName(), leadJurisdiction,
-            institution, tumourType, platform);
-    File outputFile = new File(fileUrl);
-    checkArgument(outputFile.exists() == false, "A file with the name '%s' already exists.", fileUrl);
-    outputFile.createNewFile();
-
-    // Prepare file writer
+  private Writer buildFileWriter(File outputFile) throws FileNotFoundException {
     FileOutputStream fos = new FileOutputStream(outputFile);
     OutputStreamWriter osw = new OutputStreamWriter(fos, Charsets.UTF_8);
 
     return new BufferedWriter(osw);
+  }
+
+  private File generateFileName(DataGenerator datagen, FileSchema schema, String leadJurisdiction, String institution,
+      String tumourType, String platform) throws IOException {
+    List<String> fileNameTokens = newArrayList(schema.getName(), leadJurisdiction, institution, tumourType, platform);
+    String fileName = SubmissionFileUtils.generateFileName(datagen.getOutputDirectory(), fileNameTokens);
+    File outputFile = new File(fileName);
+    checkArgument(outputFile.exists() == false, "A file with the name '%s' already exists.", fileName);
+    outputFile.createNewFile();
+
+    return outputFile;
   }
 
   public void populateFile(ResourceWrapper resourceWrapper, FileSchema schema, Integer linesPerForeignKey, Writer writer)
