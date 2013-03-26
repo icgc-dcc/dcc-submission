@@ -50,7 +50,7 @@ import com.google.common.io.Resources;
 @Slf4j
 public class SecondaryFileGenerator {
 
-  private static final String TAB = "\t";
+  private static final String FIELD_SEPERATOR = "\t";
 
   private static final String NEW_LINE = "\n";
 
@@ -122,7 +122,7 @@ public class SecondaryFileGenerator {
       if(counterForFieldNames == schema.getFields().size() - 1) {
         writer.write(fieldName);
       } else {
-        writer.write(fieldName + TAB);
+        writer.write(fieldName + FIELD_SEPERATOR);
       }
       counterForFieldNames++;
     }
@@ -157,7 +157,7 @@ public class SecondaryFileGenerator {
           if(schema.getFields().size() - 1 == counterForFields) {
             writer.write(output);
           } else {
-            writer.write(output + TAB);
+            writer.write(output + FIELD_SEPERATOR);
           }
 
           counterForFields++;
@@ -226,13 +226,13 @@ public class SecondaryFileGenerator {
 
   public String getSystemFileOutput(String currentFieldName, String line) {
     if(currentFieldName.equals(MIRBASE_ID_FIELD_NAME)) {
-      return line.substring(0, line.indexOf(TAB));
+      return line.substring(0, line.indexOf(FIELD_SEPERATOR));
     } else if(currentFieldName.equals(MIRNA_SEQUENCE_ID_FIELD_NAME)) {
-      return line.substring(line.indexOf(TAB) + 1, line.length());
+      return line.substring(line.indexOf(FIELD_SEPERATOR) + 1, line.length());
     } else if(currentFieldName.equals(SECONDARY_GENE_FIELD_NAME)) {
-      return line.substring(0, line.indexOf(TAB));
+      return line.substring(0, line.indexOf(FIELD_SEPERATOR));
     } else if(currentFieldName.equals(SECONDARY_TRANSCRIPT_FIELD_NAME)) {
-      return line.substring(line.indexOf(TAB) + 1, line.length());
+      return line.substring(line.indexOf(FIELD_SEPERATOR) + 1, line.length());
     }
     return null;
   }

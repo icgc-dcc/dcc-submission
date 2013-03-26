@@ -48,7 +48,7 @@ import com.google.common.base.Charsets;
 @Slf4j
 public class CoreFileGenerator {
 
-  private static final String TAB = "\t";
+  private static final String FIELD_SEPERATOR = "\t";
 
   private static final String NEW_LINE = "\n";
 
@@ -99,7 +99,7 @@ public class CoreFileGenerator {
       if(counterForFieldNames == schema.getFields().size() - 1) {
         writer.write(fieldName);
       } else {
-        writer.write(fieldName + TAB);
+        writer.write(fieldName + FIELD_SEPERATOR);
       }
       counterForFieldNames++;
     }
@@ -144,7 +144,7 @@ public class CoreFileGenerator {
           if(schema.getFields().size() - 1 == counterForFields) {
             writer.write(output);
           } else {
-            writer.write(output + TAB);
+            writer.write(output + FIELD_SEPERATOR);
           }
 
           counterForFields++;

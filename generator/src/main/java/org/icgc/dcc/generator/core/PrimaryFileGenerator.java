@@ -52,7 +52,7 @@ import com.google.common.io.Resources;
 @Slf4j
 public class PrimaryFileGenerator {
 
-  private static final String TAB = "\t";
+  private static final String FIELD_SEPERATOR = "\t";
 
   private static final String NEW_LINE = "\n";
 
@@ -100,7 +100,7 @@ public class PrimaryFileGenerator {
       if(counterForFieldNames == schema.getFields().size() - 1) {
         writer.write(fieldName);
       } else {
-        writer.write(fieldName + TAB);
+        writer.write(fieldName + FIELD_SEPERATOR);
       }
       counterForFieldNames++;
     }
@@ -151,7 +151,7 @@ public class PrimaryFileGenerator {
           if(schema.getFields().size() - 1 == counterForFields) {
             writer.write(output);
           } else {
-            writer.write(output + TAB);
+            writer.write(output + FIELD_SEPERATOR);
           }
           counterForFields++;
         }
@@ -172,7 +172,7 @@ public class PrimaryFileGenerator {
       output = foreignKeyArray.get(foreignKeyEntry);
     } else {
       if(schemaName.equals(SSM_SCHEMA_NAME) && simulatedData.contains(fieldName)) {// This prints out if true
-        output = line.substring(nextTabIndex.intValue(), line.indexOf(TAB, nextTabIndex.intValue()));
+        output = line.substring(nextTabIndex.intValue(), line.indexOf(FIELD_SEPERATOR, nextTabIndex.intValue()));
         nextTabIndex.add(output.length() + 1);
       } else {
         output = getCodeListValue(schema, schemaName, field, fieldName);
