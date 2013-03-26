@@ -43,7 +43,7 @@ import org.icgc.dcc.dictionary.model.Relation;
 import org.icgc.dcc.dictionary.model.Term;
 import org.icgc.dcc.generator.model.CodeListTerm;
 import org.icgc.dcc.generator.utils.ResourceWrapper;
-import org.icgc.dcc.generator.utils.SubmissionUtils;
+import org.icgc.dcc.generator.utils.SubmissionFileUtils;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
@@ -53,7 +53,7 @@ public class PrimaryFileGenerator {
 
   private static final String FIELD_SEPERATOR = "\t";
 
-  private static final String NEW_LINE = "\n";
+  private static final String LINE_SEPERATOR = "\n";
 
   private static final String SSM_SCHEMA_NAME = "ssm_p";
 
@@ -103,17 +103,17 @@ public class PrimaryFileGenerator {
       }
       counterForFieldNames++;
     }
-    writer.write(NEW_LINE);
+    writer.write(LINE_SEPERATOR);
   }
 
   private BufferedWriter prepareFile(DataGenerator datagen, FileSchema schema, String leadJurisdiction,
       String institution, String tumourType, String platform) throws IOException, FileNotFoundException {
     // File building
     String fileUrl =
-        SubmissionUtils.generateExperimentalFileUrl(datagen.getOutputDirectory(), schema.getName(), leadJurisdiction,
-            institution, tumourType, platform);
+        SubmissionFileUtils.generateExperimentalFileUrl(datagen.getOutputDirectory(), schema.getName(),
+            leadJurisdiction, institution, tumourType, platform);
     File outputFile = new File(fileUrl);
-    checkArgument(!outputFile.exists(), "A file with the name '%s' already exists.", fileUrl);
+    checkArgument(outputFile.exists() == false, "A file with the name '%s' already exists.", fileUrl);
     outputFile.createNewFile();
 
     // Prepare file writer
@@ -154,7 +154,7 @@ public class PrimaryFileGenerator {
           }
           counterForFields++;
         }
-        writer.write(NEW_LINE);
+        writer.write(LINE_SEPERATOR);
       }
       numberOfLinesPerForeignKey = calculateNumberOfLinesPerForeignKey(schema, linesPerForeignKey, relations);
     }

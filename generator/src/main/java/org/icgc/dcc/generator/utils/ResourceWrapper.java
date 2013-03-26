@@ -46,9 +46,9 @@ public class ResourceWrapper {
 
   private static final ObjectReader READER = MAPPER.reader(CodeList.class);
 
-  private static final String codeListUrl = "org/icgc/dcc/resources/CodeList.json";
+  private static final String CODE_LIST_URL = "org/icgc/dcc/resources/CodeList.json";
 
-  private static final String dictionaryUrl = "org/icgc/dcc/resources/CodeList.json";
+  private static final String DICTIONARY_URL = "org/icgc/dcc/resources/CodeList.json";
 
   public ResourceWrapper(File dictionaryFile, File codeListFile) throws JsonParseException, JsonMappingException,
       IOException, JsonProcessingException {
@@ -72,7 +72,7 @@ public class ResourceWrapper {
 
   private void initDictionary() throws JsonParseException, JsonMappingException, IOException {
     log.info("Initializing dictionary: Dictionary.json");
-    fileSchemas = MAPPER.readValue(Resources.getResource(dictionaryUrl), Dictionary.class).getFiles();
+    fileSchemas = MAPPER.readValue(Resources.getResource(DICTIONARY_URL), Dictionary.class).getFiles();
   }
 
   private void initCodeLists(File codeListFile) throws JsonParseException, JsonMappingException, IOException {
@@ -82,7 +82,7 @@ public class ResourceWrapper {
 
   private void initCodeLists() throws JsonProcessingException, IOException {
     log.info("Initializing codelist: CodeList.json");
-    codeList = READER.readValues(Resources.getResource(codeListUrl));
+    codeList = READER.readValues(Resources.getResource(CODE_LIST_URL));
   }
 
   public Iterator<CodeList> getCodeLists() {

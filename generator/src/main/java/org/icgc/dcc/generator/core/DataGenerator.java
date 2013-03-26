@@ -52,8 +52,6 @@ public class DataGenerator {
 
   static final String CONSTANT_DATE = "20130313";
 
-  private static final int UPPER_LIMIT_FOR_TEXT_TYPE_FIELD_INTEGER = 1000000000;
-
   private final List<PrimaryKey> primaryKeys = newArrayList();
 
   private Random random;
@@ -161,7 +159,7 @@ public class DataGenerator {
         uniqueId.increment();
         output = schemaName + String.valueOf(uniqueId);
       } else {
-        output = Integer.toString(datagen.randomIntGenerator(0, UPPER_LIMIT_FOR_TEXT_TYPE_FIELD_INTEGER));
+        output = Integer.toString(datagen.randomIntGenerator(0, Integer.MAX_VALUE));
       }
     } else if(fieldValueType == ValueType.INTEGER) {
       if(resourceWrapper.isUniqueField(list, fieldName)) {

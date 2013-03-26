@@ -22,7 +22,7 @@ import com.google.common.base.Joiner;
 /**
  * 
  */
-public class SubmissionUtils {
+public class SubmissionFileUtils {
 
   private static final String CONSTANT_DATE = "20130313";
 
@@ -30,16 +30,16 @@ public class SubmissionUtils {
 
   private static final String FILE_NAME_TOKEN_SEPARATOR = "__";
 
+  private static final Joiner joiner = Joiner.on(FILE_NAME_TOKEN_SEPARATOR).skipNulls();
+
   public static String generateCoreFileUrl(String outputDirectory, String schemaName, String leadJurisdiction,
       String institution, String tumourType, String platform) {
-    Joiner joiner = Joiner.on(FILE_NAME_TOKEN_SEPARATOR).skipNulls();
     return outputDirectory + joiner.join(leadJurisdiction, tumourType, institution, schemaName, CONSTANT_DATE)
         + FILE_EXTENSION;
   }
 
   public static String generateOptionalFileUrl(String outputDirectory, String schemaName, String leadJurisdiction,
       String institution, String tumourType, String platform) {
-    Joiner joiner = Joiner.on(FILE_NAME_TOKEN_SEPARATOR).skipNulls();
     return outputDirectory + joiner.join(leadJurisdiction, tumourType, institution, schemaName, CONSTANT_DATE)
         + FILE_EXTENSION;
   }
@@ -49,7 +49,6 @@ public class SubmissionUtils {
     String fileName = schemaName.substring(0, schemaName.length() - 2);
     char fileType = schemaName.charAt(schemaName.length() - 1);
 
-    Joiner joiner = Joiner.on(FILE_NAME_TOKEN_SEPARATOR).skipNulls();
     return outputDirectory
         + joiner.join(fileName, leadJurisdiction, tumourType, institution, fileType, platform, CONSTANT_DATE)
         + FILE_EXTENSION;

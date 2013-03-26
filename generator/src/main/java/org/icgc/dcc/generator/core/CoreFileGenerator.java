@@ -41,7 +41,7 @@ import org.icgc.dcc.dictionary.model.Term;
 import org.icgc.dcc.generator.model.CodeListTerm;
 import org.icgc.dcc.generator.model.PrimaryKey;
 import org.icgc.dcc.generator.utils.ResourceWrapper;
-import org.icgc.dcc.generator.utils.SubmissionUtils;
+import org.icgc.dcc.generator.utils.SubmissionFileUtils;
 
 import com.google.common.base.Charsets;
 
@@ -50,7 +50,7 @@ public class CoreFileGenerator {
 
   private static final String FIELD_SEPERATOR = "\t";
 
-  private static final String NEW_LINE = "\n";
+  private static final String LINE_SEPERATOR = "\n";
 
   private static final String DONOR_SCHEMA_NAME = "donor";
 
@@ -103,17 +103,17 @@ public class CoreFileGenerator {
       }
       counterForFieldNames++;
     }
-    writer.write(NEW_LINE);
+    writer.write(LINE_SEPERATOR);
   }
 
   private BufferedWriter prepareFile(DataGenerator datagen, FileSchema schema, String leadJurisdiction,
       String institution, String tumourType, String platform) throws IOException, FileNotFoundException {
     // File building
     String fileUrl =
-        SubmissionUtils.generateCoreFileUrl(datagen.getOutputDirectory(), schema.getName(), leadJurisdiction,
+        SubmissionFileUtils.generateCoreFileUrl(datagen.getOutputDirectory(), schema.getName(), leadJurisdiction,
             institution, tumourType, platform);
     File outputFile = new File(fileUrl);
-    checkArgument(!outputFile.exists(), "A file with the name '%s' already exists.", fileUrl);
+    checkArgument(outputFile.exists() == false, "A file with the name '%s' already exists.", fileUrl);
     outputFile.createNewFile();
 
     // Prepare file writer
@@ -149,7 +149,7 @@ public class CoreFileGenerator {
 
           counterForFields++;
         }
-        writer.write(NEW_LINE);
+        writer.write(LINE_SEPERATOR);
       }
       numberOfLinesPerForeignKey = calculateNumberOfLinesPerForeingKey(schema, linesPerForeignKey, relations);
     }
@@ -240,7 +240,7 @@ public class CoreFileGenerator {
 
   private String getCodeListValue(FileSchema schema, String schemaName, Field currentField, String fieldName) {
     String output = null;
-    if(!codeListTerms.isEmpty()) {
+    if(codeListTerms.isEmpty() == false) {
       for(CodeListTerm codeListTerm : codeListTerms) {
         if(codeListTerm.getFieldName().equals(fieldName)) {
           List<Term> terms = codeListTerm.getTerms();

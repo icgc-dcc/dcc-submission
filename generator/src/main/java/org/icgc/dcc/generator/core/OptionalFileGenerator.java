@@ -42,7 +42,7 @@ import org.icgc.dcc.dictionary.model.Restriction;
 import org.icgc.dcc.dictionary.model.Term;
 import org.icgc.dcc.generator.model.CodeListTerm;
 import org.icgc.dcc.generator.utils.ResourceWrapper;
-import org.icgc.dcc.generator.utils.SubmissionUtils;
+import org.icgc.dcc.generator.utils.SubmissionFileUtils;
 
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.google.common.base.Charsets;
@@ -73,7 +73,7 @@ public class OptionalFileGenerator {
     this.datagen = datagen;
 
     String fileUrl =
-        SubmissionUtils.generateOptionalFileUrl(datagen.getOutputDirectory(), schema.getName(), leadJurisdiction,
+        SubmissionFileUtils.generateOptionalFileUrl(datagen.getOutputDirectory(), schema.getName(), leadJurisdiction,
             institution, tumourType, platform);
 
     File outputFile = new File(fileUrl);

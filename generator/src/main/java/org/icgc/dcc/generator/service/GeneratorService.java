@@ -107,25 +107,18 @@ public class GeneratorService {
 
     DataGenerator datagen = new DataGenerator(outputDirectory, seed);
 
-    // Generate all core files
-    createCoreFile(datagen, resourceWrapper, DONOR_SCHEMA_NAME, numberOfDonors, leadJurisdiction, institution,
-        tumourType, platform);
-    createCoreFile(datagen, resourceWrapper, SPECIMEN_SCHEMA_NAME, numberOfSpecimensPerDonor, leadJurisdiction,
-        institution, tumourType, platform);
-    createCoreFile(datagen, resourceWrapper, SAMPLE_SCHEMA_NAME, numberOfSamplesPerSpecimen, leadJurisdiction,
-        institution, tumourType, platform);
+    createCoreFiles(resourceWrapper, numberOfDonors, numberOfSpecimensPerDonor, numberOfSamplesPerSpecimen,
+        leadJurisdiction, tumourType, institution, platform, datagen);
 
-    // Generate optional files
-    for(OptionalFile optionalFile : optionalFiles) {
-      String schemaName = optionalFile.getName();
-      Integer numberOfLinesPerDonor = optionalFile.getNumberOfLinesPerDonor();
+    createOptionalFiles(resourceWrapper, leadJurisdiction, tumourType, institution, platform, optionalFiles, datagen);
 
-      datagen.buildPrimaryKey(resourceWrapper.getSchema(datagen, schemaName));
-      createTemplateFile(datagen, resourceWrapper, schemaName, numberOfLinesPerDonor, leadJurisdiction, institution,
-          tumourType, platform);
-    }
+    createExperimentalFiles(resourceWrapper, leadJurisdiction, tumourType, institution, platform, experimentalFiles,
+        datagen);
+  }
 
-    // Generate experimental files
+  private void createExperimentalFiles(ResourceWrapper resourceWrapper, String leadJurisdiction, String tumourType,
+      String institution, String platform, List<ExperimentalFile> experimentalFiles, DataGenerator datagen)
+      throws IOException {
     for(ExperimentalFile experimentalFile : experimentalFiles) {
       String fileType = experimentalFile.getFileType();
       String schemaName = experimentalFile.getName() + "_" + fileType;
@@ -147,6 +140,30 @@ public class GeneratorService {
             tumourType, platform);
       }
     }
+  }
+
+  private void createOptionalFiles(ResourceWrapper resourceWrapper, String leadJurisdiction, String tumourType,
+      String institution, String platform, ArrayList<OptionalFile> optionalFiles, DataGenerator datagen)
+      throws IOException {
+    for(OptionalFile optionalFile : optionalFiles) {
+      String schemaName = optionalFile.getName();
+      Integer numberOfLinesPerDonor = optionalFile.getNumberOfLinesPerDonor();
+
+      datagen.buildPrimaryKey(resourceWrapper.getSchema(datagen, schemaName));
+      createTemplateFile(datagen, resourceWrapper, schemaName, numberOfLinesPerDonor, leadJurisdiction, institution,
+          tumourType, platform);
+    }
+  }
+
+  private void createCoreFiles(ResourceWrapper resourceWrapper, Integer numberOfDonors,
+      Integer numberOfSpecimensPerDonor, Integer numberOfSamplesPerSpecimen, String leadJurisdiction,
+      String tumourType, String institution, String platform, DataGenerator datagen) throws IOException {
+    createCoreFile(datagen, resourceWrapper, DONOR_SCHEMA_NAME, numberOfDonors, leadJurisdiction, institution,
+        tumourType, platform);
+    createCoreFile(datagen, resourceWrapper, SPECIMEN_SCHEMA_NAME, numberOfSpecimensPerDonor, leadJurisdiction,
+        institution, tumourType, platform);
+    createCoreFile(datagen, resourceWrapper, SAMPLE_SCHEMA_NAME, numberOfSamplesPerSpecimen, leadJurisdiction,
+        institution, tumourType, platform);
   }
 
   private static void createCoreFile(DataGenerator datagen, ResourceWrapper resourceWrapper, String schemaName,

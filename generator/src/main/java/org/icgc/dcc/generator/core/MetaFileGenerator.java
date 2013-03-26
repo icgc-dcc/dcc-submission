@@ -41,7 +41,7 @@ import org.icgc.dcc.dictionary.model.Relation;
 import org.icgc.dcc.dictionary.model.Term;
 import org.icgc.dcc.generator.model.CodeListTerm;
 import org.icgc.dcc.generator.utils.ResourceWrapper;
-import org.icgc.dcc.generator.utils.SubmissionUtils;
+import org.icgc.dcc.generator.utils.SubmissionFileUtils;
 
 import com.google.common.base.Charsets;
 
@@ -50,7 +50,7 @@ public class MetaFileGenerator {
 
   private static final String FIELD_SEPERATOR = "\t";
 
-  private static final String NEW_LINE = "\n";
+  private static final String LINE_SEPERATOR = "\n";
 
   private static final String SAMPLE_SCHEMA_NAME = "sample";
 
@@ -108,17 +108,17 @@ public class MetaFileGenerator {
       }
       counterForFieldNames++;
     }
-    writer.write(NEW_LINE);
+    writer.write(LINE_SEPERATOR);
   }
 
   private BufferedWriter prepareFile(DataGenerator datagen, FileSchema schema, String leadJurisdiction,
       String institution, String tumourType, String platform) throws IOException, FileNotFoundException {
     // File building
     String fileUrl =
-        SubmissionUtils.generateExperimentalFileUrl(datagen.getOutputDirectory(), schema.getName(), leadJurisdiction,
-            institution, tumourType, platform);
+        SubmissionFileUtils.generateExperimentalFileUrl(datagen.getOutputDirectory(), schema.getName(),
+            leadJurisdiction, institution, tumourType, platform);
     File outputFile = new File(fileUrl);
-    checkArgument(!outputFile.exists(), "A file with the name '%s' already exists.", fileUrl);
+    checkArgument(outputFile.exists() == false, "A file with the name '%s' already exists.", fileUrl);
     outputFile.createNewFile();
 
     // Prepare file writer
@@ -151,7 +151,7 @@ public class MetaFileGenerator {
 
           counterForFields++;
         }
-        writer.write(NEW_LINE);
+        writer.write(LINE_SEPERATOR);
       }
       numberOfLinesPerForeignKey = calculateNumberOfLinesPerForeignKey(schema, linesPerForeignKey, relations);
     }
@@ -187,9 +187,9 @@ public class MetaFileGenerator {
   }
 
   private boolean isSystemMetaFile(String schemaName) {
-    boolean isNotMetaExpressionFile = !schemaName.equals(NON_SYSTEM_META_FILE_EXPRESSION);
-    boolean isNotMetaJunctionFile = !schemaName.equals(NON_SYSTEM_META_FILE_JUNCTION);
-    boolean isNotMetaMirnaFile = !schemaName.equals(NON_SYSTEM_META_FILE_MIRNA);
+    boolean isNotMetaExpressionFile = (schemaName.equals(NON_SYSTEM_META_FILE_EXPRESSION) == false);
+    boolean isNotMetaJunctionFile = (schemaName.equals(NON_SYSTEM_META_FILE_JUNCTION) == false);
+    boolean isNotMetaMirnaFile = (schemaName.equals(NON_SYSTEM_META_FILE_MIRNA) == false);
 
     return (isNotMetaExpressionFile && isNotMetaJunctionFile && isNotMetaMirnaFile);
   }
@@ -232,7 +232,7 @@ public class MetaFileGenerator {
 
   private String getCodeListValue(FileSchema schema, String schemaName, Field currentField, String currentFieldName) {
     String output = null;
-    if(!codeListTerms.isEmpty()) {
+    if(codeListTerms.isEmpty() == false) {
       for(CodeListTerm codeListTerm : codeListTerms) {
         if(codeListTerm.getFieldName().equals(currentFieldName)) {
           List<Term> terms = codeListTerm.getTerms();
