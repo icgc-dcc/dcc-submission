@@ -26,24 +26,24 @@ platform: 1
 seed: 1234567
 
 # This is an array of all the optional files. Append/Unappend the array as necessary
-optionalFiles:
-   # Name of the experimental file
+#optionalFiles:
+   # Name of the optional file
 # - name: surgery
    # Number of lines for each entry in the donor file
  #  numberOfLinesPerDonor: 3
-   # Name of the experimental file
+   # Name of the optional file
  #- name: exposure
    # Number of lines for each entry in the donor file
   # numberOfLinesPerDonor: 3
-   # Name of the experimental file
+   # Name of the optional file
  #- name: family
    # Number of lines for each entry in the donor file
   # numberOfLinesPerDonor: 3
-   # Name of the experimental file
+   # Name of the optional file
  #- name: biomarker
    # Number of lines for each entry in the donor file
   # numberOfLinesPerDonor: 3
-   # Name of the experimental file
+   # Name of the optional file
  #- name: therapy
    # Number of lines for each entry in the donor file
   # numberOfLinesPerDonor: 3

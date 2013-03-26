@@ -72,18 +72,19 @@ public class MetaFileGenerator {
 
   private final MutableInt uniqueInteger = new MutableInt(0);
 
-  private final MutableDouble uniqueDecimal = new MutableDouble(0.0);
+  private final MutableDouble uniqueDouble = new MutableDouble(0.0);
 
   private DataGenerator datagen;
 
-  public void createFile(DataGenerator datagen, ResourceWrapper resourceWrapper, FileSchema schema,
-      Integer linesPerForeignKey, String leadJurisdiction, String institution, String tumourType, String platform)
-      throws IOException {
-
+  public MetaFileGenerator(DataGenerator datagen) {
     this.datagen = datagen;
+  }
+
+  public void createFile(ResourceWrapper resourceWrapper, FileSchema schema, Integer linesPerForeignKey,
+      String leadJurisdiction, String institution, String tumourType, String platform) throws IOException {
 
     @Cleanup
-    BufferedWriter writer = prepareFile(datagen, schema, leadJurisdiction, institution, tumourType, platform);
+    Writer writer = prepareFile(datagen, schema, leadJurisdiction, institution, tumourType, platform);
 
     // Output field names (eliminate trailing tab)
     populateFileHeader(resourceWrapper, schema, writer);
@@ -93,12 +94,9 @@ public class MetaFileGenerator {
     log.info("Populating {} file", schema.getName());
     populateFile(resourceWrapper, schema, linesPerForeignKey, writer);
     log.info("Finished populating {} file ", schema.getName());
-
-    writer.close();
   }
 
-  private void populateFileHeader(ResourceWrapper resourceWrapper, FileSchema schema, BufferedWriter writer)
-      throws IOException {
+  private void populateFileHeader(ResourceWrapper resourceWrapper, FileSchema schema, Writer writer) throws IOException {
     int counterForFieldNames = 0;
     for(String fieldName : schema.getFieldNames()) {
       if(counterForFieldNames == schema.getFields().size() - 1) {
@@ -111,8 +109,8 @@ public class MetaFileGenerator {
     writer.write(LINE_SEPERATOR);
   }
 
-  private BufferedWriter prepareFile(DataGenerator datagen, FileSchema schema, String leadJurisdiction,
-      String institution, String tumourType, String platform) throws IOException, FileNotFoundException {
+  private Writer prepareFile(DataGenerator datagen, FileSchema schema, String leadJurisdiction, String institution,
+      String tumourType, String platform) throws IOException, FileNotFoundException {
     // File building
     String fileUrl =
         SubmissionFileUtils.generateExperimentalFileUrl(datagen.getOutputDirectory(), schema.getName(),
@@ -163,12 +161,12 @@ public class MetaFileGenerator {
     String fieldName = field.getName();
 
     // Output foreign key if current field is to be populated by a foreign key
-    List<String> foreignKeyArray = DataGenerator.getForeignKeys(datagen, schema, fieldName);
-    if(foreignKeyArray != null) {
+    List<String> foreignKeys = DataGenerator.getForeignKeys(datagen, schema, fieldName);
+    if(foreignKeys != null) {
       if(isSystemMetaFile(schemaName)) {
         output = getSampleType(fieldName);
       } else {
-        output = foreignKeyArray.get(foreignKeyEntry);
+        output = foreignKeys.get(foreignKeyEntry);
       }
     } else {
       output = getCodeListValue(schema, schemaName, field, fieldName);
@@ -176,7 +174,7 @@ public class MetaFileGenerator {
     if(output == null) {
       output =
           DataGenerator.generateFieldValue(datagen, resourceWrapper, schema.getUniqueFields(), schemaName, field,
-              uniqueId, uniqueInteger, uniqueDecimal);
+              uniqueId, uniqueInteger, uniqueDouble);
     }
 
     // Add the output to the corresponding Primary Key if this primary key is a foreign key else where
@@ -210,9 +208,9 @@ public class MetaFileGenerator {
   private int calculateNumberOfLinesPerForeignKey(FileSchema schema, Integer linesPerForeignKey,
       List<Relation> relations) {
     if(relations.size() > 0 && relations.get(0).isBidirectional()) {
-      return datagen.randomIntGenerator(1, linesPerForeignKey);
+      return datagen.generateRandomInteger(1, linesPerForeignKey);
     } else {
-      return datagen.randomIntGenerator(0, linesPerForeignKey);
+      return datagen.generateRandomInteger(0, linesPerForeignKey);
     }
   }
 
@@ -220,12 +218,12 @@ public class MetaFileGenerator {
     if(currentFieldName.equals(MATCHED_SAMPLE_FIELD_NAME)) {
       List<String> tumourTypeIDs =
           DataGenerator.getPrimaryKeys(datagen, SAMPLE_SCHEMA_NAME, TUMOUR_PRIMARY_KEY_FIELD_IDENTIFIER);
-      Integer randomInteger = datagen.randomIntGenerator(2, tumourTypeIDs.size() - 3);
+      Integer randomInteger = datagen.generateRandomInteger(0, tumourTypeIDs.size());
       return tumourTypeIDs.get(randomInteger);
     } else {
       List<String> controlTypeIDs =
           DataGenerator.getPrimaryKeys(datagen, SAMPLE_SCHEMA_NAME, CONTROL_PRIMARY_KEY_FIELD_IDENTIFIER);
-      Integer randomInteger = datagen.randomIntGenerator(2, controlTypeIDs.size() - 3);
+      Integer randomInteger = datagen.generateRandomInteger(0, controlTypeIDs.size());
       return controlTypeIDs.get(randomInteger);
     }
   }
@@ -236,7 +234,7 @@ public class MetaFileGenerator {
       for(CodeListTerm codeListTerm : codeListTerms) {
         if(codeListTerm.getFieldName().equals(currentFieldName)) {
           List<Term> terms = codeListTerm.getTerms();
-          output = terms.get(datagen.randomIntGenerator(0, terms.size() - 1)).getCode();
+          output = terms.get(datagen.generateRandomInteger(0, terms.size())).getCode();
 
         }
       }

@@ -26,6 +26,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.List;
 
 import lombok.Cleanup;
@@ -68,18 +69,19 @@ public class CoreFileGenerator {
 
   private final MutableInt uniqueInteger = new MutableInt(0);
 
-  private final MutableDouble uniqueDecimal = new MutableDouble(0.0);
+  private final MutableDouble uniqueDouble = new MutableDouble(0.0);
 
   private DataGenerator datagen;
 
-  public void createFile(DataGenerator datagen, ResourceWrapper resourceWrapper, FileSchema schema,
-      Integer linesPerForeignKey, String leadJurisdiction, String institution, String tumourType, String platform)
-      throws IOException {
-
+  public CoreFileGenerator(DataGenerator datagen) {
     this.datagen = datagen;
+  }
+
+  public void createFile(ResourceWrapper resourceWrapper, FileSchema schema, Integer linesPerForeignKey,
+      String leadJurisdiction, String institution, String tumourType, String platform) throws IOException {
 
     @Cleanup
-    BufferedWriter writer = prepareFile(datagen, schema, leadJurisdiction, institution, tumourType, platform);
+    Writer writer = prepareFile(datagen, schema, leadJurisdiction, institution, tumourType, platform);
 
     populateFileHeader(schema, writer);
 
@@ -88,11 +90,9 @@ public class CoreFileGenerator {
     log.info("Populating {} file", schema.getName());
     populateFile(resourceWrapper, schema, linesPerForeignKey, writer);
     log.info("Finished populating {} file", schema.getName());
-
-    writer.close();
   }
 
-  private void populateFileHeader(FileSchema schema, BufferedWriter writer) throws IOException {
+  private void populateFileHeader(FileSchema schema, Writer writer) throws IOException {
     // Output field names (eliminate trailing tab)
     int counterForFieldNames = 0;
     for(String fieldName : schema.getFieldNames()) {
@@ -106,8 +106,8 @@ public class CoreFileGenerator {
     writer.write(LINE_SEPERATOR);
   }
 
-  private BufferedWriter prepareFile(DataGenerator datagen, FileSchema schema, String leadJurisdiction,
-      String institution, String tumourType, String platform) throws IOException, FileNotFoundException {
+  private Writer prepareFile(DataGenerator datagen, FileSchema schema, String leadJurisdiction, String institution,
+      String tumourType, String platform) throws IOException, FileNotFoundException {
     // File building
     String fileUrl =
         SubmissionFileUtils.generateCoreFileUrl(datagen.getOutputDirectory(), schema.getName(), leadJurisdiction,
@@ -123,8 +123,8 @@ public class CoreFileGenerator {
     return new BufferedWriter(osw);
   }
 
-  public void populateFile(ResourceWrapper resourceWrapper, FileSchema schema, Integer linesPerForeignKey,
-      BufferedWriter writer) throws IOException {
+  public void populateFile(ResourceWrapper resourceWrapper, FileSchema schema, Integer linesPerForeignKey, Writer writer)
+      throws IOException {
 
     String schemaName = schema.getName();
     List<Relation> relations = schema.getRelations();
@@ -155,8 +155,8 @@ public class CoreFileGenerator {
     }
   }
 
-  private String getFieldValue(ResourceWrapper resourceWrapper, FileSchema schema, BufferedWriter writer,
-      String schemaName, int foreignKeyEntry, int counterForFields, Field field) throws IOException {
+  private String getFieldValue(ResourceWrapper resourceWrapper, FileSchema schema, Writer writer, String schemaName,
+      int foreignKeyEntry, int counterForFields, Field field) throws IOException {
     String output = null;
     String fieldName = field.getName();
 
@@ -172,7 +172,7 @@ public class CoreFileGenerator {
     if(output == null) {
       output =
           DataGenerator.generateFieldValue(datagen, resourceWrapper, schema.getUniqueFields(), schemaName, field,
-              uniqueId, uniqueInteger, uniqueDecimal);
+              uniqueId, uniqueInteger, uniqueDouble);
     }
 
     // Add the output to the corresponding Primary Key if this primary key is a foreign key else where
@@ -189,7 +189,7 @@ public class CoreFileGenerator {
 
   private void addOutputToSamplePrimaryKeys(FileSchema schema, Field field, String output) {
     if(schema.getName().equals(SAMPLE_SCHEMA_NAME) && field.getName().equals(SAMPLE_TYPE_FIELD_NAME)) {
-      int x = datagen.randomIntGenerator(0, 1);
+      int x = datagen.generateRandomInteger(0, 2);
       if(x == 0) {
         DataGenerator.getPrimaryKeys(datagen, SAMPLE_SCHEMA_NAME, TUMOUR_PRIMARY_KEY_FIELD_IDENTIFIER).add(output);
       } else {
@@ -232,9 +232,9 @@ public class CoreFileGenerator {
     if(schema.getName().equals(DONOR_SCHEMA_NAME)) {
       return 1;
     } else if(relations.size() > 0 && relations.get(0).isBidirectional()) {
-      return datagen.randomIntGenerator(1, numberOfLinesPerPrimaryKey);
+      return datagen.generateRandomInteger(1, numberOfLinesPerPrimaryKey);
     } else {
-      return datagen.randomIntGenerator(0, numberOfLinesPerPrimaryKey);
+      return datagen.generateRandomInteger(0, numberOfLinesPerPrimaryKey);
     }
   }
 
@@ -244,7 +244,7 @@ public class CoreFileGenerator {
       for(CodeListTerm codeListTerm : codeListTerms) {
         if(codeListTerm.getFieldName().equals(fieldName)) {
           List<Term> terms = codeListTerm.getTerms();
-          output = terms.get(datagen.randomIntGenerator(0, terms.size() - 1)).getCode();
+          output = terms.get(datagen.generateRandomInteger(0, terms.size())).getCode();
         }
       }
     }

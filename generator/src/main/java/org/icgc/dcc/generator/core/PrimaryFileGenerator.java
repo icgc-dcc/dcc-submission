@@ -70,16 +70,17 @@ public class PrimaryFileGenerator {
 
   private final MutableInt uniqueInteger = new MutableInt(0);
 
-  private final MutableDouble uniqueDecimal = new MutableDouble(0.0);
+  private final MutableDouble uniqueDouble = new MutableDouble(0.0);
 
-  public void createFile(DataGenerator datagen, ResourceWrapper resourceWrapper, FileSchema schema,
-      Integer linesPerForeignKey, String leadJurisdiction, String institution, String tumourType, String platform)
-      throws IOException {
-
+  public PrimaryFileGenerator(DataGenerator datagen) {
     this.datagen = datagen;
+  }
+
+  public void createFile(ResourceWrapper resourceWrapper, FileSchema schema, Integer linesPerForeignKey,
+      String leadJurisdiction, String institution, String tumourType, String platform) throws IOException {
 
     @Cleanup
-    BufferedWriter writer = prepareFile(datagen, schema, leadJurisdiction, institution, tumourType, platform);
+    Writer writer = prepareFile(datagen, schema, leadJurisdiction, institution, tumourType, platform);
 
     // Output field names (eliminate trailing tab)
     populateFileHeader(schema, writer);
@@ -89,11 +90,9 @@ public class PrimaryFileGenerator {
     log.info("Populating {} file", schema.getName());
     populateFile(resourceWrapper, schema, linesPerForeignKey, writer);
     log.info("Finished populating {}", schema.getName());
-
-    writer.close();
   }
 
-  private void populateFileHeader(FileSchema schema, BufferedWriter writer) throws IOException {
+  private void populateFileHeader(FileSchema schema, Writer writer) throws IOException {
     int counterForFieldNames = 0;
     for(String fieldName : schema.getFieldNames()) {
       if(counterForFieldNames == schema.getFields().size() - 1) {
@@ -106,8 +105,8 @@ public class PrimaryFileGenerator {
     writer.write(LINE_SEPERATOR);
   }
 
-  private BufferedWriter prepareFile(DataGenerator datagen, FileSchema schema, String leadJurisdiction,
-      String institution, String tumourType, String platform) throws IOException, FileNotFoundException {
+  private Writer prepareFile(DataGenerator datagen, FileSchema schema, String leadJurisdiction, String institution,
+      String tumourType, String platform) throws IOException, FileNotFoundException {
     // File building
     String fileUrl =
         SubmissionFileUtils.generateExperimentalFileUrl(datagen.getOutputDirectory(), schema.getName(),
@@ -140,7 +139,7 @@ public class PrimaryFileGenerator {
       for(int foreignKeyEntryLineNumber = 0; foreignKeyEntryLineNumber < numberOfLinesPerForeignKey; foreignKeyEntryLineNumber++) {
         int counterForFields = 0;
         MutableInt nextTabIndex = new MutableInt(0);
-        String line = lines.get(datagen.randomIntGenerator(0, lines.size() - 1));// This read in the file
+        String line = lines.get(datagen.generateRandomInteger(0, lines.size()));// This read in the file
 
         for(Field field : schema.getFields()) {
           String output =
@@ -166,9 +165,9 @@ public class PrimaryFileGenerator {
     String fieldName = field.getName();
 
     // Output foreign key if current field is to be populated with one
-    List<String> foreignKeyArray = DataGenerator.getForeignKeys(datagen, schema, fieldName);
-    if(foreignKeyArray != null) {
-      output = foreignKeyArray.get(foreignKeyEntry);
+    List<String> foreignKeys = DataGenerator.getForeignKeys(datagen, schema, fieldName);
+    if(foreignKeys != null) {
+      output = foreignKeys.get(foreignKeyEntry);
     } else {
       if(schemaName.equals(SSM_SCHEMA_NAME) && simulatedData.contains(fieldName)) {// This prints out if true
         output = line.substring(nextTabIndex.intValue(), line.indexOf(FIELD_SEPERATOR, nextTabIndex.intValue()));
@@ -180,7 +179,7 @@ public class PrimaryFileGenerator {
     if(output == null) {
       output =
           DataGenerator.generateFieldValue(datagen, resourceWrapper, schema.getUniqueFields(), schemaName, field,
-              uniqueId, uniqueInteger, uniqueDecimal);
+              uniqueId, uniqueInteger, uniqueDouble);
     }
 
     // Add output to primary keys if it is to be used as a foreign key else where
@@ -206,9 +205,9 @@ public class PrimaryFileGenerator {
   private int calculateNumberOfLinesPerForeignKey(FileSchema schema, Integer linesPerForeignKey,
       List<Relation> relations) {
     if(relations.size() > 0 && relations.get(0).isBidirectional()) {
-      return datagen.randomIntGenerator(1, linesPerForeignKey);
+      return datagen.generateRandomInteger(1, linesPerForeignKey);
     } else {
-      return datagen.randomIntGenerator(0, linesPerForeignKey);
+      return datagen.generateRandomInteger(0, linesPerForeignKey);
     }
   }
 
@@ -218,7 +217,7 @@ public class PrimaryFileGenerator {
       for(CodeListTerm codeListTerm : codeListTerms) {
         if(codeListTerm.getFieldName().equals(currentFieldName)) {
           List<Term> terms = codeListTerm.getTerms();
-          output = terms.get(datagen.randomIntGenerator(0, terms.size() - 1)).getCode();
+          output = terms.get(datagen.generateRandomInteger(0, terms.size())).getCode();
 
         }
       }

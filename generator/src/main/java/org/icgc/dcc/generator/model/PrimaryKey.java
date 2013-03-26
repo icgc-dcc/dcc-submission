@@ -17,33 +17,23 @@
  */
 package org.icgc.dcc.generator.model;
 
-import java.util.ArrayList;
+import static com.google.common.collect.Lists.newArrayList;
+
 import java.util.List;
 
-/**
- * 
- */
+import lombok.Data;
+
+@Data
 public class PrimaryKey {
   private final String schemaIdentifier;
 
   private final String fieldIdentifier;
 
-  private final List<String> primaryKeys = new ArrayList<String>();
+  private final List<String> primaryKeys = newArrayList();
 
   public PrimaryKey(String schemaIdentifier, String fieldIdentifier) {
     this.schemaIdentifier = schemaIdentifier;
     this.fieldIdentifier = fieldIdentifier;
   }
 
-  public String getSchemaIdentifier() {
-    return this.schemaIdentifier;
-  }
-
-  public String getFieldIdentifier() {
-    return this.fieldIdentifier;
-  }
-
-  public List<String> getPrimaryKeyList() {
-    return this.primaryKeys;
-  }
 }

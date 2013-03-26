@@ -68,11 +68,11 @@ public class DataGenerator {
     return this.primaryKeys;
   }
 
-  public int randomIntGenerator(int start, int end) {
-    return this.random.nextInt(end + 1) + start;
+  public int generateRandomInteger(int start, int end) {
+    return this.random.nextInt(end) + start;
   }
 
-  public double randomDecimalGenerator(double end) {
+  public double generateRandomDouble(double end) {
     return this.random.nextDouble() * end;
   }
 
@@ -115,7 +115,7 @@ public class DataGenerator {
       String primaryKeyFieldIdentifier = primaryKey.getFieldIdentifier();
 
       if(primaryKeySchemaIdentifier.equals(schemaName) && primaryKeyFieldIdentifier.equals(fieldName)) {
-        return primaryKey.getPrimaryKeyList();
+        return primaryKey.getPrimaryKeys();
       }
     }
     return null;
@@ -138,7 +138,7 @@ public class DataGenerator {
 
               if(primaryKeySchemaIdentifier.equals(relatedFileSchemaIdentifier)
                   && primaryKeyFieldIdentifier.equals(relatedFieldIdentifier)) {
-                return primaryKey.getPrimaryKeyList();
+                return primaryKey.getPrimaryKeys();
               }
             }
           }
@@ -159,21 +159,21 @@ public class DataGenerator {
         uniqueId.increment();
         output = schemaName + String.valueOf(uniqueId);
       } else {
-        output = Integer.toString(datagen.randomIntGenerator(0, Integer.MAX_VALUE));
+        output = Integer.toString(datagen.generateRandomInteger(0, Integer.MAX_VALUE));
       }
     } else if(fieldValueType == ValueType.INTEGER) {
       if(resourceWrapper.isUniqueField(list, fieldName)) {
         uniqueInteger.increment();
         output = schemaName + String.valueOf(uniqueInteger);
       } else {
-        output = Integer.toString(datagen.randomIntGenerator(0, 200));
+        output = Integer.toString(datagen.generateRandomInteger(0, 200));
       }
     } else if(fieldValueType == ValueType.DECIMAL) {
       if(resourceWrapper.isUniqueField(list, fieldName)) {
         uniqueDecimal.add(0.1);
         output = schemaName + String.valueOf(uniqueDecimal);
       } else {
-        output = Double.toString(datagen.randomDecimalGenerator(50));
+        output = Double.toString(datagen.generateRandomDouble(50));
       }
     } else if(fieldValueType == ValueType.DATETIME) {
       output = CONSTANT_DATE;

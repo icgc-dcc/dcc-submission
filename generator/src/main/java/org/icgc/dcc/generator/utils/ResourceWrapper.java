@@ -48,7 +48,7 @@ public class ResourceWrapper {
 
   private static final String CODE_LIST_URL = "org/icgc/dcc/resources/CodeList.json";
 
-  private static final String DICTIONARY_URL = "org/icgc/dcc/resources/CodeList.json";
+  private static final String DICTIONARY_URL = "org/icgc/dcc/resources/Dictionary.json";
 
   public ResourceWrapper(File dictionaryFile, File codeListFile) throws JsonParseException, JsonMappingException,
       IOException, JsonProcessingException {
@@ -66,22 +66,22 @@ public class ResourceWrapper {
   }
 
   private void initDictionary(File dictionaryFile) throws JsonParseException, JsonMappingException, IOException {
-    log.info("Initializing dictionary: {}", dictionaryFile.getName());
+    log.info("Initializing dictionary: {}", dictionaryFile.getAbsolutePath());
     fileSchemas = MAPPER.readValue(dictionaryFile, Dictionary.class).getFiles();
   }
 
   private void initDictionary() throws JsonParseException, JsonMappingException, IOException {
-    log.info("Initializing dictionary: Dictionary.json");
+    log.info("Initializing dictionary: {}", Resources.getResource(CODE_LIST_URL));
     fileSchemas = MAPPER.readValue(Resources.getResource(DICTIONARY_URL), Dictionary.class).getFiles();
   }
 
   private void initCodeLists(File codeListFile) throws JsonParseException, JsonMappingException, IOException {
-    log.info("Initializing codelist: {}", codeListFile.getName());
+    log.info("Initializing codelist: {}", codeListFile.getAbsolutePath());
     codeList = READER.readValues(codeListFile);
   }
 
   private void initCodeLists() throws JsonProcessingException, IOException {
-    log.info("Initializing codelist: CodeList.json");
+    log.info("Initializing codelist: {}", Resources.getResource(CODE_LIST_URL));
     codeList = READER.readValues(Resources.getResource(CODE_LIST_URL));
   }
 
@@ -98,8 +98,8 @@ public class ResourceWrapper {
     return null;
   }
 
-  public boolean isUniqueField(List<String> list, String fieldName) {
-    return list.contains(fieldName);
+  public boolean isUniqueField(List<String> uniqueFields, String fieldName) {
+    return uniqueFields.contains(fieldName);
   }
 
 }

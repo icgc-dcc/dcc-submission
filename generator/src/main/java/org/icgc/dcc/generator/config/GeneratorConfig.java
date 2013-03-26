@@ -19,14 +19,12 @@ package org.icgc.dcc.generator.config;
 
 import static com.google.common.collect.Lists.newArrayList;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import lombok.Getter;
 import lombok.ToString;
 
 import org.icgc.dcc.generator.model.ExperimentalFile;
-import org.icgc.dcc.generator.model.OptionalFile;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -61,8 +59,8 @@ public class GeneratorConfig {
   @JsonProperty
   private Long seed;
 
-  @JsonProperty
-  private ArrayList<OptionalFile> optionalFiles = newArrayList();
+  // @JsonProperty
+  // private ArrayList<OptionalFile> optionalFiles = newArrayList();
 
   @JsonProperty
   private List<ExperimentalFile> experimentalFiles = newArrayList();

@@ -76,16 +76,17 @@ public class SecondaryFileGenerator {
 
   private final MutableInt uniqueInteger = new MutableInt(0);
 
-  private final MutableDouble uniqueDecimal = new MutableDouble(0.0);
+  private final MutableDouble uniqueDouble = new MutableDouble(0.0);
 
-  public void createFile(DataGenerator datagen, ResourceWrapper resourceWrapper, FileSchema schema,
-      Integer linesPerForeignKey, String leadJurisdiction, String institution, String tumourType, String platform)
-      throws IOException {
-
+  public SecondaryFileGenerator(DataGenerator datagen) {
     this.datagen = datagen;
+  }
+
+  public void createFile(ResourceWrapper resourceWrapper, FileSchema schema, Integer linesPerForeignKey,
+      String leadJurisdiction, String institution, String tumourType, String platform) throws IOException {
 
     @Cleanup
-    BufferedWriter writer = prepareFile(datagen, schema, leadJurisdiction, institution, tumourType, platform);
+    Writer writer = prepareFile(datagen, schema, leadJurisdiction, institution, tumourType, platform);
 
     populateFileHeader(schema, writer);
 
@@ -94,12 +95,10 @@ public class SecondaryFileGenerator {
     log.info("Populating {} file", schema.getName());
     populateFile(resourceWrapper, schema, linesPerForeignKey, writer);
     log.info("Finished populating {} file ", schema.getName());
-
-    writer.close();
   }
 
-  private BufferedWriter prepareFile(DataGenerator datagen, FileSchema schema, String leadJurisdiction,
-      String institution, String tumourType, String platform) throws IOException, FileNotFoundException {
+  private Writer prepareFile(DataGenerator datagen, FileSchema schema, String leadJurisdiction, String institution,
+      String tumourType, String platform) throws IOException, FileNotFoundException {
     // File building
     String fileUrl =
         SubmissionFileUtils.generateExperimentalFileUrl(datagen.getOutputDirectory(), schema.getName(),
@@ -115,7 +114,7 @@ public class SecondaryFileGenerator {
     return new BufferedWriter(osw);
   }
 
-  private void populateFileHeader(FileSchema schema, BufferedWriter writer) throws IOException {
+  private void populateFileHeader(FileSchema schema, Writer writer) throws IOException {
     // Output field names (eliminate trailing tabs)
     int counterForFieldNames = 0;
     for(String fieldName : schema.getFieldNames()) {
@@ -145,7 +144,7 @@ public class SecondaryFileGenerator {
         int counterForFields = 0;
 
         // Get net line, cycling around if needed
-        if(!iterator.hasNext()) {
+        if(iterator.hasNext() == false) {
           iterator = lines.iterator();
         }
         String line = iterator.next();
@@ -187,16 +186,16 @@ public class SecondaryFileGenerator {
     String output = getSystemFileOutput(fieldName, line);
 
     if(output == null) {
-      List<String> foreignKeyArray = DataGenerator.getForeignKeys(datagen, schema, fieldName);
-      if(foreignKeyArray != null) {
-        output = foreignKeyArray.get(i);
+      List<String> foreignKeys = DataGenerator.getForeignKeys(datagen, schema, fieldName);
+      if(foreignKeys != null) {
+        output = foreignKeys.get(i);
       } else {
         output = getCodeListValue(schema, schemaName, field, fieldName);
       }
       if(output == null) {
         output =
             DataGenerator.generateFieldValue(datagen, resourceWrapper, schema.getUniqueFields(), schemaName, field,
-                uniqueId, uniqueInteger, uniqueDecimal);
+                uniqueId, uniqueInteger, uniqueDouble);
       }
     }
     return output;
@@ -218,9 +217,9 @@ public class SecondaryFileGenerator {
   private int calculateNumberOfLinesPerForeignKey(FileSchema schema, Integer linesPerForeignKey,
       List<Relation> relations) {
     if(relations.size() > 0 && relations.get(0).isBidirectional()) {
-      return datagen.randomIntGenerator(1, linesPerForeignKey);
+      return datagen.generateRandomInteger(1, linesPerForeignKey);
     } else {
-      return datagen.randomIntGenerator(0, linesPerForeignKey);
+      return datagen.generateRandomInteger(0, linesPerForeignKey);
     }
   }
 
@@ -243,7 +242,7 @@ public class SecondaryFileGenerator {
       for(CodeListTerm codeListTerm : codeListTerms) {
         if(codeListTerm.getFieldName().equals(currentFieldName)) {
           List<Term> terms = codeListTerm.getTerms();
-          output = terms.get(datagen.randomIntGenerator(0, terms.size() - 1)).getCode();
+          output = terms.get(datagen.generateRandomInteger(0, terms.size())).getCode();
         }
       }
     }

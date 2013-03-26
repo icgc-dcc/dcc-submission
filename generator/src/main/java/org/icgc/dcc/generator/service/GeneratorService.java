@@ -49,6 +49,8 @@ public class GeneratorService {
 
   private static final String SPECIMEN_SCHEMA_NAME = "specimen";
 
+  private static final String FILE_NAME_DIVIDER = "_";
+
   private static final String META_FILE_TYPE = "m";
 
   private static final String PRIMARY_FILE_TYPE = "p";
@@ -69,7 +71,7 @@ public class GeneratorService {
     String institution = config.getInstitution();
     String platform = config.getPlatform();
     Long seed = config.getSeed();
-    ArrayList<OptionalFile> optionalFiles = config.getOptionalFiles();
+    ArrayList<OptionalFile> optionalFiles = null;// config.getOptionalFiles();
     List<ExperimentalFile> experimentalFiles = config.getExperimentalFiles();
 
     log.info("Checking validity of parameters");
@@ -110,7 +112,8 @@ public class GeneratorService {
     createCoreFiles(resourceWrapper, numberOfDonors, numberOfSpecimensPerDonor, numberOfSamplesPerSpecimen,
         leadJurisdiction, tumourType, institution, platform, datagen);
 
-    createOptionalFiles(resourceWrapper, leadJurisdiction, tumourType, institution, platform, optionalFiles, datagen);
+    // createOptionalFiles(resourceWrapper, leadJurisdiction, tumourType, institution, platform, optionalFiles,
+    // datagen);
 
     createExperimentalFiles(resourceWrapper, leadJurisdiction, tumourType, institution, platform, experimentalFiles,
         datagen);
@@ -121,7 +124,7 @@ public class GeneratorService {
       throws IOException {
     for(ExperimentalFile experimentalFile : experimentalFiles) {
       String fileType = experimentalFile.getFileType();
-      String schemaName = experimentalFile.getName() + "_" + fileType;
+      String schemaName = experimentalFile.getName() + FILE_NAME_DIVIDER + fileType;
       Integer numberOfLines = experimentalFile.getNumberOfLinesPerForeignKey();
 
       datagen.buildPrimaryKey(resourceWrapper.getSchema(datagen, schemaName));
@@ -150,7 +153,7 @@ public class GeneratorService {
       Integer numberOfLinesPerDonor = optionalFile.getNumberOfLinesPerDonor();
 
       datagen.buildPrimaryKey(resourceWrapper.getSchema(datagen, schemaName));
-      createTemplateFile(datagen, resourceWrapper, schemaName, numberOfLinesPerDonor, leadJurisdiction, institution,
+      createOptionalFile(datagen, resourceWrapper, schemaName, numberOfLinesPerDonor, leadJurisdiction, institution,
           tumourType, platform);
     }
   }
@@ -172,17 +175,18 @@ public class GeneratorService {
     log.info("Creating {} file", schemaName);
     datagen.buildPrimaryKey(resourceWrapper.getSchema(datagen, schemaName));
     FileSchema schema = resourceWrapper.getSchema(datagen, schemaName);
-    new CoreFileGenerator().createFile(datagen, resourceWrapper, schema, linesPerForeignKey, leadJurisdiction,
-        institution, tumourType, platform);
+    CoreFileGenerator cfg = new CoreFileGenerator(datagen);
+    cfg.createFile(resourceWrapper, schema, linesPerForeignKey, leadJurisdiction, institution, tumourType, platform);
   }
 
-  private static void createTemplateFile(DataGenerator datagen, ResourceWrapper resourceWrapper, String schemaName,
+  private static void createOptionalFile(DataGenerator datagen, ResourceWrapper resourceWrapper, String schemaName,
       Integer numberOfLinesPerDonor, String leadJurisdiction, String institution, String tumourType, String platform)
       throws IOException {
     log.info("Creating {} file", schemaName);
     FileSchema schema = resourceWrapper.getSchema(datagen, schemaName);
-    new OptionalFileGenerator().createFile(datagen, resourceWrapper, schema, numberOfLinesPerDonor, leadJurisdiction,
-        institution, tumourType, platform);
+    OptionalFileGenerator ofg = new OptionalFileGenerator();
+    ofg.createFile(datagen, resourceWrapper, schema, numberOfLinesPerDonor, leadJurisdiction, institution, tumourType,
+        platform);
   }
 
   private static void createMetaFile(DataGenerator datagen, ResourceWrapper resourceWrapper, String schemaName,
@@ -190,8 +194,8 @@ public class GeneratorService {
       throws IOException {
     log.info("Creating {} file", schemaName);
     FileSchema schema = resourceWrapper.getSchema(datagen, schemaName);
-    new MetaFileGenerator().createFile(datagen, resourceWrapper, schema, linesPerForeignKey, leadJurisdiction,
-        institution, tumourType, platform);
+    MetaFileGenerator mfg = new MetaFileGenerator(datagen);
+    mfg.createFile(resourceWrapper, schema, linesPerForeignKey, leadJurisdiction, institution, tumourType, platform);
   }
 
   private static void createPrimaryFile(DataGenerator datagen, ResourceWrapper resourceWrapper, String schemaName,
@@ -199,8 +203,8 @@ public class GeneratorService {
       throws IOException {
     log.info("Creating {} file", schemaName);
     FileSchema schema = resourceWrapper.getSchema(datagen, schemaName);
-    new PrimaryFileGenerator().createFile(datagen, resourceWrapper, schema, linesPerForeignKey, leadJurisdiction,
-        institution, tumourType, platform);
+    PrimaryFileGenerator pfg = new PrimaryFileGenerator(datagen);
+    pfg.createFile(resourceWrapper, schema, linesPerForeignKey, leadJurisdiction, institution, tumourType, platform);
   }
 
   private static void createSecondaryFile(DataGenerator datagen, ResourceWrapper resourceWrapper, String schemaName,
@@ -208,7 +212,7 @@ public class GeneratorService {
       throws IOException {
     log.info("Creating {} file", schemaName);
     FileSchema schema = resourceWrapper.getSchema(datagen, schemaName);
-    new SecondaryFileGenerator().createFile(datagen, resourceWrapper, schema, linesPerForeignKey, leadJurisdiction,
-        institution, tumourType, platform);
+    SecondaryFileGenerator sfg = new SecondaryFileGenerator(datagen);
+    sfg.createFile(resourceWrapper, schema, linesPerForeignKey, leadJurisdiction, institution, tumourType, platform);
   }
 }

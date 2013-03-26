@@ -171,9 +171,9 @@ public class OptionalFileGenerator {
    */
   private int calculateNumberOfLines(FileSchema schema, Integer numberOfLinesPerPrimaryKey, List<Relation> relations) {
     if(relations.size() > 0 && relations.get(0).isBidirectional()) {
-      return datagen.randomIntGenerator(1, numberOfLinesPerPrimaryKey);
+      return datagen.generateRandomInteger(1, numberOfLinesPerPrimaryKey);
     } else {
-      return datagen.randomIntGenerator(0, numberOfLinesPerPrimaryKey);
+      return datagen.generateRandomInteger(0, numberOfLinesPerPrimaryKey);
     }
   }
 
@@ -191,7 +191,7 @@ public class OptionalFileGenerator {
       for(CodeListTerm codeListTerm : codeListArrayList) {
         if(codeListTerm.getFieldName().equals(currentFieldName)) {
           List<Term> terms = codeListTerm.getTerms();
-          output = terms.get(datagen.randomIntGenerator(0, terms.size() - 1)).getCode();
+          output = terms.get(datagen.generateRandomInteger(0, terms.size() - 1)).getCode();
 
         }
       }
