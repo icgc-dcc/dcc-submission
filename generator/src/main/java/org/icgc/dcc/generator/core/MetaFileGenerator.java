@@ -190,10 +190,8 @@ public class MetaFileGenerator {
     boolean isNotMetaExpressionFile = !schemaName.equals(NON_SYSTEM_META_FILE_EXPRESSION);
     boolean isNotMetaJunctionFile = !schemaName.equals(NON_SYSTEM_META_FILE_JUNCTION);
     boolean isNotMetaMirnaFile = !schemaName.equals(NON_SYSTEM_META_FILE_MIRNA);
-    if(isNotMetaExpressionFile && isNotMetaJunctionFile && isNotMetaMirnaFile) {
-      return true;
-    }
-    return false;
+
+    return (isNotMetaExpressionFile && isNotMetaJunctionFile && isNotMetaMirnaFile);
   }
 
   /**

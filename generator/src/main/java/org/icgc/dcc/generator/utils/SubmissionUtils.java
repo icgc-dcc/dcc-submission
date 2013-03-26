@@ -28,16 +28,18 @@ public class SubmissionUtils {
 
   private static final String FILE_EXTENSION = ".txt";
 
+  private static final String FILE_NAME_TOKEN_SEPARATOR = "__";
+
   public static String generateCoreFileUrl(String outputDirectory, String schemaName, String leadJurisdiction,
       String institution, String tumourType, String platform) {
-    Joiner joiner = Joiner.on("__").skipNulls();
+    Joiner joiner = Joiner.on(FILE_NAME_TOKEN_SEPARATOR).skipNulls();
     return outputDirectory + joiner.join(leadJurisdiction, tumourType, institution, schemaName, CONSTANT_DATE)
         + FILE_EXTENSION;
   }
 
   public static String generateOptionalFileUrl(String outputDirectory, String schemaName, String leadJurisdiction,
       String institution, String tumourType, String platform) {
-    Joiner joiner = Joiner.on("__").skipNulls();
+    Joiner joiner = Joiner.on(FILE_NAME_TOKEN_SEPARATOR).skipNulls();
     return outputDirectory + joiner.join(leadJurisdiction, tumourType, institution, schemaName, CONSTANT_DATE)
         + FILE_EXTENSION;
   }
@@ -47,7 +49,7 @@ public class SubmissionUtils {
     String fileName = schemaName.substring(0, schemaName.length() - 2);
     char fileType = schemaName.charAt(schemaName.length() - 1);
 
-    Joiner joiner = Joiner.on("__").skipNulls();
+    Joiner joiner = Joiner.on(FILE_NAME_TOKEN_SEPARATOR).skipNulls();
     return outputDirectory
         + joiner.join(fileName, leadJurisdiction, tumourType, institution, fileType, platform, CONSTANT_DATE)
         + FILE_EXTENSION;
