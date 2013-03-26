@@ -45,6 +45,7 @@ import org.icgc.dcc.generator.utils.ResourceWrapper;
 import org.icgc.dcc.generator.utils.SubmissionFileUtils;
 
 import com.google.common.base.Charsets;
+import com.google.common.collect.Iterables;
 import com.google.common.io.Resources;
 
 @Slf4j
@@ -88,13 +89,10 @@ public class SecondaryFileGenerator {
     File outputFile = generateFileName(datagen, schema, leadJurisdiction, institution, tumourType, platform);
     @Cleanup
     Writer writer = buildFileWriter(outputFile);
-    datagen.populateTermList(resourceWrapper, schema, codeListTerms);
-    log.info(String.valueOf(codeListTerms.size()));
 
     datagen.populateTermList(resourceWrapper, schema, codeListTerms);
 
     log.info("Populating {} file", schema.getName());
-    populateFileHeader(schema, writer);
     populateFile(resourceWrapper, schema, linesPerForeignKey, writer);
     log.info("Finished populating {} file ", schema.getName());
   }
@@ -120,49 +118,37 @@ public class SecondaryFileGenerator {
   }
 
   private void populateFileHeader(FileSchema schema, Writer writer) throws IOException {
-    // Output field names (eliminate trailing tabs)
-    int counterForFieldNames = 0;
+    int counterForFields = 1;
+    int numberOfFields = schema.getFields().size();
     for(String fieldName : schema.getFieldNames()) {
-      if(counterForFieldNames == schema.getFields().size() - 1) {
-        writer.write(fieldName);
-      } else {
-        writer.write(fieldName + FIELD_SEPERATOR);
-      }
-      counterForFieldNames++;
+      writeFieldValue(writer, counterForFields, numberOfFields, fieldName);
+      counterForFields++;
     }
     writer.write(LINE_SEPERATOR);
   }
 
   public void populateFile(ResourceWrapper resourceWrapper, FileSchema schema, Integer linesPerForeignKey, Writer writer)
       throws IOException {
+    populateFileHeader(schema, writer);
     String schemaName = schema.getName();
     List<Relation> relations = schema.getRelations();
 
     List<String> lines = readSystemFiles(schemaName);
-    Iterator<String> iterator = lines.iterator();
+    Iterator<String> iterator = Iterables.cycle(lines).iterator();
 
     int lengthOfForeignKeys = calculatedLengthOfForeignKeys(schema, relations);
     int numberOfLinesPerForeignKey = calculateNumberOfLinesPerForeignKey(schema, linesPerForeignKey, relations);
 
     for(int foreignKeyEntry = 0; foreignKeyEntry < lengthOfForeignKeys; foreignKeyEntry++) {
       for(int foreignKeyEntryLineNumber = 0; foreignKeyEntryLineNumber < numberOfLinesPerForeignKey; foreignKeyEntryLineNumber++) {
-        int counterForFields = 0;
+        int counterForFields = 1;
+        int numberOfFields = schema.getFields().size();
 
-        // Get net line, cycling around if needed
-        if(iterator.hasNext() == false) {
-          iterator = lines.iterator();
-        }
         String line = iterator.next();
-
         for(Field field : schema.getFields()) {
-          String output = getFieldValue(resourceWrapper, schema, schemaName, foreignKeyEntry, line, field);
+          String fieldValue = getFieldValue(resourceWrapper, schema, schemaName, foreignKeyEntry, line, field);
 
-          // Output field value (eliminate trailing tabs)
-          if(schema.getFields().size() - 1 == counterForFields) {
-            writer.write(output);
-          } else {
-            writer.write(output + FIELD_SEPERATOR);
-          }
+          writeFieldValue(writer, counterForFields, numberOfFields, fieldValue);
 
           counterForFields++;
         }
@@ -172,8 +158,16 @@ public class SecondaryFileGenerator {
     }
   }
 
+  private void writeFieldValue(Writer writer, int counterForFields, int numberOfFields, String fieldValue)
+      throws IOException {
+    if(counterForFields == numberOfFields) {
+      writer.write(fieldValue);
+    } else {
+      writer.write(fieldValue + FIELD_SEPERATOR);
+    }
+  }
+
   private List<String> readSystemFiles(String schemaName) throws IOException {
-    // Read in system files
     List<String> lines = null;
     if(schemaName.equals(SECONDARY_MIRNA_SCHEMA_NAME)) {
       lines = Resources.readLines(Resources.getResource(MIRNA_MIRBASE_FILE_NAME), Charsets.UTF_8);
@@ -187,23 +181,24 @@ public class SecondaryFileGenerator {
       String line, Field field) {
     String fieldName = field.getName();
 
-    // populate output with systemfile value if current field is to be populated with a system file value
-    String output = getSystemFileOutput(fieldName, line);
+    String fieldValue = getSystemFileValue(fieldName, line);
 
-    if(output == null) {
-      List<String> foreignKeys = DataGenerator.getForeignKeys(datagen, schema, fieldName);
-      if(foreignKeys != null) {
-        output = foreignKeys.get(i);
-      } else {
-        output = getCodeListValue(schema, schemaName, field, fieldName);
-      }
-      if(output == null) {
-        output =
-            DataGenerator.generateFieldValue(datagen, resourceWrapper, schema.getUniqueFields(), schemaName, field,
-                uniqueId, uniqueInteger, uniqueDouble);
-      }
+    List<String> foreignKeys = DataGenerator.getForeignKeys(datagen, schema, fieldName);
+    if(foreignKeys != null) {
+      fieldValue = foreignKeys.get(i);
     }
-    return output;
+
+    if(fieldValue == null) {
+      fieldValue = getCodeListValue(schema, schemaName, field, fieldName);
+    }
+
+    if(fieldValue == null) {
+      fieldValue =
+          DataGenerator.generateFieldValue(datagen, resourceWrapper, schema.getUniqueFields(), schemaName, field,
+              uniqueId, uniqueInteger, uniqueDouble);
+    }
+
+    return fieldValue;
   }
 
   /**
@@ -229,7 +224,7 @@ public class SecondaryFileGenerator {
     }
   }
 
-  public String getSystemFileOutput(String currentFieldName, String line) {
+  public String getSystemFileValue(String currentFieldName, String line) {
     if(currentFieldName.equals(MIRBASE_ID_FIELD_NAME)) {
       return line.substring(0, line.indexOf(FIELD_SEPERATOR));
     } else if(currentFieldName.equals(MIRNA_SEQUENCE_ID_FIELD_NAME)) {
@@ -243,16 +238,14 @@ public class SecondaryFileGenerator {
   }
 
   private String getCodeListValue(FileSchema schema, String schemaName, Field currentField, String currentFieldName) {
-    String output = null;
-    if(codeListTerms.size() > 0) {
-      for(CodeListTerm codeListTerm : codeListTerms) {
-        if(codeListTerm.getFieldName().equals(currentFieldName)) {
-          List<Term> terms = codeListTerm.getTerms();
-          output = terms.get(datagen.generateRandomInteger(0, terms.size())).getCode();
-        }
+    String fieldValue = null;
+    for(CodeListTerm codeListTerm : codeListTerms) {
+      if(codeListTerm.getFieldName().equals(currentFieldName)) {
+        List<Term> terms = codeListTerm.getTerms();
+        fieldValue = terms.get(datagen.generateRandomInteger(0, terms.size())).getCode();
       }
     }
-    return output;
+    return fieldValue;
   }
 
 }

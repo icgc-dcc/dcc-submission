@@ -87,9 +87,6 @@ public class MetaFileGenerator {
     @Cleanup
     Writer writer = buildFileWriter(outputFile);
 
-    // Output field names (eliminate trailing tab)
-    populateFileHeader(resourceWrapper, schema, writer);
-
     datagen.populateTermList(resourceWrapper, schema, codeListTerms);
 
     log.info("Populating {} file", schema.getName());
@@ -97,15 +94,12 @@ public class MetaFileGenerator {
     log.info("Finished populating {} file ", schema.getName());
   }
 
-  private void populateFileHeader(ResourceWrapper resourceWrapper, FileSchema schema, Writer writer) throws IOException {
-    int counterForFieldNames = 0;
+  private void populateFileHeader(FileSchema schema, Writer writer) throws IOException {
+    int counterForFields = 1;
+    int numberOfFields = schema.getFields().size();
     for(String fieldName : schema.getFieldNames()) {
-      if(counterForFieldNames == schema.getFields().size() - 1) {
-        writer.write(fieldName);
-      } else {
-        writer.write(fieldName + FIELD_SEPERATOR);
-      }
-      counterForFieldNames++;
+      writeFieldValue(writer, counterForFields, numberOfFields, fieldName);
+      counterForFields++;
     }
     writer.write(LINE_SEPERATOR);
   }
@@ -132,6 +126,7 @@ public class MetaFileGenerator {
 
   private void populateFile(ResourceWrapper resourceWrapper, FileSchema schema, Integer linesPerForeignKey,
       Writer writer) throws IOException {
+    populateFileHeader(schema, writer);
     String schemaName = schema.getName();
     List<Relation> relations = schema.getRelations();
 
@@ -140,16 +135,12 @@ public class MetaFileGenerator {
 
     for(int foreignKeyEntry = 0; foreignKeyEntry < lengthOfForeignKeys; foreignKeyEntry++) {
       for(int foreignKeyEntryLineNumber = 0; foreignKeyEntryLineNumber < numberOfLinesPerForeignKey; foreignKeyEntryLineNumber++) {
-        int counterForFields = 0;
+        int counterForFields = 1;
+        int numberOfFields = schema.getFields().size();
         for(Field field : schema.getFields()) {
-          String output = getFieldValue(schema, resourceWrapper, schemaName, foreignKeyEntry, field);
+          String fieldValue = getFieldValue(schema, resourceWrapper, schemaName, foreignKeyEntry, field);
 
-          // Eliminate trailing tab
-          if(schema.getFields().size() - 1 == counterForFields) {
-            writer.write(output);
-          } else {
-            writer.write(output + FIELD_SEPERATOR);
-          }
+          writeFieldValue(writer, counterForFields, numberOfFields, fieldValue);
 
           counterForFields++;
         }
@@ -159,33 +150,42 @@ public class MetaFileGenerator {
     }
   }
 
+  private void writeFieldValue(Writer writer, int counterForFields, int numberOfFields, String fieldValue)
+      throws IOException {
+    if(counterForFields == numberOfFields) {
+      writer.write(fieldValue);
+    } else {
+      writer.write(fieldValue + FIELD_SEPERATOR);
+    }
+  }
+
   private String getFieldValue(FileSchema schema, ResourceWrapper resourceWrapper, String schemaName,
       int foreignKeyEntry, Field field) {
-    String output = null;
+    String fieldValue = null;
     String fieldName = field.getName();
 
-    // Output foreign key if current field is to be populated by a foreign key
     List<String> foreignKeys = DataGenerator.getForeignKeys(datagen, schema, fieldName);
     if(foreignKeys != null) {
       if(isSystemMetaFile(schemaName)) {
-        output = getSampleType(fieldName);
+        fieldValue = getSampleType(fieldName);
       } else {
-        output = foreignKeys.get(foreignKeyEntry);
+        fieldValue = foreignKeys.get(foreignKeyEntry);
       }
-    } else {
-      output = getCodeListValue(schema, schemaName, field, fieldName);
     }
-    if(output == null) {
-      output =
+    if(fieldValue == null) {
+      fieldValue = getCodeListValue(schema, schemaName, field, fieldName);
+    }
+    if(fieldValue == null) {
+      fieldValue =
           DataGenerator.generateFieldValue(datagen, resourceWrapper, schema.getUniqueFields(), schemaName, field,
               uniqueId, uniqueInteger, uniqueDouble);
     }
 
-    // Add the output to the corresponding Primary Key if this primary key is a foreign key else where
     if(resourceWrapper.isUniqueField(schema.getUniqueFields(), fieldName)) {
-      DataGenerator.getPrimaryKeys(datagen, schemaName, fieldName).add(output);
+      DataGenerator.getPrimaryKeys(datagen, schemaName, fieldName).add(fieldValue);
     }
-    return output;
+
+    return fieldValue;
   }
 
   private boolean isSystemMetaFile(String schemaName) {
@@ -220,32 +220,32 @@ public class MetaFileGenerator {
   }
 
   private String getSampleType(String currentFieldName) {
+    String fieldValue = null;
     if(currentFieldName.equals(MATCHED_SAMPLE_FIELD_NAME)) {
       List<String> tumourTypeIDs =
           DataGenerator.getPrimaryKeys(datagen, SAMPLE_SCHEMA_NAME, TUMOUR_PRIMARY_KEY_FIELD_IDENTIFIER);
       Integer randomInteger = datagen.generateRandomInteger(0, tumourTypeIDs.size());
-      return tumourTypeIDs.get(randomInteger);
+      fieldValue = tumourTypeIDs.get(randomInteger);
     } else {
       List<String> controlTypeIDs =
           DataGenerator.getPrimaryKeys(datagen, SAMPLE_SCHEMA_NAME, CONTROL_PRIMARY_KEY_FIELD_IDENTIFIER);
       Integer randomInteger = datagen.generateRandomInteger(0, controlTypeIDs.size());
-      return controlTypeIDs.get(randomInteger);
+      fieldValue = controlTypeIDs.get(randomInteger);
     }
+
+    return fieldValue;
   }
 
   private String getCodeListValue(FileSchema schema, String schemaName, Field currentField, String currentFieldName) {
-    String output = null;
-    if(codeListTerms.isEmpty() == false) {
-      for(CodeListTerm codeListTerm : codeListTerms) {
-        if(codeListTerm.getFieldName().equals(currentFieldName)) {
-          List<Term> terms = codeListTerm.getTerms();
-          output = terms.get(datagen.generateRandomInteger(0, terms.size())).getCode();
-
-        }
+    String fieldValue = null;
+    for(CodeListTerm codeListTerm : codeListTerms) {
+      if(codeListTerm.getFieldName().equals(currentFieldName)) {
+        List<Term> terms = codeListTerm.getTerms();
+        fieldValue = terms.get(datagen.generateRandomInteger(0, terms.size())).getCode();
       }
     }
 
-    return output;
+    return fieldValue;
   }
 
 }

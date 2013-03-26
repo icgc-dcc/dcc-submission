@@ -86,9 +86,6 @@ public class PrimaryFileGenerator {
     @Cleanup
     Writer writer = buildFileWriter(outputFile);
 
-    // Output field names (eliminate trailing tab)
-    populateFileHeader(schema, writer);
-
     datagen.populateTermList(resourceWrapper, schema, codeListTerms);
 
     log.info("Populating {} file", schema.getName());
@@ -97,14 +94,11 @@ public class PrimaryFileGenerator {
   }
 
   private void populateFileHeader(FileSchema schema, Writer writer) throws IOException {
-    int counterForFieldNames = 0;
+    int counterForFields = 1;
+    int numberOfFields = schema.getFields().size();
     for(String fieldName : schema.getFieldNames()) {
-      if(counterForFieldNames == schema.getFields().size() - 1) {
-        writer.write(fieldName);
-      } else {
-        writer.write(fieldName + FIELD_SEPERATOR);
-      }
-      counterForFieldNames++;
+      writeFieldValue(writer, counterForFields, numberOfFields, fieldName);
+      counterForFields++;
     }
     writer.write(LINE_SEPERATOR);
   }
@@ -112,7 +106,6 @@ public class PrimaryFileGenerator {
   private Writer buildFileWriter(File outputFile) throws FileNotFoundException {
     FileOutputStream fos = new FileOutputStream(outputFile);
     OutputStreamWriter osw = new OutputStreamWriter(fos, Charsets.UTF_8);
-
     return new BufferedWriter(osw);
   }
 
@@ -122,23 +115,24 @@ public class PrimaryFileGenerator {
     String expName = schemaName.substring(0, schemaName.length() - 2);
     String expType = schemaName.substring(schemaName.length() - 1);
     List<String> fileNameTokens = newArrayList(expName, leadJurisdiction, tumourType, institution, expType, platform);
+
     String fileName = SubmissionFileUtils.generateFileName(datagen.getOutputDirectory(), fileNameTokens);
     File outputFile = new File(fileName);
     checkArgument(outputFile.exists() == false, "A file with the name '%s' already exists.", fileName);
     outputFile.createNewFile();
+
     return outputFile;
   }
 
   public void populateFile(ResourceWrapper resourceWrapper, FileSchema schema, Integer linesPerForeignKey, Writer writer)
       throws IOException {
+    populateFileHeader(schema, writer);
     String schemaName = schema.getName();
     List<Relation> relations = schema.getRelations();
 
     Iterator<String> iterator = null;
     if(schemaName.equals(SSM_SCHEMA_NAME)) {
-      List<String> lines = Resources.readLines(Resources.getResource(SIMULATED_DATA_FILE_URL), Charsets.UTF_8);
-      Collections.shuffle(lines);
-      iterator = Iterables.cycle(lines).iterator();
+      iterator = readSimulatedDataFile();
     }
 
     int lengthOfForeignKeys = calculateLengthOfForeignKeys(schema, relations);
@@ -146,20 +140,17 @@ public class PrimaryFileGenerator {
 
     for(int foreignKeyEntry = 0; foreignKeyEntry < lengthOfForeignKeys; foreignKeyEntry++) {
       for(int foreignKeyEntryLineNumber = 0; foreignKeyEntryLineNumber < numberOfLinesPerForeignKey; foreignKeyEntryLineNumber++) {
-        int counterForFields = 0;
+        int counterForFields = 1;
+        int numberOfFields = schema.getFields().size();
         MutableInt nextTabIndex = new MutableInt(0);
         String line = iterator.next();
 
         for(Field field : schema.getFields()) {
-          String output =
+          String fieldValue =
               getFieldValue(resourceWrapper, schema, schemaName, foreignKeyEntry, nextTabIndex, line, field);
 
-          // Write output, eliminate trailing tabs
-          if(schema.getFields().size() - 1 == counterForFields) {
-            writer.write(output);
-          } else {
-            writer.write(output + FIELD_SEPERATOR);
-          }
+          writeFieldValue(writer, counterForFields, numberOfFields, fieldValue);
+
           counterForFields++;
         }
         writer.write(LINE_SEPERATOR);
@@ -168,34 +159,53 @@ public class PrimaryFileGenerator {
     }
   }
 
+  private void writeFieldValue(Writer writer, int counterForFields, int numberOfFields, String fieldValue)
+      throws IOException {
+    if(counterForFields == numberOfFields) {
+      writer.write(fieldValue);
+    } else {
+      writer.write(fieldValue + FIELD_SEPERATOR);
+    }
+  }
+
+  private Iterator<String> readSimulatedDataFile() throws IOException {
+    Iterator<String> iterator;
+    List<String> lines = Resources.readLines(Resources.getResource(SIMULATED_DATA_FILE_URL), Charsets.UTF_8);
+    Collections.shuffle(lines);
+    iterator = Iterables.cycle(lines).iterator();
+
+    return iterator;
+  }
+
   private String getFieldValue(ResourceWrapper resourceWrapper, FileSchema schema, String schemaName,
       int foreignKeyEntry, MutableInt nextTabIndex, String line, Field field) {
-    String output = null;
+    String fieldValue = null;
     String fieldName = field.getName();
 
-    // Output foreign key if current field is to be populated with one
+    if(schemaName.equals(SSM_SCHEMA_NAME) && simulatedData.contains(fieldName)) {
+      fieldValue = line.substring(nextTabIndex.intValue(), line.indexOf(FIELD_SEPERATOR, nextTabIndex.intValue()));
+      nextTabIndex.add(fieldValue.length() + 1);
+    }
+
     List<String> foreignKeys = DataGenerator.getForeignKeys(datagen, schema, fieldName);
     if(foreignKeys != null) {
-      output = foreignKeys.get(foreignKeyEntry);
-    } else {
-      if(schemaName.equals(SSM_SCHEMA_NAME) && simulatedData.contains(fieldName)) {// This prints out if true
-        output = line.substring(nextTabIndex.intValue(), line.indexOf(FIELD_SEPERATOR, nextTabIndex.intValue()));
-        nextTabIndex.add(output.length() + 1);
-      } else {
-        output = getCodeListValue(schema, schemaName, field, fieldName);
-      }
+      fieldValue = foreignKeys.get(foreignKeyEntry);
     }
-    if(output == null) {
-      output =
+
+    if(fieldValue == null) {
+      fieldValue = getCodeListValue(schema, schemaName, field, fieldName);
+    }
+
+    if(fieldValue == null) {
+      fieldValue =
           DataGenerator.generateFieldValue(datagen, resourceWrapper, schema.getUniqueFields(), schemaName, field,
               uniqueId, uniqueInteger, uniqueDouble);
     }
 
-    // Add output to primary keys if it is to be used as a foreign key else where
     if(resourceWrapper.isUniqueField(schema.getUniqueFields(), fieldName)) {
-      DataGenerator.getPrimaryKeys(datagen, schemaName, fieldName).add(output);
+      DataGenerator.getPrimaryKeys(datagen, schemaName, fieldName).add(fieldValue);
     }
-    return output;
+    return fieldValue;
   }
 
   /**
@@ -222,16 +232,14 @@ public class PrimaryFileGenerator {
   }
 
   private String getCodeListValue(FileSchema schema, String schemaName, Field currentField, String currentFieldName) {
-    String output = null;
-    if(codeListTerms.size() > 0) {
-      for(CodeListTerm codeListTerm : codeListTerms) {
-        if(codeListTerm.getFieldName().equals(currentFieldName)) {
-          List<Term> terms = codeListTerm.getTerms();
-          output = terms.get(datagen.generateRandomInteger(0, terms.size())).getCode();
+    String fieldValue = null;
+    for(CodeListTerm codeListTerm : codeListTerms) {
+      if(codeListTerm.getFieldName().equals(currentFieldName)) {
+        List<Term> terms = codeListTerm.getTerms();
+        fieldValue = terms.get(datagen.generateRandomInteger(0, terms.size())).getCode();
 
-        }
       }
     }
-    return output;
+    return fieldValue;
   }
 }

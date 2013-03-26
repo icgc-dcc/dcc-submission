@@ -152,36 +152,36 @@ public class DataGenerator {
 
   public static String generateFieldValue(DataGenerator datagen, ResourceWrapper resourceWrapper, List<String> list,
       String schemaName, Field field, MutableLong uniqueId, MutableInt uniqueInteger, MutableDouble uniqueDecimal) {
-    String output = null;
+    String fieldValue = null;
     String fieldName = field.getName();
     ValueType fieldValueType = field.getValueType();
 
     if(fieldValueType == ValueType.TEXT) {
       if(resourceWrapper.isUniqueField(list, fieldName)) {
         uniqueId.increment();
-        output = schemaName + String.valueOf(uniqueId);
+        fieldValue = schemaName + String.valueOf(uniqueId);
       } else {
-        output = Integer.toString(datagen.generateRandomInteger(0, Integer.MAX_VALUE));
+        fieldValue = Integer.toString(datagen.generateRandomInteger(0, Integer.MAX_VALUE));
       }
     } else if(fieldValueType == ValueType.INTEGER) {
       if(resourceWrapper.isUniqueField(list, fieldName)) {
         uniqueInteger.increment();
-        output = schemaName + String.valueOf(uniqueInteger);
+        fieldValue = schemaName + String.valueOf(uniqueInteger);
       } else {
-        output = Integer.toString(datagen.generateRandomInteger(0, 200));
+        fieldValue = Integer.toString(datagen.generateRandomInteger(0, 200));
       }
     } else if(fieldValueType == ValueType.DECIMAL) {
       if(resourceWrapper.isUniqueField(list, fieldName)) {
         uniqueDecimal.add(0.1);
-        output = schemaName + String.valueOf(uniqueDecimal);
+        fieldValue = schemaName + String.valueOf(uniqueDecimal);
       } else {
-        output = Double.toString(datagen.generateRandomDouble(50));
+        fieldValue = Double.toString(datagen.generateRandomDouble(50));
       }
     } else if(fieldValueType == ValueType.DATETIME) {
-      output = CONSTANT_DATE;
+      fieldValue = CONSTANT_DATE;
     }
 
-    return output;
+    return fieldValue;
   }
 
 }
