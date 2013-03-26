@@ -227,14 +227,17 @@ public class CoreFileGenerator {
   /**
    * Calculates the number of times a file entry repeats with regards to the foreign key
    */
-  private int calculateNumberOfLinesPerForeingKey(FileSchema schema, Integer numberOfLinesPerPrimaryKey,
+  private int calculateNumberOfLinesPerForeingKey(FileSchema schema, Integer linesPerForeignKey,
       List<Relation> relations) {
     if(schema.getName().equals(DONOR_SCHEMA_NAME)) {
       return 1;
-    } else if(relations.size() > 0 && relations.get(0).isBidirectional()) {
-      return datagen.generateRandomInteger(1, numberOfLinesPerPrimaryKey);
     } else {
-      return datagen.generateRandomInteger(0, numberOfLinesPerPrimaryKey);
+      Relation randomRelation = relations.get(0);// If one relation is bidirectional, assumption is they both are
+      if(relations.size() > 0 && randomRelation.isBidirectional()) {
+        return datagen.generateRandomInteger(1, linesPerForeignKey);
+      } else {
+        return datagen.generateRandomInteger(0, linesPerForeignKey);
+      }
     }
   }
 

@@ -28,6 +28,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -46,6 +48,7 @@ import org.icgc.dcc.generator.utils.ResourceWrapper;
 import org.icgc.dcc.generator.utils.SubmissionFileUtils;
 
 import com.google.common.base.Charsets;
+import com.google.common.collect.Iterables;
 import com.google.common.io.Resources;
 
 @Slf4j
@@ -127,9 +130,11 @@ public class PrimaryFileGenerator {
     String schemaName = schema.getName();
     List<Relation> relations = schema.getRelations();
 
-    List<String> lines = null;
+    Iterator<String> iterator = null;
     if(schemaName.equals(SSM_SCHEMA_NAME)) {
-      lines = Resources.readLines(Resources.getResource(SIMULATED_DATA_FILE_URL), Charsets.UTF_8);
+      List<String> lines = Resources.readLines(Resources.getResource(SIMULATED_DATA_FILE_URL), Charsets.UTF_8);
+      Collections.shuffle(lines);
+      iterator = Iterables.cycle(lines).iterator();
     }
 
     int lengthOfForeignKeys = calculateLengthOfForeignKeys(schema, relations);
@@ -139,7 +144,7 @@ public class PrimaryFileGenerator {
       for(int foreignKeyEntryLineNumber = 0; foreignKeyEntryLineNumber < numberOfLinesPerForeignKey; foreignKeyEntryLineNumber++) {
         int counterForFields = 0;
         MutableInt nextTabIndex = new MutableInt(0);
-        String line = lines.get(datagen.generateRandomInteger(0, lines.size()));// This read in the file
+        String line = iterator.next();// This read in the file
 
         for(Field field : schema.getFields()) {
           String output =
@@ -204,7 +209,8 @@ public class PrimaryFileGenerator {
    */
   private int calculateNumberOfLinesPerForeignKey(FileSchema schema, Integer linesPerForeignKey,
       List<Relation> relations) {
-    if(relations.size() > 0 && relations.get(0).isBidirectional()) {
+    Relation randomRelation = relations.get(0);// If one relation is bidirectional, assumption is they both are
+    if(relations.size() > 0 && randomRelation.isBidirectional()) {
       return datagen.generateRandomInteger(1, linesPerForeignKey);
     } else {
       return datagen.generateRandomInteger(0, linesPerForeignKey);

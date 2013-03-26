@@ -27,6 +27,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -45,6 +46,7 @@ import org.icgc.dcc.generator.utils.ResourceWrapper;
 import org.icgc.dcc.generator.utils.SubmissionFileUtils;
 
 import com.google.common.base.Charsets;
+import com.google.common.collect.Iterables;
 import com.google.common.io.Resources;
 
 @Slf4j
@@ -134,7 +136,8 @@ public class SecondaryFileGenerator {
     List<Relation> relations = schema.getRelations();
 
     List<String> lines = readSystemFiles(schemaName);
-    Iterator<String> iterator = lines.iterator();
+    Collections.shuffle(lines);
+    Iterator<String> iterator = Iterables.cycle(lines).iterator();
 
     int lengthOfForeignKeys = calculatedLengthOfForeignKeys(schema, relations);
     int numberOfLinesPerForeignKey = calculateNumberOfLinesPerForeignKey(schema, linesPerForeignKey, relations);
@@ -142,11 +145,6 @@ public class SecondaryFileGenerator {
     for(int foreignKeyEntry = 0; foreignKeyEntry < lengthOfForeignKeys; foreignKeyEntry++) {
       for(int foreignKeyEntryLineNumber = 0; foreignKeyEntryLineNumber < numberOfLinesPerForeignKey; foreignKeyEntryLineNumber++) {
         int counterForFields = 0;
-
-        // Get net line, cycling around if needed
-        if(iterator.hasNext() == false) {
-          iterator = lines.iterator();
-        }
         String line = iterator.next();
 
         for(Field field : schema.getFields()) {
@@ -216,7 +214,8 @@ public class SecondaryFileGenerator {
    */
   private int calculateNumberOfLinesPerForeignKey(FileSchema schema, Integer linesPerForeignKey,
       List<Relation> relations) {
-    if(relations.size() > 0 && relations.get(0).isBidirectional()) {
+    Relation randomRelation = relations.get(0);// If one relation is bidirectional, assumption is they both are
+    if(relations.size() > 0 && randomRelation.isBidirectional()) {
       return datagen.generateRandomInteger(1, linesPerForeignKey);
     } else {
       return datagen.generateRandomInteger(0, linesPerForeignKey);

@@ -207,7 +207,8 @@ public class MetaFileGenerator {
    */
   private int calculateNumberOfLinesPerForeignKey(FileSchema schema, Integer linesPerForeignKey,
       List<Relation> relations) {
-    if(relations.size() > 0 && relations.get(0).isBidirectional()) {
+    Relation randomRelation = relations.get(0);// If one relation is bidirectional, assumption is they both are
+    if(relations.size() > 0 && randomRelation.isBidirectional()) {
       return datagen.generateRandomInteger(1, linesPerForeignKey);
     } else {
       return datagen.generateRandomInteger(0, linesPerForeignKey);
