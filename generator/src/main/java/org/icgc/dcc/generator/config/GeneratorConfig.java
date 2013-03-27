@@ -25,6 +25,7 @@ import lombok.Getter;
 import lombok.ToString;
 
 import org.icgc.dcc.generator.model.ExperimentalFile;
+import org.icgc.dcc.generator.model.OptionalFile;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -59,8 +60,8 @@ public class GeneratorConfig {
   @JsonProperty
   private Long seed;
 
-  // @JsonProperty
-  // private List<OptionalFile> optionalFiles = newArrayList();
+  @JsonProperty
+  private List<OptionalFile> optionalFiles = newArrayList();
 
   @JsonProperty
   private List<ExperimentalFile> experimentalFiles = newArrayList();

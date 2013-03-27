@@ -137,6 +137,9 @@ public class CoreFileGenerator {
 
     if(schemaName.equals(SAMPLE_SCHEMA_NAME)) {
       addSamplePrimaryKeys(schemaName);
+    } else if(schemaName.equals("specimen")) {
+      PrimaryKey pk = new PrimaryKey("donor", "donor_id_for_optional_file");
+      datagen.getPrimaryKeys().add(pk);
     }
 
     for(int foreignKeyEntry = 0; foreignKeyEntry < lengthOfForeignKeys; foreignKeyEntry++) {
@@ -188,20 +191,22 @@ public class CoreFileGenerator {
       DataGenerator.getPrimaryKeys(datagen, schemaName, fieldName).add(fieldValue);
     }
 
-    // Special case for sample, to add whether sample type is controlled or tumor
-    addOutputToSamplePrimaryKeys(schema, field, fieldValue);
+    // Special case for sample, to add whether sample type is controlled or tumour
+    if(schema.getName().equals(SAMPLE_SCHEMA_NAME) && field.getName().equals(SAMPLE_TYPE_FIELD_NAME)) {
+      addOutputToSamplePrimaryKeys(schema, field, fieldValue);
+    } else if(schema.getName().equals("specimen") && field.getName().equals("donor_id")) {
+      DataGenerator.getPrimaryKeys(datagen, "donor", "donor_id_for_optional_file").add(fieldValue);
+    }
 
     return fieldValue;
   }
 
   private void addOutputToSamplePrimaryKeys(FileSchema schema, Field field, String fieldValue) {
-    if(schema.getName().equals(SAMPLE_SCHEMA_NAME) && field.getName().equals(SAMPLE_TYPE_FIELD_NAME)) {
-      int x = datagen.generateRandomInteger(0, 2);
-      if(x == 0) {
-        DataGenerator.getPrimaryKeys(datagen, SAMPLE_SCHEMA_NAME, TUMOUR_PRIMARY_KEY_FIELD_IDENTIFIER).add(fieldValue);
-      } else {
-        DataGenerator.getPrimaryKeys(datagen, SAMPLE_SCHEMA_NAME, CONTROL_PRIMARY_KEY_FIELD_IDENTIFIER).add(fieldValue);
-      }
+    int x = datagen.generateRandomInteger(0, 2);
+    if(x == 0) {
+      DataGenerator.getPrimaryKeys(datagen, SAMPLE_SCHEMA_NAME, TUMOUR_PRIMARY_KEY_FIELD_IDENTIFIER).add(fieldValue);
+    } else {
+      DataGenerator.getPrimaryKeys(datagen, SAMPLE_SCHEMA_NAME, CONTROL_PRIMARY_KEY_FIELD_IDENTIFIER).add(fieldValue);
     }
   }
 

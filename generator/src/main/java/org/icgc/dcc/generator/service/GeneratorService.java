@@ -19,7 +19,6 @@ package org.icgc.dcc.generator.service;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -73,7 +72,7 @@ public class GeneratorService {
     String institution = config.getInstitution();
     String platform = config.getPlatform();
     Long seed = config.getSeed();
-    ArrayList<OptionalFile> optionalFiles = null;// config.getOptionalFiles();
+    List<OptionalFile> optionalFiles = config.getOptionalFiles();
     List<ExperimentalFile> experimentalFiles = config.getExperimentalFiles();
 
     log.info("Checking validity of parameters");
@@ -119,7 +118,7 @@ public class GeneratorService {
   @SneakyThrows
   private void generateFiles(String outputDirectory, ResourceWrapper resourceWrapper, Integer numberOfDonors,
       Integer numberOfSpecimensPerDonor, Integer numberOfSamplesPerSpecimen, String leadJurisdiction,
-      String tumourType, String institution, String platform, Long seed, ArrayList<OptionalFile> optionalFiles,
+      String tumourType, String institution, String platform, Long seed, List<OptionalFile> optionalFiles,
       List<ExperimentalFile> experimentalFiles) throws JsonParseException, JsonMappingException, IOException {
 
     DataGenerator datagen = new DataGenerator(seed);
@@ -127,8 +126,8 @@ public class GeneratorService {
     createCoreFiles(resourceWrapper, outputDirectory, numberOfDonors, numberOfSpecimensPerDonor,
         numberOfSamplesPerSpecimen, leadJurisdiction, tumourType, institution, platform, datagen);
 
-    // createOptionalFiles(resourceWrapper, leadJurisdiction, tumourType, institution, platform, optionalFiles,
-    // datagen);
+    createOptionalFiles(resourceWrapper, outputDirectory, leadJurisdiction, tumourType, institution, platform,
+        optionalFiles, datagen);
 
     createExperimentalFiles(resourceWrapper, outputDirectory, leadJurisdiction, tumourType, institution, platform,
         experimentalFiles, datagen);
@@ -160,16 +159,16 @@ public class GeneratorService {
     }
   }
 
-  private void createOptionalFiles(ResourceWrapper resourceWrapper, String leadJurisdiction, String tumourType,
-      String institution, String platform, ArrayList<OptionalFile> optionalFiles, DataGenerator datagen)
+  private void createOptionalFiles(ResourceWrapper resourceWrapper, String outputDirectory, String leadJurisdiction,
+      String tumourType, String institution, String platform, List<OptionalFile> optionalFiles, DataGenerator datagen)
       throws IOException {
     for(OptionalFile optionalFile : optionalFiles) {
       String schemaName = optionalFile.getName();
       Integer numberOfLinesPerDonor = optionalFile.getNumberOfLinesPerDonor();
 
       datagen.buildPrimaryKey(resourceWrapper.getSchema(datagen, schemaName));
-      createOptionalFile(datagen, resourceWrapper, schemaName, numberOfLinesPerDonor, leadJurisdiction, institution,
-          tumourType, platform);
+      createOptionalFile(datagen, outputDirectory, resourceWrapper, schemaName, numberOfLinesPerDonor,
+          leadJurisdiction, institution, tumourType, platform);
     }
   }
 
@@ -194,14 +193,13 @@ public class GeneratorService {
     cfg.createFile(resourceWrapper, schema, linesPerForeignKey, leadJurisdiction, institution, tumourType, platform);
   }
 
-  private static void createOptionalFile(DataGenerator datagen, ResourceWrapper resourceWrapper, String schemaName,
-      Integer numberOfLinesPerDonor, String leadJurisdiction, String institution, String tumourType, String platform)
-      throws IOException {
+  private static void createOptionalFile(DataGenerator datagen, String outputDirectory,
+      ResourceWrapper resourceWrapper, String schemaName, Integer numberOfLinesPerDonor, String leadJurisdiction,
+      String institution, String tumourType, String platform) throws IOException {
     log.info("Creating {} file", schemaName);
     FileSchema schema = resourceWrapper.getSchema(datagen, schemaName);
-    OptionalFileGenerator ofg = new OptionalFileGenerator();
-    ofg.createFile(datagen, resourceWrapper, schema, numberOfLinesPerDonor, leadJurisdiction, institution, tumourType,
-        platform);
+    OptionalFileGenerator ofg = new OptionalFileGenerator(datagen, outputDirectory);
+    ofg.createFile(resourceWrapper, schema, numberOfLinesPerDonor, leadJurisdiction, institution, tumourType, platform);
   }
 
   private static void createMetaFile(DataGenerator datagen, String outputDirectory, ResourceWrapper resourceWrapper,
