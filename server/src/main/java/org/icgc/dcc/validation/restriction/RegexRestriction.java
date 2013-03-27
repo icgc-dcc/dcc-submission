@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.validation.restriction;
 
+import java.util.regex.Pattern;
+
 import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.Restriction;
 import org.icgc.dcc.validation.FlowType;
@@ -40,6 +42,7 @@ import com.mongodb.BasicDBObject;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.icgc.dcc.validation.RestrictionTypeSchema.ParameterType.TEXT;
+import static org.icgc.dcc.validation.ValidationErrorCode.REGEX_ERROR;
 
 public class RegexRestriction implements InternalPlanElement {
 
@@ -65,7 +68,7 @@ public class RegexRestriction implements InternalPlanElement {
 
   @Override
   public Pipe extend(Pipe pipe) {
-    return new Each(pipe, new ValidationFields(field), new RegexFunction(patternString), Fields.REPLACE);
+    return new Each(pipe, new ValidationFields(field), new RegexFunction(field, patternString), Fields.REPLACE);
   }
 
   public static class Type implements RestrictionType {
@@ -104,25 +107,24 @@ public class RegexRestriction implements InternalPlanElement {
   @SuppressWarnings("rawtypes")
   public static class RegexFunction extends BaseOperation implements Function {
 
-    @SuppressWarnings("unused")
-    private final String patternString;
+    private final String fieldname;
 
-    protected RegexFunction(String patternString) {
+    private final Pattern pattern;
+
+    protected RegexFunction(String fieldname, String patternString) {
       super(2, Fields.ARGS);
-      this.patternString = patternString;
+      this.fieldname = fieldname;
+      this.pattern = Pattern.compile(patternString);
     }
 
     @Override
     public void operate(FlowProcess flowProcess, FunctionCall functionCall) {
       TupleEntry tupleEntry = functionCall.getArguments();
-      // String value = tupleEntry.getString(0);
-      // if(value != null && values.contains(value) == false) {
-      // Object fieldName = tupleEntry.getFields().get(0);
-      // ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.DISCRETE_VALUES_ERROR, fieldName.toString(),
-      // value, values);
-      // }
+      String value = tupleEntry.getString(fieldname);
+      if(value != null && pattern.matcher(value).matches() == false) {
+        ValidationFields.state(tupleEntry).reportError(REGEX_ERROR, fieldname, value, pattern.pattern());
+      }
       functionCall.getOutputCollector().add(tupleEntry.getTupleCopy());
     }
-
   }
 }

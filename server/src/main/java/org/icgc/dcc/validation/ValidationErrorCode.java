@@ -168,7 +168,7 @@ public enum ValidationErrorCode { // TODO: DCC-505 to fix the message (currently
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
       checkArgument(params != null);
       checkArgument(params.length == 1);
-      checkArgument(params[0] instanceof Set);
+      checkArgument(params[0] instanceof String);
       return ImmutableMap.of(EXPECTED, params[0]);
     }
   }, //
