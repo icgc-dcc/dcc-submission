@@ -29,14 +29,14 @@
     <div class="span9">
         <div class="row"><h1 class="span">Advanced Search</h1></div>
         <tabs>
-            <pane count="genes.pagination.total" heading="Genes">
+            <pane style="position: absolute" count="genes.pagination.total" heading="Genes">
                 <div class="row">
                     <div class="span3">
-                        <chart items='cdata_genes_gt' title="Gene Types" label="Genes" type="pie" height="220"
-                               width="220"></chart>
+                        <pie items='cdata_genes_gt' title="Gene Types" label="Genes" type="pie" height="220"
+                             width="220"></pie>
                     </div>
                     <div class="span6">
-                        <stacked items='stdata' height="220"></stacked>
+                        <stacked items='stdata' height="220" width="440"></stacked>
                     </div>
                 </div>
 
@@ -70,21 +70,24 @@
                         </tr>
                         </tbody>
                     </table>
+                    <pagination boundary-links="true" num-pages="genes.pagination.total"
+                                current-page="genes.pagination.page"
+                                max-size="5"></pagination>
                 </div>
             </pane>
-            <pane count="donors.pagination.total" heading="Donors">
+            <pane style="position: absolute" count="donors.pagination.total" heading="Donors">
                 <div class="row">
                     <div class="span3">
-                        <chart items='cdata_donors_p' title="Donor Distribution" label="Donors" type="pie" height="220"
-                               width="220"></chart>
+                        <pie items='cdata_donors_p' title="Donor Distribution" label="Donors" type="pie" height="220"
+                             width="220"></pie>
                     </div>
                     <div class="span3">
-                        <chart items='cdata_donors_ps' title="Primary Site" label="Donors" type="pie" height="220"
-                               width="220"></chart>
+                        <pie items='cdata_donors_ps' title="Primary Site" label="Donors" type="pie" height="220"
+                             width="220"></pie>
                     </div>
                     <div class="span3">
-                        <chart items='cdata_donors_t' title="Tumour Stage" label="Donors" type="pie" height="220"
-                               width="220"></chart>
+                        <pie items='cdata_donors_t' title="Tumour Stage" label="Donors" type="pie" height="220"
+                             width="220"></pie>
                     </div>
                 </div>
 
@@ -122,6 +125,9 @@
                         </tr>
                         </tbody>
                     </table>
+                    <pagination boundary-links="true" num-pages="donors.pagination.total"
+                                current-page="donors.pagination.page"
+                                max-size="5"></pagination>
                 </div>
             </pane>
         </tabs>

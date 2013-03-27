@@ -21,7 +21,7 @@ angular.module('highcharts', ['highcharts.directives', 'highcharts.services']);
 
 angular.module('highcharts.directives', []);
 
-angular.module('highcharts.directives').directive('chart', function () {
+angular.module('highcharts.directives').directive('pie', function () {
   return {
     restrict: 'E',
     replace: true,
@@ -49,20 +49,22 @@ angular.module('highcharts.directives').directive('chart', function () {
         },
         plotOptions: {
           pie: {
-            innerSize: 100,
+            innerSize: 0,
             allowPointSelect: true,
             animation: true,
             cursor: 'pointer',
             showInLegend: false,
             dataLabels: {
-              enabled: false,
-              color: '#000000',
+              enabled: true,
+              color: '#fff',
               connectorColor: '#000000',
-              distance: 1,
-              zIndex: 2,
+              distance: -30,
+              zIndex: 20,
               //overflow: "justify",
               formatter: function () {
-                return this.point.y + '<b>(' + this.point.percentage.toFixed(2) + '% )</b>';
+                if (this.point.percentage > 5) {
+                  return this.point.y;// + '<b>(' + this.point.percentage.toFixed(2) + '% )</b>';
+                }
               }
             }
           }
@@ -116,6 +118,103 @@ angular.module('highcharts.directives').directive('chart', function () {
   }
 });
 
+angular.module('highcharts.directives').directive('donut', function () {
+  return {
+    restrict: 'E',
+    replace: true,
+    scope: {
+      items: '='
+    },
+    template: '<div id="container" style="margin: 0 auto">not working</div>',
+    link: function ($scope, $element, $attrs) {
+      var renderChart = function (settings) {
+        new Highcharts.Chart(settings);
+      };
+
+      var chartsDefaults = {
+        chart: {
+          renderTo: $element[0],
+          type: 'pie',
+          height: $attrs.height || null,
+          width: $attrs.width || null,
+          plotBackgroundColor: null,
+          plotBorderWidth: null,
+          plotShadow: false
+        },
+        title: {
+          text: $attrs.title
+        },
+        plotOptions: {
+          pie: {
+            allowPointSelect: false,
+            animation: true,
+            cursor: 'pointer',
+            showInLegend: false
+          }
+        },
+        tooltip: {
+          shared: true,
+          enabled: true
+        },
+        series: [
+          {
+            name: $attrs.innerLabel,
+            data: $scope.items.inner,
+            size: '75%',
+            dataLabels: {
+              enabled: true,
+              color: '#fff',
+              connectorColor: '#000000',
+              distance: -25,
+              zIndex: 20,
+              //overflow: "justify",
+              formatter: function () {
+                if (this.point.percentage > 5) {
+                  return this.point.y;// + '<b>(' + this.point.percentage.toFixed(2) + '% )</b>';
+                }
+              }
+            }
+          },
+          {
+            name: $attrs.outerLabel,
+            data: $scope.items.outer,
+            size: '90%',
+            innerSize: '76%',
+            dataLabels: {
+              enabled: true,
+              distance: 15,
+              overflow: "justify",
+              formatter: function () {
+                if (this.point.percentage > 5) {
+                  return this.point.y;// + '<b>(' + this.point.percentage.toFixed(2) + '% )</b>';
+                }
+              }
+            }
+          }
+        ]
+      };
+
+      $scope.$watch("items", function (newValue, oldValue) {
+        if (!newValue) return;
+        if (angular.equals(newValue, oldValue)) return;
+
+        // We need deep copy in order to NOT override original chart object.
+        // This allows us to override chart data member and still the keep
+        // our original renderTo will be the same
+        var deepCopy = true;
+        var newSettings = {};
+        $.extend(deepCopy, newSettings, chartsDefaults);
+        newSettings.series[0].data = newValue.inner;
+        newSettings.series[1].data = newValue.outer;
+
+        renderChart(newSettings);
+      });
+
+      renderChart(chartsDefaults);
+    }
+  }
+});
+
 angular.module('highcharts.directives').directive('stacked', function () {
   return {
     restrict: 'E',
@@ -144,7 +243,15 @@ angular.module('highcharts.directives').directive('stacked', function () {
           text: 'Top 30 Affected Genes'
         },
         xAxis: {
-          categories: $scope.items.x //['Apples', 'Oranges', 'Pears', 'Grapes', 'Bananas']
+          categories: $scope.items.x, //['Apples', 'Oranges', 'Pears', 'Grapes', 'Bananas']
+          labels: {
+            rotation: -45,
+            align: 'right',
+            style: {
+              fontSize: '10px',
+              fontFamily: 'Verdana, sans-serif'
+            }
+          }
         },
         yAxis: {
           min: 0,

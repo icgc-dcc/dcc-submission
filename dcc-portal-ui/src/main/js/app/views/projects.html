@@ -18,49 +18,89 @@
         <h1>Cancer Projects</h1>
 
         <div class="row">
-            <div class="span3">
-                <chart items='cdata' label='Donors' title="Donor Distribution" type="pie" height="220"></chart>
-
+            <stacked items='stdata' height="220"></stacked>
+        </div>
+        <div class="row-fluid">
+            <div class="span6">
+                <donut items='dcpndata' inner-label='DonorsIn' outer-label='DonorsOut'
+                       title="Donor Distribution by Country" height="220"></donut>
             </div>
             <div class="span6">
-                <stacked items='stdata' height="220"></stacked>
-
+                <donut items='dpspndata' inner-label='DonorsIn' outer-label='DonorsOut'
+                       title="Donor Distribution by Primary Site" height="220"></donut>
             </div>
         </div>
-        <table class="table table-bordered table-striped">
-            <thead>
-            <tr>
-                <th>Cancer Project</th>
-                <th>Primary Site</th>
-                <th>Release Country</th>
-                <th>Donors</th>
-                <th>SSM</th>
-                <th>CNSM</th>
-                <th>Gene Expression</th>
-                <th>DNA Methylation</th>
-                <th>Publications</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr ng-repeat="project in projects.hits">
-                <td><a href="#/projects/{{project.id}}">{{project.fields.project_name}}</a></td>
-                <td>{{project.fields.primary_site}}</td>
-                <td>{{project.fields.country}}</td>
-                <td>{{project.fields.total_donor_count}}</td>
-                <td>{{project.fields.ssm_tested_donor_count}}</td>
-                <td>{{project.fields.cnsm_tested_donor_count}}</td>
-                <td>{{project.fields.exp_tested_donor_count}}</td>
-                <td>{{project.fields.meth_tested_donor_count}}</td>
-                <td>
-                    <ul class="unstyled" ng-repeat="pmid in project.fields.pubmed_id">
-                        <li><a href="http://www.ncbi.nlm.nih.gov/pubmed/{{pmid}}">pmid:{{pmid}}</a></li>
-                    </ul>
-                </td>
-            </tr>
-            <tr ng-hide="projects.hits.length">
-                <td colspan="9">No Projects found.</td>
-            </tr>
-            </tbody>
-        </table>
+        <div class="row">
+            <div class="span">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                    <tr>
+                        <th ng-click="toggleSort('project_name')" class="link"><i ng-show="sort=='project_name'"
+                                                                                  ng-class="{'icon-angle-down': order=='desc', 'icon-angle-up': order=='asc'}"></i>
+                            Project Name
+                        </th>
+                        <th ng-click="toggleSort('primary_site')" class="link"><i ng-show="sort=='primary_site'"
+                                                                                  ng-class="{'icon-angle-down': order=='desc', 'icon-angle-up': order=='asc'}"></i>
+                            Primary Site
+                        </th>
+                        <th ng-click="toggleSort('country')" class="link"><i ng-show="sort=='country'"
+                                                                             ng-class="{'icon-angle-down': order=='desc', 'icon-angle-up': order=='asc'}"></i>
+                            Country
+                        </th>
+                        <th ng-click="toggleSort('total_donor_count')" class="link"><i
+                                ng-show="sort=='total_donor_count'"
+                                ng-class="{'icon-angle-down': order=='desc', 'icon-angle-up': order=='asc'}"></i>
+                            Donors
+                        </th>
+                        <th ng-click="toggleSort('ssm_tested_donor_count')" class="link"><i
+                                ng-show="sort=='ssm_tested_donor_count'"
+                                ng-class="{'icon-angle-down': order=='desc', 'icon-angle-up': order=='asc'}"></i> <abbr
+                                title="Simple Somatic Mutation">SSM</abbr>
+                        </th>
+                        <th ng-click="toggleSort('cnsm_tested_donor_count')" class="link"><i
+                                ng-show="sort=='cnsm_tested_donor_count'"
+                                ng-class="{'icon-angle-down': order=='desc', 'icon-angle-up': order=='asc'}"></i> <abbr
+                                title="Copy Number Somatic Mutation">CNSM</abbr>
+                        </th>
+                        <th ng-click="toggleSort('exp_tested_donor_count')" class="link"><i
+                                ng-show="sort=='exp_tested_donor_count'"
+                                ng-class="{'icon-angle-down': order=='desc', 'icon-angle-up': order=='asc'}"></i> <abbr
+                                title="Gene Expression">GE</abbr>
+                        </th>
+                        <th ng-click="toggleSort('meth_tested_donor_count')" class="link"><i
+                                ng-show="sort=='meth_tested_donor_count'"
+                                ng-class="{'icon-angle-down': order=='desc', 'icon-angle-up': order=='asc'}"></i> <abbr
+                                title="DNA Methylation">Meth.</abbr>
+                        </th>
+                        <th>Publications</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr ng-repeat="project in projects.hits">
+                        <td><a href="#/projects/{{project.id}}">{{project.fields.project_name}}</a></td>
+                        <td>{{project.fields.primary_site}}</td>
+                        <td>{{project.fields.country}}</td>
+                        <td style="text-align: center">{{project.fields.total_donor_count}}</td>
+                        <td style="text-align: center">{{project.fields.ssm_tested_donor_count}}</td>
+                        <td style="text-align: center">{{project.fields.cnsm_tested_donor_count}}</td>
+                        <td style="text-align: center">{{project.fields.exp_tested_donor_count}}</td>
+                        <td style="text-align: center">{{project.fields.meth_tested_donor_count}}</td>
+                        <td>
+                            <ul class="unstyled" ng-repeat="pmid in project.fields.pubmed_id">
+                                <li><img src="/styles/images/pubmed_icon.gif"> <a
+                                        href="http://www.ncbi.nlm.nih.gov/pubmed/{{pmid}}">{{pmid}}</a></li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr ng-hide="projects.hits.length">
+                        <td colspan="9">No Projects found.</td>
+                    </tr>
+                    </tbody>
+                </table>
+                <pagination boundary-links="true" num-pages="projects.pagination.total"
+                            current-page="projects.pagination.page"
+                            max-size="5"></pagination>
+            </div>
+        </div>
     </div>
 </div>

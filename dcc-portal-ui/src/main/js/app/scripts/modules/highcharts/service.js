@@ -33,7 +33,7 @@ angular.module('highcharts.services').service('HighchartsService', [function () 
     }
 
     return r;
-  }
+  };
 
   this.hits2HCpie = function (type, facet, hits, countBy) {
     var r = [];
@@ -48,6 +48,60 @@ angular.module('highcharts.services').service('HighchartsService', [function () 
     }
 
     return r;
+  };
+
+
+  this.hits2HCdonut = function (type, facetInner, facetOuter, hits, countBy) {
+    var colors = Highcharts.getOptions().colors;
+
+    var inr = [];
+    var outr = [];
+
+    var innerHits = {};
+    var outerHits = {};
+
+    for (var i = 0; i < hits.length; ++i) {
+      var hit = hits[i];
+      var name = hit.fields[facetInner];
+      var count = hit.fields[countBy];
+      if (innerHits.hasOwnProperty(name)) {
+        innerHits[name] += count;
+      } else {
+        innerHits[name] = count;
+      }
+    }
+
+    console.log('ih: ', innerHits);
+    var i = 0;
+    for (var iName in innerHits) {
+      inr.push({
+        name: iName,
+        y: innerHits[iName],
+        type: type,
+        facet: facetInner,
+        color: colors[i]
+      });
+
+      for (var j = 0; j < hits.length; ++j) {
+        var hitj = hits[j];
+        var brightness = 0.3 - (j / hitj.fields[countBy]) / 5;
+        if (hitj.fields[facetInner] === iName) {
+          outr.push({
+            name: hitj.fields[facetOuter],
+            y: hitj.fields[countBy],
+            type: type,
+            facet: facetOuter,
+            color: Highcharts.Color(colors[i]).brighten(brightness).get()
+          });
+        }
+      }
+      i++;
+    }
+
+    return {
+      inner: inr,
+      outer: outr
+    };
   };
 
   this.hits2HCstacked = function (hits, x, y) {
