@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.validation;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -29,6 +27,14 @@ import org.icgc.dcc.dictionary.model.ValueType;
 import org.icgc.dcc.validation.cascading.TupleState.TupleError;
 
 import com.google.common.collect.ImmutableMap;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static org.icgc.dcc.validation.ErrorParameterKey.EXPECTED;
+import static org.icgc.dcc.validation.ErrorParameterKey.FIELDS;
+import static org.icgc.dcc.validation.ErrorParameterKey.FILES;
+import static org.icgc.dcc.validation.ErrorParameterKey.MAX;
+import static org.icgc.dcc.validation.ErrorParameterKey.MIN;
+import static org.icgc.dcc.validation.ErrorParameterKey.SCHEMA;
 
 public enum ValidationErrorCode { // TODO: DCC-505 to fix the message (currently not used for anything)
 
@@ -41,7 +47,7 @@ public enum ValidationErrorCode { // TODO: DCC-505 to fix the message (currently
       checkArgument(params != null);
       checkArgument(params.length == 1);
       checkArgument(params[0] instanceof Integer);
-      return ImmutableMap.of(ErrorParameterKey.EXPECTED, params[0]);
+      return ImmutableMap.of(EXPECTED, params[0]);
     }
   }, //
   /**
@@ -58,7 +64,7 @@ public enum ValidationErrorCode { // TODO: DCC-505 to fix the message (currently
       checkArgument(params.length == 2);
       checkArgument(params[0] instanceof String);
       checkArgument(params[1] instanceof List);
-      return ImmutableMap.of(ErrorParameterKey.SCHEMA, params[0], ErrorParameterKey.FIELDS, params[1]);
+      return ImmutableMap.of(SCHEMA, params[0], FIELDS, params[1]);
     }
   }, //
   /**
@@ -77,7 +83,7 @@ public enum ValidationErrorCode { // TODO: DCC-505 to fix the message (currently
       checkArgument(params.length == 2);
       checkArgument(params[0] instanceof String);
       checkArgument(params[1] instanceof List);
-      return ImmutableMap.of(ErrorParameterKey.SCHEMA, params[0], ErrorParameterKey.FIELDS, params[1]);
+      return ImmutableMap.of(SCHEMA, params[0], FIELDS, params[1]);
     }
   }, //
   /**
@@ -98,7 +104,7 @@ public enum ValidationErrorCode { // TODO: DCC-505 to fix the message (currently
       checkArgument(params != null);
       checkArgument(params.length == 1);
       checkArgument(params[0] instanceof ValueType);
-      return ImmutableMap.of(ErrorParameterKey.EXPECTED, params[0]);
+      return ImmutableMap.of(EXPECTED, params[0]);
     }
   }, //
   /**
@@ -112,7 +118,7 @@ public enum ValidationErrorCode { // TODO: DCC-505 to fix the message (currently
       checkArgument(params[0] instanceof Long);
       checkArgument(params[1] instanceof Long);
 
-      return ImmutableMap.of(ErrorParameterKey.MIN, params[0], ErrorParameterKey.MAX, params[1]);
+      return ImmutableMap.of(MIN, params[0], MAX, params[1]);
     }
   }, //
   /**
@@ -151,7 +157,19 @@ public enum ValidationErrorCode { // TODO: DCC-505 to fix the message (currently
       checkArgument(params != null);
       checkArgument(params.length == 1);
       checkArgument(params[0] instanceof Set);
-      return ImmutableMap.of(ErrorParameterKey.EXPECTED, params[0]);
+      return ImmutableMap.of(EXPECTED, params[0]);
+    }
+  }, //
+  /**
+   * Values do not match regex.
+   */
+  REGEX_ERROR("Invalid value %s for field %s. Expected to match regex: %s") {
+    @Override
+    public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
+      checkArgument(params != null);
+      checkArgument(params.length == 1);
+      checkArgument(params[0] instanceof Set);
+      return ImmutableMap.of(EXPECTED, params[0]);
     }
   }, //
   /**
@@ -164,7 +182,7 @@ public enum ValidationErrorCode { // TODO: DCC-505 to fix the message (currently
       checkArgument(params.length == 2);
       checkArgument(params[0] instanceof String);
       checkArgument(params[1] instanceof List);
-      return ImmutableMap.of(ErrorParameterKey.SCHEMA, params[0], ErrorParameterKey.FILES, params[1]);
+      return ImmutableMap.of(SCHEMA, params[0], FILES, params[1]);
     }
   }, //
   /**
@@ -180,7 +198,7 @@ public enum ValidationErrorCode { // TODO: DCC-505 to fix the message (currently
       checkArgument(params != null);
       checkArgument(params.length == 1);
       checkArgument(params[0] instanceof String);
-      return ImmutableMap.of(ErrorParameterKey.SCHEMA, params[0]);
+      return ImmutableMap.of(SCHEMA, params[0]);
     }
   }, //
   /**
@@ -197,7 +215,7 @@ public enum ValidationErrorCode { // TODO: DCC-505 to fix the message (currently
       checkArgument(params != null);
       checkArgument(params.length == 1);
       checkArgument(params[0] instanceof String);
-      return ImmutableMap.of(ErrorParameterKey.SCHEMA, params[0]);
+      return ImmutableMap.of(SCHEMA, params[0]);
     }
   }, //
   /**
@@ -209,7 +227,7 @@ public enum ValidationErrorCode { // TODO: DCC-505 to fix the message (currently
       checkArgument(params != null);
       checkArgument(params.length == 1);
       checkArgument(params[0] instanceof String);
-      return ImmutableMap.of(ErrorParameterKey.SCHEMA, params[0]);
+      return ImmutableMap.of(SCHEMA, params[0]);
     }
   }, //
   /**
@@ -221,7 +239,7 @@ public enum ValidationErrorCode { // TODO: DCC-505 to fix the message (currently
       checkArgument(params != null);
       checkArgument(params.length == 1);
       checkArgument(params[0] instanceof List);
-      return ImmutableMap.of(ErrorParameterKey.FIELDS, params[0]);
+      return ImmutableMap.of(FIELDS, params[0]);
     }
   };
 

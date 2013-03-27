@@ -23,6 +23,7 @@ import org.icgc.dcc.validation.report.ByteOffsetToLineNumber;
 import org.icgc.dcc.validation.restriction.CodeListRestriction;
 import org.icgc.dcc.validation.restriction.DiscreteValuesRestriction;
 import org.icgc.dcc.validation.restriction.RangeFieldRestriction;
+import org.icgc.dcc.validation.restriction.RegexRestriction;
 import org.icgc.dcc.validation.restriction.RequiredRestriction;
 import org.icgc.dcc.validation.service.ValidationQueueManagerService;
 import org.icgc.dcc.validation.service.ValidationService;
@@ -50,6 +51,7 @@ public class ValidationModule extends AbstractDccModule {
     bindRestriction(RangeFieldRestriction.Type.class);
     bindRestriction(RequiredRestriction.Type.class);
     bindRestriction(CodeListRestriction.Type.class);
+    bindRestriction(RegexRestriction.Type.class);
     requestStaticInjection(ByteOffsetToLineNumber.class);
   }
 
