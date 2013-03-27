@@ -17,10 +17,10 @@
  */
 package org.icgc.dcc.web.validator;
 
+import org.junit.Test;
+
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-
-import org.junit.Test;
 
 /**
  * 
@@ -30,15 +30,20 @@ public class NameValidatorTest {
   @Test
   public void test_name_validation() {
 
-    assertTrue(NameValidator.validate("abc123"));
+    assertTrue(NameValidator.validateEntityName("abc123"));
 
-    assertTrue(NameValidator.validate("abc_123_p9k"));
+    assertTrue(NameValidator.validateEntityName("abc_123_p9k"));
 
-    assertFalse(NameValidator.validate("!@#123"));
+    assertFalse(NameValidator.validateEntityName("!@#123"));
 
-    assertTrue(NameValidator.validate("ABCabc123"));
+    assertTrue(NameValidator.validateEntityName("ABCabc123"));
 
-    assertFalse(NameValidator.validate("a2"));
+    assertFalse(NameValidator.validateEntityName("a2"));
+
+    assertFalse(NameValidator.validateEntityName("a␡b")); // non-printable
+
+    assertTrue(NameValidator.validateProjectId("809_0"));
+
+    assertTrue(NameValidator.validateProjectId("809.0"));
   }
-
 }

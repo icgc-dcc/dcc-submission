@@ -17,10 +17,6 @@
  */
 package org.icgc.dcc.release;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
-
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
@@ -80,6 +76,10 @@ import com.mysema.query.mongodb.MongodbQuery;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
 import com.typesafe.config.Config;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+
 public class ReleaseService extends BaseMorphiaService<Release> {
 
   private static final Logger log = LoggerFactory.getLogger(ReleaseService.class);
@@ -131,7 +131,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
   public void createInitialRelease(Release initRelease) {
     // check for init release name
-    if(!NameValidator.validate(initRelease.getName())) {
+    if(!NameValidator.validateEntityName(initRelease.getName())) {
       throw new InvalidNameException(initRelease.getName());
     }
     String dictionaryVersion = initRelease.getDictionaryVersion();
@@ -489,7 +489,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     boolean sameName = oldName.equals(updatedName);
     boolean sameDictionary = oldDictionaryVersion.equals(updatedDictionaryVersion);
 
-    if(!NameValidator.validate(updatedName)) {
+    if(!NameValidator.validateEntityName(updatedName)) {
       throw new ReleaseException("Updated release name " + updatedName + " is not valid");
     }
 

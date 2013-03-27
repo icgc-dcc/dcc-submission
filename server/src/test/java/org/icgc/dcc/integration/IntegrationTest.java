@@ -74,11 +74,18 @@ public class IntegrationTest {
 
   private static final String SECOND_DICTIONARY_VERSION = "0.6d";
 
-  private static final String PROJECT1_NAME = "project1";
+  // ===========================================================================
+  /*
+   * If changing project names, must also change their directory counterparts under
+   * server/src/test/resources/integrationtest/fs/release1
+   */
+  private static final String PROJECT1_NAME = "project.1";
 
-  private static final String PROJECT2_NAME = "project2";
+  private static final String PROJECT2_NAME = "project.2";
 
-  private static final String PROJECT3_NAME = "project3";
+  private static final String PROJECT3_NAME = "project.3";
+
+  // ===========================================================================
 
   private static final String INITITAL_RELEASE_NAME = "release1";
 
@@ -128,23 +135,24 @@ public class IntegrationTest {
 
   private static final String SECOND_RELEASE = "{\"name\": \"release2\"}";
 
-  private static final String PROJECT1 =
-      "{\"name\":\"Project One\",\"key\":\"project1\",\"users\":[\"admin\"],\"groups\":[\"admin\"]}"; // TODO: use:
-                                                                                                      // ./server/src/main/resources/integration/project1.json
+  private static final String PROJECT1 = "{\"name\":\"Project One\",\"key\":\"" + PROJECT1_NAME
+      + "\",\"users\":[\"admin\"],\"groups\":[\"admin\"]}"; // TODO: use:
+                                                            // ./server/src/main/resources/integration/project1.json
 
-  private static final String PROJECT2 =
-      "{\"name\":\"Project Two\",\"key\":\"project2\",\"users\":[\"admin\", \"brett\"],\"groups\":[\"admin\"]}";
+  private static final String PROJECT2 = "{\"name\":\"Project Two\",\"key\":\"" + PROJECT2_NAME
+      + "\",\"users\":[\"admin\", \"brett\"],\"groups\":[\"admin\"]}";
 
-  private static final String PROJECT3 =
-      "{\"name\":\"Project Three\",\"key\":\"project3\",\"users\":[\"admin\"],\"groups\":[\"admin\"]}";
+  private static final String PROJECT3 = "{\"name\":\"Project Three\",\"key\":\"" + PROJECT3_NAME
+      + "\",\"users\":[\"admin\"],\"groups\":[\"admin\"]}";
 
-  private static final String PROJECT_TO_SIGN_OFF = "[\"project1\"]";
+  private static final String PROJECT_TO_SIGN_OFF = "[\"" + PROJECT1_NAME + "\"]";
 
-  private static final String PROJECTS_TO_ENQUEUE =
-      "[{\"key\": \"project1\", \"emails\": [\"a@a.ca\"]}, {\"key\": \"project2\", \"emails\": [\"a@a.ca\"]}, {\"key\": \"project3\", \"emails\": [\"a@a.ca\"]}]";
+  private static final String PROJECTS_TO_ENQUEUE = "[{\"key\": \"" + PROJECT1_NAME
+      + "\", \"emails\": [\"a@a.ca\"]}, {\"key\": \"" + PROJECT2_NAME + "\", \"emails\": [\"a@a.ca\"]}, {\"key\": \""
+      + PROJECT3_NAME + "\", \"emails\": [\"a@a.ca\"]}]";
 
-  private static final String PROJECTS_TO_ENQUEUE2 =
-      "[{\"key\": \"project2\", \"emails\": [\"a@a.ca\"]}, {\"key\": \"project3\", \"emails\": [\"a@a.ca\"]}]";
+  private static final String PROJECTS_TO_ENQUEUE2 = "[{\"key\": \"" + PROJECT2_NAME
+      + "\", \"emails\": [\"a@a.ca\"]}, {\"key\": \"" + PROJECT3_NAME + "\", \"emails\": [\"a@a.ca\"]}]";
 
   private static final String FS_DIR = "src/test/resources/integrationtest/fs";
 
@@ -154,7 +162,7 @@ public class IntegrationTest {
 
   private static final String INITIAL_RELEASE_SYSTEM_FILES_DIR = DCC_ROOT_DIR + "/release1/SystemFiles";
 
-  private static final String PROJECT1_VALIDATION_DIR = "release1/project1/.validation";
+  private static final String PROJECT1_VALIDATION_DIR = "release1/" + PROJECT1_NAME + "/.validation";
 
   private final Client client = ClientFactory.newClient();
 
@@ -282,6 +290,12 @@ public class IntegrationTest {
     assertEquals(INITITAL_RELEASE_NAME, release.getName());
   }
 
+  /**
+   * TODO: improve this to make expectedSubmissionStates a map rather than a list (else order of project names could
+   * break the test)
+   * <p>
+   * TODO: reuse checkValidatedSubmission() to while at it (since it's smarter and can poll)
+   */
   private void checkRelease(String releaseName, String dictionaryVersion, ReleaseState expectedReleaseState,
       List<SubmissionState> expectedSubmissionStates) throws Exception {
 
@@ -297,7 +311,7 @@ public class IntegrationTest {
     assertEquals(expectedSubmissionStates.size(), releaseView.getSubmissions().size());
     int i = 0;
     for(DetailedSubmission submission : releaseView.getSubmissions()) {
-      assertEquals(expectedSubmissionStates.get(i++), submission.getState());
+      assertEquals(submission.getProjectKey(), expectedSubmissionStates.get(i++), submission.getState());
     }
   }
 
