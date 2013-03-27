@@ -42,9 +42,9 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 @Slf4j
 public class ProjectResource {
 
-  private static final String DEFAULT_SORT = "project_name";
+  private static final String DEFAULT_SORT = "_summary._total_donor_count";
 
-  private static final String DEFAULT_ORDER = "asc";
+  private static final String DEFAULT_ORDER = "desc";
 
   private final ProjectRepository store;
 

@@ -23,16 +23,16 @@ angular.module('app.projects.controllers').controller('ProjectsController', [ "$
   $scope.projects = projects;
   $scope.gp = gp;
 
-  $scope.dpspndata = HighchartsService.hits2HCdonut("project", "primary_site", "project_name", projects.hits, "total_donor_count");
-  $scope.dcpndata = HighchartsService.hits2HCdonut("project", "country", "project_name", projects.hits, "total_donor_count");
+  $scope.dpspndata = HighchartsService.hits2HCdonut("project", "primary_site", "project_name", projects.hits, "_summary._total_donor_count");
+  $scope.dcpndata = HighchartsService.hits2HCdonut("project", "countries", "project_name", projects.hits, "_summary._total_donor_count");
 
-  $scope.stdata = HighchartsService.hits2HCstacked(gp.hits, 'project.project_name', 'project.affected_donor_count');
+  $scope.stdata = HighchartsService.hits2HCstacked(gp.hits, 'project.project_name', 'project._summary._ssm_donor_count');
 
   $scope.refresh = function () {
     ProjectsService.query().then(function (projects) {
       $scope.projects = projects;
-      $scope.dpspndata = HighchartsService.hits2HCdonut("project", "primary_site", "project_name", projects.hits, "total_donor_count");
-      $scope.dcpndata = HighchartsService.hits2HCdonut("project", "country", "project_name", projects.hits, "total_donor_count");
+      $scope.dpspndata = HighchartsService.hits2HCdonut("project", "primary_site", "project_name", projects.hits, "_summary._total_donor_count");
+      $scope.dcpndata = HighchartsService.hits2HCdonut("project", "countries", "project_name", projects.hits, "_summary._total_donor_count");
     });
     GenesProjectsService.query().then(function (response) {
       $scope.stdata = HighchartsService.hits2HCstacked(response.hits, 'project.project_name', 'project.affected_donor_count');

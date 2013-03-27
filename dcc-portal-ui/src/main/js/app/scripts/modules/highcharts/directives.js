@@ -231,6 +231,7 @@ angular.module('highcharts.directives').directive('stacked', function () {
 
       var chartsDefaults = {
         chart: {
+          zoomType: 'x',
           renderTo: $element[0],
           type: 'column',
           height: $attrs.height || null,
@@ -239,8 +240,11 @@ angular.module('highcharts.directives').directive('stacked', function () {
           plotBorderWidth: null,
           plotShadow: false
         },
+        subtitle: {
+          text: 'Click and drag in the plot area to zoom in'
+        },
         title: {
-          text: 'Top 30 Affected Genes'
+          text: 'Top 50 Affected Genes'
         },
         xAxis: {
           categories: $scope.items.x, //['Apples', 'Oranges', 'Pears', 'Grapes', 'Bananas']

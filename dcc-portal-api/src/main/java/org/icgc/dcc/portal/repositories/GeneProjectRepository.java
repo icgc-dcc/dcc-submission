@@ -44,6 +44,7 @@ public class GeneProjectRepository extends BaseRepository {
 
   @Override
   QueryBuilder buildQuery() {
+    /*
     return QueryBuilders //
         .nestedQuery(Project.NAME, //
             QueryBuilders.customScoreQuery(QueryBuilders.filteredQuery( //
@@ -53,6 +54,8 @@ public class GeneProjectRepository extends BaseRepository {
                 //    "/doc['project.total_donor_count'].value"
             ) //
         ).scoreMode("total");
+        */
+    return QueryBuilders.matchAllQuery();
   }
 
   @Override

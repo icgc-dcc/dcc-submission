@@ -99,17 +99,20 @@ public class GeneResource {
   @Timed
   @ApiOperation(value = "Find a gene data by project")
   public final Response findByProjects(
-      @ApiParam(value = "Start index of results", required = false) @QueryParam("from") @DefaultValue("1") IntParam from,
-      @ApiParam(value = "Number of results returned", allowableValues = "range[1,100]", required = false) @QueryParam("size") @DefaultValue("10") IntParam size,
-      @ApiParam(value = "Column to sort results on", defaultValue = DEFAULT_SORT, required = false) @QueryParam("sort") String sort,
-      @ApiParam(value = "Order to sort the column", defaultValue = DEFAULT_ORDER, allowableValues = "asc,desc", required = false) @QueryParam("order") String order,
-      @ApiParam(value = "Filter the search results", required = false) @QueryParam("filters") String filters,
-      @ApiParam(value = "Select fields returned", required = false) @QueryParam("fields") String fields) {
-    String s = sort != null ? sort : DEFAULT_SORT;
-    String o = order != null ? order : DEFAULT_ORDER;
+      //@ApiParam(value = "Start index of results", required = false) @QueryParam("from") @DefaultValue("1") IntParam from,
+      //@ApiParam(value = "Number of results returned", allowableValues = "range[1,100]", required = false) @QueryParam("size") @DefaultValue("10") IntParam size,
+      //@ApiParam(value = "Column to sort results on", defaultValue = DEFAULT_SORT, required = false) @QueryParam("sort") String sort,
+      //@ApiParam(value = "Order to sort the column", defaultValue = DEFAULT_ORDER, allowableValues = "asc,desc", required = false) @QueryParam("order") String order,
+      //@ApiParam(value = "Select fields returned", required = false) @QueryParam("fields") String fields,
+      @ApiParam(value = "Filter the search results", required = false) @QueryParam("filters") String filters
+  ) {
+    String s = "_score";
+    String o = "desc";
 
     RequestSearchQuery requestSearchQuery =
-        RequestSearchQuery.builder().filters(filters).from(from.get()).size(size.get()).sort(s).order(o)
+        RequestSearchQuery.builder().filters(filters)
+            .from(0).size(50)
+            .sort(s).order(o)
             .build();
 
     FindAllResults results = gp.findAll(requestSearchQuery);

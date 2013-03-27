@@ -32,6 +32,19 @@ body {
     border: 0;
 }
 
+.table thead th {
+    font-size: 12px;
+}
+
+.table thead th {
+    text-align: center;
+    vertical-align: middle;
+}
+
+.table thead .subhead th, .table td {
+    font-size: 11px;
+}
+
 .table th, .table td {
     max-width: 150px;
     white-space: nowrap;
@@ -112,7 +125,7 @@ textarea.ng-invalid:focus {
 /* Current Selection */
 .sidebar {
     /*margin-left: -19px;*/
-    font-size: 12px;
+    font-size: 11px;
 }
 
 .loc {
@@ -170,7 +183,6 @@ textarea.ng-invalid:focus {
     margin-bottom: 25px;
     color: #333;
     background: hsl(103, 47%, 97%);
-    font-size: 11px;
 }
 
 #current-group ul {

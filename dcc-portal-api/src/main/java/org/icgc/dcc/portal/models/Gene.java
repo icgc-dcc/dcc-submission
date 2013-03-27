@@ -24,16 +24,20 @@ import com.google.common.collect.ImmutableMap;
 public final class Gene {
   public static final String NAME = "gene";
 
-  public static final String[] FIELDS = {"symbol", "description", "chromosome", "start", "end", "band", "gene_type"};
+  public static final String[] FIELDS = {"symbol", "name", "chromosome", "start", "end", "biotype"};
 
-  public static final String INDEX = "icgc_demo";
+  public static final String INDEX = "dcc-release-indexer";
 
   public static final String TYPE = "genes";
 
   public static final ImmutableMap<String, ImmutableList<String>> FACETS = ImmutableMap.of("terms",
-      ImmutableList.of("gene_type"));
+      ImmutableList.of("biotype"));
 
-  public static final ImmutableMap<String, ImmutableList<String>> FILTERS = ImmutableMap.of("terms",
-      ImmutableList.of("gene_type", "symbol"), "ranges", ImmutableList.of(""), "locations",
+  public static final ImmutableMap<String, ImmutableList<String>> FILTERS = ImmutableMap.of(
+      "terms",
+      ImmutableList.of("biotype", "symbol"),
+      "ranges",
+      ImmutableList.of(""),
+      "locations",
       ImmutableList.of("gene_location"));
 }

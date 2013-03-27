@@ -40,6 +40,7 @@ public class GeneRepository extends BaseRepository {
 
   @Override
   QueryBuilder buildQuery() {
+    /*
     return QueryBuilders //
         .nestedQuery(Donor.NAME, //
             QueryBuilders.customScoreQuery(QueryBuilders.filteredQuery( //
@@ -47,6 +48,8 @@ public class GeneRepository extends BaseRepository {
                 getScoreFilters() //
             )).script("doc['donor.somatic_mutation'].value") //
         ).scoreMode("total");
+    */
+    return QueryBuilders.matchAllQuery();
   }
 
   @Override
