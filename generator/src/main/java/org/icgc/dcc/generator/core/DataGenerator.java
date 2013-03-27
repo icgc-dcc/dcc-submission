@@ -68,7 +68,7 @@ public class DataGenerator {
 
   private static ObjectMapper mapper = new ObjectMapper();
 
-  public static List<CodeList> codeList;
+  static List<CodeList> codeList;
 
   private static List<FileSchema> fileSchemas;
 
