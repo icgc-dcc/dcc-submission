@@ -55,6 +55,8 @@ public class SecondaryFileGenerator {
 
   private static final String LINE_SEPERATOR = "\n";
 
+  private static final String FILE_PATH_TOKEN_SEPERATOR = "/";
+
   private static final String MIRNA_MIRBASE_FILE_NAME = "org/icgc/dcc/generator/Mirna_MirbaseSystemFile.txt";
 
   private static final String HSAPIENS_SYSTEM_FILE_NAME = "org/icgc/dcc/generator/HsapSystemFile.txt";
@@ -69,8 +71,6 @@ public class SecondaryFileGenerator {
 
   private static final String SECONDARY_TRANSCRIPT_FIELD_NAME = "transcript_affected";
 
-  private DataGenerator datagen;
-
   private final List<CodeListTerm> codeListTerms = newArrayList();
 
   private final MutableLong uniqueId = new MutableLong(0L);
@@ -79,8 +79,13 @@ public class SecondaryFileGenerator {
 
   private final MutableDouble uniqueDouble = new MutableDouble(0.0);
 
-  public SecondaryFileGenerator(DataGenerator datagen) {
+  private final DataGenerator datagen;
+
+  private final String outputDirectory;
+
+  public SecondaryFileGenerator(DataGenerator datagen, String outputDirectory) {
     this.datagen = datagen;
+    this.outputDirectory = outputDirectory;
   }
 
   public void createFile(ResourceWrapper resourceWrapper, FileSchema schema, Integer linesPerForeignKey,
@@ -110,8 +115,10 @@ public class SecondaryFileGenerator {
     String expName = schemaName.substring(0, schemaName.length() - 2);
     String expType = schemaName.substring(schemaName.length() - 1);
     List<String> fileNameTokens = newArrayList(expName, leadJurisdiction, tumourType, institution, expType, platform);
-    String fileName = SubmissionFileUtils.generateFileName(datagen.getOutputDirectory(), fileNameTokens);
-    File outputFile = new File(fileName);
+
+    String fileName = SubmissionFileUtils.generateFileName(fileNameTokens);
+    String pathName = outputDirectory + FILE_PATH_TOKEN_SEPERATOR + fileName;
+    File outputFile = new File(pathName);
     checkArgument(outputFile.exists() == false, "A file with the name '%s' already exists.", fileName);
     outputFile.createNewFile();
     return outputFile;
@@ -127,8 +134,8 @@ public class SecondaryFileGenerator {
     writer.write(LINE_SEPERATOR);
   }
 
-  public void populateFile(ResourceWrapper resourceWrapper, FileSchema schema, Integer linesPerForeignKey, Writer writer)
-      throws IOException {
+  private void populateFile(ResourceWrapper resourceWrapper, FileSchema schema, Integer linesPerForeignKey,
+      Writer writer) throws IOException {
     populateFileHeader(schema, writer);
     String schemaName = schema.getName();
     List<Relation> relations = schema.getRelations();

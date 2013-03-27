@@ -34,9 +34,9 @@ public class SubmissionFileUtils {
 
   private static final Joiner joiner = Joiner.on(FILE_NAME_TOKEN_SEPARATOR).skipNulls();
 
-  public static String generateFileName(String outputDirectory, List<String> fileNameTokens) {
+  public static String generateFileName(List<String> fileNameTokens) {
     fileNameTokens.add(CONSTANT_DATE);
-    return outputDirectory + joiner.join(fileNameTokens) + FILE_EXTENSION;
+    return joiner.join(fileNameTokens) + FILE_EXTENSION;
   }
 
 }

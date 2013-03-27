@@ -52,6 +52,8 @@ public class MetaFileGenerator {
 
   private static final String LINE_SEPERATOR = "\n";
 
+  private static final String FILE_PATH_TOKEN_SEPERATOR = "/";
+
   private static final String SAMPLE_SCHEMA_NAME = "sample";
 
   private static final String NON_SYSTEM_META_FILE_EXPRESSION = "exp_m";
@@ -74,10 +76,13 @@ public class MetaFileGenerator {
 
   private final MutableDouble uniqueDouble = new MutableDouble(0.0);
 
-  private DataGenerator datagen;
+  private final DataGenerator datagen;
 
-  public MetaFileGenerator(DataGenerator datagen) {
+  private final String outputDirectory;
+
+  public MetaFileGenerator(DataGenerator datagen, String outputDirectory) {
     this.datagen = datagen;
+    this.outputDirectory = outputDirectory;
   }
 
   public void createFile(ResourceWrapper resourceWrapper, FileSchema schema, Integer linesPerForeignKey,
@@ -117,8 +122,9 @@ public class MetaFileGenerator {
     String expName = schemaName.substring(0, schemaName.length() - 2);
     String expType = schemaName.substring(schemaName.length() - 1);
     List<String> fileNameTokens = newArrayList(expName, leadJurisdiction, tumourType, institution, expType, platform);
-    String fileName = SubmissionFileUtils.generateFileName(datagen.getOutputDirectory(), fileNameTokens);
-    File outputFile = new File(fileName);
+    String fileName = SubmissionFileUtils.generateFileName(fileNameTokens);
+    String pathName = outputDirectory + FILE_PATH_TOKEN_SEPERATOR + fileName;
+    File outputFile = new File(pathName);
     checkArgument(outputFile.exists() == false, "A file with the name '%s' already exists.", fileName);
     outputFile.createNewFile();
     return outputFile;

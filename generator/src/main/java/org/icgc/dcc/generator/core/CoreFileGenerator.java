@@ -61,6 +61,8 @@ public class CoreFileGenerator {
 
   private static final String CONTROL_PRIMARY_KEY_FIELD_IDENTIFIER = "controlledSampleTypeID";
 
+  private static final String FILE_PATH_TOKEN_SEPERATOR = "/";
+
   // Essentially the primary key called analyzed_sample_id is not used
   private static final String SAMPLE_TYPE_FIELD_NAME = "analyzed_sample_id";
 
@@ -72,10 +74,13 @@ public class CoreFileGenerator {
 
   private final MutableDouble uniqueDouble = new MutableDouble(0.0);
 
-  private DataGenerator datagen;
+  private final DataGenerator datagen;
 
-  public CoreFileGenerator(DataGenerator datagen) {
+  private final String outputDirectory;
+
+  public CoreFileGenerator(DataGenerator datagen, String outputDirectory) {
     this.datagen = datagen;
+    this.outputDirectory = outputDirectory;
   }
 
   public void createFile(ResourceWrapper resourceWrapper, FileSchema schema, Integer linesPerForeignKey,
@@ -112,16 +117,17 @@ public class CoreFileGenerator {
   private File generateFileName(DataGenerator datagen, FileSchema schema, String leadJurisdiction, String institution,
       String tumourType) throws IOException {
     List<String> fileNameTokens = newArrayList(leadJurisdiction, tumourType, institution, schema.getName());
-    String fileName = SubmissionFileUtils.generateFileName(datagen.getOutputDirectory(), fileNameTokens);
-    File outputFile = new File(fileName);
+    String fileName = SubmissionFileUtils.generateFileName(fileNameTokens);
+    String pathName = outputDirectory + FILE_PATH_TOKEN_SEPERATOR + fileName;
+    File outputFile = new File(pathName);
     checkArgument(outputFile.exists() == false, "A file with the name '%s' already exists.", fileName);
     outputFile.createNewFile();
 
     return outputFile;
   }
 
-  public void populateFile(ResourceWrapper resourceWrapper, FileSchema schema, Integer linesPerForeignKey, Writer writer)
-      throws IOException {
+  private void populateFile(ResourceWrapper resourceWrapper, FileSchema schema, Integer linesPerForeignKey,
+      Writer writer) throws IOException {
     populateFileHeader(schema, writer);
     String schemaName = schema.getName();
     List<Relation> schemaRelations = schema.getRelations();

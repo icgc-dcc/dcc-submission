@@ -24,7 +24,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.lang.mutable.MutableDouble;
@@ -56,13 +55,9 @@ public class DataGenerator {
 
   private final List<PrimaryKey> primaryKeys = newArrayList();
 
-  private Random random;
+  private final Random random;
 
-  private String outputDirectory;
-
-  @SneakyThrows
-  public DataGenerator(String outputDirectory, Long seed) {
-    this.outputDirectory = outputDirectory;
+  public DataGenerator(Long seed) {
     this.random = (seed == null) ? new Random() : new Random(seed);
   }
 
@@ -76,10 +71,6 @@ public class DataGenerator {
 
   public double generateRandomDouble(double end) {
     return this.random.nextDouble() * end;
-  }
-
-  public String getOutputDirectory() {
-    return this.outputDirectory;
   }
 
   public void buildPrimaryKey(FileSchema schema) {

@@ -60,7 +60,7 @@ public class GeneratorConfig {
   private Long seed;
 
   // @JsonProperty
-  // private ArrayList<OptionalFile> optionalFiles = newArrayList();
+  // private List<OptionalFile> optionalFiles = newArrayList();
 
   @JsonProperty
   private List<ExperimentalFile> experimentalFiles = newArrayList();

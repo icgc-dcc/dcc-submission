@@ -58,16 +58,16 @@ public class PrimaryFileGenerator {
 
   private static final String LINE_SEPERATOR = "\n";
 
+  private static final String FILE_PATH_TOKEN_SEPERATOR = "/";
+
   private static final String SSM_SCHEMA_NAME = "ssm_p";
 
   private static final String SIMULATED_DATA_FILE_URL = "org/icgc/dcc/generator/ssmp_simulated.txt";
 
-  private DataGenerator datagen;
-
-  private final List<CodeListTerm> codeListTerms = newArrayList();
-
   private final Set<String> simulatedData = newHashSet("mutation_type", "chromosome", "chromosome_start",
       "chromosome_end", "reference_genome_allele", "control_genotype", "tumour_genotype mutation");
+
+  private final List<CodeListTerm> codeListTerms = newArrayList();
 
   private final MutableLong uniqueId = new MutableLong(0L);
 
@@ -75,8 +75,13 @@ public class PrimaryFileGenerator {
 
   private final MutableDouble uniqueDouble = new MutableDouble(0.0);
 
-  public PrimaryFileGenerator(DataGenerator datagen) {
+  private final DataGenerator datagen;
+
+  private final String outputDirectory;
+
+  public PrimaryFileGenerator(DataGenerator datagen, String outputDirectory) {
     this.datagen = datagen;
+    this.outputDirectory = outputDirectory;
   }
 
   public void createFile(ResourceWrapper resourceWrapper, FileSchema schema, Integer linesPerForeignKey,
@@ -116,16 +121,17 @@ public class PrimaryFileGenerator {
     String expType = schemaName.substring(schemaName.length() - 1);
     List<String> fileNameTokens = newArrayList(expName, leadJurisdiction, tumourType, institution, expType, platform);
 
-    String fileName = SubmissionFileUtils.generateFileName(datagen.getOutputDirectory(), fileNameTokens);
-    File outputFile = new File(fileName);
+    String fileName = SubmissionFileUtils.generateFileName(fileNameTokens);
+    String pathName = outputDirectory + FILE_PATH_TOKEN_SEPERATOR + fileName;
+    File outputFile = new File(pathName);
     checkArgument(outputFile.exists() == false, "A file with the name '%s' already exists.", fileName);
     outputFile.createNewFile();
 
     return outputFile;
   }
 
-  public void populateFile(ResourceWrapper resourceWrapper, FileSchema schema, Integer linesPerForeignKey, Writer writer)
-      throws IOException {
+  private void populateFile(ResourceWrapper resourceWrapper, FileSchema schema, Integer linesPerForeignKey,
+      Writer writer) throws IOException {
     populateFileHeader(schema, writer);
     String schemaName = schema.getName();
     List<Relation> relations = schema.getRelations();

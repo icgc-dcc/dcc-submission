@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
@@ -87,17 +89,30 @@ public class GeneratorService {
 
   public static void checkParameters(String leadJurisdiction, String tumourType, String institution, String platform)
       throws Exception {
-    if(leadJurisdiction.length() != 2) {
-      throw new Exception("The lead jurisdiction is invalid");
-    }
-    if(Integer.parseInt(tumourType) > 31 || Integer.parseInt(tumourType) < 1) {
-      throw new Exception("The tumour type is invalid");
-    }
-    if(Integer.parseInt(institution) > 98 || Integer.parseInt(institution) < 1) {
-      throw new Exception("The insitute is invalid");
-    }
-    if(Integer.parseInt(platform) > 75 || Integer.parseInt(institution) < 1) {
-      throw new Exception("The platform is invalid");
+    checkParameter(
+        leadJurisdiction.length() == 2,
+        "The lead jurisdiction parameter can only be of length 2. Please refer to http://dcc.icgc.org/pages/docs/ICGC_Data_Submission_Manual-0.6c-150512.pdf, for valid lead jurisdction values",
+        "lead jurisdiction", leadJurisdiction);
+    checkParameter(
+        (Integer.parseInt(tumourType) >= 1 && Integer.parseInt(tumourType) <= 31 && tumourType.length() >= 2),
+        "The tumour type parameter can only be a number between 1 and 31 (inclusive) and must be of length 2. Please refer to http://dcc.icgc.org/pages/docs/ICGC_Data_Submission_Manual-0.6c-150512.pdf, for valid lead jurisdction values",
+        "tumour type", tumourType);
+    checkParameter(
+        (Integer.parseInt(institution) >= 1 && Integer.parseInt(institution) <= 98 && institution.length() == 3),
+        "The institution parameter must be a number between 1 and 98 (inclusive) and must of length 3. Please refer to http://dcc.icgc.org/pages/docs/ICGC_Data_Submission_Manual-0.6c-150512.pdf, for valid lead jurisdction values",
+        "institution", leadJurisdiction);
+    checkParameter(
+        (Integer.parseInt(platform) >= 1 && Integer.parseInt(platform) <= 75),
+        "The platform parameter can only be of length 2. Please refer to http://dcc.icgc.org/pages/docs/ICGC_Data_Submission_Manual-0.6c-150512.pdf, for valid lead jurisdction values",
+        "platform", platform);
+
+  }
+
+  public static void checkParameter(boolean expression, @Nullable String errorMessageTemplate,
+      @Nullable Object... errorMessageArgs) throws Exception {
+    if(expression == false) {
+      throw new Exception(String.format("Invalid parameter {%2$ = %3$}. %1$", errorMessageTemplate,
+          errorMessageArgs[0], errorMessageArgs[1]));
     }
   }
 
@@ -107,21 +122,21 @@ public class GeneratorService {
       String tumourType, String institution, String platform, Long seed, ArrayList<OptionalFile> optionalFiles,
       List<ExperimentalFile> experimentalFiles) throws JsonParseException, JsonMappingException, IOException {
 
-    DataGenerator datagen = new DataGenerator(outputDirectory, seed);
+    DataGenerator datagen = new DataGenerator(seed);
 
-    createCoreFiles(resourceWrapper, numberOfDonors, numberOfSpecimensPerDonor, numberOfSamplesPerSpecimen,
-        leadJurisdiction, tumourType, institution, platform, datagen);
+    createCoreFiles(resourceWrapper, outputDirectory, numberOfDonors, numberOfSpecimensPerDonor,
+        numberOfSamplesPerSpecimen, leadJurisdiction, tumourType, institution, platform, datagen);
 
     // createOptionalFiles(resourceWrapper, leadJurisdiction, tumourType, institution, platform, optionalFiles,
     // datagen);
 
-    createExperimentalFiles(resourceWrapper, leadJurisdiction, tumourType, institution, platform, experimentalFiles,
-        datagen);
+    createExperimentalFiles(resourceWrapper, outputDirectory, leadJurisdiction, tumourType, institution, platform,
+        experimentalFiles, datagen);
   }
 
-  private void createExperimentalFiles(ResourceWrapper resourceWrapper, String leadJurisdiction, String tumourType,
-      String institution, String platform, List<ExperimentalFile> experimentalFiles, DataGenerator datagen)
-      throws IOException {
+  private void createExperimentalFiles(ResourceWrapper resourceWrapper, String outputDirectory,
+      String leadJurisdiction, String tumourType, String institution, String platform,
+      List<ExperimentalFile> experimentalFiles, DataGenerator datagen) throws IOException {
     for(ExperimentalFile experimentalFile : experimentalFiles) {
       String fileType = experimentalFile.getFileType();
       String schemaName = experimentalFile.getName() + FILE_NAME_DIVIDER + fileType;
@@ -130,17 +145,17 @@ public class GeneratorService {
       datagen.buildPrimaryKey(resourceWrapper.getSchema(datagen, schemaName));
 
       if(fileType.equals(META_FILE_TYPE)) {
-        createMetaFile(datagen, resourceWrapper, schemaName, numberOfLines, leadJurisdiction, institution, tumourType,
-            platform);
+        createMetaFile(datagen, outputDirectory, resourceWrapper, schemaName, numberOfLines, leadJurisdiction,
+            institution, tumourType, platform);
       } else if(fileType.equals(PRIMARY_FILE_TYPE)) {
-        createPrimaryFile(datagen, resourceWrapper, schemaName, numberOfLines, leadJurisdiction, institution,
-            tumourType, platform);
+        createPrimaryFile(datagen, outputDirectory, resourceWrapper, schemaName, numberOfLines, leadJurisdiction,
+            institution, tumourType, platform);
       } else if(fileType.equals(EXPRESSION_PRIMARY_FILE_TYPE)) {
-        createPrimaryFile(datagen, resourceWrapper, schemaName, numberOfLines, leadJurisdiction, institution,
-            tumourType, platform);
+        createPrimaryFile(datagen, outputDirectory, resourceWrapper, schemaName, numberOfLines, leadJurisdiction,
+            institution, tumourType, platform);
       } else if(fileType.equals(SECONDARY_FILE_TYPE)) {
-        createSecondaryFile(datagen, resourceWrapper, schemaName, numberOfLines, leadJurisdiction, institution,
-            tumourType, platform);
+        createSecondaryFile(datagen, outputDirectory, resourceWrapper, schemaName, numberOfLines, leadJurisdiction,
+            institution, tumourType, platform);
       }
     }
   }
@@ -158,24 +173,24 @@ public class GeneratorService {
     }
   }
 
-  private void createCoreFiles(ResourceWrapper resourceWrapper, Integer numberOfDonors,
+  private void createCoreFiles(ResourceWrapper resourceWrapper, String outputDirectory, Integer numberOfDonors,
       Integer numberOfSpecimensPerDonor, Integer numberOfSamplesPerSpecimen, String leadJurisdiction,
       String tumourType, String institution, String platform, DataGenerator datagen) throws IOException {
-    createCoreFile(datagen, resourceWrapper, DONOR_SCHEMA_NAME, numberOfDonors, leadJurisdiction, institution,
-        tumourType, platform);
-    createCoreFile(datagen, resourceWrapper, SPECIMEN_SCHEMA_NAME, numberOfSpecimensPerDonor, leadJurisdiction,
+    createCoreFile(datagen, outputDirectory, resourceWrapper, DONOR_SCHEMA_NAME, numberOfDonors, leadJurisdiction,
         institution, tumourType, platform);
-    createCoreFile(datagen, resourceWrapper, SAMPLE_SCHEMA_NAME, numberOfSamplesPerSpecimen, leadJurisdiction,
-        institution, tumourType, platform);
+    createCoreFile(datagen, outputDirectory, resourceWrapper, SPECIMEN_SCHEMA_NAME, numberOfSpecimensPerDonor,
+        leadJurisdiction, institution, tumourType, platform);
+    createCoreFile(datagen, outputDirectory, resourceWrapper, SAMPLE_SCHEMA_NAME, numberOfSamplesPerSpecimen,
+        leadJurisdiction, institution, tumourType, platform);
   }
 
-  private static void createCoreFile(DataGenerator datagen, ResourceWrapper resourceWrapper, String schemaName,
-      Integer linesPerForeignKey, String leadJurisdiction, String institution, String tumourType, String platform)
-      throws IOException {
+  private static void createCoreFile(DataGenerator datagen, String outputDirectory, ResourceWrapper resourceWrapper,
+      String schemaName, Integer linesPerForeignKey, String leadJurisdiction, String institution, String tumourType,
+      String platform) throws IOException {
     log.info("Creating {} file", schemaName);
     datagen.buildPrimaryKey(resourceWrapper.getSchema(datagen, schemaName));
     FileSchema schema = resourceWrapper.getSchema(datagen, schemaName);
-    CoreFileGenerator cfg = new CoreFileGenerator(datagen);
+    CoreFileGenerator cfg = new CoreFileGenerator(datagen, outputDirectory);
     cfg.createFile(resourceWrapper, schema, linesPerForeignKey, leadJurisdiction, institution, tumourType, platform);
   }
 
@@ -189,30 +204,30 @@ public class GeneratorService {
         platform);
   }
 
-  private static void createMetaFile(DataGenerator datagen, ResourceWrapper resourceWrapper, String schemaName,
-      Integer linesPerForeignKey, String leadJurisdiction, String institution, String tumourType, String platform)
-      throws IOException {
+  private static void createMetaFile(DataGenerator datagen, String outputDirectory, ResourceWrapper resourceWrapper,
+      String schemaName, Integer linesPerForeignKey, String leadJurisdiction, String institution, String tumourType,
+      String platform) throws IOException {
     log.info("Creating {} file", schemaName);
     FileSchema schema = resourceWrapper.getSchema(datagen, schemaName);
-    MetaFileGenerator mfg = new MetaFileGenerator(datagen);
+    MetaFileGenerator mfg = new MetaFileGenerator(datagen, outputDirectory);
     mfg.createFile(resourceWrapper, schema, linesPerForeignKey, leadJurisdiction, institution, tumourType, platform);
   }
 
-  private static void createPrimaryFile(DataGenerator datagen, ResourceWrapper resourceWrapper, String schemaName,
-      Integer linesPerForeignKey, String leadJurisdiction, String institution, String tumourType, String platform)
-      throws IOException {
+  private static void createPrimaryFile(DataGenerator datagen, String outputDirectory, ResourceWrapper resourceWrapper,
+      String schemaName, Integer linesPerForeignKey, String leadJurisdiction, String institution, String tumourType,
+      String platform) throws IOException {
     log.info("Creating {} file", schemaName);
     FileSchema schema = resourceWrapper.getSchema(datagen, schemaName);
-    PrimaryFileGenerator pfg = new PrimaryFileGenerator(datagen);
+    PrimaryFileGenerator pfg = new PrimaryFileGenerator(datagen, outputDirectory);
     pfg.createFile(resourceWrapper, schema, linesPerForeignKey, leadJurisdiction, institution, tumourType, platform);
   }
 
-  private static void createSecondaryFile(DataGenerator datagen, ResourceWrapper resourceWrapper, String schemaName,
-      Integer linesPerForeignKey, String leadJurisdiction, String institution, String tumourType, String platform)
-      throws IOException {
+  private static void createSecondaryFile(DataGenerator datagen, String outputDirectory,
+      ResourceWrapper resourceWrapper, String schemaName, Integer linesPerForeignKey, String leadJurisdiction,
+      String institution, String tumourType, String platform) throws IOException {
     log.info("Creating {} file", schemaName);
     FileSchema schema = resourceWrapper.getSchema(datagen, schemaName);
-    SecondaryFileGenerator sfg = new SecondaryFileGenerator(datagen);
+    SecondaryFileGenerator sfg = new SecondaryFileGenerator(datagen, outputDirectory);
     sfg.createFile(resourceWrapper, schema, linesPerForeignKey, leadJurisdiction, institution, tumourType, platform);
   }
 }
