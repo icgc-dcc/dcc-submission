@@ -16,15 +16,46 @@
  */
 
 'use strict';
+
 angular.module('app.projects.controllers', ['app.projects.services']);
 
-angular.module('app.projects.controllers').controller('ProjectsController', [ "$scope", 'ProjectsService', "projects", function ($scope, ProjectsService, projects) {
+angular.module('app.projects.controllers').controller('ProjectsController', [ "$scope", 'ProjectsService', "GenesProjectsService", "projects", "gp", "HighchartsService", 'httpService', function ($scope, ProjectsService, GenesProjectsService, projects, gp, HighchartsService, httpService) {
   $scope.projects = projects;
+  $scope.gp = gp;
+
+  $scope.dpspndata = HighchartsService.hits2HCdonut("project", "primary_site", "project_name", projects.hits, "total_donor_count");
+  $scope.dcpndata = HighchartsService.hits2HCdonut("project", "country", "project_name", projects.hits, "total_donor_count");
+
+  $scope.stdata = HighchartsService.hits2HCstacked(gp.hits, 'project.project_name', 'project.affected_donor_count');
 
   $scope.refresh = function () {
-    ProjectsService.query().then(function (response) {
-      $scope.projects = response;
+    ProjectsService.query().then(function (projects) {
+      $scope.projects = projects;
+      $scope.dpspndata = HighchartsService.hits2HCdonut("project", "primary_site", "project_name", projects.hits, "total_donor_count");
+      $scope.dcpndata = HighchartsService.hits2HCdonut("project", "country", "project_name", projects.hits, "total_donor_count");
     });
+    GenesProjectsService.query().then(function (response) {
+      $scope.stdata = HighchartsService.hits2HCstacked(response.hits, 'project.project_name', 'project.affected_donor_count');
+    });
+  };
+
+  var s = httpService.getCurrentSearch();
+  $scope.sort = s.sort ? s.sort : 'total_donor_count';
+  $scope.order = s.order ? s.order : 'desc';
+  $scope.getOrder = function () {
+    if ($scope.order == 'desc') {
+      $scope.order = 'asc';
+    } else {
+      $scope.order = 'desc';
+    }
+    return $scope.order;
+  };
+  $scope.toggleSort = function (header) {
+    var search = httpService.getCurrentSearch();
+    search.sort = $scope.sort = header;
+    search.order = $scope.getOrder();
+    httpService.updateSearch(search);
+    $scope.refresh();
   };
 
   $scope.$on('refresh', $scope.refresh);

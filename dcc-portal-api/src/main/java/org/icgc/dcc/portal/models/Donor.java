@@ -32,7 +32,7 @@ public final class Donor {
   public static final String TYPE = "donors";
 
   public static final ImmutableMap<String, ImmutableList<String>> FACETS = ImmutableMap.of("terms",
-      ImmutableList.of("project_name", "donor_sex", "donor_tumour_stage_at_diagnosis"));
+      ImmutableList.of("project_name", "donor_sex", "primary_site", "donor_tumour_stage_at_diagnosis"));
 
   public static final ImmutableMap<String, ImmutableList<String>> FILTERS = ImmutableMap.of("terms",
       ImmutableList.of("project_name", "donor_sex", "donor_tumour_stage_at_diagnosis"), "ranges",

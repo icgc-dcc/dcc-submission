@@ -19,17 +19,31 @@
 
 angular.module('app.advanced.controllers', []);
 
-angular.module('app.advanced.controllers').controller('AdvancedController', [ "$scope", 'donors', 'genes', 'DonorsService', 'GenesService', function ($scope, donors, genes, DonorsService, GenesService) {
+angular.module('app.advanced.controllers').controller('AdvancedController', [ "$scope", 'donors', 'genes', 'gp', 'DonorsService', 'GenesService', 'HighchartsService', 'GenesProjectsService', function ($scope, donors, genes, gp, DonorsService, GenesService, HighchartsService, GenesProjectsService) {
   $scope.donors = donors;
   $scope.genes = genes;
+  $scope.gp = gp;
+
+  $scope.cdata_genes_gt = HighchartsService.termFacets2HCpie("gene", "gene_type", genes.facets.gene_type.terms);
+  $scope.cdata_donors_p = HighchartsService.termFacets2HCpie("donor", "project_name", donors.facets.project_name.terms);
+  $scope.cdata_donors_ps = HighchartsService.termFacets2HCpie("donor", "primary_site", donors.facets.primary_site.terms);
+  $scope.cdata_donors_t = HighchartsService.termFacets2HCpie("donor", "donor_tumour_stage_at_diagnosis", donors.facets.donor_tumour_stage_at_diagnosis.terms);
+
+  $scope.stdata = HighchartsService.hits2HCstacked(gp.hits, 'project.project_name', 'project.affected_donor_count');
 
   $scope.refresh = function () {
-    console.log('refresh');
     GenesService.query().then(function (response) {
       $scope.genes = response;
+      $scope.cdata_genes_gt = HighchartsService.termFacets2HCpie("gene", "gene_type", response.facets.gene_type.terms);
     });
     DonorsService.query().then(function (response) {
       $scope.donors = response;
+      $scope.cdata_donors_p = HighchartsService.termFacets2HCpie("donor", "project_name", response.facets.project_name.terms);
+      $scope.cdata_donors_ps = HighchartsService.termFacets2HCpie("donor", "primary_site", response.facets.primary_site.terms);
+      $scope.cdata_donors_t = HighchartsService.termFacets2HCpie("donor", "donor_tumour_stage_at_diagnosis", response.facets.donor_tumour_stage_at_diagnosis.terms);
+    });
+    GenesProjectsService.query().then(function (response) {
+      $scope.stdata = HighchartsService.hits2HCstacked(response.hits, 'project.project_name', 'project.affected_donor_count');
     });
   };
 

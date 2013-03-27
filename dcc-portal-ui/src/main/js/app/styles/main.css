@@ -32,6 +32,13 @@ body {
     border: 0;
 }
 
+.table th, .table td {
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .summary .key {
     font-weight: bold;
 }
@@ -186,4 +193,17 @@ textarea.ng-invalid:focus {
 
 #current-group .or {
     color: olive;
+}
+
+.highcharts-container {
+    overflow: visible !important;
+}
+
+.hc-tooltip {
+    background: hsla(360, 100%, 100%, .9);
+    padding: 5px;
+    border-radius: 3px;
+    /*-webkit-box-shadow: 1px 1px 2px #555;
+    -moz-box-shadow: 1px 1px 2px #555;*/
+    box-shadow: 1px 1px 2px #555;
 }

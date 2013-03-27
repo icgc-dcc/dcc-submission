@@ -28,7 +28,20 @@ angular.module('app.genes.models').factory('Genes', ['http', function (http) {
       return http.get('/ws/genes/' + params.gene);
     },
     embQuery: function (project, params) {
-      return http.embQuery('/ws/genes/project/' + project, params);
+      var u = '/ws/genes/projects/';
+      var url = project ? u + project : u;
+      return http.embQuery(url, params);
+    }
+  }
+}]);
+
+angular.module('app.genes.models').factory('GenesProjects', ['http', function (http) {
+  return {
+    query: function () {
+      return http.query('/ws/genes/projects');
+    },
+    get: function (params) {
+      return http.get('/ws/genes/projects/' + params.gene);
     }
   }
 }]);

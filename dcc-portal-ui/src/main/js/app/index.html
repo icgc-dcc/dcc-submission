@@ -93,7 +93,7 @@
         <div id="fadee"></div>
     </div>
 </div>
-<div class="container" ng-view></div>
+<div class="container" style="position:relative" ng-view></div>
 
 <script src="scripts/vendor/jquery-1.9.1.min.js"></script>
 <script src="scripts/vendor/select2.min.js"></script>
@@ -101,12 +101,15 @@
 <script src="scripts/vendor/angular-ui.js"></script>
 <script src="scripts/vendor/ui-bootstrap-0.2.0.js"></script>
 <script src="scripts/vendor/ui-bootstrap-tpls-0.2.0.js"></script>
+<script src="scripts/vendor/highcharts.js"></script>
 
 <!-- build:js scripts/scripts.js -->
 <script src="scripts/app.js"></script>
 <script src="scripts/common/common.js"></script>
 <script src="scripts/common/navigation.js"></script>
-<script src="scripts/common/loading.js"></script>
+<script src="scripts/modules/loading.js"></script>
+<script src="scripts/modules/highcharts/service.js"></script>
+<script src="scripts/modules/highcharts/directives.js"></script>
 <script src="scripts/http/http.js"></script>
 <script src="scripts/http/service.js"></script>
 <script src="scripts/projects/routes.js"></script>

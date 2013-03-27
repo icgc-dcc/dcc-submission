@@ -34,3 +34,15 @@ angular.module('app.genes.services').service('GenesService', ['$q', 'Genes', fun
   };
 
 }]);
+
+
+angular.module('app.genes.services').service('GenesProjectsService', ['$q', 'GenesProjects', function ($q, GenesProjects) {
+
+  this.query = function () {
+    return GenesProjects.query();
+  };
+
+  this.get = function (params) {
+    return GenesProjects.get(params);
+  };
+}]);
