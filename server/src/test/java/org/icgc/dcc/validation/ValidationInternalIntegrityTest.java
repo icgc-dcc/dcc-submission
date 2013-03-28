@@ -51,7 +51,6 @@ import org.icgc.dcc.validation.service.ValidationService;
 import org.icgc.dcc.validation.visitor.UniqueFieldsPlanningVisitor;
 import org.icgc.dcc.validation.visitor.ValueTypePlanningVisitor;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 

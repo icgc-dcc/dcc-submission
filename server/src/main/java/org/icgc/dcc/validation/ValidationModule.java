@@ -36,21 +36,19 @@ import com.google.inject.multibindings.Multibinder;
  */
 public class ValidationModule extends AbstractDccModule {
 
-  private Multibinder<RestrictionType> restrictionTypes;
-
   @Override
   protected void configure() {
     bindService(ValidationQueueManagerService.class);
     bind(ValidationService.class);
     bind(Planner.class).to(DefaultPlanner.class);
     bind(CascadingStrategyFactory.class).toProvider(CascadingStrategyFactoryProvider.class).in(Singleton.class);
-    restrictionTypes = bindRestrictionTypes();
+    bindRestrictionTypes();
   }
 
   /**
    * Any restrictions added in here should also be added in {@link ValidationTestModule} for testing.
    */
-  private Multibinder<RestrictionType> bindRestrictionTypes() {
+  private void bindRestrictionTypes() {
     Multibinder<RestrictionType> types = Multibinder.newSetBinder(binder(), RestrictionType.class);
     bindRestriction(types, DiscreteValuesRestriction.Type.class);
     bindRestriction(types, RangeFieldRestriction.Type.class);
@@ -58,7 +56,6 @@ public class ValidationModule extends AbstractDccModule {
     bindRestriction(types, CodeListRestriction.Type.class);
     bindRestriction(types, RegexRestriction.Type.class);
     requestStaticInjection(ByteOffsetToLineNumber.class);
-    return types;
   }
 
   private void bindRestriction(Multibinder<RestrictionType> types, Class<? extends RestrictionType> type) {
