@@ -17,9 +17,6 @@
  */
 package org.icgc.dcc.genes;
 
-import static java.lang.String.format;
-import static org.fest.assertions.api.Assertions.assertThat;
-
 import java.io.File;
 import java.io.IOException;
 
@@ -37,8 +34,12 @@ import com.github.fge.jsonschema.main.JsonSchemaFactory;
 import com.github.fge.jsonschema.report.ValidationReport;
 import com.github.fge.jsonschema.util.JsonLoader;
 import com.mongodb.DB;
-import com.mongodb.Mongo;
-import com.mongodb.MongoURI;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
+
+import static java.lang.String.format;
+
+import static org.fest.assertions.api.Assertions.assertThat;
 
 public class IntegrationTest {
 
@@ -81,15 +82,15 @@ public class IntegrationTest {
   }
 
   private MongoCollection getGenes(String uri) {
-    MongoURI mongoUri = new MongoURI(uri);
+    MongoClientURI mongoUri = new MongoClientURI(uri);
     Jongo jongo = getJongo(mongoUri);
     MongoCollection genes = jongo.getCollection(mongoUri.getCollection());
 
     return genes;
   }
 
-  private Jongo getJongo(MongoURI mongoUri) {
-    Mongo mongo = embeddedMongo.getMongo();
+  private Jongo getJongo(MongoClientURI mongoUri) {
+    MongoClient mongo = embeddedMongo.getMongo();
     DB db = mongo.getDB(mongoUri.getDatabase());
     Jongo jongo = new Jongo(db);
 

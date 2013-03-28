@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.genes.cli;
 
-import static java.lang.String.format;
-
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -26,14 +24,17 @@ import java.net.UnknownHostException;
 import com.beust.jcommander.IValueValidator;
 import com.beust.jcommander.ParameterException;
 import com.mongodb.Mongo;
-import com.mongodb.MongoURI;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
 
-public class MongoValidator implements IValueValidator<MongoURI> {
+import static java.lang.String.format;
+
+public class MongoValidator implements IValueValidator<MongoClientURI> {
 
   @Override
-  public void validate(String name, MongoURI mongoUri) throws ParameterException {
+  public void validate(String name, MongoClientURI mongoUri) throws ParameterException {
     try {
-      Mongo mongo = new Mongo(mongoUri);
+      Mongo mongo = new MongoClient(mongoUri);
       try {
         // Test connectivity
         Socket socket = mongo.getMongoOptions().socketFactory.createSocket();
@@ -51,7 +52,8 @@ public class MongoValidator implements IValueValidator<MongoURI> {
     }
   }
 
-  private static void parameterException(String name, MongoURI mongoUri, String message) throws ParameterException {
+  private static void parameterException(String name, MongoClientURI mongoUri, String message)
+      throws ParameterException {
     throw new ParameterException(format("Invalid option: %s: %s %s", name, mongoUri, message));
   }
 

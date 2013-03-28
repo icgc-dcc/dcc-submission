@@ -26,7 +26,7 @@ import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
-import com.mongodb.Mongo;
+import com.mongodb.MongoClient;
 
 import de.flapdoodle.embed.mongo.MongodExecutable;
 import de.flapdoodle.embed.mongo.MongodProcess;
@@ -47,7 +47,7 @@ public class EmbeddedMongo implements TestRule {
 
   private MongodConfig mongodConfig;
 
-  private Mongo mongo;
+  private MongoClient mongo;
 
   @Override
   public Statement apply(final Statement base, Description description) {
@@ -71,7 +71,7 @@ public class EmbeddedMongo implements TestRule {
     return mongodConfig.net().getPort();
   }
 
-  public Mongo getMongo() {
+  public MongoClient getMongo() {
     return mongo;
   }
 
@@ -88,7 +88,7 @@ public class EmbeddedMongo implements TestRule {
     mongodConfig = new MongodConfig(Version.Main.V2_3);
     mongodExe = runtime.prepare(mongodConfig);
     mongod = mongodExe.start();
-    mongo = new Mongo("localhost", mongodConfig.net().getPort());
+    mongo = new MongoClient("localhost", mongodConfig.net().getPort());
   }
 
   @SneakyThrows
