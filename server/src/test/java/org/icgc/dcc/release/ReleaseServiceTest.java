@@ -17,13 +17,6 @@
  */
 package org.icgc.dcc.release;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -49,8 +42,16 @@ import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
 import com.google.common.base.Throwables;
 import com.mongodb.Mongo;
+import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
 import com.typesafe.config.Config;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class ReleaseServiceTest {
 
@@ -77,7 +78,7 @@ public class ReleaseServiceTest {
     try {
 
       // use local host as test MongoDB for now
-      Mongo mongo = new Mongo("localhost");
+      Mongo mongo = new MongoClient("localhost");
       Morphia morphia = new Morphia();
       datastore = morphia.createDatastore(mongo, testDbName);
       dccLocking = mock(DccLocking.class);

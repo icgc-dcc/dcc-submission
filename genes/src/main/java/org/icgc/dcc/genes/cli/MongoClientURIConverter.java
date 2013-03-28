@@ -18,13 +18,13 @@
 package org.icgc.dcc.genes.cli;
 
 import com.beust.jcommander.IStringConverter;
-import com.mongodb.MongoURI;
+import com.mongodb.MongoClientURI;
 
-public class MongoURIConverter implements IStringConverter<MongoURI> {
+public class MongoClientURIConverter implements IStringConverter<MongoClientURI> {
 
   @Override
-  public MongoURI convert(String uri) {
-    return new MongoURI(uri);
+  public MongoClientURI convert(String uri) {
+    return new MongoClientURI(uri);
   }
 
 }

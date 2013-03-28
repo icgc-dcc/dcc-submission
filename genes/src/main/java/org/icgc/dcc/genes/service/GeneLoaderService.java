@@ -38,7 +38,8 @@ import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.DB;
 import com.mongodb.Mongo;
-import com.mongodb.MongoURI;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
 
 import de.undercouch.bson4jackson.BsonFactory;
 
@@ -52,7 +53,7 @@ public class GeneLoaderService {
   private final GeneTransformer transformer = new GeneTransformer();
 
   @NonNull
-  private final MongoURI mongoUri;
+  private final MongoClientURI mongoUri;
 
   @SneakyThrows
   public void load(InputStream inputStream) {
@@ -91,11 +92,11 @@ public class GeneLoaderService {
     }
   }
 
-  MongoCollection getTargetCollection(MongoURI mongoUri) throws UnknownHostException {
+  MongoCollection getTargetCollection(MongoClientURI mongoUri) throws UnknownHostException {
     String database = mongoUri.getDatabase();
     String collection = mongoUri.getCollection();
 
-    Mongo mongo = new Mongo(mongoUri);
+    Mongo mongo = new MongoClient(mongoUri);
     DB db = mongo.getDB(database);
     Jongo jongo = new Jongo(db);
 

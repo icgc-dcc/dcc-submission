@@ -17,19 +17,19 @@
  */
 package org.icgc.dcc.genes.cli;
 
-import static com.google.common.base.Strings.isNullOrEmpty;
-import static java.lang.String.format;
-
 import com.beust.jcommander.IParameterValidator;
 import com.beust.jcommander.ParameterException;
-import com.mongodb.MongoURI;
+import com.mongodb.MongoClientURI;
+
+import static com.google.common.base.Strings.isNullOrEmpty;
+import static java.lang.String.format;
 
 public class MongoURIValidator implements IParameterValidator {
 
   @Override
   public void validate(String name, String uri) throws ParameterException {
     try {
-      MongoURI mongoUri = new MongoURI(uri);
+      MongoClientURI mongoUri = new MongoClientURI(uri);
 
       String database = mongoUri.getDatabase();
       if(isNullOrEmpty(database)) {
