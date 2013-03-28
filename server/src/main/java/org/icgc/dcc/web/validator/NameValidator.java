@@ -25,12 +25,21 @@ import java.util.regex.Pattern;
  */
 public class NameValidator {
 
-  public final static String NAME_PATTERN = "^[\\w]{3,}$";
+  public final static String DEFAULT_NAME_PATTERN = "^[\\w]{3,}$";
 
-  public static boolean validate(String name) {
-    Pattern pattern = Pattern.compile(NAME_PATTERN);
+  public final static String PROJECT_ID_PATTERN = "^[\\p{Print}\\.]{3,}$";
+
+  public static boolean validateProjectId(String id) {
+    return validateEntityName(id, PROJECT_ID_PATTERN);
+  }
+
+  public static boolean validateEntityName(String name) {
+    return validateEntityName(name, DEFAULT_NAME_PATTERN);
+  }
+
+  public static boolean validateEntityName(String name, String patternString) {
+    Pattern pattern = Pattern.compile(patternString);
     Matcher matcher = pattern.matcher(name);
-
     return matcher.matches();
   }
 }

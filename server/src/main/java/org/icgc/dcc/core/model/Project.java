@@ -33,7 +33,7 @@ import com.google.common.collect.Lists;
 public class Project extends BaseEntity implements HasName {
 
   @NotBlank
-  @Pattern(regexp = NameValidator.NAME_PATTERN)
+  @Pattern(regexp = NameValidator.PROJECT_ID_PATTERN)
   @Indexed(unique = true)
   protected String key;
 

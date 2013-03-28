@@ -72,7 +72,7 @@ public class ProjectService extends BaseMorphiaService<Project> {
   @SuppressWarnings("all")
   public void addProject(Project project) {
     // check for project key
-    if(!NameValidator.validate(project.getKey())) {
+    if(!NameValidator.validateProjectId(project.getKey())) {
       throw new InvalidNameException(project.getKey());
     }
     // check for duplicate project key

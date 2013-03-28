@@ -52,7 +52,7 @@ import static org.icgc.dcc.release.model.SubmissionState.INVALID;
 public class Release extends BaseEntity implements HasName {
 
   @NotBlank
-  @Pattern(regexp = NameValidator.NAME_PATTERN)
+  @Pattern(regexp = NameValidator.DEFAULT_NAME_PATTERN)
   protected String name;
 
   protected ReleaseState state;

@@ -17,9 +17,6 @@
  */
 package org.icgc.dcc.release;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.collect.Lists.newArrayList;
-
 import java.util.List;
 
 import org.icgc.dcc.core.model.InvalidStateException;
@@ -43,6 +40,9 @@ import com.google.code.morphia.query.Query;
 import com.google.code.morphia.query.UpdateOperations;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Lists.newArrayList;
 
 public class NextRelease extends BaseRelease {
 
@@ -71,7 +71,7 @@ public class NextRelease extends BaseRelease {
     checkArgument(nextReleaseName != null);
 
     // check for next release name
-    if(NameValidator.validate(nextReleaseName) == false) {
+    if(NameValidator.validateEntityName(nextReleaseName) == false) {
       throw new InvalidNameException(nextReleaseName);
     }
 
