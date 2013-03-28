@@ -23,7 +23,6 @@ import com.yammer.dropwizard.jersey.params.IntParam;
 import com.yammer.metrics.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.http.HttpStatus;
-import org.icgc.dcc.portal.repositories.GeneProjectRepository;
 import org.icgc.dcc.portal.repositories.GeneRepository;
 import org.icgc.dcc.portal.request.RequestSearchQuery;
 import org.icgc.dcc.portal.responses.ErrorResponse;
@@ -48,12 +47,9 @@ public class GeneResource {
 
   private final GeneRepository store;
 
-  private final GeneProjectRepository gp;
-
   @Inject
-  public GeneResource(GeneRepository store, GeneProjectRepository gp) {
+  public GeneResource(GeneRepository store) {
     this.store = store;
-    this.gp = gp;
   }
 
   @GET
@@ -90,53 +86,6 @@ public class GeneResource {
       return Response.status(Response.Status.NOT_FOUND)
           .entity(new ErrorResponse(Response.Status.NOT_FOUND, "Gene " + id + " not found.")).build();
     }
-
-    return Response.ok().entity(results).build();
-  }
-
-  @Path("/projects")
-  @GET
-  @Timed
-  @ApiOperation(value = "Find a gene data by project")
-  public final Response findByProjects(
-      @ApiParam(value = "Start index of results", required = false) @QueryParam("from") @DefaultValue("1") IntParam from,
-      @ApiParam(value = "Number of results returned", allowableValues = "range[1,100]", required = false) @QueryParam("size") @DefaultValue("10") IntParam size,
-      @ApiParam(value = "Column to sort results on", defaultValue = DEFAULT_SORT, required = false) @QueryParam("sort") String sort,
-      @ApiParam(value = "Order to sort the column", defaultValue = DEFAULT_ORDER, allowableValues = "asc,desc", required = false) @QueryParam("order") String order,
-      @ApiParam(value = "Filter the search results", required = false) @QueryParam("filters") String filters,
-      @ApiParam(value = "Select fields returned", required = false) @QueryParam("fields") String fields) {
-    String s = sort != null ? sort : DEFAULT_SORT;
-    String o = order != null ? order : DEFAULT_ORDER;
-
-    RequestSearchQuery requestSearchQuery =
-        RequestSearchQuery.builder().filters(filters).from(from.get()).size(size.get()).sort(s).order(o)
-            .build();
-
-    FindAllResults results = gp.findAll(requestSearchQuery);
-
-    FindAllResults filteredResults;
-
-    return Response.ok().entity(results).build();
-  }
-
-  @Path("/projects/{id}")
-  @GET
-  @Timed
-  @ApiOperation(value = "Find a gene data by project")
-  public final Response findByProject(@ApiParam(value = "Project ID") @PathParam("id") String id,
-                                      @ApiParam(value = "Start index of results", required = false) @QueryParam("from") @DefaultValue("1") IntParam from,
-                                      @ApiParam(value = "Number of results returned", allowableValues = "range[1,100]", required = false) @QueryParam("size") @DefaultValue("10") IntParam size,
-                                      @ApiParam(value = "Column to sort results on", defaultValue = DEFAULT_SORT, required = false) @QueryParam("sort") String sort,
-                                      @ApiParam(value = "Order to sort the column", defaultValue = DEFAULT_ORDER, allowableValues = "asc,desc", required = false) @QueryParam("order") String order) {
-    String s = sort != null ? sort : DEFAULT_SORT;
-    String o = order != null ? order : DEFAULT_ORDER;
-    String filters = "{'project': {'project_key': '" + id + "'}}";
-
-    RequestSearchQuery requestSearchQuery =
-        RequestSearchQuery.builder().filters(filters).from(from.get()).size(size.get()).sort(s).order(o)
-            .build();
-
-    FindAllResults results = gp.findAll(requestSearchQuery);
 
     return Response.ok().entity(results).build();
   }

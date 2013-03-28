@@ -45,8 +45,9 @@ public class GeneRepository extends BaseRepository {
             QueryBuilders.customScoreQuery(QueryBuilders.filteredQuery( //
                 QueryBuilders.matchAllQuery(), //
                 getScoreFilters() //
-            )).script("doc['donor.somatic_mutation'].value") //
+            )).script("doc['donor._summary._ssm_count'].value") //
         ).scoreMode("total");
+    //return QueryBuilders.matchAllQuery();
   }
 
   @Override

@@ -28,23 +28,23 @@
             </tr>
             <tr>
                 <td>Name</td>
-                <td>{{gene.fields.description}}</td>
+                <td>{{gene.fields.name}}</td>
             </tr>
             <tr>
                 <td>Synonyms</td>
-                <td>??</td>
+                <td>{{gene.fields.synonyms.join(", ")}}</td>
             </tr>
             <tr>
-                <td>Gene type</td>
-                <td>{{gene.fields.gene_type}}</td>
+                <td>Type</td>
+                <td>{{gene.fields.biotype}}</td>
             </tr>
             <tr>
                 <td>Location</td>
-                <td>{{gene.fields.gene_location}}</td>
+                <td>chr{{gene.fields.chromosome}}:{{gene.fields.start}}-{{gene.fields.end}}</td>
             </tr>
             <tr>
                 <td>Strand</td>
-                <td>{{donor.fields.strand}}</td>
+                <td>{{gene.fields.strand}}</td>
             </tr>
             <tr>
                 <td>Reference Genome</td>
@@ -52,7 +52,7 @@
             </tr>
             <tr>
                 <td>Description</td>
-                <td>{{donor.fields.description}}</td>
+                <td>{{gene.fields.description}}</td>
             </tr>
         </table>
     </div>
@@ -104,11 +104,11 @@
             </tr>
             </thead>
             <tbody>
-            <tr>
-                <td>??</td>
-                <td>??</td>
-                <td>??</td>
-                <td>??</td>
+            <tr ng-repeat="(i,hit) in projects.fields['project.project_name']">
+                <td>{{hit}}</td>
+                <td>{{n=projects.fields['project._summary._ssm_donor_count'][i]}}</td>
+                <td>{{t=projects.fields['project._summary._ssm_tested_donor_count'][i]}}</td>
+                <td>{{((n/t)*100).toFixed(2)}}%</td>
                 <td>??</td>
                 <td>??</td>
                 <td>??</td>

@@ -24,18 +24,23 @@ import com.google.common.collect.ImmutableMap;
 public final class Project {
   public static final String NAME = "project";
 
-  public static final String[] FIELDS = {"project_name", "project_key", "primary_site", "country", "total_donor_count",
-      "ssm_tested_donor_count", "cnsm_tested_donor_count", "exp_tested_donor_count", "meth_tested_donor_count",
-      "pubmed_id"};
+  public static final String[] FIELDS = {"_release_id", "_project_id", "project_name", "project_key", "primary_site", "countries", "_summary._total_donor_count",
+      "_summary._ssm_tested_donor_count", "_summary._cnsm_tested_donor_count", "_summary._exp_tested_donor_count", "_summary._meth_tested_donor_count",
+      "pubmed_ids"};
 
-  public static final String INDEX = "icgc_demo";
+  public static final String INDEX = "dcc-release-indexer";
 
   public static final String TYPE = "projects";
 
   public static final ImmutableMap<String, ImmutableList<String>> FACETS = ImmutableMap.of("terms",
-      ImmutableList.of("project_name", "primary_site", "country", "available_profiling_data"));
+      ImmutableList.of("project_name", "primary_site", "countries", "_summary._available_data_type")
+  );
 
-  public static final ImmutableMap<String, ImmutableList<String>> FILTERS = ImmutableMap.of("terms",
-      ImmutableList.of("project_name", "project_key", "primary_site", "country", "available_profiling_data"), "ranges",
-      ImmutableList.of(""), "locations", ImmutableList.of(""));
+  public static final ImmutableMap<String, ImmutableList<String>> FILTERS = ImmutableMap.of(
+      "terms",
+      ImmutableList.of("_project_id", "project_name", "project_key", "primary_site", "countries", "_summary._available_data_type"),
+      "ranges",
+      ImmutableList.of(""),
+      "locations",
+      ImmutableList.of(""));
 }

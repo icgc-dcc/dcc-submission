@@ -65,7 +65,7 @@ public class GeneResourceTest extends ResourceTest {
 
   @Override
   protected final void setUpResources() {
-    addResource(new GeneResource(store, gp));
+    addResource(new GeneResource(store));
   }
 
   @Test

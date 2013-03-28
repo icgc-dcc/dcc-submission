@@ -22,13 +22,13 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 public final class GeneProject {
-  public static final String NAME = "genes_projects";
+  public static final String NAME = "gene-projects";
 
-  public static final String[] FIELDS = {"symbol", "project.project_name", "project.affected_donor_count", "project.total_donor_count"};
+  public static final String[] FIELDS = {"symbol", "project.project_name", "project._summary._ssm_tested_donor_count", "project._summary._ssm_donor_count"};
 
-  public static final String INDEX = "icgc_demo";
+  public static final String INDEX = "dcc-release-indexer";
 
-  public static final String TYPE = "genes_projects";
+  public static final String TYPE = "gene-projects";
 
   public static final ImmutableMap<String, ImmutableList<String>> FACETS = ImmutableMap.of("terms",
       ImmutableList.of(""));
