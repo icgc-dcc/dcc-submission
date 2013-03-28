@@ -54,7 +54,7 @@ public class MorphiaModule extends AbstractModule {
         try {
           String uri = config.getString("mongo.uri");
           log.info("mongo URI: {}", uri);
-          return new MongoClientURI(uri).connect();
+          return new MongoClient(new MongoClientURI(uri));
         } catch(Exception e) {
           throw new RuntimeException(e);
         }
