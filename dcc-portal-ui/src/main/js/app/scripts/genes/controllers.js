@@ -37,18 +37,27 @@ angular.module('app.genes.controllers').controller('GenesController', [ "$scope"
   $scope.$on('refresh', $scope.refresh);
 }]);
 
-angular.module('app.genes.controllers').controller('GeneController', [ "$scope", "gene", function ($scope, gene) {
+angular.module('app.genes.controllers').controller('GeneController', [ "$scope", "gene", "GenesProjectsService", function ($scope, gene, GenesProjectsService) {
   $scope.gene = gene;
+
+  GenesProjectsService.get(gene.id).then(function (response) {
+    $scope.projects = response;
+  });
+
+  $scope.refresh = function () {
+    GenesProjectsService.get(gene.id).then(function (response) {
+      $scope.projects = response;
+    });
+  };
 }]);
 
-angular.module('app.genes.controllers').controller('EmbGenesController', [ "$scope", 'GenesService', function ($scope, GenesService) {
-  GenesService.embQuery($scope.project.fields.project_key, {}).then(function (response) {
+angular.module('app.genes.controllers').controller('EmbGenesController', [ "$scope", 'GenesProjectsService', function ($scope, GenesProjectsService) {
+  GenesProjectsService.queryByProject($scope.project.id).then(function (response) {
     $scope.genes = response;
   });
 
   $scope.refresh = function () {
-    console.log('refresh');
-    GenesService.query().then(function (response) {
+    GenesProjectsService.queryByProject().then(function (response) {
       $scope.genes = response;
     });
   };

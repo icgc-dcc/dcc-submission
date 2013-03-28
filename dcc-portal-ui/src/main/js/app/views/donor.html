@@ -27,32 +27,28 @@
                 <td>{{donor.id}}</td>
             </tr>
             <tr>
-                <td>Submitter Donor ID name</td>
+                <td>Submitter Donor ID</td>
                 <td>??</td>
             </tr>
             <tr>
                 <td>Cancer Project</td>
-                <td><a href="{{donor.fields.project_key}}">{{donor.fields.project_name}}</a></td>
+                <td><a href="#/projects/{{donor.fields._project_id}}">??</a></td>
             </tr>
             <tr>
                 <td>Cancer Primary Site</td>
-                <td>{{donor.fields.primary_site}}</td>
+                <td>??</td>
             </tr>
             <tr>
                 <td>Gender</td>
                 <td>{{donor.fields.donor_sex}}</td>
             </tr>
             <tr>
-                <td>Tumour stage at diagnosis</td>
-                <td>{{donor.fields.donor_tumour_stage_at_diagnosis}}</td>
-            </tr>
-            <tr>
                 <td>Donor vital status</td>
-                <td>{{donor.fields.donor_}}</td>
+                <td>{{donor.fields.donor_vital_status}}</td>
             </tr>
             <tr>
                 <td>Donor survival time</td>
-                <td>{{donor.fields.donor_}}</td>
+                <td>{{donor.fields.donor_survival_time}}</td>
             </tr>
         </table>
     </div>
@@ -111,23 +107,23 @@
         <table class="table table-bordered table-striped table-condensed">
             <tr>
                 <td>Age at enrollment</td>
-                <td>??</td>
+                <td>{{donor.fields.donor_age_at_enrollment}}</td>
             </tr>
             <tr>
                 <td>Age at last followup</td>
-                <td>??</td>
+                <td>{{donor.fields.donor_age_at_last_followup}}</td>
             </tr>
             <tr>
                 <td>Diagnosis ICD-10 code</td>
-                <td>??</td>
+                <td>{{donor.fields.donor_diagnosis_icd10}}</td>
             </tr>
             <tr>
                 <td>Disease status at last followup</td>
-                <td>??</td>
+                <td>{{donor.fields.disease_status_last_followup}}</td>
             </tr>
             <tr>
                 <td>Interval of last followup</td>
-                <td>??</td>
+                <td>{{donor.fields.donor_interval_of_last_followup}}</td>
             </tr>
         </table>
     </div>
@@ -135,23 +131,23 @@
         <table class="table table-bordered table-striped table-condensed">
             <tr>
                 <td>Tumour stage at diagnosis</td>
-                <td>??</td>
+                <td>{{donor.fields.donor_tumour_stage_at_diagnosis}}</td>
             </tr>
             <tr>
                 <td>Tumour staging system at diagnosis</td>
-                <td>??</td>
+                <td>{{donor.fields.donor_tumour_staging_system_at_diagnosis}}</td>
             </tr>
             <tr>
                 <td>Tumour stage at diagnosis supplemental</td>
-                <td>??</td>
+                <td>{{donor.fields.donor_tumour_stage_at_diagnosis_supplemental}}</td>
             </tr>
             <tr>
                 <td>Relapse type</td>
-                <td>??</td>
+                <td>{{donor.fields.donor_relapse_type}}</td>
             </tr>
             <tr>
                 <td>Relapse interval</td>
-                <td>??</td>
+                <td>{{donor.fields.donor_relapse_interval}}</td>
             </tr>
         </table>
     </div>

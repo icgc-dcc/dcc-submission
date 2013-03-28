@@ -24,8 +24,32 @@ import com.google.common.collect.ImmutableMap;
 public final class Donor {
   public static final String NAME = "donor";
 
-  public static final String[] FIELDS = {"_donor_id", "_project_id", "donor_sex",
-      "donor_survival_time", "donor_age_at_diagnosis", "donor_tumour_stage_at_diagnosis", "_summary._ssm_count", "_summary._cnsm_count", "_summary._sgv_count", "_summary._stsm_count", "_summary._exp_exists", "_summary._jcn_exists", "_summary._meth_exists", "_summary._mirna_exists"};
+  public static final String[] FIELDS = {
+      "_donor_id",
+      "_project_id",
+      "donor_sex",
+      "donor_survival_time",
+      "donor_vital_status",
+      "donor_age_at_diagnosis",
+      "donor_age_at_enrollment",
+      "donor_age_at_last_followup",
+      "donor_diagnosis_icd10",
+      "donor_interval_of_last_followup",
+      "disease_status_last_followup",
+      "donor_tumour_stage_at_diagnosis",
+      "donor_tumour_staging_system_at_diagnosis",
+      "donor_tumour_stage_at_diagnosis_supplemental",
+      "donor_relapse_type",
+      "donor_relapse_interval",
+      "_summary._ssm_count",
+      "_summary._cnsm_count",
+      "_summary._sgv_count",
+      "_summary._stsm_count",
+      "_summary._exp_exists",
+      "_summary._jcn_exists",
+      "_summary._meth_exists",
+      "_summary._mirna_exists"
+  };
 
   public static final String INDEX = "dcc-release-indexer";
 
@@ -38,7 +62,7 @@ public final class Donor {
       "terms",
       ImmutableList.of("donor_sex", "donor_tumour_stage_at_diagnosis", "donor_vital_status", "disease_status_last_followup", "donor_relapse_type"),
       "ranges",
-      ImmutableList.of("age_at_diagnosis", "survival_time", "donor_relapse_interval"),
+      ImmutableList.of("donor_age_at_diagnosis", "donor_survival_time", "donor_relapse_interval"),
       "locations",
       ImmutableList.of(""));
 }

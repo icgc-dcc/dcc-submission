@@ -24,7 +24,16 @@ import com.google.common.collect.ImmutableMap;
 public final class Gene {
   public static final String NAME = "gene";
 
-  public static final String[] FIELDS = {"symbol", "name", "chromosome", "start", "end", "biotype"};
+  public static final String[] FIELDS = {
+      "symbol",
+      "name",
+      "chromosome",
+      "start",
+      "end",
+      "biotype",
+      "strand",
+      "synonyms"
+  };
 
   public static final String INDEX = "dcc-release-indexer";
 

@@ -42,6 +42,10 @@ angular.module('app.genes.services').service('GenesProjectsService', ['$q', 'Gen
     return GenesProjects.query();
   };
 
+  this.queryByProject = function (params) {
+    return GenesProjects.queryByProject(params);
+  };
+
   this.get = function (params) {
     return GenesProjects.get(params);
   };

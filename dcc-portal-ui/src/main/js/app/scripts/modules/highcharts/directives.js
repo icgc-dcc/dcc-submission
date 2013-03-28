@@ -49,8 +49,6 @@ angular.module('highcharts.directives').directive('pie', function () {
         },
         plotOptions: {
           pie: {
-            innerSize: 0,
-            allowPointSelect: true,
             animation: true,
             cursor: 'pointer',
             showInLegend: false,
