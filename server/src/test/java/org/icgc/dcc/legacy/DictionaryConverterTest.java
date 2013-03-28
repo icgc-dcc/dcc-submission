@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.legacy;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.File;
 import java.io.IOException;
 
@@ -29,6 +27,7 @@ import org.apache.commons.io.FileUtils;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +35,8 @@ import org.xml.sax.SAXException;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * 
@@ -61,6 +62,7 @@ public class DictionaryConverterTest {
 
   }
 
+  @Ignore
   @Test
   public void test_dictionaryConverter_compareJSON() throws IOException, XPathExpressionException,
       ParserConfigurationException, SAXException {
