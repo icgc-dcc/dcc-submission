@@ -55,6 +55,7 @@ public final class FieldNames {
   public static final String DONOR_GENE_GENE_ID = "_gene_id";
   public static final String DONOR_GENE_SUMMARY = "_summary";
   public static final String DONOR_PROJECT_ID = "_project_id";
+  public static final String DONOR_PROJECT = "project";
   public static final String DONOR_SPECIMEN = "specimen";
   public static final String DONOR_SPECIMEN_ID = "_specimen_id";
   public static final String DONOR_SAMPLE = "sample";
