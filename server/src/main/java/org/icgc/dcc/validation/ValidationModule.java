@@ -23,6 +23,7 @@ import org.icgc.dcc.validation.report.ByteOffsetToLineNumber;
 import org.icgc.dcc.validation.restriction.CodeListRestriction;
 import org.icgc.dcc.validation.restriction.DiscreteValuesRestriction;
 import org.icgc.dcc.validation.restriction.RangeFieldRestriction;
+import org.icgc.dcc.validation.restriction.RegexRestriction;
 import org.icgc.dcc.validation.restriction.RequiredRestriction;
 import org.icgc.dcc.validation.service.ValidationQueueManagerService;
 import org.icgc.dcc.validation.service.ValidationService;
@@ -35,25 +36,29 @@ import com.google.inject.multibindings.Multibinder;
  */
 public class ValidationModule extends AbstractDccModule {
 
-  private Multibinder<RestrictionType> types;
-
   @Override
   protected void configure() {
     bindService(ValidationQueueManagerService.class);
     bind(ValidationService.class);
     bind(Planner.class).to(DefaultPlanner.class);
     bind(CascadingStrategyFactory.class).toProvider(CascadingStrategyFactoryProvider.class).in(Singleton.class);
+    bindRestrictionTypes();
+  }
 
-    types = Multibinder.newSetBinder(binder(), RestrictionType.class);
-
-    bindRestriction(DiscreteValuesRestriction.Type.class);
-    bindRestriction(RangeFieldRestriction.Type.class);
-    bindRestriction(RequiredRestriction.Type.class);
-    bindRestriction(CodeListRestriction.Type.class);
+  /**
+   * Any restrictions added in here should also be added in {@link ValidationTestModule} for testing.
+   */
+  private void bindRestrictionTypes() {
+    Multibinder<RestrictionType> types = Multibinder.newSetBinder(binder(), RestrictionType.class);
+    bindRestriction(types, DiscreteValuesRestriction.Type.class);
+    bindRestriction(types, RangeFieldRestriction.Type.class);
+    bindRestriction(types, RequiredRestriction.Type.class);
+    bindRestriction(types, CodeListRestriction.Type.class);
+    bindRestriction(types, RegexRestriction.Type.class);
     requestStaticInjection(ByteOffsetToLineNumber.class);
   }
 
-  private void bindRestriction(Class<? extends RestrictionType> type) {
+  private void bindRestriction(Multibinder<RestrictionType> types, Class<? extends RestrictionType> type) {
     types.addBinding().to(type).in(Singleton.class);
   }
 

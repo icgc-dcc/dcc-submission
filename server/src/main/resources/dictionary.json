@@ -902,7 +902,12 @@
       "controlled" : true,
       "label" : "Free text notes concerning donor",
       "name" : "donor_notes",
-      "restrictions" : [ ],
+      "restrictions" : [ {
+        "config" : {
+          "pattern" : "^Note[12]$"
+        },
+        "type" : "regex"
+      } ],
       "summaryType" : null,
       "valueType" : "TEXT"
     } ],

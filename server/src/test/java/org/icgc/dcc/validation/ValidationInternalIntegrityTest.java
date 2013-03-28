@@ -17,11 +17,9 @@
  */
 package org.icgc.dcc.validation;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -60,6 +58,11 @@ import com.google.common.base.Optional;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.inject.Inject;
 import com.mongodb.BasicDBObject;
+
+import static org.icgc.dcc.validation.restriction.RegexRestriction.NAME;
+import static org.icgc.dcc.validation.restriction.RegexRestriction.PARAM;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @RunWith(GuiceJUnitRunner.class)
 @GuiceModules({ ValidationTestModule.class })
@@ -169,6 +172,26 @@ public class ValidationInternalIntegrityTest {
     region.addRestriction(inRestriction);
 
     testErrorType(DiscreteValuesRestriction.NAME);
+
+    resetDictionary();
+  }
+
+  @Test
+  public void test_validate_invalidRegexValues() throws IOException {
+
+    BasicDBObject config = new BasicDBObject();
+    config.put(PARAM, "^T[0-9] N[0-9] M[0-9]$");
+
+    Restriction restriction = new Restriction();
+    restriction.setType(NAME);
+    restriction.setConfig(config);
+
+    FileSchema donor = getFileSchemaByName(dictionary, "donor");
+    Field stage = getFieldByName(donor, "donor_tumour_stage_at_diagnosis");
+    stage.setRestrictions(new ArrayList<Restriction>());
+    stage.addRestriction(restriction);
+
+    testErrorType(NAME);
 
     resetDictionary();
   }
