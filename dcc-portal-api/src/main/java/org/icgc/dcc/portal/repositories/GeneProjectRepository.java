@@ -44,18 +44,16 @@ public class GeneProjectRepository extends BaseRepository {
 
   @Override
   QueryBuilder buildQuery() {
-    /*
+
     return QueryBuilders //
         .nestedQuery(Project.NAME, //
             QueryBuilders.customScoreQuery(QueryBuilders.filteredQuery( //
                 QueryBuilders.matchAllQuery(), //
                 getScoreFilters()
-            )).script("doc['project.affected_donor_count'].value"
+            )).script("doc['project._summary._ssm_donor_count'].value"
                 //    "/doc['project.total_donor_count'].value"
             ) //
         ).scoreMode("total");
-        */
-    return QueryBuilders.matchAllQuery();
   }
 
   @Override
@@ -75,12 +73,10 @@ public class GeneProjectRepository extends BaseRepository {
     AndFilterBuilder geneFilters = FilterBuilders.andFilter();
     System.out.println(geneFilters);
     if (filters.has(Gene.NAME)) {
-      System.out.println("has gene");
       geneFilters
           .add(FilterService.buildAndFilters(Gene.FILTERS, filters.get(Gene.NAME)));
     }
     if (filters.has(Project.NAME)) {
-      System.out.println("has project");
       geneFilters
           .add(FilterService.buildNestedFilter(Project.NAME, FilterService.buildAndFilters(Project.FILTERS, filters.get(Project.NAME))));
     }

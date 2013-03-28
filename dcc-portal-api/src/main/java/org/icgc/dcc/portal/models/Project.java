@@ -38,7 +38,7 @@ public final class Project {
 
   public static final ImmutableMap<String, ImmutableList<String>> FILTERS = ImmutableMap.of(
       "terms",
-      ImmutableList.of("project_name", "project_key", "primary_site", "countries", "_summary._available_data_type"),
+      ImmutableList.of("_project_id", "project_name", "project_key", "primary_site", "countries", "_summary._available_data_type"),
       "ranges",
       ImmutableList.of(""),
       "locations",

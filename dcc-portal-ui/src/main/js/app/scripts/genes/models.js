@@ -41,10 +41,10 @@ angular.module('app.genes.models').factory('GenesProjects', ['http', function (h
       return http.query('/ws/gp/');
     },
     queryByProject: function (params) {
-      return http.get('/ws/gp/project/' + params.project);
+      return http.get('/ws/gp/project/' + params);
     },
     get: function (params) {
-      return http.get('/ws/gp/genes/' + params.gene);
+      return http.get('/ws/gp/genes/' + params);
     }
   }
 }]);

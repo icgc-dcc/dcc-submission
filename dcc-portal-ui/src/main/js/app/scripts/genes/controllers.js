@@ -57,7 +57,7 @@ angular.module('app.genes.controllers').controller('EmbGenesController', [ "$sco
   });
 
   $scope.refresh = function () {
-    GenesProjectsService.queryByProject().then(function (response) {
+    GenesProjectsService.queryByProject($scope.project.id).then(function (response) {
       $scope.genes = response;
     });
   };

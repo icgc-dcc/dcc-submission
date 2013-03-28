@@ -40,14 +40,15 @@ public class DonorRepository extends BaseRepository {
 
   @Override
   QueryBuilder buildQuery() {
-    /*return QueryBuilders //
+
+    return QueryBuilders //
         .nestedQuery(Gene.NAME, //
             QueryBuilders.customScoreQuery(QueryBuilders.filteredQuery( //
                 QueryBuilders.matchAllQuery(), //
                 getScoreFilters()
-            )).script("doc['gene.somatic_mutation'].value") //
-        ).scoreMode("total");*/
-    return QueryBuilders.matchAllQuery();
+            )).script("doc['gene._summary._ssm_count'].value") //
+        ).scoreMode("total");
+    //return QueryBuilders.matchAllQuery();
   }
 
   @Override

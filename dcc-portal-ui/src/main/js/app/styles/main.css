@@ -91,9 +91,9 @@ h2 small {
 
 h3 {
     font-size: 18px;
-    line-height: 20px;
+    line-height: 30px;
     font-weight: normal;
-    margin: 0;
+    margin: 5px 0;
 }
 
 a {

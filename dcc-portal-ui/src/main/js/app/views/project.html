@@ -14,7 +14,11 @@
                 <td>{{project.fields.project_name}}</td>
             </tr>
             <tr>
-                <td>Cancer Type</td>
+                <td>Tumour Type</td>
+                <td>??</td>
+            </tr>
+            <tr>
+                <td>Tumour Subtype</td>
                 <td>??</td>
             </tr>
             <tr>
@@ -22,12 +26,31 @@
                 <td>{{project.fields.primary_site}}</td>
             </tr>
             <tr>
-                <td>Country</td>
+                <td>Countries</td>
                 <td>{{project.fields.countries.join(", ")}}</td>
             </tr>
+        </table>
+        <h3>Experimental Analyses</h3>
+        <table class="table table-bordered table-striped table-condensed">
             <tr>
-                <td>Total number of donors</td>
-                <td>{{project.fields['_summary._total_donor_count']}}</td>
+                <td>Whole genome sequencing</td>
+                <td>?? donors</td>
+            </tr>
+            <tr>
+                <td>Whole transcriptome sequencing</td>
+                <td>?? donors</td>
+            </tr>
+            <tr>
+                <td>Bisulfite-Seq</td>
+                <td>?? donors</td>
+            </tr>
+            <tr>
+                <td>RNA-Seq</td>
+                <td>?? donors</td>
+            </tr>
+            <tr>
+                <td>miRNA-Seq</td>
+                <td>?? donors</td>
             </tr>
         </table>
     </div>
@@ -35,7 +58,7 @@
         <table class="table table-bordered table-striped table-condensed">
             <tr>
                 <td>Clinical Data</td>
-                <td colspan="4">??</td>
+                <td colspan="4">{{project.fields['_summary._total_donor_count']}}</td>
             </tr>
             <tr>
                 <td>Small mutations</td>
@@ -47,34 +70,36 @@
             <tr>
                 <td>Copy number alterations</td>
                 <td>Somatic</td>
-                <td>??</td>
+                <td>NA</td>
                 <td>Germline</td>
-                <td>??</td>
+                <td>NA</td>
             </tr>
             <tr>
                 <td>Structural rearrangements</td>
                 <td>Somatic</td>
-                <td>10,000</td>
+                <td>NA</td>
                 <td>Germline</td>
-                <td>10,000</td>
+                <td>NA</td>
             </tr>
             <tr>
                 <td>DNA methylation</td>
-                <td colspan="4">??</td>
+                <td colspan="4">NA</td>
             </tr>
             <tr>
                 <td>Gene expression</td>
-                <td colspan="4">??</td>
+                <td colspan="4">NA</td>
             </tr>
             <tr>
                 <td>miRNA</td>
-                <td colspan="4">??</td>
+                <td colspan="4">NA</td>
             </tr>
             <tr>
                 <td>Exon junction</td>
-                <td colspan="4">??</td>
+                <td colspan="4">NA</td>
             </tr>
         </table>
+        <button class="btn btn-primary">View Available Raw Sequence Data</button>
+        <button class="btn btn-success pull-right">Download Data</button>
     </div>
 </div>
 <div ng-controller="EmbDonorsController" class="row-fluid">
@@ -195,3 +220,34 @@
         </tbody>
     </table>
 </div>
+
+<div class="row-fluid">
+    <h2>Available Raw Sequence Data</h2>
+    <table class="table table-bordered table-striped table-condensed">
+        <thead>
+        <tr>
+            <th>Donor ID</th>
+            <th>Specimen ID</th>
+            <th>Specimen Type</th>
+            <th>Sample ID</th>
+            <th>Raw sequence repo</th>
+            <th>Library strategy</th>
+            <th>BAM file access point</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="seq in sequences.hits">
+            <td><a href="#/donors/{{seq.fields._donor_id}}">{{seq.fields._donor_id}}</a></td>
+            <td><a href="#/genes/{{gene.fields.ensembl_gene_id}}">{{gene.fields.symbol}}</a></td>
+            <td>??</td>
+            <td><a href="#/genes/{{gene.fields.ensembl_gene_id}}">{{gene.fields.symbol}}</a></td>
+            <td>??</td>
+            <td>??</td>
+            <td><a href="#/genes/{{gene.fields.ensembl_gene_id}}">{{gene.fields.symbol}}</a></td>
+        </tr>
+        <tr ui-if="!mutations.hits">
+            <td colspan="10"><i class="icon-spinner icon-spin"></i> Fetching mutations...</td>
+        </tr>
+        </tbody>
+    </table>
+</div> 
