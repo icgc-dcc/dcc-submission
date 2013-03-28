@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.validation;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import java.util.List;
 import java.util.Set;
 
@@ -37,6 +35,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
+
+import static com.google.common.base.Preconditions.checkArgument;
 
 public class DefaultPlanner implements Planner {
 

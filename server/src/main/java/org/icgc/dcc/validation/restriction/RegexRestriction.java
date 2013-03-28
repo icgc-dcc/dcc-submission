@@ -46,7 +46,7 @@ import static org.icgc.dcc.validation.ValidationErrorCode.REGEX_ERROR;
 
 public class RegexRestriction implements InternalPlanElement {
 
-  public static final String NAME = "regex";
+  public static final String NAME = "regex"; // TODO: this really should go in an enum
 
   public static final String DESCRIPTION = "Regex that values must match.";
 

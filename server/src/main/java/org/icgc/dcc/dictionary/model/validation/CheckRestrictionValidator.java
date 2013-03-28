@@ -15,59 +15,61 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.dictionary.model;
+package org.icgc.dcc.dictionary.model.validation;
 
-import java.io.Serializable;
+import java.util.regex.PatternSyntaxException;
 
-import org.hibernate.validator.constraints.NotBlank;
-import org.icgc.dcc.dictionary.model.validation.CheckRestriction;
-import org.icgc.dcc.dictionary.visitor.DictionaryElement;
-import org.icgc.dcc.dictionary.visitor.DictionaryVisitor;
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
 
-import com.google.code.morphia.annotations.Embedded;
+import org.icgc.dcc.dictionary.model.Restriction;
+
 import com.mongodb.BasicDBObject;
 
+import static java.util.regex.Pattern.compile;
+import static org.icgc.dcc.validation.restriction.RegexRestriction.NAME;
+import static org.icgc.dcc.validation.restriction.RegexRestriction.PARAM;
+
 /**
- * Describes a restriction that applies to some {@code Field}(s)
- * 
- * TODO: possibly to some file schemata too in the future
+ * Really just laid the ground here for DCC-904.
+ * <p>
+ * TODO: use interface instead of Restriction directly
  */
-@Embedded
-@CheckRestriction
-public class Restriction implements DictionaryElement, Serializable {
+public class CheckRestrictionValidator implements ConstraintValidator<CheckRestriction, Restriction> {
 
-  public static final String CONFIG_VALUE_SEPARATOR = ","; // simple key-value pair for now, so the value can hold a
-                                                           // comma-separated list of values
-
-  @NotBlank
-  private String type; // TODO: enforce provided (DCC-904) + make enum? predefined all restrictions + one custom?
-
-  // TODO: enforce that if codelist, a name is provided (DCC-904)
-  private BasicDBObject config;
-
-  public Restriction() {
-    super();
+  @Override
+  public void initialize(CheckRestriction constraintAnnotation) {
   }
 
   @Override
-  public void accept(DictionaryVisitor dictionaryVisitor) {
-    dictionaryVisitor.visit(this);
-  }
+  public boolean isValid(Restriction restriction, ConstraintValidatorContext constraintContext) {
 
-  public String getType() {
-    return type;
+    // TODO: address properly instead of nesting (DCC-904)
+    if(restriction != null) {
+      String type = restriction.getType();
+      if(type != null) {
+        if(NAME.equals(type)) { // TODO: this really should go in an enum
+          BasicDBObject config = restriction.getConfig();
+          Object object = config.get(PARAM);
+          if(object instanceof String) {
+            String pattern = (String) object;
+            try {
+              compile(pattern);
+            } catch(PatternSyntaxException e) { // must be a pattern that compiles
+              return false;
+            }
+            return true;
+          } else { // must be a String if "pattern"
+            return false;
+          }
+        } else { // TODO: other types
+          return true;
+        }
+      } else { // type is null
+        return false;
+      }
+    } else { // no restrictions
+      return true;
+    }
   }
-
-  public void setType(String type) {
-    this.type = type;
-  }
-
-  public BasicDBObject getConfig() {
-    return config;
-  }
-
-  public void setConfig(BasicDBObject config) {
-    this.config = config;
-  }
-
 }

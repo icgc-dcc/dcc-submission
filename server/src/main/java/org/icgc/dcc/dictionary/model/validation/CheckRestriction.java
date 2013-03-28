@@ -15,43 +15,27 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.validation;
+package org.icgc.dcc.dictionary.model.validation;
 
-import org.icgc.dcc.core.AbstractDccModule;
-import org.icgc.dcc.dictionary.DictionaryService;
-import org.icgc.dcc.validation.restriction.CodeListRestriction;
-import org.icgc.dcc.validation.restriction.DiscreteValuesRestriction;
-import org.icgc.dcc.validation.restriction.RangeFieldRestriction;
-import org.icgc.dcc.validation.restriction.RegexRestriction;
-import org.icgc.dcc.validation.restriction.RequiredRestriction;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
-import com.google.inject.Singleton;
-import com.google.inject.multibindings.Multibinder;
+import javax.validation.Constraint;
+import javax.validation.Payload;
 
-import static org.mockito.Mockito.mock;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-/**
- * Any restrictions added in here would likely have been added to {@link ValidationModule} for normal run.
- */
-public class ValidationTestModule extends AbstractDccModule {
+@Target({ TYPE })
+@Retention(RUNTIME)
+@Constraint(validatedBy = CheckRestrictionValidator.class)
+@Documented
+public @interface CheckRestriction {
 
-  private Multibinder<RestrictionType> types;
+  String message() default "Restriction config must consistent with restriction type"; // TODO: parameterize (DCC-904)
 
-  @Override
-  protected void configure() {
-    bind(DictionaryService.class).toInstance(mock(DictionaryService.class));
+  Class<?>[] groups() default {};
 
-    bind(Planner.class).to(DefaultPlanner.class);
-    types = Multibinder.newSetBinder(binder(), RestrictionType.class);
-
-    bindRestriction(DiscreteValuesRestriction.Type.class);
-    bindRestriction(RegexRestriction.Type.class);
-    bindRestriction(RangeFieldRestriction.Type.class);
-    bindRestriction(RequiredRestriction.Type.class);
-    bindRestriction(CodeListRestriction.Type.class);
-  }
-
-  private void bindRestriction(Class<? extends RestrictionType> type) {
-    types.addBinding().to(type).in(Singleton.class);
-  }
+  Class<? extends Payload>[] payload() default {};
 }

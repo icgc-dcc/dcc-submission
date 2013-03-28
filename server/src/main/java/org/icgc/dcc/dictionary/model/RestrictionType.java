@@ -15,43 +15,26 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.validation;
-
-import org.icgc.dcc.core.AbstractDccModule;
-import org.icgc.dcc.dictionary.DictionaryService;
-import org.icgc.dcc.validation.restriction.CodeListRestriction;
-import org.icgc.dcc.validation.restriction.DiscreteValuesRestriction;
-import org.icgc.dcc.validation.restriction.RangeFieldRestriction;
-import org.icgc.dcc.validation.restriction.RegexRestriction;
-import org.icgc.dcc.validation.restriction.RequiredRestriction;
-
-import com.google.inject.Singleton;
-import com.google.inject.multibindings.Multibinder;
-
-import static org.mockito.Mockito.mock;
+package org.icgc.dcc.dictionary.model;
 
 /**
- * Any restrictions added in here would likely have been added to {@link ValidationModule} for normal run.
+ * TODO:
  */
-public class ValidationTestModule extends AbstractDccModule {
+public enum RestrictionType {
 
-  private Multibinder<RestrictionType> types;
+  // @formatter:off
+  REGEX ("regex"),
+  IN ("in"), // TODO: more
+  ;
+  //@formatter:on
 
-  @Override
-  protected void configure() {
-    bind(DictionaryService.class).toInstance(mock(DictionaryService.class));
+  private String name;
 
-    bind(Planner.class).to(DefaultPlanner.class);
-    types = Multibinder.newSetBinder(binder(), RestrictionType.class);
-
-    bindRestriction(DiscreteValuesRestriction.Type.class);
-    bindRestriction(RegexRestriction.Type.class);
-    bindRestriction(RangeFieldRestriction.Type.class);
-    bindRestriction(RequiredRestriction.Type.class);
-    bindRestriction(CodeListRestriction.Type.class);
+  private RestrictionType(String name) {
+    this.name = name;
   }
 
-  private void bindRestriction(Class<? extends RestrictionType> type) {
-    types.addBinding().to(type).in(Singleton.class);
+  public String getName() {
+    return name;
   }
 }

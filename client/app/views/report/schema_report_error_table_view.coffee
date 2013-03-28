@@ -51,7 +51,14 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       description: (source) ->
         """
         Values do not match any of the following allowed values for
-        this field: #{source.parameters?.EXPECTED}
+        this field: <em>#{source.parameters?.EXPECTED}</em>
+        """
+    REGEX_ERROR:
+      name: "Invalid value"
+      description: (source) ->
+        """
+        Values do not match the regular expression set for
+        this field: <em>#{source.parameters?.EXPECTED}</em>
         """
     DUPLICATE_HEADER_ERROR:
       name: "Duplicate field name"
