@@ -7,6 +7,8 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
   <artifactId>dcc-genes</artifactId>
+  <name>${project.artifactId}</name>
+  <description>${project.name}</description>
   <repositories>
     <!-- Parent pom bootstrap -->
     <repository>
@@ -62,7 +64,7 @@
 
     <!-- Testing - DCC -->
     <dependency>
-      <groupId>org.icgc.dcc</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>dcc-test</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
@@ -72,7 +74,6 @@
     <plugins>
       <!-- Package -->
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
         <configuration>
           <createDependencyReducedPom>false</createDependencyReducedPom>
