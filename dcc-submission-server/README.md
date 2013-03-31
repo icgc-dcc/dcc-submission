@@ -1,21 +1,23 @@
-ICGC DCC Data Submission Server
+ICGC DCC - Submission Server
 ===
 
-Development Instructions
+Web, REST and SFTP server for the data submission sub-system. 
+
+Build
 ---
 
-Clone the repository
+	mvn
 
-	git clone https://github.com/icgc-dcc/data-submission.git
+
+Development
+---
 
 Start the server
 
-	cd data-submission/server
+	cd dcc/dcc-submission-server
 	mvn exec:java
 
-Server Development
----
+To see the client interface, point your browser to [http://localhost:5380/](http://localhost:5380/)
+	
 
-Point your browser to [http://localhost:5380/](http://localhost:5380/)
-to see the client interface.
 
