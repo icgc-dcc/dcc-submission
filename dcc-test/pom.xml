@@ -7,6 +7,8 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
   <artifactId>dcc-test</artifactId>
+  <name>${project.artifactId}</name>
+  <description>${project.name}</description>
   <repositories>
     <!-- Parent pom bootstrap -->
     <repository>
@@ -17,7 +19,7 @@
   <dependencies>
     <!-- DCC -->
     <dependency>
-      <groupId>org.icgc.dcc</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>dcc-core</artifactId>
       <version>${project.version}</version>
     </dependency>
