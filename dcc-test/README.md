@@ -1,7 +1,7 @@
-ICGC DCC Tests
+ICGC DCC - Test
 ===
 
-Common classes for tests within DCC projects
+Common classes for tests within DCC projects.
 
 Build
 ---

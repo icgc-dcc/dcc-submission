@@ -1,4 +1,4 @@
-ICGC DCC Gene Loader
+ICGC DCC - Gene Model Loader
 ===
 
 Genes model loader that reads a MongoDB dump of the Heliotrope gene model (`genes.bson`) and inserts a transformed version into the DCC `dcc-genome` MongoDB database.

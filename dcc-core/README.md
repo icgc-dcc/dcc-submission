@@ -1,4 +1,4 @@
-ICGC DCC Core
+ICGC DCC - Core
 ===
 
 Common classes for DCC projects
