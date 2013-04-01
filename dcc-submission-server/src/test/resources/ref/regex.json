@@ -1,0 +1,12 @@
+{
+  "offset" : 2,
+  "errors" : [ {
+    "code" : "REGEX_ERROR",
+    "columnNames" : [ "donor_tumour_stage_at_diagnosis" ],
+    "value" : "A2 N2 M0",
+    "line" : 2,
+    "parameters" : {
+      "EXPECTED" : "^T[0-9] N[0-9] M[0-9]$"
+    }
+  } ]
+}
