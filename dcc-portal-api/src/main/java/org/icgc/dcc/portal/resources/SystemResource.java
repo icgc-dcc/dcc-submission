@@ -17,33 +17,33 @@
 
 package org.icgc.dcc.portal.resources;
 
-import com.google.inject.Inject;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import lombok.extern.slf4j.Slf4j;
-import org.icgc.dcc.portal.health.ElasticSearchHealthCheck;
-import org.icgc.dcc.portal.health.MongoHealthCheck;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
-import java.util.HashMap;
-import java.util.Map;
 
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import com.google.inject.Inject;
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
+
+import org.icgc.dcc.portal.health.ElasticSearchHealthCheck;
+import org.icgc.dcc.portal.health.MongoHealthCheck;
 
 @Path("/system")
 @Produces(APPLICATION_JSON)
 @Consumes(APPLICATION_JSON)
 @Api(value = "/system", description = "Operations about system status")
-@Slf4j
 public class SystemResource {
 
   private final ElasticSearchHealthCheck esHealth;
 
-  private MongoHealthCheck mongoHealthCheck;
+  private final MongoHealthCheck mongoHealthCheck;
 
   @Inject
   public SystemResource(ElasticSearchHealthCheck esHealth, MongoHealthCheck mongoHealthCheck) {

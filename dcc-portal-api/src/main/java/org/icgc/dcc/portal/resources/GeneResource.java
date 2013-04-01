@@ -17,28 +17,38 @@
 
 package org.icgc.dcc.portal.resources;
 
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response;
+
+import org.eclipse.jetty.http.HttpStatus;
+
 import com.google.inject.Inject;
-import com.wordnik.swagger.annotations.*;
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiError;
+import com.wordnik.swagger.annotations.ApiErrors;
+import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiParam;
 import com.yammer.dropwizard.jersey.params.IntParam;
 import com.yammer.metrics.annotation.Timed;
-import lombok.extern.slf4j.Slf4j;
-import org.eclipse.jetty.http.HttpStatus;
+
 import org.icgc.dcc.portal.repositories.GeneRepository;
 import org.icgc.dcc.portal.request.RequestSearchQuery;
 import org.icgc.dcc.portal.responses.ErrorResponse;
 import org.icgc.dcc.portal.results.FindAllResults;
 import org.icgc.dcc.portal.results.FindResults;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.Response;
-
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-
 @Path("/genes")
 @Produces(APPLICATION_JSON)
 @Consumes(APPLICATION_JSON)
 @Api(value = "/genes", description = "Operations about genes")
-@Slf4j
 public class GeneResource {
 
   private static final String DEFAULT_SORT = "_score";

@@ -17,13 +17,12 @@
 
 package org.icgc.dcc.portal.repositories;
 
-import com.google.inject.Inject;
-import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.QueryBuilders;
 
-@Slf4j
+import com.google.inject.Inject;
+
 public class FuzzyRepository {
 
   private final static String INDEX = "icgc_test54"; // This should probably be set in a config
