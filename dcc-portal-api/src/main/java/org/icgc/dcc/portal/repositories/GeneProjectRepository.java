@@ -1,10 +1,10 @@
 /*
  * Copyright 2013(c) The Ontario Institute for Cancer Research. All rights reserved.
- *
+ * 
  * This program and the accompanying materials are made available under the terms of the GNU Public
  * License v3.0. You should have received a copy of the GNU General Public License along with this
  * program. If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
  * FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
@@ -17,19 +17,23 @@
 
 package org.icgc.dcc.portal.repositories;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.google.inject.Inject;
-import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.index.query.*;
+import org.elasticsearch.index.query.AndFilterBuilder;
+import org.elasticsearch.index.query.FilterBuilder;
+import org.elasticsearch.index.query.FilterBuilders;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.google.inject.Inject;
+
 import org.icgc.dcc.portal.models.Gene;
 import org.icgc.dcc.portal.models.GeneProject;
 import org.icgc.dcc.portal.models.Project;
 import org.icgc.dcc.portal.request.RequestSearchQuery;
 import org.icgc.dcc.portal.services.FilterService;
 
-@Slf4j
 public class GeneProjectRepository extends BaseRepository {
 
   @Inject
@@ -49,10 +53,9 @@ public class GeneProjectRepository extends BaseRepository {
         .nestedQuery(Project.NAME, //
             QueryBuilders.customScoreQuery(QueryBuilders.filteredQuery( //
                 QueryBuilders.matchAllQuery(), //
-                getScoreFilters()
-            )).script("doc['project._summary._ssm_donor_count'].value"
-                //    "/doc['project.total_donor_count'].value"
-            ) //
+                getScoreFilters())).script("doc['project._summary._ssm_donor_count'].value"
+            // "/doc['project.total_donor_count'].value"
+                ) //
         ).scoreMode("total");
   }
 
@@ -60,8 +63,8 @@ public class GeneProjectRepository extends BaseRepository {
   FilterBuilder buildScoreFilters(JsonNode filters) {
     if (filters.has(Project.NAME)) {
       AndFilterBuilder score = FilterBuilders.andFilter();
-      score
-          .add(FilterService.buildNestedFilter(Project.NAME, FilterService.buildAndFilters(Project.FILTERS, filters.get(Project.NAME))));
+      score.add(FilterService.buildNestedFilter(Project.NAME,
+          FilterService.buildAndFilters(Project.FILTERS, filters.get(Project.NAME))));
       return score;
     }
 
@@ -73,12 +76,11 @@ public class GeneProjectRepository extends BaseRepository {
     AndFilterBuilder geneFilters = FilterBuilders.andFilter();
     System.out.println(geneFilters);
     if (filters.has(Gene.NAME)) {
-      geneFilters
-          .add(FilterService.buildAndFilters(Gene.FILTERS, filters.get(Gene.NAME)));
+      geneFilters.add(FilterService.buildAndFilters(Gene.FILTERS, filters.get(Gene.NAME)));
     }
     if (filters.has(Project.NAME)) {
-      geneFilters
-          .add(FilterService.buildNestedFilter(Project.NAME, FilterService.buildAndFilters(Project.FILTERS, filters.get(Project.NAME))));
+      geneFilters.add(FilterService.buildNestedFilter(Project.NAME,
+          FilterService.buildAndFilters(Project.FILTERS, filters.get(Project.NAME))));
     }
     return geneFilters;
   }

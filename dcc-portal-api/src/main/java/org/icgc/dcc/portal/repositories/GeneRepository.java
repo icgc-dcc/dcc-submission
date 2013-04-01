@@ -17,20 +17,24 @@
 
 package org.icgc.dcc.portal.repositories;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.google.inject.Inject;
-import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.index.query.*;
+import org.elasticsearch.index.query.AndFilterBuilder;
+import org.elasticsearch.index.query.FilterBuilder;
+import org.elasticsearch.index.query.FilterBuilders;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.facet.FacetBuilders;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.google.inject.Inject;
+
 import org.icgc.dcc.portal.models.Donor;
 import org.icgc.dcc.portal.models.Gene;
 import org.icgc.dcc.portal.models.Mutation;
 import org.icgc.dcc.portal.request.RequestSearchQuery;
 import org.icgc.dcc.portal.services.FilterService;
 
-@Slf4j
 public class GeneRepository extends BaseRepository {
 
   @Inject
@@ -45,17 +49,17 @@ public class GeneRepository extends BaseRepository {
             QueryBuilders.customScoreQuery(QueryBuilders.filteredQuery( //
                 QueryBuilders.matchAllQuery(), //
                 getScoreFilters() //
-            )).script("doc['donor._summary._ssm_count'].value") //
+                )).script("doc['donor._summary._ssm_count'].value") //
         ).scoreMode("total");
-    //return QueryBuilders.matchAllQuery();
+    // return QueryBuilders.matchAllQuery();
   }
 
   @Override
   FilterBuilder buildScoreFilters(JsonNode filters) {
     if (filters.has(Donor.NAME)) {
       AndFilterBuilder scoreFilters = FilterBuilders.andFilter();
-      scoreFilters
-          .add(FilterService.buildNestedFilter(Donor.NAME, FilterService.buildAndFilters(Donor.FILTERS, filters.get(Donor.NAME))));
+      scoreFilters.add(FilterService.buildNestedFilter(Donor.NAME,
+          FilterService.buildAndFilters(Donor.FILTERS, filters.get(Donor.NAME))));
       return scoreFilters;
     }
 
@@ -67,12 +71,11 @@ public class GeneRepository extends BaseRepository {
     AndFilterBuilder geneFilters = FilterBuilders.andFilter();
 
     if (filters.has(Gene.NAME)) {
-      geneFilters
-          .add(FilterService.buildAndFilters(Gene.FILTERS, filters.get(Gene.NAME)));
+      geneFilters.add(FilterService.buildAndFilters(Gene.FILTERS, filters.get(Gene.NAME)));
     }
     if (filters.has(Donor.NAME)) {
-      geneFilters
-          .add(FilterService.buildNestedFilter(Donor.NAME, FilterService.buildAndFilters(Donor.FILTERS, filters.get(Donor.NAME))));
+      geneFilters.add(FilterService.buildNestedFilter(Donor.NAME,
+          FilterService.buildAndFilters(Donor.FILTERS, filters.get(Donor.NAME))));
     }
     if (filters.has(Mutation.NAME)) {
       geneFilters.add(FilterService.buildNestedFilter(Mutation.NAME,
@@ -82,10 +85,12 @@ public class GeneRepository extends BaseRepository {
   }
 
 
+  @Override
   SearchRequestBuilder addFacets(SearchRequestBuilder s, RequestSearchQuery requestSearchQuery) {
     for (String facet : Gene.FACETS.get("terms")) {
       s.addFacet(FacetBuilders.termsFacet(facet).field(facet)
-          .facetFilter(setFacetFilter(Gene.NAME, facet, requestSearchQuery.getFilters())).size(Integer.MAX_VALUE).global(true));
+          .facetFilter(setFacetFilter(Gene.NAME, facet, requestSearchQuery.getFilters())).size(Integer.MAX_VALUE)
+          .global(true));
     }
     return s;
   }

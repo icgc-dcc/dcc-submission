@@ -17,17 +17,23 @@
 
 package org.icgc.dcc.portal.resources;
 
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response;
+
 import com.google.inject.Inject;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 import com.yammer.metrics.annotation.Timed;
+
 import org.icgc.dcc.portal.repositories.FuzzyRepository;
-
-import javax.ws.rs.*;
-import javax.ws.rs.core.Response;
-
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
 @Path("/text")
 @Produces(APPLICATION_JSON)
@@ -35,6 +41,7 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 @Api(value = "/text", description = "Text text")
 public class SearchResource {
 
+  @SuppressWarnings("unused")
   private final FuzzyRepository store;
 
   @Inject
@@ -50,6 +57,9 @@ public class SearchResource {
       @ApiParam(value = "Start index of results", required = false) @QueryParam("from") @DefaultValue("1") int from,
       @ApiParam(value = "Number of results returned", allowableValues = "range[1,100]", required = false) @QueryParam("size") @DefaultValue("10") int size) {
 
+    // TODO: Implement
+
     return Response.ok().build();
   }
+
 }

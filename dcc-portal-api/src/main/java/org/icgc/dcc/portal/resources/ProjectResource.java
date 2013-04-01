@@ -17,29 +17,40 @@
 
 package org.icgc.dcc.portal.resources;
 
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+
+import java.io.IOException;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response;
+
+import org.eclipse.jetty.http.HttpStatus;
+
 import com.google.inject.Inject;
-import com.wordnik.swagger.annotations.*;
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiError;
+import com.wordnik.swagger.annotations.ApiErrors;
+import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiParam;
 import com.yammer.dropwizard.jersey.params.IntParam;
 import com.yammer.metrics.annotation.Timed;
-import lombok.extern.slf4j.Slf4j;
-import org.eclipse.jetty.http.HttpStatus;
+
 import org.icgc.dcc.portal.repositories.ProjectRepository;
 import org.icgc.dcc.portal.request.RequestSearchQuery;
 import org.icgc.dcc.portal.responses.ErrorResponse;
 import org.icgc.dcc.portal.results.FindAllResults;
 import org.icgc.dcc.portal.results.FindResults;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.Response;
-import java.io.IOException;
-
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-
 @Path("/projects")
 @Produces(APPLICATION_JSON)
 @Consumes(APPLICATION_JSON)
 @Api(value = "/projects", description = "Operations about projects")
-@Slf4j
 public class ProjectResource {
 
   private static final String DEFAULT_SORT = "_summary._total_donor_count";
