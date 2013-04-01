@@ -17,11 +17,14 @@
 
 package org.icgc.dcc.portal;
 
+import org.junit.Test;
+
 public class DataPortalServiceTest {
 
-  // @Test
-  public void testMain() throws Exception {
+  @Test
+  synchronized public void testMain() throws Exception {
     DataPortalService.main("server", "settings.yml");
+    wait();
   }
 
 }

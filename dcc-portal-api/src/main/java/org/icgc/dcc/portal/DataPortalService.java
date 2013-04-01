@@ -17,6 +17,17 @@
 
 package org.icgc.dcc.portal;
 
+import static java.lang.String.format;
+import static org.apache.commons.lang.StringUtils.join;
+import static org.apache.commons.lang.StringUtils.repeat;
+
+import java.io.File;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
+import java.util.List;
+
+import lombok.extern.slf4j.Slf4j;
+
 import com.bazaarvoice.dropwizard.redirect.RedirectBundle;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -26,20 +37,12 @@ import com.sun.jersey.api.core.ResourceConfig;
 import com.yammer.dropwizard.Service;
 import com.yammer.dropwizard.config.Bootstrap;
 import com.yammer.dropwizard.config.Environment;
-import lombok.extern.slf4j.Slf4j;
+
 import org.icgc.dcc.portal.bundles.SwaggerBundle;
 import org.icgc.dcc.portal.core.VersionUtils;
 import org.icgc.dcc.portal.filters.EtagFilter;
 import org.icgc.dcc.portal.filters.GetNotFoundResourceFilter;
 import org.icgc.dcc.portal.filters.VersionFilter;
-
-import java.io.File;
-import java.lang.management.ManagementFactory;
-import java.lang.management.RuntimeMXBean;
-import java.util.List;
-
-import static org.apache.commons.lang.StringUtils.join;
-import static org.apache.commons.lang.StringUtils.repeat;
 
 @Slf4j
 public class DataPortalService extends Service<DataPortalConfiguration> {
@@ -72,7 +75,7 @@ public class DataPortalService extends Service<DataPortalConfiguration> {
     RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
     List<String> inputArguments = runtime.getInputArguments();
 
-    return String.format("java %s -jar %s %s", join(inputArguments, SPACE), getJarName(), join(args, SPACE));
+    return format("java %s -jar %s %s", join(inputArguments, SPACE), getJarName(), join(args, SPACE));
   }
 
   @Override
@@ -101,14 +104,9 @@ public class DataPortalService extends Service<DataPortalConfiguration> {
    * @return
    */
   private GuiceBundle<DataPortalConfiguration> createGuiceBundle(Bootstrap<DataPortalConfiguration> bootstrap) {
-    GuiceBundle<DataPortalConfiguration> bundle =
-        new GuiceBundle.Builder<DataPortalConfiguration>().addModule(new DataPortalModule())
-            .setConfigClass(DataPortalConfiguration.class).enableAutoConfig(PACKAGE).build();
-
-    // See https://github.com/codahale/dropwizard/issues/237
-    bundle.initialize(bootstrap);
-
-    return bundle;
+    return new GuiceBundle.Builder<DataPortalConfiguration>() //
+        .addModule(new DataPortalModule()).setConfigClass(DataPortalConfiguration.class) //
+        .enableAutoConfig(PACKAGE).build();
   }
 
   /**
@@ -117,7 +115,7 @@ public class DataPortalService extends Service<DataPortalConfiguration> {
    * @return
    */
   private RedirectBundle createRedirectBundle() {
-    return new RedirectBundle(ImmutableMap.<String, String>builder().put("/docs", "/docs/").build());
+    return new RedirectBundle(ImmutableMap.of("/docs", "/docs/"));
   }
 
 }
