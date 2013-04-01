@@ -23,7 +23,7 @@ public class DataPortalServiceTest {
 
   @Test
   synchronized public void testMain() throws Exception {
-    DataPortalService.main("server", "settings.yml");
+    DataPortalService.main("server", "src/main/conf/settings.yml");
     wait();
   }
 
