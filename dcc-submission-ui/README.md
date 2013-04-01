@@ -1,24 +1,17 @@
-ICGC DCC Data Submission Client
+ICGC DCC - Submission UI
 ===
 
-Development Instructions
----
-
-Clone the repository
-
-	git clone https://github.com/icgc-dcc/data-submission.git
-
-Client Development
+Development
 ---
 
 Start brunch (in another console)
 
-	cd data-submission/client
+	cd dcc/dcc-submission-ui
 	brunch w -s
 
 Start the proxy (in yet another console)
 
-	cd data-submission/client
+	cd dcc/dcc-submission-ui
 	cake proxy
 
 Point your browser to [http://localhost:3334/](http://localhost:3334/)
