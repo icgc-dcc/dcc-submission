@@ -34,7 +34,7 @@ import org.elasticsearch.search.sort.SortOrder;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.Sets;
+import com.google.common.collect.Sets.SetView;
 import com.google.inject.Inject;
 
 import org.icgc.dcc.portal.request.RequestSearchQuery;
@@ -111,7 +111,7 @@ public abstract class BaseRepository {
 
   private String[] allowedFields(String[] searchedFields) {
     if (searchedFields.length != 0) {
-      Sets.SetView<String> intersection = intersection(newHashSet(getFields()), newHashSet(searchedFields));
+      SetView<String> intersection = intersection(newHashSet(getFields()), newHashSet(searchedFields));
       return intersection.toArray(new String[intersection.size()]);
     }
 

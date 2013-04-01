@@ -17,10 +17,15 @@
 
 package org.icgc.dcc.portal.resources;
 
+import static com.google.common.base.Objects.firstNonNull;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static javax.ws.rs.core.Response.ok;
+import static javax.ws.rs.core.Response.status;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 
 import java.io.IOException;
 
+import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -31,6 +36,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
 import org.eclipse.jetty.http.HttpStatus;
+import org.hibernate.validator.constraints.NotEmpty;
 
 import com.google.inject.Inject;
 import com.wordnik.swagger.annotations.Api;
@@ -67,23 +73,32 @@ public class MutationResource {
   @GET
   @Timed
   @ApiOperation(value = "Retrieves a list of mutations")
-  public final Response findAll(
-      @ApiParam(value = "Start index of results", required = false) @QueryParam("from") @DefaultValue("1") IntParam from,
-      @ApiParam(value = "Number of results returned", allowableValues = "range[1,100]", required = false) @QueryParam("size") @DefaultValue("10") IntParam size,
-      @ApiParam(value = "Column to sort results on", defaultValue = DEFAULT_SORT, required = false) @QueryParam("sort") String sort,
-      @ApiParam(value = "Order to sort the column", defaultValue = DEFAULT_ORDER, allowableValues = "asc,desc", required = false) @QueryParam("order") String order,
-      @ApiParam(value = "Filter the search results", required = false) @QueryParam("filters") String filters,
-      @ApiParam(value = "Select fields returned", required = false) @QueryParam("fields") String fields) {
-    String s = sort != null ? sort : DEFAULT_SORT;
-    String o = order != null ? order : DEFAULT_ORDER;
+  public final FindAllResults findAll(
+      @ApiParam(value = "Start index of results", required = false) @QueryParam("from") @DefaultValue("1")//
+      IntParam from, //
+      @ApiParam(value = "Number of results returned", allowableValues = "range[1,100]", required = false) @QueryParam("size") @DefaultValue("10")//
+      IntParam size, //
+      @ApiParam(value = "Column to sort results on", defaultValue = DEFAULT_SORT, required = false) @QueryParam("sort")//
+      String sort, //
+      @ApiParam(value = "Order to sort the column", defaultValue = DEFAULT_ORDER, allowableValues = "asc,desc", required = false) @QueryParam("order")//
+      String order, //
+      @ApiParam(value = "Filter the search results", required = false) @QueryParam("filters")//
+      String filters, //
+      @ApiParam(value = "Select fields returned", required = false) @QueryParam("fields")//
+      String fields) {
+    String s = firstNonNull(sort, DEFAULT_SORT);
+    String o = firstNonNull(order, DEFAULT_ORDER);
 
-    RequestSearchQuery requestSearchQuery =
-        RequestSearchQuery.builder().filters(filters).fields(fields).from(from.get()).size(size.get()).sort(s).order(o)
-            .build();
+    RequestSearchQuery requestSearchQuery = RequestSearchQuery.builder()//
+        .filters(filters)//
+        .fields(fields)//
+        .from(from.get())//
+        .size(size.get())//
+        .sort(s)//
+        .order(o)//
+        .build();
 
-    FindAllResults results = store.findAll(requestSearchQuery);
-
-    return Response.ok().entity(results).build();
+    return store.findAll(requestSearchQuery);
   }
 
   @Path("/{id}")
@@ -91,14 +106,16 @@ public class MutationResource {
   @Timed
   @ApiOperation(value = "Find a gene by id", notes = "If a mutation does not exist with the specified id an error will be returned")
   @ApiErrors(value = {@ApiError(code = HttpStatus.NOT_FOUND_404, reason = "Mutation not found")})
-  public final Response find(@ApiParam(value = "Mutation ID") @PathParam("id") String id) throws IOException {
+  public final Response find(//
+      @ApiParam(value = "Mutation ID") @Valid @NotEmpty @PathParam("id")//
+      String id) throws IOException {
     FindResults results = store.find(id);
 
     if (results.getFields() == null) {
-      return Response.status(Response.Status.NOT_FOUND)
-          .entity(new ErrorResponse(Response.Status.NOT_FOUND, "Mutation " + id + " not found.")).build();
+      return status(NOT_FOUND).entity(new ErrorResponse(NOT_FOUND, "Mutation " + id + " not found.")).build();
     }
 
-    return Response.ok().entity(results).build();
+    return ok().entity(results).build();
   }
+
 }

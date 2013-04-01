@@ -19,10 +19,7 @@ package org.icgc.dcc.portal.repositories;
 
 import static org.elasticsearch.index.query.FilterBuilders.andFilter;
 import static org.elasticsearch.index.query.FilterBuilders.matchAllFilter;
-import static org.elasticsearch.index.query.QueryBuilders.customScoreQuery;
-import static org.elasticsearch.index.query.QueryBuilders.filteredQuery;
 import static org.elasticsearch.index.query.QueryBuilders.matchAllQuery;
-import static org.elasticsearch.index.query.QueryBuilders.nestedQuery;
 
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.client.Client;
@@ -48,12 +45,7 @@ public class MutationRepository extends BaseRepository {
 
   @Override
   QueryBuilder buildQuery() {
-    return nestedQuery(Gene.NAME, //
-        customScoreQuery(filteredQuery( //
-            matchAllQuery(), //
-            getScoreFilters())) //
-            .script("doc['gene.somatic_mutation'].value") //
-    ).scoreMode("total");
+    return matchAllQuery();
   }
 
   @Override

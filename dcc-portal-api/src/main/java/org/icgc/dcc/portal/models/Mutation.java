@@ -21,12 +21,14 @@ package org.icgc.dcc.portal.models;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import org.icgc.dcc.portal.DataPortalConfiguration;
+
 public final class Mutation {
   public static final String NAME = "mutation";
 
-  public static final String[] FIELDS = {};
+  public static final String[] FIELDS = {"ssm_occurrence"};
 
-  public static final String INDEX = "icgc_demo";
+  public static final String INDEX = DataPortalConfiguration.INDEX_NAME;
 
   public static final String TYPE = "mutations";
 

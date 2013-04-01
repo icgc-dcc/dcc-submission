@@ -17,23 +17,28 @@
 
 package org.icgc.dcc.portal;
 
+import javax.validation.Valid;
+
+import lombok.Getter;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.yammer.dropwizard.config.Configuration;
-import lombok.Getter;
+
 import org.icgc.dcc.portal.configurations.ElasticSearchConfiguration;
 import org.icgc.dcc.portal.configurations.MongoDbConfiguration;
-
-import javax.validation.Valid;
 
 @Getter
 public class DataPortalConfiguration extends Configuration {
 
-  @Valid
-  @JsonProperty
-  private MongoDbConfiguration mongo = new MongoDbConfiguration();
+  // TODO: Make dynamic
+  public static final String INDEX_NAME = "dcc-release-release5";
 
   @Valid
   @JsonProperty
-  private ElasticSearchConfiguration elastic = new ElasticSearchConfiguration();
+  private final MongoDbConfiguration mongo = new MongoDbConfiguration();
+
+  @Valid
+  @JsonProperty
+  private final ElasticSearchConfiguration elastic = new ElasticSearchConfiguration();
 
 }
