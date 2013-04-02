@@ -32,8 +32,9 @@ public final class Mutation {
 
   public static final String TYPE = "mutations";
 
-  public static final ImmutableMap<String, ImmutableList<String>> FACETS = ImmutableMap.of("terms",
-      ImmutableList.of(""));
+  public static final ImmutableMap<String, ImmutableList<String>> FACETS = //
+      ImmutableMap.of( //
+          "terms", ImmutableList.of(""));
 
   public static final ImmutableMap<String, ImmutableList<String>> FILTERS = //
       ImmutableMap.of( //

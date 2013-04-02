@@ -17,20 +17,25 @@
 
 package org.icgc.dcc.portal.services;
 
+import static org.icgc.dcc.portal.core.JsonUtils.MAPPER;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.elasticsearch.index.query.AndFilterBuilder;
+import org.elasticsearch.index.query.FilterBuilder;
+import org.elasticsearch.index.query.FilterBuilders;
+import org.elasticsearch.index.query.NestedFilterBuilder;
+import org.elasticsearch.index.query.NumericRangeFilterBuilder;
+import org.elasticsearch.index.query.OrFilterBuilder;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import org.elasticsearch.index.query.*;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.icgc.dcc.portal.core.JsonUtils.MAPPER;
 
 public class FilterService {
-
 
   private static final TypeReference<ArrayList<String>> TYPE_REF = new TypeReference<ArrayList<String>>() {};
 

@@ -17,32 +17,41 @@
 
 package org.icgc.dcc.portal.core;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.icgc.dcc.portal.responses.ErrorResponse;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE;
+import static javax.ws.rs.core.Response.status;
 
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.net.URLDecoder;
 
-public final class JsonUtils {
-  public static ObjectMapper MAPPER = new ObjectMapper();
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
 
-  private JsonUtils() {}
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.icgc.dcc.portal.responses.ErrorResponse;
+
+public final class JsonUtils {
+
+  public static final ObjectMapper MAPPER = new ObjectMapper() //
+      .configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true) //
+      .configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
 
   public static JsonNode readRequestString(String filters) {
     String wrappedFilters = filters.replaceFirst("^\\{?", "{").replaceFirst("}?$", "}");
     try {
-      return MAPPER.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true)
-          .configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true)
-          .readValue(URLDecoder.decode(wrappedFilters, "UTF-8"), JsonNode.class);
+      String json = URLDecoder.decode(wrappedFilters, "UTF-8");
+
+      // MAPPER.readTree(json)?
+      return MAPPER.readValue(json, JsonNode.class);
     } catch (IOException e) {
-      throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST)
-          .entity(new ErrorResponse(Response.Status.BAD_REQUEST, e)).type(MediaType.APPLICATION_JSON_TYPE).build());
+      throw new WebApplicationException(status(Response.Status.BAD_REQUEST) //
+          .entity(new ErrorResponse(Response.Status.BAD_REQUEST, e)) //
+          .type(APPLICATION_JSON_TYPE).build());
     }
   }
+
+  private JsonUtils() {}
 
 }
