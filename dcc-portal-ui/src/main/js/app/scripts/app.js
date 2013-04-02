@@ -42,7 +42,13 @@ angular.module('app').config(['$routeProvider', '$locationProvider', function ($
 
 angular.module('app.controllers', []);
 
-angular.module('app.controllers').controller('ApplicationController', [ "$rootScope", function ($rootScope) {
+angular.module('app.controllers').controller('ApplicationController', [ "$rootScope", "$scope", "ProjectsService", "HighchartsService", function ($rootScope, $scope, ProjectsService, HighchartsService) {
+  ProjectsService.query().then(function (projects) {
+    $scope.projects = projects;
+    $scope.dpspndata = HighchartsService.hits2HCdonut("project", "primary_site", "project_name", projects.hits, "_summary._total_donor_count");
+  });
+
+
   $rootScope.$on("$routeChangeStart", function (event, next, current) {
     console.log("$routeChangeStart")
   });

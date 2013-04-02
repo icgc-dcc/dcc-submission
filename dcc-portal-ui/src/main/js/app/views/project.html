@@ -2,8 +2,8 @@
     <small>PROJECT</small>
     {{project.fields.project_name}}
 </h1>
-<div class="row-fluid">
-    <div class="span6">
+<div class="row">
+    <div class="col-span-6">
         <table class="table table-bordered table-striped table-condensed">
             <tr>
                 <td>Project ID</td>
@@ -54,7 +54,7 @@
             </tr>
         </table>
     </div>
-    <div class="span6">
+    <div class="col-span-6">
         <table class="table table-bordered table-striped table-condensed">
             <tr>
                 <td>Clinical Data</td>
@@ -98,156 +98,164 @@
                 <td colspan="4">NA</td>
             </tr>
         </table>
-        <button class="btn btn-primary">View Available Raw Sequence Data</button>
-        <button class="btn btn-success pull-right">Download Data</button>
+        <div class="row">
+            <span class="col-span-6"><button class="btn btn-primary">View Raw Sequence Data</button></span>
+            <span class="col-span-6 text-right pull-right"><button class="btn btn-success">Download Data</button></span>
+        </div>
     </div>
 </div>
-<div ng-controller="EmbDonorsController" class="row-fluid">
-    <h2 id="donors">Donors</h2>
-    <table class="table table-bordered table-striped table-condensed">
-        <thead>
-        <tr>
-            <th rowspan="2">Donor ID</th>
-            <th rowspan="2">Gender</th>
-            <th colspan="2">Diagnosis</th>
-            <th rowspan="2">Survival time<br>(days)</th>
-            <th rowspan="2">Analyses</th>
-            <th rowspan="2">Mutations</th>
-            <th rowspan="2">CNSM</th>
-            <th rowspan="2">SSM</th>
-            <th rowspan="2">Methylation</th>
-            <th rowspan="2">Expression</th>
-            <th rowspan="2">Mutated Genes</th>
-        </tr>
-        <tr class="subhead">
-            <th>Age</th>
-            <th>Tumor Stage</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr ng-repeat="donor in donors.hits">
-            <td><a href="#/donors/{{donor.id}}">{{donor.fields._donor_id}}</a></td>
-            <td>{{donor.fields.donor_sex}}</td>
-            <td style="text-align: right">{{donor.fields.donor_age_at_diagnosis}}</td>
-            <td>{{donor.fields.donor_tumour_stage_at_diagnosis}}</td>
-            <td style="text-align: right">{{donor.fields.donor_survival_time}}</td>
-            <td style="text-align: right">??</td>
-            <td style="text-align: right">??</td>
-            <td style="text-align: right">{{donor.fields['_summary._cnsm_count']}}</td>
-            <td style="text-align: right">{{donor.fields['_summary._ssm_count']}}</td>
-            <td style="text-align: center">
-                <i ng-show="donor.fields['_summary._meth_exists']" class="icon-ok text-success"></i>
-                <i ng-hide="donor.fields['_summary._meth_exists']" class="icon-remove text-error"></i>
-            </td>
-            <td style="text-align: center">
-                <i ng-show="donor.fields['_summary._exp_exists']" class="icon-ok text-success"></i>
-                <i ng-hide="donor.fields['_summary._exp_exists']" class="icon-remove text-error"></i>
-            </td>
-            <td style="text-align: right">{{donor.score}}</td>
-        </tr>
-        <tr ng-hide="donors.hits">
-            <td colspan="10">No results found.</td>
-        </tr>
-        </tbody>
-    </table>
+<div ng-controller="EmbDonorsController" class="row">
+    <div class="col-span-12">
+        <h2 id="donors">Donors</h2>
+        <table class="table table-bordered table-striped table-condensed">
+            <thead>
+            <tr>
+                <th rowspan="2">Donor ID</th>
+                <th rowspan="2">Gender</th>
+                <th colspan="2">Diagnosis</th>
+                <th rowspan="2">Survival time<br>(days)</th>
+                <th rowspan="2">Analyses</th>
+                <th rowspan="2">Mutations</th>
+                <th rowspan="2">CNSM</th>
+                <th rowspan="2">SSM</th>
+                <th rowspan="2">Methylation</th>
+                <th rowspan="2">Expression</th>
+                <th rowspan="2">Mutated Genes</th>
+            </tr>
+            <tr class="subhead">
+                <th>Age</th>
+                <th>Tumor Stage</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="donor in donors.hits">
+                <td><a href="#/donors/{{donor.id}}">{{donor.fields._donor_id}}</a></td>
+                <td>{{donor.fields.donor_sex}}</td>
+                <td style="text-align: right">{{donor.fields.donor_age_at_diagnosis}}</td>
+                <td>{{donor.fields.donor_tumour_stage_at_diagnosis}}</td>
+                <td style="text-align: right">{{donor.fields.donor_survival_time}}</td>
+                <td style="text-align: right">??</td>
+                <td style="text-align: right">??</td>
+                <td style="text-align: right">{{donor.fields['_summary._cnsm_count']}}</td>
+                <td style="text-align: right">{{donor.fields['_summary._ssm_count']}}</td>
+                <td style="text-align: center">
+                    <i ng-show="donor.fields['_summary._meth_exists']" class="icon-ok text-success"></i>
+                    <i ng-hide="donor.fields['_summary._meth_exists']" class="icon-remove text-error"></i>
+                </td>
+                <td style="text-align: center">
+                    <i ng-show="donor.fields['_summary._exp_exists']" class="icon-ok text-success"></i>
+                    <i ng-hide="donor.fields['_summary._exp_exists']" class="icon-remove text-error"></i>
+                </td>
+                <td style="text-align: right">{{donor.score}}</td>
+            </tr>
+            <tr ng-hide="donors.hits">
+                <td colspan="10">No results found.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
-<div ng-controller="EmbGenesController" class="row-fluid">
-    <h2 id="genes">Mutated Genes</h2>
-    <table class="table table-bordered table-striped table-condensed">
-        <thead>
-        <tr>
-            <th>gene</th>
-            <th>affected donors</th>
-            <th>donors tested</th>
-            <th>percentage affected</th>
-            <th>MulSig score (Q-value)</th>
-            <th>Number of mutations</th>
-            <th>Number of mutation occurrences</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr ng-repeat="gene in genes.hits">
-            <td><a href="#/genes/{{gene.id}}">{{gene.fields.symbol}}</a></td>
-            <td ng-init="i=gene.fields['project.project_name'].indexOf(project.fields.project_name)">
-                {{ad=gene.fields['project._summary._ssm_donor_count'][i]}}
-            </td>
-            <td>{{td=gene.fields['project._summary._ssm_tested_donor_count'][i]}}</td>
-            <td>{{ad/td * 100 | number:2}} %</td>
-            <td>??</td>
-            <td>??</td>
-            <td>??</td>
-        </tr>
-        <tr ui-if="!genes.hits">
-            <td colspan="8"><i class="icon-spinner icon-spin"></i> Fetching donors...</td>
-        </tr>
-        </tbody>
-    </table>
+<div ng-controller="EmbGenesController" class="row">
+    <div class="col-span-12"><h2 id="genes">Mutated Genes</h2>
+        <table class="table table-bordered table-striped table-condensed">
+            <thead>
+            <tr>
+                <th>gene</th>
+                <th>affected donors</th>
+                <th>donors tested</th>
+                <th>percentage affected</th>
+                <th>MulSig score (Q-value)</th>
+                <th>Number of mutations</th>
+                <th>Number of mutation occurrences</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="gene in genes.hits">
+                <td><a href="#/genes/{{gene.id}}">{{gene.fields.symbol}}</a></td>
+                <td ng-init="i=gene.fields['project.project_name'].indexOf(project.fields.project_name)">
+                    {{ad=gene.fields['project._summary._ssm_donor_count'][i]}}
+                </td>
+                <td>{{td=gene.fields['project._summary._ssm_tested_donor_count'][i]}}</td>
+                <td>{{ad/td * 100 | number:2}} %</td>
+                <td>??</td>
+                <td>??</td>
+                <td>??</td>
+            </tr>
+            <tr ui-if="!genes.hits">
+                <td colspan="8"><i class="icon-spinner icon-spin"></i> Fetching donors...</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
-<div class="row-fluid">
-    <h2>Mutations</h2>
-    <table class="table table-bordered table-striped table-condensed">
-        <thead>
-        <tr>
-            <th>Mutation ID</th>
-            <th>DNA Change</th>
-            <th>Mutation Type</th>
-            <th>Gene</th>
-            <th>AA Change</th>
-            <th>Consequence</th>
-            <th>Protein domain</th>
-            <th>Number of affected Donors</th>
-            <th>Percentage of mutated Donors</th>
-            <th>Occurrences in other Cancer Projects</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr ng-repeat="mutation in mutations.hits">
-            <td><a href="#/genes/{{gene.fields.ensembl_gene_id}}">{{gene.fields.symbol}}</a></td>
-            <td>??</td>
-            <td>??</td>
-            <td>??</td>
-            <td>??</td>
-            <td>??</td>
-            <td>??</td>
-            <td>??</td>
-            <td>??</td>
-            <td>??</td>
-            <td>??</td>
-        </tr>
-        <tr ui-if="!mutations.hits">
-            <td colspan="10"><i class="icon-spinner icon-spin"></i> Fetching mutations...</td>
-        </tr>
-        </tbody>
-    </table>
+<div class="row">
+    <div class="col-span-12">
+        <h2>Mutations</h2>
+        <table class="table table-bordered table-striped table-condensed">
+            <thead>
+            <tr>
+                <th>Mutation ID</th>
+                <th>DNA Change</th>
+                <th>Mutation Type</th>
+                <th>Gene</th>
+                <th>AA Change</th>
+                <th>Consequence</th>
+                <th>Protein domain</th>
+                <th>Number of affected Donors</th>
+                <th>Percentage of mutated Donors</th>
+                <th>Occurrences in other Cancer Projects</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="mutation in mutations.hits">
+                <td><a href="#/genes/{{gene.fields.ensembl_gene_id}}">{{gene.fields.symbol}}</a></td>
+                <td>??</td>
+                <td>??</td>
+                <td>??</td>
+                <td>??</td>
+                <td>??</td>
+                <td>??</td>
+                <td>??</td>
+                <td>??</td>
+                <td>??</td>
+                <td>??</td>
+            </tr>
+            <tr ui-if="!mutations.hits">
+                <td colspan="10"><i class="icon-spinner icon-spin"></i> Fetching mutations...</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
-
-<div class="row-fluid">
-    <h2>Available Raw Sequence Data</h2>
-    <table class="table table-bordered table-striped table-condensed">
-        <thead>
-        <tr>
-            <th>Donor ID</th>
-            <th>Specimen ID</th>
-            <th>Specimen Type</th>
-            <th>Sample ID</th>
-            <th>Raw sequence repo</th>
-            <th>Library strategy</th>
-            <th>BAM file access point</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr ng-repeat="seq in sequences.hits">
-            <td><a href="#/donors/{{seq.fields._donor_id}}">{{seq.fields._donor_id}}</a></td>
-            <td><a href="#/genes/{{gene.fields.ensembl_gene_id}}">{{gene.fields.symbol}}</a></td>
-            <td>??</td>
-            <td><a href="#/genes/{{gene.fields.ensembl_gene_id}}">{{gene.fields.symbol}}</a></td>
-            <td>??</td>
-            <td>??</td>
-            <td><a href="#/genes/{{gene.fields.ensembl_gene_id}}">{{gene.fields.symbol}}</a></td>
-        </tr>
-        <tr ui-if="!mutations.hits">
-            <td colspan="10"><i class="icon-spinner icon-spin"></i> Fetching mutations...</td>
-        </tr>
-        </tbody>
-    </table>
+<div class="row">
+    <div class="col-span-12">
+        <h2>Available Raw Sequence Data</h2>
+        <table class="table table-bordered table-striped table-condensed">
+            <thead>
+            <tr>
+                <th>Donor ID</th>
+                <th>Specimen ID</th>
+                <th>Specimen Type</th>
+                <th>Sample ID</th>
+                <th>Raw sequence repo</th>
+                <th>Library strategy</th>
+                <th>BAM file access point</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="seq in sequences.hits">
+                <td><a href="#/donors/{{seq.fields._donor_id}}">{{seq.fields._donor_id}}</a></td>
+                <td><a href="#/genes/{{gene.fields.ensembl_gene_id}}">{{gene.fields.symbol}}</a></td>
+                <td>??</td>
+                <td><a href="#/genes/{{gene.fields.ensembl_gene_id}}">{{gene.fields.symbol}}</a></td>
+                <td>??</td>
+                <td>??</td>
+                <td><a href="#/genes/{{gene.fields.ensembl_gene_id}}">{{gene.fields.symbol}}</a></td>
+            </tr>
+            <tr ui-if="!mutations.hits">
+                <td colspan="10"><i class="icon-spinner icon-spin"></i> Fetching mutations...</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
 </div> 
