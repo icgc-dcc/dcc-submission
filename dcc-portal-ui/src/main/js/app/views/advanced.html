@@ -1,5 +1,5 @@
 <div class="row">
-    <div class="span3">
+    <div class="col-span-3">
         <div current-selection class="sidebar"></div>
         <div id="facets" class="sidebar">
             <div class="facet-header facets"><span>Filter Search</span></div>
@@ -35,16 +35,16 @@
             </tabs>
         </div>
     </div>
-    <div class="span9">
+    <div class="col-span-9">
         <h2>
             <small>{{genes.pagination.total}}</small>
             Genes
         </h2>
-        <div class="row-fluid">
+        <div class="row">
             <stacked items='stdata' height="220"></stacked>
         </div>
-        <div class="row-fluid">
-            <div class="span6">
+        <div class="row">
+            <div class="col-span-6">
                 <pie items='cdata_genes_gt' title="Gene Types" label="Genes" type="pie" height="220"
                         ></pie>
             </div>
@@ -54,7 +54,7 @@
         </div>
 
 
-        <div class="row-fluid">
+        <div class="row">
             <table class="table table-bordered table-striped">
                 <thead>
                 <tr>
@@ -90,25 +90,25 @@
             <small>{{donors.pagination.total}}</small>
             Donors
         </h2>
-        <div class="row-fluid">
-            <div class="span6">
+        <div class="row">
+            <div class="col-span-6">
                 <pie items='cdata_donors_t' title="Tumour Stage" label="Donors" type="pie" height="220"></pie>
             </div>
-            <div class="span6">
+            <div class="col-span-6">
                 <pie items='cdata_donors_t' title="Tumour Stage" label="Donors" type="pie" height="220"></pie>
             </div>
         </div>
-        <div class="row-fluid">
-            <div class="span6">
+        <div class="row">
+            <div class="col-span-6">
                 <pie items='cdata_donors_t' title="Tumour Stage" label="Donors" type="pie" height="220"></pie>
             </div>
-            <div class="span6">
+            <div class="col-span-6">
                 <pie items='cdata_donors_t' title="Tumour Stage" label="Donors" type="pie" height="220"></pie>
             </div>
         </div>
 
-        <div class="row-fluid">
-            <table class="table table-bordered table-striped span">
+        <div class="row">
+            <table class="table table-bordered table-striped">
                 <thead>
                 <tr>
                     <th rowspan="2">Donor ID</th>

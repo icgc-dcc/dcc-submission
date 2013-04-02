@@ -19,8 +19,8 @@
     <small>GENE</small>
     {{gene.fields.symbol}}
 </h1>
-<div class="row-fluid">
-    <div class="span8">
+<div class="row">
+    <div class="col-span-8">
         <table class="table table-bordered table-striped table-condensed">
             <tr>
                 <td>Symbol</td>
@@ -56,7 +56,7 @@
             </tr>
         </table>
     </div>
-    <div class="span4">
+    <div class="col-span-4">
         <table class="table table-bordered table-striped table-condensed">
             <tr>
                 <td>Entrez Gene</td>
@@ -82,42 +82,41 @@
     </div>
 </div>
 
-<div class="row-fluid">
+<div class="row">
     <h2>Cancer Distribution<br>
         <small><strong>??</strong> donors affected by <strong>??</strong> gene mutations across <strong>??</strong>
             projects
         </small>
     </h2>
 </div>
-<div class="row-fluid">
-    <div class="span">
-        <table class="table table-bordered table-striped table-condensed">
-            <thead>
-            <tr>
-                <th>project</th>
-                <th>affected donors</th>
-                <th>tested donors</th>
-                <th>mutated donors</th>
-                <th>MutSig score (Q-value)</th>
-                <th>mutations</th>
-                <th>mutation occurrences</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr ng-repeat="(i,hit) in projects.fields['project.project_name']">
-                <td>{{hit}}</td>
-                <td>{{n=projects.fields['project._summary._ssm_donor_count'][i]}}</td>
-                <td>{{t=projects.fields['project._summary._ssm_tested_donor_count'][i]}}</td>
-                <td>{{((n/t)*100).toFixed(2)}}%</td>
-                <td>??</td>
-                <td>??</td>
-                <td>??</td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
+<div class="row">
+    <table class="table table-bordered table-striped table-condensed">
+        <thead>
+        <tr>
+            <th>project</th>
+            <th>affected donors</th>
+            <th>tested donors</th>
+            <th>mutated donors</th>
+            <th>MutSig score (Q-value)</th>
+            <th>mutations</th>
+            <th>mutation occurrences</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="(i,hit) in projects.fields['project.project_name']">
+            <td>{{hit}}</td>
+            <td>{{n=projects.fields['project._summary._ssm_donor_count'][i]}}</td>
+            <td>{{t=projects.fields['project._summary._ssm_tested_donor_count'][i]}}</td>
+            <td>{{((n/t)*100).toFixed(2)}}%</td>
+            <td>??</td>
+            <td>??</td>
+            <td>??</td>
+        </tr>
+        </tbody>
+    </table>
+
 </div>
-<div class="row-fluid">
+<div class="row">
     <h2>Mutations</h2>
     <table class="table table-bordered table-striped table-condensed">
         <thead>

@@ -24,8 +24,46 @@
 
 body {
     font-family: OpenSansLight, sans-serif;
-    /*padding-top: 45px;*/
     padding-bottom: 40px;
+}
+
+.navbar {
+    padding: 0;
+}
+
+.header {
+    padding: 10px 0;
+}
+
+.brand {
+    padding-top: 4px;
+    font-size: 38px;
+    /*line-height: 25px;
+    font-weight: normal;
+    padding: 5px 0 0;*/
+}
+
+.brand small {
+    font-size: 14px;
+    line-height: 16px;
+    padding: 0;
+}
+
+#big-search-wrap {
+    background: hsl(0, 0%, 95%);
+    margin: 0 0 10px;
+    padding: 5px;
+    border-radius: 4px;
+    border: 1px solid hsl(0, 0%, 90%);
+}
+
+#big-search-text {
+    padding: 10px;
+    border: 1px solid hsl(0, 0%, 85%);
+}
+
+#big-search-btn {
+    padding: 10px;
 }
 
 .table-noborder td, .table-noborder th {
