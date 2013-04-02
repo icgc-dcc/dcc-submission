@@ -8,3 +8,18 @@ elastic:
   #host: "hcn50.res.oicr.on.ca"
   host: "localhost"
   port: 9300
+
+# Logging settings
+logging:
+
+  # The default level of all loggers. Can be OFF, ERROR, WARN, INFO, DEBUG, TRACE, or ALL
+  level: INFO
+
+  # Logger-specific levels
+  loggers:
+
+    # Very chatty
+    "com.wordnik.swagger.jsonschema.ApiModelParser": WARN
+    
+    # ERRORs should be converted to WARNs in Swagger 1.2.2
+    "com.wordnik.swagger.jaxrs.HelpApi": OFF

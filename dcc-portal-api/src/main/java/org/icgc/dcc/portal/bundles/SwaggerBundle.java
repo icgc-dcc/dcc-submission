@@ -17,15 +17,15 @@
 
 package org.icgc.dcc.portal.bundles;
 
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.jaxrs.JaxrsApiReader;
 import com.wordnik.swagger.jaxrs.listing.ApiListing;
 import com.yammer.dropwizard.assets.AssetsBundle;
 import com.yammer.dropwizard.config.Bootstrap;
-
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
 
 public class SwaggerBundle extends AssetsBundle {
 
@@ -42,6 +42,12 @@ public class SwaggerBundle extends AssetsBundle {
   @Override
   public final void initialize(Bootstrap<?> bootstrap) {
     super.initialize(bootstrap);
+
+    // TODO: Uncomment in Swagger 1.2.2 and change settings.yaml to enable logging o
+    // com.wordnik.swagger.jaxrs.HelpApi": OFF
+    // import com.yammer.dropwizard.jersey.params.IntParam;
+    // ...
+    // ApiPropertiesReader.add(IntParam.class);
 
     // Set the Swagger suffix to an empty string before Swagger warms up
     JaxrsApiReader.setFormatString(EMPTY_FORMAT);

@@ -112,7 +112,11 @@ public class DataPortalService extends Service<DataPortalConfiguration> {
    * @return
    */
   private RedirectBundle createRedirectBundle() {
-    return new RedirectBundle(ImmutableMap.of("/docs", "/docs/"));
+    return new RedirectBundle(ImmutableMap.of(//
+        "/docs", "/docs/", //
+        "/favicon.ico", "/docs/favicon.ico", //
+        "/swagger-ui/favicon.ico", "/docs/favicon.ico" //
+    ));
   }
 
 }

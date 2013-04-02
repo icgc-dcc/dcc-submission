@@ -51,7 +51,6 @@ public class DonorRepository extends BaseRepository {
                 QueryBuilders.matchAllQuery(), //
                 getScoreFilters())).script("doc['gene._summary._ssm_count'].value") //
         ).scoreMode("total");
-    // return QueryBuilders.matchAllQuery();
   }
 
   @Override
