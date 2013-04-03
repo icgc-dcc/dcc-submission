@@ -32,14 +32,9 @@ import java.util.List;
 import lombok.Cleanup;
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.commons.lang.mutable.MutableDouble;
-import org.apache.commons.lang.mutable.MutableInt;
-import org.apache.commons.lang.mutable.MutableLong;
 import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.dictionary.model.Relation;
-import org.icgc.dcc.dictionary.model.Term;
-import org.icgc.dcc.generator.model.CodeListTerm;
 import org.icgc.dcc.generator.model.PrimaryKey;
 import org.icgc.dcc.generator.utils.ResourceWrapper;
 import org.icgc.dcc.generator.utils.SubmissionFileUtils;
@@ -66,14 +61,6 @@ public class CoreFileGenerator {
   // Essentially the primary key called analyzed_sample_id is not used
   private static final String SAMPLE_TYPE_FIELD_NAME = "analyzed_sample_id";
 
-  final List<CodeListTerm> codeListTerms = newArrayList();
-
-  private final MutableLong uniqueId = new MutableLong(0L);
-
-  private final MutableInt uniqueInteger = new MutableInt(0);
-
-  private final MutableDouble uniqueDouble = new MutableDouble(0.0);
-
   private final DataGenerator datagen;
 
   private final String outputDirectory;
@@ -90,11 +77,12 @@ public class CoreFileGenerator {
     @Cleanup
     Writer writer = buildFileWriter(outputFile);
 
-    datagen.populateTermList(resourceWrapper, schema, codeListTerms);
+    datagen.populateTermList(resourceWrapper, schema);
 
     log.info("Populating {} file", schema.getName());
 
     populateFile(resourceWrapper, schema, linesPerForeignKey, writer);
+    datagen.resetUniqueValueFields();
     log.info("Finished populating {} file", schema.getName());
   }
 
@@ -173,29 +161,24 @@ public class CoreFileGenerator {
     String fieldValue = null;
     String fieldName = field.getName();
 
-    List<String> foreignKeys = DataGenerator.getForeignKeys(datagen, schema, fieldName);
+    List<String> foreignKeys = datagen.getFileForeignKey(schema, fieldName);
     if(foreignKeys != null) {
       fieldValue = foreignKeys.get(foreignKeyEntry);
     }
 
     if(fieldValue == null) {
-      fieldValue = getCodeListValue(schema, schemaName, field, fieldName);
-    }
-    if(fieldValue == null) {
-      fieldValue =
-          DataGenerator.generateFieldValue(datagen, resourceWrapper, schema.getUniqueFields(), schemaName, field,
-              uniqueId, uniqueInteger, uniqueDouble);
+      fieldValue = datagen.getFieldValue(resourceWrapper, schemaName, field, schema.getUniqueFields());
     }
 
     if(resourceWrapper.isUniqueField(schema.getUniqueFields(), fieldName)) {
-      DataGenerator.getPrimaryKeys(datagen, schemaName, fieldName).add(fieldValue);
+      datagen.getFilePrimaryKey(schemaName, fieldName).add(fieldValue);
     }
 
     // Special case for sample, to add whether sample type is controlled or tumour
     if(schema.getName().equals(SAMPLE_SCHEMA_NAME) && field.getName().equals(SAMPLE_TYPE_FIELD_NAME)) {
       addOutputToSamplePrimaryKeys(schema, field, fieldValue);
     } else if(schema.getName().equals("specimen") && field.getName().equals("donor_id")) {
-      DataGenerator.getPrimaryKeys(datagen, "donor", "donor_id_for_optional_file").add(fieldValue);
+      datagen.getFilePrimaryKey("donor", "donor_id_for_optional_file").add(fieldValue);
     }
 
     return fieldValue;
@@ -204,9 +187,9 @@ public class CoreFileGenerator {
   private void addOutputToSamplePrimaryKeys(FileSchema schema, Field field, String fieldValue) {
     int x = datagen.generateRandomInteger(0, 2);
     if(x == 0) {
-      DataGenerator.getPrimaryKeys(datagen, SAMPLE_SCHEMA_NAME, TUMOUR_PRIMARY_KEY_FIELD_IDENTIFIER).add(fieldValue);
+      datagen.getFilePrimaryKey(SAMPLE_SCHEMA_NAME, TUMOUR_PRIMARY_KEY_FIELD_IDENTIFIER).add(fieldValue);
     } else {
-      DataGenerator.getPrimaryKeys(datagen, SAMPLE_SCHEMA_NAME, CONTROL_PRIMARY_KEY_FIELD_IDENTIFIER).add(fieldValue);
+      datagen.getFilePrimaryKey(SAMPLE_SCHEMA_NAME, CONTROL_PRIMARY_KEY_FIELD_IDENTIFIER).add(fieldValue);
     }
   }
 
@@ -229,7 +212,7 @@ public class CoreFileGenerator {
     } else {
       Relation randomRelation = relations.get(0);
       String relatedFieldName = randomRelation.getFields().get(0);
-      lengthOfForeingKeys = DataGenerator.getForeignKeys(datagen, schema, relatedFieldName).size();
+      lengthOfForeingKeys = datagen.getFileForeignKey(schema, relatedFieldName).size();
     }
     return lengthOfForeingKeys;
   }
@@ -249,17 +232,6 @@ public class CoreFileGenerator {
         return datagen.generateRandomInteger(0, linesPerForeignKey);
       }
     }
-  }
-
-  private String getCodeListValue(FileSchema schema, String schemaName, Field currentField, String fieldName) {
-    String fieldValue = null;
-    for(CodeListTerm codeListTerm : codeListTerms) {
-      if(codeListTerm.getFieldName().equals(fieldName)) {
-        List<Term> terms = codeListTerm.getTerms();
-        fieldValue = terms.get(datagen.generateRandomInteger(0, terms.size())).getCode();
-      }
-    }
-    return fieldValue;
   }
 
 }

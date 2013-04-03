@@ -76,7 +76,7 @@ public class GeneratorService {
     List<ExperimentalFile> experimentalFiles = config.getExperimentalFiles();
 
     log.info("Checking validity of parameters");
-    checkParameters(leadJurisdiction, tumourType, institution, platform);
+    checkParameters(outputDirectory, leadJurisdiction, tumourType, institution, platform);
 
     log.info("Initializing Dictionary and CodeList files");
     ResourceWrapper resourceWrapper = new ResourceWrapper(dictionaryFile, codeListFile);
@@ -86,8 +86,10 @@ public class GeneratorService {
         experimentalFiles);
   }
 
-  public static void checkParameters(String leadJurisdiction, String tumourType, String institution, String platform)
-      throws Exception {
+  public static void checkParameters(String outputDirectory, String leadJurisdiction, String tumourType,
+      String institution, String platform) throws Exception {
+    checkParameter(new File(outputDirectory).exists(), "The output directory specified does not exist",
+        "output directory", outputDirectory);
     checkParameter(
         leadJurisdiction.length() == 2,
         "The lead jurisdiction parameter can only be of length 2. Please refer to http://dcc.icgc.org/pages/docs/ICGC_Data_Submission_Manual-0.6c-150512.pdf, for valid lead jurisdction values",
@@ -107,11 +109,11 @@ public class GeneratorService {
 
   }
 
-  public static void checkParameter(boolean expression, @Nullable String errorMessageTemplate,
+  public static void checkParameter(boolean expression, @Nullable String errorMessage,
       @Nullable Object... errorMessageArgs) throws Exception {
     if(expression == false) {
-      throw new Exception(String.format("Invalid parameter {%2$ = %3$}. %1$", errorMessageTemplate,
-          errorMessageArgs[0], errorMessageArgs[1]));
+      throw new Exception(String.format("Invalid parameter {%2$s = %3$s}. %1$s", errorMessage, errorMessageArgs[0],
+          errorMessageArgs[1]));
     }
   }
 
@@ -120,6 +122,10 @@ public class GeneratorService {
       Integer numberOfSpecimensPerDonor, Integer numberOfSamplesPerSpecimen, String leadJurisdiction,
       String tumourType, String institution, String platform, Long seed, List<OptionalFile> optionalFiles,
       List<ExperimentalFile> experimentalFiles) throws JsonParseException, JsonMappingException, IOException {
+
+    if(outputDirectory.charAt(outputDirectory.length() - 1) != '/') {
+      outputDirectory = outputDirectory + "/";
+    }
 
     DataGenerator datagen = new DataGenerator(seed);
 

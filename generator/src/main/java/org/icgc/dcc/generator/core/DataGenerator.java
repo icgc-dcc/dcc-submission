@@ -26,14 +26,12 @@ import java.util.Random;
 
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.commons.lang.mutable.MutableDouble;
-import org.apache.commons.lang.mutable.MutableInt;
-import org.apache.commons.lang.mutable.MutableLong;
 import org.icgc.dcc.dictionary.model.CodeList;
 import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.dictionary.model.Relation;
 import org.icgc.dcc.dictionary.model.Restriction;
+import org.icgc.dcc.dictionary.model.Term;
 import org.icgc.dcc.dictionary.model.ValueType;
 import org.icgc.dcc.generator.model.CodeListTerm;
 import org.icgc.dcc.generator.model.PrimaryKey;
@@ -55,7 +53,17 @@ public class DataGenerator {
 
   private final List<PrimaryKey> primaryKeys = newArrayList();
 
+  private final List<CodeListTerm> codeListTerms = newArrayList();
+
   private final Random random;
+
+  private final String[] missingCodes = { "-777", "-888", "-999" };
+
+  private int uniqueInteger = 0;
+
+  private double uniqueDouble = 0.0;
+
+  private long uniqueId = 0L;
 
   public DataGenerator(Long seed) {
     this.random = (seed == null) ? new Random() : new Random(seed);
@@ -73,6 +81,18 @@ public class DataGenerator {
     return this.random.nextDouble() * end;
   }
 
+  private String generateUniqueDouble(String schemaName) {
+    return schemaName + String.valueOf(uniqueDouble += 0.1);
+  }
+
+  private String generateUniqueInteger(String schemaName) {
+    return schemaName + String.valueOf(uniqueInteger++);
+  }
+
+  private String generateUniqueId(String schemaName) {
+    return schemaName + String.valueOf(uniqueId++);
+  }
+
   public void buildPrimaryKey(FileSchema schema) {
     for(String uniqueFieldName : schema.getUniqueFields()) {
       String schemaIdentifier = schema.getName();
@@ -83,19 +103,24 @@ public class DataGenerator {
     }
   }
 
-  void populateTermList(ResourceWrapper resourceWrapper, FileSchema schema, List<CodeListTerm> codeListTerms) {
+  public void resetUniqueValueFields() {
+    uniqueId = 0L;
+    uniqueInteger = 0;
+    uniqueDouble = 0.0;
+  }
+
+  public void populateTermList(ResourceWrapper resourceWrapper, FileSchema schema) {
     for(Field field : schema.getFields()) {
       Optional<Restriction> restriction = field.getRestriction(CODELIST_RESTRICTION_NAME);
       if(restriction.isPresent()) {
         String codeListName = restriction.get().getConfig().getString("name");
         List<CodeList> codeLists = resourceWrapper.getCodeLists();
         Iterator<CodeList> cl = codeLists.iterator();
-        log.info(codeListName);
         while(cl.hasNext()) {
           CodeList codeList = cl.next();
 
           if(codeList.getName().equals(codeListName)) {
-            CodeListTerm term = new CodeListTerm(field.getName(), codeList.getTerms());
+            CodeListTerm term = new CodeListTerm(schema.getName(), field.getName(), codeList.getTerms());
             codeListTerms.add(term);
           }
         }
@@ -103,8 +128,20 @@ public class DataGenerator {
     }
   }
 
-  public static List<String> getPrimaryKeys(DataGenerator datagen, String schemaName, String fieldName) {
-    for(PrimaryKey primaryKey : datagen.getPrimaryKeys()) {
+  public String getCodeListValue(String schemaName, String currentFieldName) {
+    String fieldValue = null;
+    for(CodeListTerm codeListTerm : codeListTerms) {
+      if(codeListTerm.getFieldName().equals(currentFieldName) && codeListTerm.getSchemaName().equals(schemaName)) {
+        List<Term> terms = codeListTerm.getTerms();
+        fieldValue = terms.get(generateRandomInteger(0, terms.size())).getCode();
+      }
+    }
+
+    return fieldValue;
+  }
+
+  public List<String> getFilePrimaryKey(String schemaName, String fieldName) {
+    for(PrimaryKey primaryKey : primaryKeys) {
       String primaryKeySchemaIdentifier = primaryKey.getSchemaIdentifier();
       String primaryKeyFieldIdentifier = primaryKey.getFieldIdentifier();
 
@@ -117,13 +154,13 @@ public class DataGenerator {
 
   // Go through all the fields that are populated by a foreign key once in each file, and then do an if statement before
   // calling getForeignKey, that would decrease the number of times this method is called
-  public static List<String> getForeignKeys(DataGenerator datagen, FileSchema schema, String fieldName) {
+  public List<String> getFileForeignKey(FileSchema schema, String fieldName) {
     for(Relation relation : schema.getRelations()) {
       int k = 0;
       for(String primaryKeyFieldName : relation.getFields()) {
         if(primaryKeyFieldName.equals(fieldName)) {
 
-          for(PrimaryKey primaryKey : datagen.getPrimaryKeys()) {
+          for(PrimaryKey primaryKey : primaryKeys) {
             String primaryKeySchemaIdentifier = primaryKey.getSchemaIdentifier();
             String primaryKeyFieldIdentifier = primaryKey.getFieldIdentifier();
             String relatedFileSchemaIdentifier = relation.getOther();
@@ -141,38 +178,86 @@ public class DataGenerator {
     return null;
   }
 
-  public static String generateFieldValue(DataGenerator datagen, ResourceWrapper resourceWrapper, List<String> list,
-      String schemaName, Field field, MutableLong uniqueId, MutableInt uniqueInteger, MutableDouble uniqueDecimal) {
+  public String getFieldValue(ResourceWrapper resourceWrapper, String schemaName, Field field, List<String> uniqueFields) {
     String fieldValue = null;
     String fieldName = field.getName();
     ValueType fieldValueType = field.getValueType();
 
-    if(fieldValueType == ValueType.TEXT) {
-      if(resourceWrapper.isUniqueField(list, fieldName)) {
-        uniqueId.increment();
-        fieldValue = schemaName + String.valueOf(uniqueId);
+    int randomProbabilityInteger = generateRandomInteger(1, 11);
+    if(resourceWrapper.isRequired(field)) {
+      if(resourceWrapper.isCodeListField(field)) {
+        if(resourceWrapper.acceptsMissingCode(field)) {
+          if(randomProbabilityInteger >= 1 && randomProbabilityInteger <= 3) {
+            fieldValue = generateMissingCode();
+          } else {
+            fieldValue = getCodeListValue(schemaName, field.getName());
+          }
+        } else {
+          fieldValue = getCodeListValue(schemaName, field.getName());
+        }
       } else {
-        fieldValue = Integer.toString(datagen.generateRandomInteger(0, Integer.MAX_VALUE));
+        if(resourceWrapper.acceptsMissingCode(field)) {
+          if(randomProbabilityInteger >= 1 && randomProbabilityInteger <= 3) {
+            fieldValue = generateMissingCode();
+          } else {
+            fieldValue = generateFieldValue(resourceWrapper, schemaName, fieldName, uniqueFields, fieldValueType);
+          }
+        } else {
+          fieldValue = generateFieldValue(resourceWrapper, schemaName, fieldName, uniqueFields, fieldValueType);
+        }
       }
-    } else if(fieldValueType == ValueType.INTEGER) {
-      if(resourceWrapper.isUniqueField(list, fieldName)) {
-        uniqueInteger.increment();
-        fieldValue = schemaName + String.valueOf(uniqueInteger);
+    } else {
+      if(resourceWrapper.isCodeListField(field)) {
+        if(randomProbabilityInteger >= 1 && randomProbabilityInteger <= 3) {
+          fieldValue = "";
+        } else {
+          fieldValue = getCodeListValue(schemaName, fieldName);
+        }
       } else {
-        fieldValue = Integer.toString(datagen.generateRandomInteger(0, 200));
+        if(randomProbabilityInteger >= 1 && randomProbabilityInteger <= 3) {
+          fieldValue = "";
+        } else {
+          fieldValue = getCodeListValue(schemaName, fieldName);
+        }
       }
-    } else if(fieldValueType == ValueType.DECIMAL) {
-      if(resourceWrapper.isUniqueField(list, fieldName)) {
-        uniqueDecimal.add(0.1);
-        fieldValue = schemaName + String.valueOf(uniqueDecimal);
-      } else {
-        fieldValue = Double.toString(datagen.generateRandomDouble(50));
-      }
-    } else if(fieldValueType == ValueType.DATETIME) {
-      fieldValue = CONSTANT_DATE;
+    }
+
+    if(fieldValue == null) {
+      fieldValue = generateFieldValue(resourceWrapper, schemaName, fieldName, uniqueFields, fieldValueType);
     }
 
     return fieldValue;
   }
 
+  private String generateMissingCode() {
+    int randomInteger = generateRandomInteger(0, 3);
+    return missingCodes[randomInteger];
+  }
+
+  private String generateFieldValue(ResourceWrapper resourceWrapper, String schemaName, String fieldName,
+      List<String> uniqueFields, ValueType fieldValueType) {
+    String fieldValue = null;
+    if(fieldValueType == ValueType.TEXT) {
+      if(resourceWrapper.isUniqueField(uniqueFields, fieldName)) {
+        fieldValue = generateUniqueId(schemaName);
+      } else {
+        fieldValue = Integer.toString(generateRandomInteger(0, Integer.MAX_VALUE));
+      }
+    } else if(fieldValueType == ValueType.INTEGER) {
+      if(resourceWrapper.isUniqueField(uniqueFields, fieldName)) {
+        fieldValue = generateUniqueInteger(schemaName);
+      } else {
+        fieldValue = Integer.toString(generateRandomInteger(0, 200));
+      }
+    } else if(fieldValueType == ValueType.DECIMAL) {
+      if(resourceWrapper.isUniqueField(uniqueFields, fieldName)) {
+        fieldValue = generateUniqueDouble(schemaName);
+      } else {
+        fieldValue = Double.toString(generateRandomDouble(50));
+      }
+    } else if(fieldValueType == ValueType.DATETIME) {
+      fieldValue = CONSTANT_DATE;
+    }
+    return fieldValue;
+  }
 }

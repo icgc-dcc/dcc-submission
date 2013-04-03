@@ -36,14 +36,10 @@ import java.util.Set;
 import lombok.Cleanup;
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.commons.lang.mutable.MutableDouble;
 import org.apache.commons.lang.mutable.MutableInt;
-import org.apache.commons.lang.mutable.MutableLong;
 import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.dictionary.model.Relation;
-import org.icgc.dcc.dictionary.model.Term;
-import org.icgc.dcc.generator.model.CodeListTerm;
 import org.icgc.dcc.generator.utils.ResourceWrapper;
 import org.icgc.dcc.generator.utils.SubmissionFileUtils;
 
@@ -67,14 +63,6 @@ public class PrimaryFileGenerator {
   private final Set<String> simulatedData = newHashSet("mutation_type", "chromosome", "chromosome_start",
       "chromosome_end", "reference_genome_allele", "control_genotype", "tumour_genotype mutation");
 
-  private final List<CodeListTerm> codeListTerms = newArrayList();
-
-  private final MutableLong uniqueId = new MutableLong(0L);
-
-  private final MutableInt uniqueInteger = new MutableInt(0);
-
-  private final MutableDouble uniqueDouble = new MutableDouble(0.0);
-
   private final DataGenerator datagen;
 
   private final String outputDirectory;
@@ -91,10 +79,11 @@ public class PrimaryFileGenerator {
     @Cleanup
     Writer writer = buildFileWriter(outputFile);
 
-    datagen.populateTermList(resourceWrapper, schema, codeListTerms);
+    datagen.populateTermList(resourceWrapper, schema);
 
     log.info("Populating {} file", schema.getName());
     populateFile(resourceWrapper, schema, linesPerForeignKey, writer);
+    datagen.resetUniqueValueFields();
     log.info("Finished populating {}", schema.getName());
   }
 
@@ -193,23 +182,17 @@ public class PrimaryFileGenerator {
       nextTabIndex.add(fieldValue.length() + 1);
     }
 
-    List<String> foreignKeys = DataGenerator.getForeignKeys(datagen, schema, fieldName);
+    List<String> foreignKeys = datagen.getFileForeignKey(schema, fieldName);
     if(foreignKeys != null) {
       fieldValue = foreignKeys.get(foreignKeyEntry);
     }
 
     if(fieldValue == null) {
-      fieldValue = getCodeListValue(schema, schemaName, field, fieldName);
-    }
-
-    if(fieldValue == null) {
-      fieldValue =
-          DataGenerator.generateFieldValue(datagen, resourceWrapper, schema.getUniqueFields(), schemaName, field,
-              uniqueId, uniqueInteger, uniqueDouble);
+      fieldValue = datagen.getFieldValue(resourceWrapper, schemaName, field, schema.getUniqueFields());
     }
 
     if(resourceWrapper.isUniqueField(schema.getUniqueFields(), fieldName)) {
-      DataGenerator.getPrimaryKeys(datagen, schemaName, fieldName).add(fieldValue);
+      datagen.getFilePrimaryKey(schemaName, fieldName).add(fieldValue);
     }
     return fieldValue;
   }
@@ -220,7 +203,7 @@ public class PrimaryFileGenerator {
   private int calculateLengthOfForeignKeys(FileSchema schema, List<Relation> relations) {
     Relation randomRelation = relations.get(0);
     String relatedFieldName = randomRelation.getFields().get(0);
-    int lengthOfForeignKeys = DataGenerator.getForeignKeys(datagen, schema, relatedFieldName).size();
+    int lengthOfForeignKeys = datagen.getFileForeignKey(schema, relatedFieldName).size();
     return lengthOfForeignKeys;
   }
 
@@ -235,17 +218,5 @@ public class PrimaryFileGenerator {
     } else {
       return datagen.generateRandomInteger(0, linesPerForeignKey);
     }
-  }
-
-  private String getCodeListValue(FileSchema schema, String schemaName, Field currentField, String currentFieldName) {
-    String fieldValue = null;
-    for(CodeListTerm codeListTerm : codeListTerms) {
-      if(codeListTerm.getFieldName().equals(currentFieldName)) {
-        List<Term> terms = codeListTerm.getTerms();
-        fieldValue = terms.get(datagen.generateRandomInteger(0, terms.size())).getCode();
-
-      }
-    }
-    return fieldValue;
   }
 }

@@ -22,39 +22,38 @@ import java.util.List;
 import org.icgc.dcc.dictionary.model.Term;
 
 public class CodeListTerm {
+  private String schemaName;
+
   private String fieldName;
 
   private List<Term> terms;
 
-  public CodeListTerm(String fieldName, List<Term> terms) {
+  public CodeListTerm(String schemaName, String fieldName, List<Term> terms) {
+    this.schemaName = schemaName;
     this.fieldName = fieldName;
     this.terms = terms;
   }
 
-  /**
-   * @return the fieldName
-   */
+  public String getSchemaName() {
+    return schemaName;
+  }
+
+  public void setSchemaName(String schemaName) {
+    this.schemaName = schemaName;
+  }
+
   public String getFieldName() {
     return fieldName;
   }
 
-  /**
-   * @param fieldName the fieldName to set
-   */
   public void setFieldName(String fieldName) {
     this.fieldName = fieldName;
   }
 
-  /**
-   * @return the terms
-   */
   public List<Term> getTerms() {
     return terms;
   }
 
-  /**
-   * @param terms the terms to set
-   */
   public void setTerms(List<Term> terms) {
     this.terms = terms;
   }

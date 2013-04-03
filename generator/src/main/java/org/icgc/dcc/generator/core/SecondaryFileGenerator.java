@@ -33,14 +33,9 @@ import java.util.List;
 import lombok.Cleanup;
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.commons.lang.mutable.MutableDouble;
-import org.apache.commons.lang.mutable.MutableInt;
-import org.apache.commons.lang.mutable.MutableLong;
 import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.dictionary.model.Relation;
-import org.icgc.dcc.dictionary.model.Term;
-import org.icgc.dcc.generator.model.CodeListTerm;
 import org.icgc.dcc.generator.utils.ResourceWrapper;
 import org.icgc.dcc.generator.utils.SubmissionFileUtils;
 
@@ -71,14 +66,6 @@ public class SecondaryFileGenerator {
 
   private static final String SECONDARY_TRANSCRIPT_FIELD_NAME = "transcript_affected";
 
-  private final List<CodeListTerm> codeListTerms = newArrayList();
-
-  private final MutableLong uniqueId = new MutableLong(0L);
-
-  private final MutableInt uniqueInteger = new MutableInt(0);
-
-  private final MutableDouble uniqueDouble = new MutableDouble(0.0);
-
   private final DataGenerator datagen;
 
   private final String outputDirectory;
@@ -95,10 +82,11 @@ public class SecondaryFileGenerator {
     @Cleanup
     Writer writer = buildFileWriter(outputFile);
 
-    datagen.populateTermList(resourceWrapper, schema, codeListTerms);
+    datagen.populateTermList(resourceWrapper, schema);
 
     log.info("Populating {} file", schema.getName());
     populateFile(resourceWrapper, schema, linesPerForeignKey, writer);
+    datagen.resetUniqueValueFields();
     log.info("Finished populating {} file ", schema.getName());
   }
 
@@ -190,19 +178,13 @@ public class SecondaryFileGenerator {
 
     String fieldValue = getSystemFileValue(fieldName, line);
 
-    List<String> foreignKeys = DataGenerator.getForeignKeys(datagen, schema, fieldName);
+    List<String> foreignKeys = datagen.getFileForeignKey(schema, fieldName);
     if(foreignKeys != null) {
       fieldValue = foreignKeys.get(i);
     }
 
     if(fieldValue == null) {
-      fieldValue = getCodeListValue(schema, schemaName, field, fieldName);
-    }
-
-    if(fieldValue == null) {
-      fieldValue =
-          DataGenerator.generateFieldValue(datagen, resourceWrapper, schema.getUniqueFields(), schemaName, field,
-              uniqueId, uniqueInteger, uniqueDouble);
+      fieldValue = datagen.getFieldValue(resourceWrapper, schemaName, field, schema.getUniqueFields());
     }
 
     return fieldValue;
@@ -214,7 +196,7 @@ public class SecondaryFileGenerator {
   private int calculatedLengthOfForeignKeys(FileSchema schema, List<Relation> relations) {
     Relation randomRelation = relations.get(0);
     String relatedFieldName = randomRelation.getFields().get(0);
-    int lengthOfForeignKeys = DataGenerator.getForeignKeys(datagen, schema, relatedFieldName).size();
+    int lengthOfForeignKeys = datagen.getFileForeignKey(schema, relatedFieldName).size();
     return lengthOfForeignKeys;
   }
 
@@ -243,16 +225,4 @@ public class SecondaryFileGenerator {
     }
     return null;
   }
-
-  private String getCodeListValue(FileSchema schema, String schemaName, Field currentField, String currentFieldName) {
-    String fieldValue = null;
-    for(CodeListTerm codeListTerm : codeListTerms) {
-      if(codeListTerm.getFieldName().equals(currentFieldName)) {
-        List<Term> terms = codeListTerm.getTerms();
-        fieldValue = terms.get(datagen.generateRandomInteger(0, terms.size())).getCode();
-      }
-    }
-    return fieldValue;
-  }
-
 }

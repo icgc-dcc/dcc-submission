@@ -32,14 +32,9 @@ import java.util.List;
 import lombok.Cleanup;
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.commons.lang.mutable.MutableDouble;
-import org.apache.commons.lang.mutable.MutableInt;
-import org.apache.commons.lang.mutable.MutableLong;
 import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.dictionary.model.Relation;
-import org.icgc.dcc.dictionary.model.Term;
-import org.icgc.dcc.generator.model.CodeListTerm;
 import org.icgc.dcc.generator.utils.ResourceWrapper;
 import org.icgc.dcc.generator.utils.SubmissionFileUtils;
 
@@ -68,14 +63,6 @@ public class MetaFileGenerator {
 
   private static final String MATCHED_SAMPLE_FIELD_NAME = "matched_sample_id";
 
-  private final List<CodeListTerm> codeListTerms = newArrayList();
-
-  private final MutableLong uniqueId = new MutableLong(0L);
-
-  private final MutableInt uniqueInteger = new MutableInt(0);
-
-  private final MutableDouble uniqueDouble = new MutableDouble(0.0);
-
   private final DataGenerator datagen;
 
   private final String outputDirectory;
@@ -92,10 +79,11 @@ public class MetaFileGenerator {
     @Cleanup
     Writer writer = buildFileWriter(outputFile);
 
-    datagen.populateTermList(resourceWrapper, schema, codeListTerms);
+    datagen.populateTermList(resourceWrapper, schema);
 
     log.info("Populating {} file", schema.getName());
     populateFile(resourceWrapper, schema, linesPerForeignKey, writer);
+    datagen.resetUniqueValueFields();
     log.info("Finished populating {} file ", schema.getName());
   }
 
@@ -170,7 +158,7 @@ public class MetaFileGenerator {
     String fieldValue = null;
     String fieldName = field.getName();
 
-    List<String> foreignKeys = DataGenerator.getForeignKeys(datagen, schema, fieldName);
+    List<String> foreignKeys = datagen.getFileForeignKey(schema, fieldName);
     if(foreignKeys != null) {
       if(isSystemMetaFile(schemaName)) {
         fieldValue = getSampleType(fieldName);
@@ -178,17 +166,13 @@ public class MetaFileGenerator {
         fieldValue = foreignKeys.get(foreignKeyEntry);
       }
     }
+
     if(fieldValue == null) {
-      fieldValue = getCodeListValue(schema, schemaName, field, fieldName);
-    }
-    if(fieldValue == null) {
-      fieldValue =
-          DataGenerator.generateFieldValue(datagen, resourceWrapper, schema.getUniqueFields(), schemaName, field,
-              uniqueId, uniqueInteger, uniqueDouble);
+      fieldValue = datagen.getFieldValue(resourceWrapper, schemaName, field, schema.getUniqueFields());
     }
 
     if(resourceWrapper.isUniqueField(schema.getUniqueFields(), fieldName)) {
-      DataGenerator.getPrimaryKeys(datagen, schemaName, fieldName).add(fieldValue);
+      datagen.getFilePrimaryKey(schemaName, fieldName).add(fieldValue);
     }
 
     return fieldValue;
@@ -208,7 +192,7 @@ public class MetaFileGenerator {
   private int calculatedLengthOfForeignKeys(FileSchema schema, List<Relation> relations) {
     Relation randomRelation = relations.get(0);
     String relatedFieldName = randomRelation.getFields().get(0);
-    int lengthOfForeignKeys = DataGenerator.getForeignKeys(datagen, schema, relatedFieldName).size();
+    int lengthOfForeignKeys = datagen.getFileForeignKey(schema, relatedFieldName).size();
     return lengthOfForeignKeys;
   }
 
@@ -228,27 +212,13 @@ public class MetaFileGenerator {
   private String getSampleType(String currentFieldName) {
     String fieldValue = null;
     if(currentFieldName.equals(MATCHED_SAMPLE_FIELD_NAME)) {
-      List<String> tumourTypeIDs =
-          DataGenerator.getPrimaryKeys(datagen, SAMPLE_SCHEMA_NAME, TUMOUR_PRIMARY_KEY_FIELD_IDENTIFIER);
+      List<String> tumourTypeIDs = datagen.getFilePrimaryKey(SAMPLE_SCHEMA_NAME, TUMOUR_PRIMARY_KEY_FIELD_IDENTIFIER);
       Integer randomInteger = datagen.generateRandomInteger(0, tumourTypeIDs.size());
       fieldValue = tumourTypeIDs.get(randomInteger);
     } else {
-      List<String> controlTypeIDs =
-          DataGenerator.getPrimaryKeys(datagen, SAMPLE_SCHEMA_NAME, CONTROL_PRIMARY_KEY_FIELD_IDENTIFIER);
+      List<String> controlTypeIDs = datagen.getFilePrimaryKey(SAMPLE_SCHEMA_NAME, CONTROL_PRIMARY_KEY_FIELD_IDENTIFIER);
       Integer randomInteger = datagen.generateRandomInteger(0, controlTypeIDs.size());
       fieldValue = controlTypeIDs.get(randomInteger);
-    }
-
-    return fieldValue;
-  }
-
-  private String getCodeListValue(FileSchema schema, String schemaName, Field currentField, String currentFieldName) {
-    String fieldValue = null;
-    for(CodeListTerm codeListTerm : codeListTerms) {
-      if(codeListTerm.getFieldName().equals(currentFieldName)) {
-        List<Term> terms = codeListTerm.getTerms();
-        fieldValue = terms.get(datagen.generateRandomInteger(0, terms.size())).getCode();
-      }
     }
 
     return fieldValue;

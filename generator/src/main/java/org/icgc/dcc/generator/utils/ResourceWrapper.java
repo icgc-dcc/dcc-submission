@@ -26,7 +26,9 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.dictionary.model.CodeList;
 import org.icgc.dcc.dictionary.model.Dictionary;
+import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.FileSchema;
+import org.icgc.dcc.dictionary.model.Restriction;
 import org.icgc.dcc.generator.core.DataGenerator;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -34,6 +36,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 import com.google.common.io.Resources;
 
@@ -107,6 +110,20 @@ public class ResourceWrapper {
 
   public boolean isUniqueField(List<String> uniqueFields, String fieldName) {
     return uniqueFields.contains(fieldName);
+  }
+
+  public boolean isRequired(Field field) {
+    return field.getRestriction("required").isPresent();
+  }
+
+  public boolean isCodeListField(Field field) {
+    return field.getRestriction("codelist").isPresent();
+
+  }
+
+  public boolean acceptsMissingCode(Field field) {
+    Optional<Restriction> restriction = field.getRestriction("required");
+    return restriction.get().getConfig().getBoolean("acceptMissingCode");
   }
 
 }
