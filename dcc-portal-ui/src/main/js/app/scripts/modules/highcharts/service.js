@@ -63,9 +63,9 @@ angular.module('highcharts.services').service('HighchartsService', [function () 
       var name = hit.fields[facetInner];
       var count = hit.fields[countBy];
       if (innerHits.hasOwnProperty(name)) {
-        innerHits[name] += count;
+        innerHits[name] += count ? count : 0;
       } else {
-        innerHits[name] = count;
+        innerHits[name] = count ? count : 0;
       }
     }
 
@@ -81,15 +81,16 @@ angular.module('highcharts.services').service('HighchartsService', [function () 
 
       for (var j = 0; j < hits.length; ++j) {
         var hitj = hits[j];
+        var namej = hitj.fields[facetOuter];
+        var countj = hitj.fields[countBy] ? hitj.fields[countBy] : 0;
         var brightness = 0.3 - (j / hitj.fields[countBy]) / 5;
 
-        // TODO
         var in_array = (angular.isArray(hitj.fields[facetInner]) && hitj.fields[facetInner].indexOf(iName) !== -1);
         var in_value = (!angular.isArray(hitj.fields[facetInner]) && hitj.fields[facetInner] === iName);
         if (in_array || in_value) {
           outr.push({
-            name: hitj.fields[facetOuter],
-            y: hitj.fields[countBy],
+            name: namej,
+            y: countj,
             type: type,
             facet: facetOuter,
             color: Highcharts.Color(colors[i]).brighten(brightness).get()
@@ -99,24 +100,27 @@ angular.module('highcharts.services').service('HighchartsService', [function () 
       i++;
     }
 
-    return {
+    var rrr = {
       inner: inr,
       outer: outr
     };
+    return rrr;
+
   };
 
   this.hits2HCstacked = function (hits, x, y) {
     var xaxis = [];
     var series = {};
     var r = [];
-
+    console.log(hits);
     for (var i = 0; i < hits.length; ++i) {
       var hit = hits[i];
+      console.log(hit);
       xaxis.push(hit.fields.symbol);
       //series[hit.fields.symbol] = {};
       for (var j = 0; j < hit.fields[x].length; ++j) {
         var label = hit.fields[x][j];
-        var count = hit.fields[y][j];
+        var count = hit.fields[y][j] ? hit.fields[y][j] : 0;
         if (series.hasOwnProperty(label) == false) {
           series[label] = [];
         }

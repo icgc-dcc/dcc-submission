@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Data;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.index.get.GetField;
+import org.icgc.dcc.portal.core.JsonUtils;
 
 import java.util.Map;
 
@@ -31,13 +32,22 @@ import static org.icgc.dcc.portal.core.JsonUtils.MAPPER;
 public class FindResults {
 
   private final String id;
+
   private final String type;
+
   private final ObjectNode fields;
+
+  private final JsonNode source;
 
   public FindResults(GetResponse hit) {
     this.id = hit.getId();
     this.type = hit.getType();
     this.fields = hit.getFields() == null ? null : buildGetHitFields(hit.getFields());
+    this.source = hit.getSourceAsString() == null ? null : buildGetHitSource(hit);
+  }
+
+  private JsonNode buildGetHitSource(GetResponse source) {
+    return JsonUtils.readRequestString(source.getSourceAsString());
   }
 
   private ObjectNode buildGetHitFields(Map<String, GetField> fields) {

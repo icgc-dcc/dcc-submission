@@ -32,7 +32,7 @@
             </tr>
             <tr>
                 <td>Cancer Project</td>
-                <td><a href="#/projects/{{donor.fields._project_id}}">??</a></td>
+                <td><a href="#/projects/{{donor.source._project_id}}">??</a></td>
             </tr>
             <tr>
                 <td>Cancer Primary Site</td>
@@ -40,15 +40,15 @@
             </tr>
             <tr>
                 <td>Gender</td>
-                <td>{{donor.fields.donor_sex}}</td>
+                <td>{{donor.source.donor_sex}}</td>
             </tr>
             <tr>
                 <td>Donor vital status</td>
-                <td>{{donor.fields.donor_vital_status}}</td>
+                <td>{{donor.source.donor_vital_status}}</td>
             </tr>
             <tr>
                 <td>Donor survival time</td>
-                <td>{{donor.fields.donor_survival_time}}</td>
+                <td>{{donor.source.donor_survival_time}}</td>
             </tr>
         </table>
     </div>
@@ -61,69 +61,79 @@
             <tr>
                 <td>Small mutations</td>
                 <td>Somatic</td>
-                <td>??</td>
+                <td>{{donor.source._summary._ssm_count}}</td>
                 <td>Germline</td>
-                <td>??</td>
+                <td>N/A</td>
             </tr>
             <tr>
                 <td>Copy number alterations</td>
                 <td>Somatic</td>
-                <td>??</td>
+                <td>N/A</td>
                 <td>Germline</td>
-                <td>??</td>
+                <td>N/A</td>
             </tr>
             <tr>
                 <td>Structural rearrangements</td>
                 <td>Somatic</td>
-                <td>10,000</td>
+                <td>N/A</td>
                 <td>Germline</td>
-                <td>10,000</td>
+                <td>N/A</td>
             </tr>
             <tr>
                 <td>DNA methylation</td>
-                <td colspan="4">??</td>
+                <td colspan="4">
+                    <i ng-show="donor.source._summary._meth_exists" class="icon-ok text-success"></i>
+                    <i ng-hide="donor.source._summary._meth_exists" class="icon-remove text-error"></i>
+                </td>
             </tr>
             <tr>
                 <td>Gene expression</td>
-                <td colspan="4">??</td>
+                <td colspan="4">
+                    <i ng-show="donor.source._summary._exp_exists" class="icon-ok text-success"></i>
+                    <i ng-hide="donor.source._summary._exp_exists" class="icon-remove text-error"></i>
+                </td>
             </tr>
             <tr>
                 <td>miRNA</td>
-                <td colspan="4">??</td>
+                <td colspan="4">
+                    <i ng-show="donor.source._summary._mirna_exists" class="icon-ok text-success"></i>
+                    <i ng-hide="donor.source._summary._mirna_exists" class="icon-remove text-error"></i>
+                </td>
             </tr>
             <tr>
                 <td>Exon junction</td>
-                <td colspan="4">??</td>
+                <td colspan="4">
+                    <i ng-show="donor.source._summary._jcn_exists" class="icon-ok text-success"></i>
+                    <i ng-hide="donor.source._summary._jcn_exists" class="icon-remove text-error"></i>
+                </td>
             </tr>
         </table>
     </div>
 </div>
 
-<div class="row">
-    <h2>Clinical Data</h2>
-</div>
+<h2>Clinical Data</h2>
 <div class="row">
     <div class="col-span-6">
         <table class="table table-bordered table-striped table-condensed">
             <tr>
                 <td>Age at enrollment</td>
-                <td>{{donor.fields.donor_age_at_enrollment}}</td>
+                <td>{{donor.source.donor_age_at_enrollment}}</td>
             </tr>
             <tr>
                 <td>Age at last followup</td>
-                <td>{{donor.fields.donor_age_at_last_followup}}</td>
+                <td>{{donor.source.donor_age_at_last_followup}}</td>
             </tr>
             <tr>
                 <td>Diagnosis ICD-10 code</td>
-                <td>{{donor.fields.donor_diagnosis_icd10}}</td>
+                <td>{{donor.source.donor_diagnosis_icd10}}</td>
             </tr>
             <tr>
                 <td>Disease status at last followup</td>
-                <td>{{donor.fields.disease_status_last_followup}}</td>
+                <td>{{donor.source.disease_status_last_followup}}</td>
             </tr>
             <tr>
                 <td>Interval of last followup</td>
-                <td>{{donor.fields.donor_interval_of_last_followup}}</td>
+                <td>{{donor.source.donor_interval_of_last_followup}}</td>
             </tr>
         </table>
     </div>
@@ -131,57 +141,192 @@
         <table class="table table-bordered table-striped table-condensed">
             <tr>
                 <td>Tumour stage at diagnosis</td>
-                <td>{{donor.fields.donor_tumour_stage_at_diagnosis}}</td>
+                <td>{{donor.source.donor_tumour_stage_at_diagnosis}}</td>
             </tr>
             <tr>
                 <td>Tumour staging system at diagnosis</td>
-                <td>{{donor.fields.donor_tumour_staging_system_at_diagnosis}}</td>
+                <td>{{donor.source.donor_tumour_staging_system_at_diagnosis}}</td>
             </tr>
             <tr>
                 <td>Tumour stage at diagnosis supplemental</td>
-                <td>{{donor.fields.donor_tumour_stage_at_diagnosis_supplemental}}</td>
+                <td>{{donor.source.donor_tumour_stage_at_diagnosis_supplemental}}</td>
             </tr>
             <tr>
                 <td>Relapse type</td>
-                <td>{{donor.fields.donor_relapse_type}}</td>
+                <td>{{donor.source.donor_relapse_type}}</td>
             </tr>
             <tr>
                 <td>Relapse interval</td>
-                <td>{{donor.fields.donor_relapse_interval}}</td>
+                <td>{{donor.source.donor_relapse_interval}}</td>
             </tr>
         </table>
     </div>
 </div>
+
+<h2>Mutations</h2>
 <div class="row">
-    <h2>Mutations</h2>
-    <table class="table table-bordered table-striped table-condensed">
-        <thead>
-        <tr>
-            <th>Mutation ID</th>
-            <th>DNA Change</th>
-            <th>Type</th>
-            <th>Gene</th>
-            <th>AA Change</th>
-            <th>Consequence</th>
-            <th>Other affected donor in the same project</th>
-            <th>Validation Status</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr ng-repeat="mutation in mutations.hits">
-            <td><a href="#/genes/{{gene.fields.ensembl_gene_id}}">{{gene.fields.symbol}}</a></td>
-            <td>??</td>
-            <td>??</td>
-            <td>??</td>
-            <td>??</td>
-            <td>??</td>
-            <td>??</td>
-            <td>??</td>
-            <td>??</td>
-        </tr>
-        <tr ui-if="!mutations.hits">
-            <td colspan="10"><i class="icon-spinner icon-spin"></i> Fetching mutations...</td>
-        </tr>
-        </tbody>
-    </table>
+    <div class="col-span-12">
+        <table class="table table-bordered table-striped table-condensed">
+            <thead>
+            <tr>
+                <th>Mutation ID</th>
+                <th>DNA Change</th>
+                <th>Type</th>
+                <th>Gene</th>
+                <th>AA Change</th>
+                <th>Consequence</th>
+                <th>Other affected donor in the same project</th>
+                <th>Validation Status</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="mutation in mutations.hits">
+                <td><a href="#/genes/{{gene.fields.ensembl_gene_id}}">{{gene.fields.symbol}}</a></td>
+                <td>??</td>
+                <td>??</td>
+                <td>??</td>
+                <td>??</td>
+                <td>??</td>
+                <td>??</td>
+                <td>??</td>
+                <td>??</td>
+            </tr>
+            <tr ui-if="!mutations.hits">
+                <td colspan="10"><i class="icon-spinner icon-spin"></i> Fetching mutations...</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<h2>Specimen</h2>
+<div class="row">
+    <div class="col-span-3">
+        <ul class="nav nav-pills nav-stacked" ng-repeat="s in donor.source.specimen">
+            <li ng-click="$parent.specimen=s._specimen_id" ng-class="{true:'active'}[$parent.specimen==s._specimen_id]">
+                <a href="">{{s._specimen_id}}</a></li>
+        </ul>
+    </div>
+    <div class="col-span-9" ng-repeat="s in donor.source.specimen">
+        <div ng-show="$parent.specimen == s._specimen_id">
+            <h3>{{s._specimen_id}}</h3>
+
+            <div class="row">
+                <div class="col-span-6">
+                    <table class="table table-bordered table-striped table-condensed">
+                        <tr>
+                            <td>Specimen Type</td>
+                            <td>{{s.specimen_type}}</td>
+                        </tr>
+                        <tr>
+                            <td>Specimen type other</td>
+                            <td>{{s.specimen_type_other}}</td>
+                        </tr>
+                        <tr>
+                            <td>Tumour Confirmed</td>
+                            <td>{{s.tumour_confirmed}}</td>
+                        </tr>
+                        <tr>
+                            <td>Specimen interval</td>
+                            <td>{{s.specimen_interval}}</td>
+                        </tr>
+                        <tr>
+                            <td>Donor treatment type</td>
+                            <td>{{s.specimen_donor_treatment_type}}</td>
+                        </tr>
+                        <tr>
+                            <td>Donor treatment type other</td>
+                            <td>{{s.specimen_donor_treatment_type_other}}</td>
+                        </tr>
+                        <tr>
+                            <td>Specimen processing</td>
+                            <td>{{s.specimen_processing}}</td>
+                        </tr>
+                        <tr>
+                            <td>Specimen processing other</td>
+                            <td>{{s.specimen_processing_other}}</td>
+                        </tr>
+                        <tr>
+                            <td>Specimen storage</td>
+                            <td>{{s.specimen_storage}}</td>
+                        </tr>
+                        <tr>
+                            <td>Specimen storage other</td>
+                            <td>{{s.specimen_storage_other}}</td>
+                        </tr>
+                        <tr>
+                            <td>Specimen available</td>
+                            <td>{{s.specimen_available}}</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-span-6">
+                    <table class="table table-bordered table-striped table-condensed">
+                        <tr>
+                            <td>Specimen biobank</td>
+                            <td>{{s.specimen_biobank}}</td>
+                        </tr>
+                        <tr>
+                            <td>Specimen biobank ID</td>
+                            <td>{{s.specimen_biobank_id}}</td>
+                        </tr>
+                        <tr>
+                            <td>Tumour grade</td>
+                            <td>{{s.tumour_grade}}</td>
+                        </tr>
+                        <tr>
+                            <td>Tumour grading system</td>
+                            <td>{{s.tumour_grading_system}}</td>
+                        </tr>
+                        <tr>
+                            <td>Tumour grade supplemental</td>
+                            <td>{{s.tumour_grade_supplemental}}</td>
+                        </tr>
+                        <tr>
+                            <td>Tumour stage</td>
+                            <td>{{s.tumour_stage}}</td>
+                        </tr>
+                        <tr>
+                            <td>Tumour stage system</td>
+                            <td>{{s.tumour_stage_system}}</td>
+                        </tr>
+                        <tr>
+                            <td>Tumour stage supplemental</td>
+                            <td>{{s.tumour_stage_supplemental}}</td>
+                        </tr>
+                        <tr>
+                            <td>Display image of stained section</td>
+                            <td>{{s.digital_image_of_stained_section}}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-span-12">
+                    <table class="table table-bordered table-striped table-condensed">
+                        <thead>
+                        <tr>
+                            <th>Sample ID</th>
+                            <th>Submitted Sample ID</th>
+                            <th>Sample Type</th>
+                            <th>Other sample type</th>
+                            <th>Sample interval (days)</th>
+                            <th>Experimental Analyses</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat="sample in s.sample">
+                            <td>{{sample._sample_id}}</td>
+                            <td>{{sample.analyzed_sample_id}}</td>
+                            <td>{{sample.analyzed_sample_type}}</td>
+                            <td>{{sample.analyzed_sample_type_other}}</td>
+                            <td>{{sample.analyzed_sample_interval}}</td>
+                            <td>??</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

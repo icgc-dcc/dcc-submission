@@ -28,12 +28,19 @@ import static java.lang.Math.floor;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ResultsPagination {
   private final int count;
+
   private final long total;
+
   private final int size;
+
   private final int from;
+
   private final int page;
+
   private final long pages;
+
   private final String sort;
+
   private final String order;
 
   public ResultsPagination(final SearchHits hits, final RequestSearchQuery requestSearchQuery) {
@@ -43,7 +50,7 @@ public class ResultsPagination {
     this.from = requestSearchQuery.getFrom() + 1;
     this.sort = requestSearchQuery.getSort();
     this.order = requestSearchQuery.getOrder().toLowerCase();
-    this.page = (int) floor(from / size) + 1;
+    this.page = size == 1 ? from : (int) floor(from / size) + 1;
     this.pages = (total + size - 1) / size;
   }
 }

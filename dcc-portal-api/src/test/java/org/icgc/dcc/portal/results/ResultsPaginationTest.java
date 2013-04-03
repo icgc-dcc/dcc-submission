@@ -40,7 +40,8 @@ public class ResultsPaginationTest {
   SearchHits searchHits;
 
   @Before
-  public void setUp() throws Exception {}
+  public void setUp() throws Exception {
+  }
 
   @Test
   public final void test_Page_WhenFromLessThanSize() {
@@ -91,6 +92,23 @@ public class ResultsPaginationTest {
 
     // ... so should be on page 6
     assertThat(resultsPagination.getPage()).isEqualTo(6);
+  }
+
+  @Test
+  public final void test_Page_WhenSizeIsOne() {
+    // Just to deal with NullPointers
+    when(searchHits.getHits()).thenReturn(new SearchHit[10]);
+    when(requestSearchQuery.getOrder()).thenReturn("asc");
+
+    // 10 results per page...
+    when(requestSearchQuery.getSize()).thenReturn(1);
+    // 7th result
+    when(requestSearchQuery.getFrom()).thenReturn(7);
+
+    ResultsPagination resultsPagination = new ResultsPagination(searchHits, requestSearchQuery);
+
+    // page should be same as 'from' + 1 to account for 0/1 index count
+    assertThat(resultsPagination.getPage()).isEqualTo(requestSearchQuery.getFrom() + 1);
   }
 
   @Test

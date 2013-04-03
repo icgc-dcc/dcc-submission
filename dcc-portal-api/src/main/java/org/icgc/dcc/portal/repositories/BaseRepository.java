@@ -17,12 +17,12 @@
 
 package org.icgc.dcc.portal.repositories;
 
-import static com.google.common.collect.Sets.intersection;
-import static com.google.common.collect.Sets.newHashSet;
-import static org.icgc.dcc.portal.core.JsonUtils.MAPPER;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.Sets.SetView;
+import com.google.inject.Inject;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-
 import org.elasticsearch.action.get.GetRequestBuilder;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchType;
@@ -31,15 +31,13 @@ import org.elasticsearch.index.query.FilterBuilder;
 import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.sort.SortOrder;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.Sets.SetView;
-import com.google.inject.Inject;
-
 import org.icgc.dcc.portal.request.RequestSearchQuery;
 import org.icgc.dcc.portal.results.FindAllResults;
 import org.icgc.dcc.portal.results.FindResults;
+
+import static com.google.common.collect.Sets.intersection;
+import static com.google.common.collect.Sets.newHashSet;
+import static org.icgc.dcc.portal.core.JsonUtils.MAPPER;
 
 @Data
 @Slf4j
@@ -93,7 +91,7 @@ public abstract class BaseRepository {
   }
 
   private GetRequestBuilder buildGetRequest(String id) {
-    return getClient().prepareGet(getIndex(), getType(), id).setFields(getFields());
+    return getClient().prepareGet(getIndex(), getType(), id);//.setFields(getFields());
   }
 
   private SearchRequestBuilder buildSearchRequest(RequestSearchQuery requestSearchQuery) {
@@ -128,7 +126,7 @@ public abstract class BaseRepository {
   }
 
   abstract SearchRequestBuilder addFacets(SearchRequestBuilder searchRequestBuilder,
-      RequestSearchQuery requestSearchQuery);
+                                          RequestSearchQuery requestSearchQuery);
 
   abstract QueryBuilder buildQuery();
 
