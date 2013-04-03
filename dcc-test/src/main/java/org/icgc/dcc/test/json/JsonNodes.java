@@ -48,4 +48,9 @@ public class JsonNodes {
     return MAPPER.readTree(json);
   }
 
+  @SneakyThrows
+  public static String _(Object object) {
+    return MAPPER.writeValueAsString(object);
+  }
+
 }

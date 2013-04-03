@@ -25,16 +25,24 @@ import java.net.URL;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
+import org.bson.types.ObjectId;
 import org.jongo.Jongo;
 import org.jongo.MongoCollection;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.POJONode;
 import com.mongodb.DB;
 
 @Slf4j
 public class MongoImporter extends BaseMongoImportExport {
+
+  /**
+   * Mongo id field.
+   */
+  private static final String ID_FIELD = "_id";
 
   private static final ObjectReader READER = MAPPER.reader(JsonNode.class);
 
@@ -60,6 +68,8 @@ public class MongoImporter extends BaseMongoImportExport {
 
     while(iterator.hasNext()) {
       JsonNode object = iterator.next();
+      handleObjectId(object);
+
       collection.save(object);
     }
   }
@@ -74,7 +84,18 @@ public class MongoImporter extends BaseMongoImportExport {
 
     while(iterator.hasNext()) {
       JsonNode object = iterator.next();
+      handleObjectId(object);
+
       collection.save(object);
+    }
+  }
+
+  private void handleObjectId(JsonNode object) {
+    if(object.has(ID_FIELD)) {
+      String value = object.get(ID_FIELD).textValue();
+      if(ObjectId.isValid(value)) {
+        ((ObjectNode) object).put(ID_FIELD, new POJONode(new ObjectId(value)));
+      }
     }
   }
 
