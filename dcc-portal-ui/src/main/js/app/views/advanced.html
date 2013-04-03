@@ -1,166 +1,229 @@
 <div class="row">
-    <div class="col-span-3">
-        <div current-selection class="sidebar"></div>
-        <div id="facets" class="sidebar">
-            <div class="facet-header facets"><span>Filter Search</span></div>
+<div class="col-span-3">
+    <div current-selection class="sidebar"></div>
+    <div id="facets" class="sidebar">
+        <div class="facet-header facets"><span>Filter Search</span></div>
 
-            <tabs>
-                <pane heading="Genes">
-                    <ul class="nav nav-list" ng-controller="FacetsController">
-                        <term-facet type="gene" facet-name="biotype" facet="genes.facets['biotype']"></term-facet>
-                        <location-facet type="gene" facet-name="gene_location"
-                                        placeholder="Search for a gene location"></location-facet>
-                        <lmulti-facet facet-name="gene_list" select2="geneList"></lmulti-facet>
-                        <lmulti-facet facet-name="pathways" select2="geneList"></lmulti-facet>
-                    </ul>
-                </pane>
-                <pane heading="Donors">
-                    <ul class="nav nav-list" ng-controller="FacetsController">
-                        <term-facet type="donor" facet-name="project_name"
-                                    facet="donors.facets['project.project_name']"></term-facet>
-                        <term-facet type="donor" facet-name="primary_site"
-                                    facet="donors.facets['project.primary_site']"></term-facet>
-                        <term-facet type="donor" facet-name="donor_sex" facet="donors.facets['donor_sex']"></term-facet>
-                        <term-facet type="donor" facet-name="donor_tumour_stage_at_diagnosis"
-                                    facet="donors.facets['donor_tumour_stage_at_diagnosis']"></term-facet>
-                        <term-facet type="donor" facet-name="donor_vital_status"
-                                    facet="donors.facets['donor_vital_status']"></term-facet>
-                        <term-facet type="donor" facet-name="disease_status_last_followup"
-                                    facet="donors.facets['disease_status_last_followup']"></term-facet>
-                        <term-facet type="donor" facet-name="donor_relapse_type"
-                                    facet="donors.facets['donor_relapse_type']"></term-facet>
+        <tabs>
+            <pane heading="Genes">
+                <ul class="nav nav-list" ng-controller="FacetsController">
+                    <term-facet type="gene" facet-name="biotype" facet="genes.facets['biotype']"></term-facet>
+                    <location-facet type="gene" facet-name="gene_location"
+                                    placeholder="Search for a gene location"></location-facet>
+                    <lmulti-facet facet-name="gene_list" select2="geneList"></lmulti-facet>
+                    <lmulti-facet facet-name="pathways" select2="geneList"></lmulti-facet>
+                </ul>
+            </pane>
+            <pane heading="Donors">
+                <ul class="nav nav-list" ng-controller="FacetsController">
+                    <tterm-facet type="donor" facet-name="project_name"
+                                 facet="donors.facets['project.project_name']"></tterm-facet>
+                    <tterm-facet type="donor" facet-name="primary_site"
+                                 facet="donors.facets['project.primary_site']"></tterm-facet>
+                    <term-facet type="donor" facet-name="donor_sex" facet="donors.facets['donor_sex']"></term-facet>
+                    <term-facet type="donor" facet-name="donor_tumour_stage_at_diagnosis"
+                                facet="donors.facets['donor_tumour_stage_at_diagnosis']"></term-facet>
+                    <term-facet type="donor" facet-name="donor_vital_status"
+                                facet="donors.facets['donor_vital_status']"></term-facet>
+                    <term-facet type="donor" facet-name="disease_status_last_followup"
+                                facet="donors.facets['disease_status_last_followup']"></term-facet>
+                    <term-facet type="donor" facet-name="donor_relapse_type"
+                                facet="donors.facets['donor_relapse_type']"></term-facet>
 
-                    </ul>
-                </pane>
-            </tabs>
+                </ul>
+            </pane>
+        </tabs>
+    </div>
+</div>
+<div class="col-span-9">
+    <h2>
+        <small>{{genes.pagination.total}}</small>
+        Genes
+    </h2>
+    <div class="row">
+        <stacked items='stdata' height="220"></stacked>
+    </div>
+    <div class="row">
+        <div class="col-span-6">
+            <pie items='cdata_genes_gt' title="Gene Types" label="Genes" type="pie" height="220"
+                    ></pie>
+        </div>
+        <div class="span6">
+
         </div>
     </div>
-    <div class="col-span-9">
-        <h2>
-            <small>{{genes.pagination.total}}</small>
-            Genes
-        </h2>
-        <div class="row">
-            <stacked items='stdata' height="220"></stacked>
-        </div>
-        <div class="row">
-            <div class="col-span-6">
-                <pie items='cdata_genes_gt' title="Gene Types" label="Genes" type="pie" height="220"
-                        ></pie>
-            </div>
-            <div class="span6">
-
-            </div>
-        </div>
 
 
-        <div class="row">
-            <table class="table table-bordered table-striped">
-                <thead>
-                <tr>
-                    <th>Symbol</th>
-                    <th>Name</th>
-                    <th>Location</th>
-                    <th>Type</th>
-                    <th>Donors</th>
-                    <th>Mutations</th>
-                    <th>Projects</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr ng-repeat="gene in genes.hits">
-                    <td><a href="#/genes/{{gene.id}}">{{gene.fields.symbol}}</a></td>
-                    <td>{{gene.fields.name}}</td>
-                    <td>chr{{gene.fields.chromosome}}:{{gene.fields.start}}-{{gene.fields.end}}</td>
-                    <td>{{gene.fields.biotype}}</td>
-                    <td style="text-align: right">{{gene.score}}</td>
-                    <td style="text-align: right">??</td>
-                    <td style="text-align: right">??</td>
-                </tr>
-                <tr ng-hide="genes.hits">
-                    <td colspan="8">No results found. <a href="">Reset filters to try again.</a></td>
-                </tr>
-                </tbody>
-            </table>
-            <pagination boundary-links="true" num-pages="genes.pagination.total"
-                        current-page="genes.pagination.page"
-                        max-size="5"></pagination>
-        </div>
-        <h2>
-            <small>{{donors.pagination.total}}</small>
-            Donors
-        </h2>
-        <div class="row">
-            <div class="col-span-6">
-                <pie items='cdata_donors_t' title="Tumour Stage" label="Donors" type="pie" height="220"></pie>
-            </div>
-            <div class="col-span-6">
-                <pie items='cdata_donors_t' title="Tumour Stage" label="Donors" type="pie" height="220"></pie>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-span-6">
-                <pie items='cdata_donors_t' title="Tumour Stage" label="Donors" type="pie" height="220"></pie>
-            </div>
-            <div class="col-span-6">
-                <pie items='cdata_donors_t' title="Tumour Stage" label="Donors" type="pie" height="220"></pie>
-            </div>
-        </div>
+    <div class="row">
+        <table class="table table-bordered table-striped">
+            <thead>
+            <tr>
+                <th ng-click="gToggleSort('symbol')" class="link"><i ng-show="gso.sort=='symbol'"
+                                                                     ng-class="{'icon-angle-down': gso.order=='desc', 'icon-angle-up': gso.order=='asc'}"></i>
+                    Symbol
+                </th>
+                <th ng-click="gToggleSort('name')" class="link"><i ng-show="gso.sort=='name'"
+                                                                   ng-class="{'icon-angle-down': gso.order=='desc', 'icon-angle-up': gso.order=='asc'}"></i>
+                    Name
+                </th>
+                <th ng-click="gToggleSort('chromosome')" class="link"><i ng-show="gso.sort=='chromosome'"
+                                                                         ng-class="{'icon-angle-down': gso.order=='desc', 'icon-angle-up': gso.order=='asc'}"></i>
+                    Chromosome
+                </th>
+                <th ng-click="gToggleSort('start')" class="link"><i ng-show="gso.sort=='start'"
+                                                                    ng-class="{'icon-angle-down': gso.order=='desc', 'icon-angle-up': gso.order=='asc'}"></i>
+                    Start
+                </th>
+                <th ng-click="gToggleSort('end')" class="link"><i ng-show="gso.sort=='end'"
+                                                                  ng-class="{'icon-angle-down': gso.order=='desc', 'icon-angle-up': gso.order=='asc'}"></i>
+                    End
+                </th>
+                <th ng-click="gToggleSort('biotype')" class="link"><i ng-show="gso.sort=='biotype'"
+                                                                      ng-class="{'icon-angle-down': gso.order=='desc', 'icon-angle-up': gso.order=='asc'}"></i>
+                    Type
+                </th>
+                <th ng-click="gToggleSort('_score')" class="link"><i ng-show="gso.sort=='_score'"
+                                                                     ng-class="{'icon-angle-down': gso.order=='desc', 'icon-angle-up': gso.order=='asc'}"></i>
+                    Donors
+                </th>
+                <th>Mutations</th>
 
-        <div class="row">
-            <table class="table table-bordered table-striped">
-                <thead>
-                <tr>
-                    <th rowspan="2">Donor ID</th>
-                    <th rowspan="2">Project</th>
-                    <th rowspan="2">Primary Site</th>
-                    <th rowspan="2">Gender</th>
-                    <th colspan="2">Diagnosis</th>
-                    <th rowspan="2">Survival time<br>(days)</th>
-                    <th rowspan="2">Analyses</th>
-                    <th rowspan="2">Mutations</th>
-                    <th rowspan="2">CNSM</th>
-                    <th rowspan="2">SSM</th>
-                    <th rowspan="2">Methylation</th>
-                    <th rowspan="2">Expression</th>
-                    <th rowspan="2">Mutated Genes</th>
-                </tr>
-                <tr class="subhead">
-                    <th>Age</th>
-                    <th>Tumor Stage</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr ng-repeat="donor in donors.hits">
-                    <td><a href="#/donors/{{donor.id}}">{{donor.id}}</a></td>
-                    <td><a href="{{donor.fields._project_id}}">??</a></td>
-                    <td>??</td>
-                    <td>{{donor.fields.donor_sex}}</td>
-                    <td style="text-align: right">{{donor.fields.donor_age_at_diagnosis}}</td>
-                    <td>{{donor.fields.donor_tumour_stage_at_diagnosis}}</td>
-                    <td style="text-align: right">{{donor.fields.donor_survival_time}}</td>
-                    <td style="text-align: right">??</td>
-                    <td style="text-align: right">??</td>
-                    <td style="text-align: right">{{donor.fields['_summary._cnsm_count']}}</td>
-                    <td style="text-align: right">{{donor.fields['_summary._ssm_count']}}</td>
-                    <td style="text-align: center">
-                        <i ng-show="donor.fields['_summary._meth_exists']" class="icon-ok text-success"></i>
-                        <i ng-hide="donor.fields['_summary._meth_exists']" class="icon-remove text-error"></i>
-                    </td>
-                    <td style="text-align: center">
-                        <i ng-show="donor.fields['_summary._exp_exists']" class="icon-ok text-success"></i>
-                        <i ng-hide="donor.fields['_summary._exp_exists']" class="icon-remove text-error"></i>
-                    </td>
-                    <td style="text-align: right">{{donor.score}}</td>
-                </tr>
-                <tr ng-hide="donors.hits">
-                    <td colspan="10">No results found.</td>
-                </tr>
-                </tbody>
-            </table>
-            <pagination boundary-links="true" num-pages="donors.pagination.total"
-                        current-page="donors.pagination.page"
-                        max-size="5"></pagination>
+                <th>Projects</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="gene in genes.hits">
+                <td><a href="#/genes/{{gene.id}}">{{gene.fields.symbol}}</a></td>
+                <td>{{gene.fields.name}}</td>
+                <td colspan="3">chr{{gene.fields.chromosome}}:{{gene.fields.start}}-{{gene.fields.end}}</td>
+                <td>{{gene.fields.biotype}}</td>
+                <td style="text-align: right">{{gene.score}}</td>
+                <td style="text-align: right">??</td>
+                <td style="text-align: right">??</td>
+            </tr>
+            <tr ng-hide="genes.hits">
+                <td colspan="8">No results found. <a href="">Reset filters to try again.</a></td>
+            </tr>
+            </tbody>
+        </table>
+        <pagination boundary-links="true"
+                    num-pages="genes.pagination.pages"
+                    current-page="genes.pagination.page"
+                    max-size="5"
+                    on-select-page="gSelectPage(page)"></pagination>
+    </div>
+    <h2>
+        <small>{{donors.pagination.total}}</small>
+        Donors
+    </h2>
+    <div class="row">
+        <div class="col-span-6">
+            <pie items='cdata_donors_t' title="Tumour Stage" label="Donors" type="pie" height="220"></pie>
+        </div>
+        <div class="col-span-6">
+            <pie items='cdata_donors_t' title="Tumour Stage" label="Donors" type="pie" height="220"></pie>
         </div>
     </div>
+    <div class="row">
+        <div class="col-span-6">
+            <pie items='cdata_donors_t' title="Tumour Stage" label="Donors" type="pie" height="220"></pie>
+        </div>
+        <div class="col-span-6">
+            <pie items='cdata_donors_t' title="Tumour Stage" label="Donors" type="pie" height="220"></pie>
+        </div>
+    </div>
+
+    <div class="row">
+        <table class="table table-bordered table-striped">
+            <thead>
+            <tr>
+                <th rowspan="2" ng-click="dToggleSort('_donor_id')" class="link"><i ng-show="dso.sort=='_donor_id'"
+                                                                                    ng-class="{'icon-angle-down': dso.order=='desc', 'icon-angle-up': dso.order=='asc'}"></i>
+                    Donor ID
+                </th>
+                <th rowspan="2" ng-click="dToggleSort('project_name')" class="link"><i
+                        ng-show="dso.sort=='project_name'"
+                        ng-class="{'icon-angle-down': dso.order=='desc', 'icon-angle-up': dso.order=='asc'}"></i>
+                    Project
+                </th>
+                <th rowspan="2" ng-click="dToggleSort('primary_site')" class="link"><i
+                        ng-show="dso.sort=='primary_site'"
+                        ng-class="{'icon-angle-down': dso.order=='desc', 'icon-angle-up': dso.order=='asc'}"></i>
+                    Primary Site
+                </th>
+                <th rowspan="2" ng-click="dToggleSort('donor_sex')" class="link"><i ng-show="dso.sort=='donor_sex'"
+                                                                                    ng-class="{'icon-angle-down': dso.order=='desc', 'icon-angle-up': dso.order=='asc'}"></i>
+                    Gender
+                </th>
+                <th colspan="2">Diagnosis</th>
+                <th rowspan="2" ng-click="dToggleSort('donor_survival_time')" class="link"><i
+                        ng-show="dso.sort=='donor_survival_time'"
+                        ng-class="{'icon-angle-down': dso.order=='desc', 'icon-angle-up': dso.order=='asc'}"></i>
+                    Survival time<br>(days)
+                </th>
+                <th rowspan="2">Analyses</th>
+                <th rowspan="2">Mutations</th>
+                <th rowspan="2" ng-click="dToggleSort('_summary._cnsm_count')" class="link"><i
+                        ng-show="dso.sort=='_summary._cnsm_count'"
+                        ng-class="{'icon-angle-down': dso.order=='desc', 'icon-angle-up': dso.order=='asc'}"></i>
+                    CNSM
+                </th>
+                <th rowspan="2" ng-click="dToggleSort('_summary._ssm_count')" class="link"><i
+                        ng-show="dso.sort=='_summary._ssm_count'"
+                        ng-class="{'icon-angle-down': dso.order=='desc', 'icon-angle-up': dso.order=='asc'}"></i>
+                    SSM
+                </th>
+                <th rowspan="2">Methylation</th>
+                <th rowspan="2">Expression</th>
+                <th rowspan="2" ng-click="dToggleSort('_score')" class="link"><i ng-show="dso.sort=='_score'"
+                                                                                 ng-class="{'icon-angle-down': dso.order=='desc', 'icon-angle-up': dso.order=='asc'}"></i>
+                    Mutated Genes
+                </th>
+            </tr>
+            <tr class="subhead">
+                <th ng-click="dToggleSort('donor_age_at_diagnosis')" class="link"><i
+                        ng-show="dso.sort=='donor_age_at_diagnosis'"
+                        ng-class="{'icon-angle-down': dso.order=='desc', 'icon-angle-up': dso.order=='asc'}"></i>
+                    Age
+                </th>
+                <th ng-click="dToggleSort('donor_tumour_stage_at_diagnosis')" class="link"><i
+                        ng-show="dso.sort=='donor_tumour_stage_at_diagnosis'"
+                        ng-class="{'icon-angle-down': dso.order=='desc', 'icon-angle-up': dso.order=='asc'}"></i>
+                    Tumor Stage
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="donor in donors.hits">
+                <td><a href="#/donors/{{donor.id}}">{{donor.id}}</a></td>
+                <td><a href="{{donor.fields._project_id}}">??</a></td>
+                <td>??</td>
+                <td>{{donor.fields.donor_sex}}</td>
+                <td style="text-align: right">{{donor.fields.donor_age_at_diagnosis}}</td>
+                <td>{{donor.fields.donor_tumour_stage_at_diagnosis}}</td>
+                <td style="text-align: right">{{donor.fields.donor_survival_time}}</td>
+                <td style="text-align: right">??</td>
+                <td style="text-align: right">??</td>
+                <td style="text-align: right">{{donor.fields['_summary._cnsm_count']}}</td>
+                <td style="text-align: right">{{donor.fields['_summary._ssm_count']}}</td>
+                <td style="text-align: center">
+                    <i ng-show="donor.fields['_summary._meth_exists']" class="icon-ok text-success"></i>
+                    <i ng-hide="donor.fields['_summary._meth_exists']" class="icon-remove text-error"></i>
+                </td>
+                <td style="text-align: center">
+                    <i ng-show="donor.fields['_summary._exp_exists']" class="icon-ok text-success"></i>
+                    <i ng-hide="donor.fields['_summary._exp_exists']" class="icon-remove text-error"></i>
+                </td>
+                <td style="text-align: right">{{donor.score}}</td>
+            </tr>
+            <tr ng-hide="donors.hits">
+                <td colspan="10">No results found.</td>
+            </tr>
+            </tbody>
+        </table>
+        <pagination boundary-links="true" num-pages="donors.pagination.pages"
+                    current-page="donors.pagination.page"
+                    max-size="5"></pagination>
+    </div>
+</div>
 </div>

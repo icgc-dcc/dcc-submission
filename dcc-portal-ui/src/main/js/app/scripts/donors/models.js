@@ -19,10 +19,18 @@
 
 angular.module('app.donors.models', []);
 
-angular.module('app.donors.models').factory('Donors', ['http', function (http) {
+angular.module('app.donors.models').factory('Donors', ['http', 'httpService', function (http, httpService) {
+  var serialize = function (parse) {
+    var params = [];
+    for (var p in parse) {
+      params.push(p + "=" + parse[p]);
+    }
+    return params.join("&");
+  };
   return {
     query: function () {
-      return http.query('/ws/donors');
+      var so = httpService.getCurrentSearch().donors ? serialize(JSON.parse(httpService.getCurrentSearch().donors)) : null;
+      return http.query('/ws/donors', so);
     },
     get: function (params) {
       return http.get('/ws/donors/' + params.donor);

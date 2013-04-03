@@ -34,8 +34,41 @@ angular.module('app.donors.controllers').controller('DonorController', [ "$scope
   $scope.donor = donor;
 }]);
 
-angular.module('app.donors.controllers').controller('EmbDonorsController', [ "$scope", 'DonorsService', function ($scope, DonorsService) {
+angular.module('app.donors.controllers').controller('EmbDonorsController', [ "$scope", 'DonorsService', 'httpService', function ($scope, DonorsService, httpService) {
   DonorsService.embQuery({donor: {project_name: $scope.project.fields.project_name}}).then(function (response) {
     $scope.donors = response;
   });
+
+  $scope.refresh = function () {
+    DonorsService.embQuery({donor: {project_name: $scope.project.fields.project_name}}).then(function (response) {
+      $scope.donors = response;
+    });
+  };
+
+  /* Pagination Stuff */
+  var dso = httpService.getCurrentSearch().donors ? JSON.parse(httpService.getCurrentSearch().donors) : "{}";
+  $scope.dso = {};
+  $scope.dso.sort = dso.sort ? dso.sort : '_score';
+  $scope.dso.order = dso.order ? dso.order : 'desc';
+  $scope.dGetOrder = function () {
+    if ($scope.dso.order == 'desc') {
+      $scope.dso.order = 'asc';
+    } else {
+      $scope.dso.order = 'desc';
+    }
+    return $scope.dso.order;
+  };
+  $scope.dToggleSort = function (header) {
+    var search = httpService.getCurrentSearch();
+    $scope.dso.sort = header;
+    $scope.dGetOrder();
+
+    search.donors = '{"sort":"' + $scope.dso.sort + '","order":"' + $scope.dso.order + '"}';
+
+    httpService.updateSearch(search);
+    $scope.refresh();
+  };
+  /* /pagination */
+
+  $scope.$on('refresh', $scope.refresh);
 }]);

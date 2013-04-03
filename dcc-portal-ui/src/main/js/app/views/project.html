@@ -110,21 +110,50 @@
         <table class="table table-bordered table-striped table-condensed">
             <thead>
             <tr>
-                <th rowspan="2">Donor ID</th>
-                <th rowspan="2">Gender</th>
+                <th rowspan="2" ng-click="dToggleSort('_donor_id')" class="link"><i ng-show="dso.sort=='_donor_id'"
+                                                                                    ng-class="{'icon-angle-down': dso.order=='desc', 'icon-angle-up': dso.order=='asc'}"></i>
+                    Donor ID
+                </th>
+                <th rowspan="2" ng-click="dToggleSort('donor_sex')" class="link"><i ng-show="dso.sort=='donor_sex'"
+                                                                                    ng-class="{'icon-angle-down': dso.order=='desc', 'icon-angle-up': dso.order=='asc'}"></i>
+                    Gender
+                </th>
                 <th colspan="2">Diagnosis</th>
-                <th rowspan="2">Survival time<br>(days)</th>
+                <th rowspan="2" ng-click="dToggleSort('donor_survival_time')" class="link"><i
+                        ng-show="dso.sort=='donor_survival_time'"
+                        ng-class="{'icon-angle-down': dso.order=='desc', 'icon-angle-up': dso.order=='asc'}"></i>
+                    Survival time<br>(days)
+                </th>
                 <th rowspan="2">Analyses</th>
                 <th rowspan="2">Mutations</th>
-                <th rowspan="2">CNSM</th>
-                <th rowspan="2">SSM</th>
+                <th rowspan="2" ng-click="dToggleSort('_summary._cnsm_count')" class="link"><i
+                        ng-show="dso.sort=='_summary._cnsm_count'"
+                        ng-class="{'icon-angle-down': dso.order=='desc', 'icon-angle-up': dso.order=='asc'}"></i>
+                    CNSM
+                </th>
+                <th rowspan="2" ng-click="dToggleSort('_summary._ssm_count')" class="link"><i
+                        ng-show="dso.sort=='_summary._ssm_count'"
+                        ng-class="{'icon-angle-down': dso.order=='desc', 'icon-angle-up': dso.order=='asc'}"></i>
+                    SSM
+                </th>
                 <th rowspan="2">Methylation</th>
                 <th rowspan="2">Expression</th>
-                <th rowspan="2">Mutated Genes</th>
+                <th rowspan="2" ng-click="dToggleSort('_score')" class="link"><i ng-show="dso.sort=='_score'"
+                                                                                 ng-class="{'icon-angle-down': dso.order=='desc', 'icon-angle-up': dso.order=='asc'}"></i>
+                    Mutated Genes
+                </th>
             </tr>
             <tr class="subhead">
-                <th>Age</th>
-                <th>Tumor Stage</th>
+                <th ng-click="dToggleSort('donor_age_at_diagnosis')" class="link"><i
+                        ng-show="dso.sort=='donor_age_at_diagnosis'"
+                        ng-class="{'icon-angle-down': dso.order=='desc', 'icon-angle-up': dso.order=='asc'}"></i>
+                    Age
+                </th>
+                <th ng-click="dToggleSort('donor_tumour_stage_at_diagnosis')" class="link"><i
+                        ng-show="dso.sort=='donor_tumour_stage_at_diagnosis'"
+                        ng-class="{'icon-angle-down': dso.order=='desc', 'icon-angle-up': dso.order=='asc'}"></i>
+                    Tumor Stage
+                </th>
             </tr>
             </thead>
             <tbody>
@@ -160,7 +189,10 @@
         <table class="table table-bordered table-striped table-condensed">
             <thead>
             <tr>
-                <th>gene</th>
+                <th ng-click="gToggleSort('symbol')" class="link"><i ng-show="gso.sort=='symbol'"
+                                                                     ng-class="{'icon-angle-down': gso.order=='desc', 'icon-angle-up': gso.order=='asc'}"></i>
+                    Symbol
+                </th>
                 <th>affected donors</th>
                 <th>donors tested</th>
                 <th>percentage affected</th>
@@ -177,7 +209,7 @@
                 </td>
                 <td>{{td=gene.fields['project._summary._ssm_tested_donor_count'][i]}}</td>
                 <td>{{ad/td * 100 | number:2}} %</td>
-                <td>??</td>
+                <td>{{gene._score}}</td>
                 <td>??</td>
                 <td>??</td>
             </tr>

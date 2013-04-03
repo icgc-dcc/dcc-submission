@@ -37,6 +37,7 @@ angular.module('app.projects').config(['$routeProvider', function ($routeProvide
       .when('/projects/:project', {
         templateUrl: 'views/project.html',
         controller: 'ProjectController',
+        reloadOnSearch: false,
         resolve: {
           project: ['$route', 'ProjectsService', 'DonorsService', function ($route, ProjectsService) {
             return ProjectsService.get({project: $route.current.params.project});
