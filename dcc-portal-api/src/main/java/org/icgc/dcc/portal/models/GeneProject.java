@@ -20,11 +20,10 @@ package org.icgc.dcc.portal.models;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-
 import org.icgc.dcc.portal.DataPortalConfiguration;
 
 public final class GeneProject {
-  public static final String NAME = "gene-projects";
+  public static final String NAME = "gene-project";
 
   public static final String[] FIELDS = {"symbol", "project.project_name", "project._summary._ssm_tested_donor_count",
       "project._summary._ssm_donor_count"};
