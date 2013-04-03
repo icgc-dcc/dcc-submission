@@ -46,6 +46,10 @@ public class MongoImporter extends BaseMongoImportExport {
 
   private static final ObjectReader READER = MAPPER.reader(JsonNode.class);
 
+  public MongoImporter(DB targetDatabase) {
+    super(null, new Jongo(targetDatabase));
+  }
+
   public MongoImporter(File sourceDirectory, DB targetDatabase) {
     super(sourceDirectory, new Jongo(targetDatabase));
   }
