@@ -88,6 +88,7 @@ public final class FieldNames {
   public static final String OBSERVATION_CONSEQUENCES_TRANSCRIPT_ID = "_transcript_id";
   public static final String OBSERVATION_CONSEQUENCES_GENE_ID = "_gene_id";
   public static final String OBSERVATION_CONSEQUENCES_GENE = "gene";
+  public static final String OBSERVATION_PLATFORM = "platform";
   
   public static String getPartitionTypeFieldName(String type) {
     return type;
@@ -104,6 +105,7 @@ public final class FieldNames {
   public static final String MUTATION_TRANSCRIPTS = "transcript";
   public static final String MUTATION_TRANSCRIPTS_GENE = "gene";
   public static final String MUTATION_TRANSCRIPTS_CONSEQUENCE = "consequence";
+  public static final String MUTATION_PLATFORM = "platform";
   
   /**
    * Aggregate field names.
