@@ -36,7 +36,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
-import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 import com.google.common.io.Resources;
 
@@ -55,6 +54,12 @@ public class ResourceWrapper {
   private static final String CODE_LIST_DEFAULT_FILE_NAME = "CodeList.json";
 
   private static final String DICTIONARY_DEFAULT_FILE_NAME = "Dictionary.json";
+
+  private static final String CODELIST_RESTRICTION_NAME = "codelist";
+
+  private static final String REQUIRED_RESTRICTION_NAME = "required";
+
+  private static final String ACCEPT_MISSING_CODE_TYPE = "acceptMissingCode";
 
   public ResourceWrapper(File dictionaryFile, File codeListFile) throws JsonParseException, JsonMappingException,
       IOException, JsonProcessingException {
@@ -113,17 +118,19 @@ public class ResourceWrapper {
   }
 
   public boolean isRequired(Field field) {
-    return field.getRestriction("required").isPresent();
+    return field.getRestriction(REQUIRED_RESTRICTION_NAME).isPresent();
   }
 
   public boolean isCodeListField(Field field) {
-    return field.getRestriction("codelist").isPresent();
+    return field.getRestriction(CODELIST_RESTRICTION_NAME).isPresent();
 
   }
 
   public boolean acceptsMissingCode(Field field) {
-    Optional<Restriction> restriction = field.getRestriction("required");
-    return restriction.get().getConfig().getBoolean("acceptMissingCode");
+    if(isRequired(field)) {
+      Restriction restriction = field.getRestriction(REQUIRED_RESTRICTION_NAME).get();
+      return restriction.getConfig().getBoolean(ACCEPT_MISSING_CODE_TYPE);
+    }
+    return false;
   }
-
 }

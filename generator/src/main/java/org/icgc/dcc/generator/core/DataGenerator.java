@@ -184,10 +184,11 @@ public class DataGenerator {
     ValueType fieldValueType = field.getValueType();
 
     int randomProbabilityInteger = generateRandomInteger(1, 11);
+    boolean isLessLikelyOutcome = randomProbabilityInteger >= 1 && randomProbabilityInteger <= 3;
     if(resourceWrapper.isRequired(field)) {
       if(resourceWrapper.isCodeListField(field)) {
         if(resourceWrapper.acceptsMissingCode(field)) {
-          if(randomProbabilityInteger >= 1 && randomProbabilityInteger <= 3) {
+          if(isLessLikelyOutcome) {
             fieldValue = generateMissingCode();
           } else {
             fieldValue = getCodeListValue(schemaName, field.getName());
@@ -197,7 +198,7 @@ public class DataGenerator {
         }
       } else {
         if(resourceWrapper.acceptsMissingCode(field)) {
-          if(randomProbabilityInteger >= 1 && randomProbabilityInteger <= 3) {
+          if(isLessLikelyOutcome) {
             fieldValue = generateMissingCode();
           } else {
             fieldValue = generateFieldValue(resourceWrapper, schemaName, fieldName, uniqueFields, fieldValueType);
@@ -208,13 +209,13 @@ public class DataGenerator {
       }
     } else {
       if(resourceWrapper.isCodeListField(field)) {
-        if(randomProbabilityInteger >= 1 && randomProbabilityInteger <= 3) {
+        if(isLessLikelyOutcome) {
           fieldValue = "";
         } else {
           fieldValue = getCodeListValue(schemaName, fieldName);
         }
       } else {
-        if(randomProbabilityInteger >= 1 && randomProbabilityInteger <= 3) {
+        if(isLessLikelyOutcome) {
           fieldValue = "";
         } else {
           fieldValue = getCodeListValue(schemaName, fieldName);

@@ -48,6 +48,16 @@ public class OptionalFileGenerator {
 
   private static final String FILE_PATH_TOKEN_SEPERATOR = "/";
 
+  private static final String BIOMARKER_SCHEMA_NAME = "biomarker";
+
+  private static final String SURGERY_SCHEMA_NAME = "surgerY";
+
+  private static final String DONOR_SCHEMA_NAME = "donor";
+
+  private static final String DONOR_ID_FIELD_NAME = "donor_id";
+
+  private static final String DONOR_ID_PRIMARY_KEY_FIELD_IDENTIFIER = "donor_id_for_optional_file";
+
   private final DataGenerator datagen;
 
   private final String outputDirectory;
@@ -165,8 +175,9 @@ public class OptionalFileGenerator {
     String fieldName = field.getName();
 
     List<String> foreignKeys;
-    if((schemaName.equals("surgery") || schemaName.equals("biomarker")) && fieldName.equals("donor_id")) {
-      foreignKeys = datagen.getFilePrimaryKey("donor", "donor_id_for_optional_file");
+    if((schemaName.equals(SURGERY_SCHEMA_NAME) || schemaName.equals(BIOMARKER_SCHEMA_NAME))
+        && fieldName.equals(DONOR_ID_FIELD_NAME)) {
+      foreignKeys = datagen.getFilePrimaryKey(DONOR_SCHEMA_NAME, DONOR_ID_PRIMARY_KEY_FIELD_IDENTIFIER);
     } else {
       foreignKeys = datagen.getFileForeignKey(schema, fieldName);
     }

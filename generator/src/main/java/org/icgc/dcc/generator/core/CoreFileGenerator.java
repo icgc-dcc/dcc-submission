@@ -50,7 +50,13 @@ public class CoreFileGenerator {
 
   private static final String DONOR_SCHEMA_NAME = "donor";
 
+  private static final String SPECIMEN_SCHEMA_NAME = "specimen";
+
   private static final String SAMPLE_SCHEMA_NAME = "sample";
+
+  private static final String DONOR_ID_FIELD_NAME = "donor_id";
+
+  private static final String DONOR_ID_PRIMARY_KEY_FIELD_IDENTIFIER = "donor_id_for_optional_file";
 
   private static final String TUMOUR_PRIMARY_KEY_FIELD_IDENTIFIER = "tumourSampleTypeID";
 
@@ -177,8 +183,8 @@ public class CoreFileGenerator {
     // Special case for sample, to add whether sample type is controlled or tumour
     if(schema.getName().equals(SAMPLE_SCHEMA_NAME) && field.getName().equals(SAMPLE_TYPE_FIELD_NAME)) {
       addOutputToSamplePrimaryKeys(schema, field, fieldValue);
-    } else if(schema.getName().equals("specimen") && field.getName().equals("donor_id")) {
-      datagen.getFilePrimaryKey("donor", "donor_id_for_optional_file").add(fieldValue);
+    } else if(schema.getName().equals(SPECIMEN_SCHEMA_NAME) && field.getName().equals(DONOR_ID_FIELD_NAME)) {
+      datagen.getFilePrimaryKey(DONOR_SCHEMA_NAME, DONOR_ID_PRIMARY_KEY_FIELD_IDENTIFIER).add(fieldValue);
     }
 
     return fieldValue;
