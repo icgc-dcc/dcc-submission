@@ -21,32 +21,22 @@ package org.icgc.dcc.portal.models;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import org.icgc.dcc.portal.DataPortalConfiguration;
+
 public final class Gene {
   public static final String NAME = "gene";
 
-  public static final String[] FIELDS = {
-      "symbol",
-      "name",
-      "chromosome",
-      "start",
-      "end",
-      "biotype",
-      "strand",
-      "synonyms"
-  };
+  public static final String[] FIELDS = {"symbol", "name", "chromosome", "start", "end", "biotype", "strand",
+      "synonyms"};
 
-  public static final String INDEX = "dcc-release-indexer";
+  public static final String INDEX = DataPortalConfiguration.INDEX_NAME;
 
-  public static final String TYPE = "genes";
+  public static final String TYPE = "gene-centric";
 
   public static final ImmutableMap<String, ImmutableList<String>> FACETS = ImmutableMap.of("terms",
       ImmutableList.of("biotype"));
 
-  public static final ImmutableMap<String, ImmutableList<String>> FILTERS = ImmutableMap.of(
-      "terms",
-      ImmutableList.of("biotype", "symbol"),
-      "ranges",
-      ImmutableList.of(""),
-      "locations",
+  public static final ImmutableMap<String, ImmutableList<String>> FILTERS = ImmutableMap.of("terms",
+      ImmutableList.of("biotype", "symbol"), "ranges", ImmutableList.of(""), "locations",
       ImmutableList.of("gene_location"));
 }

@@ -1,10 +1,10 @@
 /*
  * Copyright 2013(c) The Ontario Institute for Cancer Research. All rights reserved.
- *
+ * 
  * This program and the accompanying materials are made available under the terms of the GNU Public
  * License v3.0. You should have received a copy of the GNU General Public License along with this
  * program. If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
  * FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
@@ -21,14 +21,17 @@ package org.icgc.dcc.portal.models;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import org.icgc.dcc.portal.DataPortalConfiguration;
+
 public final class GeneProject {
   public static final String NAME = "gene-projects";
 
-  public static final String[] FIELDS = {"symbol", "project.project_name", "project._summary._ssm_tested_donor_count", "project._summary._ssm_donor_count"};
+  public static final String[] FIELDS = {"symbol", "project.project_name", "project._summary._ssm_tested_donor_count",
+      "project._summary._ssm_donor_count"};
 
-  public static final String INDEX = "dcc-release-indexer";
+  public static final String INDEX = DataPortalConfiguration.INDEX_NAME;
 
-  public static final String TYPE = "gene-projects";
+  public static final String TYPE = "gene-project";
 
   public static final ImmutableMap<String, ImmutableList<String>> FACETS = ImmutableMap.of("terms",
       ImmutableList.of(""));

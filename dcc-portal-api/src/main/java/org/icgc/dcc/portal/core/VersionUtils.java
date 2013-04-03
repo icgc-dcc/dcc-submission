@@ -19,15 +19,18 @@ package org.icgc.dcc.portal.core;
 
 import org.icgc.dcc.portal.DataPortalService;
 
-public class VersionUtils {
+public final class VersionUtils {
 
-  private static String implementationVersion = DataPortalService.class.getPackage().getImplementationVersion();
+  private final static String VERSION = DataPortalService.class.getPackage().getImplementationVersion();
 
   public static String getVersion() {
-    return implementationVersion == null ? "" : "v" + implementationVersion;
+    return VERSION == null ? "" : "v" + VERSION;
   }
 
   public static String getMajorVersion() {
     return getVersion().split(".", 1)[0];
   }
+
+  private VersionUtils() {}
+
 }

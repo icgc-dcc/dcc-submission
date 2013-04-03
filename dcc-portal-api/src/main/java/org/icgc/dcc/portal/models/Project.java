@@ -21,26 +21,24 @@ package org.icgc.dcc.portal.models;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import org.icgc.dcc.portal.DataPortalConfiguration;
+
 public final class Project {
   public static final String NAME = "project";
 
-  public static final String[] FIELDS = {"_release_id", "_project_id", "project_name", "project_key", "primary_site", "countries", "_summary._total_donor_count",
-      "_summary._ssm_tested_donor_count", "_summary._cnsm_tested_donor_count", "_summary._exp_tested_donor_count", "_summary._meth_tested_donor_count",
+  public static final String[] FIELDS = {"_release_id", "_project_id", "project_name", "project_key", "primary_site",
+      "countries", "_summary._total_donor_count", "_summary._ssm_tested_donor_count",
+      "_summary._cnsm_tested_donor_count", "_summary._exp_tested_donor_count", "_summary._meth_tested_donor_count",
       "pubmed_ids"};
 
-  public static final String INDEX = "dcc-release-indexer";
+  public static final String INDEX = DataPortalConfiguration.INDEX_NAME;
 
-  public static final String TYPE = "projects";
+  public static final String TYPE = "project";
 
   public static final ImmutableMap<String, ImmutableList<String>> FACETS = ImmutableMap.of("terms",
-      ImmutableList.of("project_name", "primary_site", "countries", "_summary._available_data_type")
-  );
+      ImmutableList.of("project_name", "primary_site", "countries", "_summary._available_data_type"));
 
-  public static final ImmutableMap<String, ImmutableList<String>> FILTERS = ImmutableMap.of(
-      "terms",
-      ImmutableList.of("_project_id", "project_name", "project_key", "primary_site", "countries", "_summary._available_data_type"),
-      "ranges",
-      ImmutableList.of(""),
-      "locations",
-      ImmutableList.of(""));
+  public static final ImmutableMap<String, ImmutableList<String>> FILTERS = ImmutableMap.of("terms", ImmutableList.of(
+      "_project_id", "project_name", "project_key", "primary_site", "countries", "_summary._available_data_type"),
+      "ranges", ImmutableList.of(""), "locations", ImmutableList.of(""));
 }

@@ -17,11 +17,12 @@
 
 package org.icgc.dcc.portal.repositories;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.Sets;
-import com.google.inject.Inject;
+import static com.google.common.collect.Sets.intersection;
+import static com.google.common.collect.Sets.newHashSet;
+import static org.icgc.dcc.portal.core.JsonUtils.MAPPER;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
+
 import org.elasticsearch.action.get.GetRequestBuilder;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchType;
@@ -30,13 +31,18 @@ import org.elasticsearch.index.query.FilterBuilder;
 import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.sort.SortOrder;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.Sets.SetView;
+import com.google.inject.Inject;
+
 import org.icgc.dcc.portal.request.RequestSearchQuery;
 import org.icgc.dcc.portal.results.FindAllResults;
 import org.icgc.dcc.portal.results.FindResults;
 
-import static org.icgc.dcc.portal.core.JsonUtils.MAPPER;
-
 @Data
+@Slf4j
 public abstract class BaseRepository {
 
   private final String index;
@@ -70,9 +76,11 @@ public abstract class BaseRepository {
     setFilters(buildRequestFilters(requestSearchQuery.getFilters()));
     setScoreFilters(buildScoreFilters(requestSearchQuery.getFilters()));
     setQuery(buildQuery());
+
     SearchRequestBuilder s = buildSearchRequest(requestSearchQuery);
     s = addFacets(s, requestSearchQuery);
-    System.out.println(s);
+    log.debug("Search request: {}", s);
+
     return new FindAllResults(s.execute().actionGet(), requestSearchQuery);
   }
 
@@ -89,17 +97,21 @@ public abstract class BaseRepository {
   }
 
   private SearchRequestBuilder buildSearchRequest(RequestSearchQuery requestSearchQuery) {
-    return getClient().prepareSearch(getIndex()).setTypes(getType()).setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
-        .setQuery(getQuery()).setFilter(getFilters()).setFrom(requestSearchQuery.getFrom())
-        .setSize(requestSearchQuery.getSize())
-        .addSort(requestSearchQuery.getSort(), SortOrder.valueOf(requestSearchQuery.getOrder()))
+    return getClient()//
+        .prepareSearch(getIndex()) //
+        .setTypes(getType()) //
+        .setSearchType(SearchType.DFS_QUERY_THEN_FETCH) //
+        .setQuery(getQuery()) //
+        .setFilter(getFilters()) //
+        .setFrom(requestSearchQuery.getFrom()) //
+        .setSize(requestSearchQuery.getSize()) //
+        .addSort(requestSearchQuery.getSort(), SortOrder.valueOf(requestSearchQuery.getOrder())) //
         .addFields(allowedFields(requestSearchQuery.getFields()));
   }
 
   private String[] allowedFields(String[] searchedFields) {
     if (searchedFields.length != 0) {
-      Sets.SetView<String> intersection =
-          Sets.intersection(Sets.newHashSet(getFields()), Sets.newHashSet(searchedFields));
+      SetView<String> intersection = intersection(newHashSet(getFields()), newHashSet(searchedFields));
       return intersection.toArray(new String[intersection.size()]);
     }
 
@@ -111,11 +123,12 @@ public abstract class BaseRepository {
     if (temp.has(type)) {
       ((ObjectNode) temp.get(type)).remove(facet);
     }
+
     return buildRequestFilters(temp);
   }
 
   abstract SearchRequestBuilder addFacets(SearchRequestBuilder searchRequestBuilder,
-                                          RequestSearchQuery requestSearchQuery);
+      RequestSearchQuery requestSearchQuery);
 
   abstract QueryBuilder buildQuery();
 

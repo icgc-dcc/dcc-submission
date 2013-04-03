@@ -17,79 +17,77 @@
 
 package org.icgc.dcc.portal.repositories;
 
+import static org.elasticsearch.index.query.FilterBuilders.andFilter;
+import static org.elasticsearch.index.query.FilterBuilders.matchAllFilter;
+import static org.elasticsearch.index.query.QueryBuilders.matchAllQuery;
+
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.AndFilterBuilder;
 import org.elasticsearch.index.query.FilterBuilder;
-import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.facet.FacetBuilders;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
 
-import org.icgc.dcc.portal.models.Donor;
 import org.icgc.dcc.portal.models.Gene;
-import org.icgc.dcc.portal.models.Mutation;
+import org.icgc.dcc.portal.models.Observation;
 import org.icgc.dcc.portal.request.RequestSearchQuery;
 import org.icgc.dcc.portal.services.FilterService;
 
-public class DonorRepository extends BaseRepository {
+public class ObservationRepository extends BaseRepository {
 
   @Inject
-  public DonorRepository(Client client) {
-    super(client, Donor.INDEX, Donor.TYPE, Donor.FIELDS);
+  public ObservationRepository(Client client) {
+    super(client, Observation.INDEX, Observation.TYPE, Observation.FIELDS);
   }
 
   @Override
   QueryBuilder buildQuery() {
-
-    return QueryBuilders //
-        .nestedQuery(Gene.NAME, //
-            QueryBuilders.customScoreQuery(QueryBuilders.filteredQuery( //
-                QueryBuilders.matchAllQuery(), //
-                getScoreFilters())).script("doc['gene._summary._ssm_count'].value") //
-        ).scoreMode("total");
+    return matchAllQuery();
   }
 
   @Override
   FilterBuilder buildScoreFilters(JsonNode filters) {
     if (filters.has(Gene.NAME)) {
-      AndFilterBuilder scoreFilters = FilterBuilders.andFilter();
+      AndFilterBuilder scoreFilters = andFilter();
       scoreFilters.add(FilterService.buildNestedFilter(Gene.NAME,
           FilterService.buildAndFilters(Gene.FILTERS, filters.get(Gene.NAME))));
       return scoreFilters;
     }
 
-    return FilterBuilders.matchAllFilter();
+    return matchAllFilter();
   }
 
   @Override
   FilterBuilder buildFilters(JsonNode filters) {
-    AndFilterBuilder donorFilters = FilterBuilders.andFilter();
+    AndFilterBuilder observationFilters = andFilter();
 
-    if (filters.has(Donor.NAME)) {
-      donorFilters.add(FilterService.buildAndFilters(Donor.FILTERS, filters.get(Donor.NAME)));
+    if (filters.has(Observation.NAME)) {
+      observationFilters.add(FilterService.buildAndFilters(Observation.FILTERS, filters.get(Observation.NAME)));
     }
     if (filters.has(Gene.NAME)) {
-      donorFilters.add(FilterService.buildNestedFilter(Gene.NAME,
+      observationFilters.add(FilterService.buildNestedFilter(Gene.NAME,
           FilterService.buildAndFilters(Gene.FILTERS, filters.get(Gene.NAME))));
     }
-    if (filters.has(Mutation.NAME)) {
-      donorFilters.add(FilterService.buildNestedFilter(Mutation.NAME,
-          FilterService.buildAndFilters(Mutation.FILTERS, filters.get(Mutation.NAME))));
+    if (filters.has(Observation.NAME)) {
+      observationFilters.add(FilterService.buildNestedFilter(Observation.NAME,
+          FilterService.buildAndFilters(Observation.FILTERS, filters.get(Observation.NAME))));
     }
-    return donorFilters;
+    return observationFilters;
   }
 
   @Override
   SearchRequestBuilder addFacets(SearchRequestBuilder s, RequestSearchQuery requestSearchQuery) {
-    for (String facet : Donor.FACETS.get("terms")) {
-      s.addFacet(FacetBuilders.termsFacet(facet).field(facet)
-          .facetFilter(setFacetFilter(Donor.NAME, facet, requestSearchQuery.getFilters())).size(Integer.MAX_VALUE)
+    for (String facet : Observation.FACETS.get("terms")) {
+      s.addFacet(FacetBuilders.termsFacet(facet) //
+          .field(facet) //
+          .facetFilter(setFacetFilter(Observation.NAME, facet, requestSearchQuery.getFilters())) //
+          .size(Integer.MAX_VALUE) //
           .global(true));
     }
+
     return s;
   }
 }

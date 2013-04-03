@@ -41,7 +41,6 @@ import com.yammer.dropwizard.config.Environment;
 import org.icgc.dcc.portal.bundles.SwaggerBundle;
 import org.icgc.dcc.portal.core.VersionUtils;
 import org.icgc.dcc.portal.filters.EtagFilter;
-import org.icgc.dcc.portal.filters.GetNotFoundResourceFilter;
 import org.icgc.dcc.portal.filters.VersionFilter;
 
 @Slf4j
@@ -92,8 +91,6 @@ public class DataPortalService extends Service<DataPortalConfiguration> {
         ImmutableList.of(LoggingFilter.class.getName(), EtagFilter.class.getName(), VersionFilter.class.getName()));
     environment.setJerseyProperty(ResourceConfig.PROPERTY_CONTAINER_REQUEST_FILTERS,
         ImmutableList.of(LoggingFilter.class.getName()));
-    environment.setJerseyProperty(ResourceConfig.PROPERTY_RESOURCE_FILTER_FACTORIES,
-        ImmutableList.of(GetNotFoundResourceFilter.class.getName()));
     logInfo(args);
   }
 
@@ -115,7 +112,11 @@ public class DataPortalService extends Service<DataPortalConfiguration> {
    * @return
    */
   private RedirectBundle createRedirectBundle() {
-    return new RedirectBundle(ImmutableMap.of("/docs", "/docs/"));
+    return new RedirectBundle(ImmutableMap.of(//
+        "/docs", "/docs/", //
+        "/favicon.ico", "/docs/favicon.ico", //
+        "/swagger-ui/favicon.ico", "/docs/favicon.ico" //
+    ));
   }
 
 }

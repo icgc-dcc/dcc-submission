@@ -15,16 +15,30 @@
  * WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.icgc.dcc.portal;
+package org.icgc.dcc.portal.models;
 
-import org.junit.Test;
 
-public class DataPortalServiceTest {
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
-  @Test
-  synchronized public void testMain() throws Exception {
-    DataPortalService.main("server", "settings.yml");
-    wait();
-  }
+import org.icgc.dcc.portal.DataPortalConfiguration;
 
+public final class Observation {
+  public static final String NAME = "observation";
+
+  public static final String[] FIELDS = {"ssm"};
+
+  public static final String INDEX = DataPortalConfiguration.INDEX_NAME;
+
+  public static final String TYPE = "observation-centric";
+
+  public static final ImmutableMap<String, ImmutableList<String>> FACETS = //
+      ImmutableMap.of(//
+          "terms", ImmutableList.of(""));
+
+  public static final ImmutableMap<String, ImmutableList<String>> FILTERS = //
+      ImmutableMap.of( //
+          "terms", ImmutableList.of(""), //
+          "ranges", ImmutableList.of(""), //
+          "locations", ImmutableList.of("location"));
 }
