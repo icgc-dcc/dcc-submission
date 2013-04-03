@@ -19,10 +19,18 @@
 
 angular.module('app.projects.models', []);
 
-angular.module('app.projects.models').factory('Projects', ['http', function (http) {
+angular.module('app.projects.models').factory('Projects', ['http', 'httpService', function (http, httpService) {
+  var serialize = function (parse) {
+    var params = [];
+    for (var p in parse) {
+      params.push(p + "=" + parse[p]);
+    }
+    return params.join("&");
+  };
   return {
     query: function () {
-      return http.query('/ws/projects');
+      var so = httpService.getCurrentSearch().projects ? serialize(JSON.parse(httpService.getCurrentSearch().projects)) : null;
+      return http.query('/ws/projects', so);
     },
     get: function (params) {
       return http.get('/ws/projects/' + params.project);

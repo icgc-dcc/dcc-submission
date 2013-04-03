@@ -222,7 +222,6 @@ angular.module('highcharts.directives').directive('stacked', function () {
     },
     template: '<div id="container" style="margin: 0 auto">not working</div>',
     link: function ($scope, $element, $attrs) {
-      console.log($scope, $element, $attrs);
       var renderChart = function (settings) {
         new Highcharts.Chart(settings);
       };
@@ -300,7 +299,6 @@ angular.module('highcharts.directives').directive('stacked', function () {
       };
 
       $scope.$watch("items", function (newValue, oldValue) {
-        console.log("New Value: ", newValue.s);
         if (!newValue) return;
         if (angular.equals(newValue, oldValue)) return;
 

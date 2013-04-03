@@ -21,7 +21,7 @@ angular.module('app.http', ['app.http.http']);
 
 angular.module('app.http.http', ['app.http.service']);
 
-angular.module('app.http.http').factory('http', ['$http', 'httpService', '$location', function ($http, httpService, $location) {
+angular.module('app.http.http').factory('http', ['$http', 'httpService', function ($http, httpService) {
   var extractData = function (response) {
     return response.data;
   };
@@ -30,28 +30,18 @@ angular.module('app.http.http').factory('http', ['$http', 'httpService', '$locat
     get: function (url) {
       return $http.get(url).then(extractData);
     },
-    query: function (url) {
-      //var search = JSON.stringify(httpService.getCurrentSearch());
+    query: function (url, so) {
+      var filters = httpService.getCurrentFilters();
 
-      //var query_url = search != "{}" ? url + "?" + JSON.stringify(search): url;
-      var search = $location.search();
-      var params = [];
-      for (var s in search) {
-        params.push(s + '=' + search[s]);
-      }
+      url = url + "?filters=" + JSON.stringify(filters);
+      url = so ? url + "&" + so : url;
 
-      var query_url = url + "?" + params.join('&');
-
-      return $http.get(query_url).then(extractData);
+      return $http.get(url).then(extractData);
     },
     embQuery: function (url, param) {
-      //  console.log(param);
-      var filters, query_url = url;
-      //  if (param) {
+      var filters, query_url;
       filters = JSON.stringify(param);
       query_url = url + '?filters=' + filters;
-      //  }
-      //  console.log(query_url);
       return $http.get(query_url).then(extractData);
     }
   };

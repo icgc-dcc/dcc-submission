@@ -52,7 +52,6 @@ angular.module('highcharts.services').service('HighchartsService', [function () 
 
   this.hits2HCdonut = function (type, facetInner, facetOuter, hits, countBy) {
     var colors = Highcharts.getOptions().colors;
-    console.log(hits);
     var inr = [];
     var outr = [];
 
@@ -70,7 +69,6 @@ angular.module('highcharts.services').service('HighchartsService', [function () 
       }
     }
 
-    console.log('ih: ', innerHits);
     var i = 0;
     for (var iName in innerHits) {
       inr.push({
@@ -83,15 +81,11 @@ angular.module('highcharts.services').service('HighchartsService', [function () 
 
       for (var j = 0; j < hits.length; ++j) {
         var hitj = hits[j];
-        console.log(hitj);
-        console.log(hitj.fields[facetOuter]);
         var brightness = 0.3 - (j / hitj.fields[countBy]) / 5;
 
         // TODO
         var in_array = (angular.isArray(hitj.fields[facetInner]) && hitj.fields[facetInner].indexOf(iName) !== -1);
-        console.log(in_array);
         var in_value = (!angular.isArray(hitj.fields[facetInner]) && hitj.fields[facetInner] === iName);
-        console.log(in_value);
         if (in_array || in_value) {
           outr.push({
             name: hitj.fields[facetOuter],

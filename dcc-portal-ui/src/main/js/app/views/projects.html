@@ -33,46 +33,51 @@
                        title="Donor Distribution by Primary Site" height="220"></donut>
             </div>
         </div>
+
         <div class="row">
             <table class="table table-bordered table-striped">
                 <thead>
                 <tr>
-                    <th ng-click="toggleSort('project_name')" class="link"><i ng-show="sort=='project_name'"
-                                                                              ng-class="{'icon-angle-down': order=='desc', 'icon-angle-up': order=='asc'}"></i>
+                    <th ng-click="pToggleSort('project_name')" class="link"><i ng-show="pso.sort=='project_name'"
+                                                                               ng-class="{'icon-angle-down': pso.order=='desc', 'icon-angle-up': pso.order=='asc'}"></i>
                         Project Name
                     </th>
-                    <th ng-click="toggleSort('primary_site')" class="link"><i ng-show="sort=='primary_site'"
-                                                                              ng-class="{'icon-angle-down': order=='desc', 'icon-angle-up': order=='asc'}"></i>
+                    <th ng-click="pToggleSort('primary_site')" class="link"><i ng-show="pso.sort=='primary_site'"
+                                                                               ng-class="{'icon-angle-down': pso.order=='desc', 'icon-angle-up': pso.order=='asc'}"></i>
                         Primary Site
                     </th>
-                    <th ng-click="toggleSort('countries')" class="link"><i ng-show="sort=='countries'"
-                                                                           ng-class="{'icon-angle-down': order=='desc', 'icon-angle-up': order=='asc'}"></i>
+                    <th ng-click="pToggleSort('countries')" class="link"><i ng-show="pso.sort=='countries'"
+                                                                            ng-class="{'icon-angle-down': pso.order=='desc', 'icon-angle-up': pso.order=='asc'}"></i>
                         Country
                     </th>
-                    <th ng-click="toggleSort('_summary._total_donor_count')" class="link"><i
-                            ng-show="sort=='_summary._total_donor_count'"
-                            ng-class="{'icon-angle-down': order=='desc', 'icon-angle-up': order=='asc'}"></i>
+                    <th ng-click="pToggleSort('_summary._total_donor_count')" class="link"><i
+                            ng-show="pso.sort=='_summary._total_donor_count'"
+                            ng-class="{'icon-angle-down': pso.order=='desc', 'icon-angle-up': pso.order=='asc'}"></i>
                         Donors
                     </th>
-                    <th ng-click="toggleSort('_summary._ssm_tested_donor_count')" class="link"><i
-                            ng-show="sort=='_summary._ssm_tested_donor_count'"
-                            ng-class="{'icon-angle-down': order=='desc', 'icon-angle-up': order=='asc'}"></i> <abbr
-                            title="Simple Somatic Mutation">SSM</abbr>
+                    <th ng-click="pToggleSort('_summary._ssm_tested_donor_count')" class="link"><i
+                            ng-show="pso.sort=='_summary._ssm_tested_donor_count'"
+                            ng-class="{'icon-angle-down': pso.order=='desc', 'icon-angle-up': pso.order=='asc'}"></i>
+                        <abbr
+                                title="Simple Somatic Mutation">SSM</abbr>
                     </th>
-                    <th ng-click="toggleSort('_summary._cnsm_tested_donor_count')" class="link"><i
-                            ng-show="sort=='_summary._cnsm_tested_donor_count'"
-                            ng-class="{'icon-angle-down': order=='desc', 'icon-angle-up': order=='asc'}"></i> <abbr
-                            title="Copy Number Somatic Mutation">CNSM</abbr>
+                    <th ng-click="pToggleSort('_summary._cnsm_tested_donor_count')" class="link"><i
+                            ng-show="pso.sort=='_summary._cnsm_tested_donor_count'"
+                            ng-class="{'icon-angle-down': pso.order=='desc', 'icon-angle-up': pso.order=='asc'}"></i>
+                        <abbr
+                                title="Copy Number Somatic Mutation">CNSM</abbr>
                     </th>
-                    <th ng-click="toggleSort('_summary._exp_tested_donor_count')" class="link"><i
-                            ng-show="sort=='_summary._exp_tested_donor_count'"
-                            ng-class="{'icon-angle-down': order=='desc', 'icon-angle-up': order=='asc'}"></i> <abbr
-                            title="Gene Expression">Expression</abbr>
+                    <th ng-click="pToggleSort('_summary._exp_tested_donor_count')" class="link"><i
+                            ng-show="pso.sort=='_summary._exp_tested_donor_count'"
+                            ng-class="{'icon-angle-down': pso.order=='desc', 'icon-angle-up': pso.order=='asc'}"></i>
+                        <abbr
+                                title="Gene Expression">Expression</abbr>
                     </th>
-                    <th ng-click="toggleSort('_summary._meth_tested_donor_count')" class="link"><i
-                            ng-show="sort=='_summary._meth_tested_donor_count'"
-                            ng-class="{'icon-angle-down': order=='desc', 'icon-angle-up': order=='asc'}"></i> <abbr
-                            title="DNA Methylation">Methylation</abbr>
+                    <th ng-click="pToggleSort('_summary._meth_tested_donor_count')" class="link"><i
+                            ng-show="pso.sort=='_summary._meth_tested_donor_count'"
+                            ng-class="{'icon-angle-down': pso.order=='desc', 'icon-angle-up': pso.order=='asc'}"></i>
+                        <abbr
+                                title="DNA Methylation">Methylation</abbr>
                     </th>
                     <th>Publications</th>
                 </tr>

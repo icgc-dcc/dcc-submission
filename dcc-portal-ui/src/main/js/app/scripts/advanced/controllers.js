@@ -19,7 +19,7 @@
 
 angular.module('app.advanced.controllers', []);
 
-angular.module('app.advanced.controllers').controller('AdvancedController', [ "$scope", 'donors', 'genes', 'gp', 'DonorsService', 'GenesService', 'HighchartsService', 'GenesProjectsService', function ($scope, donors, genes, gp, DonorsService, GenesService, HighchartsService, GenesProjectsService) {
+angular.module('app.advanced.controllers').controller('AdvancedController', [ "$scope", 'donors', 'genes', 'gp', 'DonorsService', 'GenesService', 'HighchartsService', 'GenesProjectsService', 'httpService', function ($scope, donors, genes, gp, DonorsService, GenesService, HighchartsService, GenesProjectsService, httpService) {
   $scope.donors = donors;
   $scope.genes = genes;
   $scope.gp = gp;
@@ -43,9 +43,61 @@ angular.module('app.advanced.controllers').controller('AdvancedController', [ "$
       $scope.cdata_donors_t = HighchartsService.termFacets2HCpie("donor", "donor_tumour_stage_at_diagnosis", response.facets.donor_tumour_stage_at_diagnosis.terms);
     });
     GenesProjectsService.query().then(function (response) {
-      $scope.stdata = HighchartsService.hits2HCstacked(response.hits, 'project.project_name', 'project.affected_donor_count');
+      $scope.stdata = HighchartsService.hits2HCstacked(response.hits, 'project.project_name', 'project._summary._ssm_donor_count');
     });
   };
+
+
+  /* Pagination Stuff */
+  var dso = httpService.getCurrentSearch().donors ? JSON.parse(httpService.getCurrentSearch().donors) : "{}";
+  $scope.dso = {};
+  $scope.dso.sort = dso.sort ? dso.sort : '_score';
+  $scope.dso.order = dso.order ? dso.order : 'desc';
+  $scope.dGetOrder = function () {
+    if ($scope.dso.order == 'desc') {
+      $scope.dso.order = 'asc';
+    } else {
+      $scope.dso.order = 'desc';
+    }
+    return $scope.dso.order;
+  };
+  $scope.dToggleSort = function (header) {
+    var search = httpService.getCurrentSearch();
+    $scope.dso.sort = header;
+    $scope.dGetOrder();
+
+    search.donors = '{"sort":"' + $scope.dso.sort + '","order":"' + $scope.dso.order + '"}';
+
+    httpService.updateSearch(search);
+    $scope.refresh();
+  };
+  /* /pagination */
+
+  /* Pagination Stuff */
+  var gso = httpService.getCurrentSearch().genes ? JSON.parse(httpService.getCurrentSearch().genes) : "{}";
+  $scope.gso = {};
+  $scope.gso.sort = gso.sort ? gso.sort : '_score';
+  $scope.gso.order = gso.order ? gso.order : 'desc';
+  $scope.gGetOrder = function () {
+    if ($scope.gso.order == 'desc') {
+      $scope.gso.order = 'asc';
+    } else {
+      $scope.gso.order = 'desc';
+    }
+    return $scope.gso.order;
+  };
+  $scope.gToggleSort = function (header) {
+    var search = httpService.getCurrentSearch();
+    $scope.gso.sort = header;
+    $scope.gGetOrder();
+
+    search.genes = '{"sort":"' + $scope.gso.sort + '","order":"' + $scope.gso.order + '"}';
+
+    httpService.updateSearch(search);
+    $scope.refresh();
+  };
+  /* /pagination */
+
 
   $scope.$on('refresh', $scope.refresh);
 }]);

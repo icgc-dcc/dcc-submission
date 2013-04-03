@@ -19,10 +19,18 @@
 
 angular.module('app.genes.models', []);
 
-angular.module('app.genes.models').factory('Genes', ['http', function (http) {
+angular.module('app.genes.models').factory('Genes', ['http', 'httpService', function (http, httpService) {
+  var serialize = function (parse) {
+    var params = [];
+    for (var p in parse) {
+      params.push(p + "=" + parse[p]);
+    }
+    return params.join("&");
+  };
   return {
     query: function () {
-      return http.query('/ws/genes');
+      var so = httpService.getCurrentSearch().genes ? serialize(JSON.parse(httpService.getCurrentSearch().genes)) : null;
+      return http.query('/ws/genes', so);
     },
     get: function (params) {
       return http.get('/ws/genes/' + params.gene);

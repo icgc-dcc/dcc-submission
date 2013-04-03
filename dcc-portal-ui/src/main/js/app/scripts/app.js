@@ -50,13 +50,13 @@ angular.module('app.controllers').controller('ApplicationController', [ "$rootSc
 
 
   $rootScope.$on("$routeChangeStart", function (event, next, current) {
-    console.log("$routeChangeStart")
+    //console.log("$routeChangeStart")
   });
   $rootScope.$on("$routeChangeSuccess", function (event, current, previous) {
-    console.log("$routeChangeSuccess")
+    //console.log("$routeChangeSuccess")
   });
   $rootScope.$on("$routeChangeError", function (event, current, previous, rejection) {
-    console.log("$routeChangeError")
+    //console.log("$routeChangeError")
   });
 }]);
 

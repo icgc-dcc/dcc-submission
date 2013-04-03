@@ -51,7 +51,7 @@ angular.module('app.genes.controllers').controller('GeneController', [ "$scope",
   };
 }]);
 
-angular.module('app.genes.controllers').controller('EmbGenesController', [ "$scope", 'GenesProjectsService', function ($scope, GenesProjectsService) {
+angular.module('app.genes.controllers').controller('EmbGenesController', [ "$scope", 'GenesProjectsService', 'httpService', function ($scope, GenesProjectsService, httpService) {
   GenesProjectsService.queryByProject($scope.project.id).then(function (response) {
     $scope.genes = response;
   });
@@ -61,6 +61,31 @@ angular.module('app.genes.controllers').controller('EmbGenesController', [ "$sco
       $scope.genes = response;
     });
   };
+
+  /* Pagination Stuff */
+  var gso = httpService.getCurrentSearch().genes ? JSON.parse(httpService.getCurrentSearch().genes) : "{}";
+  $scope.gso = {};
+  $scope.gso.sort = gso.sort ? gso.sort : '_score';
+  $scope.gso.order = gso.order ? gso.order : 'desc';
+  $scope.gGetOrder = function () {
+    if ($scope.gso.order == 'desc') {
+      $scope.gso.order = 'asc';
+    } else {
+      $scope.gso.order = 'desc';
+    }
+    return $scope.gso.order;
+  };
+  $scope.gToggleSort = function (header) {
+    var search = httpService.getCurrentSearch();
+    $scope.gso.sort = header;
+    $scope.gGetOrder();
+
+    search.genes = '{"sort":"' + $scope.gso.sort + '","order":"' + $scope.gso.order + '"}';
+
+    httpService.updateSearch(search);
+    $scope.refresh();
+  };
+  /* /pagination */
 
   $scope.$on('refresh', $scope.refresh);
 }]);

@@ -35,28 +35,35 @@ angular.module('app.projects.controllers').controller('ProjectsController', [ "$
       $scope.dcpndata = HighchartsService.hits2HCdonut("project", "countries", "project_name", projects.hits, "_summary._total_donor_count");
     });
     GenesProjectsService.query().then(function (response) {
-      $scope.stdata = HighchartsService.hits2HCstacked(response.hits, 'project.project_name', 'project.affected_donor_count');
+      $scope.stdata = HighchartsService.hits2HCstacked(response.hits, 'project.project_name', 'project._summary._ssm_donor_count');
     });
   };
 
-  var s = httpService.getCurrentSearch();
-  $scope.sort = s.sort ? s.sort : 'total_donor_count';
-  $scope.order = s.order ? s.order : 'desc';
-  $scope.getOrder = function () {
-    if ($scope.order == 'desc') {
-      $scope.order = 'asc';
+
+  /* Pagination Stuff */
+  var pso = httpService.getCurrentSearch().projects ? JSON.parse(httpService.getCurrentSearch().projects) : "{}";
+  $scope.pso = {};
+  $scope.pso.sort = pso.sort ? pso.sort : '_summary._total_donor_count';
+  $scope.pso.order = pso.order ? pso.order : 'desc';
+  $scope.pGetOrder = function () {
+    if ($scope.pso.order == 'desc') {
+      $scope.pso.order = 'asc';
     } else {
-      $scope.order = 'desc';
+      $scope.pso.order = 'desc';
     }
-    return $scope.order;
+    return $scope.pso.order;
   };
-  $scope.toggleSort = function (header) {
+  $scope.pToggleSort = function (header) {
     var search = httpService.getCurrentSearch();
-    search.sort = $scope.sort = header;
-    search.order = $scope.getOrder();
+    $scope.pso.sort = header;
+    $scope.pGetOrder();
+
+    search.projects = '{"sort":"' + $scope.pso.sort + '","order":"' + $scope.pso.order + '"}';
+
     httpService.updateSearch(search);
     $scope.refresh();
   };
+  /* /pagination */
 
   $scope.$on('refresh', $scope.refresh);
 }]);
