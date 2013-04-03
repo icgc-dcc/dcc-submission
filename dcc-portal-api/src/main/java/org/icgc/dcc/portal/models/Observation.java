@@ -30,7 +30,7 @@ public final class Observation {
 
   public static final String INDEX = DataPortalConfiguration.INDEX_NAME;
 
-  public static final String TYPE = "observations";
+  public static final String TYPE = "observation-centric";
 
   public static final ImmutableMap<String, ImmutableList<String>> FACETS = //
       ImmutableMap.of(//

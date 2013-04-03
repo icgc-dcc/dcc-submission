@@ -30,11 +30,13 @@ public final class Mutation {
 
   public static final String INDEX = DataPortalConfiguration.INDEX_NAME;
 
-  public static final String TYPE = "mutations";
+  public static final String TYPE = "mutation-centric";
 
   public static final ImmutableMap<String, ImmutableList<String>> FACETS = //
       ImmutableMap.of( //
-          "terms", ImmutableList.of(""));
+          "terms", ImmutableList.of( //
+              "mutation_type", //
+              "consequence_type"));
 
   public static final ImmutableMap<String, ImmutableList<String>> FILTERS = //
       ImmutableMap.of( //

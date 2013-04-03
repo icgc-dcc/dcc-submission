@@ -33,7 +33,7 @@ public final class Project {
 
   public static final String INDEX = DataPortalConfiguration.INDEX_NAME;
 
-  public static final String TYPE = "projects";
+  public static final String TYPE = "project";
 
   public static final ImmutableMap<String, ImmutableList<String>> FACETS = ImmutableMap.of("terms",
       ImmutableList.of("project_name", "primary_site", "countries", "_summary._available_data_type"));

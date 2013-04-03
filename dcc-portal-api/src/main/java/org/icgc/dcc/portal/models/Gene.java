@@ -31,7 +31,7 @@ public final class Gene {
 
   public static final String INDEX = DataPortalConfiguration.INDEX_NAME;
 
-  public static final String TYPE = "genes";
+  public static final String TYPE = "gene-centric";
 
   public static final ImmutableMap<String, ImmutableList<String>> FACETS = ImmutableMap.of("terms",
       ImmutableList.of("biotype"));

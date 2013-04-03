@@ -19,29 +19,16 @@ package org.icgc.dcc.portal.resources;
 
 import static com.google.common.base.Objects.firstNonNull;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static javax.ws.rs.core.Response.ok;
-import static javax.ws.rs.core.Response.status;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 
-import java.io.IOException;
-
-import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Response;
-
-import org.eclipse.jetty.http.HttpStatus;
-import org.hibernate.validator.constraints.NotEmpty;
 
 import com.google.inject.Inject;
 import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiError;
-import com.wordnik.swagger.annotations.ApiErrors;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 import com.yammer.dropwizard.jersey.params.IntParam;
@@ -49,9 +36,7 @@ import com.yammer.metrics.annotation.Timed;
 
 import org.icgc.dcc.portal.repositories.ObservationRepository;
 import org.icgc.dcc.portal.request.RequestSearchQuery;
-import org.icgc.dcc.portal.responses.ErrorResponse;
 import org.icgc.dcc.portal.results.FindAllResults;
-import org.icgc.dcc.portal.results.FindResults;
 
 @Path("/observations")
 @Produces(APPLICATION_JSON)
@@ -100,22 +85,4 @@ public class ObservationResource {
 
     return store.findAll(requestSearchQuery);
   }
-
-  @Path("/{id}")
-  @GET
-  @Timed
-  @ApiOperation(value = "Find a gene by id", notes = "If a observation does not exist with the specified id an error will be returned")
-  @ApiErrors(value = {@ApiError(code = HttpStatus.NOT_FOUND_404, reason = "Observation not found")})
-  public final Response find(//
-      @ApiParam(value = "Observation ID") @Valid @NotEmpty @PathParam("id")//
-      String id) throws IOException {
-    FindResults results = store.find(id);
-
-    if (results.getFields() == null) {
-      return status(NOT_FOUND).entity(new ErrorResponse(NOT_FOUND, "Observation " + id + " not found.")).build();
-    }
-
-    return ok().entity(results).build();
-  }
-
 }

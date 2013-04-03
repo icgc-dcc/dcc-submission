@@ -31,7 +31,7 @@ public final class GeneProject {
 
   public static final String INDEX = DataPortalConfiguration.INDEX_NAME;
 
-  public static final String TYPE = "gene-projects";
+  public static final String TYPE = "gene-project";
 
   public static final ImmutableMap<String, ImmutableList<String>> FACETS = ImmutableMap.of("terms",
       ImmutableList.of(""));

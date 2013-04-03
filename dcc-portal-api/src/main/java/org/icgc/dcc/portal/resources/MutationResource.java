@@ -22,6 +22,7 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.ok;
 import static javax.ws.rs.core.Response.status;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static org.eclipse.jetty.http.HttpStatus.NOT_FOUND_404;
 
 import java.io.IOException;
 
@@ -35,7 +36,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
-import org.eclipse.jetty.http.HttpStatus;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.google.inject.Inject;
@@ -104,8 +104,8 @@ public class MutationResource {
   @Path("/{id}")
   @GET
   @Timed
-  @ApiOperation(value = "Find a gene by id", notes = "If a mutation does not exist with the specified id an error will be returned")
-  @ApiErrors(value = {@ApiError(code = HttpStatus.NOT_FOUND_404, reason = "Mutation not found")})
+  @ApiOperation(value = "Find a mutation by id", notes = "If a mutation does not exist with the specified id an error will be returned")
+  @ApiErrors(value = {@ApiError(code = NOT_FOUND_404, reason = "Mutation not found")})
   public final Response find(//
       @ApiParam(value = "Mutation ID") @Valid @NotEmpty @PathParam("id")//
       String id) throws IOException {
