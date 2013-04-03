@@ -106,9 +106,11 @@
             </tr>
             </tbody>
         </table>
-        <pagination boundary-links="true" num-pages="genes.pagination.total"
+        <pagination boundary-links="true"
+                    num-pages="genes.pagination.pages"
                     current-page="genes.pagination.page"
-                    max-size="5"></pagination>
+                    max-size="5"
+                    on-select-page="gSelectPage(page)"></pagination>
     </div>
     <h2>
         <small>{{donors.pagination.total}}</small>
@@ -219,7 +221,7 @@
             </tr>
             </tbody>
         </table>
-        <pagination boundary-links="true" num-pages="donors.pagination.total"
+        <pagination boundary-links="true" num-pages="donors.pagination.pages"
                     current-page="donors.pagination.page"
                     max-size="5"></pagination>
     </div>

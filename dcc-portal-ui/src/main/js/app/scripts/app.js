@@ -21,6 +21,7 @@ angular.module('app', [
   'ui.directives',
   'ui.bootstrap',
   'highcharts',
+  'app.bootstrap.tpls',
   'app.controllers',
   'app.common',
   'app.http',
@@ -60,3 +61,14 @@ angular.module('app.controllers').controller('ApplicationController', [ "$rootSc
   });
 }]);
 
+
+angular.module("app.bootstrap.tpls", ["template/pagination/pagination.html"]);
+
+
+angular.module("template/pagination/pagination.html", []).run(["$templateCache", function ($templateCache) {
+  $templateCache.put("template/pagination/pagination.html",
+      "<ul class=\"pagination\">" +
+          "  <li ng-repeat=\"page in pages\" ng-class=\"{active: page.active, disabled: page.disabled}\"><span class='link' ng-click=\"selectPage(page.number)\">{{page.text}}</span></li>" +
+          "  </ul>" +
+          "");
+}]);

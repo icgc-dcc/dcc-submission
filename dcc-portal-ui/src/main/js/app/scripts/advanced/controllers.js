@@ -91,8 +91,29 @@ angular.module('app.advanced.controllers').controller('AdvancedController', [ "$
     $scope.gso.sort = header;
     $scope.gGetOrder();
 
-    search.genes = '{"sort":"' + $scope.gso.sort + '","order":"' + $scope.gso.order + '"}';
+    if (search.genes) {
+      var g = JSON.parse(search.genes);
+      g.sort = $scope.gso.sort;
+      g.order = $scope.gso.order;
+      search.genes = JSON.stringify(g);
+    } else {
+      search.genes = '{"sort":"' + $scope.gso.sort + '","order":"' + $scope.gso.order + '"}';
+    }
+    httpService.updateSearch(search);
+    $scope.refresh();
+  };
 
+  $scope.gSelectPage = function (page) {
+    console.log(genes.pagination.size * page);
+    var search = httpService.getCurrentSearch();
+
+    if (search.genes) {
+      var g = JSON.parse(search.genes);
+      g.from = genes.pagination.size * page;
+      search.genes = JSON.stringify(g);
+    } else {
+      search.genes = '{"from":"' + genes.pagination.size * page + '"}';
+    }
     httpService.updateSearch(search);
     $scope.refresh();
   };
