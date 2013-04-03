@@ -161,7 +161,7 @@ angular.module('highcharts.directives').directive('donut', function () {
             size: '75%',
             dataLabels: {
               enabled: true,
-              color: '#fff',
+              color: '#000',
               connectorColor: '#000000',
               distance: -25,
               zIndex: 20,
@@ -195,7 +195,7 @@ angular.module('highcharts.directives').directive('donut', function () {
       $scope.$watch("items", function (newValue, oldValue) {
         if (!newValue) return;
         if (angular.equals(newValue, oldValue)) return;
-
+        console.log(newValue);
         // We need deep copy in order to NOT override original chart object.
         // This allows us to override chart data member and still the keep
         // our original renderTo will be the same

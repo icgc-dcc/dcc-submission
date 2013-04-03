@@ -32,6 +32,7 @@ angular.module('app.donors.controllers').controller('DonorsController', [ "$scop
 
 angular.module('app.donors.controllers').controller('DonorController', [ "$scope", "donor", function ($scope, donor) {
   $scope.donor = donor;
+  $scope.specimen = donor.source.specimen[0]._specimen_id;
 }]);
 
 angular.module('app.donors.controllers').controller('EmbDonorsController', [ "$scope", 'DonorsService', 'httpService', function ($scope, DonorsService, httpService) {
