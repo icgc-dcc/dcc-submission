@@ -89,6 +89,8 @@ public final class FieldNames {
   public static final String OBSERVATION_CONSEQUENCES_GENE_ID = "_gene_id";
   public static final String OBSERVATION_CONSEQUENCES_GENE = "gene";
   public static final String OBSERVATION_PLATFORM = "platform";
+  public static final String OBSERVATION_VALIDATION_STATUS = "validation_status";
+  public static final String OBSERVATION_IS_ANNOTATED = "is_annotated";
   
   public static String getPartitionTypeFieldName(String type) {
     return type;
@@ -106,6 +108,8 @@ public final class FieldNames {
   public static final String MUTATION_TRANSCRIPTS_GENE = "gene";
   public static final String MUTATION_TRANSCRIPTS_CONSEQUENCE = "consequence";
   public static final String MUTATION_PLATFORM = "platform";
+  public static final String MUTATION_IS_ANNOTATED = "is_annotated";
+  public static final String MUTATION_VALIDATION_STATUS = "validation_status";
   
   /**
    * Aggregate field names.
