@@ -133,6 +133,13 @@ public class GeneTransformer {
     transcript.put("end_exon", asInteger(node.get("endExon")));
     transcript.put("translation_id", node.get("translationId"));
 
+    transcript.put("start", asInteger(node.get("start")));
+    transcript.put("end", asInteger(node.get("end")));
+    transcript.put("coding_region_start", asInteger(node.get("codingRegionStart")));
+    transcript.put("coding_region_end", asInteger(node.get("codingRegionEnd")));
+    transcript.put("cdna_coding_start", asInteger(node.get("cdnaCodingStart")));
+    transcript.put("cdna_coding_end", asInteger(node.get("cdnaCodingEnd")));
+
     // Collections
     transcript.put("exons", exons(node));
     transcript.put("domains", domains(node));
@@ -159,6 +166,13 @@ public class GeneTransformer {
     exon.put("start_phase", asInteger(node.get("startPhase")));
     exon.put("end", asInteger(node.get("end")));
     exon.put("end_phase", asInteger(node.get("endPhase")));
+
+    exon.put("cdna_start", asInteger(node.get("cdnaStart")));
+    exon.put("cdna_end", asInteger(node.get("cdnaEnd")));
+    exon.put("genomic_coding_start", asInteger(node.get("genomicCodingStart")));
+    exon.put("genomic_coding_end", asInteger(node.get("genomicCodingEnd")));
+    exon.put("cdna_coding_start", asInteger(node.get("cdnaCodingStart")));
+    exon.put("cdna_coding_end", asInteger(node.get("cdnaCodingEnd")));
 
     return exon;
   }
