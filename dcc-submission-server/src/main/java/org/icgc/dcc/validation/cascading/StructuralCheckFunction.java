@@ -41,6 +41,8 @@ import static org.icgc.dcc.core.cascading.Fields2.indicesOf;
 
 /**
  * Checks structural aspects of an input data file (header, format, ...)
+ * <p>
+ * loader's counterpart is {@link PreProcessFunction}
  */
 @SuppressWarnings("rawtypes")
 public class StructuralCheckFunction extends BaseOperation implements Function {
@@ -66,8 +68,11 @@ public class StructuralCheckFunction extends BaseOperation implements Function {
     dictionaryFields = new Fields(Iterables.toArray(fieldNames, String.class));
   }
 
+  /**
+   * TODO: address trick to know what the header contain: DCC-996 (also in PreProcessFunction)
+   */
   @SuppressWarnings("unchecked")
-  public void processFileHeader(Fields headerFields) {
+  public void declareFieldsPostPlanning(Fields headerFields) {
     headerSize = headerFields.size();
 
     Fields mergedFields = Fields.merge(headerFields, dictionaryFields);

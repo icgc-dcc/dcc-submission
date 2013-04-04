@@ -137,9 +137,12 @@ public class HadoopCascadingStrategy extends BaseCascadingStrategy {
     return new Hfs(textLine, path.toUri().getPath());
   }
 
+  /**
+   * TODO: try and combine with validator's equivalent. (DCC-996)
+   */
   @Override
-  public Fields getFileHeader(FileSchema schema) throws IOException {
-    Path path = this.path(schema);
+  public Fields getFileHeader(FileSchema fileSchema) throws IOException {
+    Path path = this.path(fileSchema);
 
     InputStreamReader isr = null;
     Configuration conf = this.fileSystem.getConf();
@@ -148,9 +151,9 @@ public class HadoopCascadingStrategy extends BaseCascadingStrategy {
       Path resolvedPath = FileContext.getFileContext(fileSystem.getUri()).resolvePath(path);
       CompressionCodec codec = factory.getCodec(resolvedPath);
 
-      isr =
-          (codec == null) ? new InputStreamReader(fileSystem.open(resolvedPath), Charsets.UTF_8) : new InputStreamReader(
-              codec.createInputStream(fileSystem.open(resolvedPath)), Charsets.UTF_8);
+      isr = (codec == null) ? //
+      new InputStreamReader(fileSystem.open(resolvedPath), Charsets.UTF_8) : //
+      new InputStreamReader(codec.createInputStream(fileSystem.open(resolvedPath)), Charsets.UTF_8);
 
       LineReader lineReader = new LineReader(isr);
       String firstLine = lineReader.readLine();

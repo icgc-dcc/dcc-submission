@@ -17,17 +17,14 @@
  */
 package org.icgc.dcc.validation;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 
 import org.icgc.dcc.dictionary.model.FileSchema;
-import org.icgc.dcc.validation.cascading.RemoveEmptyLineFilter;
 import org.icgc.dcc.validation.cascading.RemoveHeaderFilter;
+import org.icgc.dcc.validation.cascading.RemoveHollowTupleFilter;
 import org.icgc.dcc.validation.cascading.StructuralCheckFunction;
 import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.cascading.TupleStates;
@@ -52,6 +49,11 @@ import cascading.tuple.TupleEntry;
 import com.google.common.collect.Maps;
 import com.google.common.collect.ObjectArrays;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
+import static org.icgc.dcc.validation.cascading.StructuralCheckFunction.LINE_FIELD_NAME;
+import static org.icgc.dcc.validation.cascading.ValidationFields.OFFSET_FIELD_NAME;
+
 class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements InternalFlowPlanner {
 
   private static final Logger log = LoggerFactory.getLogger(DefaultInternalFlowPlanner.class);
@@ -64,7 +66,7 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
 
   private final Map<Key, Pipe> trimmedTails = Maps.newHashMap();
 
-  private StructuralCheckFunction structralCheck;
+  private StructuralCheckFunction structuralCheck;
 
   DefaultInternalFlowPlanner(FileSchema fileSchema) {
     super(fileSchema, FlowType.INTERNAL);
@@ -122,11 +124,12 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
 
   @Override
   protected FlowDef onConnect(FlowDef flowDef, CascadingStrategy strategy) {
-    checkState(structralCheck != null);
+    checkState(structuralCheck != null);
     Tap<?, ?, ?> source = strategy.getSourceTap(getSchema());
     try {
+      // TODO: address trick to know what the header contain: DCC-996
       Fields header = strategy.getFileHeader(getSchema());
-      structralCheck.processFileHeader(header);
+      structuralCheck.declareFieldsPostPlanning(header);
 
     } catch(IOException e) {
       throw new PlanningException("Error processing file header");
@@ -152,12 +155,11 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
   }
 
   private void applySystemPipes(Pipe pipe) {
-    pipe = new Each(pipe, new RemoveEmptyLineFilter());
+    pipe = new Each(pipe, new RemoveHollowTupleFilter());
     pipe = new Each(pipe, new RemoveHeaderFilter());
-    structralCheck = new StructuralCheckFunction(getSchema().getFieldNames());
-    pipe =
-        new Each(pipe, new Fields(ValidationFields.OFFSET_FIELD_NAME, StructuralCheckFunction.LINE_FIELD_NAME),
-            structralCheck, Fields.SWAP); // parse "line" into the actual expected fields
+    structuralCheck = new StructuralCheckFunction(getSchema().getFieldNames());
+    pipe = new Each( // parse "line" into the actual expected fields
+        pipe, new Fields(OFFSET_FIELD_NAME, LINE_FIELD_NAME), structuralCheck, Fields.SWAP);
     this.structurallyValidTail = new Each(pipe, TupleStates.keepStructurallyValidTuplesFilter());
     this.structurallyInvalidTail = new Each(pipe, TupleStates.keepStructurallyInvalidTuplesFilter());
   }

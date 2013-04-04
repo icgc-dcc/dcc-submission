@@ -20,7 +20,6 @@ package org.icgc.dcc.validation;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -37,13 +36,8 @@ import org.icgc.dcc.filesystem.DccFileSystem;
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
 
-import com.google.common.base.Charsets;
-import com.google.common.base.Splitter;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.google.common.io.Closeables;
-import com.google.common.io.LineReader;
 
 public abstract class BaseCascadingStrategy implements CascadingStrategy {
 
@@ -95,27 +89,6 @@ public abstract class BaseCascadingStrategy implements CascadingStrategy {
     return fileSystem.open(reportPath);
   }
 
-  @Override
-  public Fields getFileHeader(FileSchema schema) throws IOException {
-    Path path = this.path(schema);
-
-    InputStreamReader isr = null;
-    try {
-      Path resolvedPath = FileContext.getFileContext(fileSystem.getUri()).resolvePath(path);
-      isr = new InputStreamReader(fileSystem.open(resolvedPath), Charsets.UTF_8);
-      LineReader lineReader = new LineReader(isr);
-      String firstLine = lineReader.readLine();
-      Iterable<String> header = Splitter.on('\t').split(firstLine);
-      List<String> dupHeader = this.checkDuplicateHeader(header);
-      if(!dupHeader.isEmpty()) {
-        throw new DuplicateHeaderException(dupHeader);
-      }
-      return new Fields(Iterables.toArray(header, String.class));
-    } finally {
-      Closeables.closeQuietly(isr);
-    }
-  }
-
   protected Path trimmedPath(Key key) {
     if(key.getSchema().getRole() == FileSchemaRole.SUBMISSION) {
       return new Path(output, key.getName() + ".tsv");
@@ -139,27 +112,27 @@ public abstract class BaseCascadingStrategy implements CascadingStrategy {
   protected abstract Tap<?, ?, ?> tapSource(Path path);
 
   @Override
-  public Path path(final FileSchema schema) throws FileNotFoundException, IOException {
+  public Path path(final FileSchema fileSchema) throws FileNotFoundException, IOException {
 
     RemoteIterator<LocatedFileStatus> files;
-    if(schema.getRole() == FileSchemaRole.SUBMISSION) {
+    if(fileSchema.getRole() == FileSchemaRole.SUBMISSION) {
       files = fileSystem.listFiles(input, false);
-    } else if(schema.getRole() == FileSchemaRole.SYSTEM) {
+    } else if(fileSchema.getRole() == FileSchemaRole.SYSTEM) {
       files = fileSystem.listFiles(system, false);
     } else {
-      throw new RuntimeException("undefined File Schema Role " + schema.getRole());
+      throw new RuntimeException("undefined File Schema Role " + fileSchema.getRole());
     }
 
     while(files.hasNext()) {
       LocatedFileStatus file = files.next();
       if(file.isFile()) {
         Path path = file.getPath();
-        if(Pattern.matches(schema.getPattern(), path.getName())) {
+        if(Pattern.matches(fileSchema.getPattern(), path.getName())) {
           return path;
         }
       }
     }
-    throw new FileNotFoundException("no file for schema " + schema.getName());
+    throw new FileNotFoundException("no file for schema " + fileSchema.getName());
   }
 
   @Override
