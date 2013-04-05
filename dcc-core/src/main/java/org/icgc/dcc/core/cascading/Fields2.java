@@ -17,16 +17,17 @@
  */
 package org.icgc.dcc.core.cascading;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 import cascading.tuple.Fields;
 
 import com.google.common.collect.ImmutableList;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Utility class for working with cascading {@code Fields} objects.
@@ -39,6 +40,14 @@ public final class Fields2 {
 
   private Fields2() {
     // Prevent construction
+  }
+
+  public static Fields fields(Collection<String> fieldNames) {
+    return new Fields(fieldNames.toArray(new String[] {}));
+  }
+
+  public static Fields fields(String... fieldNames) {
+    return new Fields(fieldNames);
   }
 
   public static Fields argumentSelector(String... fieldNames) {
