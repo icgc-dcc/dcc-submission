@@ -34,13 +34,23 @@ import static org.icgc.dcc.core.model.FeatureTypes.STSM_TYPE;
  */
 public class FileSchemaNames {
 
-  private static final String META_SUFFIX = "_m";
+  private static final String SEPARATOR = "_";
 
-  private static final String PRIMARY_SUFFIX = "_p";
+  public static final String META_ABBREVIATION = "m";
 
-  private static final String SECONDARY_SUFFIX = "_s";
+  public static final String PRIMARY_ABBREVIATION = "p";
 
-  private static final String GENE_SUFFIX = "_g";
+  public static final String SECONDARY_ABBREVIATION = "s";
+
+  public static final String GENE_ABBREVIATION = "g";
+
+  private static final String META_SUFFIX = SEPARATOR + META_ABBREVIATION;
+
+  private static final String PRIMARY_SUFFIX = SEPARATOR + PRIMARY_ABBREVIATION;
+
+  private static final String SECONDARY_SUFFIX = SEPARATOR + SECONDARY_ABBREVIATION;
+
+  private static final String GENE_SUFFIX = SEPARATOR + GENE_ABBREVIATION;
 
   /**
    * Used as placeholder in the loader for imported fields.
