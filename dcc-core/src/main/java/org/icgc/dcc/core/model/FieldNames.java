@@ -92,6 +92,15 @@ public final class FieldNames {
   public static final String OBSERVATION_VALIDATION_STATUS = "validation_status";
   public static final String OBSERVATION_IS_ANNOTATED = "is_annotated";
   
+  public static final String OBSERVATION_CHROMOSOME = "chromosome";
+  public static final String OBSERVATION_CHROMOSOME_START = "chromosome_start";
+  public static final String OBSERVATION_CHROMOSOME_END = "chromosome_end";
+  public static final String OBSERVATION_MUTATION_TYPE = "mutation_type";
+  public static final String OBSERVATION_MUTATION = "mutation";
+  public static final String OBSERVATION_REFERENCE_GENOME_ALLELE = "reference_genome_allele";
+  
+  public static final String OBSERVATION_ASSEMBLY_VERSION = "assembly_version"; // actually from meta
+  
   public static String getPartitionTypeFieldName(String type) {
     return type;
   }
