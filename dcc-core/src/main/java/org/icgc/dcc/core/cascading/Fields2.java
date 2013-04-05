@@ -46,6 +46,10 @@ public final class Fields2 {
     return new Fields(toStringArray(fieldNames));
   }
 
+  public static Fields fields(String... fieldNames) {
+    return new Fields(fieldNames);
+  }
+
   public static Fields argumentSelector(String... fieldNames) {
     return new Fields(fieldNames);
   }
