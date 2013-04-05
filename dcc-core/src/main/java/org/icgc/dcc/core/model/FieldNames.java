@@ -91,6 +91,17 @@ public final class FieldNames {
   public static final String OBSERVATION_PLATFORM = "platform";
   public static final String OBSERVATION_VALIDATION_STATUS = "validation_status";
   public static final String OBSERVATION_IS_ANNOTATED = "is_annotated";
+
+  public static final String OBSERVATION_ASSEMBLY_VERSION = "assembly_version";
+  public static final String OBSERVATION_ANALYSIS_ID = "analysis_id";
+  public static final String OBSERVATION_ANALYZED_SAMPLE_ID = "analyzed_sample_id";
+  
+  public static final String OBSERVATION_CHROMOSOME = "chromosome";
+  public static final String OBSERVATION_CHROMOSOME_START = "chromosome_start";
+  public static final String OBSERVATION_CHROMOSOME_END = "chromosome_end";
+  public static final String OBSERVATION_MUTATION_TYPE = "mutation_type";
+  public static final String OBSERVATION_MUTATION = "mutation";
+  public static final String OBSERVATION_REFERENCE_GENOME_ALLELE = "reference_genome_allele";
   
   public static String getPartitionTypeFieldName(String type) {
     return type;
