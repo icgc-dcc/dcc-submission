@@ -11,19 +11,19 @@
 # - this script is based on former https://wiki.oicr.on.ca/display/DCCSOFT/Standard+operating+procedures#Standardoperatingprocedures-SOPforDeployingtheserver (which also links to this script now)
 # - assumptions:
 #   - using Linux or Darwin
-#   - must be in data-submission
+#   - must be in dcc-submission
 #   - must have checked out wanted branch
-#   - must have run "npm install" in ./client
+#   - must have run "npm install" in ./dcc-submission-ui
 #   - tests must run (else jar creation will fail)
 #   - on the remote server, /var/lib/hdfs/log and /var/lib/hdfs/realm.ini already exist (the latter is the reference file)
-# - convention: server expects client files under ../client (content should be that of ./client/public after build with brunch). this script takes care of building the appropriate directoy structure.
+# - convention: server expects ui files under ../dcc-submission-ui (content should be that of ./dcc-submission-ui/public after build with brunch). this script takes care of building the appropriate directoy structure.
 
 # ===========================================================================
 
 dev_dir="."
-dev_server_dir="${dev_dir?}/server"
+dev_server_dir="${dev_dir?}/dcc-submission-server"
 dev_target_dir="${dev_server_dir?}/target"
-dev_client_dir="${dev_dir?}/client"
+dev_client_dir="${dev_dir?}/dcc-submission-ui"
 dev_public_dir="${dev_client_dir?}/public"
 
 parent_pom_file="${dev_dir?}/pom.xml"
