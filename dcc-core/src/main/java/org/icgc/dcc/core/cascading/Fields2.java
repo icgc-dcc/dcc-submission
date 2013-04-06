@@ -43,7 +43,7 @@ public final class Fields2 {
   }
 
   public static Fields fields(Collection<String> fieldNames) {
-    return new Fields(fieldNames.toArray(new String[] {}));
+    return new Fields(toStringArray(fieldNames));
   }
 
   public static Fields fields(String... fieldNames) {
@@ -56,6 +56,10 @@ public final class Fields2 {
 
   public static Fields outputSelector(String... fieldNames) {
     return new Fields(fieldNames);
+  }
+
+  public static Fields declaredFields(Collection<String> fieldNames) {
+    return new Fields(toStringArray(fieldNames));
   }
 
   public static Fields declaredFields(String... fieldNames) {
@@ -84,6 +88,21 @@ public final class Fields2 {
 
   public static Fields sortFields(String... fieldNames) {
     return new Fields(fieldNames);
+  }
+
+  private static String[] toStringArray(Collection<String> fieldNames) {
+    return fieldNames.toArray(new String[] {});
+  }
+
+  /**
+   * There does not seem to be a built-in way...
+   */
+  public static Fields cloneFields(Fields fields) {
+    Fields clone = new Fields();
+    for(int i = 0; i < fields.size(); i++) {
+      clone = clone.append(new Fields(fields.get(i)));
+    }
+    return clone;
   }
 
   /**

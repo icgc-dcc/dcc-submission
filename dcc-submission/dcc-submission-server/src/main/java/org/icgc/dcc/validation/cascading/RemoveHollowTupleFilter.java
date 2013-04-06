@@ -21,16 +21,31 @@ import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
 import cascading.operation.Filter;
 import cascading.operation.FilterCall;
+import cascading.tuple.Tuple;
 
-public class RemoveEmptyLineFilter extends BaseOperation<Void> implements Filter<Void> {
+/**
+ * TODO: move to a more generic module
+ * <p>
+ * "hollow" because "empty" would be ambiguous with regard to whether the {@code Tuple} has elements or not, whereas we
+ * care whether those elements are null or not instead.
+ */
+public class RemoveHollowTupleFilter extends BaseOperation<Void> implements Filter<Void> {
 
   @Override
   public boolean isRemove(@SuppressWarnings("rawtypes") FlowProcess flowProcess, FilterCall<Void> filterCall) {
-    if(filterCall.getArguments().getString("line").isEmpty()) {
+    Tuple tuple = filterCall.getArguments().getTuple();
+    if(isHollowTuple(tuple)) {
       return true;
     } else {
       return false;
     }
   }
 
+  private boolean isHollowTuple(Tuple tuple) {
+    return tuple.equals(hollowTuple(tuple.size()));
+  }
+
+  private Tuple hollowTuple(int size) {
+    return Tuple.size(size);
+  }
 }

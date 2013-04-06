@@ -69,7 +69,7 @@ public class StructuralCheckFunctionTest {
   public void test_operate_valid() {
     StructuralCheckFunction function = new StructuralCheckFunction(DICTIONARY_FIELD_NAMES);
 
-    function.processFileHeader(VALID_HEADER);
+    function.declareFieldsPostPlanning(VALID_HEADER);
     TupleEntry[] tuples = VALID_DATA_TUPLES;
 
     Iterator<TupleEntry> iterator = callFunction(function, tuples, RESULT_FIELDS);
@@ -82,7 +82,7 @@ public class StructuralCheckFunctionTest {
   public void test_operate_missingColumns() {
     StructuralCheckFunction function = new StructuralCheckFunction(DICTIONARY_FIELD_NAMES);
 
-    function.processFileHeader(MISSING_HEADER_FIELDS);
+    function.declareFieldsPostPlanning(MISSING_HEADER_FIELDS);
     TupleEntry[] tuples = MISSING_DATA_TUPLES;
 
     Iterator<TupleEntry> iterator = callFunction(function, tuples, RESULT_FIELDS);
@@ -95,7 +95,7 @@ public class StructuralCheckFunctionTest {
   public void test_operate_extraColumns() {
     StructuralCheckFunction function = new StructuralCheckFunction(DICTIONARY_FIELD_NAMES);
 
-    function.processFileHeader(EXTRA_HEADER_FIELDS);
+    function.declareFieldsPostPlanning(EXTRA_HEADER_FIELDS);
     TupleEntry[] tuples = EXTRA_DATA_TUPLES;
 
     Iterator<TupleEntry> iterator = callFunction(function, tuples, RESULT_FIELDS);
@@ -108,7 +108,7 @@ public class StructuralCheckFunctionTest {
   public void test_operate_missingHeaders() {
     StructuralCheckFunction function = new StructuralCheckFunction(DICTIONARY_FIELD_NAMES);
 
-    function.processFileHeader(MISSING_HEADER_FIELDS);
+    function.declareFieldsPostPlanning(MISSING_HEADER_FIELDS);
     TupleEntry[] tuples = VALID_DATA_TUPLES;
 
     Iterator<TupleEntry> iterator = callFunction(function, tuples, RESULT_FIELDS);
@@ -121,7 +121,7 @@ public class StructuralCheckFunctionTest {
   public void test_operate_extraHeaders() {
     StructuralCheckFunction function = new StructuralCheckFunction(DICTIONARY_FIELD_NAMES);
 
-    function.processFileHeader(EXTRA_HEADER_FIELDS);
+    function.declareFieldsPostPlanning(EXTRA_HEADER_FIELDS);
     TupleEntry[] tuples = VALID_DATA_TUPLES;
 
     Iterator<TupleEntry> iterator = callFunction(function, tuples, RESULT_FIELDS);
@@ -134,7 +134,7 @@ public class StructuralCheckFunctionTest {
   public void test_operate_missingData() {
     StructuralCheckFunction function = new StructuralCheckFunction(DICTIONARY_FIELD_NAMES);
 
-    function.processFileHeader(VALID_HEADER);
+    function.declareFieldsPostPlanning(VALID_HEADER);
     TupleEntry[] tuples = MISSING_DATA_TUPLES;
 
     Iterator<TupleEntry> iterator = callFunction(function, tuples, RESULT_FIELDS);
@@ -147,7 +147,7 @@ public class StructuralCheckFunctionTest {
   public void test_operate_extraData() {
     StructuralCheckFunction function = new StructuralCheckFunction(DICTIONARY_FIELD_NAMES);
 
-    function.processFileHeader(VALID_HEADER);
+    function.declareFieldsPostPlanning(VALID_HEADER);
     TupleEntry[] tuples = EXTRA_DATA_TUPLES;
 
     Iterator<TupleEntry> iterator = callFunction(function, tuples, RESULT_FIELDS);
@@ -160,7 +160,7 @@ public class StructuralCheckFunctionTest {
   public void test_operate_chaos() { // missing and extra headers, missing and extra data!
     StructuralCheckFunction function = new StructuralCheckFunction(DICTIONARY_FIELD_NAMES);
 
-    function.processFileHeader(new Fields("col1", "col5", "col4", "col6"));
+    function.declareFieldsPostPlanning(new Fields("col1", "col5", "col4", "col6"));
     TupleEntry[] tuples = new TupleEntry[] {//
         new TupleEntry(LINE_FIELDS, new Tuple("v.1.1\tv.1.4")),//
         new TupleEntry(LINE_FIELDS, new Tuple("v.2.1\tv.2.3\tv.2.2\tv.2.5\tv.2.4\tv.2.6")),//
