@@ -21,27 +21,12 @@ import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
 import cascading.operation.Filter;
 import cascading.operation.FilterCall;
-import cascading.tuple.Tuple;
+import static org.icgc.dcc.validation.cascading.StructuralCheckFunction.LINE_FIELD_NAME;
 
-/**
- * TODO: move to a more generic module
- * <p>
- * "hollow" because "empty" would be ambiguous with regard to whether the {@code Tuple} has elements or not, whereas we
- * care whether those elements are null or not instead.
- */
-public class RemoveHollowTupleFilter extends BaseOperation<Void> implements Filter<Void> {
-
+public class RemoveEmptyValidationLineFilter extends BaseOperation<Void> implements Filter<Void> {
   @Override
   public boolean isRemove(@SuppressWarnings("rawtypes") FlowProcess flowProcess, FilterCall<Void> filterCall) {
-    Tuple tuple = filterCall.getArguments().getTuple();
-    return isHollowTuple(tuple);
-  }
-
-  private boolean isHollowTuple(Tuple tuple) {
-    return tuple.equals(hollowTuple(tuple.size()));
-  }
-
-  private Tuple hollowTuple(int size) {
-    return Tuple.size(size);
+    String tuple = filterCall.getArguments().getString(LINE_FIELD_NAME);
+    return tuple.isEmpty();
   }
 }

@@ -36,6 +36,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Lists.newArrayList;
 import static org.icgc.dcc.core.cascading.Fields2.buildSortedList;
 import static org.icgc.dcc.core.cascading.Fields2.indicesOf;
 
@@ -43,6 +44,8 @@ import static org.icgc.dcc.core.cascading.Fields2.indicesOf;
  * Checks structural aspects of an input data file (header, format, ...)
  * <p>
  * loader's counterpart is {@link PreProcessFunction}
+ * <p>
+ * Empty lines have already been filtered out in {@link RemoveHollowTupleFilter}.
  */
 @SuppressWarnings("rawtypes")
 public class StructuralCheckFunction extends BaseOperation implements Function {
@@ -97,9 +100,10 @@ public class StructuralCheckFunction extends BaseOperation implements Function {
     long offset = functionCall.getArguments().getLong(ValidationFields.OFFSET_FIELD_NAME);
     TupleState tupleState = new TupleState(offset);
 
-    String line = arguments.getString(StructuralCheckFunction.LINE_FIELD_NAME);
-    List<String> values = Lists.newArrayList(Splitter.on(FIELD_SEPARATOR).split(line));
+    String line = arguments.getString(LINE_FIELD_NAME);
+    List<String> values = newArrayList(Splitter.on(FIELD_SEPARATOR).split(line));
     List<String> adjustedValues = adjustValues(values, tupleState);
+
     List<Object> tupleValues = Lists.<Object> newArrayList(adjustedValues);
     tupleValues.add(tupleState); // lastly state
     checkState(fieldDeclaration.size() == tupleValues.size());
