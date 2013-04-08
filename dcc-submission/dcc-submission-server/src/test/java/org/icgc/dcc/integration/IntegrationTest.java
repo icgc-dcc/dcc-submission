@@ -60,6 +60,16 @@ import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.inject.Inject;
 import com.typesafe.config.ConfigFactory;
 
+import static java.util.Arrays.asList;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static javax.ws.rs.core.Response.Status.CREATED;
+import static javax.ws.rs.core.Response.Status.OK;
+import static org.icgc.dcc.release.model.ReleaseState.OPENED;
+import static org.icgc.dcc.release.model.SubmissionState.INVALID;
+import static org.icgc.dcc.release.model.SubmissionState.NOT_VALIDATED;
+import static org.icgc.dcc.release.model.SubmissionState.QUEUED;
+import static org.icgc.dcc.release.model.SubmissionState.VALID;
+import static org.icgc.dcc.release.model.SubmissionState.VALIDATING;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -375,32 +385,27 @@ public class IntegrationTest {
   }
 
   private void addCodeListTerm() throws Exception {
-    checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, ReleaseState.OPENED, //
-        Arrays.<SubmissionState> asList( //
-            SubmissionState.VALID, SubmissionState.INVALID, SubmissionState.INVALID));
+    checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED, asList(VALID, INVALID, INVALID));
 
     Response response = // 1: deceased, 2: alive
         TestUtils.post(client, CODELISTS_ENDPOINT + "/dr__donor_vital_status/terms",
             "[{\"code\": \"3\", \"value\": \"new value 1\"}, {\"code\": \"4\", \"value\": \"new value 2\"}]");
-    assertEquals(Status.CREATED.getStatusCode(), response.getStatus());
+    assertEquals(CREATED.getStatusCode(), response.getStatus());
 
     // Only the INVALID ones should have been reset (DCC-851)
-    checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, ReleaseState.OPENED, //
-        Arrays.<SubmissionState> asList( //
-            SubmissionState.VALID, SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED));
+    checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED, asList(VALID, NOT_VALIDATED, NOT_VALIDATED));
   }
 
   private void checkValidatedSubmission(String project, SubmissionState expectedSubmissionState) throws Exception {
     DetailedSubmission detailedSubmission;
     do {
-      Uninterruptibles.sleepUninterruptibly(2, TimeUnit.SECONDS);
+      Uninterruptibles.sleepUninterruptibly(2, SECONDS);
 
       Response response = TestUtils.get(client, INITIAL_RELEASE_SUBMISSIONS_ENDPOINT + "/" + project);
-      assertEquals(Status.OK.getStatusCode(), response.getStatus());
+      assertEquals(OK.getStatusCode(), response.getStatus());
 
       detailedSubmission = TestUtils.asDetailedSubmission(response);
-    } while(detailedSubmission.getState() == SubmissionState.QUEUED
-        || detailedSubmission.getState() == SubmissionState.VALIDATING);
+    } while(detailedSubmission.getState() == QUEUED || detailedSubmission.getState() == VALIDATING);
 
     assertEquals(expectedSubmissionState, detailedSubmission.getState());
   }
@@ -422,7 +427,7 @@ public class IntegrationTest {
 
     // attempt releasing again
     response = TestUtils.post(client, NEXT_RELEASE_ENPOINT, SECOND_RELEASE);
-    assertEquals(TestUtils.asString(response), Status.OK.getStatusCode(), response.getStatus());
+    assertEquals(TestUtils.asString(response), OK.getStatusCode(), response.getStatus());
 
     // attempt releasing one too many times
     response = TestUtils.post(client, NEXT_RELEASE_ENPOINT, SECOND_RELEASE);

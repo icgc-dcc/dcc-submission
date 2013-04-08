@@ -23,8 +23,8 @@ import java.util.Arrays;
 import java.util.Map;
 
 import org.icgc.dcc.dictionary.model.FileSchema;
+import org.icgc.dcc.validation.cascading.RemoveEmptyValidationLineFilter;
 import org.icgc.dcc.validation.cascading.RemoveHeaderFilter;
-import org.icgc.dcc.validation.cascading.RemoveHollowTupleFilter;
 import org.icgc.dcc.validation.cascading.StructuralCheckFunction;
 import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.cascading.TupleStates;
@@ -155,7 +155,7 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
   }
 
   private void applySystemPipes(Pipe pipe) {
-    pipe = new Each(pipe, new RemoveHollowTupleFilter());
+    pipe = new Each(pipe, new RemoveEmptyValidationLineFilter());
     pipe = new Each(pipe, new RemoveHeaderFilter());
     structuralCheck = new StructuralCheckFunction(getSchema().getFieldNames());
     pipe = new Each( // parse "line" into the actual expected fields
