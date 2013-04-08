@@ -18,8 +18,11 @@
 package org.icgc.dcc.validation;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileContext;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.dictionary.model.FileSchema;
@@ -33,6 +36,12 @@ import cascading.scheme.local.TextLine;
 import cascading.tap.Tap;
 import cascading.tap.local.FileTap;
 import cascading.tuple.Fields;
+
+import com.google.common.base.Charsets;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Iterables;
+import com.google.common.io.Closeables;
+import com.google.common.io.LineReader;
 
 /**
  * 
@@ -73,6 +82,30 @@ public class LocalCascadingStrategy extends BaseCascadingStrategy {
       return FileSystem.getLocal(new Configuration());
     } catch(IOException e) {
       throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * TODO: try and combine with loader's equivalent. (DCC-996)
+   */
+  @Override
+  public Fields getFileHeader(FileSchema fileSchema) throws IOException {
+    Path path = this.path(fileSchema);
+
+    InputStreamReader isr = null;
+    try {
+      Path resolvedPath = FileContext.getFileContext(fileSystem.getUri()).resolvePath(path);
+      isr = new InputStreamReader(fileSystem.open(resolvedPath), Charsets.UTF_8);
+      LineReader lineReader = new LineReader(isr);
+      String firstLine = lineReader.readLine();
+      Iterable<String> header = Splitter.on('\t').split(firstLine);
+      List<String> dupHeader = this.checkDuplicateHeader(header);
+      if(!dupHeader.isEmpty()) {
+        throw new DuplicateHeaderException(dupHeader);
+      }
+      return new Fields(Iterables.toArray(header, String.class));
+    } finally {
+      Closeables.closeQuietly(isr);
     }
   }
 }

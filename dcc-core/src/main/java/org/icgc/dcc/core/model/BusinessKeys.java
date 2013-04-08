@@ -15,22 +15,32 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.validation.cascading;
+package org.icgc.dcc.core.model;
 
-import cascading.flow.FlowProcess;
-import cascading.operation.BaseOperation;
-import cascading.operation.Filter;
-import cascading.operation.FilterCall;
+import java.util.List;
 
-public class RemoveEmptyLineFilter extends BaseOperation<Void> implements Filter<Void> {
+import static com.google.common.collect.Lists.newArrayList;
+import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_ASSEMBLY_VERSION;
+import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_CHROMOSOME;
+import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_CHROMOSOME_END;
+import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_CHROMOSOME_START;
+import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_MUTATION;
+import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_MUTATION_TYPE;
+import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_REFERENCE_GENOME_ALLELE;
 
-  @Override
-  public boolean isRemove(@SuppressWarnings("rawtypes") FlowProcess flowProcess, FilterCall<Void> filterCall) {
-    if(filterCall.getArguments().getString("line").isEmpty()) {
-      return true;
-    } else {
-      return false;
-    }
-  }
+/**
+ * Contains business keys from the standpoint of the loader entities (not the submission files').
+ */
+public class BusinessKeys {
 
+  // @formatter:off
+  public static final List<String> MUTATION_BUSINESS_KEY_META_PART = newArrayList(OBSERVATION_ASSEMBLY_VERSION);
+  public static final List<String> MUTATION_BUSINESS_KEY_PRIMARY_PART = newArrayList(
+      OBSERVATION_CHROMOSOME, 
+      OBSERVATION_CHROMOSOME_START,
+      OBSERVATION_CHROMOSOME_END, 
+      OBSERVATION_MUTATION_TYPE, 
+      OBSERVATION_MUTATION, 
+      OBSERVATION_REFERENCE_GENOME_ALLELE);
+  // @formatter:on
 }
