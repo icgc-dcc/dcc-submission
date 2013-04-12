@@ -24,14 +24,20 @@ import static java.lang.String.format;
  */
 public final class DatabaseUtils {
 
+  private static final String IDENTIFICATION = "identification";
+
   /**
    * Creates a release database name from a supplied release name.
-   * 
-   * @param releaseName
-   * @return
    */
   public static String releaseDatabaseName(String releaseName) {
     return format("%s-%s", "dcc-release", releaseName);
+  }
+
+  /**
+   * Creates an identification database name.
+   */
+  public static String identificationDatabaseName() {
+    return format("%s-%s", "dcc", IDENTIFICATION);
   }
 
   private DatabaseUtils() {
