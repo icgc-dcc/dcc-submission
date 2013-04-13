@@ -21,26 +21,29 @@ import static java.lang.String.format;
 import static lombok.AccessLevel.PRIVATE;
 import lombok.NoArgsConstructor;
 
-/**
- * Common utilities for working with DCC databases.
- */
 @NoArgsConstructor(access = PRIVATE)
-public final class DatabaseUtils {
+public final class FormatUtils {
 
-  private static final String IDENTIFICATION = "identification";
-
-  /**
-   * Creates a release database name from a supplied release name.
-   */
-  public static String releaseDatabaseName(String releaseName) {
-    return format("%s-%s", "dcc-release", releaseName);
+  public static String formatBytes(long bytes) {
+    return formatBytes(bytes, true);
   }
 
-  /**
-   * Creates an identification database name.
-   */
-  public static String identificationDatabaseName() {
-    return format("%s-%s", "dcc", IDENTIFICATION);
+  public static String formatBytes(long bytes, boolean si) {
+    int unit = si ? 1000 : 1024;
+    if(bytes < unit) return bytes + " B";
+
+    int exp = (int) (Math.log(bytes) / Math.log(unit));
+    String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp - 1) + (si ? "" : "i");
+
+    return format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
+  }
+
+  public static String formatNumber(long number) {
+    return format("%,d", number);
+  }
+
+  public static String formatNumber(int number) {
+    return format("%,d", number);
   }
 
 }
