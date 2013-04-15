@@ -19,7 +19,11 @@ package org.icgc.dcc.core.util;
 
 import static java.lang.String.format;
 import static lombok.AccessLevel.PRIVATE;
+import static org.joda.time.Duration.standardSeconds;
 import lombok.NoArgsConstructor;
+
+import org.joda.time.Duration;
+import org.joda.time.Period;
 
 @NoArgsConstructor(access = PRIVATE)
 public final class FormatUtils {
@@ -38,12 +42,30 @@ public final class FormatUtils {
     return format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
   }
 
-  public static String formatNumber(long number) {
-    return format("%,d", number);
+  public static String formatCount(int count) {
+    return format("%,d", count);
   }
 
-  public static String formatNumber(int number) {
-    return format("%,d", number);
+  public static String formatCount(long count) {
+    return format("%,d", count);
+  }
+
+  public static String formatPercent(float percent) {
+    return format("%.2f", percent);
+  }
+
+  public static String formatDuration(long seconds) {
+    Duration duration = standardSeconds(seconds);
+
+    return format("%02d:%02d:%02d (hh:mm:ss)", //
+        duration.getStandardHours(), duration.getStandardMinutes(), duration.getStandardSeconds());
+  }
+
+  public static String formatPeriod(Period period) {
+    period = period.normalizedStandard();
+
+    return format("%02d:%02d:%02d (hh:mm:ss)",//
+        period.getHours(), period.getMinutes(), period.getSeconds());
   }
 
 }
