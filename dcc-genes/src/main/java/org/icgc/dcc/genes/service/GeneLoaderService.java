@@ -18,6 +18,7 @@
 package org.icgc.dcc.genes.service;
 
 import static org.icgc.dcc.core.util.FormatUtils.formatCount;
+import static org.icgc.dcc.core.util.FormatUtils.formatDuration;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -38,6 +39,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Stopwatch;
 import com.mongodb.DB;
 import com.mongodb.Mongo;
 import com.mongodb.MongoClient;
@@ -52,6 +54,11 @@ import de.undercouch.bson4jackson.BsonFactory;
 @AllArgsConstructor
 public class GeneLoaderService {
 
+  /**
+   * How frequently to report status on inserted genes.
+   */
+  private static final int STATUS_GENE_COUNT = 10000;
+
   private final GeneTransformer transformer = new GeneTransformer();
 
   @NonNull
@@ -59,6 +66,7 @@ public class GeneLoaderService {
 
   @SneakyThrows
   public void load(InputStream inputStream) {
+    Stopwatch watch = new Stopwatch().start();
     log.info("Loading gene model from {} into {}...", inputStream, mongoUri);
 
     final MongoCollection genes = getTargetCollection(mongoUri);
@@ -78,6 +86,8 @@ public class GeneLoaderService {
           genes.save(transformed);
         }
       });
+
+      log.info("Loaded gene model in {}", formatDuration(watch));
     } finally {
       // Close db connection
       genes.getDBCollection().getDB().getMongo().close();
@@ -117,12 +127,15 @@ public class GeneLoaderService {
   void eachGene(MappingIterator<JsonNode> iterator, GeneCallback callback) throws IOException {
     try {
       int insertCount = 0;
+      Stopwatch watch = new Stopwatch().start();
       while(hasNext(iterator)) {
         JsonNode gene = iterator.next();
         callback.handle(gene);
 
-        if(++insertCount % 10000 == 0) {
-          log.info("Loaded {} genes", formatCount(insertCount));
+        if(++insertCount % STATUS_GENE_COUNT == 0) {
+          log.info("Loaded {} genes ({} inserts/s)", //
+              formatCount(insertCount), formatCount(STATUS_GENE_COUNT / (watch.elapsedMillis() / 1000)));
+          watch.reset().start();
         }
       }
       log.info("Finished processing {} gene(s) total", formatCount(insertCount));
