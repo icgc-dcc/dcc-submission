@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.genes.service;
 
+import static org.icgc.dcc.core.util.FormatUtils.formatCount;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -120,10 +122,10 @@ public class GeneLoaderService {
         callback.handle(gene);
 
         if(++insertCount % 10000 == 0) {
-          log.info("Loaded {} genes", insertCount);
+          log.info("Loaded {} genes", formatCount(insertCount));
         }
       }
-      log.info("Finished processing {} gene(s) total", insertCount);
+      log.info("Finished processing {} gene(s) total", formatCount(insertCount));
     } finally {
       iterator.close();
     }

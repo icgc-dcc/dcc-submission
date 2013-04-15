@@ -18,12 +18,15 @@
 package org.icgc.dcc.core.util;
 
 import static java.lang.String.format;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static lombok.AccessLevel.PRIVATE;
 import static org.joda.time.Duration.standardSeconds;
 import lombok.NoArgsConstructor;
 
 import org.joda.time.Duration;
 import org.joda.time.Period;
+
+import com.google.common.base.Stopwatch;
 
 @NoArgsConstructor(access = PRIVATE)
 public final class FormatUtils {
@@ -59,6 +62,10 @@ public final class FormatUtils {
 
     return format("%02d:%02d:%02d (hh:mm:ss)", //
         duration.getStandardHours(), duration.getStandardMinutes(), duration.getStandardSeconds());
+  }
+
+  public static String formatDuration(Stopwatch watch) {
+    return formatDuration(watch.elapsedTime(SECONDS));
   }
 
   public static String formatPeriod(Period period) {
