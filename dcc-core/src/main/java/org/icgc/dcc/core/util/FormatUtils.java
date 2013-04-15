@@ -57,15 +57,14 @@ public final class FormatUtils {
     return format("%.2f", percent);
   }
 
+  public static String formatDuration(Stopwatch watch) {
+    return formatDuration(watch.elapsedTime(SECONDS));
+  }
+
   public static String formatDuration(long seconds) {
     Duration duration = standardSeconds(seconds);
 
-    return format("%02d:%02d:%02d (hh:mm:ss)", //
-        duration.getStandardHours(), duration.getStandardMinutes(), duration.getStandardSeconds());
-  }
-
-  public static String formatDuration(Stopwatch watch) {
-    return formatDuration(watch.elapsedTime(SECONDS));
+    return formatPeriod(duration.toPeriod());
   }
 
   public static String formatPeriod(Period period) {
