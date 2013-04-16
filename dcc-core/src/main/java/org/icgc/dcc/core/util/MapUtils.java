@@ -17,15 +17,20 @@
  */
 package org.icgc.dcc.core.util;
 
+import static lombok.AccessLevel.PRIVATE;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
+import lombok.NoArgsConstructor;
+
 import com.google.common.collect.Maps;
 
-public class MapUtils {
+@NoArgsConstructor(access = PRIVATE)
+public final class MapUtils {
 
   @SuppressWarnings("unchecked")
   public static TreeMap<String, Object> asTreeMap(Map<String, Object> map) throws IOException {
@@ -51,6 +56,7 @@ public class MapUtils {
         treeMap.put(key, value); // possibly null
       }
     }
+
     return treeMap;
   }
 
