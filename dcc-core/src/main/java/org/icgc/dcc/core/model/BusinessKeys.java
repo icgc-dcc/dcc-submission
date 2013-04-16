@@ -33,7 +33,13 @@ import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_REFERENCE_GENOME_AL
  */
 public class BusinessKeys {
 
-  // @formatter:off
+  //@formatter:off
+  public static final String PROJECT = "project";
+  public static final String DONOR = "donor";
+  public static final String SPECIMEN = "specimen";
+  public static final String SAMPLE = "sample";
+  public static final String MUTATION = "mutation";
+
   public static final List<String> MUTATION_BUSINESS_KEY_META_PART = newArrayList(OBSERVATION_ASSEMBLY_VERSION);
   public static final List<String> MUTATION_BUSINESS_KEY_PRIMARY_PART = newArrayList(
       OBSERVATION_CHROMOSOME, 
