@@ -175,7 +175,8 @@ public class StructuralCheckFunction extends BaseOperation implements Function {
 
   private List<String> replaceEmptyStrings(List<String> adjustedValues) {
     for(int i = 0; i < adjustedValues.size(); i++) {
-      if("".equals(adjustedValues.get(i))) {
+      String value = adjustedValues.get(i);
+      if(value != null && value.trim().isEmpty()) {
         adjustedValues.set(i, null);
       }
     }
