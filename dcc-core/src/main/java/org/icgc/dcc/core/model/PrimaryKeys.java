@@ -15,47 +15,25 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.validation;
+package org.icgc.dcc.core.model;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.util.List;
 
-import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.dictionary.model.FileSchema;
+import static com.google.common.collect.Lists.newArrayList;
+import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_ANALYSIS_ID;
+import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_ANALYZED_SAMPLE_ID;
 
-import cascading.flow.FlowConnector;
-import cascading.tap.Tap;
-import cascading.tuple.Fields;
+/**
+ * Contains primary keys from the standpoint of the the submission files' (not the loader entities).
+ */
+public class PrimaryKeys {
 
-public interface CascadingStrategy {
-
-  public FlowConnector getFlowConnector();
-
-  public Tap<?, ?, ?> getSourceTap(FileSchema schema);
-
-  public Tap<?, ?, ?> getFlowSinkTap(FileSchema schema, FlowType type);
-
-  public Tap<?, ?, ?> getTrimmedTap(Key key);
-
-  public Tap<?, ?, ?> getReportTap(FileSchema schema, FlowType type, String reportName);
-
+  // @formatter:off
   /**
-   * Used to read back a report that was produced during the execution of a Flow. This does not use a Tap so that it can
-   * be executed outside of a Flow.
-   * @throws IOException
+   * Read "primary key" of the "meta" file (so primary in PK sense, not the ICGC submission file sense).
    */
-  public InputStream readReportTap(FileSchema schema, FlowType type, String reportName) throws FileNotFoundException,
-      IOException;
-
-  /**
-   * Necessary until DCC-996 is done (IF there is indeed a more elegant alternative).
-   */
-  public Fields getFileHeader(FileSchema schema) throws IOException;
-
-  public Path path(final FileSchema schema) throws FileNotFoundException, IOException;
-
-  public FileSchemaDirectory getFileSchemaDirectory();
-
-  public FileSchemaDirectory getSystemDirectory();
+  public static final List<String> META_PRIMARY_KEY = newArrayList(
+      OBSERVATION_ANALYSIS_ID,
+      OBSERVATION_ANALYZED_SAMPLE_ID);
+  // @formatter:on
 }

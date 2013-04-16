@@ -21,16 +21,12 @@ import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
 import cascading.operation.Filter;
 import cascading.operation.FilterCall;
+import static org.icgc.dcc.validation.cascading.StructuralCheckFunction.LINE_FIELD_NAME;
 
-public class RemoveEmptyLineFilter extends BaseOperation<Void> implements Filter<Void> {
-
+public class RemoveEmptyValidationLineFilter extends BaseOperation<Void> implements Filter<Void> {
   @Override
   public boolean isRemove(@SuppressWarnings("rawtypes") FlowProcess flowProcess, FilterCall<Void> filterCall) {
-    if(filterCall.getArguments().getString("line").isEmpty()) {
-      return true;
-    } else {
-      return false;
-    }
+    String tuple = filterCall.getArguments().getString(LINE_FIELD_NAME);
+    return tuple.isEmpty();
   }
-
 }
