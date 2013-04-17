@@ -37,6 +37,7 @@ import com.google.common.collect.Lists;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
+import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.icgc.dcc.core.cascading.Fields2.buildSortedList;
 import static org.icgc.dcc.core.cascading.Fields2.indicesOf;
 
@@ -176,7 +177,7 @@ public class StructuralCheckFunction extends BaseOperation implements Function {
   private List<String> replaceEmptyStrings(List<String> adjustedValues) {
     for(int i = 0; i < adjustedValues.size(); i++) {
       String value = adjustedValues.get(i);
-      if(value != null && value.trim().isEmpty()) {
+      if(value != null && isBlank(value)) {
         adjustedValues.set(i, null);
       }
     }
