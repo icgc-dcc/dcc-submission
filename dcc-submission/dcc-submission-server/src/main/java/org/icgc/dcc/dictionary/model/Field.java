@@ -26,6 +26,8 @@ import javax.validation.Valid;
 import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.dictionary.visitor.DictionaryElement;
 import org.icgc.dcc.dictionary.visitor.DictionaryVisitor;
+import org.icgc.dcc.validation.restriction.CodeListRestriction;
+import org.icgc.dcc.validation.restriction.DiscreteValuesRestriction;
 
 import com.google.code.morphia.annotations.Embedded;
 import com.google.common.base.Optional;
@@ -142,6 +144,23 @@ public class Field implements DictionaryElement, Serializable {
 
   public void setControlled(boolean controlled) {
     this.controlled = controlled;
+  }
+
+  public boolean hasCodeListRestriction() {
+    return hasRestriction(CodeListRestriction.NAME);
+  }
+
+  public boolean hasInRestriction() {
+    return hasRestriction(DiscreteValuesRestriction.NAME);
+  }
+
+  private boolean hasRestriction(String restrictionName) {
+    for(Restriction restriction : restrictions) {
+      if(restrictionName.equalsIgnoreCase(restriction.getType())) {
+        return true;
+      }
+    }
+    return false;
   }
 
 }
