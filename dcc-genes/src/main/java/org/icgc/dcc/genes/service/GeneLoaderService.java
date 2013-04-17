@@ -78,7 +78,7 @@ public class GeneLoaderService {
       MappingIterator<JsonNode> iterator = getSourceIterator(inputStream);
 
       // Transform and save
-      eachGene(iterator, new GeneCallback() {
+      processGenes(iterator, new GeneCallback() {
         @Override
         public void handle(JsonNode gene) {
           JsonNode transformed = transformer.transform(gene);
@@ -124,7 +124,7 @@ public class GeneLoaderService {
     return iterator;
   }
 
-  void eachGene(MappingIterator<JsonNode> iterator, GeneCallback callback) throws IOException {
+  void processGenes(MappingIterator<JsonNode> iterator, GeneCallback callback) throws IOException {
     try {
       int insertCount = 0;
       Stopwatch watch = new Stopwatch().start();
