@@ -83,6 +83,7 @@ public final class FieldNames {
   public static final String OBSERVATION_TYPE = "_type";
   public static final String OBSERVATION_DONOR = "donor";
   public static final String OBSERVATION_DONOR_ID = "_donor_id";
+  public static final String OBSERVATION_PROJECT = "project";
   public static final String OBSERVATION_CONSEQUENCE_TYPES = "consequence_type";
   public static final String OBSERVATION_CONSEQUENCES = "consequence";
   public static final String OBSERVATION_CONSEQUENCES_CONSEQUENCE_TYPE = "consequence_type";
