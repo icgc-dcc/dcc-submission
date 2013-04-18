@@ -17,9 +17,7 @@
  */
 package org.icgc.dcc.filesystem;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
-
+import java.util.List;
 import java.util.Set;
 
 import org.apache.hadoop.fs.FileSystem;
@@ -33,6 +31,10 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Joiner;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
+import static org.icgc.dcc.filesystem.hdfs.HadoopUtils.toFilenameList;
 
 public class DccFileSystem {
 
@@ -121,8 +123,8 @@ public class DccFileSystem {
     }
 
     // log resulting sub-directories
-    log.info("ls " + releaseStringPath + " = "
-        + HadoopUtils.toFilenameList(HadoopUtils.lsAll(this.fileSystem, releaseStringPath)));
+    List<Path> lsAll = HadoopUtils.lsAll(this.fileSystem, new Path(releaseStringPath));
+    log.info("ls {} = {}", releaseStringPath, toFilenameList(lsAll));
   }
 
   /**
