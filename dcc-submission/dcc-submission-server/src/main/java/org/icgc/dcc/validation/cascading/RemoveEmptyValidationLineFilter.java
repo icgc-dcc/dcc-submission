@@ -15,32 +15,18 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.util;
+package org.icgc.dcc.validation.cascading;
 
-import static java.lang.String.format;
-import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
+import cascading.flow.FlowProcess;
+import cascading.operation.BaseOperation;
+import cascading.operation.Filter;
+import cascading.operation.FilterCall;
+import static org.icgc.dcc.validation.cascading.StructuralCheckFunction.LINE_FIELD_NAME;
 
-/**
- * Common utilities for working with DCC databases.
- */
-@NoArgsConstructor(access = PRIVATE)
-public final class DatabaseUtils {
-
-  private static final String IDENTIFICATION = "identification";
-
-  /**
-   * Creates a release database name from a supplied release name.
-   */
-  public static String releaseDatabaseName(String releaseName) {
-    return format("%s-%s", "dcc-release", releaseName);
+public class RemoveEmptyValidationLineFilter extends BaseOperation<Void> implements Filter<Void> {
+  @Override
+  public boolean isRemove(@SuppressWarnings("rawtypes") FlowProcess flowProcess, FilterCall<Void> filterCall) {
+    String tuple = filterCall.getArguments().getString(LINE_FIELD_NAME);
+    return tuple.isEmpty();
   }
-
-  /**
-   * Creates an identification database name.
-   */
-  public static String identificationDatabaseName() {
-    return format("%s-%s", "dcc", IDENTIFICATION);
-  }
-
 }

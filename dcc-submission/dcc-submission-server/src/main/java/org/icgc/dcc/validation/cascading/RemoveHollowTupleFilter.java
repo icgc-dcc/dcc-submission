@@ -15,32 +15,33 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.util;
+package org.icgc.dcc.validation.cascading;
 
-import static java.lang.String.format;
-import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
+import cascading.flow.FlowProcess;
+import cascading.operation.BaseOperation;
+import cascading.operation.Filter;
+import cascading.operation.FilterCall;
+import cascading.tuple.Tuple;
 
 /**
- * Common utilities for working with DCC databases.
+ * TODO: move to a more generic module
+ * <p>
+ * "hollow" because "empty" would be ambiguous with regard to whether the {@code Tuple} has elements or not, whereas we
+ * care whether those elements are null or not instead.
  */
-@NoArgsConstructor(access = PRIVATE)
-public final class DatabaseUtils {
+public class RemoveHollowTupleFilter extends BaseOperation<Void> implements Filter<Void> {
 
-  private static final String IDENTIFICATION = "identification";
-
-  /**
-   * Creates a release database name from a supplied release name.
-   */
-  public static String releaseDatabaseName(String releaseName) {
-    return format("%s-%s", "dcc-release", releaseName);
+  @Override
+  public boolean isRemove(@SuppressWarnings("rawtypes") FlowProcess flowProcess, FilterCall<Void> filterCall) {
+    Tuple tuple = filterCall.getArguments().getTuple();
+    return isHollowTuple(tuple);
   }
 
-  /**
-   * Creates an identification database name.
-   */
-  public static String identificationDatabaseName() {
-    return format("%s-%s", "dcc", IDENTIFICATION);
+  private boolean isHollowTuple(Tuple tuple) {
+    return tuple.equals(hollowTuple(tuple.size()));
   }
 
+  private Tuple hollowTuple(int size) {
+    return Tuple.size(size);
+  }
 }

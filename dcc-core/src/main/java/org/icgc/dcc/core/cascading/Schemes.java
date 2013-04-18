@@ -15,32 +15,14 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.util;
-
-import static java.lang.String.format;
-import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
+package org.icgc.dcc.core.cascading;
 
 /**
- * Common utilities for working with DCC databases.
+ * TODO: use org.icgc.dcc.etl.loader.cascading.Schemes instead until DCC-993 is done. This class is just created so we
+ * don't "forget about it!".
  */
-@NoArgsConstructor(access = PRIVATE)
-public final class DatabaseUtils {
-
-  private static final String IDENTIFICATION = "identification";
-
-  /**
-   * Creates a release database name from a supplied release name.
-   */
-  public static String releaseDatabaseName(String releaseName) {
-    return format("%s-%s", "dcc-release", releaseName);
+public class Schemes {
+  private Schemes() {
+    // Prevent construction
   }
-
-  /**
-   * Creates an identification database name.
-   */
-  public static String identificationDatabaseName() {
-    return format("%s-%s", "dcc", IDENTIFICATION);
-  }
-
 }

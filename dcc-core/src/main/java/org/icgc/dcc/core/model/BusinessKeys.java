@@ -15,32 +15,38 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.util;
+package org.icgc.dcc.core.model;
 
-import static java.lang.String.format;
-import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
+import java.util.List;
+
+import static com.google.common.collect.Lists.newArrayList;
+import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_ASSEMBLY_VERSION;
+import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_CHROMOSOME;
+import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_CHROMOSOME_END;
+import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_CHROMOSOME_START;
+import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_MUTATION;
+import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_MUTATION_TYPE;
+import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_REFERENCE_GENOME_ALLELE;
 
 /**
- * Common utilities for working with DCC databases.
+ * Contains business keys from the standpoint of the loader entities (not the submission files').
  */
-@NoArgsConstructor(access = PRIVATE)
-public final class DatabaseUtils {
+public class BusinessKeys {
 
-  private static final String IDENTIFICATION = "identification";
+  //@formatter:off
+  public static final String PROJECT = "project";
+  public static final String DONOR = "donor";
+  public static final String SPECIMEN = "specimen";
+  public static final String SAMPLE = "sample";
+  public static final String MUTATION = "mutation";
 
-  /**
-   * Creates a release database name from a supplied release name.
-   */
-  public static String releaseDatabaseName(String releaseName) {
-    return format("%s-%s", "dcc-release", releaseName);
-  }
-
-  /**
-   * Creates an identification database name.
-   */
-  public static String identificationDatabaseName() {
-    return format("%s-%s", "dcc", IDENTIFICATION);
-  }
-
+  public static final List<String> MUTATION_BUSINESS_KEY_META_PART = newArrayList(OBSERVATION_ASSEMBLY_VERSION);
+  public static final List<String> MUTATION_BUSINESS_KEY_PRIMARY_PART = newArrayList(
+      OBSERVATION_CHROMOSOME, 
+      OBSERVATION_CHROMOSOME_START,
+      OBSERVATION_CHROMOSOME_END, 
+      OBSERVATION_MUTATION_TYPE, 
+      OBSERVATION_MUTATION, 
+      OBSERVATION_REFERENCE_GENOME_ALLELE);
+  // @formatter:on
 }

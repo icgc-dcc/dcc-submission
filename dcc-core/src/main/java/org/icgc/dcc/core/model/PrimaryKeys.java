@@ -15,32 +15,25 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.util;
+package org.icgc.dcc.core.model;
 
-import static java.lang.String.format;
-import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
+import java.util.List;
+
+import static com.google.common.collect.Lists.newArrayList;
+import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_ANALYSIS_ID;
+import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_ANALYZED_SAMPLE_ID;
 
 /**
- * Common utilities for working with DCC databases.
+ * Contains primary keys from the standpoint of the the submission files' (not the loader entities).
  */
-@NoArgsConstructor(access = PRIVATE)
-public final class DatabaseUtils {
+public class PrimaryKeys {
 
-  private static final String IDENTIFICATION = "identification";
-
+  // @formatter:off
   /**
-   * Creates a release database name from a supplied release name.
+   * Read "primary key" of the "meta" file (so primary in PK sense, not the ICGC submission file sense).
    */
-  public static String releaseDatabaseName(String releaseName) {
-    return format("%s-%s", "dcc-release", releaseName);
-  }
-
-  /**
-   * Creates an identification database name.
-   */
-  public static String identificationDatabaseName() {
-    return format("%s-%s", "dcc", IDENTIFICATION);
-  }
-
+  public static final List<String> META_PRIMARY_KEY = newArrayList(
+      OBSERVATION_ANALYSIS_ID,
+      OBSERVATION_ANALYZED_SAMPLE_ID);
+  // @formatter:on
 }

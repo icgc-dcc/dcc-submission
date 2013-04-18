@@ -17,11 +17,6 @@
  */
 package org.icgc.dcc.test.mongodb;
 
-import static com.google.common.base.Charsets.UTF_8;
-import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.io.Files.copy;
-import static org.junit.Assert.assertEquals;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -53,6 +48,11 @@ import org.icgc.dcc.core.util.MapUtils;
 import com.google.code.externalsorting.ExternalSort;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
+
+import static com.google.common.base.Charsets.UTF_8;
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.io.Files.copy;
+import static org.junit.Assert.assertEquals;
 
 /**
  * General test utilities for working with JSON objects.; TODO: rename to MongoUtils

@@ -1,0 +1,31 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.icgc.dcc</groupId>
+        <artifactId>dcc</artifactId>
+        <version>1.4-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>dcc-submission</artifactId>
+    <packaging>pom</packaging>
+    
+    <name>${project.artifactId}</name>
+    <description>${project.name}</description>
+
+    <modules>
+        <module>dcc-submission-ui</module>
+        <module>dcc-submission-server</module>
+    </modules>
+
+    <repositories>
+	<!-- Parent pom bootstrap -->
+        <repository>
+            <id>internal</id>
+            <url>http://seqwaremaven.oicr.on.ca/artifactory/dcc-dependencies</url>
+        </repository>
+    </repositories>
+
+</project>

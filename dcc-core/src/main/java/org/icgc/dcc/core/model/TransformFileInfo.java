@@ -15,32 +15,25 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.util;
-
-import static java.lang.String.format;
-import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
+package org.icgc.dcc.core.model;
 
 /**
- * Common utilities for working with DCC databases.
+ * A placeholder for redundant information from the transform files.
  */
-@NoArgsConstructor(access = PRIVATE)
-public final class DatabaseUtils {
+public class TransformFileInfo {
 
-  private static final String IDENTIFICATION = "identification";
-
-  /**
-   * Creates a release database name from a supplied release name.
-   */
-  public static String releaseDatabaseName(String releaseName) {
-    return format("%s-%s", "dcc-release", releaseName);
+  private TransformFileInfo() {
   }
 
-  /**
-   * Creates an identification database name.
-   */
-  public static String identificationDatabaseName() {
-    return format("%s-%s", "dcc", IDENTIFICATION);
-  }
+  public static final String DONOR_COLLECTION = "Donor";
 
+  public static final String PROJECT_COLLECTION = "Project";
+
+  public static final String MUTATION_COLLECTION = "Mutation";
+
+  public static final String OBSERVATION_COLLECTION = "Observation";
+
+  public static final String SPECIMEN_ARRAY = "specimen";
+
+  public static final String SAMPLE_ARRAY = "sample";
 }

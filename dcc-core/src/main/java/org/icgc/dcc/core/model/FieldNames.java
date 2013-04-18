@@ -71,6 +71,7 @@ public final class FieldNames {
   public static final String GENE_PROJECTS = "project";
   public static final String GENE_PROJECT_PROJECT_ID = "_project_id";
   public static final String GENE_PROJECT_SUMMARY = "_summary";
+  public static final String GENE_CANONICAL_TRANSCRIPT_ID = "canonical_transcript_id";
   public static final String GENE_TRANSCRIPTS = "transcripts";
   public static final String GENE_TRANSCRIPTS_TRANSCRIPT_ID = "id";
 
@@ -82,13 +83,28 @@ public final class FieldNames {
   public static final String OBSERVATION_TYPE = "_type";
   public static final String OBSERVATION_DONOR = "donor";
   public static final String OBSERVATION_DONOR_ID = "_donor_id";
+  public static final String OBSERVATION_PROJECT = "project";
   public static final String OBSERVATION_CONSEQUENCE_TYPES = "consequence_type";
   public static final String OBSERVATION_CONSEQUENCES = "consequence";
   public static final String OBSERVATION_CONSEQUENCES_CONSEQUENCE_TYPE = "consequence_type";
+  public static final String OBSERVATION_CONSEQUENCES_CONSEQUENCE_CANONICAL = "_is_canonical_transcript";
   public static final String OBSERVATION_CONSEQUENCES_TRANSCRIPT_ID = "_transcript_id";
   public static final String OBSERVATION_CONSEQUENCES_GENE_ID = "_gene_id";
   public static final String OBSERVATION_CONSEQUENCES_GENE = "gene";
   public static final String OBSERVATION_PLATFORM = "platform";
+  public static final String OBSERVATION_VALIDATION_STATUS = "validation_status";
+  public static final String OBSERVATION_IS_ANNOTATED = "is_annotated";
+
+  public static final String OBSERVATION_ASSEMBLY_VERSION = "assembly_version";
+  public static final String OBSERVATION_ANALYSIS_ID = "analysis_id";
+  public static final String OBSERVATION_ANALYZED_SAMPLE_ID = "analyzed_sample_id";
+  
+  public static final String OBSERVATION_CHROMOSOME = "chromosome";
+  public static final String OBSERVATION_CHROMOSOME_START = "chromosome_start";
+  public static final String OBSERVATION_CHROMOSOME_END = "chromosome_end";
+  public static final String OBSERVATION_MUTATION_TYPE = "mutation_type";
+  public static final String OBSERVATION_MUTATION = "mutation";
+  public static final String OBSERVATION_REFERENCE_GENOME_ALLELE = "reference_genome_allele";
   
   public static String getPartitionTypeFieldName(String type) {
     return type;
@@ -106,6 +122,8 @@ public final class FieldNames {
   public static final String MUTATION_TRANSCRIPTS_GENE = "gene";
   public static final String MUTATION_TRANSCRIPTS_CONSEQUENCE = "consequence";
   public static final String MUTATION_PLATFORM = "platform";
+  public static final String MUTATION_IS_ANNOTATED = "is_annotated";
+  public static final String MUTATION_VALIDATION_STATUS = "validation_status";
   
   /**
    * Aggregate field names.

@@ -15,32 +15,21 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.util;
+package org.icgc.dcc.core.model;
 
-import static java.lang.String.format;
-import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
+import java.util.List;
+
+import static org.icgc.dcc.core.model.PrimaryKeys.META_PRIMARY_KEY;
 
 /**
- * Common utilities for working with DCC databases.
+ * Contains foreign keys from the standpoint of the the submission files' (not the loader entities).
  */
-@NoArgsConstructor(access = PRIVATE)
-public final class DatabaseUtils {
+public class ForeignKeys {
 
-  private static final String IDENTIFICATION = "identification";
-
+  // @formatter:off
   /**
-   * Creates a release database name from a supplied release name.
+   * Read "foreign key" of the "primary" file (so primary in ICGC submission file sense, not the PK sense).
    */
-  public static String releaseDatabaseName(String releaseName) {
-    return format("%s-%s", "dcc-release", releaseName);
-  }
-
-  /**
-   * Creates an identification database name.
-   */
-  public static String identificationDatabaseName() {
-    return format("%s-%s", "dcc", IDENTIFICATION);
-  }
-
+  public static final List<String> PRIMARY_FOREIGN_KEY = META_PRIMARY_KEY; // not always guaranteed to be the same as the primary key's
+  // @formatter:on
 }
