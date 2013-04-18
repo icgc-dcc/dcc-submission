@@ -71,6 +71,7 @@ public final class FieldNames {
   public static final String GENE_PROJECTS = "project";
   public static final String GENE_PROJECT_PROJECT_ID = "_project_id";
   public static final String GENE_PROJECT_SUMMARY = "_summary";
+  public static final String GENE_CANONICAL_TRANSCRIPT_ID = "canonical_transcript_id";
   public static final String GENE_TRANSCRIPTS = "transcripts";
   public static final String GENE_TRANSCRIPTS_TRANSCRIPT_ID = "id";
 
@@ -82,9 +83,11 @@ public final class FieldNames {
   public static final String OBSERVATION_TYPE = "_type";
   public static final String OBSERVATION_DONOR = "donor";
   public static final String OBSERVATION_DONOR_ID = "_donor_id";
+  public static final String OBSERVATION_PROJECT = "project";
   public static final String OBSERVATION_CONSEQUENCE_TYPES = "consequence_type";
   public static final String OBSERVATION_CONSEQUENCES = "consequence";
   public static final String OBSERVATION_CONSEQUENCES_CONSEQUENCE_TYPE = "consequence_type";
+  public static final String OBSERVATION_CONSEQUENCES_CONSEQUENCE_CANONICAL = "_is_canonical_transcript";
   public static final String OBSERVATION_CONSEQUENCES_TRANSCRIPT_ID = "_transcript_id";
   public static final String OBSERVATION_CONSEQUENCES_GENE_ID = "_gene_id";
   public static final String OBSERVATION_CONSEQUENCES_GENE = "gene";
