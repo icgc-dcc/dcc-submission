@@ -99,7 +99,7 @@ class RootHdfsSshFile extends HdfsSshFile {
 
   @Override
   public List<SshFile> listSshFiles() {
-    List<Path> pathList = HadoopUtils.lsAll(fs, path.toString());
+    List<Path> pathList = HadoopUtils.lsAll(fs, path);
     List<SshFile> sshFileList = new ArrayList<SshFile>();
     for(Path path : pathList) {
       try {
