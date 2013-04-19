@@ -67,6 +67,7 @@ public final class FieldNames {
   public static final String GENE_ID = "_gene_id";
   public static final String GENE_DONORS = "donor";
   public static final String GENE_DONOR_DONOR_ID = "_donor_id";
+  public static final String GENE_DONOR_PROJECT = "project";
   public static final String GENE_DONOR_SUMMARY = "_summary";
   public static final String GENE_PROJECTS = "project";
   public static final String GENE_PROJECT_PROJECT_ID = "_project_id";
@@ -104,7 +105,6 @@ public final class FieldNames {
   public static final String OBSERVATION_CHROMOSOME_END = "chromosome_end";
   public static final String OBSERVATION_MUTATION_TYPE = "mutation_type";
   public static final String OBSERVATION_MUTATION = "mutation";
-  public static final String OBSERVATION_REFERENCE_GENOME_ALLELE = "reference_genome_allele";
   
   public static String getPartitionTypeFieldName(String type) {
     return type;
