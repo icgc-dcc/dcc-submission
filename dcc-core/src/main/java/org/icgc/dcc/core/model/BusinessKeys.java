@@ -26,7 +26,6 @@ import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_CHROMOSOME_END;
 import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_CHROMOSOME_START;
 import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_MUTATION;
 import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_MUTATION_TYPE;
-import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_REFERENCE_GENOME_ALLELE;
 
 /**
  * Contains business keys from the standpoint of the loader entities (not the submission files').
@@ -46,7 +45,6 @@ public class BusinessKeys {
       OBSERVATION_CHROMOSOME_START,
       OBSERVATION_CHROMOSOME_END, 
       OBSERVATION_MUTATION_TYPE, 
-      OBSERVATION_MUTATION, 
-      OBSERVATION_REFERENCE_GENOME_ALLELE);
+      OBSERVATION_MUTATION);
   // @formatter:on
 }

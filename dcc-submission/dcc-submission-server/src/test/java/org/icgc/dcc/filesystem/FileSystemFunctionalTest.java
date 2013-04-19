@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.filesystem;
 
-import static org.fest.assertions.api.Assertions.assertThat;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.regex.Pattern;
@@ -26,6 +24,7 @@ import java.util.regex.Pattern;
 import junit.framework.Assert;
 
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.config.ConfigModule;
 import org.icgc.dcc.core.CoreModule;
 import org.icgc.dcc.core.morphia.MorphiaModule;
@@ -45,6 +44,8 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
+
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(GuiceJUnitRunner.class)
 @GuiceModules({ ConfigModule.class, CoreModule.class,//
@@ -79,7 +80,7 @@ public class FileSystemFunctionalTest extends FileSystemTest {
     FileSystem fileSystem = this.dccFileSystem.getFileSystem();
 
     Iterable<String> filenameList0 =
-        HadoopUtils.toFilenameList(HadoopUtils.lsDir(fileSystem, this.dccFileSystem.getRootStringPath()));
+        HadoopUtils.toFilenameList(HadoopUtils.lsDir(fileSystem, new Path(this.dccFileSystem.getRootStringPath())));
     Assert.assertNotNull(filenameList0);
     Assert.assertEquals(//
         "[]",//
@@ -89,7 +90,7 @@ public class FileSystemFunctionalTest extends FileSystemTest {
     this.dccFileSystem.ensureReleaseFilesystem(this.mockRelease, Sets.newHashSet(this.mockProject.getKey()));
 
     Iterable<String> filenameList1 =
-        HadoopUtils.toFilenameList(HadoopUtils.lsDir(fileSystem, this.dccFileSystem.getRootStringPath()));
+        HadoopUtils.toFilenameList(HadoopUtils.lsDir(fileSystem, new Path(this.dccFileSystem.getRootStringPath())));
     Assert.assertNotNull(filenameList1);
     Assert.assertEquals(//
         "[ICGC4]",//
@@ -99,7 +100,8 @@ public class FileSystemFunctionalTest extends FileSystemTest {
     String releaseStringPath = this.dccFileSystem.buildReleaseStringPath(this.mockRelease);
     log.info("releaseStringPath = " + releaseStringPath);
 
-    Iterable<String> filenameList2 = HadoopUtils.toFilenameList(HadoopUtils.lsDir(fileSystem, releaseStringPath));
+    Iterable<String> filenameList2 =
+        HadoopUtils.toFilenameList(HadoopUtils.lsDir(fileSystem, new Path(releaseStringPath)));
     assertThat(filenameList2).isNotNull().contains("DBQ", "SystemFiles");
     log.info("ls2 = " + filenameList2);
 

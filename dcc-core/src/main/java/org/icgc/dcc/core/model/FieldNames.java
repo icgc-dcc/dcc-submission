@@ -104,7 +104,6 @@ public final class FieldNames {
   public static final String OBSERVATION_CHROMOSOME_END = "chromosome_end";
   public static final String OBSERVATION_MUTATION_TYPE = "mutation_type";
   public static final String OBSERVATION_MUTATION = "mutation";
-  public static final String OBSERVATION_REFERENCE_GENOME_ALLELE = "reference_genome_allele";
   
   public static String getPartitionTypeFieldName(String type) {
     return type;
