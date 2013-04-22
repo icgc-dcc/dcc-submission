@@ -19,6 +19,8 @@ package org.icgc.dcc.core.model;
 
 import java.util.List;
 
+import com.google.common.collect.ImmutableList;
+
 import static com.google.common.collect.Lists.newArrayList;
 import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_ASSEMBLY_VERSION;
 import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_CHROMOSOME;
@@ -46,5 +48,8 @@ public class BusinessKeys {
       OBSERVATION_CHROMOSOME_END, 
       OBSERVATION_MUTATION_TYPE, 
       OBSERVATION_MUTATION);
+
+  public static final List<String> MUTATION_BUSINESS_KEY = ImmutableList.<String> builder()
+      .addAll(MUTATION_BUSINESS_KEY_PRIMARY_PART).addAll(MUTATION_BUSINESS_KEY_META_PART).build();
   // @formatter:on
 }
