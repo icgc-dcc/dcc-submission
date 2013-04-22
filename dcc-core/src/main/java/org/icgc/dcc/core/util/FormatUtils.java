@@ -53,6 +53,10 @@ public final class FormatUtils {
     return format("%,d", count);
   }
 
+  public static String formatRate(float count) {
+    return format("%,.2f", count);
+  }
+
   public static String formatPercent(float percent) {
     return format("%.2f", percent);
   }
