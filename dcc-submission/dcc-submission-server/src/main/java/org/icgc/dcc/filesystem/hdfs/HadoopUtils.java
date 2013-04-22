@@ -144,9 +144,8 @@ public class HadoopUtils {
   /**
    * non-recursively
    */
-  private static List<Path> ls(FileSystem fileSystem, String stringPath, Pattern pattern, boolean file, boolean dir,
+  private static List<Path> ls(FileSystem fileSystem, Path path, Pattern pattern, boolean file, boolean dir,
       boolean symLink) {
-    Path path = new Path(stringPath);
     FileStatus[] listStatus;
     try {
       listStatus = fileSystem.listStatus(path);
@@ -164,28 +163,28 @@ public class HadoopUtils {
     return ls;
   }
 
-  public static List<Path> lsFile(FileSystem fileSystem, String stringPath, Pattern pattern) {
-    return ls(fileSystem, stringPath, pattern, true, false, false);
+  public static List<Path> lsFile(FileSystem fileSystem, Path path, Pattern pattern) {
+    return ls(fileSystem, path, pattern, true, false, false);
   }
 
-  public static List<Path> lsDir(FileSystem fileSystem, String stringPath, Pattern pattern) {
-    return ls(fileSystem, stringPath, pattern, false, true, false);
+  public static List<Path> lsDir(FileSystem fileSystem, Path path, Pattern pattern) {
+    return ls(fileSystem, path, pattern, false, true, false);
   }
 
-  public static List<Path> lsAll(FileSystem fileSystem, String stringPath, Pattern pattern) {
-    return ls(fileSystem, stringPath, pattern, true, true, true);
+  public static List<Path> lsAll(FileSystem fileSystem, Path path, Pattern pattern) {
+    return ls(fileSystem, path, pattern, true, true, true);
   }
 
-  public static List<Path> lsFile(FileSystem fileSystem, String stringPath) {
-    return lsFile(fileSystem, stringPath, null);
+  public static List<Path> lsFile(FileSystem fileSystem, Path path) {
+    return lsFile(fileSystem, path, null);
   }
 
-  public static List<Path> lsDir(FileSystem fileSystem, String stringPath) {
-    return lsDir(fileSystem, stringPath, null);
+  public static List<Path> lsDir(FileSystem fileSystem, Path path) {
+    return lsDir(fileSystem, path, null);
   }
 
-  public static List<Path> lsAll(FileSystem fileSystem, String stringPath) {
-    return lsAll(fileSystem, stringPath, null);
+  public static List<Path> lsAll(FileSystem fileSystem, Path path) {
+    return lsAll(fileSystem, path, null);
   }
 
   public static List<String> toFilenameList(List<Path> pathList) {
@@ -204,5 +203,13 @@ public class HadoopUtils {
       throw new HdfsException(e);
     }
     return fileStatus;
+  }
+
+  /**
+   * This is not applicable for dir.
+   */
+  public static long duFile(FileSystem fileSystem, Path filePath) throws IOException {
+    FileStatus status = fileSystem.getFileStatus(filePath);
+    return status.getLen();
   }
 }

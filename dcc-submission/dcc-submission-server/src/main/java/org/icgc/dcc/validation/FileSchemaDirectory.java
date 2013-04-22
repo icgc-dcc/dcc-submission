@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.validation;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.Arrays;
@@ -33,6 +31,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
+
+import static com.google.common.base.Preconditions.checkArgument;
 
 /**
  * A directory that contains files associated with {@code FileSchema}. Each {@code FileSchema} is expected to have at
@@ -101,6 +101,6 @@ public class FileSchemaDirectory {
     if(pattern == null) {
       return null;
     }
-    return HadoopUtils.lsFile(fs, directory.toString(), Pattern.compile(pattern));
+    return HadoopUtils.lsFile(fs, directory, Pattern.compile(pattern));
   }
 }

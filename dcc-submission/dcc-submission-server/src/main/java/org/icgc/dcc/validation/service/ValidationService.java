@@ -17,9 +17,6 @@
  */
 package org.icgc.dcc.validation.service;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.dictionary.DictionaryService;
@@ -44,6 +41,9 @@ import cascading.cascade.CascadeListener;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Iterables;
 import com.google.inject.Inject;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Wraps validation call for the {@code ValidationQueueManagerService} and {@Main} (the validation one) to use
@@ -93,7 +93,7 @@ public class ValidationService {
 
       SubmissionDirectory submissionDirectory = releaseFilesystem.getSubmissionDirectory(qProject.getKey());
 
-      Path rootDir = new Path(submissionDirectory.getSubmissionDirPath());
+      Path rootDir = submissionDirectory.getSubmissionDirPath();
       Path outputDir = new Path(submissionDirectory.getValidationDirPath());
       Path systemDir = releaseFilesystem.getSystemDirectory();
 

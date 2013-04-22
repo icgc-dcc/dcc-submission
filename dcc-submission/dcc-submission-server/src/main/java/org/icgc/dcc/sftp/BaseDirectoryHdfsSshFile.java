@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.sftp;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +25,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.sshd.server.SshFile;
 import org.icgc.dcc.filesystem.DccFileSystemException;
 import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * 
@@ -86,7 +86,7 @@ public abstract class BaseDirectoryHdfsSshFile extends HdfsSshFile {
 
   @Override
   public List<SshFile> listSshFiles() {
-    List<Path> pathList = HadoopUtils.lsAll(fs, path.toString());
+    List<Path> pathList = HadoopUtils.lsAll(fs, path);
     List<SshFile> sshFileList = new ArrayList<SshFile>();
     for(Path path : pathList) {
       sshFileList.add(new FileHdfsSshFile(this, path.getName()));

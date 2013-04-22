@@ -17,9 +17,6 @@
  */
 package org.icgc.dcc.validation.cascading;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.io.Serializable;
 
 import cascading.flow.FlowProcess;
@@ -29,6 +26,8 @@ import cascading.operation.FunctionCall;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Utility class for working with cascading {@code Function} objects.
@@ -108,4 +107,28 @@ public abstract class FunctionUtils {
     }
   }
 
+  /**
+   * Replaces a null value with an empty tuple.
+   */
+  @SuppressWarnings("rawtypes")
+  public static class AddEmptyTuple extends BaseOperation implements Function {
+
+    private static final int NEST_FIELD_INDEX = 0;
+
+    public AddEmptyTuple() {
+      super(Fields.ARGS);
+    }
+
+    @Override
+    public void operate(FlowProcess flowProcess, FunctionCall functionCall) {
+      TupleEntry entry = functionCall.getArguments();
+
+      Tuple copy = entry.getTupleCopy();
+      if(copy.getObject(NEST_FIELD_INDEX) == null) { // If null, then replace it with an empty tuple
+        copy.set(NEST_FIELD_INDEX, new Tuple());
+      }
+
+      functionCall.getOutputCollector().add(copy);
+    }
+  }
 }

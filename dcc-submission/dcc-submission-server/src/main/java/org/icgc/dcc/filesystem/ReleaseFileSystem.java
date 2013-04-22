@@ -17,9 +17,6 @@
  */
 package org.icgc.dcc.filesystem;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.List;
 
 import org.apache.hadoop.fs.FileSystem;
@@ -32,6 +29,9 @@ import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.shiro.AuthorizationPrivileges;
 import org.icgc.dcc.web.Authorizations;
 import org.mortbay.log.Log;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class ReleaseFileSystem {
 
@@ -100,7 +100,7 @@ public class ReleaseFileSystem {
     Path destinationDir = this.getSystemDirectory();
     HadoopUtils.mkdirs(fileSystem, destinationDir.toString());
 
-    List<Path> files = HadoopUtils.lsFile(fileSystem, originDir.toString());
+    List<Path> files = HadoopUtils.lsFile(fileSystem, originDir);
     for(Path originFile : files) {
       Path destinationFile = new Path(destinationDir, originFile.getName());
       HadoopUtils.mv(fileSystem, originFile, destinationFile); // temporary solution until DCC-835 is done
