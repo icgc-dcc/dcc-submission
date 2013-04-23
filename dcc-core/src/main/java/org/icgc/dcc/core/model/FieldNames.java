@@ -60,6 +60,7 @@ public final class FieldNames {
   public static final String DONOR_SPECIMEN_ID = "_specimen_id";
   public static final String DONOR_SAMPLE = "sample";
   public static final String DONOR_SAMPLE_ID = "_sample_id";
+  public static final String DONOR_SAMPLE_ANALYZED_SAMPLE_ID = "analyzed_sample_id";
 
   /**
    * Gene field names.
