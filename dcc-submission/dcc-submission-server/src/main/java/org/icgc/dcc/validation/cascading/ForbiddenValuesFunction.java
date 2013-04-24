@@ -19,8 +19,6 @@ package org.icgc.dcc.validation.cascading;
 
 import java.util.List;
 
-import org.icgc.dcc.validation.ValidationErrorCode;
-
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
 import cascading.operation.Function;
@@ -28,6 +26,7 @@ import cascading.operation.FunctionCall;
 import cascading.tuple.TupleEntry;
 import static cascading.tuple.Fields.ARGS;
 import static com.google.common.collect.Lists.newArrayList;
+import static org.icgc.dcc.validation.ValidationErrorCode.FORBIDDEN_VALUE_ERROR;
 
 /**
  * Systematically applied on every field for now, we may want to allow some fields to use those values on an individual
@@ -59,7 +58,7 @@ public class ForbiddenValuesFunction extends BaseOperation implements Function {
     for(Comparable fieldName : entry.getFields()) {
       String value = entry.getString(fieldName);
       if(DEPRECATED_VALUES.contains(value)) {
-        state.reportError(ValidationErrorCode.FORBIDDEN_VALUE_ERROR, fieldName.toString(), value, value);
+        state.reportError(FORBIDDEN_VALUE_ERROR, fieldName.toString(), value, value);
       }
     }
     functionCall.getOutputCollector().add(entry.getTupleCopy());
