@@ -353,9 +353,9 @@ public class IntegrationTest {
     Response response = TestUtils.get(client, INITIAL_RELEASE_ENDPOINT);
     assertEquals(Status.OK.getStatusCode(), response.getStatus());
 
-    checkValidatedSubmission(PROJECT1_NAME, SubmissionState.VALID);
-    checkValidatedSubmission(PROJECT2_NAME, SubmissionState.INVALID);
-    checkValidatedSubmission(PROJECT3_NAME, SubmissionState.INVALID);
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT1_NAME, SubmissionState.VALID);
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT2_NAME, SubmissionState.INVALID);
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT3_NAME, SubmissionState.INVALID);
 
     // check no errors for project 1
     checkEmptyFile(DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/donor.internal#errors.json");
@@ -396,7 +396,8 @@ public class IntegrationTest {
     checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED, asList(VALID, NOT_VALIDATED, NOT_VALIDATED));
   }
 
-  private void checkValidatedSubmission(String project, SubmissionState expectedSubmissionState) throws Exception {
+  private void checkValidatedSubmission(String release, String project, SubmissionState expectedSubmissionState)
+      throws Exception {
     DetailedSubmission detailedSubmission;
     do {
       Uninterruptibles.sleepUninterruptibly(2, SECONDS);
@@ -407,7 +408,7 @@ public class IntegrationTest {
       detailedSubmission = TestUtils.asDetailedSubmission(response);
     } while(detailedSubmission.getState() == QUEUED || detailedSubmission.getState() == VALIDATING);
 
-    assertEquals(expectedSubmissionState, detailedSubmission.getState());
+    assertEquals(project, expectedSubmissionState, detailedSubmission.getState());
   }
 
   private void checkEmptyFile(String dir, String path) throws IOException {
