@@ -333,6 +333,12 @@
         </executions>
         <configuration>
           <mainClass>${main.class}</mainClass>
+          <systemProperties>
+            <systemProperty>
+              <key>logback.configurationFile</key>
+              <value>src/main/conf/logback.xml</value>
+            </systemProperty>
+          </systemProperties>
         </configuration>
       </plugin>
     </plugins>

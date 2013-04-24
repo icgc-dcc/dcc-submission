@@ -15,59 +15,52 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.release.model;
+package org.icgc.dcc.validation.cascading;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import javax.validation.Valid;
+import cascading.flow.FlowProcess;
+import cascading.operation.BaseOperation;
+import cascading.operation.Function;
+import cascading.operation.FunctionCall;
+import cascading.tuple.TupleEntry;
+import static cascading.tuple.Fields.ARGS;
+import static com.google.common.collect.Lists.newArrayList;
+import static org.icgc.dcc.validation.ValidationErrorCode.FORBIDDEN_VALUE_ERROR;
 
-import org.hibernate.validator.constraints.NotBlank;
-import org.icgc.dcc.filesystem.SubmissionFile;
+/**
+ * Systematically applied on every field for now, we may want to allow some fields to use those values on an individual
+ * basis in the future.
+ */
+@SuppressWarnings("rawtypes")
+public class ForbiddenValuesFunction extends BaseOperation implements Function {
 
-import static com.google.common.base.Preconditions.checkArgument;
+  /**
+   * Only used internally, this isn't configurable in the dictionary (unlike {@link Restriction} names).
+   */
+  public static final String NAME = "forbidden";
 
-// TODO: DetailedSubmission shouldn't extend Submission (DCC-721)
-public class DetailedSubmission extends Submission {
-  @NotBlank
-  private String projectName;
+  /**
+   * Former reserved values that must not appear in the data anymore.
+   */
+  private static final List<String> DEPRECATED_VALUES = newArrayList("-999");
 
-  private String projectAlias;
-
-  @Valid
-  private List<SubmissionFile> submissionFiles;
-
-  public DetailedSubmission() {
-    super();
+  public ForbiddenValuesFunction() {
+    super(ARGS);
   }
 
-  public DetailedSubmission(Submission submission, LiteProject liteProject) {
-    super();
-    checkArgument(submission.projectKey != null && //
-        submission.projectKey.equals(liteProject.getKey())); // By design
-    this.projectKey = liteProject.getKey();
-    this.projectName = liteProject.getName();
-    this.projectAlias = liteProject.getAlias();
+  @Override
+  public void operate(FlowProcess flowProcess, FunctionCall functionCall) {
+    TupleEntry entry = functionCall.getArguments();
+    TupleState state = ValidationFields.state(entry);
 
-    this.state = submission.state;
-    this.report = submission.report;
-    this.lastUpdated = submission.lastUpdated;
-    this.submissionFiles = new ArrayList<SubmissionFile>();
+    for(Comparable fieldName : entry.getFields()) {
+      String value = entry.getString(fieldName);
+      if(DEPRECATED_VALUES.contains(value)) {
+        state.reportError(FORBIDDEN_VALUE_ERROR, fieldName.toString(), value, value);
+      }
+    }
+    functionCall.getOutputCollector().add(entry.getTupleCopy());
   }
 
-  public String getProjectName() {
-    return projectName;
-  }
-
-  public String getProjectAlias() {
-    return projectAlias;
-  }
-
-  public List<SubmissionFile> getSubmissionFiles() {
-    return submissionFiles;
-  }
-
-  public void setSubmissionFiles(List<SubmissionFile> submissionFiles) {
-    this.submissionFiles = submissionFiles;
-  }
 }

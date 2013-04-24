@@ -11,25 +11,30 @@
 # - this script is based on former https://wiki.oicr.on.ca/display/DCCSOFT/Standard+operating+procedures#Standardoperatingprocedures-SOPforDeployingtheserver (which also links to this script now)
 # - assumptions:
 #   - using Linux or Darwin
-#   - must be in dcc-submission
+#   - must be in "dcc" directory (or wherever the utmost parent pom is)
 #   - must have checked out wanted branch
 #   - must have run "npm install" in ./dcc-submission-ui
 #   - tests must run (else jar creation will fail)
 #   - on the remote server, /var/lib/hdfs/log and /var/lib/hdfs/realm.ini already exist (the latter is the reference file)
-# - convention: server expects ui files under ../dcc-submission-ui (content should be that of ./dcc-submission-ui/public after build with brunch). this script takes care of building the appropriate directoy structure.
+# - convention: server on the deployment machine expects ui files under ../client (as a sibling basically). Content should be that of ./dcc-submission/dcc-submission-ui/public after build with brunch). this script takes care of building the appropriate directoy structure.
 
 # ===========================================================================
 
 dev_dir="."
-dev_server_dir="${dev_dir?}/dcc-submission-server"
+original_pwd=$PWD
+dcc_submission_dir="${dev_dir?}/dcc-submission"
+
+dev_server_dir="${dcc_submission_dir?}/dcc-submission-server"
 dev_target_dir="${dev_server_dir?}/target"
-dev_client_dir="${dev_dir?}/dcc-submission-ui"
+dev_client_dir="${dcc_submission_dir?}/dcc-submission-ui"
 dev_public_dir="${dev_client_dir?}/public"
 
 parent_pom_file="${dev_dir?}/pom.xml"
 server_pom_file="${dev_server_dir?}/pom.xml"
 
 main_class="org.icgc.dcc.Main"
+
+parent_dir="dcc"
 
 # ===========================================================================
 # basic checks
@@ -58,8 +63,8 @@ function get_xml_value() {
 
 is_linux || is_mac || { echo "ERROR: must be using Linux or Mac (Darwin)"; exit 1; }
 
-# check in data-submission directory
-[ -f "${parent_pom_file?}" ] && [ "$(get_xml_value ${parent_pom_file?} '//project/artifactId/text()')" == "dcc-submission" ] || { echo "ERROR: must be in data-submission dir"; exit 1; }
+# Check one is in ${parent_dir?} directory
+[ -f "${parent_pom_file?}" ] && [ "$(get_xml_value ${parent_pom_file?} '//project/artifactId/text()')" == "${parent_dir?}" ] || { echo "ERROR: must be in ${parent_dir?} dir"; exit 1; }
 
 
 # ===========================================================================
@@ -105,7 +110,7 @@ local_client_dir="${local_working_dir?}/client"
 # "build" project (mostly manual for now)
 mkdir -p ${local_working_dir?} ${local_server_dir?} ${local_working_dir?}/log && { rm -rf "${local_client_dir?}" 2>&- || : ; }
 if ! ${skip_mvn?}; then
- { cd ${dev_server_dir?} && mvn assembly:assembly -Dmaven.test.skip=${skip_test?} && cd .. ; } || { echo "ERROR: failed to build project (server)"; exit 1; } # critical
+ { cd ${dev_server_dir?} && mvn assembly:assembly -Dmaven.test.skip=${skip_test?} && cd ${original_pwd?} ; } || { echo "ERROR: failed to build project (server)"; exit 1; } # critical
 else
  ls ${jar_file?} >/dev/null || { echo "ERROR: ${jar_file?} does not exist"; exit 1; } # critical
  echo -n "skipping jar creation, re-using: ${jar_file?}"
@@ -117,7 +122,8 @@ else
  echo " from \"${latest?}\""
 fi
 echo "building client files..."
-{ cd "${dev_client_dir?}" && brunch b -m && cd .. ; } || { echo "ERROR: failed to build project (client)"; exit 1; } # critical
+
+{ cd "${dev_client_dir?}" && brunch b -m && cd ${original_pwd?} ; } || { echo "ERROR: failed to build project (client)"; exit 1; } # critical
 
 cp "${jar_file?}" "${local_server_dir?}/"
 cp -r "${dev_public_dir?}" "${local_client_dir?}"
