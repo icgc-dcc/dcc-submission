@@ -76,6 +76,7 @@ public final class FieldNames {
   public static final String GENE_CANONICAL_TRANSCRIPT_ID = "canonical_transcript_id";
   public static final String GENE_TRANSCRIPTS = "transcripts";
   public static final String GENE_TRANSCRIPTS_TRANSCRIPT_ID = "id";
+  public static final String GENE_TRANSCRIPTS_TRANSCRIPT_EXONS = "exons";
 
   /**
    * Observation field names.
