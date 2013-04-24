@@ -42,6 +42,7 @@ import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.filesystem.GuiceJUnitRunner;
 import org.icgc.dcc.filesystem.GuiceJUnitRunner.GuiceModules;
 import org.icgc.dcc.release.model.QueuedProject;
+import org.icgc.dcc.validation.cascading.ForbiddenValuesFunction;
 import org.icgc.dcc.validation.factory.LocalCascadingStrategyFactory;
 import org.icgc.dcc.validation.restriction.CodeListRestriction;
 import org.icgc.dcc.validation.restriction.DiscreteValuesRestriction;
@@ -51,7 +52,6 @@ import org.icgc.dcc.validation.service.ValidationService;
 import org.icgc.dcc.validation.visitor.UniqueFieldsPlanningVisitor;
 import org.icgc.dcc.validation.visitor.ValueTypePlanningVisitor;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -117,7 +117,6 @@ public class ValidationInternalIntegrityTest {
     resetDictionary();
   }
 
-  @Ignore
   @Test
   public void test_validate_valid() throws IOException {
     String content = validate(validationService, dictionary, ROOT_DIR);
@@ -126,65 +125,24 @@ public class ValidationInternalIntegrityTest {
 
   @Test
   public void test_validate_forbiddenValues() throws IOException {
-    String errorType = "forbidden";
-
-    String relative = "/integration/validation/internal/error/" + errorType;
-
-    String rootDirString = this.getClass().getResource(relative).getFile();
-    String outputDirString = rootDirString + "/" + ".validation";
-    String errorFileString = outputDirString + "/" + "donor.internal#errors.json";
-
-    File errorFile = new File(errorFileString);
-    errorFile.delete();
-    Assert.assertFalse(errorFileString, errorFile.exists());
-
-    Path rootDir = new Path(rootDirString);
-    Path outputDir = new Path(outputDirString);
-    Path systemDir = new Path("src/test/resources/integrationtest/fs/SystemFiles");
-
-    CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir, systemDir);
-
-    TestCascadeListener listener = new TestCascadeListener();
-    Plan plan;
-    try {
-      plan = validationService.planAndConnectCascade(QUEUED_PROJECT, cascadingStrategy, dictionary, listener);
-    } catch(FilePresenceException e) {
-      throw new RuntimeException();
-    }
-    Assert.assertEquals(1, plan.getCascade().getFlows().size());
-
-    validationService.startCascade(plan.getCascade());
-    while(listener.isRunning()) {
-      Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
-    }
-
-    Assert.assertTrue(errorFileString, errorFile.exists());
-    String content = FileUtils.readFileToString(errorFile);
-
-    String expected =
-        FileUtils.readFileToString(new File(this.getClass().getResource("/ref/" + errorType + ".json").getFile()));
-    Assert.assertEquals(content, expected.trim(), content.trim());
+    testErrorType(ForbiddenValuesFunction.NAME);
   }
 
-  @Ignore
   @Test
   public void test_validate_invalidValueType() throws IOException {
     testErrorType(ValueTypePlanningVisitor.NAME);
   }
 
-  @Ignore
   @Test
   public void test_validate_invalidCodeList() throws IOException {
     testErrorType(CodeListRestriction.NAME);
   }
 
-  @Ignore
   @Test
   public void test_validate_invalidRequired() throws IOException {
     testErrorType(RequiredRestriction.NAME);
   }
 
-  @Ignore
   @Test
   public void test_validate_invalidRange() throws IOException {
     BasicDBObject rangeConfig = new BasicDBObject();
@@ -205,7 +163,6 @@ public class ValidationInternalIntegrityTest {
     resetDictionary();
   }
 
-  @Ignore
   @Test
   public void test_validate_invalidDiscreteValues() throws IOException {
 
@@ -225,7 +182,6 @@ public class ValidationInternalIntegrityTest {
     resetDictionary();
   }
 
-  @Ignore
   @Test
   public void test_validate_invalidRegexValues() throws IOException {
 
@@ -246,7 +202,6 @@ public class ValidationInternalIntegrityTest {
     resetDictionary();
   }
 
-  @Ignore
   @Test
   public void test_validate_invalidUniqueFieldsCombination() throws IOException {
     FileSchema donor = getFileSchemaByName(dictionary, "donor");

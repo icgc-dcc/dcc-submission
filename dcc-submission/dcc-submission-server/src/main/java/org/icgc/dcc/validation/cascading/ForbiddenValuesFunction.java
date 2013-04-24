@@ -37,6 +37,11 @@ import static com.google.common.collect.Lists.newArrayList;
 public class ForbiddenValuesFunction extends BaseOperation implements Function {
 
   /**
+   * Only used internally, this isn't configurable in the dictionary (unlike {@link Restriction} names).
+   */
+  public static final String NAME = "forbidden";
+
+  /**
    * Former reserved values that must not appear in the data anymore.
    */
   private static final List<String> DEPRECATED_VALUES = newArrayList("-999");
