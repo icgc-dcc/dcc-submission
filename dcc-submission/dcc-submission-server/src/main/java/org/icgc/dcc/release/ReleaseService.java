@@ -17,12 +17,10 @@
  */
 package org.icgc.dcc.release;
 
-import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -44,6 +42,7 @@ import org.icgc.dcc.filesystem.SubmissionDirectory;
 import org.icgc.dcc.filesystem.SubmissionFile;
 import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
 import org.icgc.dcc.release.model.DetailedSubmission;
+import org.icgc.dcc.release.model.LiteProject;
 import org.icgc.dcc.release.model.QRelease;
 import org.icgc.dcc.release.model.QueuedProject;
 import org.icgc.dcc.release.model.Release;
@@ -65,7 +64,6 @@ import com.google.code.morphia.query.Query;
 import com.google.code.morphia.query.UpdateOperations;
 import com.google.code.morphia.query.UpdateResults;
 import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -79,6 +77,8 @@ import com.typesafe.config.Config;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.ImmutableList.copyOf;
+import static com.google.common.collect.Lists.newArrayList;
 
 public class ReleaseService extends BaseMorphiaService<Release> {
 
@@ -169,9 +169,9 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     if(release != null) {
       // populate project name for submissions
       List<Project> projects = this.getProjects(release, user);
-      List<Entry<String, String>> projectEntries = buildProjectEntries(projects);
+      List<LiteProject> liteProjects = buildLiteProjects(projects);
       Map<String, List<SubmissionFile>> submissionFilesMap = buildSubmissionFilesMap(releaseName, release);
-      releaseView = Optional.of(new ReleaseView(release, projectEntries, submissionFilesMap));
+      releaseView = Optional.of(new ReleaseView(release, liteProjects, submissionFilesMap));
     }
     return releaseView;
   }
@@ -236,8 +236,8 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
   public DetailedSubmission getDetailedSubmission(String releaseName, String projectKey) {
     Submission submission = this.getSubmission(releaseName, projectKey);
-    DetailedSubmission detailedSubmission = new DetailedSubmission(submission);
-    detailedSubmission.setProjectName(this.getProject(projectKey).getName());
+    LiteProject liteProject = new LiteProject(checkNotNull(this.getProject(projectKey)));
+    DetailedSubmission detailedSubmission = new DetailedSubmission(submission, liteProject);
     detailedSubmission.setSubmissionFiles(getSubmissionFiles(releaseName, projectKey));
     return detailedSubmission;
   }
@@ -776,12 +776,12 @@ public class ReleaseService extends BaseMorphiaService<Release> {
         QDictionary.dictionary.version.eq(version)).singleResult();
   }
 
-  private List<Entry<String, String>> buildProjectEntries(List<Project> projects) {
-    List<Entry<String, String>> projectEntries = new ArrayList<Map.Entry<String, String>>();
+  private List<LiteProject> buildLiteProjects(List<Project> projects) {
+    List<LiteProject> liteProjects = newArrayList();
     for(Project project : projects) {
-      projectEntries.add(new SimpleEntry<String, String>(project.getKey(), project.getName()));
+      liteProjects.add(new LiteProject(project));
     }
-    return ImmutableList.copyOf(projectEntries);
+    return copyOf(liteProjects);
   }
 
   private Map<String, List<SubmissionFile>> buildSubmissionFilesMap(String releaseName, Release release) {

@@ -76,7 +76,7 @@ module.exports = class SubmissionTableView extends DataTableView
         {
           sTitle: "Alias"
           mData: (source) ->
-            source.alias
+            source.projectAlias
         }
         {
           sTitle: "Project Name"

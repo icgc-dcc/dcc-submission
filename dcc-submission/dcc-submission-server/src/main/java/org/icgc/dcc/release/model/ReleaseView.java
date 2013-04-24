@@ -22,13 +22,14 @@ import java.util.Date;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.validation.Valid;
 
 import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.filesystem.SubmissionFile;
 import org.icgc.dcc.release.ReleaseException;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * 
@@ -56,7 +57,7 @@ public class ReleaseView {
 
   }
 
-  public ReleaseView(Release release, List<Entry<String, String>> projectEntries,
+  public ReleaseView(Release release, List<LiteProject> liteProjects,
       Map<String, List<SubmissionFile>> submissionFilesMap) {
 
     this.name = release.name;
@@ -64,21 +65,20 @@ public class ReleaseView {
     this.queue = release.getQueuedProjectKeys();
     this.releaseDate = release.releaseDate;
     this.dictionaryVersion = release.dictionaryVersion;
-    for(Entry<String, String> projectEntry : projectEntries) {
-      String projectKey = projectEntry.getKey();
-      String projectName = projectEntry.getValue();
+    for(LiteProject liteProject : liteProjects) {
+      String projectKey = liteProject.getKey();
+      Submission submission = checkNotNull(release.getSubmission(projectKey));
 
-      DetailedSubmission submission = new DetailedSubmission(release.getSubmission(projectKey));
-      submission.setProjectName(projectName);
-      submission.setSubmissionFiles(submissionFilesMap.get(projectKey));
-      this.submissions.add(submission);
+      DetailedSubmission detailedSubmission = new DetailedSubmission(submission, liteProject);
+      detailedSubmission.setSubmissionFiles(submissionFilesMap.get(projectKey));
+      this.submissions.add(detailedSubmission);
 
-      Integer stateCount = this.summary.get(submission.getState());
+      Integer stateCount = this.summary.get(detailedSubmission.getState());
       if(stateCount == null) {
         stateCount = 0;
       }
       stateCount++;
-      this.summary.put(submission.getState(), stateCount);
+      this.summary.put(detailedSubmission.getState(), stateCount);
     }
   }
 
