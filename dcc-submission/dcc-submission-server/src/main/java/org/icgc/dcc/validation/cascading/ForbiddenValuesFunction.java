@@ -51,7 +51,6 @@ public class ForbiddenValuesFunction extends BaseOperation implements Function {
 
   @Override
   public void operate(FlowProcess flowProcess, FunctionCall functionCall) {
-
     TupleEntry entry = functionCall.getArguments();
     TupleState state = ValidationFields.state(entry);
 
@@ -63,4 +62,5 @@ public class ForbiddenValuesFunction extends BaseOperation implements Function {
     }
     functionCall.getOutputCollector().add(entry.getTupleCopy());
   }
+
 }
