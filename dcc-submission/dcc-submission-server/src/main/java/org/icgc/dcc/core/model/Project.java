@@ -29,6 +29,8 @@ import com.google.code.morphia.annotations.Indexed;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
+import static com.google.common.base.Objects.firstNonNull;
+
 @Entity
 public class Project extends BaseEntity implements HasName {
 
@@ -63,7 +65,7 @@ public class Project extends BaseEntity implements HasName {
 
   @Override
   public String getName() {
-    return name == null ? getKey() : name;
+    return firstNonNull(name, getKey());
   }
 
   public void setName(String name) {
