@@ -74,6 +74,11 @@ module.exports = class SubmissionTableView extends DataTableView
             "<a href='/releases/#{r}/submissions/#{k}'>#{k}</a>"
         }
         {
+          sTitle: "Alias"
+          mData: (source) ->
+            source.alias
+        }
+        {
           sTitle: "Project Name"
           mData: (source) ->
             source.projectName
