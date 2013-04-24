@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Map;
 
 import org.icgc.dcc.dictionary.model.FileSchema;
+import org.icgc.dcc.validation.cascading.ForbiddenValuesFunction;
 import org.icgc.dcc.validation.cascading.RemoveEmptyValidationLineFilter;
 import org.icgc.dcc.validation.cascading.RemoveHeaderFilter;
 import org.icgc.dcc.validation.cascading.StructuralCheckFunction;
@@ -49,6 +50,8 @@ import cascading.tuple.TupleEntry;
 import com.google.common.collect.Maps;
 import com.google.common.collect.ObjectArrays;
 
+import static cascading.tuple.Fields.ALL;
+import static cascading.tuple.Fields.REPLACE;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static org.icgc.dcc.validation.cascading.StructuralCheckFunction.LINE_FIELD_NAME;
@@ -157,11 +160,16 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
   private void applySystemPipes(Pipe pipe) {
     pipe = new Each(pipe, new RemoveEmptyValidationLineFilter());
     pipe = new Each(pipe, new RemoveHeaderFilter());
-    structuralCheck = new StructuralCheckFunction(getSchema().getFieldNames());
-    pipe = new Each( // parse "line" into the actual expected fields
-        pipe, new Fields(OFFSET_FIELD_NAME, LINE_FIELD_NAME), structuralCheck, Fields.SWAP);
+    pipe = applyStructuralCheck(pipe);
+    pipe = new Each(pipe, ALL, new ForbiddenValuesFunction(), REPLACE);
     this.structurallyValidTail = new Each(pipe, TupleStates.keepStructurallyValidTuplesFilter());
     this.structurallyInvalidTail = new Each(pipe, TupleStates.keepStructurallyInvalidTuplesFilter());
+  }
+
+  private Pipe applyStructuralCheck(Pipe pipe) {
+    structuralCheck = new StructuralCheckFunction(getSchema().getFieldNames()); // TODO: due for a splitting
+    return new Each( // parse "line" into the actual expected fields
+        pipe, new Fields(OFFSET_FIELD_NAME, LINE_FIELD_NAME), structuralCheck, Fields.SWAP);
   }
 
   @SuppressWarnings("rawtypes")

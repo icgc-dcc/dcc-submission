@@ -47,6 +47,8 @@ import static org.icgc.dcc.core.cascading.Fields2.indicesOf;
  * loader's counterpart is {@link PreProcessFunction}
  * <p>
  * Empty lines have already been filtered out in {@link RemoveHollowTupleFilter}.
+ * <p>
+ * TODO: this should be split in multiple operations.
  */
 @SuppressWarnings("rawtypes")
 public class StructuralCheckFunction extends BaseOperation implements Function {
@@ -57,7 +59,12 @@ public class StructuralCheckFunction extends BaseOperation implements Function {
 
   public static final char FIELD_SEPARATOR = '\t';
 
-  public static final List<String> MISSING_CODES = Arrays.asList("-777", "-888", "-999"); // TODO: move elsewhere?
+  /**
+   * Values representing absent values.
+   * <p>
+   * "-999" has been deprecated {@link ForbiddenValuesFunction}
+   */
+  public static final List<String> MISSING_CODES = newArrayList("-777", "-888"); // TODO: move elsewhere?
 
   private static boolean REPORT_WARNINGS = false; // see DCC-270 & DCC-411
 

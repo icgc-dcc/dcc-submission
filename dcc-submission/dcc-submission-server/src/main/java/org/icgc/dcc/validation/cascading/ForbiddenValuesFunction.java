@@ -15,14 +15,53 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.validation;
+package org.icgc.dcc.validation.cascading;
+
+import java.util.List;
+
+import org.icgc.dcc.validation.ValidationErrorCode;
+
+import cascading.flow.FlowProcess;
+import cascading.operation.BaseOperation;
+import cascading.operation.Function;
+import cascading.operation.FunctionCall;
+import cascading.tuple.TupleEntry;
+import static cascading.tuple.Fields.ARGS;
+import static com.google.common.collect.Lists.newArrayList;
 
 /**
- * Describe set of keys used of error parameters.
- * <p>
- * Field name(s) and current value(s) are systematically recorded, so these keys only reflect extra parameters needed to
- * describe the error
+ * Systematically applied on every field for now, we may want to allow some fields to use those values on an individual
+ * basis in the future.
  */
-public enum ErrorParameterKey {
-  EXPECTED, MIN, MAX, SCHEMA, FILES, FIELDS, VALUE; // TODO: change EXPECTED to use VALUE instead (more generic)
+@SuppressWarnings("rawtypes")
+public class ForbiddenValuesFunction extends BaseOperation implements Function {
+
+  /**
+   * Only used internally, this isn't configurable in the dictionary (unlike {@link Restriction} names).
+   */
+  public static final String NAME = "forbidden";
+
+  /**
+   * Former reserved values that must not appear in the data anymore.
+   */
+  private static final List<String> DEPRECATED_VALUES = newArrayList("-999");
+
+  public ForbiddenValuesFunction() {
+    super(ARGS);
+  }
+
+  @Override
+  public void operate(FlowProcess flowProcess, FunctionCall functionCall) {
+
+    TupleEntry entry = functionCall.getArguments();
+    TupleState state = ValidationFields.state(entry);
+
+    for(Comparable fieldName : entry.getFields()) {
+      String value = entry.getString(fieldName);
+      if(DEPRECATED_VALUES.contains(value)) {
+        state.reportError(ValidationErrorCode.FORBIDDEN_VALUE_ERROR, fieldName.toString(), value, value);
+      }
+    }
+    functionCall.getOutputCollector().add(entry.getTupleCopy());
+  }
 }

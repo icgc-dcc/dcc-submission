@@ -1,0 +1,23 @@
+{
+  "offset" : 2,
+  "errors" : [ {
+    "code" : "FORBIDDEN_VALUE_ERROR",
+    "columnNames" : [ "donor_survival_time" ],
+    "value" : "-999",
+    "line" : 2,
+    "parameters" : {
+      "VALUE" : "-999"
+    }
+  } ]
+}{
+  "offset" : 3,
+  "errors" : [ {
+    "code" : "FORBIDDEN_VALUE_ERROR",
+    "columnNames" : [ "donor_diagnosis_icd10" ],
+    "value" : "-999",
+    "line" : 3,
+    "parameters" : {
+      "VALUE" : "-999"
+    }
+  } ]
+}
