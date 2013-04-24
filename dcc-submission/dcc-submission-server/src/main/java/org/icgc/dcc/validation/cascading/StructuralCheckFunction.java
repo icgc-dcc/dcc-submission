@@ -57,7 +57,12 @@ public class StructuralCheckFunction extends BaseOperation implements Function {
 
   public static final char FIELD_SEPARATOR = '\t';
 
-  public static final List<String> MISSING_CODES = Arrays.asList("-777", "-888", "-999"); // TODO: move elsewhere?
+  public static final List<String> MISSING_CODES = Arrays.asList("-777", "-888"); // TODO: move elsewhere?
+
+  /**
+   * Former reserved values that must not appear in the data anymore.
+   */
+  public static final List<String> DEPRECATED_VALUES = Arrays.asList("-999");
 
   private static boolean REPORT_WARNINGS = false; // see DCC-270 & DCC-411
 
