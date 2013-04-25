@@ -42,6 +42,7 @@ import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.filesystem.GuiceJUnitRunner;
 import org.icgc.dcc.filesystem.GuiceJUnitRunner.GuiceModules;
 import org.icgc.dcc.release.model.QueuedProject;
+import org.icgc.dcc.validation.cascading.ForbiddenValuesFunction;
 import org.icgc.dcc.validation.factory.LocalCascadingStrategyFactory;
 import org.icgc.dcc.validation.restriction.CodeListRestriction;
 import org.icgc.dcc.validation.restriction.DiscreteValuesRestriction;
@@ -120,6 +121,11 @@ public class ValidationInternalIntegrityTest {
   public void test_validate_valid() throws IOException {
     String content = validate(validationService, dictionary, ROOT_DIR);
     Assert.assertTrue(content, content.isEmpty());
+  }
+
+  @Test
+  public void test_validate_forbiddenValues() throws IOException {
+    testErrorType(ForbiddenValuesFunction.NAME);
   }
 
   @Test

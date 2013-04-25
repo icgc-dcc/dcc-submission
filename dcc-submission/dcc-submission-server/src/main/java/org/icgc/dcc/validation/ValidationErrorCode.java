@@ -35,6 +35,7 @@ import static org.icgc.dcc.validation.ErrorParameterKey.FILES;
 import static org.icgc.dcc.validation.ErrorParameterKey.MAX;
 import static org.icgc.dcc.validation.ErrorParameterKey.MIN;
 import static org.icgc.dcc.validation.ErrorParameterKey.SCHEMA;
+import static org.icgc.dcc.validation.ErrorParameterKey.VALUE;
 
 public enum ValidationErrorCode { // TODO: DCC-505 to fix the message (currently not used for anything)
 
@@ -48,6 +49,18 @@ public enum ValidationErrorCode { // TODO: DCC-505 to fix the message (currently
       checkArgument(params.length == 1);
       checkArgument(params[0] instanceof Integer);
       return ImmutableMap.of(EXPECTED, params[0]);
+    }
+  }, //
+  /**
+   * A forbidden value was found (for instance deprecated "-999" value).
+   */
+  FORBIDDEN_VALUE_ERROR("Invalid value (%s) for field %s. Cannot use forbidden value: %s") {
+    @Override
+    public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
+      checkArgument(params != null);
+      checkArgument(params.length == 1);
+      checkArgument(params[0] instanceof String);
+      return ImmutableMap.of(VALUE, params[0]);
     }
   }, //
   /**

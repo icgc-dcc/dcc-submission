@@ -1,20 +1,20 @@
 analysis_id	analyzed_sample_id	sv_id	placement	bkpt_from_context	gene_affected_by_bkpt_from	transcript_affected_by_bkpt_from	bkpt_to_context	gene_affected_by_bkpt_to	transcript_affected_by_bkpt_to	gene_build_version	note
-AX1001T	SP1001T	40000	1	Intergenic	-999	-999	Intergenic	-999	-999	54	-999
-AX1001T	SP1001T	40001	1	Intronic	-999	-999	Intronic	-999	-999	54	GRM8 intronic deletion
-AX1001T	SP1001T	40002	1	Intronic	-999	-999	Intronic	-999	-999	54	MAGI2 exon 7 deletion
-AX1001T	SP1001T	40003	1	Intronic	-999	-999	Intronic	-999	-999	54	MAGI2 exon 3 deletion
-AX1001T	SP1001T	40004	1	Intronic	-999	-999	Intergenic	-999	-999	54	CCT4 partial deletion
-AX1001T	SP1001T	40005	1	Intronic	-999	-999	Intronic	-999	-999	54	LARGE exon 7-9 deletion
-AX1001T	SP1001T	40006	1	Intergenic	-999	-999	Intergenic	-999	-999	54	-999
-AX1001T	SP1001T	40007	1	Intergenic	-999	-999	Intronic	-999	-999	54	C1orf132 partial deletion
-AX1001T	SP1001T	40008	1	Intronic	-999	-999	Intergenic	-999	-999	54	SEP15 interruption
-AX1001T	SP1001T	40009	1	Intronic	-999	-999	Intronic	-999	-999	54	Homozygous CNOT1 exon 1-2 deletion
-AX1001T	SP1001T	40010	1	Intronic	-999	-999	Intronic	-999	-999	54	WWOX intronic deletion
-AX1001T	SP1001T	40011	1	Intergenic	-999	-999	Intronic	-999	-999	54	DLG2 interruption
-AX1001T	SP1001T	40012	1	Intergenic	-999	-999	Exonic	-999	-999	54	HIST1H2B exon 1 partial deletion
-AX1001T	SP1001T	40013	1	Intergenic	-999	-999	Intergenic	-999	-999	54	-999
-AX1001T	SP1001T	40014	1	Intronic	-999	-999	Intronic	-999	-999	54	FHIT intronic deletion
-AX1001T	SP1001T	40015	1	Intergenic	-999	-999	Intergenic	-999	-999	54	-999
-AX1001T	SP1001T	40016	1	Intronic	-999	-999	Intronic	-999	-999	54	DMD exon 44 deletion
-AX1001T	SP1001T	40017	1	Intergenic	-999	-999	Intergenic	-999	-999	54	-999
+AX1001T	SP1001T	40000	1	Intergenic	-888	-888	Intergenic	-888	-888	54	-888
+AX1001T	SP1001T	40001	1	Intronic	-888	-888	Intronic	-888	-888	54	GRM8 intronic deletion
+AX1001T	SP1001T	40002	1	Intronic	-888	-888	Intronic	-888	-888	54	MAGI2 exon 7 deletion
+AX1001T	SP1001T	40003	1	Intronic	-888	-888	Intronic	-888	-888	54	MAGI2 exon 3 deletion
+AX1001T	SP1001T	40004	1	Intronic	-888	-888	Intergenic	-888	-888	54	CCT4 partial deletion
+AX1001T	SP1001T	40005	1	Intronic	-888	-888	Intronic	-888	-888	54	LARGE exon 7-9 deletion
+AX1001T	SP1001T	40006	1	Intergenic	-888	-888	Intergenic	-888	-888	54	-888
+AX1001T	SP1001T	40007	1	Intergenic	-888	-888	Intronic	-888	-888	54	C1orf132 partial deletion
+AX1001T	SP1001T	40008	1	Intronic	-888	-888	Intergenic	-888	-888	54	SEP15 interruption
+AX1001T	SP1001T	40009	1	Intronic	-888	-888	Intronic	-888	-888	54	Homozygous CNOT1 exon 1-2 deletion
+AX1001T	SP1001T	40010	1	Intronic	-888	-888	Intronic	-888	-888	54	WWOX intronic deletion
+AX1001T	SP1001T	40011	1	Intergenic	-888	-888	Intronic	-888	-888	54	DLG2 interruption
+AX1001T	SP1001T	40012	1	Intergenic	-888	-888	Exonic	-888	-888	54	HIST1H2B exon 1 partial deletion
+AX1001T	SP1001T	40013	1	Intergenic	-888	-888	Intergenic	-888	-888	54	-888
+AX1001T	SP1001T	40014	1	Intronic	-888	-888	Intronic	-888	-888	54	FHIT intronic deletion
+AX1001T	SP1001T	40015	1	Intergenic	-888	-888	Intergenic	-888	-888	54	-888
+AX1001T	SP1001T	40016	1	Intronic	-888	-888	Intronic	-888	-888	54	DMD exon 44 deletion
+AX1001T	SP1001T	40017	1	Intergenic	-888	-888	Intergenic	-888	-888	54	-888
 

@@ -60,6 +60,7 @@ public final class FieldNames {
   public static final String DONOR_SPECIMEN_ID = "_specimen_id";
   public static final String DONOR_SAMPLE = "sample";
   public static final String DONOR_SAMPLE_ID = "_sample_id";
+  public static final String DONOR_SAMPLE_ANALYZED_SAMPLE_ID = "analyzed_sample_id";
 
   /**
    * Gene field names.
@@ -75,6 +76,8 @@ public final class FieldNames {
   public static final String GENE_CANONICAL_TRANSCRIPT_ID = "canonical_transcript_id";
   public static final String GENE_TRANSCRIPTS = "transcripts";
   public static final String GENE_TRANSCRIPTS_TRANSCRIPT_ID = "id";
+  public static final String GENE_TRANSCRIPTS_TRANSCRIPT_EXONS = "exons";
+  public static final String GENE_TRANSCRIPTS_TRANSCRIPT_DOMAINS = "domains";
 
   /**
    * Observation field names.

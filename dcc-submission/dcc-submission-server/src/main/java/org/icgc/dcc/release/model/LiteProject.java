@@ -17,57 +17,36 @@
  */
 package org.icgc.dcc.release.model;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.icgc.dcc.core.model.Project;
 
-import javax.validation.Valid;
+public class LiteProject {
 
-import org.hibernate.validator.constraints.NotBlank;
-import org.icgc.dcc.filesystem.SubmissionFile;
+  private final String key;
 
-import static com.google.common.base.Preconditions.checkArgument;
+  private final String name;
 
-// TODO: DetailedSubmission shouldn't extend Submission (DCC-721)
-public class DetailedSubmission extends Submission {
-  @NotBlank
-  private String projectName;
+  private final String alias;
 
-  private String projectAlias;
-
-  @Valid
-  private List<SubmissionFile> submissionFiles;
-
-  public DetailedSubmission() {
-    super();
+  public LiteProject(Project project) {
+    this.key = project.getKey();
+    this.name = project.getName();
+    this.alias = project.getAlias();
   }
 
-  public DetailedSubmission(Submission submission, LiteProject liteProject) {
-    super();
-    checkArgument(submission.projectKey != null && //
-        submission.projectKey.equals(liteProject.getKey())); // By design
-    this.projectKey = liteProject.getKey();
-    this.projectName = liteProject.getName();
-    this.projectAlias = liteProject.getAlias();
-
-    this.state = submission.state;
-    this.report = submission.report;
-    this.lastUpdated = submission.lastUpdated;
-    this.submissionFiles = new ArrayList<SubmissionFile>();
+  public String getKey() {
+    return key;
   }
 
-  public String getProjectName() {
-    return projectName;
+  public String getName() {
+    return name;
   }
 
-  public String getProjectAlias() {
-    return projectAlias;
+  public String getAlias() {
+    return alias;
   }
 
-  public List<SubmissionFile> getSubmissionFiles() {
-    return submissionFiles;
-  }
-
-  public void setSubmissionFiles(List<SubmissionFile> submissionFiles) {
-    this.submissionFiles = submissionFiles;
+  @Override
+  public String toString() {
+    return "LiteProject [key=" + key + ", name=" + name + ", alias=" + alias + "]";
   }
 }
