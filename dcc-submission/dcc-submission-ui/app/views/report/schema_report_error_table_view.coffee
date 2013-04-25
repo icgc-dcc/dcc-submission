@@ -109,7 +109,7 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
         #{source.parameters?.MAX}] (inclusive). Offending lines
         """
     NOT_A_NUMBER_ERROR:
-      name: "Data type erorr"
+      name: "Data type error"
       description: (source) ->
         """
         Values for range field are not numerical. Offending lines
@@ -134,6 +134,12 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
         """
         Field counts in all lines are expected to match that of the file
         header. Offending lines
+        """
+    FORBIDDEN_VALUE_ERROR:
+      name: "Invalid value"
+      description: (source) ->
+        """
+        Using forbidden value: <em>#{source.parameters?.VALUE}</em>
         """
     TOO_MANY_FILES_ERROR:
       name: "Filename collision"

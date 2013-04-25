@@ -25,10 +25,14 @@ import javax.validation.Valid;
 import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.filesystem.SubmissionFile;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 // TODO: DetailedSubmission shouldn't extend Submission (DCC-721)
 public class DetailedSubmission extends Submission {
   @NotBlank
   private String projectName;
+
+  private String projectAlias;
 
   @Valid
   private List<SubmissionFile> submissionFiles;
@@ -37,9 +41,14 @@ public class DetailedSubmission extends Submission {
     super();
   }
 
-  public DetailedSubmission(Submission submission) {
+  public DetailedSubmission(Submission submission, LiteProject liteProject) {
     super();
-    this.projectKey = submission.projectKey;
+    checkArgument(submission.projectKey != null && //
+        submission.projectKey.equals(liteProject.getKey())); // By design
+    this.projectKey = liteProject.getKey();
+    this.projectName = liteProject.getName();
+    this.projectAlias = liteProject.getAlias();
+
     this.state = submission.state;
     this.report = submission.report;
     this.lastUpdated = submission.lastUpdated;
@@ -50,8 +59,8 @@ public class DetailedSubmission extends Submission {
     return projectName;
   }
 
-  public void setProjectName(String projectName) {
-    this.projectName = projectName;
+  public String getProjectAlias() {
+    return projectAlias;
   }
 
   public List<SubmissionFile> getSubmissionFiles() {

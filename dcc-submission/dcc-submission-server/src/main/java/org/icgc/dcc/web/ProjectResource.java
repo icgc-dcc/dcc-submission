@@ -107,7 +107,7 @@ public class ProjectResource {
   }
 
   /**
-   * Only updates the name (will ignore the rest)
+   * Only updates the name and alias (will ignore the rest)
    */
   @PUT
   @Path("{projectKey}")
@@ -124,7 +124,9 @@ public class ProjectResource {
     // update project use morphia query
     projects.datastore().update( //
         projects.datastore().createQuery(Project.class).field("key").equal(projectKey), //
-        projects.datastore().createUpdateOperations(Project.class).set("name", project.getName()));
+        projects.datastore().createUpdateOperations(Project.class) //
+            .set("name", project.getName()) //
+            .set("alias", project.getAlias()));
 
     return ResponseTimestamper.ok(project).build();
   }
