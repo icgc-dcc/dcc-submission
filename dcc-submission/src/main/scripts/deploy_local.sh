@@ -32,6 +32,9 @@ dev_public_dir="${dev_client_dir?}/public"
 parent_pom_file="${dev_dir?}/pom.xml"
 server_pom_file="${dev_server_dir?}/pom.xml"
 
+logback_filename="logback.xml"
+logback_file="${dev_server_dir?}/src/main/conf/${logback_filename?}"
+
 main_class="org.icgc.dcc.Main"
 
 parent_dir="dcc"
@@ -158,7 +161,8 @@ fi
 hdfs_dir="/var/lib/hdfs"
 backup_dir="${hdfs_dir?}/backup" # must be absolute path
 remote_dir="${hdfs_dir?}/dcc" # must be absolute path
-remote_realm_file="${hdfs_dir?}/realm.ini" # must exist already
+remote_realm_file="${hdfs_dir?}/realm.ini" # must exist already; on prod: /srv/webapp/dcc/server/realm.ini
+remote_conf_file="${hdfs_dir?}/application.conf" # must exist already; on prod: /srv/webapp/dcc/server/application.conf
 remote_log_dir="${hdfs_dir?}/log" # must exist already
 remote_server_dir="${remote_dir?}/server"
 remote_client_dir="${remote_dir?}/client"
@@ -168,6 +172,7 @@ echo "remote_log_dir=\"${remote_log_dir?}\""
 
 log_base="${artifact_id?}-${timestamp?}"
 log_file="${remote_log_dir?}/${log_base?}.log"
+remote_logback_file="${remote_server_dir?}/${logback_filename?}"
 
 echo "==========================================================================="
 echo "please issue the following commands on ${server?}:"
@@ -179,12 +184,13 @@ fi
 echo "ssh ${username:='your_user'}@${server?}"
 echo "sudo -u hdfs -i"
 echo
-echo "current_pid=\$(jps -lm | grep \"${main_class?} ${mode?}\" | awk '{print "'$1'"}') && read -p \"kill \$current_pid?\" && kill \$current_pid"
+echo "current_pid=\$(jps -lm | grep \"${main_class?} external\" | awk '{print "'$1'"}') && read -p \"kill \$current_pid?\" && kill \$current_pid"
 echo "mv ${remote_dir?} ${backup_dir?}/dcc.${timestamp?}.bak"
 echo "cp -r ${remote_tmp_dir?} ${remote_dir?}"
 echo "cp ${remote_realm_file?} ${remote_server_dir?}/"
+echo "cp ${logback_file?}  ${remote_server_dir?}/"
 echo "cd ${remote_server_dir?}"
-echo "nohup java -cp ${jar_file_name?} ${main_class?} ${mode?} >> ${log_file?} 2>&1 &"
+echo "nohup java -Dlogback.configurationFile=${remote_logback_file?} -cp ${jar_file_name?} ${main_class?} external ${remote_conf_file?} >> ${log_file?} 2>&1 &"
 echo "less +F ${log_file?}"
 echo
 if [ "dev" == "${mode?}" ]; then read -p "must modify watch crontab to match the new log file (they are timestamped)"; fi

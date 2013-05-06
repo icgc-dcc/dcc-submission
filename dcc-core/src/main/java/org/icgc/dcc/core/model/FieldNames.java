@@ -51,6 +51,7 @@ public final class FieldNames {
    */
   public static final String DONOR_ID = "_donor_id";
   public static final String DONOR_SUMMARY = "_summary";
+  public static final String DONOR_SUMMARY_EXPERIMENTAL_ANALYSIS = "experimental_analysis_performed";
   public static final String DONOR_GENES = "gene";
   public static final String DONOR_GENE_GENE_ID = "_gene_id";
   public static final String DONOR_GENE_SUMMARY = "_summary";
@@ -61,6 +62,14 @@ public final class FieldNames {
   public static final String DONOR_SAMPLE = "sample";
   public static final String DONOR_SAMPLE_ID = "_sample_id";
   public static final String DONOR_SAMPLE_ANALYZED_SAMPLE_ID = "analyzed_sample_id";
+  public static final String DONOR_SAMPLE_SEQUENCE_DATA = "available_raw_sequence_data";
+  
+  
+  /**
+   * CGHub field names.
+   */
+  public static final String SEQUENCE_DATA_LEGACY_SAMPLE_ID = "legacy_sample_id";
+  public static final String SEQUENCE_DATA_LIBRARY_STRATEGY = "library_strategy";
 
   /**
    * Gene field names.
@@ -140,6 +149,7 @@ public final class FieldNames {
   public static final String TOTAL_SAMPLE_COUNT = "_total_sample_count";
   public static final String TESTED_DONOR_COUNT_SUFFIX = "_tested_donor_count";
   public static final String AFFECTED_DONOR_COUNT = "_affected_donor_count";
+  public static final String EXPERIMENTAL_ANALYSIS_PERFORMED = "experimental_analysis_performed";
   // @formatter:on
 
   public static String getTypeExistsFieldName(String type) {
