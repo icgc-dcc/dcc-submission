@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.core.morphia;
 
+import static org.icgc.dcc.core.model.Configurations.MONGO_URI_KEY;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +54,7 @@ public class MorphiaModule extends AbstractModule {
       @Override
       public MongoClient get() {
         try {
-          String uri = config.getString("mongo.uri");
+          String uri = config.getString(MONGO_URI_KEY);
           log.info("mongo URI: {}", uri);
           return new MongoClient(new MongoClientURI(uri));
         } catch(Exception e) {
@@ -74,7 +76,7 @@ public class MorphiaModule extends AbstractModule {
 
       @Override
       public Datastore get() {
-        MongoClientURI uri = new MongoClientURI(config.getString("mongo.uri"));
+        MongoClientURI uri = new MongoClientURI(config.getString(MONGO_URI_KEY));
         log.info("mongo URI: {}", uri);
         Datastore datastore = morphia.createDatastore(mongo, uri.getDatabase());
         datastore.ensureIndexes();
