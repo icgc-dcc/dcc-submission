@@ -15,51 +15,29 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.validation;
+package org.icgc.dcc.core.model;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static org.icgc.dcc.core.model.Configurations.HADOOP_KEY;
+/**
+ * Contains keys used in configuration files and used across components.
+ */
+public class Configurations {
 
-import org.apache.hadoop.fs.FileSystem;
-import org.icgc.dcc.validation.factory.CascadingStrategyFactory;
-import org.icgc.dcc.validation.factory.HadoopCascadingStrategyFactory;
-import org.icgc.dcc.validation.factory.LocalCascadingStrategyFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+  /**
+   * Submitter component.
+   */
+  public static final String FS_URL_KEY = "fs.url";
 
-import com.google.inject.Inject;
-import com.google.inject.Provider;
-import com.typesafe.config.Config;
+  public static final String FS_ROOT_KEY = "fs.root";
 
-public class CascadingStrategyFactoryProvider implements Provider<CascadingStrategyFactory> {
+  public static final String MONGO_URI_KEY = "mongo.uri";
 
-  private static final Logger log = LoggerFactory.getLogger(CascadingStrategyFactoryProvider.class);
+  /**
+   * ETL component.
+   */
+  public static final String RELEASE_MONGO_URI_KEY = "releaseMongoUri";
 
-  private final FileSystem fs;
+  public static final String SUBMISSIONS_KEY = "submissions";
 
-  private final Config config;
-
-  @Inject
-  CascadingStrategyFactoryProvider(Config config, FileSystem fs) {
-    checkArgument(fs != null);
-    checkArgument(config != null);
-    this.fs = fs;
-    this.config = config;
-  }
-
-  @Override
-  public CascadingStrategyFactory get() {
-    String fsUrl = fs.getScheme();
-
-    if(fsUrl.equals("file")) {
-      log.info("System configured for local filesystem");
-      return new LocalCascadingStrategyFactory();
-    } else if(fsUrl.equals("hdfs")) {
-      log.info("System configured for Hadoop filesystem");
-      return new HadoopCascadingStrategyFactory(config.getConfig(HADOOP_KEY), fs);
-    } else {
-      throw new RuntimeException("Unknown file system type: " + fsUrl + ". Expected file or hdfs");
-    }
-  }
+  public static final String HADOOP_KEY = "hadoop";
 
 }
