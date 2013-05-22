@@ -1,7 +1,7 @@
 ICGC DCC - Submission UI
 ===
 
-Development
+Run
 ---
 
 Start brunch (in another console)
