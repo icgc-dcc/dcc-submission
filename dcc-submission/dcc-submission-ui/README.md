@@ -1,17 +1,19 @@
 ICGC DCC - Submission UI
 ===
 
-Development
+Run
 ---
 
-Start brunch (in another console)
+Start brunch (in another console):
 
 	cd dcc/dcc-submission-ui
-	brunch w -s
+	brunch w
 
 Start the proxy (in yet another console)
 
 	cd dcc/dcc-submission-ui
 	cake proxy
 
-Point your browser to [http://localhost:3334/](http://localhost:3334/)
+Point your browser to:
+
+[http://localhost:3334/](http://localhost:3334/)
