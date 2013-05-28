@@ -296,7 +296,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     List<Project> projects = this.getProjects(projectKeys);
     for(Project project : projects) {
       SubmissionDirectory submissionDirectory = releaseFS.getSubmissionDirectory(project.getKey());
-      submissionDirectory.removeSubmissionDir();
+      submissionDirectory.removeValidationDir();
     }
 
     // after sign off, send a email to DCC support

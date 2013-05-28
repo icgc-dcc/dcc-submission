@@ -17,6 +17,10 @@
  */
 package org.icgc.dcc.validation.service;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static java.lang.String.format;
+
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.dictionary.DictionaryService;
@@ -41,9 +45,6 @@ import cascading.cascade.CascadeListener;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Iterables;
 import com.google.inject.Inject;
-
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Wraps validation call for the {@code ValidationQueueManagerService} and {@Main} (the validation one) to use
@@ -84,7 +85,7 @@ public class ValidationService {
     String dictionaryVersion = release.getDictionaryVersion();
     Dictionary dictionary = this.dictionaries.getFromVersion(dictionaryVersion);
     if(dictionary == null) {
-      throw new ValidationServiceException(String.format("no dictionary found with version %s, in release %s",
+      throw new ValidationServiceException(format("no dictionary found with version %s, in release %s",
           dictionaryVersion, release.getName()));
     } else {
       log.info("Preparing cascade for project {}", qProject.getKey());
@@ -102,7 +103,9 @@ public class ValidationService {
       log.info("systemDir = {} ", systemDir);
 
       CascadingStrategy cascadingStrategy = cascadingStrategyFactory.get(rootDir, outputDir, systemDir);
-      Plan plan = planAndConnectCascade(qProject, cascadingStrategy, dictionary, validationCascadeListener);
+      Plan plan =
+          planAndConnectCascade(qProject, submissionDirectory, cascadingStrategy, dictionary, validationCascadeListener);
+
       validationCascadeListener.setPlan(plan);
 
       log.info("Prepared cascade for project {}", qProject.getKey());
@@ -110,13 +113,19 @@ public class ValidationService {
     }
   }
 
+  /**
+   * Plans and connects the cascade running the validation.
+   * <p>
+   * Note that emptying of the .validation dir happens right before launching the cascade in {@link Plan#startCascade()}
+   */
   @VisibleForTesting
-  public Plan planAndConnectCascade(QueuedProject queuedProject, CascadingStrategy cascadingStrategy,
-      Dictionary dictionary, final CascadeListener cascadeListener) throws FilePresenceException { // TODO: separate
-                                                                                                   // plan and connect?
+  public Plan planAndConnectCascade(QueuedProject queuedProject, SubmissionDirectory submissionDirectory,
+      CascadingStrategy cascadingStrategy, Dictionary dictionary, final CascadeListener cascadeListener)
+      throws FilePresenceException { // TODO: separate
+                                     // plan and connect?
 
     log.info("Planning cascade for project {}", queuedProject.getKey());
-    Plan plan = planner.plan(queuedProject, cascadingStrategy, dictionary);
+    Plan plan = planner.plan(queuedProject, submissionDirectory, cascadingStrategy, dictionary);
     log.info("Planned cascade for project {}", queuedProject.getKey());
 
     log.info("# internal flows: {}", Iterables.size(plan.getInternalFlows()));
@@ -145,14 +154,6 @@ public class ValidationService {
     checkNotNull(queuedProject);
     String projectKey = queuedProject.getKey();
     log.info("starting validation on project {}", projectKey);
-    plan.setStartTime();
-    this.startCascade(plan.getCascade()); // non-blocking
-  }
-
-  @VisibleForTesting
-  public void startCascade(Cascade cascade) {
-    int size = cascade.getFlows().size();
-    log.info("starting cascade with {} flows", size);
-    cascade.start();
+    plan.startCascade();
   }
 }

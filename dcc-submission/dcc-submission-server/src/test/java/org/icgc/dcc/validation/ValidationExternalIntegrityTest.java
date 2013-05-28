@@ -45,6 +45,7 @@ import org.icgc.dcc.dictionary.model.ValueType;
 import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.filesystem.GuiceJUnitRunner;
 import org.icgc.dcc.filesystem.GuiceJUnitRunner.GuiceModules;
+import org.icgc.dcc.filesystem.SubmissionDirectory;
 import org.icgc.dcc.release.model.QueuedProject;
 import org.icgc.dcc.validation.factory.LocalCascadingStrategyFactory;
 import org.icgc.dcc.validation.service.ValidationService;
@@ -74,6 +75,8 @@ public class ValidationExternalIntegrityTest { // TODO create base class for thi
 
   private ValidationService validationService;
 
+  private SubmissionDirectory submissionDirectory;
+
   private Dictionary dictionary;
 
   @Before
@@ -86,6 +89,8 @@ public class ValidationExternalIntegrityTest { // TODO create base class for thi
     CodeList codeList3 = mock(CodeList.class);
     CodeList codeList4 = mock(CodeList.class);
     CodeList codeList5 = mock(CodeList.class);
+
+    submissionDirectory = mock(SubmissionDirectory.class);
 
     List<Term> termList1 = Arrays.asList(new Term("1", "dummy", null), new Term("2", "dummy", null));
     List<Term> termList2 = Arrays.asList(new Term("1", "dummy", null), new Term("2", "dummy", null));
@@ -215,10 +220,12 @@ public class ValidationExternalIntegrityTest { // TODO create base class for thi
     CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir, systemDir);
 
     TestCascadeListener listener = new TestCascadeListener();
-    Plan plan = validationService.planAndConnectCascade(QUEUED_PROJECT, cascadingStrategy, dictionary, listener);
+    Plan plan =
+        validationService.planAndConnectCascade(QUEUED_PROJECT, submissionDirectory, cascadingStrategy, dictionary,
+            listener);
     Assert.assertEquals(5, plan.getCascade().getFlows().size());
 
-    validationService.startCascade(plan.getCascade());
+    plan.startCascade();
     while(listener.isRunning()) {
       Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
     }
