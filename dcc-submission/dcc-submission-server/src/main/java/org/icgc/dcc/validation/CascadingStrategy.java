@@ -30,6 +30,8 @@ import cascading.tuple.Fields;
 
 public interface CascadingStrategy {
 
+  public static final String SEPARATOR = "--";
+
   public FlowConnector getFlowConnector();
 
   public Tap<?, ?, ?> getSourceTap(FileSchema schema);

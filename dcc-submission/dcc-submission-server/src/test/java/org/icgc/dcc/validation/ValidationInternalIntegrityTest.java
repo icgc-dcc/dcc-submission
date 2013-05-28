@@ -17,6 +17,12 @@
  */
 package org.icgc.dcc.validation;
 
+import static org.icgc.dcc.validation.BaseCascadingStrategy.SEPARATOR;
+import static org.icgc.dcc.validation.restriction.RegexRestriction.NAME;
+import static org.icgc.dcc.validation.restriction.RegexRestriction.PARAM;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -59,11 +65,6 @@ import com.google.common.base.Optional;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.inject.Inject;
 import com.mongodb.BasicDBObject;
-
-import static org.icgc.dcc.validation.restriction.RegexRestriction.NAME;
-import static org.icgc.dcc.validation.restriction.RegexRestriction.PARAM;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @RunWith(GuiceJUnitRunner.class)
 @GuiceModules({ ValidationTestModule.class })
@@ -223,7 +224,7 @@ public class ValidationInternalIntegrityTest {
       throws IOException {
     String rootDirString = this.getClass().getResource(relative).getFile();
     String outputDirString = rootDirString + "/" + ".validation";
-    String errorFileString = outputDirString + "/" + "donor.internal#errors.json";
+    String errorFileString = outputDirString + "/" + "donor.internal" + SEPARATOR + "errors.json";
 
     File errorFile = new File(errorFileString);
     errorFile.delete();

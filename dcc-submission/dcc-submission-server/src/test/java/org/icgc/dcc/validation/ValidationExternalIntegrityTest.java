@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.validation;
 
+import static org.icgc.dcc.validation.CascadingStrategy.SEPARATOR;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -129,11 +130,11 @@ public class ValidationExternalIntegrityTest { // TODO create base class for thi
     String content = validate(dictionary, ROOTDIR);
     Assert.assertTrue(content, content.isEmpty());
 
-    String donorTrim = getUnsortedFileContent(ROOTDIR, "/.validation/donor#donor_id-offset.tsv");
+    String donorTrim = getUnsortedFileContent(ROOTDIR, "/.validation/donor" + SEPARATOR + "donor_id-offset.tsv");
     String donorTrimExpected = getUnsortedFileContent("/ref/fk_donor_trim.tsv");
     Assert.assertEquals("Incorrect donor ID trim list", donorTrimExpected.trim(), donorTrim.trim());
 
-    String specimenTrim = getUnsortedFileContent(ROOTDIR, "/.validation/specimen#donor_id-offset.tsv");
+    String specimenTrim = getUnsortedFileContent(ROOTDIR, "/.validation/specimen" + SEPARATOR + "donor_id-offset.tsv");
     String specimenTrimExpected = getUnsortedFileContent("/ref/fk_specimen_trim.tsv");
     Assert.assertEquals("Incorrect specimen ID trim list", specimenTrimExpected.trim(), specimenTrim.trim());
 
@@ -165,12 +166,14 @@ public class ValidationExternalIntegrityTest { // TODO create base class for thi
 
     resetDictionary();
 
-    String donorTrim = getUnsortedFileContent(ROOTDIR, "/error/fk_1/.validation/donor#donor_id-fakecolumn-offset.tsv");
+    String donorTrim =
+        getUnsortedFileContent(ROOTDIR, "/error/fk_1/.validation/donor" + SEPARATOR + "donor_id-fakecolumn-offset.tsv");
     String donorTrimExpected = getUnsortedFileContent("/ref/fk_1_donor_trim.tsv");
     Assert.assertEquals("Incorrect donor ID trim list", donorTrimExpected.trim(), donorTrim.trim());
 
     String specimenTrim =
-        getUnsortedFileContent(ROOTDIR, "/error/fk_1/.validation/specimen#donor_id-fakecolumn-offset.tsv");
+        getUnsortedFileContent(ROOTDIR, "/error/fk_1/.validation/specimen" + SEPARATOR
+            + "donor_id-fakecolumn-offset.tsv");
     String specimenTrimExpected = getUnsortedFileContent("/ref/fk_1_specimen_trim.tsv");
     Assert.assertEquals("Incorrect specimen ID trim list", specimenTrimExpected.trim(), specimenTrim.trim());
   }
@@ -202,7 +205,7 @@ public class ValidationExternalIntegrityTest { // TODO create base class for thi
     String rootDirString = this.getClass().getResource(relative).getFile();
     String outputDirString = rootDirString + "/" + ".validation";
     System.err.println(outputDirString);
-    String errorFileString = outputDirString + "/" + "specimen.external#errors.json";
+    String errorFileString = outputDirString + "/" + "specimen.external" + SEPARATOR + "errors.json";
 
     File errorFile = new File(errorFileString);
     errorFile.delete();

@@ -19,7 +19,6 @@ package org.icgc.dcc.validation;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -83,12 +82,6 @@ public abstract class BaseCascadingStrategy implements CascadingStrategy {
     return tap(trimmedPath(key), new Fields(key.getFields()));
   }
 
-  @Override
-  public InputStream readReportTap(FileSchema schema, FlowType type, String reportName) throws IOException {
-    Path reportPath = reportPath(schema, type, reportName);
-    return fileSystem.open(reportPath);
-  }
-
   protected Path trimmedPath(Key key) {
     if(key.getSchema().getRole() == FileSchemaRole.SUBMISSION) {
       return new Path(output, key.getName() + ".tsv");
@@ -102,7 +95,7 @@ public abstract class BaseCascadingStrategy implements CascadingStrategy {
   }
 
   protected Path reportPath(FileSchema schema, FlowType type, String reportName) {
-    return new Path(output, String.format("%s.%s#%s.json", schema.getName(), type, reportName));
+    return new Path(output, String.format("%s.%s%s%s.json", schema.getName(), type, SEPARATOR, reportName));
   }
 
   protected abstract Tap<?, ?, ?> tap(Path path);

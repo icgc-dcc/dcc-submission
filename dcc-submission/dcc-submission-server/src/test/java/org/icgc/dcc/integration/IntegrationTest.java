@@ -17,6 +17,21 @@
  */
 package org.icgc.dcc.integration;
 
+import static java.util.Arrays.asList;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static javax.ws.rs.core.Response.Status.CREATED;
+import static javax.ws.rs.core.Response.Status.OK;
+import static org.icgc.dcc.release.model.ReleaseState.OPENED;
+import static org.icgc.dcc.release.model.SubmissionState.INVALID;
+import static org.icgc.dcc.release.model.SubmissionState.NOT_VALIDATED;
+import static org.icgc.dcc.release.model.SubmissionState.QUEUED;
+import static org.icgc.dcc.release.model.SubmissionState.VALID;
+import static org.icgc.dcc.release.model.SubmissionState.VALIDATING;
+import static org.icgc.dcc.validation.BaseCascadingStrategy.SEPARATOR;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -59,20 +74,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.inject.Inject;
 import com.typesafe.config.ConfigFactory;
-
-import static java.util.Arrays.asList;
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.OK;
-import static org.icgc.dcc.release.model.ReleaseState.OPENED;
-import static org.icgc.dcc.release.model.SubmissionState.INVALID;
-import static org.icgc.dcc.release.model.SubmissionState.NOT_VALIDATED;
-import static org.icgc.dcc.release.model.SubmissionState.QUEUED;
-import static org.icgc.dcc.release.model.SubmissionState.VALID;
-import static org.icgc.dcc.release.model.SubmissionState.VALIDATING;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 @RunWith(GuiceJUnitRunner.class)
 @GuiceModules({ ConfigModule.class, CoreModule.class, HttpModule.class, JerseyModule.class, MorphiaModule.class, FileSystemModule.class, SftpModule.class, WebModule.class, ShiroModule.class })
@@ -358,9 +359,9 @@ public class IntegrationTest {
     checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT3_NAME, SubmissionState.INVALID);
 
     // check no errors for project 1
-    checkEmptyFile(DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/donor.internal#errors.json");
-    checkEmptyFile(DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/specimen.internal#errors.json");
-    checkEmptyFile(DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/specimen.external#errors.json");
+    checkEmptyFile(DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/donor.internal" + SEPARATOR + "errors.json");
+    checkEmptyFile(DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/specimen.internal" + SEPARATOR + "errors.json");
+    checkEmptyFile(DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/specimen.external" + SEPARATOR + "errors.json");
     // TODO add more
   }
 
