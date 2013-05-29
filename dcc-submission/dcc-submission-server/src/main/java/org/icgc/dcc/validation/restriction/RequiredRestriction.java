@@ -119,6 +119,7 @@ public class RequiredRestriction implements InternalPlanElement {
       boolean isFieldMissing =
           ValidationFields.state(tupleEntry).isFieldMissing((String) tupleEntry.getFields().get(0));
       // TODO The IF conditions seem to lead to the same thing
+      // TODO: DCC-1076 - This should also check for -999 rather than have {@link ForbiddenValuesFunction} do it.
       if(isFieldMissing == false && (value == null || value.isEmpty())) {
         Object fieldName = tupleEntry.getFields().get(0);
         ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.MISSING_VALUE_ERROR, fieldName.toString(),

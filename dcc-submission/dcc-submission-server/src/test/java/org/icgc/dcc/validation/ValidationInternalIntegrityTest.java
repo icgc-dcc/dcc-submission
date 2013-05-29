@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.validation;
 
+import static org.icgc.dcc.validation.CascadingStrategy.SEPARATOR;
 import static org.icgc.dcc.validation.restriction.RegexRestriction.NAME;
 import static org.icgc.dcc.validation.restriction.RegexRestriction.PARAM;
 import static org.mockito.Mockito.mock;
@@ -228,7 +229,7 @@ public class ValidationInternalIntegrityTest {
       throws IOException {
     String rootDirString = this.getClass().getResource(relative).getFile();
     String outputDirString = rootDirString + "/" + ".validation";
-    String errorFileString = outputDirString + "/" + "donor.internal#errors.json";
+    String errorFileString = outputDirString + "/" + "donor.internal" + SEPARATOR + "errors.json";
 
     File errorFile = new File(errorFileString);
     errorFile.delete();

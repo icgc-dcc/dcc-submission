@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.validation;
 
+import static org.icgc.dcc.validation.CascadingStrategy.SEPARATOR;
+
 import java.io.Serializable;
 import java.util.Arrays;
 
@@ -30,8 +32,6 @@ import com.google.common.base.Joiner;
 public class Key implements Serializable {
 
   private static final char FIELD_SEPARATOR = '-';
-
-  private static final String SCHEMA_SEPERATOR = "#";
 
   private final FileSchema schema;
 
@@ -51,7 +51,7 @@ public class Key implements Serializable {
   }
 
   public String getName() {
-    return schema.getName() + SCHEMA_SEPERATOR + Joiner.on(FIELD_SEPARATOR).join(fields);
+    return schema.getName() + SEPARATOR + Joiner.on(FIELD_SEPARATOR).join(fields);
   }
 
   @Override
