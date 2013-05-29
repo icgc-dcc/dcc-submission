@@ -17,6 +17,11 @@
  */
 package org.icgc.dcc.validation;
 
+import static org.icgc.dcc.validation.restriction.RegexRestriction.NAME;
+import static org.icgc.dcc.validation.restriction.RegexRestriction.PARAM;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -41,6 +46,7 @@ import org.icgc.dcc.dictionary.model.Term;
 import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.filesystem.GuiceJUnitRunner;
 import org.icgc.dcc.filesystem.GuiceJUnitRunner.GuiceModules;
+import org.icgc.dcc.filesystem.SubmissionDirectory;
 import org.icgc.dcc.release.model.QueuedProject;
 import org.icgc.dcc.validation.cascading.ForbiddenValuesFunction;
 import org.icgc.dcc.validation.factory.LocalCascadingStrategyFactory;
@@ -60,11 +66,6 @@ import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.inject.Inject;
 import com.mongodb.BasicDBObject;
 
-import static org.icgc.dcc.validation.restriction.RegexRestriction.NAME;
-import static org.icgc.dcc.validation.restriction.RegexRestriction.PARAM;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 @RunWith(GuiceJUnitRunner.class)
 @GuiceModules({ ValidationTestModule.class })
 public class ValidationInternalIntegrityTest {
@@ -81,6 +82,8 @@ public class ValidationInternalIntegrityTest {
 
   private ValidationService validationService;
 
+  private SubmissionDirectory submissionDirectory;
+
   private Dictionary dictionary;
 
   @Before
@@ -92,6 +95,8 @@ public class ValidationInternalIntegrityTest {
     CodeList codeList2 = mock(CodeList.class);
     CodeList codeList3 = mock(CodeList.class);
     CodeList codeList4 = mock(CodeList.class);
+
+    submissionDirectory = mock(SubmissionDirectory.class);
 
     List<Term> termList1 = Arrays.asList(new Term("1", "dummy", null), new Term("2", "dummy", null));
     List<Term> termList2 = Arrays.asList(new Term("1", "dummy", null), new Term("2", "dummy", null));
@@ -238,13 +243,15 @@ public class ValidationInternalIntegrityTest {
     TestCascadeListener listener = new TestCascadeListener();
     Plan plan;
     try {
-      plan = validationService.planAndConnectCascade(QUEUED_PROJECT, cascadingStrategy, dictionary, listener);
+      plan =
+          validationService.planAndConnectCascade(QUEUED_PROJECT, submissionDirectory, cascadingStrategy, dictionary,
+              listener);
     } catch(FilePresenceException e) {
       throw new RuntimeException();
     }
     Assert.assertEquals(1, plan.getCascade().getFlows().size());
 
-    validationService.startCascade(plan.getCascade());
+    plan.startCascade();
     while(listener.isRunning()) {
       Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
     }

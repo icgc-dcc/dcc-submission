@@ -18,11 +18,12 @@
 package org.icgc.dcc.validation;
 
 import org.icgc.dcc.dictionary.model.Dictionary;
+import org.icgc.dcc.filesystem.SubmissionDirectory;
 import org.icgc.dcc.release.model.QueuedProject;
 
 public interface Planner {
 
-  public Plan plan(QueuedProject queuedProject, CascadingStrategy strategy, Dictionary dictionary)
-      throws PlanningException;
+  public Plan plan(QueuedProject queuedProject, SubmissionDirectory submissionDirectory, CascadingStrategy strategy,
+      Dictionary dictionary) throws PlanningException;
 
 }

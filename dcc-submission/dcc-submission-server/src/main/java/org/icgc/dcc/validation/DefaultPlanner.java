@@ -17,11 +17,14 @@
  */
 package org.icgc.dcc.validation;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.util.List;
 import java.util.Set;
 
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.FileSchema;
+import org.icgc.dcc.filesystem.SubmissionDirectory;
 import org.icgc.dcc.release.model.QueuedProject;
 import org.icgc.dcc.validation.report.ErrorPlanningVisitor;
 import org.icgc.dcc.validation.report.SummaryPlanningVisitor;
@@ -35,8 +38,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
-
-import static com.google.common.base.Preconditions.checkArgument;
 
 public class DefaultPlanner implements Planner {
 
@@ -62,13 +63,14 @@ public class DefaultPlanner implements Planner {
   }
 
   @Override
-  public Plan plan(QueuedProject queuedProject, CascadingStrategy strategy, Dictionary dictionary) {
+  public Plan plan(QueuedProject queuedProject, SubmissionDirectory submissionDirectory, CascadingStrategy strategy,
+      Dictionary dictionary) {
     checkArgument(strategy != null);
     checkArgument(dictionary != null);
 
     FileSchemaDirectory systemDirectory = strategy.getSystemDirectory();
 
-    Plan plan = new Plan(queuedProject, dictionary, strategy);
+    Plan plan = new Plan(queuedProject, dictionary, strategy, submissionDirectory);
     for(FileSchema fileSchema : dictionary.getFiles()) {
       try {
         FileSchemaDirectory fileSchemaDirectory = strategy.getFileSchemaDirectory();
