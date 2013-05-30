@@ -17,6 +17,10 @@
  */
 package org.icgc.dcc.filesystem;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
+import static org.icgc.dcc.filesystem.hdfs.HadoopUtils.toFilenameList;
+
 import java.util.List;
 import java.util.Set;
 
@@ -31,10 +35,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Joiner;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
-
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
-import static org.icgc.dcc.filesystem.hdfs.HadoopUtils.toFilenameList;
 
 public class DccFileSystem {
 
@@ -154,6 +154,9 @@ public class DccFileSystem {
     }
   }
 
+  /**
+   * TODO: this is duplicate logic that belongs to {@link SubmissionDirectory}...
+   */
   public void mkdirProjectDirectory(Release release, String projectKey) {
     checkArgument(release != null);
     checkArgument(projectKey != null);
@@ -166,6 +169,9 @@ public class DccFileSystem {
     log.info("\t" + "project path = " + projectStringPath);
   }
 
+  /**
+   * TODO: this is duplicate logic that belongs to {@link SubmissionDirectory}...
+   */
   void createDirIfDoesNotExist(final String stringPath) {
     if(HadoopUtils.checkExistence(this.fileSystem, stringPath) == false) {
       HadoopUtils.mkdirs(this.fileSystem, stringPath);
@@ -173,6 +179,9 @@ public class DccFileSystem {
     }
   }
 
+  /**
+   * TODO: this is duplicate logic that belongs to {@link SubmissionDirectory}...
+   */
   void removeDirIfExist(final String stringPath) {
     if(HadoopUtils.checkExistence(this.fileSystem, stringPath)) {
       HadoopUtils.rmr(this.fileSystem, stringPath);

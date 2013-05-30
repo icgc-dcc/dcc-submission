@@ -17,6 +17,12 @@
  */
 package org.icgc.dcc.release;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.ImmutableList.copyOf;
+import static com.google.common.collect.Lists.newArrayList;
+
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.List;
@@ -61,7 +67,6 @@ import org.slf4j.LoggerFactory;
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
 import com.google.code.morphia.query.Query;
-import com.google.code.morphia.query.UpdateOperations;
 import com.google.code.morphia.query.UpdateResults;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
@@ -73,12 +78,6 @@ import com.google.inject.Inject;
 import com.mysema.query.mongodb.MongodbQuery;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
 import com.typesafe.config.Config;
-
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.collect.ImmutableList.copyOf;
-import static com.google.common.collect.Lists.newArrayList;
 
 public class ReleaseService extends BaseMorphiaService<Release> {
 
@@ -551,7 +550,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
         datastore().createQuery(Release.class) //
             .filter("name = ", releaseName) //
             .filter("submissions.projectKey = ", projectKey), //
-        datastore().createUpdateOperations(Release.class).disableValidation() //
+        datastore().createUpdateOperations(Release.class) //
             .set("submissions.$.state", SubmissionState.NOT_VALIDATED) //
             .unset("submissions.$.report"), false);
 
@@ -607,11 +606,11 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     checkArgument(currentReleaseName != null);
     checkArgument(queue != null);
 
-    Query<Release> updateQuery = datastore().createQuery(Release.class)//
-        .filter("name = ", currentReleaseName);
-    UpdateOperations<Release> ops = datastore().createUpdateOperations(Release.class).disableValidation()//
-        .set("queue", queue);
-    datastore().update(updateQuery, ops);
+    datastore().update( //
+        datastore().createQuery(Release.class) //
+            .filter("name = ", currentReleaseName), //
+        datastore().createUpdateOperations(Release.class) //
+            .set("queue", queue));
 
     for(String projectKey : projectKeys) {
       updateSubmission(currentReleaseName, newState, projectKey);
@@ -619,14 +618,12 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   }
 
   private void updateSubmission(String currentReleaseName, SubmissionState newState, String projectKey) {
-    Query<Release> updateQuery;
-    UpdateOperations<Release> ops;
-    updateQuery = datastore().createQuery(Release.class)//
-        .filter("name = ", currentReleaseName)//
-        .filter("submissions.projectKey = ", projectKey);
-    ops = datastore().createUpdateOperations(Release.class).disableValidation()//
-        .set("submissions.$.state", newState);
-    datastore().update(updateQuery, ops);
+    datastore().update( //
+        datastore().createQuery(Release.class) //
+            .filter("name = ", currentReleaseName) //
+            .filter("submissions.projectKey = ", projectKey), //
+        datastore().createUpdateOperations(Release.class) //
+            .set("submissions.$.state", newState));
   }
 
   public void updateSubmission(String currentReleaseName, Submission submission) {
@@ -634,30 +631,19 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   }
 
   public void updateSubmissionReport(String releaseName, String projectKey, SubmissionReport report) {
-    Query<Release> updateQuery = datastore().createQuery(Release.class)//
-        .filter("name = ", releaseName)//
-        .filter("submissions.projectKey = ", projectKey);
 
-    UpdateOperations<Release> ops = datastore().createUpdateOperations(Release.class).disableValidation()//
-        .set("submissions.$.report", report);
+    UpdateResults<Release> update = datastore().update( //
+        datastore().createQuery(Release.class) //
+            .filter("name = ", releaseName) //
+            .filter("submissions.projectKey = ", projectKey), //
+        datastore().createUpdateOperations(Release.class) //
+            .set("submissions.$.report", report));
 
-    UpdateResults<Release> update = datastore().update(updateQuery, ops);
     int updatedCount = update.getUpdatedCount();
     if(updatedCount != 1) { // Only to help diagnosis for now, we're unsure when that happens (DCC-848)
       log.error("Setting submission reports {} failed for {}.{}", new Object[] { (report == null ? null : report
-          .getSchemaReports().size()), releaseName, projectKey });
+          .getSchemaReports().size()), releaseName, projectKey }, new Throwable());
     }
-  }
-
-  public void removeSubmissionReport(String releaseName, String projectKey) {
-    Query<Release> updateQuery = datastore().createQuery(Release.class)//
-        .filter("name = ", releaseName)//
-        .filter("submissions.projectKey = ", projectKey);
-
-    UpdateOperations<Release> ops =
-        datastore().createUpdateOperations(Release.class).disableValidation().unset("submissions.$.report");
-
-    datastore().update(updateQuery, ops);
   }
 
   public List<Project> getProjects(Release release, Subject user) {
