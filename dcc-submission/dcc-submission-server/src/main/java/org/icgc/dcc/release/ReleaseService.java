@@ -67,6 +67,7 @@ import org.slf4j.LoggerFactory;
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
 import com.google.code.morphia.query.Query;
+import com.google.code.morphia.query.UpdateOperations;
 import com.google.code.morphia.query.UpdateResults;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
@@ -550,7 +551,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
         datastore().createQuery(Release.class) //
             .filter("name = ", releaseName) //
             .filter("submissions.projectKey = ", projectKey), //
-        datastore().createUpdateOperations(Release.class) //
+        allowDollarSignForMorphiaUpdatesBug(datastore().createUpdateOperations(Release.class)) //
             .set("submissions.$.state", SubmissionState.NOT_VALIDATED) //
             .unset("submissions.$.report"), false);
 
@@ -622,7 +623,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
         datastore().createQuery(Release.class) //
             .filter("name = ", currentReleaseName) //
             .filter("submissions.projectKey = ", projectKey), //
-        datastore().createUpdateOperations(Release.class) //
+        allowDollarSignForMorphiaUpdatesBug(datastore().createUpdateOperations(Release.class)) //
             .set("submissions.$.state", newState));
   }
 
@@ -636,7 +637,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
         datastore().createQuery(Release.class) //
             .filter("name = ", releaseName) //
             .filter("submissions.projectKey = ", projectKey), //
-        datastore().createUpdateOperations(Release.class) //
+        allowDollarSignForMorphiaUpdatesBug(datastore().createUpdateOperations(Release.class)) //
             .set("submissions.$.report", report));
 
     int updatedCount = update.getUpdatedCount();
@@ -778,4 +779,17 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     return ImmutableMap.copyOf(submissionFilesMap);
   }
 
+  /**
+   * This is currently necessary in order to use the <i>field.$.nestedField</i> notation in updates. Otherwise one gets
+   * an error like <i>
+   * "The field '$' could not be found in 'org.icgc.dcc.release.model.Release' while validating - submissions.$.state; if you wish to continue please disable validation."
+   * </i>
+   * <p>
+   * For more information, see
+   * http://groups.google.com/group/morphia/tree/browse_frm/month/2011-01/489d5b7501760724?rnum
+   * =31&_done=/group/morphia/browse_frm/month/2011-01?
+   */
+  private static <T> UpdateOperations<T> allowDollarSignForMorphiaUpdatesBug(UpdateOperations<T> updateOperations) {
+    return updateOperations.disableValidation();
+  }
 }

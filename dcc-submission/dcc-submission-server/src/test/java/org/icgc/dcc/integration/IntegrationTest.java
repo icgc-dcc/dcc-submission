@@ -17,6 +17,21 @@
  */
 package org.icgc.dcc.integration;
 
+import static java.util.Arrays.asList;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static javax.ws.rs.core.Response.Status.CREATED;
+import static javax.ws.rs.core.Response.Status.NO_CONTENT;
+import static javax.ws.rs.core.Response.Status.OK;
+import static org.icgc.dcc.release.model.ReleaseState.OPENED;
+import static org.icgc.dcc.release.model.SubmissionState.INVALID;
+import static org.icgc.dcc.release.model.SubmissionState.NOT_VALIDATED;
+import static org.icgc.dcc.release.model.SubmissionState.QUEUED;
+import static org.icgc.dcc.release.model.SubmissionState.VALID;
+import static org.icgc.dcc.release.model.SubmissionState.VALIDATING;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -59,20 +74,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.inject.Inject;
 import com.typesafe.config.ConfigFactory;
-
-import static java.util.Arrays.asList;
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static javax.ws.rs.core.Response.Status.CREATED;
-import static javax.ws.rs.core.Response.Status.OK;
-import static org.icgc.dcc.release.model.ReleaseState.OPENED;
-import static org.icgc.dcc.release.model.SubmissionState.INVALID;
-import static org.icgc.dcc.release.model.SubmissionState.NOT_VALIDATED;
-import static org.icgc.dcc.release.model.SubmissionState.QUEUED;
-import static org.icgc.dcc.release.model.SubmissionState.VALID;
-import static org.icgc.dcc.release.model.SubmissionState.VALIDATING;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 @RunWith(GuiceJUnitRunner.class)
 @GuiceModules({ ConfigModule.class, CoreModule.class, HttpModule.class, JerseyModule.class, MorphiaModule.class, FileSystemModule.class, SftpModule.class, WebModule.class, ShiroModule.class })
@@ -245,7 +246,7 @@ public class IntegrationTest {
 
       // validate
       updateDictionary( // dictionary is OPENED
-          FIRST_DICTIONARY_RESOURCE, FIRST_DICTIONARY_VERSION, Status.NO_CONTENT.getStatusCode());
+          FIRST_DICTIONARY_RESOURCE, FIRST_DICTIONARY_VERSION, NO_CONTENT.getStatusCode());
       enqueueProjects(PROJECTS_TO_ENQUEUE, Status.NO_CONTENT); // triggers validations
       checkValidations(); // will poll until all validated
 
