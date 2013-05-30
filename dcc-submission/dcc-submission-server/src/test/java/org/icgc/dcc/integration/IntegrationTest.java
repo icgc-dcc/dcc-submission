@@ -20,6 +20,7 @@ package org.icgc.dcc.integration;
 import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static javax.ws.rs.core.Response.Status.CREATED;
+import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.icgc.dcc.release.model.ReleaseState.OPENED;
 import static org.icgc.dcc.release.model.SubmissionState.INVALID;
@@ -27,7 +28,7 @@ import static org.icgc.dcc.release.model.SubmissionState.NOT_VALIDATED;
 import static org.icgc.dcc.release.model.SubmissionState.QUEUED;
 import static org.icgc.dcc.release.model.SubmissionState.VALID;
 import static org.icgc.dcc.release.model.SubmissionState.VALIDATING;
-import static org.icgc.dcc.validation.BaseCascadingStrategy.SEPARATOR;
+import static org.icgc.dcc.validation.CascadingStrategy.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -246,7 +247,7 @@ public class IntegrationTest {
 
       // validate
       updateDictionary( // dictionary is OPENED
-          FIRST_DICTIONARY_RESOURCE, FIRST_DICTIONARY_VERSION, Status.NO_CONTENT.getStatusCode());
+          FIRST_DICTIONARY_RESOURCE, FIRST_DICTIONARY_VERSION, NO_CONTENT.getStatusCode());
       enqueueProjects(PROJECTS_TO_ENQUEUE, Status.NO_CONTENT); // triggers validations
       checkValidations(); // will poll until all validated
 
