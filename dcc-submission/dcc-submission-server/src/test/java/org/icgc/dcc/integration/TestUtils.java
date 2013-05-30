@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.integration;
 
+import static org.apache.commons.lang.StringUtils.abbreviate;
+
 import java.io.IOException;
 
 import javax.ws.rs.client.Client;
@@ -68,12 +70,12 @@ public final class TestUtils {
   }
 
   static Response post(Client client, String endPoint, String payload) {
-    log.info("POST {} {}", new Object[] { endPoint, payload });
+    log.info("POST {} {}", new Object[] { endPoint, abbreviate(payload, 1000) });
     return build(client, endPoint).post(Entity.entity(payload, MediaType.APPLICATION_JSON));
   }
 
   static Response put(Client client, String endPoint, String payload) {
-    log.info("PUT {} {}", new Object[] { endPoint, payload });
+    log.info("PUT {} {}", new Object[] { endPoint, abbreviate(payload, 1000) });
     return build(client, endPoint).put(Entity.entity(payload, MediaType.APPLICATION_JSON));
   }
 

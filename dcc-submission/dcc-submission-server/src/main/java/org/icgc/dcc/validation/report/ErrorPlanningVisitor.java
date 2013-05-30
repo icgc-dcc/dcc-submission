@@ -17,6 +17,9 @@
  */
 package org.icgc.dcc.validation.report;
 
+import static org.icgc.dcc.validation.cascading.TupleStates.keepInvalidTuplesFilter;
+import static org.icgc.dcc.validation.cascading.ValidationFields.STATE_FIELD;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,8 +36,6 @@ import org.icgc.dcc.validation.ReportingFlowPlanningVisitor;
 import org.icgc.dcc.validation.ReportingPlanElement;
 import org.icgc.dcc.validation.ValidationErrorCode;
 import org.icgc.dcc.validation.cascading.TupleState;
-import org.icgc.dcc.validation.cascading.TupleStates;
-import org.icgc.dcc.validation.cascading.ValidationFields;
 
 import cascading.pipe.Each;
 import cascading.pipe.Pipe;
@@ -43,6 +44,8 @@ import cascading.pipe.assembly.Retain;
 import com.google.common.io.Closeables;
 
 public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
+
+  public static final int MAX_ERROR_COUNT = 50;
 
   public ErrorPlanningVisitor(FlowType type) {
     super(type);
@@ -77,7 +80,7 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
 
     @Override
     public Pipe report(Pipe pipe) {
-      return new Retain(new Each(pipe, TupleStates.keepInvalidTuplesFilter()), ValidationFields.STATE_FIELD);
+      return new Retain(new Each(pipe, keepInvalidTuplesFilter()), STATE_FIELD);
     }
 
     public FileSchema getFileSchema() {

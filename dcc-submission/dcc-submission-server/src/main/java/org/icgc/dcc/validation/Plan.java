@@ -30,6 +30,7 @@ import java.util.Map;
 
 import org.icgc.dcc.dictionary.model.Dictionary;
 import org.icgc.dcc.dictionary.model.FileSchema;
+import org.icgc.dcc.filesystem.SubmissionDirectory;
 import org.icgc.dcc.release.model.QueuedProject;
 import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.report.Outcome;
@@ -67,14 +68,21 @@ public class Plan {
 
   private final Map<String, TupleState> fileLevelErrors = new LinkedHashMap<String, TupleState>();
 
+  /**
+   * So we can empty the .validation directory prior to running the cascade.
+   */
+  private final SubmissionDirectory submissionDirectory;
+
   private Cascade cascade;
 
   private long startTime; // TODO: use proper timer (see DCC-739)
 
-  public Plan(QueuedProject queuedProject, Dictionary dictionary, CascadingStrategy cascadingStrategy) {
+  public Plan(QueuedProject queuedProject, Dictionary dictionary, CascadingStrategy cascadingStrategy,
+      SubmissionDirectory submissionDirectory) {
     this.queuedProject = checkNotNull(queuedProject);
     this.dictionary = checkNotNull(dictionary);
     this.cascadingStrategy = checkNotNull(cascadingStrategy);
+    this.submissionDirectory = checkNotNull(submissionDirectory);
   }
 
   public String path(final FileSchema schema) throws FileNotFoundException, IOException {
@@ -152,8 +160,17 @@ public class Plan {
     this.cascade = new CascadeConnector().connect(cascade);
   }
 
-  public void setStartTime() {
+  /**
+   * Starts the cascade in a non-blocking manner and takes care of associated action like starting timer and emptying
+   * the working directory.
+   */
+  public void startCascade() {
     startTime = System.currentTimeMillis();
+    submissionDirectory.resetValidationDir();
+
+    int size = cascade.getFlows().size();
+    log.info("starting cascade with {} flows", size);
+    cascade.start();
   }
 
   /**
