@@ -17,11 +17,22 @@
  */
 package org.icgc.dcc.validation;
 
+import static cascading.tuple.Fields.ALL;
+import static cascading.tuple.Fields.REPLACE;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.ImmutableList.copyOf;
+import static com.google.common.collect.Lists.newArrayList;
+import static org.icgc.dcc.validation.cascading.StructuralCheckFunction.LINE_FIELD_NAME;
+import static org.icgc.dcc.validation.cascading.ValidationFields.OFFSET_FIELD_NAME;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
+import org.icgc.dcc.dictionary.model.Field;
 import org.icgc.dcc.dictionary.model.FileSchema;
 import org.icgc.dcc.validation.cascading.ForbiddenValuesFunction;
 import org.icgc.dcc.validation.cascading.RemoveEmptyValidationLineFilter;
@@ -30,6 +41,7 @@ import org.icgc.dcc.validation.cascading.StructuralCheckFunction;
 import org.icgc.dcc.validation.cascading.TupleState;
 import org.icgc.dcc.validation.cascading.TupleStates;
 import org.icgc.dcc.validation.cascading.ValidationFields;
+import org.icgc.dcc.validation.restriction.RequiredRestriction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,13 +61,6 @@ import cascading.tuple.TupleEntry;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.ObjectArrays;
-
-import static cascading.tuple.Fields.ALL;
-import static cascading.tuple.Fields.REPLACE;
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
-import static org.icgc.dcc.validation.cascading.StructuralCheckFunction.LINE_FIELD_NAME;
-import static org.icgc.dcc.validation.cascading.ValidationFields.OFFSET_FIELD_NAME;
 
 class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements InternalFlowPlanner {
 
@@ -161,7 +166,10 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
     pipe = new Each(pipe, new RemoveEmptyValidationLineFilter());
     pipe = new Each(pipe, new RemoveHeaderFilter());
     pipe = applyStructuralCheck(pipe);
-    pipe = new Each(pipe, ALL, new ForbiddenValuesFunction(), REPLACE);
+
+    // TODO: DCC-1076 - Would be better done from within {@link RequiredRestriction}.
+    pipe = new Each(pipe, ALL, new ForbiddenValuesFunction(computeRequiredFieldnames()), REPLACE);
+
     this.structurallyValidTail = new Each(pipe, TupleStates.keepStructurallyValidTuplesFilter());
     this.structurallyInvalidTail = new Each(pipe, TupleStates.keepStructurallyInvalidTuplesFilter());
   }
@@ -170,6 +178,22 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
     structuralCheck = new StructuralCheckFunction(getSchema().getFieldNames()); // TODO: due for a splitting
     return new Each( // parse "line" into the actual expected fields
         pipe, new Fields(OFFSET_FIELD_NAME, LINE_FIELD_NAME), structuralCheck, Fields.SWAP);
+  }
+
+  /**
+   * Returns the list of field names that have a {@link RequiredRestriction} set on them (irrespective of whether it's a
+   * strict one or not).
+   * <p>
+   * TODO: DCC-1076 will render it unnecessary (everything would take place in {@link RequiredRestriction}).
+   */
+  private List<String> computeRequiredFieldnames() {
+    List<String> requiredFieldnames = newArrayList();
+    for(Field field : getSchema().getFields()) {
+      if(field.hasRequiredRestriction()) {
+        requiredFieldnames.add(field.getName());
+      }
+    }
+    return copyOf(requiredFieldnames);
   }
 
   @SuppressWarnings("rawtypes")

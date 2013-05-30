@@ -18,6 +18,7 @@
 package org.icgc.dcc.validation;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
 
@@ -60,6 +61,12 @@ public class LocalCascadingStrategy extends BaseCascadingStrategy {
   @Override
   public Tap<?, ?, ?> getReportTap(FileSchema schema, FlowType type, String reportName) {
     return new FileTap(new LocalJsonScheme(), reportPath(schema, type, reportName).toUri().getPath());
+  }
+
+  @Override
+  public InputStream readReportTap(FileSchema schema, FlowType type, String reportName) throws IOException {
+    Path reportPath = reportPath(schema, type, reportName);
+    return fileSystem.open(reportPath);
   }
 
   @Override
