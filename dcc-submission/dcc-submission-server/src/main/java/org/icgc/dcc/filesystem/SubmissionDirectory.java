@@ -110,11 +110,17 @@ public class SubmissionDirectory {
     createEmptyValidationDir();
   }
 
+  /**
+   * TODO: port logic in here rather than in {@link DccFileSystem}
+   */
   public void removeValidationDir() {
-    HadoopUtils.rmr(this.dccFileSystem.getFileSystem(), getValidationDirPath());
+    dccFileSystem.removeDirIfExist(getValidationDirPath());
   }
 
+  /**
+   * TODO: port logic in here rather than in {@link DccFileSystem}
+   */
   public void createEmptyValidationDir() {
-    HadoopUtils.mkdirs(this.dccFileSystem.getFileSystem(), getValidationDirPath());
+    dccFileSystem.createDirIfDoesNotExist(getValidationDirPath());
   }
 }
