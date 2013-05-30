@@ -26,6 +26,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.GZIPInputStream;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileContext;
@@ -90,12 +91,11 @@ public class HadoopCascadingStrategy extends BaseCascadingStrategy {
 
     // Enable compression on intermediate map outputs
     properties.put("mapred.compress.map.output", true);
+    properties.put("mapred.output.compression.type", "BLOCK");
     properties.put("mapred.map.output.compression.codec", "org.apache.hadoop.io.compress.SnappyCodec");
 
     // Enable compression on job outputs
-    properties.put("mapred.output.compress", true);
     properties.put("mapred.output.compression.codec", "org.apache.hadoop.io.compress.GzipCodec");
-    properties.put("mapred.output.compression.type", "BLOCK");
 
     // M/R job entry point
     AppProps.setApplicationJarClass(properties, org.icgc.dcc.Main.class);
@@ -106,14 +106,17 @@ public class HadoopCascadingStrategy extends BaseCascadingStrategy {
   @Override
   public Tap<?, ?, ?> getReportTap(FileSchema schema, FlowType type, String reportName) {
     Path path = reportPath(schema, type, reportName);
-    return new Hfs(new HadoopJsonScheme(), path.toUri().getPath());
+    HadoopJsonScheme scheme = new HadoopJsonScheme();
+    scheme.setSinkCompression(Compress.ENABLE);
+
+    return new Hfs(scheme, path.toUri().getPath());
   }
 
   @Override
   public InputStream readReportTap(FileSchema schema, FlowType type, String reportName) throws IOException {
     Path reportPath = reportPath(schema, type, reportName);
     if(fileSystem.isFile(reportPath)) {
-      return fileSystem.open(reportPath);
+      return new GZIPInputStream(fileSystem.open(reportPath));
     }
 
     List<InputSupplier<InputStream>> inputSuppliers = new ArrayList<InputSupplier<InputStream>>();
@@ -124,7 +127,7 @@ public class HadoopCascadingStrategy extends BaseCascadingStrategy {
         InputSupplier<InputStream> inputSupplier = new InputSupplier<InputStream>() {
           @Override
           public InputStream getInput() throws IOException {
-            return fileSystem.open(filePath);
+            return new GZIPInputStream(fileSystem.open(filePath));
           }
         };
 
