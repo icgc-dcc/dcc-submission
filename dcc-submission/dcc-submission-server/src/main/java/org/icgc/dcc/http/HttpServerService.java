@@ -104,7 +104,11 @@ public class HttpServerService extends AbstractService {
       for(HttpHandlerProvider provider : handlerProviders) {
         serverConfig.addHttpHandler(provider.get(), provider.path());
       }
-      serverConfig.addHttpHandler(new StaticHttpHandler(resources), "/");
+
+      // See DCC-673
+      StaticHttpHandler httpHandler = new StaticHttpHandler(resources);
+      httpHandler.setFileCacheEnabled(false);
+      serverConfig.addHttpHandler(httpHandler, "/");
 
       // Redirect back to "/" and appends the request url after the hash(#), which the client can then parse
       serverConfig.addHttpHandler(new HttpHandler() {

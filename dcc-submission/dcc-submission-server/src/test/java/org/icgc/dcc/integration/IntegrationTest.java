@@ -28,6 +28,7 @@ import static org.icgc.dcc.release.model.SubmissionState.NOT_VALIDATED;
 import static org.icgc.dcc.release.model.SubmissionState.QUEUED;
 import static org.icgc.dcc.release.model.SubmissionState.VALID;
 import static org.icgc.dcc.release.model.SubmissionState.VALIDATING;
+import static org.icgc.dcc.validation.CascadingStrategy.SEPARATOR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -359,9 +360,9 @@ public class IntegrationTest {
     checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT3_NAME, SubmissionState.INVALID);
 
     // check no errors for project 1
-    checkEmptyFile(DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/donor.internal#errors.json");
-    checkEmptyFile(DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/specimen.internal#errors.json");
-    checkEmptyFile(DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/specimen.external#errors.json");
+    checkEmptyFile(DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/donor.internal" + SEPARATOR + "errors.json");
+    checkEmptyFile(DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/specimen.internal" + SEPARATOR + "errors.json");
+    checkEmptyFile(DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/specimen.external" + SEPARATOR + "errors.json");
     // TODO add more
   }
 

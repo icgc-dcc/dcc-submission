@@ -643,7 +643,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     int updatedCount = update.getUpdatedCount();
     if(updatedCount != 1) { // Only to help diagnosis for now, we're unsure when that happens (DCC-848)
       log.error("Setting submission reports {} failed for {}.{}", new Object[] { (report == null ? null : report
-          .getSchemaReports().size()), releaseName, projectKey }, new Throwable());
+          .getSchemaReports().size()), releaseName, projectKey }, new IllegalStateException());
     }
   }
 

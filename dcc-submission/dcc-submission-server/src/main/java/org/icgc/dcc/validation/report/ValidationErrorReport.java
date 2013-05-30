@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.validation.report;
 
+import static org.icgc.dcc.validation.report.ErrorPlanningVisitor.MAX_ERROR_COUNT;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collection;
@@ -38,8 +40,6 @@ public class ValidationErrorReport implements Serializable {
   private String description;
 
   private final List<ColumnErrorReport> columns = Lists.newLinkedList();
-
-  private static final int MAX_ERROR_COUNT = 50;
 
   public ValidationErrorReport() {
   }
