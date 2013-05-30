@@ -26,7 +26,6 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.zip.GZIPInputStream;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileContext;
@@ -125,8 +124,7 @@ public class HadoopCascadingStrategy extends BaseCascadingStrategy {
         InputSupplier<InputStream> inputSupplier = new InputSupplier<InputStream>() {
           @Override
           public InputStream getInput() throws IOException {
-            // Outer input stream needs to match getFlowConnector's "mapred.output.compression.codec" value
-            return new GZIPInputStream(fileSystem.open(filePath));
+            return fileSystem.open(filePath);
           }
         };
 
