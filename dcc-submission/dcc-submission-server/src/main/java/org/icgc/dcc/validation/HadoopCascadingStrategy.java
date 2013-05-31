@@ -17,12 +17,16 @@
  */
 package org.icgc.dcc.validation;
 
+import static com.google.common.base.Joiner.on;
+import static com.google.common.collect.Maps.newHashMap;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.GZIPInputStream;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileContext;
@@ -50,7 +54,6 @@ import cascading.tuple.hadoop.TupleSerializationProps;
 import com.google.common.base.Charsets;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Closeables;
 import com.google.common.io.InputSupplier;
@@ -69,46 +72,65 @@ public class HadoopCascadingStrategy extends BaseCascadingStrategy {
 
   @Override
   public FlowConnector getFlowConnector() {
-    Map<Object, Object> properties = Maps.newHashMap();
+    Map<Object, Object> properties = newHashMap();
+
+    // Custom serialization
     TupleSerializationProps.addSerialization(properties, TupleStateSerialization.class.getName());
+
+    // From external application configuration file
     for(Map.Entry<String, ConfigValue> configEntry : hadoopConfig.entrySet()) {
       properties.put(configEntry.getKey(), configEntry.getValue().unwrapped());
     }
-    properties
-        .put(
-            "io.compression.codecs",
-            "org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.DefaultCodec,com.hadoop.compression.lzo.LzoCodec,com.hadoop.compression.lzo.LzopCodec,org.apache.hadoop.io.compress.BZip2Codec");
-    properties.put("io.compression.codec.lzo.class", "com.hadoop.compression.lzo.LzoCodec");
+
+    // Specify available compression codecs
+    String avalailbleCodecs = on(',').join(//
+        "org.apache.hadoop.io.compress.DefaultCodec", //
+        "org.apache.hadoop.io.compress.GzipCodec", //
+        "org.apache.hadoop.io.compress.BZip2Codec");
+    properties.put("io.compression.codecs", avalailbleCodecs);
+
+    // Enable compression on intermediate map outputs
     properties.put("mapred.compress.map.output", true);
-    properties.put("mapred.map.output.compression.codec", "org.apache.hadoop.io.compress.SnappyCodec");
     properties.put("mapred.output.compression.type", "BLOCK");
+    properties.put("mapred.map.output.compression.codec", "org.apache.hadoop.io.compress.SnappyCodec");
+
+    // Enable compression on job outputs
+    properties.put("mapred.output.compression.codec", "org.apache.hadoop.io.compress.GzipCodec");
+
+    // M/R job entry point
     AppProps.setApplicationJarClass(properties, org.icgc.dcc.Main.class);
+
     return new HadoopFlowConnector(properties);
   }
 
   @Override
   public Tap<?, ?, ?> getReportTap(FileSchema schema, FlowType type, String reportName) {
     Path path = reportPath(schema, type, reportName);
-    return new Hfs(new HadoopJsonScheme(), path.toUri().getPath());
+    HadoopJsonScheme scheme = new HadoopJsonScheme();
+    scheme.setSinkCompression(Compress.ENABLE);
+
+    return new Hfs(scheme, path.toUri().getPath());
   }
 
   @Override
   public InputStream readReportTap(FileSchema schema, FlowType type, String reportName) throws IOException {
     Path reportPath = reportPath(schema, type, reportName);
     if(fileSystem.isFile(reportPath)) {
-      return fileSystem.open(reportPath);
+      return new GZIPInputStream(fileSystem.open(reportPath));
     }
 
     List<InputSupplier<InputStream>> inputSuppliers = new ArrayList<InputSupplier<InputStream>>();
     for(FileStatus fileStatus : fileSystem.listStatus(reportPath)) {
       final Path filePath = fileStatus.getPath();
+
       if(fileStatus.isFile() && filePath.getName().startsWith("part-")) {
         InputSupplier<InputStream> inputSupplier = new InputSupplier<InputStream>() {
           @Override
           public InputStream getInput() throws IOException {
-            return fileSystem.open(filePath);
+            return new GZIPInputStream(fileSystem.open(filePath));
           }
         };
+
         inputSuppliers.add(inputSupplier);
       }
     }
@@ -167,4 +189,5 @@ public class HadoopCascadingStrategy extends BaseCascadingStrategy {
       Closeables.closeQuietly(isr);
     }
   }
+
 }
