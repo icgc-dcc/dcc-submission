@@ -35,7 +35,7 @@ function process() {
 
  ssh ${host?} "rm ${remote_script?} 2>&-" || :
  scp ${script?} ${host?}:${remote_script?} >&-
- ssh -t ${host?} "sudo -u hdfs -s ${remote_script?} ${host?} ${user?} ${keyword?}" 2>&-
+ ssh -t ${host?} "sudo -u ${user?} -s ${remote_script?} ${host?} ${user?} ${keyword?}" 2>&-
  ssh ${host?} "rm ${remote_script?}"
 
  sleep 1
