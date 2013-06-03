@@ -1,11 +1,11 @@
 #!/bin/bash -e
 # see DCC-499
 #
-# usage: ./deploy_local.sh my.dcc.server my_mode [optional flags...]
+# usage: ./dcc-submission/src/main/scripts/deploy_local.sh my_mode [optional flags...]
 # example:
-#  src/main/scripts/deploy_local.sh ***REMOVED*** dev # deploy on dev
-#  src/main/scripts/deploy_local.sh ***REMOVED*** dev false false # deploy on dev, don't skip mvn tests
-#  src/main/scripts/deploy_local.sh ***REMOVED*** dev false ignoreme true # deploy on dev, skip jar generation altogther (assumes there's an existing jar from a previous run)
+#  ./dcc-submission/src/main/scripts/deploy_local.sh ***REMOVED*** dev # RECOMMENDED; deploy on dev
+#  ./dcc-submission/src/main/scripts/deploy_local.sh ***REMOVED*** dev false false # deploy on dev, don't skip mvn tests
+#  ./dcc-submission/src/main/scripts/deploy_local.sh ***REMOVED*** dev false ignoreme true # deploy on dev, skip jar generation altogther (assumes there's an existing jar from a previous run)
 #
 # notes:
 # - this script is based on former https://wiki.oicr.on.ca/display/DCCSOFT/Standard+operating+procedures#Standardoperatingprocedures-SOPforDeployingtheserver (which also links to this script now)
@@ -31,9 +31,6 @@ dev_public_dir="${dev_client_dir?}/public"
 
 parent_pom_file="${dev_dir?}/pom.xml"
 server_pom_file="${dev_server_dir?}/pom.xml"
-
-logback_filename="logback.xml"
-logback_file="${dev_server_dir?}/src/main/conf/${logback_filename?}"
 
 main_class="org.icgc.dcc.Main"
 
@@ -159,11 +156,17 @@ fi
 # start server remotely
 
 hdfs_dir="/var/lib/hdfs"
+logback_filename="logback.xml"
 backup_dir="${hdfs_dir?}/backup" # must be absolute path
 remote_dir="${hdfs_dir?}/dcc" # must be absolute path
-remote_realm_file="${hdfs_dir?}/realm.ini" # must exist already; on prod: /srv/webapp/dcc/server/realm.ini
-remote_conf_file="${hdfs_dir?}/application.conf" # must exist already; on prod: /srv/webapp/dcc/server/application.conf
-remote_log_dir="${hdfs_dir?}/log" # must exist already
+remote_dcc_submission_dir="${hdfs_dir?}/dcc-submission"
+remote_conf_dir="${remote_dcc_submission_dir?}/conf"
+
+remote_realm_file="${remote_conf_dir?}/realm.ini" # must exist already; on prod: /srv/webapp/dcc/server/realm.ini
+remote_conf_file="${remote_conf_dir?}/application.conf" # must exist already; on prod: /srv/webapp/dcc/server/application.conf
+remote_logback_file="${remote_conf_dir?}/${logback_filename?}"
+
+remote_log_dir="${remote_dcc_submission_dir?}/logs" # must exist already
 remote_server_dir="${remote_dir?}/server"
 remote_client_dir="${remote_dir?}/client"
 echo "remote_server_dir=\"${remote_server_dir?}\""
@@ -187,8 +190,7 @@ echo
 echo "current_pid=\$(jps -lm | grep \"${main_class?} external\" | awk '{print "'$1'"}') && read -p \"kill \$current_pid?\" && kill \$current_pid"
 echo "mv ${remote_dir?} ${backup_dir?}/dcc.${timestamp?}.bak"
 echo "cp -r ${remote_tmp_dir?} ${remote_dir?}"
-echo "cp ${remote_realm_file?} ${remote_server_dir?}/"
-echo "cp ${logback_file?}  ${remote_server_dir?}/"
+echo "cp ${remote_realm_file?} ${remote_server_dir?}/" # expects it there..
 echo "cd ${remote_server_dir?}"
 echo "nohup java -Dlogback.configurationFile=${remote_logback_file?} -cp ${jar_file_name?} ${main_class?} external ${remote_conf_file?} >> ${log_file?} 2>&1 &"
 echo "less +F ${log_file?}"
