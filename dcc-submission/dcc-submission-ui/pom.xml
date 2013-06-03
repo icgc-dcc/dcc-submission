@@ -22,4 +22,75 @@
     </repository>
   </repositories>
 
+<!-- 
+  <pluginRepositories>
+    <pluginRepository>
+      <id>mulesoft-releases</id>
+      <url>https://repository.mulesoft.org/releases</url>
+      <layout>default</layout>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+    </pluginRepository>
+    <pluginRepository>
+      <id>mulesoft-snapshots</id>
+      <url>https://repository.mulesoft.org/snapshots/</url>
+      <layout>default</layout>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </pluginRepository>
+  </pluginRepositories>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.mule.tools.javascript</groupId>
+        <artifactId>brunch-maven-plugin</artifactId>
+        <version>1.0</version>
+        <executions>
+          <execution>
+            <phase>compile</phase>
+            <goals>
+              <goal>build</goal>
+            </goals>
+            <configuration>
+              <minify>true</minify>
+              <sourceDirectory>${basedir}</sourceDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.eclipse.m2e</groupId>
+          <artifactId>lifecycle-mapping</artifactId>
+          <version>1.0.0</version>
+          <configuration>
+            <lifecycleMappingMetadata>
+              <pluginExecutions>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>org.mule.tools.javascript</groupId>
+                    <artifactId>brunch-maven-plugin</artifactId>
+                    <versionRange>[1.0-SNAPSHOT,)</versionRange>
+                    <goals>
+                      <goal>build</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <ignore></ignore>
+                  </action>
+                </pluginExecution>
+              </pluginExecutions>
+            </lifecycleMappingMetadata>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+   -->
+  
 </project>
