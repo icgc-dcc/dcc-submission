@@ -14,7 +14,9 @@
 # ===========================================================================
 
 params_file=${1?}
-script="./limit.sh"
+script_name="limit.sh"
+script="./${script_name?}"
+remote_script="/tmp/${script_name?}"
 
 # sanity checks
 [ -f ${params_file?} ] || { echo "ERROR: cannot find ${params_file?}"; exit 1; }
@@ -31,12 +33,9 @@ function process() {
  user=${1?} && shift
  keyword=${1?} && shift
 
- tmp_script="./tmp/sh"
- echo "${script?} \"${host?}\" \"${user?}\" \"${keyword?}\"" > ${tmp_script?} # somehow can't seem to pass parameters to sudo otherwise
- chmod +x ${tmp_script?}
-
- ssh ${host?} 'sudo -u hdfs -s' < ${tmp_script?}
- rm ${tmp_script?}
+ scp ${script?} ${host?}:${remote_script?}
+ ssh ${host?} 'sudo -u hdfs -s ${remote_script?} ${host?} ${user?} ${keyword?}'
+ ssh ${host?} "rm ${remote_script?}"
 }
 
 # ===========================================================================
