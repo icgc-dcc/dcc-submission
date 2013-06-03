@@ -33,9 +33,12 @@ function process() {
  user=${1?} && shift
  keyword=${1?} && shift
 
- scp ${script?} ${host?}:${remote_script?}
- ssh ${host?} 'sudo -u hdfs -s ${remote_script?} ${host?} ${user?} ${keyword?}'
+ ssh ${host?} "rm ${remote_script?} 2>&-" || :
+ scp ${script?} ${host?}:${remote_script?} >&-
+ ssh ${host?} "sudo -u hdfs -s ${remote_script?} ${host?} ${user?} ${keyword?}"
  ssh ${host?} "rm ${remote_script?}"
+
+ sleep 1
 }
 
 # ===========================================================================
