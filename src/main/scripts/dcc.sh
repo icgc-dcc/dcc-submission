@@ -35,7 +35,7 @@ function process() {
 
  ssh ${host?} "rm ${remote_script?} 2>&-" || :
  scp ${script?} ${host?}:${remote_script?} >&-
- ssh ${host?} "sudo -u hdfs -s ${remote_script?} ${host?} ${user?} ${keyword?}"
+ ssh -t ${host?} "sudo -u hdfs -s ${remote_script?} ${host?} ${user?} ${keyword?}" 2>&-
  ssh ${host?} "rm ${remote_script?}"
 
  sleep 1
@@ -79,7 +79,7 @@ done
 
 ## mongos: mongodb   2377 11.0 24.3 28695548 15829532 ?   Sl   Apr10 8099:33 /usr/bin/mongod --config /etc/mongodb.conf
 for mongo in ${mongos?}; do
- process ${mongo?} "mongodb" "mongod"
+ process "${mongo?}" "mongodb" "mongod"
 done
 
 # ===========================================================================
