@@ -1,0 +1,9 @@
+export www="hwww-dev.res"
+
+export nn="hname-dev.res"
+export nn2=""
+export jt="hmapred-dev.res"
+export workers="hcn52.res hcn53.res hcn54.res hcn55.res hcn56.res"
+
+export mongos="hmongodb-dev.res"
+
