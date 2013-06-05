@@ -106,7 +106,7 @@ public class ElasticSearchExporter {
         .setTypes(typeName) //
         .setSize(100).execute().get();
 
-    return searchResponse.hits();
+    return searchResponse.getHits();
   }
 
 }
