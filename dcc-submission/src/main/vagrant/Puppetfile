@@ -1,0 +1,7 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+forge 'http://forge.puppetlabs.com'
+
+mod 'jcraigbrown/artifactory'
+mod 'dcc', :path => 'puppet/modules/dcc'

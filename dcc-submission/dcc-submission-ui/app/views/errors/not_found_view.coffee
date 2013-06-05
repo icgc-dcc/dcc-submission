@@ -32,7 +32,6 @@ module.exports = class NotFoundView extends View
 
   container: '#page-container'
   containerMethod: 'html'
-  autoRender: false
   tagName: 'div'
   id: 'not-found-view'
 
