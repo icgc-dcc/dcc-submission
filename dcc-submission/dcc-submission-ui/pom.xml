@@ -22,75 +22,58 @@
     </repository>
   </repositories>
 
-<!-- 
-  <pluginRepositories>
-    <pluginRepository>
-      <id>mulesoft-releases</id>
-      <url>https://repository.mulesoft.org/releases</url>
-      <layout>default</layout>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-    </pluginRepository>
-    <pluginRepository>
-      <id>mulesoft-snapshots</id>
-      <url>https://repository.mulesoft.org/snapshots/</url>
-      <layout>default</layout>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </pluginRepository>
-  </pluginRepositories>
-
   <build>
     <plugins>
+      <!-- Compile -->
       <plugin>
-        <groupId>org.mule.tools.javascript</groupId>
-        <artifactId>brunch-maven-plugin</artifactId>
-        <version>1.0</version>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
         <executions>
           <execution>
+            <id>npm-install</id>
             <phase>compile</phase>
             <goals>
-              <goal>build</goal>
+              <goal>exec</goal>
             </goals>
             <configuration>
-              <minify>true</minify>
-              <sourceDirectory>${basedir}</sourceDirectory>
+              <executable>npm</executable>
+              <arguments>
+                <argument>install</argument>
+              </arguments>
+            </configuration>
+          </execution>
+          <execution>
+            <id>brunch-build</id>
+            <phase>compile</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>brunch</executable>
+              <arguments>
+                <argument>b</argument>
+                <argument>m</argument>
+              </arguments>
+              <successCodes>
+                <successCode>1</successCode>
+              </successCodes>
             </configuration>
           </execution>
         </executions>
       </plugin>
+
+      <!-- Package -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <classesDirectory>${basedir}</classesDirectory>
+          <includes>
+            <include>public/</include>
+          </includes>
+        </configuration>
+      </plugin>
     </plugins>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <groupId>org.eclipse.m2e</groupId>
-          <artifactId>lifecycle-mapping</artifactId>
-          <version>1.0.0</version>
-          <configuration>
-            <lifecycleMappingMetadata>
-              <pluginExecutions>
-                <pluginExecution>
-                  <pluginExecutionFilter>
-                    <groupId>org.mule.tools.javascript</groupId>
-                    <artifactId>brunch-maven-plugin</artifactId>
-                    <versionRange>[1.0-SNAPSHOT,)</versionRange>
-                    <goals>
-                      <goal>build</goal>
-                    </goals>
-                  </pluginExecutionFilter>
-                  <action>
-                    <ignore></ignore>
-                  </action>
-                </pluginExecution>
-              </pluginExecutions>
-            </lifecycleMappingMetadata>
-          </configuration>
-        </plugin>
-      </plugins>
-    </pluginManagement>
   </build>
-   -->
-  
+
 </project>
