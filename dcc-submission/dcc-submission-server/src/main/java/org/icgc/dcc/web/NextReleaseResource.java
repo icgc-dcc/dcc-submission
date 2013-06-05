@@ -17,6 +17,16 @@
  */
 package org.icgc.dcc.web;
 
+import static javax.ws.rs.core.Response.status;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static org.icgc.dcc.web.Authorizations.hasReleaseClosePrivilege;
+import static org.icgc.dcc.web.Authorizations.hasReleaseModifyPrivilege;
+import static org.icgc.dcc.web.Authorizations.hasReleaseViewPrivilege;
+import static org.icgc.dcc.web.Authorizations.hasSpecificProjectPrivilege;
+import static org.icgc.dcc.web.Authorizations.hasSubmissionSignoffPrivilege;
+import static org.icgc.dcc.web.Authorizations.isOmnipotentUser;
+import static org.icgc.dcc.web.Authorizations.unauthorizedResponse;
+
 import java.util.List;
 
 import javax.validation.Valid;
@@ -48,14 +58,6 @@ import com.google.common.collect.Lists;
 import com.google.common.net.HttpHeaders;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
-
-import static org.icgc.dcc.web.Authorizations.hasReleaseClosePrivilege;
-import static org.icgc.dcc.web.Authorizations.hasReleaseModifyPrivilege;
-import static org.icgc.dcc.web.Authorizations.hasReleaseViewPrivilege;
-import static org.icgc.dcc.web.Authorizations.hasSpecificProjectPrivilege;
-import static org.icgc.dcc.web.Authorizations.hasSubmissionSignoffPrivilege;
-import static org.icgc.dcc.web.Authorizations.isOmnipotentUser;
-import static org.icgc.dcc.web.Authorizations.unauthorizedResponse;
 
 @Path("nextRelease")
 public class NextReleaseResource {
@@ -238,6 +240,9 @@ public class NextReleaseResource {
     return Response.ok().build();
   }
 
+  /**
+   * See {@link ReleaseService#update(Release)}.
+   */
   @PUT
   @Path("update")
   public Response update(@Valid Release release, @Context Request req, @Context SecurityContext securityContext) {
@@ -253,9 +258,11 @@ public class NextReleaseResource {
       ResponseTimestamper.evaluate(req, release);
 
       if(this.releaseService.list().isEmpty()) {
-        return Response.status(Status.BAD_REQUEST).build();
+        return status(BAD_REQUEST).build();
       } else {
-        Release updatedRelease = releaseService.update(release);
+        String updatedName = release.getName();
+        String updatedDictionaryVersion = release.getDictionaryVersion();
+        Release updatedRelease = releaseService.update(updatedName, updatedDictionaryVersion);
         log.info("updated {}", name);
 
         return ResponseTimestamper.ok(updatedRelease).build();
