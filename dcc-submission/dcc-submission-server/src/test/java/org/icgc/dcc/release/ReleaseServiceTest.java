@@ -17,6 +17,12 @@
  */
 package org.icgc.dcc.release;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -45,13 +51,6 @@ import com.mongodb.Mongo;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
 import com.typesafe.config.Config;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 public class ReleaseServiceTest {
 
@@ -205,11 +204,7 @@ public class ReleaseServiceTest {
 
   // @Test
   public void test_update_valid() {
-    Release mockUpdatedRelease = mock(Release.class);
-    when(mockUpdatedRelease.getName()).thenReturn("not_existing_release");
-    when(mockUpdatedRelease.getDictionaryVersion()).thenReturn("existing_dictionary");
-
-    Release updatedRelease = releaseService.update(mockUpdatedRelease);
+    Release updatedRelease = releaseService.update("not_existing_release", "existing_dictionary");
     Assert.assertNotNull(updatedRelease);
     Assert.assertEquals("not_existing_release", updatedRelease.getName());
     Assert.assertEquals("existing_dictionary", updatedRelease.getDictionaryVersion());

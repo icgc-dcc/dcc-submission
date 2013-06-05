@@ -17,11 +17,15 @@
  */
 package org.icgc.dcc.release;
 
+import static com.google.common.base.Joiner.on;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
+import static java.lang.String.format;
+import static org.icgc.dcc.core.MailUtils.email;
+import static org.icgc.dcc.release.model.SubmissionState.NOT_VALIDATED;
 
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
@@ -66,7 +70,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
-import com.google.code.morphia.query.Query;
 import com.google.code.morphia.query.UpdateOperations;
 import com.google.code.morphia.query.UpdateResults;
 import com.google.common.base.Optional;
@@ -137,7 +140,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     String dictionaryVersion = initRelease.getDictionaryVersion();
     if(dictionaryVersion == null) {
       throw new ReleaseException("Dictionary version must not be null!");
-    } else if(buildDictionaryVersionQuery(dictionaryVersion).get() == null) {
+    } else if(getDictionaryForVersion(dictionaryVersion) == null) {
       throw new ReleaseException("Specified dictionary version not found in DB: " + dictionaryVersion);
     }
     // Just use name and dictionaryVersion from incoming json
@@ -469,65 +472,86 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   }
 
   /**
+   * Updates a release name and/or dictionary version.
+   * <p>
    * Does not allow to update submissions per se, {@code ProjectService.addProject()} must be used instead.
    * <p>
    * This MUST reset submission states.
+   * <p>
+   * This method is not included in NextRelease because of its dependence on methods from NextRelease (we may reconsider
+   * in the future) - see comments in DCC-245
    */
-  public Release update(Release updatedRelease) { // This method is not included in NextRelease because of its
-                                                  // dependence on methods from NextRelease (we may reconsider in the
-                                                  // future) - see comments in DCC-245
-    checkArgument(updatedRelease != null);
+  public Release update(String newReleaseName, String newDictionaryVersion) {
 
-    String updatedName = updatedRelease.getName();
-    String updatedDictionaryVersion = updatedRelease.getDictionaryVersion();
+    Release release = getNextRelease().getRelease();
+    String oldReleaseName = release.getName();
+    String oldDictionaryVersion = release.getDictionaryVersion();
+    checkState(release.getState() == ReleaseState.OPENED);
 
-    Release oldRelease = getNextRelease().getRelease();
-    String oldName = oldRelease.getName();
-    String oldDictionaryVersion = oldRelease.getDictionaryVersion();
-    checkState(oldRelease.getState() == ReleaseState.OPENED);
+    boolean sameName = oldReleaseName.equals(newReleaseName);
+    boolean sameDictionary = oldDictionaryVersion.equals(newDictionaryVersion);
 
-    boolean sameName = oldName.equals(updatedName);
-    boolean sameDictionary = oldDictionaryVersion.equals(updatedDictionaryVersion);
-
-    if(!NameValidator.validateEntityName(updatedName)) {
-      throw new ReleaseException("Updated release name " + updatedName + " is not valid");
+    if(!NameValidator.validateEntityName(newReleaseName)) {
+      throw new ReleaseException("Updated release name " + newReleaseName + " is not valid");
     }
 
-    if(sameName == false && getFromName(updatedName) != null) {
-      throw new ReleaseException("New release name " + updatedName + " conflicts with an existing release");
+    if(sameName == false && getFromName(newReleaseName) != null) {
+      throw new ReleaseException("New release name " + newReleaseName + " conflicts with an existing release");
     }
 
-    if(updatedDictionaryVersion == null) {
+    if(newDictionaryVersion == null) {
       throw new ReleaseException("Release must have associated dictionary before being updated");
     }
 
-    if(sameDictionary == false && getDictionaryFromVersion(updatedDictionaryVersion) == null) {
-      throw new ReleaseException("Release must point to an existing dictionary, no match for "
-          + updatedDictionaryVersion);
+    if(sameDictionary == false && getDictionaryFromVersion(newDictionaryVersion) == null) {
+      throw new ReleaseException("Release must point to an existing dictionary, no match for " + newDictionaryVersion);
     }
 
-    // only TWO parameters can be updated for now (though specifying another dictionary resets all the submission
-    // states)
-    oldRelease.setName(updatedName);
-    oldRelease.setDictionaryVersion(updatedDictionaryVersion);
-    ArrayList<String> oldProjectKeys = Lists.newArrayList(oldRelease.getProjectKeys());
-    if(sameDictionary == false) { // TODO: use resetSubmission() instead (DCC-901)!
-      oldRelease.emptyQueue();
-      updateSubmisions(oldProjectKeys, SubmissionState.NOT_VALIDATED);
+    // Update release object and database entity (top-level entity only)
+    log.info("Updating release {} with {} and {}" + (sameDictionary ? " and emptying queue" : ""), //
+        new Object[] { oldReleaseName, newReleaseName, newDictionaryVersion });
+    release.setName(newReleaseName);
+    release.setDictionaryVersion(newDictionaryVersion);
+    if(sameDictionary == false) {
+      release.emptyQueue();
+    }
+    UpdateResults<Release> releaseUpdate = datastore().update( //
+        datastore().createQuery(Release.class) //
+            .filter("name = ", oldReleaseName), //
+        datastore().createUpdateOperations(Release.class) //
+            .set("name", newReleaseName) //
+            .set("dictionaryVersion", newDictionaryVersion) //
+            .set("queue", release.getQueue()));
+    if(releaseUpdate.getUpdatedCount() != 1) { // Ensure update was successful
+      notifyUpdateError(oldReleaseName, on(",").join(newReleaseName, newDictionaryVersion, release.getQueue()));
     }
 
-    Datastore datastore = datastore();
-    datastore.update( //
-        datastore.createQuery(Release.class) //
-            .filter("name = ", oldName), //
-        datastore.createUpdateOperations(Release.class) //
-            .set("name", updatedName) //
-            .set("dictionaryVersion", updatedDictionaryVersion));
-    if(sameDictionary == false) { // TODO: use resetSubmission() instead (DCC-901)!
-      dbUpdateSubmissions(updatedName, oldRelease.getQueue(), oldProjectKeys, SubmissionState.NOT_VALIDATED);
+    // If a new dictionary was specified, reset submissions, TODO: use resetSubmission() instead (DCC-901)!
+    if(sameDictionary == false) {
+      for(Submission submission : release.getSubmissions()) {
+        String projectKey = submission.getProjectKey();
+        SubmissionState newSubmissionState = NOT_VALIDATED;
+        String report = "report";
+
+        log.info("Setting submission {} to {} and resetting {}", //
+            new Object[] { on(".").join(newReleaseName, projectKey), newSubmissionState, report });
+
+        submission.setState(newSubmissionState);
+        submission.resetReport();
+        UpdateResults<Release> submissionUpdate = datastore().update( //
+            datastore().createQuery(Release.class) //
+                .filter("name = ", newReleaseName) //
+                .filter("submissions.projectKey = ", projectKey), //
+            allowDollarSignForMorphiaUpdatesBug(datastore().createUpdateOperations(Release.class)) //
+                .set("submissions.$.state", newSubmissionState) //
+                .unset(report));
+        if(submissionUpdate.getUpdatedCount() != 1) { // Ensure update was successful
+          notifyUpdateError(on(".").join(newReleaseName, projectKey), newSubmissionState.name(), report);
+        }
+      }
     }
 
-    return oldRelease;
+    return release;
   }
 
   public void resetSubmissions(final String releaseName, final Iterable<String> projectKeys) {
@@ -572,11 +596,6 @@ public class ReleaseService extends BaseMorphiaService<Release> {
    */
   private void resetValidationFolder(final String projectKey, Release release) {
     fs.getReleaseFilesystem(release).resetValidationFolder(projectKey);
-  }
-
-  private Query<Dictionary> buildDictionaryVersionQuery(String dictionaryVersion) {
-    return this.datastore().createQuery(Dictionary.class) //
-        .filter("version", dictionaryVersion);
   }
 
   /**
@@ -757,10 +776,16 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     return submission;
   }
 
+  // TODO: figure out difference with method below
   private Dictionary getDictionaryFromVersion(String version) { // also found in DictionaryService - see comments in
                                                                 // DCC-245
     return new MorphiaQuery<Dictionary>(morphia(), datastore(), QDictionary.dictionary).where(
         QDictionary.dictionary.version.eq(version)).singleResult();
+  }
+
+  private Dictionary getDictionaryForVersion(String dictionaryVersion) {
+    return this.datastore().createQuery(Dictionary.class) //
+        .filter("version", dictionaryVersion).get();
   }
 
   private List<LiteProject> buildLiteProjects(List<Project> projects) {
@@ -791,5 +816,22 @@ public class ReleaseService extends BaseMorphiaService<Release> {
    */
   private static <T> UpdateOperations<T> allowDollarSignForMorphiaUpdatesBug(UpdateOperations<T> updateOperations) {
     return updateOperations.disableValidation();
+  }
+
+  private void notifyUpdateError(String filter, String setValues) {
+    notifyUpdateError(filter, setValues, null);
+  }
+
+  /**
+   * To notify us that an update failed.
+   */
+  private void notifyUpdateError(String filter, String setValues, String unsetValues) {
+    log.error("Unable to update the release (maybe a lock problem)?", new IllegalStateException());
+    email(this.config, //
+        config.getString(MailUtils.PROBLEM_FROM), //
+        config.getString(MailUtils.AUTOMATIC_SUPPORT_RECIPIENT), //
+        format("Automatic email - Failure update"), //
+        format("filter: %s, set values: %s, unset values: %s", //
+            filter, setValues, unsetValues));
   }
 }
