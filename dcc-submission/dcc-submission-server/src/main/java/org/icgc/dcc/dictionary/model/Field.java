@@ -28,6 +28,7 @@ import org.icgc.dcc.dictionary.visitor.DictionaryElement;
 import org.icgc.dcc.dictionary.visitor.DictionaryVisitor;
 import org.icgc.dcc.validation.restriction.CodeListRestriction;
 import org.icgc.dcc.validation.restriction.DiscreteValuesRestriction;
+import org.icgc.dcc.validation.restriction.RegexRestriction;
 import org.icgc.dcc.validation.restriction.RequiredRestriction;
 
 import com.google.code.morphia.annotations.Embedded;
@@ -157,6 +158,10 @@ public class Field implements DictionaryElement, Serializable {
 
   public boolean hasRequiredRestriction() {
     return hasRestriction(RequiredRestriction.NAME);
+  }
+
+  public boolean hasRegexRestriction() {
+    return hasRestriction(RegexRestriction.NAME);
   }
 
   private boolean hasRestriction(String restrictionName) {
