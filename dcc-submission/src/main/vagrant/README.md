@@ -5,8 +5,8 @@ To create and start the virtual machine:
 
 Setup
 ---
-- Install [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
-- Install [Ruby](http://www.ruby-lang.org/en/downloads/)
+- Install [VirtualBox 4.2.12](https://www.virtualbox.org/wiki/Downloads)
+- Install [Ruby 2.0.0](http://www.ruby-lang.org/en/downloads/)
 - Install [Vagrant 1.2.2](http://downloads.vagrantup.com/tags/v1.2.2)
 
 Puppet
