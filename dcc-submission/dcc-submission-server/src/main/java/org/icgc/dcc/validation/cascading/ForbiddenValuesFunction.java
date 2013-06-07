@@ -49,7 +49,7 @@ public class ForbiddenValuesFunction extends BaseOperation implements Function {
   /**
    * Former reserved values that must not appear in required data anymore.
    */
-  private static final List<String> DEPRECATED_VALUES = newArrayList("-999");
+  public static final List<String> DEPRECATED_VALUES = newArrayList("-999");
 
   /**
    * Fields having a required restriction set on them (whether scrict or not).
