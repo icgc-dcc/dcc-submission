@@ -62,7 +62,7 @@ public class HadoopJsonScheme extends TextLine {
 
   private final ObjectWriter writer() {
     if(writer == null) {
-      writer = mapper().writerWithDefaultPrettyPrinter();
+      writer = mapper().writer();
     }
 
     return writer;
