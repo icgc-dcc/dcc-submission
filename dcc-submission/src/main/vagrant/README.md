@@ -20,10 +20,12 @@ Puppet Modules
 ---
 Install puppet modules:
 
+	cd dcc/dcc-submission/src/main/vagrant
 	librarian-puppet install
 
 Run
 ---
 Issue the following command:
  
+ 	cd dcc/dcc-submission/src/main/vagrant
 	vagrant up
