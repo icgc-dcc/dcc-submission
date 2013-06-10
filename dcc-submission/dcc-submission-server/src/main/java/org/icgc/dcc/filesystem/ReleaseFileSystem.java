@@ -17,6 +17,9 @@
  */
 package org.icgc.dcc.filesystem;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.List;
 
 import org.apache.hadoop.fs.FileSystem;
@@ -29,9 +32,6 @@ import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.shiro.AuthorizationPrivileges;
 import org.icgc.dcc.web.Authorizations;
 import org.mortbay.log.Log;
-
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 
 public class ReleaseFileSystem {
 
@@ -67,13 +67,13 @@ public class ReleaseFileSystem {
 
   private void checkSubmissionDirectory(String projectKey) {
     checkNotNull(projectKey);
-    if(hasPrivileges(projectKey) == false) {
+    if (hasPrivileges(projectKey) == false) {
       throw new DccFileSystemException("User " + userSubject.getPrincipal()
           + " does not have permission to access project " + projectKey);
     }
     String projectStringPath = dccFileSystem.buildProjectStringPath(release, projectKey);
     boolean exists = HadoopUtils.checkExistence(dccFileSystem.getFileSystem(), projectStringPath);
-    if(exists == false) {
+    if (exists == false) {
       throw new DccFileSystemException("Release directory " + projectStringPath + " does not exist");
     }
   }
@@ -81,10 +81,10 @@ public class ReleaseFileSystem {
   public void moveFrom(ReleaseFileSystem previous, List<String> projectKeys) {
     FileSystem fileSystem = this.dccFileSystem.getFileSystem();
 
-    for(String projectKey : projectKeys) {
+    for (String projectKey : projectKeys) {
       SubmissionDirectory previousSubmissionDirectory = previous.getSubmissionDirectory(projectKey);
       SubmissionDirectory newSubmissionDirectory = getSubmissionDirectory(projectKey);
-      for(String filename : previousSubmissionDirectory.listFile()) {
+      for (String filename : previousSubmissionDirectory.listFile()) {
         String origin = previousSubmissionDirectory.getDataFilePath(filename);
         String destination = newSubmissionDirectory.getDataFilePath(filename);
         Log.info("moving {} to {} ", origin, destination);
@@ -101,14 +101,14 @@ public class ReleaseFileSystem {
     HadoopUtils.mkdirs(fileSystem, destinationDir.toString());
 
     List<Path> files = HadoopUtils.lsFile(fileSystem, originDir);
-    for(Path originFile : files) {
+    for (Path originFile : files) {
       Path destinationFile = new Path(destinationDir, originFile.getName());
       HadoopUtils.mv(fileSystem, originFile, destinationFile); // temporary solution until DCC-835 is done
     }
   }
 
   public void emptyValidationFolders() {
-    for(String projectKey : release.getProjectKeys()) {
+    for (String projectKey : release.getProjectKeys()) {
       resetValidationFolder(projectKey);
     }
   }
@@ -138,10 +138,6 @@ public class ReleaseFileSystem {
 
   public Path getSystemDirectory() {
     return new Path(this.getReleaseDirectory(), ReleaseFileSystem.SYSTEM_FILES);
-  }
-
-  public Path getLoaderDirectory() {
-    return new Path(this.getReleaseDirectory(), DccFileSystem.LOADER_DIRNAME);
   }
 
   public boolean isSystemDirectory(Path path) {

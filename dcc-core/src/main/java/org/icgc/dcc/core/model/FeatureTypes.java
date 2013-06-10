@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.core.model;
 
+import static com.google.common.collect.ImmutableList.of;
+
 import java.util.List;
 import java.util.Set;
 
@@ -65,13 +67,6 @@ public final class FeatureTypes {
   private static final List<String> SURVEY_FEATURE_TYPES = ImmutableList.of(EXP_TYPE, MIRNA_TYPE, JCN_TYPE, METH_TYPE,
       PEXP_TYPE);
 
-  /**
-   * Subset of {@link #FEATURE_TYPES} that in which the sample ID fields is called "sample_id" instead of
-   * "analyzed_sample_id"
-   */
-  private static final List<String> MISNAMED_SAMPLE_ID_FEATURE_TYPES = ImmutableList.of(EXP_TYPE, PEXP_TYPE,
-      MIRNA_TYPE, JCN_TYPE);
-
   public static List<String> getTypes() {
     return FEATURE_TYPES;
   }
@@ -96,8 +91,8 @@ public final class FeatureTypes {
     return SURVEY_FEATURE_TYPES.contains(type);
   }
 
-  public static boolean isMisnamedSampleIdType(String type) {
-    return MISNAMED_SAMPLE_ID_FEATURE_TYPES.contains(type);
-  }
-
+  /**
+   * 
+   */
+  public static final List<String> MONGO_FRIENDLY_FEATURE_TYPES = of(SSM_TYPE, SGV_TYPE, CNSM_TYPE);
 }
