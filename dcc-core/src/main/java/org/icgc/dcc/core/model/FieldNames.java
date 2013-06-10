@@ -47,6 +47,12 @@ public final class FieldNames {
   public static final String PROJECT_SUMMARY = "_summary";
   
   /**
+   * Special fields, usually appearing in all clinical files as well as primary/meta experimental files. 
+   */
+  public static final String URI = "uri";
+  public static final String DB_XREF = "db_xref";
+  
+  /**
    * Donor field names.
    */
   public static final String DONOR_ID = "_donor_id";

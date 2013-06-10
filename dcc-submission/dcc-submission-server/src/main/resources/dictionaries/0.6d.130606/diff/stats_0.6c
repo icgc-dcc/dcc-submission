@@ -1,0 +1,270 @@
+===========================================================================
+Referenced fields' uniqueness
+
+cnsm_m	[analysis_id, analyzed_sample_id]	true
+cnsm_p	[analysis_id, analyzed_sample_id, mutation_id]	true
+donor	[donor_id]	true
+exp_m	[analysis_id, sample_id]	true
+jcn_m	[analysis_id, sample_id]	true
+meth_m	[analysis_id, analyzed_sample_id]	true
+meth_p	[analysis_id, analyzed_sample_id, methylated_fragment_id]	true
+mirna_m	[analysis_id, sample_id]	true
+mirna_p	[mirna_seq]	false
+pexp_m	[analysis_id, sample_id]	true
+sample	[analyzed_sample_id]	true
+sample	[analyzed_sample_id]	true
+sample	[analyzed_sample_id]	true
+sample	[analyzed_sample_id]	true
+sample	[analyzed_sample_id]	true
+sample	[analyzed_sample_id]	true
+sample	[analyzed_sample_id]	true
+sample	[analyzed_sample_id]	true
+sample	[analyzed_sample_id]	true
+sample	[analyzed_sample_id]	true
+sample	[analyzed_sample_id]	true
+sample	[analyzed_sample_id]	true
+specimen	[specimen_id]	true
+ssm_m	[analysis_id]	true
+ssm_p	[analysis_id, analyzed_sample_id, mutation_id]	true
+stsm_m	[analysis_id, analyzed_sample_id]	true
+stsm_p	[analysis_id, analyzed_sample_id, sv_id, placement]	true
+
+===========================================================================
+Relations surjectivity
+
+false	cnsm_m -> sample
+false	cnsm_m -> sample
+false	cnsm_s -> cnsm_p
+false	exp_m -> sample
+false	jcn_m -> sample
+false	meth_m -> sample
+false	meth_m -> sample
+false	meth_s -> meth_p
+false	mirna_m -> sample
+false	mirna_s -> mirna_p
+false	pexp_m -> sample
+false	ssm_m -> sample
+false	ssm_m -> sample
+false	ssm_s -> ssm_p
+false	stsm_m -> sample
+false	stsm_m -> sample
+false	stsm_s -> stsm_p
+true	cnsm_p -> cnsm_m
+true	exp_g -> exp_m
+true	jcn_p -> jcn_m
+true	meth_p -> meth_m
+true	mirna_p -> mirna_m
+true	pexp_p -> pexp_m
+true	sample -> specimen
+true	specimen -> donor
+true	ssm_p -> ssm_m
+true	stsm_p -> stsm_m
+
+===========================================================================
+Unique fields' requiredness
+
+cnsm_m
+	analysis_id	true
+	analyzed_sample_id	true
+	matched_sample_id	false
+cnsm_p
+	analysis_id	true
+	analyzed_sample_id	true
+	mutation_id	true
+cnsm_s
+donor
+	donor_id	true
+exp_g
+exp_m
+	analysis_id	true
+	sample_id	true
+hsap_gene
+hsap_transcript
+jcn_m
+	analysis_id	true
+	sample_id	true
+jcn_p
+meth_m
+	analysis_id	true
+	analyzed_sample_id	true
+meth_p
+	analysis_id	true
+	analyzed_sample_id	true
+	methylated_fragment_id	true
+meth_s
+mirna_m
+	analysis_id	true
+	sample_id	true
+mirna_mirbase
+mirna_p
+mirna_s
+pexp_m
+	analysis_id	true
+	sample_id	true
+pexp_p
+sample
+	analyzed_sample_id	true
+specimen
+	specimen_id	true
+ssm_m
+	analysis_id	true
+	analyzed_sample_id	true
+	matched_sample_id	true
+ssm_p
+	analysis_id	true
+	analyzed_sample_id	true
+	mutation_id	true
+ssm_s
+stsm_m
+	analysis_id	true
+	analyzed_sample_id	true
+stsm_p
+	analysis_id	true
+	analyzed_sample_id	true
+	placement	true
+	sv_id	true
+stsm_s
+===========================================================================
+Relation fields' requiredness
+
+cnsm_m
+	analysis_id	true
+	analyzed_sample_id	true
+	matched_sample_id	false
+cnsm_p
+	analysis_id	true
+	analyzed_sample_id	true
+	mutation_id	true
+cnsm_s
+	analysis_id	true
+	analyzed_sample_id	true
+	mutation_id	true
+donor
+	donor_id	true
+exp_g
+	analysis_id	true
+exp_m
+	analysis_id	true
+hsap_gene
+hsap_transcript
+jcn_m
+	analysis_id	true
+jcn_p
+	analysis_id	true
+meth_m
+	analysis_id	true
+	analyzed_sample_id	true
+	matched_sample_id	true
+meth_p
+	analysis_id	true
+	analyzed_sample_id	true
+	methylated_fragment_id	true
+meth_s
+	analysis_id	true
+	analyzed_sample_id	true
+	methylated_fragment_id	true
+mirna_m
+	analysis_id	true
+mirna_mirbase
+mirna_p
+	analysis_id	true
+	mirna_seq	true
+mirna_s
+	mirna_seq	true
+pexp_m
+	analysis_id	true
+pexp_p
+	analysis_id	true
+sample
+	analyzed_sample_id	true
+	specimen_id	true
+specimen
+	donor_id	true
+	specimen_id	true
+ssm_m
+	analysis_id	true
+	analyzed_sample_id	true
+	matched_sample_id	true
+ssm_p
+	analysis_id	true
+	analyzed_sample_id	true
+	mutation_id	true
+ssm_s
+	analysis_id	true
+	analyzed_sample_id	true
+	mutation_id	true
+stsm_m
+	analysis_id	true
+	analyzed_sample_id	true
+	matched_sample_id	true
+stsm_p
+	analysis_id	true
+	analyzed_sample_id	true
+	placement	true
+	sv_id	true
+stsm_s
+	analysis_id	true
+	analyzed_sample_id	true
+	placement	true
+	sv_id	true
+===========================================================================
+Dictionary dot file
+
+digraph dictionary {
+ mirna_m [label="mirna_m\nanalysis_id,sample_id"]
+ mirna_p [label="mirna_p"]
+ ssm_s [label="ssm_s"]
+ mirna_s [label="mirna_s"]
+ donor [label="donor\ndonor_id"]
+ specimen [label="specimen\nspecimen_id"]
+ stsm_s [label="stsm_s"]
+ stsm_p [label="stsm_p\nanalysis_id,analyzed_sample_id,placement,sv_id"]
+ meth_s [label="meth_s"]
+ stsm_m [label="stsm_m\nanalysis_id,analyzed_sample_id"]
+ sample [label="sample\nanalyzed_sample_id"]
+ hsap_transcript [label="hsap_transcript"]
+ mirna_mirbase [label="mirna_mirbase"]
+ hsap_gene [label="hsap_gene"]
+ cnsm_s [label="cnsm_s"]
+ cnsm_p [label="cnsm_p\nanalysis_id,analyzed_sample_id,mutation_id"]
+ cnsm_m [label="cnsm_m\nanalysis_id,analyzed_sample_id,matched_sample_id"]
+ exp_g [label="exp_g"]
+ ssm_p [label="ssm_p\nanalysis_id,analyzed_sample_id,mutation_id"]
+ ssm_m [label="ssm_m\nanalysis_id,analyzed_sample_id,matched_sample_id"]
+ jcn_p [label="jcn_p"]
+ meth_p [label="meth_p\nanalysis_id,analyzed_sample_id,methylated_fragment_id"]
+ exp_m [label="exp_m\nanalysis_id,sample_id"]
+ jcn_m [label="jcn_m\nanalysis_id,sample_id"]
+ meth_m [label="meth_m\nanalysis_id,analyzed_sample_id"]
+ pexp_p [label="pexp_p"]
+ pexp_m [label="pexp_m\nanalysis_id,sample_id"]
+
+ mirna_m -> sample [label="sample_id -> analyzed_sample_id"]
+ mirna_p -> mirna_m [label="analysis_id,sample_id\n(bidirectional)"]
+ ssm_s -> ssm_p [label="analysis_id,analyzed_sample_id,mutation_id"]
+ mirna_s -> mirna_p [label="mirna_seq"]
+ specimen -> donor [label="donor_id\n(bidirectional)"]
+ stsm_s -> stsm_p [label="analysis_id,analyzed_sample_id,sv_id,placement"]
+ stsm_p -> stsm_m [label="analysis_id,analyzed_sample_id\n(bidirectional)"]
+ meth_s -> meth_p [label="analysis_id,analyzed_sample_id,methylated_fragment_id"]
+ stsm_m -> sample [label="analyzed_sample_id"]
+ stsm_m -> sample [label="matched_sample_id -> analyzed_sample_id"]
+ sample -> specimen [label="specimen_id\n(bidirectional)"]
+ cnsm_s -> cnsm_p [label="analysis_id,analyzed_sample_id,mutation_id"]
+ cnsm_p -> cnsm_m [label="analysis_id,analyzed_sample_id\n(bidirectional)"]
+ cnsm_m -> sample [label="analyzed_sample_id"]
+ cnsm_m -> sample [label="matched_sample_id -> analyzed_sample_id"]
+ exp_g -> exp_m [label="analysis_id,sample_id\n(bidirectional)"]
+ ssm_p -> ssm_m [label="analysis_id\n(bidirectional)"]
+ ssm_m -> sample [label="analyzed_sample_id"]
+ ssm_m -> sample [label="matched_sample_id -> analyzed_sample_id"]
+ jcn_p -> jcn_m [label="analysis_id,sample_id\n(bidirectional)"]
+ meth_p -> meth_m [label="analysis_id,analyzed_sample_id\n(bidirectional)"]
+ exp_m -> sample [label="sample_id -> analyzed_sample_id"]
+ jcn_m -> sample [label="sample_id -> analyzed_sample_id"]
+ meth_m -> sample [label="analyzed_sample_id"]
+ meth_m -> sample [label="matched_sample_id -> analyzed_sample_id"]
+ pexp_p -> pexp_m [label="analysis_id,sample_id\n(bidirectional)"]
+ pexp_m -> sample [label="sample_id -> analyzed_sample_id"]
+}
+
