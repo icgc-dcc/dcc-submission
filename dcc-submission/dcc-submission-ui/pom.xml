@@ -55,6 +55,7 @@
                 <argument>m</argument>
               </arguments>
               <successCodes>
+                <successCode>0</successCode>
                 <successCode>1</successCode>
               </successCodes>
             </configuration>
