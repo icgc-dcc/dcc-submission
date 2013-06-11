@@ -36,6 +36,8 @@ public class Configurations {
    */
   public static final String RELEASE_MONGO_URI_KEY = "releaseMongoUri";
 
+  public static final String FS_LOADER_ROOT = "fsLoaderRoot";
+
   public static final String SUBMISSIONS_KEY = "submissions";
 
   public static final String HADOOP_KEY = "hadoop";

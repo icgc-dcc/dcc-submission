@@ -52,15 +52,18 @@ public class HadoopUtils {
   }
 
   public static void mkdirs(FileSystem fileSystem, String stringPath) {
-    Path path = new Path(stringPath);
+    mkdirs(fileSystem, new Path(stringPath));
+  }
+
+  public static void mkdirs(FileSystem fileSystem, Path path) {
     boolean mkdirs;
     try {
       mkdirs = fileSystem.mkdirs(path);
-    } catch(IOException e) {
+    } catch (IOException e) {
       throw new HdfsException(e);
     }
-    if(!mkdirs) {
-      throw new HdfsException("could not create " + stringPath);
+    if (!mkdirs) {
+      throw new HdfsException("could not create " + path);
     }
   }
 
@@ -70,7 +73,7 @@ public class HadoopUtils {
     try {
       out = fileSystem.create(path);
       ByteStreams.copy(in, out);
-    } catch(IOException e) {
+    } catch (IOException e) {
       throw new HdfsException(e);
     } finally {
       Closeables.closeQuietly(out);
@@ -90,10 +93,10 @@ public class HadoopUtils {
     try {
       Path path = new Path(stringPath);
       delete = fileSystem.delete(path, recursive);
-    } catch(IOException e) {
+    } catch (IOException e) {
       throw new HdfsException(e);
     }
-    if(!delete) {
+    if (!delete) {
       throw new HdfsException("could not remove " + stringPath);
     }
   }
@@ -107,7 +110,7 @@ public class HadoopUtils {
 
     try {
       FileContext.getFileContext(fileSystem.getUri()).createSymlink(origin, destination, false);
-    } catch(IOException e) {
+    } catch (IOException e) {
       throw new HdfsException(e);
     }
   }
@@ -122,20 +125,23 @@ public class HadoopUtils {
     boolean rename;
     try {
       rename = fileSystem.rename(originPath, destinationPath);
-    } catch(IOException e) {
+    } catch (IOException e) {
       throw new HdfsException(e);
     }
-    if(!rename) {
+    if (!rename) {
       throw new HdfsException(String.format("could not rename %s to %s", originPath, destinationPath));
     }
   }
 
   public static boolean checkExistence(FileSystem fileSystem, String stringPath) {
-    Path path = new Path(stringPath);
+    return checkExistence(fileSystem, new Path(stringPath));
+  }
+
+  public static boolean checkExistence(FileSystem fileSystem, Path path) {
     boolean exists;
     try {
       exists = fileSystem.exists(path);
-    } catch(IOException e) {
+    } catch (IOException e) {
       throw new HdfsException(e);
     }
     return exists;
@@ -149,13 +155,13 @@ public class HadoopUtils {
     FileStatus[] listStatus;
     try {
       listStatus = fileSystem.listStatus(path);
-    } catch(IOException e) {
+    } catch (IOException e) {
       throw new HdfsException(e);
     }
     List<Path> ls = new ArrayList<Path>();
-    for(FileStatus fileStatus : listStatus) {
+    for (FileStatus fileStatus : listStatus) {
       String filename = fileStatus.getPath().getName();
-      if(((fileStatus.isFile() && file) || (fileStatus.isSymlink() && symLink) //
+      if (((fileStatus.isFile() && file) || (fileStatus.isSymlink() && symLink) //
       || (fileStatus.isDirectory() && dir)) && (null == pattern || pattern.matcher(filename).matches())) {
         ls.add(fileStatus.getPath());
       }
@@ -189,7 +195,7 @@ public class HadoopUtils {
 
   public static List<String> toFilenameList(List<Path> pathList) {
     List<String> filenameList = new ArrayList<String>();
-    for(Path path : pathList) {
+    for (Path path : pathList) {
       filenameList.add(path.getName());
     }
     return filenameList;
@@ -199,7 +205,7 @@ public class HadoopUtils {
     FileStatus fileStatus = null;
     try {
       fileStatus = fileSystem.getFileStatus(path);
-    } catch(IOException e) {
+    } catch (IOException e) {
       throw new HdfsException(e);
     }
     return fileStatus;
