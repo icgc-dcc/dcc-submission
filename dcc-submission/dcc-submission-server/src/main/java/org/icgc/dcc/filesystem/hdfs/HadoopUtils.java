@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.filesystem.hdfs;
 
+import static com.google.common.io.Closeables.closeQuietly;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -34,7 +36,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import com.google.common.io.ByteStreams;
-import com.google.common.io.Closeables;
 
 /**
  * Handles all hadoop API related methods - TODO: change to use proxy or decorator pattern?
@@ -76,28 +77,37 @@ public class HadoopUtils {
     } catch (IOException e) {
       throw new HdfsException(e);
     } finally {
-      Closeables.closeQuietly(out);
+      closeQuietly(out);
     }
   }
 
   public static void rm(FileSystem fileSystem, String stringPath) {
-    rm(fileSystem, stringPath, false);
+    Path path = new Path(stringPath);
+    rm(fileSystem, path);
+  }
+
+  public static void rm(FileSystem fileSystem, Path path) {
+    rm(fileSystem, path, false);
   }
 
   public static void rmr(FileSystem fileSystem, String stringPath) {
-    rm(fileSystem, stringPath, true);
+    Path path = new Path(stringPath);
+    rm(fileSystem, path);
   }
 
-  private static void rm(FileSystem fileSystem, String stringPath, boolean recursive) {
+  public static void rmr(FileSystem fileSystem, Path path) {
+    rm(fileSystem, path, true);
+  }
+
+  private static void rm(FileSystem fileSystem, Path path, boolean recursive) {
     boolean delete;
     try {
-      Path path = new Path(stringPath);
       delete = fileSystem.delete(path, recursive);
     } catch (IOException e) {
       throw new HdfsException(e);
     }
     if (!delete) {
-      throw new HdfsException("could not remove " + stringPath);
+      throw new HdfsException("could not remove " + path);
     }
   }
 
