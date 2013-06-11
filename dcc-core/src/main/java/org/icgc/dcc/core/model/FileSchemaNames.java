@@ -67,7 +67,6 @@ public class FileSchemaNames {
 
   public static final String SGV_M = SGV_TYPE + META_SUFFIX;
   public static final String SGV_P = SGV_TYPE + PRIMARY_SUFFIX;
-  public static final String SGV_S = SGV_TYPE + SECONDARY_SUFFIX;
   
   public static final String CNGV_M = CNGV_TYPE + META_SUFFIX;
   public static final String CNGV_P = CNGV_TYPE + PRIMARY_SUFFIX;
