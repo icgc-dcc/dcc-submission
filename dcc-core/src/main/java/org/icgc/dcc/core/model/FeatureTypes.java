@@ -67,6 +67,11 @@ public final class FeatureTypes {
   private static final List<String> SURVEY_FEATURE_TYPES = ImmutableList.of(EXP_TYPE, MIRNA_TYPE, JCN_TYPE, METH_TYPE,
       PEXP_TYPE);
 
+  /**
+   * Features types that are small enough to be stored in mongodb (as exposed to exported to hdfs only).
+   */
+  public static final List<String> MONGO_FRIENDLY_FEATURE_TYPES = of(SSM_TYPE, SGV_TYPE, CNSM_TYPE);
+
   public static List<String> getTypes() {
     return FEATURE_TYPES;
   }
@@ -90,9 +95,4 @@ public final class FeatureTypes {
   public static boolean isSurveyType(String type) {
     return SURVEY_FEATURE_TYPES.contains(type);
   }
-
-  /**
-   * 
-   */
-  public static final List<String> MONGO_FRIENDLY_FEATURE_TYPES = of(SSM_TYPE, SGV_TYPE, CNSM_TYPE);
 }
