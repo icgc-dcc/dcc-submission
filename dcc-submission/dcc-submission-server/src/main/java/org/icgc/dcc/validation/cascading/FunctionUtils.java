@@ -17,6 +17,9 @@
  */
 package org.icgc.dcc.validation.cascading;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.io.Serializable;
 
 import cascading.flow.FlowProcess;
@@ -26,8 +29,6 @@ import cascading.operation.FunctionCall;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Utility class for working with cascading {@code Function} objects.
@@ -74,6 +75,7 @@ public abstract class FunctionUtils {
      * Very basic for now, possibly offer more overloadings for transform()
      */
     public interface Transformable extends Serializable {
+
       String tranform(String value);
     }
 
@@ -83,6 +85,7 @@ public abstract class FunctionUtils {
 
     public CloneField(Fields originalField, Fields newField) {
       this(originalField, newField, new Transformable() {
+
         @Override
         public String tranform(String value) {
           return value;
@@ -124,7 +127,7 @@ public abstract class FunctionUtils {
       TupleEntry entry = functionCall.getArguments();
 
       Tuple copy = entry.getTupleCopy();
-      if(copy.getObject(NEST_FIELD_INDEX) == null) { // If null, then replace it with an empty tuple
+      if (copy.getObject(NEST_FIELD_INDEX) == null) { // If null, then replace it with an empty tuple
         copy.set(NEST_FIELD_INDEX, new Tuple());
       }
 
