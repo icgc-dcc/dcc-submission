@@ -92,7 +92,7 @@ public class HadoopUtils {
 
   public static void rmr(FileSystem fileSystem, String stringPath) {
     Path path = new Path(stringPath);
-    rm(fileSystem, path);
+    rmr(fileSystem, path);
   }
 
   public static void rmr(FileSystem fileSystem, Path path) {
