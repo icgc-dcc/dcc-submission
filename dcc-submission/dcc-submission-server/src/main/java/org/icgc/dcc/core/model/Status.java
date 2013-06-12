@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.core.model;
 
+import java.util.List;
+
 import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonProperty;
 
@@ -24,11 +26,18 @@ public class Status {
 
   private final int activeSftpSessions;
 
+  private final List<String> userNames;
+
+  // @formatter:off
   @JsonCreator
-  public Status(@JsonProperty("activeSftpSessions") int activeSftpSessions) {
+  public Status(
+      @JsonProperty("activeSftpSessions") int activeSftpSessions,
+      @JsonProperty("userNames") List<String> userNames) {
     super();
     this.activeSftpSessions = activeSftpSessions;
+    this.userNames = userNames;
   }
+  // @formatter:on
 
   /**
    * @return the activeSftpSessions
@@ -37,9 +46,16 @@ public class Status {
     return activeSftpSessions;
   }
 
+  /**
+   * @return the list of user names
+   */
+  public List<String> getUsernames() {
+    return userNames;
+  }
+
   @Override
   public String toString() {
-    return String.format("Status [activeSftpSessions=%s]", activeSftpSessions);
+    return String.format("Status [activeSftpSessions=%s, userNames=%s]", activeSftpSessions, userNames);
   }
 
 }

@@ -76,7 +76,7 @@ public class Sftp implements TestRule {
   }
 
   public void connect() throws JSchException {
-    if(sftpChannel != null && sftpChannel.isConnected()) {
+    if (sftpChannel != null && sftpChannel.isConnected()) {
       return;
     }
 
@@ -90,11 +90,11 @@ public class Sftp implements TestRule {
   }
 
   public void disconnect() {
-    if(session == null) {
+    if (session == null) {
       return;
     }
 
-    if(session.isConnected() == false) {
+    if (session.isConnected() == false) {
       return;
     }
 

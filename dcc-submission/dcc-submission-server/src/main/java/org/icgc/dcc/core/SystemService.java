@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.core;
 
+import java.util.List;
+
 import org.icgc.dcc.core.model.Status;
 import org.icgc.dcc.sftp.SftpServerService;
 
@@ -34,10 +36,8 @@ public class SystemService {
   }
 
   public Status getStatus() {
-    int activeSftpSessions = sftpService.getActiveSessions();
-    Status status = new Status(activeSftpSessions);
-
-    return status;
+    List<String> userNames = sftpService.getActiveSessions();
+    return new Status(userNames.size(), userNames);
   }
 
   public boolean isFtpEnabled() {

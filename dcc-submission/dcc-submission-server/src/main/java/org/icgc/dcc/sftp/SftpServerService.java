@@ -17,14 +17,21 @@
  */
 package org.icgc.dcc.sftp;
 
+import static com.google.common.base.Joiner.on;
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Maps.newLinkedHashMap;
+import static java.lang.String.valueOf;
 
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.mina.core.session.IoSession;
 import org.apache.sshd.SshServer;
+import org.apache.sshd.common.AbstractFactoryManager;
+import org.apache.sshd.common.FactoryManager;
 import org.apache.sshd.common.NamedFactory;
 import org.apache.sshd.common.Session;
 import org.apache.sshd.common.session.AbstractSession;
@@ -35,6 +42,9 @@ import org.apache.sshd.server.PasswordAuthenticator;
 import org.apache.sshd.server.keyprovider.PEMGeneratorHostKeyProvider;
 import org.apache.sshd.server.session.ServerSession;
 import org.apache.sshd.server.sftp.SftpSubsystem;
+import org.codehaus.jackson.JsonGenerationException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.release.ReleaseService;
@@ -43,6 +53,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.AbstractService;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
@@ -51,6 +62,10 @@ import com.typesafe.config.Config;
  * Service abstraction to the SFTP sub-system.
  */
 public class SftpServerService extends AbstractService {
+
+  private static final ObjectMapper MAPPER = new ObjectMapper();
+
+  private static final String SFTP_CONFIG_SECTION = "sftp";
 
   private static final Logger log = LoggerFactory.getLogger(SftpServerService.class);
 
@@ -62,17 +77,21 @@ public class SftpServerService extends AbstractService {
     checkArgument(passwordAuthenticator != null);
 
     sshd = SshServer.setUpDefaultServer();
-    sshd.setPort(config.getInt("sftp.port"));
-    sshd.setKeyPairProvider(new PEMGeneratorHostKeyProvider(config.getString("sftp.path"), "RSA", 2048));
+    sshd.setPort(config.getInt(getSftpConfigPath("port")));
+    sshd.setKeyPairProvider(new PEMGeneratorHostKeyProvider(config.getString(getSftpConfigPath("path")), "RSA", 2048));
+    setSshdProperties(config);
+
     sshd.setPasswordAuthenticator(new PasswordAuthenticator() {
 
       @Override
       public boolean authenticate(String username, String password, ServerSession session) {
         return passwordAuthenticator.authenticate(username, password.toCharArray(), null) != null;
       }
+
     });
 
     sshd.setFileSystemFactory(new FileSystemFactory() {
+
       @Override
       public FileSystemView createFileSystemView(Session session) throws IOException {
         return new HdfsFileSystemView(fs, projectService, releaseService, passwordAuthenticator);
@@ -81,22 +100,24 @@ public class SftpServerService extends AbstractService {
     sshd.setSubsystemFactories(ImmutableList.<NamedFactory<Command>> of(new SftpSubsystem.Factory()));
   }
 
-  public int getActiveSessions() {
-    List<AbstractSession> activeSessions = sshd.getActiveSessions();
+  public List<String> getActiveSessions() {
+    List<String> userNames = newArrayList();
 
-    for(AbstractSession activeSession : activeSessions) {
+    List<AbstractSession> activeSessions = sshd.getActiveSessions();
+    for (AbstractSession activeSession : activeSessions) {
+
       // Shorthands
       IoSession ioSession = activeSession.getIoSession();
-      String username = activeSession.getUsername();
       long creationTime = ioSession.getCreationTime();
       long lastWriteTime = ioSession.getLastWriteTime();
-
-      log.info("User with username '{}' has an active SFTP session created on '{}', last written to '{}': {}", //
-          new Object[] { username, new Date(creationTime), new Date(lastWriteTime), ioSession });
-
+      String username = activeSession.getUsername();
+      log.info(
+          getLogMessage(username),
+          new Object[] { username, new Date(creationTime), new Date(lastWriteTime), getJsonSummary(ioSession) });
+      userNames.add(username);
     }
 
-    return activeSessions.size();
+    return userNames;
   }
 
   @Override
@@ -105,7 +126,7 @@ public class SftpServerService extends AbstractService {
       log.info("Starting DCC SSH Server on port {}", sshd.getPort());
       sshd.start();
       notifyStarted();
-    } catch(IOException e) {
+    } catch (IOException e) {
       log.error("Failed to start SFTP server on {}:{} : {}",
           new Object[] { sshd.getHost(), sshd.getPort(), e.getMessage() });
       notifyFailed(e);
@@ -117,11 +138,70 @@ public class SftpServerService extends AbstractService {
     try {
       sshd.stop(true);
       notifyStopped();
-    } catch(InterruptedException e) {
+    } catch (InterruptedException e) {
       log.error("Failed to stop SFTP server on {}:{} : {}",
           new Object[] { sshd.getHost(), sshd.getPort(), e.getMessage() });
       notifyFailed(e);
     }
   }
 
+  private void setSshdProperties(Config config) {
+    String nioWorkersPath = getSftpConfigPath(AbstractFactoryManager.NIO_WORKERS);
+    if (config.hasPath(nioWorkersPath)) {
+      Integer nioWorkers = config.getInt(nioWorkersPath);
+      log.info("Setting '{}' to '{}'", AbstractFactoryManager.NIO_WORKERS, nioWorkers);
+      sshd.setProperties(new ImmutableMap.Builder<String, String>()
+          .put(AbstractFactoryManager.NIO_WORKERS, valueOf(nioWorkers))
+          .build());
+    } else {
+      log.info("Using default value for '{}': '{}'",
+          AbstractFactoryManager.NIO_WORKERS, FactoryManager.DEFAULT_NIO_WORKERS);
+    }
+
+  }
+
+  private String getLogMessage(String username) {
+    String intro = username == null ?
+        "Authentication pending ('{}' username) " :
+        "User with username '{}' has an active ";
+    return intro + "SFTP session created on '{}', last written to '{}'; full ioSession is: {}";
+  }
+
+  private String getSftpConfigPath(String param) {
+    return on(".").join(SFTP_CONFIG_SECTION, param);
+  }
+
+  /**
+   * Returns some of the useful values for an {@link IoSession}
+   */
+  private String getJsonSummary(IoSession ioSession) {
+    Map<String, Object> map = newLinkedHashMap();
+    map.put("bothIdleCount", ioSession.getBothIdleCount());
+    map.put("creationTime", ioSession.getCreationTime());
+    map.put("id", ioSession.getId());
+    map.put("lastBothIdleTime", ioSession.getLastBothIdleTime());
+    map.put("lastIoTime", ioSession.getLastIoTime());
+    map.put("lastReaderIdleTime", ioSession.getLastReaderIdleTime());
+    map.put("lastReadTime", ioSession.getLastReadTime());
+    map.put("lastWriterIdleTime", ioSession.getLastWriterIdleTime());
+    map.put("lastWriteTime", ioSession.getLastWriteTime());
+    map.put("readBytes", ioSession.getReadBytes());
+    map.put("readBytesThroughput", ioSession.getReadBytesThroughput());
+    map.put("scheduledWriteBytes", ioSession.getScheduledWriteBytes());
+    map.put("scheduledWriteMessages", ioSession.getScheduledWriteMessages());
+    map.put("writerIdleCount", ioSession.getWriterIdleCount());
+    map.put("writtenBytes", ioSession.getWrittenBytes());
+    map.put("writtenBytesThroughput", ioSession.getWrittenBytesThroughput());
+    map.put("writtenMessages", ioSession.getWrittenMessages());
+    map.put("writtenMessagesThroughput", ioSession.getWrittenMessagesThroughput());
+    try {
+      return MAPPER.writeValueAsString(map);
+    } catch (JsonGenerationException e) {
+      throw new RuntimeException(e);
+    } catch (JsonMappingException e) {
+      throw new RuntimeException(e);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
 }
