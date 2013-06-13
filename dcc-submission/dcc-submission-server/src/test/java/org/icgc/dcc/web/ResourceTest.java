@@ -1,5 +1,11 @@
 package org.icgc.dcc.web;
 
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.inject.util.Modules.EMPTY_MODULE;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static org.glassfish.grizzly.http.util.Header.Authorization;
+import static org.glassfish.jersey.internal.util.Base64.encodeAsString;
+
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
@@ -10,7 +16,6 @@ import javax.ws.rs.core.Application;
 
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
 import org.glassfish.jersey.client.ClientConfig;
-import org.glassfish.jersey.internal.util.Base64;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 import org.glassfish.jersey.test.inmemory.InMemoryTestContainerFactory;
@@ -30,16 +35,11 @@ import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.typesafe.config.ConfigFactory;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static com.google.inject.util.Modules.EMPTY_MODULE;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static org.glassfish.grizzly.http.util.Header.Authorization;
-
 public abstract class ResourceTest extends JerseyTest {
 
   private static final String AUTH_HEADER = Authorization.toString();
 
-  private static final String AUTH_VALUE = "X-DCC-Auth " + Base64.encodeAsString("admin:adminspasswd");
+  private static final String AUTH_VALUE = "X-DCC-Auth " + encodeAsString("admin:adminspasswd");
 
   protected static final String MIME_TYPE = APPLICATION_JSON;
 
@@ -77,6 +77,7 @@ public abstract class ResourceTest extends JerseyTest {
   protected void configureClient(ClientConfig clientConfig) {
     clientConfig.register(JacksonJsonProvider.class);
     clientConfig.register(new ClientRequestFilter() {
+
       @Override
       public void filter(ClientRequestContext requestContext) throws IOException {
         requestContext.getHeaders().add(AUTH_HEADER, AUTH_VALUE);
