@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.core;
 
-import org.icgc.dcc.core.model.SftpStatus;
+import org.icgc.dcc.core.model.Status;
 import org.icgc.dcc.sftp.SftpServerService;
 
 import com.google.common.util.concurrent.Service.State;
@@ -33,7 +33,7 @@ public class SystemService {
     this.sftpService = sftpService;
   }
 
-  public SftpStatus getStatus() {
+  public Status getStatus() {
     return sftpService.getActiveSessions();
   }
 
@@ -42,6 +42,8 @@ public class SystemService {
   }
 
   public State stopSftp() {
+    sftpService
+        .disconnectActiveSessions("\nThe ICGC DCC SFTP server is shutting down for scheduled maintenance. Please login and try again later.");
     State state = sftpService.stopAndWait();
 
     return state;
