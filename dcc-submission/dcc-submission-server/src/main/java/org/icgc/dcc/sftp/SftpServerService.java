@@ -123,7 +123,6 @@ public class SftpServerService extends AbstractService {
     List<AbstractSession> activeSessions = sshd.getActiveSessions();
 
     for (AbstractSession activeSession : activeSessions) {
-
       log.info("Sending disconnect message '{}' to {}", message, activeSession.getUsername());
       try {
         activeSession.disconnect(0, message);
