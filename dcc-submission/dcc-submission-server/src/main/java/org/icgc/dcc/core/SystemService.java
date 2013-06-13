@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.core;
 
-import org.icgc.dcc.core.model.Status;
+import org.icgc.dcc.core.model.SftpStatus;
 import org.icgc.dcc.sftp.SftpServerService;
 
 import com.google.common.util.concurrent.Service.State;
@@ -33,11 +33,8 @@ public class SystemService {
     this.sftpService = sftpService;
   }
 
-  public Status getStatus() {
-    int activeSftpSessions = sftpService.getActiveSessions();
-    Status status = new Status(activeSftpSessions);
-
-    return status;
+  public SftpStatus getStatus() {
+    return sftpService.getActiveSessions();
   }
 
   public boolean isFtpEnabled() {

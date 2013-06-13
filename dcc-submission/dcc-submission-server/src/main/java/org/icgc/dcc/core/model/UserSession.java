@@ -17,29 +17,56 @@
  */
 package org.icgc.dcc.core.model;
 
-import org.codehaus.jackson.annotate.JsonCreator;
-import org.codehaus.jackson.annotate.JsonProperty;
+import static com.google.common.base.Preconditions.checkNotNull;
 
-public class Status {
+import java.util.Map;
 
-  private final int activeSftpSessions;
+import com.google.common.base.Objects;
 
-  @JsonCreator
-  public Status(@JsonProperty("activeSftpSessions") int activeSftpSessions) {
-    super();
-    this.activeSftpSessions = activeSftpSessions;
+/**
+ * Represents a user session.
+ */
+public class UserSession {
+
+  private final String userName;
+
+  private final long creationTime;
+
+  private final long lastWriteTime;
+
+  private final Map<String, String> ioSessionMap;
+
+  public UserSession(String username, long creationTime, long lastWriteTime, Map<String, String> ioSessionMap) {
+    this.userName = username; // May be null
+    this.creationTime = creationTime;
+    this.lastWriteTime = lastWriteTime;
+    this.ioSessionMap = checkNotNull(ioSessionMap);
   }
 
-  /**
-   * @return the activeSftpSessions
-   */
-  public int getActiveSftpSessions() {
-    return activeSftpSessions;
+  public String getUserName() {
+    return userName;
+  }
+
+  public Map<String, String> getIoSessionMap() {
+    return ioSessionMap;
+  }
+
+  public long getCreationTime() {
+    return creationTime;
+  }
+
+  public long getLastWriteTime() {
+    return lastWriteTime;
   }
 
   @Override
   public String toString() {
-    return String.format("Status [activeSftpSessions=%s]", activeSftpSessions);
+    return Objects.toStringHelper(UserSession.class)
+        .add("userName", this.userName)
+        .add("creationTime", this.creationTime)
+        .add("lastWriteTime", this.lastWriteTime)
+        .add("ioSessionMap", this.ioSessionMap)
+        .toString();
   }
 
 }
