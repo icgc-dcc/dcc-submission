@@ -17,45 +17,56 @@
  */
 package org.icgc.dcc.core.model;
 
-import java.util.List;
+import static com.google.common.base.Preconditions.checkNotNull;
 
-import org.codehaus.jackson.annotate.JsonCreator;
-import org.codehaus.jackson.annotate.JsonProperty;
+import java.util.Map;
 
-public class Status {
+import com.google.common.base.Objects;
 
-  private final int activeSftpSessions;
+/**
+ * Represents a user session.
+ */
+public class UserSession {
 
-  private final List<String> userNames;
+  private final String userName;
 
-  // @formatter:off
-  @JsonCreator
-  public Status(
-      @JsonProperty("activeSftpSessions") int activeSftpSessions,
-      @JsonProperty("userNames") List<String> userNames) {
-    super();
-    this.activeSftpSessions = activeSftpSessions;
-    this.userNames = userNames;
-  }
-  // @formatter:on
+  private final long creationTime;
 
-  /**
-   * @return the activeSftpSessions
-   */
-  public int getActiveSftpSessions() {
-    return activeSftpSessions;
+  private final long lastWriteTime;
+
+  private final Map<String, String> ioSessionMap;
+
+  public UserSession(String username, long creationTime, long lastWriteTime, Map<String, String> ioSessionMap) {
+    this.userName = username; // May be null
+    this.creationTime = creationTime;
+    this.lastWriteTime = lastWriteTime;
+    this.ioSessionMap = checkNotNull(ioSessionMap);
   }
 
-  /**
-   * @return the list of user names
-   */
-  public List<String> getUsernames() {
-    return userNames;
+  public String getUserName() {
+    return userName;
+  }
+
+  public Map<String, String> getIoSessionMap() {
+    return ioSessionMap;
+  }
+
+  public long getCreationTime() {
+    return creationTime;
+  }
+
+  public long getLastWriteTime() {
+    return lastWriteTime;
   }
 
   @Override
   public String toString() {
-    return String.format("Status [activeSftpSessions=%s, userNames=%s]", activeSftpSessions, userNames);
+    return Objects.toStringHelper(UserSession.class)
+        .add("userName", this.userName)
+        .add("creationTime", this.creationTime)
+        .add("lastWriteTime", this.lastWriteTime)
+        .add("ioSessionMap", this.ioSessionMap)
+        .toString();
   }
 
 }

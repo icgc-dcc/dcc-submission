@@ -19,7 +19,6 @@ package org.icgc.dcc.sftp;
 
 import static com.google.common.base.Joiner.on;
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newLinkedHashMap;
 import static java.lang.String.valueOf;
 
@@ -42,10 +41,9 @@ import org.apache.sshd.server.PasswordAuthenticator;
 import org.apache.sshd.server.keyprovider.PEMGeneratorHostKeyProvider;
 import org.apache.sshd.server.session.ServerSession;
 import org.apache.sshd.server.sftp.SftpSubsystem;
-import org.codehaus.jackson.JsonGenerationException;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.core.ProjectService;
+import org.icgc.dcc.core.model.SftpStatus;
+import org.icgc.dcc.core.model.UserSession;
 import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.security.UsernamePasswordAuthenticator;
@@ -62,8 +60,6 @@ import com.typesafe.config.Config;
  * Service abstraction to the SFTP sub-system.
  */
 public class SftpServerService extends AbstractService {
-
-  private static final ObjectMapper MAPPER = new ObjectMapper();
 
   private static final String SFTP_CONFIG_SECTION = "sftp";
 
@@ -100,8 +96,8 @@ public class SftpServerService extends AbstractService {
     sshd.setSubsystemFactories(ImmutableList.<NamedFactory<Command>> of(new SftpSubsystem.Factory()));
   }
 
-  public List<String> getActiveSessions() {
-    List<String> userNames = newArrayList();
+  public SftpStatus getActiveSessions() {
+    SftpStatus status = new SftpStatus();
 
     List<AbstractSession> activeSessions = sshd.getActiveSessions();
     for (AbstractSession activeSession : activeSessions) {
@@ -111,13 +107,15 @@ public class SftpServerService extends AbstractService {
       long creationTime = ioSession.getCreationTime();
       long lastWriteTime = ioSession.getLastWriteTime();
       String username = activeSession.getUsername();
+
+      Map<String, String> ioSessionMap = getIoSessionMap(ioSession);
       log.info(
           getLogMessage(username),
-          new Object[] { username, new Date(creationTime), new Date(lastWriteTime), getJsonSummary(ioSession) });
-      userNames.add(username);
+          new Object[] { username, new Date(creationTime), new Date(lastWriteTime), ioSessionMap });
+      status.addUserSession(new UserSession(username, creationTime, lastWriteTime, ioSessionMap));
     }
 
-    return userNames;
+    return status;
   }
 
   @Override
@@ -172,36 +170,28 @@ public class SftpServerService extends AbstractService {
   }
 
   /**
-   * Returns some of the useful values for an {@link IoSession}
+   * Returns some of the useful values for an {@link IoSession}.
    */
-  private String getJsonSummary(IoSession ioSession) {
-    Map<String, Object> map = newLinkedHashMap();
-    map.put("bothIdleCount", ioSession.getBothIdleCount());
-    map.put("creationTime", ioSession.getCreationTime());
-    map.put("id", ioSession.getId());
-    map.put("lastBothIdleTime", ioSession.getLastBothIdleTime());
-    map.put("lastIoTime", ioSession.getLastIoTime());
-    map.put("lastReaderIdleTime", ioSession.getLastReaderIdleTime());
-    map.put("lastReadTime", ioSession.getLastReadTime());
-    map.put("lastWriterIdleTime", ioSession.getLastWriterIdleTime());
-    map.put("lastWriteTime", ioSession.getLastWriteTime());
-    map.put("readBytes", ioSession.getReadBytes());
-    map.put("readBytesThroughput", ioSession.getReadBytesThroughput());
-    map.put("scheduledWriteBytes", ioSession.getScheduledWriteBytes());
-    map.put("scheduledWriteMessages", ioSession.getScheduledWriteMessages());
-    map.put("writerIdleCount", ioSession.getWriterIdleCount());
-    map.put("writtenBytes", ioSession.getWrittenBytes());
-    map.put("writtenBytesThroughput", ioSession.getWrittenBytesThroughput());
-    map.put("writtenMessages", ioSession.getWrittenMessages());
-    map.put("writtenMessagesThroughput", ioSession.getWrittenMessagesThroughput());
-    try {
-      return MAPPER.writeValueAsString(map);
-    } catch (JsonGenerationException e) {
-      throw new RuntimeException(e);
-    } catch (JsonMappingException e) {
-      throw new RuntimeException(e);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+  private Map<String, String> getIoSessionMap(IoSession ioSession) {
+    Map<String, String> map = newLinkedHashMap();
+    map.put("bothIdleCount", valueOf(ioSession.getBothIdleCount()));
+    map.put("creationTime", valueOf(ioSession.getCreationTime()));
+    map.put("id", valueOf(ioSession.getId()));
+    map.put("lastBothIdleTime", valueOf(ioSession.getLastBothIdleTime()));
+    map.put("lastIoTime", valueOf(ioSession.getLastIoTime()));
+    map.put("lastReaderIdleTime", valueOf(ioSession.getLastReaderIdleTime()));
+    map.put("lastReadTime", valueOf(ioSession.getLastReadTime()));
+    map.put("lastWriterIdleTime", valueOf(ioSession.getLastWriterIdleTime()));
+    map.put("lastWriteTime", valueOf(ioSession.getLastWriteTime()));
+    map.put("readBytes", valueOf(ioSession.getReadBytes()));
+    map.put("readBytesThroughput", valueOf(ioSession.getReadBytesThroughput()));
+    map.put("scheduledWriteBytes", valueOf(ioSession.getScheduledWriteBytes()));
+    map.put("scheduledWriteMessages", valueOf(ioSession.getScheduledWriteMessages()));
+    map.put("writerIdleCount", valueOf(ioSession.getWriterIdleCount()));
+    map.put("writtenBytes", valueOf(ioSession.getWrittenBytes()));
+    map.put("writtenBytesThroughput", valueOf(ioSession.getWrittenBytesThroughput()));
+    map.put("writtenMessages", valueOf(ioSession.getWrittenMessages()));
+    map.put("writtenMessagesThroughput", valueOf(ioSession.getWrittenMessagesThroughput()));
+    return map;
   }
 }

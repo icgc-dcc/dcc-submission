@@ -18,7 +18,6 @@
 package org.icgc.dcc.sftp;
 
 import static com.google.common.base.Charsets.UTF_8;
-import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
 import static java.util.concurrent.Executors.newFixedThreadPool;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -31,6 +30,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import org.apache.hadoop.conf.Configuration;
@@ -38,6 +38,8 @@ import org.apache.hadoop.fs.RawLocalFileSystem;
 import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.core.model.Project;
+import org.icgc.dcc.core.model.SftpStatus;
+import org.icgc.dcc.core.model.UserSession;
 import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.filesystem.ReleaseFileSystem;
 import org.icgc.dcc.filesystem.SubmissionDirectory;
@@ -191,7 +193,7 @@ public class SftpServerServiceTest {
   @Test
   public void testActiveSession() throws InterruptedException {
     // Connected
-    assertThat(service.getActiveSessions()).isEqualTo(newArrayList(USERNAME));
+    checkActiveSessions(1);
 
     // Disconnect
     disconnectAndCheck();
@@ -243,11 +245,7 @@ public class SftpServerServiceTest {
     }
     Thread.sleep(extraClientCount * 1500);
 
-    ArrayList<String> list = newArrayList();
-    for (int i = 0; i < extraClientCount + 1; i++) { // One is already connected
-      list.add(USERNAME);
-    }
-    assertThat(service.getActiveSessions()).isEqualTo(list);
+    checkActiveSessions(extraClientCount + 1); // One is already connected
 
     Thread.sleep(extraClientCount * 15000);
     disconnectAndCheck();
@@ -256,7 +254,17 @@ public class SftpServerServiceTest {
   private void disconnectAndCheck() throws InterruptedException {
     sftp.disconnect();
     Thread.sleep(1000); // Allow for asynchronous disconnection latency
-    assertThat(service.getActiveSessions()).isEqualTo(new ArrayList<String>());
+    checkActiveSessions(0);
+  }
+
+  private void checkActiveSessions(int total) {
+    SftpStatus activeSessions = service.getActiveSessions();
+    assertThat(activeSessions.getActiveSftpSessions()).isEqualTo(total);
+    List<UserSession> userSessions = activeSessions.getUserSessions();
+    assertThat(userSessions.size()).isEqualTo(total);
+    for (int i = 0; i < total; i++) {
+      assertThat(userSessions.get(i).getUserName()).isEqualTo(USERNAME);
+    }
   }
 
   @After
