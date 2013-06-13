@@ -20,6 +20,7 @@ package org.icgc.dcc.sftp;
 import static com.google.common.base.Joiner.on;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Maps.newLinkedHashMap;
+import static com.google.common.util.concurrent.Service.State.TERMINATED;
 import static java.lang.String.valueOf;
 
 import java.io.IOException;
@@ -44,7 +45,7 @@ import org.apache.sshd.server.keyprovider.PEMGeneratorHostKeyProvider;
 import org.apache.sshd.server.session.ServerSession;
 import org.apache.sshd.server.sftp.SftpSubsystem;
 import org.icgc.dcc.core.ProjectService;
-import org.icgc.dcc.core.model.SftpStatus;
+import org.icgc.dcc.core.model.Status;
 import org.icgc.dcc.core.model.UserSession;
 import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.release.ReleaseService;
@@ -115,8 +116,24 @@ public class SftpServerService extends AbstractService {
     sshd.setSubsystemFactories(ImmutableList.<NamedFactory<Command>> of(new SftpSubsystem.Factory()));
   }
 
-  public SftpStatus getActiveSessions() {
-    SftpStatus status = new SftpStatus();
+  public void disconnectActiveSessions(String message) {
+    List<AbstractSession> activeSessions = sshd.getActiveSessions();
+
+    for (AbstractSession activeSession : activeSessions) {
+      log.info("Sending disconnect message '{}' to {}", message, activeSession.getUsername());
+      try {
+        activeSession.disconnect(0, message);
+      } catch (IOException e) {
+        log.error("Exception sending disconnect message: {}", e);
+      }
+    }
+  }
+
+  public Status getActiveSessions() {
+    Status status = new Status(state());
+    if (state() == TERMINATED) {
+      return status;
+    }
 
     List<AbstractSession> activeSessions = sshd.getActiveSessions();
     for (AbstractSession activeSession : activeSessions) {
@@ -135,19 +152,6 @@ public class SftpServerService extends AbstractService {
     }
 
     return status;
-  }
-
-  public void disconnectActiveSessions(String message) {
-    List<AbstractSession> activeSessions = sshd.getActiveSessions();
-
-    for (AbstractSession activeSession : activeSessions) {
-      log.info("Sending disconnect message '{}' to {}", message, activeSession.getUsername());
-      try {
-        activeSession.disconnect(0, message);
-      } catch (IOException e) {
-        log.error("Exception sending disconnect message: {}", e);
-      }
-    }
   }
 
   @Override

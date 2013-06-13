@@ -17,9 +17,10 @@
  */
 package org.icgc.dcc.core.model;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.Map;
+
+import org.codehaus.jackson.annotate.JsonCreator;
+import org.codehaus.jackson.annotate.JsonProperty;
 
 import com.google.common.base.Objects;
 
@@ -36,11 +37,22 @@ public class UserSession {
 
   private final Map<String, String> ioSessionMap;
 
-  public UserSession(String username, long creationTime, long lastWriteTime, Map<String, String> ioSessionMap) {
-    this.userName = username; // May be null
+  @JsonCreator
+  public UserSession(
+      @JsonProperty("userName")
+      String userName,
+      @JsonProperty("creationTime")
+      long creationTime,
+      @JsonProperty("lastWriteTime")
+      long lastWriteTime,
+      @JsonProperty("ioSessionMap")
+      Map<String, String> ioSessionMap) {
+    super();
+    this.userName = userName;
     this.creationTime = creationTime;
     this.lastWriteTime = lastWriteTime;
-    this.ioSessionMap = checkNotNull(ioSessionMap);
+    this.ioSessionMap = ioSessionMap;
+
   }
 
   public String getUserName() {

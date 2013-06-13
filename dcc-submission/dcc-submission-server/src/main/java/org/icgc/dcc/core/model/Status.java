@@ -17,24 +17,55 @@
  */
 package org.icgc.dcc.core.model;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.List;
 
+import org.codehaus.jackson.annotate.JsonCreator;
+import org.codehaus.jackson.annotate.JsonProperty;
+
 import com.google.common.base.Objects;
+import com.google.common.util.concurrent.Service.State;
 
 /**
  * Represents the status of user sessions.
  */
-public class SftpStatus {
+public class Status {
+
+  private final State sftpState;
 
   private int activeSftpSessions;
 
-  private final List<UserSession> userSessions = newArrayList();
+  private final List<UserSession> userSessions;
 
-  public void addUserSession(UserSession userSession) {
+  @JsonCreator
+  public Status(
+      @JsonProperty("sftpState")
+      State sftpState,
+      @JsonProperty("activeSftpSessions")
+      int activeSftpSessions,
+      @JsonProperty("userSessions")
+      List<UserSession> userSessions) {
+    super();
+    this.sftpState = sftpState;
+    this.activeSftpSessions = activeSftpSessions;
+    this.userSessions = userSessions;
+  }
+
+  public Status(State sftpState) {
+    this.sftpState = checkNotNull(sftpState);
+    this.activeSftpSessions = 0;
+    this.userSessions = newArrayList();
+  }
+
+  public void addUserSession(UserSession userSession) { // TODO: builder
     userSessions.add(userSession);
     activeSftpSessions++;
+  }
+
+  public State getSftpState() {
+    return sftpState;
   }
 
   public int getActiveSftpSessions() {
@@ -47,7 +78,7 @@ public class SftpStatus {
 
   @Override
   public String toString() {
-    return Objects.toStringHelper(SftpStatus.class)
+    return Objects.toStringHelper(Status.class)
         .add("activeSftpSessions", this.activeSftpSessions)
         .add("userSessions", this.userSessions)
         .toString();

@@ -38,7 +38,7 @@ import org.apache.hadoop.fs.RawLocalFileSystem;
 import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.core.model.Project;
-import org.icgc.dcc.core.model.SftpStatus;
+import org.icgc.dcc.core.model.Status;
 import org.icgc.dcc.core.model.UserSession;
 import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.filesystem.ReleaseFileSystem;
@@ -261,7 +261,7 @@ public class SftpServerServiceTest {
   }
 
   private void checkActiveSessions(int total) {
-    SftpStatus activeSessions = service.getActiveSessions();
+    Status activeSessions = service.getActiveSessions();
     assertThat(activeSessions.getActiveSftpSessions()).isEqualTo(total);
     List<UserSession> userSessions = activeSessions.getUserSessions();
     assertThat(userSessions.size()).isEqualTo(total);
