@@ -15,91 +15,70 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.sftp;
+package org.icgc.dcc.core.model;
 
-import org.junit.rules.TestRule;
-import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
+import java.util.Map;
 
-import com.jcraft.jsch.ChannelSftp;
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
+import org.codehaus.jackson.annotate.JsonCreator;
+import org.codehaus.jackson.annotate.JsonProperty;
 
-public class Sftp implements TestRule {
+import com.google.common.base.Objects;
 
-  private static final String SFTP_HOST = "127.0.0.1";
+/**
+ * Represents a user session.
+ */
+public class UserSession {
 
-  private static final int SFTP_PORT = 5322;
+  private final String userName;
 
-  private final JSch jsch = new JSch();
+  private final long creationTime;
 
-  private Session session;
+  private final long lastWriteTime;
 
-  private ChannelSftp sftpChannel;
+  private final Map<String, String> ioSessionMap;
 
-  private final String username;
+  @JsonCreator
+  public UserSession(
+      @JsonProperty("userName")
+      String userName,
+      @JsonProperty("creationTime")
+      long creationTime,
+      @JsonProperty("lastWriteTime")
+      long lastWriteTime,
+      @JsonProperty("ioSessionMap")
+      Map<String, String> ioSessionMap) {
+    super();
+    this.userName = userName;
+    this.creationTime = creationTime;
+    this.lastWriteTime = lastWriteTime;
+    this.ioSessionMap = ioSessionMap;
 
-  private final String password;
+  }
 
-  public Sftp(String username, String password) {
-    this.username = username;
-    this.password = password;
+  public String getUserName() {
+    return userName;
+  }
+
+  public Map<String, String> getIoSessionMap() {
+    return ioSessionMap;
+  }
+
+  public long getCreationTime() {
+    return creationTime;
+  }
+
+  public long getLastWriteTime() {
+    return lastWriteTime;
   }
 
   @Override
-  public Statement apply(final Statement base, Description description) {
-    return new Statement() {
-
-      @Override
-      public void evaluate() throws Throwable {
-        try {
-          base.evaluate();
-        } finally {
-          disconnect();
-        }
-      }
-
-    };
-  }
-
-  public int getPort() {
-    return SFTP_PORT;
-  }
-
-  public String getHost() {
-    return SFTP_HOST;
-  }
-
-  public ChannelSftp getChannel() {
-    return sftpChannel;
-  }
-
-  public void connect() throws JSchException {
-    if (sftpChannel != null && sftpChannel.isConnected()) {
-      return;
-    }
-
-    session = jsch.getSession(username, SFTP_HOST, SFTP_PORT);
-    session.setConfig("StrictHostKeyChecking", "no");
-    session.setPassword(password);
-    session.connect();
-
-    sftpChannel = (ChannelSftp) session.openChannel("sftp");
-    sftpChannel.connect();
-  }
-
-  public void disconnect() {
-    if (session == null) {
-      return;
-    }
-
-    if (session.isConnected() == false) {
-      return;
-    }
-
-    sftpChannel.exit();
-    session.disconnect();
+  public String toString() {
+    return Objects.toStringHelper(UserSession.class)
+        .add("userName", this.userName)
+        .add("creationTime", this.creationTime)
+        .add("lastWriteTime", this.lastWriteTime)
+        .add("ioSessionMap", this.ioSessionMap)
+        .toString();
   }
 
 }

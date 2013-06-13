@@ -34,10 +34,7 @@ public class SystemService {
   }
 
   public Status getStatus() {
-    int activeSftpSessions = sftpService.getActiveSessions();
-    Status status = new Status(activeSftpSessions);
-
-    return status;
+    return sftpService.getActiveSessions();
   }
 
   public boolean isFtpEnabled() {
@@ -45,6 +42,8 @@ public class SystemService {
   }
 
   public State stopSftp() {
+    sftpService
+        .disconnectActiveSessions("\nThe ICGC DCC SFTP server is shutting down for scheduled maintenance. Please login and try again later.");
     State state = sftpService.stopAndWait();
 
     return state;

@@ -1,6 +1,7 @@
 <configuration debug="false">
   <property name="log.dir" value="target/logs" />
   <property name="log.name" value="dcc-server" />
+  <property name="log.debug.name" value="dcc-server.debug" />
   <property name="pattern" value="%date{ISO8601} [%thread] %-5level %logger{20} - %msg%n" />
 
   <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator">
@@ -23,9 +24,32 @@
     </encoder>
   </appender>
 
-  <logger name="de.flapdoodle.embed" level="WARN"/>
-  <logger name="org.glassfish.jersey" level="WARN"/>
-  <logger name="org.hibernate.validator" level="WARN"/>
+  <appender name="DEBUG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <File>${log.dir}/${log.debug.name}.log</File>
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <FileNamePattern>${log.dir}/${log.debug.name}.%d{yyyy-MM-dd}.log</FileNamePattern>
+    </rollingPolicy>
+    <encoder>
+      <pattern>${pattern}</pattern>
+    </encoder>
+  </appender>
+
+  <logger name="org.icgc.dcc.core.UserService" level="info" additivity="false">
+    <appender-ref ref="DEBUG" />
+  </logger>
+  <logger name="org.icgc.dcc.shiro.ShiroPasswordAuthenticator" level="info" additivity="false">
+    <appender-ref ref="DEBUG" />
+  </logger>
+  <logger name="org.icgc.dcc.http.jersey.BasicHttpAuthenticationRequestFilter" level="info" additivity="false">
+    <appender-ref ref="DEBUG" />
+  </logger>
+  <logger name="org.apache.sshd.server.session.ServerSession" level="info" additivity="false">
+    <appender-ref ref="DEBUG" />
+  </logger>
+
+  <logger name="de.flapdoodle.embed" level="WARN" />
+  <logger name="org.glassfish.jersey" level="WARN" />
+  <logger name="org.hibernate.validator" level="WARN" />
 
   <root level="info">
     <appender-ref ref="STDOUT" />
