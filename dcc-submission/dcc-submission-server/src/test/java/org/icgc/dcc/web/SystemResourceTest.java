@@ -2,7 +2,7 @@ package org.icgc.dcc.web;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
-import org.icgc.dcc.core.model.Status;
+import org.icgc.dcc.core.model.SftpStatus;
 import org.icgc.dcc.sftp.SftpServerService;
 import org.junit.After;
 import org.junit.Before;
@@ -21,7 +21,7 @@ public class SystemResourceTest extends ResourceTest {
 
   @Test
   public void testStatus() {
-    Status status = target().path("system").path("status").request(MIME_TYPE).get(Status.class);
+    SftpStatus status = target().path("system").path("status").request(MIME_TYPE).get(SftpStatus.class);
 
     assertThat(status.getActiveSftpSessions()).isEqualTo(0);
   }
