@@ -33,7 +33,9 @@ import org.apache.sshd.common.AbstractFactoryManager;
 import org.apache.sshd.common.FactoryManager;
 import org.apache.sshd.common.NamedFactory;
 import org.apache.sshd.common.Session;
+import org.apache.sshd.common.SshConstants;
 import org.apache.sshd.common.session.AbstractSession;
+import org.apache.sshd.common.util.Buffer;
 import org.apache.sshd.server.Command;
 import org.apache.sshd.server.FileSystemFactory;
 import org.apache.sshd.server.FileSystemView;
@@ -81,7 +83,23 @@ public class SftpServerService extends AbstractService {
 
       @Override
       public boolean authenticate(String username, String password, ServerSession session) {
-        return passwordAuthenticator.authenticate(username, password.toCharArray(), null) != null;
+        boolean authenticated = passwordAuthenticator.authenticate(username, password.toCharArray(), null) != null;
+        if (authenticated) {
+          sendWelcomeBanner(session);
+        }
+
+        return authenticated;
+      }
+
+      private void sendWelcomeBanner(ServerSession session) {
+        try {
+          Buffer buffer = session.createBuffer(SshConstants.Message.SSH_MSG_USERAUTH_BANNER, 0);
+          buffer.putString("Welcome to the ICGC DCC Submission SFTP Server!\n\n");
+          buffer.putString("\n");
+          session.writePacket(buffer);
+        } catch (IOException e) {
+          log.warn("Error sending SFTP connection welcome banner: ", e);
+        }
       }
 
     });
@@ -93,6 +111,7 @@ public class SftpServerService extends AbstractService {
         return new HdfsFileSystemView(fs, projectService, releaseService, passwordAuthenticator);
       }
     });
+
     sshd.setSubsystemFactories(ImmutableList.<NamedFactory<Command>> of(new SftpSubsystem.Factory()));
   }
 
@@ -116,6 +135,19 @@ public class SftpServerService extends AbstractService {
     }
 
     return status;
+  }
+
+  public void disconnectActiveSessions(String message) {
+    List<AbstractSession> activeSessions = sshd.getActiveSessions();
+
+    for (AbstractSession activeSession : activeSessions) {
+      log.info("Sending disconnect message '{}' to {}", message, activeSession.getUsername());
+      try {
+        activeSession.disconnect(0, message);
+      } catch (IOException e) {
+        log.error("Exception sending disconnect message: {}", e);
+      }
+    }
   }
 
   @Override
