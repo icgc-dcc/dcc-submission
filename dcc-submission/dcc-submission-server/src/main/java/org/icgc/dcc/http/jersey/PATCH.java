@@ -15,73 +15,23 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.model;
+package org.icgc.dcc.http.jersey;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Lists.newArrayList;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import java.util.List;
-
-import org.codehaus.jackson.annotate.JsonCreator;
-import org.codehaus.jackson.annotate.JsonProperty;
-
-import com.google.common.base.Objects;
-import com.google.common.util.concurrent.Service.State;
+import javax.ws.rs.HttpMethod;
 
 /**
- * Represents the status of user sessions.
+ * Indicates that the annotated method responds to HTTP PATCH requests.
+ * 
+ * @see http://java.net/projects/jersey/lists/users/archive/2012-03/message/122
+ * @see HttpMethod
  */
-public class Status {
-
-  private final State sftpState;
-
-  private int activeSftpSessions;
-
-  private final List<UserSession> userSessions;
-
-  @JsonCreator
-  public Status(
-      @JsonProperty("sftpState")
-      State sftpState,
-      @JsonProperty("activeSftpSessions")
-      int activeSftpSessions,
-      @JsonProperty("userSessions")
-      List<UserSession> userSessions) {
-    super();
-    this.sftpState = sftpState;
-    this.activeSftpSessions = activeSftpSessions;
-    this.userSessions = userSessions;
-  }
-
-  public Status(State sftpState) {
-    this.sftpState = checkNotNull(sftpState);
-    this.activeSftpSessions = 0;
-    this.userSessions = newArrayList();
-  }
-
-  public void addUserSession(UserSession userSession) { // TODO: builder
-    userSessions.add(userSession);
-    activeSftpSessions++;
-  }
-
-  public State getSftpState() {
-    return sftpState;
-  }
-
-  public int getActiveSftpSessions() {
-    return activeSftpSessions;
-  }
-
-  public List<UserSession> getUserSessions() {
-    return userSessions;
-  }
-
-  @Override
-  public String toString() {
-    return Objects.toStringHelper(Status.class)
-        .add("activeSftpSessions", this.activeSftpSessions)
-        .add("userSessions", this.userSessions)
-        .toString();
-  }
-
+@Target({ ElementType.METHOD })
+@Retention(RetentionPolicy.RUNTIME)
+@HttpMethod("PATCH")
+public @interface PATCH {
 }

@@ -169,6 +169,13 @@
       <version>1.4.5</version>
     </dependency>
 
+    <!-- Utilities -->
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
     <!-- Testing - REST -->
     <dependency>
       <groupId>org.glassfish.jersey.test-framework</groupId>

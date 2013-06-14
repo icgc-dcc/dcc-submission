@@ -19,6 +19,7 @@ package org.icgc.dcc.sftp;
 
 import static com.google.common.base.Charsets.UTF_8;
 import static java.lang.String.format;
+import static java.util.concurrent.Executors.newFixedThreadPool;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -28,12 +29,17 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.RawLocalFileSystem;
 import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.core.model.Project;
+import org.icgc.dcc.core.model.Status;
+import org.icgc.dcc.core.model.UserSession;
 import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.filesystem.ReleaseFileSystem;
 import org.icgc.dcc.filesystem.SubmissionDirectory;
@@ -43,13 +49,17 @@ import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.security.UsernamePasswordAuthenticator;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.SftpException;
@@ -58,13 +68,21 @@ import com.typesafe.config.Config;
 @RunWith(MockitoJUnitRunner.class)
 public class SftpServerServiceTest {
 
+  private static final Logger log = LoggerFactory.getLogger(SftpServerServiceTest.class);
+
   private static final String RELEASE_NAME = "release1";
 
   private static final String PROJECT_KEY = "project1";
 
+  private static final String USERNAME = "username";
+
+  private static final String PASSWORD = "password";
+
+  private static final int NIO_WORKERS = 3;
+
   // @formatter:off
   @Rule public TemporaryFolder tmp = new TemporaryFolder();
-  @Rule public Sftp sftp = new Sftp("username", "password");
+  @Rule public Sftp sftp = new Sftp(USERNAME, PASSWORD);
 
   @Mock Config config;
   @Mock Subject subject;
@@ -93,6 +111,8 @@ public class SftpServerServiceTest {
     // Mock configuration
     when(config.getInt("sftp.port")).thenReturn(sftp.getPort());
     when(config.getString("sftp.path")).thenReturn("");
+    when(config.hasPath("sftp.nio-workers")).thenReturn(true);
+    when(config.getInt("sftp.nio-workers")).thenReturn(NIO_WORKERS);
 
     // Mock authentication
     when(passwordAuthenticator.authenticate(anyString(), (char[]) any(), anyString())).thenReturn(subject);
@@ -125,9 +145,7 @@ public class SftpServerServiceTest {
   @SuppressWarnings("unchecked")
   public void testService() throws JSchException, SftpException {
     // Create the simulated project directory
-    String projectDirectoryName = "/" + PROJECT_KEY;
-    File projectDirectory = new File(root, projectDirectoryName);
-    projectDirectory.mkdir();
+    String projectDirectoryName = createProjectDirectory();
 
     // Original file
     String fileName = fileName(1);
@@ -176,12 +194,80 @@ public class SftpServerServiceTest {
   @Test
   public void testActiveSession() throws InterruptedException {
     // Connected
-    assertThat(service.getActiveSessions()).isEqualTo(1);
+    checkActiveSessions(1);
 
     // Disconnect
+    disconnectAndCheck();
+  }
+
+  // re-enable in DCC-1226
+  @Ignore
+  @Test
+  public void testMaxSession() throws InterruptedException {
+    int extraClientCount = NIO_WORKERS + 1; // one is already connected
+
+    ExecutorService executor = newFixedThreadPool(extraClientCount);
+    for (int i = 0; i < extraClientCount; i++) {
+      final int thread = i + 1;
+      executor.execute(new Runnable() {
+
+        @Override
+        public void run() {
+          Sftp sftpTmp = new Sftp(USERNAME, PASSWORD);
+          try {
+            log.info("Connecting - {}", thread);
+            sftpTmp.connect();
+            log.info("Connected - {}", thread);
+
+            String projectDirectoryName = createProjectDirectory(); // Somehow it seems we can't write at the root...
+            log.info(lsString(sftpTmp, projectDirectoryName));
+
+            log.info("Writting - {}", thread);
+            sftpTmp.getChannel().put(new ByteArrayInputStream(new byte[250000000]), fileName("dummy" + thread));
+
+            log.info("Written - {}", thread);
+            log.info(lsString(sftpTmp, projectDirectoryName));
+
+            log.info("Disconnecting - {}", thread);
+            sftpTmp.disconnect();
+            log.info("Disconnected - {}", thread);
+
+          } catch (Exception e) {
+            e.printStackTrace();
+            Assert.assertFalse(true);
+          }
+        }
+
+        @SuppressWarnings("unchecked")
+        private String lsString(Sftp sftpTmp, String projectDirectoryName) throws SftpException {
+          return new ArrayList<String>(sftpTmp.getChannel().ls(projectDirectoryName)).toString();
+        }
+
+      });
+      Thread.sleep(1000);
+    }
+    Thread.sleep(extraClientCount * 1500);
+
+    checkActiveSessions(extraClientCount + 1); // One is already connected
+
+    Thread.sleep(extraClientCount * 15000);
+    disconnectAndCheck();
+  }
+
+  private void disconnectAndCheck() throws InterruptedException {
     sftp.disconnect();
     Thread.sleep(1000); // Allow for asynchronous disconnection latency
-    assertThat(service.getActiveSessions()).isEqualTo(0);
+    checkActiveSessions(0);
+  }
+
+  private void checkActiveSessions(int total) {
+    Status activeSessions = service.getActiveSessions();
+    assertThat(activeSessions.getActiveSftpSessions()).isEqualTo(total);
+    List<UserSession> userSessions = activeSessions.getUserSessions();
+    assertThat(userSessions.size()).isEqualTo(total);
+    for (int i = 0; i < total; i++) {
+      assertThat(userSessions.get(i).getUserName()).isEqualTo(USERNAME);
+    }
   }
 
   @After
@@ -196,8 +282,23 @@ public class SftpServerServiceTest {
     return localFileSystem;
   }
 
+  private String createProjectDirectory() {
+    String projectDirectoryName = getProjectDirectoryName();
+    File projectDirectory = new File(root, projectDirectoryName);
+    projectDirectory.mkdir();
+    return projectDirectoryName;
+  }
+
+  private String getProjectDirectoryName() {
+    return "/" + PROJECT_KEY;
+  }
+
   private static String fileName(int i) {
-    return format("/%s/file%s.txt", PROJECT_KEY, i);
+    return fileName(String.valueOf(i));
+  }
+
+  private static String fileName(String s) {
+    return format("/%s/file%s.txt", PROJECT_KEY, s);
   }
 
   private static InputStream inputStream(String text) {
