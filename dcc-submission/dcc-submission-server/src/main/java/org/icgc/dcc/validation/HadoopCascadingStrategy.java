@@ -83,11 +83,11 @@ public class HadoopCascadingStrategy extends BaseCascadingStrategy {
     }
 
     // Specify available compression codecs
-    String avalailbleCodecs = on(',').join(//
+    String availableCodecs = on(',').join(//
         "org.apache.hadoop.io.compress.DefaultCodec", //
         "org.apache.hadoop.io.compress.GzipCodec", //
         "org.apache.hadoop.io.compress.BZip2Codec");
-    properties.put("io.compression.codecs", avalailbleCodecs);
+    properties.put("io.compression.codecs", availableCodecs);
 
     // Enable compression on intermediate map outputs
     properties.put("mapred.compress.map.output", true);

@@ -70,7 +70,7 @@ public final class FeatureTypes {
   /**
    * Features types that are small enough to be stored in mongodb (as exposed to exported to hdfs only).
    */
-  public static final List<String> MONGO_FRIENDLY_FEATURE_TYPES = of(SSM_TYPE, SGV_TYPE, CNSM_TYPE);
+  public static final List<String> MONGO_FRIENDLY_FEATURE_TYPES = of(SSM_TYPE);
 
   public static List<String> getTypes() {
     return FEATURE_TYPES;
