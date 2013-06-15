@@ -17,29 +17,25 @@
  */
 package org.icgc.dcc.web;
 
-import static javax.ws.rs.core.Response.created;
 import static javax.ws.rs.core.Response.ok;
+import static javax.ws.rs.core.Response.status;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.MOVED_PERMANENTLY;
 import static org.icgc.dcc.web.Authorizations.isOmnipotentUser;
 import static org.icgc.dcc.web.Authorizations.unauthorizedResponse;
 import static org.icgc.dcc.web.ServerErrorCode.MISSING_REQUIRED_DATA;
-
-import java.net.URI;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
-import javax.ws.rs.core.UriInfo;
+
+import lombok.extern.slf4j.Slf4j;
 
 import org.codehaus.jackson.JsonNode;
 import org.icgc.dcc.core.SystemService;
 import org.icgc.dcc.core.model.Status;
 import org.icgc.dcc.http.jersey.PATCH;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 
@@ -54,27 +50,11 @@ import com.google.inject.Inject;
  * ://stackoverflow.com/questions/5591348/how-to-implement-a-restful-resource-for-a-state-machine-or-finite-automata
  */
 @Path("/")
+@Slf4j
 public class SystemResource {
-
-  private static final Logger log = LoggerFactory.getLogger(SystemResource.class);
 
   @Inject
   private SystemService system;
-
-  @GET
-  @Path("/system/status")
-  @Deprecated
-  public Response redirectStatus(@Context
-  SecurityContext securityContext, @Context
-  UriInfo uriInfo) {
-    log.info("Redirecting status...");
-    if (isOmnipotentUser(securityContext) == false) {
-      return unauthorizedResponse();
-    }
-
-    URI uri = uriInfo.getBaseUriBuilder().path("/systems/sftp").build();
-    return created(uri).status(MOVED_PERMANENTLY).build();
-  }
 
   @GET
   @Path("/systems/sftp")
@@ -92,8 +72,11 @@ public class SystemResource {
 
   @PATCH
   @Path("/systems/sftp")
-  public Response patch(@Context
-  SecurityContext securityContext, JsonNode state) {
+  public Response patch(
+      @Context
+      SecurityContext securityContext,
+
+      JsonNode state) {
     log.info("Setting SFTP state to {}...", state);
     if (isOmnipotentUser(securityContext) == false) {
       return unauthorizedResponse();
@@ -101,13 +84,15 @@ public class SystemResource {
 
     JsonNode active = state.path("active");
     if (active.isMissingNode()) {
-      return Response.status(BAD_REQUEST).entity(new ServerErrorResponseMessage(MISSING_REQUIRED_DATA)).build();
+      return status(BAD_REQUEST)
+          .entity(new ServerErrorResponseMessage(MISSING_REQUIRED_DATA))
+          .build();
     }
 
     if (active.asBoolean()) {
-      system.startSftp();
+      system.enableSftp();
     } else {
-      system.stopSftp();
+      system.disableSftp();
     }
 
     Status status = system.getStatus();

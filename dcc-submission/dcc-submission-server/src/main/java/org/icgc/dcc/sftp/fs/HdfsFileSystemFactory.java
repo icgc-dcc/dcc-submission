@@ -15,37 +15,31 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core;
+package org.icgc.dcc.sftp.fs;
 
-import org.icgc.dcc.core.model.Status;
-import org.icgc.dcc.sftp.SftpServerService;
+import java.io.IOException;
 
-import com.google.inject.Inject;
+import lombok.AllArgsConstructor;
 
-public class SystemService {
+import org.apache.sshd.common.Session;
+import org.apache.sshd.server.FileSystemFactory;
+import org.apache.sshd.server.FileSystemView;
+import org.icgc.dcc.core.ProjectService;
+import org.icgc.dcc.filesystem.DccFileSystem;
+import org.icgc.dcc.release.ReleaseService;
+import org.icgc.dcc.security.UsernamePasswordAuthenticator;
 
-  private final SftpServerService sftpService;
+@AllArgsConstructor
+public class HdfsFileSystemFactory implements FileSystemFactory {
 
-  @Inject
-  private SystemService(SftpServerService sftpService) {
-    super();
-    this.sftpService = sftpService;
-  }
+  private final ProjectService projectService;
+  private final UsernamePasswordAuthenticator passwordAuthenticator;
+  private final ReleaseService releaseService;
+  private final DccFileSystem fs;
 
-  public Status getStatus() {
-    return sftpService.getActiveSessions();
-  }
-
-  public boolean isSftpEnabled() {
-    return sftpService.isEnabled();
-  }
-
-  public void disableSftp() {
-    sftpService.disable();
-  }
-
-  public void enableSftp() {
-    sftpService.enable();
+  @Override
+  public FileSystemView createFileSystemView(Session session) throws IOException {
+    return new HdfsFileSystemView(fs, projectService, releaseService, passwordAuthenticator);
   }
 
 }

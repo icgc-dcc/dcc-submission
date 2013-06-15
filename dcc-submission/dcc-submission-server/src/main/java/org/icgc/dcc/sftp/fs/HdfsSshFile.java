@@ -15,11 +15,15 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.sftp;
+package org.icgc.dcc.sftp.fs;
+
+import static com.google.common.base.Throwables.propagateIfInstanceOf;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+
+import lombok.SneakyThrows;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -30,9 +34,6 @@ import org.icgc.dcc.filesystem.ReleaseFileSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * 
- */
 public abstract class HdfsSshFile implements SshFile {
 
   protected static final Logger log = LoggerFactory.getLogger(HdfsSshFile.class);
@@ -57,35 +58,32 @@ public abstract class HdfsSshFile implements SshFile {
   @Override
   public boolean doesExist() {
     try {
-      return this.fs.exists(path);
-    } catch(IOException e) {
-      log.error("File system error", e);
-      return false;
+      return fs.exists(path);
+    } catch (Exception e) {
+      return handleException(Boolean.class, e);
     }
   }
 
   @Override
   public boolean isReadable() {
-    FsAction u;
     try {
-      u = fs.getFileStatus(path).getPermission().getUserAction();
-    } catch(IOException e) {
-      log.error("File system error", e);
-      return false;
+      FsAction u = fs.getFileStatus(path).getPermission().getUserAction();
+
+      return (u == FsAction.ALL || u == FsAction.READ_WRITE || u == FsAction.READ || u == FsAction.READ_EXECUTE);
+    } catch (Exception e) {
+      return handleException(Boolean.class, e);
     }
-    return (u == FsAction.ALL || u == FsAction.READ_WRITE || u == FsAction.READ || u == FsAction.READ_EXECUTE);
   }
 
   @Override
   public boolean isWritable() {
-    FsAction u;
     try {
-      u = fs.getFileStatus(path).getPermission().getUserAction();
-    } catch(IOException e) {
-      log.error("File system error", e);
-      return false;
+      FsAction u = fs.getFileStatus(path).getPermission().getUserAction();
+
+      return (u == FsAction.ALL || u == FsAction.READ_WRITE || u == FsAction.WRITE || u == FsAction.WRITE_EXECUTE);
+    } catch (Exception e) {
+      return handleException(Boolean.class, e);
     }
-    return (u == FsAction.ALL || u == FsAction.READ_WRITE || u == FsAction.WRITE || u == FsAction.WRITE_EXECUTE);
   }
 
   @Override
@@ -101,42 +99,39 @@ public abstract class HdfsSshFile implements SshFile {
   @Override
   public long getLastModified() {
     try {
-      return this.fs.getFileStatus(path).getModificationTime();
-    } catch(IOException e) {
-      log.error("File system error", e);
-      return 0;
+      return fs.getFileStatus(path).getModificationTime();
+    } catch (Exception e) {
+      return handleException(Long.class, e);
     }
   }
 
   @Override
   public boolean setLastModified(long time) {
     try {
-      this.fs.setTimes(path, time, -1);
+      fs.setTimes(path, time, -1);
+
       return true;
-    } catch(IOException e) {
-      log.error("File system error", e);
+    } catch (Exception e) {
+      return handleException(Boolean.class, e);
     }
-    return false;
   }
 
   @Override
   public long getSize() {
     try {
       return fs.getFileStatus(path).getLen();
-    } catch(IOException e) {
-      log.error("File system error", e);
+    } catch (Exception e) {
+      return handleException(Long.class, e);
     }
-    return 0;
   }
 
   @Override
   public String getOwner() {
     try {
       return fs.getFileStatus(path).getOwner();
-    } catch(IOException e) {
-      log.error("File system error", e);
+    } catch (Exception e) {
+      return handleException(String.class, e);
     }
-    return null;
   }
 
   @Override
@@ -156,10 +151,15 @@ public abstract class HdfsSshFile implements SshFile {
 
   @Override
   public OutputStream createOutputStream(long offset) throws IOException {
-    if(this.isWritable() == false) {
-      throw new IOException("SFTP is in readonly mode");
+    try {
+      if (this.isWritable() == false) {
+        throw new IOException("SFTP is in readonly mode");
+      }
+
+      return fs.create(path);
+    } catch (Exception e) {
+      return handleException(OutputStream.class, e);
     }
-    return fs.create(path);
   }
 
   @Override
@@ -168,13 +168,50 @@ public abstract class HdfsSshFile implements SshFile {
     // return fs.open(path);
     // Ideally we would throw an Unsupported Exception, but mina will kick user out
     // so we have to use a low level IOException to keep user connected
-    throw new IOException("download from SFTP is disabled");
+    throw new IOException("Download from SFTP is disabled");
   }
 
   @Override
   public void handleClose() throws IOException {
-
   }
 
   public abstract HdfsSshFile getChild(Path filePath);
+
+  /**
+   * Apache MINA exception handling method designed to evade Java's checked exception mechanism to propagate
+   * {@code IOException}s to avoid terminating MINA SFTP sessions.
+   * 
+   * @param e - the exception to propagate
+   */
+  protected void handleException(Exception e) {
+    handleException(Void.class, e);
+  }
+
+  /**
+   * Apache MINA exception handling method designed to evade Java's checked exception mechanism to propagate
+   * {@code IOException}s to avoid terminating MINA SFTP sessions.
+   * 
+   * @param type - the return type
+   * @param message - the exception method
+   * @return nothing
+   */
+  protected <T> T handleException(Class<T> type, String message) {
+    return handleException(type, new IOException(message));
+  }
+
+  /**
+   * Apache MINA exception handling method designed to evade Java's checked exception mechanism to propagate
+   * {@code IOException}s to avoid terminating MINA SFTP sessions.
+   * 
+   * @param type - the return type
+   * @param e - the exception to propagate
+   * @return nothing
+   */
+  @SneakyThrows
+  protected <T> T handleException(Class<T> type, Exception e) {
+    log.warn("SFTP user triggered exception: {}", e.getMessage());
+    propagateIfInstanceOf(e, IOException.class);
+    throw new IOException(e);
+  }
+
 }

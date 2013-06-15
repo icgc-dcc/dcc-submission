@@ -33,6 +33,8 @@ import com.google.common.util.concurrent.Service.State;
  */
 public class Status {
 
+  private final boolean sftpEnabled;
+
   private final State sftpState;
 
   private int activeSftpSessions;
@@ -41,19 +43,28 @@ public class Status {
 
   @JsonCreator
   public Status(
+      @JsonProperty("sftpEnabled")
+      Boolean sftpEnabled,
+
       @JsonProperty("sftpState")
       State sftpState,
+
       @JsonProperty("activeSftpSessions")
       int activeSftpSessions,
+
       @JsonProperty("userSessions")
-      List<UserSession> userSessions) {
+      List<UserSession> userSessions)
+
+  {
     super();
+    this.sftpEnabled = sftpEnabled;
     this.sftpState = sftpState;
     this.activeSftpSessions = activeSftpSessions;
     this.userSessions = userSessions;
   }
 
-  public Status(State sftpState) {
+  public Status(boolean sftpEnabled, State sftpState) {
+    this.sftpEnabled = sftpEnabled;
     this.sftpState = checkNotNull(sftpState);
     this.activeSftpSessions = 0;
     this.userSessions = newArrayList();
@@ -62,6 +73,10 @@ public class Status {
   public void addUserSession(UserSession userSession) { // TODO: builder
     userSessions.add(userSession);
     activeSftpSessions++;
+  }
+
+  public boolean isSftpEnabled() {
+    return sftpEnabled;
   }
 
   public State getSftpState() {
@@ -79,6 +94,8 @@ public class Status {
   @Override
   public String toString() {
     return Objects.toStringHelper(Status.class)
+        .add("sftpEnabled", this.sftpEnabled)
+        .add("sftpState", this.sftpState)
         .add("activeSftpSessions", this.activeSftpSessions)
         .add("userSessions", this.userSessions)
         .toString();

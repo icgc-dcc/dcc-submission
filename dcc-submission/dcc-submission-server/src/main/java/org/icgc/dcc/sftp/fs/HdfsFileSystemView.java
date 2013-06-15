@@ -15,9 +15,15 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.sftp;
+package org.icgc.dcc.sftp.fs;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Throwables.propagateIfInstanceOf;
+
+import java.io.IOException;
+
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.shiro.subject.Subject;
@@ -32,8 +38,9 @@ import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.security.UsernamePasswordAuthenticator;
 
 /**
- * Bridge between the SSHd SftpModule and the DCC file system
+ * Bridge between the SSHD SftpModule and the DCC file system
  */
+@Slf4j
 public class HdfsFileSystemView implements FileSystemView {
 
   private final DccFileSystem dccFileSystem;
@@ -59,22 +66,26 @@ public class HdfsFileSystemView implements FileSystemView {
    */
   @Override
   public SshFile getFile(String file) {
-    Path filePath = getFilePath(file);
-    Subject currentSubject = this.passwordAuthenticator.getSubject();
-    Release curRelease = this.releaseService.getNextRelease().getRelease();
-    ReleaseFileSystem rfs = this.dccFileSystem.getReleaseFilesystem(curRelease, currentSubject);
-    RootHdfsSshFile root = new RootHdfsSshFile(rfs, this.projectService, this.releaseService);
+    try {
+      Path filePath = getFilePath(file);
+      Subject currentSubject = this.passwordAuthenticator.getSubject();
+      Release curRelease = this.releaseService.getNextRelease().getRelease();
+      ReleaseFileSystem rfs = this.dccFileSystem.getReleaseFilesystem(curRelease, currentSubject);
+      RootHdfsSshFile root = new RootHdfsSshFile(rfs, this.projectService, this.releaseService);
 
-    switch(filePath.depth()) {
-    case 0:
-      return root;
-    case 1:
-      return this.getHdfsSshFile(rfs, root, filePath);
-    case 2:
-      Path parentDirPath = filePath.getParent();
-      return new FileHdfsSshFile(this.getHdfsSshFile(rfs, root, parentDirPath), filePath.getName());
-    default:
-      throw new DccFileSystemException("Invalid file path: " + file);
+      switch (filePath.depth()) {
+      case 0:
+        return root;
+      case 1:
+        return this.getHdfsSshFile(rfs, root, filePath);
+      case 2:
+        Path parentDirPath = filePath.getParent();
+        return new FileHdfsSshFile(this.getHdfsSshFile(rfs, root, parentDirPath), filePath.getName());
+      default:
+        throw new DccFileSystemException("Invalid file path: " + file);
+      }
+    } catch (Exception e) {
+      return handleException(SshFile.class, e);
     }
   }
 
@@ -86,28 +97,51 @@ public class HdfsFileSystemView implements FileSystemView {
    */
   @Override
   public SshFile getFile(SshFile baseDir, String file) {
-    Path filePath = getFilePath(file);
+    try {
+      Path filePath = getFilePath(file);
 
-    if(baseDir instanceof HdfsSshFile) {
-      return ((HdfsSshFile) baseDir).getChild(filePath);
+      if (baseDir instanceof HdfsSshFile) {
+        return ((HdfsSshFile) baseDir).getChild(filePath);
+      }
+
+      throw new IllegalStateException("Invalid SshFile: " + baseDir.toString());
+    } catch (Exception e) {
+      return handleException(SshFile.class, e);
     }
-    throw new IllegalStateException("Invalid SshFile: " + baseDir.toString());
   }
 
   private Path getFilePath(String file) {
     checkNotNull(file);
     file = (file.isEmpty() || file.equals(".")) ? "/" : file;
     Path filePath = new Path(file);
+
     return filePath;
   }
 
   private BaseDirectoryHdfsSshFile getHdfsSshFile(ReleaseFileSystem rfs, RootHdfsSshFile root, Path path) {
     BaseDirectoryHdfsSshFile result;
-    if(rfs.isSystemDirectory(path)) {
+    if (rfs.isSystemDirectory(path)) {
       result = new SystemFileHdfsSshFile(root, path.getName());
     } else {
       result = new SubmissionDirectoryHdfsSshFile(root, path.getName());
     }
+
     return result;
   }
+
+  /**
+   * Apache MINA exception handling method designed to evade Java's checked exception mechanism to propagate
+   * {@code IOException}s to avoid terminating MINA SFTP sessions.
+   * 
+   * @param type - the return type
+   * @param e - the exception to propagate
+   * @return nothing
+   */
+  @SneakyThrows
+  protected <T> T handleException(Class<T> type, Exception e) {
+    log.warn("SFTP user triggered exception: {}", e.getMessage());
+    propagateIfInstanceOf(e, IOException.class);
+    throw new IOException(e);
+  }
+
 }

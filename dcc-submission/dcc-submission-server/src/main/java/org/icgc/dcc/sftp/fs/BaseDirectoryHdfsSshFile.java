@@ -15,22 +15,18 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.sftp;
+package org.icgc.dcc.sftp.fs;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static org.elasticsearch.common.collect.Lists.newArrayList;
+import static org.icgc.dcc.filesystem.hdfs.HadoopUtils.lsAll;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.sshd.server.SshFile;
-import org.icgc.dcc.filesystem.DccFileSystemException;
-import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-/**
- * 
- */
 public abstract class BaseDirectoryHdfsSshFile extends HdfsSshFile {
 
   private final RootHdfsSshFile root;
@@ -72,11 +68,15 @@ public abstract class BaseDirectoryHdfsSshFile extends HdfsSshFile {
 
   @Override
   public boolean create() throws IOException {
-    if(isWritable()) {
-      this.fs.create(path);
-      return true;
+    try {
+      if (isWritable()) {
+        this.fs.create(path);
+        return true;
+      }
+      return false;
+    } catch (Exception e) {
+      return handleException(Boolean.class, e);
     }
-    return false;
   }
 
   @Override
@@ -84,46 +84,57 @@ public abstract class BaseDirectoryHdfsSshFile extends HdfsSshFile {
     create();
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public List<SshFile> listSshFiles() {
-    List<Path> pathList = HadoopUtils.lsAll(fs, path);
-    List<SshFile> sshFileList = new ArrayList<SshFile>();
-    for(Path path : pathList) {
-      sshFileList.add(new FileHdfsSshFile(this, path.getName()));
+    try {
+      List<Path> pathList = lsAll(fs, path);
+      List<SshFile> sshFileList = newArrayList();
+
+      for (Path path : pathList) {
+        sshFileList.add(new FileHdfsSshFile(this, path.getName()));
+      }
+
+      return sshFileList;
+    } catch (Exception e) {
+      return handleException(List.class, e);
     }
-    return sshFileList;
   }
 
   @Override
   public HdfsSshFile getChild(Path filePath) {
-    switch(filePath.depth()) {
-    case 0:
-      return this;
-    case 1:
-      return new FileHdfsSshFile(this, filePath.getName());
+    try {
+      switch (filePath.depth()) {
+      case 0:
+        return this;
+      case 1:
+        return new FileHdfsSshFile(this, filePath.getName());
+      }
+    } catch (Exception e) {
+      return handleException(HdfsSshFile.class, e);
     }
-    throw new DccFileSystemException("Invalid file path: " + this.getAbsolutePath() + filePath.toString());
+
+    return handleException(HdfsSshFile.class, "Invalid file path: " + this.getAbsolutePath() + filePath.toString());
   }
 
   @Override
   public boolean mkdir() {
     try {
       return create();
-    } catch(IOException e) {
-      log.error("File system error", e);
+    } catch (Exception e) {
+      return handleException(Boolean.class, e);
     }
-    return false;
   }
 
   @Override
   public boolean move(SshFile destination) {
     try {
       return this.fs.rename(path, new Path(destination.getAbsolutePath()));
-    } catch(IOException e) {
-      log.error("File system error", e);
+    } catch (Exception e) {
+      return handleException(Boolean.class, e);
     }
-    return false;
   }
 
   public abstract void notifyModified();
+
 }
