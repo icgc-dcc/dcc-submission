@@ -37,7 +37,7 @@ import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.Submission;
 
 @Slf4j
-class RootHdfsSshFile extends HdfsSshFile {
+public class RootHdfsSshFile extends HdfsSshFile {
 
   private final ReleaseFileSystem rfs;
 

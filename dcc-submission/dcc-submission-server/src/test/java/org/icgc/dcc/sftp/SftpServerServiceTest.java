@@ -32,6 +32,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.RawLocalFileSystem;
@@ -61,6 +62,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.util.concurrent.Uninterruptibles;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.SftpException;
 import com.typesafe.config.Config;
@@ -137,6 +139,8 @@ public class SftpServerServiceTest {
     // Create an start CUT
     service = new SftpServerService(config, passwordAuthenticator, fs, projectService, releaseService);
     service.startAndWait();
+
+    Uninterruptibles.sleepUninterruptibly(1, TimeUnit.DAYS);
 
     sftp.connect();
   }

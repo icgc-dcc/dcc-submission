@@ -19,7 +19,7 @@ package org.icgc.dcc.sftp.fs;
 
 import org.icgc.dcc.filesystem.SubmissionDirectory;
 
-class SubmissionDirectoryHdfsSshFile extends BaseDirectoryHdfsSshFile {
+public class SubmissionDirectoryHdfsSshFile extends BaseDirectoryHdfsSshFile {
 
   private final SubmissionDirectory directory;
 

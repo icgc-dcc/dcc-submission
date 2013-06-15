@@ -29,7 +29,7 @@ public class FileHdfsSshFile extends HdfsSshFile {
 
   private final BaseDirectoryHdfsSshFile directory;
 
-  FileHdfsSshFile(BaseDirectoryHdfsSshFile directory, String fileName) {
+  public FileHdfsSshFile(BaseDirectoryHdfsSshFile directory, String fileName) {
     super(new Path(directory.path, fileName), directory.fs);
     this.directory = directory;
   }
