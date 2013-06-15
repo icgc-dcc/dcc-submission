@@ -29,9 +29,12 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.RawLocalFileSystem;
@@ -58,51 +61,60 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import com.google.common.io.CharStreams;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.SftpException;
 import com.typesafe.config.Config;
 
 @RunWith(MockitoJUnitRunner.class)
+@Slf4j
 public class SftpServerServiceTest {
 
-  private static final Logger log = LoggerFactory.getLogger(SftpServerServiceTest.class);
-
+  /**
+   * Test configuration.
+   */
   private static final String RELEASE_NAME = "release1";
-
   private static final String PROJECT_KEY = "project1";
-
   private static final String USERNAME = "username";
-
   private static final String PASSWORD = "password";
-
   private static final int NIO_WORKERS = 3;
 
-  // @formatter:off
-  @Rule public TemporaryFolder tmp = new TemporaryFolder();
-  @Rule public Sftp sftp = new Sftp(USERNAME, PASSWORD);
+  @Rule
+  public TemporaryFolder tmp = new TemporaryFolder();
+  @Rule
+  public Sftp sftp = new Sftp(USERNAME, PASSWORD, false);
 
-  @Mock Config config;
-  @Mock Subject subject;
-  @Mock UsernamePasswordAuthenticator passwordAuthenticator;
-  
-  @Mock Release release;
-  @Mock Submission submission;
-  @Mock Project project;
-  @Mock NextRelease nextRelease;
+  @Mock
+  Config config;
+  @Mock
+  Subject subject;
+  @Mock
+  UsernamePasswordAuthenticator passwordAuthenticator;
 
-  @Mock DccFileSystem fs;
-  @Mock SubmissionDirectory submissionDirectory;
-  @Mock ReleaseFileSystem releaseFileSystem;
+  @Mock
+  Release release;
+  @Mock
+  Submission submission;
+  @Mock
+  Project project;
+  @Mock
+  NextRelease nextRelease;
 
-  @Mock ProjectService projectService;
-  @Mock ReleaseService releaseService;
+  @Mock
+  DccFileSystem fs;
+  @Mock
+  SubmissionDirectory submissionDirectory;
+  @Mock
+  ReleaseFileSystem releaseFileSystem;
+
+  @Mock
+  ProjectService projectService;
+  @Mock
+  ReleaseService releaseService;
 
   SftpServerService service;
   File root;
-  // @formatter:on
 
   @Before
   public void setUp() throws IOException, JSchException {
@@ -181,6 +193,25 @@ public class SftpServerServiceTest {
     assertThat(sftp.getChannel().ls(projectDirectoryName)).hasSize(0);
   }
 
+  @Test(expected = IOException.class)
+  public void testGetNotPossible() throws SftpException, IOException {
+    // Create the simulated project directory
+    String projectDirectoryName = createProjectDirectory();
+
+    // File
+    String fileName = fileName(1);
+    String fileContent = "This is the content of the file";
+    File file = new File(root, fileName);
+
+    // Put file
+    sftp.getChannel().cd(projectDirectoryName);
+    sftp.getChannel().put(inputStream(fileContent), fileName);
+    assertThat(file).exists().hasContent(fileContent);
+
+    // This should throw on read
+    read(sftp.getChannel().get(fileName));
+  }
+
   @Test(expected = SftpException.class)
   public void testRemoveNonExistentFile() throws SftpException {
     sftp.getChannel().rm("/does/not/exist");
@@ -189,6 +220,21 @@ public class SftpServerServiceTest {
   @Test(expected = SftpException.class)
   public void testCdIntoNonExistent() throws SftpException {
     sftp.getChannel().cd("/does/not/exist");
+  }
+
+  @Test(expected = SftpException.class)
+  public void testLsIntoNonExistent() throws SftpException {
+    sftp.getChannel().ls("/does/not/exist");
+  }
+
+  @Test(expected = SftpException.class)
+  public void testRenameNonExistent() throws SftpException {
+    sftp.getChannel().rename("/does/not/exist", "/still/does/not/exist");
+  }
+
+  @Test(expected = SftpException.class)
+  public void testGetNonExistent() throws SftpException {
+    sftp.getChannel().get("/does/not/exist");
   }
 
   @Test
@@ -213,7 +259,7 @@ public class SftpServerServiceTest {
 
         @Override
         public void run() {
-          Sftp sftpTmp = new Sftp(USERNAME, PASSWORD);
+          Sftp sftpTmp = new Sftp(USERNAME, PASSWORD, false);
           try {
             log.info("Connecting - {}", thread);
             sftpTmp.connect();
@@ -286,6 +332,7 @@ public class SftpServerServiceTest {
     String projectDirectoryName = getProjectDirectoryName();
     File projectDirectory = new File(root, projectDirectoryName);
     projectDirectory.mkdir();
+
     return projectDirectoryName;
   }
 
@@ -299,6 +346,10 @@ public class SftpServerServiceTest {
 
   private static String fileName(String s) {
     return format("/%s/file%s.txt", PROJECT_KEY, s);
+  }
+
+  private static String read(InputStream inputStream) throws IOException {
+    return CharStreams.toString(new InputStreamReader(inputStream, UTF_8));
   }
 
   private static InputStream inputStream(String text) {

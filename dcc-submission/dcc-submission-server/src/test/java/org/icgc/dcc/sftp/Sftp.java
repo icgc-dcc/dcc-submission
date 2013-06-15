@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.sftp;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -26,6 +28,7 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 
+@Slf4j
 public class Sftp implements TestRule {
 
   private static final String SFTP_HOST = "127.0.0.1";
@@ -42,9 +45,12 @@ public class Sftp implements TestRule {
 
   private final String password;
 
-  public Sftp(String username, String password) {
+  public Sftp(String username, String password, boolean logging) {
     this.username = username;
     this.password = password;
+    if (logging) {
+      JSch.setLogger(new SftpLogger());
+    }
   }
 
   @Override
@@ -86,6 +92,8 @@ public class Sftp implements TestRule {
     session.connect();
 
     sftpChannel = (ChannelSftp) session.openChannel("sftp");
+    sftpChannel.setInputStream(System.in);
+    sftpChannel.setOutputStream(System.out);
     sftpChannel.connect();
   }
 
@@ -100,6 +108,20 @@ public class Sftp implements TestRule {
 
     sftpChannel.exit();
     session.disconnect();
+  }
+
+  public static class SftpLogger implements com.jcraft.jsch.Logger {
+
+    @Override
+    public boolean isEnabled(int level) {
+      return true;
+    }
+
+    @Override
+    public void log(int level, String message) {
+      log.debug(message);
+    }
+
   }
 
 }
