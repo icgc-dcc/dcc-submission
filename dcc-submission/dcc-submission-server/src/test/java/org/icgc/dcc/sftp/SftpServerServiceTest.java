@@ -25,6 +25,7 @@ import static java.util.concurrent.Executors.newFixedThreadPool;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.icgc.dcc.filesystem.DccFileSystem.VALIDATION_DIRNAME;
 import static org.junit.Assert.fail;
 import static org.mockito.AdditionalMatchers.not;
 import static org.mockito.Matchers.any;
@@ -42,6 +43,7 @@ import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 
+import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -88,6 +90,7 @@ public class SftpServerServiceTest {
   private static final String USERNAME = "username";
   private static final String PASSWORD = "password";
   private static final int NIO_WORKERS = 3;
+  private static final String VALIDATION_FILE_NAME = "dummy-validation-file.txt";
 
   @Rule
   public TemporaryFolder tmp = new TemporaryFolder();
@@ -124,12 +127,11 @@ public class SftpServerServiceTest {
 
   SftpServerService service;
   File root;
-  List<Project> projects;
 
   @Before
   public void setUp() throws IOException, JSchException {
+    // Create root of file system
     root = tmp.newFolder(RELEASE_NAME);
-    projects = newArrayList(project);
 
     // Mock configuration
     when(config.getInt("sftp.port")).thenReturn(sftp.getPort());
@@ -148,7 +150,7 @@ public class SftpServerServiceTest {
     when(releaseService.getNextRelease()).thenReturn(nextRelease);
     when(projectService.getProject(PROJECT_KEY)).thenReturn(project);
     when(projectService.getProject(not(eq(PROJECT_KEY)))).thenThrow(new ProjectServiceException(""));
-    when(projectService.getProjectsBySubject(any(Subject.class))).thenReturn(projects);
+    when(projectService.getProjectsBySubject(any(Subject.class))).thenReturn(newArrayList(project));
 
     // Mock file system
     when(fs.buildReleaseStringPath(release)).thenReturn(root.getAbsolutePath());
@@ -229,6 +231,14 @@ public class SftpServerServiceTest {
 
     // This should throw
     get(fileName);
+  }
+
+  @Test(expected = SftpException.class)
+  public void testRemoveValidationFileNotPossible() throws SftpException, IOException {
+    // Create the simulated project directory
+    String projectDirectoryName = createProjectDirectory();
+
+    rm(projectDirectoryName + "/" + VALIDATION_DIRNAME + "/" + VALIDATION_FILE_NAME);
   }
 
   @Test(expected = SftpException.class)
@@ -344,10 +354,22 @@ public class SftpServerServiceTest {
     return localFileSystem;
   }
 
+  @SneakyThrows
   private String createProjectDirectory() {
+    // Create base directory
     String projectDirectoryName = getProjectDirectoryName();
     File projectDirectory = new File(root, projectDirectoryName);
     projectDirectory.mkdir();
+
+    // Create validation directory
+    String validationDirectoryName = VALIDATION_DIRNAME;
+    File validationDirectory = new File(projectDirectory, validationDirectoryName);
+    validationDirectory.mkdir();
+
+    // Create validation file
+    String validationFileName = VALIDATION_FILE_NAME;
+    File validationFile = new File(validationDirectory, validationFileName);
+    validationFile.createNewFile();
 
     return projectDirectoryName;
   }

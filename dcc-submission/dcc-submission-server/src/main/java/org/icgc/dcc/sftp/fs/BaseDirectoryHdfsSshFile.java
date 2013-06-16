@@ -35,10 +35,8 @@ public abstract class BaseDirectoryHdfsSshFile extends HdfsSshFile {
 
   protected BaseDirectoryHdfsSshFile(RootHdfsSshFile root, String directoryName) {
     super(new Path(root.path, directoryName.isEmpty() ? "/" : directoryName), root.fs);
-    checkNotNull(root);
-    checkNotNull(directoryName);
-    this.root = root;
-    this.directoryName = directoryName;
+    this.root = checkNotNull(root);
+    this.directoryName = checkNotNull(directoryName);
   }
 
   @Override
@@ -88,14 +86,17 @@ public abstract class BaseDirectoryHdfsSshFile extends HdfsSshFile {
   @Override
   public List<SshFile> listSshFiles() {
     try {
-      List<Path> pathList = lsAll(fs, path);
-      List<SshFile> sshFileList = newArrayList();
+      List<Path> paths = lsAll(fs, path);
+      List<SshFile> sshFiles = newArrayList();
 
-      for (Path path : pathList) {
-        sshFileList.add(new FileHdfsSshFile(this, path.getName()));
+      for (Path path : paths) {
+        FileHdfsSshFile sshFile = new FileHdfsSshFile(this, path.getName());
+        if (sshFile.doesExist()) {
+          sshFiles.add(sshFile);
+        }
       }
 
-      return sshFileList;
+      return sshFiles;
     } catch (Exception e) {
       return handleException(List.class, e);
     }

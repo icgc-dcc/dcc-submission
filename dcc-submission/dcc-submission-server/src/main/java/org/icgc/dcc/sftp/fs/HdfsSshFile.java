@@ -18,6 +18,7 @@
 package org.icgc.dcc.sftp.fs;
 
 import static com.google.common.base.Throwables.propagateIfInstanceOf;
+import static org.icgc.dcc.filesystem.DccFileSystem.VALIDATION_DIRNAME;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -58,6 +59,11 @@ public abstract class HdfsSshFile implements SshFile {
   @Override
   public boolean doesExist() {
     try {
+      if (isValidationFile(path)) {
+        // Validation files should not be visible
+        return false;
+      }
+
       return fs.exists(path);
     } catch (Exception e) {
       return handleException(Boolean.class, e);
@@ -176,6 +182,15 @@ public abstract class HdfsSshFile implements SshFile {
   }
 
   public abstract HdfsSshFile getChild(Path filePath);
+
+  protected boolean isValidationFile(Path path) {
+    if (path == null) {
+      return false;
+    }
+
+    String uri = path.toString();
+    return uri.contains(VALIDATION_DIRNAME);
+  }
 
   /**
    * Apache MINA exception handling method designed to evade Java's checked exception mechanism to propagate
