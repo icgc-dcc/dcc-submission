@@ -18,34 +18,27 @@
 package org.icgc.dcc.sftp;
 
 import static com.google.common.base.Joiner.on;
-import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Maps.newLinkedHashMap;
 import static com.google.common.util.concurrent.Service.State.TERMINATED;
 import static java.lang.String.valueOf;
+import static org.apache.sshd.common.FactoryManager.DEFAULT_NIO_WORKERS;
+import static org.apache.sshd.common.FactoryManager.NIO_WORKERS;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.mina.core.session.IoSession;
-import org.apache.shiro.subject.Subject;
 import org.apache.sshd.SshServer;
-import org.apache.sshd.common.AbstractFactoryManager;
-import org.apache.sshd.common.FactoryManager;
 import org.apache.sshd.common.NamedFactory;
-import org.apache.sshd.common.SshConstants;
 import org.apache.sshd.common.session.AbstractSession;
-import org.apache.sshd.common.util.Buffer;
 import org.apache.sshd.server.Command;
-import org.apache.sshd.server.PasswordAuthenticator;
 import org.apache.sshd.server.keyprovider.PEMGeneratorHostKeyProvider;
-import org.apache.sshd.server.session.ServerSession;
 import org.apache.sshd.server.sftp.SftpSubsystem;
 import org.icgc.dcc.core.ProjectService;
-import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.core.model.Status;
 import org.icgc.dcc.core.model.UserSession;
 import org.icgc.dcc.filesystem.DccFileSystem;
@@ -54,10 +47,8 @@ import org.icgc.dcc.security.UsernamePasswordAuthenticator;
 import org.icgc.dcc.sftp.fs.HdfsFileSystemFactory;
 import org.joda.time.DateTime;
 
-import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.io.Resources;
 import com.google.common.util.concurrent.AbstractService;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
@@ -68,88 +59,28 @@ import com.typesafe.config.Config;
 @Slf4j
 public class SftpServerService extends AbstractService {
 
-  private static final String SFTP_CONFIG_SECTION = "sftp";
+  /**
+   * Message sent to active session when disabling SFTP.
+   */
+  private static final String DISABLE_MESSAGE =
+      "The ICGC DCC Submission SFTP Server is shutting down for scheduled maintenance. Please login and try again later.";
 
+  /**
+   * Service state.
+   */
   private final SshServer sshd;
-
   private volatile boolean enabled = true;
 
   @Inject
-  public SftpServerService(Config config, final UsernamePasswordAuthenticator passwordAuthenticator,
-      final DccFileSystem fs, final ProjectService projectService, final ReleaseService releaseService) {
-    checkArgument(passwordAuthenticator != null);
-
-    sshd = SshServer.setUpDefaultServer();
-    sshd.setPort(config.getInt(getConfigPath("port")));
-    sshd.setKeyPairProvider(new PEMGeneratorHostKeyProvider(config.getString(getConfigPath("path")), "RSA", 2048));
-    setSshdProperties(config);
-
-    sshd.setPasswordAuthenticator(new PasswordAuthenticator() {
-
-      @Override
-      @SneakyThrows
-      public boolean authenticate(String username, String password, ServerSession session) {
-        if (!isEnabled()) {
-          // Only allow connections when enabled
-          disconnectSession(session,
-              "The ICGC DCC Submission SFTP Server is disabled for scheduled maintenance. Please login and try again later.");
-
-          return false;
-        }
-
-        boolean authenticated = passwordAuthenticator.authenticate(username, password.toCharArray(), null) != null;
-        if (authenticated) {
-          sendWelcomeBanner(session);
-        }
-
-        return authenticated;
-      }
-
-      private void sendWelcomeBanner(ServerSession session) {
-        try {
-          String welcomeMessage = getWelcomeMessage(passwordAuthenticator, projectService, releaseService, session);
-
-          String eof = "\n\n";
-          Buffer buffer = session.createBuffer(SshConstants.Message.SSH_MSG_USERAUTH_BANNER, 0);
-          buffer.putString(welcomeMessage);
-          buffer.putString(eof);
-          session.writePacket(buffer);
-        } catch (IOException e) {
-          log.warn("Error sending SFTP connection welcome banner: ", e);
-        }
-      }
-
-      @SneakyThrows
-      private String getWelcomeMessage(UsernamePasswordAuthenticator passwordAuthenticator,
-          ProjectService projectService, ReleaseService releaseService, ServerSession session) {
-        Subject subject = passwordAuthenticator.getSubject();
-        String releaseName = releaseService.getNextRelease().getRelease().getName();
-        List<Project> projects = projectService.getProjectsBySubject(subject);
-
-        String directories = "";
-        for (Project project : projects) {
-          directories += "    * '" + project.getKey() + "/'\n";
-        }
-
-        String banner = Resources.toString(Resources.getResource("banner.txt"), Charsets.UTF_8);
-
-        String message = "\n" +
-            banner + "\n\n" +
-            "Hello '" + session.getUsername() + "', welcome to the ICGC DCC Submission SFTP Server!\n" +
-            "\n" +
-            "  - Accepting submissions for release '" + releaseName + "'\n" +
-            "  - Downloading is disabled (ex. 'get', 'mget')\n" +
-            "  - You may 'cd', 'put' 'rm' 'ls' in the following project directories:\n" +
-            directories +
-            "\n";
-
-        return message;
-      }
-
-    });
-
-    sshd.setFileSystemFactory(new HdfsFileSystemFactory(projectService, passwordAuthenticator, releaseService, fs));
-    sshd.setSubsystemFactories(ImmutableList.<NamedFactory<Command>> of(new SftpSubsystem.Factory()));
+  public SftpServerService(Config config, UsernamePasswordAuthenticator passwordAuthenticator, DccFileSystem fs,
+      ProjectService projectService, ReleaseService releaseService) {
+    this.sshd = SshServerFactory.create(
+        checkNotNull(config),
+        this,
+        checkNotNull(passwordAuthenticator),
+        checkNotNull(fs),
+        checkNotNull(projectService),
+        checkNotNull(releaseService));
   }
 
   public Status getActiveSessions() {
@@ -168,8 +99,7 @@ public class SftpServerService extends AbstractService {
       String username = activeSession.getUsername();
 
       Map<String, String> ioSessionMap = getIoSessionMap(ioSession);
-      log.info(
-          getLogMessage(username),
+      log.info(getLogMessage(username),
           new Object[] { username, formatDateTime(creationTime), formatDateTime(lastWriteTime), ioSessionMap });
 
       status.addUserSession(new UserSession(username, creationTime, lastWriteTime, ioSessionMap));
@@ -216,17 +146,15 @@ public class SftpServerService extends AbstractService {
     }
   }
 
-  private void disconnectActiveSessions() {
-    String message =
-        "The ICGC DCC Submission SFTP Server is shutting down for scheduled maintenance. Please login and try again later.";
+  void disconnectActiveSessions() {
     List<AbstractSession> activeSessions = sshd.getActiveSessions();
 
     for (AbstractSession activeSession : activeSessions) {
-      disconnectSession(activeSession, message);
+      disconnectSession(activeSession, DISABLE_MESSAGE);
     }
   }
 
-  private void disconnectSession(AbstractSession session, String message) {
+  void disconnectSession(AbstractSession session, String message) {
     log.info("Sending disconnect message '{}' to {}", message, session.getUsername());
     try {
       session.disconnect(0, message);
@@ -235,31 +163,12 @@ public class SftpServerService extends AbstractService {
     }
   }
 
-  private void setSshdProperties(Config config) {
-    String nioWorkersPath = getConfigPath(AbstractFactoryManager.NIO_WORKERS);
-    if (config.hasPath(nioWorkersPath)) {
-      Integer nioWorkers = config.getInt(nioWorkersPath);
-      log.info("Setting '{}' to '{}'", AbstractFactoryManager.NIO_WORKERS, nioWorkers);
-      sshd.setProperties(new ImmutableMap.Builder<String, String>()
-          .put(AbstractFactoryManager.NIO_WORKERS, valueOf(nioWorkers))
-          .build());
-    } else {
-      log.info("Using default value for '{}': '{}'",
-          AbstractFactoryManager.NIO_WORKERS, FactoryManager.DEFAULT_NIO_WORKERS);
-    }
-
-  }
-
   private String getLogMessage(String username) {
     String intro = username == null ?
         "Authentication pending ('{}' username) " :
         "User with username '{}' has an active ";
 
     return intro + "SFTP session created on '{}', last written to '{}'; full ioSession is: {}";
-  }
-
-  private String getConfigPath(String param) {
-    return on(".").join(SFTP_CONFIG_SECTION, param);
   }
 
   /**
@@ -301,6 +210,57 @@ public class SftpServerService extends AbstractService {
 
   private static String formatDateTime(long timestamp) {
     return new DateTime(timestamp).toString();
+  }
+
+  @Slf4j
+  static class SshServerFactory {
+
+    /**
+     * Configuration file path.
+     */
+    private static final String SFTP_CONFIG_SECTION = "sftp";
+
+    static SshServer create(
+        Config config,
+        SftpServerService service,
+        UsernamePasswordAuthenticator passwordAuthenticator,
+        DccFileSystem fs,
+        ProjectService projectService,
+        ReleaseService releaseService) {
+
+      // Create default server
+      SshServer sshd = SshServer.setUpDefaultServer();
+
+      // Set customized configuration
+      sshd.setPort(config.getInt(getConfigPath("port")));
+      setProperties(sshd, config);
+
+      // Set customized extension points
+      sshd.setKeyPairProvider(new PEMGeneratorHostKeyProvider(config.getString(getConfigPath("path")), "RSA", 2048));
+      sshd.setFileSystemFactory(new HdfsFileSystemFactory(projectService, passwordAuthenticator, releaseService, fs));
+      sshd.setSubsystemFactories(ImmutableList.<NamedFactory<Command>> of(new SftpSubsystem.Factory()));
+      sshd.setPasswordAuthenticator(new SftpPasswordAuthenticator(service, passwordAuthenticator, projectService,
+          releaseService));
+
+      return sshd;
+    }
+
+    private static void setProperties(SshServer sshd, Config config) {
+      String nioWorkersPath = getConfigPath(NIO_WORKERS);
+
+      if (config.hasPath(nioWorkersPath)) {
+        Integer nioWorkers = config.getInt(nioWorkersPath);
+        log.info("Setting '{}' to '{}'", NIO_WORKERS, nioWorkers);
+        sshd.setProperties(new ImmutableMap.Builder<String, String>().put(NIO_WORKERS, valueOf(nioWorkers)).build());
+      } else {
+        log.info("Using default value for '{}': '{}'", NIO_WORKERS, DEFAULT_NIO_WORKERS);
+      }
+    }
+
+    private static String getConfigPath(String param) {
+      return on(".").join(SFTP_CONFIG_SECTION, param);
+    }
+
   }
 
 }

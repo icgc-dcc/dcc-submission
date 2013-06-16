@@ -32,7 +32,6 @@ import org.apache.sshd.server.FileSystemView;
 import org.apache.sshd.server.SshFile;
 import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.filesystem.DccFileSystem;
-import org.icgc.dcc.filesystem.DccFileSystemException;
 import org.icgc.dcc.filesystem.ReleaseFileSystem;
 import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.Release;
@@ -82,7 +81,7 @@ public class HdfsFileSystemView implements FileSystemView {
       case 2:
         return getSubmissionFile(file, filePath, rfs, root);
       default:
-        throw new DccFileSystemException("Invalid file path: " + file);
+        throw new FileNotFoundException("Invalid file path: " + file);
       }
     } catch (Exception e) {
       return handleException(SshFile.class, e);
