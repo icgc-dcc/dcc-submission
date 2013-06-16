@@ -18,6 +18,7 @@
 package org.icgc.dcc.sftp;
 
 import static com.google.common.base.Charsets.UTF_8;
+import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
 import static java.util.concurrent.Executors.newFixedThreadPool;
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -118,10 +119,12 @@ public class SftpServerServiceTest {
 
   SftpServerService service;
   File root;
+  List<Project> projects;
 
   @Before
   public void setUp() throws IOException, JSchException {
     root = tmp.newFolder(RELEASE_NAME);
+    projects = newArrayList(project);
 
     // Mock configuration
     when(config.getInt("sftp.port")).thenReturn(sftp.getPort());
@@ -135,11 +138,13 @@ public class SftpServerServiceTest {
 
     // Mock release / project
     when(project.getKey()).thenReturn(PROJECT_KEY);
+    when(release.getName()).thenReturn(RELEASE_NAME);
     when(nextRelease.getRelease()).thenReturn(release);
     when(releaseService.getNextRelease()).thenReturn(nextRelease);
     when(projectService.getProject(PROJECT_KEY)).thenReturn(project);
     when(projectService.getProject(not(eq(PROJECT_KEY)))).thenThrow(
         new ProjectServiceException("No project found with key"));
+    when(projectService.getProjectsBySubject(any(Subject.class))).thenReturn(projects);
 
     // Mock file system
     when(fs.buildReleaseStringPath(release)).thenReturn(root.getAbsolutePath());

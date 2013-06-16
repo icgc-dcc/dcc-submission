@@ -31,6 +31,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.mina.core.session.IoSession;
+import org.apache.shiro.subject.Subject;
 import org.apache.sshd.SshServer;
 import org.apache.sshd.common.AbstractFactoryManager;
 import org.apache.sshd.common.FactoryManager;
@@ -44,6 +45,7 @@ import org.apache.sshd.server.keyprovider.PEMGeneratorHostKeyProvider;
 import org.apache.sshd.server.session.ServerSession;
 import org.apache.sshd.server.sftp.SftpSubsystem;
 import org.icgc.dcc.core.ProjectService;
+import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.core.model.Status;
 import org.icgc.dcc.core.model.UserSession;
 import org.icgc.dcc.filesystem.DccFileSystem;
@@ -52,8 +54,10 @@ import org.icgc.dcc.security.UsernamePasswordAuthenticator;
 import org.icgc.dcc.sftp.fs.HdfsFileSystemFactory;
 import org.joda.time.DateTime;
 
+import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.io.Resources;
 import com.google.common.util.concurrent.AbstractService;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
@@ -103,13 +107,43 @@ public class SftpServerService extends AbstractService {
 
       private void sendWelcomeBanner(ServerSession session) {
         try {
+          String welcomeMessage = getWelcomeMessage(passwordAuthenticator, projectService, releaseService, session);
+
+          String eof = "\n\n";
           Buffer buffer = session.createBuffer(SshConstants.Message.SSH_MSG_USERAUTH_BANNER, 0);
-          buffer.putString("Welcome to the ICGC DCC Submission SFTP Server!\n\n");
-          buffer.putString("\n");
+          buffer.putString(welcomeMessage);
+          buffer.putString(eof);
           session.writePacket(buffer);
         } catch (IOException e) {
           log.warn("Error sending SFTP connection welcome banner: ", e);
         }
+      }
+
+      @SneakyThrows
+      private String getWelcomeMessage(UsernamePasswordAuthenticator passwordAuthenticator,
+          ProjectService projectService, ReleaseService releaseService, ServerSession session) {
+        Subject subject = passwordAuthenticator.getSubject();
+        String releaseName = releaseService.getNextRelease().getRelease().getName();
+        List<Project> projects = projectService.getProjectsBySubject(subject);
+
+        String directories = "";
+        for (Project project : projects) {
+          directories += "    * '" + project.getKey() + "/'\n";
+        }
+
+        String banner = Resources.toString(Resources.getResource("banner.txt"), Charsets.UTF_8);
+
+        String message = "\n" +
+            banner + "\n\n" +
+            "Hello '" + session.getUsername() + "', welcome to the ICGC DCC Submission SFTP Server!\n" +
+            "\n" +
+            "  - Accepting submissions for release '" + releaseName + "'\n" +
+            "  - Downloading is disabled (ex. 'get', 'mget')\n" +
+            "  - You may 'cd', 'put' 'rm' 'ls' in the following project directories:\n" +
+            directories +
+            "\n";
+
+        return message;
       }
 
     });
