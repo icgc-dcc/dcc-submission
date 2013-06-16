@@ -21,8 +21,10 @@ import static com.google.common.base.Charsets.UTF_8;
 import static java.lang.String.format;
 import static java.util.concurrent.Executors.newFixedThreadPool;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.mockito.AdditionalMatchers.not;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
@@ -40,6 +42,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.RawLocalFileSystem;
 import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.core.ProjectService;
+import org.icgc.dcc.core.ProjectServiceException;
 import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.core.model.Status;
 import org.icgc.dcc.core.model.UserSession;
@@ -135,6 +138,8 @@ public class SftpServerServiceTest {
     when(nextRelease.getRelease()).thenReturn(release);
     when(releaseService.getNextRelease()).thenReturn(nextRelease);
     when(projectService.getProject(PROJECT_KEY)).thenReturn(project);
+    when(projectService.getProject(not(eq(PROJECT_KEY)))).thenThrow(
+        new ProjectServiceException("No project found with key"));
 
     // Mock file system
     when(fs.buildReleaseStringPath(release)).thenReturn(root.getAbsolutePath());

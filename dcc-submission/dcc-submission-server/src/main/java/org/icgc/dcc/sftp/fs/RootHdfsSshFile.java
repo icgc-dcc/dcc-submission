@@ -19,6 +19,7 @@ package org.icgc.dcc.sftp.fs;
 
 import static org.icgc.dcc.filesystem.hdfs.HadoopUtils.lsAll;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -129,8 +130,12 @@ public class RootHdfsSshFile extends HdfsSshFile {
 
   public SubmissionDirectory getSubmissionDirectory(String directoryName) {
     try {
-      final Project project = this.projects.getProject(directoryName);
-      return rfs.getSubmissionDirectory(project.getKey());
+      try {
+        Project project = projects.getProject(directoryName);
+        return rfs.getSubmissionDirectory(project.getKey());
+      } catch (ProjectServiceException e) {
+        throw new FileNotFoundException(directoryName);
+      }
     } catch (Exception e) {
       return handleException(SubmissionDirectory.class, e);
     }
@@ -167,9 +172,9 @@ public class RootHdfsSshFile extends HdfsSshFile {
   }
 
   public void systemFilesNotifyModified() {
-    for (Submission submission : this.rfs.getRelease().getSubmissions()) {
-      this.releases.resetSubmission( // TODO: DCC-903 (only if open release uses it)
-          this.rfs.getRelease().getName(), submission.getProjectKey());
+    for (Submission submission : rfs.getRelease().getSubmissions()) {
+      // TODO: DCC-903 (only if open release uses it)
+      releases.resetSubmission(rfs.getRelease().getName(), submission.getProjectKey());
     }
   }
 

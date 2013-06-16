@@ -24,11 +24,11 @@ import static com.google.common.util.concurrent.Service.State.TERMINATED;
 import static java.lang.String.valueOf;
 
 import java.io.IOException;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.mina.core.session.IoSession;
 import org.apache.sshd.SshServer;
@@ -50,8 +50,7 @@ import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.security.UsernamePasswordAuthenticator;
 import org.icgc.dcc.sftp.fs.HdfsFileSystemFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.joda.time.DateTime;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -62,11 +61,10 @@ import com.typesafe.config.Config;
 /**
  * Service abstraction to the SFTP sub-system.
  */
+@Slf4j
 public class SftpServerService extends AbstractService {
 
   private static final String SFTP_CONFIG_SECTION = "sftp";
-
-  private static final Logger log = LoggerFactory.getLogger(SftpServerService.class);
 
   private final SshServer sshd;
 
@@ -138,7 +136,7 @@ public class SftpServerService extends AbstractService {
       Map<String, String> ioSessionMap = getIoSessionMap(ioSession);
       log.info(
           getLogMessage(username),
-          new Object[] { username, new Date(creationTime), new Date(lastWriteTime), ioSessionMap });
+          new Object[] { username, formatDateTime(creationTime), formatDateTime(lastWriteTime), ioSessionMap });
 
       status.addUserSession(new UserSession(username, creationTime, lastWriteTime, ioSessionMap));
     }
@@ -235,26 +233,40 @@ public class SftpServerService extends AbstractService {
    */
   private Map<String, String> getIoSessionMap(IoSession ioSession) {
     Map<String, String> map = newLinkedHashMap();
-    map.put("bothIdleCount", valueOf(ioSession.getBothIdleCount()));
-    map.put("creationTime", valueOf(ioSession.getCreationTime()));
+
     map.put("id", valueOf(ioSession.getId()));
-    map.put("lastBothIdleTime", valueOf(ioSession.getLastBothIdleTime()));
-    map.put("lastIoTime", valueOf(ioSession.getLastIoTime()));
-    map.put("lastReaderIdleTime", valueOf(ioSession.getLastReaderIdleTime()));
-    map.put("lastReadTime", valueOf(ioSession.getLastReadTime()));
-    map.put("lastWriterIdleTime", valueOf(ioSession.getLastWriterIdleTime()));
-    map.put("lastWriteTime", valueOf(ioSession.getLastWriteTime()));
+    map.put("creationTime", formatDateTime(ioSession.getCreationTime()));
+
+    map.put("readerIdleCount", valueOf(ioSession.getReaderIdleCount()));
+    map.put("writerIdleCount", valueOf(ioSession.getWriterIdleCount()));
+    map.put("bothIdleCount", valueOf(ioSession.getBothIdleCount()));
+
+    map.put("lastIoTime", formatDateTime(ioSession.getLastIoTime()));
+    map.put("lastBothIdleTime", formatDateTime(ioSession.getLastBothIdleTime()));
+
+    map.put("lastReadTime", formatDateTime(ioSession.getLastReadTime()));
+    map.put("lastReaderIdleTime", formatDateTime(ioSession.getLastReaderIdleTime()));
+
+    map.put("lastWriteTime", formatDateTime(ioSession.getLastWriteTime()));
+    map.put("lastWriterIdleTime", formatDateTime(ioSession.getLastWriterIdleTime()));
+
     map.put("readBytes", valueOf(ioSession.getReadBytes()));
     map.put("readBytesThroughput", valueOf(ioSession.getReadBytesThroughput()));
+
     map.put("scheduledWriteBytes", valueOf(ioSession.getScheduledWriteBytes()));
     map.put("scheduledWriteMessages", valueOf(ioSession.getScheduledWriteMessages()));
-    map.put("writerIdleCount", valueOf(ioSession.getWriterIdleCount()));
+
     map.put("writtenBytes", valueOf(ioSession.getWrittenBytes()));
     map.put("writtenBytesThroughput", valueOf(ioSession.getWrittenBytesThroughput()));
+
     map.put("writtenMessages", valueOf(ioSession.getWrittenMessages()));
     map.put("writtenMessagesThroughput", valueOf(ioSession.getWrittenMessagesThroughput()));
 
     return map;
+  }
+
+  private static String formatDateTime(long timestamp) {
+    return new DateTime(timestamp).toString();
   }
 
 }
