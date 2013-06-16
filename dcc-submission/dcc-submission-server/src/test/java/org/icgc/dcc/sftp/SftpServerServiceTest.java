@@ -128,7 +128,7 @@ public class SftpServerServiceTest {
 
     // Mock configuration
     when(config.getInt("sftp.port")).thenReturn(sftp.getPort());
-    when(config.getString("sftp.path")).thenReturn("");
+    when(config.getString("sftp.path")).thenReturn("/tmp/file.pem");
     when(config.hasPath("sftp.nio-workers")).thenReturn(true);
     when(config.getInt("sftp.nio-workers")).thenReturn(NIO_WORKERS);
 
