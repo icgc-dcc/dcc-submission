@@ -18,7 +18,7 @@
 package org.icgc.dcc.sftp.fs;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.elasticsearch.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Lists.newArrayList;
 import static org.icgc.dcc.filesystem.hdfs.HadoopUtils.lsAll;
 
 import java.io.IOException;
