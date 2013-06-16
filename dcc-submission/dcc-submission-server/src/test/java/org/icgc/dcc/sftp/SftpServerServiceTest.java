@@ -279,6 +279,23 @@ public class SftpServerServiceTest {
    * DCC-1071
    */
   @Test
+  public void testCdToHomeDirectory() throws SftpException, IOException {
+    // Create the simulated project directory
+    createProjectDirectory();
+
+    // Destination directory
+    String homeDirectoryName = "~";
+    String rootDirectoryName = "/";
+
+    // Change directory
+    cd(homeDirectoryName);
+    assertThat(pwd()).isEqualTo(rootDirectoryName);
+  }
+
+  /**
+   * DCC-1071
+   */
+  @Test
   public void testRemoveDotCurrentDirectoryStar() throws SftpException {
     // Create the simulated project directory
     String projectDirectoryName = createProjectDirectory();

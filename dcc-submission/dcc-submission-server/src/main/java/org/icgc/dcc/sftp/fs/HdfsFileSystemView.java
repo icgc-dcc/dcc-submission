@@ -137,10 +137,15 @@ public class HdfsFileSystemView implements FileSystemView {
     checkNotNull(file);
 
     if (file.endsWith("/.")) {
-      // Fix for DCC-1071
+      // Fix for DCC-1071: Remove trailing "/."
       file = file.substring(0, file.length() - 2);
     }
+    if (file.equals("~") || file.endsWith("/~")) {
+      // Fix for DCC-1071: Alias to root since "home" is ambiguous in general
+      file = "/";
+    }
     if (file.isEmpty() || file.equals(".")) {
+      // Alias
       file = "/";
     }
 
