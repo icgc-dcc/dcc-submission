@@ -64,7 +64,7 @@ public abstract class HdfsSshFile implements SshFile {
 
       return fs.exists(path);
     } catch (Exception e) {
-      return handleException(e);
+      return handleException(Boolean.class, e);
     }
   }
 
@@ -75,7 +75,7 @@ public abstract class HdfsSshFile implements SshFile {
 
       return (u == FsAction.ALL || u == FsAction.READ_WRITE || u == FsAction.READ || u == FsAction.READ_EXECUTE);
     } catch (Exception e) {
-      return handleException(e);
+      return handleException(Boolean.class, e);
     }
   }
 
@@ -86,7 +86,7 @@ public abstract class HdfsSshFile implements SshFile {
 
       return (u == FsAction.ALL || u == FsAction.READ_WRITE || u == FsAction.WRITE || u == FsAction.WRITE_EXECUTE);
     } catch (Exception e) {
-      return handleException(e);
+      return handleException(Boolean.class, e);
     }
   }
 
@@ -105,7 +105,7 @@ public abstract class HdfsSshFile implements SshFile {
     try {
       return fs.getFileStatus(path).getModificationTime();
     } catch (Exception e) {
-      return handleException(e);
+      return handleException(Long.class, e);
     }
   }
 
@@ -116,7 +116,7 @@ public abstract class HdfsSshFile implements SshFile {
 
       return true;
     } catch (Exception e) {
-      return handleException(e);
+      return handleException(Boolean.class, e);
     }
   }
 
@@ -125,7 +125,7 @@ public abstract class HdfsSshFile implements SshFile {
     try {
       return fs.getFileStatus(path).getLen();
     } catch (Exception e) {
-      return handleException(e);
+      return handleException(Long.class, e);
     }
   }
 
@@ -134,7 +134,7 @@ public abstract class HdfsSshFile implements SshFile {
     try {
       return fs.getFileStatus(path).getOwner();
     } catch (Exception e) {
-      return handleException(e);
+      return handleException(String.class, e);
     }
   }
 
@@ -162,7 +162,7 @@ public abstract class HdfsSshFile implements SshFile {
 
       return fs.create(path);
     } catch (Exception e) {
-      return handleException(e);
+      return handleException(OutputStream.class, e);
     }
   }
 

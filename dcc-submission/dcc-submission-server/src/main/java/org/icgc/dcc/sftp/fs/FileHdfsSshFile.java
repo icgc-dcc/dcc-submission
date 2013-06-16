@@ -72,7 +72,7 @@ public class FileHdfsSshFile extends HdfsSshFile {
 
       return true;
     } catch (Exception e) {
-      return handleException(e);
+      return handleException(Boolean.class, e);
     }
   }
 
@@ -81,7 +81,7 @@ public class FileHdfsSshFile extends HdfsSshFile {
     try {
       return isWritable();
     } catch (Exception e) {
-      return handleException(e);
+      return handleException(Boolean.class, e);
     }
   }
 
@@ -106,7 +106,7 @@ public class FileHdfsSshFile extends HdfsSshFile {
       }
       return false;
     } catch (Exception e) {
-      return handleException(e);
+      return handleException(Boolean.class, e);
     }
   }
 
@@ -126,7 +126,7 @@ public class FileHdfsSshFile extends HdfsSshFile {
 
       return false;
     } catch (Exception e) {
-      return handleException(e);
+      return handleException(Boolean.class, e);
     }
   }
 
@@ -156,7 +156,7 @@ public class FileHdfsSshFile extends HdfsSshFile {
 
       return false;
     } catch (Exception e) {
-      return handleException(e);
+      return handleException(Boolean.class, e);
     }
   }
 
@@ -167,7 +167,7 @@ public class FileHdfsSshFile extends HdfsSshFile {
 
   @Override
   public HdfsSshFile getChild(Path filePath) {
-    return handleException("Invalid file path: %s%s", getAbsolutePath(), filePath.toString());
+    return handleException(HdfsSshFile.class, "Invalid file path: %s%s", getAbsolutePath(), filePath.toString());
   }
 
 }

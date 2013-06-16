@@ -18,6 +18,7 @@
 package org.icgc.dcc.sftp.fs;
 
 import static org.icgc.dcc.filesystem.hdfs.HadoopUtils.lsAll;
+import static org.icgc.dcc.sftp.fs.HdfsFileUtils.SshFileList;
 import static org.icgc.dcc.sftp.fs.HdfsFileUtils.handleException;
 
 import java.io.FileNotFoundException;
@@ -124,7 +125,7 @@ public class RootHdfsSshFile extends HdfsSshFile {
 
       return sshFileList;
     } catch (Exception e) {
-      return handleException(e);
+      return handleException(SshFileList, e);
     }
   }
 
@@ -137,7 +138,7 @@ public class RootHdfsSshFile extends HdfsSshFile {
         throw new FileNotFoundException(directoryName);
       }
     } catch (Exception e) {
-      return handleException(e);
+      return handleException(SubmissionDirectory.class, e);
     }
   }
 
@@ -155,10 +156,10 @@ public class RootHdfsSshFile extends HdfsSshFile {
         return new FileHdfsSshFile(parentDir, filePath.getName());
       }
     } catch (Exception e) {
-      return handleException(e);
+      return handleException(HdfsSshFile.class, e);
     }
 
-    return handleException("Invalid file path: %s%s", getAbsolutePath(), filePath.toString());
+    return handleException(HdfsSshFile.class, "Invalid file path: %s%s", getAbsolutePath(), filePath.toString());
   }
 
   @Override

@@ -62,9 +62,9 @@ public class HdfsFileSystemView implements FileSystemView {
   public SshFile getFile(String file) {
     try {
       Path filePath = getFilePath(file);
-      Subject subject = passwordAuthenticator.getSubject();
+      Subject user = passwordAuthenticator.getSubject();
       Release release = releaseService.getNextRelease().getRelease();
-      ReleaseFileSystem rfs = dccFileSystem.getReleaseFilesystem(release, subject);
+      ReleaseFileSystem rfs = dccFileSystem.getReleaseFilesystem(release, user);
       RootHdfsSshFile root = new RootHdfsSshFile(rfs, projectService, releaseService);
 
       switch (filePath.depth()) {
@@ -78,7 +78,7 @@ public class HdfsFileSystemView implements FileSystemView {
         throw new FileNotFoundException("Invalid file path: " + file);
       }
     } catch (Exception e) {
-      return handleException(e);
+      return handleException(SshFile.class, e);
     }
   }
 
@@ -96,7 +96,7 @@ public class HdfsFileSystemView implements FileSystemView {
       checkState(baseDir instanceof HdfsSshFile, "Invalid SshFile: %s", baseDir);
       return ((HdfsSshFile) baseDir).getChild(filePath);
     } catch (Exception e) {
-      return handleException(e);
+      return handleException(SshFile.class, e);
     }
   }
 

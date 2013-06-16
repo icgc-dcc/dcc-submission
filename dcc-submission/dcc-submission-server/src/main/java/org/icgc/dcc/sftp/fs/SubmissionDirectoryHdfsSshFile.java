@@ -45,7 +45,7 @@ public class SubmissionDirectoryHdfsSshFile extends BaseDirectoryHdfsSshFile {
 
       return super.isWritable();
     } catch (Exception e) {
-      return handleException(e);
+      return handleException(Boolean.class, e);
     }
   }
 
@@ -57,7 +57,7 @@ public class SubmissionDirectoryHdfsSshFile extends BaseDirectoryHdfsSshFile {
     try {
       return directory == null ? false : super.doesExist();
     } catch (Exception e) {
-      return handleException(e);
+      return handleException(Boolean.class, e);
     }
   }
 
@@ -66,7 +66,7 @@ public class SubmissionDirectoryHdfsSshFile extends BaseDirectoryHdfsSshFile {
     try {
       getParentFile().notifyModified(directory);
     } catch (Exception e) {
-      handleException(e);
+      handleException(Boolean.class, e);
     }
   }
 

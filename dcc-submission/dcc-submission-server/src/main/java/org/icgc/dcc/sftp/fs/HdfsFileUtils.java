@@ -22,14 +22,23 @@ import static java.lang.String.format;
 import static lombok.AccessLevel.PRIVATE;
 
 import java.io.IOException;
+import java.util.List;
 
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.sshd.server.SshFile;
+
+import com.google.inject.TypeLiteral;
+
 @Slf4j
 @NoArgsConstructor(access = PRIVATE)
 public final class HdfsFileUtils {
+
+  // @formatter:off
+  public static final TypeLiteral<List<SshFile>> SshFileList = new TypeLiteral<List<SshFile>>() {{}};
+  // @formatter:oon
 
   /**
    * Apache MINA exception handling method designed to evade Java's checked exception mechanism to propagate
@@ -40,8 +49,8 @@ public final class HdfsFileUtils {
    * @param args - the exception message arguments
    * @return nothing
    */
-  public static <T> T handleException(String message, String... args) {
-    return handleException(new IOException(format(message, (Object[]) args)));
+  public static <T> T handleException(Class<T> type, String message, String... args) {
+    return handleException(type, new IOException(format(message, (Object[]) args)));
   }
 
   /**
@@ -53,10 +62,37 @@ public final class HdfsFileUtils {
    * @return nothing
    */
   @SneakyThrows
-  public static <T> T handleException(Exception e) {
+  public static <T> T handleException(Class<T> type, Exception e) {
     log.warn("SFTP user triggered exception: {}", e.getMessage());
     propagateIfInstanceOf(e, IOException.class);
     throw new IOException(e);
+  }
+
+  /**
+   * Apache MINA exception handling method designed to evade Java's checked exception mechanism to propagate
+   * {@code IOException}s to avoid terminating MINA SFTP sessions.
+   * 
+   * @param type - the return type
+   * @param e - the exception to propagate
+   * @return nothing
+   */
+  @SneakyThrows
+  public static <T> T handleException(TypeLiteral<T> type, Exception e) {
+    log.warn("SFTP user triggered exception: {}", e.getMessage());
+    propagateIfInstanceOf(e, IOException.class);
+    throw new IOException(e);
+  }
+
+  /**
+   * Apache MINA exception handling method designed to evade Java's checked exception mechanism to propagate
+   * {@code IOException}s to avoid terminating MINA SFTP sessions.
+   * 
+   * @param e - the exception to propagate
+   * @return nothing
+   */
+  @SneakyThrows
+  public static void handleException(Exception e) {
+    handleException(Void.class, e);
   }
 
 }
