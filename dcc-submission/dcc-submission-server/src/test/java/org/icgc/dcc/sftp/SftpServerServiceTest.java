@@ -40,7 +40,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 
 import lombok.SneakyThrows;
@@ -74,6 +73,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.common.io.CharStreams;
+import com.jcraft.jsch.ChannelSftp.LsEntry;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.SftpException;
 import com.typesafe.config.Config;
@@ -181,13 +181,13 @@ public class SftpServerServiceTest {
     String projectDirectoryName = createProjectDirectory();
 
     // Original file
-    String fileName = fileName(1);
+    String filePath = filePath(1);
     String fileContent = "This is the content of the file";
-    File file = new File(root, fileName);
+    File file = new File(root, filePath);
 
     // New file
-    String newFileName = fileName(2);
-    File newFile = new File(root, newFileName);
+    String newFilePath = filePath(2);
+    File newFile = new File(root, newFilePath);
 
     // Initial state
     assertThat(pwd()).isEqualTo("/");
@@ -198,20 +198,20 @@ public class SftpServerServiceTest {
     assertThat(pwd()).isEqualTo(projectDirectoryName);
 
     // Put file
-    put(fileName, fileContent);
+    put(filePath, fileContent);
     assertThat(file).exists().hasContent(fileContent);
     assertThat(ls(projectDirectoryName)).hasSize(1);
 
     // Rename file
-    rename(fileName, newFileName);
+    rename(filePath, newFilePath);
     assertThat(file).doesNotExist();
     assertThat(newFile).exists().hasContent(fileContent);
     assertThat(ls(projectDirectoryName)).hasSize(1);
 
     // Remove file
-    rm(newFileName);
+    rm(newFilePath);
     assertThat(newFile).doesNotExist();
-    assertThat(ls(projectDirectoryName)).hasSize(0);
+    assertThat(ls(projectDirectoryName)).isEmpty();
   }
 
   @Test(expected = IOException.class)
@@ -220,25 +220,84 @@ public class SftpServerServiceTest {
     String projectDirectoryName = createProjectDirectory();
 
     // File
-    String fileName = fileName(1);
+    String filePath = filePath(1);
     String fileContent = "This is the content of the file";
-    File file = new File(root, fileName);
+    File file = new File(root, filePath);
+
+    // Change directory
+    cd(projectDirectoryName);
+    assertThat(pwd()).isEqualTo(projectDirectoryName);
 
     // Put file
-    cd(projectDirectoryName);
-    put(fileName, fileContent);
+    put(filePath, fileContent);
     assertThat(file).exists().hasContent(fileContent);
 
     // This should throw
-    get(fileName);
+    get(filePath);
   }
 
+  /**
+   * DCC-1082
+   */
   @Test(expected = SftpException.class)
-  public void testRemoveValidationFileNotPossible() throws SftpException, IOException {
+  public void testRemoveValidationFileNotPossible() throws SftpException {
     // Create the simulated project directory
     String projectDirectoryName = createProjectDirectory();
 
     rm(projectDirectoryName + "/" + VALIDATION_DIRNAME + "/" + VALIDATION_FILE_NAME);
+  }
+
+  /**
+   * DCC-1071
+   */
+  @Test
+  public void testPutToDotCurrentDirectory() throws SftpException, IOException {
+    // Create the simulated project directory
+    String projectDirectoryName = createProjectDirectory();
+
+    // Source file
+    String filePath = filePath(1);
+    String fileContent = "This is the content of the file";
+    File file = new File(root, filePath);
+    file.createNewFile();
+    String fileName = file.getName();
+
+    // Destination directory
+    String currentDirectoryName = ".";
+
+    // Change directory
+    cd(projectDirectoryName);
+    assertThat(pwd()).isEqualTo(projectDirectoryName);
+
+    // Put file
+    put(file.getAbsolutePath(), currentDirectoryName, fileContent);
+    assertThat(ls(projectDirectoryName)).hasSize(1);
+    assertThat(ls(projectDirectoryName).get(0).getFilename()).isEqualTo(fileName);
+  }
+
+  /**
+   * DCC-1071
+   */
+  @Test
+  public void testRemoveDotCurrentDirectoryStar() throws SftpException {
+    // Create the simulated project directory
+    String projectDirectoryName = createProjectDirectory();
+
+    // File
+    String filePath = filePath(1);
+    String fileContent = "This is the content of the file";
+
+    // Change directory
+    cd(projectDirectoryName);
+    assertThat(pwd()).isEqualTo(projectDirectoryName);
+
+    // Put file
+    put(filePath, fileContent);
+    assertThat(ls(projectDirectoryName)).hasSize(1);
+
+    // Remove all files in the current directory
+    rm("./*");
+    assertThat(ls(projectDirectoryName)).isEmpty();
   }
 
   @Test(expected = SftpException.class)
@@ -298,7 +357,7 @@ public class SftpServerServiceTest {
             log.info(lsString(sftpTmp, projectDirectoryName));
 
             log.info("Writting - {}", thread);
-            sftpTmp.getChannel().put(new ByteArrayInputStream(new byte[250000000]), fileName("dummy" + thread));
+            sftpTmp.getChannel().put(new ByteArrayInputStream(new byte[250000000]), filePath("dummy" + thread));
 
             log.info("Written - {}", thread);
             log.info(lsString(sftpTmp, projectDirectoryName));
@@ -319,8 +378,10 @@ public class SftpServerServiceTest {
         }
 
       });
+
       sleepUninterruptibly(1000, MILLISECONDS);
     }
+
     sleepUninterruptibly(extraClientCount * 1500, MILLISECONDS);
     checkActiveSessions(extraClientCount + 1); // One is already connected
 
@@ -378,7 +439,8 @@ public class SftpServerServiceTest {
     return "/" + PROJECT_KEY;
   }
 
-  private Vector<?> ls(String projectDirectoryName) throws SftpException {
+  @SuppressWarnings("unchecked")
+  private List<LsEntry> ls(String projectDirectoryName) throws SftpException {
     return sftp.getChannel().ls(projectDirectoryName);
   }
 
@@ -394,8 +456,12 @@ public class SftpServerServiceTest {
     sftp.getChannel().rename(fileName, newFileName);
   }
 
-  private void put(String fileName, String fileContent) throws SftpException {
-    sftp.getChannel().put(inputStream(fileContent), fileName);
+  private void put(String sourceFileName, String fileContent) throws SftpException {
+    sftp.getChannel().put(inputStream(fileContent), sourceFileName);
+  }
+
+  private void put(String sourceFileName, String destFileName, String fileContent) throws SftpException {
+    sftp.getChannel().put(sourceFileName, destFileName);
   }
 
   private String get(String fileName) throws SftpException, IOException {
@@ -406,11 +472,11 @@ public class SftpServerServiceTest {
     sftp.getChannel().cd(projectDirectoryName);
   }
 
-  private static String fileName(int i) {
-    return fileName(String.valueOf(i));
+  private static String filePath(int i) {
+    return filePath(String.valueOf(i));
   }
 
-  private static String fileName(String s) {
+  private static String filePath(String s) {
     return format("/%s/file%s.txt", PROJECT_KEY, s);
   }
 

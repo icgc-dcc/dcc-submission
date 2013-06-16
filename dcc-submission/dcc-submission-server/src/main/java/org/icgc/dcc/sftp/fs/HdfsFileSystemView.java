@@ -135,7 +135,15 @@ public class HdfsFileSystemView implements FileSystemView {
 
   private Path getFilePath(String file) {
     checkNotNull(file);
-    file = (file.isEmpty() || file.equals(".")) ? "/" : file;
+
+    if (file.endsWith("/.")) {
+      // Fix for DCC-1071
+      file = file.substring(0, file.length() - 2);
+    }
+    if (file.isEmpty() || file.equals(".")) {
+      file = "/";
+    }
+
     Path filePath = new Path(file);
 
     return filePath;
