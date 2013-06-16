@@ -17,34 +17,46 @@
  */
 package org.icgc.dcc.sftp.fs;
 
+import static com.google.common.base.Throwables.propagateIfInstanceOf;
+import static java.lang.String.format;
+import static lombok.AccessLevel.PRIVATE;
+
 import java.io.IOException;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
-import org.apache.sshd.common.Session;
-import org.apache.sshd.server.FileSystemFactory;
-import org.apache.sshd.server.FileSystemView;
-import org.icgc.dcc.core.ProjectService;
-import org.icgc.dcc.filesystem.DccFileSystem;
-import org.icgc.dcc.release.ReleaseService;
-import org.icgc.dcc.security.UsernamePasswordAuthenticator;
+@Slf4j
+@NoArgsConstructor(access = PRIVATE)
+public final class HdfsFileUtils {
 
-@RequiredArgsConstructor
-public class HdfsFileSystemFactory implements FileSystemFactory {
+  /**
+   * Apache MINA exception handling method designed to evade Java's checked exception mechanism to propagate
+   * {@code IOException}s to avoid terminating MINA SFTP sessions.
+   * 
+   * @param type - the return type
+   * @param message - the exception message
+   * @param args - the exception message arguments
+   * @return nothing
+   */
+  public static <T> T handleException(String message, String... args) {
+    return handleException(new IOException(format(message, (Object[]) args)));
+  }
 
-  @NonNull
-  private final ProjectService projectService;
-  @NonNull
-  private final UsernamePasswordAuthenticator passwordAuthenticator;
-  @NonNull
-  private final ReleaseService releaseService;
-  @NonNull
-  private final DccFileSystem fs;
-
-  @Override
-  public FileSystemView createFileSystemView(Session session) throws IOException {
-    return new HdfsFileSystemView(fs, projectService, releaseService, passwordAuthenticator);
+  /**
+   * Apache MINA exception handling method designed to evade Java's checked exception mechanism to propagate
+   * {@code IOException}s to avoid terminating MINA SFTP sessions.
+   * 
+   * @param type - the return type
+   * @param e - the exception to propagate
+   * @return nothing
+   */
+  @SneakyThrows
+  public static <T> T handleException(Exception e) {
+    log.warn("SFTP user triggered exception: {}", e.getMessage());
+    propagateIfInstanceOf(e, IOException.class);
+    throw new IOException(e);
   }
 
 }

@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.sftp.fs;
 
+import static org.icgc.dcc.sftp.fs.HdfsFileUtils.handleException;
+
 public class SystemFileHdfsSshFile extends BaseDirectoryHdfsSshFile {
 
   public SystemFileHdfsSshFile(RootHdfsSshFile root, String directoryName) {
@@ -26,7 +28,7 @@ public class SystemFileHdfsSshFile extends BaseDirectoryHdfsSshFile {
   @Override
   public void notifyModified() {
     try {
-      this.getParentFile().systemFilesNotifyModified();
+      getParentFile().systemFilesNotifyModified();
     } catch (Exception e) {
       handleException(e);
     }

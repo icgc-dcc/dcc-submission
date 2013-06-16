@@ -20,9 +20,12 @@ package org.icgc.dcc.sftp.fs;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.icgc.dcc.filesystem.hdfs.HadoopUtils.lsAll;
+import static org.icgc.dcc.sftp.fs.HdfsFileUtils.handleException;
 
 import java.io.IOException;
 import java.util.List;
+
+import lombok.SneakyThrows;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.sshd.server.SshFile;
@@ -46,7 +49,7 @@ public abstract class BaseDirectoryHdfsSshFile extends HdfsSshFile {
 
   @Override
   public String getName() {
-    return this.path.getName();
+    return path.getName();
   }
 
   @Override
@@ -68,12 +71,12 @@ public abstract class BaseDirectoryHdfsSshFile extends HdfsSshFile {
   public boolean create() throws IOException {
     try {
       if (isWritable()) {
-        this.fs.create(path);
+        fs.create(path);
         return true;
       }
       return false;
     } catch (Exception e) {
-      return handleException(Boolean.class, e);
+      return handleException(e);
     }
   }
 
@@ -82,7 +85,6 @@ public abstract class BaseDirectoryHdfsSshFile extends HdfsSshFile {
     create();
   }
 
-  @SuppressWarnings("unchecked")
   @Override
   public List<SshFile> listSshFiles() {
     try {
@@ -98,7 +100,7 @@ public abstract class BaseDirectoryHdfsSshFile extends HdfsSshFile {
 
       return sshFiles;
     } catch (Exception e) {
-      return handleException(List.class, e);
+      return handleException(e);
     }
   }
 
@@ -112,27 +114,24 @@ public abstract class BaseDirectoryHdfsSshFile extends HdfsSshFile {
         return new FileHdfsSshFile(this, filePath.getName());
       }
     } catch (Exception e) {
-      return handleException(HdfsSshFile.class, e);
+      return handleException(e);
     }
 
-    return handleException(HdfsSshFile.class, "Invalid file path: " + this.getAbsolutePath() + filePath.toString());
+    return handleException("Invalid file path: %s%s", getAbsolutePath(), filePath.toString());
   }
 
   @Override
+  @SneakyThrows
   public boolean mkdir() {
-    try {
-      return create();
-    } catch (Exception e) {
-      return handleException(Boolean.class, e);
-    }
+    return create();
   }
 
   @Override
   public boolean move(SshFile destination) {
     try {
-      return this.fs.rename(path, new Path(destination.getAbsolutePath()));
+      return fs.rename(path, new Path(destination.getAbsolutePath()));
     } catch (Exception e) {
-      return handleException(Boolean.class, e);
+      return handleException(e);
     }
   }
 

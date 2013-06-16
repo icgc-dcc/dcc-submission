@@ -18,6 +18,7 @@
 package org.icgc.dcc.sftp.fs;
 
 import static org.icgc.dcc.filesystem.hdfs.HadoopUtils.lsAll;
+import static org.icgc.dcc.sftp.fs.HdfsFileUtils.handleException;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -98,7 +99,6 @@ public class RootHdfsSshFile extends HdfsSshFile {
     return false;
   }
 
-  @SuppressWarnings("unchecked")
   @Override
   public List<SshFile> listSshFiles() {
     try {
@@ -107,7 +107,7 @@ public class RootHdfsSshFile extends HdfsSshFile {
       for (Path path : pathList) {
         try {
           // if it is System File directory and admin user, add to file list
-          if (this.rfs.isSystemDirectory(path)) {
+          if (rfs.isSystemDirectory(path)) {
             sshFileList.add(new SystemFileHdfsSshFile(this, path.getName()));
           } else {
             SubmissionDirectoryHdfsSshFile dir = new SubmissionDirectoryHdfsSshFile(this, path.getName());
@@ -124,7 +124,7 @@ public class RootHdfsSshFile extends HdfsSshFile {
 
       return sshFileList;
     } catch (Exception e) {
-      return handleException(List.class, e);
+      return handleException(e);
     }
   }
 
@@ -137,7 +137,7 @@ public class RootHdfsSshFile extends HdfsSshFile {
         throw new FileNotFoundException(directoryName);
       }
     } catch (Exception e) {
-      return handleException(SubmissionDirectory.class, e);
+      return handleException(e);
     }
   }
 
@@ -155,10 +155,10 @@ public class RootHdfsSshFile extends HdfsSshFile {
         return new FileHdfsSshFile(parentDir, filePath.getName());
       }
     } catch (Exception e) {
-      return handleException(HdfsSshFile.class, e);
+      return handleException(e);
     }
 
-    return handleException(HdfsSshFile.class, "Invalid file path: " + this.getAbsolutePath() + filePath.toString());
+    return handleException("Invalid file path: %s%s", getAbsolutePath(), filePath.toString());
   }
 
   @Override
@@ -168,7 +168,7 @@ public class RootHdfsSshFile extends HdfsSshFile {
 
   public void notifyModified(SubmissionDirectory submissionDirectory) {
     Submission submission = submissionDirectory.getSubmission();
-    this.releases.resetSubmission(this.rfs.getRelease().getName(), submission.getProjectKey());
+    releases.resetSubmission(rfs.getRelease().getName(), submission.getProjectKey());
   }
 
   public void systemFilesNotifyModified() {

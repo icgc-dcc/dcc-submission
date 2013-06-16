@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.sftp.fs;
 
+import static org.icgc.dcc.sftp.fs.HdfsFileUtils.handleException;
+
 import org.icgc.dcc.filesystem.SubmissionDirectory;
 
 public class SubmissionDirectoryHdfsSshFile extends BaseDirectoryHdfsSshFile {
@@ -43,7 +45,7 @@ public class SubmissionDirectoryHdfsSshFile extends BaseDirectoryHdfsSshFile {
 
       return super.isWritable();
     } catch (Exception e) {
-      return handleException(Boolean.class, e);
+      return handleException(e);
     }
   }
 
@@ -55,14 +57,14 @@ public class SubmissionDirectoryHdfsSshFile extends BaseDirectoryHdfsSshFile {
     try {
       return directory == null ? false : super.doesExist();
     } catch (Exception e) {
-      return handleException(Boolean.class, e);
+      return handleException(e);
     }
   }
 
   @Override
   public void notifyModified() {
     try {
-      this.getParentFile().notifyModified(directory);
+      getParentFile().notifyModified(directory);
     } catch (Exception e) {
       handleException(e);
     }

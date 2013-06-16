@@ -17,14 +17,12 @@
  */
 package org.icgc.dcc.sftp.fs;
 
-import static com.google.common.base.Throwables.propagateIfInstanceOf;
 import static org.icgc.dcc.filesystem.DccFileSystem.VALIDATION_DIRNAME;
+import static org.icgc.dcc.sftp.fs.HdfsFileUtils.handleException;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import lombok.SneakyThrows;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -66,7 +64,7 @@ public abstract class HdfsSshFile implements SshFile {
 
       return fs.exists(path);
     } catch (Exception e) {
-      return handleException(Boolean.class, e);
+      return handleException(e);
     }
   }
 
@@ -77,7 +75,7 @@ public abstract class HdfsSshFile implements SshFile {
 
       return (u == FsAction.ALL || u == FsAction.READ_WRITE || u == FsAction.READ || u == FsAction.READ_EXECUTE);
     } catch (Exception e) {
-      return handleException(Boolean.class, e);
+      return handleException(e);
     }
   }
 
@@ -88,7 +86,7 @@ public abstract class HdfsSshFile implements SshFile {
 
       return (u == FsAction.ALL || u == FsAction.READ_WRITE || u == FsAction.WRITE || u == FsAction.WRITE_EXECUTE);
     } catch (Exception e) {
-      return handleException(Boolean.class, e);
+      return handleException(e);
     }
   }
 
@@ -107,7 +105,7 @@ public abstract class HdfsSshFile implements SshFile {
     try {
       return fs.getFileStatus(path).getModificationTime();
     } catch (Exception e) {
-      return handleException(Long.class, e);
+      return handleException(e);
     }
   }
 
@@ -118,7 +116,7 @@ public abstract class HdfsSshFile implements SshFile {
 
       return true;
     } catch (Exception e) {
-      return handleException(Boolean.class, e);
+      return handleException(e);
     }
   }
 
@@ -127,7 +125,7 @@ public abstract class HdfsSshFile implements SshFile {
     try {
       return fs.getFileStatus(path).getLen();
     } catch (Exception e) {
-      return handleException(Long.class, e);
+      return handleException(e);
     }
   }
 
@@ -136,7 +134,7 @@ public abstract class HdfsSshFile implements SshFile {
     try {
       return fs.getFileStatus(path).getOwner();
     } catch (Exception e) {
-      return handleException(String.class, e);
+      return handleException(e);
     }
   }
 
@@ -158,13 +156,13 @@ public abstract class HdfsSshFile implements SshFile {
   @Override
   public OutputStream createOutputStream(long offset) throws IOException {
     try {
-      if (this.isWritable() == false) {
+      if (!this.isWritable()) {
         throw new IOException("SFTP is in readonly mode");
       }
 
       return fs.create(path);
     } catch (Exception e) {
-      return handleException(OutputStream.class, e);
+      return handleException(e);
     }
   }
 
@@ -190,43 +188,6 @@ public abstract class HdfsSshFile implements SshFile {
 
     String uri = path.toString();
     return uri.contains(VALIDATION_DIRNAME);
-  }
-
-  /**
-   * Apache MINA exception handling method designed to evade Java's checked exception mechanism to propagate
-   * {@code IOException}s to avoid terminating MINA SFTP sessions.
-   * 
-   * @param e - the exception to propagate
-   */
-  protected void handleException(Exception e) {
-    handleException(Void.class, e);
-  }
-
-  /**
-   * Apache MINA exception handling method designed to evade Java's checked exception mechanism to propagate
-   * {@code IOException}s to avoid terminating MINA SFTP sessions.
-   * 
-   * @param type - the return type
-   * @param message - the exception method
-   * @return nothing
-   */
-  protected <T> T handleException(Class<T> type, String message) {
-    return handleException(type, new IOException(message));
-  }
-
-  /**
-   * Apache MINA exception handling method designed to evade Java's checked exception mechanism to propagate
-   * {@code IOException}s to avoid terminating MINA SFTP sessions.
-   * 
-   * @param type - the return type
-   * @param e - the exception to propagate
-   * @return nothing
-   */
-  @SneakyThrows
-  protected <T> T handleException(Class<T> type, Exception e) {
-    log.warn("SFTP user triggered exception: {}", e.getMessage());
-    propagateIfInstanceOf(e, IOException.class);
-    throw new IOException(e);
   }
 
 }
