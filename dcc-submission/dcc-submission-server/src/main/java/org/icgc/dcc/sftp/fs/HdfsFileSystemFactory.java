@@ -25,26 +25,17 @@ import lombok.RequiredArgsConstructor;
 import org.apache.sshd.common.Session;
 import org.apache.sshd.server.FileSystemFactory;
 import org.apache.sshd.server.FileSystemView;
-import org.icgc.dcc.core.ProjectService;
-import org.icgc.dcc.filesystem.DccFileSystem;
-import org.icgc.dcc.release.ReleaseService;
-import org.icgc.dcc.security.UsernamePasswordAuthenticator;
+import org.icgc.dcc.sftp.SftpContext;
 
 @RequiredArgsConstructor
 public class HdfsFileSystemFactory implements FileSystemFactory {
 
   @NonNull
-  private final ProjectService projectService;
-  @NonNull
-  private final UsernamePasswordAuthenticator passwordAuthenticator;
-  @NonNull
-  private final ReleaseService releaseService;
-  @NonNull
-  private final DccFileSystem fs;
+  private final SftpContext context;
 
   @Override
   public FileSystemView createFileSystemView(Session session) throws IOException {
-    return new HdfsFileSystemView(fs, projectService, releaseService, passwordAuthenticator);
+    return new HdfsFileSystemView(context);
   }
 
 }

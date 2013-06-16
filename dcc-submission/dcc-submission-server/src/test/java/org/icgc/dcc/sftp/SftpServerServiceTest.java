@@ -102,7 +102,7 @@ public class SftpServerServiceTest {
   @Mock
   Subject subject;
   @Mock
-  UsernamePasswordAuthenticator passwordAuthenticator;
+  UsernamePasswordAuthenticator authenticator;
 
   @Mock
   Release release;
@@ -140,8 +140,8 @@ public class SftpServerServiceTest {
     when(config.getInt("sftp.nio-workers")).thenReturn(NIO_WORKERS);
 
     // Mock authentication
-    when(passwordAuthenticator.authenticate(anyString(), (char[]) any(), anyString())).thenReturn(subject);
-    when(passwordAuthenticator.getSubject()).thenReturn(subject);
+    when(authenticator.authenticate(anyString(), (char[]) any(), anyString())).thenReturn(subject);
+    when(authenticator.getSubject()).thenReturn(subject);
 
     // Mock release / project
     when(project.getKey()).thenReturn(PROJECT_KEY);
@@ -163,7 +163,7 @@ public class SftpServerServiceTest {
     when(submissionDirectory.getSubmission()).thenReturn(submission);
 
     // Create and start CUT
-    service = new SftpServerService(config, passwordAuthenticator, fs, projectService, releaseService);
+    service = new SftpServerService(config, authenticator, fs, projectService, releaseService);
     service.startAndWait();
 
     sftp.connect();

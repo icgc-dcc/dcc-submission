@@ -236,11 +236,11 @@ public class SftpServerService extends AbstractService {
       setProperties(sshd, config);
 
       // Set customized extension points
+      SftpContext context = new SftpContext(fs, releaseService, projectService, passwordAuthenticator);
       sshd.setKeyPairProvider(new PEMGeneratorHostKeyProvider(config.getString(getConfigPath("path")), "RSA", 2048));
-      sshd.setFileSystemFactory(new HdfsFileSystemFactory(projectService, passwordAuthenticator, releaseService, fs));
+      sshd.setFileSystemFactory(new HdfsFileSystemFactory(context));
       sshd.setSubsystemFactories(ImmutableList.<NamedFactory<Command>> of(new SftpSubsystem.Factory()));
-      sshd.setPasswordAuthenticator(new SftpPasswordAuthenticator(service, passwordAuthenticator, projectService,
-          releaseService));
+      sshd.setPasswordAuthenticator(new SftpPasswordAuthenticator(service, context));
 
       return sshd;
     }

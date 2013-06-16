@@ -30,29 +30,20 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.sshd.server.SshFile;
-import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.core.ProjectServiceException;
-import org.icgc.dcc.core.model.Project;
 import org.icgc.dcc.filesystem.DccFileSystemException;
-import org.icgc.dcc.filesystem.ReleaseFileSystem;
 import org.icgc.dcc.filesystem.SubmissionDirectory;
-import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.Submission;
+import org.icgc.dcc.sftp.SftpContext;
 
 @Slf4j
 public class RootHdfsSshFile extends HdfsSshFile {
 
-  private final ReleaseFileSystem rfs;
+  private final SftpContext context;
 
-  private final ReleaseService releases;
-
-  private final ProjectService projects;
-
-  public RootHdfsSshFile(ReleaseFileSystem rfs, ProjectService projects, ReleaseService releases) {
-    super(rfs);
-    this.rfs = rfs;
-    this.projects = projects;
-    this.releases = releases;
+  public RootHdfsSshFile(SftpContext context) {
+    super(context.getReleasePath(), context.getFileSystem());
+    this.context = context;
   }
 
   @Override
@@ -108,7 +99,7 @@ public class RootHdfsSshFile extends HdfsSshFile {
       for (Path path : pathList) {
         try {
           // if it is System File directory and admin user, add to file list
-          if (rfs.isSystemDirectory(path)) {
+          if (context.isSystemDirectory(path)) {
             sshFileList.add(new SystemFileHdfsSshFile(this, path.getName()));
           } else {
             SubmissionDirectoryHdfsSshFile dir = new SubmissionDirectoryHdfsSshFile(this, path.getName());
@@ -132,8 +123,7 @@ public class RootHdfsSshFile extends HdfsSshFile {
   public SubmissionDirectory getSubmissionDirectory(String directoryName) {
     try {
       try {
-        Project project = projects.getProject(directoryName);
-        return rfs.getSubmissionDirectory(project.getKey());
+        return context.getSubmissionDirectory(directoryName);
       } catch (ProjectServiceException e) {
         throw new FileNotFoundException(directoryName);
       }
@@ -164,19 +154,15 @@ public class RootHdfsSshFile extends HdfsSshFile {
 
   @Override
   public void truncate() throws IOException {
-
   }
 
   public void notifyModified(SubmissionDirectory submissionDirectory) {
     Submission submission = submissionDirectory.getSubmission();
-    releases.resetSubmission(rfs.getRelease().getName(), submission.getProjectKey());
+    context.resetSubmission(submission);
   }
 
   public void systemFilesNotifyModified() {
-    for (Submission submission : rfs.getRelease().getSubmissions()) {
-      // TODO: DCC-903 (only if open release uses it)
-      releases.resetSubmission(rfs.getRelease().getName(), submission.getProjectKey());
-    }
+    context.resetSubmissions();
   }
 
 }

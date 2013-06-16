@@ -18,7 +18,6 @@
 package org.icgc.dcc.sftp;
 
 import static com.google.common.base.Charsets.UTF_8;
-import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.io.Resources.getResource;
 import static lombok.AccessLevel.PACKAGE;
 
@@ -28,15 +27,11 @@ import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.SneakyThrows;
-import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.shiro.subject.Subject;
 import org.apache.sshd.common.SshConstants;
 import org.apache.sshd.common.util.Buffer;
 import org.apache.sshd.server.session.ServerSession;
-import org.icgc.dcc.core.ProjectService;
-import org.icgc.dcc.release.ReleaseService;
 
 import com.google.common.io.Resources;
 
@@ -72,21 +67,19 @@ class SftpBanner {
   private final String BANNER = getBanner();
 
   @NonNull
-  private final ReleaseService releaseService;
-  @NonNull
-  private final ProjectService projectService;
+  private final SftpContext context;
 
-  public void send(ServerSession session, Subject user) {
+  public void send(ServerSession session) {
     try {
       // General information
-      String releaseName = getReleaseName();
+      String releaseName = context.getNextReleaseName();
 
       // User specific information
       String username = session.getUsername();
-      List<String> projectKeys = getUserProjectKeys(user);
+      List<String> projectKeys = context.getUserProjectKeys();
 
       // Create a customized message for the supplied user
-      String message = getMessage(releaseName, user, username, projectKeys);
+      String message = getMessage(releaseName, username, projectKeys);
 
       write(session, message);
     } catch (IOException e) {
@@ -104,7 +97,7 @@ class SftpBanner {
   }
 
   @SneakyThrows
-  private String getMessage(String releaseName, Subject user, String username, List<String> projectKeys) {
+  private String getMessage(String releaseName, String username, List<String> projectKeys) {
     String message = "\n" +
         BANNER + "\n\n" +
         "Hello '" + username + "', welcome to the ICGC DCC Submission SFTP Server!\n" +
@@ -127,19 +120,6 @@ class SftpBanner {
     }
 
     return directories;
-  }
-
-  private String getReleaseName() {
-    return releaseService.getNextRelease().getRelease().getName();
-  }
-
-  private List<String> getUserProjectKeys(Subject user) {
-    List<String> projectKeys = newArrayList();
-    for (val project : projectService.getProjectsBySubject(user)) {
-      projectKeys.add(project.getKey());
-    }
-
-    return projectKeys;
   }
 
   @SneakyThrows

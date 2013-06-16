@@ -28,30 +28,17 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.sshd.server.SshFile;
-import org.icgc.dcc.filesystem.DccFileSystem;
-import org.icgc.dcc.filesystem.ReleaseFileSystem;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public abstract class HdfsSshFile implements SshFile {
 
-  protected static final Logger log = LoggerFactory.getLogger(HdfsSshFile.class);
-
-  protected final String SEPARATOR = "/";
+  protected static final String SEPARATOR = "/";
 
   protected Path path;
-
   protected final FileSystem fs;
 
   protected HdfsSshFile(Path path, FileSystem fs) {
     this.path = path;
     this.fs = fs;
-  }
-
-  protected HdfsSshFile(ReleaseFileSystem rfs) {
-    DccFileSystem dccFS = rfs.getDccFileSystem();
-    this.path = new Path(dccFS.buildReleaseStringPath(rfs.getRelease()));
-    this.fs = dccFS.getFileSystem();
   }
 
   @Override

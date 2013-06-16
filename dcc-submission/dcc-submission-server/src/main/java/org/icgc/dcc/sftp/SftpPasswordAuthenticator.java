@@ -19,9 +19,6 @@ package org.icgc.dcc.sftp;
 
 import org.apache.sshd.server.PasswordAuthenticator;
 import org.apache.sshd.server.session.ServerSession;
-import org.icgc.dcc.core.ProjectService;
-import org.icgc.dcc.release.ReleaseService;
-import org.icgc.dcc.security.UsernamePasswordAuthenticator;
 
 class SftpPasswordAuthenticator implements PasswordAuthenticator {
 
@@ -35,14 +32,13 @@ class SftpPasswordAuthenticator implements PasswordAuthenticator {
    * Authenticator state.
    */
   private final SftpServerService service;
-  private final UsernamePasswordAuthenticator delegate;
+  private final SftpContext context;
   private final SftpBanner banner;
 
-  SftpPasswordAuthenticator(SftpServerService service, UsernamePasswordAuthenticator delegate,
-      ProjectService projectService, ReleaseService releaseService) {
+  SftpPasswordAuthenticator(SftpServerService service, SftpContext context) {
     this.service = service;
-    this.delegate = delegate;
-    this.banner = new SftpBanner(releaseService, projectService);
+    this.context = context;
+    this.banner = new SftpBanner(context);
   }
 
   @Override
@@ -71,11 +67,11 @@ class SftpPasswordAuthenticator implements PasswordAuthenticator {
   }
 
   private boolean authenticate(String username, String password) {
-    return delegate.authenticate(username, password.toCharArray(), null) != null;
+    return context.authenticate(username, password);
   }
 
   private void sendBanner(ServerSession session) {
-    banner.send(session, delegate.getSubject());
+    banner.send(session);
   }
 
 }

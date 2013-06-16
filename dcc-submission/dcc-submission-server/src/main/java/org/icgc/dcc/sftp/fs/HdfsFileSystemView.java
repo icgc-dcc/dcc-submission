@@ -27,15 +27,9 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.shiro.subject.Subject;
 import org.apache.sshd.server.FileSystemView;
 import org.apache.sshd.server.SshFile;
-import org.icgc.dcc.core.ProjectService;
-import org.icgc.dcc.filesystem.DccFileSystem;
-import org.icgc.dcc.filesystem.ReleaseFileSystem;
-import org.icgc.dcc.release.ReleaseService;
-import org.icgc.dcc.release.model.Release;
-import org.icgc.dcc.security.UsernamePasswordAuthenticator;
+import org.icgc.dcc.sftp.SftpContext;
 
 /**
  * Virtual file system that bridges the SSHD SftpModule and the DCC file system
@@ -44,13 +38,7 @@ import org.icgc.dcc.security.UsernamePasswordAuthenticator;
 public class HdfsFileSystemView implements FileSystemView {
 
   @NonNull
-  private final DccFileSystem dccFileSystem;
-  @NonNull
-  private final ProjectService projectService;
-  @NonNull
-  private final ReleaseService releaseService;
-  @NonNull
-  private final UsernamePasswordAuthenticator passwordAuthenticator;
+  private final SftpContext context;
 
   /**
    * Returns the appropriate file system abstraction for the specified {@code file} path.
@@ -62,18 +50,15 @@ public class HdfsFileSystemView implements FileSystemView {
   public SshFile getFile(String file) {
     try {
       Path filePath = getFilePath(file);
-      Subject user = passwordAuthenticator.getSubject();
-      Release release = releaseService.getNextRelease().getRelease();
-      ReleaseFileSystem rfs = dccFileSystem.getReleaseFilesystem(release, user);
-      RootHdfsSshFile root = new RootHdfsSshFile(rfs, projectService, releaseService);
+      RootHdfsSshFile root = new RootHdfsSshFile(context);
 
       switch (filePath.depth()) {
       case 0:
         return root;
       case 1:
-        return getSubmissionDirectory(file, filePath, rfs, root);
+        return getSubmissionDirectory(file, filePath, root);
       case 2:
-        return getSubmissionFile(file, filePath, rfs, root);
+        return getSubmissionFile(file, filePath, root);
       default:
         throw new FileNotFoundException("Invalid file path: " + file);
       }
@@ -100,9 +85,9 @@ public class HdfsFileSystemView implements FileSystemView {
     }
   }
 
-  private static BaseDirectoryHdfsSshFile getSubmissionDirectory(String file, Path path, ReleaseFileSystem rfs,
-      RootHdfsSshFile root) throws FileNotFoundException {
-    BaseDirectoryHdfsSshFile submissionDirectory = getHdfsSshFile(rfs, root, path);
+  private BaseDirectoryHdfsSshFile getSubmissionDirectory(String file, Path path, RootHdfsSshFile root)
+      throws FileNotFoundException {
+    BaseDirectoryHdfsSshFile submissionDirectory = getHdfsSshFile(root, path);
     if (!submissionDirectory.doesExist()) {
       throw new FileNotFoundException("Invalid file path: " + file);
     }
@@ -110,9 +95,9 @@ public class HdfsFileSystemView implements FileSystemView {
     return submissionDirectory;
   }
 
-  private static SshFile getSubmissionFile(String file, Path path, ReleaseFileSystem rfs, RootHdfsSshFile root)
+  private SshFile getSubmissionFile(String file, Path path, RootHdfsSshFile root)
       throws FileNotFoundException {
-    BaseDirectoryHdfsSshFile submissionDirectory = getSubmissionDirectory(file, path.getParent(), rfs, root);
+    BaseDirectoryHdfsSshFile submissionDirectory = getSubmissionDirectory(file, path.getParent(), root);
     String submissionFileName = path.getName();
     FileHdfsSshFile submissionFile = new FileHdfsSshFile(submissionDirectory, submissionFileName);
 
@@ -123,7 +108,7 @@ public class HdfsFileSystemView implements FileSystemView {
     return submissionFile;
   }
 
-  private static Path getFilePath(String file) {
+  private Path getFilePath(String file) {
     checkNotNull(file);
 
     if (file.endsWith("/.")) {
@@ -144,9 +129,9 @@ public class HdfsFileSystemView implements FileSystemView {
     return filePath;
   }
 
-  private static BaseDirectoryHdfsSshFile getHdfsSshFile(ReleaseFileSystem rfs, RootHdfsSshFile root, Path path) {
+  private BaseDirectoryHdfsSshFile getHdfsSshFile(RootHdfsSshFile root, Path path) {
     BaseDirectoryHdfsSshFile result;
-    if (rfs.isSystemDirectory(path)) {
+    if (context.isSystemDirectory(path)) {
       result = new SystemFileHdfsSshFile(root, path.getName());
     } else {
       result = new SubmissionDirectoryHdfsSshFile(root, path.getName());
