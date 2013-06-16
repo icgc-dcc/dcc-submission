@@ -56,6 +56,17 @@ class SftpBanner {
   private static final String BANNER_FILE = "banner.txt";
 
   /**
+   * Support email address.
+   */
+  // TODO: Externalize
+  private static final String SUPPORT_EMAIL = "***REMOVED***";
+
+  /**
+   * Standard operating procedure for DCC submissions.
+   */
+  private static final String SOP_URL = "http://dcc.icgc.org/pages/docs/dcc_submission_system_sop-beta.pdf";
+
+  /**
    * External banner text.
    */
   private final String BANNER = getBanner();
@@ -98,10 +109,12 @@ class SftpBanner {
         BANNER + "\n\n" +
         "Hello '" + username + "', welcome to the ICGC DCC Submission SFTP Server!\n" +
         "\n" +
-        "  - Accepting submissions for release '" + releaseName + "'\n" +
+        "  - Accepting submissions for release: '" + releaseName + "'\n" +
         "  - Downloading is disabled (ex. 'get', 'mget')\n" +
         "  - You may 'cd', 'put' 'rm' 'ls' in the following project directories:\n" +
         formatDirectories(projectKeys) +
+        "  - Submission instructions may be found at: '" + SOP_URL + "'\n" +
+        "  - For support contact: '" + SUPPORT_EMAIL + "'\n" +
         "\n";
 
     return message;

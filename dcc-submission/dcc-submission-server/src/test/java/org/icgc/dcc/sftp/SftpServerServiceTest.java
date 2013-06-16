@@ -19,9 +19,13 @@ package org.icgc.dcc.sftp;
 
 import static com.google.common.base.Charsets.UTF_8;
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.util.concurrent.Uninterruptibles.sleepUninterruptibly;
 import static java.lang.String.format;
 import static java.util.concurrent.Executors.newFixedThreadPool;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
 import static org.mockito.AdditionalMatchers.not;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -35,8 +39,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.conf.Configuration;
@@ -56,7 +62,6 @@ import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.security.UsernamePasswordAuthenticator;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -142,8 +147,7 @@ public class SftpServerServiceTest {
     when(nextRelease.getRelease()).thenReturn(release);
     when(releaseService.getNextRelease()).thenReturn(nextRelease);
     when(projectService.getProject(PROJECT_KEY)).thenReturn(project);
-    when(projectService.getProject(not(eq(PROJECT_KEY)))).thenThrow(
-        new ProjectServiceException("No project found with key"));
+    when(projectService.getProject(not(eq(PROJECT_KEY)))).thenThrow(new ProjectServiceException(""));
     when(projectService.getProjectsBySubject(any(Subject.class))).thenReturn(projects);
 
     // Mock file system
@@ -156,16 +160,21 @@ public class SftpServerServiceTest {
     when(submissionDirectory.isReadOnly()).thenReturn(false);
     when(submissionDirectory.getSubmission()).thenReturn(submission);
 
-    // Create an start CUT
+    // Create and start CUT
     service = new SftpServerService(config, passwordAuthenticator, fs, projectService, releaseService);
     service.startAndWait();
 
     sftp.connect();
   }
 
+  @After
+  public void tearDown() {
+    service.stop();
+    sftp.disconnect();
+  }
+
   @Test
-  @SuppressWarnings("unchecked")
-  public void testService() throws JSchException, SftpException {
+  public void testTypicalWorkflow() throws JSchException, SftpException {
     // Create the simulated project directory
     String projectDirectoryName = createProjectDirectory();
 
@@ -179,28 +188,28 @@ public class SftpServerServiceTest {
     File newFile = new File(root, newFileName);
 
     // Initial state
-    assertThat(sftp.getChannel().pwd()).isEqualTo("/");
-    assertThat(sftp.getChannel().ls(projectDirectoryName)).hasSize(0);
+    assertThat(pwd()).isEqualTo("/");
+    assertThat(ls(projectDirectoryName)).hasSize(0);
 
     // Change directory
-    sftp.getChannel().cd(projectDirectoryName);
-    assertThat(sftp.getChannel().pwd()).isEqualTo(projectDirectoryName);
+    cd(projectDirectoryName);
+    assertThat(pwd()).isEqualTo(projectDirectoryName);
 
     // Put file
-    sftp.getChannel().put(inputStream(fileContent), fileName);
+    put(fileName, fileContent);
     assertThat(file).exists().hasContent(fileContent);
-    assertThat(sftp.getChannel().ls(projectDirectoryName)).hasSize(1);
+    assertThat(ls(projectDirectoryName)).hasSize(1);
 
     // Rename file
-    sftp.getChannel().rename(fileName, newFileName);
+    rename(fileName, newFileName);
     assertThat(file).doesNotExist();
     assertThat(newFile).exists().hasContent(fileContent);
-    assertThat(sftp.getChannel().ls(projectDirectoryName)).hasSize(1);
+    assertThat(ls(projectDirectoryName)).hasSize(1);
 
     // Remove file
-    sftp.getChannel().rm(newFileName);
+    rm(newFileName);
     assertThat(newFile).doesNotExist();
-    assertThat(sftp.getChannel().ls(projectDirectoryName)).hasSize(0);
+    assertThat(ls(projectDirectoryName)).hasSize(0);
   }
 
   @Test(expected = IOException.class)
@@ -214,37 +223,37 @@ public class SftpServerServiceTest {
     File file = new File(root, fileName);
 
     // Put file
-    sftp.getChannel().cd(projectDirectoryName);
-    sftp.getChannel().put(inputStream(fileContent), fileName);
+    cd(projectDirectoryName);
+    put(fileName, fileContent);
     assertThat(file).exists().hasContent(fileContent);
 
-    // This should throw on read
-    read(sftp.getChannel().get(fileName));
+    // This should throw
+    get(fileName);
   }
 
   @Test(expected = SftpException.class)
   public void testRemoveNonExistentFile() throws SftpException {
-    sftp.getChannel().rm("/does/not/exist");
+    rm("/does/not/exist");
   }
 
   @Test(expected = SftpException.class)
   public void testCdIntoNonExistent() throws SftpException {
-    sftp.getChannel().cd("/does/not/exist");
+    cd("/does/not/exist");
   }
 
   @Test(expected = SftpException.class)
   public void testLsIntoNonExistent() throws SftpException {
-    sftp.getChannel().ls("/does/not/exist");
+    ls("/does/not/exist");
   }
 
   @Test(expected = SftpException.class)
   public void testRenameNonExistent() throws SftpException {
-    sftp.getChannel().rename("/does/not/exist", "/still/does/not/exist");
+    rename("/does/not/exist", "/still/does/not/exist");
   }
 
   @Test(expected = SftpException.class)
-  public void testGetNonExistent() throws SftpException {
-    sftp.getChannel().get("/does/not/exist");
+  public void testGetNonExistent() throws SftpException, IOException {
+    get("/does/not/exist");
   }
 
   @Test
@@ -256,10 +265,10 @@ public class SftpServerServiceTest {
     disconnectAndCheck();
   }
 
-  // re-enable in DCC-1226
+  // Re-enable in DCC-1226
   @Ignore
   @Test
-  public void testMaxSession() throws InterruptedException {
+  public void testMaxSession() {
     int extraClientCount = NIO_WORKERS + 1; // one is already connected
 
     ExecutorService executor = newFixedThreadPool(extraClientCount);
@@ -290,7 +299,7 @@ public class SftpServerServiceTest {
 
           } catch (Exception e) {
             e.printStackTrace();
-            Assert.assertFalse(true);
+            fail();
           }
         }
 
@@ -300,35 +309,32 @@ public class SftpServerServiceTest {
         }
 
       });
-      Thread.sleep(1000);
+      sleepUninterruptibly(1000, MILLISECONDS);
     }
-    Thread.sleep(extraClientCount * 1500);
-
+    sleepUninterruptibly(extraClientCount * 1500, MILLISECONDS);
     checkActiveSessions(extraClientCount + 1); // One is already connected
 
-    Thread.sleep(extraClientCount * 15000);
+    sleepUninterruptibly(extraClientCount * 15000, MILLISECONDS);
     disconnectAndCheck();
   }
 
-  private void disconnectAndCheck() throws InterruptedException {
+  private void disconnectAndCheck() {
     sftp.disconnect();
-    Thread.sleep(1000); // Allow for asynchronous disconnection latency
+    sleepUninterruptibly(1, SECONDS);
     checkActiveSessions(0);
   }
 
   private void checkActiveSessions(int total) {
     Status activeSessions = service.getActiveSessions();
     assertThat(activeSessions.getActiveSftpSessions()).isEqualTo(total);
+
     List<UserSession> userSessions = activeSessions.getUserSessions();
     assertThat(userSessions.size()).isEqualTo(total);
-    for (int i = 0; i < total; i++) {
-      assertThat(userSessions.get(i).getUserName()).isEqualTo(USERNAME);
-    }
-  }
 
-  @After
-  public void tearDown() {
-    service.stop();
+    for (int i = 0; i < total; i++) {
+      val userSession = userSessions.get(i);
+      assertThat(userSession.getUserName()).isEqualTo(USERNAME);
+    }
   }
 
   private static RawLocalFileSystem fileSystem() {
@@ -348,6 +354,34 @@ public class SftpServerServiceTest {
 
   private String getProjectDirectoryName() {
     return "/" + PROJECT_KEY;
+  }
+
+  private Vector<?> ls(String projectDirectoryName) throws SftpException {
+    return sftp.getChannel().ls(projectDirectoryName);
+  }
+
+  private String pwd() throws SftpException {
+    return sftp.getChannel().pwd();
+  }
+
+  private void rm(String newFileName) throws SftpException {
+    sftp.getChannel().rm(newFileName);
+  }
+
+  private void rename(String fileName, String newFileName) throws SftpException {
+    sftp.getChannel().rename(fileName, newFileName);
+  }
+
+  private void put(String fileName, String fileContent) throws SftpException {
+    sftp.getChannel().put(inputStream(fileContent), fileName);
+  }
+
+  private String get(String fileName) throws SftpException, IOException {
+    return read(sftp.getChannel().get(fileName));
+  }
+
+  private void cd(String projectDirectoryName) throws SftpException {
+    sftp.getChannel().cd(projectDirectoryName);
   }
 
   private static String fileName(int i) {
