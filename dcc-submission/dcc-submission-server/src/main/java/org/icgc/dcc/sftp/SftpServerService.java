@@ -96,14 +96,14 @@ public class SftpServerService extends AbstractService {
   public void enable() {
     this.enabled = true;
 
-    eventBus.post(new SftpEvent(enabled));
+    eventBus.post(new SftpChangeEvent(enabled));
   }
 
   public void disable() {
     disconnectActiveSessions();
     this.enabled = false;
 
-    eventBus.post(new SftpEvent(enabled));
+    eventBus.post(new SftpChangeEvent(enabled));
   }
 
   @Override

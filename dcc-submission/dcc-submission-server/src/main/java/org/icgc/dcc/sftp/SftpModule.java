@@ -29,6 +29,9 @@ import com.google.inject.spi.InjectionListener;
 import com.google.inject.spi.TypeEncounter;
 import com.google.inject.spi.TypeListener;
 
+/**
+ * Dependency injection module for the SFTP subsystem.
+ */
 public class SftpModule extends AbstractDccModule {
 
   @Override
@@ -41,6 +44,8 @@ public class SftpModule extends AbstractDccModule {
   }
 
   /**
+   * Configures the global event bus and registers all components as recipients.
+   * 
    * @see http://spin.atomicobject.com/2012/01/13/the-guava-eventbus-on-guice/
    */
   private void bindEvents() {
@@ -54,6 +59,7 @@ public class SftpModule extends AbstractDccModule {
 
           @Override
           public void afterInjection(I i) {
+            // Register the current component
             eventBus.register(i);
           }
 

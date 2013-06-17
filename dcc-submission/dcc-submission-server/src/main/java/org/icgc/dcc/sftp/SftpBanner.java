@@ -35,6 +35,9 @@ import org.apache.sshd.server.session.ServerSession;
 
 import com.google.common.io.Resources;
 
+/**
+ * Helper class for generating SFTP user customized authentication banner message.
+ */
 @Slf4j
 @AllArgsConstructor(access = PACKAGE)
 class SftpBanner {

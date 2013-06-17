@@ -41,8 +41,8 @@ import com.google.inject.Inject;
  * "Encapsulated Context Object" class that insulates and decouples the SFTP subsystem from DCC file system
  * abstractions. This is very similar in purpose to Hadoop's new API "Context Object for Mapper and Reducer".
  * <p>
- * Note that there still remain some accessors that should be removed as they violate the "Law of Demeter". In this
- * sense, this should be considered a "Parameter Object" transitioning to a "Encapsulated Context Object".
+ * Note that there still remain some accessors that should be removed as they violate the encapsulation. In this sense,
+ * this should be considered a "Parameter Object" transitioning to a "Encapsulated Context Object".
  * 
  * @see http://www.two-sdg.demon.co.uk/curbralan/papers/europlop/ContextEncapsulation.pdf
  * @see http://www.allankelly.net/static/patterns/encapsulatecontext.pdf

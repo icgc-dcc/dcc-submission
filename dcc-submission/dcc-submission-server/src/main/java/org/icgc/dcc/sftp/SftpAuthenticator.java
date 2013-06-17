@@ -26,6 +26,11 @@ import org.apache.sshd.server.session.ServerSession;
 
 import com.google.common.eventbus.Subscribe;
 
+/**
+ * MINA abstraction for implementing SFTP authentication.
+ * <p>
+ * Delegates to Shiro based implementation by way of the {@link SftpContext}.
+ */
 @Slf4j
 class SftpAuthenticator implements PasswordAuthenticator {
 
@@ -70,7 +75,7 @@ class SftpAuthenticator implements PasswordAuthenticator {
    * @param event
    */
   @Subscribe
-  public void onEvent(SftpEvent event) {
+  public void onEvent(SftpChangeEvent event) {
     enabled = event.isEnabled();
   }
 

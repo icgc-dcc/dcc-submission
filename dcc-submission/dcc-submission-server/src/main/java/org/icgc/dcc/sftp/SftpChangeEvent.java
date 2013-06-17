@@ -19,9 +19,15 @@ package org.icgc.dcc.sftp;
 
 import lombok.experimental.Value;
 
+/**
+ * Event object used to signal {@link SftpServerService} state transitions.
+ */
 @Value
-public class SftpEvent {
+public class SftpChangeEvent {
 
+  /**
+   * Indicates that the SFTP service is enabled (allows authenticated connections).
+   */
   private final boolean enabled;
 
 }

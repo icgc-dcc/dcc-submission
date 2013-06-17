@@ -36,6 +36,9 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.typesafe.config.Config;
 
+/**
+ * Factory class for encapsulating the complex logic of creating an {@link SshServer}.
+ */
 @Slf4j
 public class SshServerProvider implements Provider<SshServer> {
 
@@ -74,6 +77,8 @@ public class SshServerProvider implements Provider<SshServer> {
     return sshd;
   }
 
+  // TODO: Return Map instead of setting.
+  // TODO: Remove all configuration references
   private static void setProperties(SshServer sshd, Config config) {
     String nioWorkersPath = getConfigPath(NIO_WORKERS);
 
