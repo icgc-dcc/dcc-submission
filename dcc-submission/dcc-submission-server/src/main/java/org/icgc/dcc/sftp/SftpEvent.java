@@ -17,49 +17,11 @@
  */
 package org.icgc.dcc.sftp;
 
-import static com.google.inject.matcher.Matchers.any;
+import lombok.experimental.Value;
 
-import org.apache.sshd.SshServer;
-import org.icgc.dcc.core.AbstractDccModule;
+@Value
+public class SftpEvent {
 
-import com.google.common.eventbus.EventBus;
-import com.google.inject.Singleton;
-import com.google.inject.TypeLiteral;
-import com.google.inject.spi.InjectionListener;
-import com.google.inject.spi.TypeEncounter;
-import com.google.inject.spi.TypeListener;
+  private final boolean enabled;
 
-public class SftpModule extends AbstractDccModule {
-
-  @Override
-  protected void configure() {
-
-    bind(SftpContext.class);
-    bind(SshServer.class).toProvider(SshServerProvider.class).in(Singleton.class);
-    bindService(SftpServerService.class);
-    bindEvents();
-  }
-
-  /**
-   * @see http://spin.atomicobject.com/2012/01/13/the-guava-eventbus-on-guice/
-   */
-  private void bindEvents() {
-    final EventBus eventBus = new EventBus("SFTP EventBus");
-    bind(EventBus.class).toInstance(eventBus);
-    bindListener(any(), new TypeListener() {
-
-      @Override
-      public <I> void hear(TypeLiteral<I> typeLiteral, TypeEncounter<I> typeEncounter) {
-        typeEncounter.register(new InjectionListener<I>() {
-
-          @Override
-          public void afterInjection(I i) {
-            eventBus.register(i);
-          }
-
-        });
-      }
-
-    });
-  }
 }

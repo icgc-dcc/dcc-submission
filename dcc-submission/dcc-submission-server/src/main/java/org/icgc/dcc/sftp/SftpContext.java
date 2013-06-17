@@ -50,7 +50,7 @@ import com.google.inject.Inject;
 public class SftpContext {
 
   /**
-   * Encapsulate context.
+   * Encapsulated context.
    */
   private final DccFileSystem fs;
   private final ReleaseService releaseService;
@@ -71,10 +71,6 @@ public class SftpContext {
     return authenticator.authenticate(username, password.toCharArray(), null) != null;
   }
 
-  public Subject getCurrentUser() {
-    return authenticator.getSubject();
-  }
-
   public List<String> getUserProjectKeys() {
     List<String> projectKeys = newArrayList();
     for (val project : projectService.getProjectsBySubject(getCurrentUser())) {
@@ -84,6 +80,7 @@ public class SftpContext {
     return projectKeys;
   }
 
+  // TODO: This should not be needed once the other todos are addressed
   public Release getNextRelease() {
     return releaseService.getNextRelease().getRelease();
   }
@@ -92,6 +89,7 @@ public class SftpContext {
     return getNextRelease().getName();
   }
 
+  // TODO: Return Paths or Strings and nothing in org.dcc.filesystem.*
   public ReleaseFileSystem getReleaseFileSystem() {
     return fs.getReleaseFilesystem(getNextRelease(), getCurrentUser());
   }
@@ -100,6 +98,7 @@ public class SftpContext {
     return fs.getFileSystem();
   }
 
+  // TODO: Return Paths or Strings and nothing in org.dcc.filesystem.*
   public SubmissionDirectory getSubmissionDirectory(String projectKey) {
     return getReleaseFileSystem().getSubmissionDirectory(projectKey);
   }
@@ -109,6 +108,7 @@ public class SftpContext {
     return new Path(releasePath);
   }
 
+  // TODO: Accept Paths or Strings and nothing in org.dcc.filesystem.*
   public void resetSubmission(Submission submission) {
     releaseService.resetSubmission(getNextReleaseName(), submission.getProjectKey());
   }
@@ -122,6 +122,10 @@ public class SftpContext {
 
   public boolean isSystemDirectory(Path path) {
     return getReleaseFileSystem().isSystemDirectory(path);
+  }
+
+  private Subject getCurrentUser() {
+    return authenticator.getSubject();
   }
 
 }

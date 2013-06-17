@@ -49,6 +49,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.RawLocalFileSystem;
 import org.apache.shiro.subject.Subject;
+import org.apache.sshd.SshServer;
 import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.core.ProjectServiceException;
 import org.icgc.dcc.core.model.Project;
@@ -72,6 +73,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import com.google.common.eventbus.EventBus;
 import com.google.common.io.CharStreams;
 import com.jcraft.jsch.ChannelSftp.LsEntry;
 import com.jcraft.jsch.JSchException;
@@ -162,9 +164,13 @@ public class SftpServerServiceTest {
     when(submissionDirectory.isReadOnly()).thenReturn(false);
     when(submissionDirectory.getSubmission()).thenReturn(submission);
 
-    // Create and start CUT
+    // Create CUT
     SftpContext context = new SftpContext(fs, releaseService, projectService, authenticator);
-    service = new SftpServerService(config, context);
+    SshServer sshd = new SshServerProvider(config, context).get();
+    EventBus eventBus = new EventBus();
+
+    // Start CUT
+    service = new SftpServerService(sshd, eventBus);
     service.startAndWait();
 
     sftp.connect();

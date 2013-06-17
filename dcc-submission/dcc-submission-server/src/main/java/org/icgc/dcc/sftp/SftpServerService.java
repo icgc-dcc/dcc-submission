@@ -17,12 +17,9 @@
  */
 package org.icgc.dcc.sftp;
 
-import static com.google.common.base.Joiner.on;
 import static com.google.common.collect.Maps.newLinkedHashMap;
 import static com.google.common.util.concurrent.Service.State.TERMINATED;
 import static java.lang.String.valueOf;
-import static org.apache.sshd.common.FactoryManager.DEFAULT_NIO_WORKERS;
-import static org.apache.sshd.common.FactoryManager.NIO_WORKERS;
 
 import java.io.IOException;
 import java.util.List;
@@ -32,21 +29,14 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.mina.core.session.IoSession;
 import org.apache.sshd.SshServer;
-import org.apache.sshd.common.NamedFactory;
 import org.apache.sshd.common.session.AbstractSession;
-import org.apache.sshd.server.Command;
-import org.apache.sshd.server.keyprovider.PEMGeneratorHostKeyProvider;
-import org.apache.sshd.server.sftp.SftpSubsystem;
 import org.icgc.dcc.core.model.Status;
 import org.icgc.dcc.core.model.UserSession;
-import org.icgc.dcc.sftp.fs.HdfsFileSystemFactory;
 import org.joda.time.DateTime;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.eventbus.EventBus;
 import com.google.common.util.concurrent.AbstractService;
 import com.google.inject.Inject;
-import com.typesafe.config.Config;
 
 /**
  * Service abstraction to the SFTP sub-system.
@@ -64,11 +54,14 @@ public class SftpServerService extends AbstractService {
    * Service state.
    */
   private final SshServer sshd;
+  private final EventBus eventBus;
   private volatile boolean enabled = true;
 
   @Inject
-  public SftpServerService(Config config, SftpContext context) {
-    this.sshd = SshServerFactory.create(this, config, context);
+  public SftpServerService(SshServer ssd, EventBus eventBus) {
+    super();
+    this.sshd = ssd;
+    this.eventBus = eventBus;
   }
 
   public Status getActiveSessions() {
@@ -102,11 +95,15 @@ public class SftpServerService extends AbstractService {
 
   public void enable() {
     this.enabled = true;
+
+    eventBus.post(new SftpEvent(enabled));
   }
 
   public void disable() {
     disconnectActiveSessions();
     this.enabled = false;
+
+    eventBus.post(new SftpEvent(enabled));
   }
 
   @Override
@@ -134,7 +131,7 @@ public class SftpServerService extends AbstractService {
     }
   }
 
-  void disconnectActiveSessions() {
+  private void disconnectActiveSessions() {
     List<AbstractSession> activeSessions = sshd.getActiveSessions();
 
     for (AbstractSession activeSession : activeSessions) {
@@ -142,7 +139,7 @@ public class SftpServerService extends AbstractService {
     }
   }
 
-  void disconnectSession(AbstractSession session, String message) {
+  private void disconnectSession(AbstractSession session, String message) {
     log.info("Sending disconnect message '{}' to {}", message, session.getUsername());
     try {
       session.disconnect(0, message);
@@ -198,50 +195,6 @@ public class SftpServerService extends AbstractService {
 
   private static String formatDateTime(long timestamp) {
     return new DateTime(timestamp).toString();
-  }
-
-  @Slf4j
-  static class SshServerFactory {
-
-    /**
-     * Configuration file path.
-     */
-    private static final String SFTP_CONFIG_SECTION = "sftp";
-
-    static SshServer create(SftpServerService service, Config config, SftpContext context) {
-
-      // Create default server
-      SshServer sshd = SshServer.setUpDefaultServer();
-
-      // Set customized configuration
-      sshd.setPort(config.getInt(getConfigPath("port")));
-      setProperties(sshd, config);
-
-      // Set customized extension points
-      sshd.setKeyPairProvider(new PEMGeneratorHostKeyProvider(config.getString(getConfigPath("path")), "RSA", 2048));
-      sshd.setFileSystemFactory(new HdfsFileSystemFactory(context));
-      sshd.setSubsystemFactories(ImmutableList.<NamedFactory<Command>> of(new SftpSubsystem.Factory()));
-      sshd.setPasswordAuthenticator(new SftpAuthenticator(service, context));
-
-      return sshd;
-    }
-
-    private static void setProperties(SshServer sshd, Config config) {
-      String nioWorkersPath = getConfigPath(NIO_WORKERS);
-
-      if (config.hasPath(nioWorkersPath)) {
-        Integer nioWorkers = config.getInt(nioWorkersPath);
-        log.info("Setting '{}' to '{}'", NIO_WORKERS, nioWorkers);
-        sshd.setProperties(new ImmutableMap.Builder<String, String>().put(NIO_WORKERS, valueOf(nioWorkers)).build());
-      } else {
-        log.info("Using default value for '{}': '{}'", NIO_WORKERS, DEFAULT_NIO_WORKERS);
-      }
-    }
-
-    private static String getConfigPath(String param) {
-      return on(".").join(SFTP_CONFIG_SECTION, param);
-    }
-
   }
 
 }

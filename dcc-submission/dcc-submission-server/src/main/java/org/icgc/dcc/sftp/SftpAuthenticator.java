@@ -17,9 +17,16 @@
  */
 package org.icgc.dcc.sftp;
 
+import java.io.IOException;
+
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.sshd.server.PasswordAuthenticator;
 import org.apache.sshd.server.session.ServerSession;
 
+import com.google.common.eventbus.Subscribe;
+
+@Slf4j
 class SftpAuthenticator implements PasswordAuthenticator {
 
   /**
@@ -31,12 +38,11 @@ class SftpAuthenticator implements PasswordAuthenticator {
   /**
    * Authenticator state.
    */
-  private final SftpServerService service;
   private final SftpContext context;
   private final SftpBanner banner;
+  private volatile boolean enabled = true;
 
-  SftpAuthenticator(SftpServerService service, SftpContext context) {
-    this.service = service;
+  SftpAuthenticator(SftpContext context) {
     this.context = context;
     this.banner = new SftpBanner(context);
   }
@@ -44,7 +50,7 @@ class SftpAuthenticator implements PasswordAuthenticator {
   @Override
   public boolean authenticate(String username, String password, ServerSession session) {
     if (isDisabled()) {
-      // Only allow connections when enabled
+      // Only allow new connection when enabled
       disconnect(session);
 
       return false;
@@ -58,12 +64,27 @@ class SftpAuthenticator implements PasswordAuthenticator {
     return authenticated;
   }
 
+  /**
+   * Event fired from {@link SftpServerService}.
+   * 
+   * @param event
+   */
+  @Subscribe
+  public void onEvent(SftpEvent event) {
+    enabled = event.isEnabled();
+  }
+
   private boolean isDisabled() {
-    return !service.isEnabled();
+    return !enabled;
   }
 
   private void disconnect(ServerSession session) {
-    service.disconnectSession(session, DISABLED_MESSAGE);
+    log.info("Sending disconnect message '{}' to {}", DISABLED_MESSAGE, session.getUsername());
+    try {
+      session.disconnect(0, DISABLED_MESSAGE);
+    } catch (IOException e) {
+      log.error("Exception sending disconnect message: {}", e);
+    }
   }
 
   private boolean authenticate(String username, String password) {

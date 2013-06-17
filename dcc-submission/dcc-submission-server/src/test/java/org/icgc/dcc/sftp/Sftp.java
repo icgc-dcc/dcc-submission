@@ -32,17 +32,13 @@ import com.jcraft.jsch.Session;
 public class Sftp implements TestRule {
 
   private static final String SFTP_HOST = "127.0.0.1";
-
   private static final int SFTP_PORT = 5322;
 
   private final JSch jsch = new JSch();
-
   private Session session;
-
   private ChannelSftp sftpChannel;
 
   private final String username;
-
   private final String password;
 
   public Sftp(String username, String password, boolean logging) {
