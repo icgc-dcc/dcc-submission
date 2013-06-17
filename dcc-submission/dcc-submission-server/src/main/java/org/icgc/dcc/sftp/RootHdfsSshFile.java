@@ -32,12 +32,15 @@ import org.icgc.dcc.filesystem.SubmissionDirectory;
 import org.icgc.dcc.filesystem.hdfs.HadoopUtils;
 import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.Submission;
-import org.mortbay.log.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
  */
 class RootHdfsSshFile extends HdfsSshFile {
+
+  private static final Logger log = LoggerFactory.getLogger(RootHdfsSshFile.class);
 
   private final ReleaseFileSystem rfs;
 
@@ -101,21 +104,21 @@ class RootHdfsSshFile extends HdfsSshFile {
   public List<SshFile> listSshFiles() {
     List<Path> pathList = HadoopUtils.lsAll(fs, path);
     List<SshFile> sshFileList = new ArrayList<SshFile>();
-    for(Path path : pathList) {
+    for (Path path : pathList) {
       try {
         // if it is System File directory and admin user, add to file list
-        if(this.rfs.isSystemDirectory(path)) {
+        if (this.rfs.isSystemDirectory(path)) {
           sshFileList.add(new SystemFileHdfsSshFile(this, path.getName()));
         } else {
           SubmissionDirectoryHdfsSshFile dir = new SubmissionDirectoryHdfsSshFile(this, path.getName());
-          if(dir.doesExist()) { // Necessary because of error handling workaround
+          if (dir.doesExist()) { // Necessary because of error handling workaround
             sshFileList.add(dir);
           }
         }
-      } catch(DccFileSystemException e) {
-        Log.info("Directory skipped due to insufficient permissions: " + path.getName());
-      } catch(ProjectServiceException e) {
-        Log.info("Skipped due to no corresponding project: " + path.getName());
+      } catch (DccFileSystemException e) {
+        log.info("Directory skipped due to insufficient permissions: " + path.getName());
+      } catch (ProjectServiceException e) {
+        log.info("Skipped due to no corresponding project: " + path.getName());
       }
     }
     return sshFileList;
@@ -125,7 +128,7 @@ class RootHdfsSshFile extends HdfsSshFile {
     try {
       final Project project = this.projects.getProject(directoryName);
       return this.rfs.getSubmissionDirectory(project.getKey());
-    } catch(RuntimeException e) {
+    } catch (RuntimeException e) {
       // Ideally we would rethrow as a FileNotFound or IOException, but Mina's interface won't let us.
       // Instead we put it as null so it can be used to indicate that the directory doesn't exist later
       return null;
@@ -134,7 +137,7 @@ class RootHdfsSshFile extends HdfsSshFile {
 
   @Override
   public HdfsSshFile getChild(Path filePath) {
-    switch(filePath.depth()) {
+    switch (filePath.depth()) {
     case 0:
       return this;
     case 1:
@@ -158,7 +161,7 @@ class RootHdfsSshFile extends HdfsSshFile {
   }
 
   public void systemFilesNotifyModified() {
-    for(Submission submission : this.rfs.getRelease().getSubmissions()) {
+    for (Submission submission : this.rfs.getRelease().getSubmissions()) {
       this.releases.resetSubmission( // TODO: DCC-903 (only if open release uses it)
           this.rfs.getRelease().getName(), submission.getProjectKey());
     }
