@@ -163,7 +163,8 @@ public class SftpServerServiceTest {
     when(submissionDirectory.getSubmission()).thenReturn(submission);
 
     // Create and start CUT
-    service = new SftpServerService(config, authenticator, fs, projectService, releaseService);
+    SftpContext context = new SftpContext(fs, releaseService, projectService, authenticator);
+    service = new SftpServerService(config, context);
     service.startAndWait();
 
     sftp.connect();

@@ -20,7 +20,7 @@ package org.icgc.dcc.sftp;
 import org.apache.sshd.server.PasswordAuthenticator;
 import org.apache.sshd.server.session.ServerSession;
 
-class SftpPasswordAuthenticator implements PasswordAuthenticator {
+class SftpAuthenticator implements PasswordAuthenticator {
 
   /**
    * Disconnect message sent to clients when disabled.
@@ -35,7 +35,7 @@ class SftpPasswordAuthenticator implements PasswordAuthenticator {
   private final SftpContext context;
   private final SftpBanner banner;
 
-  SftpPasswordAuthenticator(SftpServerService service, SftpContext context) {
+  SftpAuthenticator(SftpServerService service, SftpContext context) {
     this.service = service;
     this.context = context;
     this.banner = new SftpBanner(context);

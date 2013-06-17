@@ -17,13 +17,13 @@
  */
 package org.icgc.dcc.sftp.fs;
 
+import static org.elasticsearch.common.collect.Lists.newArrayList;
 import static org.icgc.dcc.filesystem.hdfs.HadoopUtils.lsAll;
 import static org.icgc.dcc.sftp.fs.HdfsFileUtils.SshFileList;
 import static org.icgc.dcc.sftp.fs.HdfsFileUtils.handleException;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import lombok.extern.slf4j.Slf4j;
@@ -31,10 +31,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.fs.Path;
 import org.apache.sshd.server.SshFile;
 import org.icgc.dcc.core.ProjectServiceException;
-import org.icgc.dcc.filesystem.DccFileSystemException;
 import org.icgc.dcc.filesystem.SubmissionDirectory;
 import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.sftp.SftpContext;
+
+import com.google.common.base.Optional;
 
 @Slf4j
 public class RootHdfsSshFile extends HdfsSshFile {
@@ -94,30 +95,38 @@ public class RootHdfsSshFile extends HdfsSshFile {
   @Override
   public List<SshFile> listSshFiles() {
     try {
-      List<Path> pathList = lsAll(fs, path);
-      List<SshFile> sshFileList = new ArrayList<SshFile>();
-      for (Path path : pathList) {
-        try {
-          // if it is System File directory and admin user, add to file list
-          if (context.isSystemDirectory(path)) {
-            sshFileList.add(new SystemFileHdfsSshFile(this, path.getName()));
-          } else {
-            SubmissionDirectoryHdfsSshFile dir = new SubmissionDirectoryHdfsSshFile(this, path.getName());
-            if (dir.doesExist()) { // Necessary because of error handling workaround
-              sshFileList.add(dir);
-            }
-          }
-        } catch (DccFileSystemException e) {
-          log.info("Directory skipped due to insufficient permissions: " + path.getName());
-        } catch (ProjectServiceException e) {
-          log.info("Skipped due to no corresponding project: " + path.getName());
+      List<Path> paths = lsAll(fs, path);
+      List<SshFile> sshFiles = newArrayList();
+      for (Path path : paths) {
+        Optional<SshFile> sshFile = listSshFile(path);
+        if (sshFile.isPresent()) {
+          sshFiles.add(sshFile.get());
         }
       }
 
-      return sshFileList;
+      return sshFiles;
     } catch (Exception e) {
       return handleException(SshFileList, e);
     }
+  }
+
+  private Optional<SshFile> listSshFile(Path path) {
+    try {
+      // if it is System File directory and admin user, add to file list
+      if (context.isSystemDirectory(path)) {
+        return Optional.<SshFile> of(new SystemFileHdfsSshFile(this, path.getName()));
+      } else {
+        SubmissionDirectoryHdfsSshFile submissionDir = new SubmissionDirectoryHdfsSshFile(this, path.getName());
+        if (submissionDir.doesExist()) {
+          // Necessary because of error handling workaround
+          return Optional.<SshFile> of(submissionDir);
+        }
+      }
+    } catch (Exception e) {
+      log.warn("Path '{}' skipped due to exception", path.getName(), e.getMessage());
+    }
+
+    return Optional.<SshFile> absent();
   }
 
   public SubmissionDirectory getSubmissionDirectory(String directoryName) {

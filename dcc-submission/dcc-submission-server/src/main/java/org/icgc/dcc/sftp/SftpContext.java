@@ -18,12 +18,9 @@
 package org.icgc.dcc.sftp;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static lombok.AccessLevel.PACKAGE;
 
 import java.util.List;
 
-import lombok.AllArgsConstructor;
-import lombok.NonNull;
 import lombok.val;
 
 import org.apache.hadoop.fs.FileSystem;
@@ -38,6 +35,8 @@ import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.security.UsernamePasswordAuthenticator;
 
+import com.google.inject.Inject;
+
 /**
  * "Encapsulated Context Object" class that insulates and decouples the SFTP subsystem from DCC file system
  * abstractions. This is very similar in purpose to Hadoop's new API "Context Object for Mapper and Reducer".
@@ -48,17 +47,25 @@ import org.icgc.dcc.security.UsernamePasswordAuthenticator;
  * @see http://www.two-sdg.demon.co.uk/curbralan/papers/europlop/ContextEncapsulation.pdf
  * @see http://www.allankelly.net/static/patterns/encapsulatecontext.pdf
  */
-@AllArgsConstructor(access = PACKAGE)
 public class SftpContext {
 
-  @NonNull
+  /**
+   * Encapsulate context.
+   */
   private final DccFileSystem fs;
-  @NonNull
   private final ReleaseService releaseService;
-  @NonNull
   private final ProjectService projectService;
-  @NonNull
   private final UsernamePasswordAuthenticator authenticator;
+
+  @Inject
+  public SftpContext(DccFileSystem fs, ReleaseService releaseService, ProjectService projectService,
+      UsernamePasswordAuthenticator authenticator) {
+    super();
+    this.fs = fs;
+    this.releaseService = releaseService;
+    this.projectService = projectService;
+    this.authenticator = authenticator;
+  }
 
   public boolean authenticate(String username, String password) {
     return authenticator.authenticate(username, password.toCharArray(), null) != null;

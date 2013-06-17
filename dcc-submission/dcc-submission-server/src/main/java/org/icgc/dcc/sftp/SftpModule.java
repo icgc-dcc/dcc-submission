@@ -23,8 +23,8 @@ public class SftpModule extends AbstractDccModule {
 
   @Override
   protected void configure() {
-    // TODO Bind to shell factory and shell container
     bindService(SftpServerService.class);
+    bind(SftpContext.class);
   }
 
 }

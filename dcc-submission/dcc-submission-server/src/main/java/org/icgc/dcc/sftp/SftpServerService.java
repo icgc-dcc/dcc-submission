@@ -18,7 +18,6 @@
 package org.icgc.dcc.sftp;
 
 import static com.google.common.base.Joiner.on;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Maps.newLinkedHashMap;
 import static com.google.common.util.concurrent.Service.State.TERMINATED;
 import static java.lang.String.valueOf;
@@ -38,12 +37,8 @@ import org.apache.sshd.common.session.AbstractSession;
 import org.apache.sshd.server.Command;
 import org.apache.sshd.server.keyprovider.PEMGeneratorHostKeyProvider;
 import org.apache.sshd.server.sftp.SftpSubsystem;
-import org.icgc.dcc.core.ProjectService;
 import org.icgc.dcc.core.model.Status;
 import org.icgc.dcc.core.model.UserSession;
-import org.icgc.dcc.filesystem.DccFileSystem;
-import org.icgc.dcc.release.ReleaseService;
-import org.icgc.dcc.security.UsernamePasswordAuthenticator;
 import org.icgc.dcc.sftp.fs.HdfsFileSystemFactory;
 import org.joda.time.DateTime;
 
@@ -72,15 +67,8 @@ public class SftpServerService extends AbstractService {
   private volatile boolean enabled = true;
 
   @Inject
-  public SftpServerService(Config config, UsernamePasswordAuthenticator passwordAuthenticator, DccFileSystem fs,
-      ProjectService projectService, ReleaseService releaseService) {
-    this.sshd = SshServerFactory.create(
-        checkNotNull(config),
-        this,
-        checkNotNull(passwordAuthenticator),
-        checkNotNull(fs),
-        checkNotNull(projectService),
-        checkNotNull(releaseService));
+  public SftpServerService(Config config, SftpContext context) {
+    this.sshd = SshServerFactory.create(this, config, context);
   }
 
   public Status getActiveSessions() {
@@ -220,13 +208,7 @@ public class SftpServerService extends AbstractService {
      */
     private static final String SFTP_CONFIG_SECTION = "sftp";
 
-    static SshServer create(
-        Config config,
-        SftpServerService service,
-        UsernamePasswordAuthenticator passwordAuthenticator,
-        DccFileSystem fs,
-        ProjectService projectService,
-        ReleaseService releaseService) {
+    static SshServer create(SftpServerService service, Config config, SftpContext context) {
 
       // Create default server
       SshServer sshd = SshServer.setUpDefaultServer();
@@ -236,11 +218,10 @@ public class SftpServerService extends AbstractService {
       setProperties(sshd, config);
 
       // Set customized extension points
-      SftpContext context = new SftpContext(fs, releaseService, projectService, passwordAuthenticator);
       sshd.setKeyPairProvider(new PEMGeneratorHostKeyProvider(config.getString(getConfigPath("path")), "RSA", 2048));
       sshd.setFileSystemFactory(new HdfsFileSystemFactory(context));
       sshd.setSubsystemFactories(ImmutableList.<NamedFactory<Command>> of(new SftpSubsystem.Factory()));
-      sshd.setPasswordAuthenticator(new SftpPasswordAuthenticator(service, context));
+      sshd.setPasswordAuthenticator(new SftpAuthenticator(service, context));
 
       return sshd;
     }
