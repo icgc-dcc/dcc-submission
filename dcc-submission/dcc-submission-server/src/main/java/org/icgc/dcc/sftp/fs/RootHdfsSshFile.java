@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.sftp.fs;
 
-import static org.elasticsearch.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Lists.newArrayList;
 import static org.icgc.dcc.filesystem.hdfs.HadoopUtils.lsAll;
 import static org.icgc.dcc.sftp.fs.HdfsFileUtils.SshFileList;
 import static org.icgc.dcc.sftp.fs.HdfsFileUtils.handleException;
