@@ -24,6 +24,7 @@ import static org.icgc.dcc.web.Authorizations.isOmnipotentUser;
 import static org.icgc.dcc.web.Authorizations.unauthorizedResponse;
 import static org.icgc.dcc.web.ServerErrorCode.MISSING_REQUIRED_DATA;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
@@ -50,6 +51,7 @@ import com.google.inject.Inject;
  * ://stackoverflow.com/questions/5591348/how-to-implement-a-restful-resource-for-a-state-machine-or-finite-automata
  */
 @Path("/")
+@Consumes("application/json")
 @Slf4j
 public class SystemResource {
 
