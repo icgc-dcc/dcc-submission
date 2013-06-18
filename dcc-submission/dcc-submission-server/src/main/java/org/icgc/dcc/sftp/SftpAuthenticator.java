@@ -63,7 +63,7 @@ class SftpAuthenticator implements PasswordAuthenticator {
 
     boolean authenticated = authenticate(username, password);
     if (authenticated) {
-      sendBanner(session);
+      sendBanner(username, session);
     }
 
     return authenticated;
@@ -96,8 +96,8 @@ class SftpAuthenticator implements PasswordAuthenticator {
     return context.authenticate(username, password);
   }
 
-  private void sendBanner(ServerSession session) {
-    banner.send(session);
+  private void sendBanner(String username, ServerSession session) {
+    banner.send(username, session);
   }
 
 }

@@ -72,13 +72,12 @@ class SftpBanner {
   @NonNull
   private final SftpContext context;
 
-  public void send(ServerSession session) {
+  public void send(String username, ServerSession session) {
     try {
       // General information
       String releaseName = context.getNextReleaseName();
 
       // User specific information
-      String username = session.getUsername();
       List<String> projectKeys = context.getUserProjectKeys();
 
       // Create a customized message for the supplied user
