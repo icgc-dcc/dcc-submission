@@ -25,6 +25,7 @@ import org.apache.sshd.server.PasswordAuthenticator;
 import org.apache.sshd.server.session.ServerSession;
 
 import com.google.common.eventbus.Subscribe;
+import com.google.inject.Inject;
 
 /**
  * MINA abstraction for implementing SFTP authentication.
@@ -47,7 +48,8 @@ class SftpAuthenticator implements PasswordAuthenticator {
   private final SftpBanner banner;
   private volatile boolean enabled = true;
 
-  SftpAuthenticator(SftpContext context) {
+  @Inject
+  public SftpAuthenticator(SftpContext context) {
     this.context = context;
     this.banner = new SftpBanner(context);
   }
@@ -56,6 +58,7 @@ class SftpAuthenticator implements PasswordAuthenticator {
   public boolean authenticate(String username, String password, ServerSession session) {
     if (isDisabled()) {
       // Only allow new connection when enabled
+      log.info("Blocked connection for user '{}' because SFTP is disabled", username);
       disconnect(session);
 
       return false;
@@ -76,11 +79,14 @@ class SftpAuthenticator implements PasswordAuthenticator {
    */
   @Subscribe
   public void onEvent(SftpChangeEvent event) {
-    enabled = event.isEnabled();
+    log.info("Received SFTP event: {}", event);
+
+    // Synchronize state
+    this.enabled = event.isEnabled();
   }
 
   private boolean isDisabled() {
-    return !enabled;
+    return !this.enabled;
   }
 
   private void disconnect(ServerSession session) {
@@ -93,10 +99,12 @@ class SftpAuthenticator implements PasswordAuthenticator {
   }
 
   private boolean authenticate(String username, String password) {
+    // Delegate to Shiro
     return context.authenticate(username, password);
   }
 
   private void sendBanner(String username, ServerSession session) {
+    // Send a custom welcome message
     banner.send(username, session);
   }
 

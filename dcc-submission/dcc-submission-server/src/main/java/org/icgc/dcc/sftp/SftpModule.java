@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.sftp;
 
-import static com.google.inject.matcher.Matchers.any;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.sshd.SshServer;
 import org.icgc.dcc.core.AbstractDccModule;
@@ -25,6 +25,7 @@ import org.icgc.dcc.core.AbstractDccModule;
 import com.google.common.eventbus.EventBus;
 import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
+import com.google.inject.matcher.Matchers;
 import com.google.inject.spi.InjectionListener;
 import com.google.inject.spi.TypeEncounter;
 import com.google.inject.spi.TypeListener;
@@ -32,34 +33,36 @@ import com.google.inject.spi.TypeListener;
 /**
  * Dependency injection module for the SFTP subsystem.
  */
+@Slf4j
 public class SftpModule extends AbstractDccModule {
 
   @Override
   protected void configure() {
-
+    bindEvents(new EventBus("SFTP EventBus"));
+    bind(SftpAuthenticator.class);
     bind(SftpContext.class);
     bind(SshServer.class).toProvider(SshServerProvider.class).in(Singleton.class);
     bindService(SftpServerService.class);
-    bindEvents();
   }
 
   /**
    * Configures the global event bus and registers all components as recipients.
    * 
+   * @param eventBus - the shared SFTP event bus
    * @see http://spin.atomicobject.com/2012/01/13/the-guava-eventbus-on-guice/
    */
-  private void bindEvents() {
-    final EventBus eventBus = new EventBus("SFTP EventBus");
+  private void bindEvents(final EventBus eventBus) {
     bind(EventBus.class).toInstance(eventBus);
-    bindListener(any(), new TypeListener() {
+    bindListener(Matchers.any(), new TypeListener() {
 
       @Override
       public <I> void hear(TypeLiteral<I> typeLiteral, TypeEncounter<I> typeEncounter) {
+        // Register all module instantiated objects with the event bus
         typeEncounter.register(new InjectionListener<I>() {
 
           @Override
           public void afterInjection(I i) {
-            // Register the current component
+            log.info("Registering {} with event bus...", i);
             eventBus.register(i);
           }
 

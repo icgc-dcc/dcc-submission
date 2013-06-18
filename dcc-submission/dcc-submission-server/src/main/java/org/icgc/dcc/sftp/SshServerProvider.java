@@ -50,13 +50,16 @@ public class SshServerProvider implements Provider<SshServer> {
   /**
    * Provider dependencies.
    */
+  // TODO: Remove config
   private final Config config;
   private final SftpContext context;
+  private final SftpAuthenticator authenticator;
 
   @Inject
-  SshServerProvider(Config config, SftpContext context) {
+  SshServerProvider(Config config, SftpContext context, SftpAuthenticator authenticator) {
     this.config = config;
     this.context = context;
+    this.authenticator = authenticator;
   }
 
   @Override
@@ -70,7 +73,7 @@ public class SshServerProvider implements Provider<SshServer> {
 
     // Set customized extension points
     sshd.setKeyPairProvider(new PEMGeneratorHostKeyProvider(config.getString(getConfigPath("path")), "RSA", 2048));
-    sshd.setPasswordAuthenticator(new SftpAuthenticator(context));
+    sshd.setPasswordAuthenticator(authenticator);
     sshd.setFileSystemFactory(new HdfsFileSystemFactory(context));
     sshd.setSubsystemFactories(ImmutableList.<NamedFactory<Command>> of(new SftpSubsystem.Factory()));
 

@@ -95,15 +95,14 @@ public class SftpServerService extends AbstractService {
 
   public void enable() {
     this.enabled = true;
-
-    eventBus.post(new SftpChangeEvent(enabled));
+    notifyChange(this.enabled);
   }
 
   public void disable() {
     disconnectActiveSessions();
-    this.enabled = false;
 
-    eventBus.post(new SftpChangeEvent(enabled));
+    this.enabled = false;
+    notifyChange(this.enabled);
   }
 
   @Override
@@ -129,6 +128,14 @@ public class SftpServerService extends AbstractService {
           new Object[] { sshd.getHost(), sshd.getPort(), e.getMessage() });
       notifyFailed(e);
     }
+  }
+
+  private void notifyChange(boolean enabled) {
+    SftpChangeEvent event = new SftpChangeEvent(enabled);
+
+    log.info("Sending SFTP event: {}...", event);
+    eventBus.post(event);
+    log.info("SFTP event sent");
   }
 
   private void disconnectActiveSessions() {
