@@ -70,7 +70,8 @@ public class Status {
     this.userSessions = newArrayList();
   }
 
-  public void addUserSession(UserSession userSession) { // TODO: builder
+  public void addUserSession(UserSession userSession) { 
+    // TODO: builder
     userSessions.add(userSession);
     activeSftpSessions++;
   }
