@@ -17,6 +17,10 @@
  */
 package org.icgc.dcc.sftp;
 
+import static com.google.inject.matcher.Matchers.inSubpackage;
+
+import java.io.Serializable;
+
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.sshd.SshServer;
@@ -25,7 +29,8 @@ import org.icgc.dcc.core.AbstractDccModule;
 import com.google.common.eventbus.EventBus;
 import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
-import com.google.inject.matcher.Matchers;
+import com.google.inject.matcher.AbstractMatcher;
+import com.google.inject.matcher.Matcher;
 import com.google.inject.spi.InjectionListener;
 import com.google.inject.spi.TypeEncounter;
 import com.google.inject.spi.TypeListener;
@@ -39,25 +44,25 @@ public class SftpModule extends AbstractDccModule {
   @Override
   protected void configure() {
     bindEvents(new EventBus("SFTP EventBus"));
-    bind(SftpAuthenticator.class);
-    bind(SftpContext.class);
+    bind(SftpAuthenticator.class).in(Singleton.class);
+    bind(SftpContext.class).in(Singleton.class);
     bind(SshServer.class).toProvider(SshServerProvider.class).in(Singleton.class);
     bindService(SftpServerService.class);
   }
 
   /**
-   * Configures the global event bus and registers all components as recipients.
+   * Configures the global event bus and registers all module types as recipients.
    * 
    * @param eventBus - the shared SFTP event bus
    * @see http://spin.atomicobject.com/2012/01/13/the-guava-eventbus-on-guice/
    */
   private void bindEvents(final EventBus eventBus) {
     bind(EventBus.class).toInstance(eventBus);
-    bindListener(Matchers.any(), new TypeListener() {
+    bindListener(new InModule(), new TypeListener() {
 
       @Override
       public <I> void hear(TypeLiteral<I> typeLiteral, TypeEncounter<I> typeEncounter) {
-        // Register all module instantiated objects with the event bus
+        // Register all local module instantiated objects with the event bus
         typeEncounter.register(new InjectionListener<I>() {
 
           @Override
@@ -71,4 +76,26 @@ public class SftpModule extends AbstractDccModule {
 
     });
   }
+
+  /**
+   * Guice injection matcher that matches all types in the current package.
+   * <p>
+   * Uses the adapter pattern to delegate to the already existing core matcher with an incompatible interface.
+   */
+  private static class InModule extends AbstractMatcher<TypeLiteral<?>> implements Serializable {
+
+    /**
+     * Adaptee delegate.
+     */
+    @SuppressWarnings("rawtypes")
+    Matcher<Class> subpackage = inSubpackage(getClass().getPackage().getName());
+
+    @Override
+    public boolean matches(TypeLiteral<?> t) {
+      // Delegate
+      return subpackage.matches(t.getRawType());
+    }
+
+  }
+
 }
