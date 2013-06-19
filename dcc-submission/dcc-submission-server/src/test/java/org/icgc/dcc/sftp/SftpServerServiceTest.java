@@ -165,12 +165,9 @@ public class SftpServerServiceTest {
     when(submissionDirectory.getSubmission()).thenReturn(submission);
 
     // Create CUT
-    SftpContext context = new SftpContext(fs, releaseService, projectService, authenticator);
-    SshServer sshd = new SshServerProvider(config, context).get();
-    EventBus eventBus = new EventBus();
+    service = createService();
 
     // Start CUT
-    service = new SftpServerService(sshd, eventBus);
     service.startAndWait();
 
     sftp.connect();
@@ -411,6 +408,16 @@ public class SftpServerServiceTest {
 
     sleepUninterruptibly(extraClientCount * 15000, MILLISECONDS);
     disconnectAndCheck();
+  }
+
+  private SftpServerService createService() {
+    SftpContext context = new SftpContext(fs, releaseService, projectService, authenticator);
+    SftpAuthenticator authenticator = new SftpAuthenticator(context);
+    SshServer sshd = new SshServerProvider(config, context, authenticator).get();
+    EventBus eventBus = new EventBus();
+    eventBus.register(authenticator);
+
+    return new SftpServerService(sshd, eventBus);
   }
 
   private void disconnectAndCheck() {
