@@ -15,37 +15,19 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core;
+package org.icgc.dcc.sftp;
 
-import org.icgc.dcc.core.model.Status;
-import org.icgc.dcc.sftp.SftpServerService;
+import lombok.experimental.Value;
 
-import com.google.inject.Inject;
+/**
+ * Event object used to signal {@link SftpServerService} state transitions.
+ */
+@Value
+public class SftpChangeEvent {
 
-public class SystemService {
-
-  private final SftpServerService sftpService;
-
-  @Inject
-  private SystemService(SftpServerService sftpService) {
-    super();
-    this.sftpService = sftpService;
-  }
-
-  public Status getStatus() {
-    return sftpService.getActiveSessions();
-  }
-
-  public boolean isSftpEnabled() {
-    return sftpService.isEnabled();
-  }
-
-  public void disableSftp() {
-    sftpService.disable();
-  }
-
-  public void enableSftp() {
-    sftpService.enable();
-  }
+  /**
+   * Indicates that the SFTP service is enabled (allows authenticated connections).
+   */
+  private final boolean enabled;
 
 }

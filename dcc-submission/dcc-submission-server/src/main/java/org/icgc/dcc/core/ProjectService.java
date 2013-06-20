@@ -57,9 +57,9 @@ public class ProjectService extends BaseMorphiaService<Project> {
   public List<Release> getReleases(Project project) {
     MorphiaQuery<Release> releaseQuery = new MorphiaQuery<Release>(morphia(), datastore(), QRelease.release);
     List<Release> releases = new ArrayList<Release>();
-    for(Release release : releaseQuery.list()) {
-      for(Submission submission : release.getSubmissions()) {
-        if(submission.getProjectKey().equals(project.getKey())) {
+    for (Release release : releaseQuery.list()) {
+      for (Submission submission : release.getSubmissions()) {
+        if (submission.getProjectKey().equals(project.getKey())) {
           releases.add(release);
           continue;
         }
@@ -72,11 +72,11 @@ public class ProjectService extends BaseMorphiaService<Project> {
   @SuppressWarnings("all")
   public void addProject(Project project) {
     // check for project key
-    if(!NameValidator.validateProjectId(project.getKey())) {
+    if (!NameValidator.validateProjectId(project.getKey())) {
       throw new InvalidNameException(project.getKey());
     }
     // check for duplicate project key
-    if(this.hasProject(project.getKey())) {
+    if (this.hasProject(project.getKey())) {
       throw new DuplicateNameException(project.getKey());
     }
 
@@ -105,8 +105,8 @@ public class ProjectService extends BaseMorphiaService<Project> {
    */
   public List<Project> getProjectsBySubject(Subject user) {
     List<Project> filteredProjects = new ArrayList<Project>();
-    for(Project project : this.getProjects()) {
-      if(user.isPermitted(AuthorizationPrivileges.projectViewPrivilege(project.getKey()))) {
+    for (Project project : this.getProjects()) {
+      if (user.isPermitted(AuthorizationPrivileges.projectViewPrivilege(project.getKey()))) {
         filteredProjects.add(project);
       }
     }
@@ -116,9 +116,10 @@ public class ProjectService extends BaseMorphiaService<Project> {
   public Project getProject(final String projectKey) {
     Project project = this.getProjectQuery(projectKey).singleResult();
 
-    if(project == null) {
+    if (project == null) {
       throw new ProjectServiceException("No project found with key " + projectKey);
     }
+
     return project;
   }
 
@@ -130,7 +131,7 @@ public class ProjectService extends BaseMorphiaService<Project> {
 
   public List<Project> getProjects(List<String> projectKeys) {
     List<Project> projects = this.query().where(QProject.project.key.in(projectKeys)).list();
-    if(projects == null) {
+    if (projects == null) {
       throw new ProjectServiceException("No projects found within the key list");
     }
     return projects;
