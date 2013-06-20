@@ -66,9 +66,11 @@ public class CodeListResource {
   }
 
   @POST
-  public Response addCodeLists(@Valid
-  List<CodeList> codeLists, @Context
-  SecurityContext securityContext) {
+  public Response addCodeLists(
+      @Valid
+      List<CodeList> codeLists,
+      @Context
+      SecurityContext securityContext) {
     log.info("Adding codelists: {}", codeLists);
     if (isOmnipotentUser(securityContext) == false) {
       return unauthorizedResponse();
@@ -81,8 +83,9 @@ public class CodeListResource {
 
   @GET
   @Path("{name}")
-  public Response getCodeList(@PathParam("name")
-  String name) {
+  public Response getCodeList(
+      @PathParam("name")
+      String name) {
     /* no authorization check necessary */
 
     log.debug("Getting codelist: {}", name);
@@ -100,10 +103,13 @@ public class CodeListResource {
    */
   @PUT
   @Path("{name}")
-  public Response updateCodeList(@PathParam("name")
-  String name, @Valid
-  CodeList newCodeList, @Context
-  Request req,
+  public Response updateCodeList(
+      @PathParam("name")
+      String name,
+      @Valid
+      CodeList newCodeList,
+      @Context
+      Request req,
       @Context
       SecurityContext securityContext) {
 
@@ -131,10 +137,13 @@ public class CodeListResource {
 
   @POST
   @Path("{name}/terms")
-  public Response addTerms(@PathParam("name")
-  String name, @Valid
-  List<Term> terms, @Context
-  Request req,
+  public Response addTerms(
+      @PathParam("name")
+      String name,
+      @Valid
+      List<Term> terms,
+      @Context
+      Request req,
       @Context
       SecurityContext securityContext) {
 
