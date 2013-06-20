@@ -15,43 +15,70 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.sftp;
+package org.icgc.dcc.core.model;
 
-import org.icgc.dcc.filesystem.SubmissionDirectory;
+import java.util.Map;
 
-class SubmissionDirectoryHdfsSshFile extends BaseDirectoryHdfsSshFile {
+import org.codehaus.jackson.annotate.JsonCreator;
+import org.codehaus.jackson.annotate.JsonProperty;
 
-  private final SubmissionDirectory directory;
+import com.google.common.base.Objects;
 
-  public SubmissionDirectoryHdfsSshFile(RootHdfsSshFile root, String directoryName) {
-    super(root, directoryName);
-    this.directory = root.getSubmissionDirectory(directoryName);
+/**
+ * Represents a user session.
+ */
+public class UserSession {
+
+  private final String userName;
+
+  private final long creationTime;
+
+  private final long lastWriteTime;
+
+  private final Map<String, String> ioSessionMap;
+
+  @JsonCreator
+  public UserSession(
+      @JsonProperty("userName")
+      String userName,
+      @JsonProperty("creationTime")
+      long creationTime,
+      @JsonProperty("lastWriteTime")
+      long lastWriteTime,
+      @JsonProperty("ioSessionMap")
+      Map<String, String> ioSessionMap) {
+    super();
+    this.userName = userName;
+    this.creationTime = creationTime;
+    this.lastWriteTime = lastWriteTime;
+    this.ioSessionMap = ioSessionMap;
+
+  }
+
+  public String getUserName() {
+    return userName;
+  }
+
+  public Map<String, String> getIoSessionMap() {
+    return ioSessionMap;
+  }
+
+  public long getCreationTime() {
+    return creationTime;
+  }
+
+  public long getLastWriteTime() {
+    return lastWriteTime;
   }
 
   @Override
-  public String getAbsolutePath() {
-    return SEPARATOR + directoryName;
+  public String toString() {
+    return Objects.toStringHelper(UserSession.class)
+        .add("userName", this.userName)
+        .add("creationTime", this.creationTime)
+        .add("lastWriteTime", this.lastWriteTime)
+        .add("ioSessionMap", this.ioSessionMap)
+        .toString();
   }
 
-  @Override
-  public boolean isWritable() {
-    // See doesExist for explanation of the null check
-    if(directory == null || directory.isReadOnly()) {
-      return false;
-    }
-    return super.isWritable();
-  }
-
-  @Override
-  public boolean doesExist() {
-    // If directory is null it means that the directory doesn't exist or the user does not have permission to access it
-    // We are using this in lieu of throwing an exception, since Mina's interface erroneously disallows checked
-    // exceptions
-    return directory == null ? false : super.doesExist();
-  }
-
-  @Override
-  public void notifyModified() {
-    this.getParentFile().notifyModified(this.directory);
-  }
 }

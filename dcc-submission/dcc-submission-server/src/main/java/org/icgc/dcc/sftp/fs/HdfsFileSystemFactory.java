@@ -15,33 +15,27 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.model;
+package org.icgc.dcc.sftp.fs;
 
-/**
- * Contains keys used in configuration files and used across components.
- */
-public class Configurations {
+import java.io.IOException;
 
-  /**
-   * Submitter component.
-   */
-  public static final String FS_URL_KEY = "fs.url";
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
-  public static final String FS_ROOT_KEY = "fs.root";
+import org.apache.sshd.common.Session;
+import org.apache.sshd.server.FileSystemFactory;
+import org.apache.sshd.server.FileSystemView;
+import org.icgc.dcc.sftp.SftpContext;
 
-  public static final String MONGO_URI_KEY = "mongo.uri";
+@RequiredArgsConstructor
+public class HdfsFileSystemFactory implements FileSystemFactory {
 
-  /**
-   * ETL component.
-   */
-  public static final String RELEASE_MONGO_URI_KEY = "releaseMongoUri";
+  @NonNull
+  private final SftpContext context;
 
-  public static final String FS_LOADER_ROOT = "fsLoaderRoot";
-
-  public static final String SUBMISSIONS_KEY = "submissions";
-
-  public static final String HADOOP_KEY = "hadoop";
-
-  public static final String IDENTIFIER_KEY = "identifier";
+  @Override
+  public FileSystemView createFileSystemView(Session session) throws IOException {
+    return new HdfsFileSystemView(context);
+  }
 
 }

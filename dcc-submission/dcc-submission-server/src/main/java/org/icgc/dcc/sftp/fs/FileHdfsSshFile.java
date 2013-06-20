@@ -15,37 +15,33 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.sftp;
+package org.icgc.dcc.sftp.fs;
+
+import static org.icgc.dcc.sftp.fs.HdfsFileUtils.handleException;
 
 import java.io.IOException;
 import java.util.List;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.sshd.server.SshFile;
-import org.icgc.dcc.filesystem.DccFileSystemException;
 
-import com.google.common.base.Preconditions;
-
-/**
- * 
- */
 public class FileHdfsSshFile extends HdfsSshFile {
 
   private final BaseDirectoryHdfsSshFile directory;
 
-  FileHdfsSshFile(BaseDirectoryHdfsSshFile directory, String fileName) {
+  public FileHdfsSshFile(BaseDirectoryHdfsSshFile directory, String fileName) {
     super(new Path(directory.path, fileName), directory.fs);
     this.directory = directory;
   }
 
   @Override
   public String getAbsolutePath() {
-    return this.directory.getAbsolutePath() + SEPARATOR + path.getName();
+    return directory.getAbsolutePath() + SEPARATOR + path.getName();
   }
 
   @Override
   public String getName() {
-    return this.path.getName();
+    return path.getName();
   }
 
   @Override
@@ -59,19 +55,34 @@ public class FileHdfsSshFile extends HdfsSshFile {
   }
 
   @Override
+  public boolean isReadable() {
+    // Submission files are write-only
+    return false;
+  }
+
+  @Override
   public boolean isWritable() {
-    if(directory.isWritable() == false) {
-      return false;
+    try {
+      if (directory.isWritable() == false) {
+        return false;
+      }
+      if (doesExist()) {
+        return super.isWritable();
+      }
+
+      return true;
+    } catch (Exception e) {
+      return handleException(Boolean.class, e);
     }
-    if(doesExist()) {
-      return super.isWritable();
-    }
-    return true;
   }
 
   @Override
   public boolean isRemovable() {
-    return isWritable();
+    try {
+      return isWritable();
+    } catch (Exception e) {
+      return handleException(Boolean.class, e);
+    }
   }
 
   @Override
@@ -86,33 +97,37 @@ public class FileHdfsSshFile extends HdfsSshFile {
 
   @Override
   public boolean create() throws IOException {
-    Preconditions.checkState(path != null);
-    if(isWritable()) {
-      this.directory.notifyModified();
-      this.fs.createNewFile(path);
-      return true;
+    try {
+      if (isWritable()) {
+        directory.notifyModified();
+        fs.createNewFile(path);
+
+        return true;
+      }
+      return false;
+    } catch (Exception e) {
+      return handleException(Boolean.class, e);
     }
-    return false;
   }
 
   @Override
   public boolean delete() {
-    Preconditions.checkState(path != null);
-    if(isRemovable()) {
-      try {
-        this.directory.notifyModified();
-        boolean success = this.fs.delete(path, false);
-        if(success == false) {
-          throw new IOException(// must use IOException (see comments in
-                                // https://github.com/icgc-dcc/data-submission/pull/229)
-              "unable to delete file " + path.toUri());
+    try {
+      if (isRemovable()) {
+        directory.notifyModified();
+        boolean success = fs.delete(path, false);
+
+        if (success == false) {
+          throw new IOException("Unable to delete file " + path.toUri());
         }
+
         return success;
-      } catch(IOException e) {
-        log.error("File system error", e);
       }
+
+      return false;
+    } catch (Exception e) {
+      return handleException(Boolean.class, e);
     }
-    return false;
   }
 
   @Override
@@ -122,27 +137,27 @@ public class FileHdfsSshFile extends HdfsSshFile {
 
   @Override
   public boolean move(SshFile destination) {
-    Preconditions.checkState(path != null);
-    if(isWritable() && destination.isWritable()) {
-      try {
+    try {
+      if (isWritable() && destination.isWritable()) {
         Path destinationPath =
-            new Path(this.directory.getParentFile().path, destination.getAbsolutePath().substring(1));
-        Preconditions.checkState(destinationPath != null);
+            new Path(directory.getParentFile().path, destination.getAbsolutePath().substring(1));
 
-        this.directory.notifyModified();
-        boolean success = this.fs.rename(path, destinationPath);
-        if(success == false) {
-          throw new IOException(// must use IOException (see comments in
-                                // https://github.com/icgc-dcc/data-submission/pull/229)
-              "unable to move file " + path.toUri() + " to " + destinationPath.toUri());
+        directory.notifyModified();
+        boolean success = fs.rename(path, destinationPath);
+
+        if (success == false) {
+          throw new IOException("Unable to move file " + path.toUri() + " to " + destinationPath.toUri());
         }
-        this.path = destinationPath;
+
+        path = destinationPath;
+
         return success;
-      } catch(IOException e) {
-        log.error("File system error", e);
       }
+
+      return false;
+    } catch (Exception e) {
+      return handleException(Boolean.class, e);
     }
-    return false;
   }
 
   @Override
@@ -152,6 +167,7 @@ public class FileHdfsSshFile extends HdfsSshFile {
 
   @Override
   public HdfsSshFile getChild(Path filePath) {
-    throw new DccFileSystemException("Invalid file path: " + this.getAbsolutePath() + filePath.toString());
+    return handleException(HdfsSshFile.class, "Invalid file path: %s%s", getAbsolutePath(), filePath.toString());
   }
+
 }

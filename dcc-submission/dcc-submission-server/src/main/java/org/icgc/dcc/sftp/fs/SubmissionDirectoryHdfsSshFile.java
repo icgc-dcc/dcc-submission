@@ -15,19 +15,59 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.sftp;
+package org.icgc.dcc.sftp.fs;
 
-/**
- * 
- */
-public class SystemFileHdfsSshFile extends BaseDirectoryHdfsSshFile {
+import static org.icgc.dcc.sftp.fs.HdfsFileUtils.handleException;
 
-  public SystemFileHdfsSshFile(RootHdfsSshFile root, String directoryName) {
+import org.icgc.dcc.filesystem.SubmissionDirectory;
+
+public class SubmissionDirectoryHdfsSshFile extends BaseDirectoryHdfsSshFile {
+
+  private final SubmissionDirectory directory;
+
+  public SubmissionDirectoryHdfsSshFile(RootHdfsSshFile root, String directoryName) {
     super(root, directoryName);
+    this.directory = root.getSubmissionDirectory(directoryName);
+  }
+
+  @Override
+  public String getAbsolutePath() {
+    return SEPARATOR + directoryName;
+  }
+
+  @Override
+  public boolean isWritable() {
+    // See doesExist for explanation of the null check
+    try {
+      if (directory == null || directory.isReadOnly()) {
+        return false;
+      }
+
+      return super.isWritable();
+    } catch (Exception e) {
+      return handleException(Boolean.class, e);
+    }
+  }
+
+  @Override
+  public boolean doesExist() {
+    // If directory is null it means that the directory doesn't exist or the user does not have permission to access it
+    // We are using this in lieu of throwing an exception, since Mina's interface erroneously disallows checked
+    // exceptions
+    try {
+      return directory == null ? false : super.doesExist();
+    } catch (Exception e) {
+      return handleException(Boolean.class, e);
+    }
   }
 
   @Override
   public void notifyModified() {
-    this.getParentFile().systemFilesNotifyModified();
+    try {
+      getParentFile().notifyModified(directory);
+    } catch (Exception e) {
+      handleException(Boolean.class, e);
+    }
   }
+
 }

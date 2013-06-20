@@ -15,33 +15,23 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.model;
+package org.icgc.dcc.sftp.fs;
 
-/**
- * Contains keys used in configuration files and used across components.
- */
-public class Configurations {
+import static org.icgc.dcc.sftp.fs.HdfsFileUtils.handleException;
 
-  /**
-   * Submitter component.
-   */
-  public static final String FS_URL_KEY = "fs.url";
+public class SystemFileHdfsSshFile extends BaseDirectoryHdfsSshFile {
 
-  public static final String FS_ROOT_KEY = "fs.root";
+  public SystemFileHdfsSshFile(RootHdfsSshFile root, String directoryName) {
+    super(root, directoryName);
+  }
 
-  public static final String MONGO_URI_KEY = "mongo.uri";
-
-  /**
-   * ETL component.
-   */
-  public static final String RELEASE_MONGO_URI_KEY = "releaseMongoUri";
-
-  public static final String FS_LOADER_ROOT = "fsLoaderRoot";
-
-  public static final String SUBMISSIONS_KEY = "submissions";
-
-  public static final String HADOOP_KEY = "hadoop";
-
-  public static final String IDENTIFIER_KEY = "identifier";
+  @Override
+  public void notifyModified() {
+    try {
+      getParentFile().systemFilesNotifyModified();
+    } catch (Exception e) {
+      handleException(e);
+    }
+  }
 
 }

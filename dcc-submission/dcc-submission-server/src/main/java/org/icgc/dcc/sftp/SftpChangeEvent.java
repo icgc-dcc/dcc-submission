@@ -15,33 +15,19 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.model;
+package org.icgc.dcc.sftp;
+
+import lombok.experimental.Value;
 
 /**
- * Contains keys used in configuration files and used across components.
+ * Event object used to signal {@link SftpServerService} state transitions.
  */
-public class Configurations {
+@Value
+public class SftpChangeEvent {
 
   /**
-   * Submitter component.
+   * Indicates that the SFTP service is enabled (allows authenticated connections).
    */
-  public static final String FS_URL_KEY = "fs.url";
-
-  public static final String FS_ROOT_KEY = "fs.root";
-
-  public static final String MONGO_URI_KEY = "mongo.uri";
-
-  /**
-   * ETL component.
-   */
-  public static final String RELEASE_MONGO_URI_KEY = "releaseMongoUri";
-
-  public static final String FS_LOADER_ROOT = "fsLoaderRoot";
-
-  public static final String SUBMISSIONS_KEY = "submissions";
-
-  public static final String HADOOP_KEY = "hadoop";
-
-  public static final String IDENTIFIER_KEY = "identifier";
+  private final boolean enabled;
 
 }

@@ -15,33 +15,23 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.model;
+package org.icgc.dcc.http.jersey;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+import javax.ws.rs.HttpMethod;
 
 /**
- * Contains keys used in configuration files and used across components.
+ * Indicates that the annotated method responds to HTTP PATCH requests.
+ * 
+ * @see http://java.net/projects/jersey/lists/users/archive/2012-03/message/122
+ * @see HttpMethod
  */
-public class Configurations {
-
-  /**
-   * Submitter component.
-   */
-  public static final String FS_URL_KEY = "fs.url";
-
-  public static final String FS_ROOT_KEY = "fs.root";
-
-  public static final String MONGO_URI_KEY = "mongo.uri";
-
-  /**
-   * ETL component.
-   */
-  public static final String RELEASE_MONGO_URI_KEY = "releaseMongoUri";
-
-  public static final String FS_LOADER_ROOT = "fsLoaderRoot";
-
-  public static final String SUBMISSIONS_KEY = "submissions";
-
-  public static final String HADOOP_KEY = "hadoop";
-
-  public static final String IDENTIFIER_KEY = "identifier";
-
+@Target({ ElementType.METHOD })
+@Retention(RetentionPolicy.RUNTIME)
+@HttpMethod("PATCH")
+public @interface PATCH {
 }
