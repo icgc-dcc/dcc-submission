@@ -17,40 +17,19 @@
  */
 package org.icgc.dcc.core.model;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_ASSEMBLY_VERSION;
-import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_CHROMOSOME;
-import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_CHROMOSOME_END;
-import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_CHROMOSOME_START;
-import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_MUTATION;
-import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_MUTATION_TYPE;
-
-import java.util.List;
-
-import com.google.common.collect.ImmutableList;
+import static org.icgc.dcc.core.model.FieldNames.DONOR_ID;
+import static org.icgc.dcc.core.model.FieldNames.DONOR_SPECIMEN_ID;
+import static org.icgc.dcc.core.model.FieldNames.DONOR_SAMPLE_ID;
+import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_MUTATION_ID;
 
 /**
- * Contains business keys from the standpoint of the loader entities (not the submission files').
+ * Contains surrogate keys for the ICGC DCC portal.
  */
-public class BusinessKeys {
+public class SurrogateKeys {
 
-  public static final String PROJECT = "project";
-  public static final String DONOR = "donor";
-  public static final String SPECIMEN = "specimen";
-  public static final String SAMPLE = "sample";
-  public static final String MUTATION = "mutation";
-
-  public static final List<String> MUTATION_BUSINESS_KEY_META_PART = newArrayList(OBSERVATION_ASSEMBLY_VERSION);
-  public static final List<String> MUTATION_BUSINESS_KEY_PRIMARY_PART = newArrayList(
-      OBSERVATION_CHROMOSOME,
-      OBSERVATION_CHROMOSOME_START,
-      OBSERVATION_CHROMOSOME_END,
-      OBSERVATION_MUTATION_TYPE,
-      OBSERVATION_MUTATION);
-
-  public static final List<String> MUTATION_BUSINESS_KEY = ImmutableList.<String> builder()
-      .addAll(MUTATION_BUSINESS_KEY_PRIMARY_PART)
-      .addAll(MUTATION_BUSINESS_KEY_META_PART)
-      .build();
+  public static final String DONOR = DONOR_ID;
+  public static final String SPECIMEN = DONOR_SPECIMEN_ID;
+  public static final String SAMPLE = DONOR_SAMPLE_ID;
+  public static final String MUTATION = OBSERVATION_MUTATION_ID;
 
 }

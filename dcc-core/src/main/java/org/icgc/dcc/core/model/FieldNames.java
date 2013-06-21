@@ -23,12 +23,7 @@ public final class FieldNames {
   /**
    * Internal mongo ID field name.
    */
-  public static final String MONGO_INTERNAL_ID_FIELD = "_id";
-  
-  /**
-   * The non-surrogate version of _project_id (formerly known as "project_key").
-   */
-  public static final String PROJECT_ID_FIELD = "project_id";
+  public static final String MONGO_INTERNAL_ID_FIELD = "_id";  
   
   /**
    * Field names in the original input format.
@@ -66,7 +61,7 @@ public final class FieldNames {
   public static final String DONOR_SPECIMEN = "specimen";
   public static final String DONOR_SPECIMEN_ID = "_specimen_id";
   public static final String DONOR_SAMPLE = "sample";
-  public static final String DONOR_TUMOUR_SAMPLE_ID = "_sample_id";
+  public static final String DONOR_SAMPLE_ID = "_sample_id";
   public static final String DONOR_CONTROL_SAMPLE_ID = "_matched_sample_id";
   public static final String DONOR_SAMPLE_ANALYZED_SAMPLE_ID = "analyzed_sample_id";
   public static final String DONOR_SAMPLE_SEQUENCE_DATA = "available_raw_sequence_data";
