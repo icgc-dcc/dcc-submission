@@ -99,6 +99,7 @@ public final class FieldNames {
   
   public static final String GENE_SUMMARY = "_summary";
   public static final String GENE_SUMMARY_UNIQUE_MUTATION_COUNT = "_unique_mutation_count";
+  public static final String GENE_SUMMARY_TOTAL_MUTATION_COUNT = "_total_mutation_count";
   public static final String GENE_SUMMARY_AFFECTED_PROJECT_COUNT = "_affected_project_count";
   public static final String GENE_SUMMARY_AFFECTED_DONOR_COUNT = "_affected_donor_count";
 
