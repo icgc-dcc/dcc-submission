@@ -18,6 +18,7 @@
 package org.icgc.dcc.core.model;
 
 import static com.google.common.collect.ImmutableList.of;
+import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.List;
 import java.util.Set;
@@ -34,29 +35,30 @@ public final class FeatureTypes {
 
   public static final String SSM_TYPE = "ssm";
 
-  public static final String CNSM_TYPE = "cnsm";
-
-  public static final String STSM_TYPE = "stsm";
-
   public static final String SGV_TYPE = "sgv";
+
+  public static final String CNSM_TYPE = "cnsm";
 
   public static final String CNGV_TYPE = "cngv";
 
+  public static final String STSM_TYPE = "stsm";
+
   public static final String STGV_TYPE = "stgv";
-
-  public static final String PEXP_TYPE = "pexp";
-
-  public static final String EXP_TYPE = "exp";
 
   public static final String METH_TYPE = "meth";
 
   public static final String MIRNA_TYPE = "mirna";
 
+  public static final String EXP_TYPE = "exp";
+
+  public static final String PEXP_TYPE = "pexp";
+
   public static final String JCN_TYPE = "jcn";
 
   /** From the ICGC Submission Manual */
-  private static final List<String> FEATURE_TYPES = ImmutableList.of(SSM_TYPE, SGV_TYPE, CNSM_TYPE, CNGV_TYPE,
-      STSM_TYPE, STGV_TYPE, EXP_TYPE, MIRNA_TYPE, JCN_TYPE, METH_TYPE, PEXP_TYPE);
+  public static final List<String> FEATURE_TYPES = ImmutableList.of(
+      SSM_TYPE, SGV_TYPE, CNSM_TYPE, CNGV_TYPE, STSM_TYPE, STGV_TYPE,
+      METH_TYPE, MIRNA_TYPE, EXP_TYPE, PEXP_TYPE, JCN_TYPE);
 
   /** Subset of {@link #FEATURE_TYPES} that relates to somatic mutations */
   private static final List<String> SOMATIC_FEATURE_TYPES = ImmutableList.of(SSM_TYPE, CNSM_TYPE, STSM_TYPE);
@@ -68,9 +70,14 @@ public final class FeatureTypes {
       PEXP_TYPE);
 
   /**
+   * Features types for which mutations will be aggregated.
+   */
+  private static final List<String> AGGREGATED_FEATURE_TYPES = of(SSM_TYPE);
+
+  /**
    * Features types that are small enough to be stored in mongodb (as exposed to exported to hdfs only).
    */
-  public static final List<String> MONGO_FRIENDLY_FEATURE_TYPES = of(SSM_TYPE);
+  public static final List<String> MONGO_FRIENDLY_FEATURE_TYPES = newArrayList(AGGREGATED_FEATURE_TYPES);
 
   public static List<String> getTypes() {
     return FEATURE_TYPES;
@@ -95,4 +102,9 @@ public final class FeatureTypes {
   public static boolean isSurveyType(String type) {
     return SURVEY_FEATURE_TYPES.contains(type);
   }
+
+  public static boolean isAggregatedType(String type) {
+    return AGGREGATED_FEATURE_TYPES.contains(type);
+  }
+
 }
