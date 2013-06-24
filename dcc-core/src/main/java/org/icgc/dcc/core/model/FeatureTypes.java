@@ -75,7 +75,7 @@ public final class FeatureTypes {
   /**
    * Feature types for which there is a control sample ID.
    */
-  private static final List<String> CONTROLLED_FEATURE_TYPES = of(
+  private static final List<String> CONTROL_SAMPLE_FEATURE_TYPES = of(
       SSM_TYPE, CNSM_TYPE, STSM_TYPE, METH_TYPE);
 
   /**
@@ -121,7 +121,7 @@ public final class FeatureTypes {
   }
 
   public static boolean hasControlSampleId(String type) {
-    return CONTROLLED_FEATURE_TYPES.contains(type);
+    return CONTROL_SAMPLE_FEATURE_TYPES.contains(type);
   }
 
 }
