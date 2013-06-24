@@ -18,13 +18,11 @@
 package org.icgc.dcc.core.model;
 
 import static com.google.common.collect.ImmutableList.of;
+import static com.google.common.collect.ImmutableSet.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.List;
 import java.util.Set;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 
 /**
  * Utilities for working with ICGC feature types.
@@ -56,23 +54,29 @@ public final class FeatureTypes {
   public static final String JCN_TYPE = "jcn";
 
   /** From the ICGC Submission Manual */
-  public static final List<String> FEATURE_TYPES = ImmutableList.of(
+  public static final List<String> FEATURE_TYPES = of(
       SSM_TYPE, SGV_TYPE, CNSM_TYPE, CNGV_TYPE, STSM_TYPE, STGV_TYPE,
       MIRNA_TYPE, METH_TYPE, EXP_TYPE, PEXP_TYPE, JCN_TYPE);
 
   /** Subset of {@link #FEATURE_TYPES} that relates to somatic mutations */
-  private static final List<String> SOMATIC_FEATURE_TYPES = ImmutableList.of(
+  private static final List<String> SOMATIC_FEATURE_TYPES = of(
       SSM_TYPE, CNSM_TYPE, STSM_TYPE);
 
-  private static final Set<String> SOMATIC_FEATURE_TYPES_SET = ImmutableSet.copyOf(SOMATIC_FEATURE_TYPES);
+  private static final Set<String> SOMATIC_FEATURE_TYPES_SET = copyOf(SOMATIC_FEATURE_TYPES);
 
   /** Subset of {@link #FEATURE_TYPES} that relates to survey-based features */
-  private static final List<String> SURVEY_FEATURE_TYPES = ImmutableList.of(
+  private static final List<String> SURVEY_FEATURE_TYPES = of(
       EXP_TYPE, MIRNA_TYPE, JCN_TYPE, METH_TYPE, PEXP_TYPE);
 
   /** Feature types whose sample ID isn't called analyzed_sample_id in older dictionaries */
-  private static final List<String> DIFFERENT_SAMPLE_ID_FEATURE_TYPES = ImmutableList.of(
+  private static final List<String> DIFFERENT_SAMPLE_ID_FEATURE_TYPES = of(
       EXP_TYPE, MIRNA_TYPE, JCN_TYPE, PEXP_TYPE);
+
+  /**
+   * Feature types for which there is a control sample ID.
+   */
+  private static final List<String> CONTROLLED_FEATURE_TYPES = of(
+      SSM_TYPE, CNSM_TYPE, STSM_TYPE, METH_TYPE);
 
   /**
    * Features types for which mutations will be aggregated.
@@ -114,6 +118,10 @@ public final class FeatureTypes {
 
   public static boolean hasDifferentSampleId(String type) {
     return DIFFERENT_SAMPLE_ID_FEATURE_TYPES.contains(type);
+  }
+
+  public static boolean hasControlSampleId(String type) {
+    return CONTROLLED_FEATURE_TYPES.contains(type);
   }
 
 }
