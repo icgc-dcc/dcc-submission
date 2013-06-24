@@ -122,6 +122,9 @@ public final class FieldNames {
   public static final String OBSERVATION_CONSEQUENCES_GENE = "gene";
   public static final String OBSERVATION_PLATFORM = "platform";
   public static final String OBSERVATION_VALIDATION_STATUS = "validation_status";
+  public static final String OBSERVATION_VALIDATION_PLATFORM = "validation_platform";
+  public static final String OBSERVATION_VERIFICATION_STATUS = "verification_status";
+  public static final String OBSERVATION_VERIFICATION_PLATFORM = "verification_platform";
   public static final String OBSERVATION_IS_ANNOTATED = "is_annotated";
 
   public static final String OBSERVATION_ASSEMBLY_VERSION = "assembly_version";
