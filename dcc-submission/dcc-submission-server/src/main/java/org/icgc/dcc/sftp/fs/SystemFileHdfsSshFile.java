@@ -15,11 +15,10 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.sftp;
+package org.icgc.dcc.sftp.fs;
 
-/**
- * 
- */
+import static org.icgc.dcc.sftp.fs.HdfsFileUtils.handleException;
+
 public class SystemFileHdfsSshFile extends BaseDirectoryHdfsSshFile {
 
   public SystemFileHdfsSshFile(RootHdfsSshFile root, String directoryName) {
@@ -28,6 +27,11 @@ public class SystemFileHdfsSshFile extends BaseDirectoryHdfsSshFile {
 
   @Override
   public void notifyModified() {
-    this.getParentFile().systemFilesNotifyModified();
+    try {
+      getParentFile().systemFilesNotifyModified();
+    } catch (Exception e) {
+      handleException(e);
+    }
   }
+
 }

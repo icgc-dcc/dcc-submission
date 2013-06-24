@@ -56,8 +56,11 @@ public final class FieldNames {
    * Donor field names.
    */
   public static final String DONOR_ID = "_donor_id";
+  
   public static final String DONOR_SUMMARY = "_summary";
   public static final String DONOR_SUMMARY_EXPERIMENTAL_ANALYSIS = "experimental_analysis_performed";
+  public static final String DONOR_SUMMARY_AFFECTED_GENE_COUNT = "_affected_gene_count";
+  
   public static final String DONOR_GENES = "gene";
   public static final String DONOR_GENE_GENE_ID = "_gene_id";
   public static final String DONOR_GENE_SUMMARY = "_summary";
@@ -93,6 +96,13 @@ public final class FieldNames {
   public static final String GENE_TRANSCRIPTS_TRANSCRIPT_ID = "id";
   public static final String GENE_TRANSCRIPTS_TRANSCRIPT_EXONS = "exons";
   public static final String GENE_TRANSCRIPTS_TRANSCRIPT_DOMAINS = "domains";
+  
+  public static final String GENE_SUMMARY = "_summary";
+  public static final String GENE_SUMMARY_AFFECTED_TRANSCRIPT_IDS = "_affected_transcript_id";
+  public static final String GENE_SUMMARY_AFFECTED_PROJECT_COUNT = "_affected_project_count";
+  public static final String GENE_SUMMARY_AFFECTED_DONOR_COUNT = "_affected_donor_count";
+  public static final String GENE_SUMMARY_UNIQUE_MUTATION_COUNT = "_unique_mutation_count";
+  public static final String GENE_SUMMARY_TOTAL_MUTATION_COUNT = "_total_mutation_count";
 
   /**
    * Observation field names.
@@ -112,6 +122,9 @@ public final class FieldNames {
   public static final String OBSERVATION_CONSEQUENCES_GENE = "gene";
   public static final String OBSERVATION_PLATFORM = "platform";
   public static final String OBSERVATION_VALIDATION_STATUS = "validation_status";
+  public static final String OBSERVATION_VALIDATION_PLATFORM = "validation_platform";
+  public static final String OBSERVATION_VERIFICATION_STATUS = "verification_status";
+  public static final String OBSERVATION_VERIFICATION_PLATFORM = "verification_platform";
   public static final String OBSERVATION_IS_ANNOTATED = "is_annotated";
 
   public static final String OBSERVATION_ASSEMBLY_VERSION = "assembly_version";
@@ -132,16 +145,23 @@ public final class FieldNames {
    * Mutation field names.
    */  
   public static final String MUTATION_ID = "_mutation_id";
-  public static final String MUTATION_CONSEQUENCE_TYPES = "consequence_type";
   public static final String MUTATION_OBSERVATIONS = "ssm_occurrence";
   public static final String MUTATION_OBSERVATION_DONOR = "donor";
   public static final String MUTATION_OBSERVATION_PROJECT = "project";
   public static final String MUTATION_TRANSCRIPTS = "transcript";
   public static final String MUTATION_TRANSCRIPTS_GENE = "gene";
   public static final String MUTATION_TRANSCRIPTS_CONSEQUENCE = "consequence";
+  
+  // TODO: Move to summary
+  public static final String MUTATION_CONSEQUENCE_TYPES = "consequence_type";
   public static final String MUTATION_PLATFORM = "platform";
   public static final String MUTATION_IS_ANNOTATED = "is_annotated";
   public static final String MUTATION_VALIDATION_STATUS = "validation_status";
+  
+  public static final String MUTATION_SUMMARY = "_summary";
+  public static final String MUTATION_SUMMARY_AFFECTED_PROJECT_IDS = "_affected_project_id";
+  public static final String MUTATION_SUMMARY_AFFECTED_PROJECT_COUNT = "_affected_project_count";
+  public static final String MUTATION_SUMMARY_AFFECTED_DONOR_COUNT = "_affected_donor_count";
   
   /**
    * Aggregate field names.
