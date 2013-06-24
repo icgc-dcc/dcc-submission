@@ -58,16 +58,21 @@ public final class FeatureTypes {
   /** From the ICGC Submission Manual */
   public static final List<String> FEATURE_TYPES = ImmutableList.of(
       SSM_TYPE, SGV_TYPE, CNSM_TYPE, CNGV_TYPE, STSM_TYPE, STGV_TYPE,
-      METH_TYPE, MIRNA_TYPE, EXP_TYPE, PEXP_TYPE, JCN_TYPE);
+      MIRNA_TYPE, METH_TYPE, EXP_TYPE, PEXP_TYPE, JCN_TYPE);
 
   /** Subset of {@link #FEATURE_TYPES} that relates to somatic mutations */
-  private static final List<String> SOMATIC_FEATURE_TYPES = ImmutableList.of(SSM_TYPE, CNSM_TYPE, STSM_TYPE);
+  private static final List<String> SOMATIC_FEATURE_TYPES = ImmutableList.of(
+      SSM_TYPE, CNSM_TYPE, STSM_TYPE);
 
   private static final Set<String> SOMATIC_FEATURE_TYPES_SET = ImmutableSet.copyOf(SOMATIC_FEATURE_TYPES);
 
   /** Subset of {@link #FEATURE_TYPES} that relates to survey-based features */
-  private static final List<String> SURVEY_FEATURE_TYPES = ImmutableList.of(EXP_TYPE, MIRNA_TYPE, JCN_TYPE, METH_TYPE,
-      PEXP_TYPE);
+  private static final List<String> SURVEY_FEATURE_TYPES = ImmutableList.of(
+      EXP_TYPE, MIRNA_TYPE, JCN_TYPE, METH_TYPE, PEXP_TYPE);
+
+  /** Feature types whose sample ID isn't called analyzed_sample_id in older dictionaries */
+  private static final List<String> DIFFERENT_SAMPLE_ID_FEATURE_TYPES = ImmutableList.of(
+      EXP_TYPE, MIRNA_TYPE, JCN_TYPE, PEXP_TYPE);
 
   /**
    * Features types for which mutations will be aggregated.
@@ -105,6 +110,10 @@ public final class FeatureTypes {
 
   public static boolean isAggregatedType(String type) {
     return AGGREGATED_FEATURE_TYPES.contains(type);
+  }
+
+  public static boolean hasDifferentSampleId(String type) {
+    return DIFFERENT_SAMPLE_ID_FEATURE_TYPES.contains(type);
   }
 
 }

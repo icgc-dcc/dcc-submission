@@ -1,13 +1,9 @@
 package org.icgc.dcc.web;
 
 import static com.google.common.util.concurrent.Service.State.RUNNING;
-import static com.google.common.util.concurrent.Service.State.TERMINATED;
 import static javax.ws.rs.client.Entity.json;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.MOVED_PERMANENTLY;
 import static org.fest.assertions.api.Assertions.assertThat;
-
-import java.net.URISyntaxException;
 
 import javax.ws.rs.core.Response;
 
@@ -31,17 +27,11 @@ public class SystemResourceTest extends ResourceTest {
   }
 
   @Test
-  public void testRedirectStatus() throws URISyntaxException {
-    Response response = target().path("system").path("status").request(MIME_TYPE).get(Response.class);
-    assertThat(response.getStatus()).isEqualTo(MOVED_PERMANENTLY.getStatusCode());
-    assertThat(response.getLocation().getPath()).isEqualTo("/systems/sftp");
-  }
-
-  @Test
   public void testGetStatus() {
     Status status = target().path("systems").path("sftp").request(MIME_TYPE).get(Status.class);
     assertThat(status.getActiveSftpSessions()).isEqualTo(0);
     assertThat(status.getSftpState()).isEqualTo(RUNNING);
+    assertThat(status.isSftpEnabled()).isTrue();
   }
 
   @Test
@@ -50,7 +40,8 @@ public class SystemResourceTest extends ResourceTest {
         target().path("systems").path("sftp").request(MIME_TYPE)
             .method(PATCH, json("{\"active\":false}"), Status.class);
     assertThat(status.getActiveSftpSessions()).isEqualTo(0);
-    assertThat(status.getSftpState()).isEqualTo(TERMINATED);
+    assertThat(status.getSftpState()).isEqualTo(RUNNING);
+    assertThat(status.isSftpEnabled()).isFalse();
   }
 
   @Test
@@ -60,6 +51,7 @@ public class SystemResourceTest extends ResourceTest {
             .method(PATCH, json("{\"active\":true}"), Status.class);
     assertThat(status.getActiveSftpSessions()).isEqualTo(0);
     assertThat(status.getSftpState()).isEqualTo(RUNNING);
+    assertThat(status.isSftpEnabled()).isTrue();
   }
 
   @Test
