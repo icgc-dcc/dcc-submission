@@ -63,7 +63,7 @@ public final class FieldNames {
   public static final String DONOR_GENES = "gene";
   public static final String DONOR_GENE_GENE_ID = "_gene_id";
   public static final String DONOR_GENE_SUMMARY = "_summary";
-  public static final String DONOR_PROJECT_ID = "_project_id";
+  public static final String DONOR_PROJECT_ID = PROJECT_ID;
   public static final String DONOR_PROJECT = "project";
   public static final String DONOR_SPECIMEN = "specimen";
   public static final String DONOR_SPECIMEN_ID = "_specimen_id";
@@ -87,7 +87,7 @@ public final class FieldNames {
   public static final String GENE_DONOR_PROJECT = "project";
   public static final String GENE_DONOR_SUMMARY = "_summary";
   public static final String GENE_PROJECTS = "project";
-  public static final String GENE_PROJECT_PROJECT_ID = "_project_id";
+  public static final String GENE_PROJECT_PROJECT_ID = PROJECT_ID;
   public static final String GENE_PROJECT_SUMMARY = "_summary";
   public static final String GENE_CANONICAL_TRANSCRIPT_ID = "canonical_transcript_id";
   public static final String GENE_TRANSCRIPTS = "transcripts";
