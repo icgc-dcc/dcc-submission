@@ -17,11 +17,8 @@
  */
 package org.icgc.dcc.core.model;
 
-import java.util.List;
-
-import com.google.common.collect.ImmutableList;
-
 import static com.google.common.collect.Lists.newArrayList;
+import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_ASSEMBLY_VERSION;
 import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_CHROMOSOME;
 import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_CHROMOSOME_END;
@@ -29,12 +26,18 @@ import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_CHROMOSOME_START;
 import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_MUTATION;
 import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_MUTATION_TYPE;
 
+import java.util.List;
+
+import lombok.NoArgsConstructor;
+
+import com.google.common.collect.ImmutableList;
+
 /**
  * Contains business keys from the standpoint of the loader entities (not the submission files').
  */
-public class BusinessKeys {
+@NoArgsConstructor(access = PRIVATE)
+public final class BusinessKeys {
 
-  //@formatter:off
   public static final String PROJECT = "project";
   public static final String DONOR = "donor";
   public static final String SPECIMEN = "specimen";
@@ -43,13 +46,13 @@ public class BusinessKeys {
 
   public static final List<String> MUTATION_BUSINESS_KEY_META_PART = newArrayList(OBSERVATION_ASSEMBLY_VERSION);
   public static final List<String> MUTATION_BUSINESS_KEY_PRIMARY_PART = newArrayList(
-      OBSERVATION_CHROMOSOME, 
+      OBSERVATION_CHROMOSOME,
       OBSERVATION_CHROMOSOME_START,
-      OBSERVATION_CHROMOSOME_END, 
-      OBSERVATION_MUTATION_TYPE, 
+      OBSERVATION_CHROMOSOME_END,
+      OBSERVATION_MUTATION_TYPE,
       OBSERVATION_MUTATION);
 
   public static final List<String> MUTATION_BUSINESS_KEY = ImmutableList.<String> builder()
       .addAll(MUTATION_BUSINESS_KEY_PRIMARY_PART).addAll(MUTATION_BUSINESS_KEY_META_PART).build();
-  // @formatter:on
+
 }

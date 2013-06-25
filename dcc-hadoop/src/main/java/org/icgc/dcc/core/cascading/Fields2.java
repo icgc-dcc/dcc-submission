@@ -18,6 +18,7 @@
 package org.icgc.dcc.core.cascading;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static lombok.AccessLevel.PRIVATE;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,6 +26,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import lombok.NoArgsConstructor;
 import cascading.tuple.Fields;
 
 import com.google.common.collect.ImmutableList;
@@ -34,13 +36,10 @@ import com.google.common.collect.ImmutableList;
  * <p>
  * TODO: remove some redundant/obsolete methods + make this a decorator instead
  */
+@NoArgsConstructor(access = PRIVATE)
 public final class Fields2 {
 
   private static final String DEFAULT_PREFIX_SEPARATOR = ".";
-
-  private Fields2() {
-    // Prevent construction
-  }
 
   public static Fields fields(Collection<String> fieldNames) {
     return new Fields(toStringArray(fieldNames));
@@ -99,7 +98,7 @@ public final class Fields2 {
    */
   public static Fields cloneFields(Fields fields) {
     Fields clone = new Fields();
-    for(int i = 0; i < fields.size(); i++) {
+    for (int i = 0; i < fields.size(); i++) {
       clone = clone.append(new Fields(fields.get(i)));
     }
     return clone;
@@ -121,7 +120,7 @@ public final class Fields2 {
   public static List<Integer> indicesOf(Fields fields, Fields subfields) {
     List<Comparable> fieldNames = getFieldComparables(fields);
     List<Integer> indices = new ArrayList<Integer>();
-    for(int i = 0; i < subfields.size(); i++) {
+    for (int i = 0; i < subfields.size(); i++) {
       Comparable fieldName = subfields.get(i);
       indices.add(fieldNames.indexOf(fieldName));
     }
@@ -137,9 +136,9 @@ public final class Fields2 {
 
   @SuppressWarnings("rawtypes")
   public static Comparable[] concat(Comparable[] fields, Comparable... extra) {
-    if(fields == null) return extra;
+    if (fields == null) return extra;
     Comparable[] concatenated = Arrays.copyOf(fields, fields.length + extra.length);
-    for(int i = 0; i < extra.length; i++) {
+    for (int i = 0; i < extra.length; i++) {
       concatenated[i + fields.length] = extra[i];
     }
     return concatenated;
@@ -148,7 +147,7 @@ public final class Fields2 {
   @SuppressWarnings("rawtypes")
   private static List<Comparable> buildMutableFieldNames(Fields fields) {
     List<Comparable> fieldNames = new ArrayList<Comparable>();
-    for(int i = 0; i < fields.size(); i++) {
+    for (int i = 0; i < fields.size(); i++) {
       fieldNames.add(fields.get(i));
     }
     return fieldNames;
@@ -156,7 +155,7 @@ public final class Fields2 {
 
   public static List<String> getFieldNames(Fields fields) {
     List<String> fieldNames = new ArrayList<String>();
-    for(int i = 0; i < fields.size(); i++) {
+    for (int i = 0; i < fields.size(); i++) {
       fieldNames.add(fields.get(i).toString());
     }
     return fieldNames;
@@ -168,7 +167,7 @@ public final class Fields2 {
 
   public static Fields prefixedFields(String prefix, String separator, Fields fields) {
     Fields prefixedFields = new Fields();
-    for(String fieldName : getFieldNames(fields)) {
+    for (String fieldName : getFieldNames(fields)) {
       String newFieldName = prefix(prefix, separator, fieldName);
       prefixedFields = prefixedFields.append(new Fields(newFieldName));
     }
@@ -177,7 +176,7 @@ public final class Fields2 {
 
   public static Fields prefixedFields(String prefix, String sep, String[] fields) {
     String[] prefixed = new String[fields.length];
-    for(int i = 0; i < prefixed.length; i++) {
+    for (int i = 0; i < prefixed.length; i++) {
       prefixed[i] = prefix(prefix, sep, fields[i]);
     }
     return new Fields(prefixed);
@@ -195,7 +194,7 @@ public final class Fields2 {
 
   public static Fields unprefixFields(Fields fields, String sep) {
     String[] unprefixed = new String[fields.size()];
-    for(int i = 0; i < unprefixed.length; i++) {
+    for (int i = 0; i < unprefixed.length; i++) {
       unprefixed[i] = extractField(fields.get(i).toString(), sep);
     }
     return new Fields(unprefixed);
@@ -203,8 +202,8 @@ public final class Fields2 {
 
   public static String extractField(String prefixedField, String sep) {
     int index = prefixedField.indexOf(sep);
-    if(index < 0) throw new IllegalArgumentException();
-    if(index + 1 > prefixedField.length()) throw new IllegalArgumentException();
+    if (index < 0) throw new IllegalArgumentException();
+    if (index + 1 > prefixedField.length()) throw new IllegalArgumentException();
     return prefixedField.substring(index + 1);
   }
 
