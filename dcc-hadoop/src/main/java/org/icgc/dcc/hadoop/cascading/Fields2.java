@@ -207,4 +207,11 @@ public final class Fields2 {
     return prefixedField.substring(index + 1);
   }
 
+  /**
+   * Returns the actual field name.
+   */
+  public static String getFieldName(Fields fields) {
+    return fields.print().replace("['", "").replace("']", "");
+  }
+
 }
