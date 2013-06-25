@@ -15,9 +15,10 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.cascading;
+package org.icgc.dcc.hadoop.cascading;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static lombok.AccessLevel.PRIVATE;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,6 +26,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import lombok.NoArgsConstructor;
 import cascading.tuple.Fields;
 
 import com.google.common.collect.ImmutableList;
@@ -34,13 +36,10 @@ import com.google.common.collect.ImmutableList;
  * <p>
  * TODO: remove some redundant/obsolete methods + make this a decorator instead
  */
+@NoArgsConstructor(access = PRIVATE)
 public final class Fields2 {
 
   private static final String DEFAULT_PREFIX_SEPARATOR = ".";
-
-  private Fields2() {
-    // Prevent construction
-  }
 
   public static Fields fields(Collection<String> fieldNames) {
     return new Fields(toStringArray(fieldNames));
