@@ -17,14 +17,17 @@
  */
 package org.icgc.dcc.core.model;
 
+import static lombok.AccessLevel.PRIVATE;
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor(access = PRIVATE)
 public final class FieldNames {
 
-  // @formatter:off
   /**
    * Internal mongo ID field name.
    */
-  public static final String MONGO_INTERNAL_ID_FIELD = "_id";  
-  
+  public static final String MONGO_INTERNAL_ID_FIELD = "_id";
+
   /**
    * Field names in the original input format.
    */
@@ -38,25 +41,25 @@ public final class FieldNames {
 
   /**
    * Project field names.
-   */  
+   */
   public static final String PROJECT_ID = "_project_id";
   public static final String PROJECT_SUMMARY = "_summary";
-  
+
   /**
-   * Special fields, usually appearing in all clinical files as well as primary/meta experimental files. 
+   * Special fields, usually appearing in all clinical files as well as primary/meta experimental files.
    */
   public static final String URI = "uri";
   public static final String DB_XREF = "db_xref";
-  
+
   /**
    * Donor field names.
    */
   public static final String DONOR_ID = "_donor_id";
-  
+
   public static final String DONOR_SUMMARY = "_summary";
   public static final String DONOR_SUMMARY_EXPERIMENTAL_ANALYSIS = "experimental_analysis_performed";
   public static final String DONOR_SUMMARY_AFFECTED_GENE_COUNT = "_affected_gene_count";
-  
+
   public static final String DONOR_GENES = "gene";
   public static final String DONOR_GENE_GENE_ID = "_gene_id";
   public static final String DONOR_GENE_SUMMARY = "_summary";
@@ -69,8 +72,7 @@ public final class FieldNames {
   public static final String DONOR_CONTROL_SAMPLE_ID = "_matched_sample_id";
   public static final String DONOR_SAMPLE_ANALYZED_SAMPLE_ID = "analyzed_sample_id";
   public static final String DONOR_SAMPLE_SEQUENCE_DATA = "available_raw_sequence_data";
-  
-  
+
   /**
    * CGHub field names.
    */
@@ -79,7 +81,7 @@ public final class FieldNames {
 
   /**
    * Gene field names.
-   */  
+   */
   public static final String GENE_ID = "_gene_id";
   public static final String GENE_DONORS = "donor";
   public static final String GENE_DONOR_DONOR_ID = "_donor_id";
@@ -93,7 +95,7 @@ public final class FieldNames {
   public static final String GENE_TRANSCRIPTS_TRANSCRIPT_ID = "id";
   public static final String GENE_TRANSCRIPTS_TRANSCRIPT_EXONS = "exons";
   public static final String GENE_TRANSCRIPTS_TRANSCRIPT_DOMAINS = "domains";
-  
+
   public static final String GENE_SUMMARY = "_summary";
   public static final String GENE_SUMMARY_AFFECTED_TRANSCRIPT_IDS = "_affected_transcript_id";
   public static final String GENE_SUMMARY_AFFECTED_PROJECT_COUNT = "_affected_project_count";
@@ -103,7 +105,7 @@ public final class FieldNames {
 
   /**
    * Observation field names.
-   */  
+   */
   public static final String OBSERVATION_ID = "_id";
   public static final String OBSERVATION_MUTATION_ID = "_mutation_id";
   public static final String OBSERVATION_TYPE = "_type";
@@ -127,20 +129,20 @@ public final class FieldNames {
   public static final String OBSERVATION_ASSEMBLY_VERSION = "assembly_version";
   public static final String OBSERVATION_ANALYSIS_ID = "analysis_id";
   public static final String OBSERVATION_ANALYZED_SAMPLE_ID = "analyzed_sample_id";
-  
+
   public static final String OBSERVATION_CHROMOSOME = "chromosome";
   public static final String OBSERVATION_CHROMOSOME_START = "chromosome_start";
   public static final String OBSERVATION_CHROMOSOME_END = "chromosome_end";
   public static final String OBSERVATION_MUTATION_TYPE = "mutation_type";
   public static final String OBSERVATION_MUTATION = "mutation";
-  
+
   public static String getPartitionTypeFieldName(String type) {
     return type;
   }
 
   /**
    * Mutation field names.
-   */  
+   */
   public static final String MUTATION_ID = "_mutation_id";
   public static final String MUTATION_OBSERVATIONS = "ssm_occurrence";
   public static final String MUTATION_OBSERVATION_DONOR = "donor";
@@ -148,24 +150,24 @@ public final class FieldNames {
   public static final String MUTATION_TRANSCRIPTS = "transcript";
   public static final String MUTATION_TRANSCRIPTS_GENE = "gene";
   public static final String MUTATION_TRANSCRIPTS_CONSEQUENCE = "consequence";
-  
+
   // TODO: Move to summary
   public static final String MUTATION_CONSEQUENCE_TYPES = "consequence_type";
   public static final String MUTATION_PLATFORM = "platform";
   public static final String MUTATION_IS_ANNOTATED = "is_annotated";
   public static final String MUTATION_VALIDATION_STATUS = "validation_status";
-  
+
   public static final String MUTATION_SUMMARY = "_summary";
   public static final String MUTATION_SUMMARY_AFFECTED_PROJECT_IDS = "_affected_project_id";
   public static final String MUTATION_SUMMARY_AFFECTED_PROJECT_COUNT = "_affected_project_count";
   public static final String MUTATION_SUMMARY_AFFECTED_DONOR_COUNT = "_affected_donor_count";
-  
+
   /**
    * Aggregate field names.
-   */    
+   */
   public static final String SYNTHETIC_PREFIX = "_";
-  public static final String TYPE_COUNT_SUFFIX =  "_count";
-  public static final String TYPE_EXISTS_SUFFIX = "_exists";  
+  public static final String TYPE_COUNT_SUFFIX = "_count";
+  public static final String TYPE_EXISTS_SUFFIX = "_exists";
   public static final String AVAILABLE_DATA_TYPES = "_available_data_type";
   public static final String TOTAL_DONOR_COUNT = "_total_donor_count";
   public static final String TOTAL_SPECIMEN_COUNT = "_total_specimen_count";
@@ -173,7 +175,6 @@ public final class FieldNames {
   public static final String TESTED_DONOR_COUNT_SUFFIX = "_tested_donor_count";
   public static final String AFFECTED_DONOR_COUNT = "_affected_donor_count";
   public static final String EXPERIMENTAL_ANALYSIS_PERFORMED = "experimental_analysis_performed";
-  // @formatter:on
 
   public static String getTypeExistsFieldName(String type) {
     return SYNTHETIC_PREFIX + type + TYPE_EXISTS_SUFFIX;
@@ -185,10 +186,6 @@ public final class FieldNames {
 
   public static String getTestedTypeCountFieldName(String type) {
     return SYNTHETIC_PREFIX + type + TESTED_DONOR_COUNT_SUFFIX;
-  }
-
-  private FieldNames() {
-    // Prevent construction
   }
 
 }

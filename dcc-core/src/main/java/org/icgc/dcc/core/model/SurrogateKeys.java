@@ -17,15 +17,18 @@
  */
 package org.icgc.dcc.core.model;
 
+import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.model.FieldNames.DONOR_ID;
-import static org.icgc.dcc.core.model.FieldNames.DONOR_SPECIMEN_ID;
 import static org.icgc.dcc.core.model.FieldNames.DONOR_SAMPLE_ID;
+import static org.icgc.dcc.core.model.FieldNames.DONOR_SPECIMEN_ID;
 import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_MUTATION_ID;
+import lombok.NoArgsConstructor;
 
 /**
  * Contains surrogate keys for the ICGC DCC portal.
  */
-public class SurrogateKeys {
+@NoArgsConstructor(access = PRIVATE)
+public final class SurrogateKeys {
 
   public static final String DONOR = DONOR_ID;
   public static final String SPECIMEN = DONOR_SPECIMEN_ID;

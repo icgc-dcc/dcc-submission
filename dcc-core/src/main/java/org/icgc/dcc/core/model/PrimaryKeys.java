@@ -17,23 +17,26 @@
  */
 package org.icgc.dcc.core.model;
 
-import java.util.List;
-
 import static com.google.common.collect.Lists.newArrayList;
+import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_ANALYSIS_ID;
 import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_ANALYZED_SAMPLE_ID;
+
+import java.util.List;
+
+import lombok.NoArgsConstructor;
 
 /**
  * Contains primary keys from the standpoint of the the submission files' (not the loader entities).
  */
-public class PrimaryKeys {
+@NoArgsConstructor(access = PRIVATE)
+public final class PrimaryKeys {
 
-  // @formatter:off
   /**
    * Read "primary key" of the "meta" file (so primary in PK sense, not the ICGC submission file sense).
    */
   public static final List<String> META_PRIMARY_KEY = newArrayList(
       OBSERVATION_ANALYSIS_ID,
       OBSERVATION_ANALYZED_SAMPLE_ID);
-  // @formatter:on
+
 }

@@ -17,19 +17,23 @@
  */
 package org.icgc.dcc.core.model;
 
+import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.core.model.PrimaryKeys.META_PRIMARY_KEY;
+
 import java.util.List;
 
-import static org.icgc.dcc.core.model.PrimaryKeys.META_PRIMARY_KEY;
+import lombok.NoArgsConstructor;
 
 /**
  * Contains foreign keys from the standpoint of the the submission files' (not the loader entities).
  */
-public class ForeignKeys {
+@NoArgsConstructor(access = PRIVATE)
+public final class ForeignKeys {
 
-  // @formatter:off
   /**
    * Read "foreign key" of the "primary" file (so primary in ICGC submission file sense, not the PK sense).
    */
-  public static final List<String> PRIMARY_FOREIGN_KEY = META_PRIMARY_KEY; // not always guaranteed to be the same as the primary key's
-  // @formatter:on
+  public static final List<String> PRIMARY_FOREIGN_KEY = META_PRIMARY_KEY; // not always guaranteed to be the same as
+                                                                           // the primary key's
+
 }
