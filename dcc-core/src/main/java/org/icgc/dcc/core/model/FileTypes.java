@@ -17,16 +17,19 @@
  */
 package org.icgc.dcc.core.model;
 
+import static lombok.AccessLevel.PRIVATE;
+import lombok.NoArgsConstructor;
+
 /**
  * Utilities for working with ICGC file types.
  * <p>
  * For experimental feature types, see {@link FeatureTypes} instead.
  */
-public class FileTypes {
+@NoArgsConstructor(access = PRIVATE)
+public final class FileTypes {
 
   public static final String DONOR_TYPE = "donor";
-
   public static final String SPECIMEN_TYPE = "specimen";
-
   public static final String SAMPLE_TYPE = "sample";
+
 }

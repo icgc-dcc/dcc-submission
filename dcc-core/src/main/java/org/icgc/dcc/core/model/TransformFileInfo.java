@@ -17,23 +17,20 @@
  */
 package org.icgc.dcc.core.model;
 
+import static lombok.AccessLevel.PRIVATE;
+import lombok.NoArgsConstructor;
+
 /**
  * A placeholder for redundant information from the transform files.
  */
-public class TransformFileInfo {
-
-  private TransformFileInfo() {
-  }
+@NoArgsConstructor(access = PRIVATE)
+public final class TransformFileInfo {
 
   public static final String DONOR_COLLECTION = "Donor";
-
   public static final String PROJECT_COLLECTION = "Project";
-
   public static final String MUTATION_COLLECTION = "Mutation";
-
   public static final String OBSERVATION_COLLECTION = "Observation";
-
   public static final String SPECIMEN_ARRAY = "specimen";
-
   public static final String SAMPLE_ARRAY = "sample";
+
 }

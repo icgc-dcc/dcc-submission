@@ -15,14 +15,16 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.cascading;
+package org.icgc.dcc.hadoop.cascading;
+
+import static lombok.AccessLevel.PRIVATE;
+import lombok.NoArgsConstructor;
 
 /**
  * TODO: use org.icgc.dcc.etl.loader.cascading.Schemes instead until DCC-993 is done. This class is just created so we
  * don't "forget about it!".
  */
-public class Schemes {
-  private Schemes() {
-    // Prevent construction
-  }
+@NoArgsConstructor(access = PRIVATE)
+public final class Schemes {
+
 }
