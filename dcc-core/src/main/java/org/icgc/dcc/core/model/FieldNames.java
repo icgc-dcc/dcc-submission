@@ -70,6 +70,7 @@ public final class FieldNames {
   public static final String DONOR_SAMPLE = "sample";
   public static final String DONOR_SAMPLE_ID = "_sample_id";
   public static final String DONOR_CONTROL_SAMPLE_ID = "_matched_sample_id";
+  public static final String DONOR_SAMPLE_ANALYZED_SAMPLE_ID = "analyzed_sample_id";
   public static final String DONOR_SAMPLE_SEQUENCE_DATA = "available_raw_sequence_data";
 
   /**
