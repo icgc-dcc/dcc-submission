@@ -18,18 +18,21 @@
 package org.icgc.dcc.core.model;
 
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.core.model.FieldNames.DONOR_ID;
+import static org.icgc.dcc.core.model.FieldNames.DONOR_SAMPLE_ID;
+import static org.icgc.dcc.core.model.FieldNames.DONOR_SPECIMEN_ID;
+import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_MUTATION_ID;
 import lombok.NoArgsConstructor;
 
 /**
- * Utilities for working with ICGC file types.
- * <p>
- * For experimental feature types, see {@link FeatureTypes} instead.
+ * Contains surrogate keys for the ICGC DCC portal.
  */
 @NoArgsConstructor(access = PRIVATE)
-public final class FileTypes {
+public final class SurrogateKeys {
 
-  public static final String DONOR_TYPE = "donor";
-  public static final String SPECIMEN_TYPE = "specimen";
-  public static final String SAMPLE_TYPE = "sample";
+  public static final String DONOR = DONOR_ID;
+  public static final String SPECIMEN = DONOR_SPECIMEN_ID;
+  public static final String SAMPLE = DONOR_SAMPLE_ID;
+  public static final String MUTATION = OBSERVATION_MUTATION_ID;
 
 }

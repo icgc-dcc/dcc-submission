@@ -66,6 +66,8 @@ public abstract class FunctionUtils {
   /**
    * Clone a Field (possibly transforming its value).
    * <p>
+   * Usage: clinicalPipe = new Each(clinicalPipe, new FunctionUtils.CloneField(originalField, clonedField), Fields.ALL);
+   * <p>
    * TODO: rename to account for other types of Transformable
    */
   @SuppressWarnings("rawtypes")

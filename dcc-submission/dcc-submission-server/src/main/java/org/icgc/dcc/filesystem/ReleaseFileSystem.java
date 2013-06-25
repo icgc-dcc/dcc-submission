@@ -31,9 +31,12 @@ import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.shiro.AuthorizationPrivileges;
 import org.icgc.dcc.web.Authorizations;
-import org.mortbay.log.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ReleaseFileSystem {
+
+  private static final Logger log = LoggerFactory.getLogger(ReleaseFileSystem.class);
 
   private final DccFileSystem dccFileSystem;
 
@@ -87,7 +90,7 @@ public class ReleaseFileSystem {
       for (String filename : previousSubmissionDirectory.listFile()) {
         String origin = previousSubmissionDirectory.getDataFilePath(filename);
         String destination = newSubmissionDirectory.getDataFilePath(filename);
-        Log.info("moving {} to {} ", origin, destination);
+        log.info("moving {} to {} ", origin, destination);
         HadoopUtils.mv(fileSystem, origin, destination);
       }
       // move .validation folder over
@@ -117,7 +120,7 @@ public class ReleaseFileSystem {
     String validationStringPath = this.dccFileSystem.buildValidationDirStringPath(release, projectKey);
     dccFileSystem.removeDirIfExist(validationStringPath);
     dccFileSystem.createDirIfDoesNotExist(validationStringPath);
-    Log.info("emptied directory {} for project {} ", validationStringPath, projectKey);
+    log.info("emptied directory {} for project {} ", validationStringPath, projectKey);
   }
 
   public boolean isReadOnly() {
