@@ -20,6 +20,7 @@ package org.icgc.dcc.test.mongodb;
 import static com.google.common.base.Charsets.UTF_8;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.io.Files.copy;
+import static lombok.AccessLevel.PRIVATE;
 import static org.junit.Assert.assertEquals;
 
 import java.io.BufferedReader;
@@ -41,6 +42,7 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import lombok.Cleanup;
+import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
 
@@ -58,7 +60,7 @@ import com.google.common.collect.ImmutableList;
 /**
  * General test utilities for working with JSON objects.; TODO: rename to MongoUtils
  */
-// @NoArgsConstructor(access = PRIVATE)
+@NoArgsConstructor(access = PRIVATE)
 public final class JsonUtils {
 
   public static final String MONGO_ID_FIELD = "_id";
