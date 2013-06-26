@@ -17,6 +17,11 @@
  */
 package org.icgc.dcc.test.mongodb;
 
+import static com.google.common.base.Charsets.UTF_8;
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.io.Files.copy;
+import static org.junit.Assert.assertEquals;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -28,6 +33,7 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -36,8 +42,8 @@ import java.util.TreeMap;
 
 import lombok.Cleanup;
 import lombok.SneakyThrows;
+import lombok.val;
 
-import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
@@ -49,28 +55,19 @@ import com.google.code.externalsorting.ExternalSort;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 
-import static com.google.common.base.Charsets.UTF_8;
-import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.io.Files.copy;
-import static org.junit.Assert.assertEquals;
-
 /**
  * General test utilities for working with JSON objects.; TODO: rename to MongoUtils
  */
+// @NoArgsConstructor(access = PRIVATE)
 public final class JsonUtils {
 
   public static final String MONGO_ID_FIELD = "_id";
 
-  private JsonUtils() {
-    // Prevent construction
-  }
+  private static String REPLACEMENT_VALUE = "[...]";
 
   /**
    * Asserts semantic JSON equality between {@code expectedFile} and {@code actualFile} using a memory efficient
    * stream-based comparison of deserialized sequences of JSON objects, ignoring transient fields.
-   * 
-   * @param expectedFile
-   * @param actualFile
    */
   public static void assertJsonFileEquals(File expectedFile, File actualFile) {
     try {
@@ -78,7 +75,7 @@ public final class JsonUtils {
       MappingIterator<JsonNode> expected = mapper.reader(JsonNode.class).readValues(expectedFile);
       MappingIterator<JsonNode> actual = mapper.reader(JsonNode.class).readValues(actualFile);
 
-      while(actual.hasNext() && expected.hasNext()) {
+      while (actual.hasNext() && expected.hasNext()) {
 
         // ObjectJSON.toString() seems to be the way to get the json representation, but documentation is lacking...
         @SuppressWarnings("unchecked")
@@ -95,7 +92,7 @@ public final class JsonUtils {
           false);
       assertEquals("Actual JSON file has additional objects: " + expectedFile + ", " + actualFile, actual.hasNext(),
           false);
-    } catch(IOException e) {
+    } catch (IOException e) {
       Throwables.propagate(e);
     }
   }
@@ -125,14 +122,14 @@ public final class JsonUtils {
   private static void filterTreeRecursive(JsonNode tree, List<String> includedProperties,
       List<String> excludedProperties, int maxDepth, String key) {
     Iterator<Entry<String, JsonNode>> fieldsIter = tree.getFields();
-    while(fieldsIter.hasNext()) {
+    while (fieldsIter.hasNext()) {
       Entry<String, JsonNode> field = fieldsIter.next();
       String fullName = key == null ? field.getKey() : key + "." + field.getKey();
 
       boolean depthOk = field.getValue().isContainerNode() && maxDepth >= 0;
       boolean isIncluded = includedProperties != null && !includedProperties.contains(fullName);
       boolean isExcluded = excludedProperties != null && excludedProperties.contains(fullName);
-      if((!depthOk && !isIncluded) || isExcluded) {
+      if ((!depthOk && !isIncluded) || isExcluded) {
         fieldsIter.remove();
         continue;
       }
@@ -164,7 +161,7 @@ public final class JsonUtils {
 
       String line = null;
       ObjectMapper mapper = new ObjectMapper();
-      while((line = bufferedReader.readLine()) != null) {
+      while ((line = bufferedReader.readLine()) != null) {
         processLine(mapper, bufferedWriter, mapper.readValue(line, Map.class));
       }
     }
@@ -178,18 +175,41 @@ public final class JsonUtils {
     checkState(sort.delete(), "JSON sort file not deleted: %s", sort);
   }
 
-  private static void processLine(ObjectMapper mapper, BufferedWriter bufferedWriter, Map<String, Object> map)
-      throws IOException, JsonParseException, JsonMappingException, JsonGenerationException {
+  @SneakyThrows
+  private static void processLine(ObjectMapper mapper, BufferedWriter bufferedWriter, Map<String, Object> map) {
     TreeMap<String, Object> treeMap = asTreeMap(map); // for reordering
-    Object object = treeMap.get(MONGO_ID_FIELD);
-    if(object != null && object instanceof Map) {
-      treeMap.put(MONGO_ID_FIELD, "[removed-for-comparisons]");
-    }
+    eraseValue(treeMap, MONGO_ID_FIELD, REPLACEMENT_VALUE);
     StringWriter sw = new StringWriter();
     mapper.writeValue(sw, treeMap);
     sw.close();
     bufferedWriter.write(sw.toString());
     bufferedWriter.newLine();
+  }
+
+  /**
+   * Recursively erases a value for comparison purposes.
+   */
+  @SuppressWarnings("unchecked")
+  private static void eraseValue(TreeMap<String, Object> treeMap, String fieldName, String replacementValue) {
+
+    // Replace value
+    if (treeMap.get(fieldName) != null) {
+      treeMap.put(fieldName, replacementValue);
+    }
+
+    // Continue recursively
+    for (val v : treeMap.entrySet()) {
+      Object value = v.getValue();
+      if (value instanceof Map) {
+        eraseValue((TreeMap<String, Object>) value, fieldName, replacementValue);
+      } else if (value instanceof Collection) {
+        Collection<Object> collection = (Collection<Object>) value;
+        for (Object item : collection) {
+          eraseValue((TreeMap<String, Object>) item, fieldName, replacementValue);
+        }
+      }
+    }
+
   }
 
   public static TreeMap<String, Object> asTreeMap(Map<String, Object> map) throws IOException, JsonParseException,
