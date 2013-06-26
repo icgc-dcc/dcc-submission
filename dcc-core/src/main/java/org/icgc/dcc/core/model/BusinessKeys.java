@@ -18,6 +18,7 @@
 package org.icgc.dcc.core.model;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_ASSEMBLY_VERSION;
 import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_CHROMOSOME;
 import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_CHROMOSOME_END;
@@ -27,12 +28,15 @@ import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_MUTATION_TYPE;
 
 import java.util.List;
 
+import lombok.NoArgsConstructor;
+
 import com.google.common.collect.ImmutableList;
 
 /**
  * Contains business keys from the standpoint of the loader entities (not the submission files').
  */
-public class BusinessKeys {
+@NoArgsConstructor(access = PRIVATE)
+public final class BusinessKeys {
 
   public static final String PROJECT = "project";
   public static final String DONOR = "donor";

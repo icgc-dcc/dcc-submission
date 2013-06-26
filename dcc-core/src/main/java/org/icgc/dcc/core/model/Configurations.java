@@ -17,31 +17,30 @@
  */
 package org.icgc.dcc.core.model;
 
+import static lombok.AccessLevel.PRIVATE;
+import lombok.NoArgsConstructor;
+
 /**
  * Contains keys used in configuration files and used across components.
  */
-public class Configurations {
+@NoArgsConstructor(access = PRIVATE)
+public final class Configurations {
 
   /**
    * Submitter component.
    */
   public static final String FS_URL_KEY = "fs.url";
-
   public static final String FS_ROOT_KEY = "fs.root";
-
   public static final String MONGO_URI_KEY = "mongo.uri";
 
   /**
    * ETL component.
    */
   public static final String RELEASE_MONGO_URI_KEY = "releaseMongoUri";
-
   public static final String FS_LOADER_ROOT = "fsLoaderRoot";
-
   public static final String SUBMISSIONS_KEY = "submissions";
-
   public static final String HADOOP_KEY = "hadoop";
-
+  public static final String IDENTIFIER_CLIENT_CLASS_NAME_KEY = "identifierClientClassName";
   public static final String IDENTIFIER_KEY = "identifier";
 
 }

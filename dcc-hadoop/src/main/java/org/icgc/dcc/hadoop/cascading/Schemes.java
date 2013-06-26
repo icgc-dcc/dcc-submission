@@ -15,25 +15,16 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.model;
+package org.icgc.dcc.hadoop.cascading;
 
-import java.util.List;
-
-import static com.google.common.collect.Lists.newArrayList;
-import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_ANALYSIS_ID;
-import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_ANALYZED_SAMPLE_ID;
+import static lombok.AccessLevel.PRIVATE;
+import lombok.NoArgsConstructor;
 
 /**
- * Contains primary keys from the standpoint of the the submission files' (not the loader entities).
+ * TODO: use org.icgc.dcc.etl.loader.cascading.Schemes instead until DCC-993 is done. This class is just created so we
+ * don't "forget about it!".
  */
-public class PrimaryKeys {
+@NoArgsConstructor(access = PRIVATE)
+public final class Schemes {
 
-  // @formatter:off
-  /**
-   * Read "primary key" of the "meta" file (so primary in PK sense, not the ICGC submission file sense).
-   */
-  public static final List<String> META_PRIMARY_KEY = newArrayList(
-      OBSERVATION_ANALYSIS_ID,
-      OBSERVATION_ANALYZED_SAMPLE_ID);
-  // @formatter:on
 }

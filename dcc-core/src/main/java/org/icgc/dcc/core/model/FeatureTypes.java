@@ -20,37 +20,34 @@ package org.icgc.dcc.core.model;
 import static com.google.common.collect.ImmutableList.of;
 import static com.google.common.collect.ImmutableSet.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
+import static lombok.AccessLevel.PRIVATE;
 
 import java.util.List;
 import java.util.Set;
+
+import lombok.NoArgsConstructor;
 
 /**
  * Utilities for working with ICGC feature types.
  * <p>
  * For clinical file types, see {@link FileTypes} instead.
  */
+@NoArgsConstructor(access = PRIVATE)
 public final class FeatureTypes {
 
+  /**
+   * Feature types.
+   */
   public static final String SSM_TYPE = "ssm";
-
   public static final String SGV_TYPE = "sgv";
-
   public static final String CNSM_TYPE = "cnsm";
-
   public static final String CNGV_TYPE = "cngv";
-
   public static final String STSM_TYPE = "stsm";
-
   public static final String STGV_TYPE = "stgv";
-
   public static final String METH_TYPE = "meth";
-
   public static final String MIRNA_TYPE = "mirna";
-
   public static final String EXP_TYPE = "exp";
-
   public static final String PEXP_TYPE = "pexp";
-
   public static final String JCN_TYPE = "jcn";
 
   /** From the ICGC Submission Manual */
