@@ -20,6 +20,7 @@ package org.icgc.dcc.test.mongodb;
 import static com.google.common.base.Charsets.UTF_8;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.io.Files.copy;
+import static java.lang.String.format;
 import static lombok.AccessLevel.PRIVATE;
 import static org.junit.Assert.assertEquals;
 
@@ -28,7 +29,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
@@ -47,14 +47,11 @@ import lombok.SneakyThrows;
 import lombok.val;
 
 import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.MappingIterator;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.core.util.MapUtils;
 
 import com.google.code.externalsorting.ExternalSort;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -65,44 +62,41 @@ public final class JsonUtils {
 
   public static final String MONGO_ID_FIELD = "_id";
 
-  private static String REPLACEMENT_VALUE = "[...]";
+  private static final String REPLACEMENT_VALUE = "[...]";
 
   /**
    * Asserts semantic JSON equality between {@code expectedFile} and {@code actualFile} using a memory efficient
    * stream-based comparison of deserialized sequences of JSON objects, ignoring transient fields.
    */
+  @SneakyThrows
   public static void assertJsonFileEquals(File expectedFile, File actualFile) {
-    try {
-      ObjectMapper mapper = new ObjectMapper();
-      MappingIterator<JsonNode> expected = mapper.reader(JsonNode.class).readValues(expectedFile);
-      MappingIterator<JsonNode> actual = mapper.reader(JsonNode.class).readValues(actualFile);
+    ObjectMapper mapper = new ObjectMapper();
+    MappingIterator<JsonNode> expected = mapper.reader(JsonNode.class).readValues(expectedFile);
+    MappingIterator<JsonNode> actual = mapper.reader(JsonNode.class).readValues(actualFile);
 
-      while (actual.hasNext() && expected.hasNext()) {
+    while (actual.hasNext() && expected.hasNext()) {
 
-        // ObjectJSON.toString() seems to be the way to get the json representation, but documentation is lacking...
-        @SuppressWarnings("unchecked")
-        TreeMap<String, Object> expectedMap = asTreeMap(mapper.readValue(expected.nextValue().toString(), Map.class));
-        @SuppressWarnings("unchecked")
-        TreeMap<String, Object> actualMap = asTreeMap(mapper.readValue(actual.nextValue().toString(), Map.class));
+      // ObjectJSON.toString() seems to be the way to get the json representation, but documentation is lacking...
+      @SuppressWarnings("unchecked")
+      TreeMap<String, Object> expectedMap = asTreeMap(mapper.readValue(expected.nextValue().toString(), Map.class));
+      @SuppressWarnings("unchecked")
+      TreeMap<String, Object> actualMap = asTreeMap(mapper.readValue(actual.nextValue().toString(), Map.class));
 
-        assertEquals("JSON mismatch between expected JSON file:\n\t" + expectedFile + "\nand actual JSON file:\n\t"
-            + actualFile + "\n", expectedMap.toString(), actualMap.toString());
-      }
-
-      // Ensure same number of elements
-      assertEquals("Actual JSON file is missing objects: " + expectedFile + ", " + actualFile, expected.hasNext(),
-          false);
-      assertEquals("Actual JSON file has additional objects: " + expectedFile + ", " + actualFile, actual.hasNext(),
-          false);
-    } catch (IOException e) {
-      Throwables.propagate(e);
+      assertEquals("JSON mismatch between expected JSON file:\n\t" + expectedFile + "\nand actual JSON file:\n\t"
+          + actualFile + "\n", expectedMap.toString(), actualMap.toString());
     }
+
+    // Ensure same number of elements
+    assertEquals(
+        format("Actual JSON file is missing objects: %s, %s", expectedFile, actualFile),
+        expected.hasNext(), false);
+    assertEquals(
+        format("Actual JSON file has additional objects: %s, %s", expectedFile, actualFile),
+        actual.hasNext(), false);
   }
 
   /**
    * Removes transient JSON properties that can change across runs (e.g. $oid).
-   * 
-   * @param jsonNode
    */
   public static void normalizeJsonNode(JsonNode jsonNode) {
     filterTree(jsonNode, null, ImmutableList.of("$oid"), Integer.MAX_VALUE);
@@ -195,7 +189,7 @@ public final class JsonUtils {
   private static void eraseValue(TreeMap<String, Object> treeMap, String fieldName, String replacementValue) {
 
     // Replace value
-    if (treeMap.get(fieldName) != null) {
+    if (treeMap.containsKey(fieldName)) {
       treeMap.put(fieldName, replacementValue);
     }
 
@@ -214,8 +208,7 @@ public final class JsonUtils {
 
   }
 
-  public static TreeMap<String, Object> asTreeMap(Map<String, Object> map) throws IOException, JsonParseException,
-      JsonMappingException {
+  public static TreeMap<String, Object> asTreeMap(Map<String, Object> map) {
     return MapUtils.asTreeMap(map);
   }
 }
