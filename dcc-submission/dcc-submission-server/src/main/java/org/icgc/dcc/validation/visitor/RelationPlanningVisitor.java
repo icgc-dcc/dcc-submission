@@ -20,6 +20,7 @@ package org.icgc.dcc.validation.visitor;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static java.lang.String.format;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
@@ -80,7 +81,7 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
   public void visit(Relation relation) {
     FileSchema currentSchema = getCurrentSchema();
     List<FileSchema> afferentStrictFileSchemata = currentSchema.getBidirectionalAfferentFileSchemata(dictionary);
-    if(currentSchema.getRole() != FileSchemaRole.SYSTEM //
+    if (currentSchema.getRole() != FileSchemaRole.SYSTEM //
         && isReAnnotatedFile(currentSchema.getName()) == false) { // skip checking relations in file to be re-annotated
       collect(new RelationPlanElement(currentSchema, relation, afferentStrictFileSchemata));
     }
@@ -132,8 +133,8 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
 
     @Override
     public String describe() {
-      return String.format("%s[%s:%s(%s)->%s:%s [%s]]", NAME, lhs, Arrays.toString(lhsFields), bidirectional, rhs,
-          Arrays.toString(rhsFields), optionals);
+      return format("%s[%s:%s(%s)->%s:%s [%s]]",
+          NAME, lhs, Arrays.toString(lhsFields), bidirectional, rhs, Arrays.toString(rhsFields), optionals);
     }
 
     @Override
@@ -192,8 +193,8 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
       int size = keepOptional ? optionals.size() : fields.length - optionals.size();
       String[] requiredFields = new String[size];
       int j = 0;
-      for(int i = 0; i < fields.length; i++) {
-        if(optionals.contains(i) == keepOptional) {
+      for (int i = 0; i < fields.length; i++) {
+        if (optionals.contains(i) == keepOptional) {
           requiredFields[j++] = fields[i];
         }
       }
@@ -202,7 +203,7 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
 
     private String[] rename() {
       String[] renamed = new String[rhsFields.length];
-      for(int i = 0; i < renamed.length; i++) {
+      for (int i = 0; i < renamed.length; i++) {
         renamed[i] = rhs + "$" + rhsFields[i];
       }
       return renamed;
@@ -279,19 +280,21 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
       checkArgument(optionalSize > 0);
 
       Comparator<Object> comparator = new Comparator<Object>() { // allows one side to be null
+
             @Override
             public int compare(Object object1, Object object2) {
               return object1 == null || object2 == null ? 0 : ((String) object1).compareTo(((String) object2));
             }
           };
       this.tupleComparators = new Comparator[optionalSize];
-      for(int i = 0; i < optionalRhsFields.length; i++) {
+      for (int i = 0; i < optionalRhsFields.length; i++) {
         this.tupleComparators[i] = comparator; // we can reuse the same for all fields
       }
     }
 
     @Override
-    public void operate(@SuppressWarnings("rawtypes") FlowProcess flowProcess, BufferCall<Void> bufferCall) {
+    public void operate(@SuppressWarnings("rawtypes")
+    FlowProcess flowProcess, BufferCall<Void> bufferCall) {
       Iterator<TupleEntry> iter = bufferCall.getArgumentsIterator();
       TupleEntry group = bufferCall.getGroup();
 
@@ -300,14 +303,14 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
       List<Tuple> rhsOptionalTuples = new ArrayList<Tuple>();
       Tuple requiredLhsTuple = group.selectTuple(new Fields(requiredLhsFields));
 
-      while(iter.hasNext()) {
+      while (iter.hasNext()) {
         TupleEntry entry = iter.next();
-        if(TuplesUtils.hasValues(entry, requiredRhsFields)) { // this already filters out join on nulls
-          if(TuplesUtils.hasValues(entry, optionalLhsFields)) {
+        if (TuplesUtils.hasValues(entry, requiredRhsFields)) { // this already filters out join on nulls
+          if (TuplesUtils.hasValues(entry, optionalLhsFields)) {
             Tuple lhsOptionalTuple = entry.selectTuple(new Fields(optionalLhsFields));
             lhsOptionalTuples.add(new SimpleEntry<Tuple, Long>(lhsOptionalTuple, getLhsOffset(entry)));
           }
-          if(TuplesUtils.hasValues(entry, optionalRhsFields)) {
+          if (TuplesUtils.hasValues(entry, optionalRhsFields)) {
             rhsOptionalTuples.add(entry.selectTuple(new Fields(optionalRhsFields)));
           }
         } // if it does not, it is a problem that will be picked up by the corresponding non-conditional relation (see
@@ -319,12 +322,12 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
        * set for lhsOptionalTuples (TODO: why?)
        */
       Set<Long> reported = new HashSet<Long>();
-      for(Entry<Tuple, Long> lhsTupleToOffset : lhsOptionalTuples) {
+      for (Entry<Tuple, Long> lhsTupleToOffset : lhsOptionalTuples) {
         Tuple lhsOptionalTuple = lhsTupleToOffset.getKey();
-        if(contains(rhsOptionalTuples, lhsOptionalTuple) == false) {
+        if (contains(rhsOptionalTuples, lhsOptionalTuple) == false) {
           long lhsOffset = lhsTupleToOffset.getValue();
           TupleState tupleState = new TupleState(lhsOffset);
-          if(reported.contains(lhsOffset) == false) {
+          if (reported.contains(lhsOffset) == false) {
             Tuple offendingLhsTuple = // so as to avoid storing it all in memory (memory/computing tradeoff)
                 rebuildLhsTuple(requiredLhsFields, optionalLhsFields, requiredLhsTuple, lhsOptionalTuple);
             reportRelationError(tupleState, offendingLhsTuple);
@@ -337,8 +340,8 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
     }
 
     private boolean contains(List<Tuple> tuples, Tuple tuple) {
-      for(Tuple tupleTmp : tuples) {
-        if(tupleTmp.compareTo(this.tupleComparators, tuple) == 0) {
+      for (Tuple tupleTmp : tuples) {
+        if (tupleTmp.compareTo(this.tupleComparators, tuple) == 0) {
           return true;
         }
       }
@@ -372,21 +375,22 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
     }
 
     @Override
-    public void operate(@SuppressWarnings("rawtypes") FlowProcess flowProcess, BufferCall<Void> bufferCall) {
+    public void operate(@SuppressWarnings("rawtypes")
+    FlowProcess flowProcess, BufferCall<Void> bufferCall) {
       Iterator<TupleEntry> iter = bufferCall.getArgumentsIterator();
-      while(iter.hasNext()) {
+      while (iter.hasNext()) {
         TupleEntry entry = iter.next();
 
-        if(TuplesUtils.hasValues(entry, renamedRhsFields) == false) {
-          if(TuplesUtils.hasValues(entry, lhsFields)) { // no need to report the result of joining on nulls
-                                                        // (required restriction will report error if this is not
-                                                        // acceptable)
+        if (TuplesUtils.hasValues(entry, renamedRhsFields) == false) {
+          if (TuplesUtils.hasValues(entry, lhsFields)) { // no need to report the result of joining on nulls
+                                                         // (required restriction will report error if this is not
+                                                         // acceptable)
             TupleState state = new TupleState(getLhsOffset(entry));
             reportRelationError(state, entry.selectTuple(new Fields(lhsFields)));
             bufferCall.getOutputCollector().add(new Tuple(state));
           }
-        } else if(bidirectional) {
-          if(TuplesUtils.hasValues(entry, lhsFields) == false) {
+        } else if (bidirectional) {
+          if (TuplesUtils.hasValues(entry, lhsFields) == false) {
             Tuple offendingRhsTuple = entry.selectTuple(new Fields(renamedRhsFields));
             TupleState state = new TupleState(CONVENTION_PARENT_OFFSET);
 
