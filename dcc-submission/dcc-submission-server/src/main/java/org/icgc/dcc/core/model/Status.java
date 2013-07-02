@@ -17,29 +17,89 @@
  */
 package org.icgc.dcc.core.model;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Lists.newArrayList;
+
+import java.util.List;
+
 import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonProperty;
 
+import com.google.common.base.Objects;
+import com.google.common.util.concurrent.Service.State;
+
+/**
+ * Represents the status of user sessions.
+ */
 public class Status {
 
-  private final int activeSftpSessions;
+  private final boolean sftpEnabled;
+
+  private final State sftpState;
+
+  private int activeSftpSessions;
+
+  private final List<UserSession> userSessions;
 
   @JsonCreator
-  public Status(@JsonProperty("activeSftpSessions") int activeSftpSessions) {
+  public Status(
+      @JsonProperty("sftpEnabled")
+      Boolean sftpEnabled,
+
+      @JsonProperty("sftpState")
+      State sftpState,
+
+      @JsonProperty("activeSftpSessions")
+      int activeSftpSessions,
+
+      @JsonProperty("userSessions")
+      List<UserSession> userSessions)
+
+  {
     super();
+    this.sftpEnabled = sftpEnabled;
+    this.sftpState = sftpState;
     this.activeSftpSessions = activeSftpSessions;
+    this.userSessions = userSessions;
   }
 
-  /**
-   * @return the activeSftpSessions
-   */
+  public Status(boolean sftpEnabled, State sftpState) {
+    this.sftpEnabled = sftpEnabled;
+    this.sftpState = checkNotNull(sftpState);
+    this.activeSftpSessions = 0;
+    this.userSessions = newArrayList();
+  }
+
+  public void addUserSession(UserSession userSession) { 
+    // TODO: builder
+    userSessions.add(userSession);
+    activeSftpSessions++;
+  }
+
+  public boolean isSftpEnabled() {
+    return sftpEnabled;
+  }
+
+  public State getSftpState() {
+    return sftpState;
+  }
+
   public int getActiveSftpSessions() {
     return activeSftpSessions;
   }
 
+  public List<UserSession> getUserSessions() {
+    return userSessions;
+  }
+
   @Override
   public String toString() {
-    return String.format("Status [activeSftpSessions=%s]", activeSftpSessions);
+    return Objects.toStringHelper(Status.class)
+        .add("sftpEnabled", this.sftpEnabled)
+        .add("sftpState", this.sftpState)
+        .add("activeSftpSessions", this.activeSftpSessions)
+        .add("userSessions", this.userSessions)
+        .toString();
   }
 
 }

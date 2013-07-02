@@ -17,17 +17,17 @@
  */
 package org.icgc.dcc.sftp;
 
+import lombok.experimental.Value;
+
 /**
- * 
+ * Event object used to signal {@link SftpServerService} state transitions.
  */
-public class SystemFileHdfsSshFile extends BaseDirectoryHdfsSshFile {
+@Value
+public class SftpChangeEvent {
 
-  public SystemFileHdfsSshFile(RootHdfsSshFile root, String directoryName) {
-    super(root, directoryName);
-  }
+  /**
+   * Indicates that the SFTP service is enabled (allows authenticated connections).
+   */
+  private final boolean enabled;
 
-  @Override
-  public void notifyModified() {
-    this.getParentFile().systemFilesNotifyModified();
-  }
 }

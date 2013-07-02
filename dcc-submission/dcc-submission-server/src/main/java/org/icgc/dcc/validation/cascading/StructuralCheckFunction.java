@@ -38,8 +38,8 @@ import com.google.common.collect.Lists;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.apache.commons.lang.StringUtils.isBlank;
-import static org.icgc.dcc.core.cascading.Fields2.buildSortedList;
-import static org.icgc.dcc.core.cascading.Fields2.indicesOf;
+import static org.icgc.dcc.hadoop.cascading.Fields2.buildSortedList;
+import static org.icgc.dcc.hadoop.cascading.Fields2.indicesOf;
 
 /**
  * Checks structural aspects of an input data file (header, format, ...)

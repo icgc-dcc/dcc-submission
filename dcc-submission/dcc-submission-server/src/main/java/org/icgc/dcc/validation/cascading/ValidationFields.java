@@ -21,7 +21,7 @@ import java.beans.ConstructorProperties;
 
 import cascading.tuple.Fields;
 import cascading.tuple.TupleEntry;
-import static org.icgc.dcc.core.cascading.Fields2.concat;
+import static org.icgc.dcc.hadoop.cascading.Fields2.concat;
 
 /**
  * An extension of {@code Fields} that always includes the {@code TupleState} field.

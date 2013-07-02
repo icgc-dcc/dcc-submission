@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.filesystem.hdfs;
 
+import static com.google.common.io.Closeables.closeQuietly;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -34,7 +36,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import com.google.common.io.ByteStreams;
-import com.google.common.io.Closeables;
 
 /**
  * Handles all hadoop API related methods - TODO: change to use proxy or decorator pattern?
@@ -52,15 +53,18 @@ public class HadoopUtils {
   }
 
   public static void mkdirs(FileSystem fileSystem, String stringPath) {
-    Path path = new Path(stringPath);
+    mkdirs(fileSystem, new Path(stringPath));
+  }
+
+  public static void mkdirs(FileSystem fileSystem, Path path) {
     boolean mkdirs;
     try {
       mkdirs = fileSystem.mkdirs(path);
-    } catch(IOException e) {
+    } catch (IOException e) {
       throw new HdfsException(e);
     }
-    if(!mkdirs) {
-      throw new HdfsException("could not create " + stringPath);
+    if (!mkdirs) {
+      throw new HdfsException("could not create " + path);
     }
   }
 
@@ -70,31 +74,40 @@ public class HadoopUtils {
     try {
       out = fileSystem.create(path);
       ByteStreams.copy(in, out);
-    } catch(IOException e) {
+    } catch (IOException e) {
       throw new HdfsException(e);
     } finally {
-      Closeables.closeQuietly(out);
+      closeQuietly(out);
     }
   }
 
   public static void rm(FileSystem fileSystem, String stringPath) {
-    rm(fileSystem, stringPath, false);
+    Path path = new Path(stringPath);
+    rm(fileSystem, path);
+  }
+
+  public static void rm(FileSystem fileSystem, Path path) {
+    rm(fileSystem, path, false);
   }
 
   public static void rmr(FileSystem fileSystem, String stringPath) {
-    rm(fileSystem, stringPath, true);
+    Path path = new Path(stringPath);
+    rmr(fileSystem, path);
   }
 
-  private static void rm(FileSystem fileSystem, String stringPath, boolean recursive) {
+  public static void rmr(FileSystem fileSystem, Path path) {
+    rm(fileSystem, path, true);
+  }
+
+  private static void rm(FileSystem fileSystem, Path path, boolean recursive) {
     boolean delete;
     try {
-      Path path = new Path(stringPath);
       delete = fileSystem.delete(path, recursive);
-    } catch(IOException e) {
+    } catch (IOException e) {
       throw new HdfsException(e);
     }
-    if(!delete) {
-      throw new HdfsException("could not remove " + stringPath);
+    if (!delete) {
+      throw new HdfsException("could not remove " + path);
     }
   }
 
@@ -107,7 +120,7 @@ public class HadoopUtils {
 
     try {
       FileContext.getFileContext(fileSystem.getUri()).createSymlink(origin, destination, false);
-    } catch(IOException e) {
+    } catch (IOException e) {
       throw new HdfsException(e);
     }
   }
@@ -122,20 +135,23 @@ public class HadoopUtils {
     boolean rename;
     try {
       rename = fileSystem.rename(originPath, destinationPath);
-    } catch(IOException e) {
+    } catch (IOException e) {
       throw new HdfsException(e);
     }
-    if(!rename) {
+    if (!rename) {
       throw new HdfsException(String.format("could not rename %s to %s", originPath, destinationPath));
     }
   }
 
   public static boolean checkExistence(FileSystem fileSystem, String stringPath) {
-    Path path = new Path(stringPath);
+    return checkExistence(fileSystem, new Path(stringPath));
+  }
+
+  public static boolean checkExistence(FileSystem fileSystem, Path path) {
     boolean exists;
     try {
       exists = fileSystem.exists(path);
-    } catch(IOException e) {
+    } catch (IOException e) {
       throw new HdfsException(e);
     }
     return exists;
@@ -149,13 +165,13 @@ public class HadoopUtils {
     FileStatus[] listStatus;
     try {
       listStatus = fileSystem.listStatus(path);
-    } catch(IOException e) {
+    } catch (IOException e) {
       throw new HdfsException(e);
     }
     List<Path> ls = new ArrayList<Path>();
-    for(FileStatus fileStatus : listStatus) {
+    for (FileStatus fileStatus : listStatus) {
       String filename = fileStatus.getPath().getName();
-      if(((fileStatus.isFile() && file) || (fileStatus.isSymlink() && symLink) //
+      if (((fileStatus.isFile() && file) || (fileStatus.isSymlink() && symLink) //
       || (fileStatus.isDirectory() && dir)) && (null == pattern || pattern.matcher(filename).matches())) {
         ls.add(fileStatus.getPath());
       }
@@ -189,7 +205,7 @@ public class HadoopUtils {
 
   public static List<String> toFilenameList(List<Path> pathList) {
     List<String> filenameList = new ArrayList<String>();
-    for(Path path : pathList) {
+    for (Path path : pathList) {
       filenameList.add(path.getName());
     }
     return filenameList;
@@ -199,7 +215,7 @@ public class HadoopUtils {
     FileStatus fileStatus = null;
     try {
       fileStatus = fileSystem.getFileStatus(path);
-    } catch(IOException e) {
+    } catch (IOException e) {
       throw new HdfsException(e);
     }
     return fileStatus;
