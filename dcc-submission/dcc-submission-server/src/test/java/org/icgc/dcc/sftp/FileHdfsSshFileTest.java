@@ -17,6 +17,10 @@ import org.icgc.dcc.release.NextRelease;
 import org.icgc.dcc.release.ReleaseService;
 import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.Submission;
+import org.icgc.dcc.security.UsernamePasswordAuthenticator;
+import org.icgc.dcc.sftp.fs.FileHdfsSshFile;
+import org.icgc.dcc.sftp.fs.RootHdfsSshFile;
+import org.icgc.dcc.sftp.fs.SubmissionDirectoryHdfsSshFile;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -47,6 +51,8 @@ public class FileHdfsSshFileTest {
   
   @Mock ProjectService projectService;
   @Mock ReleaseService releaseService;  
+  
+  @Mock UsernamePasswordAuthenticator authenticator;  
   // @formatter:off
 
   SubmissionDirectoryHdfsSshFile directory;
@@ -67,7 +73,7 @@ public class FileHdfsSshFileTest {
 
     // Mock file system
     when(fs.buildReleaseStringPath(release)).thenReturn(root.getAbsolutePath());
-    when(fs.getReleaseFilesystem(release)).thenReturn(releaseFileSystem);
+    when(fs.getReleaseFilesystem(release, null)).thenReturn(releaseFileSystem);
     when(fs.getFileSystem()).thenReturn(createFileSystem());
     when(releaseFileSystem.getDccFileSystem()).thenReturn(fs);
     when(releaseFileSystem.getRelease()).thenReturn(release);
@@ -75,7 +81,8 @@ public class FileHdfsSshFileTest {
     when(submissionDirectory.isReadOnly()).thenReturn(false);
     when(submissionDirectory.getSubmission()).thenReturn(submission);    
     
-    RootHdfsSshFile rootDirectory = new RootHdfsSshFile(releaseFileSystem, projectService, releaseService);
+    SftpContext context = new SftpContext(fs, releaseService, projectService, authenticator);
+    RootHdfsSshFile rootDirectory = new RootHdfsSshFile(context);
     String directoryName = PROJECT_KEY;
     directory = new SubmissionDirectoryHdfsSshFile(rootDirectory, directoryName);
   }

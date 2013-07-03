@@ -15,11 +15,13 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.sftp;
+package org.icgc.dcc.sftp.fs;
+
+import static org.icgc.dcc.sftp.fs.HdfsFileUtils.handleException;
 
 import org.icgc.dcc.filesystem.SubmissionDirectory;
 
-class SubmissionDirectoryHdfsSshFile extends BaseDirectoryHdfsSshFile {
+public class SubmissionDirectoryHdfsSshFile extends BaseDirectoryHdfsSshFile {
 
   private final SubmissionDirectory directory;
 
@@ -36,10 +38,15 @@ class SubmissionDirectoryHdfsSshFile extends BaseDirectoryHdfsSshFile {
   @Override
   public boolean isWritable() {
     // See doesExist for explanation of the null check
-    if(directory == null || directory.isReadOnly()) {
-      return false;
+    try {
+      if (directory == null || directory.isReadOnly()) {
+        return false;
+      }
+
+      return super.isWritable();
+    } catch (Exception e) {
+      return handleException(Boolean.class, e);
     }
-    return super.isWritable();
   }
 
   @Override
@@ -47,11 +54,20 @@ class SubmissionDirectoryHdfsSshFile extends BaseDirectoryHdfsSshFile {
     // If directory is null it means that the directory doesn't exist or the user does not have permission to access it
     // We are using this in lieu of throwing an exception, since Mina's interface erroneously disallows checked
     // exceptions
-    return directory == null ? false : super.doesExist();
+    try {
+      return directory == null ? false : super.doesExist();
+    } catch (Exception e) {
+      return handleException(Boolean.class, e);
+    }
   }
 
   @Override
   public void notifyModified() {
-    this.getParentFile().notifyModified(this.directory);
+    try {
+      getParentFile().notifyModified(directory);
+    } catch (Exception e) {
+      handleException(Boolean.class, e);
+    }
   }
+
 }

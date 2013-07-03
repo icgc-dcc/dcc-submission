@@ -20,7 +20,6 @@ package org.icgc.dcc.core;
 import org.icgc.dcc.core.model.Status;
 import org.icgc.dcc.sftp.SftpServerService;
 
-import com.google.common.util.concurrent.Service.State;
 import com.google.inject.Inject;
 
 public class SystemService {
@@ -34,26 +33,19 @@ public class SystemService {
   }
 
   public Status getStatus() {
-    int activeSftpSessions = sftpService.getActiveSessions();
-    Status status = new Status(activeSftpSessions);
-
-    return status;
+    return sftpService.getActiveSessions();
   }
 
-  public boolean isFtpEnabled() {
-    return sftpService.isRunning();
+  public boolean isSftpEnabled() {
+    return sftpService.isEnabled();
   }
 
-  public State stopSftp() {
-    State state = sftpService.stopAndWait();
-
-    return state;
+  public void disableSftp() {
+    sftpService.disable();
   }
 
-  public State startSftp() {
-    State state = sftpService.startAndWait();
-
-    return state;
+  public void enableSftp() {
+    sftpService.enable();
   }
 
 }

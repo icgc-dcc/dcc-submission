@@ -17,17 +17,24 @@
  */
 package org.icgc.dcc.test.mongodb;
 
+import static com.google.common.base.Charsets.UTF_8;
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.io.Files.copy;
+import static java.lang.String.format;
+import static lombok.AccessLevel.PRIVATE;
+import static org.junit.Assert.assertEquals;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -35,75 +42,61 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import lombok.Cleanup;
+import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.val;
 
-import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.MappingIterator;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.core.util.MapUtils;
 
 import com.google.code.externalsorting.ExternalSort;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
-
-import static com.google.common.base.Charsets.UTF_8;
-import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.io.Files.copy;
-import static org.junit.Assert.assertEquals;
 
 /**
  * General test utilities for working with JSON objects.; TODO: rename to MongoUtils
  */
+@NoArgsConstructor(access = PRIVATE)
 public final class JsonUtils {
 
   public static final String MONGO_ID_FIELD = "_id";
 
-  private JsonUtils() {
-    // Prevent construction
-  }
+  private static final String REPLACEMENT_VALUE = "[...]";
 
   /**
    * Asserts semantic JSON equality between {@code expectedFile} and {@code actualFile} using a memory efficient
    * stream-based comparison of deserialized sequences of JSON objects, ignoring transient fields.
-   * 
-   * @param expectedFile
-   * @param actualFile
    */
+  @SneakyThrows
   public static void assertJsonFileEquals(File expectedFile, File actualFile) {
-    try {
-      ObjectMapper mapper = new ObjectMapper();
-      MappingIterator<JsonNode> expected = mapper.reader(JsonNode.class).readValues(expectedFile);
-      MappingIterator<JsonNode> actual = mapper.reader(JsonNode.class).readValues(actualFile);
+    ObjectMapper mapper = new ObjectMapper();
+    MappingIterator<JsonNode> expected = mapper.reader(JsonNode.class).readValues(expectedFile);
+    MappingIterator<JsonNode> actual = mapper.reader(JsonNode.class).readValues(actualFile);
 
-      while(actual.hasNext() && expected.hasNext()) {
+    while (actual.hasNext() && expected.hasNext()) {
 
-        // ObjectJSON.toString() seems to be the way to get the json representation, but documentation is lacking...
-        @SuppressWarnings("unchecked")
-        TreeMap<String, Object> expectedMap = asTreeMap(mapper.readValue(expected.nextValue().toString(), Map.class));
-        @SuppressWarnings("unchecked")
-        TreeMap<String, Object> actualMap = asTreeMap(mapper.readValue(actual.nextValue().toString(), Map.class));
+      // ObjectJSON.toString() seems to be the way to get the json representation, but documentation is lacking...
+      @SuppressWarnings("unchecked")
+      TreeMap<String, Object> expectedMap = asTreeMap(mapper.readValue(expected.nextValue().toString(), Map.class));
+      @SuppressWarnings("unchecked")
+      TreeMap<String, Object> actualMap = asTreeMap(mapper.readValue(actual.nextValue().toString(), Map.class));
 
-        assertEquals("JSON mismatch between expected JSON file:\n\t" + expectedFile + "\nand actual JSON file:\n\t"
-            + actualFile + "\n", expectedMap.toString(), actualMap.toString());
-      }
-
-      // Ensure same number of elements
-      assertEquals("Actual JSON file is missing objects: " + expectedFile + ", " + actualFile, expected.hasNext(),
-          false);
-      assertEquals("Actual JSON file has additional objects: " + expectedFile + ", " + actualFile, actual.hasNext(),
-          false);
-    } catch(IOException e) {
-      Throwables.propagate(e);
+      assertEquals("JSON mismatch between expected JSON file:\n\t" + expectedFile + "\nand actual JSON file:\n\t"
+          + actualFile + "\n", expectedMap.toString(), actualMap.toString());
     }
+
+    // Ensure same number of elements
+    assertEquals(
+        format("Actual JSON file is missing objects: %s, %s", expectedFile, actualFile),
+        expected.hasNext(), false);
+    assertEquals(
+        format("Actual JSON file has additional objects: %s, %s", expectedFile, actualFile),
+        actual.hasNext(), false);
   }
 
   /**
    * Removes transient JSON properties that can change across runs (e.g. $oid).
-   * 
-   * @param jsonNode
    */
   public static void normalizeJsonNode(JsonNode jsonNode) {
     filterTree(jsonNode, null, ImmutableList.of("$oid"), Integer.MAX_VALUE);
@@ -125,14 +118,14 @@ public final class JsonUtils {
   private static void filterTreeRecursive(JsonNode tree, List<String> includedProperties,
       List<String> excludedProperties, int maxDepth, String key) {
     Iterator<Entry<String, JsonNode>> fieldsIter = tree.getFields();
-    while(fieldsIter.hasNext()) {
+    while (fieldsIter.hasNext()) {
       Entry<String, JsonNode> field = fieldsIter.next();
       String fullName = key == null ? field.getKey() : key + "." + field.getKey();
 
       boolean depthOk = field.getValue().isContainerNode() && maxDepth >= 0;
       boolean isIncluded = includedProperties != null && !includedProperties.contains(fullName);
       boolean isExcluded = excludedProperties != null && excludedProperties.contains(fullName);
-      if((!depthOk && !isIncluded) || isExcluded) {
+      if ((!depthOk && !isIncluded) || isExcluded) {
         fieldsIter.remove();
         continue;
       }
@@ -164,7 +157,7 @@ public final class JsonUtils {
 
       String line = null;
       ObjectMapper mapper = new ObjectMapper();
-      while((line = bufferedReader.readLine()) != null) {
+      while ((line = bufferedReader.readLine()) != null) {
         processLine(mapper, bufferedWriter, mapper.readValue(line, Map.class));
       }
     }
@@ -178,13 +171,10 @@ public final class JsonUtils {
     checkState(sort.delete(), "JSON sort file not deleted: %s", sort);
   }
 
-  private static void processLine(ObjectMapper mapper, BufferedWriter bufferedWriter, Map<String, Object> map)
-      throws IOException, JsonParseException, JsonMappingException, JsonGenerationException {
+  @SneakyThrows
+  private static void processLine(ObjectMapper mapper, BufferedWriter bufferedWriter, Map<String, Object> map) {
     TreeMap<String, Object> treeMap = asTreeMap(map); // for reordering
-    Object object = treeMap.get(MONGO_ID_FIELD);
-    if(object != null && object instanceof Map) {
-      treeMap.put(MONGO_ID_FIELD, "[removed-for-comparisons]");
-    }
+    eraseValue(treeMap, MONGO_ID_FIELD, REPLACEMENT_VALUE);
     StringWriter sw = new StringWriter();
     mapper.writeValue(sw, treeMap);
     sw.close();
@@ -192,8 +182,33 @@ public final class JsonUtils {
     bufferedWriter.newLine();
   }
 
-  public static TreeMap<String, Object> asTreeMap(Map<String, Object> map) throws IOException, JsonParseException,
-      JsonMappingException {
+  /**
+   * Recursively erases a value for comparison purposes.
+   */
+  @SuppressWarnings("unchecked")
+  private static void eraseValue(TreeMap<String, Object> treeMap, String fieldName, String replacementValue) {
+
+    // Replace value
+    if (treeMap.containsKey(fieldName)) {
+      treeMap.put(fieldName, replacementValue);
+    }
+
+    // Continue recursively
+    for (val v : treeMap.entrySet()) {
+      Object value = v.getValue();
+      if (value instanceof Map) {
+        eraseValue((TreeMap<String, Object>) value, fieldName, replacementValue);
+      } else if (value instanceof Collection) {
+        Collection<Object> collection = (Collection<Object>) value;
+        for (Object item : collection) {
+          eraseValue((TreeMap<String, Object>) item, fieldName, replacementValue);
+        }
+      }
+    }
+
+  }
+
+  public static TreeMap<String, Object> asTreeMap(Map<String, Object> map) {
     return MapUtils.asTreeMap(map);
   }
 }

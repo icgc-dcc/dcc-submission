@@ -17,6 +17,10 @@
  */
 package org.icgc.dcc.web;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static org.icgc.dcc.web.Authorizations.isOmnipotentUser;
+import static org.icgc.dcc.web.Authorizations.unauthorizedResponse;
+
 import java.util.List;
 
 import javax.validation.Valid;
@@ -34,18 +38,17 @@ import javax.ws.rs.core.SecurityContext;
 import org.icgc.dcc.dictionary.DictionaryService;
 import org.icgc.dcc.dictionary.model.CodeList;
 import org.icgc.dcc.dictionary.model.Term;
-import org.mortbay.log.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static org.icgc.dcc.web.Authorizations.isOmnipotentUser;
-import static org.icgc.dcc.web.Authorizations.unauthorizedResponse;
-
 @Path("codeLists")
 public class CodeListResource {
+
+  private static final Logger log = LoggerFactory.getLogger(CodeListResource.class);
 
   @Inject
   private DictionaryService dictionaries;
@@ -56,16 +59,20 @@ public class CodeListResource {
   @GET
   public Response getCodeLists() {
     List<CodeList> codeLists = this.dictionaries.listCodeList();
-    if(codeLists == null) {
+    if (codeLists == null) {
       codeLists = Lists.newArrayList();
     }
     return Response.ok(codeLists).build();
   }
 
   @POST
-  public Response addCodeLists(@Valid List<CodeList> codeLists, @Context SecurityContext securityContext) {
-    Log.info("Adding codelists: {}", codeLists);
-    if(isOmnipotentUser(securityContext) == false) {
+  public Response addCodeLists(
+      @Valid
+      List<CodeList> codeLists,
+      @Context
+      SecurityContext securityContext) {
+    log.info("Adding codelists: {}", codeLists);
+    if (isOmnipotentUser(securityContext) == false) {
       return unauthorizedResponse();
     }
 
@@ -76,13 +83,15 @@ public class CodeListResource {
 
   @GET
   @Path("{name}")
-  public Response getCodeList(@PathParam("name") String name) {
+  public Response getCodeList(
+      @PathParam("name")
+      String name) {
     /* no authorization check necessary */
 
-    Log.debug("Getting codelist: {}", name);
+    log.debug("Getting codelist: {}", name);
     checkArgument(name != null);
     Optional<CodeList> optional = this.dictionaries.getCodeList(name);
-    if(optional.isPresent() == false) {
+    if (optional.isPresent() == false) {
       return Response.status(Status.NOT_FOUND)
           .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, name)).build();
     }
@@ -94,11 +103,18 @@ public class CodeListResource {
    */
   @PUT
   @Path("{name}")
-  public Response updateCodeList(@PathParam("name") String name, @Valid CodeList newCodeList, @Context Request req,
-      @Context SecurityContext securityContext) {
+  public Response updateCodeList(
+      @PathParam("name")
+      String name,
+      @Valid
+      CodeList newCodeList,
+      @Context
+      Request req,
+      @Context
+      SecurityContext securityContext) {
 
-    Log.info("Updating codelist: {} with {}", name, newCodeList);
-    if(isOmnipotentUser(securityContext) == false) {
+    log.info("Updating codelist: {} with {}", name, newCodeList);
+    if (isOmnipotentUser(securityContext) == false) {
       return unauthorizedResponse();
     }
 
@@ -106,10 +122,10 @@ public class CodeListResource {
     checkArgument(newCodeList != null);
 
     Optional<CodeList> optional = this.dictionaries.getCodeList(name);
-    if(optional.isPresent() == false) {
+    if (optional.isPresent() == false) {
       return Response.status(Status.NOT_FOUND)
           .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, name)).build();
-    } else if(newCodeList.getName().equals(name) == false) {
+    } else if (newCodeList.getName().equals(name) == false) {
       return Response.status(Status.BAD_REQUEST)
           .entity(new ServerErrorResponseMessage(ServerErrorCode.NAME_MISMATCH, newCodeList.getName(), name)).build();
     }
@@ -121,18 +137,25 @@ public class CodeListResource {
 
   @POST
   @Path("{name}/terms")
-  public Response addTerms(@PathParam("name") String name, @Valid List<Term> terms, @Context Request req,
-      @Context SecurityContext securityContext) {
+  public Response addTerms(
+      @PathParam("name")
+      String name,
+      @Valid
+      List<Term> terms,
+      @Context
+      Request req,
+      @Context
+      SecurityContext securityContext) {
 
-    Log.info("Adding term {} to codelist {}", terms, name);
-    if(isOmnipotentUser(securityContext) == false) {
+    log.info("Adding term {} to codelist {}", terms, name);
+    if (isOmnipotentUser(securityContext) == false) {
       return unauthorizedResponse();
     }
 
     checkArgument(name != null);
     checkArgument(terms != null);
     Optional<CodeList> optional = this.dictionaries.getCodeList(name);
-    if(optional.isPresent() == false) {
+    if (optional.isPresent() == false) {
       return Response.status(Status.NOT_FOUND)
           .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, name)).build();
     }
@@ -141,13 +164,13 @@ public class CodeListResource {
 
     // First check if the terms exist. The DictionaryService addTerm method checks too, but we don't want to add some of
     // the list and then have it fail part way through
-    for(Term term : terms) {
-      if(codeList.containsTerm(term)) {
+    for (Term term : terms) {
+      if (codeList.containsTerm(term)) {
         return Response.status(Status.BAD_REQUEST)
             .entity(new ServerErrorResponseMessage(ServerErrorCode.ALREADY_EXISTS, term.getCode())).build();
       }
     }
-    for(Term term : terms) {
+    for (Term term : terms) {
       this.dictionaries.addTerm(name, term);
     }
 
