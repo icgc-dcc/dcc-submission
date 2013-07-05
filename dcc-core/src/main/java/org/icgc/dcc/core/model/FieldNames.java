@@ -42,8 +42,19 @@ public final class FieldNames {
   /**
    * Project field names.
    */
-  public static final String PROJECT_ID = "_project_id";
-  public static final String PROJECT_CODE = "project_code";
+  public static final String PROJECT_ID = "_project_id"; // Same as project_code for now
+  public static final String PROJECT_CODE = "project_code"; // "BRCA-UK" for instance
+  public static final String PROJECT_SUBMISSION_ID = "submission_id"; // "1133.0" for instance
+  public static final String PROJECT_INTERNAL_ID = "internal_id"; // Not really used for now... "PR3" for instance
+  public static final String PROJECT_ICGC_ID = "icgc_id"; // "1133" for instance
+  public static final String PROJECT_ALIAS = "alias";
+  public static final String PROJECT_COLOUR = "colour";
+  public static final String PROJECT_DISPLAY_NAME = "project_name";
+  public static final String PROJECT_TUMOUR_TYPE = "tumour_type";
+  public static final String PROJECT_TUMOUR_SUBTYPE = "tumour_subtype";
+  public static final String PROJECT_PRIMARY_SITE = "primary_site";
+  public static final String PROJECT_COUNTRIES = "countries";
+  public static final String PROJECT_PUBMED_IDS = "pubmed_ids";
   public static final String PROJECT_SUMMARY = "_summary";
 
   /**
