@@ -22,10 +22,10 @@ package org.icgc.dcc.core.model;
  */
 public enum ReleaseCollection {
 
-  OBSERVATION("Observation", FieldNames.OBSERVATION_ID), //
-  DONOR("Donor", FieldNames.DONOR_ID), //
-  GENE("Gene", FieldNames.GENE_ID), //
-  PROJECT("Project", FieldNames.PROJECT_ID), //
+  OBSERVATION("Observation", FieldNames.OBSERVATION_ID),
+  DONOR("Donor", FieldNames.DONOR_ID),
+  GENE("Gene", FieldNames.GENE_ID),
+  PROJECT("Project", FieldNames.PROJECT_ID),
   MUTATION("Mutation", FieldNames.MUTATION_ID);
 
   final private String name;

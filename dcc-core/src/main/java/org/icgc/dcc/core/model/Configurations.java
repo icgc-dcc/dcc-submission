@@ -42,5 +42,6 @@ public final class Configurations {
   public static final String HADOOP_KEY = "hadoop";
   public static final String IDENTIFIER_CLIENT_CLASS_NAME_KEY = "identifierClientClassName";
   public static final String IDENTIFIER_KEY = "identifier";
+  public static final String PROJECTS_KEY = "projects";
 
 }

@@ -43,6 +43,7 @@ public final class FieldNames {
    * Project field names.
    */
   public static final String PROJECT_ID = "_project_id";
+  public static final String PROJECT_CODE = "project_code";
   public static final String PROJECT_SUMMARY = "_summary";
 
   /**
