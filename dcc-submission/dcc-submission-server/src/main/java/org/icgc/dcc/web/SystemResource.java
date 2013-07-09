@@ -17,46 +17,89 @@
  */
 package org.icgc.dcc.web;
 
+import static javax.ws.rs.core.Response.ok;
+import static javax.ws.rs.core.Response.status;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static org.icgc.dcc.web.Authorizations.isOmnipotentUser;
 import static org.icgc.dcc.web.Authorizations.unauthorizedResponse;
+import static org.icgc.dcc.web.ServerErrorCode.MISSING_REQUIRED_DATA;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
+import lombok.extern.slf4j.Slf4j;
+
+import org.codehaus.jackson.JsonNode;
 import org.icgc.dcc.core.SystemService;
 import org.icgc.dcc.core.model.Status;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.icgc.dcc.http.jersey.PATCH;
 
 import com.google.inject.Inject;
 
 /**
  * Endpoint for system related operations.
  * 
- * @see http://stackoverflow.com/questions/2447722/rest-services-exposing-non-data-actions
+ * @see http://stackoverflow.com/questions/6433480/restful-actions-services-that-dont-correspond-to-an-entity
+ * @see http://stackoverflow.com/questions/8660003/restful-design-of-a-resource-with-binary-states
+ * @see http://stackoverflow.com/questions/8914852/rest-interface-design-for-machine-control
+ * @see http://stackoverflow.com/questions/6776198/rest-model-state-transitions
+ * @see http
+ * ://stackoverflow.com/questions/5591348/how-to-implement-a-restful-resource-for-a-state-machine-or-finite-automata
  */
-@Path("system")
+@Path("/")
+@Consumes("application/json")
+@Slf4j
 public class SystemResource {
-
-  private static final Logger log = LoggerFactory.getLogger(SystemResource.class);
 
   @Inject
   private SystemService system;
 
   @GET
-  @Path("/status")
-  public Response getStatus(@Context SecurityContext securityContext) {
+  @Path("/systems/sftp")
+  public Response getStatus(@Context
+  SecurityContext securityContext) {
     log.info("Getting status...");
-    if(isOmnipotentUser(securityContext) == false) {
+    if (isOmnipotentUser(securityContext) == false) {
       return unauthorizedResponse();
     }
 
     Status status = system.getStatus();
 
     return Response.ok(status).build();
+  }
+
+  @PATCH
+  @Path("/systems/sftp")
+  public Response patch(
+      @Context
+      SecurityContext securityContext,
+
+      JsonNode state) {
+    log.info("Setting SFTP state to {}...", state);
+    if (isOmnipotentUser(securityContext) == false) {
+      return unauthorizedResponse();
+    }
+
+    JsonNode active = state.path("active");
+    if (active.isMissingNode()) {
+      return status(BAD_REQUEST)
+          .entity(new ServerErrorResponseMessage(MISSING_REQUIRED_DATA))
+          .build();
+    }
+
+    if (active.asBoolean()) {
+      system.enableSftp();
+    } else {
+      system.disableSftp();
+    }
+
+    Status status = system.getStatus();
+
+    return ok(status).build();
   }
 
 }

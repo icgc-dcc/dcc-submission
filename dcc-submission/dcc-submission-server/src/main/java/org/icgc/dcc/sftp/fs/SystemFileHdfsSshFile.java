@@ -15,21 +15,23 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.model;
+package org.icgc.dcc.sftp.fs;
 
-import java.util.List;
+import static org.icgc.dcc.sftp.fs.HdfsFileUtils.handleException;
 
-import static org.icgc.dcc.core.model.PrimaryKeys.META_PRIMARY_KEY;
+public class SystemFileHdfsSshFile extends BaseDirectoryHdfsSshFile {
 
-/**
- * Contains foreign keys from the standpoint of the the submission files' (not the loader entities).
- */
-public class ForeignKeys {
+  public SystemFileHdfsSshFile(RootHdfsSshFile root, String directoryName) {
+    super(root, directoryName);
+  }
 
-  // @formatter:off
-  /**
-   * Read "foreign key" of the "primary" file (so primary in ICGC submission file sense, not the PK sense).
-   */
-  public static final List<String> PRIMARY_FOREIGN_KEY = META_PRIMARY_KEY; // not always guaranteed to be the same as the primary key's
-  // @formatter:on
+  @Override
+  public void notifyModified() {
+    try {
+      getParentFile().systemFilesNotifyModified();
+    } catch (Exception e) {
+      handleException(e);
+    }
+  }
+
 }
