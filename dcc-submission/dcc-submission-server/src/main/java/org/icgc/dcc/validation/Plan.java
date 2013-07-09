@@ -231,9 +231,8 @@ public class Plan {
     TupleState tupleState = e.getTupleState();
     checkState(filename != null);
     checkState(tupleState != null);
-    if (fileLevelErrors.get(filename) != null) {
-      throw new AssertionError(filename);
-    }
+    checkState(fileLevelErrors.get(filename) == null,
+        "There should be no file level errors existing for file {} already", filename);
     fileLevelErrors.put(filename, tupleState);
   }
 
