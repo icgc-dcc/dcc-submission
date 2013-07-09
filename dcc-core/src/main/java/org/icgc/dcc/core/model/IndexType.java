@@ -50,7 +50,6 @@ public enum IndexType {
    * Gene type(s).
    */
   GENE_TYPE(GENE, "gene", Classifier.BASIC),
-  GENE_PROJECT_TYPE(GENE, "gene-project", Classifier.BASIC),
   GENE_CENTRIC_TYPE(GENE, "gene-centric", Classifier.CENTRIC),
 
   /**
@@ -88,19 +87,6 @@ public enum IndexType {
     }
 
     throw new IllegalArgumentException("No " + IndexType.class.getName() + " value with name '" + name + "' found");
-  }
-
-  public static IndexType byClassifier(Classifier classifier) {
-    checkArgument(classifier != null, "Target classifier for class '%s' cannot be null", IndexType.class.getName());
-
-    for (val value : values()) {
-      if (classifier.equals(value.classifier)) {
-        return value;
-      }
-    }
-
-    throw new IllegalArgumentException("No " + IndexType.class.getName() + " value with classifier '" + classifier
-        + "' found");
   }
 
   public enum Classifier {
