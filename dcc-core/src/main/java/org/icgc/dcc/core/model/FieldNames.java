@@ -58,6 +58,7 @@ public final class FieldNames {
 
   public static final String DONOR_SUMMARY = "_summary";
   public static final String DONOR_SUMMARY_EXPERIMENTAL_ANALYSIS = "experimental_analysis_performed";
+  public static final String DONOR_SUMMARY_AGE_AT_DIAGNOSIS_GROUP = "_age_at_diagnosis_group";
   public static final String DONOR_SUMMARY_AFFECTED_GENE_COUNT = "_affected_gene_count";
 
   public static final String DONOR_GENES = "gene";
@@ -65,6 +66,7 @@ public final class FieldNames {
   public static final String DONOR_GENE_SUMMARY = "_summary";
   public static final String DONOR_PROJECT_ID = PROJECT_ID;
   public static final String DONOR_PROJECT = "project";
+  public static final String DONOR_AGE_AT_DIAGNOSIS = "donor_age_at_diagnosis";
   public static final String DONOR_SPECIMEN = "specimen";
   public static final String DONOR_SPECIMEN_ID = "_specimen_id";
   public static final String DONOR_SAMPLE = "sample";
