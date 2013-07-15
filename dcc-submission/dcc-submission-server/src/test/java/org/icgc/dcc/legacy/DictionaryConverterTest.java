@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.legacy;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -35,8 +37,6 @@ import org.xml.sax.SAXException;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * 
@@ -90,7 +90,7 @@ public class DictionaryConverterTest {
 
     String regeneratedDictionary = Files.toString(new File(NEW_DICTIONARY), Charsets.UTF_8);
     boolean significantlyChanged = hasSignificantlyChanged(currentDictionary, regeneratedDictionary);
-    if(significantlyChanged) { // only replace if has changed (else will have to recommit it everytime tests run)
+    if (significantlyChanged) { // only replace if has changed (else will have to recommit it everytime tests run)
       log.info("==================================");
       log.info("dictionary has changed, you may consider updating {} with {}", CURRENT_DICTIONARY, NEW_DICTIONARY);
       log.info("==================================");
@@ -109,7 +109,7 @@ public class DictionaryConverterTest {
     // check FileSchema List Size
     assertEquals(getFileContents(), refFileSchemas.size(), testFileSchemas.size());
     // check each FileSchema
-    for(int i = 0; i < refFileSchemas.size(); i++) {
+    for (int i = 0; i < refFileSchemas.size(); i++) {
       JsonNode refNode = refFileSchemas.get(i);
       JsonNode testNode = this.findNode(testFileSchemas, refNode.get("name"));
 
@@ -127,7 +127,7 @@ public class DictionaryConverterTest {
   private void test_compare_field(JsonNode refFields, JsonNode testFields) {
     assertEquals(getFileContents(), refFields.size(), testFields.size());
 
-    for(int i = 0; i < refFields.size(); i++) {
+    for (int i = 0; i < refFields.size(); i++) {
       JsonNode refField = refFields.get(i);
       JsonNode testField = this.findNode(testFields, refField.get("name"));
 
@@ -142,7 +142,7 @@ public class DictionaryConverterTest {
   private void test_compare_restriction(JsonNode refRestrictions, JsonNode testRestrictions) {
     assertEquals(getFileContents(), refRestrictions.size(), testRestrictions.size());
 
-    for(int i = 0; i < refRestrictions.size(); i++) {
+    for (int i = 0; i < refRestrictions.size(); i++) {
       JsonNode refRestriction = refRestrictions.get(i);
       JsonNode testRestriction = this.findRestrictionNode(testRestrictions, refRestriction.get("type"));
 
@@ -160,8 +160,8 @@ public class DictionaryConverterTest {
   }
 
   private JsonNode findNode(JsonNode tree, JsonNode name) {
-    for(int i = 0; i < tree.size(); i++) {
-      if(tree.get(i).get("name").equals(name)) {
+    for (int i = 0; i < tree.size(); i++) {
+      if (tree.get(i).get("name").equals(name)) {
         return tree.get(i);
       }
     }
@@ -169,8 +169,8 @@ public class DictionaryConverterTest {
   }
 
   private JsonNode findRestrictionNode(JsonNode tree, JsonNode type) {
-    for(int i = 0; i < tree.size(); i++) {
-      if(tree.get(i).get("type").equals(type)) {
+    for (int i = 0; i < tree.size(); i++) {
+      if (tree.get(i).get("type").equals(type)) {
         return tree.get(i);
       }
     }
