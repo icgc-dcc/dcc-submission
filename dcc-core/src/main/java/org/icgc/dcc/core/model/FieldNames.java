@@ -44,7 +44,7 @@ public final class FieldNames {
    */
   public static final String PROJECT_ID = "_project_id"; // Same as project_code for now
   public static final String PROJECT_CODE = "project_code"; // "BRCA-UK" for instance
-  public static final String PROJECT_SUBMISSION_ID = "submission_id"; // "1133.0" for instance
+  public static final String PROJECT_FORMER_SUBMISSION_ID = "former_submission_id"; // "1133.0" for instance
   public static final String PROJECT_INTERNAL_ID = "internal_id"; // Not really used for now... "PR3" for instance
   public static final String PROJECT_ICGC_ID = "icgc_id"; // "1133" for instance
   public static final String PROJECT_ALIAS = "alias";
