@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.validation;
 
+import static org.icgc.dcc.validation.CascadingStrategy.SEPARATOR;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -45,6 +46,7 @@ import org.icgc.dcc.dictionary.model.ValueType;
 import org.icgc.dcc.filesystem.DccFileSystem;
 import org.icgc.dcc.filesystem.GuiceJUnitRunner;
 import org.icgc.dcc.filesystem.GuiceJUnitRunner.GuiceModules;
+import org.icgc.dcc.filesystem.SubmissionDirectory;
 import org.icgc.dcc.release.model.QueuedProject;
 import org.icgc.dcc.validation.factory.LocalCascadingStrategyFactory;
 import org.icgc.dcc.validation.service.ValidationService;
@@ -74,6 +76,8 @@ public class ValidationExternalIntegrityTest { // TODO create base class for thi
 
   private ValidationService validationService;
 
+  private SubmissionDirectory submissionDirectory;
+
   private Dictionary dictionary;
 
   @Before
@@ -86,6 +90,8 @@ public class ValidationExternalIntegrityTest { // TODO create base class for thi
     CodeList codeList3 = mock(CodeList.class);
     CodeList codeList4 = mock(CodeList.class);
     CodeList codeList5 = mock(CodeList.class);
+
+    submissionDirectory = mock(SubmissionDirectory.class);
 
     List<Term> termList1 = Arrays.asList(new Term("1", "dummy", null), new Term("2", "dummy", null));
     List<Term> termList2 = Arrays.asList(new Term("1", "dummy", null), new Term("2", "dummy", null));
@@ -129,11 +135,11 @@ public class ValidationExternalIntegrityTest { // TODO create base class for thi
     String content = validate(dictionary, ROOTDIR);
     Assert.assertTrue(content, content.isEmpty());
 
-    String donorTrim = getUnsortedFileContent(ROOTDIR, "/.validation/donor#donor_id-offset.tsv");
+    String donorTrim = getUnsortedFileContent(ROOTDIR, "/.validation/donor" + SEPARATOR + "donor_id-offset.tsv");
     String donorTrimExpected = getUnsortedFileContent("/ref/fk_donor_trim.tsv");
     Assert.assertEquals("Incorrect donor ID trim list", donorTrimExpected.trim(), donorTrim.trim());
 
-    String specimenTrim = getUnsortedFileContent(ROOTDIR, "/.validation/specimen#donor_id-offset.tsv");
+    String specimenTrim = getUnsortedFileContent(ROOTDIR, "/.validation/specimen" + SEPARATOR + "donor_id-offset.tsv");
     String specimenTrimExpected = getUnsortedFileContent("/ref/fk_specimen_trim.tsv");
     Assert.assertEquals("Incorrect specimen ID trim list", specimenTrimExpected.trim(), specimenTrim.trim());
 
@@ -165,12 +171,14 @@ public class ValidationExternalIntegrityTest { // TODO create base class for thi
 
     resetDictionary();
 
-    String donorTrim = getUnsortedFileContent(ROOTDIR, "/error/fk_1/.validation/donor#donor_id-fakecolumn-offset.tsv");
+    String donorTrim =
+        getUnsortedFileContent(ROOTDIR, "/error/fk_1/.validation/donor" + SEPARATOR + "donor_id-fakecolumn-offset.tsv");
     String donorTrimExpected = getUnsortedFileContent("/ref/fk_1_donor_trim.tsv");
     Assert.assertEquals("Incorrect donor ID trim list", donorTrimExpected.trim(), donorTrim.trim());
 
     String specimenTrim =
-        getUnsortedFileContent(ROOTDIR, "/error/fk_1/.validation/specimen#donor_id-fakecolumn-offset.tsv");
+        getUnsortedFileContent(ROOTDIR, "/error/fk_1/.validation/specimen" + SEPARATOR
+            + "donor_id-fakecolumn-offset.tsv");
     String specimenTrimExpected = getUnsortedFileContent("/ref/fk_1_specimen_trim.tsv");
     Assert.assertEquals("Incorrect specimen ID trim list", specimenTrimExpected.trim(), specimenTrim.trim());
   }
@@ -202,7 +210,7 @@ public class ValidationExternalIntegrityTest { // TODO create base class for thi
     String rootDirString = this.getClass().getResource(relative).getFile();
     String outputDirString = rootDirString + "/" + ".validation";
     System.err.println(outputDirString);
-    String errorFileString = outputDirString + "/" + "specimen.external#errors.json";
+    String errorFileString = outputDirString + "/" + "specimen.external" + SEPARATOR + "errors.json";
 
     File errorFile = new File(errorFileString);
     errorFile.delete();
@@ -215,10 +223,12 @@ public class ValidationExternalIntegrityTest { // TODO create base class for thi
     CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir, systemDir);
 
     TestCascadeListener listener = new TestCascadeListener();
-    Plan plan = validationService.planAndConnectCascade(QUEUED_PROJECT, cascadingStrategy, dictionary, listener);
+    Plan plan =
+        validationService.planAndConnectCascade(QUEUED_PROJECT, submissionDirectory, cascadingStrategy, dictionary,
+            listener);
     Assert.assertEquals(5, plan.getCascade().getFlows().size());
 
-    validationService.startCascade(plan.getCascade());
+    plan.startCascade();
     while(listener.isRunning()) {
       Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
     }

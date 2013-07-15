@@ -1,0 +1,9 @@
+export www="hwww1-dcc"
+
+export nn="hnn1-dcc.res"
+export nn2="hnn2-dcc.res"
+export jt="hmapred-dev.res"
+export workers="hcn-101.res hcn-102.res hcn-103.res hcn-104.res hcn-105.res hcn-106.res hcn-107.res hcn-108.res hcn-109.res hcn-110.res hcn-111.res hcn-112.res hcn-113.res hcn-114.res hcn-115.res hcn-116.res hcn-117.res hcn-118.res hcn-119.res hcn-120.res hcn-121.res hcn-122.res hcn-123.res hcn-124.res hcn-125.res hcn-126.res hcn-127.res hcn-128.res hcn-129.res hcn-130.res hcn-131.res hcn-132.res"
+
+export mongos="mongodb1-dcc.res mongodb2-dcc.res mongodb3-dcc.res"
+

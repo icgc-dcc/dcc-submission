@@ -70,6 +70,10 @@ public class Submission implements Serializable {
     this.report = report;
   }
 
+  public void resetReport() {
+    setReport(null);
+  }
+
   public SubmissionState getState() {
     return state;
   }

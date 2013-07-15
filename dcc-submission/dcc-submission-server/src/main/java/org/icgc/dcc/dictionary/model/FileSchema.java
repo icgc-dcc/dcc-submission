@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.dictionary.model;
 
+import static com.google.common.collect.Lists.newArrayList;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -77,10 +79,10 @@ public class FileSchema implements DictionaryElement, Serializable {
   @Override
   public void accept(DictionaryVisitor dictionaryVisitor) {
     dictionaryVisitor.visit(this);
-    for(Field field : fields) {
+    for (Field field : fields) {
       field.accept(dictionaryVisitor);
     }
-    for(Relation relation : relations) {
+    for (Relation relation : relations) {
       relation.accept(dictionaryVisitor);
     }
   }
@@ -158,8 +160,8 @@ public class FileSchema implements DictionaryElement, Serializable {
   }
 
   public boolean hasField(String fieldName) {
-    for(Field field : this.fields) {
-      if(field.getName().equals(fieldName)) {
+    for (Field field : this.fields) {
+      if (field.getName().equals(fieldName)) {
         return true;
       }
     }
@@ -182,9 +184,14 @@ public class FileSchema implements DictionaryElement, Serializable {
     this.relations.clear();
   }
 
+  public boolean containsField(String fieldName) {
+    return newArrayList(getFieldNames()).contains(fieldName);
+  }
+
   @JsonIgnore
   public Iterable<String> getFieldNames() {
     return Iterables.transform(getFields(), new Function<Field, String>() {
+
       @Override
       public String apply(Field input) {
         return input.getName();
@@ -200,9 +207,9 @@ public class FileSchema implements DictionaryElement, Serializable {
    */
   public List<FileSchema> getBidirectionalAfferentFileSchemata(Dictionary dictionary) {
     List<FileSchema> afferentFileSchemata = Lists.newArrayList();
-    for(FileSchema tmp : dictionary.getFiles()) {
-      for(Relation relation : tmp.getRelations()) {
-        if(relation.getOther().equals(name) && relation.isBidirectional()) {
+    for (FileSchema tmp : dictionary.getFiles()) {
+      for (Relation relation : tmp.getRelations()) {
+        if (relation.getOther().equals(name) && relation.isBidirectional()) {
           afferentFileSchemata.add(tmp);
         }
       }

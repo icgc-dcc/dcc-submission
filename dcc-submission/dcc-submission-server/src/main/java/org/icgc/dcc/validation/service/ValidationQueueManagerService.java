@@ -17,6 +17,15 @@
  */
 package org.icgc.dcc.validation.service;
 
+import static cascading.stats.CascadingStats.Status.FAILED;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+import static org.icgc.dcc.release.model.SubmissionState.ERROR;
+import static org.icgc.dcc.release.model.SubmissionState.INVALID;
+import static org.icgc.dcc.release.model.SubmissionState.VALID;
+import static org.icgc.dcc.validation.report.Outcome.PASSED;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -60,15 +69,6 @@ import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.AbstractService;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
-
-import static cascading.stats.CascadingStats.Status.FAILED;
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
-import static org.icgc.dcc.release.model.SubmissionState.ERROR;
-import static org.icgc.dcc.release.model.SubmissionState.INVALID;
-import static org.icgc.dcc.release.model.SubmissionState.VALID;
-import static org.icgc.dcc.validation.report.Outcome.PASSED;
 
 /**
  * Manages validation queue that:<br>
@@ -187,6 +187,10 @@ public class ValidationQueueManagerService extends AbstractService {
 
           releaseService.dequeueToValidating(nextProject);
           Plan plan = validationService.prepareValidation(release, nextProject, new ValidationCascadeListener());
+          /**
+           * Note that emptying of the .validation directory happens right before launching the cascade in
+           * {@link Plan#startCascade()}
+           */
           validationService.startValidation(plan); // non-blocking
         }
       }

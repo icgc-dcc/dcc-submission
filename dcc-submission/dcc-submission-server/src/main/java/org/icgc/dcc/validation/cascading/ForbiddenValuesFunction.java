@@ -17,20 +17,26 @@
  */
 package org.icgc.dcc.validation.cascading;
 
+import static cascading.tuple.Fields.ARGS;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Lists.newArrayList;
+import static org.icgc.dcc.validation.ValidationErrorCode.FORBIDDEN_VALUE_ERROR;
+
 import java.util.List;
+
+import org.icgc.dcc.dictionary.model.Restriction;
+import org.icgc.dcc.validation.restriction.RequiredRestriction;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
 import cascading.operation.Function;
 import cascading.operation.FunctionCall;
 import cascading.tuple.TupleEntry;
-import static cascading.tuple.Fields.ARGS;
-import static com.google.common.collect.Lists.newArrayList;
-import static org.icgc.dcc.validation.ValidationErrorCode.FORBIDDEN_VALUE_ERROR;
 
 /**
- * Systematically applied on every field for now, we may want to allow some fields to use those values on an individual
- * basis in the future.
+ * Systematically applied on every required field for now.
+ * <p>
+ * TODO: DCC-1076 - Would be better done from within {@link RequiredRestriction}.
  */
 @SuppressWarnings("rawtypes")
 public class ForbiddenValuesFunction extends BaseOperation implements Function {
@@ -41,12 +47,18 @@ public class ForbiddenValuesFunction extends BaseOperation implements Function {
   public static final String NAME = "forbidden";
 
   /**
-   * Former reserved values that must not appear in the data anymore.
+   * Former reserved values that must not appear in required data anymore.
    */
-  private static final List<String> DEPRECATED_VALUES = newArrayList("-999");
+  public static final List<String> DEPRECATED_VALUES = newArrayList("-999");
 
-  public ForbiddenValuesFunction() {
+  /**
+   * Fields having a required restriction set on them (whether scrict or not).
+   */
+  private final List<String> requiredFieldnames;
+
+  public ForbiddenValuesFunction(List<String> requiredFieldnames) {
     super(ARGS);
+    this.requiredFieldnames = checkNotNull(requiredFieldnames);
   }
 
   @Override
@@ -55,9 +67,12 @@ public class ForbiddenValuesFunction extends BaseOperation implements Function {
     TupleState state = ValidationFields.state(entry);
 
     for(Comparable fieldName : entry.getFields()) {
-      String value = entry.getString(fieldName);
-      if(DEPRECATED_VALUES.contains(value)) {
-        state.reportError(FORBIDDEN_VALUE_ERROR, fieldName.toString(), value, value);
+      // Only check for required fields (irrespective of whether it is a strict or non-strict requirement
+      if(requiredFieldnames.contains(fieldName.toString())) {
+        String value = entry.getString(fieldName);
+        if(DEPRECATED_VALUES.contains(value)) {
+          state.reportError(FORBIDDEN_VALUE_ERROR, fieldName.toString(), value, value);
+        }
       }
     }
     functionCall.getOutputCollector().add(entry.getTupleCopy());

@@ -1,0 +1,36 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+$banner = <<'BANNER'
+
+    ______________________   ____  ____________            _    ____  ___
+   /  _/ ____/ ____/ ____/  / __ \/ ____/ ____/           | |  / /  |/  /
+   / // /   / / __/ /      / / / / /   / /      ______    | | / / /|_/ / 
+ _/ // /___/ /_/ / /___   / /_/ / /___/ /___   /_____/    | |/ / /  / /  
+/___/\____/\____/\____/  /_____/\____/\____/              |___/_/  /_/   
+                                                                         
+
+BANNER
+
+Vagrant.configure("2") do |config|
+
+  # Basic configuration
+  config.vm.box = "precise64" 
+  config.vm.box_url = "http://files.vagrantup.com/precise64.box"
+
+  # DCC submission server
+  config.vm.define :www do |www|
+    www.vm.provider :virtualbox do |v|
+      v.name = "www.dcc.icgc.local"
+      v.customize ["modifyvm", :id, "--memory", "4096"]
+    end
+    www.vm.network :private_network, ip: "10.211.55.100"
+    www.vm.hostname = "www.dcc.icgc.local"
+    www.vm.provision :puppet do |puppet|
+      puppet.manifests_path = "puppet/manifests"
+      puppet.module_path  = "modules"
+      puppet.manifest_file = "site.pp"
+    end
+  end
+
+end

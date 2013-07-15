@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.filesystem;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.io.InputStream;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -27,8 +29,6 @@ import org.icgc.dcc.release.model.Release;
 import org.icgc.dcc.release.model.ReleaseState;
 import org.icgc.dcc.release.model.Submission;
 import org.icgc.dcc.release.model.SubmissionState;
-
-import static com.google.common.base.Preconditions.checkArgument;
 
 public class SubmissionDirectory {
 
@@ -105,7 +105,22 @@ public class SubmissionDirectory {
     return this.submission;
   }
 
-  public void removeSubmissionDir() {
-    HadoopUtils.rmr(this.dccFileSystem.getFileSystem(), getValidationDirPath());
+  public void resetValidationDir() {
+    removeValidationDir();
+    createEmptyValidationDir();
+  }
+
+  /**
+   * TODO: port logic in here rather than in {@link DccFileSystem}
+   */
+  public void removeValidationDir() {
+    dccFileSystem.removeDirIfExist(getValidationDirPath());
+  }
+
+  /**
+   * TODO: port logic in here rather than in {@link DccFileSystem}
+   */
+  public void createEmptyValidationDir() {
+    dccFileSystem.createDirIfDoesNotExist(getValidationDirPath());
   }
 }

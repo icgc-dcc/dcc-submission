@@ -112,7 +112,6 @@ public class NextReleaseTest {
     when(ds.createUpdateOperations(Release.class)).thenReturn(updates);
     when(ds.createUpdateOperations(Dictionary.class)).thenReturn(updatesDict);
 
-    when(updates.disableValidation()).thenReturn(updates);
     when(updates.set(anyString(), anyString())).thenReturn(updates);
 
     query = mock(Query.class);
