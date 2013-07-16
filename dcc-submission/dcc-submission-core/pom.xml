@@ -255,24 +255,6 @@
 
   <build>
     <plugins>
-      <!-- Generate sources - Generate Morpia bindings -->
-      <plugin>
-        <groupId>com.mysema.maven</groupId>
-        <artifactId>maven-apt-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>process</goal>
-            </goals>
-            <configuration>
-              <logOnlyOnError>true</logOnlyOnError>
-              <outputDirectory>${project.build.directory}/generated-sources/java</outputDirectory>
-              <processor>com.mysema.query.mongodb.morphia.MorphiaAnnotationProcessor</processor>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
       <!-- Generate sources - Add Morphia bindings to sources -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -285,45 +267,6 @@
         <artifactId>maven-surefire-plugin</artifactId>
       </plugin>
 
-      <!-- Package -->
-      <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <configuration>
-          <finalName>${project.name}-${project.version}</finalName>
-          <appendAssemblyId>true</appendAssemblyId>
-          <descriptors>
-            <descriptor>src/main/assembly/hadoop.xml</descriptor>
-          </descriptors>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <configuration>
-          <artifactSet>
-            <excludes>
-              <exclude>com.sun.jersey:*</exclude>
-            </excludes>
-          </artifactSet>
-        </configuration>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-            <configuration>
-              <relocations>
-                <relocation>
-                  <pattern>org.codehaus.jackson</pattern>
-                  <shadedPattern>org.icgc.dcc.shaded.jackson</shadedPattern>
-                </relocation>
-              </relocations>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
       <!-- Verify -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -331,28 +274,6 @@
         <configuration>
           <excludeFilterFile>${project.basedir}/src/main/tools/findbugs-exclude.xml</excludeFilterFile>
           <skip>true</skip> <!-- TODO: remove when findbugs issues are fixed -->
-        </configuration>
-      </plugin>
-
-      <!-- CLI execution -->
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>exec-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>java</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <mainClass>${main.class}</mainClass>
-          <systemProperties>
-            <systemProperty>
-              <key>logback.configurationFile</key>
-              <value>src/main/conf/logback.xml</value>
-            </systemProperty>
-          </systemProperties>
         </configuration>
       </plugin>
     </plugins>
