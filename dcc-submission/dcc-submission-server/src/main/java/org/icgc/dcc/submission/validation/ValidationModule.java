@@ -27,7 +27,6 @@ import org.icgc.dcc.submission.validation.restriction.RegexRestriction;
 import org.icgc.dcc.submission.validation.restriction.RequiredRestriction;
 import org.icgc.dcc.submission.validation.service.ValidationQueueManagerService;
 import org.icgc.dcc.submission.validation.service.ValidationService;
-import org.icgc.dcc.validation.ValidationTestModule;
 
 import com.google.inject.Singleton;
 import com.google.inject.multibindings.Multibinder;

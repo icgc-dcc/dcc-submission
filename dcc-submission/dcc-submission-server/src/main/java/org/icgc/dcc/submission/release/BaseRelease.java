@@ -22,8 +22,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.io.Serializable;
 import java.util.List;
 
-import org.icgc.dcc.core.model.QProject;
 import org.icgc.dcc.submission.core.model.Project;
+import org.icgc.dcc.submission.core.model.QProject;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.release.model.Release;

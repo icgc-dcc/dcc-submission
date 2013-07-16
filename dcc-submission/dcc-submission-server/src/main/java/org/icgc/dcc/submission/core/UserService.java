@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.submission.core;
 
-import org.icgc.dcc.core.model.QUser;
+import org.icgc.dcc.submission.core.model.QUser;
 import org.icgc.dcc.submission.core.model.User;
 import org.icgc.dcc.submission.core.morphia.BaseMorphiaService;
 import org.slf4j.Logger;

@@ -36,17 +36,16 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.shiro.subject.Subject;
-import org.icgc.dcc.core.model.QProject;
-import org.icgc.dcc.dictionary.model.QDictionary;
-import org.icgc.dcc.release.model.QRelease;
 import org.icgc.dcc.submission.core.MailUtils;
 import org.icgc.dcc.submission.core.model.BaseEntity;
 import org.icgc.dcc.submission.core.model.DccConcurrencyException;
 import org.icgc.dcc.submission.core.model.DccModelOptimisticLockException;
 import org.icgc.dcc.submission.core.model.InvalidStateException;
 import org.icgc.dcc.submission.core.model.Project;
+import org.icgc.dcc.submission.core.model.QProject;
 import org.icgc.dcc.submission.core.morphia.BaseMorphiaService;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.dictionary.model.QDictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
@@ -54,6 +53,7 @@ import org.icgc.dcc.submission.fs.SubmissionFile;
 import org.icgc.dcc.submission.fs.hdfs.HadoopUtils;
 import org.icgc.dcc.submission.release.model.DetailedSubmission;
 import org.icgc.dcc.submission.release.model.LiteProject;
+import org.icgc.dcc.submission.release.model.QRelease;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseState;
@@ -116,11 +116,11 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     log.debug("#releases: ", releases.size());
 
     // filter out all the submissions that the current user can not see
-    for(Release release : releases) {
+    for (Release release : releases) {
       List<Submission> newSubmissions = Lists.newArrayList();
-      for(Submission submission : release.getSubmissions()) {
+      for (Submission submission : release.getSubmissions()) {
         String projectKey = submission.getProjectKey();
-        if(subject.isPermitted(AuthorizationPrivileges.projectViewPrivilege(projectKey))) {
+        if (subject.isPermitted(AuthorizationPrivileges.projectViewPrivilege(projectKey))) {
           newSubmissions.add(submission);
         }
       }
@@ -134,13 +134,13 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
   public void createInitialRelease(Release initRelease) {
     // check for init release name
-    if(!NameValidator.validateEntityName(initRelease.getName())) {
+    if (!NameValidator.validateEntityName(initRelease.getName())) {
       throw new InvalidNameException(initRelease.getName());
     }
     String dictionaryVersion = initRelease.getDictionaryVersion();
-    if(dictionaryVersion == null) {
+    if (dictionaryVersion == null) {
       throw new ReleaseException("Dictionary version must not be null!");
-    } else if(getDictionaryForVersion(dictionaryVersion) == null) {
+    } else if (getDictionaryForVersion(dictionaryVersion) == null) {
       throw new ReleaseException("Specified dictionary version not found in DB: " + dictionaryVersion);
     }
     // Just use name and dictionaryVersion from incoming json
@@ -169,7 +169,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   public Optional<ReleaseView> getFilteredReleaseView(String releaseName, Subject user) {
     Release release = this.query().where(QRelease.release.name.eq(releaseName)).uniqueResult();
     Optional<ReleaseView> releaseView = Optional.absent();
-    if(release != null) {
+    if (release != null) {
       // populate project name for submissions
       List<Project> projects = this.getProjects(release, user);
       List<LiteProject> liteProjects = buildLiteProjects(projects);
@@ -209,8 +209,8 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
     MongodbQuery<Release> query = this.query();
 
-    for(Release release : query.list()) {
-      if(release.getState() == ReleaseState.OPENED) {
+    for (Release release : query.list()) {
+      if (release.getState() == ReleaseState.OPENED) {
         list.add(new NextRelease(dccLocking, release, morphia(), datastore(), fs));
       } else {
         list.add(new CompletedRelease(release, morphia(), datastore(), fs));
@@ -224,7 +224,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     MongodbQuery<Release> query =
         this.where(QRelease.release.state.eq(ReleaseState.COMPLETED).and(QRelease.release.name.eq(releaseName)));
     Release release = query.uniqueResult();
-    if(release == null) {
+    if (release == null) {
       throw new IllegalArgumentException("release " + releaseName + " is not complete");
     }
     return new CompletedRelease(release, morphia(), datastore(), fs);
@@ -250,7 +250,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
     MongodbQuery<Release> query = this.where(QRelease.release.state.eq(ReleaseState.COMPLETED));
 
-    for(Release release : query.list()) {
+    for (Release release : query.list()) {
       completedReleases.add(new CompletedRelease(release, morphia(), datastore(), fs));
     }
 
@@ -258,8 +258,8 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   }
 
   private Submission getSubmission(Release release, String projectKey) {
-    for(Submission submission : release.getSubmissions()) {
-      if(submission.getProjectKey().equals(projectKey)) {
+    for (Submission submission : release.getSubmissions()) {
+      if (submission.getProjectKey().equals(projectKey)) {
         return submission;
       }
     }
@@ -285,7 +285,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     // update release object
     SubmissionState expectedState = SubmissionState.VALID;
     nextRelease.removeFromQueue(projectKeys);
-    for(String projectKey : projectKeys) {
+    for (String projectKey : projectKeys) {
       Submission submission = fetchAndCheckSubmission(nextRelease, projectKey, expectedState);
       submission.setState(SubmissionState.SIGNED_OFF);
     }
@@ -297,7 +297,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     // remove .validation folder from the Submission folder
     ReleaseFileSystem releaseFS = this.fs.getReleaseFilesystem(nextRelease);
     List<Project> projects = this.getProjects(projectKeys);
-    for(Project project : projects) {
+    for (Project project : projects) {
       SubmissionDirectory submissionDirectory = releaseFS.getSubmissionDirectory(project.getKey());
       submissionDirectory.removeValidationDir();
     }
@@ -323,8 +323,8 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     release.emptyQueue();
 
     this.dbUpdateSubmissions(release.getName(), release.getQueue(), projectKeys, newState); // FIXME: DCC-901
-    for(String projectKey : projectKeys) { // See spec at
-                                           // https://wiki.oicr.on.ca/display/DCCSOFT/Concurrency#Concurrency-Submissionstatesresetting
+    for (String projectKey : projectKeys) { // See spec at
+                                            // https://wiki.oicr.on.ca/display/DCCSOFT/Concurrency#Concurrency-Submissionstatesresetting
       resetValidationFolder(projectKey, release);
     }
   }
@@ -337,7 +337,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     // update release object
     SubmissionState expectedState = SubmissionState.NOT_VALIDATED;
     nextRelease.enqueue(queuedProjects);
-    for(QueuedProject queuedProject : queuedProjects) {
+    for (QueuedProject queuedProject : queuedProjects) {
       String projectKey = queuedProject.getKey();
       Submission submission = fetchAndCheckSubmission(nextRelease, projectKey, expectedState);
       submission.setState(SubmissionState.QUEUED);
@@ -364,7 +364,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     int attempts = 0;
     int MAX_ATTEMPTS = 10; // 10 attempts should be sufficient to obtain a lock (otherwise the problem is probably not
                            // recoverable - deadlock or other)
-    while(attempts < MAX_ATTEMPTS) {
+    while (attempts < MAX_ATTEMPTS) {
 
       try {
         Release nextRelease = getNextRelease().getRelease();
@@ -374,7 +374,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
         // actually dequeue the project
         QueuedProject dequeuedProject = nextRelease.dequeueProject();
         String dequeuedProjectKey = dequeuedProject.getKey();
-        if(dequeuedProjectKey.equals(nextProjectKey) == false) { // not recoverable: TODO: create dedicated exception?
+        if (dequeuedProjectKey.equals(nextProjectKey) == false) { // not recoverable: TODO: create dedicated exception?
           throw new ReleaseException("Mismatch: " + dequeuedProjectKey + " != " + nextProjectKey);
         }
 
@@ -382,7 +382,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
         Submission submission = getSubmissionByName(nextRelease, nextProjectKey); // can't be null
         SubmissionState currentState = submission.getState();
         SubmissionState destinationState = SubmissionState.VALIDATING;
-        if(expectedState != currentState) {
+        if (expectedState != currentState) {
           throw new ReleaseException( // not recoverable
               "Project " + nextProjectKey + " is not " + expectedState + " (" + currentState
                   + " instead), cannot set to " + destinationState);
@@ -394,7 +394,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
         log.info("Dequeued {} to validating state for {}", nextProjectKey, nextReleaseName);
         break;
-      } catch(DccModelOptimisticLockException e) {
+      } catch (DccModelOptimisticLockException e) {
         attempts++;
         log.warn(
             "There was a concurrency issue while attempting to set {} to validating state for release {}, number of attempts: {}",
@@ -402,7 +402,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
         Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS); // TODO: cleanup - use Executor instead?
       }
     }
-    if(attempts >= MAX_ATTEMPTS) {
+    if (attempts >= MAX_ATTEMPTS) {
       String message =
           String.format("failed to validate project %s, could never acquire lock: please contact %s", nextProjectKey,
               config.getString(MailUtils.ADMIN_RECIPIENT));
@@ -432,7 +432,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     int attempts = 0;
     int MAX_ATTEMPTS = 10; // 10 attempts should be sufficient to obtain a lock (otherwise the problem is probably not
                            // recoverable - deadlock or other)
-    while(attempts < MAX_ATTEMPTS) {
+    while (attempts < MAX_ATTEMPTS) {
 
       try {
         Release nextRelease = getNextRelease().getRelease();
@@ -441,7 +441,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
         Submission submission = getSubmissionByName(nextRelease, projectKey); // can't be null
         SubmissionState currentState = submission.getState();
-        if(expectedState != currentState) {
+        if (expectedState != currentState) {
           throw new ReleaseException( // not recoverable
               "project " + projectKey + " is not " + expectedState + " (" + currentState + " instead), cannot set to "
                   + destinationState);
@@ -453,7 +453,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
         log.info("Resolved {} for {}", projectKey, nextReleaseName);
         break;
-      } catch(DccModelOptimisticLockException e) {
+      } catch (DccModelOptimisticLockException e) {
         attempts++;
         log.warn(
             "There was a concurrency issue while attempting to resolve {} (as {}) for release {}, number of attempts: {}",
@@ -461,7 +461,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
         Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS); // TODO: cleanup - use Executor instead?
       }
     }
-    if(attempts >= MAX_ATTEMPTS) {
+    if (attempts >= MAX_ATTEMPTS) {
       String message =
           String.format("Failed to resolve project %s, could never acquire lock: please contact %s", projectKey,
               config.getString(MailUtils.ADMIN_RECIPIENT));
@@ -491,19 +491,19 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     boolean sameName = oldReleaseName.equals(newReleaseName);
     boolean sameDictionary = oldDictionaryVersion.equals(newDictionaryVersion);
 
-    if(!NameValidator.validateEntityName(newReleaseName)) {
+    if (!NameValidator.validateEntityName(newReleaseName)) {
       throw new ReleaseException("Updated release name " + newReleaseName + " is not valid");
     }
 
-    if(sameName == false && getFromName(newReleaseName) != null) {
+    if (sameName == false && getFromName(newReleaseName) != null) {
       throw new ReleaseException("New release name " + newReleaseName + " conflicts with an existing release");
     }
 
-    if(newDictionaryVersion == null) {
+    if (newDictionaryVersion == null) {
       throw new ReleaseException("Release must have associated dictionary before being updated");
     }
 
-    if(sameDictionary == false && getDictionaryFromVersion(newDictionaryVersion) == null) {
+    if (sameDictionary == false && getDictionaryFromVersion(newDictionaryVersion) == null) {
       throw new ReleaseException("Release must point to an existing dictionary, no match for " + newDictionaryVersion);
     }
 
@@ -512,7 +512,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
         new Object[] { oldReleaseName, newReleaseName, newDictionaryVersion });
     release.setName(newReleaseName);
     release.setDictionaryVersion(newDictionaryVersion);
-    if(sameDictionary == false) {
+    if (sameDictionary == false) {
       release.emptyQueue();
     }
     UpdateResults<Release> releaseUpdate = datastore().update( //
@@ -522,13 +522,13 @@ public class ReleaseService extends BaseMorphiaService<Release> {
             .set("name", newReleaseName) //
             .set("dictionaryVersion", newDictionaryVersion) //
             .set("queue", release.getQueue()));
-    if(releaseUpdate.getUpdatedCount() != 1) { // Ensure update was successful
+    if (releaseUpdate.getUpdatedCount() != 1) { // Ensure update was successful
       notifyUpdateError(oldReleaseName, on(",").join(newReleaseName, newDictionaryVersion, release.getQueue()));
     }
 
     // If a new dictionary was specified, reset submissions, TODO: use resetSubmission() instead (DCC-901)!
-    if(sameDictionary == false) {
-      for(Submission submission : release.getSubmissions()) {
+    if (sameDictionary == false) {
+      for (Submission submission : release.getSubmissions()) {
         String projectKey = submission.getProjectKey();
         SubmissionState newSubmissionState = NOT_VALIDATED;
         String report = "report";
@@ -545,7 +545,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
             allowDollarSignForMorphiaUpdatesBug(datastore().createUpdateOperations(Release.class)) //
                 .set("submissions.$.state", newSubmissionState) //
                 .unset(report));
-        if(submissionUpdate.getUpdatedCount() != 1) { // Ensure update was successful
+        if (submissionUpdate.getUpdatedCount() != 1) { // Ensure update was successful
           notifyUpdateError(on(".").join(newReleaseName, projectKey), newSubmissionState.name(), report);
         }
       }
@@ -555,7 +555,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   }
 
   public void resetSubmissions(final String releaseName, final Iterable<String> projectKeys) {
-    for(String projectKey : projectKeys) {
+    for (String projectKey : projectKeys) {
       resetSubmission(releaseName, projectKey);
     }
   }
@@ -580,7 +580,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
             .unset("submissions.$.report"), false);
 
     Submission submission = release.getSubmission(projectKey);
-    if(submission == null || submission.getState() != SubmissionState.NOT_VALIDATED || submission.getReport() != null) {
+    if (submission == null || submission.getState() != SubmissionState.NOT_VALIDATED || submission.getReport() != null) {
       // TODO: DCC-902 (optimistic lock potential problem: what if this actually happens? - add a retry?)
       log.error("If you see this, then DCC-902 MUST be addressed.");
       throw new ReleaseException("Resetting submission failed for project " + projectKey);
@@ -606,7 +606,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   @Deprecated
   private void updateSubmisions(List<String> projectKeys, final SubmissionState state) {
     final String releaseName = getNextRelease().getRelease().getName();
-    for(String projectKey : projectKeys) {
+    for (String projectKey : projectKeys) {
       getSubmission(releaseName, projectKey).setState(state);
     }
   }
@@ -632,7 +632,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
         datastore().createUpdateOperations(Release.class) //
             .set("queue", queue));
 
-    for(String projectKey : projectKeys) {
+    for (String projectKey : projectKeys) {
       updateSubmission(currentReleaseName, newState, projectKey);
     }
   }
@@ -660,7 +660,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
             .set("submissions.$.report", report));
 
     int updatedCount = update.getUpdatedCount();
-    if(updatedCount != 1) { // Only to help diagnosis for now, we're unsure when that happens (DCC-848)
+    if (updatedCount != 1) { // Only to help diagnosis for now, we're unsure when that happens (DCC-848)
       log.error("Setting submission reports {} failed for {}.{}", new Object[] { (report == null ? null : report
           .getSchemaReports().size()), releaseName, projectKey }, new IllegalStateException());
     }
@@ -668,8 +668,8 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
   public List<Project> getProjects(Release release, Subject user) {
     List<String> projectKeys = new ArrayList<String>();
-    for(Submission submission : release.getSubmissions()) {
-      if(user.isPermitted(AuthorizationPrivileges.projectViewPrivilege(submission.getProjectKey()))) {
+    for (Submission submission : release.getSubmissions()) {
+      if (user.isPermitted(AuthorizationPrivileges.projectViewPrivilege(submission.getProjectKey()))) {
         projectKeys.add(submission.getProjectKey());
       }
     }
@@ -688,20 +688,20 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
   public List<SubmissionFile> getSubmissionFiles(String releaseName, String projectKey) {
     Release release = this.where(QRelease.release.name.eq(releaseName)).singleResult();
-    if(release == null) {
+    if (release == null) {
       throw new ReleaseException("No such release");
     }
 
     Dictionary dict = this.getDictionaryFromVersion(release.getDictionaryVersion());
 
-    if(dict == null) {
+    if (dict == null) {
       throw new ReleaseException("No Dictionary " + release.getDictionaryVersion());
     }
 
     List<SubmissionFile> submissionFileList = new ArrayList<SubmissionFile>();
     Path buildProjectStringPath = new Path(this.fs.buildProjectStringPath(release, projectKey));
-    for(Path path : HadoopUtils.lsFile(this.fs.getFileSystem(), buildProjectStringPath)) { // TODO: use DccFileSystem
-                                                                                           // abstraction instead
+    for (Path path : HadoopUtils.lsFile(this.fs.getFileSystem(), buildProjectStringPath)) { // TODO: use DccFileSystem
+                                                                                            // abstraction instead
       submissionFileList.add(new SubmissionFile(path, fs.getFileSystem(), dict));
     }
     return submissionFileList;
@@ -711,13 +711,13 @@ public class ReleaseService extends BaseMorphiaService<Release> {
       throws InvalidStateException {
     Submission submission = getSubmissionByName(nextRelease, projectKey);
     String errorMessage;
-    if(submission == null) {
+    if (submission == null) {
       errorMessage = "project " + projectKey + " cannot be found";
       log.error(errorMessage);
       throw new InvalidStateException(ServerErrorCode.PROJECT_KEY_NOT_FOUND, errorMessage);
     }
     SubmissionState currentState = submission.getState();
-    if(expectedState != currentState) {
+    if (expectedState != currentState) {
       errorMessage = "project " + projectKey + " is not " + expectedState + " (" + currentState + " instead)";
       log.error(errorMessage);
       throw new InvalidStateException(ServerErrorCode.INVALID_STATE, errorMessage, currentState);
@@ -728,8 +728,8 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   private List<String> getSubmission(final SubmissionState state) {
     List<String> projectKeys = new ArrayList<String>();
     List<Submission> submissions = this.getNextRelease().getRelease().getSubmissions();
-    for(Submission submission : submissions) {
-      if(state.equals(submission.getState())) {
+    for (Submission submission : submissions) {
+      if (state.equals(submission.getState())) {
         projectKeys.add(submission.getProjectKey());
       }
     }
@@ -751,11 +751,11 @@ public class ReleaseService extends BaseMorphiaService<Release> {
           datastore().createQuery(Release.class) //
               .filter("name = ", originalReleaseName), //
           updatedRelease, false);
-    } catch(ConcurrentModificationException e) { // see method comments for why this could be thrown
+    } catch (ConcurrentModificationException e) { // see method comments for why this could be thrown
       log.warn("a possibly recoverable concurrency issue arose when trying to update release {}", originalReleaseName);
       throw new DccModelOptimisticLockException(e);
     }
-    if(update == null || update.getHadError()) {
+    if (update == null || update.getHadError()) {
       log.error("an unrecoverable error happenend when trying to update release {}", originalReleaseName);
       throw new ReleaseException(String.format("failed to update release %s", originalReleaseName));
     }
@@ -769,7 +769,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
    */
   private Submission getSubmissionByName(Release release, String projectKey) {
     Submission submission = release.getSubmission(projectKey);
-    if(submission == null) {
+    if (submission == null) {
       throw new ReleaseException(String.format("there is no project \"%s\" associated with release \"%s\"", projectKey,
           release.getName()));
     }
@@ -790,7 +790,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
   private List<LiteProject> buildLiteProjects(List<Project> projects) {
     List<LiteProject> liteProjects = newArrayList();
-    for(Project project : projects) {
+    for (Project project : projects) {
       liteProjects.add(new LiteProject(project));
     }
     return copyOf(liteProjects);
@@ -798,7 +798,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
   private Map<String, List<SubmissionFile>> buildSubmissionFilesMap(String releaseName, Release release) {
     Map<String, List<SubmissionFile>> submissionFilesMap = Maps.newLinkedHashMap();
-    for(String projectKey : release.getProjectKeys()) {
+    for (String projectKey : release.getProjectKeys()) {
       submissionFilesMap.put(projectKey, getSubmissionFiles(releaseName, projectKey));
     }
     return ImmutableMap.copyOf(submissionFilesMap);

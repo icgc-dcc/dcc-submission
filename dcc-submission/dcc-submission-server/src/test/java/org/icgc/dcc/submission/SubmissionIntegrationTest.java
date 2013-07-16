@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.integration;
+package org.icgc.dcc.submission;
 
 import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -45,13 +45,13 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.io.FileUtils;
-import org.icgc.dcc.filesystem.GuiceJUnitRunner;
-import org.icgc.dcc.filesystem.GuiceJUnitRunner.GuiceModules;
 import org.icgc.dcc.submission.Main;
 import org.icgc.dcc.submission.config.ConfigModule;
 import org.icgc.dcc.submission.core.CoreModule;
 import org.icgc.dcc.submission.core.morphia.MorphiaModule;
 import org.icgc.dcc.submission.fs.FileSystemModule;
+import org.icgc.dcc.submission.fs.GuiceJUnitRunner;
+import org.icgc.dcc.submission.fs.GuiceJUnitRunner.GuiceModules;
 import org.icgc.dcc.submission.http.HttpModule;
 import org.icgc.dcc.submission.http.jersey.JerseyModule;
 import org.icgc.dcc.submission.release.model.DetailedSubmission;
@@ -78,9 +78,9 @@ import com.typesafe.config.ConfigFactory;
 
 @RunWith(GuiceJUnitRunner.class)
 @GuiceModules({ ConfigModule.class, CoreModule.class, HttpModule.class, JerseyModule.class, MorphiaModule.class, FileSystemModule.class, SftpModule.class, WebModule.class, ShiroModule.class })
-public class IntegrationTest {
+public class SubmissionIntegrationTest {
 
-  private static final Logger log = LoggerFactory.getLogger(IntegrationTest.class);
+  private static final Logger log = LoggerFactory.getLogger(SubmissionIntegrationTest.class);
 
   private static final String FIRST_DICTIONARY_VERSION = "0.6c";
 
@@ -210,7 +210,7 @@ public class IntegrationTest {
     try {
       log.info("server main thread started");
       Main.main(null);
-    } catch(Exception e) {
+    } catch (Exception e) {
       e.printStackTrace();
     } finally {
       log.info("server main thread ended");
@@ -286,7 +286,7 @@ public class IntegrationTest {
           Arrays.<SubmissionState> asList( //
               SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED));
 
-    } catch(Exception e) {
+    } catch (Exception e) {
       e.printStackTrace(); // make sure we get stacktrace
       throw e;
     }
@@ -322,7 +322,7 @@ public class IntegrationTest {
     assertEquals(ImmutableList.<String> of(), releaseView.getQueue());
     assertEquals(expectedSubmissionStates.size(), releaseView.getSubmissions().size());
     int i = 0;
-    for(DetailedSubmission submission : releaseView.getSubmissions()) {
+    for (DetailedSubmission submission : releaseView.getSubmissions()) {
       assertEquals(submission.getProjectKey(), expectedSubmissionStates.get(i++), submission.getState());
     }
   }
@@ -345,7 +345,7 @@ public class IntegrationTest {
 
     response = TestUtils.post(client, QUEUE_ENDPOINT, projectsToEnqueue);
     assertEquals(expectedStatus.getStatusCode(), response.getStatus());
-    if(expectedStatus != Status.NO_CONTENT) {
+    if (expectedStatus != Status.NO_CONTENT) {
       assertEquals("{\"code\":\"" + ServerErrorCode.INVALID_STATE.getFrontEndString() + "\",\"parameters\":[\""
           + SubmissionState.VALID + "\"]}", TestUtils.asString(response));
     }
@@ -408,7 +408,7 @@ public class IntegrationTest {
       assertEquals(OK.getStatusCode(), response.getStatus());
 
       detailedSubmission = TestUtils.asDetailedSubmission(response);
-    } while(detailedSubmission.getState() == QUEUED || detailedSubmission.getState() == VALIDATING);
+    } while (detailedSubmission.getState() == QUEUED || detailedSubmission.getState() == VALIDATING);
 
     assertEquals(project, expectedSubmissionState, detailedSubmission.getState());
   }

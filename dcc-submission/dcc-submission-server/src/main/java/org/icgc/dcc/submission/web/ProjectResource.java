@@ -17,6 +17,12 @@
  */
 package org.icgc.dcc.submission.web;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static org.icgc.dcc.submission.web.Authorizations.hasSpecificProjectPrivilege;
+import static org.icgc.dcc.submission.web.Authorizations.isOmnipotentUser;
+import static org.icgc.dcc.submission.web.Authorizations.unauthorizedResponse;
+import static org.icgc.dcc.submission.web.Resources.noSuchEntityResponse;
+
 import java.util.List;
 
 import javax.validation.Valid;
@@ -34,21 +40,15 @@ import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriBuilder;
 
 import org.apache.shiro.subject.Subject;
-import org.icgc.dcc.core.model.QProject;
 import org.icgc.dcc.submission.core.ProjectService;
 import org.icgc.dcc.submission.core.model.Project;
+import org.icgc.dcc.submission.core.model.QProject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.mongodb.MongoException.DuplicateKey;
-
-import static com.google.common.base.Preconditions.checkArgument;
-import static org.icgc.dcc.submission.web.Authorizations.hasSpecificProjectPrivilege;
-import static org.icgc.dcc.submission.web.Authorizations.isOmnipotentUser;
-import static org.icgc.dcc.submission.web.Authorizations.unauthorizedResponse;
-import static org.icgc.dcc.submission.web.Resources.noSuchEntityResponse;
 
 @Path("projects")
 public class ProjectResource {
@@ -59,13 +59,14 @@ public class ProjectResource {
   private ProjectService projects;
 
   @GET
-  public Response getProjects(@Context SecurityContext securityContext) {
+  public Response getProjects(@Context
+  SecurityContext securityContext) {
     /* Authorization is handled by the filtering of projects below */
 
     log.debug("Getting projects");
     Subject subject = Authorizations.getShiroSubject(securityContext);
     List<Project> projectList = projects.getProjectsBySubject(subject);
-    if(projectList == null) { // TODO: use Optional (see DCC-820)
+    if (projectList == null) { // TODO: use Optional (see DCC-820)
       projectList = Lists.newArrayList();
     }
     return Response.ok(projectList).build();
@@ -73,10 +74,12 @@ public class ProjectResource {
 
   @POST
   @Consumes("application/json")
-  public Response addProject(@Context SecurityContext securityContext, @Valid Project project) {
+  public Response addProject(@Context
+  SecurityContext securityContext, @Valid
+  Project project) {
 
     log.info("Adding project {}", project);
-    if(isOmnipotentUser(securityContext) == false) {
+    if (isOmnipotentUser(securityContext) == false) {
       return unauthorizedResponse();
     }
 
@@ -84,7 +87,7 @@ public class ProjectResource {
     try {
       this.projects.addProject(project);
       return Response.created(UriBuilder.fromResource(ProjectResource.class).path(project.getKey()).build()).build();
-    } catch(DuplicateKey e) {
+    } catch (DuplicateKey e) {
       return Response.status(Status.BAD_REQUEST)
           .entity(new ServerErrorResponseMessage(ServerErrorCode.ALREADY_EXISTS, project.getKey())).build();
     }
@@ -92,15 +95,17 @@ public class ProjectResource {
 
   @GET
   @Path("{projectKey}")
-  public Response getRessource(@PathParam("projectKey") String projectKey, @Context SecurityContext securityContext) {
+  public Response getRessource(@PathParam("projectKey")
+  String projectKey, @Context
+  SecurityContext securityContext) {
 
     log.debug("Getting project: {}", projectKey);
-    if(hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
+    if (hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
       return unauthorizedResponse();
     }
 
     Project project = projects.where(QProject.project.key.eq(projectKey)).uniqueResult();
-    if(project == null) { // TODO: use Optional
+    if (project == null) { // TODO: use Optional
       return noSuchEntityResponse(projectKey);
     }
     return ResponseTimestamper.ok(project).build();
@@ -111,11 +116,15 @@ public class ProjectResource {
    */
   @PUT
   @Path("{projectKey}")
-  public Response updateProject(@PathParam("projectKey") String projectKey, @Valid Project project,
-      @Context Request req, @Context SecurityContext securityContext) {
+  public Response updateProject(@PathParam("projectKey")
+  String projectKey, @Valid
+  Project project,
+      @Context
+      Request req, @Context
+      SecurityContext securityContext) {
 
     log.info("Updating project {} with {}", projectKey, project);
-    if(isOmnipotentUser(securityContext) == false) {
+    if (isOmnipotentUser(securityContext) == false) {
       return unauthorizedResponse();
     }
 
@@ -133,15 +142,17 @@ public class ProjectResource {
 
   @GET
   @Path("{projectKey}/releases")
-  public Response getReleases(@PathParam("projectKey") String projectKey, @Context SecurityContext securityContext) {
+  public Response getReleases(@PathParam("projectKey")
+  String projectKey, @Context
+  SecurityContext securityContext) {
 
     log.debug("Getting releases for project: {}", projectKey);
-    if(hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
+    if (hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
       return unauthorizedResponse();
     }
 
     Project project = projects.where(QProject.project.key.eq(projectKey)).uniqueResult();
-    if(project == null) {
+    if (project == null) {
       return noSuchEntityResponse(projectKey);
     }
     return Response.ok(projects.getReleases(project)).build();

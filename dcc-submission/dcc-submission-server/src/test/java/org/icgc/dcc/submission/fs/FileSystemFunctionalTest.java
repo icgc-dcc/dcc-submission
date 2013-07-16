@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.submission.fs;
 
+import static org.fest.assertions.api.Assertions.assertThat;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.regex.Pattern;
@@ -25,14 +27,10 @@ import junit.framework.Assert;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.filesystem.GuiceJUnitRunner.GuiceModules;
 import org.icgc.dcc.submission.config.ConfigModule;
 import org.icgc.dcc.submission.core.CoreModule;
 import org.icgc.dcc.submission.core.morphia.MorphiaModule;
-import org.icgc.dcc.submission.fs.DccFileSystem;
-import org.icgc.dcc.submission.fs.FileSystemModule;
-import org.icgc.dcc.submission.fs.ReleaseFileSystem;
-import org.icgc.dcc.submission.fs.SubmissionDirectory;
+import org.icgc.dcc.submission.fs.GuiceJUnitRunner.GuiceModules;
 import org.icgc.dcc.submission.fs.hdfs.HadoopUtils;
 import org.icgc.dcc.submission.http.HttpModule;
 import org.icgc.dcc.submission.http.jersey.JerseyModule;
@@ -48,8 +46,6 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
-
-import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(GuiceJUnitRunner.class)
 @GuiceModules({ ConfigModule.class, CoreModule.class,//

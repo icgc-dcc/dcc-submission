@@ -17,14 +17,16 @@
  */
 package org.icgc.dcc.submission.dictionary;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.util.List;
 
-import org.icgc.dcc.dictionary.model.QCodeList;
-import org.icgc.dcc.dictionary.model.QDictionary;
 import org.icgc.dcc.submission.core.morphia.BaseMorphiaService;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.DictionaryState;
+import org.icgc.dcc.submission.dictionary.model.QCodeList;
+import org.icgc.dcc.submission.dictionary.model.QDictionary;
 import org.icgc.dcc.submission.dictionary.model.Term;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryCloneVisitor;
 import org.icgc.dcc.submission.release.ReleaseService;
@@ -38,8 +40,6 @@ import com.google.code.morphia.query.Query;
 import com.google.common.base.Optional;
 import com.google.inject.Inject;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
-
-import static com.google.common.base.Preconditions.checkArgument;
 
 /**
  * Offers various CRUD operations pertaining to {@code Dictionary}
@@ -78,14 +78,14 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
 
     checkArgument(dictionary != null);
     Query<Dictionary> updateQuery = this.buildDictionaryVersionQuery(dictionary);
-    if(updateQuery.countAll() != 1) {
+    if (updateQuery.countAll() != 1) {
       throw new DictionaryServiceException("cannot update a non-existent dictionary: " + dictionary.getVersion());
     }
     datastore().updateFirst(updateQuery, dictionary, false);
 
     // Reset submissions if applicable
     Release release = releases.getNextRelease().getRelease();
-    if(dictionary.getVersion().equals(release.getDictionaryVersion())) {
+    if (dictionary.getVersion().equals(release.getDictionaryVersion())) {
       releases.resetSubmissions(release.getName(), release.getProjectKeys());
     }
   }
@@ -93,14 +93,14 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
   public Dictionary clone(String oldVersion, String newVersion) {
     checkArgument(oldVersion != null);
     checkArgument(newVersion != null);
-    if(oldVersion.equals(newVersion)) {
+    if (oldVersion.equals(newVersion)) {
       throw new DictionaryServiceException("cannot clone a dictionary using the same version: " + newVersion);
     }
     Dictionary oldDictionary = this.getFromVersion(oldVersion);
-    if(oldDictionary == null) {
+    if (oldDictionary == null) {
       throw new DictionaryServiceException("cannot clone an non-existent dictionary: " + oldVersion);
     }
-    if(getFromVersion(newVersion) != null) {
+    if (getFromVersion(newVersion) != null) {
       throw new DictionaryServiceException("cannot clone to an already existing dictionary: " + newVersion);
     }
 
@@ -124,15 +124,15 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
     checkArgument(dictionary != null);
 
     String version = dictionary.getVersion();
-    if(version == null) {
+    if (version == null) {
       throw new DictionaryServiceException("New dictionary must specify a valid version");
     }
 
-    if(this.getFromVersion(version) != null) {
+    if (this.getFromVersion(version) != null) {
       throw new DictionaryServiceException("cannot add an existing dictionary: " + version);
     }
 
-    if(DictionaryState.OPENED != dictionary.getState()) {
+    if (DictionaryState.OPENED != dictionary.getState()) {
       throw new DictionaryServiceException(String.format("New dictionary must be in OPENED state: %s instead",
           dictionary.getState()));
     }
@@ -152,10 +152,10 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
   public void addCodeList(List<CodeList> codeLists) {
     log.info("Saving codelists {}", codeLists);
 
-    for(CodeList codeList : codeLists) {
+    for (CodeList codeList : codeLists) {
       checkArgument(codeList != null);
       String name = codeList.getName();
-      if(getCodeList(name).isPresent()) {
+      if (getCodeList(name).isPresent()) {
         throw new DictionaryServiceException("Aborting codelist addition: cannot add existing codeList: " + name);
       }
     }
@@ -178,7 +178,7 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
     String name = newCodeList.getName();
 
     Optional<CodeList> optional = this.getCodeList(name);
-    if(optional.isPresent() == false) {
+    if (optional.isPresent() == false) {
       throw new DictionaryServiceException("Cannot perform update to non-existant codeList: " + name);
     }
 
@@ -199,11 +199,11 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
     checkArgument(term != null);
 
     Optional<CodeList> optional = this.getCodeList(codeListName);
-    if(optional.isPresent() == false) {
+    if (optional.isPresent() == false) {
       throw new DictionaryServiceException("cannot add term to non-existant codeList: " + codeListName);
     }
     CodeList codeList = optional.get();
-    if(codeList.containsTerm(term)) {
+    if (codeList.containsTerm(term)) {
       throw new DictionaryServiceException("cannot add an existing term: " + term.getCode());
     }
     codeList.addTerm(term);
@@ -216,7 +216,7 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
     // Reset INVALID submissions if applicable
     Release openRelease = releases.getNextRelease().getRelease();
     Dictionary currentDictionary = getCurrentDictionary(openRelease);
-    if(currentDictionary.usesCodeList(codeListName)) {
+    if (currentDictionary.usesCodeList(codeListName)) {
       releases.resetSubmissions(openRelease.getName(), openRelease.getInvalidProjectKeys());
     }
   }

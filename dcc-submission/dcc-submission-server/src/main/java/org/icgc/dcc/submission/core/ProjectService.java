@@ -21,11 +21,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.shiro.subject.Subject;
-import org.icgc.dcc.core.model.QProject;
-import org.icgc.dcc.release.model.QRelease;
 import org.icgc.dcc.submission.core.model.Project;
+import org.icgc.dcc.submission.core.model.QProject;
 import org.icgc.dcc.submission.core.morphia.BaseMorphiaService;
 import org.icgc.dcc.submission.fs.DccFileSystem;
+import org.icgc.dcc.submission.release.model.QRelease;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseState;
 import org.icgc.dcc.submission.release.model.Submission;

@@ -36,8 +36,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.fs.Path;
 import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.icgc.dcc.filesystem.GuiceJUnitRunner;
-import org.icgc.dcc.filesystem.GuiceJUnitRunner.GuiceModules;
 import org.icgc.dcc.submission.core.ProjectService;
 import org.icgc.dcc.submission.dictionary.DictionaryService;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
@@ -47,13 +45,10 @@ import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.Restriction;
 import org.icgc.dcc.submission.dictionary.model.Term;
 import org.icgc.dcc.submission.fs.DccFileSystem;
+import org.icgc.dcc.submission.fs.GuiceJUnitRunner;
+import org.icgc.dcc.submission.fs.GuiceJUnitRunner.GuiceModules;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.QueuedProject;
-import org.icgc.dcc.submission.validation.CascadingStrategy;
-import org.icgc.dcc.submission.validation.FilePresenceException;
-import org.icgc.dcc.submission.validation.LocalCascadingStrategy;
-import org.icgc.dcc.submission.validation.Plan;
-import org.icgc.dcc.submission.validation.Planner;
 import org.icgc.dcc.submission.validation.cascading.ForbiddenValuesFunction;
 import org.icgc.dcc.submission.validation.factory.LocalCascadingStrategyFactory;
 import org.icgc.dcc.submission.validation.restriction.CodeListRestriction;
@@ -252,13 +247,13 @@ public class ValidationInternalIntegrityTest {
       plan =
           validationService.planAndConnectCascade(QUEUED_PROJECT, submissionDirectory, cascadingStrategy, dictionary,
               listener);
-    } catch(FilePresenceException e) {
+    } catch (FilePresenceException e) {
       throw new RuntimeException();
     }
     Assert.assertEquals(1, plan.getCascade().getFlows().size());
 
     plan.startCascade();
-    while(listener.isRunning()) {
+    while (listener.isRunning()) {
       Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
     }
 
@@ -268,8 +263,8 @@ public class ValidationInternalIntegrityTest {
 
   private FileSchema getFileSchemaByName(Dictionary dictionary, String name) {
     FileSchema fileSchema = null;
-    for(FileSchema fileSchemaTmp : dictionary.getFiles()) {
-      if(name.equals(fileSchemaTmp.getName())) {
+    for (FileSchema fileSchemaTmp : dictionary.getFiles()) {
+      if (name.equals(fileSchemaTmp.getName())) {
         fileSchema = fileSchemaTmp;
         break;
       }
@@ -279,8 +274,8 @@ public class ValidationInternalIntegrityTest {
 
   private Field getFieldByName(FileSchema fileSchema, String name) {
     Field field = null;
-    for(Field fieldTmp : fileSchema.getFields()) {
-      if(name.equals(fieldTmp.getName())) {
+    for (Field fieldTmp : fileSchema.getFields()) {
+      if (name.equals(fieldTmp.getName())) {
         field = fieldTmp;
         break;
       }

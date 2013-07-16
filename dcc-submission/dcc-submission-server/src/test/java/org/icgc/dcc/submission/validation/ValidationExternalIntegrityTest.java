@@ -34,8 +34,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.fs.Path;
 import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.icgc.dcc.filesystem.GuiceJUnitRunner;
-import org.icgc.dcc.filesystem.GuiceJUnitRunner.GuiceModules;
 import org.icgc.dcc.submission.core.ProjectService;
 import org.icgc.dcc.submission.dictionary.DictionaryService;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
@@ -46,13 +44,10 @@ import org.icgc.dcc.submission.dictionary.model.Relation;
 import org.icgc.dcc.submission.dictionary.model.Term;
 import org.icgc.dcc.submission.dictionary.model.ValueType;
 import org.icgc.dcc.submission.fs.DccFileSystem;
+import org.icgc.dcc.submission.fs.GuiceJUnitRunner;
+import org.icgc.dcc.submission.fs.GuiceJUnitRunner.GuiceModules;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.QueuedProject;
-import org.icgc.dcc.submission.validation.CascadingStrategy;
-import org.icgc.dcc.submission.validation.FilePresenceException;
-import org.icgc.dcc.submission.validation.LocalCascadingStrategy;
-import org.icgc.dcc.submission.validation.Plan;
-import org.icgc.dcc.submission.validation.Planner;
 import org.icgc.dcc.submission.validation.factory.LocalCascadingStrategyFactory;
 import org.icgc.dcc.submission.validation.service.ValidationService;
 import org.junit.Before;
@@ -234,7 +229,7 @@ public class ValidationExternalIntegrityTest { // TODO create base class for thi
     Assert.assertEquals(5, plan.getCascade().getFlows().size());
 
     plan.startCascade();
-    while(listener.isRunning()) {
+    while (listener.isRunning()) {
       Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
     }
     Assert.assertTrue(errorFileString, errorFile.exists());
@@ -249,8 +244,8 @@ public class ValidationExternalIntegrityTest { // TODO create base class for thi
 
   private FileSchema getFileSchemaByName(Dictionary dictionary, String name) {
     FileSchema fileSchema = null;
-    for(FileSchema fileSchemaTmp : dictionary.getFiles()) {
-      if(name.equals(fileSchemaTmp.getName())) {
+    for (FileSchema fileSchemaTmp : dictionary.getFiles()) {
+      if (name.equals(fileSchemaTmp.getName())) {
         fileSchema = fileSchemaTmp;
         break;
       }
