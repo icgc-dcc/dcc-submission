@@ -34,13 +34,13 @@
     </encoder>
   </appender>
 
-  <logger name="org.icgc.dcc.core.UserService" level="info" additivity="false">
+  <logger name="org.icgc.dcc.submission.core.UserService" level="info" additivity="false">
     <appender-ref ref="DEBUG" />
   </logger>
-  <logger name="org.icgc.dcc.shiro.ShiroPasswordAuthenticator" level="info" additivity="false">
+  <logger name="org.icgc.dcc.submission.shiro.ShiroPasswordAuthenticator" level="info" additivity="false">
     <appender-ref ref="DEBUG" />
   </logger>
-  <logger name="org.icgc.dcc.http.jersey.BasicHttpAuthenticationRequestFilter" level="info" additivity="false">
+  <logger name="org.icgc.dcc.submission.http.jersey.BasicHttpAuthenticationRequestFilter" level="info" additivity="false">
     <appender-ref ref="DEBUG" />
   </logger>
   <logger name="org.apache.sshd.server.session.ServerSession" level="info" additivity="false">
