@@ -58,6 +58,7 @@ public final class FieldNames {
 
   public static final String DONOR_SUMMARY = "_summary";
   public static final String DONOR_SUMMARY_EXPERIMENTAL_ANALYSIS = "experimental_analysis_performed";
+  public static final String DONOR_SUMMARY_AGE_AT_DIAGNOSIS_GROUP = "_age_at_diagnosis_group";
   public static final String DONOR_SUMMARY_AFFECTED_GENE_COUNT = "_affected_gene_count";
 
   public static final String DONOR_GENES = "gene";
@@ -65,6 +66,7 @@ public final class FieldNames {
   public static final String DONOR_GENE_SUMMARY = "_summary";
   public static final String DONOR_PROJECT_ID = PROJECT_ID;
   public static final String DONOR_PROJECT = "project";
+  public static final String DONOR_AGE_AT_DIAGNOSIS = "donor_age_at_diagnosis";
   public static final String DONOR_SPECIMEN = "specimen";
   public static final String DONOR_SPECIMEN_ID = "_specimen_id";
   public static final String DONOR_SAMPLE = "sample";
@@ -83,6 +85,7 @@ public final class FieldNames {
    * Gene field names.
    */
   public static final String GENE_ID = "_gene_id";
+  public static final String GENE_SYMBOL = "symbol";
   public static final String GENE_DONORS = "donor";
   public static final String GENE_DONOR_DONOR_ID = "_donor_id";
   public static final String GENE_DONOR_PROJECT = "project";
@@ -104,6 +107,11 @@ public final class FieldNames {
   public static final String GENE_SUMMARY_TOTAL_MUTATION_COUNT = "_total_mutation_count";
 
   /**
+   * Consequence field names.
+   */
+  public static final String CONSEQUENCE_AA_MUTATION = "aa_mutation";
+
+  /**
    * Observation field names.
    */
   public static final String OBSERVATION_ID = "_id";
@@ -115,6 +123,7 @@ public final class FieldNames {
   public static final String OBSERVATION_CONSEQUENCE_TYPES = "consequence_type";
   public static final String OBSERVATION_CONSEQUENCES = "consequence";
   public static final String OBSERVATION_CONSEQUENCES_CONSEQUENCE_TYPE = "consequence_type";
+  public static final String OBSERVATION_CONSEQUENCES_AA_MUTATION = CONSEQUENCE_AA_MUTATION;
   public static final String OBSERVATION_CONSEQUENCES_CONSEQUENCE_CANONICAL = "_is_canonical_transcript";
   public static final String OBSERVATION_CONSEQUENCES_TRANSCRIPT_ID = "_transcript_id";
   public static final String OBSERVATION_CONSEQUENCES_GENE_ID = "_gene_id";
