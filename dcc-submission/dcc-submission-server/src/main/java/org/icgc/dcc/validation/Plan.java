@@ -19,11 +19,11 @@ package org.icgc.dcc.validation;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Maps.newLinkedHashMap;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -109,7 +109,7 @@ public class Plan {
 
   public InternalFlowPlanner getInternalFlow(String schema) throws MissingFileException {
     InternalFlowPlanner schemaPlan = internalPlanners.get(schema);
-    if(schemaPlan == null) {
+    if (schemaPlan == null) {
       log.error(String.format("no corresponding file for schema %s, schemata with files are %s", schema,
           internalPlanners.keySet()));
       throw new MissingFileException(schema);
@@ -123,7 +123,7 @@ public class Plan {
 
   public ExternalFlowPlanner getExternalFlow(String schema) throws MissingFileException {
     ExternalFlowPlanner schemaPlan = externalPlanners.get(schema);
-    if(schemaPlan == null) {
+    if (schemaPlan == null) {
       throw new MissingFileException(schema);
     }
     return schemaPlan;
@@ -134,7 +134,7 @@ public class Plan {
   }
 
   public Iterable<? extends FileSchemaFlowPlanner> getFlows(FlowType type) {
-    switch(type) {
+    switch (type) {
     case INTERNAL:
       return Iterables.unmodifiableIterable(internalPlanners.values());
     case EXTERNAL:
@@ -146,13 +146,13 @@ public class Plan {
 
   public void connect(CascadingStrategy cascadingStrategy) {
     CascadeDef cascade = new CascadeDef();
-    for(FileSchemaFlowPlanner planner : Iterables.concat(internalPlanners.values(), externalPlanners.values())) {
+    for (FileSchemaFlowPlanner planner : Iterables.concat(internalPlanners.values(), externalPlanners.values())) {
       try {
         Flow<?> flow = planner.connect(cascadingStrategy);
-        if(flow != null) {
+        if (flow != null) {
           cascade.addFlow(flow);
         }
-      } catch(PlanningFileLevelException e) {
+      } catch (PlanningFileLevelException e) {
         addFileLevelError(e);
       }
     }
@@ -192,14 +192,14 @@ public class Plan {
 
   public Outcome collect(SubmissionReport report) {
     Outcome result = Outcome.PASSED;
-    Map<String, SchemaReport> schemaReports = new HashMap<String, SchemaReport>();
-    for(FileSchemaFlowPlanner planner : Iterables.concat(internalPlanners.values(), externalPlanners.values())) {
+    Map<String, SchemaReport> schemaReports = newLinkedHashMap();
+    for (FileSchemaFlowPlanner planner : Iterables.concat(internalPlanners.values(), externalPlanners.values())) {
       SchemaReport schemaReport = new SchemaReport();
       Outcome outcome = planner.collect(cascadingStrategy, schemaReport);
-      if(outcome == Outcome.FAILED) {
+      if (outcome == Outcome.FAILED) {
         result = Outcome.FAILED;
       }
-      if(!schemaReports.containsKey(schemaReport.getName())) {
+      if (!schemaReports.containsKey(schemaReport.getName())) {
         schemaReports.put(schemaReport.getName(), schemaReport);
       } else {
         // combine internal and external plans into one
@@ -218,8 +218,8 @@ public class Plan {
   }
 
   public FileSchema getFileSchema(String name) {
-    for(FileSchema schema : plannedSchema) {
-      if(schema.getName().equals(name)) {
+    for (FileSchema schema : plannedSchema) {
+      if (schema.getName().equals(name)) {
         return schema;
       }
     }
@@ -231,9 +231,8 @@ public class Plan {
     TupleState tupleState = e.getTupleState();
     checkState(filename != null);
     checkState(tupleState != null);
-    if(fileLevelErrors.get(filename) != null) {
-      throw new AssertionError(filename);
-    }
+    checkState(fileLevelErrors.get(filename) == null,
+        "There should be no file level errors existing for file {} already", filename);
     fileLevelErrors.put(filename, tupleState);
   }
 
