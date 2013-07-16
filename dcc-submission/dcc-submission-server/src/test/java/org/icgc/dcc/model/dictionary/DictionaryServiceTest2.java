@@ -17,10 +17,10 @@
  */
 package org.icgc.dcc.model.dictionary;
 
-import org.icgc.dcc.dictionary.DictionaryService;
-import org.icgc.dcc.dictionary.DictionaryServiceException;
-import org.icgc.dcc.dictionary.model.CodeList;
-import org.icgc.dcc.release.ReleaseService;
+import org.icgc.dcc.submission.dictionary.DictionaryService;
+import org.icgc.dcc.submission.dictionary.DictionaryServiceException;
+import org.icgc.dcc.submission.dictionary.model.CodeList;
+import org.icgc.dcc.submission.release.ReleaseService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

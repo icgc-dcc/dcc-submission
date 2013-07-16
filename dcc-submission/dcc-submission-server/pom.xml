@@ -23,10 +23,16 @@
   </repositories>
 
   <dependencies>
+    <!-- TODO: refactor this between dcc-submission and dcc-submission-core -->
     <!-- DCC -->
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>dcc-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>dcc-submission-core</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -359,7 +365,7 @@
 
   <properties>
     <!-- Entry point -->
-    <main.class>org.icgc.dcc.Main</main.class>
+    <main.class>org.icgc.dcc.submission.Main</main.class>
 
     <!-- Versions -->
     <jersey.version>2.0-m10</jersey.version>

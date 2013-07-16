@@ -30,9 +30,9 @@ import javax.ws.rs.core.Response;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.glassfish.grizzly.http.util.Header;
 import org.glassfish.jersey.internal.util.Base64;
-import org.icgc.dcc.release.model.DetailedSubmission;
-import org.icgc.dcc.release.model.Release;
-import org.icgc.dcc.release.model.ReleaseView;
+import org.icgc.dcc.submission.release.model.DetailedSubmission;
+import org.icgc.dcc.submission.release.model.Release;
+import org.icgc.dcc.submission.release.model.ReleaseView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

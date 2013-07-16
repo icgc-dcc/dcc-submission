@@ -17,6 +17,7 @@
 
   <modules>
     <module>dcc-submission-ui</module>
+    <module>dcc-submission-core</module>
     <module>dcc-submission-server</module>
   </modules>
 
