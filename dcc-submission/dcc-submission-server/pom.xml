@@ -260,30 +260,6 @@
 
   <build>
     <plugins>
-      <!-- Generate sources - Generate Morpia bindings -->
-      <plugin>
-        <groupId>com.mysema.maven</groupId>
-        <artifactId>maven-apt-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>process</goal>
-            </goals>
-            <configuration>
-              <logOnlyOnError>true</logOnlyOnError>
-              <outputDirectory>${project.build.directory}/generated-sources/java</outputDirectory>
-              <processor>com.mysema.query.mongodb.morphia.MorphiaAnnotationProcessor</processor>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <!-- Generate sources - Add Morphia bindings to sources -->
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-      </plugin>
-
       <!-- Test -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
