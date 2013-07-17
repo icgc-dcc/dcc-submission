@@ -155,7 +155,7 @@ public class ReleaseResource {
     if (submission == null) {
       return noSuchEntityResponse(releaseName, projectKey);
     }
-    SubmissionReport report = submission.getReport();
+    SubmissionReport report = (SubmissionReport) submission.getReport();
     return Response.ok(report).build();
   }
 
