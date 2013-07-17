@@ -17,7 +17,12 @@
  */
 package org.icgc.dcc.submission.release;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Lists.newArrayList;
+
 import java.util.List;
+
+import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.core.model.InvalidStateException;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
@@ -31,8 +36,6 @@ import org.icgc.dcc.submission.release.model.SubmissionState;
 import org.icgc.dcc.submission.web.ServerErrorCode;
 import org.icgc.dcc.submission.web.validator.InvalidNameException;
 import org.icgc.dcc.submission.web.validator.NameValidator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
@@ -41,12 +44,8 @@ import com.google.code.morphia.query.UpdateOperations;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.collect.Lists.newArrayList;
-
+@Slf4j
 public class NextRelease extends BaseRelease {
-
-  private static final Logger log = LoggerFactory.getLogger(NextRelease.class);
 
   private final DccLocking dccLocking;
 
@@ -58,7 +57,7 @@ public class NextRelease extends BaseRelease {
     this.dccLocking = dccLocking; // TODO: moveup (DCC-685)?
     dccLocking.setDatastore(datastore);
 
-    if(release.getState() != ReleaseState.OPENED) {
+    if (release.getState() != ReleaseState.OPENED) {
       throw new IllegalReleaseStateException(release, ReleaseState.OPENED);
     }
   }
@@ -71,7 +70,7 @@ public class NextRelease extends BaseRelease {
     checkArgument(nextReleaseName != null);
 
     // check for next release name
-    if(NameValidator.validateEntityName(nextReleaseName) == false) {
+    if (NameValidator.validateEntityName(nextReleaseName) == false) {
       throw new InvalidNameException(nextReleaseName);
     }
 
@@ -81,35 +80,35 @@ public class NextRelease extends BaseRelease {
     try {
       String errorMessage;
 
-      if(oldRelease == null) { // just in case (can't really happen)
+      if (oldRelease == null) { // just in case (can't really happen)
         errorMessage = "could not acquire lock on release";
         log.error(errorMessage);
         throw new ReleaseException("ReleaseException");
       }
-      if(oldRelease.equals(this.getRelease()) == false) { // just in case (can't really happen)
+      if (oldRelease.equals(this.getRelease()) == false) { // just in case (can't really happen)
         errorMessage = oldRelease + " != " + this.getRelease();
         log.error(errorMessage);
         throw new ReleaseException("ReleaseException");
       }
-      if(atLeastOneSignedOff(oldRelease) == false) { // check for signed-off submission states (must have at least one)
+      if (atLeastOneSignedOff(oldRelease) == false) { // check for signed-off submission states (must have at least one)
         errorMessage = "no signed off project in " + oldRelease;
         log.error(errorMessage);
         throw new InvalidStateException(ServerErrorCode.SIGNED_OFF_SUBMISSION_REQUIRED, errorMessage);
       }
-      if(oldRelease.getQueue().isEmpty() == false) {
+      if (oldRelease.getQueue().isEmpty() == false) {
         errorMessage = "some projects are still enqueue in " + oldRelease;
         log.error(errorMessage);
         throw new InvalidStateException(ServerErrorCode.QUEUE_NOT_EMPTY, errorMessage);
       }
 
       String dictionaryVersion = oldRelease.getDictionaryVersion();
-      if(dictionaryVersion == null) {
+      if (dictionaryVersion == null) {
         errorMessage = "could not find a dictionary matching null";
         log.error(errorMessage);
         throw new InvalidStateException(ServerErrorCode.RELEASE_MISSING_DICTIONARY, errorMessage); // TODO: new kind of
                                                                                                    // exception rather?
       }
-      if(forName(nextReleaseName) != null) {
+      if (forName(nextReleaseName) != null) {
         errorMessage = "found a conflicting release for name " + nextReleaseName;
         log.error(errorMessage);
         throw new InvalidStateException(ServerErrorCode.DUPLICATE_RELEASE_NAME, errorMessage);
@@ -123,7 +122,7 @@ public class NextRelease extends BaseRelease {
       completeOldRelease(oldRelease);
     } finally {
       Release relinquishedRelease = dccLocking.relinquishReleasingLock();
-      if(relinquishedRelease == null || //
+      if (relinquishedRelease == null || //
           relinquishedRelease.equals(oldRelease) == false) { // just in case
         log.error("could not relinquish lock on release {}, obtaining {}",
             new Object[] { oldRelease, relinquishedRelease });
@@ -138,9 +137,9 @@ public class NextRelease extends BaseRelease {
     Release nextRelease = new Release(name);
     nextRelease.setDictionaryVersion(dictionaryVersion);
     nextRelease.setState(ReleaseState.OPENED);
-    for(Submission submission : oldRelease.getSubmissions()) {
+    for (Submission submission : oldRelease.getSubmissions()) {
       Submission newSubmission = new Submission(submission.getProjectKey());
-      if(submission.getState() == SubmissionState.SIGNED_OFF) {
+      if (submission.getState() == SubmissionState.SIGNED_OFF) {
         newSubmission.setState(SubmissionState.NOT_VALIDATED);
       } else {
         newSubmission.setState(submission.getState());
@@ -175,8 +174,8 @@ public class NextRelease extends BaseRelease {
     oldRelease.setState(ReleaseState.COMPLETED);
     oldRelease.setReleaseDate();
     List<Submission> submissions = oldRelease.getSubmissions();
-    for(int i = submissions.size() - 1; i >= 0; i--) {
-      if(submissions.get(i).getState() != SubmissionState.SIGNED_OFF) {
+    for (int i = submissions.size() - 1; i >= 0; i--) {
+      if (submissions.get(i).getState() != SubmissionState.SIGNED_OFF) {
         submissions.remove(i);
       }
     }
@@ -191,8 +190,8 @@ public class NextRelease extends BaseRelease {
   }
 
   boolean atLeastOneSignedOff(Release release) {
-    for(Submission submission : release.getSubmissions()) {
-      if(submission.getState() == SubmissionState.SIGNED_OFF) {
+    for (Submission submission : release.getSubmissions()) {
+      if (submission.getState() == SubmissionState.SIGNED_OFF) {
         return true;
       }
     }
@@ -201,8 +200,8 @@ public class NextRelease extends BaseRelease {
 
   private ImmutableList<String> getProjectsToMove(final Release oldRelease) {
     List<String> projectsKeys = newArrayList();
-    for(Submission submission : oldRelease.getSubmissions()) {
-      if(submission.getState() != SubmissionState.SIGNED_OFF) {
+    for (Submission submission : oldRelease.getSubmissions()) {
+      if (submission.getState() != SubmissionState.SIGNED_OFF) {
         projectsKeys.add(submission.getProjectKey());
       }
     }
