@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.submission.sftp;
 
-import lombok.experimental.Value;
+import lombok.Value;
 
 /**
  * Event object used to signal {@link SftpServerService} state transitions.
