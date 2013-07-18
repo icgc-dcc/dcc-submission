@@ -26,7 +26,8 @@ public enum ReleaseCollection {
   DONOR("Donor", FieldNames.DONOR_ID),
   GENE("Gene", FieldNames.GENE_ID),
   PROJECT("Project", FieldNames.PROJECT_ID),
-  MUTATION("Mutation", FieldNames.MUTATION_ID);
+  MUTATION("Mutation", FieldNames.MUTATION_ID),
+  RELEASE("Release", FieldNames.RELEASE_ID);
 
   final private String name;
 
