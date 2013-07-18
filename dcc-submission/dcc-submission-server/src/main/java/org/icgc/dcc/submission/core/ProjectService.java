@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.submission.core;
 
+import static org.icgc.dcc.submission.release.ReleaseService.filterOutFakeReleasesForETL;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,6 +44,7 @@ import com.google.code.morphia.query.UpdateOperations;
 import com.google.inject.Inject;
 import com.mysema.query.mongodb.MongodbQuery;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
+import com.mysema.query.types.Predicate;
 
 public class ProjectService extends BaseMorphiaService<Project> {
 
@@ -55,9 +58,8 @@ public class ProjectService extends BaseMorphiaService<Project> {
   }
 
   public List<Release> getReleases(Project project) {
-    MorphiaQuery<Release> releaseQuery = new MorphiaQuery<Release>(morphia(), datastore(), QRelease.release);
     List<Release> releases = new ArrayList<Release>();
-    for (Release release : releaseQuery.list()) {
+    for (Release release : listReleases()) {
       for (Submission submission : release.getSubmissions()) {
         if (submission.getProjectKey().equals(project.getKey())) {
           releases.add(release);
@@ -82,8 +84,7 @@ public class ProjectService extends BaseMorphiaService<Project> {
 
     this.saveProject(project);
 
-    MorphiaQuery<Release> releaseQuery = new MorphiaQuery<Release>(morphia(), datastore(), QRelease.release);
-    Release release = releaseQuery.where(QRelease.release.state.eq(ReleaseState.OPENED)).singleResult();
+    Release release = getOpenedRelease(QRelease.release.state.eq(ReleaseState.OPENED));
     Submission submission = new Submission();
     submission.setProjectKey(project.getKey());
     submission.setState(SubmissionState.NOT_VALIDATED);
@@ -144,4 +145,23 @@ public class ProjectService extends BaseMorphiaService<Project> {
   private MongodbQuery<Project> getProjectQuery(final String projectKey) {
     return this.query().where(QProject.project.key.eq(projectKey));
   }
+
+  private Release getOpenedRelease(Predicate mysemaPredicate) {
+    return getReleaseQuery()
+        .where(mysemaPredicate)
+        .singleResult();
+  }
+
+  /**
+   * Ignoring releases whose name is starting with a specific prefix (see https://jira.oicr.on.ca/browse/DCC-1409 for
+   * more details).
+   */
+  private List<Release> listReleases() {
+    return filterOutFakeReleasesForETL(getReleaseQuery().list());
+  }
+
+  private MorphiaQuery<Release> getReleaseQuery() {
+    return new MorphiaQuery<Release>(morphia(), datastore(), QRelease.release);
+  }
+
 }
