@@ -197,7 +197,10 @@ public final class FieldNames {
   public static final String TOTAL_SAMPLE_COUNT = "_total_sample_count";
   public static final String TESTED_DONOR_COUNT_SUFFIX = "_tested_donor_count";
   public static final String AFFECTED_DONOR_COUNT = "_affected_donor_count";
-  public static final String EXPERIMENTAL_ANALYSIS_PERFORMED = "experimental_analysis_performed";
+  public static final String EXPERIMENTAL_ANALYSIS_PERFORMED_DONOR_COUNT =
+      "experimental_analysis_performed_donor_count";
+  public static final String EXPERIMENTAL_ANALYSIS_PERFORMED_SAMPLE_COUNT =
+      "experimental_analysis_performed_sample_count";
 
   public static String getTypeExistsFieldName(String type) {
     return SYNTHETIC_PREFIX + type + TYPE_EXISTS_SUFFIX;
