@@ -155,6 +155,9 @@ public class ReleaseResource {
     if (submission == null) {
       return noSuchEntityResponse(releaseName, projectKey);
     }
+
+    // DCC-799: Runtime type will be SubmissionReport. Static type is Object to untangle cyclic dependencies between
+    // dcc-submission-server and dcc-submission-core.
     SubmissionReport report = (SubmissionReport) submission.getReport();
     return Response.ok(report).build();
   }
@@ -240,6 +243,8 @@ public class ReleaseResource {
     Optional<SchemaReport> optional = Optional.absent();
     Submission submission = this.releaseService.getSubmission(releaseName, projectKey);
     if (submission != null) {
+      // DCC-799: Runtime type will be SubmissionReport. Static type is Object to untangle cyclic dependencies between
+      // dcc-submission-server and dcc-submission-core.
       SubmissionReport report = (SubmissionReport) submission.getReport();
       if (report != null) {
         SchemaReport schemaReport = report.getSchemaReport(schema);

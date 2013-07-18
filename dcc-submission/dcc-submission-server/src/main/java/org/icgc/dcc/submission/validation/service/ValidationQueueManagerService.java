@@ -305,6 +305,8 @@ public class ValidationQueueManagerService extends AbstractService {
     submission.setReport(report);
 
     // persist the report to DB
+    // DCC-799: Runtime type will be SubmissionReport. Static type is Object to untangle cyclic dependencies between
+    // dcc-submission-server and dcc-submission-core.
     this.releaseService
         .updateSubmissionReport(release.getName(), projectKey, (SubmissionReport) submission.getReport());
     log.info("report collecting finished on project {}", projectKey);

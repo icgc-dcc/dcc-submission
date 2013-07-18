@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.fs;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.icgc.dcc.submission.core.util.Constants.Authorizations_ADMIN_ROLE;
 
 import java.util.List;
 
@@ -144,7 +145,7 @@ public class ReleaseFileSystem {
 
   public boolean isSystemDirectory(Path path) {
     return this.getSystemDirectory().getName().equals(path.getName())
-        && this.userSubject.hasRole("admin");
+        && this.userSubject.hasRole(Authorizations_ADMIN_ROLE);
   }
 
   private boolean isApplication() {

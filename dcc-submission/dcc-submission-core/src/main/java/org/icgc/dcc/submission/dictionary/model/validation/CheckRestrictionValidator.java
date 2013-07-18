@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission.dictionary.model.validation;
 
 import static java.util.regex.Pattern.compile;
+import static org.icgc.dcc.submission.core.util.Constants.RegexRestriction_NAME;
 
 import java.util.regex.PatternSyntaxException;
 
@@ -46,7 +47,7 @@ public class CheckRestrictionValidator implements ConstraintValidator<CheckRestr
     if (restriction != null) {
       String type = restriction.getType();
       if (type != null) {
-        if ("regex".equals(type)) { // TODO: this really should go in an enum
+        if (RegexRestriction_NAME.equals(type)) { // TODO: this really should go in an enum
           BasicDBObject config = restriction.getConfig();
           Object object = config.get("pattern");
           if (object instanceof String) {

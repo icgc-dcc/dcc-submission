@@ -17,6 +17,11 @@
  */
 package org.icgc.dcc.submission.dictionary.model;
 
+import static org.icgc.dcc.submission.core.util.Constants.CodeListRestriction_NAME;
+import static org.icgc.dcc.submission.core.util.Constants.DiscreteValuesRestriction_NAME;
+import static org.icgc.dcc.submission.core.util.Constants.RegexRestriction_NAME;
+import static org.icgc.dcc.submission.core.util.Constants.RequiredRestriction_NAME;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -145,19 +150,19 @@ public class Field implements DictionaryElement, Serializable {
   }
 
   public boolean hasCodeListRestriction() {
-    return hasRestriction("codelist");
+    return hasRestriction(CodeListRestriction_NAME);
   }
 
   public boolean hasInRestriction() {
-    return hasRestriction("in");
+    return hasRestriction(DiscreteValuesRestriction_NAME);
   }
 
   public boolean hasRequiredRestriction() {
-    return hasRestriction("required");
+    return hasRestriction(RequiredRestriction_NAME);
   }
 
   public boolean hasRegexRestriction() {
-    return hasRestriction("regex");
+    return hasRestriction(RegexRestriction_NAME);
   }
 
   private boolean hasRestriction(String restrictionName) {

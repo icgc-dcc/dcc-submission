@@ -20,10 +20,11 @@ package org.icgc.dcc.submission.core.util;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * 
- */
-public class NameValidator {
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class NameValidator {
 
   public final static String DEFAULT_NAME_PATTERN = "^[\\w]{3,}$";
 
@@ -42,4 +43,5 @@ public class NameValidator {
     Matcher matcher = pattern.matcher(name);
     return matcher.matches();
   }
+
 }

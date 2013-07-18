@@ -18,6 +18,8 @@
 package org.icgc.dcc.submission.dictionary.model;
 
 import static com.google.common.collect.Sets.newLinkedHashSet;
+import static org.icgc.dcc.submission.core.util.Constants.CodeListRestriction_FIELD;
+import static org.icgc.dcc.submission.core.util.Constants.CodeListRestriction_NAME;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -161,9 +163,9 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
     for (FileSchema fileSchema : getFiles()) { // TODO: use visitor instead
       for (Field field : fileSchema.getFields()) {
         for (Restriction restriction : field.getRestrictions()) {
-          if (restriction.getType().equals("codelist")) {
+          if (restriction.getType().equals(CodeListRestriction_NAME)) {
             BasicDBObject config = restriction.getConfig();
-            String codeListName = config.getString("name");
+            String codeListName = config.getString(CodeListRestriction_FIELD);
             codeListNames.add(codeListName);
           }
         }

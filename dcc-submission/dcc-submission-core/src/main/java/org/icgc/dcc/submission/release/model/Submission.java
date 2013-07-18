@@ -40,6 +40,8 @@ public class Submission implements Serializable {
 
   protected SubmissionState state;
 
+  // DCC-799: Runtime type will be SubmissionReport. Static type is Object to untangle cyclic dependencies between
+  // dcc-submission-server and dcc-submission-core.
   @Valid
   protected Object report;
 
@@ -54,18 +56,19 @@ public class Submission implements Serializable {
     this.lastUpdated = new Date();
   }
 
-  /**
-   * @return the lastUpdated
-   */
   public Date getLastUpdated() {
     return lastUpdated;
   }
 
   public Object getReport() {
+    // DCC-799: Runtime type will be SubmissionReport. Static type is Object to untangle cyclic dependencies between
+    // dcc-submission-server and dcc-submission-core.
     return report;
   }
 
   public void setReport(Object report) {
+    // DCC-799: Runtime type will be SubmissionReport. Static type is Object to untangle cyclic dependencies between
+    // dcc-submission-server and dcc-submission-core.
     this.report = report;
   }
 
@@ -123,4 +126,5 @@ public class Submission implements Serializable {
         .add("report", this.report) // TODO: toString for SubmissionReport
         .toString();
   }
+
 }
