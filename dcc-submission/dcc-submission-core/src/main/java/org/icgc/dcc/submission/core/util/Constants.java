@@ -21,7 +21,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 /**
- * Temporary support for DCC-799 refactoring.
+ * DCC-799: Temporary support to untangle cyclic dependencies between dcc-submission-server and dcc-submission-core.
  * <p>
  * Convention: OriginalClassName_CONSTANT_NAME;
  */
