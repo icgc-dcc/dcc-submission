@@ -34,6 +34,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.hadoop.fs.Path;
 import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.submission.core.MailUtils;
@@ -65,8 +67,6 @@ import org.icgc.dcc.submission.validation.report.SubmissionReport;
 import org.icgc.dcc.submission.web.ServerErrorCode;
 import org.icgc.dcc.submission.web.validator.InvalidNameException;
 import org.icgc.dcc.submission.web.validator.NameValidator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
@@ -74,6 +74,7 @@ import com.google.code.morphia.query.UpdateOperations;
 import com.google.code.morphia.query.UpdateResults;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -81,11 +82,17 @@ import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.inject.Inject;
 import com.mysema.query.mongodb.MongodbQuery;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
+import com.mysema.query.types.Predicate;
 import com.typesafe.config.Config;
 
+@Slf4j
 public class ReleaseService extends BaseMorphiaService<Release> {
 
-  private static final Logger log = LoggerFactory.getLogger(ReleaseService.class);
+  /**
+   * Ignoring releases whose name is starting with a specific prefix (see https://jira.oicr.on.ca/browse/DCC-1409 for
+   * more details).
+   */
+  private static final String SPECIAL_RELEASE_PREFIX = "r--";
 
   private final DccLocking dccLocking;
 
@@ -112,7 +119,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   public List<Release> getFilteredReleases(Subject subject) {
     log.debug("getting releases for {}", subject.getPrincipal());
 
-    List<Release> releases = query().list();
+    List<Release> releases = listReleases();
     log.debug("#releases: ", releases.size());
 
     // filter out all the submissions that the current user can not see
@@ -207,9 +214,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   public List<HasRelease> list() {
     List<HasRelease> list = new ArrayList<HasRelease>();
 
-    MongodbQuery<Release> query = this.query();
-
-    for (Release release : query.list()) {
+    for (Release release : listReleases()) {
       if (release.getState() == ReleaseState.OPENED) {
         list.add(new NextRelease(dccLocking, release, morphia(), datastore(), fs));
       } else {
@@ -248,9 +253,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   public List<CompletedRelease> getCompletedReleases() throws IllegalReleaseStateException {
     List<CompletedRelease> completedReleases = new ArrayList<CompletedRelease>();
 
-    MongodbQuery<Release> query = this.where(QRelease.release.state.eq(ReleaseState.COMPLETED));
-
-    for (Release release : query.list()) {
+    for (Release release : listReleases(Optional.<Predicate> of(QRelease.release.state.eq(ReleaseState.COMPLETED)))) {
       completedReleases.add(new CompletedRelease(release, morphia(), datastore(), fs));
     }
 
@@ -834,4 +837,42 @@ public class ReleaseService extends BaseMorphiaService<Release> {
         format("filter: %s, set values: %s, unset values: %s", //
             filter, setValues, unsetValues));
   }
+
+  private List<Release> listReleases() {
+    return listReleases(Optional.<Predicate> absent());
+  }
+
+  /**
+   * Ignoring releases whose name is starting with a specific prefix (see https://jira.oicr.on.ca/browse/DCC-1409 for
+   * more details).
+   */
+  private List<Release> listReleases(Optional<Predicate> mysemaPredicate) {
+    MongodbQuery<Release> query = mysemaPredicate.isPresent() ?
+        where(mysemaPredicate.get()) :
+        query();
+    return filterOutFakeReleasesForETL(query.list());
+  }
+
+  /**
+   * Filters out fake releases used by the ETL component (see https://jira.oicr.on.ca/browse/DCC-1409 for more details).
+   */
+  public static List<Release> filterOutFakeReleasesForETL(List<Release> list) {
+    return newArrayList(Iterables.filter(list,
+        new com.google.common.base.Predicate<Release>() { // guava predicate (not mysema)
+
+          @Override
+          public boolean apply(Release release) {
+            String releaseName = release.getName();
+            return isFakeReleaseForETL(releaseName) == false;
+          }
+        }));
+  }
+
+  /**
+   * Returns true if the release should be ignored (see https://jira.oicr.on.ca/browse/DCC-1409 for more details).
+   */
+  private static boolean isFakeReleaseForETL(String releaseName) {
+    return releaseName.startsWith(SPECIAL_RELEASE_PREFIX);
+  }
+
 }
