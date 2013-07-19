@@ -17,6 +17,10 @@
  */
 package org.icgc.dcc.submission.dictionary.model;
 
+import static com.google.common.collect.Sets.newLinkedHashSet;
+import static org.icgc.dcc.submission.core.util.Constants.CodeListRestriction_FIELD;
+import static org.icgc.dcc.submission.core.util.Constants.CodeListRestriction_NAME;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -30,7 +34,6 @@ import org.icgc.dcc.submission.core.model.BaseEntity;
 import org.icgc.dcc.submission.core.model.HasName;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryElement;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryVisitor;
-import org.icgc.dcc.submission.validation.restriction.CodeListRestriction;
 
 import com.google.code.morphia.annotations.Entity;
 import com.google.code.morphia.annotations.Indexed;
@@ -42,8 +45,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.mongodb.BasicDBObject;
-
-import static com.google.common.collect.Sets.newLinkedHashSet;
 
 /**
  * Describes a dictionary that contains {@code FileSchema}ta and that may be used by some releases
@@ -74,7 +75,7 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
   @Override
   public void accept(DictionaryVisitor dictionaryVisitor) {
     dictionaryVisitor.visit(this);
-    for(FileSchema fileSchema : files) {
+    for (FileSchema fileSchema : files) {
       fileSchema.accept(dictionaryVisitor);
     }
   }
@@ -135,6 +136,7 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
    */
   public List<String> fileSchemaNames() {
     return Lists.newArrayList(Iterables.transform(this.files, new Function<FileSchema, String>() {
+
       @Override
       public String apply(FileSchema input) {
         return input.getName();
@@ -143,8 +145,8 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
   }
 
   public boolean hasFileSchema(String fileName) {
-    for(FileSchema fileSchema : this.files) {
-      if(fileSchema.getName().equals(fileName)) {
+    for (FileSchema fileSchema : this.files) {
+      if (fileSchema.getName().equals(fileName)) {
         return true;
       }
     }
@@ -158,12 +160,12 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
   @JsonIgnore
   public Set<String> getCodeListNames() { // TODO: add corresponding unit test(s) - see DCC-905
     Set<String> codeListNames = newLinkedHashSet();
-    for(FileSchema fileSchema : getFiles()) { // TODO: use visitor instead
-      for(Field field : fileSchema.getFields()) {
-        for(Restriction restriction : field.getRestrictions()) {
-          if(restriction.getType().equals(CodeListRestriction.NAME)) {
+    for (FileSchema fileSchema : getFiles()) { // TODO: use visitor instead
+      for (Field field : fileSchema.getFields()) {
+        for (Restriction restriction : field.getRestrictions()) {
+          if (restriction.getType().equals(CodeListRestriction_NAME)) {
             BasicDBObject config = restriction.getConfig();
-            String codeListName = config.getString(CodeListRestriction.FIELD);
+            String codeListName = config.getString(CodeListRestriction_FIELD);
             codeListNames.add(codeListName);
           }
         }

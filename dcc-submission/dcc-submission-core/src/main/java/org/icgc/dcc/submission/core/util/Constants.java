@@ -15,44 +15,25 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.release.model;
+package org.icgc.dcc.submission.core.util;
 
-import java.util.List;
-
-import org.icgc.dcc.submission.web.Authorizations;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-
-import static com.google.common.base.Preconditions.checkNotNull;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 /**
- * A DTO corresponding to the <code>{@link User}</code> DAO and that allows the front-end to be aware of whether the
- * connected user is admin or not.
+ * DCC-799: Temporary support to untangle cyclic dependencies between dcc-submission-server and dcc-submission-core.
  * <p>
- * TODO: front-end should be revisited to only expect a boolean (DCC-828)
+ * Convention: OriginalClassName_CONSTANT_NAME;
  */
-public class DetailedUser {
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class Constants {
 
-  private final String username;
+  public static final String Authorizations_ADMIN_ROLE = "admin";
 
-  protected List<String> roles = Lists.newArrayList();
+  public static final String CodeListRestriction_FIELD = "name";
+  public static final String CodeListRestriction_NAME = "codelist";
+  public static final String DiscreteValuesRestriction_NAME = "in";
+  public static final String RequiredRestriction_NAME = "required";
+  public static final String RegexRestriction_NAME = "regex";
 
-  public DetailedUser(String username, boolean admin) {
-    this.username = checkNotNull(username);
-    this.roles = admin ? ImmutableList.of(Authorizations.ADMIN_ROLE) : ImmutableList.<String> of();
-  }
-
-  public String getUsername() {
-    return username;
-  }
-
-  public List<String> getRoles() {
-    return roles;
-  }
-
-  @Override
-  public String toString() {
-    return "DetailedUser [username=" + username + ", roles=" + roles + "]";
-  }
 }

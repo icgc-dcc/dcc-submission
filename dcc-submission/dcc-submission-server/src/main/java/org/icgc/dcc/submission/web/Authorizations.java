@@ -26,6 +26,7 @@ import javax.ws.rs.core.SecurityContext;
 import org.apache.shiro.realm.SimpleAccountRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.Subject;
+import org.icgc.dcc.submission.core.util.Constants;
 import org.icgc.dcc.submission.shiro.AuthorizationPrivileges;
 import org.icgc.dcc.submission.shiro.ShiroSecurityContext;
 import org.slf4j.Logger;
@@ -38,7 +39,7 @@ public class Authorizations {
 
   private static final Logger log = LoggerFactory.getLogger(Authorizations.class);
 
-  public static final String ADMIN_ROLE = "admin"; // TODO: hardcoded value..!! (DCC-759)
+  public static final String ADMIN_ROLE = Constants.Authorizations_ADMIN_ROLE; // TODO: hardcoded value..!! (DCC-759)
 
   /**
    * Returns the username from a "principal" {@code Object}. Using toString seems to be the only way (as used in Shiro's
@@ -110,7 +111,7 @@ public class Authorizations {
 
   static Response unauthorizedResponse(boolean important) {
     ServerErrorResponseMessage errorMessage = new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED);
-    if(important) {
+    if (important) {
       log.info("unauthorized action: {}", errorMessage);
     }
     return Response.status(Status.UNAUTHORIZED).entity(errorMessage).build();

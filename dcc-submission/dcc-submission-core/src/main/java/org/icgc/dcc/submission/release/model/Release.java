@@ -17,6 +17,12 @@
  */
 package org.icgc.dcc.submission.release.model;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Lists.newArrayList;
+import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
+import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
+
 import java.util.Date;
 import java.util.List;
 
@@ -27,8 +33,8 @@ import org.codehaus.jackson.annotate.JsonIgnore;
 import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.submission.core.model.BaseEntity;
 import org.icgc.dcc.submission.core.model.HasName;
+import org.icgc.dcc.submission.core.util.NameValidator;
 import org.icgc.dcc.submission.release.ReleaseException;
-import org.icgc.dcc.submission.web.validator.NameValidator;
 
 import com.google.code.morphia.annotations.Entity;
 import com.google.common.base.Function;
@@ -38,12 +44,6 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.collect.Lists.newArrayList;
-import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
-import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
 
 /**
  * Not meant to be used in a hash for now (override hashCode if so)
@@ -113,6 +113,7 @@ public class Release extends BaseEntity implements HasName {
   @JsonIgnore
   public Iterable<String> getProjectKeys() {
     return Iterables.transform(getSubmissions(), new Function<Submission, String>() {
+
       @Override
       public String apply(Submission input) {
         return input.getProjectKey();
@@ -123,8 +124,8 @@ public class Release extends BaseEntity implements HasName {
   @JsonIgnore
   public List<String> getInvalidProjectKeys() {
     List<String> invalidProjectKeys = newArrayList();
-    for(Submission submission : getSubmissions()) {
-      if(submission.getState() == INVALID) {
+    for (Submission submission : getSubmissions()) {
+      if (submission.getState() == INVALID) {
         invalidProjectKeys.add(submission.getProjectKey());
       }
     }
@@ -135,13 +136,14 @@ public class Release extends BaseEntity implements HasName {
     checkArgument(projectKey != null);
 
     Optional<Submission> foundSubmission = Iterables.tryFind(this.submissions, new Predicate<Submission>() {
+
       @Override
       public boolean apply(Submission submission) {
         return submission.getProjectKey().equals(projectKey);
       }
     });
 
-    if(foundSubmission.isPresent()) {
+    if (foundSubmission.isPresent()) {
       return foundSubmission.get();
     } else {
       throw new ReleaseException(String.format("there is no project \"%s\" associated with release \"%s\"", projectKey,
@@ -174,7 +176,7 @@ public class Release extends BaseEntity implements HasName {
    */
   public List<String> getQueuedProjectKeys() {
     List<String> projectKeys = Lists.newArrayList();
-    for(QueuedProject qp : this.getQueue()) {
+    for (QueuedProject qp : this.getQueue()) {
       projectKeys.add(qp.getKey());
     }
     return projectKeys;
@@ -185,22 +187,22 @@ public class Release extends BaseEntity implements HasName {
   }
 
   public void enqueue(QueuedProject project) {
-    if(project.getKey() != null && !project.getKey().isEmpty() && !this.queue.contains(project)) {
+    if (project.getKey() != null && !project.getKey().isEmpty() && !this.queue.contains(project)) {
       this.queue.add(project);
     }
   }
 
   public void enqueue(List<QueuedProject> queuedProjects) {
-    for(QueuedProject qp : queuedProjects) {
+    for (QueuedProject qp : queuedProjects) {
       this.enqueue(qp);
     }
   }
 
   public int removeFromQueue(final String projectKey) {
     int count = 0;
-    for(int i = this.queue.size() - 1; i >= 0; i--) {
+    for (int i = this.queue.size() - 1; i >= 0; i--) {
       QueuedProject queuedProject = this.queue.get(i);
-      if(queuedProject != null && queuedProject.getKey().equals(projectKey)) {
+      if (queuedProject != null && queuedProject.getKey().equals(projectKey)) {
         this.queue.remove(i);
         count++;
       }
@@ -210,7 +212,7 @@ public class Release extends BaseEntity implements HasName {
 
   public int removeFromQueue(final List<String> projectKeys) {
     int count = 0;
-    for(String projectKey : projectKeys) {
+    for (String projectKey : projectKeys) {
       count += removeFromQueue(projectKey);
     }
     return count;
@@ -254,13 +256,13 @@ public class Release extends BaseEntity implements HasName {
 
   @Override
   public boolean equals(Object obj) {
-    if(obj == null) {
+    if (obj == null) {
       return false;
     }
-    if(obj == this) {
+    if (obj == this) {
       return true;
     }
-    if(getClass() != obj.getClass()) {
+    if (getClass() != obj.getClass()) {
       return false;
     }
     final Release other = (Release) obj;
