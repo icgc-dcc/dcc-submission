@@ -17,37 +17,36 @@
  */
 package org.icgc.dcc.core.model;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
 /**
  * Represents a collection in the the MongoDB data model.
  */
+@RequiredArgsConstructor
+@Getter
 public enum ReleaseCollection {
 
-  OBSERVATION("Observation", FieldNames.OBSERVATION_ID),
-  DONOR("Donor", FieldNames.DONOR_ID),
-  GENE("Gene", FieldNames.GENE_ID),
-  PROJECT("Project", FieldNames.PROJECT_ID),
-  MUTATION("Mutation", FieldNames.MUTATION_ID);
+  RELEASE_COLLECTION("Release", FieldNames.RELEASE_ID),
+  PROJECT_COLLECTION("Project", FieldNames.PROJECT_ID),
+  DONOR_COLLECTION("Donor", FieldNames.DONOR_ID),
+  GENE_COLLECTION("Gene", FieldNames.GENE_ID),
+  OBSERVATION_COLLECTION("Observation", FieldNames.OBSERVATION_ID),
+  MUTATION_COLLECTION("Mutation", FieldNames.MUTATION_ID);
 
+  /**
+   * The name of the collection.
+   */
   final private String name;
 
+  /**
+   * The primary key of the collection.
+   */
   final private String key;
-
-  private ReleaseCollection(String name, String key) {
-    this.name = name;
-    this.key = key;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public String getKey() {
-    return key;
-  }
 
   @Override
   public String toString() {
-    return getName();
+    return name;
   }
 
 }

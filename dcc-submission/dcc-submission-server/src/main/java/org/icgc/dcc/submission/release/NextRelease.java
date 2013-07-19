@@ -22,6 +22,8 @@ import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.List;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.icgc.dcc.submission.core.model.InvalidStateException;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.DictionaryState;
@@ -34,8 +36,6 @@ import org.icgc.dcc.submission.release.model.SubmissionState;
 import org.icgc.dcc.submission.web.ServerErrorCode;
 import org.icgc.dcc.submission.web.validator.InvalidNameException;
 import org.icgc.dcc.submission.web.validator.NameValidator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
@@ -44,9 +44,8 @@ import com.google.code.morphia.query.UpdateOperations;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 
+@Slf4j
 public class NextRelease extends BaseRelease {
-
-  private static final Logger log = LoggerFactory.getLogger(NextRelease.class);
 
   private final DccLocking dccLocking;
 
