@@ -19,8 +19,9 @@ package org.icgc.dcc.core.model;
 
 public enum Entity {
 
-  DONOR,
+  RELEASE,
   PROJECT,
+  DONOR,
   GENE,
   OBSERVATION,
   MUTATION,
