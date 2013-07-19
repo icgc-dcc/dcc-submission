@@ -22,18 +22,21 @@ import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.model.Entity.GENE;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.ToString;
 import lombok.val;
 import lombok.experimental.FieldDefaults;
 
 /**
  * ElasticSearch index types.
  */
-@RequiredArgsConstructor(access = PRIVATE)
+@RequiredArgsConstructor
 @FieldDefaults(level = PRIVATE, makeFinal = true)
 @Getter
-@ToString
 public enum IndexType {
+
+  /**
+   * Release type(s).
+   */
+  RELEASE_TYPE(Entity.PROJECT, "release", Classifier.BASIC),
 
   /**
    * Project type(s).
@@ -87,6 +90,11 @@ public enum IndexType {
     }
 
     throw new IllegalArgumentException("No " + IndexType.class.getName() + " value with name '" + name + "' found");
+  }
+
+  @Override
+  public String toString() {
+    return name;
   }
 
   public enum Classifier {
