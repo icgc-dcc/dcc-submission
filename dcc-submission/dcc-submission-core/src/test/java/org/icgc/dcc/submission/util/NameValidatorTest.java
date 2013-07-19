@@ -15,38 +15,36 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.model;
+package org.icgc.dcc.submission.util;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import org.icgc.dcc.submission.core.util.NameValidator;
+import org.junit.Test;
 
 /**
- * Represents a collection in the the MongoDB data model.
+ * 
  */
-@RequiredArgsConstructor
-@Getter
-public enum ReleaseCollection {
+public class NameValidatorTest {
 
-  RELEASE_COLLECTION("Release", FieldNames.RELEASE_ID),
-  PROJECT_COLLECTION("Project", FieldNames.PROJECT_ID),
-  DONOR_COLLECTION("Donor", FieldNames.DONOR_ID),
-  GENE_COLLECTION("Gene", FieldNames.GENE_ID),
-  OBSERVATION_COLLECTION("Observation", FieldNames.OBSERVATION_ID),
-  MUTATION_COLLECTION("Mutation", FieldNames.MUTATION_ID);
+  @Test
+  public void test_name_validation() {
 
-  /**
-   * The name of the collection.
-   */
-  final private String name;
+    assertTrue(NameValidator.validateEntityName("abc123"));
 
-  /**
-   * The primary key of the collection.
-   */
-  final private String key;
+    assertTrue(NameValidator.validateEntityName("abc_123_p9k"));
 
-  @Override
-  public String toString() {
-    return name;
+    assertFalse(NameValidator.validateEntityName("!@#123"));
+
+    assertTrue(NameValidator.validateEntityName("ABCabc123"));
+
+    assertFalse(NameValidator.validateEntityName("a2"));
+
+    assertFalse(NameValidator.validateEntityName("a␡b")); // non-printable
+
+    assertTrue(NameValidator.validateProjectId("809_0"));
+
+    assertTrue(NameValidator.validateProjectId("809.0"));
   }
-
 }

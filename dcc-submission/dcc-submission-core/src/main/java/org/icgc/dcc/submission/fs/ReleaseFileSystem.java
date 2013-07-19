@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.fs;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.icgc.dcc.submission.core.util.Constants.Authorizations_ADMIN_ROLE;
 
 import java.util.List;
 
@@ -30,7 +31,6 @@ import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseState;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.shiro.AuthorizationPrivileges;
-import org.icgc.dcc.submission.web.Authorizations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -145,7 +145,7 @@ public class ReleaseFileSystem {
 
   public boolean isSystemDirectory(Path path) {
     return this.getSystemDirectory().getName().equals(path.getName())
-        && this.userSubject.hasRole(Authorizations.ADMIN_ROLE);
+        && this.userSubject.hasRole(Authorizations_ADMIN_ROLE);
   }
 
   private boolean isApplication() {

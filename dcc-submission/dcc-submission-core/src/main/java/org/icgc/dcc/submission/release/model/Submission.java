@@ -23,7 +23,6 @@ import java.util.Date;
 import javax.validation.Valid;
 
 import org.hibernate.validator.constraints.NotBlank;
-import org.icgc.dcc.submission.validation.report.SubmissionReport;
 
 import com.google.code.morphia.annotations.Embedded;
 import com.google.common.base.Objects;
@@ -41,8 +40,10 @@ public class Submission implements Serializable {
 
   protected SubmissionState state;
 
+  // DCC-799: Runtime type will be SubmissionReport. Static type is Object to untangle cyclic dependencies between
+  // dcc-submission-server and dcc-submission-core.
   @Valid
-  protected SubmissionReport report;
+  protected Object report;
 
   public Submission() {
     super();
@@ -55,18 +56,19 @@ public class Submission implements Serializable {
     this.lastUpdated = new Date();
   }
 
-  /**
-   * @return the lastUpdated
-   */
   public Date getLastUpdated() {
     return lastUpdated;
   }
 
-  public SubmissionReport getReport() {
+  public Object getReport() {
+    // DCC-799: Runtime type will be SubmissionReport. Static type is Object to untangle cyclic dependencies between
+    // dcc-submission-server and dcc-submission-core.
     return report;
   }
 
-  public void setReport(SubmissionReport report) {
+  public void setReport(Object report) {
+    // DCC-799: Runtime type will be SubmissionReport. Static type is Object to untangle cyclic dependencies between
+    // dcc-submission-server and dcc-submission-core.
     this.report = report;
   }
 
@@ -101,13 +103,13 @@ public class Submission implements Serializable {
 
   @Override
   public boolean equals(Object obj) {
-    if(obj == null) {
+    if (obj == null) {
       return false;
     }
-    if(obj == this) {
+    if (obj == this) {
       return true;
     }
-    if(getClass() != obj.getClass()) {
+    if (getClass() != obj.getClass()) {
       return false;
     }
     final Submission other = (Submission) obj;
@@ -124,4 +126,5 @@ public class Submission implements Serializable {
         .add("report", this.report) // TODO: toString for SubmissionReport
         .toString();
   }
+
 }

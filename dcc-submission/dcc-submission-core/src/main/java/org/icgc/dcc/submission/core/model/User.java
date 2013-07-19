@@ -17,101 +17,61 @@
  */
 package org.icgc.dcc.submission.core.model;
 
-import java.util.List;
-
-import javax.validation.constraints.Pattern;
-
-import org.hibernate.validator.constraints.NotBlank;
-import org.icgc.dcc.submission.web.validator.NameValidator;
-
 import com.google.code.morphia.annotations.Entity;
-import com.google.code.morphia.annotations.Indexed;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 
-import static com.google.common.base.Objects.firstNonNull;
-
+/**
+ * This class/collection is only intended to persist the number of failed login attempts per user. It should not try to
+ * keep track of roles/permissions as it is the responsibility of <code>DccWrappingRealm</code> to do so. Keeping track
+ * of those permissions would require updates on <code>{@link Project}</code> to cascade down changes to this collection
+ * (a complexity we do not care for).
+ * <p>
+ * It is a workaround until the user management is fully figured out (https://jira.oicr.on.ca/browse/DCC-815 for Crowd
+ * integration)
+ */
 @Entity
-public class Project extends BaseEntity implements HasName {
+public class User extends BaseEntity implements HasName {
 
-  @NotBlank
-  @Pattern(regexp = NameValidator.PROJECT_ID_PATTERN)
-  @Indexed(unique = true)
-  protected String key;
+  protected String username;
 
-  @NotBlank
-  protected String name;
+  private int failedAttempts = 0;
 
-  protected String alias;
-
-  protected List<String> users = Lists.newArrayList();
-
-  protected List<String> groups = Lists.newArrayList();
-
-  public Project() {
-    super();
-  }
-
-  public Project(String name) {
-    super();
-    this.setName(name);
-  }
-
-  public Project(String name, String key) {
-    super();
-    this.setName(name);
-    this.setKey(key);
-  }
+  private static final int MAX_ATTEMPTS = 3;
 
   @Override
   public String getName() {
-    return firstNonNull(name, getKey());
+    return getUsername();
   }
 
-  public void setName(String name) {
-    this.name = name;
+  public String getUsername() {
+    return username;
   }
 
-  public String getAlias() {
-    return alias;
+  public void setUsername(String username) {
+    this.username = username;
   }
 
-  public void setAlias(String alias) {
-    this.alias = alias;
+  public int getFailedAttempts() {
+    return failedAttempts;
   }
 
-  public String getKey() {
-    return key;
+  public void setFailedAttempts(int failedAttempts) {
+    this.failedAttempts = failedAttempts;
   }
 
-  public void setKey(String key) {
-    this.key = key;
+  public void incrementAttempts() {
+    failedAttempts++;
   }
 
-  public List<String> getUsers() {
-    return users;
+  public boolean isLocked() {
+    return failedAttempts >= MAX_ATTEMPTS;
   }
 
-  public void setUsers(List<String> users) {
-    this.users = users;
-  }
-
-  public List<String> getGroups() {
-    return groups == null ? ImmutableList.<String> of() : ImmutableList.copyOf(groups);
-  }
-
-  public void setGroups(List<String> groups) {
-    this.groups = groups;
-  }
-
-  public boolean hasUser(String name) {
-    return this.users != null && this.users.contains(name);
+  public void resetAttempts() {
+    failedAttempts = 0;
   }
 
   @Override
   public String toString() {
-    return "Project [key=" + key + ", name=" + name + ", alias=" + alias + ", users=" + users + ", groups=" + groups
-        + "]";
+    return "User [username=" + username + ", failedAttempts=" + failedAttempts + "]";
   }
-
 }

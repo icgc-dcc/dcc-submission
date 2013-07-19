@@ -15,12 +15,43 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core;
+package org.icgc.dcc.submission.release.model;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static org.icgc.dcc.submission.core.util.Constants.Authorizations_ADMIN_ROLE;
+
+import java.util.List;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 
 /**
- * 
+ * A DTO corresponding to the <code>{@link User}</code> DAO and that allows the front-end to be aware of whether the
+ * connected user is admin or not.
+ * <p>
+ * TODO: front-end should be revisited to only expect a boolean (DCC-828)
  */
-public class AddClassesHere {
+public class DetailedUser {
 
+  private final String username;
+
+  protected List<String> roles = Lists.newArrayList();
+
+  public DetailedUser(String username, boolean admin) {
+    this.username = checkNotNull(username);
+    this.roles = admin ? ImmutableList.of(Authorizations_ADMIN_ROLE) : ImmutableList.<String> of();
+  }
+
+  public String getUsername() {
+    return username;
+  }
+
+  public List<String> getRoles() {
+    return roles;
+  }
+
+  @Override
+  public String toString() {
+    return "DetailedUser [username=" + username + ", roles=" + roles + "]";
+  }
 }
