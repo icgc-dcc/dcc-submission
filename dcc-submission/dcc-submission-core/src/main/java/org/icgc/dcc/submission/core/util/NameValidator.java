@@ -15,38 +15,33 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.model;
+package org.icgc.dcc.submission.core.util;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-/**
- * Represents a collection in the the MongoDB data model.
- */
-@RequiredArgsConstructor
-@Getter
-public enum ReleaseCollection {
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
-  RELEASE_COLLECTION("Release", FieldNames.RELEASE_ID),
-  PROJECT_COLLECTION("Project", FieldNames.PROJECT_ID),
-  DONOR_COLLECTION("Donor", FieldNames.DONOR_ID),
-  GENE_COLLECTION("Gene", FieldNames.GENE_ID),
-  OBSERVATION_COLLECTION("Observation", FieldNames.OBSERVATION_ID),
-  MUTATION_COLLECTION("Mutation", FieldNames.MUTATION_ID);
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class NameValidator {
 
-  /**
-   * The name of the collection.
-   */
-  final private String name;
+  public final static String DEFAULT_NAME_PATTERN = "^[\\w]{3,}$";
 
-  /**
-   * The primary key of the collection.
-   */
-  final private String key;
+  public final static String PROJECT_ID_PATTERN = "^[\\p{Print}\\.]{3,}$";
 
-  @Override
-  public String toString() {
-    return name;
+  public static boolean validateProjectId(String id) {
+    return validateEntityName(id, PROJECT_ID_PATTERN);
+  }
+
+  public static boolean validateEntityName(String name) {
+    return validateEntityName(name, DEFAULT_NAME_PATTERN);
+  }
+
+  public static boolean validateEntityName(String name, String patternString) {
+    Pattern pattern = Pattern.compile(patternString);
+    Matcher matcher = pattern.matcher(name);
+    return matcher.matches();
   }
 
 }

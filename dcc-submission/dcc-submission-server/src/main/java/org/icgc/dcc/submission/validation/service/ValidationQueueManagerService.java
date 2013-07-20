@@ -127,6 +127,7 @@ public class ValidationQueueManagerService extends AbstractService {
     log.info("polling queue every {} second", POLLING_FREQUENCY_PER_SEC);
 
     schedule = scheduler.scheduleWithFixedDelay(new Runnable() {
+
       @Override
       public void run() {
         log.debug("polling");
@@ -134,17 +135,17 @@ public class ValidationQueueManagerService extends AbstractService {
         Optional<QueuedProject> optionalNextProject = Optional.absent();
         Optional<Throwable> criticalThrowable = Optional.absent();
         try {
-          if(isRunning() && releaseService.hasNextRelease()) {
+          if (isRunning() && releaseService.hasNextRelease()) {
             optionalNextProject = processNext();
           }
-        } catch(FilePresenceException e) {
+        } catch (FilePresenceException e) {
           try {
             handleAbortedValidation(e);
-          } catch(Throwable t) {
+          } catch (Throwable t) {
             criticalThrowable = Optional.fromNullable(t);
           }
-        } catch(Throwable t) { // exception thrown within the run method are not logged otherwise (NullPointerException
-                               // for instance)
+        } catch (Throwable t) { // exception thrown within the run method are not logged otherwise (NullPointerException
+                                // for instance)
           criticalThrowable = Optional.fromNullable(t);
         } finally {
 
@@ -152,7 +153,7 @@ public class ValidationQueueManagerService extends AbstractService {
            * When a scheduled job throws an exception to the executor, all future runs of the job are cancelled. Thus,
            * we should never throw an exception to our executor otherwise a server restart is necessary.
            */
-          if(criticalThrowable.isPresent()) {
+          if (criticalThrowable.isPresent()) {
             processCriticalThrowable(criticalThrowable.get(), optionalNextProject);
           }
         }
@@ -175,12 +176,12 @@ public class ValidationQueueManagerService extends AbstractService {
 
     NextRelease nextRelease = releaseService.getNextRelease();
     Release release = nextRelease.getRelease();
-    if(release == null || release.getState() != ReleaseState.OPENED) {
+    if (release == null || release.getState() != ReleaseState.OPENED) {
       throw new ValidationServiceException("cannot access the release");
     } else {
       optionalNextProject = release.nextInQueue();
-      if(optionalNextProject.isPresent()) {
-        if(isRunnable()) {
+      if (optionalNextProject.isPresent()) {
+        if (isRunnable()) {
           QueuedProject nextProject = optionalNextProject.get();
           String projectKey = nextProject.getKey();
           log.info("next in queue {}", projectKey);
@@ -201,11 +202,11 @@ public class ValidationQueueManagerService extends AbstractService {
   private void processCriticalThrowable(Throwable t, Optional<QueuedProject> optionalNextProject) {
     log.error("a critical error occured while processing the validation queue", t);
 
-    if(checkNotNull(optionalNextProject.isPresent())) {
+    if (checkNotNull(optionalNextProject.isPresent())) {
       QueuedProject project = optionalNextProject.get();
       try {
         resolveSubmission(project, SubmissionState.ERROR);
-      } catch(Throwable t2) {
+      } catch (Throwable t2) {
         log.error("a critical error occured while attempting to dequeue project " + project.getKey(), t2);
       }
     } else {
@@ -228,7 +229,7 @@ public class ValidationQueueManagerService extends AbstractService {
    */
   private void handleAbortedValidation(FilePresenceException e) {
     Plan plan = e.getPlan();
-    if(plan.hasFileLevelErrors() == false) {
+    if (plan.hasFileLevelErrors() == false) {
       throw new AssertionError(); // by design since this should be the condition for throwing the
                                   // FatalPlanningException
     }
@@ -244,11 +245,11 @@ public class ValidationQueueManagerService extends AbstractService {
     SubmissionReport report = new SubmissionReport();
 
     List<SchemaReport> schemaReports = new ArrayList<SchemaReport>();
-    for(String schema : fileLevelErrors.keySet()) {
+    for (String schema : fileLevelErrors.keySet()) {
       SchemaReport schemaReport = new SchemaReport();
       Iterator<TupleState.TupleError> es = fileLevelErrors.get(schema).getErrors().iterator();
       List<ValidationErrorReport> errReport = Lists.newArrayList();
-      while(es.hasNext()) {
+      while (es.hasNext()) {
         errReport.add(new ValidationErrorReport(es.next()));
       }
       schemaReport.addErrors(errReport);
@@ -270,8 +271,8 @@ public class ValidationQueueManagerService extends AbstractService {
     log.info("Cascade completed for project {}", projectKey);
 
     Status cascadeStatus = plan.getCascade().getCascadeStats().getStatus();
-    if(FAILED == cascadeStatus) { // Completion does not guarantee success (at least in current version of
-                                  // cascading)
+    if (FAILED == cascadeStatus) { // Completion does not guarantee success (at least in current version of
+                                   // cascading)
       log.error("Validation failed: cascade completed with a {} status; About to dequeue project key {}",
           cascadeStatus, projectKey);
       resolveSubmission(queuedProject, ERROR);
@@ -282,7 +283,7 @@ public class ValidationQueueManagerService extends AbstractService {
       log.info("Gathered report for project {}", projectKey);
 
       // resolving submission
-      if(outcome == PASSED) {
+      if (outcome == PASSED) {
         resolveSubmission(queuedProject, VALID);
       } else {
         resolveSubmission(queuedProject, INVALID);
@@ -304,7 +305,10 @@ public class ValidationQueueManagerService extends AbstractService {
     submission.setReport(report);
 
     // persist the report to DB
-    this.releaseService.updateSubmissionReport(release.getName(), projectKey, submission.getReport());
+    // DCC-799: Runtime type will be SubmissionReport. Static type is Object to untangle cyclic dependencies between
+    // dcc-submission-server and dcc-submission-core.
+    this.releaseService
+        .updateSubmissionReport(release.getName(), projectKey, (SubmissionReport) submission.getReport());
     log.info("report collecting finished on project {}", projectKey);
   }
 
@@ -330,7 +334,7 @@ public class ValidationQueueManagerService extends AbstractService {
     releaseService.resolve(key, state);
 
     decrementParallelValidationCount();
-    if(project.getEmails().isEmpty() == false) {
+    if (project.getEmails().isEmpty() == false) {
       this.email(project, state);
     }
     log.info("Resolved {}", key);
@@ -346,7 +350,7 @@ public class ValidationQueueManagerService extends AbstractService {
    */
   private synchronized boolean isRunnable() {
     int original = parallelValidationCount.intValue();
-    if(original < MAX_VALIDATING) {
+    if (original < MAX_VALIDATING) {
       checkState(parallelValidationCount.incrementAndGet() <= MAX_VALIDATING, "by design: %s",
           parallelValidationCount.intValue());
     }
@@ -367,16 +371,16 @@ public class ValidationQueueManagerService extends AbstractService {
 
     Set<Address> aCheck = Sets.newHashSet();
 
-    for(String email : project.getEmails()) {
+    for (String email : project.getEmails()) {
       try {
         Address a = new InternetAddress(email);
         aCheck.add(a);
-      } catch(AddressException e) {
+      } catch (AddressException e) {
         log.error("Illegal Address: " + e);
       }
     }
 
-    if(aCheck.isEmpty() == false) {
+    if (aCheck.isEmpty() == false) {
       MailUtils.validationEndEmail(config, release.getName(), project.getKey(), state, aCheck);
     }
   }
@@ -385,6 +389,7 @@ public class ValidationQueueManagerService extends AbstractService {
    * TODO: externalize? may be difficult because of it calls method from the enclosing class...
    */
   public class ValidationCascadeListener implements CascadeListener {
+
     Plan plan;
 
     public void setPlan(Plan plan) {
