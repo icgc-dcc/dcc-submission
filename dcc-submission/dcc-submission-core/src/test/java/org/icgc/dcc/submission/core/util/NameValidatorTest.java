@@ -15,17 +15,13 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.web.validator;
-
-import org.icgc.dcc.submission.web.validator.NameValidator;
-import org.junit.Test;
+package org.icgc.dcc.submission.core.util;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-/**
- * 
- */
+import org.junit.Test;
+
 public class NameValidatorTest {
 
   @Test
@@ -46,5 +42,6 @@ public class NameValidatorTest {
     assertTrue(NameValidator.validateProjectId("809_0"));
 
     assertTrue(NameValidator.validateProjectId("809.0"));
+
   }
 }

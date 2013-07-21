@@ -25,6 +25,7 @@ import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.core.model.InvalidStateException;
+import org.icgc.dcc.submission.core.util.NameValidator;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.DictionaryState;
 import org.icgc.dcc.submission.fs.DccFileSystem;
@@ -35,7 +36,6 @@ import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 import org.icgc.dcc.submission.web.ServerErrorCode;
 import org.icgc.dcc.submission.web.validator.InvalidNameException;
-import org.icgc.dcc.submission.web.validator.NameValidator;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;

@@ -37,9 +37,10 @@ public class Resources {
   static Response noSuchEntityResponse(boolean important, String... names) {
     ServerErrorResponseMessage errorMessage =
         new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, (Object[]) names);
-    if(important) {
+    if (important) {
       log.info("no such entity: {}", errorMessage);
     }
     return Response.status(Status.NOT_FOUND).entity(errorMessage).build();
   }
+
 }
