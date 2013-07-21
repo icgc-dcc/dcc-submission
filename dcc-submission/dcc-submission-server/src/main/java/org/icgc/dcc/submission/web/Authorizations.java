@@ -62,7 +62,7 @@ public class Authorizations {
     return (ShiroSecurityContext) securityContext;
   }
 
-  static Subject getShiroSubject(SecurityContext securityContext) {
+  static Subject getSubject(SecurityContext securityContext) {
     return Authorizations.shiroSecurityContext(securityContext).getSubject();
   }
 

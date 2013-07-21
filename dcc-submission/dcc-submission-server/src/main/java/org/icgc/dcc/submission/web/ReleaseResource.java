@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.web;
 
+import static org.icgc.dcc.submission.web.Authorizations.getSubject;
 import static org.icgc.dcc.submission.web.Authorizations.hasReleaseViewPrivilege;
 import static org.icgc.dcc.submission.web.Authorizations.hasSpecificProjectPrivilege;
 import static org.icgc.dcc.submission.web.Authorizations.isOmnipotentUser;
@@ -36,72 +37,53 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.shiro.subject.Subject;
+import org.codehaus.jackson.map.annotate.JsonView;
+import org.icgc.dcc.submission.core.model.Views.Digest;
 import org.icgc.dcc.submission.fs.SubmissionFile;
 import org.icgc.dcc.submission.release.ReleaseService;
 import org.icgc.dcc.submission.release.model.DetailedSubmission;
 import org.icgc.dcc.submission.release.model.Release;
-import org.icgc.dcc.submission.release.model.ReleaseView;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.validation.report.FieldReport;
 import org.icgc.dcc.submission.validation.report.SchemaReport;
 import org.icgc.dcc.submission.validation.report.SubmissionReport;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
 import com.google.inject.Inject;
 
+@Slf4j
 @Path("releases")
 public class ReleaseResource {
-
-  private static final Logger log = LoggerFactory.getLogger(ReleaseResource.class);
 
   @Inject
   private ReleaseService releaseService;
 
-  @GET
-  public Response getResources(@Context
-  SecurityContext securityContext) {
-    log.debug("Getting (filtered) releases");
-    if (hasReleaseViewPrivilege(securityContext) == false) {
-      return unauthorizedResponse();
-    }
-
-    Subject subject = Authorizations.getShiroSubject(securityContext);
-    List<Release> filteredReleases = this.releaseService.getFilteredReleases(subject);
-    return Response.ok(filteredReleases).build();
-  }
-
-  @GET
-  @Path("{name}")
-  public Response getReleaseByName(@PathParam("name")
-  String name, @Context
-  SecurityContext securityContext) {
-    log.debug("Getting release using: {}", name);
-
-    Subject subject = Authorizations.getShiroSubject(securityContext);
-    Optional<ReleaseView> filteredReleaseView = // this handles authorization
-        releaseService.getFilteredReleaseView(name, subject);
-
-    if (filteredReleaseView.isPresent() == false) {
-      return noSuchEntityResponse(name);
-    }
-    return Response.ok(filteredReleaseView.get()).build();
-  }
-
+  // TODO: This method seems like it should be removed since it is being exposed just for testing
+  @VisibleForTesting
   @PUT
-  public Response initialize(@Valid
-  Release release, @Context
-  Request req, @Context
-  SecurityContext securityContext) {
+  public Response initialize(
+      @Valid
+      Release release,
+
+      @Context
+      Request request,
+
+      @Context
+      SecurityContext securityContext
+      )
+  {
     log.info("Initializing releases with: {}", release);
     if (isOmnipotentUser(securityContext) == false) {
       return unauthorizedResponse();
     }
 
     if (release != null) {
-      ResponseTimestamper.evaluate(req, release);
+      ResponseTimestamper.evaluate(request, release);
 
       if (this.releaseService.list().isEmpty()) {
         this.releaseService.createInitialRelease(release);
@@ -117,41 +99,88 @@ public class ReleaseResource {
   }
 
   @GET
-  @Path("{name}/submissions/{projectKey}")
-  public Response getSubmission(@PathParam("name")
-  String releaseName, @PathParam("projectKey")
-  String projectKey,
+  @JsonView(Digest.class)
+  public Response getReleases(
       @Context
-      SecurityContext securityContext) {
+      SecurityContext securityContext
+      )
+  {
+    log.debug("Getting (filtered) releases");
+    if (hasReleaseViewPrivilege(securityContext) == false) {
+      return unauthorizedResponse();
+    }
 
+    Subject subject = getSubject(securityContext);
+    List<Release> filteredReleases = this.releaseService.getReleasesBySubject(subject);
+
+    return Response.ok(filteredReleases).build();
+  }
+
+  @GET
+  @Path("{name}")
+  public Response getReleaseByName(
+      @PathParam("name")
+      String name,
+
+      @Context
+      SecurityContext securityContext)
+  {
+    log.debug("Getting release using: {}", name);
+    Subject subject = getSubject(securityContext);
+    val releaseView = releaseService.getReleaseViewBySubject(name, subject);
+
+    if (releaseView.isPresent() == false) {
+      return noSuchEntityResponse(name);
+    }
+
+    return Response.ok(releaseView.get()).build();
+  }
+
+  @GET
+  @Path("{name}/submissions/{projectKey}")
+  public Response getSubmission(
+      @PathParam("name")
+      String releaseName,
+
+      @PathParam("projectKey")
+      String projectKey,
+
+      @Context
+      SecurityContext securityContext)
+  {
     log.debug("Getting detailed submission: {}.{}", releaseName, projectKey);
     if (hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
       return unauthorizedResponse();
     }
 
-    DetailedSubmission detailedSubmission = // TODO: use Optional...
-        this.releaseService.getDetailedSubmission(releaseName, projectKey);
+    // TODO: use Optional...
+    DetailedSubmission detailedSubmission = this.releaseService.getDetailedSubmission(releaseName, projectKey);
     if (detailedSubmission == null) {
       return noSuchEntityResponse(releaseName, projectKey);
     }
+
     return Response.ok(detailedSubmission).build();
   }
 
   @GET
   @Path("{name}/submissions/{projectKey}/report")
-  public Response getSubmissionReport(@PathParam("name")
-  String releaseName,
-      @PathParam("projectKey")
-      String projectKey, @Context
-      SecurityContext securityContext) {
+  public Response getSubmissionReport(
+      @PathParam("name")
+      String releaseName,
 
+      @PathParam("projectKey")
+      String projectKey,
+
+      @Context
+      SecurityContext securityContext)
+  {
     log.debug("Getting submission report for: {}.{}", releaseName, projectKey);
     if (hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
       return unauthorizedResponse();
     }
 
-    Submission submission = // TODO: use Optional...
-        this.releaseService.getSubmission(releaseName, projectKey);
+    // TODO: use Optional...
+    Submission submission = this.releaseService.getSubmission(releaseName, projectKey);
     if (submission == null) {
       return noSuchEntityResponse(releaseName, projectKey);
     }
@@ -164,35 +193,50 @@ public class ReleaseResource {
 
   @GET
   @Path("{name}/submissions/{projectKey}/report/{schema}")
-  public Response getSchemaReport(@PathParam("name")
-  String releaseName, @PathParam("projectKey")
-  String projectKey,
-      @PathParam("schema")
-      String schema, @Context
-      SecurityContext securityContext) {
+  public Response getSchemaReport(
+      @PathParam("name")
+      String releaseName,
 
+      @PathParam("projectKey")
+      String projectKey,
+
+      @PathParam("schema")
+      String schema,
+
+      @Context
+      SecurityContext securityContext)
+  {
     log.debug("Getting schema report for: {}.{}.{}", new Object[] { releaseName, projectKey, schema });
     if (hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
       return unauthorizedResponse();
     }
 
-    Optional<SchemaReport> optionalSchemaReport = getSchemaReport(releaseName, projectKey, schema);
-    if (optionalSchemaReport.isPresent() == false) {
+    val schemaReport = getSchemaReport(releaseName, projectKey, schema);
+    if (schemaReport.isPresent() == false) {
       return noSuchEntityResponse(releaseName, projectKey, schema);
     }
-    return Response.ok(optionalSchemaReport.get()).build();
+
+    return Response.ok(schemaReport.get()).build();
   }
 
   @GET
   @Path("{name}/submissions/{projectKey}/report/{schema}/{field}")
-  public Response getFieldReport(@PathParam("name")
-  String releaseName, @PathParam("projectKey")
-  String projectKey,
-      @PathParam("schema")
-      String schema, @PathParam("field")
-      String field, @Context
-      SecurityContext securityContext) {
+  public Response getFieldReport(
+      @PathParam("name")
+      String releaseName,
 
+      @PathParam("projectKey")
+      String projectKey,
+
+      @PathParam("schema")
+      String schema,
+
+      @PathParam("field")
+      String field,
+
+      @Context
+      SecurityContext securityContext)
+  {
     log.debug("Getting field report for: {}.{}.{}.{}", new Object[] { releaseName, projectKey, schema, field });
     if (hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
       return unauthorizedResponse();
@@ -219,12 +263,16 @@ public class ReleaseResource {
 
   @GET
   @Path("{name}/submissions/{projectKey}/files")
-  public Response getSubmissionFileList(@PathParam("name")
-  String releaseName,
-      @PathParam("projectKey")
-      String projectKey, @Context
-      SecurityContext securityContext) {
+  public Response getSubmissionFileList(
+      @PathParam("name")
+      String releaseName,
 
+      @PathParam("projectKey")
+      String projectKey,
+
+      @Context
+      SecurityContext securityContext)
+  {
     log.debug("Getting submission file list for release {} and project {}", releaseName, projectKey);
     if (hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
       return unauthorizedResponse();
@@ -251,6 +299,8 @@ public class ReleaseResource {
         optional = Optional.of(schemaReport);
       }
     }
+
     return optional;
   }
+
 }

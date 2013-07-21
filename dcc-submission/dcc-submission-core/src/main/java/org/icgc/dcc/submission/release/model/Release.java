@@ -30,9 +30,11 @@ import javax.validation.Valid;
 import javax.validation.constraints.Pattern;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.map.annotate.JsonView;
 import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.submission.core.model.BaseEntity;
 import org.icgc.dcc.submission.core.model.HasName;
+import org.icgc.dcc.submission.core.model.Views.Digest;
 import org.icgc.dcc.submission.core.util.NameValidator;
 import org.icgc.dcc.submission.release.ReleaseException;
 
@@ -53,9 +55,18 @@ public class Release extends BaseEntity implements HasName {
 
   @NotBlank
   @Pattern(regexp = NameValidator.DEFAULT_NAME_PATTERN)
+  @JsonView(Digest.class)
   protected String name;
 
+  @JsonView(Digest.class)
   protected ReleaseState state;
+
+  @JsonView(Digest.class)
+  protected Date releaseDate;
+
+  @NotBlank
+  @JsonView(Digest.class)
+  protected String dictionaryVersion;
 
   protected boolean transitioning; // mutex
 
@@ -64,11 +75,6 @@ public class Release extends BaseEntity implements HasName {
 
   @Valid
   protected List<QueuedProject> queue = Lists.newArrayList();
-
-  protected Date releaseDate;
-
-  @NotBlank
-  protected String dictionaryVersion;
 
   public Release() {
     super();

@@ -40,6 +40,7 @@ import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
+import org.codehaus.jackson.map.SerializationConfig;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -63,6 +64,7 @@ public class ValidatingJacksonJsonProvider implements MessageBodyReader<Object>,
   // Unfortunate that this isn't defined in Response.Status
   @VisibleForTesting
   static final Response.StatusType UNPROCESSABLE_ENTITY = new Response.StatusType() {
+
     @Override
     public int getStatusCode() {
       return 422;
@@ -87,6 +89,9 @@ public class ValidatingJacksonJsonProvider implements MessageBodyReader<Object>,
   public ValidatingJacksonJsonProvider(JacksonJsonProvider delegate, Validator validator) {
     this.delegate = delegate;
     this.validator = validator;
+
+    // Do not serialize properties without a view when views are specified
+    delegate.configure(SerializationConfig.Feature.DEFAULT_VIEW_INCLUSION, false);
   }
 
   @Override
@@ -95,11 +100,11 @@ public class ValidatingJacksonJsonProvider implements MessageBodyReader<Object>,
 
     Object value = parseEntity(type, genericType, annotations, mediaType, httpHeaders, entityStream);
 
-    if(hasValidAnnotation(annotations)) {
+    if (hasValidAnnotation(annotations)) {
       List<String> errors = validate(value);
-      if(!errors.isEmpty()) {
+      if (!errors.isEmpty()) {
         StringBuilder msg = new StringBuilder("The request entity had the following errors:\n");
-        for(String error : errors) {
+        for (String error : errors) {
           msg.append("  * ").append(error).append('\n');
         }
         throw new WebApplicationException(unprocessableEntity(msg.toString()));
@@ -138,8 +143,8 @@ public class ValidatingJacksonJsonProvider implements MessageBodyReader<Object>,
 
   @VisibleForTesting
   boolean hasValidAnnotation(Annotation[] annotations) {
-    for(Annotation annotation : annotations) {
-      if(Valid.class.equals(annotation.annotationType())) {
+    for (Annotation annotation : annotations) {
+      if (Valid.class.equals(annotation.annotationType())) {
         return true;
       }
     }
@@ -148,12 +153,12 @@ public class ValidatingJacksonJsonProvider implements MessageBodyReader<Object>,
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
   private List<String> validate(Object o) {
-    if(o instanceof Collection<?>) {
+    if (o instanceof Collection<?>) {
       o = new CollectionWrapper((Collection<?>) o);
     }
     Set<String> errors = Sets.newHashSet();
     Set<ConstraintViolation<Object>> violations = validator.validate(o);
-    for(ConstraintViolation<Object> v : violations) {
+    for (ConstraintViolation<Object> v : violations) {
       errors.add(String.format("%s %s (was %s)", v.getPropertyPath(), v.getMessage(), v.getInvalidValue()));
     }
     return ImmutableList.copyOf(Ordering.natural().sortedCopy(errors));
@@ -164,6 +169,7 @@ public class ValidatingJacksonJsonProvider implements MessageBodyReader<Object>,
   }
 
   private static class CollectionWrapper<T> {
+
     @Valid
     private final Collection<T> collection;
 

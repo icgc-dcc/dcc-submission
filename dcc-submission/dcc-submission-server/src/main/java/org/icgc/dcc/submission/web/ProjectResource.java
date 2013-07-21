@@ -64,7 +64,7 @@ public class ProjectResource {
     /* Authorization is handled by the filtering of projects below */
 
     log.debug("Getting projects");
-    Subject subject = Authorizations.getShiroSubject(securityContext);
+    Subject subject = Authorizations.getSubject(securityContext);
     List<Project> projectList = projects.getProjectsBySubject(subject);
     if (projectList == null) { // TODO: use Optional (see DCC-820)
       projectList = Lists.newArrayList();

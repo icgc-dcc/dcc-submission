@@ -116,7 +116,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
    * Returns a list of {@code Release}s with their @{code Submission} filtered based on the user's privilege on
    * projects.
    */
-  public List<Release> getFilteredReleases(Subject subject) {
+  public List<Release> getReleasesBySubject(Subject subject) {
     log.debug("getting releases for {}", subject.getPrincipal());
 
     List<Release> releases = listReleases();
@@ -173,7 +173,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
    * Optionally returns a {@code ReleaseView} matching the given name, and for which {@code Submission}s are filtered
    * based on the user's privileges.
    */
-  public Optional<ReleaseView> getFilteredReleaseView(String releaseName, Subject user) {
+  public Optional<ReleaseView> getReleaseViewBySubject(String releaseName, Subject user) {
     Release release = this.query().where(QRelease.release.name.eq(releaseName)).uniqueResult();
     Optional<ReleaseView> releaseView = Optional.absent();
     if (release != null) {
