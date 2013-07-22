@@ -17,6 +17,7 @@
 
   <modules>
     <module>dcc-submission-ui</module>
+    <module>dcc-submission-core</module>
     <module>dcc-submission-server</module>
   </modules>
 
@@ -27,5 +28,25 @@
       <url>http://seqwaremaven.oicr.on.ca/artifactory/dcc-dependencies</url>
     </repository>
   </repositories>
+
+  <build>
+    <plugins>
+      <!-- Test -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+      </plugin>
+
+      <!-- Verify -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>findbugs-maven-plugin</artifactId>
+        <configuration>
+          <excludeFilterFile>${project.basedir}/src/main/tools/findbugs-exclude.xml</excludeFilterFile>
+          <skip>true</skip> <!-- TODO: remove when findbugs issues are fixed -->
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 
 </project>

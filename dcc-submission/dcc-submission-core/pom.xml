@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.icgc.dcc</groupId>
+    <artifactId>dcc-submission</artifactId>
+    <version>1.10-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
+  <artifactId>dcc-submission-core</artifactId>
+
+  <name>${project.artifactId}</name>
+  <description>${project.name}</description>
+
+  <repositories>
+    <!-- Parent pom bootstrap -->
+    <repository>
+      <id>internal</id>
+      <url>http://seqwaremaven.oicr.on.ca/artifactory/dcc-dependencies</url>
+    </repository>
+  </repositories>
+
+  <dependencies>
+    <!-- TODO: refactor this between dcc-submission and dcc-submission-core -->
+    <!-- DCC -->
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>dcc-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <!-- Security -->
+    <dependency>
+      <groupId>org.apache.shiro</groupId>
+      <artifactId>shiro-core</artifactId>
+      <version>${shiro.version}</version>
+    </dependency>
+
+    <!-- Validation -->
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-validator</artifactId>
+      <version>${hibernate-validator.version}</version>
+    </dependency>
+
+    <!-- Mongo -->
+    <dependency>
+      <groupId>org.mongodb</groupId>
+      <artifactId>mongo-hadoop-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.google.code.morphia</groupId>
+      <artifactId>morphia</artifactId>
+      <version>${morphia.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.code.morphia</groupId>
+      <artifactId>morphia-logging-slf4j</artifactId>
+      <!-- For some reason this is not the same as above -->
+      <version>0.99</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>slf4j-api</artifactId>
+          <groupId>org.slf4j</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>com.mysema.querydsl</groupId>
+      <artifactId>querydsl-mongodb</artifactId>
+      <version>${querydsl.version}</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>slf4j-api</artifactId>
+          <groupId>org.slf4j</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <!-- Hadoop -->
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-annotations</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-hdfs</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+
+    <!-- Dependency injection -->
+    <dependency>
+      <groupId>com.google.inject</groupId>
+      <artifactId>guice</artifactId>
+    </dependency>
+
+    <!-- Configuration -->
+    <dependency>
+      <groupId>com.typesafe</groupId>
+      <artifactId>config</artifactId>
+    </dependency>
+
+    <!-- Mail -->
+    <dependency>
+      <groupId>javax.mail</groupId>
+      <artifactId>mail</artifactId>
+      <version>1.4.5</version>
+    </dependency>
+
+    <!-- Utilities -->
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <!-- Testing - Utilities -->
+    <dependency>
+      <groupId>com.google.code</groupId>
+      <artifactId>externalsortinginjava</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <!-- Generate sources - Add Morphia bindings to sources -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+      </plugin>
+
+      <!-- Generate sources - Generate Morpia bindings -->
+      <plugin>
+        <groupId>com.mysema.maven</groupId>
+        <artifactId>maven-apt-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>process</goal>
+            </goals>
+            <configuration>
+              <logOnlyOnError>true</logOnlyOnError>
+              <outputDirectory>${project.build.directory}/generated-sources/java</outputDirectory>
+              <processor>com.mysema.query.mongodb.morphia.MorphiaAnnotationProcessor</processor>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <properties>
+    <!-- Versions -->
+    <hibernate-validator.version>4.3.1.Final</hibernate-validator.version>
+    <morphia.version>0.99.1-DCC</morphia.version>
+    <querydsl.version>2.6.0</querydsl.version>
+    <shiro.version>1.2.0</shiro.version>
+  </properties>
+</project>
