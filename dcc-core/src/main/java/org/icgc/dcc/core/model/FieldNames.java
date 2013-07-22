@@ -70,6 +70,8 @@ public final class FieldNames {
 
   public static final String DONOR_SUMMARY = "_summary";
   public static final String DONOR_SUMMARY_EXPERIMENTAL_ANALYSIS = "experimental_analysis_performed";
+  public static final String DONOR_SUMMARY_EXPERIMENTAL_ANALYSIS_SAMPLE_COUNTS =
+      "experimental_analysis_performed_sample_count";
   public static final String DONOR_SUMMARY_AGE_AT_DIAGNOSIS_GROUP = "_age_at_diagnosis_group";
   public static final String DONOR_SUMMARY_AFFECTED_GENE_COUNT = "_affected_gene_count";
 
@@ -184,6 +186,20 @@ public final class FieldNames {
   public static final String MUTATION_SUMMARY_AFFECTED_DONOR_COUNT = "_affected_donor_count";
 
   /**
+   * Release field names.
+   */
+  public static final String RELEASE_ID = "_release_id";
+  public static final String RELEASE_NAME = "name";
+  public static final String RELEASE_DATE = "date";
+  public static final String RELEASE_PROJECT_COUNT = "project_count";
+  public static final String RELEASE_PRIMARY_SITE_COUNT = "primary_site_count";
+  public static final String RELEASE_DONOR_COUNT = "donor_count";
+  public static final String RELEASE_SPECIMEN_COUNT = "specimen_count";
+  public static final String RELEASE_SAMPLE_COUNT = "sample_count";
+  public static final String RELEASE_SSM_COUNT = "ssm_count";
+  public static final String RELEASE_MUTATED_GENE_COUNT = "mutated_gene_count";
+
+  /**
    * Aggregate field names.
    */
   public static final String SYNTHETIC_PREFIX = "_";
@@ -195,7 +211,10 @@ public final class FieldNames {
   public static final String TOTAL_SAMPLE_COUNT = "_total_sample_count";
   public static final String TESTED_DONOR_COUNT_SUFFIX = "_tested_donor_count";
   public static final String AFFECTED_DONOR_COUNT = "_affected_donor_count";
-  public static final String EXPERIMENTAL_ANALYSIS_PERFORMED = "experimental_analysis_performed";
+  public static final String EXPERIMENTAL_ANALYSIS_PERFORMED_DONOR_COUNT =
+      "experimental_analysis_performed_donor_count";
+  public static final String EXPERIMENTAL_ANALYSIS_PERFORMED_SAMPLE_COUNT =
+      "experimental_analysis_performed_sample_count";
 
   public static String getTypeExistsFieldName(String type) {
     return SYNTHETIC_PREFIX + type + TYPE_EXISTS_SUFFIX;
