@@ -143,7 +143,9 @@ public final class FieldNames {
   public static final String OBSERVATION_CONSEQUENCES_GENE_ID = "_gene_id";
   public static final String OBSERVATION_CONSEQUENCES_GENE = "gene";
   public static final String OBSERVATION_PLATFORM = "platform";
+  @Deprecated
   public static final String OBSERVATION_VALIDATION_STATUS = "validation_status";
+  @Deprecated
   public static final String OBSERVATION_VALIDATION_PLATFORM = "validation_platform";
   public static final String OBSERVATION_VERIFICATION_STATUS = "verification_status";
   public static final String OBSERVATION_VERIFICATION_PLATFORM = "verification_platform";
@@ -178,7 +180,9 @@ public final class FieldNames {
   public static final String MUTATION_CONSEQUENCE_TYPES = "consequence_type";
   public static final String MUTATION_PLATFORM = "platform";
   public static final String MUTATION_IS_ANNOTATED = "is_annotated";
+  @Deprecated
   public static final String MUTATION_VALIDATION_STATUS = "validation_status";
+  public static final String MUTATION_VERIFICATION_STATUS = "verification_status";
 
   public static final String MUTATION_SUMMARY = "_summary";
   public static final String MUTATION_SUMMARY_AFFECTED_PROJECT_IDS = "_affected_project_id";
