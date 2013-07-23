@@ -20,13 +20,15 @@ This script installs the dcc-submission-server and dcc-submission-ui from Artifa
 OPTIONS:
    -h      Show this message
    -r      Install release number (e.g. 1.8)
-   -s      Install lastest snapshot
+   -l      Install latest release
+   -s      Install latest snapshot
 EOF
 }
 
 release=
+latest=
 snapshot=
-while getopts “hr:s” OPTION
+while getopts “hr:ls” OPTION
 do
   case $OPTION in
          h)
@@ -35,6 +37,9 @@ do
              ;;
          r)
              release=$OPTARG
+             ;;
+         l)
+             latest=1
              ;;
          s)
              snapshot=1
@@ -46,7 +51,7 @@ do
      esac
 done
 
-if [[ -z $release ]] && [[ -z $snapshot ]]
+if [[ -z $release ]] && [[ -z $latest ]] && [[ -z $snapshot ]]
 then
   usage
   exit 1
@@ -67,8 +72,15 @@ if [[ -n $release ]]
 then
   repo="dcc-release"
   path="$server/$repo/$artifact"
-  build=$release
   version=$release
+  build=$release
+fi
+if [[ -n $latest ]]
+then
+  repo="dcc-release"
+  path="$server/$repo/$artifact"
+  version=`curl -s "$path/maven-metadata.xml" | grep latest | sed "s/.*<latest>\([^<]*\)<\/latest>.*/\1/"`
+  build=$version
 fi
 if [[ -n $snapshot ]]
 then
@@ -99,4 +111,3 @@ unzip -o -q -d $wwwdir $libdir/$jar "public/**"
 
 # Restart server
 $bindir/dcc-submission-server restart
-
