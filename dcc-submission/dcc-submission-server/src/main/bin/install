@@ -8,6 +8,7 @@
 #
 # Usage:
 #  ./install -v 1.8 # installs released version
+#  ./install -l     # installs the latest release version
 #  ./install -s     # installs the latest snapshot version
 
 usage()
