@@ -15,13 +15,12 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.web;
+package org.icgc.dcc.submission.web.resource;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.icgc.dcc.submission.web.Authorizations.hasSpecificProjectPrivilege;
-import static org.icgc.dcc.submission.web.Authorizations.isOmnipotentUser;
-import static org.icgc.dcc.submission.web.Authorizations.unauthorizedResponse;
-import static org.icgc.dcc.submission.web.Resources.noSuchEntityResponse;
+import static org.icgc.dcc.submission.web.util.Authorizations.hasSpecificProjectPrivilege;
+import static org.icgc.dcc.submission.web.util.Authorizations.isOmnipotentUser;
+import static org.icgc.dcc.submission.web.util.Responses.noSuchEntityResponse;
 
 import java.util.List;
 
@@ -43,6 +42,11 @@ import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.submission.core.ProjectService;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.core.model.QProject;
+import org.icgc.dcc.submission.web.model.ServerErrorCode;
+import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
+import org.icgc.dcc.submission.web.util.Authorizations;
+import org.icgc.dcc.submission.web.util.ResponseTimestamper;
+import org.icgc.dcc.submission.web.util.Responses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,7 +68,7 @@ public class ProjectResource {
     /* Authorization is handled by the filtering of projects below */
 
     log.debug("Getting projects");
-    Subject subject = Authorizations.getShiroSubject(securityContext);
+    Subject subject = Authorizations.getSubject(securityContext);
     List<Project> projectList = projects.getProjectsBySubject(subject);
     if (projectList == null) { // TODO: use Optional (see DCC-820)
       projectList = Lists.newArrayList();
@@ -80,7 +84,7 @@ public class ProjectResource {
 
     log.info("Adding project {}", project);
     if (isOmnipotentUser(securityContext) == false) {
-      return unauthorizedResponse();
+      return Responses.unauthorizedResponse();
     }
 
     checkArgument(project != null);
@@ -101,7 +105,7 @@ public class ProjectResource {
 
     log.debug("Getting project: {}", projectKey);
     if (hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
-      return unauthorizedResponse();
+      return Responses.unauthorizedResponse();
     }
 
     Project project = projects.where(QProject.project.key.eq(projectKey)).uniqueResult();
@@ -125,7 +129,7 @@ public class ProjectResource {
 
     log.info("Updating project {} with {}", projectKey, project);
     if (isOmnipotentUser(securityContext) == false) {
-      return unauthorizedResponse();
+      return Responses.unauthorizedResponse();
     }
 
     ResponseTimestamper.evaluate(req, project); // FIXME...
@@ -148,7 +152,7 @@ public class ProjectResource {
 
     log.debug("Getting releases for project: {}", projectKey);
     if (hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
-      return unauthorizedResponse();
+      return Responses.unauthorizedResponse();
     }
 
     Project project = projects.where(QProject.project.key.eq(projectKey)).uniqueResult();

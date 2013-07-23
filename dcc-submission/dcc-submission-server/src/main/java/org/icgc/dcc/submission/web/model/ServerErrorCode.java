@@ -15,14 +15,41 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.web.validator;
+package org.icgc.dcc.submission.web.model;
+
+import static lombok.AccessLevel.PRIVATE;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 /**
- * 
+ * Represents server error types.
  */
-public class DuplicateNameException extends RuntimeException {
+@Getter
+@RequiredArgsConstructor(access = PRIVATE)
+public enum ServerErrorCode {
 
-  public DuplicateNameException(String message) {
-    super(message);
-  }
+  // TODO: Migrate all (DCC-660)
+  UNAUTHORIZED("Unauthorized"),
+  NO_SUCH_ENTITY("NoSuchEntity"),
+  NO_DATA("NoData"),
+  NAME_MISMATCH("NameMismatch"),
+  ALREADY_EXISTS("AlreadyExists"),
+  RESOURCE_CLOSED("ResourceClosed"),
+  ALREADY_INITIALIZED("AlreadyInitialized"),
+  MISSING_REQUIRED_DATA("MissingRequiredData"),
+  EMPTY_REQUEST("EmptyRequest"),
+  INVALID_NAME("InvalidName"),
+  INVALID_STATE("InvalidState"),
+  UNAVAILABLE("Unavailable"),
+  RELEASE_EXCEPTION("ReleaseException"),
+  SIGNED_OFF_SUBMISSION_REQUIRED("SignedOffSubmissionRequired"),
+  QUEUE_NOT_EMPTY("QueueNotEmpty"),
+  RELEASE_MISSING_DICTIONARY("ReleaseMissingDictionary"),
+  DUPLICATE_RELEASE_NAME("DuplicateReleaseName"),
+  PROJECT_KEY_NOT_FOUND("ProjectKeyNotFound");
+
+  // TODO: See
+  // https://jira.oicr.on.ca/browse/DCC-660?focusedCommentId=44725&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-44725
+  private final String frontEndString;
+
 }

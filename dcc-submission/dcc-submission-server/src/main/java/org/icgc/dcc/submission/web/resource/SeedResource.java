@@ -15,7 +15,9 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.web;
+package org.icgc.dcc.submission.web.resource;
+
+import static org.icgc.dcc.submission.web.util.Authorizations.isOmnipotentUser;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,12 +43,10 @@ import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.release.model.Release;
+import org.icgc.dcc.submission.web.util.Responses;
 
 import com.google.code.morphia.Datastore;
 import com.google.inject.Inject;
-
-import static org.icgc.dcc.submission.web.Authorizations.isOmnipotentUser;
-import static org.icgc.dcc.submission.web.Authorizations.unauthorizedResponse;
 
 /**
  * TODO: discard class: DCC-819 (was originally created in the context of DCC-135)
@@ -67,14 +67,18 @@ public class SeedResource {
 
   @POST
   @Path("users")
-  public Response seedUsers(@Context SecurityContext securityContext, @Valid User[] users,
-      @DefaultValue("false") @QueryParam("delete") boolean delete) {
+  public Response seedUsers(@Context
+  SecurityContext securityContext, @Valid
+  User[] users,
+      @DefaultValue("false")
+      @QueryParam("delete")
+      boolean delete) {
 
-    if(isOmnipotentUser(securityContext) == false) {
-      return unauthorizedResponse();
+    if (isOmnipotentUser(securityContext) == false) {
+      return Responses.unauthorizedResponse();
     }
 
-    if(delete) {
+    if (delete) {
       this.datastore.getCollection(User.class).drop();
     }
     this.datastore.save(users);
@@ -83,13 +87,17 @@ public class SeedResource {
 
   @POST
   @Path("projects")
-  public Response seedProjects(@Context SecurityContext securityContext, @Valid Project[] projects,
-      @DefaultValue("false") @QueryParam("delete") boolean delete) {
-    if(isOmnipotentUser(securityContext) == false) {
-      return unauthorizedResponse();
+  public Response seedProjects(@Context
+  SecurityContext securityContext, @Valid
+  Project[] projects,
+      @DefaultValue("false")
+      @QueryParam("delete")
+      boolean delete) {
+    if (isOmnipotentUser(securityContext) == false) {
+      return Responses.unauthorizedResponse();
     }
 
-    if(delete) {
+    if (delete) {
       this.datastore.getCollection(Project.class).drop();
     }
     this.datastore.save(projects);
@@ -98,13 +106,17 @@ public class SeedResource {
 
   @POST
   @Path("releases")
-  public Response seedReleases(@Context SecurityContext securityContext, @Valid Release[] releases,
-      @DefaultValue("false") @QueryParam("delete") boolean delete) {
-    if(isOmnipotentUser(securityContext) == false) {
-      return unauthorizedResponse();
+  public Response seedReleases(@Context
+  SecurityContext securityContext, @Valid
+  Release[] releases,
+      @DefaultValue("false")
+      @QueryParam("delete")
+      boolean delete) {
+    if (isOmnipotentUser(securityContext) == false) {
+      return Responses.unauthorizedResponse();
     }
 
-    if(delete) {
+    if (delete) {
       this.datastore.getCollection(Release.class).drop();
     }
     this.datastore.save(releases);
@@ -113,14 +125,18 @@ public class SeedResource {
 
   @POST
   @Path("dictionaries")
-  public Response seedDictionaries(@Context SecurityContext securityContext, @Valid Dictionary[] dictionaries,
-      @DefaultValue("false") @QueryParam("delete") boolean delete) {
+  public Response seedDictionaries(@Context
+  SecurityContext securityContext, @Valid
+  Dictionary[] dictionaries,
+      @DefaultValue("false")
+      @QueryParam("delete")
+      boolean delete) {
 
-    if(isOmnipotentUser(securityContext) == false) {
-      return unauthorizedResponse();
+    if (isOmnipotentUser(securityContext) == false) {
+      return Responses.unauthorizedResponse();
     }
 
-    if(delete) {
+    if (delete) {
       this.datastore.getCollection(Dictionary.class).drop();
     }
     this.datastore.save(dictionaries);
@@ -129,13 +145,17 @@ public class SeedResource {
 
   @POST
   @Path("codelists")
-  public Response seedCodeLists(@Context SecurityContext securityContext, @Valid CodeList[] codelists,
-      @DefaultValue("false") @QueryParam("delete") boolean delete) {
-    if(isOmnipotentUser(securityContext) == false) {
-      return unauthorizedResponse();
+  public Response seedCodeLists(@Context
+  SecurityContext securityContext, @Valid
+  CodeList[] codelists,
+      @DefaultValue("false")
+      @QueryParam("delete")
+      boolean delete) {
+    if (isOmnipotentUser(securityContext) == false) {
+      return Responses.unauthorizedResponse();
     }
 
-    if(delete) {
+    if (delete) {
       this.datastore.getCollection(CodeList.class).drop();
     }
     this.datastore.save(codelists);
@@ -144,10 +164,12 @@ public class SeedResource {
 
   @POST
   @Path("fs/{filepath: .*}")
-  public Response seedFileSystem(@Context SecurityContext securityContext, @PathParam("filepath") String filename,
+  public Response seedFileSystem(@Context
+  SecurityContext securityContext, @PathParam("filepath")
+  String filename,
       InputStream fileContents) {
-    if(isOmnipotentUser(securityContext) == false) {
-      return unauthorizedResponse();
+    if (isOmnipotentUser(securityContext) == false) {
+      return Responses.unauthorizedResponse();
     }
 
     FileSystem fs = this.dccfs.getFileSystem();
@@ -160,7 +182,7 @@ public class SeedResource {
       IOUtils.copy(fileContents, fileDestination);
       fileDestination.flush();
       fileDestination.close();
-    } catch(IOException e) {
+    } catch (IOException e) {
       return Response.status(Status.INTERNAL_SERVER_ERROR).build();
     }
 

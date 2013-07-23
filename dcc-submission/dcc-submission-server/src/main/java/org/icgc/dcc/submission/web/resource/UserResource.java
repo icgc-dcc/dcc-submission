@@ -15,7 +15,9 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.web;
+package org.icgc.dcc.submission.web.resource;
+
+import static org.icgc.dcc.submission.web.util.Authorizations.isOmnipotentUser;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -33,15 +35,17 @@ import org.icgc.dcc.submission.core.UserService;
 import org.icgc.dcc.submission.core.model.Feedback;
 import org.icgc.dcc.submission.core.model.User;
 import org.icgc.dcc.submission.release.model.DetailedUser;
+import org.icgc.dcc.submission.web.model.ServerErrorCode;
+import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
+import org.icgc.dcc.submission.web.util.Authorizations;
+import org.icgc.dcc.submission.web.util.ResponseTimestamper;
+import org.icgc.dcc.submission.web.util.Responses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
-
-import static org.icgc.dcc.submission.web.Authorizations.isOmnipotentUser;
-import static org.icgc.dcc.submission.web.Authorizations.unauthorizedResponse;
 
 /**
  * Resource (REST end-points) for users.
@@ -59,7 +63,8 @@ public class UserResource {
 
   @GET
   @Path("self")
-  public Response getResource(@Context SecurityContext securityContext) {
+  public Response getResource(@Context
+  SecurityContext securityContext) {
     String username = Authorizations.getUsername(securityContext);
     boolean admin = isOmnipotentUser(securityContext);
     return Response.ok(new DetailedUser(username, admin)).build();
@@ -79,21 +84,23 @@ public class UserResource {
 
   @PUT
   @Path("unlock/{username}")
-  public Response unlock(@PathParam("username") String username, @Context SecurityContext securityContext) {
+  public Response unlock(@PathParam("username")
+  String username, @Context
+  SecurityContext securityContext) {
 
     log.info("Unlocking user: {}", username);
-    if(isOmnipotentUser(securityContext) == false) {
-      return unauthorizedResponse();
+    if (isOmnipotentUser(securityContext) == false) {
+      return Responses.unauthorizedResponse();
     }
 
     Optional<User> optionalUser = users.getUserByUsername(username);
-    if(optionalUser.isPresent() == false) {
+    if (optionalUser.isPresent() == false) {
       log.warn("unknown user {} provided", username);
       return Response.status(Status.BAD_REQUEST)
           .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, new Object[] { username })).build();
     } else {
       User user = optionalUser.get();
-      if(user.isLocked()) {
+      if (user.isLocked()) {
         user = users.resetUser(user);
         log.info("user {} was unlocked", username);
       } else {

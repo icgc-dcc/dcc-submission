@@ -15,27 +15,42 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.web;
+package org.icgc.dcc.submission.web.util;
 
-public class ServerErrorResponseMessage {
-  private final String code;
+import javax.ws.rs.core.Request;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 
-  private final Object[] parameters;
+import org.icgc.dcc.submission.core.model.HasTimestamps;
+import org.icgc.dcc.submission.web.UnsatisfiedPreconditionException;
 
-  public ServerErrorResponseMessage(ServerErrorCode code) {
-    this(code, new Object[0]);
+/**
+ * Utility class for interaction between responses and objects with {@code HasTimestamps}
+ */
+public final class ResponseTimestamper {
+
+  /**
+   * Sets the Last-Modified header in a ResponseBuilder object based on the Last Update property of a HasTimestamps
+   * object. If the Last Update property is null, no time stamp will be added and any existing time stamp will be
+   * removed.
+   * 
+   * @param responseBuilder
+   * @param hasTimestamps
+   * @return
+   */
+  public static ResponseBuilder setLastModified(ResponseBuilder responseBuilder, HasTimestamps hasTimestamps) {
+    return responseBuilder.lastModified(hasTimestamps.getLastUpdate());
   }
 
-  public ServerErrorResponseMessage(ServerErrorCode code, Object... parameters) {
-    this.code = code.getFrontEndString();
-    this.parameters = parameters;
+  public static ResponseBuilder ok(HasTimestamps hasTimestamps) {
+    return ResponseTimestamper.setLastModified(Response.ok(hasTimestamps), hasTimestamps);
   }
 
-  public String getCode() {
-    return code;
+  public static void evaluate(Request request, HasTimestamps hasTimestamps) {
+    ResponseBuilder rb = request.evaluatePreconditions(hasTimestamps.getLastUpdate());
+    if (rb != null) {
+      throw new UnsatisfiedPreconditionException(rb);
+    }
   }
 
-  public Object[] getParameters() {
-    return parameters;
-  }
 }

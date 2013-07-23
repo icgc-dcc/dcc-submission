@@ -15,11 +15,12 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.web.validator;
+package org.icgc.dcc.submission.web;
 
-public class InvalidNameException extends RuntimeException {
+public class DuplicateNameException extends RuntimeException {
 
-  public InvalidNameException(String message) {
+  public DuplicateNameException(String message) {
     super(message);
   }
+
 }

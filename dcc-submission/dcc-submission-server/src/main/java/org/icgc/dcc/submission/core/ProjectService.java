@@ -34,8 +34,8 @@ import org.icgc.dcc.submission.release.model.ReleaseState;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 import org.icgc.dcc.submission.shiro.AuthorizationPrivileges;
-import org.icgc.dcc.submission.web.validator.DuplicateNameException;
-import org.icgc.dcc.submission.web.validator.InvalidNameException;
+import org.icgc.dcc.submission.web.DuplicateNameException;
+import org.icgc.dcc.submission.web.InvalidNameException;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;

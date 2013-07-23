@@ -1,4 +1,4 @@
-package org.icgc.dcc.submission.web;
+package org.icgc.dcc.submission.web.resource;
 
 import static com.google.common.util.concurrent.Service.State.RUNNING;
 import static javax.ws.rs.client.Entity.json;

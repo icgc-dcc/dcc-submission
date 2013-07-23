@@ -15,14 +15,13 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.web;
+package org.icgc.dcc.submission.web.resource;
 
 import static javax.ws.rs.core.Response.ok;
 import static javax.ws.rs.core.Response.status;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static org.icgc.dcc.submission.web.Authorizations.isOmnipotentUser;
-import static org.icgc.dcc.submission.web.Authorizations.unauthorizedResponse;
-import static org.icgc.dcc.submission.web.ServerErrorCode.MISSING_REQUIRED_DATA;
+import static org.icgc.dcc.submission.web.model.ServerErrorCode.MISSING_REQUIRED_DATA;
+import static org.icgc.dcc.submission.web.util.Authorizations.isOmnipotentUser;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -37,6 +36,8 @@ import org.codehaus.jackson.JsonNode;
 import org.icgc.dcc.submission.core.SystemService;
 import org.icgc.dcc.submission.core.model.Status;
 import org.icgc.dcc.submission.http.jersey.PATCH;
+import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
+import org.icgc.dcc.submission.web.util.Responses;
 
 import com.google.inject.Inject;
 
@@ -64,7 +65,7 @@ public class SystemResource {
   SecurityContext securityContext) {
     log.info("Getting status...");
     if (isOmnipotentUser(securityContext) == false) {
-      return unauthorizedResponse();
+      return Responses.unauthorizedResponse();
     }
 
     Status status = system.getStatus();
@@ -81,7 +82,7 @@ public class SystemResource {
       JsonNode state) {
     log.info("Setting SFTP state to {}...", state);
     if (isOmnipotentUser(securityContext) == false) {
-      return unauthorizedResponse();
+      return Responses.unauthorizedResponse();
     }
 
     JsonNode active = state.path("active");

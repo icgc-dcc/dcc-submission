@@ -22,9 +22,9 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
-import org.icgc.dcc.submission.web.ServerErrorCode;
-import org.icgc.dcc.submission.web.ServerErrorResponseMessage;
-import org.icgc.dcc.submission.web.validator.InvalidNameException;
+import org.icgc.dcc.submission.web.InvalidNameException;
+import org.icgc.dcc.submission.web.model.ServerErrorCode;
+import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
 
 @Provider
 public class InvalidNameExceptionMapper implements ExceptionMapper<InvalidNameException> {

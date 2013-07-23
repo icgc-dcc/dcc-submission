@@ -65,8 +65,8 @@ import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 import org.icgc.dcc.submission.shiro.AuthorizationPrivileges;
 import org.icgc.dcc.submission.validation.report.SubmissionReport;
-import org.icgc.dcc.submission.web.ServerErrorCode;
-import org.icgc.dcc.submission.web.validator.InvalidNameException;
+import org.icgc.dcc.submission.web.InvalidNameException;
+import org.icgc.dcc.submission.web.model.ServerErrorCode;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;

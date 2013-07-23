@@ -28,6 +28,15 @@ import org.icgc.dcc.submission.web.mapper.DuplicateNameExceptionMapper;
 import org.icgc.dcc.submission.web.mapper.InvalidNameExceptionMapper;
 import org.icgc.dcc.submission.web.mapper.ReleaseExceptionMapper;
 import org.icgc.dcc.submission.web.mapper.UnsatisfiedPreconditionExceptionMapper;
+import org.icgc.dcc.submission.web.provider.ValidatingJacksonJsonProvider;
+import org.icgc.dcc.submission.web.resource.CodeListResource;
+import org.icgc.dcc.submission.web.resource.DictionaryResource;
+import org.icgc.dcc.submission.web.resource.NextReleaseResource;
+import org.icgc.dcc.submission.web.resource.ProjectResource;
+import org.icgc.dcc.submission.web.resource.ReleaseResource;
+import org.icgc.dcc.submission.web.resource.SeedResource;
+import org.icgc.dcc.submission.web.resource.SystemResource;
+import org.icgc.dcc.submission.web.resource.UserResource;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;

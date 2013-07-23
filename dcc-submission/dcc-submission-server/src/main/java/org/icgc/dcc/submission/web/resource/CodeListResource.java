@@ -15,11 +15,10 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.web;
+package org.icgc.dcc.submission.web.resource;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.icgc.dcc.submission.web.Authorizations.isOmnipotentUser;
-import static org.icgc.dcc.submission.web.Authorizations.unauthorizedResponse;
+import static org.icgc.dcc.submission.web.util.Authorizations.isOmnipotentUser;
 
 import java.util.List;
 
@@ -38,6 +37,10 @@ import javax.ws.rs.core.SecurityContext;
 import org.icgc.dcc.submission.dictionary.DictionaryService;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Term;
+import org.icgc.dcc.submission.web.model.ServerErrorCode;
+import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
+import org.icgc.dcc.submission.web.util.ResponseTimestamper;
+import org.icgc.dcc.submission.web.util.Responses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,7 +76,7 @@ public class CodeListResource {
       SecurityContext securityContext) {
     log.info("Adding codelists: {}", codeLists);
     if (isOmnipotentUser(securityContext) == false) {
-      return unauthorizedResponse();
+      return Responses.unauthorizedResponse();
     }
 
     checkArgument(codeLists != null);
@@ -115,7 +118,7 @@ public class CodeListResource {
 
     log.info("Updating codelist: {} with {}", name, newCodeList);
     if (isOmnipotentUser(securityContext) == false) {
-      return unauthorizedResponse();
+      return Responses.unauthorizedResponse();
     }
 
     checkArgument(name != null);
@@ -149,7 +152,7 @@ public class CodeListResource {
 
     log.info("Adding term {} to codelist {}", terms, name);
     if (isOmnipotentUser(securityContext) == false) {
-      return unauthorizedResponse();
+      return Responses.unauthorizedResponse();
     }
 
     checkArgument(name != null);
