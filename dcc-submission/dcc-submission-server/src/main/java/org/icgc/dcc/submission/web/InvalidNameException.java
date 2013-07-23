@@ -17,38 +17,10 @@
  */
 package org.icgc.dcc.submission.web;
 
-import javax.ws.rs.core.Request;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
+public class InvalidNameException extends RuntimeException {
 
-import org.icgc.dcc.submission.core.model.HasTimestamps;
-
-/**
- * Utility class for interaction between responses and objects with {@code HasTimestamps}
- */
-public final class ResponseTimestamper {
-
-  /**
-   * Sets the Last-Modified header in a ResponseBuilder object based on the Last Update property of a HasTimestamps
-   * object. If the Last Update property is null, no time stamp will be added and any existing time stamp will be
-   * removed.
-   * 
-   * @param responseBuilder
-   * @param hasTimestamps
-   * @return
-   */
-  public static ResponseBuilder setLastModified(ResponseBuilder responseBuilder, HasTimestamps hasTimestamps) {
-    return responseBuilder.lastModified(hasTimestamps.getLastUpdate());
+  public InvalidNameException(String message) {
+    super(message);
   }
 
-  public static ResponseBuilder ok(HasTimestamps hasTimestamps) {
-    return ResponseTimestamper.setLastModified(Response.ok(hasTimestamps), hasTimestamps);
-  }
-
-  public static void evaluate(Request request, HasTimestamps hasTimestamps) {
-    ResponseBuilder rb = request.evaluatePreconditions(hasTimestamps.getLastUpdate());
-    if(rb != null) {
-      throw new UnsatisfiedPreconditionException(rb);
-    }
-  }
 }

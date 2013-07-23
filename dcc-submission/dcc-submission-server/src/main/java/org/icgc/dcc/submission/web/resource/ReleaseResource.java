@@ -15,13 +15,12 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.web;
+package org.icgc.dcc.submission.web.resource;
 
-import static org.icgc.dcc.submission.web.Authorizations.hasReleaseViewPrivilege;
-import static org.icgc.dcc.submission.web.Authorizations.hasSpecificProjectPrivilege;
-import static org.icgc.dcc.submission.web.Authorizations.isOmnipotentUser;
-import static org.icgc.dcc.submission.web.Authorizations.unauthorizedResponse;
-import static org.icgc.dcc.submission.web.Resources.noSuchEntityResponse;
+import static org.icgc.dcc.submission.web.util.Authorizations.hasReleaseViewPrivilege;
+import static org.icgc.dcc.submission.web.util.Authorizations.hasSpecificProjectPrivilege;
+import static org.icgc.dcc.submission.web.util.Authorizations.isOmnipotentUser;
+import static org.icgc.dcc.submission.web.util.Responses.noSuchEntityResponse;
 
 import java.util.List;
 
@@ -46,6 +45,11 @@ import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.validation.report.FieldReport;
 import org.icgc.dcc.submission.validation.report.SchemaReport;
 import org.icgc.dcc.submission.validation.report.SubmissionReport;
+import org.icgc.dcc.submission.web.model.ServerErrorCode;
+import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
+import org.icgc.dcc.submission.web.util.Authorizations;
+import org.icgc.dcc.submission.web.util.ResponseTimestamper;
+import org.icgc.dcc.submission.web.util.Responses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,10 +69,10 @@ public class ReleaseResource {
   SecurityContext securityContext) {
     log.debug("Getting (filtered) releases");
     if (hasReleaseViewPrivilege(securityContext) == false) {
-      return unauthorizedResponse();
+      return Responses.unauthorizedResponse();
     }
 
-    Subject subject = Authorizations.getShiroSubject(securityContext);
+    Subject subject = Authorizations.getSubject(securityContext);
     List<Release> filteredReleases = this.releaseService.getFilteredReleases(subject);
     return Response.ok(filteredReleases).build();
   }
@@ -80,7 +84,7 @@ public class ReleaseResource {
   SecurityContext securityContext) {
     log.debug("Getting release using: {}", name);
 
-    Subject subject = Authorizations.getShiroSubject(securityContext);
+    Subject subject = Authorizations.getSubject(securityContext);
     Optional<ReleaseView> filteredReleaseView = // this handles authorization
         releaseService.getFilteredReleaseView(name, subject);
 
@@ -97,7 +101,7 @@ public class ReleaseResource {
   SecurityContext securityContext) {
     log.info("Initializing releases with: {}", release);
     if (isOmnipotentUser(securityContext) == false) {
-      return unauthorizedResponse();
+      return Responses.unauthorizedResponse();
     }
 
     if (release != null) {
@@ -126,7 +130,7 @@ public class ReleaseResource {
 
     log.debug("Getting detailed submission: {}.{}", releaseName, projectKey);
     if (hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
-      return unauthorizedResponse();
+      return Responses.unauthorizedResponse();
     }
 
     DetailedSubmission detailedSubmission = // TODO: use Optional...
@@ -147,7 +151,7 @@ public class ReleaseResource {
 
     log.debug("Getting submission report for: {}.{}", releaseName, projectKey);
     if (hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
-      return unauthorizedResponse();
+      return Responses.unauthorizedResponse();
     }
 
     Submission submission = // TODO: use Optional...
@@ -173,7 +177,7 @@ public class ReleaseResource {
 
     log.debug("Getting schema report for: {}.{}.{}", new Object[] { releaseName, projectKey, schema });
     if (hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
-      return unauthorizedResponse();
+      return Responses.unauthorizedResponse();
     }
 
     Optional<SchemaReport> optionalSchemaReport = getSchemaReport(releaseName, projectKey, schema);
@@ -195,7 +199,7 @@ public class ReleaseResource {
 
     log.debug("Getting field report for: {}.{}.{}.{}", new Object[] { releaseName, projectKey, schema, field });
     if (hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
-      return unauthorizedResponse();
+      return Responses.unauthorizedResponse();
     }
 
     Optional<SchemaReport> optionalSchemaReport = getSchemaReport(releaseName, projectKey, schema);
@@ -227,7 +231,7 @@ public class ReleaseResource {
 
     log.debug("Getting submission file list for release {} and project {}", releaseName, projectKey);
     if (hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
-      return unauthorizedResponse();
+      return Responses.unauthorizedResponse();
     }
 
     Submission submission = this.releaseService.getSubmission(releaseName, projectKey);

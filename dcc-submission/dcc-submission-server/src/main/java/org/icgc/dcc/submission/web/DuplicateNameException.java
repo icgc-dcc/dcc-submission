@@ -15,36 +15,12 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.web.validator;
+package org.icgc.dcc.submission.web;
 
-import org.icgc.dcc.submission.web.validator.NameValidator;
-import org.junit.Test;
+public class DuplicateNameException extends RuntimeException {
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-/**
- * 
- */
-public class NameValidatorTest {
-
-  @Test
-  public void test_name_validation() {
-
-    assertTrue(NameValidator.validateEntityName("abc123"));
-
-    assertTrue(NameValidator.validateEntityName("abc_123_p9k"));
-
-    assertFalse(NameValidator.validateEntityName("!@#123"));
-
-    assertTrue(NameValidator.validateEntityName("ABCabc123"));
-
-    assertFalse(NameValidator.validateEntityName("a2"));
-
-    assertFalse(NameValidator.validateEntityName("a␡b")); // non-printable
-
-    assertTrue(NameValidator.validateProjectId("809_0"));
-
-    assertTrue(NameValidator.validateProjectId("809.0"));
+  public DuplicateNameException(String message) {
+    super(message);
   }
+
 }

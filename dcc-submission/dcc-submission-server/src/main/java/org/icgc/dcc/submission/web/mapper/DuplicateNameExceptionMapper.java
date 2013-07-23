@@ -21,9 +21,9 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.ExceptionMapper;
 
-import org.icgc.dcc.submission.web.ServerErrorCode;
-import org.icgc.dcc.submission.web.ServerErrorResponseMessage;
-import org.icgc.dcc.submission.web.validator.DuplicateNameException;
+import org.icgc.dcc.submission.web.DuplicateNameException;
+import org.icgc.dcc.submission.web.model.ServerErrorCode;
+import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
 
 /**
  * 

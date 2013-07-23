@@ -15,13 +15,15 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.web;
+package org.icgc.dcc.submission.web.util;
 
 import java.util.Collection;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
+
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.shiro.realm.SimpleAccountRealm;
 import org.apache.shiro.subject.PrincipalCollection;
@@ -29,15 +31,13 @@ import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.submission.core.util.Constants;
 import org.icgc.dcc.submission.shiro.AuthorizationPrivileges;
 import org.icgc.dcc.submission.shiro.ShiroSecurityContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Utils method to bring together logic pertaining to authorization checks.
  */
-public class Authorizations {
-
-  private static final Logger log = LoggerFactory.getLogger(Authorizations.class);
+@Slf4j
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class Authorizations {
 
   public static final String ADMIN_ROLE = Constants.Authorizations_ADMIN_ROLE; // TODO: hardcoded value..!! (DCC-759)
 
@@ -49,8 +49,9 @@ public class Authorizations {
     return principal == null ? null : principal.toString();
   }
 
-  static String getUsername(SecurityContext securityContext) { // consider as alternative: ((ShiroSecurityContext)
-                                                               // securityContext).getUserPrincipal().getName();
+  public static String getUsername(SecurityContext securityContext) { // consider as alternative:
+                                                                      // ((ShiroSecurityContext)
+    // securityContext).getUserPrincipal().getName();
     Object principal = shiroSecurityContext(securityContext).getSubject().getPrincipal();
     return getUsername(principal);
   }
@@ -62,38 +63,38 @@ public class Authorizations {
     return (ShiroSecurityContext) securityContext;
   }
 
-  static Subject getShiroSubject(SecurityContext securityContext) {
-    return Authorizations.shiroSecurityContext(securityContext).getSubject();
+  public static Subject getSubject(SecurityContext securityContext) {
+    return shiroSecurityContext(securityContext).getSubject();
   }
 
   public static boolean hasAdminRole(Collection<String> roles) {
     return roles.contains(Authorizations.ADMIN_ROLE);
   }
 
-  static boolean hasPrivilege(SecurityContext securityContext, String privilege) {
+  public static boolean hasPrivilege(SecurityContext securityContext, String privilege) {
     Subject subject = shiroSecurityContext(securityContext).getSubject();
     log.debug("Checking that subject {} has privilege {}", subject.getPrincipal(), privilege);
 
     return subject.isPermitted(privilege);
   }
 
-  static boolean isOmnipotentUser(SecurityContext securityContext) {
+  public static boolean isOmnipotentUser(SecurityContext securityContext) {
     return hasPrivilege(securityContext, AuthorizationPrivileges.ALL.getPrefix());
   }
 
-  static boolean hasReleaseViewPrivilege(SecurityContext securityContext) {
+  public static boolean hasReleaseViewPrivilege(SecurityContext securityContext) {
     return hasPrivilege(securityContext, AuthorizationPrivileges.RELEASE_VIEW.getPrefix());
   }
 
-  static boolean hasReleaseClosePrivilege(SecurityContext securityContext) {
+  public static boolean hasReleaseClosePrivilege(SecurityContext securityContext) {
     return hasPrivilege(securityContext, AuthorizationPrivileges.RELEASE_CLOSE.getPrefix());
   }
 
-  static boolean hasSubmissionSignoffPrivilege(SecurityContext securityContext) {
+  public static boolean hasSubmissionSignoffPrivilege(SecurityContext securityContext) {
     return hasPrivilege(securityContext, AuthorizationPrivileges.SUBMISSION_SIGNOFF.getPrefix());
   }
 
-  static boolean hasReleaseModifyPrivilege(SecurityContext securityContext) {
+  public static boolean hasReleaseModifyPrivilege(SecurityContext securityContext) {
     return hasPrivilege(securityContext, AuthorizationPrivileges.RELEASE_MODIFY.getPrefix());
   }
 
@@ -101,19 +102,8 @@ public class Authorizations {
    * Connected user has access to the projects it owns:
    * <code>{@link DccDbRealm#doGetAuthorizationInfo(PrincipalCollection)}</code>
    */
-  static boolean hasSpecificProjectPrivilege(SecurityContext securityContext, String projectKey) {
+  public static boolean hasSpecificProjectPrivilege(SecurityContext securityContext, String projectKey) {
     return hasPrivilege(securityContext, AuthorizationPrivileges.projectViewPrivilege(projectKey));
   }
 
-  static Response unauthorizedResponse() {
-    return unauthorizedResponse(false);
-  }
-
-  static Response unauthorizedResponse(boolean important) {
-    ServerErrorResponseMessage errorMessage = new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED);
-    if (important) {
-      log.info("unauthorized action: {}", errorMessage);
-    }
-    return Response.status(Status.UNAUTHORIZED).entity(errorMessage).build();
-  }
 }

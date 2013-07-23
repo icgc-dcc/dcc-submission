@@ -15,17 +15,16 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.web;
+package org.icgc.dcc.submission.web.resource;
 
 import static javax.ws.rs.core.Response.status;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static org.icgc.dcc.submission.web.Authorizations.hasReleaseClosePrivilege;
-import static org.icgc.dcc.submission.web.Authorizations.hasReleaseModifyPrivilege;
-import static org.icgc.dcc.submission.web.Authorizations.hasReleaseViewPrivilege;
-import static org.icgc.dcc.submission.web.Authorizations.hasSpecificProjectPrivilege;
-import static org.icgc.dcc.submission.web.Authorizations.hasSubmissionSignoffPrivilege;
-import static org.icgc.dcc.submission.web.Authorizations.isOmnipotentUser;
-import static org.icgc.dcc.submission.web.Authorizations.unauthorizedResponse;
+import static org.icgc.dcc.submission.web.util.Authorizations.hasReleaseClosePrivilege;
+import static org.icgc.dcc.submission.web.util.Authorizations.hasReleaseModifyPrivilege;
+import static org.icgc.dcc.submission.web.util.Authorizations.hasReleaseViewPrivilege;
+import static org.icgc.dcc.submission.web.util.Authorizations.hasSpecificProjectPrivilege;
+import static org.icgc.dcc.submission.web.util.Authorizations.hasSubmissionSignoffPrivilege;
+import static org.icgc.dcc.submission.web.util.Authorizations.isOmnipotentUser;
 
 import java.util.List;
 
@@ -50,6 +49,11 @@ import org.icgc.dcc.submission.release.ReleaseException;
 import org.icgc.dcc.submission.release.ReleaseService;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
+import org.icgc.dcc.submission.web.model.ServerErrorCode;
+import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
+import org.icgc.dcc.submission.web.util.Authorizations;
+import org.icgc.dcc.submission.web.util.ResponseTimestamper;
+import org.icgc.dcc.submission.web.util.Responses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,10 +75,11 @@ public class NextReleaseResource {
   private ReleaseService releaseService;
 
   @GET
-  public Response getNextRelease(@Context SecurityContext securityContext) {
+  public Response getNextRelease(@Context
+  SecurityContext securityContext) {
     log.debug("Getting nextRelease");
-    if(hasReleaseViewPrivilege(securityContext) == false) {
-      return unauthorizedResponse();
+    if (hasReleaseViewPrivilege(securityContext) == false) {
+      return Responses.unauthorizedResponse();
     }
 
     NextRelease nextRelease = releaseService.getNextRelease();
@@ -92,7 +97,8 @@ public class NextReleaseResource {
    */
   @GET
   @Path("dictionary")
-  public Response getDictionary(@Context Request req) {
+  public Response getDictionary(@Context
+  Request req) {
     Dictionary dictionary = releaseService.getNextDictionary();
 
     ResponseTimestamper.evaluate(req, dictionary);
@@ -100,13 +106,15 @@ public class NextReleaseResource {
   }
 
   @POST
-  public Response release(Release nextRelease, @Context Request req, @Context SecurityContext securityContext) {
+  public Response release(Release nextRelease, @Context
+  Request req, @Context
+  SecurityContext securityContext) {
     log.info("Releasing nextRelease, new release will be: {}", nextRelease);
 
     // TODO: this is intentionally not validated, since we're only currently using the name. This seems sketchy to me
     // --Jonathan (DCC-759)
-    if(hasReleaseClosePrivilege(securityContext) == false) {
-      return unauthorizedResponse();
+    if (hasReleaseClosePrivilege(securityContext) == false) {
+      return Responses.unauthorizedResponse();
     }
 
     NextRelease oldRelease = releaseService.getNextRelease(); // guaranteed not null
@@ -121,11 +129,11 @@ public class NextReleaseResource {
     try {
       newRelease = oldRelease.release(nextRelease.getName());
       log.info("Released {}", oldReleaseName);
-    } catch(ReleaseException e) {
+    } catch (ReleaseException e) {
       ServerErrorCode code = ServerErrorCode.RELEASE_EXCEPTION;
       log.error(code.getFrontEndString(), e);
       return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage(code)).build();
-    } catch(InvalidStateException e) {
+    } catch (InvalidStateException e) {
       ServerErrorCode code = e.getCode();
       log.error(code.getFrontEndString(), e);
       return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage(code)).build();
@@ -147,15 +155,18 @@ public class NextReleaseResource {
 
   @POST
   @Path("queue")
-  public Response queue(@Valid List<QueuedProject> queuedProjects, @Context Request req,
-      @Context SecurityContext securityContext) {
+  public Response queue(@Valid
+  List<QueuedProject> queuedProjects, @Context
+  Request req,
+      @Context
+      SecurityContext securityContext) {
 
     log.info("Enqueuing projects for nextRelease: {}", queuedProjects);
     List<String> projectKeys = Lists.newArrayList();
-    for(QueuedProject qp : queuedProjects) {
+    for (QueuedProject qp : queuedProjects) {
       String projectKey = qp.getKey();
-      if(hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
-        return unauthorizedResponse();
+      if (hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
+        return Responses.unauthorizedResponse();
       }
 
       projectKeys.add(projectKey);
@@ -166,16 +177,16 @@ public class NextReleaseResource {
 
     try {
       this.releaseService.queue(nextRelease, queuedProjects);
-    } catch(ReleaseException e) {
+    } catch (ReleaseException e) {
       log.error("ProjectKeyNotFound", e); // FIXME: this isn't correct
       return Response.status(Status.BAD_REQUEST)
           .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, projectKeys)).build();
-    } catch(InvalidStateException e) {
+    } catch (InvalidStateException e) {
       ServerErrorCode code = e.getCode();
       Object offendingState = e.getState();
       log.error(code.getFrontEndString(), e);
       return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage(code, offendingState)).build();
-    } catch(DccModelOptimisticLockException e) { // not very likely
+    } catch (DccModelOptimisticLockException e) { // not very likely
       ServerErrorCode code = ServerErrorCode.UNAVAILABLE;
       log.error(code.getFrontEndString(), e);
       return Response.status(Status.SERVICE_UNAVAILABLE) //
@@ -187,11 +198,12 @@ public class NextReleaseResource {
 
   @DELETE
   @Path("queue")
-  public Response removeAllQueued(@Context SecurityContext securityContext) {
+  public Response removeAllQueued(@Context
+  SecurityContext securityContext) {
 
     log.info("Emptying queue for nextRelease");
-    if(isOmnipotentUser(securityContext) == false) {
-      return unauthorizedResponse();
+    if (isOmnipotentUser(securityContext) == false) {
+      return Responses.unauthorizedResponse();
     }
     this.releaseService.deleteQueuedRequest();
 
@@ -210,10 +222,12 @@ public class NextReleaseResource {
 
   @POST
   @Path("signed")
-  public Response signOff(List<String> projectKeys, @Context Request req, @Context SecurityContext securityContext) {
+  public Response signOff(List<String> projectKeys, @Context
+  Request req, @Context
+  SecurityContext securityContext) {
     log.info("Signing off projects {}", projectKeys);
-    if(hasSubmissionSignoffPrivilege(securityContext) == false) {
-      return unauthorizedResponse();
+    if (hasSubmissionSignoffPrivilege(securityContext) == false) {
+      return Responses.unauthorizedResponse();
     }
 
     Release nextRelease = this.releaseService.getNextRelease().getRelease();
@@ -222,15 +236,15 @@ public class NextReleaseResource {
     try {
       String username = Authorizations.getUsername(securityContext);
       this.releaseService.signOff(nextRelease, projectKeys, username);
-    } catch(ReleaseException e) {
+    } catch (ReleaseException e) {
       ServerErrorCode code = ServerErrorCode.NO_SUCH_ENTITY;
       log.error(code.getFrontEndString(), e);
       return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage(code, projectKeys)).build();
-    } catch(InvalidStateException e) {
+    } catch (InvalidStateException e) {
       ServerErrorCode code = e.getCode();
       log.error(code.getFrontEndString(), e);
       return Response.status(Status.BAD_REQUEST).entity(new ServerErrorResponseMessage(code)).build();
-    } catch(DccModelOptimisticLockException e) { // not very likely
+    } catch (DccModelOptimisticLockException e) { // not very likely
       ServerErrorCode code = ServerErrorCode.UNAVAILABLE;
       log.error(code.getFrontEndString(), e);
       return Response.status(Status.SERVICE_UNAVAILABLE) //
@@ -245,19 +259,22 @@ public class NextReleaseResource {
    */
   @PUT
   @Path("update")
-  public Response update(@Valid Release release, @Context Request req, @Context SecurityContext securityContext) {
+  public Response update(@Valid
+  Release release, @Context
+  Request req, @Context
+  SecurityContext securityContext) {
     log.info("Updating nextRelease with: {}", release);
-    if(hasReleaseModifyPrivilege(securityContext) == false) {
-      return unauthorizedResponse();
+    if (hasReleaseModifyPrivilege(securityContext) == false) {
+      return Responses.unauthorizedResponse();
     }
 
-    if(release != null) {
+    if (release != null) {
       String name = release.getName();
 
       log.info("updating {}", name);
       ResponseTimestamper.evaluate(req, release);
 
-      if(this.releaseService.list().isEmpty()) {
+      if (this.releaseService.list().isEmpty()) {
         return status(BAD_REQUEST).build();
       } else {
         String updatedName = release.getName();

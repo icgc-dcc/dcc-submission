@@ -1,4 +1,4 @@
-package org.icgc.dcc.submission.web;
+package org.icgc.dcc.submission.web.resource;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.inject.util.Modules.EMPTY_MODULE;

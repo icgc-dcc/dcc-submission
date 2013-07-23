@@ -15,27 +15,41 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.web;
+package org.icgc.dcc.submission.web.model;
 
-public class ServerErrorResponseMessage {
-  private final String code;
+import static lombok.AccessLevel.PRIVATE;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
-  private final Object[] parameters;
+/**
+ * Represents server error types.
+ */
+@Getter
+@RequiredArgsConstructor(access = PRIVATE)
+public enum ServerErrorCode {
 
-  public ServerErrorResponseMessage(ServerErrorCode code) {
-    this(code, new Object[0]);
-  }
+  // TODO: Migrate all (DCC-660)
+  UNAUTHORIZED("Unauthorized"),
+  NO_SUCH_ENTITY("NoSuchEntity"),
+  NO_DATA("NoData"),
+  NAME_MISMATCH("NameMismatch"),
+  ALREADY_EXISTS("AlreadyExists"),
+  RESOURCE_CLOSED("ResourceClosed"),
+  ALREADY_INITIALIZED("AlreadyInitialized"),
+  MISSING_REQUIRED_DATA("MissingRequiredData"),
+  EMPTY_REQUEST("EmptyRequest"),
+  INVALID_NAME("InvalidName"),
+  INVALID_STATE("InvalidState"),
+  UNAVAILABLE("Unavailable"),
+  RELEASE_EXCEPTION("ReleaseException"),
+  SIGNED_OFF_SUBMISSION_REQUIRED("SignedOffSubmissionRequired"),
+  QUEUE_NOT_EMPTY("QueueNotEmpty"),
+  RELEASE_MISSING_DICTIONARY("ReleaseMissingDictionary"),
+  DUPLICATE_RELEASE_NAME("DuplicateReleaseName"),
+  PROJECT_KEY_NOT_FOUND("ProjectKeyNotFound");
 
-  public ServerErrorResponseMessage(ServerErrorCode code, Object... parameters) {
-    this.code = code.getFrontEndString();
-    this.parameters = parameters;
-  }
+  // TODO: See
+  // https://jira.oicr.on.ca/browse/DCC-660?focusedCommentId=44725&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-44725
+  private final String frontEndString;
 
-  public String getCode() {
-    return code;
-  }
-
-  public Object[] getParameters() {
-    return parameters;
-  }
 }

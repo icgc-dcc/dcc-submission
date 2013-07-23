@@ -15,31 +15,42 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.web.validator;
+package org.icgc.dcc.submission.web.util;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import javax.ws.rs.core.Request;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
+
+import org.icgc.dcc.submission.core.model.HasTimestamps;
+import org.icgc.dcc.submission.web.UnsatisfiedPreconditionException;
 
 /**
- * 
+ * Utility class for interaction between responses and objects with {@code HasTimestamps}
  */
-public class NameValidator {
+public final class ResponseTimestamper {
 
-  public final static String DEFAULT_NAME_PATTERN = "^[\\w]{3,}$";
-
-  public final static String PROJECT_ID_PATTERN = "^[\\p{Print}\\.]{3,}$";
-
-  public static boolean validateProjectId(String id) {
-    return validateEntityName(id, PROJECT_ID_PATTERN);
+  /**
+   * Sets the Last-Modified header in a ResponseBuilder object based on the Last Update property of a HasTimestamps
+   * object. If the Last Update property is null, no time stamp will be added and any existing time stamp will be
+   * removed.
+   * 
+   * @param responseBuilder
+   * @param hasTimestamps
+   * @return
+   */
+  public static ResponseBuilder setLastModified(ResponseBuilder responseBuilder, HasTimestamps hasTimestamps) {
+    return responseBuilder.lastModified(hasTimestamps.getLastUpdate());
   }
 
-  public static boolean validateEntityName(String name) {
-    return validateEntityName(name, DEFAULT_NAME_PATTERN);
+  public static ResponseBuilder ok(HasTimestamps hasTimestamps) {
+    return ResponseTimestamper.setLastModified(Response.ok(hasTimestamps), hasTimestamps);
   }
 
-  public static boolean validateEntityName(String name, String patternString) {
-    Pattern pattern = Pattern.compile(patternString);
-    Matcher matcher = pattern.matcher(name);
-    return matcher.matches();
+  public static void evaluate(Request request, HasTimestamps hasTimestamps) {
+    ResponseBuilder rb = request.evaluatePreconditions(hasTimestamps.getLastUpdate());
+    if (rb != null) {
+      throw new UnsatisfiedPreconditionException(rb);
+    }
   }
+
 }

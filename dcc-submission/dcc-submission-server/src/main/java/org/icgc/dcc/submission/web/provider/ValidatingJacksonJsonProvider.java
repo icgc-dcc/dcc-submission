@@ -15,7 +15,13 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.web;
+package org.icgc.dcc.submission.web.provider;
+
+import static com.google.common.collect.Sets.newHashSet;
+import static java.lang.String.format;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static javax.ws.rs.core.Response.status;
+import static org.icgc.dcc.submission.web.util.Responses.UNPROCESSABLE_ENTITY;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,70 +45,44 @@ import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 
-import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
-import com.google.common.annotations.VisibleForTesting;
+import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
+import org.codehaus.jackson.map.JsonMappingException;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
-import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 
 /**
- * A Jersey provider which adds validation to the basic Jackson Json provider. Any request entity method parameters
- * annotated with {@code @Valid} are validated, and an informative {@code 422 Unprocessable Entity} response is returned
- * should the entity be invalid. Additionally, a {@code 400 Bad Request} is returned should the entity be unparseable.
- * 
- * @author codyaray
- * @since 5/23/12
+ * A Jersey provider which adds validation to the basic Jackson Json provider.
+ * <p>
+ * Any request entity method parameters annotated with {@code @Valid} are validated, and an informative
+ * {@code 422 Unprocessable Entity} response is returned should the entity be invalid. Additionally, a
+ * {@code 400 Bad Request} is returned should the entity be unparseable.
  */
+@Slf4j
 @Provider
-@Consumes({ MediaType.APPLICATION_JSON, "text/json" })
-@Produces({ MediaType.APPLICATION_JSON, "text/json" })
+@Consumes({ APPLICATION_JSON, "text/json" })
+@Produces({ APPLICATION_JSON, "text/json" })
+@RequiredArgsConstructor(onConstructor = @_(@Inject))
 public class ValidatingJacksonJsonProvider implements MessageBodyReader<Object>, MessageBodyWriter<Object> {
 
-  // Unfortunate that this isn't defined in Response.Status
-  @VisibleForTesting
-  static final Response.StatusType UNPROCESSABLE_ENTITY = new Response.StatusType() {
-    @Override
-    public int getStatusCode() {
-      return 422;
-    }
-
-    @Override
-    public Response.Status.Family getFamily() {
-      return Response.Status.Family.CLIENT_ERROR;
-    }
-
-    @Override
-    public String getReasonPhrase() {
-      return "Unprocessable Entity";
-    }
-  };
-
   private final JacksonJsonProvider delegate;
-
   private final Validator validator;
-
-  @Inject
-  public ValidatingJacksonJsonProvider(JacksonJsonProvider delegate, Validator validator) {
-    this.delegate = delegate;
-    this.validator = validator;
-  }
 
   @Override
   public Object readFrom(Class<Object> type, Type genericType, Annotation[] annotations, MediaType mediaType,
       MultivaluedMap<String, String> httpHeaders, InputStream entityStream) throws IOException, WebApplicationException {
-
     Object value = parseEntity(type, genericType, annotations, mediaType, httpHeaders, entityStream);
 
-    if(hasValidAnnotation(annotations)) {
+    if (isValidatable(annotations)) {
       List<String> errors = validate(value);
-      if(!errors.isEmpty()) {
-        StringBuilder msg = new StringBuilder("The request entity had the following errors:\n");
-        for(String error : errors) {
-          msg.append("  * ").append(error).append('\n');
-        }
-        throw new WebApplicationException(unprocessableEntity(msg.toString()));
+      if (!errors.isEmpty()) {
+        handleErrors(errors);
       }
     }
 
@@ -110,10 +90,16 @@ public class ValidatingJacksonJsonProvider implements MessageBodyReader<Object>,
   }
 
   @Override
-  public void writeTo(Object t, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType,
+  @SneakyThrows
+  public void writeTo(Object entity, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType,
       MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream) throws IOException,
       WebApplicationException {
-    delegate.writeTo(t, type, genericType, annotations, mediaType, httpHeaders, entityStream);
+    try {
+      delegate.writeTo(entity, type, genericType, annotations, mediaType, httpHeaders, entityStream);
+    } catch (Throwable t) {
+      log.error("Unknown error writing entity:", t);
+      throw t;
+    }
   }
 
   @Override
@@ -131,44 +117,72 @@ public class ValidatingJacksonJsonProvider implements MessageBodyReader<Object>,
     return delegate.isReadable(type, genericType, annotations, mediaType);
   }
 
+  @SneakyThrows
   private Object parseEntity(Class<Object> type, Type genericType, Annotation[] annotations, MediaType mediaType,
       MultivaluedMap<String, String> httpHeaders, InputStream entityStream) throws IOException {
-    return delegate.readFrom(type, genericType, annotations, mediaType, httpHeaders, entityStream);
+    try {
+      return delegate.readFrom(type, genericType, annotations, mediaType, httpHeaders, entityStream);
+    } catch (JsonMappingException e) {
+      log.warn("Error mapping entity to json:", e);
+
+      // Something went wrong trying to map request json to the model object
+      List<String> errors = ImmutableList.of(e.getMessage());
+      handleErrors(errors);
+
+      return null; // Cannot happen
+    } catch (Throwable t) {
+      log.error("Unknown error reading entity:", t);
+      throw t;
+    }
   }
 
-  @VisibleForTesting
-  boolean hasValidAnnotation(Annotation[] annotations) {
-    for(Annotation annotation : annotations) {
-      if(Valid.class.equals(annotation.annotationType())) {
+  private void handleErrors(List<String> errors) {
+    StringBuilder message = new StringBuilder("The request entity had the following errors:\n");
+    for (String error : errors) {
+      message.append("  * ").append(error).append('\n');
+    }
+
+    throw new WebApplicationException(unprocessableEntity(message.toString()));
+  }
+
+  private boolean isValidatable(Annotation[] annotations) {
+    for (Annotation annotation : annotations) {
+      if (Valid.class.equals(annotation.annotationType())) {
         return true;
       }
     }
+
     return false;
   }
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
   private List<String> validate(Object o) {
-    if(o instanceof Collection<?>) {
+    if (o instanceof Collection<?>) {
       o = new CollectionWrapper((Collection<?>) o);
     }
-    Set<String> errors = Sets.newHashSet();
+
+    Set<String> errors = newHashSet();
     Set<ConstraintViolation<Object>> violations = validator.validate(o);
-    for(ConstraintViolation<Object> v : violations) {
-      errors.add(String.format("%s %s (was %s)", v.getPropertyPath(), v.getMessage(), v.getInvalidValue()));
+    for (ConstraintViolation<Object> v : violations) {
+      errors.add(format("%s %s (was %s)", v.getPropertyPath(), v.getMessage(), v.getInvalidValue()));
     }
+
     return ImmutableList.copyOf(Ordering.natural().sortedCopy(errors));
   }
 
   private static Response unprocessableEntity(String msg) {
-    return Response.status(UNPROCESSABLE_ENTITY).entity(msg).type(MediaType.TEXT_PLAIN_TYPE).build();
+    return status(UNPROCESSABLE_ENTITY)
+        .entity(msg)
+        .type(MediaType.TEXT_PLAIN_TYPE).build();
   }
 
+  @RequiredArgsConstructor
   private static class CollectionWrapper<T> {
+
     @Valid
+    @NonNull
     private final Collection<T> collection;
 
-    public CollectionWrapper(Collection<T> toWrap) {
-      this.collection = toWrap;
-    }
   }
+
 }
