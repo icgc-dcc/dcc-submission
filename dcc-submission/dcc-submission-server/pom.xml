@@ -317,6 +317,10 @@
               <key>logback.configurationFile</key>
               <value>src/main/conf/logback.xml</value>
             </systemProperty>
+            <systemProperty>
+              <key>log.dir</key>
+              <value>target/logs</value>
+            </systemProperty>
           </systemProperties>
         </configuration>
       </plugin>
