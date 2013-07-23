@@ -17,6 +17,11 @@
  */
 package org.icgc.dcc.submission.web;
 
+import static com.google.common.collect.Sets.newHashSet;
+import static java.lang.String.format;
+import static javax.ws.rs.core.Response.status;
+import static org.icgc.dcc.submission.web.Responses.UNPROCESSABLE_ENTITY;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -39,12 +44,14 @@ import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 
-import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
-import com.google.common.annotations.VisibleForTesting;
+import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
+import org.codehaus.jackson.map.JsonMappingException;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
-import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 
 /**
@@ -60,25 +67,6 @@ import com.google.inject.Inject;
 @Produces({ MediaType.APPLICATION_JSON, "text/json" })
 public class ValidatingJacksonJsonProvider implements MessageBodyReader<Object>, MessageBodyWriter<Object> {
 
-  // Unfortunate that this isn't defined in Response.Status
-  @VisibleForTesting
-  static final Response.StatusType UNPROCESSABLE_ENTITY = new Response.StatusType() {
-    @Override
-    public int getStatusCode() {
-      return 422;
-    }
-
-    @Override
-    public Response.Status.Family getFamily() {
-      return Response.Status.Family.CLIENT_ERROR;
-    }
-
-    @Override
-    public String getReasonPhrase() {
-      return "Unprocessable Entity";
-    }
-  };
-
   private final JacksonJsonProvider delegate;
 
   private final Validator validator;
@@ -92,17 +80,12 @@ public class ValidatingJacksonJsonProvider implements MessageBodyReader<Object>,
   @Override
   public Object readFrom(Class<Object> type, Type genericType, Annotation[] annotations, MediaType mediaType,
       MultivaluedMap<String, String> httpHeaders, InputStream entityStream) throws IOException, WebApplicationException {
-
     Object value = parseEntity(type, genericType, annotations, mediaType, httpHeaders, entityStream);
 
-    if(hasValidAnnotation(annotations)) {
+    if (hasValidAnnotation(annotations)) {
       List<String> errors = validate(value);
-      if(!errors.isEmpty()) {
-        StringBuilder msg = new StringBuilder("The request entity had the following errors:\n");
-        for(String error : errors) {
-          msg.append("  * ").append(error).append('\n');
-        }
-        throw new WebApplicationException(unprocessableEntity(msg.toString()));
+      if (!errors.isEmpty()) {
+        handleErrors(errors);
       }
     }
 
@@ -131,44 +114,66 @@ public class ValidatingJacksonJsonProvider implements MessageBodyReader<Object>,
     return delegate.isReadable(type, genericType, annotations, mediaType);
   }
 
-  private Object parseEntity(Class<Object> type, Type genericType, Annotation[] annotations, MediaType mediaType,
-      MultivaluedMap<String, String> httpHeaders, InputStream entityStream) throws IOException {
-    return delegate.readFrom(type, genericType, annotations, mediaType, httpHeaders, entityStream);
+  private void handleErrors(List<String> errors) {
+    StringBuilder message = new StringBuilder("The request entity had the following errors:\n");
+    for (String error : errors) {
+      message.append("  * ").append(error).append('\n');
+    }
+
+    throw new WebApplicationException(unprocessableEntity(message.toString()));
   }
 
-  @VisibleForTesting
-  boolean hasValidAnnotation(Annotation[] annotations) {
-    for(Annotation annotation : annotations) {
-      if(Valid.class.equals(annotation.annotationType())) {
+  private Object parseEntity(Class<Object> type, Type genericType, Annotation[] annotations, MediaType mediaType,
+      MultivaluedMap<String, String> httpHeaders, InputStream entityStream) throws IOException {
+    try {
+      return delegate.readFrom(type, genericType, annotations, mediaType, httpHeaders, entityStream);
+    } catch (JsonMappingException e) {
+      // Something went wrong trying to map request json to the model object
+      List<String> errors = ImmutableList.of(e.getMessage());
+
+      handleErrors(errors);
+      return null; // Cannot happen
+    }
+  }
+
+  private boolean hasValidAnnotation(Annotation[] annotations) {
+    for (Annotation annotation : annotations) {
+      if (Valid.class.equals(annotation.annotationType())) {
         return true;
       }
     }
+
     return false;
   }
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
   private List<String> validate(Object o) {
-    if(o instanceof Collection<?>) {
+    if (o instanceof Collection<?>) {
       o = new CollectionWrapper((Collection<?>) o);
     }
-    Set<String> errors = Sets.newHashSet();
+
+    Set<String> errors = newHashSet();
     Set<ConstraintViolation<Object>> violations = validator.validate(o);
-    for(ConstraintViolation<Object> v : violations) {
-      errors.add(String.format("%s %s (was %s)", v.getPropertyPath(), v.getMessage(), v.getInvalidValue()));
+    for (ConstraintViolation<Object> v : violations) {
+      errors.add(format("%s %s (was %s)", v.getPropertyPath(), v.getMessage(), v.getInvalidValue()));
     }
+
     return ImmutableList.copyOf(Ordering.natural().sortedCopy(errors));
   }
 
   private static Response unprocessableEntity(String msg) {
-    return Response.status(UNPROCESSABLE_ENTITY).entity(msg).type(MediaType.TEXT_PLAIN_TYPE).build();
+    return status(UNPROCESSABLE_ENTITY)
+        .entity(msg)
+        .type(MediaType.TEXT_PLAIN_TYPE).build();
   }
 
+  @RequiredArgsConstructor
   private static class CollectionWrapper<T> {
+
     @Valid
+    @NonNull
     private final Collection<T> collection;
 
-    public CollectionWrapper(Collection<T> toWrap) {
-      this.collection = toWrap;
-    }
   }
+
 }

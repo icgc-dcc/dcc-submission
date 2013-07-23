@@ -15,31 +15,33 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.web.validator;
+package org.icgc.dcc.submission.web;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import javax.ws.rs.core.Response;
 
-/**
- * 
- */
-public class NameValidator {
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
-  public final static String DEFAULT_NAME_PATTERN = "^[\\w]{3,}$";
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class Responses {
 
-  public final static String PROJECT_ID_PATTERN = "^[\\p{Print}\\.]{3,}$";
+  public static final Response.StatusType UNPROCESSABLE_ENTITY = new Response.StatusType() {
 
-  public static boolean validateProjectId(String id) {
-    return validateEntityName(id, PROJECT_ID_PATTERN);
-  }
+    @Override
+    public int getStatusCode() {
+      return 422;
+    }
 
-  public static boolean validateEntityName(String name) {
-    return validateEntityName(name, DEFAULT_NAME_PATTERN);
-  }
+    @Override
+    public Response.Status.Family getFamily() {
+      return Response.Status.Family.CLIENT_ERROR;
+    }
 
-  public static boolean validateEntityName(String name, String patternString) {
-    Pattern pattern = Pattern.compile(patternString);
-    Matcher matcher = pattern.matcher(name);
-    return matcher.matches();
-  }
+    @Override
+    public String getReasonPhrase() {
+      return "Unprocessable Entity";
+    }
+
+  };
+
 }

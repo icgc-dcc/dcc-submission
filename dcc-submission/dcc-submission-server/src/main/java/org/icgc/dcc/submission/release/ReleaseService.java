@@ -46,6 +46,7 @@ import org.icgc.dcc.submission.core.model.InvalidStateException;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.core.model.QProject;
 import org.icgc.dcc.submission.core.morphia.BaseMorphiaService;
+import org.icgc.dcc.submission.core.util.NameValidator;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.QDictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
@@ -66,7 +67,6 @@ import org.icgc.dcc.submission.shiro.AuthorizationPrivileges;
 import org.icgc.dcc.submission.validation.report.SubmissionReport;
 import org.icgc.dcc.submission.web.ServerErrorCode;
 import org.icgc.dcc.submission.web.validator.InvalidNameException;
-import org.icgc.dcc.submission.web.validator.NameValidator;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;

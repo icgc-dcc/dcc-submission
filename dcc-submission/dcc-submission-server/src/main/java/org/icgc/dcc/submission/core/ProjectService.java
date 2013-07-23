@@ -26,6 +26,7 @@ import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.core.model.QProject;
 import org.icgc.dcc.submission.core.morphia.BaseMorphiaService;
+import org.icgc.dcc.submission.core.util.NameValidator;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.release.model.QRelease;
 import org.icgc.dcc.submission.release.model.Release;
@@ -35,7 +36,6 @@ import org.icgc.dcc.submission.release.model.SubmissionState;
 import org.icgc.dcc.submission.shiro.AuthorizationPrivileges;
 import org.icgc.dcc.submission.web.validator.DuplicateNameException;
 import org.icgc.dcc.submission.web.validator.InvalidNameException;
-import org.icgc.dcc.submission.web.validator.NameValidator;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
