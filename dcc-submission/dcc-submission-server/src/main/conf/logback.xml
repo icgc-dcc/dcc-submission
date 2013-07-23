@@ -1,5 +1,4 @@
 <configuration debug="false">
-  <property name="log.dir" value="/srv/webapp/dcc/server/logs" />
   <property name="log.name" value="dcc-server" />
   <property name="log.debug.name" value="dcc-server.debug" />
   <property name="pattern" value="%date{ISO8601} [%thread] %-5level %logger{20} - %msg%n" />
@@ -48,7 +47,8 @@
   </logger>
 
   <root level="info">
-    <appender-ref ref="STDOUT" />
+    <appender-ref ref="DEBUG" />
     <appender-ref ref="FILE" />
+    <appender-ref ref="STDOUT" />
   </root>
 </configuration>

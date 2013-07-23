@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.icgc.dcc</groupId>
     <artifactId>dcc-submission</artifactId>
-    <version>1.10-SNAPSHOT</version>
+    <version>1.11-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -23,10 +23,16 @@
   </repositories>
 
   <dependencies>
+    <!-- TODO: refactor this between dcc-submission and dcc-submission-core -->
     <!-- DCC -->
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>dcc-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>dcc-submission-core</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -210,9 +216,9 @@
 
     <!-- Testing - DCC -->
     <dependency>
-      <groupId>org.icgc.dcc</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>dcc-test</artifactId>
-      <version>1.10-SNAPSHOT</version>
+      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
 
@@ -254,36 +260,6 @@
 
   <build>
     <plugins>
-      <!-- Generate sources - Generate Morpia bindings -->
-      <plugin>
-        <groupId>com.mysema.maven</groupId>
-        <artifactId>maven-apt-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>process</goal>
-            </goals>
-            <configuration>
-              <logOnlyOnError>true</logOnlyOnError>
-              <outputDirectory>${project.build.directory}/generated-sources/java</outputDirectory>
-              <processor>com.mysema.query.mongodb.morphia.MorphiaAnnotationProcessor</processor>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <!-- Generate sources - Add Morphia bindings to sources -->
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-      </plugin>
-
-      <!-- Test -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-      </plugin>
-
       <!-- Package -->
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
@@ -323,16 +299,6 @@
         </executions>
       </plugin>
 
-      <!-- Verify -->
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>findbugs-maven-plugin</artifactId>
-        <configuration>
-          <excludeFilterFile>${project.basedir}/src/main/tools/findbugs-exclude.xml</excludeFilterFile>
-          <skip>true</skip> <!-- TODO: remove when findbugs issues are fixed -->
-        </configuration>
-      </plugin>
-
       <!-- CLI execution -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -351,6 +317,10 @@
               <key>logback.configurationFile</key>
               <value>src/main/conf/logback.xml</value>
             </systemProperty>
+            <systemProperty>
+              <key>log.dir</key>
+              <value>target/logs</value>
+            </systemProperty>
           </systemProperties>
         </configuration>
       </plugin>
@@ -359,7 +329,7 @@
 
   <properties>
     <!-- Entry point -->
-    <main.class>org.icgc.dcc.Main</main.class>
+    <main.class>org.icgc.dcc.submission.Main</main.class>
 
     <!-- Versions -->
     <jersey.version>2.0-m10</jersey.version>

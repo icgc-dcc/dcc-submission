@@ -42,7 +42,19 @@ public final class FieldNames {
   /**
    * Project field names.
    */
-  public static final String PROJECT_ID = "_project_id";
+  public static final String PROJECT_ID = "_project_id"; // Same as project_code for now
+  public static final String PROJECT_CODE = "project_code"; // "BRCA-UK" for instance
+  public static final String PROJECT_FORMER_SUBMISSION_ID = "former_submission_id"; // "1133.0" for instance
+  public static final String PROJECT_INTERNAL_ID = "internal_id"; // Not really used for now... "PR3" for instance
+  public static final String PROJECT_ICGC_ID = "icgc_id"; // "1133" for instance
+  public static final String PROJECT_ALIAS = "alias";
+  public static final String PROJECT_COLOUR = "colour";
+  public static final String PROJECT_DISPLAY_NAME = "project_name";
+  public static final String PROJECT_TUMOUR_TYPE = "tumour_type";
+  public static final String PROJECT_TUMOUR_SUBTYPE = "tumour_subtype";
+  public static final String PROJECT_PRIMARY_SITE = "primary_site";
+  public static final String PROJECT_COUNTRIES = "countries";
+  public static final String PROJECT_PUBMED_IDS = "pubmed_ids";
   public static final String PROJECT_SUMMARY = "_summary";
 
   /**
@@ -58,6 +70,9 @@ public final class FieldNames {
 
   public static final String DONOR_SUMMARY = "_summary";
   public static final String DONOR_SUMMARY_EXPERIMENTAL_ANALYSIS = "experimental_analysis_performed";
+  public static final String DONOR_SUMMARY_EXPERIMENTAL_ANALYSIS_SAMPLE_COUNTS =
+      "experimental_analysis_performed_sample_count";
+  public static final String DONOR_SUMMARY_AGE_AT_DIAGNOSIS_GROUP = "_age_at_diagnosis_group";
   public static final String DONOR_SUMMARY_AFFECTED_GENE_COUNT = "_affected_gene_count";
 
   public static final String DONOR_GENES = "gene";
@@ -65,6 +80,7 @@ public final class FieldNames {
   public static final String DONOR_GENE_SUMMARY = "_summary";
   public static final String DONOR_PROJECT_ID = PROJECT_ID;
   public static final String DONOR_PROJECT = "project";
+  public static final String DONOR_AGE_AT_DIAGNOSIS = "donor_age_at_diagnosis";
   public static final String DONOR_SPECIMEN = "specimen";
   public static final String DONOR_SPECIMEN_ID = "_specimen_id";
   public static final String DONOR_SAMPLE = "sample";
@@ -83,6 +99,7 @@ public final class FieldNames {
    * Gene field names.
    */
   public static final String GENE_ID = "_gene_id";
+  public static final String GENE_SYMBOL = "symbol";
   public static final String GENE_DONORS = "donor";
   public static final String GENE_DONOR_DONOR_ID = "_donor_id";
   public static final String GENE_DONOR_PROJECT = "project";
@@ -104,6 +121,11 @@ public final class FieldNames {
   public static final String GENE_SUMMARY_TOTAL_MUTATION_COUNT = "_total_mutation_count";
 
   /**
+   * Consequence field names.
+   */
+  public static final String CONSEQUENCE_AA_MUTATION = "aa_mutation";
+
+  /**
    * Observation field names.
    */
   public static final String OBSERVATION_ID = "_id";
@@ -115,6 +137,7 @@ public final class FieldNames {
   public static final String OBSERVATION_CONSEQUENCE_TYPES = "consequence_type";
   public static final String OBSERVATION_CONSEQUENCES = "consequence";
   public static final String OBSERVATION_CONSEQUENCES_CONSEQUENCE_TYPE = "consequence_type";
+  public static final String OBSERVATION_CONSEQUENCES_AA_MUTATION = CONSEQUENCE_AA_MUTATION;
   public static final String OBSERVATION_CONSEQUENCES_CONSEQUENCE_CANONICAL = "_is_canonical_transcript";
   public static final String OBSERVATION_CONSEQUENCES_TRANSCRIPT_ID = "_transcript_id";
   public static final String OBSERVATION_CONSEQUENCES_GENE_ID = "_gene_id";
@@ -156,11 +179,26 @@ public final class FieldNames {
   public static final String MUTATION_PLATFORM = "platform";
   public static final String MUTATION_IS_ANNOTATED = "is_annotated";
   public static final String MUTATION_VALIDATION_STATUS = "validation_status";
+  public static final String MUTATION_VERIFICATION_STATUS = "verification_status";
 
   public static final String MUTATION_SUMMARY = "_summary";
   public static final String MUTATION_SUMMARY_AFFECTED_PROJECT_IDS = "_affected_project_id";
   public static final String MUTATION_SUMMARY_AFFECTED_PROJECT_COUNT = "_affected_project_count";
   public static final String MUTATION_SUMMARY_AFFECTED_DONOR_COUNT = "_affected_donor_count";
+
+  /**
+   * Release field names.
+   */
+  public static final String RELEASE_ID = "_release_id";
+  public static final String RELEASE_NAME = "name";
+  public static final String RELEASE_DATE = "date";
+  public static final String RELEASE_PROJECT_COUNT = "project_count";
+  public static final String RELEASE_PRIMARY_SITE_COUNT = "primary_site_count";
+  public static final String RELEASE_DONOR_COUNT = "donor_count";
+  public static final String RELEASE_SPECIMEN_COUNT = "specimen_count";
+  public static final String RELEASE_SAMPLE_COUNT = "sample_count";
+  public static final String RELEASE_SSM_COUNT = "ssm_count";
+  public static final String RELEASE_MUTATED_GENE_COUNT = "mutated_gene_count";
 
   /**
    * Aggregate field names.
@@ -174,7 +212,10 @@ public final class FieldNames {
   public static final String TOTAL_SAMPLE_COUNT = "_total_sample_count";
   public static final String TESTED_DONOR_COUNT_SUFFIX = "_tested_donor_count";
   public static final String AFFECTED_DONOR_COUNT = "_affected_donor_count";
-  public static final String EXPERIMENTAL_ANALYSIS_PERFORMED = "experimental_analysis_performed";
+  public static final String EXPERIMENTAL_ANALYSIS_PERFORMED_DONOR_COUNT =
+      "experimental_analysis_performed_donor_count";
+  public static final String EXPERIMENTAL_ANALYSIS_PERFORMED_SAMPLE_COUNT =
+      "experimental_analysis_performed_sample_count";
 
   public static String getTypeExistsFieldName(String type) {
     return SYNTHETIC_PREFIX + type + TYPE_EXISTS_SUFFIX;

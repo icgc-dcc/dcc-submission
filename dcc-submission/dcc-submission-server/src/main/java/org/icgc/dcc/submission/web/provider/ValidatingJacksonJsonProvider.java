@@ -1,0 +1,188 @@
+/*
+ * Copyright (c) 2013 The Ontario Institute for Cancer Research. All rights reserved.                             
+ *                                                                                                               
+ * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
+ * You should have received a copy of the GNU General Public License along with                                  
+ * this program. If not, see <http://www.gnu.org/licenses/>.                                                     
+ *                                                                                                               
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY                           
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES                          
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT                           
+ * SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,                                
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED                          
+ * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;                               
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER                              
+ * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
+ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+package org.icgc.dcc.submission.web.provider;
+
+import static com.google.common.collect.Sets.newHashSet;
+import static java.lang.String.format;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static javax.ws.rs.core.Response.status;
+import static org.icgc.dcc.submission.web.util.Responses.UNPROCESSABLE_ENTITY;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+
+import javax.validation.ConstraintViolation;
+import javax.validation.Valid;
+import javax.validation.Validator;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.MessageBodyReader;
+import javax.ws.rs.ext.MessageBodyWriter;
+import javax.ws.rs.ext.Provider;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+
+import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
+import org.codehaus.jackson.map.JsonMappingException;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Ordering;
+import com.google.inject.Inject;
+
+/**
+ * A Jersey provider which adds validation to the basic Jackson Json provider.
+ * <p>
+ * Any request entity method parameters annotated with {@code @Valid} are validated, and an informative
+ * {@code 422 Unprocessable Entity} response is returned should the entity be invalid. Additionally, a
+ * {@code 400 Bad Request} is returned should the entity be unparseable.
+ */
+@Slf4j
+@Provider
+@Consumes({ APPLICATION_JSON, "text/json" })
+@Produces({ APPLICATION_JSON, "text/json" })
+@RequiredArgsConstructor(onConstructor = @_(@Inject))
+public class ValidatingJacksonJsonProvider implements MessageBodyReader<Object>, MessageBodyWriter<Object> {
+
+  private final JacksonJsonProvider delegate;
+  private final Validator validator;
+
+  @Override
+  public Object readFrom(Class<Object> type, Type genericType, Annotation[] annotations, MediaType mediaType,
+      MultivaluedMap<String, String> httpHeaders, InputStream entityStream) throws IOException, WebApplicationException {
+    Object value = parseEntity(type, genericType, annotations, mediaType, httpHeaders, entityStream);
+
+    if (isValidatable(annotations)) {
+      List<String> errors = validate(value);
+      if (!errors.isEmpty()) {
+        handleErrors(errors);
+      }
+    }
+
+    return value;
+  }
+
+  @Override
+  @SneakyThrows
+  public void writeTo(Object entity, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType,
+      MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream) throws IOException,
+      WebApplicationException {
+    try {
+      delegate.writeTo(entity, type, genericType, annotations, mediaType, httpHeaders, entityStream);
+    } catch (Throwable t) {
+      log.error("Unknown error writing entity:", t);
+      throw t;
+    }
+  }
+
+  @Override
+  public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
+    return delegate.isWriteable(type, genericType, annotations, mediaType);
+  }
+
+  @Override
+  public long getSize(Object t, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
+    return delegate.getSize(t, type, genericType, annotations, mediaType);
+  }
+
+  @Override
+  public boolean isReadable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
+    return delegate.isReadable(type, genericType, annotations, mediaType);
+  }
+
+  @SneakyThrows
+  private Object parseEntity(Class<Object> type, Type genericType, Annotation[] annotations, MediaType mediaType,
+      MultivaluedMap<String, String> httpHeaders, InputStream entityStream) throws IOException {
+    try {
+      return delegate.readFrom(type, genericType, annotations, mediaType, httpHeaders, entityStream);
+    } catch (JsonMappingException e) {
+      log.warn("Error mapping entity to json:", e);
+
+      // Something went wrong trying to map request json to the model object
+      List<String> errors = ImmutableList.of(e.getMessage());
+      handleErrors(errors);
+
+      return null; // Cannot happen
+    } catch (Throwable t) {
+      log.error("Unknown error reading entity:", t);
+      throw t;
+    }
+  }
+
+  private void handleErrors(List<String> errors) {
+    StringBuilder message = new StringBuilder("The request entity had the following errors:\n");
+    for (String error : errors) {
+      message.append("  * ").append(error).append('\n');
+    }
+
+    throw new WebApplicationException(unprocessableEntity(message.toString()));
+  }
+
+  private boolean isValidatable(Annotation[] annotations) {
+    for (Annotation annotation : annotations) {
+      if (Valid.class.equals(annotation.annotationType())) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  @SuppressWarnings({ "rawtypes", "unchecked" })
+  private List<String> validate(Object o) {
+    if (o instanceof Collection<?>) {
+      o = new CollectionWrapper((Collection<?>) o);
+    }
+
+    Set<String> errors = newHashSet();
+    Set<ConstraintViolation<Object>> violations = validator.validate(o);
+    for (ConstraintViolation<Object> v : violations) {
+      errors.add(format("%s %s (was %s)", v.getPropertyPath(), v.getMessage(), v.getInvalidValue()));
+    }
+
+    return ImmutableList.copyOf(Ordering.natural().sortedCopy(errors));
+  }
+
+  private static Response unprocessableEntity(String msg) {
+    return status(UNPROCESSABLE_ENTITY)
+        .entity(msg)
+        .type(MediaType.TEXT_PLAIN_TYPE).build();
+  }
+
+  @RequiredArgsConstructor
+  private static class CollectionWrapper<T> {
+
+    @Valid
+    @NonNull
+    private final Collection<T> collection;
+
+  }
+
+}
