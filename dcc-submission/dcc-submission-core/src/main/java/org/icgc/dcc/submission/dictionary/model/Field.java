@@ -17,6 +17,11 @@
  */
 package org.icgc.dcc.submission.dictionary.model;
 
+import static org.icgc.dcc.submission.core.util.Constants.CodeListRestriction_NAME;
+import static org.icgc.dcc.submission.core.util.Constants.DiscreteValuesRestriction_NAME;
+import static org.icgc.dcc.submission.core.util.Constants.RegexRestriction_NAME;
+import static org.icgc.dcc.submission.core.util.Constants.RequiredRestriction_NAME;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,10 +31,6 @@ import javax.validation.Valid;
 import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryElement;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryVisitor;
-import org.icgc.dcc.submission.validation.restriction.CodeListRestriction;
-import org.icgc.dcc.submission.validation.restriction.DiscreteValuesRestriction;
-import org.icgc.dcc.submission.validation.restriction.RegexRestriction;
-import org.icgc.dcc.submission.validation.restriction.RequiredRestriction;
 
 import com.google.code.morphia.annotations.Embedded;
 import com.google.common.base.Optional;
@@ -74,7 +75,7 @@ public class Field implements DictionaryElement, Serializable {
   public void accept(DictionaryVisitor dictionaryVisitor) {
     dictionaryVisitor.visit(this);
 
-    for(Restriction restriction : restrictions) {
+    for (Restriction restriction : restrictions) {
       restriction.accept(dictionaryVisitor);
     }
   }
@@ -112,7 +113,7 @@ public class Field implements DictionaryElement, Serializable {
   }
 
   public void addRestriction(Restriction restriction) {
-    if(this.getRestriction(restriction.getType()).isPresent()) {
+    if (this.getRestriction(restriction.getType()).isPresent()) {
       throw new DuplicateRestrictionFoundException("Duplicate Restriction found with type: " + restriction.getType());
     }
     this.restrictions.add(restriction);
@@ -149,24 +150,24 @@ public class Field implements DictionaryElement, Serializable {
   }
 
   public boolean hasCodeListRestriction() {
-    return hasRestriction(CodeListRestriction.NAME);
+    return hasRestriction(CodeListRestriction_NAME);
   }
 
   public boolean hasInRestriction() {
-    return hasRestriction(DiscreteValuesRestriction.NAME);
+    return hasRestriction(DiscreteValuesRestriction_NAME);
   }
 
   public boolean hasRequiredRestriction() {
-    return hasRestriction(RequiredRestriction.NAME);
+    return hasRestriction(RequiredRestriction_NAME);
   }
 
   public boolean hasRegexRestriction() {
-    return hasRestriction(RegexRestriction.NAME);
+    return hasRestriction(RegexRestriction_NAME);
   }
 
   private boolean hasRestriction(String restrictionName) {
-    for(Restriction restriction : restrictions) {
-      if(restrictionName.equalsIgnoreCase(restriction.getType())) {
+    for (Restriction restriction : restrictions) {
+      if (restrictionName.equalsIgnoreCase(restriction.getType())) {
         return true;
       }
     }
