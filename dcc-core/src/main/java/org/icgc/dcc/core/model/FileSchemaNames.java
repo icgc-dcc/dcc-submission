@@ -38,61 +38,77 @@ import lombok.NoArgsConstructor;
 public final class FileSchemaNames {
 
   private static final String SEPARATOR = "_";
+
+  // TODO: make those private as well (must fix data generator)
   public static final String META_ABBREVIATION = "m";
   public static final String PRIMARY_ABBREVIATION = "p";
   public static final String SECONDARY_ABBREVIATION = "s";
   public static final String GENE_ABBREVIATION = "g";
 
-  public static final String META_SUFFIX = SEPARATOR + META_ABBREVIATION;
-  public static final String PRIMARY_SUFFIX = SEPARATOR + PRIMARY_ABBREVIATION;
-  public static final String SECONDARY_SUFFIX = SEPARATOR + SECONDARY_ABBREVIATION;
-  public static final String GENE_SUFFIX = SEPARATOR + GENE_ABBREVIATION;
+  private static final String META_SUFFIX = SEPARATOR + META_ABBREVIATION;
+  private static final String PRIMARY_SUFFIX = SEPARATOR + PRIMARY_ABBREVIATION;
+  private static final String SECONDARY_SUFFIX = SEPARATOR + SECONDARY_ABBREVIATION;
+  private static final String GENE_SUFFIX = SEPARATOR + GENE_ABBREVIATION;
 
   /**
    * Used as placeholder in the loader for imported fields.
    */
   public static final String NOT_APPLICABLE = "N/A";
 
-  public static final String SSM_M = SSM_TYPE + META_SUFFIX;
-  public static final String SSM_P = SSM_TYPE + PRIMARY_SUFFIX;
-  public static final String SSM_S = SSM_TYPE + SECONDARY_SUFFIX;
+  public static final String SSM_M = buildMetaFileSchemaName(SSM_TYPE);
+  public static final String SSM_P = buildPrimaryFileSchemaName(SSM_TYPE);
+  public static final String SSM_S = buildSecondaryFileSchemaName(SSM_TYPE);
 
-  public static final String CNSM_M = CNSM_TYPE + META_SUFFIX;
-  public static final String CNSM_P = CNSM_TYPE + PRIMARY_SUFFIX;
-  public static final String CNSM_S = CNSM_TYPE + SECONDARY_SUFFIX;
+  public static final String CNSM_M = buildMetaFileSchemaName(CNSM_TYPE);
+  public static final String CNSM_P = buildPrimaryFileSchemaName(CNSM_TYPE);
+  public static final String CNSM_S = buildSecondaryFileSchemaName(CNSM_TYPE);
 
-  public static final String STSM_M = STSM_TYPE + META_SUFFIX;
-  public static final String STSM_P = STSM_TYPE + PRIMARY_SUFFIX;
-  public static final String STSM_S = STSM_TYPE + SECONDARY_SUFFIX;
+  public static final String STSM_M = buildMetaFileSchemaName(STSM_TYPE);
+  public static final String STSM_P = buildPrimaryFileSchemaName(STSM_TYPE);
+  public static final String STSM_S = buildSecondaryFileSchemaName(STSM_TYPE);
 
-  public static final String SGV_M = SGV_TYPE + META_SUFFIX;
-  public static final String SGV_P = SGV_TYPE + PRIMARY_SUFFIX;
+  public static final String SGV_M = buildMetaFileSchemaName(SGV_TYPE);
+  public static final String SGV_P = buildPrimaryFileSchemaName(SGV_TYPE);
 
-  public static final String CNGV_M = CNGV_TYPE + META_SUFFIX;
-  public static final String CNGV_P = CNGV_TYPE + PRIMARY_SUFFIX;
-  public static final String CNGV_S = CNGV_TYPE + SECONDARY_SUFFIX;
+  public static final String CNGV_M = buildMetaFileSchemaName(CNGV_TYPE);
+  public static final String CNGV_P = buildPrimaryFileSchemaName(CNGV_TYPE);
+  public static final String CNGV_S = buildSecondaryFileSchemaName(CNGV_TYPE);
 
-  public static final String STGV_M = STGV_TYPE + META_SUFFIX;
-  public static final String STGV_P = STGV_TYPE + PRIMARY_SUFFIX;
-  public static final String STGV_S = STGV_TYPE + SECONDARY_SUFFIX;
+  public static final String STGV_M = buildMetaFileSchemaName(STGV_TYPE);
+  public static final String STGV_P = buildPrimaryFileSchemaName(STGV_TYPE);
+  public static final String STGV_S = buildSecondaryFileSchemaName(STGV_TYPE);
 
-  public static final String PEXP_M = PEXP_TYPE + META_SUFFIX;
-  public static final String PEXP_P = PEXP_TYPE + PRIMARY_SUFFIX;
-  public static final String PEXP_S = PEXP_TYPE + SECONDARY_SUFFIX;
+  public static final String PEXP_M = buildMetaFileSchemaName(PEXP_TYPE);
+  public static final String PEXP_P = buildPrimaryFileSchemaName(PEXP_TYPE);
 
-  public static final String METH_M = METH_TYPE + META_SUFFIX;
-  public static final String METH_P = METH_TYPE + PRIMARY_SUFFIX;
-  public static final String METH_S = METH_TYPE + SECONDARY_SUFFIX;
+  public static final String METH_M = buildMetaFileSchemaName(METH_TYPE);
+  public static final String METH_P = buildPrimaryFileSchemaName(METH_TYPE);
+  public static final String METH_S = buildSecondaryFileSchemaName(METH_TYPE);
 
-  public static final String MIRNA_M = MIRNA_TYPE + META_SUFFIX;
-  public static final String MIRNA_P = MIRNA_TYPE + PRIMARY_SUFFIX;
-  public static final String MIRNA_S = MIRNA_TYPE + SECONDARY_SUFFIX;
+  public static final String MIRNA_M = buildMetaFileSchemaName(MIRNA_TYPE);
+  public static final String MIRNA_P = buildPrimaryFileSchemaName(MIRNA_TYPE);
+  public static final String MIRNA_S = buildSecondaryFileSchemaName(MIRNA_TYPE);
 
-  public static final String JCN_M = JCN_TYPE + META_SUFFIX;
-  public static final String JCN_P = JCN_TYPE + PRIMARY_SUFFIX;
-  public static final String JCN_S = JCN_TYPE + SECONDARY_SUFFIX;
+  public static final String JCN_M = buildMetaFileSchemaName(JCN_TYPE);
+  public static final String JCN_P = buildPrimaryFileSchemaName(JCN_TYPE);
+  public static final String JCN_S = buildSecondaryFileSchemaName(JCN_TYPE);
 
-  public static final String EXP_M = EXP_TYPE + META_SUFFIX;
-  public static final String EXP_G = EXP_TYPE + GENE_SUFFIX;
+  public static final String EXP_M = buildMetaFileSchemaName(EXP_TYPE);
+  public static final String EXP_G = buildFileSchemaName(EXP_TYPE, GENE_SUFFIX);
 
+  public static String buildMetaFileSchemaName(String type) {
+    return buildFileSchemaName(type, META_SUFFIX);
+  }
+
+  public static String buildPrimaryFileSchemaName(String type) {
+    return buildFileSchemaName(type, PRIMARY_SUFFIX);
+  }
+
+  public static String buildSecondaryFileSchemaName(String type) {
+    return buildFileSchemaName(type, SECONDARY_SUFFIX);
+  }
+
+  private static String buildFileSchemaName(String type, String suffix) {
+    return type + suffix;
+  }
 }
