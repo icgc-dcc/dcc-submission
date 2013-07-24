@@ -78,8 +78,7 @@ public class ReleaseResource {
       Request request,
 
       @Context
-      SecurityContext securityContext
-      )
+      SecurityContext securityContext)
   {
     log.info("Initializing releases with: {}", release);
     if (isOmnipotentUser(securityContext) == false) {
@@ -106,8 +105,7 @@ public class ReleaseResource {
   @JsonView(Digest.class)
   public Response getReleases(
       @Context
-      SecurityContext securityContext
-      )
+      SecurityContext securityContext)
   {
     log.debug("Getting (visible) releases");
     if (hasReleaseViewPrivilege(securityContext) == false) {
