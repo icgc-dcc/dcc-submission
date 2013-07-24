@@ -15,33 +15,12 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.model;
+package org.icgc.dcc.submission.web;
 
-import org.icgc.dcc.submission.web.model.ServerErrorCode;
+public class InvalidNameException extends RuntimeException {
 
-/**
- * When an operation is attempted on the system when its states does not allow it.
- */
-public class InvalidStateException extends Exception {
-  private final ServerErrorCode code;
-
-  private final Object state; // may not be provided (for now)
-
-  public InvalidStateException(ServerErrorCode code, String message) {
-    this(code, message, null);
-  }
-
-  public InvalidStateException(ServerErrorCode code, String message, Object state) {
+  public InvalidNameException(String message) {
     super(message);
-    this.code = code;
-    this.state = state;
   }
 
-  public ServerErrorCode getCode() {
-    return code;
-  }
-
-  public Object getState() {
-    return state;
-  }
 }

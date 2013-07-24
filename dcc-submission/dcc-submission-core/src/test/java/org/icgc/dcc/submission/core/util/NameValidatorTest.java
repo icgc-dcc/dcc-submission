@@ -15,33 +15,33 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.model;
+package org.icgc.dcc.submission.core.util;
 
-import org.icgc.dcc.submission.web.model.ServerErrorCode;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-/**
- * When an operation is attempted on the system when its states does not allow it.
- */
-public class InvalidStateException extends Exception {
-  private final ServerErrorCode code;
+import org.junit.Test;
 
-  private final Object state; // may not be provided (for now)
+public class NameValidatorTest {
 
-  public InvalidStateException(ServerErrorCode code, String message) {
-    this(code, message, null);
-  }
+  @Test
+  public void test_name_validation() {
 
-  public InvalidStateException(ServerErrorCode code, String message, Object state) {
-    super(message);
-    this.code = code;
-    this.state = state;
-  }
+    assertTrue(NameValidator.validateEntityName("abc123"));
 
-  public ServerErrorCode getCode() {
-    return code;
-  }
+    assertTrue(NameValidator.validateEntityName("abc_123_p9k"));
 
-  public Object getState() {
-    return state;
+    assertFalse(NameValidator.validateEntityName("!@#123"));
+
+    assertTrue(NameValidator.validateEntityName("ABCabc123"));
+
+    assertFalse(NameValidator.validateEntityName("a2"));
+
+    assertFalse(NameValidator.validateEntityName("a␡b")); // non-printable
+
+    assertTrue(NameValidator.validateProjectId("809_0"));
+
+    assertTrue(NameValidator.validateProjectId("809.0"));
+
   }
 }
