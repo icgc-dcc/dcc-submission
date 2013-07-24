@@ -15,33 +15,25 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.model;
+package org.icgc.dcc.submission.web.model;
 
-import org.icgc.dcc.submission.web.model.ServerErrorCode;
+import lombok.Getter;
+import lombok.ToString;
 
-/**
- * When an operation is attempted on the system when its states does not allow it.
- */
-public class InvalidStateException extends Exception {
-  private final ServerErrorCode code;
+@Getter
+@ToString
+public class ServerErrorResponseMessage {
 
-  private final Object state; // may not be provided (for now)
+  private final String code;
+  private final Object[] parameters;
 
-  public InvalidStateException(ServerErrorCode code, String message) {
-    this(code, message, null);
+  public ServerErrorResponseMessage(ServerErrorCode code) {
+    this(code, new Object[0]);
   }
 
-  public InvalidStateException(ServerErrorCode code, String message, Object state) {
-    super(message);
-    this.code = code;
-    this.state = state;
+  public ServerErrorResponseMessage(ServerErrorCode code, Object... parameters) {
+    this.code = code.getFrontEndString();
+    this.parameters = parameters;
   }
 
-  public ServerErrorCode getCode() {
-    return code;
-  }
-
-  public Object getState() {
-    return state;
-  }
 }

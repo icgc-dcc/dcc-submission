@@ -15,33 +15,58 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.model;
+package org.icgc.dcc.submission.dictionary;
 
-import org.icgc.dcc.submission.web.model.ServerErrorCode;
+import org.icgc.dcc.submission.dictionary.DictionaryService;
+import org.icgc.dcc.submission.dictionary.DictionaryServiceException;
+import org.icgc.dcc.submission.dictionary.model.CodeList;
+import org.icgc.dcc.submission.release.ReleaseService;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
-/**
- * When an operation is attempted on the system when its states does not allow it.
- */
-public class InvalidStateException extends Exception {
-  private final ServerErrorCode code;
+import com.google.code.morphia.Datastore;
+import com.google.code.morphia.Morphia;
+import com.google.common.collect.Lists;
 
-  private final Object state; // may not be provided (for now)
+import static org.mockito.Mockito.when;
 
-  public InvalidStateException(ServerErrorCode code, String message) {
-    this(code, message, null);
+@RunWith(MockitoJUnitRunner.class)
+public class DictionaryServiceTest2 {
+
+  private DictionaryService dictionaryService;
+
+  @Mock
+  private Morphia morphia;
+
+  @Mock
+  private Datastore datastore;
+
+  @Mock
+  private ReleaseService releaseService;
+
+  @Mock
+  private CodeList codeList1;
+
+  @Mock
+  private CodeList codeList2;
+
+  @Before
+  public void setUp() {
+    this.dictionaryService = new DictionaryService(morphia, datastore, releaseService);
+
+    // TODO: use partial mocking in order to mock queryCodeList() that has a constructor call (and is used by methods we
+    // want to test) - DCC-897
+
+    when(codeList1.getName()).thenReturn("codeList1");
+    when(codeList2.getName()).thenReturn("codeList2");
   }
 
-  public InvalidStateException(ServerErrorCode code, String message, Object state) {
-    super(message);
-    this.code = code;
-    this.state = state;
-  }
-
-  public ServerErrorCode getCode() {
-    return code;
-  }
-
-  public Object getState() {
-    return state;
+  @Test(expected = DictionaryServiceException.class)
+  public void test_addCodeList_failOnUnexisting() {
+    dictionaryService.addCodeList(Lists.newArrayList(codeList1, codeList2));
+    // TODO: verifies
   }
 }
