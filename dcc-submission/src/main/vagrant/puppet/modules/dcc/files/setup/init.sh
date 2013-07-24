@@ -1,4 +1,5 @@
-C-738
+#!/bin/bash
+#
 # note: initializes the submission system
 # usage: ./init.sh https://submissions.dcc.icgc.org http://localhost:5380 guest 1qw2!QW@ my_initial_release my_project_key [my_project_name] [my_project_alias]
 
@@ -39,6 +40,14 @@ function extract_version() {
 }
 
 # ===========================================================================
+
+# Drop database, if it exists
+echo "dropping mongo icgc-dev database"
+/usr/bin/mongo icgc-dev --eval "db.dropDatabase()"
+
+# Clean file system, if it exists
+echo "removing /tmp/dcc_root_dir/*"
+rm -rf /tmp/dcc_root_dir/*
 
 # download origin dictionary and ensure state is OPENED
 echo "getting dictionary"
