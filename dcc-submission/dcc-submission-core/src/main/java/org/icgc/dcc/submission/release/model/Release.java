@@ -71,6 +71,7 @@ public class Release extends BaseEntity implements HasName {
   protected boolean transitioning; // mutex
 
   @Valid
+  @JsonView(Digest.class)
   protected List<Submission> submissions = Lists.newArrayList();
 
   @Valid

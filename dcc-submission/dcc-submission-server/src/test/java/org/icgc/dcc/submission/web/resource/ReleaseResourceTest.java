@@ -50,8 +50,9 @@ public class ReleaseResourceTest extends ResourceTest {
     assertThat(reponse.getStatus()).isEqualTo(OK.getStatusCode());
     assertThat(reponse.readEntity(String.class))
         .isEqualTo(
-            "[{\"name\":\"ICGC13\",\"state\":\"OPENED\",\"releaseDate\":" + release.getReleaseDate().getTime()
-                + ",\"dictionaryVersion\":\"0.6d\"}]");
+            "[{\"name\":\"ICGC13\",\"state\":\"OPENED\",\"releaseDate\":"
+                + release.getReleaseDate().getTime()
+                + ",\"dictionaryVersion\":\"0.6d\",\"submissions\":[{\"projectKey\":\"project1\"},{\"projectKey\":\"project2\"}]}]");
   }
 
   @Override
