@@ -146,7 +146,7 @@ public abstract class FunctionUtils {
     private static final int COUNT_DEFAULT_VALUE = 0;
     private static final boolean EXISTENCE_DEFAULT_VALUE = false;
 
-    boolean isCountSummary;
+    private final boolean isCountSummary;
 
     public ReplaceNulls(boolean isCountSummary) {
       super(Fields.ARGS);
