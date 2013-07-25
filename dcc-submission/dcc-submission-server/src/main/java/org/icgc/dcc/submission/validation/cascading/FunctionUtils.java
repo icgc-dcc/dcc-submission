@@ -146,11 +146,11 @@ public abstract class FunctionUtils {
     private static final int COUNT_DEFAULT_VALUE = 0;
     private static final boolean EXISTENCE_DEFAULT_VALUE = false;
 
-    boolean isSsm;
+    boolean isCountSummary;
 
-    public ReplaceNulls(boolean isSsm) {
+    public ReplaceNulls(boolean isCountSummary) {
       super(Fields.ARGS);
-      this.isSsm = isSsm;
+      this.isCountSummary = isCountSummary;
     }
 
     @Override
@@ -162,7 +162,7 @@ public abstract class FunctionUtils {
 
       Tuple copy = entry.getTupleCopy();
       if (copy.getObject(SUMMARY_FIELD_INDEX) == null) {
-        copy.set(SUMMARY_FIELD_INDEX, isSsm ? COUNT_DEFAULT_VALUE : EXISTENCE_DEFAULT_VALUE);
+        copy.set(SUMMARY_FIELD_INDEX, isCountSummary ? COUNT_DEFAULT_VALUE : EXISTENCE_DEFAULT_VALUE);
       }
 
       functionCall.getOutputCollector().add(copy);

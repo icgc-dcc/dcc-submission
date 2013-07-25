@@ -42,25 +42,32 @@ public final class FeatureTypes {
    */
   @RequiredArgsConstructor(access = PRIVATE)
   public enum FeatureType {
-    SSM_TYPE("ssm"),
-    SGV_TYPE("sgv"),
-    CNSM_TYPE("cnsm"),
-    CNGV_TYPE("cngv"),
-    STSM_TYPE("stsm"),
-    STGV_TYPE("stgv"),
-    METH_TYPE("meth"),
-    MIRNA_TYPE("mirna"),
-    EXP_TYPE("exp"),
-    PEXP_TYPE("pexp"),
-    JCN_TYPE("jcn");
+    SSM_TYPE("ssm", "_ssm_count"),
+    SGV_TYPE("sgv", "_sgv_exists"),
+    CNSM_TYPE("cnsm", "_cnsm_exists"),
+    CNGV_TYPE("cngv", "_cngv_exists"),
+    STSM_TYPE("stsm", "_stsm_exists"),
+    STGV_TYPE("stgv", "_stgv_exists"),
+    METH_TYPE("meth", "_meth_exists"),
+    MIRNA_TYPE("mirna", "_mirna_exists"),
+    EXP_TYPE("exp", "_exp_exists"),
+    PEXP_TYPE("pexp", "_pexp_exists"),
+    JCN_TYPE("jcn", "_jcn_exists");
 
     private static final String TYPE_SUFFIX = "_TYPE";
 
     @Getter
     private final String name;
 
+    @Getter
+    private final String summaryFieldName;
+
     public boolean isSsm() {
       return this == SSM_TYPE;
+    }
+
+    public boolean isCountSummary() {
+      return isSsm();
     }
 
     /**
@@ -68,6 +75,15 @@ public final class FeatureTypes {
      */
     public static FeatureType fromType(String type) {
       return FeatureTypes.FeatureType.valueOf(type.toUpperCase() + TYPE_SUFFIX);
+    }
+
+    /**
+     * Returns the complement of the feature types provided, i.e. the feature types not provided in the list.
+     */
+    public static List<FeatureType> complement(List<FeatureType> featureTypes) {
+      List<FeatureType> complement = newArrayList(values());
+      complement.removeAll(featureTypes);
+      return complement;
     }
 
   }
