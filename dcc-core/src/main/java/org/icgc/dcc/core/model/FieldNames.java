@@ -179,6 +179,7 @@ public final class FieldNames {
   public static final String MUTATION_PLATFORM = "platform";
   public static final String MUTATION_IS_ANNOTATED = "is_annotated";
   public static final String MUTATION_VALIDATION_STATUS = "validation_status";
+  public static final String MUTATION_VERIFICATION_STATUS = "verification_status";
 
   public static final String MUTATION_SUMMARY = "_summary";
   public static final String MUTATION_SUMMARY_AFFECTED_PROJECT_IDS = "_affected_project_id";

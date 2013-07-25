@@ -15,33 +15,42 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.model;
+package org.icgc.dcc.submission.web.util;
 
-import org.icgc.dcc.submission.web.model.ServerErrorCode;
+import javax.ws.rs.core.Request;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
+
+import org.icgc.dcc.submission.core.model.HasTimestamps;
+import org.icgc.dcc.submission.web.UnsatisfiedPreconditionException;
 
 /**
- * When an operation is attempted on the system when its states does not allow it.
+ * Utility class for interaction between responses and objects with {@code HasTimestamps}
  */
-public class InvalidStateException extends Exception {
-  private final ServerErrorCode code;
+public final class ResponseTimestamper {
 
-  private final Object state; // may not be provided (for now)
-
-  public InvalidStateException(ServerErrorCode code, String message) {
-    this(code, message, null);
+  /**
+   * Sets the Last-Modified header in a ResponseBuilder object based on the Last Update property of a HasTimestamps
+   * object. If the Last Update property is null, no time stamp will be added and any existing time stamp will be
+   * removed.
+   * 
+   * @param responseBuilder
+   * @param hasTimestamps
+   * @return
+   */
+  public static ResponseBuilder setLastModified(ResponseBuilder responseBuilder, HasTimestamps hasTimestamps) {
+    return responseBuilder.lastModified(hasTimestamps.getLastUpdate());
   }
 
-  public InvalidStateException(ServerErrorCode code, String message, Object state) {
-    super(message);
-    this.code = code;
-    this.state = state;
+  public static ResponseBuilder ok(HasTimestamps hasTimestamps) {
+    return ResponseTimestamper.setLastModified(Response.ok(hasTimestamps), hasTimestamps);
   }
 
-  public ServerErrorCode getCode() {
-    return code;
+  public static void evaluate(Request request, HasTimestamps hasTimestamps) {
+    ResponseBuilder rb = request.evaluatePreconditions(hasTimestamps.getLastUpdate());
+    if (rb != null) {
+      throw new UnsatisfiedPreconditionException(rb);
+    }
   }
 
-  public Object getState() {
-    return state;
-  }
 }

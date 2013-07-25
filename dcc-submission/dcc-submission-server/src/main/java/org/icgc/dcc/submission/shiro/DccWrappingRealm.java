@@ -27,7 +27,7 @@ import org.apache.shiro.realm.text.IniRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.icgc.dcc.submission.core.ProjectService;
 import org.icgc.dcc.submission.core.model.Project;
-import org.icgc.dcc.submission.web.Authorizations;
+import org.icgc.dcc.submission.web.util.Authorizations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

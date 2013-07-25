@@ -231,8 +231,12 @@ public class Plan {
     TupleState tupleState = e.getTupleState();
     checkState(filename != null);
     checkState(tupleState != null);
-    checkState(fileLevelErrors.get(filename) == null,
-        "There should be no file level errors existing for file {} already", filename);
+
+    // Let it overwrite any previously reported file-level errors
+    // This is a band-aid in the context of https://jira.oicr.on.ca/browse/DCC-1289.
+    // It shouldn't be hard to report more than one error by augmenting the existing tupleState, but the file-level
+    // error reporting must be completely reworked anyway, see https://jira.oicr.on.ca/browse/DCC-391 and
+    // https://wiki.oicr.on.ca/display/DCCSOFT/File-Level+Errors
     fileLevelErrors.put(filename, tupleState);
   }
 

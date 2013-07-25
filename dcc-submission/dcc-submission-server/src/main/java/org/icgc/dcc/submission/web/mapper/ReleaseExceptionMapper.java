@@ -23,8 +23,8 @@ import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
 import org.icgc.dcc.submission.release.ReleaseException;
-import org.icgc.dcc.submission.web.ServerErrorCode;
-import org.icgc.dcc.submission.web.ServerErrorResponseMessage;
+import org.icgc.dcc.submission.web.model.ServerErrorCode;
+import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
 
 @Provider
 public class ReleaseExceptionMapper implements ExceptionMapper<ReleaseException> {

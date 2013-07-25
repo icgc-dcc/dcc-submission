@@ -1,5 +1,4 @@
 <configuration debug="false">
-  <property name="log.dir" value="/srv/webapp/dcc/server/logs" />
   <property name="log.name" value="dcc-server" />
   <property name="log.debug.name" value="dcc-server.debug" />
   <property name="pattern" value="%date{ISO8601} [%thread] %-5level %logger{20} - %msg%n" />
@@ -34,13 +33,13 @@
     </encoder>
   </appender>
 
-  <logger name="org.icgc.dcc.submission.core.UserService" level="info" additivity="false">
+  <logger name="org.icgc.dcc.core.UserService" level="info" additivity="false">
     <appender-ref ref="DEBUG" />
   </logger>
-  <logger name="org.icgc.dcc.submission.shiro.ShiroPasswordAuthenticator" level="info" additivity="false">
+  <logger name="org.icgc.dcc.shiro.ShiroPasswordAuthenticator" level="info" additivity="false">
     <appender-ref ref="DEBUG" />
   </logger>
-  <logger name="org.icgc.dcc.submission.http.jersey.BasicHttpAuthenticationRequestFilter" level="info" additivity="false">
+  <logger name="org.icgc.dcc.http.jersey.BasicHttpAuthenticationRequestFilter" level="info" additivity="false">
     <appender-ref ref="DEBUG" />
   </logger>
   <logger name="org.apache.sshd.server.session.ServerSession" level="info" additivity="false">
@@ -48,7 +47,8 @@
   </logger>
 
   <root level="info">
-    <appender-ref ref="STDOUT" />
+    <appender-ref ref="DEBUG" />
     <appender-ref ref="FILE" />
+    <appender-ref ref="STDOUT" />
   </root>
 </configuration>

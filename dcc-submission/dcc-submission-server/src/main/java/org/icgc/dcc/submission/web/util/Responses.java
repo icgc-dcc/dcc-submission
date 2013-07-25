@@ -15,33 +15,64 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.model;
+package org.icgc.dcc.submission.web.util;
+
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.web.model.ServerErrorCode;
+import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
 
-/**
- * When an operation is attempted on the system when its states does not allow it.
- */
-public class InvalidStateException extends Exception {
-  private final ServerErrorCode code;
+@Slf4j
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class Responses {
 
-  private final Object state; // may not be provided (for now)
+  public static final Response.StatusType UNPROCESSABLE_ENTITY = new Response.StatusType() {
 
-  public InvalidStateException(ServerErrorCode code, String message) {
-    this(code, message, null);
+    @Override
+    public int getStatusCode() {
+      return 422;
+    }
+
+    @Override
+    public Response.Status.Family getFamily() {
+      return Response.Status.Family.CLIENT_ERROR;
+    }
+
+    @Override
+    public String getReasonPhrase() {
+      return "Unprocessable Entity";
+    }
+
+  };
+
+  public static Response noSuchEntityResponse(String... names) {
+    return noSuchEntityResponse(false, names);
   }
 
-  public InvalidStateException(ServerErrorCode code, String message, Object state) {
-    super(message);
-    this.code = code;
-    this.state = state;
+  public static Response noSuchEntityResponse(boolean important, String... names) {
+    ServerErrorResponseMessage errorMessage =
+        new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, (Object[]) names);
+    if (important) {
+      log.info("No such entity: {}", errorMessage);
+    }
+    return Response.status(Status.NOT_FOUND).entity(errorMessage).build();
   }
 
-  public ServerErrorCode getCode() {
-    return code;
+  public static Response unauthorizedResponse() {
+    return Responses.unauthorizedResponse(false);
   }
 
-  public Object getState() {
-    return state;
+  public static Response unauthorizedResponse(boolean important) {
+    ServerErrorResponseMessage errorMessage = new ServerErrorResponseMessage(ServerErrorCode.UNAUTHORIZED);
+    if (important) {
+      log.info("unauthorized action: {}", errorMessage);
+    }
+    return Response.status(Status.UNAUTHORIZED).entity(errorMessage).build();
   }
+
 }
