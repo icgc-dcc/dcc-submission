@@ -25,7 +25,9 @@ import static lombok.AccessLevel.PRIVATE;
 import java.util.List;
 import java.util.Set;
 
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Utilities for working with ICGC feature types.
@@ -34,6 +36,41 @@ import lombok.NoArgsConstructor;
  */
 @NoArgsConstructor(access = PRIVATE)
 public final class FeatureTypes {
+
+  /**
+   * TODO: migrate all constants below to this enum.
+   */
+  @RequiredArgsConstructor(access = PRIVATE)
+  public enum FeatureType {
+    SSM_TYPE("ssm"),
+    SGV_TYPE("sgv"),
+    CNSM_TYPE("cnsm"),
+    CNGV_TYPE("cngv"),
+    STSM_TYPE("stsm"),
+    STGV_TYPE("stgv"),
+    METH_TYPE("meth"),
+    MIRNA_TYPE("mirna"),
+    EXP_TYPE("exp"),
+    PEXP_TYPE("pexp"),
+    JCN_TYPE("jcn");
+
+    private static final String TYPE_SUFFIX = "_TYPE";
+
+    @Getter
+    private final String name;
+
+    public boolean isSsm() {
+      return this == SSM_TYPE;
+    }
+
+    /**
+     * Returns an enum matching the type like "ssm", "meth", ...
+     */
+    public static FeatureType fromType(String type) {
+      return FeatureTypes.FeatureType.valueOf(type.toUpperCase() + TYPE_SUFFIX);
+    }
+
+  }
 
   /**
    * Feature types.

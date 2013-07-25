@@ -136,4 +136,37 @@ public abstract class FunctionUtils {
       functionCall.getOutputCollector().add(copy);
     }
   }
+
+  /**
+   * Replaces the nulls resulting from a left join with the appropriate value (0 or false) based on the feature type.
+   */
+  public static class ReplaceNulls extends BaseOperation<Void> implements cascading.operation.Function<Void> {
+
+    private static final int SUMMARY_FIELD_INDEX = 0;
+    private static final int COUNT_DEFAULT_VALUE = 0;
+    private static final boolean EXISTENCE_DEFAULT_VALUE = false;
+
+    boolean isSsm;
+
+    public ReplaceNulls(boolean isSsm) {
+      super(Fields.ARGS);
+      this.isSsm = isSsm;
+    }
+
+    @Override
+    public void operate(
+        @SuppressWarnings("rawtypes")
+        FlowProcess flowProcess,
+        FunctionCall<Void> functionCall) {
+      TupleEntry entry = functionCall.getArguments();
+
+      Tuple copy = entry.getTupleCopy();
+      if (copy.getObject(SUMMARY_FIELD_INDEX) == null) {
+        copy.set(SUMMARY_FIELD_INDEX, isSsm ? COUNT_DEFAULT_VALUE : EXISTENCE_DEFAULT_VALUE);
+      }
+
+      functionCall.getOutputCollector().add(copy);
+    }
+  }
+
 }

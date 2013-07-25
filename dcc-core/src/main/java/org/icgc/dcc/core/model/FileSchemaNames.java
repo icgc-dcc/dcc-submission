@@ -96,6 +96,21 @@ public final class FileSchemaNames {
   public static final String EXP_M = buildMetaFileSchemaName(EXP_TYPE);
   public static final String EXP_G = buildFileSchemaName(EXP_TYPE, GENE_SUFFIX);
 
+  public static String buildMetaFileSchemaName(FeatureTypes.FeatureType type) {
+    return buildFileSchemaName(type.getName(), META_SUFFIX);
+  }
+
+  public static String buildPrimaryFileSchemaName(FeatureTypes.FeatureType type) {
+    return buildFileSchemaName(type.getName(), PRIMARY_SUFFIX);
+  }
+
+  public static String buildSecondaryFileSchemaName(FeatureTypes.FeatureType type) {
+    return buildFileSchemaName(type.getName(), SECONDARY_SUFFIX);
+  }
+
+  /**
+   * TODO: Remove those once {@link FeatureTypes.FeatureType} if fully adopted.
+   */
   public static String buildMetaFileSchemaName(String type) {
     return buildFileSchemaName(type, META_SUFFIX);
   }
