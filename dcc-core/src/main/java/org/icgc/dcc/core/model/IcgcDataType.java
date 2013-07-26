@@ -17,40 +17,13 @@
  */
 package org.icgc.dcc.core.model;
 
-import static lombok.AccessLevel.PRIVATE;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
+/**
+ * TODO
+ */
+public interface IcgcDataType {
 
-@NoArgsConstructor(access = PRIVATE)
-public final class FileTypes {
+  String TYPE_SUFFIX = "_TYPE";
 
-  /**
-   * TODO: migrate all constants below to this enum.
-   */
-  @RequiredArgsConstructor(access = PRIVATE)
-  public enum FileType implements IcgcDataType, IcgcFileType {
-    DONOR_TYPE("donor"),
-    SPECIMEN_TYPE("specimen"),
-    SAMPLE_TYPE("sample");
-
-    @Getter
-    private final String typeName;
-
-    public boolean isDonor() {
-      return this == DONOR_TYPE;
-    }
-
-    /**
-     * Returns an enum matching the type like "donor", "specimen", ...
-     */
-    public static FileType fromTypeName(String typeName) {
-      return valueOf(typeName.toUpperCase() + TYPE_SUFFIX);
-    }
-  }
-
-  public static final String DONOR_TYPE = "donor";
-  public static final String SPECIMEN_TYPE = "specimen";
-  public static final String SAMPLE_TYPE = "sample";
+  String getTypeName();
 
 }

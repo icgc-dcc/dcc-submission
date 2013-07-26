@@ -17,40 +17,36 @@
  */
 package org.icgc.dcc.core.model;
 
-import static lombok.AccessLevel.PRIVATE;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
+import static com.google.common.base.Preconditions.checkNotNull;
 
-@NoArgsConstructor(access = PRIVATE)
-public final class FileTypes {
+import org.icgc.dcc.core.model.FileSchemaNames.FileSchemaType;
+import org.icgc.dcc.core.model.FileTypes.FileType;
 
-  /**
-   * TODO: migrate all constants below to this enum.
-   */
-  @RequiredArgsConstructor(access = PRIVATE)
-  public enum FileType implements IcgcDataType, IcgcFileType {
-    DONOR_TYPE("donor"),
-    SPECIMEN_TYPE("specimen"),
-    SAMPLE_TYPE("sample");
+/**
+ * TODO
+ */
+public interface IcgcFileType {
 
-    @Getter
-    private final String typeName;
+  String getTypeName();
 
-    public boolean isDonor() {
-      return this == DONOR_TYPE;
-    }
+  public static class IcgcFileTypes {
 
     /**
-     * Returns an enum matching the type like "donor", "specimen", ...
+     * Returns an enum matching the type like "ssm_p", "meth_s", ...
      */
-    public static FileType fromTypeName(String typeName) {
-      return valueOf(typeName.toUpperCase() + TYPE_SUFFIX);
+    public static IcgcFileType fromTypeName(String typeName) {
+      IcgcFileType type = null;
+      try {
+        type = FileSchemaType.fromTypeName(typeName);
+      } catch (IllegalArgumentException e) {
+        // TODO
+      }
+      try {
+        type = FileType.fromTypeName(typeName);
+      } catch (IllegalArgumentException e) {
+        // TODO
+      }
+      return checkNotNull(type, "TODO");
     }
   }
-
-  public static final String DONOR_TYPE = "donor";
-  public static final String SPECIMEN_TYPE = "specimen";
-  public static final String SAMPLE_TYPE = "sample";
-
 }

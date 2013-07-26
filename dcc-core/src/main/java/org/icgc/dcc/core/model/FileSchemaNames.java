@@ -29,13 +29,76 @@ import static org.icgc.dcc.core.model.FeatureTypes.SGV_TYPE;
 import static org.icgc.dcc.core.model.FeatureTypes.SSM_TYPE;
 import static org.icgc.dcc.core.model.FeatureTypes.STGV_TYPE;
 import static org.icgc.dcc.core.model.FeatureTypes.STSM_TYPE;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
+
+import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 
 /**
  * Contains names for file schemata (eg. "ssm_p", "cnsm_s", "exp_g", "N/A", ...)
  */
 @NoArgsConstructor(access = PRIVATE)
 public final class FileSchemaNames {
+
+  /**
+   * TODO: migrate all constants below to this enum.
+   */
+  @RequiredArgsConstructor(access = PRIVATE)
+  public enum FileSchemaType implements IcgcFileType {
+
+    SSM_M(buildMetaFileSchemaName(SSM_TYPE)),
+    SSM_P(buildPrimaryFileSchemaName(SSM_TYPE)),
+    SSM_S(buildSecondaryFileSchemaName(SSM_TYPE)),
+
+    CNSM_M(buildMetaFileSchemaName(CNSM_TYPE)),
+    CNSM_P(buildPrimaryFileSchemaName(CNSM_TYPE)),
+    CNSM_S(buildSecondaryFileSchemaName(CNSM_TYPE)),
+
+    STSM_M(buildMetaFileSchemaName(STSM_TYPE)),
+    STSM_P(buildPrimaryFileSchemaName(STSM_TYPE)),
+    STSM_S(buildSecondaryFileSchemaName(STSM_TYPE)),
+
+    SGV_M(buildMetaFileSchemaName(SGV_TYPE)),
+    SGV_P(buildPrimaryFileSchemaName(SGV_TYPE)),
+
+    CNGV_M(buildMetaFileSchemaName(CNGV_TYPE)),
+    CNGV_P(buildPrimaryFileSchemaName(CNGV_TYPE)),
+    CNGV_S(buildSecondaryFileSchemaName(CNGV_TYPE)),
+
+    STGV_M(buildMetaFileSchemaName(STGV_TYPE)),
+    STGV_P(buildPrimaryFileSchemaName(STGV_TYPE)),
+    STGV_S(buildSecondaryFileSchemaName(STGV_TYPE)),
+
+    PEXP_M(buildMetaFileSchemaName(PEXP_TYPE)),
+    PEXP_P(buildPrimaryFileSchemaName(PEXP_TYPE)),
+
+    METH_M(buildMetaFileSchemaName(METH_TYPE)),
+    METH_P(buildPrimaryFileSchemaName(METH_TYPE)),
+    METH_S(buildSecondaryFileSchemaName(METH_TYPE)),
+
+    MIRNA_M(buildMetaFileSchemaName(MIRNA_TYPE)),
+    MIRNA_P(buildPrimaryFileSchemaName(MIRNA_TYPE)),
+    MIRNA_S(buildSecondaryFileSchemaName(MIRNA_TYPE)),
+
+    JCN_M(buildMetaFileSchemaName(JCN_TYPE)),
+    JCN_P(buildPrimaryFileSchemaName(JCN_TYPE)),
+    JCN_S(buildSecondaryFileSchemaName(JCN_TYPE)),
+
+    EXP_M(buildMetaFileSchemaName(EXP_TYPE)),
+    EXP_G(buildFileSchemaName(EXP_TYPE, GENE_SUFFIX)), ;
+
+    @Getter
+    private final String typeName;
+
+    /**
+     * Returns an enum matching the type like "ssm_p", "meth_s", ...
+     */
+    public static FileSchemaType fromTypeName(String typeName) {
+      return valueOf(typeName.toUpperCase());
+    }
+
+  }
 
   private static final String SEPARATOR = "_";
 
@@ -96,20 +159,20 @@ public final class FileSchemaNames {
   public static final String EXP_M = buildMetaFileSchemaName(EXP_TYPE);
   public static final String EXP_G = buildFileSchemaName(EXP_TYPE, GENE_SUFFIX);
 
-  public static String buildMetaFileSchemaName(FeatureTypes.FeatureType type) {
-    return buildFileSchemaName(type.getName(), META_SUFFIX);
+  public static String buildMetaFileSchemaName(FeatureType type) {
+    return buildFileSchemaName(type.getTypeName(), META_SUFFIX);
   }
 
-  public static String buildPrimaryFileSchemaName(FeatureTypes.FeatureType type) {
-    return buildFileSchemaName(type.getName(), PRIMARY_SUFFIX);
+  public static String buildPrimaryFileSchemaName(FeatureType type) {
+    return buildFileSchemaName(type.getTypeName(), PRIMARY_SUFFIX);
   }
 
-  public static String buildSecondaryFileSchemaName(FeatureTypes.FeatureType type) {
-    return buildFileSchemaName(type.getName(), SECONDARY_SUFFIX);
+  public static String buildSecondaryFileSchemaName(FeatureType type) {
+    return buildFileSchemaName(type.getTypeName(), SECONDARY_SUFFIX);
   }
 
   /**
-   * TODO: Remove those once {@link FeatureTypes.FeatureType} if fully adopted.
+   * TODO: Remove those once {@link FeatureType} if fully adopted.
    */
   public static String buildMetaFileSchemaName(String type) {
     return buildFileSchemaName(type, META_SUFFIX);

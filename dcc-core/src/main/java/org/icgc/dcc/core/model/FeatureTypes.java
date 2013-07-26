@@ -41,7 +41,7 @@ public final class FeatureTypes {
    * TODO: migrate all constants below to this enum.
    */
   @RequiredArgsConstructor(access = PRIVATE)
-  public enum FeatureType {
+  public enum FeatureType implements IcgcDataType {
     SSM_TYPE("ssm", "_ssm_count"),
     SGV_TYPE("sgv", "_sgv_exists"),
     CNSM_TYPE("cnsm", "_cnsm_exists"),
@@ -54,10 +54,8 @@ public final class FeatureTypes {
     PEXP_TYPE("pexp", "_pexp_exists"),
     JCN_TYPE("jcn", "_jcn_exists");
 
-    private static final String TYPE_SUFFIX = "_TYPE";
-
     @Getter
-    private final String name;
+    private final String typeName;
 
     @Getter
     private final String summaryFieldName;
@@ -73,8 +71,8 @@ public final class FeatureTypes {
     /**
      * Returns an enum matching the type like "ssm", "meth", ...
      */
-    public static FeatureType fromType(String type) {
-      return FeatureTypes.FeatureType.valueOf(type.toUpperCase() + TYPE_SUFFIX);
+    public static FeatureType fromTypeName(String typeName) {
+      return valueOf(typeName.toUpperCase() + TYPE_SUFFIX);
     }
 
     /**
