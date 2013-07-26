@@ -1,4 +1,5 @@
-C-738
+#!/bin/bash
+#
 # note: initializes the submission system
 # usage: ./init.sh https://submissions.dcc.icgc.org http://localhost:5380 guest 1qw2!QW@ my_initial_release my_project_key [my_project_name] [my_project_alias]
 
@@ -40,6 +41,14 @@ function extract_version() {
 
 # ===========================================================================
 
+# Drop database, if it exists
+echo "dropping mongo icgc-dev database"
+/usr/bin/mongo icgc-dev --eval "db.dropDatabase()"
+
+# Clean file system, if it exists
+echo "removing /tmp/dcc_root_dir/*"
+rm -rf /tmp/dcc_root_dir/*
+
 # download origin dictionary and ensure state is OPENED
 echo "getting dictionary"
 curl ${origin_host?}/ws/nextRelease/dictionary   -H "Accept: application/json" | ensure_open > ${dictionary_file?} && echo "OK" || echo "KO"
@@ -71,7 +80,7 @@ curl -XPUT ${destination_host?}/ws/releases      -H "Accept: application/json" -
 # add a project
 echo "adding project"
 curl -H "Accept: application/json" -XPOST ${destination_host?}/ws/projects     -H "Authorization: X-DCC-Auth $(echo -n ${username?}:${passwd?} | base64)" -H "Content-Type: application/json" \
- --data "{\"key\": \"${project_key?}\", \"name\": \"${project_name?}\", \"alias\": \"${project_alias?}\", \"users\": [\"${username?}\"], \"groups\": []}" && echo "OK" || echo "KO"
+ --data "{\"key\": \"${project_key?}\", \"name\": \"${project_name?}\", \"alias\": \"${project_alias?}\", \"users\": [\"guest\"], \"groups\": []}" && echo "OK" || echo "KO"
 
 # ===========================================================================
 
