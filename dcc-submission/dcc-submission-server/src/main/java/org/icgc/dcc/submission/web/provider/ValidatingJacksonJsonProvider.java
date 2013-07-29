@@ -52,6 +52,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
 import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.SerializationConfig;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
@@ -68,11 +69,19 @@ import com.google.inject.Inject;
 @Provider
 @Consumes({ APPLICATION_JSON, "text/json" })
 @Produces({ APPLICATION_JSON, "text/json" })
-@RequiredArgsConstructor(onConstructor = @_(@Inject))
 public class ValidatingJacksonJsonProvider implements MessageBodyReader<Object>, MessageBodyWriter<Object> {
 
   private final JacksonJsonProvider delegate;
   private final Validator validator;
+
+  @Inject
+  public ValidatingJacksonJsonProvider(JacksonJsonProvider delegate, Validator validator) {
+    this.delegate = delegate;
+    this.validator = validator;
+
+    // Do not serialize properties without a view when views are specified
+    delegate.configure(SerializationConfig.Feature.DEFAULT_VIEW_INCLUSION, false);
+  }
 
   @Override
   public Object readFrom(Class<Object> type, Type genericType, Annotation[] annotations, MediaType mediaType,
