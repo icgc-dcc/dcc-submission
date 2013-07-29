@@ -19,8 +19,11 @@ package org.icgc.dcc.submission.validation.cascading;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.icgc.dcc.hadoop.cascading.Tuples2.nestTuple;
 
 import java.io.Serializable;
+
+import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -70,8 +73,7 @@ public abstract class FunctionUtils {
    * <p>
    * TODO: rename to account for other types of Transformable
    */
-  @SuppressWarnings("rawtypes")
-  public static class CloneField extends BaseOperation implements Function {
+  public static class CloneField extends BaseOperation<Void> implements Function<Void> {
 
     /**
      * Very basic for now, possibly offer more overloadings for transform()
@@ -104,7 +106,8 @@ public abstract class FunctionUtils {
     }
 
     @Override
-    public void operate(FlowProcess flowProcess, FunctionCall functionCall) {
+    public void operate(@SuppressWarnings("rawtypes")
+    FlowProcess flowProcess, FunctionCall<Void> functionCall) {
       TupleEntry entry = functionCall.getArguments();
       String value = entry.getString(originalField);
       String newValue = transformable.tranform(value);
@@ -166,6 +169,49 @@ public abstract class FunctionUtils {
       }
 
       functionCall.getOutputCollector().add(copy);
+    }
+  }
+
+  /**
+   * TODO
+   */
+  public static class AvailableDataTypes extends BaseOperation<Void> implements Function<Void> {
+
+    public AvailableDataTypes(Fields availableDataTypeField) {
+      super(0, availableDataTypeField);
+    }
+
+    @Override
+    public void operate(@SuppressWarnings("rawtypes")
+    FlowProcess flowProcess, FunctionCall<Void> functionCall) {
+      TupleEntry entry = functionCall.getArguments();
+      Tuple newTuple = nestTuple(createAvailableDataTypes(entry));
+      functionCall.getOutputCollector().add(newTuple);
+    }
+
+    /**
+     * TODO: move to Summary class?
+     */
+    private Tuple createAvailableDataTypes(TupleEntry entry) {
+      Tuple availableDataTypes = new Tuple();
+      for (FeatureType type : FeatureType.values()) {
+        String summaryFieldName = type.getSummaryFieldName();
+        if (hasPositiveCount(entry, type, summaryFieldName) ||
+            isMarkedPresent(entry, type, summaryFieldName)) {
+          availableDataTypes.add(type.getTypeName());
+        }
+      }
+      return availableDataTypes;
+    }
+
+    private boolean hasPositiveCount(TupleEntry entry, FeatureType type, String summaryFieldName) {
+      return type.isCountSummary() &&
+          checkNotNull(entry.getLong(summaryFieldName), "Expecting a long for field %s", summaryFieldName) > 0;
+    }
+
+    private boolean isMarkedPresent(TupleEntry entry, FeatureType type, String summaryFieldName) {
+      return !type.isCountSummary()
+          && checkNotNull(entry.getBoolean(summaryFieldName), "Expecting a boolean for field %s", summaryFieldName);
     }
   }
 
