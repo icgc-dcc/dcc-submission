@@ -17,10 +17,14 @@
  */
 package org.icgc.dcc.submission.dictionary.model;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.validation.Valid;
+
+import lombok.ToString;
 
 import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.submission.core.model.BaseEntity;
@@ -28,12 +32,11 @@ import org.icgc.dcc.submission.core.model.HasName;
 
 import com.google.code.morphia.annotations.Entity;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 /**
  * Describes a list of codes (see {@code Term})
  */
 @Entity
+@ToString
 public class CodeList extends BaseEntity implements HasName {
 
   @NotBlank
@@ -49,7 +52,8 @@ public class CodeList extends BaseEntity implements HasName {
     terms = new ArrayList<Term>();
   }
 
-  // TODO: DCC-904 - validation: ensure no value is a code (find reference to ticket in CodeListRestriction and SubmissionFileSchemeHelper to find out why)
+  // TODO: DCC-904 - validation: ensure no value is a code (find reference to ticket in CodeListRestriction and
+  // SubmissionFileSchemeHelper to find out why)
   public CodeList(String name) {
     this();
     this.name = name;
@@ -90,9 +94,4 @@ public class CodeList extends BaseEntity implements HasName {
     return terms.contains(term);
   }
 
-  // TODO: lombokify below
-  @Override
-  public String toString() {
-    return "CodeList [name=" + name + ", label=" + label + ", terms=" + terms + "]";
-  }
 }

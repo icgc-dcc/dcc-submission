@@ -19,6 +19,8 @@ package org.icgc.dcc.submission.dictionary.model;
 
 import java.io.Serializable;
 
+import lombok.ToString;
+
 import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.submission.dictionary.model.validation.CheckRestriction;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryElement;
@@ -34,6 +36,7 @@ import com.mongodb.BasicDBObject;
  */
 @Embedded
 @CheckRestriction
+@ToString
 public class Restriction implements DictionaryElement, Serializable {
 
   public static final String CONFIG_VALUE_SEPARATOR = ","; // simple key-value pair for now, so the value can hold a
