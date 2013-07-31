@@ -28,6 +28,8 @@ import java.util.List;
 
 import javax.validation.Valid;
 
+import lombok.ToString;
+
 import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryElement;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryVisitor;
@@ -41,6 +43,7 @@ import com.google.common.collect.Iterables;
  * Describes a field that has {@code Restriction}s and that is part of a {@code FileSchema}
  */
 @Embedded
+@ToString(of = { "name", "valueType" })
 public class Field implements DictionaryElement, Serializable {
 
   @NotBlank
