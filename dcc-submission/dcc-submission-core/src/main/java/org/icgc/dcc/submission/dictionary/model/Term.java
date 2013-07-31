@@ -19,6 +19,8 @@ package org.icgc.dcc.submission.dictionary.model;
 
 import java.io.Serializable;
 
+import lombok.ToString;
+
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.URL;
 
@@ -29,6 +31,7 @@ import com.google.code.morphia.annotations.Embedded;
  * string) associated with a value, and a URI as reference for the controlled term
  */
 @Embedded
+@ToString
 public class Term implements Serializable {
 
   @NotBlank
@@ -75,8 +78,4 @@ public class Term implements Serializable {
     this.uri = uri;
   }
 
-  @Override
-  public String toString() {
-    return "Term [code=" + code + ", value=" + value + ", uri=" + uri + "]";
-  }
 }
