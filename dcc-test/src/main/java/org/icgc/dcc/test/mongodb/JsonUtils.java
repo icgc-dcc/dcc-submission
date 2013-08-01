@@ -174,7 +174,7 @@ public final class JsonUtils {
   @SneakyThrows
   private static void processLine(ObjectMapper mapper, BufferedWriter bufferedWriter, Map<String, Object> map) {
     TreeMap<String, Object> treeMap = asTreeMap(map); // for reordering
-    eraseValue(treeMap, MONGO_ID_FIELD, REPLACEMENT_VALUE);
+    eraseValue(treeMap, MONGO_ID_FIELD, REPLACEMENT_VALUE, false);
     StringWriter sw = new StringWriter();
     mapper.writeValue(sw, treeMap);
     sw.close();
@@ -182,11 +182,16 @@ public final class JsonUtils {
     bufferedWriter.newLine();
   }
 
+  private static void eraseValue(TreeMap<String, Object> treeMap, String fieldName, String replacementValue) {
+    eraseValue(treeMap, fieldName, replacementValue, true);
+  }
+
   /**
    * Recursively erases a value for comparison purposes.
    */
   @SuppressWarnings("unchecked")
-  private static void eraseValue(TreeMap<String, Object> treeMap, String fieldName, String replacementValue) {
+  private static void eraseValue(TreeMap<String, Object> treeMap, String fieldName, String replacementValue,
+      boolean recursive) {
 
     // Replace value
     if (treeMap.containsKey(fieldName)) {
@@ -194,14 +199,16 @@ public final class JsonUtils {
     }
 
     // Continue recursively
-    for (val v : treeMap.entrySet()) {
-      Object value = v.getValue();
-      if (value instanceof Map) {
-        eraseValue((TreeMap<String, Object>) value, fieldName, replacementValue);
-      } else if (value instanceof Collection) {
-        Collection<Object> collection = (Collection<Object>) value;
-        for (Object item : collection) {
-          eraseValue((TreeMap<String, Object>) item, fieldName, replacementValue);
+    if (recursive) { // TODO: fix recursive erasure to account for _available_data_type
+      for (val v : treeMap.entrySet()) {
+        Object value = v.getValue();
+        if (value instanceof Map) {
+          eraseValue((TreeMap<String, Object>) value, fieldName, replacementValue);
+        } else if (value instanceof Collection) {
+          Collection<Object> collection = (Collection<Object>) value;
+          for (Object item : collection) {
+            eraseValue((TreeMap<String, Object>) item, fieldName, replacementValue);
+          }
         }
       }
     }
