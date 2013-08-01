@@ -38,7 +38,7 @@ import lombok.RequiredArgsConstructor;
 public final class FeatureTypes {
 
   /**
-   * TODO: migrate all constants below to this enum.
+   * TODO: migrate all constants below to this enum (DCC-1452).
    */
   @RequiredArgsConstructor(access = PRIVATE)
   public enum FeatureType implements IcgcDataType {

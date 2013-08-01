@@ -22,11 +22,16 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Utilities for working with ICGC file types.
+ * <p>
+ * For experimental feature types, see {@link FeatureTypes} instead.
+ */
 @NoArgsConstructor(access = PRIVATE)
 public final class FileTypes {
 
   /**
-   * TODO: migrate all constants below to this enum.
+   * TODO: migrate all constants below to this enum (DCC-1452).
    */
   @RequiredArgsConstructor(access = PRIVATE)
   public enum FileType implements IcgcDataType, IcgcFileType {

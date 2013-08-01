@@ -42,7 +42,7 @@ import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 public final class FileSchemaNames {
 
   /**
-   * TODO: migrate all constants below to this enum.
+   * TODO: migrate all constants below to this enum (DCC-1452).
    */
   @RequiredArgsConstructor(access = PRIVATE)
   public enum FileSchemaType implements IcgcFileType {
