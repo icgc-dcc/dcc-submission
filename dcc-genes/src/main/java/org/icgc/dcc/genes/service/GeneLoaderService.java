@@ -31,6 +31,7 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
+import org.icgc.dcc.genes.core.GeneFilter;
 import org.icgc.dcc.genes.core.GeneTransformer;
 import org.jongo.Jongo;
 import org.jongo.MongoCollection;
@@ -61,11 +62,25 @@ public class GeneLoaderService {
 
   private final GeneTransformer transformer = new GeneTransformer();
 
+  private static final GeneFilter INCLUDE_ALL = new GeneFilter() {
+
+    @Override
+    public boolean filter(JsonNode gene) {
+      // Include all
+      return true;
+    }
+
+  };
+
   @NonNull
   private final MongoClientURI mongoUri;
 
-  @SneakyThrows
   public void load(InputStream inputStream) {
+    load(inputStream, INCLUDE_ALL);
+  }
+
+  @SneakyThrows
+  public void load(InputStream inputStream, GeneFilter filter) {
     Stopwatch watch = new Stopwatch().start();
     log.info("Loading gene model from {} into {}...", inputStream, mongoUri);
 
@@ -78,7 +93,8 @@ public class GeneLoaderService {
       MappingIterator<JsonNode> iterator = getSourceIterator(inputStream);
 
       // Transform and save
-      processGenes(iterator, new GeneCallback() {
+      processGenes(iterator, filter, new GeneCallback() {
+
         @Override
         public void handle(JsonNode gene) {
           JsonNode transformed = transformer.transform(gene);
@@ -96,9 +112,14 @@ public class GeneLoaderService {
 
   @SneakyThrows
   public void load(File file) {
+    load(file, INCLUDE_ALL);
+  }
+
+  @SneakyThrows
+  public void load(File file, GeneFilter filter) {
     InputStream inputStream = new FileInputStream(file);
     try {
-      load(inputStream);
+      load(inputStream, filter);
     } finally {
       inputStream.close();
     }
@@ -124,21 +145,31 @@ public class GeneLoaderService {
     return iterator;
   }
 
-  void processGenes(MappingIterator<JsonNode> iterator, GeneCallback callback) throws IOException {
+  void processGenes(MappingIterator<JsonNode> iterator, GeneFilter filter, GeneCallback callback) throws IOException {
     try {
       int insertCount = 0;
+      int excludeCount = 0;
       Stopwatch watch = new Stopwatch().start();
-      while(hasNext(iterator)) {
+      while (hasNext(iterator)) {
         JsonNode gene = iterator.next();
+
+        boolean include = filter.filter(gene);
+        if (!include) {
+          excludeCount++;
+          continue;
+        }
+
+        // Delegate
         callback.handle(gene);
 
-        if(++insertCount % STATUS_GENE_COUNT == 0) {
+        if (++insertCount % STATUS_GENE_COUNT == 0) {
           log.info("Loaded {} genes ({} inserts/s)", //
               formatCount(insertCount), formatCount(STATUS_GENE_COUNT / (watch.elapsedMillis() / 1000)));
           watch.reset().start();
         }
       }
-      log.info("Finished processing {} gene(s) total", formatCount(insertCount));
+      log.info("Finished loading {} gene(s) total, excluded {} genes total", formatCount(insertCount),
+          formatCount(excludeCount));
     } finally {
       iterator.close();
     }
@@ -153,7 +184,7 @@ public class GeneLoaderService {
   boolean hasNext(MappingIterator<JsonNode> iterator) {
     try {
       return iterator.hasNextValue();
-    } catch(IOException e) {
+    } catch (IOException e) {
       // Erroneous bson4jackson exception?
       return false;
     }
@@ -165,6 +196,7 @@ public class GeneLoaderService {
    * @author btiernay
    */
   interface GeneCallback {
+
     void handle(JsonNode gene);
   }
 

@@ -41,7 +41,7 @@ import static java.lang.String.format;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
-public class IntegrationTest {
+public class GeneIntegrationTest {
 
   private final static String DATA_DIR = "src/test/resources/data";
 
