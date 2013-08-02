@@ -27,14 +27,20 @@ import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
 /**
- * 
+ * Utility class to help with the {@link TupleEntry} object from cascading.
  */
 public class TupleEntries {
 
+  /**
+   * Returns the list of {@link Fields} for a {@link TupleEntry}.
+   */
   public static List<String> getFieldNames(TupleEntry entry) {
     return Fields2.getFieldNames(entry.getFields());
   }
 
+  /**
+   * 
+   */
   public static Tuple getTuple(TupleEntry entry, Fields fieldName) {
     return getT(Tuple.class, entry, fieldName);
   }

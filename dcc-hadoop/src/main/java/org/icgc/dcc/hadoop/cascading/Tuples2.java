@@ -20,7 +20,7 @@ package org.icgc.dcc.hadoop.cascading;
 import cascading.tuple.Tuple;
 
 /**
- * 
+ * Utility class to help with the {@link Tuple} object from cascading.
  */
 public class Tuples2 {
 
@@ -38,4 +38,7 @@ public class Tuples2 {
     return nestedTuple;
   }
 
+  public static boolean isNullField(Tuple tuple, int fieldIndex) {
+    return tuple.getObject(fieldIndex) == null;
+  }
 }
