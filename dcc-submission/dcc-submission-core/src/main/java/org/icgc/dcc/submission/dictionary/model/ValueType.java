@@ -35,4 +35,5 @@ public enum ValueType {
   public Class<?> getJavaType() {
     return javaType;
   }
+
 }
