@@ -23,7 +23,10 @@ import org.icgc.dcc.core.model.FileSchemaNames.FileSchemaType;
 import org.icgc.dcc.core.model.FileTypes.FileType;
 
 /**
- * TODO
+ * Represents an ICGC file type, such as "donor", "specimen", "ssm_m", "meth_s", ...
+ * <p>
+ * Careful not to confuse this with {@link IcgcDataType} which represents the ICGC file types, such as "donor",
+ * "specimen", "ssm", "meth", ... They have the clinical ones in common.
  */
 public interface IcgcFileType {
 
@@ -39,14 +42,14 @@ public interface IcgcFileType {
       try {
         type = FileSchemaType.fromTypeName(typeName);
       } catch (IllegalArgumentException e) {
-        // TODO
+        // Do nothing
       }
       try {
         type = FileType.fromTypeName(typeName);
       } catch (IllegalArgumentException e) {
-        // TODO
+        // Do nothing
       }
-      return checkNotNull(type, "TODO");
+      return checkNotNull(type, "Could not find a match for type %s", typeName);
     }
   }
 }

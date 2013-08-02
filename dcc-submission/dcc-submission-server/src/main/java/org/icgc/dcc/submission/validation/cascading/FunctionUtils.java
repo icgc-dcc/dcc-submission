@@ -146,8 +146,16 @@ public abstract class FunctionUtils {
   public static class ReplaceNulls extends BaseOperation<Void> implements cascading.operation.Function<Void> {
 
     private static final int SUMMARY_FIELD_INDEX = 0;
-    private static final int COUNT_DEFAULT_VALUE = 0;
-    private static final boolean EXISTENCE_DEFAULT_VALUE = false;
+
+    /**
+     * TODO
+     */
+    public static final int COUNT_DEFAULT_VALUE = 0;
+
+    /**
+     * TODO
+     */
+    public static final boolean EXISTENCE_DEFAULT_VALUE = false;
 
     private final boolean isCountSummary;
 

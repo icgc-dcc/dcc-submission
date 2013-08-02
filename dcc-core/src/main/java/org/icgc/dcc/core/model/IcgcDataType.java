@@ -18,7 +18,10 @@
 package org.icgc.dcc.core.model;
 
 /**
- * TODO
+ * Represents an ICGC data type, such as "donor", "specimen", "ssm", "meth", ...
+ * <p>
+ * Careful not to confuse this with {@link IcgcFileType} which represents the ICGC file types, such as "donor",
+ * "specimen", "ssm_m", "meth_m", ... They have the clinical ones in common.
  */
 public interface IcgcDataType {
 
