@@ -39,35 +39,32 @@ public class TupleEntries {
   }
 
   /**
-   * 
+   * Extracts a nested {@link Tuple} from a {@link TupleEntry} for a given {@link Fields}.
    */
-  public static Tuple getTuple(TupleEntry entry, Fields fieldName) {
-    return getT(Tuple.class, entry, fieldName);
+  public static Tuple getTuple(TupleEntry entry, Fields field) {
+    return getT(Tuple.class, entry, field);
   }
 
   /**
-   * @param entry
-   * @return
+   * Extracts a nested {@link TupleEntry} from a {@link TupleEntry} for a given {@link Fields}.
    */
-  private static <T> T getT(Class<T> clazz, TupleEntry entry, Fields fieldName) {
+  public static TupleEntry getTupleEntry(TupleEntry entry, Fields field) {
+    return getT(TupleEntry.class, entry, field);
+  }
+
+  /**
+   * Extracts a nested object of type T from a {@link TupleEntry} for a given {@link Fields}.
+   */
+  private static <T> T getT(Class<T> clazz, TupleEntry entry, Fields field) {
     Object object =
-        checkNotNull(entry, "Expecting non-null entry").getObject(
-            checkNotNull(fieldName, "Expecting non-null field name"));
-    checkNotNull(object, "");
-    checkState(clazz.isInstance(object), "%s was expected to be of type %s, %s instead",
-        fieldName, clazz, object.getClass());
+        checkNotNull(entry, "Expecting non-null entry")
+            .getObject(checkNotNull(field, "Expecting non-null field name for entry %s", entry));
+    checkNotNull(object, "Expecting non-null object for field name %s", field);
+    checkState(clazz.isInstance(object),
+        "%s was expected to be of type %s, %s instead", field, clazz, object.getClass());
     @SuppressWarnings("unchecked")
-    T object2 = (T) object;
-    return object2;
+    T t = (T) object;
+    return t;
   }
 
-  /**
-   * @param entry
-   * @return
-   */
-  public static TupleEntry getTupleEntry(TupleEntry entry, Fields fieldName) {
-    Object object = entry.getObject(fieldName);
-    checkState(object instanceof TupleEntry, "");
-    return (TupleEntry) object;
-  }
 }
