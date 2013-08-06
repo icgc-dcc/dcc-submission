@@ -34,10 +34,16 @@ public final class FileTypes {
    * TODO: migrate all constants below to this enum (DCC-1452).
    */
   @RequiredArgsConstructor(access = PRIVATE)
-  public enum FileType implements IcgcDataType, IcgcFileType {
+  public enum FileType implements SubmissionDataType, SubmissionFileType {
     DONOR_TYPE("donor"),
     SPECIMEN_TYPE("specimen"),
-    SAMPLE_TYPE("sample");
+    SAMPLE_TYPE("sample"),
+
+    BIOMARKER("biomarker"),
+    FAMILY("family"),
+    EXPOSURE("exposure"),
+    SURGERY("surgery"),
+    THERAPY("therapy");
 
     @Getter
     private final String typeName;

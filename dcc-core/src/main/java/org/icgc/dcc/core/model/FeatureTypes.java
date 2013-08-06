@@ -41,7 +41,7 @@ public final class FeatureTypes {
    * TODO: migrate all constants below to this enum (DCC-1452).
    */
   @RequiredArgsConstructor(access = PRIVATE)
-  public enum FeatureType implements IcgcDataType {
+  public enum FeatureType implements SubmissionDataType {
     SSM_TYPE("ssm", "_ssm_count"),
     SGV_TYPE("sgv", "_sgv_exists"),
     CNSM_TYPE("cnsm", "_cnsm_exists"),

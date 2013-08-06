@@ -175,9 +175,11 @@ public final class JsonUtils {
   private static void processLine(ObjectMapper mapper, BufferedWriter bufferedWriter, Map<String, Object> map) {
     TreeMap<String, Object> treeMap = asTreeMap(map); // for reordering
     eraseValue(treeMap, MONGO_ID_FIELD, REPLACEMENT_VALUE, false);
+
+    @Cleanup
     StringWriter sw = new StringWriter();
     mapper.writeValue(sw, treeMap);
-    sw.close();
+
     bufferedWriter.write(sw.toString());
     bufferedWriter.newLine();
   }
@@ -205,7 +207,7 @@ public final class JsonUtils {
         if (value instanceof Map) {
           eraseValue((TreeMap<String, Object>) value, fieldName, replacementValue);
         } else if (value instanceof Collection) {
-          Collection<Object> collection = (Collection<Object>) value;
+          val collection = (Collection<Object>) value;
           for (Object item : collection) {
             eraseValue((TreeMap<String, Object>) item, fieldName, replacementValue);
           }
