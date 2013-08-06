@@ -20,7 +20,6 @@ package org.icgc.dcc.core.model;
 import static lombok.AccessLevel.PRIVATE;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 
 /**
  * Utilities for working with ICGC file types.
@@ -33,7 +32,6 @@ public final class FileTypes {
   /**
    * TODO: migrate all constants below to this enum (DCC-1452).
    */
-  @RequiredArgsConstructor(access = PRIVATE)
   public enum FileType implements SubmissionDataType, SubmissionFileType {
     DONOR_TYPE("donor"),
     SPECIMEN_TYPE("specimen"),
@@ -44,6 +42,10 @@ public final class FileTypes {
     EXPOSURE("exposure"),
     SURGERY("surgery"),
     THERAPY("therapy");
+
+    private FileType(String typeName) {
+      this.typeName = typeName;
+    }
 
     @Getter
     private final String typeName;

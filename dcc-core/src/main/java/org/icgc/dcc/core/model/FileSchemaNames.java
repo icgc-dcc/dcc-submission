@@ -36,7 +36,6 @@ import static org.icgc.dcc.core.model.FileSchemaNames.SubmissionFileSubType.PRIM
 import static org.icgc.dcc.core.model.FileSchemaNames.SubmissionFileSubType.SECONDARY;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.core.model.FileTypes.FileType;
@@ -50,7 +49,6 @@ public final class FileSchemaNames {
   /**
    * TODO: migrate all constants below to this enum (DCC-1452).
    */
-  @RequiredArgsConstructor(access = PRIVATE)
   public enum FileSchemaType implements SubmissionFileType {
 
     SSM_M(META.getFileSchemaName(SSM_TYPE)),
@@ -103,6 +101,10 @@ public final class FileSchemaNames {
     SURGERY(FileType.SURGERY.getTypeName()),
     THERAPY(FileType.THERAPY.getTypeName());
 
+    private FileSchemaType(String typeName) {
+      this.typeName = typeName;
+    }
+
     @Getter
     private final String typeName;
 
@@ -121,21 +123,18 @@ public final class FileSchemaNames {
    * According to https://wiki.oicr.on.ca/display/DCCINT/Submission+File+Format, this would have to be called "FileType"
    * as well, like "donor", "specimen", ... This seems quite confusing however.
    */
-  @RequiredArgsConstructor(access = PRIVATE)
   public enum SubmissionFileSubType {
-    META("m"),
-    PRIMARY("p"),
-    SECONDARY("s"),
-    GENE("g");
+    META, PRIMARY, SECONDARY, GENE();
 
     private static final String SUFFIX_SEPARATOR = "_";
 
-    private String getFileSchemaName(FeatureType type) {
-      return format("%s%s%s", type.getTypeName(), SUFFIX_SEPARATOR, abbrev);
+    public String getAbbreviation() {
+      return name().substring(0, 1).toLowerCase();
     }
 
-    @Getter
-    private final String abbrev;
+    private String getFileSchemaName(FeatureType type) {
+      return format("%s%s%s", type.getTypeName(), SUFFIX_SEPARATOR, getAbbreviation());
+    }
   }
 
   /**

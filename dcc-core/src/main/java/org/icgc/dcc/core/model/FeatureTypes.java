@@ -27,7 +27,6 @@ import java.util.Set;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 
 /**
  * Utilities for working with ICGC feature types.
@@ -40,7 +39,6 @@ public final class FeatureTypes {
   /**
    * TODO: migrate all constants below to this enum (DCC-1452).
    */
-  @RequiredArgsConstructor(access = PRIVATE)
   public enum FeatureType implements SubmissionDataType {
     SSM_TYPE("ssm", "_ssm_count"),
     SGV_TYPE("sgv", "_sgv_exists"),
@@ -53,6 +51,11 @@ public final class FeatureTypes {
     EXP_TYPE("exp", "_exp_exists"),
     PEXP_TYPE("pexp", "_pexp_exists"),
     JCN_TYPE("jcn", "_jcn_exists");
+
+    private FeatureType(String typeName, String summaryFieldName) {
+      this.typeName = typeName;
+      this.summaryFieldName = summaryFieldName;
+    }
 
     @Getter
     private final String typeName;
