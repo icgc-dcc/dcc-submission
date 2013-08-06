@@ -25,6 +25,8 @@ import java.util.List;
 
 import javax.validation.Valid;
 
+import lombok.ToString;
+
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryElement;
@@ -42,6 +44,7 @@ import com.google.common.collect.Lists;
  * Describes a file schema that contains {@code Field}s and that is part of a {@code Dictionary}
  */
 @Embedded
+@ToString(of = { "name" })
 public class FileSchema implements DictionaryElement, Serializable {
 
   @NotBlank
@@ -216,4 +219,5 @@ public class FileSchema implements DictionaryElement, Serializable {
     }
     return ImmutableList.<FileSchema> copyOf(afferentFileSchemata);
   }
+
 }

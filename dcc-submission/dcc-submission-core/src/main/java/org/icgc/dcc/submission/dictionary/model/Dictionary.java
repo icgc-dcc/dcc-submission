@@ -28,6 +28,8 @@ import java.util.Set;
 
 import javax.validation.Valid;
 
+import lombok.ToString;
+
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.submission.core.model.BaseEntity;
@@ -50,6 +52,7 @@ import com.mongodb.BasicDBObject;
  * Describes a dictionary that contains {@code FileSchema}ta and that may be used by some releases
  */
 @Entity
+@ToString(of = { "version", "state" })
 public class Dictionary extends BaseEntity implements HasName, DictionaryElement {
 
   @NotBlank

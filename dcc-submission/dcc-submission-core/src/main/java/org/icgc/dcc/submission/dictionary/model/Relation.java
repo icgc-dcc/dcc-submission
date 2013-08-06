@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import lombok.ToString;
+
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryElement;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryVisitor;
 
@@ -33,6 +35,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 @Embedded
+@ToString
 public class Relation implements DictionaryElement, Serializable {
 
   private final List<String> fields;
@@ -74,17 +77,17 @@ public class Relation implements DictionaryElement, Serializable {
     checkArgument(this.fields.size() == this.otherFields.size());
     checkArgument(this.fields.size() > this.optionals.size(), this.fields.size() + ", " + this.optionals.size());
 
-    if(this.isFieldsValid() == false) {
+    if (this.isFieldsValid() == false) {
       throw new DataModelException(String.format("fields in relation \"%s\" are not valid", this.describe()));
     }
 
-    if(this.isOptionalValid() == false) {
+    if (this.isOptionalValid() == false) {
       throw new DataModelException(String.format("optionals (%s) in relation \"%s\" are not valid", this.optionals,
           this.describe()));
     }
 
-    if(this.optionals.isEmpty() == false && bidirectional) { // see comment DCC-289: only
-                                                             // allowing one or the other
+    if (this.optionals.isEmpty() == false && bidirectional) { // see comment DCC-289: only
+                                                              // allowing one or the other
       throw new DataModelException(String.format(
           "invalid relation \"%s\" specified: cannot specify both optional fields (%s) and bidirectionality is %s",
           describe(), this.optionals, bidirectional));
@@ -123,18 +126,18 @@ public class Relation implements DictionaryElement, Serializable {
 
   private final boolean isOptionalValid() {
     // optionals should be strictly less than fields
-    if(this.optionals.size() >= this.fields.size() || this.optionals.size() >= this.otherFields.size()) {
+    if (this.optionals.size() >= this.fields.size() || this.optionals.size() >= this.otherFields.size()) {
       return false;
     }
 
     // check for repetition
     Set<Integer> set = Sets.newHashSet(this.optionals);
-    if(set.size() != this.optionals.size()) {
+    if (set.size() != this.optionals.size()) {
       return false;
     }
     // check for valid indices
-    for(Integer optional : this.optionals) {
-      if(optional.intValue() < 0 || optional.intValue() >= this.fields.size()) {
+    for (Integer optional : this.optionals) {
+      if (optional.intValue() < 0 || optional.intValue() >= this.fields.size()) {
         return false;
       }
     }
@@ -145,12 +148,12 @@ public class Relation implements DictionaryElement, Serializable {
   private final boolean isFieldsValid() {
 
     Set<String> leftset = Sets.newHashSet(this.fields);
-    if(leftset.size() != this.fields.size()) {
+    if (leftset.size() != this.fields.size()) {
       return false;
     }
 
     Set<String> rightset = Sets.newHashSet(this.otherFields);
-    if(rightset.size() != this.otherFields.size()) {
+    if (rightset.size() != this.otherFields.size()) {
       return false;
     }
     return true;

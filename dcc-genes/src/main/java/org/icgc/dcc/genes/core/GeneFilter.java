@@ -15,67 +15,21 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.dictionary.model;
+package org.icgc.dcc.genes.core;
 
-import java.io.Serializable;
-
-import lombok.ToString;
-
-import org.hibernate.validator.constraints.NotBlank;
-import org.hibernate.validator.constraints.URL;
-
-import com.google.code.morphia.annotations.Embedded;
+import com.fasterxml.jackson.databind.JsonNode;
 
 /**
- * Describes a controlled term as part of a {@code CodeList}, which is simply a code (usually integer or integer-looking
- * string) associated with a value, and a URI as reference for the controlled term
+ * Callback to determine if a gene should be filtered.
  */
-@Embedded
-@ToString
-public class Term implements Serializable {
+public interface GeneFilter {
 
-  @NotBlank
-  private String code;
-
-  @NotBlank
-  private String value;
-
-  @URL
-  private String uri;
-
-  public Term() {
-    super();
-  }
-
-  public Term(String code, String value, String uri) {
-    this();
-    this.code = code;
-    this.value = value;
-    this.uri = uri;
-  }
-
-  public String getCode() {
-    return code;
-  }
-
-  public void setCode(String code) {
-    this.code = code;
-  }
-
-  public String getValue() {
-    return value;
-  }
-
-  public void setValue(String value) {
-    this.value = value;
-  }
-
-  public String getUri() {
-    return uri;
-  }
-
-  public void setUri(String uri) {
-    this.uri = uri;
-  }
+  /**
+   * Callback method that returns {@code true} to include and {@code false} to exclude.
+   * 
+   * @param gene - the gene to examine
+   * @return include status
+   */
+  boolean filter(JsonNode gene);
 
 }
