@@ -22,7 +22,9 @@ import java.util.Date;
 
 import javax.validation.Valid;
 
+import org.codehaus.jackson.map.annotate.JsonView;
 import org.hibernate.validator.constraints.NotBlank;
+import org.icgc.dcc.submission.core.model.Views.Digest;
 
 import com.google.code.morphia.annotations.Embedded;
 import com.google.common.base.Objects;
@@ -31,6 +33,7 @@ import com.google.common.base.Objects;
 public class Submission implements Serializable {
 
   @NotBlank
+  @JsonView(Digest.class)
   protected String projectKey; // TODO: make those private, DetailedSubmission shouldn't extend Submission (DCC-721)
 
   @NotBlank

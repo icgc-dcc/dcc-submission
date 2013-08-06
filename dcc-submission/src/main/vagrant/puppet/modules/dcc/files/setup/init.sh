@@ -80,7 +80,7 @@ curl -XPUT ${destination_host?}/ws/releases      -H "Accept: application/json" -
 # add a project
 echo "adding project"
 curl -H "Accept: application/json" -XPOST ${destination_host?}/ws/projects     -H "Authorization: X-DCC-Auth $(echo -n ${username?}:${passwd?} | base64)" -H "Content-Type: application/json" \
- --data "{\"key\": \"${project_key?}\", \"name\": \"${project_name?}\", \"alias\": \"${project_alias?}\", \"users\": [\"${username?}\"], \"groups\": []}" && echo "OK" || echo "KO"
+ --data "{\"key\": \"${project_key?}\", \"name\": \"${project_name?}\", \"alias\": \"${project_alias?}\", \"users\": [\"guest\"], \"groups\": []}" && echo "OK" || echo "KO"
 
 # ===========================================================================
 
