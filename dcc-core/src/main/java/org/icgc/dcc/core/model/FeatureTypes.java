@@ -25,6 +25,7 @@ import static lombok.AccessLevel.PRIVATE;
 import java.util.List;
 import java.util.Set;
 
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 /**
@@ -34,6 +35,59 @@ import lombok.NoArgsConstructor;
  */
 @NoArgsConstructor(access = PRIVATE)
 public final class FeatureTypes {
+
+  /**
+   * TODO: migrate all constants below to this enum (DCC-1452).
+   */
+  public enum FeatureType implements SubmissionDataType {
+    SSM_TYPE("ssm", "_ssm_count"),
+    SGV_TYPE("sgv", "_sgv_exists"),
+    CNSM_TYPE("cnsm", "_cnsm_exists"),
+    CNGV_TYPE("cngv", "_cngv_exists"),
+    STSM_TYPE("stsm", "_stsm_exists"),
+    STGV_TYPE("stgv", "_stgv_exists"),
+    METH_TYPE("meth", "_meth_exists"),
+    MIRNA_TYPE("mirna", "_mirna_exists"),
+    EXP_TYPE("exp", "_exp_exists"),
+    PEXP_TYPE("pexp", "_pexp_exists"),
+    JCN_TYPE("jcn", "_jcn_exists");
+
+    private FeatureType(String typeName, String summaryFieldName) {
+      this.typeName = typeName;
+      this.summaryFieldName = summaryFieldName;
+    }
+
+    @Getter
+    private final String typeName;
+
+    @Getter
+    private final String summaryFieldName;
+
+    public boolean isSsm() {
+      return this == SSM_TYPE;
+    }
+
+    public boolean isCountSummary() {
+      return isSsm();
+    }
+
+    /**
+     * Returns an enum matching the type like "ssm", "meth", ...
+     */
+    public static FeatureType fromTypeName(String typeName) {
+      return valueOf(typeName.toUpperCase() + TYPE_SUFFIX);
+    }
+
+    /**
+     * Returns the complement of the feature types provided, i.e. the feature types not provided in the list.
+     */
+    public static List<FeatureType> complement(List<FeatureType> featureTypes) {
+      List<FeatureType> complement = newArrayList(values());
+      complement.removeAll(featureTypes);
+      return complement;
+    }
+
+  }
 
   /**
    * Feature types.

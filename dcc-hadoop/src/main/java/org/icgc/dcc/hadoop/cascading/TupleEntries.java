@@ -15,55 +15,56 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.model;
+package org.icgc.dcc.hadoop.cascading;
 
-import static lombok.AccessLevel.PRIVATE;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+
+import java.util.List;
+
+import cascading.tuple.Fields;
+import cascading.tuple.Tuple;
+import cascading.tuple.TupleEntry;
 
 /**
- * Utilities for working with ICGC file types.
- * <p>
- * For experimental feature types, see {@link FeatureTypes} instead.
+ * Utility class to help with the {@link TupleEntry} object from cascading.
  */
-@NoArgsConstructor(access = PRIVATE)
-public final class FileTypes {
+public class TupleEntries {
 
   /**
-   * TODO: migrate all constants below to this enum (DCC-1452).
+   * Returns the list of {@link Fields} for a {@link TupleEntry}.
    */
-  public enum FileType implements SubmissionDataType, SubmissionFileType {
-    DONOR_TYPE("donor"),
-    SPECIMEN_TYPE("specimen"),
-    SAMPLE_TYPE("sample"),
-
-    BIOMARKER("biomarker"),
-    FAMILY("family"),
-    EXPOSURE("exposure"),
-    SURGERY("surgery"),
-    THERAPY("therapy");
-
-    private FileType(String typeName) {
-      this.typeName = typeName;
-    }
-
-    @Getter
-    private final String typeName;
-
-    public boolean isDonor() {
-      return this == DONOR_TYPE;
-    }
-
-    /**
-     * Returns an enum matching the type like "donor", "specimen", ...
-     */
-    public static FileType fromTypeName(String typeName) {
-      return valueOf(typeName.toUpperCase() + TYPE_SUFFIX);
-    }
+  public static List<String> getFieldNames(TupleEntry entry) {
+    return Fields2.getFieldNames(entry.getFields());
   }
 
-  public static final String DONOR_TYPE = "donor";
-  public static final String SPECIMEN_TYPE = "specimen";
-  public static final String SAMPLE_TYPE = "sample";
+  /**
+   * Extracts a nested {@link Tuple} from a {@link TupleEntry} for a given {@link Fields}.
+   */
+  public static Tuple getTuple(TupleEntry entry, Fields field) {
+    return getT(Tuple.class, entry, field);
+  }
+
+  /**
+   * Extracts a nested {@link TupleEntry} from a {@link TupleEntry} for a given {@link Fields}.
+   */
+  public static TupleEntry getTupleEntry(TupleEntry entry, Fields field) {
+    return getT(TupleEntry.class, entry, field);
+  }
+
+  /**
+   * Extracts a nested object of type T from a {@link TupleEntry} for a given {@link Fields}.
+   */
+  private static <T> T getT(Class<T> clazz, TupleEntry entry, Fields field) {
+    Object object =
+        checkNotNull(entry, "Expecting non-null entry")
+            .getObject(checkNotNull(field, "Expecting non-null field name for entry %s", entry));
+    checkNotNull(object, "Expecting non-null object for field name %s", field);
+    checkState(clazz.isInstance(object),
+        "%s was expected to be of type %s, %s instead", field, clazz, object.getClass());
+    @SuppressWarnings("unchecked")
+    T t = (T) object;
+    return t;
+  }
 
 }

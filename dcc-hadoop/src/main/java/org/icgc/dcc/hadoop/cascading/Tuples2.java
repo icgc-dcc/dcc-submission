@@ -15,55 +15,30 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.model;
+package org.icgc.dcc.hadoop.cascading;
 
-import static lombok.AccessLevel.PRIVATE;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import cascading.tuple.Tuple;
 
 /**
- * Utilities for working with ICGC file types.
- * <p>
- * For experimental feature types, see {@link FeatureTypes} instead.
+ * Utility class to help with the {@link Tuple} object from cascading.
  */
-@NoArgsConstructor(access = PRIVATE)
-public final class FileTypes {
+public class Tuples2 {
 
   /**
-   * TODO: migrate all constants below to this enum (DCC-1452).
+   * Nests a tuple within a tuple.
+   * <p>
+   * As of 2.1.5 at least this is either a bug from cascading, or a rather confusing property of a {@code Tuple}. If one
+   * uses new Tuple(myTuple), and myTuple contains only one element <i>element1</i>, then what will be stored is just
+   * <i>element1</i> as opposed to <i>element1</i> wrapped in a tuple. The workaround below seems to ensure that we do
+   * indeed get a nested tuple.
    */
-  public enum FileType implements SubmissionDataType, SubmissionFileType {
-    DONOR_TYPE("donor"),
-    SPECIMEN_TYPE("specimen"),
-    SAMPLE_TYPE("sample"),
-
-    BIOMARKER("biomarker"),
-    FAMILY("family"),
-    EXPOSURE("exposure"),
-    SURGERY("surgery"),
-    THERAPY("therapy");
-
-    private FileType(String typeName) {
-      this.typeName = typeName;
-    }
-
-    @Getter
-    private final String typeName;
-
-    public boolean isDonor() {
-      return this == DONOR_TYPE;
-    }
-
-    /**
-     * Returns an enum matching the type like "donor", "specimen", ...
-     */
-    public static FileType fromTypeName(String typeName) {
-      return valueOf(typeName.toUpperCase() + TYPE_SUFFIX);
-    }
+  public static Tuple nestTuple(Tuple tuple) {
+    Tuple nestedTuple = Tuple.size(1);
+    nestedTuple.set(0, tuple);
+    return nestedTuple;
   }
 
-  public static final String DONOR_TYPE = "donor";
-  public static final String SPECIMEN_TYPE = "specimen";
-  public static final String SAMPLE_TYPE = "sample";
-
+  public static boolean isNullField(Tuple tuple, int fieldIndex) {
+    return tuple.getObject(fieldIndex) == null;
+  }
 }

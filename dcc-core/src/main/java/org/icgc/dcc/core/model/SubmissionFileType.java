@@ -17,53 +17,39 @@
  */
 package org.icgc.dcc.core.model;
 
-import static lombok.AccessLevel.PRIVATE;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import org.icgc.dcc.core.model.FileSchemaNames.FileSchemaType;
+import org.icgc.dcc.core.model.FileTypes.FileType;
 
 /**
- * Utilities for working with ICGC file types.
+ * Represents an ICGC file type, such as "donor", "specimen", "ssm_m", "meth_s", ...
  * <p>
- * For experimental feature types, see {@link FeatureTypes} instead.
+ * Careful not to confuse this with {@link SubmissionDataType} which represents the ICGC file types, such as "donor",
+ * "specimen", "ssm", "meth", ... They have the clinical ones in common.
  */
-@NoArgsConstructor(access = PRIVATE)
-public final class FileTypes {
+public interface SubmissionFileType {
 
-  /**
-   * TODO: migrate all constants below to this enum (DCC-1452).
-   */
-  public enum FileType implements SubmissionDataType, SubmissionFileType {
-    DONOR_TYPE("donor"),
-    SPECIMEN_TYPE("specimen"),
-    SAMPLE_TYPE("sample"),
+  String getTypeName();
 
-    BIOMARKER("biomarker"),
-    FAMILY("family"),
-    EXPOSURE("exposure"),
-    SURGERY("surgery"),
-    THERAPY("therapy");
-
-    private FileType(String typeName) {
-      this.typeName = typeName;
-    }
-
-    @Getter
-    private final String typeName;
-
-    public boolean isDonor() {
-      return this == DONOR_TYPE;
-    }
+  public static class IcgcFileTypes {
 
     /**
-     * Returns an enum matching the type like "donor", "specimen", ...
+     * Returns an enum matching the type like "ssm_p", "meth_s", ...
      */
-    public static FileType fromTypeName(String typeName) {
-      return valueOf(typeName.toUpperCase() + TYPE_SUFFIX);
+    public static SubmissionFileType fromTypeName(String typeName) {
+      SubmissionFileType type = null;
+      try {
+        type = FileSchemaType.fromTypeName(typeName);
+      } catch (IllegalArgumentException e) {
+        // Do nothing
+      }
+      try {
+        type = FileType.fromTypeName(typeName);
+      } catch (IllegalArgumentException e) {
+        // Do nothing
+      }
+      return checkNotNull(type, "Could not find a match for type %s", typeName);
     }
   }
-
-  public static final String DONOR_TYPE = "donor";
-  public static final String SPECIMEN_TYPE = "specimen";
-  public static final String SAMPLE_TYPE = "sample";
-
 }
