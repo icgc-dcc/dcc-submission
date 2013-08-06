@@ -17,53 +17,16 @@
  */
 package org.icgc.dcc.core.model;
 
-import static lombok.AccessLevel.PRIVATE;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
 /**
- * Utilities for working with ICGC file types.
+ * Represents an ICGC data type, such as "donor", "specimen", "ssm", "meth", ...
  * <p>
- * For experimental feature types, see {@link FeatureTypes} instead.
+ * Careful not to confuse this with {@link SubmissionFileType} which represents the ICGC file types, such as "donor",
+ * "specimen", "ssm_m", "meth_m", ... They have the clinical ones in common.
  */
-@NoArgsConstructor(access = PRIVATE)
-public final class FileTypes {
+public interface SubmissionDataType {
 
-  /**
-   * TODO: migrate all constants below to this enum (DCC-1452).
-   */
-  public enum FileType implements SubmissionDataType, SubmissionFileType {
-    DONOR_TYPE("donor"),
-    SPECIMEN_TYPE("specimen"),
-    SAMPLE_TYPE("sample"),
+  String TYPE_SUFFIX = "_TYPE";
 
-    BIOMARKER("biomarker"),
-    FAMILY("family"),
-    EXPOSURE("exposure"),
-    SURGERY("surgery"),
-    THERAPY("therapy");
-
-    private FileType(String typeName) {
-      this.typeName = typeName;
-    }
-
-    @Getter
-    private final String typeName;
-
-    public boolean isDonor() {
-      return this == DONOR_TYPE;
-    }
-
-    /**
-     * Returns an enum matching the type like "donor", "specimen", ...
-     */
-    public static FileType fromTypeName(String typeName) {
-      return valueOf(typeName.toUpperCase() + TYPE_SUFFIX);
-    }
-  }
-
-  public static final String DONOR_TYPE = "donor";
-  public static final String SPECIMEN_TYPE = "specimen";
-  public static final String SAMPLE_TYPE = "sample";
+  String getTypeName();
 
 }
