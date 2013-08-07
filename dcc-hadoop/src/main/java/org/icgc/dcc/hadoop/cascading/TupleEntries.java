@@ -32,6 +32,15 @@ import cascading.tuple.TupleEntry;
 public class TupleEntries {
 
   /**
+   * Checks whether a {@link TupleEntry} contains a given {@link Fields}, based on the field name.
+   * <p>
+   * There doesn't seem to be a built-in way to do that in cascading as of version 2.1.5.
+   */
+  public static boolean contains(TupleEntry entry, String fieldName) {
+    return entry.getFields().contains(new Fields(fieldName));
+  }
+
+  /**
    * Returns the list of {@link Fields} for a {@link TupleEntry}.
    */
   public static List<String> getFieldNames(TupleEntry entry) {
