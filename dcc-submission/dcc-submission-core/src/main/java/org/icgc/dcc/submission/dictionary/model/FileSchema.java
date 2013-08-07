@@ -29,6 +29,7 @@ import lombok.ToString;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.hibernate.validator.constraints.NotBlank;
+import org.icgc.dcc.core.model.FileSchemaNames.FileSchemaType;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryElement;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryVisitor;
 
@@ -47,6 +48,9 @@ import com.google.common.collect.Lists;
 @ToString(of = { "name" })
 public class FileSchema implements DictionaryElement, Serializable {
 
+  /**
+   * TODO: use {@link FileSchemaType} instead of String.
+   */
   @NotBlank
   private String name;
 
