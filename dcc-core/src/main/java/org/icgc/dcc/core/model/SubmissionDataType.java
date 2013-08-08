@@ -17,6 +17,11 @@
  */
 package org.icgc.dcc.core.model;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
+import org.icgc.dcc.core.model.FileTypes.FileType;
+
 /**
  * Represents an ICGC data type, such as "donor", "specimen", "ssm", "meth", ...
  * <p>
@@ -29,4 +34,24 @@ public interface SubmissionDataType {
 
   String getTypeName();
 
+  public static class SubmissionDataTypes {
+
+    /**
+     * Returns an enum matching the type like "donor", "ssm", "meth", ...
+     */
+    public static SubmissionDataType fromTypeName(String typeName) {
+      SubmissionDataType type = null;
+      try {
+        type = FeatureType.fromTypeName(typeName);
+      } catch (IllegalArgumentException e) {
+        // Do nothing
+      }
+      try {
+        type = FileType.fromTypeName(typeName);
+      } catch (IllegalArgumentException e) {
+        // Do nothing
+      }
+      return checkNotNull(type, "Could not find a match for type %s", typeName);
+    }
+  }
 }

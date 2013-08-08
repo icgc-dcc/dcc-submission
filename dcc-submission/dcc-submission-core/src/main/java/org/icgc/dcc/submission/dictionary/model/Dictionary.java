@@ -20,7 +20,6 @@ package org.icgc.dcc.submission.dictionary.model;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newLinkedHashSet;
-import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.isOfType;
 import static org.icgc.dcc.submission.core.util.Constants.CodeListRestriction_FIELD;
 import static org.icgc.dcc.submission.core.util.Constants.CodeListRestriction_NAME;
 
@@ -167,7 +166,8 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
 
       @Override
       public boolean apply(FileSchema input) {
-        return isOfType(input.getName(), featureType);
+        FileSchemaType type = FileSchemaType.from(input.getName());
+        return type.getSubmissionDataType() == featureType;
       }
     });
     return newArrayList(filter);

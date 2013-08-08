@@ -32,7 +32,7 @@ public interface SubmissionFileType {
 
   String getTypeName();
 
-  public static class IcgcFileTypes {
+  public static class SubmissionFileTypes {
 
     /**
      * Returns an enum matching the type like "ssm_p", "meth_s", ...
@@ -40,7 +40,7 @@ public interface SubmissionFileType {
     public static SubmissionFileType fromTypeName(String typeName) {
       SubmissionFileType type = null;
       try {
-        type = FileSchemaType.fromTypeName(typeName);
+        type = FileSchemaType.from(typeName);
       } catch (IllegalArgumentException e) {
         // Do nothing
       }

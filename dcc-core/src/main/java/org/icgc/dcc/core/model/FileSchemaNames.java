@@ -17,26 +17,16 @@
  */
 package org.icgc.dcc.core.model;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.CNGV_TYPE;
-import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.CNSM_TYPE;
-import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.EXP_TYPE;
-import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.JCN_TYPE;
-import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.METH_TYPE;
-import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.MIRNA_TYPE;
-import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.PEXP_TYPE;
-import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SGV_TYPE;
-import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SSM_TYPE;
-import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.STGV_TYPE;
-import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.STSM_TYPE;
-import static org.icgc.dcc.core.model.FileSchemaNames.SubmissionFileSubType.GENE;
 import static org.icgc.dcc.core.model.FileSchemaNames.SubmissionFileSubType.META;
 import static org.icgc.dcc.core.model.FileSchemaNames.SubmissionFileSubType.PRIMARY;
 import static org.icgc.dcc.core.model.FileSchemaNames.SubmissionFileSubType.SECONDARY;
 
 import java.util.Iterator;
+import java.util.List;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -44,6 +34,7 @@ import lombok.val;
 
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
@@ -56,75 +47,17 @@ import com.google.common.base.Splitter;
 public final class FileSchemaNames {
 
   /**
-   * TODO: migrate all constants below to this enum (DCC-1452).
+   * Used as placeholder in the loader for imported fields.
    */
-  public enum FileSchemaType implements SubmissionFileType {
+  public static final String NOT_APPLICABLE = "N/A";
 
-    SSM_M(META.getFileSchemaName(SSM_TYPE)),
-    SSM_P(PRIMARY.getFileSchemaName(SSM_TYPE)),
-    SSM_S(SECONDARY.getFileSchemaName(SSM_TYPE)),
-
-    CNSM_M(META.getFileSchemaName(CNSM_TYPE)),
-    CNSM_P(PRIMARY.getFileSchemaName(CNSM_TYPE)),
-    CNSM_S(SECONDARY.getFileSchemaName(CNSM_TYPE)),
-
-    STSM_M(META.getFileSchemaName(STSM_TYPE)),
-    STSM_P(PRIMARY.getFileSchemaName(STSM_TYPE)),
-    STSM_S(SECONDARY.getFileSchemaName(STSM_TYPE)),
-
-    SGV_M(META.getFileSchemaName(SGV_TYPE)),
-    SGV_P(PRIMARY.getFileSchemaName(SGV_TYPE)),
-
-    CNGV_M(META.getFileSchemaName(CNGV_TYPE)),
-    CNGV_P(PRIMARY.getFileSchemaName(CNGV_TYPE)),
-    CNGV_S(SECONDARY.getFileSchemaName(CNGV_TYPE)),
-
-    STGV_M(META.getFileSchemaName(STGV_TYPE)),
-    STGV_P(PRIMARY.getFileSchemaName(STGV_TYPE)),
-    STGV_S(SECONDARY.getFileSchemaName(STGV_TYPE)),
-
-    PEXP_M(META.getFileSchemaName(PEXP_TYPE)),
-    PEXP_P(PRIMARY.getFileSchemaName(PEXP_TYPE)),
-
-    METH_M(META.getFileSchemaName(METH_TYPE)),
-    METH_P(PRIMARY.getFileSchemaName(METH_TYPE)),
-    METH_S(SECONDARY.getFileSchemaName(METH_TYPE)),
-
-    MIRNA_M(META.getFileSchemaName(MIRNA_TYPE)),
-    MIRNA_P(PRIMARY.getFileSchemaName(MIRNA_TYPE)),
-    MIRNA_S(SECONDARY.getFileSchemaName(MIRNA_TYPE)),
-
-    JCN_M(META.getFileSchemaName(JCN_TYPE)),
-    JCN_P(PRIMARY.getFileSchemaName(JCN_TYPE)),
-
-    EXP_M(META.getFileSchemaName(EXP_TYPE)),
-    EXP_G(GENE.getFileSchemaName(EXP_TYPE)),
-
-    DONOR(FileType.DONOR_TYPE.getTypeName()),
-    SPECIMEN(FileType.SPECIMEN_TYPE.getTypeName()),
-    SAMPLE(FileType.SAMPLE_TYPE.getTypeName()),
-
-    BIOMARKER(FileType.BIOMARKER.getTypeName()),
-    FAMILY(FileType.FAMILY.getTypeName()),
-    EXPOSURE(FileType.EXPOSURE.getTypeName()),
-    SURGERY(FileType.SURGERY.getTypeName()),
-    THERAPY(FileType.THERAPY.getTypeName());
-
-    private FileSchemaType(String typeName) {
-      this.typeName = typeName;
-    }
-
-    @Getter
-    private final String typeName;
-
-    /**
-     * Returns an enum matching the type like "ssm_p", "meth_s", ...
-     */
-    public static FileSchemaType fromTypeName(String typeName) {
-      return valueOf(typeName.toUpperCase());
-    }
-
-  }
+  /**
+   * TODO: Make this association explicit rather than by convention (we shouldn't rely on prefices/suffices).
+   */
+  private static final String SUFFIX_SEPARATOR = "_";
+  private static final Joiner JOINER = Joiner.on(SUFFIX_SEPARATOR);
+  private static final Splitter SPLITTER = Splitter.on(SUFFIX_SEPARATOR);
+  private static final Optional<SubmissionFileSubType> ABSENT = Optional.absent();
 
   /**
    * TODO: migrate all constants below to this enum (DCC-1452).
@@ -140,30 +73,28 @@ public final class FileSchemaNames {
 
     DONOR,
     SPECIMEN,
-    SAMPLE;
+    SAMPLE,
 
-    private static final String SUFFIX_SEPARATOR = "_";
-    private static final Joiner JOINER = Joiner.on(SUFFIX_SEPARATOR);
-    private static final Splitter SPLITTER = Splitter.on(SUFFIX_SEPARATOR);
-    private static final Optional<SubmissionFileSubType> ABSENT = Optional.<SubmissionFileSubType> absent();
+    OPTIONAL;
+
+    /**
+     * See {@link #usedAsAbbrevatiation()}.
+     */
+    private static final List<SubmissionFileSubType> TYPES_USED_AS_ABBREVIATION =
+        newArrayList(META, PRIMARY, SECONDARY, GENE);
 
     public String getAbbreviation() {
-      checkState(!newArrayList(DONOR, SPECIMEN, SAMPLE).contains(this),
+      checkState(usedAsAbbrevatiation(),
           "Clinical sub types do not use abbreviations, attempt was made on %s", this);
       return getFirstCharacter().toLowerCase();
     }
 
-    // @formatter:off
     /**
-     * TODO:
-     * <li>return enum rather (DCC-1452)</li>
-     * <li>change to accept {@link SubmissionFileType} rather + handle clinical as well.</li>
+     * Determines whether the sub-type is used as abbreviation for further qualification (for instance "meta" is used as
+     * the "_m" suffix) or not (for instance "donor").
      */
-    // @formatter:on
-    public String getFileSchemaName(FeatureType type) {
-      return JOINER.join(
-          type.getTypeName(),
-          getAbbreviation());
+    private boolean usedAsAbbrevatiation() {
+      return TYPES_USED_AS_ABBREVIATION.contains(this);
     }
 
     public static Optional<SubmissionFileSubType> fromAbbreviation(String abbreviation) {
@@ -176,11 +107,11 @@ public final class FileSchemaNames {
     }
 
     public static SubmissionFileSubType fromFileSchemaName(String fileSchemaName) {
-      return fromFileSchemaType(FileSchemaType.fromTypeName(fileSchemaName));
+      return fromFileSchemaType(FileSchemaType.from(fileSchemaName));
     }
 
     public static SubmissionFileSubType fromFileSchemaType(FileSchemaType type) {
-      Iterator<String> iterator = SPLITTER.split(type.typeName).iterator();
+      Iterator<String> iterator = SPLITTER.split(type.getTypeName()).iterator();
       checkState(iterator.hasNext(), "Expecting at least one element from %s", type);
       String first = iterator.next();
       Optional<SubmissionFileSubType> subType = iterator.hasNext() ?
@@ -197,60 +128,108 @@ public final class FileSchemaNames {
   }
 
   /**
-   * Checks if schema name provided is that of a meta file schema for the given feature type.
-   * <p>
-   * TODO: Make this association explicit rather than by convention.
+   * TODO: migrate all constants below to this enum (DCC-1452).
    */
-  public static final boolean isMetaFileSchema(FileSchemaType fileSchemaType, FeatureType featureType) {
-    return fileSchemaType.getTypeName().equals(META.getFileSchemaName(featureType));
+  public enum FileSchemaType implements SubmissionFileType {
+
+    SSM_M(FeatureType.SSM_TYPE, SubmissionFileSubType.META),
+    SSM_P(FeatureType.SSM_TYPE, SubmissionFileSubType.PRIMARY),
+    SSM_S(FeatureType.SSM_TYPE, SubmissionFileSubType.SECONDARY),
+
+    CNSM_M(FeatureType.CNSM_TYPE, SubmissionFileSubType.META),
+    CNSM_P(FeatureType.CNSM_TYPE, SubmissionFileSubType.PRIMARY),
+    CNSM_S(FeatureType.CNSM_TYPE, SubmissionFileSubType.SECONDARY),
+
+    STSM_M(FeatureType.STSM_TYPE, META),
+    STSM_P(FeatureType.STSM_TYPE, PRIMARY),
+    STSM_S(FeatureType.STSM_TYPE, SECONDARY),
+
+    SGV_M(FeatureType.SGV_TYPE, SubmissionFileSubType.META),
+    SGV_P(FeatureType.SGV_TYPE, SubmissionFileSubType.PRIMARY),
+
+    CNGV_M(FeatureType.CNGV_TYPE, SubmissionFileSubType.META),
+    CNGV_P(FeatureType.CNGV_TYPE, SubmissionFileSubType.PRIMARY),
+    CNGV_S(FeatureType.CNGV_TYPE, SubmissionFileSubType.SECONDARY),
+
+    STGV_M(FeatureType.STGV_TYPE, SubmissionFileSubType.META),
+    STGV_P(FeatureType.STGV_TYPE, SubmissionFileSubType.PRIMARY),
+    STGV_S(FeatureType.STGV_TYPE, SubmissionFileSubType.SECONDARY),
+
+    PEXP_M(FeatureType.PEXP_TYPE, SubmissionFileSubType.META),
+    PEXP_P(FeatureType.PEXP_TYPE, SubmissionFileSubType.PRIMARY),
+
+    METH_M(FeatureType.METH_TYPE, SubmissionFileSubType.META),
+    METH_P(FeatureType.METH_TYPE, SubmissionFileSubType.PRIMARY),
+    METH_S(FeatureType.METH_TYPE, SubmissionFileSubType.SECONDARY),
+
+    MIRNA_M(FeatureType.MIRNA_TYPE, SubmissionFileSubType.META),
+    MIRNA_P(FeatureType.MIRNA_TYPE, SubmissionFileSubType.PRIMARY),
+    MIRNA_S(FeatureType.MIRNA_TYPE, SubmissionFileSubType.SECONDARY),
+
+    JCN_M(FeatureType.JCN_TYPE, SubmissionFileSubType.META),
+    JCN_P(FeatureType.JCN_TYPE, SubmissionFileSubType.PRIMARY),
+
+    EXP_M(FeatureType.EXP_TYPE, SubmissionFileSubType.META),
+    EXP_G(FeatureType.EXP_TYPE, SubmissionFileSubType.GENE),
+
+    DONOR(FileType.DONOR_TYPE, SubmissionFileSubType.DONOR),
+    SPECIMEN(FileType.SPECIMEN_TYPE, SubmissionFileSubType.SPECIMEN),
+    SAMPLE(FileType.SAMPLE_TYPE, SubmissionFileSubType.SAMPLE),
+
+    BIOMARKER(FileType.BIOMARKER_TYPE, SubmissionFileSubType.OPTIONAL),
+    FAMILY(FileType.FAMILY_TYPE, SubmissionFileSubType.OPTIONAL),
+    EXPOSURE(FileType.EXPOSURE_TYPE, SubmissionFileSubType.OPTIONAL),
+    SURGERY(FileType.SURGERY_TYPE, SubmissionFileSubType.OPTIONAL),
+    THERAPY(FileType.THERAPY_TYPE, SubmissionFileSubType.OPTIONAL);
+
+    private FileSchemaType(SubmissionDataType type) {
+      this(type, null);
+    }
+
+    private FileSchemaType(SubmissionDataType type, SubmissionFileSubType subType) {
+      this.type = checkNotNull(type);
+      this.subType = subType;
+    }
+
+    @Override
+    public String getTypeName() {
+      return subType.usedAsAbbrevatiation() ?
+          JOINER.join(type.getTypeName(), subType.getAbbreviation()) :
+          type.getTypeName();
+    }
+
+    @Getter
+    private final SubmissionDataType type;
+
+    @Getter
+    private final SubmissionFileSubType subType;
+
+    /**
+     * Returns an enum matching the type like "ssm_p", "meth_s", ...
+     */
+    public static FileSchemaType from(FeatureType type, SubmissionFileSubType subType) {
+      return FileSchemaType.from(JOINER.join(type.getTypeName(), subType.getAbbreviation()));
+    }
+
+    /**
+     * Returns an enum matching the type like "ssm_p", "meth_s", ...
+     * <p>
+     * TODO: favor the one below
+     */
+    public static FileSchemaType from(String typeName) {
+      return valueOf(typeName.toUpperCase());
+    }
+
+    /**
+     * Returns the corresponding {@link SubmissionDataType} (like SSM or DONOR) for the given {@link FileSchemaType}
+     * (like SSM_M or DONOR).
+     */
+    public SubmissionDataType getSubmissionDataType() {
+      val iterator = SPLITTER.split(name()).iterator();
+      checkState(iterator.hasNext(), "Invalid %s: '%s'", FileSchemaType.class.getSimpleName(), name());
+      String submissionDataTypeName = iterator.next();
+      return SubmissionDataTypes.fromTypeName(submissionDataTypeName);
+    }
+
   }
-
-  /**
-   * Used as placeholder in the loader for imported fields.
-   */
-  public static final String NOT_APPLICABLE = "N/A";
-
-  /**
-   * TODO: migrate all constants below to enum (DCC-1452).
-   */
-  public static final String SSM_M = META.getFileSchemaName(SSM_TYPE);
-  public static final String SSM_P = PRIMARY.getFileSchemaName(SSM_TYPE);
-  public static final String SSM_S = SECONDARY.getFileSchemaName(SSM_TYPE);
-
-  public static final String CNSM_M = META.getFileSchemaName(CNSM_TYPE);
-  public static final String CNSM_P = PRIMARY.getFileSchemaName(CNSM_TYPE);
-  public static final String CNSM_S = SECONDARY.getFileSchemaName(CNSM_TYPE);
-
-  public static final String STSM_M = META.getFileSchemaName(STSM_TYPE);
-  public static final String STSM_P = PRIMARY.getFileSchemaName(STSM_TYPE);
-  public static final String STSM_S = SECONDARY.getFileSchemaName(STSM_TYPE);
-
-  public static final String SGV_M = META.getFileSchemaName(SGV_TYPE);
-  public static final String SGV_P = PRIMARY.getFileSchemaName(SGV_TYPE);
-
-  public static final String CNGV_M = META.getFileSchemaName(CNGV_TYPE);
-  public static final String CNGV_P = PRIMARY.getFileSchemaName(CNGV_TYPE);
-  public static final String CNGV_S = SECONDARY.getFileSchemaName(CNGV_TYPE);
-
-  public static final String STGV_M = META.getFileSchemaName(STGV_TYPE);
-  public static final String STGV_P = PRIMARY.getFileSchemaName(STGV_TYPE);
-  public static final String STGV_S = SECONDARY.getFileSchemaName(STGV_TYPE);
-
-  public static final String PEXP_M = META.getFileSchemaName(PEXP_TYPE);
-  public static final String PEXP_P = PRIMARY.getFileSchemaName(PEXP_TYPE);
-
-  public static final String METH_M = META.getFileSchemaName(METH_TYPE);
-  public static final String METH_P = PRIMARY.getFileSchemaName(METH_TYPE);
-  public static final String METH_S = SECONDARY.getFileSchemaName(METH_TYPE);
-
-  public static final String MIRNA_M = META.getFileSchemaName(MIRNA_TYPE);
-  public static final String MIRNA_P = PRIMARY.getFileSchemaName(MIRNA_TYPE);
-  public static final String MIRNA_S = SECONDARY.getFileSchemaName(MIRNA_TYPE);
-
-  public static final String JCN_M = META.getFileSchemaName(JCN_TYPE);
-  public static final String JCN_P = PRIMARY.getFileSchemaName(JCN_TYPE);
-  public static final String JCN_S = SECONDARY.getFileSchemaName(JCN_TYPE);
-
-  public static final String EXP_M = META.getFileSchemaName(EXP_TYPE);
-  public static final String EXP_G = GENE.getFileSchemaName(EXP_TYPE);
 }
