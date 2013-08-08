@@ -127,9 +127,6 @@ public final class FileSchemaNames {
     }
   }
 
-  /**
-   * TODO: migrate all constants below to this enum (DCC-1452).
-   */
   public enum FileSchemaType implements SubmissionFileType {
 
     SSM_M(FeatureType.SSM_TYPE, SubmissionFileSubType.META),
