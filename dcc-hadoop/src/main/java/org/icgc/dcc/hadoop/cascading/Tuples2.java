@@ -26,15 +26,11 @@ public class Tuples2 {
 
   /**
    * Nests a tuple within a tuple.
-   * <p>
-   * As of 2.1.5 at least this is either a bug from cascading, or a rather confusing property of a {@code Tuple}. If one
-   * uses new Tuple(myTuple), and myTuple contains only one element <i>element1</i>, then what will be stored is just
-   * <i>element1</i> as opposed to <i>element1</i> wrapped in a tuple. The workaround below seems to ensure that we do
-   * indeed get a nested tuple.
    */
   public static Tuple nestTuple(Tuple tuple) {
-    Tuple nestedTuple = Tuple.size(1);
-    nestedTuple.set(0, tuple);
+    Tuple nestedTuple = new Tuple();
+    nestedTuple.add(tuple);
+
     return nestedTuple;
   }
 
