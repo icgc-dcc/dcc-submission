@@ -145,7 +145,7 @@ public final class FileSchemaNames {
     private static final String SUFFIX_SEPARATOR = "_";
     private static final Joiner JOINER = Joiner.on(SUFFIX_SEPARATOR);
     private static final Splitter SPLITTER = Splitter.on(SUFFIX_SEPARATOR);
-    private static final Optional<SubmissionFileSubType> ABSENT = Optional.<SubmissionFileSubType> absent();
+    private static final Optional<SubmissionFileSubType> ABSENT = Optional.absent();
 
     public String getAbbreviation() {
       checkState(!newArrayList(DONOR, SPECIMEN, SAMPLE).contains(this),
