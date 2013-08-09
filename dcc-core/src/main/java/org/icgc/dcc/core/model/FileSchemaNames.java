@@ -17,7 +17,8 @@
  */
 package org.icgc.dcc.core.model;
 
-import static java.lang.String.format;
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Lists.newArrayList;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.CNGV_TYPE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.CNSM_TYPE;
@@ -34,11 +35,19 @@ import static org.icgc.dcc.core.model.FileSchemaNames.SubmissionFileSubType.GENE
 import static org.icgc.dcc.core.model.FileSchemaNames.SubmissionFileSubType.META;
 import static org.icgc.dcc.core.model.FileSchemaNames.SubmissionFileSubType.PRIMARY;
 import static org.icgc.dcc.core.model.FileSchemaNames.SubmissionFileSubType.SECONDARY;
+
+import java.util.Iterator;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.val;
 
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.core.model.FileTypes.FileType;
+
+import com.google.common.base.Joiner;
+import com.google.common.base.Optional;
+import com.google.common.base.Splitter;
 
 /**
  * Contains names for file schemata (eg. "ssm_p", "cnsm_s", "exp_g", "N/A", ...)
@@ -124,16 +133,66 @@ public final class FileSchemaNames {
    * as well, like "donor", "specimen", ... This seems quite confusing however.
    */
   public enum SubmissionFileSubType {
-    META, PRIMARY, SECONDARY, GENE();
+    META,
+    PRIMARY,
+    SECONDARY,
+    GENE,
+
+    DONOR,
+    SPECIMEN,
+    SAMPLE;
 
     private static final String SUFFIX_SEPARATOR = "_";
+    private static final Joiner JOINER = Joiner.on(SUFFIX_SEPARATOR);
+    private static final Splitter SPLITTER = Splitter.on(SUFFIX_SEPARATOR);
+    private static final Optional<SubmissionFileSubType> ABSENT = Optional.absent();
 
     public String getAbbreviation() {
-      return name().substring(0, 1).toLowerCase();
+      checkState(!newArrayList(DONOR, SPECIMEN, SAMPLE).contains(this),
+          "Clinical sub types do not use abbreviations, attempt was made on %s", this);
+      return getFirstCharacter().toLowerCase();
     }
 
-    private String getFileSchemaName(FeatureType type) {
-      return format("%s%s%s", type.getTypeName(), SUFFIX_SEPARATOR, getAbbreviation());
+    // @formatter:off
+    /**
+     * TODO:
+     * <li>return enum rather (DCC-1452)</li>
+     * <li>change to accept {@link SubmissionFileType} rather + handle clinical as well.</li>
+     */
+    // @formatter:on
+    public String getFileSchemaName(FeatureType type) {
+      return JOINER.join(
+          type.getTypeName(),
+          getAbbreviation());
+    }
+
+    public static Optional<SubmissionFileSubType> fromAbbreviation(String abbreviation) {
+      for (val item : values()) {
+        if (item.getAbbreviation().equals(abbreviation)) {
+          return Optional.<SubmissionFileSubType> of(item);
+        }
+      }
+      return ABSENT;
+    }
+
+    public static SubmissionFileSubType fromFileSchemaName(String fileSchemaName) {
+      return fromFileSchemaType(FileSchemaType.fromTypeName(fileSchemaName));
+    }
+
+    public static SubmissionFileSubType fromFileSchemaType(FileSchemaType type) {
+      Iterator<String> iterator = SPLITTER.split(type.typeName).iterator();
+      checkState(iterator.hasNext(), "Expecting at least one element from %s", type);
+      String first = iterator.next();
+      Optional<SubmissionFileSubType> subType = iterator.hasNext() ?
+          fromAbbreviation(iterator.next()) :
+          Optional.of(valueOf(first.toUpperCase()));
+      checkState(subType.isPresent(),
+          "Could not find any match for: %s", type); // TODO? we may need to address that case in the future
+      return subType.get();
+    }
+
+    private String getFirstCharacter() {
+      return name().substring(0, 1);
     }
   }
 
