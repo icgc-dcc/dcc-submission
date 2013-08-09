@@ -37,11 +37,11 @@ public final class FileTypes {
     SPECIMEN_TYPE("specimen"),
     SAMPLE_TYPE("sample"),
 
-    BIOMARKER("biomarker"),
-    FAMILY("family"),
-    EXPOSURE("exposure"),
-    SURGERY("surgery"),
-    THERAPY("therapy");
+    BIOMARKER_TYPE("biomarker"),
+    FAMILY_TYPE("family"),
+    EXPOSURE_TYPE("exposure"),
+    SURGERY_TYPE("surgery"),
+    THERAPY_TYPE("therapy");
 
     private FileType(String typeName) {
       this.typeName = typeName;

@@ -22,11 +22,23 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.core.model.FileSchemaNames.FileSchemaType;
 import org.icgc.dcc.core.model.FileSchemaNames.SubmissionFileSubType;
+import org.icgc.dcc.core.model.FileTypes.FileType;
 import org.junit.Test;
 
 import com.google.common.base.Optional;
 
 public class FileSchemaNamesTest {
+
+  @Test
+  public void test_FileSchemaType_valid_clinical() {
+    assertThat(FileSchemaType.SSM_M.getTypeName()).isEqualTo("ssm_m");
+    assertThat(FileSchemaType.SSM_M.getSubmissionDataType()).isEqualTo(FeatureType.SSM_TYPE);
+    assertThat(FileSchemaType.from("ssm_m")).isEqualTo(FileSchemaType.SSM_M);
+
+    assertThat(FileSchemaType.DONOR.getTypeName()).isEqualTo("donor");
+    assertThat(FileSchemaType.from("donor")).isEqualTo(FileSchemaType.DONOR);
+    assertThat(FileSchemaType.DONOR.getSubmissionDataType()).isEqualTo(FileType.DONOR_TYPE);
+  }
 
   @Test
   public void test_SubmissionFileSubType_valid_clinical() {
@@ -64,14 +76,14 @@ public class FileSchemaNamesTest {
     assertThat(SubmissionFileSubType.GENE.getAbbreviation())
         .isEqualTo("g");
 
-    assertThat(SubmissionFileSubType.META.getFileSchemaName(FeatureType.SSM_TYPE))
-        .isEqualTo("ssm_m");
-    assertThat(SubmissionFileSubType.PRIMARY.getFileSchemaName(FeatureType.CNSM_TYPE))
-        .isEqualTo("cnsm_p");
-    assertThat(SubmissionFileSubType.SECONDARY.getFileSchemaName(FeatureType.MIRNA_TYPE))
-        .isEqualTo("mirna_s");
-    assertThat(SubmissionFileSubType.GENE.getFileSchemaName(FeatureType.EXP_TYPE))
-        .isEqualTo("exp_g");
+    assertThat(FileSchemaType.from(FeatureType.SSM_TYPE, SubmissionFileSubType.META))
+        .isEqualTo(FileSchemaType.SSM_M);
+    assertThat(FileSchemaType.from(FeatureType.CNSM_TYPE, SubmissionFileSubType.PRIMARY))
+        .isEqualTo(FileSchemaType.CNSM_P);
+    assertThat(FileSchemaType.from(FeatureType.MIRNA_TYPE, SubmissionFileSubType.SECONDARY))
+        .isEqualTo(FileSchemaType.MIRNA_S);
+    assertThat(FileSchemaType.from(FeatureType.EXP_TYPE, SubmissionFileSubType.GENE))
+        .isEqualTo(FileSchemaType.EXP_G);
 
     assertThat(SubmissionFileSubType.fromAbbreviation("m"))
         .isEqualTo(Optional.of(SubmissionFileSubType.META));
