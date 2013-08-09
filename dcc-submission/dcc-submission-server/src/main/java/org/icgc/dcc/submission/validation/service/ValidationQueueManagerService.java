@@ -235,11 +235,11 @@ public class ValidationQueueManagerService extends AbstractService {
     }
 
     Map<String, TupleState> fileLevelErrors = plan.getFileLevelErrors();
-    log.error("file errors (fatal planning errors):\n\t{}", fileLevelErrors);
+    log.error("There are file-level errors (fatal ones):\n\t{}", fileLevelErrors);
 
     QueuedProject queuedProject = checkNotNull(plan.getQueuedProject());
     String projectKey = queuedProject.getKey();
-    log.info("about to dequeue project key {}", projectKey);
+    log.info("About to dequeue project key {}", projectKey);
     resolveSubmission(queuedProject, SubmissionState.INVALID);
 
     SubmissionReport report = new SubmissionReport();

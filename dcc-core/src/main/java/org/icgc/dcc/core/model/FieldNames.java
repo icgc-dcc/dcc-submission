@@ -33,7 +33,6 @@ public final class FieldNames {
    */
   public static final String DONOR_ID_FIELD = "donor_id";
   public static final String SPECIMEN_ID_FIELD = "specimen_id";
-  public static final String SAMPLE_ID_FIELD = "sample_id";
   public static final String ANALYZED_SAMPLE_ID_FIELD = "analyzed_sample_id";
   public static final String MATCHED_SAMPLE_ID_FIELD = "matched_sample_id";
   public static final String GENE_ID_FIELD = "gene_affected";
@@ -158,6 +157,7 @@ public final class FieldNames {
   public static final String OBSERVATION_CHROMOSOME_END = "chromosome_end";
   public static final String OBSERVATION_MUTATION_TYPE = "mutation_type";
   public static final String OBSERVATION_MUTATION = "mutation";
+  public static final String OBSERVATION_REFERENCE_GENOME_ALLELE = "reference_genome_allele";
 
   public static String getPartitionTypeFieldName(String type) {
     return type;
