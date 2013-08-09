@@ -56,6 +56,7 @@ public final class FieldNames {
   public static final String PROJECT_COUNTRIES = "countries";
   public static final String PROJECT_PUBMED_IDS = "pubmed_ids";
   public static final String PROJECT_SUMMARY = "_summary";
+  public static final String PROJECT_SUMMARY_TOTAL_DONOR_COUNT = "_total_donor_count";
 
   /**
    * Special fields, usually appearing in all clinical files as well as primary/meta experimental files.
@@ -185,6 +186,7 @@ public final class FieldNames {
   public static final String MUTATION_SUMMARY_AFFECTED_PROJECT_IDS = "_affected_project_id";
   public static final String MUTATION_SUMMARY_AFFECTED_PROJECT_COUNT = "_affected_project_count";
   public static final String MUTATION_SUMMARY_AFFECTED_DONOR_COUNT = "_affected_donor_count";
+  public static final String MUTATION_SUMMARY_TESTED_DONOR_COUNT = "_tested_donor_count";
 
   /**
    * Release field names.
