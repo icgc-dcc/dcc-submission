@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.core.model;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.ImmutableList.of;
 import static com.google.common.collect.ImmutableSet.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
@@ -39,7 +38,7 @@ import lombok.NoArgsConstructor;
 public final class FeatureTypes {
 
   /**
-   * TODO: migrate all constants below to this enum (DCC-1452).
+   * Represents a type of observation data, see {@link ClinicalType} for the clinical counterpart.
    */
   public enum FeatureType implements SubmissionDataType {
     SSM_TYPE("ssm", "_ssm_count"),
@@ -53,6 +52,10 @@ public final class FeatureTypes {
     EXP_TYPE("exp", "_exp_exists"),
     PEXP_TYPE("pexp", "_pexp_exists"),
     JCN_TYPE("jcn", "_jcn_exists");
+
+    private FeatureType(String typeName) {
+      this(typeName, null);
+    }
 
     private FeatureType(String typeName, String summaryFieldName) {
       this.typeName = typeName;
@@ -76,7 +79,7 @@ public final class FeatureTypes {
     /**
      * Returns an enum matching the type like "ssm", "meth", ...
      */
-    public static FeatureType fromTypeName(String typeName) {
+    public static FeatureType from(String typeName) {
       return valueOf(typeName.toUpperCase() + TYPE_SUFFIX);
     }
 
@@ -88,21 +91,12 @@ public final class FeatureTypes {
       complement.removeAll(featureTypes);
       return newLinkedHashSet(complement);
     }
-
-    /**
-     * Determines whether a file schema name is of the type specified (like "ssm_m" is of type
-     * {@link FeatureType#SSM_TYPE} for instance).
-     * <p>
-     * TODO: use enum for file schema + shouldn't have to rely on prefix...
-     */
-    public static boolean isOfType(String fileSchemaName, FeatureType type) {
-      return checkNotNull(fileSchemaName, "Expecting a non-null file schema name")
-          .startsWith(type.getTypeName());
-    }
   }
 
   /**
    * Feature types.
+   * <p>
+   * TODO: migrate to enum above.
    */
   public static final String SSM_TYPE = "ssm";
   public static final String SGV_TYPE = "sgv";

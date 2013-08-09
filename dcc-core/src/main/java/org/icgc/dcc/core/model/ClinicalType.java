@@ -17,53 +17,35 @@
  */
 package org.icgc.dcc.core.model;
 
-import static lombok.AccessLevel.PRIVATE;
+import static com.google.common.base.Preconditions.checkState;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
+
+import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
+import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileSubType;
 
 /**
- * Utilities for working with ICGC file types.
+ * Represents a (the only one for now) type of clinical data, see {@link FeatureType} for the observation counterpart.
  * <p>
- * For experimental feature types, see {@link FeatureTypes} instead.
+ * The "donor" name is reused here (which makes things a bit confusing...).
  */
-@NoArgsConstructor(access = PRIVATE)
-public final class FileTypes {
+public enum ClinicalType implements SubmissionDataType {
 
-  /**
-   * TODO: migrate all constants below to this enum (DCC-1452).
-   */
-  public enum FileType implements SubmissionDataType, SubmissionFileType {
-    DONOR_TYPE("donor"),
-    SPECIMEN_TYPE("specimen"),
-    SAMPLE_TYPE("sample"),
+  CLINICAL_TYPE(SubmissionFileSubType.DONOR_SUBTYPE.getFullName());
 
-    BIOMARKER("biomarker"),
-    FAMILY("family"),
-    EXPOSURE("exposure"),
-    SURGERY("surgery"),
-    THERAPY("therapy");
-
-    private FileType(String typeName) {
-      this.typeName = typeName;
-    }
-
-    @Getter
-    private final String typeName;
-
-    public boolean isDonor() {
-      return this == DONOR_TYPE;
-    }
-
-    /**
-     * Returns an enum matching the type like "donor", "specimen", ...
-     */
-    public static FileType fromTypeName(String typeName) {
-      return valueOf(typeName.toUpperCase() + TYPE_SUFFIX);
-    }
+  private ClinicalType(String typeName) {
+    this.typeName = typeName;
   }
 
-  public static final String DONOR_TYPE = "donor";
-  public static final String SPECIMEN_TYPE = "specimen";
-  public static final String SAMPLE_TYPE = "sample";
+  @Getter
+  private final String typeName;
+
+  /**
+   * Returns an enum matching the type name provided.
+   */
+  public static SubmissionDataType from(String typeName) {
+    checkState(CLINICAL_TYPE.getTypeName().equals(typeName),
+        "Only '%s' is allowed for now", CLINICAL_TYPE.getTypeName());
+    return CLINICAL_TYPE;
+  }
 
 }

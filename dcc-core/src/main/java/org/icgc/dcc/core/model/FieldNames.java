@@ -33,7 +33,6 @@ public final class FieldNames {
    */
   public static final String DONOR_ID_FIELD = "donor_id";
   public static final String SPECIMEN_ID_FIELD = "specimen_id";
-  public static final String SAMPLE_ID_FIELD = "sample_id";
   public static final String ANALYZED_SAMPLE_ID_FIELD = "analyzed_sample_id";
   public static final String MATCHED_SAMPLE_ID_FIELD = "matched_sample_id";
   public static final String GENE_ID_FIELD = "gene_affected";
@@ -56,6 +55,7 @@ public final class FieldNames {
   public static final String PROJECT_COUNTRIES = "countries";
   public static final String PROJECT_PUBMED_IDS = "pubmed_ids";
   public static final String PROJECT_SUMMARY = "_summary";
+  public static final String PROJECT_SUMMARY_TOTAL_DONOR_COUNT = "_total_donor_count";
 
   /**
    * Special fields, usually appearing in all clinical files as well as primary/meta experimental files.
@@ -158,6 +158,7 @@ public final class FieldNames {
   public static final String OBSERVATION_CHROMOSOME_END = "chromosome_end";
   public static final String OBSERVATION_MUTATION_TYPE = "mutation_type";
   public static final String OBSERVATION_MUTATION = "mutation";
+  public static final String OBSERVATION_REFERENCE_GENOME_ALLELE = "reference_genome_allele";
 
   public static String getPartitionTypeFieldName(String type) {
     return type;
@@ -185,6 +186,7 @@ public final class FieldNames {
   public static final String MUTATION_SUMMARY_AFFECTED_PROJECT_IDS = "_affected_project_id";
   public static final String MUTATION_SUMMARY_AFFECTED_PROJECT_COUNT = "_affected_project_count";
   public static final String MUTATION_SUMMARY_AFFECTED_DONOR_COUNT = "_affected_donor_count";
+  public static final String MUTATION_SUMMARY_TESTED_DONOR_COUNT = "_tested_donor_count";
 
   /**
    * Release field names.

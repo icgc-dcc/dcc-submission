@@ -24,6 +24,9 @@ import static org.icgc.dcc.hadoop.cascading.Tuples2.nestTuple;
 
 import java.io.Serializable;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 
 import cascading.flow.FlowProcess;
@@ -37,11 +40,8 @@ import cascading.tuple.TupleEntry;
 /**
  * Utility class for working with cascading {@code Function} objects.
  */
-public abstract class FunctionUtils {
-
-  private FunctionUtils() {
-    // Prevent construction
-  }
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class CascadingFunctions {
 
   /**
    * Simple function that logs the incoming tuple entries (useful for debugging).
