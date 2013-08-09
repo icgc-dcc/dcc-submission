@@ -173,18 +173,18 @@ public final class FileSchemaNames {
     }
 
     private FileSchemaType(SubmissionDataType type, SubmissionFileSubType subType) {
-      this.type = checkNotNull(type);
+      this.dataType = checkNotNull(type);
       this.subType = subType;
     }
 
     public String getTypeName() {
       return subType.usedAsAbbrevatiation() ?
-          JOINER.join(type.getTypeName(), subType.getAbbreviation()) :
+          JOINER.join(dataType.getTypeName(), subType.getAbbreviation()) :
           subType.getFullName();
     }
 
     @Getter
-    private final SubmissionDataType type;
+    private final SubmissionDataType dataType;
 
     @Getter
     private final SubmissionFileSubType subType;

@@ -31,24 +31,24 @@ public class FileSchemaNamesTest {
   @Test
   public void test_FileSchemaType_valid_clinical() {
     assertThat(FileSchemaType.SSM_M.getTypeName()).isEqualTo("ssm_m");
-    assertThat(FileSchemaType.SSM_M.getType()).isEqualTo(FeatureType.SSM_TYPE);
+    assertThat(FileSchemaType.SSM_M.getDataType()).isEqualTo(FeatureType.SSM_TYPE);
     assertThat(FileSchemaType.from("ssm_m")).isEqualTo(FileSchemaType.SSM_M);
 
     assertThat(FileSchemaType.MIRNA_S.getTypeName()).isEqualTo("mirna_s");
-    assertThat(FileSchemaType.MIRNA_S.getType()).isEqualTo(FeatureType.MIRNA_TYPE);
+    assertThat(FileSchemaType.MIRNA_S.getDataType()).isEqualTo(FeatureType.MIRNA_TYPE);
     assertThat(FileSchemaType.from("mirna_s")).isEqualTo(FileSchemaType.MIRNA_S);
 
     assertThat(FileSchemaType.DONOR.getTypeName()).isEqualTo("donor");
     assertThat(FileSchemaType.from("donor")).isEqualTo(FileSchemaType.DONOR);
-    assertThat(FileSchemaType.DONOR.getType()).isEqualTo(ClinicalType.CLINICAL_TYPE);
+    assertThat(FileSchemaType.DONOR.getDataType()).isEqualTo(ClinicalType.CLINICAL_TYPE);
 
     assertThat(FileSchemaType.SPECIMEN.getTypeName()).isEqualTo("specimen");
     assertThat(FileSchemaType.from("specimen")).isEqualTo(FileSchemaType.SPECIMEN);
-    assertThat(FileSchemaType.SPECIMEN.getType()).isEqualTo(ClinicalType.CLINICAL_TYPE);
+    assertThat(FileSchemaType.SPECIMEN.getDataType()).isEqualTo(ClinicalType.CLINICAL_TYPE);
 
     assertThat(FileSchemaType.BIOMARKER.getTypeName()).isEqualTo("biomarker");
     assertThat(FileSchemaType.from("biomarker")).isEqualTo(FileSchemaType.BIOMARKER);
-    assertThat(FileSchemaType.BIOMARKER.getType()).isEqualTo(ClinicalType.CLINICAL_TYPE);
+    assertThat(FileSchemaType.BIOMARKER.getDataType()).isEqualTo(ClinicalType.CLINICAL_TYPE);
   }
 
   @Test
