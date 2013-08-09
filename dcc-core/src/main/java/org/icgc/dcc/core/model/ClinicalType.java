@@ -17,39 +17,35 @@
  */
 package org.icgc.dcc.core.model;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+import lombok.Getter;
 
-import org.icgc.dcc.core.model.FileSchemaNames.FileSchemaType;
-import org.icgc.dcc.core.model.FileTypes.FileType;
+import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
+import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileSubType;
 
 /**
- * Represents an ICGC file type, such as "donor", "specimen", "ssm_m", "meth_s", ...
+ * Represents a (the only one for now) type of clinical data, see {@link FeatureType} for the observation counterpart.
  * <p>
- * Careful not to confuse this with {@link SubmissionDataType} which represents the ICGC file types, such as "donor",
- * "specimen", "ssm", "meth", ... They have the clinical ones in common.
+ * The "donor" name is reused here (which makes things a bit confusing...).
  */
-public interface SubmissionFileType {
+public enum ClinicalType implements SubmissionDataType {
 
-  String getTypeName();
+  CLINICAL_TYPE(SubmissionFileSubType.DONOR_SUBTYPE.getFullName());
 
-  public static class SubmissionFileTypes {
-
-    /**
-     * Returns an enum matching the type like "ssm_p", "meth_s", ...
-     */
-    public static SubmissionFileType fromTypeName(String typeName) {
-      SubmissionFileType type = null;
-      try {
-        type = FileSchemaType.from(typeName);
-      } catch (IllegalArgumentException e) {
-        // Do nothing
-      }
-      try {
-        type = FileType.fromTypeName(typeName);
-      } catch (IllegalArgumentException e) {
-        // Do nothing
-      }
-      return checkNotNull(type, "Could not find a match for type %s", typeName);
-    }
+  private ClinicalType(String typeName) {
+    this.typeName = typeName;
   }
+
+  @Getter
+  private final String typeName;
+
+  /**
+   * Returns an enum matching the type name provided.
+   */
+  public static SubmissionDataType from(String typeName) {
+    checkState(CLINICAL_TYPE.getTypeName().equals(typeName),
+        "Only '%s' is allowed for now", CLINICAL_TYPE.getTypeName());
+    return CLINICAL_TYPE;
+  }
+
 }

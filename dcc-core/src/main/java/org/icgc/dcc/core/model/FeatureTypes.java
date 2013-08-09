@@ -38,7 +38,7 @@ import lombok.NoArgsConstructor;
 public final class FeatureTypes {
 
   /**
-   * TODO: migrate all constants below to this enum (DCC-1452).
+   * Represents a type of observation data, see {@link ClinicalType} for the clinical counterpart.
    */
   public enum FeatureType implements SubmissionDataType {
     SSM_TYPE("ssm", "_ssm_count"),
@@ -52,6 +52,10 @@ public final class FeatureTypes {
     EXP_TYPE("exp", "_exp_exists"),
     PEXP_TYPE("pexp", "_pexp_exists"),
     JCN_TYPE("jcn", "_jcn_exists");
+
+    private FeatureType(String typeName) {
+      this(typeName, null);
+    }
 
     private FeatureType(String typeName, String summaryFieldName) {
       this.typeName = typeName;
@@ -75,7 +79,7 @@ public final class FeatureTypes {
     /**
      * Returns an enum matching the type like "ssm", "meth", ...
      */
-    public static FeatureType fromTypeName(String typeName) {
+    public static FeatureType from(String typeName) {
       return valueOf(typeName.toUpperCase() + TYPE_SUFFIX);
     }
 
@@ -91,6 +95,8 @@ public final class FeatureTypes {
 
   /**
    * Feature types.
+   * <p>
+   * TODO: migrate to enum above.
    */
   public static final String SSM_TYPE = "ssm";
   public static final String SGV_TYPE = "sgv";

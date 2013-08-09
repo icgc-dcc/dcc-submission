@@ -17,53 +17,36 @@
  */
 package org.icgc.dcc.core.model;
 
-import static lombok.AccessLevel.PRIVATE;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Sets.newLinkedHashSet;
+import static org.fest.assertions.api.Assertions.assertThat;
 
-/**
- * Utilities for working with ICGC file types.
- * <p>
- * For experimental feature types, see {@link FeatureTypes} instead.
- */
-@NoArgsConstructor(access = PRIVATE)
-public final class FileTypes {
+import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
+import org.junit.Test;
 
-  /**
-   * TODO: migrate all constants below to this enum (DCC-1452).
-   */
-  public enum FileType implements SubmissionDataType, SubmissionFileType {
-    DONOR_TYPE("donor"),
-    SPECIMEN_TYPE("specimen"),
-    SAMPLE_TYPE("sample"),
+public class FeatureTypesTest {
 
-    BIOMARKER_TYPE("biomarker"),
-    FAMILY_TYPE("family"),
-    EXPOSURE_TYPE("exposure"),
-    SURGERY_TYPE("surgery"),
-    THERAPY_TYPE("therapy");
+  @Test
+  public void test_FeatureType() {
+    assertThat(FeatureType.from("ssm")).isEqualTo(FeatureType.SSM_TYPE);
+    assertThat(FeatureType.from("exp")).isEqualTo(FeatureType.EXP_TYPE);
+    assertThat(FeatureType.from("pexp")).isEqualTo(FeatureType.PEXP_TYPE);
 
-    private FileType(String typeName) {
-      this.typeName = typeName;
-    }
-
-    @Getter
-    private final String typeName;
-
-    public boolean isDonor() {
-      return this == DONOR_TYPE;
-    }
-
-    /**
-     * Returns an enum matching the type like "donor", "specimen", ...
-     */
-    public static FileType fromTypeName(String typeName) {
-      return valueOf(typeName.toUpperCase() + TYPE_SUFFIX);
-    }
+    assertThat(FeatureType.complement(
+        newLinkedHashSet(newArrayList(
+            FeatureType.SSM_TYPE,
+            FeatureType.CNSM_TYPE,
+            FeatureType.SGV_TYPE,
+            FeatureType.METH_TYPE,
+            FeatureType.EXP_TYPE,
+            FeatureType.PEXP_TYPE))))
+        .isEqualTo(
+            newLinkedHashSet(newArrayList(
+                FeatureType.STSM_TYPE,
+                FeatureType.CNGV_TYPE,
+                FeatureType.STGV_TYPE,
+                FeatureType.MIRNA_TYPE,
+                FeatureType.JCN_TYPE)));
   }
-
-  public static final String DONOR_TYPE = "donor";
-  public static final String SPECIMEN_TYPE = "specimen";
-  public static final String SAMPLE_TYPE = "sample";
 
 }

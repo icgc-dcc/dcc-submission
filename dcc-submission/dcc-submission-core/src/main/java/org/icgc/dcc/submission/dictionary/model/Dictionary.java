@@ -36,7 +36,7 @@ import lombok.val;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
-import org.icgc.dcc.core.model.FileSchemaNames.FileSchemaType;
+import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 import org.icgc.dcc.submission.core.model.BaseEntity;
 import org.icgc.dcc.submission.core.model.HasName;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryElement;
@@ -126,12 +126,12 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
     this.files = files;
   }
 
-  public Optional<FileSchema> fileSchema(FileSchemaType fileSchemaType) {
+  public Optional<FileSchema> fileSchema(SubmissionFileType fileSchemaType) {
     return fileSchema(fileSchemaType.getTypeName());
   }
 
   /**
-   * TODO: phase out in favor of {@link #fileSchema(FileSchemaType)}.
+   * TODO: phase out in favor of {@link #fileSchema(SubmissionFileType)}.
    */
   public Optional<FileSchema> fileSchema(final String fileSchemaName) {
     return Iterables.tryFind(this.files, new Predicate<FileSchema>() {
@@ -166,8 +166,8 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
 
       @Override
       public boolean apply(FileSchema input) {
-        FileSchemaType type = FileSchemaType.from(input.getName());
-        return type.getSubmissionDataType() == featureType;
+        SubmissionFileType type = SubmissionFileType.from(input.getName());
+        return type.getDataType() == featureType;
       }
     });
     return newArrayList(filter);
