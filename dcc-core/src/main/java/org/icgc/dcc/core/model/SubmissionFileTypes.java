@@ -21,9 +21,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileSubType.META_SUBTYPE;
-import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileSubType.PRIMARY_SUBTYPE;
-import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileSubType.SECONDARY_SUBTYPE;
 
 import java.util.List;
 
@@ -110,9 +107,9 @@ public final class SubmissionFileTypes {
     CNSM_P_TYPE(FeatureType.CNSM_TYPE, SubmissionFileSubType.PRIMARY_SUBTYPE),
     CNSM_S_TYPE(FeatureType.CNSM_TYPE, SubmissionFileSubType.SECONDARY_SUBTYPE),
 
-    STSM_M_TYPE(FeatureType.STSM_TYPE, META_SUBTYPE),
-    STSM_P_TYPE(FeatureType.STSM_TYPE, PRIMARY_SUBTYPE),
-    STSM_S_TYPE(FeatureType.STSM_TYPE, SECONDARY_SUBTYPE),
+    STSM_M_TYPE(FeatureType.STSM_TYPE, SubmissionFileSubType.META_SUBTYPE),
+    STSM_P_TYPE(FeatureType.STSM_TYPE, SubmissionFileSubType.PRIMARY_SUBTYPE),
+    STSM_S_TYPE(FeatureType.STSM_TYPE, SubmissionFileSubType.SECONDARY_SUBTYPE),
 
     SGV_M_TYPE(FeatureType.SGV_TYPE, SubmissionFileSubType.META_SUBTYPE),
     SGV_P_TYPE(FeatureType.SGV_TYPE, SubmissionFileSubType.PRIMARY_SUBTYPE),
