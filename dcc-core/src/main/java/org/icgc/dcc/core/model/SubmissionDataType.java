@@ -20,7 +20,7 @@ package org.icgc.dcc.core.model;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
-import org.icgc.dcc.core.model.FileSchemaNames.FileSchemaType;
+import org.icgc.dcc.core.model.FileSchemaTypes.FileSchemaType;
 
 /**
  * Represents an ICGC data type, such as "donor", "specimen", "ssm", "meth", ...

@@ -20,8 +20,8 @@ package org.icgc.dcc.core.model;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
-import org.icgc.dcc.core.model.FileSchemaNames.FileSchemaType;
-import org.icgc.dcc.core.model.FileSchemaNames.SubmissionFileSubType;
+import org.icgc.dcc.core.model.FileSchemaTypes.FileSchemaType;
+import org.icgc.dcc.core.model.FileSchemaTypes.SubmissionFileSubType;
 import org.junit.Test;
 
 import com.google.common.base.Optional;

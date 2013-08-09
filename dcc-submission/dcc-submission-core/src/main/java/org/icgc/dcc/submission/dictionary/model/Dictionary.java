@@ -36,7 +36,7 @@ import lombok.val;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.hibernate.validator.constraints.NotBlank;
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
-import org.icgc.dcc.core.model.FileSchemaNames.FileSchemaType;
+import org.icgc.dcc.core.model.FileSchemaTypes.FileSchemaType;
 import org.icgc.dcc.submission.core.model.BaseEntity;
 import org.icgc.dcc.submission.core.model.HasName;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryElement;
