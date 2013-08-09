@@ -167,7 +167,7 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
       @Override
       public boolean apply(FileSchema input) {
         FileSchemaType type = FileSchemaType.from(input.getName());
-        return type.getSubmissionDataType() == featureType;
+        return type.getType() == featureType;
       }
     });
     return newArrayList(filter);

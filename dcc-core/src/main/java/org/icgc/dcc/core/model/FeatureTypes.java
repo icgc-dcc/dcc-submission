@@ -53,6 +53,10 @@ public final class FeatureTypes {
     PEXP_TYPE("pexp", "_pexp_exists"),
     JCN_TYPE("jcn", "_jcn_exists");
 
+    private FeatureType(String typeName) {
+      this(typeName, null);
+    }
+
     private FeatureType(String typeName, String summaryFieldName) {
       this.typeName = typeName;
       this.summaryFieldName = summaryFieldName;

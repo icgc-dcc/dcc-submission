@@ -25,7 +25,6 @@ import static org.icgc.dcc.core.model.FileSchemaNames.SubmissionFileSubType.META
 import static org.icgc.dcc.core.model.FileSchemaNames.SubmissionFileSubType.PRIMARY;
 import static org.icgc.dcc.core.model.FileSchemaNames.SubmissionFileSubType.SECONDARY;
 
-import java.util.Iterator;
 import java.util.List;
 
 import lombok.Getter;
@@ -33,12 +32,9 @@ import lombok.NoArgsConstructor;
 import lombok.val;
 
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
-import org.icgc.dcc.core.model.FileTypes.FileType;
-import org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
-import com.google.common.base.Splitter;
 
 /**
  * Contains names for file schemata (eg. "ssm_p", "cnsm_s", "exp_g", "N/A", ...)
@@ -56,7 +52,6 @@ public final class FileSchemaNames {
    */
   private static final String SUFFIX_SEPARATOR = "_";
   private static final Joiner JOINER = Joiner.on(SUFFIX_SEPARATOR);
-  private static final Splitter SPLITTER = Splitter.on(SUFFIX_SEPARATOR);
   private static final Optional<SubmissionFileSubType> ABSENT = Optional.absent();
 
   /**
@@ -75,7 +70,11 @@ public final class FileSchemaNames {
     SPECIMEN,
     SAMPLE,
 
-    OPTIONAL;
+    BIOMARKER,
+    FAMILY,
+    EXPOSURE,
+    SURGERY,
+    THERAPY;
 
     /**
      * See {@link #usedAsAbbrevatiation()}.
@@ -87,6 +86,12 @@ public final class FileSchemaNames {
       checkState(usedAsAbbrevatiation(),
           "Clinical sub types do not use abbreviations, attempt was made on %s", this);
       return getFirstCharacter().toLowerCase();
+    }
+
+    public String getFullName() {
+      checkState(!usedAsAbbrevatiation(),
+          "Non-clinical sub types use abbreviations, attempt was made on %s", this);
+      return name().toLowerCase();
     }
 
     /**
@@ -106,28 +111,12 @@ public final class FileSchemaNames {
       return ABSENT;
     }
 
-    public static SubmissionFileSubType fromFileSchemaName(String fileSchemaName) {
-      return fromFileSchemaType(FileSchemaType.from(fileSchemaName));
-    }
-
-    public static SubmissionFileSubType fromFileSchemaType(FileSchemaType type) {
-      Iterator<String> iterator = SPLITTER.split(type.getTypeName()).iterator();
-      checkState(iterator.hasNext(), "Expecting at least one element from %s", type);
-      String first = iterator.next();
-      Optional<SubmissionFileSubType> subType = iterator.hasNext() ?
-          fromAbbreviation(iterator.next()) :
-          Optional.of(valueOf(first.toUpperCase()));
-      checkState(subType.isPresent(),
-          "Could not find any match for: %s", type); // TODO? we may need to address that case in the future
-      return subType.get();
-    }
-
     private String getFirstCharacter() {
       return name().substring(0, 1);
     }
   }
 
-  public enum FileSchemaType implements SubmissionFileType {
+  public enum FileSchemaType {
 
     SSM_M(FeatureType.SSM_TYPE, SubmissionFileSubType.META),
     SSM_P(FeatureType.SSM_TYPE, SubmissionFileSubType.PRIMARY),
@@ -169,15 +158,15 @@ public final class FileSchemaNames {
     EXP_M(FeatureType.EXP_TYPE, SubmissionFileSubType.META),
     EXP_G(FeatureType.EXP_TYPE, SubmissionFileSubType.GENE),
 
-    DONOR(FileType.DONOR_TYPE, SubmissionFileSubType.DONOR),
-    SPECIMEN(FileType.SPECIMEN_TYPE, SubmissionFileSubType.SPECIMEN),
-    SAMPLE(FileType.SAMPLE_TYPE, SubmissionFileSubType.SAMPLE),
+    DONOR(ClinicalType.CLINICAL_TYPE, SubmissionFileSubType.DONOR),
+    SPECIMEN(ClinicalType.CLINICAL_TYPE, SubmissionFileSubType.SPECIMEN),
+    SAMPLE(ClinicalType.CLINICAL_TYPE, SubmissionFileSubType.SAMPLE),
 
-    BIOMARKER(FileType.BIOMARKER_TYPE, SubmissionFileSubType.OPTIONAL),
-    FAMILY(FileType.FAMILY_TYPE, SubmissionFileSubType.OPTIONAL),
-    EXPOSURE(FileType.EXPOSURE_TYPE, SubmissionFileSubType.OPTIONAL),
-    SURGERY(FileType.SURGERY_TYPE, SubmissionFileSubType.OPTIONAL),
-    THERAPY(FileType.THERAPY_TYPE, SubmissionFileSubType.OPTIONAL);
+    BIOMARKER(ClinicalType.CLINICAL_TYPE, SubmissionFileSubType.BIOMARKER),
+    FAMILY(ClinicalType.CLINICAL_TYPE, SubmissionFileSubType.FAMILY),
+    EXPOSURE(ClinicalType.CLINICAL_TYPE, SubmissionFileSubType.EXPOSURE),
+    SURGERY(ClinicalType.CLINICAL_TYPE, SubmissionFileSubType.SURGERY),
+    THERAPY(ClinicalType.CLINICAL_TYPE, SubmissionFileSubType.THERAPY);
 
     private FileSchemaType(SubmissionDataType type) {
       this(type, null);
@@ -188,11 +177,10 @@ public final class FileSchemaNames {
       this.subType = subType;
     }
 
-    @Override
     public String getTypeName() {
       return subType.usedAsAbbrevatiation() ?
           JOINER.join(type.getTypeName(), subType.getAbbreviation()) :
-          type.getTypeName();
+          subType.getFullName();
     }
 
     @Getter
@@ -215,17 +203,6 @@ public final class FileSchemaNames {
      */
     public static FileSchemaType from(String typeName) {
       return valueOf(typeName.toUpperCase());
-    }
-
-    /**
-     * Returns the corresponding {@link SubmissionDataType} (like SSM or DONOR) for the given {@link FileSchemaType}
-     * (like SSM_M or DONOR).
-     */
-    public SubmissionDataType getSubmissionDataType() {
-      val iterator = SPLITTER.split(name()).iterator();
-      checkState(iterator.hasNext(), "Invalid %s: '%s'", FileSchemaType.class.getSimpleName(), name());
-      String submissionDataTypeName = iterator.next();
-      return SubmissionDataTypes.fromTypeName(submissionDataTypeName);
     }
 
   }
