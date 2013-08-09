@@ -17,9 +17,11 @@
  */
 package org.icgc.dcc.core.model;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.ImmutableList.of;
 import static com.google.common.collect.ImmutableSet.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Sets.newLinkedHashSet;
 import static lombok.AccessLevel.PRIVATE;
 
 import java.util.List;
@@ -81,12 +83,22 @@ public final class FeatureTypes {
     /**
      * Returns the complement of the feature types provided, i.e. the feature types not provided in the list.
      */
-    public static List<FeatureType> complement(List<FeatureType> featureTypes) {
+    public static Set<FeatureType> complement(Set<FeatureType> featureTypes) {
       List<FeatureType> complement = newArrayList(values());
       complement.removeAll(featureTypes);
-      return complement;
+      return newLinkedHashSet(complement);
     }
 
+    /**
+     * Determines whether a file schema name is of the type specified (like "ssm_m" is of type
+     * {@link FeatureType#SSM_TYPE} for instance).
+     * <p>
+     * TODO: use enum for file schema + shouldn't have to rely on prefix...
+     */
+    public static boolean isOfType(String fileSchemaName, FeatureType type) {
+      return checkNotNull(fileSchemaName, "Expecting a non-null file schema name")
+          .startsWith(type.getTypeName());
+    }
   }
 
   /**
