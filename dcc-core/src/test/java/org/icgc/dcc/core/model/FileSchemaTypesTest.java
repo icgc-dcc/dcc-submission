@@ -28,59 +28,59 @@ public class FileSchemaTypesTest {
 
   @Test
   public void test_FileSchemaType_valid_clinical() {
-    assertThat(FileSchemaType.SSM_M.getTypeName()).isEqualTo("ssm_m");
-    assertThat(FileSchemaType.SSM_M.getDataType()).isEqualTo(FeatureType.SSM_TYPE);
-    assertThat(FileSchemaType.from("ssm_m")).isEqualTo(FileSchemaType.SSM_M);
+    assertThat(FileSchemaType.SSM_M_TYPE.getTypeName()).isEqualTo("ssm_m");
+    assertThat(FileSchemaType.SSM_M_TYPE.getDataType()).isEqualTo(FeatureType.SSM_TYPE);
+    assertThat(FileSchemaType.from("ssm_m")).isEqualTo(FileSchemaType.SSM_M_TYPE);
 
-    assertThat(FileSchemaType.MIRNA_S.getTypeName()).isEqualTo("mirna_s");
-    assertThat(FileSchemaType.MIRNA_S.getDataType()).isEqualTo(FeatureType.MIRNA_TYPE);
-    assertThat(FileSchemaType.from("mirna_s")).isEqualTo(FileSchemaType.MIRNA_S);
+    assertThat(FileSchemaType.MIRNA_S_TYPE.getTypeName()).isEqualTo("mirna_s");
+    assertThat(FileSchemaType.MIRNA_S_TYPE.getDataType()).isEqualTo(FeatureType.MIRNA_TYPE);
+    assertThat(FileSchemaType.from("mirna_s")).isEqualTo(FileSchemaType.MIRNA_S_TYPE);
 
-    assertThat(FileSchemaType.DONOR.getTypeName()).isEqualTo("donor");
-    assertThat(FileSchemaType.from("donor")).isEqualTo(FileSchemaType.DONOR);
-    assertThat(FileSchemaType.DONOR.getDataType()).isEqualTo(ClinicalType.CLINICAL_TYPE);
+    assertThat(FileSchemaType.DONOR_TYPE.getTypeName()).isEqualTo("donor");
+    assertThat(FileSchemaType.from("donor")).isEqualTo(FileSchemaType.DONOR_TYPE);
+    assertThat(FileSchemaType.DONOR_TYPE.getDataType()).isEqualTo(ClinicalType.CLINICAL_TYPE);
 
-    assertThat(FileSchemaType.SPECIMEN.getTypeName()).isEqualTo("specimen");
-    assertThat(FileSchemaType.from("specimen")).isEqualTo(FileSchemaType.SPECIMEN);
-    assertThat(FileSchemaType.SPECIMEN.getDataType()).isEqualTo(ClinicalType.CLINICAL_TYPE);
+    assertThat(FileSchemaType.SPECIMEN_TYPE.getTypeName()).isEqualTo("specimen");
+    assertThat(FileSchemaType.from("specimen")).isEqualTo(FileSchemaType.SPECIMEN_TYPE);
+    assertThat(FileSchemaType.SPECIMEN_TYPE.getDataType()).isEqualTo(ClinicalType.CLINICAL_TYPE);
 
-    assertThat(FileSchemaType.BIOMARKER.getTypeName()).isEqualTo("biomarker");
-    assertThat(FileSchemaType.from("biomarker")).isEqualTo(FileSchemaType.BIOMARKER);
-    assertThat(FileSchemaType.BIOMARKER.getDataType()).isEqualTo(ClinicalType.CLINICAL_TYPE);
+    assertThat(FileSchemaType.BIOMARKER_TYPE.getTypeName()).isEqualTo("biomarker");
+    assertThat(FileSchemaType.from("biomarker")).isEqualTo(FileSchemaType.BIOMARKER_TYPE);
+    assertThat(FileSchemaType.BIOMARKER_TYPE.getDataType()).isEqualTo(ClinicalType.CLINICAL_TYPE);
   }
 
   @Test
   public void test_SubmissionFileSubType_valid() {
-    assertThat(SubmissionSubType.META.getAbbreviation()).isEqualTo("m");
-    assertThat(SubmissionSubType.GENE.getAbbreviation()).isEqualTo("g");
-    assertThat(SubmissionSubType.DONOR.getFullName()).isEqualTo("donor");
-    assertThat(SubmissionSubType.SAMPLE.getFullName()).isEqualTo("sample");
-    assertThat(SubmissionSubType.BIOMARKER.getFullName()).isEqualTo("biomarker");
+    assertThat(SubmissionSubType.META_SUBTYPE.getAbbreviation()).isEqualTo("m");
+    assertThat(SubmissionSubType.GENE_SUBTYPE.getAbbreviation()).isEqualTo("g");
+    assertThat(SubmissionSubType.DONOR_SUBTYPE.getFullName()).isEqualTo("donor");
+    assertThat(SubmissionSubType.SAMPLE_SUBTYPE.getFullName()).isEqualTo("sample");
+    assertThat(SubmissionSubType.BIOMARKER_SUBTYPE.getFullName()).isEqualTo("biomarker");
   }
 
   @Test(expected = IllegalStateException.class)
   public void test_SubmissionFileSubType_invalid_meta() {
-    SubmissionSubType.META.getFullName();
+    SubmissionSubType.META_SUBTYPE.getFullName();
   }
 
   @Test(expected = IllegalStateException.class)
   public void test_SubmissionFileSubType_invalid_gene() {
-    SubmissionSubType.GENE.getFullName();
+    SubmissionSubType.GENE_SUBTYPE.getFullName();
   }
 
   @Test(expected = IllegalStateException.class)
   public void test_SubmissionFileSubType_invalid() {
-    SubmissionSubType.DONOR.getAbbreviation();
+    SubmissionSubType.DONOR_SUBTYPE.getAbbreviation();
   }
 
   @Test(expected = IllegalStateException.class)
   public void test_SubmissionFileSubType_invalid_sample() {
-    SubmissionSubType.SAMPLE.getAbbreviation();
+    SubmissionSubType.SAMPLE_SUBTYPE.getAbbreviation();
   }
 
   @Test(expected = IllegalStateException.class)
   public void test_SubmissionFileSubType_invalid_biomarker() {
-    SubmissionSubType.BIOMARKER.getAbbreviation();
+    SubmissionSubType.BIOMARKER_SUBTYPE.getAbbreviation();
   }
 
 }

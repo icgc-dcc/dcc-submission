@@ -21,9 +21,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.core.model.FileSchemaTypes.SubmissionSubType.META;
-import static org.icgc.dcc.core.model.FileSchemaTypes.SubmissionSubType.PRIMARY;
-import static org.icgc.dcc.core.model.FileSchemaTypes.SubmissionSubType.SECONDARY;
+import static org.icgc.dcc.core.model.FileSchemaTypes.SubmissionSubType.META_SUBTYPE;
+import static org.icgc.dcc.core.model.FileSchemaTypes.SubmissionSubType.PRIMARY_SUBTYPE;
+import static org.icgc.dcc.core.model.FileSchemaTypes.SubmissionSubType.SECONDARY_SUBTYPE;
 
 import java.util.List;
 
@@ -52,26 +52,28 @@ public final class FileSchemaTypes {
    * as well, like "donor", "specimen", ... This seems quite confusing however.
    */
   public enum SubmissionSubType {
-    META,
-    PRIMARY,
-    SECONDARY,
-    GENE,
+    META_SUBTYPE,
+    PRIMARY_SUBTYPE,
+    SECONDARY_SUBTYPE,
+    GENE_SUBTYPE,
 
-    DONOR,
-    SPECIMEN,
-    SAMPLE,
+    DONOR_SUBTYPE,
+    SPECIMEN_SUBTYPE,
+    SAMPLE_SUBTYPE,
 
-    BIOMARKER,
-    FAMILY,
-    EXPOSURE,
-    SURGERY,
-    THERAPY;
+    BIOMARKER_SUBTYPE,
+    FAMILY_SUBTYPE,
+    EXPOSURE_SUBTYPE,
+    SURGERY_SUBTYPE,
+    THERAPY_SUBTYPE;
+
+    private static final String SUBTYPE_SUFFIX = "_SUBTYPE";
 
     /**
      * See {@link #usedAsAbbrevatiation()}.
      */
     private static final List<SubmissionSubType> TYPES_USED_AS_ABBREVIATION =
-        newArrayList(META, PRIMARY, SECONDARY, GENE);
+        newArrayList(META_SUBTYPE, PRIMARY_SUBTYPE, SECONDARY_SUBTYPE, GENE_SUBTYPE);
 
     public String getAbbreviation() {
       checkState(usedAsAbbrevatiation(),
@@ -82,7 +84,7 @@ public final class FileSchemaTypes {
     public String getFullName() {
       checkState(!usedAsAbbrevatiation(),
           "Non-clinical sub types use abbreviations, attempt was made on %s", this);
-      return name().toLowerCase();
+      return name().replace(SUBTYPE_SUFFIX, "").toLowerCase();
     }
 
     private String getFirstCharacter() {
@@ -100,55 +102,57 @@ public final class FileSchemaTypes {
 
   public enum FileSchemaType {
 
-    SSM_M(FeatureType.SSM_TYPE, SubmissionSubType.META),
-    SSM_P(FeatureType.SSM_TYPE, SubmissionSubType.PRIMARY),
-    SSM_S(FeatureType.SSM_TYPE, SubmissionSubType.SECONDARY),
+    SSM_M_TYPE(FeatureType.SSM_TYPE, SubmissionSubType.META_SUBTYPE),
+    SSM_P_TYPE(FeatureType.SSM_TYPE, SubmissionSubType.PRIMARY_SUBTYPE),
+    SSM_S_TYPE(FeatureType.SSM_TYPE, SubmissionSubType.SECONDARY_SUBTYPE),
 
-    CNSM_M(FeatureType.CNSM_TYPE, SubmissionSubType.META),
-    CNSM_P(FeatureType.CNSM_TYPE, SubmissionSubType.PRIMARY),
-    CNSM_S(FeatureType.CNSM_TYPE, SubmissionSubType.SECONDARY),
+    CNSM_M_TYPE(FeatureType.CNSM_TYPE, SubmissionSubType.META_SUBTYPE),
+    CNSM_P_TYPE(FeatureType.CNSM_TYPE, SubmissionSubType.PRIMARY_SUBTYPE),
+    CNSM_S_TYPE(FeatureType.CNSM_TYPE, SubmissionSubType.SECONDARY_SUBTYPE),
 
-    STSM_M(FeatureType.STSM_TYPE, META),
-    STSM_P(FeatureType.STSM_TYPE, PRIMARY),
-    STSM_S(FeatureType.STSM_TYPE, SECONDARY),
+    STSM_M_TYPE(FeatureType.STSM_TYPE, META_SUBTYPE),
+    STSM_P_TYPE(FeatureType.STSM_TYPE, PRIMARY_SUBTYPE),
+    STSM_S_TYPE(FeatureType.STSM_TYPE, SECONDARY_SUBTYPE),
 
-    SGV_M(FeatureType.SGV_TYPE, SubmissionSubType.META),
-    SGV_P(FeatureType.SGV_TYPE, SubmissionSubType.PRIMARY),
+    SGV_M_TYPE(FeatureType.SGV_TYPE, SubmissionSubType.META_SUBTYPE),
+    SGV_P_TYPE(FeatureType.SGV_TYPE, SubmissionSubType.PRIMARY_SUBTYPE),
 
-    CNGV_M(FeatureType.CNGV_TYPE, SubmissionSubType.META),
-    CNGV_P(FeatureType.CNGV_TYPE, SubmissionSubType.PRIMARY),
-    CNGV_S(FeatureType.CNGV_TYPE, SubmissionSubType.SECONDARY),
+    CNGV_M_TYPE(FeatureType.CNGV_TYPE, SubmissionSubType.META_SUBTYPE),
+    CNGV_P_TYPE(FeatureType.CNGV_TYPE, SubmissionSubType.PRIMARY_SUBTYPE),
+    CNGV_S_TYPE(FeatureType.CNGV_TYPE, SubmissionSubType.SECONDARY_SUBTYPE),
 
-    STGV_M(FeatureType.STGV_TYPE, SubmissionSubType.META),
-    STGV_P(FeatureType.STGV_TYPE, SubmissionSubType.PRIMARY),
-    STGV_S(FeatureType.STGV_TYPE, SubmissionSubType.SECONDARY),
+    STGV_M_TYPE(FeatureType.STGV_TYPE, SubmissionSubType.META_SUBTYPE),
+    STGV_P_TYPE(FeatureType.STGV_TYPE, SubmissionSubType.PRIMARY_SUBTYPE),
+    STGV_S_TYPE(FeatureType.STGV_TYPE, SubmissionSubType.SECONDARY_SUBTYPE),
 
-    PEXP_M(FeatureType.PEXP_TYPE, SubmissionSubType.META),
-    PEXP_P(FeatureType.PEXP_TYPE, SubmissionSubType.PRIMARY),
+    PEXP_M_TYPE(FeatureType.PEXP_TYPE, SubmissionSubType.META_SUBTYPE),
+    PEXP_P_TYPE(FeatureType.PEXP_TYPE, SubmissionSubType.PRIMARY_SUBTYPE),
 
-    METH_M(FeatureType.METH_TYPE, SubmissionSubType.META),
-    METH_P(FeatureType.METH_TYPE, SubmissionSubType.PRIMARY),
-    METH_S(FeatureType.METH_TYPE, SubmissionSubType.SECONDARY),
+    METH_M_TYPE(FeatureType.METH_TYPE, SubmissionSubType.META_SUBTYPE),
+    METH_P_TYPE(FeatureType.METH_TYPE, SubmissionSubType.PRIMARY_SUBTYPE),
+    METH_S_TYPE(FeatureType.METH_TYPE, SubmissionSubType.SECONDARY_SUBTYPE),
 
-    MIRNA_M(FeatureType.MIRNA_TYPE, SubmissionSubType.META),
-    MIRNA_P(FeatureType.MIRNA_TYPE, SubmissionSubType.PRIMARY),
-    MIRNA_S(FeatureType.MIRNA_TYPE, SubmissionSubType.SECONDARY),
+    MIRNA_M_TYPE(FeatureType.MIRNA_TYPE, SubmissionSubType.META_SUBTYPE),
+    MIRNA_P_TYPE(FeatureType.MIRNA_TYPE, SubmissionSubType.PRIMARY_SUBTYPE),
+    MIRNA_S_TYPE(FeatureType.MIRNA_TYPE, SubmissionSubType.SECONDARY_SUBTYPE),
 
-    JCN_M(FeatureType.JCN_TYPE, SubmissionSubType.META),
-    JCN_P(FeatureType.JCN_TYPE, SubmissionSubType.PRIMARY),
+    JCN_M_TYPE(FeatureType.JCN_TYPE, SubmissionSubType.META_SUBTYPE),
+    JCN_P_TYPE(FeatureType.JCN_TYPE, SubmissionSubType.PRIMARY_SUBTYPE),
 
-    EXP_M(FeatureType.EXP_TYPE, SubmissionSubType.META),
-    EXP_G(FeatureType.EXP_TYPE, SubmissionSubType.GENE),
+    EXP_M_TYPE(FeatureType.EXP_TYPE, SubmissionSubType.META_SUBTYPE),
+    EXP_G_TYPE(FeatureType.EXP_TYPE, SubmissionSubType.GENE_SUBTYPE),
 
-    DONOR(ClinicalType.CLINICAL_TYPE, SubmissionSubType.DONOR),
-    SPECIMEN(ClinicalType.CLINICAL_TYPE, SubmissionSubType.SPECIMEN),
-    SAMPLE(ClinicalType.CLINICAL_TYPE, SubmissionSubType.SAMPLE),
+    DONOR_TYPE(ClinicalType.CLINICAL_TYPE, SubmissionSubType.DONOR_SUBTYPE),
+    SPECIMEN_TYPE(ClinicalType.CLINICAL_TYPE, SubmissionSubType.SPECIMEN_SUBTYPE),
+    SAMPLE_TYPE(ClinicalType.CLINICAL_TYPE, SubmissionSubType.SAMPLE_SUBTYPE),
 
-    BIOMARKER(ClinicalType.CLINICAL_TYPE, SubmissionSubType.BIOMARKER),
-    FAMILY(ClinicalType.CLINICAL_TYPE, SubmissionSubType.FAMILY),
-    EXPOSURE(ClinicalType.CLINICAL_TYPE, SubmissionSubType.EXPOSURE),
-    SURGERY(ClinicalType.CLINICAL_TYPE, SubmissionSubType.SURGERY),
-    THERAPY(ClinicalType.CLINICAL_TYPE, SubmissionSubType.THERAPY);
+    BIOMARKER_TYPE(ClinicalType.CLINICAL_TYPE, SubmissionSubType.BIOMARKER_SUBTYPE),
+    FAMILY_TYPE(ClinicalType.CLINICAL_TYPE, SubmissionSubType.FAMILY_SUBTYPE),
+    EXPOSURE_TYPE(ClinicalType.CLINICAL_TYPE, SubmissionSubType.EXPOSURE_SUBTYPE),
+    SURGERY_TYPE(ClinicalType.CLINICAL_TYPE, SubmissionSubType.SURGERY_SUBTYPE),
+    THERAPY_TYPE(ClinicalType.CLINICAL_TYPE, SubmissionSubType.THERAPY_SUBTYPE);
+
+    private static String TYPE_SUFFIX = "_TYPE";
 
     private static final Joiner JOINER = Joiner.on("_");
 
@@ -179,7 +183,7 @@ public final class FileSchemaTypes {
      * TODO: phase out as Strings are replaced with enums.
      */
     public static FileSchemaType from(String typeName) {
-      return valueOf(typeName.toUpperCase());
+      return valueOf(typeName.toUpperCase() + TYPE_SUFFIX);
     }
 
   }

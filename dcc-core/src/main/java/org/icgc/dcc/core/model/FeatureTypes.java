@@ -95,6 +95,8 @@ public final class FeatureTypes {
 
   /**
    * Feature types.
+   * <p>
+   * TODO: migrate to enum above.
    */
   public static final String SSM_TYPE = "ssm";
   public static final String SGV_TYPE = "sgv";
