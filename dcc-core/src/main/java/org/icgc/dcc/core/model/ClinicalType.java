@@ -21,7 +21,7 @@ import static com.google.common.base.Preconditions.checkState;
 import lombok.Getter;
 
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
-import org.icgc.dcc.core.model.FileSchemaTypes.SubmissionSubType;
+import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileSubType;
 
 /**
  * Represents a (the only one for now) type of clinical data, see {@link FeatureType} for the observation counterpart.
@@ -30,7 +30,7 @@ import org.icgc.dcc.core.model.FileSchemaTypes.SubmissionSubType;
  */
 public enum ClinicalType implements SubmissionDataType {
 
-  CLINICAL_TYPE(SubmissionSubType.DONOR_SUBTYPE.getFullName());
+  CLINICAL_TYPE(SubmissionFileSubType.DONOR_SUBTYPE.getFullName());
 
   private ClinicalType(String typeName) {
     this.typeName = typeName;

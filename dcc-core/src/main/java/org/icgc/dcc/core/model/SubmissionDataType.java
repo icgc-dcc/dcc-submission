@@ -20,12 +20,12 @@ package org.icgc.dcc.core.model;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
-import org.icgc.dcc.core.model.FileSchemaTypes.FileSchemaType;
+import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 
 /**
  * Represents an ICGC data type, such as "donor", "specimen", "ssm", "meth", ...
  * <p>
- * Careful not to confuse this with {@link FileSchemaType} which represents the ICGC file types, such as "donor",
+ * Careful not to confuse this with {@link SubmissionFileType} which represents the ICGC file types, such as "donor",
  * "specimen", "ssm_m", "meth_m", ... They have the clinical ones in common.
  */
 public interface SubmissionDataType {
