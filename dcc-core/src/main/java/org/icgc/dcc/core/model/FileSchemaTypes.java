@@ -21,9 +21,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.core.model.FileSchemaTypes.SubmissionFileSubType.META;
-import static org.icgc.dcc.core.model.FileSchemaTypes.SubmissionFileSubType.PRIMARY;
-import static org.icgc.dcc.core.model.FileSchemaTypes.SubmissionFileSubType.SECONDARY;
+import static org.icgc.dcc.core.model.FileSchemaTypes.SubmissionSubType.META;
+import static org.icgc.dcc.core.model.FileSchemaTypes.SubmissionSubType.PRIMARY;
+import static org.icgc.dcc.core.model.FileSchemaTypes.SubmissionSubType.SECONDARY;
 
 import java.util.List;
 
@@ -33,7 +33,6 @@ import lombok.NoArgsConstructor;
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.Optional;
 
 /**
  * Contains names for file schemata (eg. "ssm_p", "cnsm_s", "exp_g", "N/A", ...)
@@ -47,19 +46,12 @@ public final class FileSchemaTypes {
   public static final String NOT_APPLICABLE = "N/A";
 
   /**
-   * TODO: Make this association explicit rather than by convention (we shouldn't rely on prefices/suffices).
-   */
-  private static final String SUFFIX_SEPARATOR = "_";
-  private static final Joiner JOINER = Joiner.on(SUFFIX_SEPARATOR);
-  private static final Optional<SubmissionFileSubType> ABSENT = Optional.absent();
-
-  /**
    * TODO: migrate all constants below to this enum (DCC-1452).
    * <p>
    * According to https://wiki.oicr.on.ca/display/DCCINT/Submission+File+Format, this would have to be called "FileType"
    * as well, like "donor", "specimen", ... This seems quite confusing however.
    */
-  public enum SubmissionFileSubType {
+  public enum SubmissionSubType {
     META,
     PRIMARY,
     SECONDARY,
@@ -78,7 +70,7 @@ public final class FileSchemaTypes {
     /**
      * See {@link #usedAsAbbrevatiation()}.
      */
-    private static final List<SubmissionFileSubType> TYPES_USED_AS_ABBREVIATION =
+    private static final List<SubmissionSubType> TYPES_USED_AS_ABBREVIATION =
         newArrayList(META, PRIMARY, SECONDARY, GENE);
 
     public String getAbbreviation() {
@@ -108,64 +100,72 @@ public final class FileSchemaTypes {
 
   public enum FileSchemaType {
 
-    SSM_M(FeatureType.SSM_TYPE, SubmissionFileSubType.META),
-    SSM_P(FeatureType.SSM_TYPE, SubmissionFileSubType.PRIMARY),
-    SSM_S(FeatureType.SSM_TYPE, SubmissionFileSubType.SECONDARY),
+    SSM_M(FeatureType.SSM_TYPE, SubmissionSubType.META),
+    SSM_P(FeatureType.SSM_TYPE, SubmissionSubType.PRIMARY),
+    SSM_S(FeatureType.SSM_TYPE, SubmissionSubType.SECONDARY),
 
-    CNSM_M(FeatureType.CNSM_TYPE, SubmissionFileSubType.META),
-    CNSM_P(FeatureType.CNSM_TYPE, SubmissionFileSubType.PRIMARY),
-    CNSM_S(FeatureType.CNSM_TYPE, SubmissionFileSubType.SECONDARY),
+    CNSM_M(FeatureType.CNSM_TYPE, SubmissionSubType.META),
+    CNSM_P(FeatureType.CNSM_TYPE, SubmissionSubType.PRIMARY),
+    CNSM_S(FeatureType.CNSM_TYPE, SubmissionSubType.SECONDARY),
 
     STSM_M(FeatureType.STSM_TYPE, META),
     STSM_P(FeatureType.STSM_TYPE, PRIMARY),
     STSM_S(FeatureType.STSM_TYPE, SECONDARY),
 
-    SGV_M(FeatureType.SGV_TYPE, SubmissionFileSubType.META),
-    SGV_P(FeatureType.SGV_TYPE, SubmissionFileSubType.PRIMARY),
+    SGV_M(FeatureType.SGV_TYPE, SubmissionSubType.META),
+    SGV_P(FeatureType.SGV_TYPE, SubmissionSubType.PRIMARY),
 
-    CNGV_M(FeatureType.CNGV_TYPE, SubmissionFileSubType.META),
-    CNGV_P(FeatureType.CNGV_TYPE, SubmissionFileSubType.PRIMARY),
-    CNGV_S(FeatureType.CNGV_TYPE, SubmissionFileSubType.SECONDARY),
+    CNGV_M(FeatureType.CNGV_TYPE, SubmissionSubType.META),
+    CNGV_P(FeatureType.CNGV_TYPE, SubmissionSubType.PRIMARY),
+    CNGV_S(FeatureType.CNGV_TYPE, SubmissionSubType.SECONDARY),
 
-    STGV_M(FeatureType.STGV_TYPE, SubmissionFileSubType.META),
-    STGV_P(FeatureType.STGV_TYPE, SubmissionFileSubType.PRIMARY),
-    STGV_S(FeatureType.STGV_TYPE, SubmissionFileSubType.SECONDARY),
+    STGV_M(FeatureType.STGV_TYPE, SubmissionSubType.META),
+    STGV_P(FeatureType.STGV_TYPE, SubmissionSubType.PRIMARY),
+    STGV_S(FeatureType.STGV_TYPE, SubmissionSubType.SECONDARY),
 
-    PEXP_M(FeatureType.PEXP_TYPE, SubmissionFileSubType.META),
-    PEXP_P(FeatureType.PEXP_TYPE, SubmissionFileSubType.PRIMARY),
+    PEXP_M(FeatureType.PEXP_TYPE, SubmissionSubType.META),
+    PEXP_P(FeatureType.PEXP_TYPE, SubmissionSubType.PRIMARY),
 
-    METH_M(FeatureType.METH_TYPE, SubmissionFileSubType.META),
-    METH_P(FeatureType.METH_TYPE, SubmissionFileSubType.PRIMARY),
-    METH_S(FeatureType.METH_TYPE, SubmissionFileSubType.SECONDARY),
+    METH_M(FeatureType.METH_TYPE, SubmissionSubType.META),
+    METH_P(FeatureType.METH_TYPE, SubmissionSubType.PRIMARY),
+    METH_S(FeatureType.METH_TYPE, SubmissionSubType.SECONDARY),
 
-    MIRNA_M(FeatureType.MIRNA_TYPE, SubmissionFileSubType.META),
-    MIRNA_P(FeatureType.MIRNA_TYPE, SubmissionFileSubType.PRIMARY),
-    MIRNA_S(FeatureType.MIRNA_TYPE, SubmissionFileSubType.SECONDARY),
+    MIRNA_M(FeatureType.MIRNA_TYPE, SubmissionSubType.META),
+    MIRNA_P(FeatureType.MIRNA_TYPE, SubmissionSubType.PRIMARY),
+    MIRNA_S(FeatureType.MIRNA_TYPE, SubmissionSubType.SECONDARY),
 
-    JCN_M(FeatureType.JCN_TYPE, SubmissionFileSubType.META),
-    JCN_P(FeatureType.JCN_TYPE, SubmissionFileSubType.PRIMARY),
+    JCN_M(FeatureType.JCN_TYPE, SubmissionSubType.META),
+    JCN_P(FeatureType.JCN_TYPE, SubmissionSubType.PRIMARY),
 
-    EXP_M(FeatureType.EXP_TYPE, SubmissionFileSubType.META),
-    EXP_G(FeatureType.EXP_TYPE, SubmissionFileSubType.GENE),
+    EXP_M(FeatureType.EXP_TYPE, SubmissionSubType.META),
+    EXP_G(FeatureType.EXP_TYPE, SubmissionSubType.GENE),
 
-    DONOR(ClinicalType.CLINICAL_TYPE, SubmissionFileSubType.DONOR),
-    SPECIMEN(ClinicalType.CLINICAL_TYPE, SubmissionFileSubType.SPECIMEN),
-    SAMPLE(ClinicalType.CLINICAL_TYPE, SubmissionFileSubType.SAMPLE),
+    DONOR(ClinicalType.CLINICAL_TYPE, SubmissionSubType.DONOR),
+    SPECIMEN(ClinicalType.CLINICAL_TYPE, SubmissionSubType.SPECIMEN),
+    SAMPLE(ClinicalType.CLINICAL_TYPE, SubmissionSubType.SAMPLE),
 
-    BIOMARKER(ClinicalType.CLINICAL_TYPE, SubmissionFileSubType.BIOMARKER),
-    FAMILY(ClinicalType.CLINICAL_TYPE, SubmissionFileSubType.FAMILY),
-    EXPOSURE(ClinicalType.CLINICAL_TYPE, SubmissionFileSubType.EXPOSURE),
-    SURGERY(ClinicalType.CLINICAL_TYPE, SubmissionFileSubType.SURGERY),
-    THERAPY(ClinicalType.CLINICAL_TYPE, SubmissionFileSubType.THERAPY);
+    BIOMARKER(ClinicalType.CLINICAL_TYPE, SubmissionSubType.BIOMARKER),
+    FAMILY(ClinicalType.CLINICAL_TYPE, SubmissionSubType.FAMILY),
+    EXPOSURE(ClinicalType.CLINICAL_TYPE, SubmissionSubType.EXPOSURE),
+    SURGERY(ClinicalType.CLINICAL_TYPE, SubmissionSubType.SURGERY),
+    THERAPY(ClinicalType.CLINICAL_TYPE, SubmissionSubType.THERAPY);
+
+    private static final Joiner JOINER = Joiner.on("_");
 
     private FileSchemaType(SubmissionDataType type) {
       this(type, null);
     }
 
-    private FileSchemaType(SubmissionDataType type, SubmissionFileSubType subType) {
+    private FileSchemaType(SubmissionDataType type, SubmissionSubType subType) {
       this.dataType = checkNotNull(type);
       this.subType = subType;
     }
+
+    @Getter
+    private final SubmissionDataType dataType;
+
+    @Getter
+    private final SubmissionSubType subType;
 
     public String getTypeName() {
       return subType.usedAsAbbrevatiation() ?
@@ -173,23 +173,10 @@ public final class FileSchemaTypes {
           subType.getFullName();
     }
 
-    @Getter
-    private final SubmissionDataType dataType;
-
-    @Getter
-    private final SubmissionFileSubType subType;
-
-    /**
-     * Returns an enum matching the type like "ssm_p", "meth_s", ...
-     */
-    public static FileSchemaType from(FeatureType type, SubmissionFileSubType subType) {
-      return FileSchemaType.from(JOINER.join(type.getTypeName(), subType.getAbbreviation()));
-    }
-
     /**
      * Returns an enum matching the type like "ssm_p", "meth_s", ...
      * <p>
-     * TODO: favor the one below
+     * TODO: phase out as Strings are replaced with enums.
      */
     public static FileSchemaType from(String typeName) {
       return valueOf(typeName.toUpperCase());

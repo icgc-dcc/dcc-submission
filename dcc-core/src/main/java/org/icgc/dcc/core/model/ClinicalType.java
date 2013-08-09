@@ -17,12 +17,16 @@
  */
 package org.icgc.dcc.core.model;
 
+import static com.google.common.base.Preconditions.checkState;
 import lombok.Getter;
 
+import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
+
 /**
- * TODO
+ * Represents a (the only one for now) type of clinical data, see {@link FeatureType} for the observation counterpart.
  */
 public enum ClinicalType implements SubmissionDataType {
+
   CLINICAL_TYPE("donor");
 
   private ClinicalType(String typeName) {
@@ -33,9 +37,12 @@ public enum ClinicalType implements SubmissionDataType {
   private final String typeName;
 
   /**
-   * Returns an enum matching the type
+   * Returns an enum matching the type name provided.
    */
-  public static SubmissionDataType fromTypeName(String typeName) {
-    return valueOf(typeName.toUpperCase() + TYPE_SUFFIX);
+  public static SubmissionDataType from(String typeName) {
+    checkState(CLINICAL_TYPE.getTypeName().equals(typeName),
+        "Only '%s' is allowed for now", CLINICAL_TYPE.getTypeName());
+    return CLINICAL_TYPE;
   }
+
 }

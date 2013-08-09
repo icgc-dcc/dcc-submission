@@ -21,7 +21,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.core.model.FileSchemaTypes.FileSchemaType;
-import org.icgc.dcc.core.model.FileSchemaTypes.SubmissionFileSubType;
+import org.icgc.dcc.core.model.FileSchemaTypes.SubmissionSubType;
 import org.junit.Test;
 
 public class FileSchemaTypesTest {
@@ -51,36 +51,36 @@ public class FileSchemaTypesTest {
 
   @Test
   public void test_SubmissionFileSubType_valid() {
-    assertThat(SubmissionFileSubType.META.getAbbreviation()).isEqualTo("m");
-    assertThat(SubmissionFileSubType.GENE.getAbbreviation()).isEqualTo("g");
-    assertThat(SubmissionFileSubType.DONOR.getFullName()).isEqualTo("donor");
-    assertThat(SubmissionFileSubType.SAMPLE.getFullName()).isEqualTo("sample");
-    assertThat(SubmissionFileSubType.BIOMARKER.getFullName()).isEqualTo("biomarker");
+    assertThat(SubmissionSubType.META.getAbbreviation()).isEqualTo("m");
+    assertThat(SubmissionSubType.GENE.getAbbreviation()).isEqualTo("g");
+    assertThat(SubmissionSubType.DONOR.getFullName()).isEqualTo("donor");
+    assertThat(SubmissionSubType.SAMPLE.getFullName()).isEqualTo("sample");
+    assertThat(SubmissionSubType.BIOMARKER.getFullName()).isEqualTo("biomarker");
   }
 
   @Test(expected = IllegalStateException.class)
   public void test_SubmissionFileSubType_invalid_meta() {
-    SubmissionFileSubType.META.getFullName();
+    SubmissionSubType.META.getFullName();
   }
 
   @Test(expected = IllegalStateException.class)
   public void test_SubmissionFileSubType_invalid_gene() {
-    SubmissionFileSubType.GENE.getFullName();
+    SubmissionSubType.GENE.getFullName();
   }
 
   @Test(expected = IllegalStateException.class)
   public void test_SubmissionFileSubType_invalid() {
-    SubmissionFileSubType.DONOR.getAbbreviation();
+    SubmissionSubType.DONOR.getAbbreviation();
   }
 
   @Test(expected = IllegalStateException.class)
   public void test_SubmissionFileSubType_invalid_sample() {
-    SubmissionFileSubType.SAMPLE.getAbbreviation();
+    SubmissionSubType.SAMPLE.getAbbreviation();
   }
 
   @Test(expected = IllegalStateException.class)
   public void test_SubmissionFileSubType_invalid_biomarker() {
-    SubmissionFileSubType.BIOMARKER.getAbbreviation();
+    SubmissionSubType.BIOMARKER.getAbbreviation();
   }
 
 }

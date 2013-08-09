@@ -17,42 +17,36 @@
  */
 package org.icgc.dcc.core.model;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Sets.newLinkedHashSet;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
-import org.icgc.dcc.core.model.FileSchemaTypes.FileSchemaType;
+import org.junit.Test;
 
-/**
- * Represents an ICGC data type, such as "donor", "specimen", "ssm", "meth", ...
- * <p>
- * Careful not to confuse this with {@link FileSchemaType} which represents the ICGC file types, such as "donor",
- * "specimen", "ssm_m", "meth_m", ... They have the clinical ones in common.
- */
-public interface SubmissionDataType {
+public class FeatureTypesTest {
 
-  static final String TYPE_SUFFIX = "_TYPE";
+  @Test
+  public void test_FeatureType() {
+    assertThat(FeatureType.from("ssm")).isEqualTo(FeatureType.SSM_TYPE);
+    assertThat(FeatureType.from("exp")).isEqualTo(FeatureType.EXP_TYPE);
+    assertThat(FeatureType.from("pexp")).isEqualTo(FeatureType.PEXP_TYPE);
 
-  String getTypeName();
-
-  public static class SubmissionDataTypes {
-
-    /**
-     * Returns an enum matching the type like "donor", "ssm", "meth", ...
-     */
-    public static SubmissionDataType fromTypeName(String typeName) {
-      SubmissionDataType type = null;
-      try {
-        type = FeatureType.from(typeName);
-      } catch (IllegalArgumentException e) {
-        // Do nothing
-      }
-      try {
-        type = ClinicalType.from(typeName);
-      } catch (IllegalArgumentException e) {
-        // Do nothing
-      }
-      return checkNotNull(type, "Could not find a match for type %s", typeName);
-    }
+    assertThat(FeatureType.complement(
+        newLinkedHashSet(newArrayList(
+            FeatureType.SSM_TYPE,
+            FeatureType.CNSM_TYPE,
+            FeatureType.SGV_TYPE,
+            FeatureType.METH_TYPE,
+            FeatureType.EXP_TYPE,
+            FeatureType.PEXP_TYPE))))
+        .isEqualTo(
+            newLinkedHashSet(newArrayList(
+                FeatureType.STSM_TYPE,
+                FeatureType.CNGV_TYPE,
+                FeatureType.STGV_TYPE,
+                FeatureType.MIRNA_TYPE,
+                FeatureType.JCN_TYPE)));
   }
 
 }
