@@ -24,9 +24,7 @@ import org.icgc.dcc.core.model.FileSchemaTypes.FileSchemaType;
 import org.icgc.dcc.core.model.FileSchemaTypes.SubmissionFileSubType;
 import org.junit.Test;
 
-import com.google.common.base.Optional;
-
-public class FileSchemaNamesTest {
+public class FileSchemaTypesTest {
 
   @Test
   public void test_FileSchemaType_valid_clinical() {
@@ -52,13 +50,22 @@ public class FileSchemaNamesTest {
   }
 
   @Test
-  public void test_SubmissionFileSubType_valid_clinical() {
-    // assertThat(SubmissionFileSubType.fromFileSchemaType(FileSchemaType.DONOR))
-    // .isEqualTo(SubmissionFileSubType.DONOR);
-    // assertThat(SubmissionFileSubType.fromFileSchemaType(FileSchemaType.SPECIMEN))
-    // .isEqualTo(SubmissionFileSubType.SPECIMEN);
-    // assertThat(SubmissionFileSubType.fromFileSchemaType(FileSchemaType.SAMPLE))
-    // .isEqualTo(SubmissionFileSubType.SAMPLE);
+  public void test_SubmissionFileSubType_valid() {
+    assertThat(SubmissionFileSubType.META.getAbbreviation()).isEqualTo("m");
+    assertThat(SubmissionFileSubType.GENE.getAbbreviation()).isEqualTo("g");
+    assertThat(SubmissionFileSubType.DONOR.getFullName()).isEqualTo("donor");
+    assertThat(SubmissionFileSubType.SAMPLE.getFullName()).isEqualTo("sample");
+    assertThat(SubmissionFileSubType.BIOMARKER.getFullName()).isEqualTo("biomarker");
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void test_SubmissionFileSubType_invalid_meta() {
+    SubmissionFileSubType.META.getFullName();
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void test_SubmissionFileSubType_invalid_gene() {
+    SubmissionFileSubType.GENE.getFullName();
   }
 
   @Test(expected = IllegalStateException.class)
@@ -67,51 +74,13 @@ public class FileSchemaNamesTest {
   }
 
   @Test(expected = IllegalStateException.class)
-  public void test_SubmissionFileSubType_invalid_specimen() {
-    SubmissionFileSubType.SPECIMEN.getAbbreviation();
-  }
-
-  @Test(expected = IllegalStateException.class)
   public void test_SubmissionFileSubType_invalid_sample() {
     SubmissionFileSubType.SAMPLE.getAbbreviation();
   }
 
-  @Test
-  public void test_SubmissionFileSubType_valid_non_clinical() {
-    assertThat(SubmissionFileSubType.META.getAbbreviation())
-        .isEqualTo("m");
-    assertThat(SubmissionFileSubType.PRIMARY.getAbbreviation())
-        .isEqualTo("p");
-    assertThat(SubmissionFileSubType.SECONDARY.getAbbreviation())
-        .isEqualTo("s");
-    assertThat(SubmissionFileSubType.GENE.getAbbreviation())
-        .isEqualTo("g");
-
-    assertThat(FileSchemaType.from(FeatureType.SSM_TYPE, SubmissionFileSubType.META))
-        .isEqualTo(FileSchemaType.SSM_M);
-    assertThat(FileSchemaType.from(FeatureType.CNSM_TYPE, SubmissionFileSubType.PRIMARY))
-        .isEqualTo(FileSchemaType.CNSM_P);
-    assertThat(FileSchemaType.from(FeatureType.MIRNA_TYPE, SubmissionFileSubType.SECONDARY))
-        .isEqualTo(FileSchemaType.MIRNA_S);
-    assertThat(FileSchemaType.from(FeatureType.EXP_TYPE, SubmissionFileSubType.GENE))
-        .isEqualTo(FileSchemaType.EXP_G);
-
-    assertThat(SubmissionFileSubType.fromAbbreviation("m"))
-        .isEqualTo(Optional.of(SubmissionFileSubType.META));
-    assertThat(SubmissionFileSubType.fromAbbreviation("p"))
-        .isEqualTo(Optional.of(SubmissionFileSubType.PRIMARY));
-    assertThat(SubmissionFileSubType.fromAbbreviation("s"))
-        .isEqualTo(Optional.of(SubmissionFileSubType.SECONDARY));
-    assertThat(SubmissionFileSubType.fromAbbreviation("g"))
-        .isEqualTo(Optional.of(SubmissionFileSubType.GENE));
-
-    // assertThat(SubmissionFileSubType.fromFileSchemaType(FileSchemaType.SSM_M))
-    // .isEqualTo(SubmissionFileSubType.META);
-    // assertThat(SubmissionFileSubType.fromFileSchemaType(FileSchemaType.CNSM_P))
-    // .isEqualTo(SubmissionFileSubType.PRIMARY);
-    // assertThat(SubmissionFileSubType.fromFileSchemaType(FileSchemaType.MIRNA_S))
-    // .isEqualTo(SubmissionFileSubType.SECONDARY);
-    // assertThat(SubmissionFileSubType.fromFileSchemaType(FileSchemaType.EXP_G))
-    // .isEqualTo(SubmissionFileSubType.GENE);
+  @Test(expected = IllegalStateException.class)
+  public void test_SubmissionFileSubType_invalid_biomarker() {
+    SubmissionFileSubType.BIOMARKER.getAbbreviation();
   }
+
 }

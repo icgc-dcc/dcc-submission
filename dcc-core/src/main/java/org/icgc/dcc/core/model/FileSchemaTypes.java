@@ -29,7 +29,6 @@ import java.util.List;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.val;
 
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 
@@ -94,25 +93,16 @@ public final class FileSchemaTypes {
       return name().toLowerCase();
     }
 
+    private String getFirstCharacter() {
+      return name().substring(0, 1);
+    }
+
     /**
      * Determines whether the sub-type is used as abbreviation for further qualification (for instance "meta" is used as
      * the "_m" suffix) or not (for instance "donor").
      */
     private boolean usedAsAbbrevatiation() {
       return TYPES_USED_AS_ABBREVIATION.contains(this);
-    }
-
-    public static Optional<SubmissionFileSubType> fromAbbreviation(String abbreviation) {
-      for (val item : values()) {
-        if (item.getAbbreviation().equals(abbreviation)) {
-          return Optional.<SubmissionFileSubType> of(item);
-        }
-      }
-      return ABSENT;
-    }
-
-    private String getFirstCharacter() {
-      return name().substring(0, 1);
     }
   }
 
