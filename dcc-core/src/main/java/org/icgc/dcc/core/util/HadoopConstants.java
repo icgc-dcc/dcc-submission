@@ -28,12 +28,14 @@ public class HadoopConstants {
   public static final String IO_COMPRESSION_CODECS_PROPERTY_NAME = "io.compression.codecs";
   public static final String MAPRED_COMPRESSION_MAP_OUTPUT_PROPERTY_NAME =       "mapred.compress.map.output";
   public static final String MAPRED_MAP_OUTPUT_COMPRESSION_CODEC_PROPERTY_NAME = "mapred.map.output.compression.codec";
+  public static final String MAPRED_OUTPUT_COMPRESS_PROPERTY_NAME =              "mapred.output.compress";
   public static final String MAPRED_OUTPUT_COMPRESSION_TYPE_PROPERTY_NAME =      "mapred.output.compression.type";
   public static final String MAPRED_OUTPUT_COMPRESSION_CODE_PROPERTY_NAME =      "mapred.output.compression.codec";
 
   // Property values
   public static final String MAPRED_OUTPUT_COMPRESSION_TYPE_PROPERTY_BLOCK_VALUE = "BLOCK";
   public static final String HDFS_USERNAME_PROPERTY_VALUE = "hdfs";
+  public static final boolean MAPRED_OUTPUT_COMPRESS_PROPERTY_TRUE_VALUE = true;
   public static final boolean COMPRESSION_MAP_OUTPUT_PROPERTY_TRUE_VALUE = true;
   
   public static final String DEFAULT_CODEC_PROPERTY_VALUE = "org.apache.hadoop.io.compress.DefaultCodec";
