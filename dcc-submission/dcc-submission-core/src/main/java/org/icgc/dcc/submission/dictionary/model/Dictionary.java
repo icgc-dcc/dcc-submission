@@ -170,6 +170,7 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
         return type.getDataType() == featureType;
       }
     });
+
     return newArrayList(filter);
   }
 

@@ -84,7 +84,7 @@ public class ValidationService {
 
     String dictionaryVersion = release.getDictionaryVersion();
     Dictionary dictionary = this.dictionaries.getFromVersion(dictionaryVersion);
-    if(dictionary == null) {
+    if (dictionary == null) {
       throw new ValidationServiceException(format("no dictionary found with version %s, in release %s",
           dictionaryVersion, release.getName()));
     } else {
@@ -134,8 +134,9 @@ public class ValidationService {
     log.info("Connecting cascade for project {}", queuedProject.getKey());
     plan.connect(cascadingStrategy);
     log.info("Connected cascade for project {}", queuedProject.getKey());
-    if(plan.hasFileLevelErrors()) { // determined during connection
-      log.info(String.format("plan has errors, throwing a %s", FilePresenceException.class.getSimpleName()));
+    if (plan.hasFileLevelErrors()) { // determined during connection
+      log.info(String.format("Submission has file-level errors, throwing a '%s'",
+          FilePresenceException.class.getSimpleName()));
       throw new FilePresenceException(plan); // the queue manager will handle it
     }
 

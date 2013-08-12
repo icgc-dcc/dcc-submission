@@ -18,69 +18,78 @@
 package org.icgc.dcc.core.model;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileSubType.BIOMARKER_SUBTYPE;
+import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileSubType.DONOR_SUBTYPE;
+import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileSubType.GENE_SUBTYPE;
+import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileSubType.META_SUBTYPE;
+import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileSubType.SAMPLE_SUBTYPE;
+import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.BIOMARKER_TYPE;
+import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.DONOR_TYPE;
+import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.MIRNA_S_TYPE;
+import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SPECIMEN_TYPE;
+import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SSM_M_TYPE;
+import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.from;
 
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
-import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileSubType;
-import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 import org.junit.Test;
 
 public class SubmissionFileTypesTest {
 
   @Test
   public void test_SubmissionFileType_valid_clinical() {
-    assertThat(SubmissionFileType.SSM_M_TYPE.getTypeName()).isEqualTo("ssm_m");
-    assertThat(SubmissionFileType.SSM_M_TYPE.getDataType()).isEqualTo(FeatureType.SSM_TYPE);
-    assertThat(SubmissionFileType.from("ssm_m")).isEqualTo(SubmissionFileType.SSM_M_TYPE);
+    assertThat(SSM_M_TYPE.getTypeName()).isEqualTo("ssm_m");
+    assertThat(SSM_M_TYPE.getDataType()).isEqualTo(FeatureType.SSM_TYPE);
+    assertThat(from("ssm_m")).isEqualTo(SSM_M_TYPE);
 
-    assertThat(SubmissionFileType.MIRNA_S_TYPE.getTypeName()).isEqualTo("mirna_s");
-    assertThat(SubmissionFileType.MIRNA_S_TYPE.getDataType()).isEqualTo(FeatureType.MIRNA_TYPE);
-    assertThat(SubmissionFileType.from("mirna_s")).isEqualTo(SubmissionFileType.MIRNA_S_TYPE);
+    assertThat(MIRNA_S_TYPE.getTypeName()).isEqualTo("mirna_s");
+    assertThat(MIRNA_S_TYPE.getDataType()).isEqualTo(FeatureType.MIRNA_TYPE);
+    assertThat(from("mirna_s")).isEqualTo(MIRNA_S_TYPE);
 
-    assertThat(SubmissionFileType.DONOR_TYPE.getTypeName()).isEqualTo("donor");
-    assertThat(SubmissionFileType.from("donor")).isEqualTo(SubmissionFileType.DONOR_TYPE);
-    assertThat(SubmissionFileType.DONOR_TYPE.getDataType()).isEqualTo(ClinicalType.CLINICAL_TYPE);
+    assertThat(DONOR_TYPE.getTypeName()).isEqualTo("donor");
+    assertThat(from("donor")).isEqualTo(DONOR_TYPE);
+    assertThat(DONOR_TYPE.getDataType()).isEqualTo(ClinicalType.CLINICAL_TYPE);
 
-    assertThat(SubmissionFileType.SPECIMEN_TYPE.getTypeName()).isEqualTo("specimen");
-    assertThat(SubmissionFileType.from("specimen")).isEqualTo(SubmissionFileType.SPECIMEN_TYPE);
-    assertThat(SubmissionFileType.SPECIMEN_TYPE.getDataType()).isEqualTo(ClinicalType.CLINICAL_TYPE);
+    assertThat(SPECIMEN_TYPE.getTypeName()).isEqualTo("specimen");
+    assertThat(from("specimen")).isEqualTo(SPECIMEN_TYPE);
+    assertThat(SPECIMEN_TYPE.getDataType()).isEqualTo(ClinicalType.CLINICAL_TYPE);
 
-    assertThat(SubmissionFileType.BIOMARKER_TYPE.getTypeName()).isEqualTo("biomarker");
-    assertThat(SubmissionFileType.from("biomarker")).isEqualTo(SubmissionFileType.BIOMARKER_TYPE);
-    assertThat(SubmissionFileType.BIOMARKER_TYPE.getDataType()).isEqualTo(ClinicalType.CLINICAL_TYPE);
+    assertThat(BIOMARKER_TYPE.getTypeName()).isEqualTo("biomarker");
+    assertThat(from("biomarker")).isEqualTo(BIOMARKER_TYPE);
+    assertThat(BIOMARKER_TYPE.getDataType()).isEqualTo(ClinicalType.CLINICAL_TYPE);
   }
 
   @Test
   public void test_SubmissionFileSubType_valid() {
-    assertThat(SubmissionFileSubType.META_SUBTYPE.getAbbreviation()).isEqualTo("m");
-    assertThat(SubmissionFileSubType.GENE_SUBTYPE.getAbbreviation()).isEqualTo("g");
-    assertThat(SubmissionFileSubType.DONOR_SUBTYPE.getFullName()).isEqualTo("donor");
-    assertThat(SubmissionFileSubType.SAMPLE_SUBTYPE.getFullName()).isEqualTo("sample");
-    assertThat(SubmissionFileSubType.BIOMARKER_SUBTYPE.getFullName()).isEqualTo("biomarker");
+    assertThat(META_SUBTYPE.getAbbreviation()).isEqualTo("m");
+    assertThat(GENE_SUBTYPE.getAbbreviation()).isEqualTo("g");
+    assertThat(DONOR_SUBTYPE.getFullName()).isEqualTo("donor");
+    assertThat(SAMPLE_SUBTYPE.getFullName()).isEqualTo("sample");
+    assertThat(BIOMARKER_SUBTYPE.getFullName()).isEqualTo("biomarker");
   }
 
   @Test(expected = IllegalStateException.class)
   public void test_SubmissionFileSubType_invalid_meta() {
-    SubmissionFileSubType.META_SUBTYPE.getFullName();
+    META_SUBTYPE.getFullName();
   }
 
   @Test(expected = IllegalStateException.class)
   public void test_SubmissionFileSubType_invalid_gene() {
-    SubmissionFileSubType.GENE_SUBTYPE.getFullName();
+    GENE_SUBTYPE.getFullName();
   }
 
   @Test(expected = IllegalStateException.class)
   public void test_SubmissionFileSubType_invalid() {
-    SubmissionFileSubType.DONOR_SUBTYPE.getAbbreviation();
+    DONOR_SUBTYPE.getAbbreviation();
   }
 
   @Test(expected = IllegalStateException.class)
   public void test_SubmissionFileSubType_invalid_sample() {
-    SubmissionFileSubType.SAMPLE_SUBTYPE.getAbbreviation();
+    SAMPLE_SUBTYPE.getAbbreviation();
   }
 
   @Test(expected = IllegalStateException.class)
   public void test_SubmissionFileSubType_invalid_biomarker() {
-    SubmissionFileSubType.BIOMARKER_SUBTYPE.getAbbreviation();
+    BIOMARKER_SUBTYPE.getAbbreviation();
   }
 
 }
