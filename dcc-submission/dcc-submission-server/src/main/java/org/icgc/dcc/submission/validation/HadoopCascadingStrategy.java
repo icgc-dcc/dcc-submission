@@ -19,6 +19,17 @@ package org.icgc.dcc.submission.validation;
 
 import static com.google.common.base.Joiner.on;
 import static com.google.common.collect.Maps.newHashMap;
+import static org.icgc.dcc.core.util.HadoopConstants.BZIP2_CODEC_PROPERTY_VALUE;
+import static org.icgc.dcc.core.util.HadoopConstants.IO_COMPRESSION_CODECS_PROPERTY_NAME;
+import static org.icgc.dcc.core.util.HadoopConstants.MAPRED_COMPRESSION_MAP_OUTPUT_PROPERTY_NAME;
+import static org.icgc.dcc.core.util.HadoopConstants.COMPRESSION_MAP_OUTPUT_PROPERTY_TRUE_VALUE;
+import static org.icgc.dcc.core.util.HadoopConstants.DEFAULT_CODEC_PROPERTY_VALUE;
+import static org.icgc.dcc.core.util.HadoopConstants.GZIP_CODEC_PROPERTY_VALUE;
+import static org.icgc.dcc.core.util.HadoopConstants.MAPRED_MAP_OUTPUT_COMPRESSION_CODEC_PROPERTY_NAME;
+import static org.icgc.dcc.core.util.HadoopConstants.MAPRED_OUTPUT_COMPRESSION_CODE_PROPERTY_NAME;
+import static org.icgc.dcc.core.util.HadoopConstants.MAPRED_OUTPUT_COMPRESSION_TYPE_PROPERTY_BLOCK_VALUE;
+import static org.icgc.dcc.core.util.HadoopConstants.MAPRED_OUTPUT_COMPRESSION_TYPE_PROPERTY_NAME;
+import static org.icgc.dcc.core.util.HadoopConstants.SNAPPY_CODEC_PROPERTY_VALUE;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -72,35 +83,34 @@ public class HadoopCascadingStrategy extends BaseCascadingStrategy {
 
   @Override
   public FlowConnector getFlowConnector() {
-    Map<Object, Object> properties = newHashMap();
+    Map<Object, Object> flowProperties = newHashMap();
 
     // Custom serialization
-    TupleSerializationProps.addSerialization(properties, TupleStateSerialization.class.getName());
+    TupleSerializationProps.addSerialization(flowProperties, TupleStateSerialization.class.getName());
 
     // From external application configuration file
-    for(Map.Entry<String, ConfigValue> configEntry : hadoopConfig.entrySet()) {
-      properties.put(configEntry.getKey(), configEntry.getValue().unwrapped());
+    for (Map.Entry<String, ConfigValue> configEntry : hadoopConfig.entrySet()) {
+      flowProperties.put(configEntry.getKey(), configEntry.getValue().unwrapped());
     }
 
     // Specify available compression codecs
-    String availableCodecs = on(',').join(//
-        "org.apache.hadoop.io.compress.DefaultCodec", //
-        "org.apache.hadoop.io.compress.GzipCodec", //
-        "org.apache.hadoop.io.compress.BZip2Codec");
-    properties.put("io.compression.codecs", availableCodecs);
+    flowProperties.put(IO_COMPRESSION_CODECS_PROPERTY_NAME, on(',').join(
+        DEFAULT_CODEC_PROPERTY_VALUE,
+        GZIP_CODEC_PROPERTY_VALUE,
+        BZIP2_CODEC_PROPERTY_VALUE));
 
     // Enable compression on intermediate map outputs
-    properties.put("mapred.compress.map.output", true);
-    properties.put("mapred.output.compression.type", "BLOCK");
-    properties.put("mapred.map.output.compression.codec", "org.apache.hadoop.io.compress.SnappyCodec");
+    flowProperties.put(MAPRED_COMPRESSION_MAP_OUTPUT_PROPERTY_NAME, COMPRESSION_MAP_OUTPUT_PROPERTY_TRUE_VALUE);
+    flowProperties.put(MAPRED_OUTPUT_COMPRESSION_TYPE_PROPERTY_NAME, MAPRED_OUTPUT_COMPRESSION_TYPE_PROPERTY_BLOCK_VALUE);
+    flowProperties.put(MAPRED_MAP_OUTPUT_COMPRESSION_CODEC_PROPERTY_NAME, SNAPPY_CODEC_PROPERTY_VALUE);
 
     // Enable compression on job outputs
-    properties.put("mapred.output.compression.codec", "org.apache.hadoop.io.compress.GzipCodec");
+    flowProperties.put(MAPRED_OUTPUT_COMPRESSION_CODE_PROPERTY_NAME, GZIP_CODEC_PROPERTY_VALUE);
 
     // M/R job entry point
-    AppProps.setApplicationJarClass(properties, org.icgc.dcc.submission.Main.class);
+    AppProps.setApplicationJarClass(flowProperties, org.icgc.dcc.submission.Main.class);
 
-    return new HadoopFlowConnector(properties);
+    return new HadoopFlowConnector(flowProperties);
   }
 
   @Override
@@ -115,16 +125,17 @@ public class HadoopCascadingStrategy extends BaseCascadingStrategy {
   @Override
   public InputStream readReportTap(FileSchema schema, FlowType type, String reportName) throws IOException {
     Path reportPath = reportPath(schema, type, reportName);
-    if(fileSystem.isFile(reportPath)) {
+    if (fileSystem.isFile(reportPath)) {
       return new GZIPInputStream(fileSystem.open(reportPath));
     }
 
     List<InputSupplier<InputStream>> inputSuppliers = new ArrayList<InputSupplier<InputStream>>();
-    for(FileStatus fileStatus : fileSystem.listStatus(reportPath)) {
+    for (FileStatus fileStatus : fileSystem.listStatus(reportPath)) {
       final Path filePath = fileStatus.getPath();
 
-      if(fileStatus.isFile() && filePath.getName().startsWith("part-")) {
+      if (fileStatus.isFile() && filePath.getName().startsWith("part-")) {
         InputSupplier<InputStream> inputSupplier = new InputSupplier<InputStream>() {
+
           @Override
           public InputStream getInput() throws IOException {
             return new GZIPInputStream(fileSystem.open(filePath));
@@ -181,7 +192,7 @@ public class HadoopCascadingStrategy extends BaseCascadingStrategy {
       String firstLine = lineReader.readLine();
       Iterable<String> header = Splitter.on('\t').split(firstLine);
       List<String> dupHeader = this.checkDuplicateHeader(header);
-      if(!dupHeader.isEmpty()) {
+      if (!dupHeader.isEmpty()) {
         throw new DuplicateHeaderException(dupHeader);
       }
       return new Fields(Iterables.toArray(header, String.class));
