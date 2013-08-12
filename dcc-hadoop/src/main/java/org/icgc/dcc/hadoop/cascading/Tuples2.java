@@ -17,12 +17,15 @@
  */
 package org.icgc.dcc.hadoop.cascading;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import cascading.tuple.Tuple;
 
 /**
  * Utility class to help with the {@link Tuple} object from cascading.
  */
-public class Tuples2 {
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class Tuples2 {
 
   /**
    * Nests a tuple within a tuple.
