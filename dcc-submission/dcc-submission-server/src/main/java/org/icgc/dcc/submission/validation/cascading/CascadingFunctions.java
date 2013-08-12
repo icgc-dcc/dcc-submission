@@ -39,6 +39,8 @@ import cascading.tuple.TupleEntry;
 
 /**
  * Utility class for working with cascading {@code Function} objects.
+ * <p>
+ * TODO: move outside of the submitter.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class CascadingFunctions {
@@ -244,4 +246,35 @@ public final class CascadingFunctions {
     }
   }
 
+  public static class MissingFieldsAdder extends BaseOperation<Void> implements Function<Void> {
+
+    /**
+     * At the moment we just nullify it.
+     */
+    public static final String MISSING_VALUE = null;
+
+    /**
+     * {@link Tuple} to add to every record.
+     */
+    private final Tuple missingTuple;
+
+    public MissingFieldsAdder(Fields missingFields) {
+      super(missingFields);
+
+      // Create tuple to be added for every records
+      missingTuple = new Tuple();
+      for (int i = 0; i < missingFields.size(); i++) {
+        missingTuple.add(MISSING_VALUE);
+      }
+    }
+
+    @Override
+    public void operate(
+        @SuppressWarnings("rawtypes")
+        FlowProcess flowProcess,
+        FunctionCall<Void> functionCall) {
+      functionCall.getOutputCollector().add(new Tuple(missingTuple));
+    }
+
+  }
 }
