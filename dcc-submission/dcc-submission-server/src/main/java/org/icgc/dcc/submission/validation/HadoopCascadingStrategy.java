@@ -82,6 +82,9 @@ public class HadoopCascadingStrategy extends BaseCascadingStrategy {
     this.hadoopConfig = hadoopConfig;
   }
 
+  /**
+   * TODO: bring together with the loader's counterpart (create a dcc-hadoop module).
+   */
   @Override
   public FlowConnector getFlowConnector() {
     Map<Object, Object> flowProperties = newHashMap();
