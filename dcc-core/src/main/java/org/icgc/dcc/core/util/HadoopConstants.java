@@ -17,11 +17,15 @@
  */
 package org.icgc.dcc.core.util;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
 /**
  * Constants for hadoop, do not include any actual hadoop objects in here.
  */
 // @formatter:off
-public class HadoopConstants {
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class HadoopConstants {
   
   // Property names
   public static final String HADOOP_USER_NAME_PROPERTY_NAME = "HADOOP_USER_NAME";

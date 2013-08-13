@@ -17,14 +17,15 @@
  */
 package org.icgc.dcc.submission.validation;
 
+import static cascading.scheme.hadoop.TextLine.Compress.ENABLE;
 import static com.google.common.base.Joiner.on;
 import static com.google.common.collect.Maps.newHashMap;
 import static org.icgc.dcc.core.util.HadoopConstants.BZIP2_CODEC_PROPERTY_VALUE;
-import static org.icgc.dcc.core.util.HadoopConstants.IO_COMPRESSION_CODECS_PROPERTY_NAME;
-import static org.icgc.dcc.core.util.HadoopConstants.MAPRED_COMPRESSION_MAP_OUTPUT_PROPERTY_NAME;
 import static org.icgc.dcc.core.util.HadoopConstants.COMPRESSION_MAP_OUTPUT_PROPERTY_TRUE_VALUE;
 import static org.icgc.dcc.core.util.HadoopConstants.DEFAULT_CODEC_PROPERTY_VALUE;
 import static org.icgc.dcc.core.util.HadoopConstants.GZIP_CODEC_PROPERTY_VALUE;
+import static org.icgc.dcc.core.util.HadoopConstants.IO_COMPRESSION_CODECS_PROPERTY_NAME;
+import static org.icgc.dcc.core.util.HadoopConstants.MAPRED_COMPRESSION_MAP_OUTPUT_PROPERTY_NAME;
 import static org.icgc.dcc.core.util.HadoopConstants.MAPRED_MAP_OUTPUT_COMPRESSION_CODEC_PROPERTY_NAME;
 import static org.icgc.dcc.core.util.HadoopConstants.MAPRED_OUTPUT_COMPRESSION_CODE_PROPERTY_NAME;
 import static org.icgc.dcc.core.util.HadoopConstants.MAPRED_OUTPUT_COMPRESSION_TYPE_PROPERTY_BLOCK_VALUE;
@@ -100,12 +101,21 @@ public class HadoopCascadingStrategy extends BaseCascadingStrategy {
         BZIP2_CODEC_PROPERTY_VALUE));
 
     // Enable compression on intermediate map outputs
-    flowProperties.put(MAPRED_COMPRESSION_MAP_OUTPUT_PROPERTY_NAME, COMPRESSION_MAP_OUTPUT_PROPERTY_TRUE_VALUE);
-    flowProperties.put(MAPRED_OUTPUT_COMPRESSION_TYPE_PROPERTY_NAME, MAPRED_OUTPUT_COMPRESSION_TYPE_PROPERTY_BLOCK_VALUE);
-    flowProperties.put(MAPRED_MAP_OUTPUT_COMPRESSION_CODEC_PROPERTY_NAME, SNAPPY_CODEC_PROPERTY_VALUE);
+    flowProperties.put(
+        MAPRED_COMPRESSION_MAP_OUTPUT_PROPERTY_NAME,
+        COMPRESSION_MAP_OUTPUT_PROPERTY_TRUE_VALUE);
+    flowProperties.put(
+        MAPRED_OUTPUT_COMPRESSION_TYPE_PROPERTY_NAME,
+        MAPRED_OUTPUT_COMPRESSION_TYPE_PROPERTY_BLOCK_VALUE);
+    flowProperties.put(
+        MAPRED_MAP_OUTPUT_COMPRESSION_CODEC_PROPERTY_NAME,
+        SNAPPY_CODEC_PROPERTY_VALUE);
 
     // Enable compression on job outputs
-    flowProperties.put(MAPRED_OUTPUT_COMPRESSION_CODE_PROPERTY_NAME, GZIP_CODEC_PROPERTY_VALUE);
+    // TODO: add mapred.output.compress=true as well?
+    flowProperties.put(
+        MAPRED_OUTPUT_COMPRESSION_CODE_PROPERTY_NAME,
+        GZIP_CODEC_PROPERTY_VALUE);
 
     // M/R job entry point
     AppProps.setApplicationJarClass(flowProperties, org.icgc.dcc.submission.Main.class);
@@ -117,8 +127,7 @@ public class HadoopCascadingStrategy extends BaseCascadingStrategy {
   public Tap<?, ?, ?> getReportTap(FileSchema schema, FlowType type, String reportName) {
     Path path = reportPath(schema, type, reportName);
     HadoopJsonScheme scheme = new HadoopJsonScheme();
-    scheme.setSinkCompression(Compress.ENABLE);
-
+    scheme.setSinkCompression(ENABLE);
     return new Hfs(scheme, path.toUri().getPath());
   }
 
