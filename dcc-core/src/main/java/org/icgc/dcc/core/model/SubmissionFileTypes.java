@@ -23,6 +23,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static lombok.AccessLevel.PRIVATE;
 
 import java.util.List;
+import java.util.Set;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -30,6 +31,7 @@ import lombok.NoArgsConstructor;
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Contains names for file schemata (eg. "ssm_p", "cnsm_s", "exp_g", "N/A", ...)
@@ -65,6 +67,15 @@ public final class SubmissionFileTypes {
     THERAPY_SUBTYPE;
 
     private static final String SUBTYPE_SUFFIX = "_SUBTYPE";
+
+    /**
+     * These sub-types are always provided for a submission to be {@link SubmissionState#VALID}.
+     */
+    public static final Set<SubmissionFileSubType> MANDATORY_SUBTYPES = new ImmutableSet.Builder<SubmissionFileSubType>()
+        .add(DONOR_SUBTYPE)
+        .add(SPECIMEN_SUBTYPE)
+        .add(SAMPLE_SUBTYPE)
+        .build();
 
     /**
      * See {@link #usedAsAbbrevatiation()}.
