@@ -25,7 +25,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
- * TODO
+ * Describes the different types of compression in hadoop, along with their corresponding codecs.
  */
 @RequiredArgsConstructor
 public enum HadoopCompression {
