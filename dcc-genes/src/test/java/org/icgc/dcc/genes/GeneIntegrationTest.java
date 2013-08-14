@@ -17,6 +17,9 @@
  */
 package org.icgc.dcc.genes;
 
+import static java.lang.String.format;
+import static org.fest.assertions.api.Assertions.assertThat;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -37,13 +40,19 @@ import com.mongodb.DB;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 
-import static java.lang.String.format;
-
-import static org.fest.assertions.api.Assertions.assertThat;
-
 public class GeneIntegrationTest {
 
-  private final static String DATA_DIR = "src/test/resources/data";
+  /**
+   * Schema file.
+   */
+  private static final String SCHEMA_BASE_PATH = "org/icgc/dcc/genes";
+  private static final String SCHEMA_FILE_NAME = "genes.schema.json";
+  private static final String SCHEMA_PATH = SCHEMA_BASE_PATH + "/" + SCHEMA_FILE_NAME;
+
+  /**
+   * Test data.
+   */
+  protected static final String FIXTURES_DIR = "src/test/resources/fixtures";
 
   private final JsonSchema schema = getSchema();
 
@@ -57,7 +66,7 @@ public class GeneIntegrationTest {
     // mongo
     // mongodump -d test -c Gene -o - > src/test/resources/data/genes.bson
 
-    String bsonFile = DATA_DIR + "/genes.bson";
+    String bsonFile = FIXTURES_DIR + "/genes.bson";
     String mongoUri = getMongoUri();
     Main.main("-f", bsonFile, "-d", mongoUri);
 
@@ -99,7 +108,7 @@ public class GeneIntegrationTest {
 
   @SneakyThrows
   private JsonSchema getSchema() {
-    JsonNode schemaNode = JsonLoader.fromFile(new File("src/main/resources/schema/genes.schema.json"));
+    JsonNode schemaNode = JsonLoader.fromFile(new File("src/main/resources", SCHEMA_PATH));
     JsonSchemaFactory factory = JsonSchemaFactory.defaultFactory();
     JsonSchema schema = factory.fromSchema(schemaNode);
 
