@@ -132,9 +132,8 @@ public final class CascadingFunctions {
 
     @Override
     public void operate(FlowProcess flowProcess, FunctionCall functionCall) {
-      TupleEntry entry = functionCall.getArguments();
+      Tuple copy = functionCall.getArguments().getTupleCopy();
 
-      Tuple copy = entry.getTupleCopy();
       if (copy.getObject(NEST_FIELD_INDEX) == null) { // If null, then replace it with an empty tuple
         copy.set(NEST_FIELD_INDEX, new Tuple());
       }

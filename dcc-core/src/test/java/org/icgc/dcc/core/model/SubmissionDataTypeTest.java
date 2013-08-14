@@ -17,36 +17,31 @@
  */
 package org.icgc.dcc.core.model;
 
-import static com.google.common.base.Preconditions.checkState;
-import lombok.Getter;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.icgc.dcc.core.model.ClinicalType.CLINICAL_TYPE;
+import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SSM_TYPE;
+import static org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes.fromTypeName;
 
-import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
-import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileSubType;
+import java.util.HashSet;
 
-/**
- * Represents a (the only one for now) type of clinical data, see {@link FeatureType} for the observation counterpart.
- * <p>
- * The "donor" name is reused here (which makes things a bit confusing...).
- */
-public enum ClinicalType implements SubmissionDataType {
+import org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes;
+import org.junit.Test;
 
-  CLINICAL_TYPE(SubmissionFileSubType.DONOR_SUBTYPE.getFullName());
+public class SubmissionDataTypeTest {
 
-  private ClinicalType(String typeName) {
-    this.typeName = typeName;
+  @Test
+  public void test_SubmissionDataTypes_valid() {
+    assertThat(SubmissionDataTypes.fromTypeName("ssm")).isEqualTo(SSM_TYPE);
+    assertThat(SubmissionDataTypes.fromTypeName("donor")).isEqualTo(CLINICAL_TYPE);
+
+    assertThat(SubmissionDataTypes.values().size()).isEqualTo(12); // 11+1
+    assertThat(SubmissionDataTypes.values().size()).isEqualTo( // Check no duplicates
+        new HashSet<SubmissionDataType>(SubmissionDataTypes.values()).size());
   }
 
-  @Getter
-  private final String typeName;
-
-  /**
-   * Returns an enum matching the type name provided.
-   */
-  public static SubmissionDataType from(String typeName) {
-    checkState(CLINICAL_TYPE.getTypeName().equals(typeName),
-        "Only '%s' is allowed for now, '{}' provided instead",
-        CLINICAL_TYPE.getTypeName(), typeName);
-    return CLINICAL_TYPE;
+  @Test(expected = IllegalStateException.class)
+  public void test_SubmissionDataTypes_invalid() {
+    fromTypeName("dummy");
   }
 
 }

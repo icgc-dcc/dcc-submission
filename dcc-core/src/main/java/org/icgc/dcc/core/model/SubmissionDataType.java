@@ -18,6 +18,10 @@
 package org.icgc.dcc.core.model;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.ImmutableList.copyOf;
+import static com.google.common.collect.Lists.newArrayList;
+
+import java.util.List;
 
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
@@ -42,17 +46,32 @@ public interface SubmissionDataType {
     public static SubmissionDataType fromTypeName(String typeName) {
       SubmissionDataType type = null;
       try {
-        type = FeatureType.from(typeName);
+        return FeatureType.from(typeName);
       } catch (IllegalArgumentException e) {
         // Do nothing
       }
       try {
-        type = ClinicalType.from(typeName);
+        return ClinicalType.from(typeName);
       } catch (IllegalArgumentException e) {
         // Do nothing
       }
       return checkNotNull(type, "Could not find a match for type %s", typeName);
     }
+
+    /**
+     * TODO
+     */
+    public static List<SubmissionDataType> values() {
+      List<SubmissionDataType> types = newArrayList(); // TODO: better
+      for (FeatureType type : FeatureType.values()) {
+        types.add(type);
+      }
+      for (ClinicalType type : ClinicalType.values()) {
+        types.add(type);
+      }
+      return copyOf(types);
+    }
+
   }
 
 }
