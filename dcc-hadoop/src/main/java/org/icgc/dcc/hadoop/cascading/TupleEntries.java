@@ -22,6 +22,8 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.util.List;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
@@ -29,7 +31,8 @@ import cascading.tuple.TupleEntry;
 /**
  * Utility class to help with the {@link TupleEntry} object from cascading.
  */
-public class TupleEntries {
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class TupleEntries {
 
   /**
    * Checks whether a {@link TupleEntry} contains a given {@link Fields}, based on the field name.
