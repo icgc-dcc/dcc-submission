@@ -18,13 +18,16 @@
 package org.icgc.dcc.core.model;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.ImmutableList.copyOf;
-import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.List;
+import java.util.Set;
 
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Represents an ICGC data type, such as "donor", "specimen", "ssm", "meth", ...
@@ -34,7 +37,20 @@ import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
  */
 public interface SubmissionDataType {
 
-  static final String TYPE_SUFFIX = "_TYPE";
+  /**
+   * These types are always provided for a submission to be {@link SubmissionState#VALID}.
+   */
+  Set<SubmissionDataType> MANDATORY_TYPES =
+      new ImmutableSet.Builder<SubmissionDataType>()
+          .add(ClinicalType.CLINICAL_TYPE)
+          .build();
+
+  String TYPE_SUFFIX = "_TYPE";
+
+  /**
+   * Not really used anywhere (but here for consistency).
+   */
+  String OPTIONAL_TYPE_NAME = "optional";
 
   String getTypeName();
 
@@ -59,17 +75,17 @@ public interface SubmissionDataType {
     }
 
     /**
-     * TODO
+     * Returns the values for all enums that implements the interface.
      */
     public static List<SubmissionDataType> values() {
-      List<SubmissionDataType> types = newArrayList(); // TODO: better
+      Builder<SubmissionDataType> builder = new ImmutableList.Builder<SubmissionDataType>();
       for (FeatureType type : FeatureType.values()) {
-        types.add(type);
+        builder.add(type);
       }
       for (ClinicalType type : ClinicalType.values()) {
-        types.add(type);
+        builder.add(type);
       }
-      return copyOf(types);
+      return builder.build();
     }
 
   }

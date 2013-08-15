@@ -30,7 +30,8 @@ import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileSubType;
  */
 public enum ClinicalType implements SubmissionDataType {
 
-  CLINICAL_TYPE(SubmissionFileSubType.DONOR_SUBTYPE.getFullName());
+  CLINICAL_TYPE(SubmissionFileSubType.DONOR_SUBTYPE.getFullName()),
+  OPTIONAL_TYPE(OPTIONAL_TYPE_NAME); // "optional" not really used... (FIXME)
 
   private ClinicalType(String typeName) {
     this.typeName = typeName;

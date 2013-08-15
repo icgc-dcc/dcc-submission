@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.core.model;
 
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Sets.newLinkedHashSet;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.icgc.dcc.core.model.ClinicalType.CLINICAL_TYPE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SSM_TYPE;
@@ -37,6 +39,12 @@ public class SubmissionDataTypeTest {
     assertThat(SubmissionDataTypes.values().size()).isEqualTo(12); // 11+1
     assertThat(SubmissionDataTypes.values().size()).isEqualTo( // Check no duplicates
         new HashSet<SubmissionDataType>(SubmissionDataTypes.values()).size());
+
+    assertThat(SubmissionDataType.MANDATORY_TYPES).isEqualTo(
+        newLinkedHashSet(newArrayList(
+        (SubmissionDataType) ClinicalType.CLINICAL_TYPE
+        )));
+
   }
 
   @Test(expected = IllegalStateException.class)

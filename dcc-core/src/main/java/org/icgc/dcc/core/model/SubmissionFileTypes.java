@@ -20,6 +20,7 @@ package org.icgc.dcc.core.model;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Sets.newLinkedHashSet;
 import static lombok.AccessLevel.PRIVATE;
 
 import java.util.List;
@@ -31,7 +32,9 @@ import lombok.NoArgsConstructor;
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 
 /**
  * Contains names for file schemata (eg. "ssm_p", "cnsm_s", "exp_g", "N/A", ...)
@@ -71,11 +74,12 @@ public final class SubmissionFileTypes {
     /**
      * These sub-types are always provided for a submission to be {@link SubmissionState#VALID}.
      */
-    public static final Set<SubmissionFileSubType> MANDATORY_SUBTYPES = new ImmutableSet.Builder<SubmissionFileSubType>()
-        .add(DONOR_SUBTYPE)
-        .add(SPECIMEN_SUBTYPE)
-        .add(SAMPLE_SUBTYPE)
-        .build();
+    public static final Set<SubmissionFileSubType> MANDATORY_SUBTYPES =
+        new ImmutableSet.Builder<SubmissionFileSubType>()
+            .add(DONOR_SUBTYPE)
+            .add(SPECIMEN_SUBTYPE)
+            .add(SAMPLE_SUBTYPE)
+            .build();
 
     /**
      * See {@link #usedAsAbbrevatiation()}.
@@ -154,15 +158,26 @@ public final class SubmissionFileTypes {
     SPECIMEN_TYPE(ClinicalType.CLINICAL_TYPE, SubmissionFileSubType.SPECIMEN_SUBTYPE),
     SAMPLE_TYPE(ClinicalType.CLINICAL_TYPE, SubmissionFileSubType.SAMPLE_SUBTYPE),
 
-    BIOMARKER_TYPE(ClinicalType.CLINICAL_TYPE, SubmissionFileSubType.BIOMARKER_SUBTYPE),
-    FAMILY_TYPE(ClinicalType.CLINICAL_TYPE, SubmissionFileSubType.FAMILY_SUBTYPE),
-    EXPOSURE_TYPE(ClinicalType.CLINICAL_TYPE, SubmissionFileSubType.EXPOSURE_SUBTYPE),
-    SURGERY_TYPE(ClinicalType.CLINICAL_TYPE, SubmissionFileSubType.SURGERY_SUBTYPE),
-    THERAPY_TYPE(ClinicalType.CLINICAL_TYPE, SubmissionFileSubType.THERAPY_SUBTYPE);
+    BIOMARKER_TYPE(ClinicalType.OPTIONAL_TYPE, SubmissionFileSubType.BIOMARKER_SUBTYPE),
+    FAMILY_TYPE(ClinicalType.OPTIONAL_TYPE, SubmissionFileSubType.FAMILY_SUBTYPE),
+    EXPOSURE_TYPE(ClinicalType.OPTIONAL_TYPE, SubmissionFileSubType.EXPOSURE_SUBTYPE),
+    SURGERY_TYPE(ClinicalType.OPTIONAL_TYPE, SubmissionFileSubType.SURGERY_SUBTYPE),
+    THERAPY_TYPE(ClinicalType.OPTIONAL_TYPE, SubmissionFileSubType.THERAPY_SUBTYPE);
 
     private static String TYPE_SUFFIX = "_TYPE";
 
     private static final Joiner JOINER = Joiner.on("_");
+
+    public static final Set<SubmissionFileType> MANDATORY_TYPES = newLinkedHashSet(
+        Iterables.filter(
+            newLinkedHashSet(newArrayList(SubmissionFileType.values())),
+            new Predicate<SubmissionFileType>() {
+
+              @Override
+              public boolean apply(SubmissionFileType input) {
+                return SubmissionDataType.MANDATORY_TYPES.contains(input.dataType);
+              }
+            }));
 
     private SubmissionFileType(SubmissionDataType type) {
       this(type, null);
