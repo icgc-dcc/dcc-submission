@@ -30,6 +30,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
+import org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
@@ -45,7 +46,7 @@ public final class SubmissionFileTypes {
   /**
    * Used as placeholder in the loader for imported fields.
    */
-  public static final String NOT_APPLICABLE = "N/A";
+  public static final String NOT_APPLICABLE = "NA";
 
   /**
    * TODO: migrate all constants below to this enum (DCC-1452).
@@ -70,6 +71,10 @@ public final class SubmissionFileTypes {
     THERAPY_SUBTYPE;
 
     private static final String SUBTYPE_SUFFIX = "_SUBTYPE";
+
+    public boolean isMetaSubType() {
+      return this == META_SUBTYPE;
+    }
 
     /**
      * These sub-types are always provided for a submission to be {@link SubmissionState#VALID}.
@@ -154,15 +159,15 @@ public final class SubmissionFileTypes {
     EXP_M_TYPE(FeatureType.EXP_TYPE, SubmissionFileSubType.META_SUBTYPE),
     EXP_G_TYPE(FeatureType.EXP_TYPE, SubmissionFileSubType.GENE_SUBTYPE),
 
-    DONOR_TYPE(ClinicalType.CLINICAL_TYPE, SubmissionFileSubType.DONOR_SUBTYPE),
-    SPECIMEN_TYPE(ClinicalType.CLINICAL_TYPE, SubmissionFileSubType.SPECIMEN_SUBTYPE),
-    SAMPLE_TYPE(ClinicalType.CLINICAL_TYPE, SubmissionFileSubType.SAMPLE_SUBTYPE),
+    DONOR_TYPE(ClinicalType.CLINICAL_CORE_TYPE, SubmissionFileSubType.DONOR_SUBTYPE),
+    SPECIMEN_TYPE(ClinicalType.CLINICAL_CORE_TYPE, SubmissionFileSubType.SPECIMEN_SUBTYPE),
+    SAMPLE_TYPE(ClinicalType.CLINICAL_CORE_TYPE, SubmissionFileSubType.SAMPLE_SUBTYPE),
 
-    BIOMARKER_TYPE(ClinicalType.OPTIONAL_TYPE, SubmissionFileSubType.BIOMARKER_SUBTYPE),
-    FAMILY_TYPE(ClinicalType.OPTIONAL_TYPE, SubmissionFileSubType.FAMILY_SUBTYPE),
-    EXPOSURE_TYPE(ClinicalType.OPTIONAL_TYPE, SubmissionFileSubType.EXPOSURE_SUBTYPE),
-    SURGERY_TYPE(ClinicalType.OPTIONAL_TYPE, SubmissionFileSubType.SURGERY_SUBTYPE),
-    THERAPY_TYPE(ClinicalType.OPTIONAL_TYPE, SubmissionFileSubType.THERAPY_SUBTYPE);
+    BIOMARKER_TYPE(ClinicalType.CLINICAL_OPTIONAL_TYPE, SubmissionFileSubType.BIOMARKER_SUBTYPE),
+    FAMILY_TYPE(ClinicalType.CLINICAL_OPTIONAL_TYPE, SubmissionFileSubType.FAMILY_SUBTYPE),
+    EXPOSURE_TYPE(ClinicalType.CLINICAL_OPTIONAL_TYPE, SubmissionFileSubType.EXPOSURE_SUBTYPE),
+    SURGERY_TYPE(ClinicalType.CLINICAL_OPTIONAL_TYPE, SubmissionFileSubType.SURGERY_SUBTYPE),
+    THERAPY_TYPE(ClinicalType.CLINICAL_OPTIONAL_TYPE, SubmissionFileSubType.THERAPY_SUBTYPE);
 
     private static String TYPE_SUFFIX = "_TYPE";
 
@@ -175,7 +180,7 @@ public final class SubmissionFileTypes {
 
               @Override
               public boolean apply(SubmissionFileType input) {
-                return SubmissionDataType.MANDATORY_TYPES.contains(input.dataType);
+                return SubmissionDataTypes.isMandatoryType(input.dataType);
               }
             }));
 

@@ -37,24 +37,24 @@ import com.google.common.collect.ImmutableSet;
  */
 public interface SubmissionDataType {
 
-  /**
-   * These types are always provided for a submission to be {@link SubmissionState#VALID}.
-   */
-  Set<SubmissionDataType> MANDATORY_TYPES =
-      new ImmutableSet.Builder<SubmissionDataType>()
-          .add(ClinicalType.CLINICAL_TYPE)
-          .build();
-
   String TYPE_SUFFIX = "_TYPE";
 
   /**
    * Not really used anywhere (but here for consistency).
    */
-  String OPTIONAL_TYPE_NAME = "optional";
+  String CLINICAL_OPTIONAL_TYPE_NAME = "optional";
 
   String getTypeName();
 
   public static class SubmissionDataTypes {
+
+    /**
+     * These types are always provided for a submission to be {@link SubmissionState#VALID}.
+     */
+    private static Set<SubmissionDataType> MANDATORY_TYPES =
+        new ImmutableSet.Builder<SubmissionDataType>()
+            .add(ClinicalType.CLINICAL_CORE_TYPE)
+            .build();
 
     /**
      * Returns an enum matching the type like "donor", "ssm", "meth", ...
@@ -86,6 +86,13 @@ public interface SubmissionDataType {
         builder.add(type);
       }
       return builder.build();
+    }
+
+    /**
+     * Determines whether the type provided is one that must always be included in submissions or not.
+     */
+    public static boolean isMandatoryType(SubmissionDataType dataType) {
+      return MANDATORY_TYPES.contains(dataType);
     }
 
   }

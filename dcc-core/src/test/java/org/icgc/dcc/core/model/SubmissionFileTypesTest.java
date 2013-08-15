@@ -51,15 +51,15 @@ public class SubmissionFileTypesTest {
 
     assertThat(DONOR_TYPE.getTypeName()).isEqualTo("donor");
     assertThat(from("donor")).isEqualTo(DONOR_TYPE);
-    assertThat(DONOR_TYPE.getDataType()).isEqualTo(ClinicalType.CLINICAL_TYPE);
+    assertThat(DONOR_TYPE.getDataType()).isEqualTo(ClinicalType.CLINICAL_CORE_TYPE);
 
     assertThat(SPECIMEN_TYPE.getTypeName()).isEqualTo("specimen");
     assertThat(from("specimen")).isEqualTo(SPECIMEN_TYPE);
-    assertThat(SPECIMEN_TYPE.getDataType()).isEqualTo(ClinicalType.CLINICAL_TYPE);
+    assertThat(SPECIMEN_TYPE.getDataType()).isEqualTo(ClinicalType.CLINICAL_CORE_TYPE);
 
     assertThat(BIOMARKER_TYPE.getTypeName()).isEqualTo("biomarker");
     assertThat(from("biomarker")).isEqualTo(BIOMARKER_TYPE);
-    assertThat(BIOMARKER_TYPE.getDataType()).isEqualTo(ClinicalType.OPTIONAL_TYPE);
+    assertThat(BIOMARKER_TYPE.getDataType()).isEqualTo(ClinicalType.CLINICAL_OPTIONAL_TYPE);
 
     assertThat(SubmissionFileType.MANDATORY_TYPES).isEqualTo(
         newLinkedHashSet(newArrayList(

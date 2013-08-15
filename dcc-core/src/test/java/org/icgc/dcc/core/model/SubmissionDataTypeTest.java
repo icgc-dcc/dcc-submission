@@ -17,15 +17,14 @@
  */
 package org.icgc.dcc.core.model;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Sets.newLinkedHashSet;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.icgc.dcc.core.model.ClinicalType.CLINICAL_TYPE;
+import static org.icgc.dcc.core.model.ClinicalType.CLINICAL_CORE_TYPE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SSM_TYPE;
 import static org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes.fromTypeName;
 
 import java.util.HashSet;
 
+import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes;
 import org.junit.Test;
 
@@ -34,17 +33,15 @@ public class SubmissionDataTypeTest {
   @Test
   public void test_SubmissionDataTypes_valid() {
     assertThat(SubmissionDataTypes.fromTypeName("ssm")).isEqualTo(SSM_TYPE);
-    assertThat(SubmissionDataTypes.fromTypeName("donor")).isEqualTo(CLINICAL_TYPE);
+    assertThat(SubmissionDataTypes.fromTypeName("donor")).isEqualTo(CLINICAL_CORE_TYPE);
 
-    assertThat(SubmissionDataTypes.values().size()).isEqualTo(12); // 11+1
+    assertThat(SubmissionDataTypes.values().size()).
+        isEqualTo(13); // 11 feature types + 1 clinical type + 1 optional (clinical) type
     assertThat(SubmissionDataTypes.values().size()).isEqualTo( // Check no duplicates
         new HashSet<SubmissionDataType>(SubmissionDataTypes.values()).size());
 
-    assertThat(SubmissionDataType.MANDATORY_TYPES).isEqualTo(
-        newLinkedHashSet(newArrayList(
-        (SubmissionDataType) ClinicalType.CLINICAL_TYPE
-        )));
-
+    assertThat(SubmissionDataTypes.isMandatoryType(ClinicalType.CLINICAL_CORE_TYPE)).isTrue();
+    assertThat(SubmissionDataTypes.isMandatoryType(FeatureType.SSM_TYPE)).isFalse();
   }
 
   @Test(expected = IllegalStateException.class)
