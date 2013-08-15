@@ -87,7 +87,9 @@ public class GeneLoaderService {
     final MongoCollection genes = getTargetCollection(mongoUri);
     try {
       // Drop the current collection
+      log.info("Dropping current gene collection, if any...");
       genes.drop();
+      log.info("Finished dropping gene collection");
 
       // Open BSON file stream
       MappingIterator<JsonNode> iterator = getSourceIterator(inputStream);
