@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.core.model;
 
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Sets.newLinkedHashSet;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileSubType.BIOMARKER_SUBTYPE;
 import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileSubType.DONOR_SUBTYPE;
@@ -26,11 +28,13 @@ import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileSubType.
 import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.BIOMARKER_TYPE;
 import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.DONOR_TYPE;
 import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.MIRNA_S_TYPE;
+import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SAMPLE_TYPE;
 import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SPECIMEN_TYPE;
 import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SSM_M_TYPE;
 import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.from;
 
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
+import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 import org.junit.Test;
 
 public class SubmissionFileTypesTest {
@@ -47,15 +51,23 @@ public class SubmissionFileTypesTest {
 
     assertThat(DONOR_TYPE.getTypeName()).isEqualTo("donor");
     assertThat(from("donor")).isEqualTo(DONOR_TYPE);
-    assertThat(DONOR_TYPE.getDataType()).isEqualTo(ClinicalType.CLINICAL_TYPE);
+    assertThat(DONOR_TYPE.getDataType()).isEqualTo(ClinicalType.CLINICAL_CORE_TYPE);
 
     assertThat(SPECIMEN_TYPE.getTypeName()).isEqualTo("specimen");
     assertThat(from("specimen")).isEqualTo(SPECIMEN_TYPE);
-    assertThat(SPECIMEN_TYPE.getDataType()).isEqualTo(ClinicalType.CLINICAL_TYPE);
+    assertThat(SPECIMEN_TYPE.getDataType()).isEqualTo(ClinicalType.CLINICAL_CORE_TYPE);
 
     assertThat(BIOMARKER_TYPE.getTypeName()).isEqualTo("biomarker");
     assertThat(from("biomarker")).isEqualTo(BIOMARKER_TYPE);
-    assertThat(BIOMARKER_TYPE.getDataType()).isEqualTo(ClinicalType.CLINICAL_TYPE);
+    assertThat(BIOMARKER_TYPE.getDataType()).isEqualTo(ClinicalType.CLINICAL_OPTIONAL_TYPE);
+
+    assertThat(SubmissionFileType.MANDATORY_TYPES).isEqualTo(
+        newLinkedHashSet(newArrayList(
+            DONOR_TYPE,
+            SPECIMEN_TYPE,
+            SAMPLE_TYPE
+        )));
+
   }
 
   @Test
