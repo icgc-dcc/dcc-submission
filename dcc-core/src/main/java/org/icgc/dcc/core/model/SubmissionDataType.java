@@ -18,6 +18,7 @@
 package org.icgc.dcc.core.model;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.List;
 import java.util.Set;
@@ -25,9 +26,11 @@ import java.util.Set;
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 
+import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 
 /**
  * Represents an ICGC data type, such as "donor", "specimen", "ssm", "meth", ...
@@ -65,6 +68,22 @@ public interface SubmissionDataType {
             .build();
 
     /**
+     * Features types that are small enough to be loaded in mongodb (as exposed to exported to hdfs only).
+     */
+    private static final Set<SubmissionDataType> MONGO_LOADED_FEATURE_TYPES =
+        new ImmutableSet.Builder<SubmissionDataType>()
+            .add(ClinicalType.CLINICAL_CORE_TYPE)
+            .addAll( // All aggregated feature types are mongo sinkable
+                Iterables.filter(newArrayList(FeatureType.values()), new Predicate<FeatureType>() {
+
+                  @Override
+                  public boolean apply(FeatureType type) {
+                    return FeatureTypes.isAggregatedType(type);
+                  }
+                }))
+            .build();
+
+    /**
      * Returns an enum matching the type like "donor", "ssm", "meth", ...
      */
     public static SubmissionDataType from(String typeName) {
@@ -79,6 +98,7 @@ public interface SubmissionDataType {
       } catch (IllegalArgumentException e) {
         // Do nothing
       }
+
       return checkNotNull(type, "Could not find a match for type %s", typeName);
     }
 
@@ -97,6 +117,13 @@ public interface SubmissionDataType {
     }
 
     /**
+     * Checks whether a particular schema is small enough to be stored in mongodb.
+     */
+    public static boolean isMongoSinkable(SubmissionDataType type) {
+      return MONGO_LOADED_FEATURE_TYPES.contains(type);
+    }
+
+    /**
      * Determines whether the type provided is one that must always be included in submissions or not.
      */
     public static boolean isMandatoryType(SubmissionDataType dataType) {
@@ -104,15 +131,19 @@ public interface SubmissionDataType {
     }
 
     /**
-     * Determines whether the type provided is one that is experimental and aggregated, or not.
+     * Determines whether the type provided is one that has a control counterpart or not.
      */
-    public static boolean isAggregatedFeatureType(String dataTypeName) {
-      SubmissionDataType dataType = SubmissionDataTypes.from(dataTypeName);
-      return dataType.isFeatureType() && isAggregatedType(dataType.asFeatureType());
+    public static boolean hasControlSampleId(SubmissionDataType dataType) {
+      return dataType.isFeatureType() &&
+          FeatureTypes.hasControlSampleId(dataType.asFeatureType());
     }
 
+    /**
+     * Determines whether the type provided is one that is experimental and aggregated, or not.
+     */
     public static boolean isAggregatedType(SubmissionDataType dataType) {
-      return dataType.isFeatureType() && FeatureTypes.isAggregatedType((FeatureType) dataType);
+      return dataType.isFeatureType() &&
+          FeatureTypes.isAggregatedType(dataType.asFeatureType());
     }
 
   }

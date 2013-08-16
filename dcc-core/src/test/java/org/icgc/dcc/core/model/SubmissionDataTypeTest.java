@@ -21,7 +21,8 @@ import static org.fest.assertions.api.Assertions.assertThat;
 import static org.icgc.dcc.core.model.ClinicalType.CLINICAL_CORE_TYPE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SSM_TYPE;
 import static org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes.from;
-import static org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes.isAggregatedFeatureType;
+import static org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes.hasControlSampleId;
+import static org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes.isAggregatedType;
 import static org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes.isMandatoryType;
 import static org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes.values;
 
@@ -44,9 +45,13 @@ public class SubmissionDataTypeTest {
     assertThat(isMandatoryType(ClinicalType.CLINICAL_CORE_TYPE)).isTrue();
     assertThat(isMandatoryType(FeatureType.SSM_TYPE)).isFalse();
 
-    assertThat(isAggregatedFeatureType("ssm")).isTrue();
-    assertThat(isAggregatedFeatureType("meth")).isFalse();
-    assertThat(isAggregatedFeatureType("donor")).isFalse();
+    assertThat(isAggregatedType(FeatureType.SSM_TYPE)).isTrue();
+    assertThat(isAggregatedType(FeatureType.METH_TYPE)).isFalse();
+    assertThat(isAggregatedType(ClinicalType.CLINICAL_CORE_TYPE)).isFalse();
+
+    assertThat(hasControlSampleId(FeatureType.SSM_TYPE)).isTrue();
+    assertThat(hasControlSampleId(FeatureType.MIRNA_TYPE)).isFalse();
+    assertThat(hasControlSampleId(ClinicalType.CLINICAL_CORE_TYPE)).isFalse();
   }
 
   @Test(expected = IllegalStateException.class)

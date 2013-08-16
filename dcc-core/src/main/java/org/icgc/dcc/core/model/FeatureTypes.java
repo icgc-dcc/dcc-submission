@@ -18,28 +18,20 @@
 package org.icgc.dcc.core.model;
 
 import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.collect.ImmutableSet.copyOf;
 import static com.google.common.collect.ImmutableSet.of;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newLinkedHashSet;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.CNSM_TYPE;
-import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.EXP_TYPE;
-import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.JCN_TYPE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.METH_TYPE;
-import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.MIRNA_TYPE;
-import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.PEXP_TYPE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SSM_TYPE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.STSM_TYPE;
-import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.from;
 
 import java.util.List;
 import java.util.Set;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import com.google.common.collect.ImmutableSet;
 
 /**
  * Utilities for working with ICGC feature types.
@@ -130,18 +122,6 @@ public final class FeatureTypes {
 
   }
 
-  /** Subset of {@link #FEATURE_TYPES} that relates to somatic mutations */
-  private static final Set<FeatureType> SOMATIC_FEATURE_TYPES_SET = ImmutableSet.<FeatureType> of(
-      SSM_TYPE, CNSM_TYPE, STSM_TYPE);
-
-  /** Subset of {@link #FEATURE_TYPES} that relates to survey-based features */
-  private static final Set<FeatureType> SURVEY_FEATURE_TYPES = of(
-      EXP_TYPE, MIRNA_TYPE, JCN_TYPE, METH_TYPE, PEXP_TYPE);
-
-  /** Feature types whose sample ID isn't called analyzed_sample_id in older dictionaries */
-  private static final Set<FeatureType> DIFFERENT_SAMPLE_ID_FEATURE_TYPES = of(
-      EXP_TYPE, MIRNA_TYPE, JCN_TYPE, PEXP_TYPE);
-
   /**
    * Feature types for which there is a control sample ID.
    */
@@ -151,35 +131,14 @@ public final class FeatureTypes {
   /**
    * Features types for which mutations will be aggregated.
    */
-  private static final Set<FeatureType> AGGREGATED_FEATURE_TYPES = of(SSM_TYPE);
-
-  /**
-   * Features types that are small enough to be loaded in mongodb (as exposed to exported to hdfs only).
-   */
-  private static final Set<FeatureType> MONGO_LOADED_FEATURE_TYPES = copyOf(AGGREGATED_FEATURE_TYPES);
-
-  public static boolean isSomaticType(String type) { // TODO: use enum
-    return SOMATIC_FEATURE_TYPES_SET.contains(from(type));
-  }
-
-  public static boolean isSurveyType(String type) { // TODO: use enum
-    return SURVEY_FEATURE_TYPES.contains(from(type));
-  }
+  static final Set<FeatureType> AGGREGATED_FEATURE_TYPES = of(SSM_TYPE);
 
   public static boolean isAggregatedType(FeatureType type) {
     return AGGREGATED_FEATURE_TYPES.contains(type);
   }
 
-  public static boolean hasDifferentSampleId(String type) { // TODO: use enum
-    return DIFFERENT_SAMPLE_ID_FEATURE_TYPES.contains(from(type));
-  }
-
-  public static boolean hasControlSampleId(String type) { // TODO: use enum
-    return CONTROL_SAMPLE_FEATURE_TYPES.contains(from(type));
-  }
-
-  public static boolean isMongoLoaded(String type) { // TODO: use enum
-    return MONGO_LOADED_FEATURE_TYPES.contains(from(type));
+  public static boolean hasControlSampleId(FeatureType type) {
+    return CONTROL_SAMPLE_FEATURE_TYPES.contains(type);
   }
 
 }
