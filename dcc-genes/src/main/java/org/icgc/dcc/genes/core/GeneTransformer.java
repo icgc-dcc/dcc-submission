@@ -210,25 +210,7 @@ public class GeneTransformer {
   }
 
   private JsonNode externalDbIds(JsonNode node) {
-    JsonNode values = node.path("external_db_ids");
-
-    ArrayNode externalDbIds = mapper.createArrayNode();
-    for (JsonNode value : values) {
-      externalDbIds.add(externalDbId(value));
-    }
-
-    return externalDbIds;
-  }
-
-  private JsonNode externalDbId(JsonNode node) {
-    ObjectNode externalDbId = mapper.createObjectNode();
-
-    // Simple
-    externalDbId.put("hgnc_id", node.get("hgnc_id"));
-    externalDbId.put("uniprotkb_swissprot", node.get("uniprotkb_swissprot"));
-    externalDbId.put("entrez_gene", node.get("entrez_gene"));
-
-    return externalDbId;
+    return node.path("sections").path("external_db_ids").path("data");
   }
 
   private static Integer asInteger(JsonNode node) {
