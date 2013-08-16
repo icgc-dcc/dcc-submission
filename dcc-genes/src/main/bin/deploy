@@ -1,0 +1,54 @@
+#!/bin/bash
+#
+# Copyright 2013(c) The Ontario Institute for Cancer Research. All rights reserved.
+#
+# Description:
+#   Creates a new dcc-heliotrope.jar and deploys to artifactory. Requires you to have
+#   a Maven ~/.m2/settings.xml defined with artifactory credentials defined for
+#   repository 'wrench.res.oicr.on.ca'.
+#
+# Usage:
+#  ./package
+
+# Configuration
+basedir=$(dirname $(readlink -m $(dirname $0i)))
+
+server="http://seqwaremaven.oicr.on.ca/artifactory"
+repo="dcc-dependencies"
+name="dcc-heliotrope"
+artifact="org/icgc/dcc/$name"
+path="$server/$repo/$artifact"
+version=`curl -s "$path/maven-metadata.xml" | grep latest | sed "s/.*<latest>\([^<]*\)<\/latest>.*/\1/"`
+version=`expr $version + 1`
+
+# Output
+datadir=$basedir/$version
+datafile=genes.bson
+jarfile=$name.jar
+rm -rf $datadir
+mkdir $datadir
+
+# Copy
+echo "scp dcc-qa:/nfs/dcc_secure/dcc/data/gene_model/ensembl_69/genes.bson $datadir/$datafile"
+scp dcc-qa:/nfs/dcc_secure/dcc/data/gene_model/ensembl_69/genes.bson $datadir/$datafile
+
+# Jar
+echo "jar -cvf $datadir/$jarfile -C $datadir $datafile"
+jar -cvf $datadir/$jarfile -C $datadir $datafile
+
+# Echo
+jar -tvf $datadir/$jarfile
+
+# Cleanup
+rm $datadir/$datafile
+
+# Deploy
+mvn deploy:deploy-file \
+-DgroupId=org.icgc.dcc \
+-DartifactId=$name \
+-Dversion=$version \
+-Dpackaging=jar \
+-Dfile=$datadir/$jarfile \
+-DgeneratePom=true \
+-DrepositoryId=wrench.res.oicr.on.ca \
+-Durl=$server/$repo
