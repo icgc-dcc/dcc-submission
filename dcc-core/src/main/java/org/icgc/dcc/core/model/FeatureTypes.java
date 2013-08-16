@@ -17,21 +17,14 @@
  */
 package org.icgc.dcc.core.model;
 
-import static com.google.common.collect.ImmutableList.of;
-import static com.google.common.collect.ImmutableSet.copyOf;
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.ImmutableSet.of;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newLinkedHashSet;
 import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.CNGV_TYPE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.CNSM_TYPE;
-import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.EXP_TYPE;
-import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.JCN_TYPE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.METH_TYPE;
-import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.MIRNA_TYPE;
-import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.PEXP_TYPE;
-import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SGV_TYPE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SSM_TYPE;
-import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.STGV_TYPE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.STSM_TYPE;
 
 import java.util.List;
@@ -52,6 +45,8 @@ public final class FeatureTypes {
    * Represents a type of observation data, see {@link ClinicalType} for the clinical counterpart.
    */
   public enum FeatureType implements SubmissionDataType {
+
+    /** From the ICGC Submission Manual */
     SSM_TYPE("ssm", "_ssm_count"),
     SGV_TYPE("sgv", "_sgv_exists"),
     CNSM_TYPE("cnsm", "_cnsm_exists"),
@@ -79,6 +74,28 @@ public final class FeatureTypes {
     @Getter
     private final String summaryFieldName;
 
+    @Override
+    public boolean isClinicalType() {
+      return false;
+    }
+
+    @Override
+    public boolean isFeatureType() {
+      return true;
+    }
+
+    @Override
+    public ClinicalType asClinicalType() {
+      checkState(false, "Not a '%s': '%s'",
+          ClinicalType.class.getSimpleName(), this);
+      return null;
+    }
+
+    @Override
+    public FeatureType asFeatureType() {
+      return this;
+    }
+
     public boolean isSsm() {
       return this == SSM_TYPE;
     }
@@ -102,80 +119,25 @@ public final class FeatureTypes {
       complement.removeAll(featureTypes);
       return newLinkedHashSet(complement);
     }
+
   }
-
-  /** From the ICGC Submission Manual */
-  public static final List<String> FEATURE_TYPES = of( // TODO: change to use enum directly
-      SSM_TYPE.getTypeName(), SGV_TYPE.getTypeName(), CNSM_TYPE.getTypeName(),
-      CNGV_TYPE.getTypeName(), STSM_TYPE.getTypeName(), STGV_TYPE.getTypeName(),
-      MIRNA_TYPE.getTypeName(), METH_TYPE.getTypeName(), EXP_TYPE.getTypeName(),
-      PEXP_TYPE.getTypeName(), JCN_TYPE.getTypeName());
-
-  /** Subset of {@link #FEATURE_TYPES} that relates to somatic mutations */
-  private static final List<String> SOMATIC_FEATURE_TYPES = of( // TODO: change to use enum directly
-      SSM_TYPE.getTypeName(), CNSM_TYPE.getTypeName(), STSM_TYPE.getTypeName());
-
-  private static final Set<String> SOMATIC_FEATURE_TYPES_SET = copyOf(SOMATIC_FEATURE_TYPES);
-
-  /** Subset of {@link #FEATURE_TYPES} that relates to survey-based features */
-  private static final List<String> SURVEY_FEATURE_TYPES = of( // TODO: change to use enum directly
-      EXP_TYPE.getTypeName(), MIRNA_TYPE.getTypeName(), JCN_TYPE.getTypeName(),
-      METH_TYPE.getTypeName(), PEXP_TYPE.getTypeName());
-
-  /** Feature types whose sample ID isn't called analyzed_sample_id in older dictionaries */
-  private static final List<String> DIFFERENT_SAMPLE_ID_FEATURE_TYPES = of( // TODO: change to use enum directly
-      EXP_TYPE.getTypeName(), MIRNA_TYPE.getTypeName(), JCN_TYPE.getTypeName(),
-      PEXP_TYPE.getTypeName());
 
   /**
    * Feature types for which there is a control sample ID.
    */
-  private static final List<String> CONTROL_SAMPLE_FEATURE_TYPES = of( // TODO: change to use enum directly
-      SSM_TYPE.getTypeName(), CNSM_TYPE.getTypeName(), STSM_TYPE.getTypeName(), METH_TYPE.getTypeName());
+  private static final Set<FeatureType> CONTROL_SAMPLE_FEATURE_TYPES = of(
+      SSM_TYPE, CNSM_TYPE, STSM_TYPE, METH_TYPE);
 
   /**
    * Features types for which mutations will be aggregated.
    */
-  private static final List<String> AGGREGATED_FEATURE_TYPES = of(SSM_TYPE.getTypeName()); // TODO: change to use enum directly
+  static final Set<FeatureType> AGGREGATED_FEATURE_TYPES = of(SSM_TYPE);
 
-  /**
-   * Features types that are small enough to be stored in mongodb (as exposed to exported to hdfs only).
-   */
-  public static final List<String> MONGO_FRIENDLY_FEATURE_TYPES = newArrayList(AGGREGATED_FEATURE_TYPES);
-
-  public static List<String> getTypes() {
-    return FEATURE_TYPES;
-  }
-
-  public static List<String> getSomaticTypes() {
-    return SOMATIC_FEATURE_TYPES;
-  }
-
-  public static List<String> getArrayTypes() {
-    return SURVEY_FEATURE_TYPES;
-  }
-
-  public static boolean isType(String type) {
-    return FEATURE_TYPES.contains(type);
-  }
-
-  public static boolean isSomaticType(String type) {
-    return SOMATIC_FEATURE_TYPES_SET.contains(type);
-  }
-
-  public static boolean isSurveyType(String type) {
-    return SURVEY_FEATURE_TYPES.contains(type);
-  }
-
-  public static boolean isAggregatedType(String type) {
+  public static boolean isAggregatedType(FeatureType type) {
     return AGGREGATED_FEATURE_TYPES.contains(type);
   }
 
-  public static boolean hasDifferentSampleId(String type) {
-    return DIFFERENT_SAMPLE_ID_FEATURE_TYPES.contains(type);
-  }
-
-  public static boolean hasControlSampleId(String type) {
+  public static boolean hasControlSampleId(FeatureType type) {
     return CONTROL_SAMPLE_FEATURE_TYPES.contains(type);
   }
 

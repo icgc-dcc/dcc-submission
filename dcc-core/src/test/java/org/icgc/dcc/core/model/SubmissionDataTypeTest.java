@@ -20,33 +20,43 @@ package org.icgc.dcc.core.model;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.icgc.dcc.core.model.ClinicalType.CLINICAL_CORE_TYPE;
 import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SSM_TYPE;
-import static org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes.fromTypeName;
+import static org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes.from;
+import static org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes.hasControlSampleId;
+import static org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes.isAggregatedType;
+import static org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes.isMandatoryType;
+import static org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes.values;
 
 import java.util.HashSet;
 
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
-import org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes;
 import org.junit.Test;
 
 public class SubmissionDataTypeTest {
 
   @Test
   public void test_SubmissionDataTypes_valid() {
-    assertThat(SubmissionDataTypes.fromTypeName("ssm")).isEqualTo(SSM_TYPE);
-    assertThat(SubmissionDataTypes.fromTypeName("donor")).isEqualTo(CLINICAL_CORE_TYPE);
+    assertThat(from("ssm")).isEqualTo(SSM_TYPE);
+    assertThat(from("donor")).isEqualTo(CLINICAL_CORE_TYPE);
 
-    assertThat(SubmissionDataTypes.values().size()).
-        isEqualTo(13); // 11 feature types + 1 clinical type + 1 optional (clinical) type
-    assertThat(SubmissionDataTypes.values().size()).isEqualTo( // Check no duplicates
-        new HashSet<SubmissionDataType>(SubmissionDataTypes.values()).size());
+    assertThat(values().size()).isEqualTo(13); // 11 feature types + 1 clinical type + 1 optional clinical type
+    assertThat(values().size()).isEqualTo( // Check no duplicates
+        new HashSet<SubmissionDataType>(values()).size());
 
-    assertThat(SubmissionDataTypes.isMandatoryType(ClinicalType.CLINICAL_CORE_TYPE)).isTrue();
-    assertThat(SubmissionDataTypes.isMandatoryType(FeatureType.SSM_TYPE)).isFalse();
+    assertThat(isMandatoryType(ClinicalType.CLINICAL_CORE_TYPE)).isTrue();
+    assertThat(isMandatoryType(FeatureType.SSM_TYPE)).isFalse();
+
+    assertThat(isAggregatedType(FeatureType.SSM_TYPE)).isTrue();
+    assertThat(isAggregatedType(FeatureType.METH_TYPE)).isFalse();
+    assertThat(isAggregatedType(ClinicalType.CLINICAL_CORE_TYPE)).isFalse();
+
+    assertThat(hasControlSampleId(FeatureType.SSM_TYPE)).isTrue();
+    assertThat(hasControlSampleId(FeatureType.MIRNA_TYPE)).isFalse();
+    assertThat(hasControlSampleId(ClinicalType.CLINICAL_CORE_TYPE)).isFalse();
   }
 
   @Test(expected = IllegalStateException.class)
   public void test_SubmissionDataTypes_invalid() {
-    fromTypeName("dummy");
+    from("dummy");
   }
 
 }
