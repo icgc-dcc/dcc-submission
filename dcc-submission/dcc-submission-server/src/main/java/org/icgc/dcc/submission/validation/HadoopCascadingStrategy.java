@@ -30,6 +30,8 @@ import static org.icgc.dcc.core.util.hadoop.HadoopConstants.MAPRED_MAP_OUTPUT_CO
 import static org.icgc.dcc.core.util.hadoop.HadoopConstants.MAPRED_OUTPUT_COMPRESSION_CODE_PROPERTY_NAME;
 import static org.icgc.dcc.core.util.hadoop.HadoopConstants.MAPRED_OUTPUT_COMPRESSION_TYPE_PROPERTY_BLOCK_VALUE;
 import static org.icgc.dcc.core.util.hadoop.HadoopConstants.MAPRED_OUTPUT_COMPRESSION_TYPE_PROPERTY_NAME;
+import static org.icgc.dcc.core.util.hadoop.HadoopConstants.MAPRED_OUTPUT_COMPRESS_PROPERTY_NAME;
+import static org.icgc.dcc.core.util.hadoop.HadoopConstants.MAPRED_OUTPUT_COMPRESS_PROPERTY_TRUE_VALUE;
 import static org.icgc.dcc.core.util.hadoop.HadoopConstants.PROPERTY_VALUES_SEPARATOR;
 import static org.icgc.dcc.core.util.hadoop.HadoopConstants.SNAPPY_CODEC_PROPERTY_VALUE;
 
@@ -118,7 +120,9 @@ public class HadoopCascadingStrategy extends BaseCascadingStrategy {
         SNAPPY_CODEC_PROPERTY_VALUE);
 
     // Enable compression on job outputs
-    // TODO: add mapred.output.compress=true as well?
+    flowProperties.put(
+        MAPRED_OUTPUT_COMPRESS_PROPERTY_NAME,
+        MAPRED_OUTPUT_COMPRESS_PROPERTY_TRUE_VALUE);
     flowProperties.put(
         MAPRED_OUTPUT_COMPRESSION_CODE_PROPERTY_NAME,
         GZIP_CODEC_PROPERTY_VALUE);

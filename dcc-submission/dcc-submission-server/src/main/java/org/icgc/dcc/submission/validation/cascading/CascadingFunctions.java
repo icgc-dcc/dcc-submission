@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.cascading;
 
+import static cascading.tuple.Fields.ARGS;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.icgc.dcc.hadoop.cascading.Tuples2.isNullField;
@@ -127,14 +128,13 @@ public final class CascadingFunctions {
     private static final int NEST_FIELD_INDEX = 0;
 
     public AddEmptyTuple() {
-      super(Fields.ARGS);
+      super(ARGS);
     }
 
     @Override
     public void operate(FlowProcess flowProcess, FunctionCall functionCall) {
-      TupleEntry entry = functionCall.getArguments();
+      Tuple copy = functionCall.getArguments().getTupleCopy();
 
-      Tuple copy = entry.getTupleCopy();
       if (copy.getObject(NEST_FIELD_INDEX) == null) { // If null, then replace it with an empty tuple
         copy.set(NEST_FIELD_INDEX, new Tuple());
       }

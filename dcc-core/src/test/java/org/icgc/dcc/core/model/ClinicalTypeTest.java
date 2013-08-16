@@ -25,7 +25,7 @@ public class ClinicalTypeTest {
 
   @Test
   public void test_ClinicalType() {
-    assertThat(ClinicalType.from("donor")).isEqualTo(ClinicalType.CLINICAL_TYPE);
+    assertThat(ClinicalType.from("donor")).isEqualTo(ClinicalType.CLINICAL_CORE_TYPE);
   }
 
 }
