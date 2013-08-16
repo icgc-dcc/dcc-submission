@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.core.util.hadoop;
 
+import static java.lang.Boolean.TRUE;
 import static lombok.AccessLevel.PRIVATE;
 import lombok.NoArgsConstructor;
 
@@ -46,8 +47,8 @@ public final class HadoopConstants {
   public static final String HDFS_USERNAME_PROPERTY_VALUE = "hdfs";
   
   public static final String MAPRED_OUTPUT_COMPRESSION_TYPE_PROPERTY_BLOCK_VALUE = "BLOCK";
-  public static final boolean MAPRED_OUTPUT_COMPRESS_PROPERTY_TRUE_VALUE = true;
-  public static final boolean COMPRESSION_MAP_OUTPUT_PROPERTY_TRUE_VALUE = true;
+  public static final String MAPRED_OUTPUT_COMPRESS_PROPERTY_TRUE_VALUE = TRUE.toString();
+  public static final String COMPRESSION_MAP_OUTPUT_PROPERTY_TRUE_VALUE = TRUE.toString();
   
   public static final String DEFAULT_CODEC_PROPERTY_VALUE = "org.apache.hadoop.io.compress.DefaultCodec";
   public static final String GZIP_CODEC_PROPERTY_VALUE =    "org.apache.hadoop.io.compress.GzipCodec";  

@@ -17,37 +17,36 @@
  */
 package org.icgc.dcc.core.model;
 
-import static com.google.common.base.Preconditions.checkState;
-import lombok.Getter;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.icgc.dcc.core.model.ClinicalType.CLINICAL_CORE_TYPE;
+import static org.icgc.dcc.core.model.FeatureTypes.FeatureType.SSM_TYPE;
+import static org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes.fromTypeName;
+
+import java.util.HashSet;
 
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
-import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileSubType;
+import org.icgc.dcc.core.model.SubmissionDataType.SubmissionDataTypes;
+import org.junit.Test;
 
-/**
- * Represents a (the only one for now) type of clinical data, see {@link FeatureType} for the observation counterpart.
- * <p>
- * The "donor" name is reused here (which makes things a bit confusing...).
- */
-public enum ClinicalType implements SubmissionDataType {
+public class SubmissionDataTypeTest {
 
-  CLINICAL_CORE_TYPE(SubmissionFileSubType.DONOR_SUBTYPE.getFullName()),
-  CLINICAL_OPTIONAL_TYPE(CLINICAL_OPTIONAL_TYPE_NAME);
+  @Test
+  public void test_SubmissionDataTypes_valid() {
+    assertThat(SubmissionDataTypes.fromTypeName("ssm")).isEqualTo(SSM_TYPE);
+    assertThat(SubmissionDataTypes.fromTypeName("donor")).isEqualTo(CLINICAL_CORE_TYPE);
 
-  private ClinicalType(String typeName) {
-    this.typeName = typeName;
+    assertThat(SubmissionDataTypes.values().size()).
+        isEqualTo(13); // 11 feature types + 1 clinical type + 1 optional (clinical) type
+    assertThat(SubmissionDataTypes.values().size()).isEqualTo( // Check no duplicates
+        new HashSet<SubmissionDataType>(SubmissionDataTypes.values()).size());
+
+    assertThat(SubmissionDataTypes.isMandatoryType(ClinicalType.CLINICAL_CORE_TYPE)).isTrue();
+    assertThat(SubmissionDataTypes.isMandatoryType(FeatureType.SSM_TYPE)).isFalse();
   }
 
-  @Getter
-  private final String typeName;
-
-  /**
-   * Returns an enum matching the type name provided.
-   */
-  public static SubmissionDataType from(String typeName) {
-    checkState(CLINICAL_CORE_TYPE.getTypeName().equals(typeName),
-        "Only '%s' is allowed for now, '{}' provided instead",
-        CLINICAL_CORE_TYPE.getTypeName(), typeName);
-    return CLINICAL_CORE_TYPE;
+  @Test(expected = IllegalStateException.class)
+  public void test_SubmissionDataTypes_invalid() {
+    fromTypeName("dummy");
   }
 
 }

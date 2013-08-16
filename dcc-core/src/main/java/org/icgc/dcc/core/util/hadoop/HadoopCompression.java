@@ -41,7 +41,4 @@ public enum HadoopCompression {
     return this != NONE;
   }
 
-  public boolean isLzo() {
-    return this == LZO;
-  }
 }

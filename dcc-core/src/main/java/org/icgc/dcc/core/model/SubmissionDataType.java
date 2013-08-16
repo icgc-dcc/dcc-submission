@@ -19,8 +19,15 @@ package org.icgc.dcc.core.model;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.List;
+import java.util.Set;
+
 import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
 import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Represents an ICGC data type, such as "donor", "specimen", "ssm", "meth", ...
@@ -30,11 +37,24 @@ import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
  */
 public interface SubmissionDataType {
 
-  static final String TYPE_SUFFIX = "_TYPE";
+  String TYPE_SUFFIX = "_TYPE";
+
+  /**
+   * Not really used anywhere (but here for consistency).
+   */
+  String CLINICAL_OPTIONAL_TYPE_NAME = "optional";
 
   String getTypeName();
 
   public static class SubmissionDataTypes {
+
+    /**
+     * These types are always provided for a submission to be {@link SubmissionState#VALID}.
+     */
+    private static Set<SubmissionDataType> MANDATORY_TYPES =
+        new ImmutableSet.Builder<SubmissionDataType>()
+            .add(ClinicalType.CLINICAL_CORE_TYPE)
+            .build();
 
     /**
      * Returns an enum matching the type like "donor", "ssm", "meth", ...
@@ -42,17 +62,39 @@ public interface SubmissionDataType {
     public static SubmissionDataType fromTypeName(String typeName) {
       SubmissionDataType type = null;
       try {
-        type = FeatureType.from(typeName);
+        return FeatureType.from(typeName);
       } catch (IllegalArgumentException e) {
         // Do nothing
       }
       try {
-        type = ClinicalType.from(typeName);
+        return ClinicalType.from(typeName);
       } catch (IllegalArgumentException e) {
         // Do nothing
       }
       return checkNotNull(type, "Could not find a match for type %s", typeName);
     }
+
+    /**
+     * Returns the values for all enums that implements the interface.
+     */
+    public static List<SubmissionDataType> values() {
+      Builder<SubmissionDataType> builder = new ImmutableList.Builder<SubmissionDataType>();
+      for (FeatureType type : FeatureType.values()) {
+        builder.add(type);
+      }
+      for (ClinicalType type : ClinicalType.values()) {
+        builder.add(type);
+      }
+      return builder.build();
+    }
+
+    /**
+     * Determines whether the type provided is one that must always be included in submissions or not.
+     */
+    public static boolean isMandatoryType(SubmissionDataType dataType) {
+      return MANDATORY_TYPES.contains(dataType);
+    }
+
   }
 
 }
