@@ -46,6 +46,14 @@ public interface SubmissionDataType {
 
   String getTypeName();
 
+  boolean isClinicalType();
+
+  boolean isFeatureType();
+
+  ClinicalType asClinicalType();
+
+  FeatureType asFeatureType();
+
   public static class SubmissionDataTypes {
 
     /**
@@ -59,7 +67,7 @@ public interface SubmissionDataType {
     /**
      * Returns an enum matching the type like "donor", "ssm", "meth", ...
      */
-    public static SubmissionDataType fromTypeName(String typeName) {
+    public static SubmissionDataType from(String typeName) {
       SubmissionDataType type = null;
       try {
         return FeatureType.from(typeName);
@@ -93,6 +101,18 @@ public interface SubmissionDataType {
      */
     public static boolean isMandatoryType(SubmissionDataType dataType) {
       return MANDATORY_TYPES.contains(dataType);
+    }
+
+    /**
+     * Determines whether the type provided is one that is experimental and aggregated, or not.
+     */
+    public static boolean isAggregatedFeatureType(String dataTypeName) {
+      SubmissionDataType dataType = SubmissionDataTypes.from(dataTypeName);
+      return dataType.isFeatureType() && isAggregatedType(dataType.asFeatureType());
+    }
+
+    public static boolean isAggregatedType(SubmissionDataType dataType) {
+      return dataType.isFeatureType() && FeatureTypes.isAggregatedType((FeatureType) dataType);
     }
 
   }

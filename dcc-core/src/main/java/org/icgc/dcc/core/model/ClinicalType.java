@@ -40,6 +40,28 @@ public enum ClinicalType implements SubmissionDataType {
   @Getter
   private final String typeName;
 
+  @Override
+  public boolean isClinicalType() {
+    return true;
+  }
+
+  @Override
+  public boolean isFeatureType() {
+    return false;
+  }
+
+  @Override
+  public ClinicalType asClinicalType() {
+    return this;
+  }
+
+  @Override
+  public FeatureType asFeatureType() {
+    checkState(false, "Not a '%s': '%s'",
+        FeatureType.class.getSimpleName(), this);
+    return null;
+  }
+
   /**
    * Returns an enum matching the type name provided.
    */

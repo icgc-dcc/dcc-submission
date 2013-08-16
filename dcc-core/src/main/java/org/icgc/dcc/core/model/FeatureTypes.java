@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.core.model;
 
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.ImmutableSet.copyOf;
 import static com.google.common.collect.ImmutableSet.of;
 import static com.google.common.collect.Lists.newArrayList;
@@ -81,6 +82,28 @@ public final class FeatureTypes {
     @Getter
     private final String summaryFieldName;
 
+    @Override
+    public boolean isClinicalType() {
+      return false;
+    }
+
+    @Override
+    public boolean isFeatureType() {
+      return true;
+    }
+
+    @Override
+    public ClinicalType asClinicalType() {
+      checkState(false, "Not a '%s': '%s'",
+          ClinicalType.class.getSimpleName(), this);
+      return null;
+    }
+
+    @Override
+    public FeatureType asFeatureType() {
+      return this;
+    }
+
     public boolean isSsm() {
       return this == SSM_TYPE;
     }
@@ -104,6 +127,7 @@ public final class FeatureTypes {
       complement.removeAll(featureTypes);
       return newLinkedHashSet(complement);
     }
+
   }
 
   /** Subset of {@link #FEATURE_TYPES} that relates to somatic mutations */
