@@ -71,12 +71,9 @@
       }
     },
     "external_db_ids":{
-      "type":"array",
+      "type":["object","null"],
       "id":"external_db_ids",
-      "required":false,
-      "items":{
-        "$ref":"#/definitions/external_db_id"
-      }
+      "required":false
     }
   },
   "definitions":{
@@ -219,27 +216,6 @@
         "start":{
           "type":"number",
           "id":"start",
-          "required":false
-        }
-      }
-    },
-    "external_db_id":{
-      "type":"object",
-      "required":false,
-      "properties":{
-        "hgnc_id":{
-          "type":"string",
-          "id":"hgnc_id",
-          "required":false
-        },
-        "uniprotkb_swissprot":{
-          "type":"string",
-          "id":"uniprotkb_swissprot",
-          "required":false
-        },
-        "entrez_gene":{
-          "type":"string",
-          "id":"entrez_gene",
           "required":false
         }
       }

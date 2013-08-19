@@ -71,6 +71,7 @@ public class GeneIntegrationTest {
     Main.main("-f", bsonFile, "-d", mongoUri);
 
     JsonNode gene = getGene(mongoUri);
+    System.out.println(gene);
     ValidationReport report = validate(gene);
 
     assertThat(report.getMessages()).isEmpty();
