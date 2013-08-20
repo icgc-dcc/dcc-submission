@@ -39,24 +39,51 @@ import com.google.common.collect.ImmutableList;
 @NoArgsConstructor(access = PRIVATE)
 public final class BusinessKeys {
 
-  public static final String PROJECT = "project";
-  public static final String DONOR = "donor";
-  public static final String SPECIMEN = "specimen";
-  public static final String SAMPLE = "sample";
-  public static final String MUTATION = "mutation";
+  /**
+   * Part of the business key for mutations that is found in the meta files and is part of the identifying fields.
+   */
+  public static final List<String> MUTATION_META_IDENTIFYING_PART = newArrayList(
+      OBSERVATION_ASSEMBLY_VERSION);
 
-  public static final List<String> MUTATION_BUSINESS_KEY_META_PART = newArrayList(OBSERVATION_ASSEMBLY_VERSION);
-  public static final List<String> MUTATION_BUSINESS_KEY_PRIMARY_PART = newArrayList(
+  /**
+   * Part of the business key for mutations that is found in the primary files and is part of the identifying fields.
+   */
+  public static final List<String> MUTATION_PRIMARY_IDENTIFYING_PART = newArrayList(
       OBSERVATION_CHROMOSOME,
       OBSERVATION_CHROMOSOME_START,
       OBSERVATION_CHROMOSOME_END,
       OBSERVATION_MUTATION_TYPE,
-      OBSERVATION_MUTATION,
+      OBSERVATION_MUTATION);
+
+  /**
+   * Part of the business key for mutations that is found in the primary files and is <b>not</b> part of the identifying
+   * fields (redundant info added for convenience).
+   */
+  public static final List<String> MUTATION_PRIMARY_REDUNDANT_INFO_PART = newArrayList(
       OBSERVATION_REFERENCE_GENOME_ALLELE);
 
-  public static final List<String> MUTATION_BUSINESS_KEY = ImmutableList.<String> builder()
-      .addAll(MUTATION_BUSINESS_KEY_PRIMARY_PART)
-      .addAll(MUTATION_BUSINESS_KEY_META_PART)
+  /**
+   * Part of the business key for mutations that constitutes the identifying fields.
+   */
+  public static final List<String> MUTATION_IDENTIFYING_PART = ImmutableList.<String> builder()
+      .addAll(MUTATION_PRIMARY_IDENTIFYING_PART)
+      .addAll(MUTATION_META_IDENTIFYING_PART)
+      .build();
+
+  /**
+   * Part of the business key for mutations that is <b>not</b> part of the identifying fields (redundant info added for
+   * convenience).
+   */
+  public static final List<String> MUTATION_REDUNDANT_INFO_PART = ImmutableList.<String> builder()
+      .addAll(MUTATION_PRIMARY_REDUNDANT_INFO_PART)
+      .build();
+
+  /**
+   * Business key for mutations.
+   */
+  public static final List<String> MUTATION = ImmutableList.<String> builder()
+      .addAll(MUTATION_IDENTIFYING_PART)
+      .addAll(MUTATION_REDUNDANT_INFO_PART)
       .build();
 
 }
