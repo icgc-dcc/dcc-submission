@@ -39,11 +39,15 @@ public final class VersionUtils {
     return firstNonNull(SCM_INFO.get("git.commit.id.abbrev"), "unknown");
   }
 
+  public static String getCommitMessageShort() {
+    return firstNonNull(SCM_INFO.get("git.commit.message.short"), "unknown");
+  }
+
   private static Map<String, String> loadScmInfo() {
     Properties properties = new Properties();
     try {
       properties.load(VersionUtils.class.getClassLoader().getResourceAsStream("git.properties"));
-    } catch(Exception e) {
+    } catch (Exception e) {
       // Local build
     }
 
