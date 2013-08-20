@@ -25,6 +25,7 @@ import lombok.NoArgsConstructor;
  * Constants for hadoop, do not include any actual hadoop objects in here.
  */
 // @formatter:off
+// TODO: Move this an the other hadoop classes in this module to dcc-hadoop! That's the point!
 @NoArgsConstructor(access = PRIVATE)
 public final class HadoopConstants {
   
@@ -56,5 +57,7 @@ public final class HadoopConstants {
   public static final String SNAPPY_CODEC_PROPERTY_VALUE =  "org.apache.hadoop.io.compress.SnappyCodec";
   public static final String LZOP_CODEC_PROPERTY_VALUE =    "com.hadoop.compression.lzo.LzopCodec";
   
+  public static final String CASCADING_DOT_FILE_PATH = "";
+  public static final String CASCADING_ERROR_DOT_FILE_NAME = "stream-error.dot";
 }
 //@formatter:on
