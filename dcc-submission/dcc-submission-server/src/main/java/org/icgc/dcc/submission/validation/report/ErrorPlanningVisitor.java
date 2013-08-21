@@ -26,6 +26,8 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import lombok.Cleanup;
+
 import org.codehaus.jackson.map.MappingIterator;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
@@ -40,8 +42,6 @@ import org.icgc.dcc.submission.validation.cascading.TupleState;
 import cascading.pipe.Each;
 import cascading.pipe.Pipe;
 import cascading.pipe.assembly.Retain;
-
-import com.google.common.io.Closeables;
 
 public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
 
@@ -106,9 +106,9 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
 
       @Override
       public Outcome collect(CascadingStrategy strategy, SchemaReport report) {
-        InputStream src = null;
         try {
-          src = strategy.readReportTap(getFileSchema(), getFlowType(), getName());
+          @Cleanup
+          InputStream src = strategy.readReportTap(getFileSchema(), getFlowType(), getName());
 
           report.setName(strategy.path(getFileSchema()).getName());
 
@@ -116,12 +116,12 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
 
           Outcome outcome = Outcome.PASSED;
           MappingIterator<TupleState> tupleStates = mapper.reader().withType(TupleState.class).readValues(src);
-          while(tupleStates.hasNext()) {
+          while (tupleStates.hasNext()) {
             TupleState tupleState = tupleStates.next();
-            if(tupleState.isInvalid()) {
+            if (tupleState.isInvalid()) {
               outcome = Outcome.FAILED;
-              for(TupleState.TupleError error : tupleState.getErrors()) {
-                if(errorMap.containsKey(error.getCode()) == true) {
+              for (TupleState.TupleError error : tupleState.getErrors()) {
+                if (errorMap.containsKey(error.getCode()) == true) {
                   ValidationErrorReport errorReport = errorMap.get(error.getCode());
                   errorReport.updateReport(error);
                 } else {
@@ -130,17 +130,15 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
               }
             }
           }
-          for(ValidationErrorReport e : errorMap.values()) {
+          for (ValidationErrorReport e : errorMap.values()) {
             e.updateLineNumbers(strategy.path(getFileSchema()));
             report.errors.add(e);
           }
           return outcome;
-        } catch(FileNotFoundException fnfe) {
+        } catch (FileNotFoundException fnfe) {
           return Outcome.PASSED;
-        } catch(IOException e) {
+        } catch (IOException e) {
           throw new PlanExecutionException(e);
-        } finally {
-          Closeables.closeQuietly(src);
         }
       }
     }

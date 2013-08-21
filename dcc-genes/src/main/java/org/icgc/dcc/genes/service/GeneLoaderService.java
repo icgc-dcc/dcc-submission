@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.genes.service;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.icgc.dcc.core.util.FormatUtils.formatCount;
 import static org.icgc.dcc.core.util.FormatUtils.formatDuration;
 
@@ -166,7 +167,7 @@ public class GeneLoaderService {
 
         if (++insertCount % STATUS_GENE_COUNT == 0) {
           log.info("Loaded {} genes ({} inserts/s)", //
-              formatCount(insertCount), formatCount(STATUS_GENE_COUNT / (watch.elapsedMillis() / 1000)));
+              formatCount(insertCount), formatCount(STATUS_GENE_COUNT / (watch.elapsed(SECONDS))));
           watch.reset().start();
         }
       }
