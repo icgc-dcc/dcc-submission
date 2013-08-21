@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.submission.fs.hdfs;
 
-import static com.google.common.io.Closeables.closeQuietly;
+import static com.google.common.io.ByteStreams.copy;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,14 +28,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import lombok.Cleanup;
+import lombok.SneakyThrows;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileContext;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-
-import com.google.common.io.ByteStreams;
 
 /**
  * Handles all hadoop API related methods - TODO: change to use proxy or decorator pattern?
@@ -68,16 +69,15 @@ public class HadoopUtils {
     }
   }
 
+  @SneakyThrows
   public static void touch(FileSystem fileSystem, String stringPath, InputStream in) {
     Path path = new Path(stringPath);
-    FSDataOutputStream out = null;
     try {
-      out = fileSystem.create(path);
-      ByteStreams.copy(in, out);
+      @Cleanup
+      FSDataOutputStream out = fileSystem.create(path);
+      copy(in, out);
     } catch (IOException e) {
       throw new HdfsException(e);
-    } finally {
-      closeQuietly(out);
     }
   }
 

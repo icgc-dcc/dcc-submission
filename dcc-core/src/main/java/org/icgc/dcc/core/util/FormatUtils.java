@@ -37,7 +37,7 @@ public final class FormatUtils {
 
   public static String formatBytes(long bytes, boolean si) {
     int unit = si ? 1000 : 1024;
-    if(bytes < unit) return bytes + " B";
+    if (bytes < unit) return bytes + " B";
 
     int exp = (int) (Math.log(bytes) / Math.log(unit));
     String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp - 1) + (si ? "" : "i");
@@ -62,7 +62,7 @@ public final class FormatUtils {
   }
 
   public static String formatDuration(Stopwatch watch) {
-    return formatDuration(watch.elapsedTime(SECONDS));
+    return formatDuration(watch.elapsed(SECONDS));
   }
 
   public static String formatDuration(long seconds) {

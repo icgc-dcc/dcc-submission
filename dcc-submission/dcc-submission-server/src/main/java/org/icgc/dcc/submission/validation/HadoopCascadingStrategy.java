@@ -43,6 +43,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
+import lombok.Cleanup;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileContext;
 import org.apache.hadoop.fs.FileStatus;
@@ -70,7 +72,6 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 import com.google.common.io.ByteStreams;
-import com.google.common.io.Closeables;
 import com.google.common.io.InputSupplier;
 import com.google.common.io.LineReader;
 import com.typesafe.config.Config;
@@ -196,28 +197,27 @@ public class HadoopCascadingStrategy extends BaseCascadingStrategy {
   public Fields getFileHeader(FileSchema fileSchema) throws IOException {
     Path path = this.path(fileSchema);
 
-    InputStreamReader isr = null;
     Configuration conf = this.fileSystem.getConf();
     CompressionCodecFactory factory = new CompressionCodecFactory(conf);
-    try {
-      Path resolvedPath = FileContext.getFileContext(fileSystem.getUri()).resolvePath(path);
-      CompressionCodec codec = factory.getCodec(resolvedPath);
 
-      isr = (codec == null) ? //
-      new InputStreamReader(fileSystem.open(resolvedPath), Charsets.UTF_8) : //
-      new InputStreamReader(codec.createInputStream(fileSystem.open(resolvedPath)), Charsets.UTF_8);
+    Path resolvedPath = FileContext.getFileContext(fileSystem.getUri()).resolvePath(path);
+    CompressionCodec codec = factory.getCodec(resolvedPath);
 
-      LineReader lineReader = new LineReader(isr);
-      String firstLine = lineReader.readLine();
-      Iterable<String> header = Splitter.on('\t').split(firstLine);
-      List<String> dupHeader = this.checkDuplicateHeader(header);
-      if (!dupHeader.isEmpty()) {
-        throw new DuplicateHeaderException(dupHeader);
-      }
-      return new Fields(Iterables.toArray(header, String.class));
-    } finally {
-      Closeables.closeQuietly(isr);
+    @Cleanup
+    InputStreamReader isr = (codec == null) ? //
+    new InputStreamReader(fileSystem.open(resolvedPath), Charsets.UTF_8) : //
+    new InputStreamReader(codec.createInputStream(fileSystem.open(resolvedPath)), Charsets.UTF_8);
+
+    LineReader lineReader = new LineReader(isr);
+    String firstLine = lineReader.readLine();
+    Iterable<String> header = Splitter.on('\t').split(firstLine);
+    List<String> dupHeader = this.checkDuplicateHeader(header);
+    if (!dupHeader.isEmpty()) {
+      throw new DuplicateHeaderException(dupHeader);
     }
+
+    return new Fields(Iterables.toArray(header, String.class));
+
   }
 
 }
