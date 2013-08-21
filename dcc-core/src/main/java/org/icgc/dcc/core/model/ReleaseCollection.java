@@ -17,6 +17,12 @@
  */
 package org.icgc.dcc.core.model;
 
+import static org.icgc.dcc.core.model.FieldNames.DONOR_ID;
+import static org.icgc.dcc.core.model.FieldNames.GENE_ID;
+import static org.icgc.dcc.core.model.FieldNames.MUTATION_ID;
+import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_ID;
+import static org.icgc.dcc.core.model.FieldNames.PROJECT_ID;
+import static org.icgc.dcc.core.model.FieldNames.RELEASE_ID;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -27,12 +33,12 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public enum ReleaseCollection {
 
-  RELEASE_COLLECTION("Release", FieldNames.RELEASE_ID),
-  PROJECT_COLLECTION("Project", FieldNames.PROJECT_ID),
-  DONOR_COLLECTION("Donor", FieldNames.DONOR_ID),
-  GENE_COLLECTION("Gene", FieldNames.GENE_ID),
-  OBSERVATION_COLLECTION("Observation", FieldNames.OBSERVATION_ID),
-  MUTATION_COLLECTION("Mutation", FieldNames.MUTATION_ID);
+  RELEASE_COLLECTION("Release", RELEASE_ID),
+  PROJECT_COLLECTION("Project", PROJECT_ID),
+  DONOR_COLLECTION("Donor", DONOR_ID),
+  GENE_COLLECTION("Gene", GENE_ID),
+  OBSERVATION_COLLECTION("Observation", OBSERVATION_ID),
+  MUTATION_COLLECTION("Mutation", MUTATION_ID);
 
   /**
    * The name of the collection.
