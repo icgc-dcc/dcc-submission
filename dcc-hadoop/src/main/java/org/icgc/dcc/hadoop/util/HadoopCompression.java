@@ -15,12 +15,12 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.util.hadoop;
+package org.icgc.dcc.hadoop.util;
 
-import static org.icgc.dcc.core.util.hadoop.HadoopConstants.BZIP2_CODEC_PROPERTY_VALUE;
-import static org.icgc.dcc.core.util.hadoop.HadoopConstants.DEFAULT_CODEC_PROPERTY_VALUE;
-import static org.icgc.dcc.core.util.hadoop.HadoopConstants.GZIP_CODEC_PROPERTY_VALUE;
-import static org.icgc.dcc.core.util.hadoop.HadoopConstants.LZOP_CODEC_PROPERTY_VALUE;
+import static org.icgc.dcc.hadoop.util.HadoopConstants.BZIP2_CODEC_PROPERTY_VALUE;
+import static org.icgc.dcc.hadoop.util.HadoopConstants.DEFAULT_CODEC_PROPERTY_VALUE;
+import static org.icgc.dcc.hadoop.util.HadoopConstants.GZIP_CODEC_PROPERTY_VALUE;
+import static org.icgc.dcc.hadoop.util.HadoopConstants.LZOP_CODEC_PROPERTY_VALUE;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 

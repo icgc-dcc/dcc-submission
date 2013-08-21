@@ -15,8 +15,9 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.util.hadoop;
+package org.icgc.dcc.hadoop.util;
 
+import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static lombok.AccessLevel.PRIVATE;
 import lombok.NoArgsConstructor;
@@ -25,7 +26,6 @@ import lombok.NoArgsConstructor;
  * Constants for hadoop, do not include any actual hadoop objects in here.
  */
 // @formatter:off
-// TODO: Move this an the other hadoop classes in this module to dcc-hadoop! That's the point!
 @NoArgsConstructor(access = PRIVATE)
 public final class HadoopConstants {
   
@@ -43,13 +43,16 @@ public final class HadoopConstants {
   public static final String MAPRED_OUTPUT_COMPRESSION_CODE_PROPERTY_NAME =      "mapred.output.compression.codec";
   public static final String MAPRED_OUTPUT_COMPRESSION_TYPE_PROPERTY_NAME =      "mapred.output.compression.type";
 
+  public static final String MAPRED_MAP_TASKS_SPECULATIVE_EXECUTION =    "mapred.map.tasks.speculative.execution";
+  public static final String MAPRED_REDUCE_TASKS_SPECULATIVE_EXECUTION = "mapred.reduce.tasks.speculative.execution";
+  
   // Property values
   public static final String JAVA_LIBRARY_PATH_PROPERTY_NATIVE_VALUE = "/usr/lib/hadoop/lib/native";
   public static final String HDFS_USERNAME_PROPERTY_VALUE = "hdfs";
   
   public static final String MAPRED_OUTPUT_COMPRESSION_TYPE_PROPERTY_BLOCK_VALUE = "BLOCK";
-  public static final String MAPRED_OUTPUT_COMPRESS_PROPERTY_TRUE_VALUE = TRUE.toString();
-  public static final String COMPRESSION_MAP_OUTPUT_PROPERTY_TRUE_VALUE = TRUE.toString();
+  public static final String ENABLED_COMPRESSION = TRUE.toString();
+  public static final String DISABLED_SPECULATIVE_EXECUTION = FALSE.toString();
   
   public static final String DEFAULT_CODEC_PROPERTY_VALUE = "org.apache.hadoop.io.compress.DefaultCodec";
   public static final String GZIP_CODEC_PROPERTY_VALUE =    "org.apache.hadoop.io.compress.GzipCodec";  
