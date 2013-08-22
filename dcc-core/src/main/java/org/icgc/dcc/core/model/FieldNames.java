@@ -57,12 +57,16 @@ public final class FieldNames {
     public static final String SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE = "reference_genome_allele";
   }
 
+  /**
+   * Names for the array fields in the loader.
+   */
   @NoArgsConstructor(access = PRIVATE)
   public static class LoaderArrayNames {
 
     public static final String SPECIMEN_ARRAY_NAME = SPECIMEN_TYPE.getTypeName();
     public static final String SAMPLE_ARRAY_NAME = SAMPLE_TYPE.getTypeName();
     public static final String CONSEQUENCE_ARRAY_NAME = "consequence";
+
   }
 
   /**
