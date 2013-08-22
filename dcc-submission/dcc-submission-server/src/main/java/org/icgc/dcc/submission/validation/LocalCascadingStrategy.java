@@ -22,6 +22,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
 
+import lombok.Cleanup;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileContext;
 import org.apache.hadoop.fs.FileSystem;
@@ -41,7 +43,6 @@ import cascading.tuple.Fields;
 import com.google.common.base.Charsets;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
-import com.google.common.io.Closeables;
 import com.google.common.io.LineReader;
 
 /**
@@ -87,7 +88,7 @@ public class LocalCascadingStrategy extends BaseCascadingStrategy {
   static FileSystem localFileSystem() {
     try {
       return FileSystem.getLocal(new Configuration());
-    } catch(IOException e) {
+    } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
@@ -99,20 +100,19 @@ public class LocalCascadingStrategy extends BaseCascadingStrategy {
   public Fields getFileHeader(FileSchema fileSchema) throws IOException {
     Path path = this.path(fileSchema);
 
-    InputStreamReader isr = null;
-    try {
-      Path resolvedPath = FileContext.getFileContext(fileSystem.getUri()).resolvePath(path);
-      isr = new InputStreamReader(fileSystem.open(resolvedPath), Charsets.UTF_8);
-      LineReader lineReader = new LineReader(isr);
-      String firstLine = lineReader.readLine();
-      Iterable<String> header = Splitter.on('\t').split(firstLine);
-      List<String> dupHeader = this.checkDuplicateHeader(header);
-      if(!dupHeader.isEmpty()) {
-        throw new DuplicateHeaderException(dupHeader);
-      }
-      return new Fields(Iterables.toArray(header, String.class));
-    } finally {
-      Closeables.closeQuietly(isr);
+    Path resolvedPath = FileContext.getFileContext(fileSystem.getUri()).resolvePath(path);
+
+    @Cleanup
+    InputStreamReader isr = new InputStreamReader(fileSystem.open(resolvedPath), Charsets.UTF_8);
+    LineReader lineReader = new LineReader(isr);
+    String firstLine = lineReader.readLine();
+    Iterable<String> header = Splitter.on('\t').split(firstLine);
+    List<String> dupHeader = this.checkDuplicateHeader(header);
+    if (!dupHeader.isEmpty()) {
+      throw new DuplicateHeaderException(dupHeader);
     }
+
+    return new Fields(Iterables.toArray(header, String.class));
   }
+
 }
