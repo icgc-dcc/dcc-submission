@@ -59,6 +59,7 @@ public final class HadoopConstants {
   public static final String BZIP2_CODEC_PROPERTY_VALUE =   "org.apache.hadoop.io.compress.BZip2Codec";
   public static final String SNAPPY_CODEC_PROPERTY_VALUE =  "org.apache.hadoop.io.compress.SnappyCodec";
   public static final String LZOP_CODEC_PROPERTY_VALUE =    "com.hadoop.compression.lzo.LzopCodec";
+  public static final String DEFLATE_CODEC_PROPERTY_VALUE = DEFAULT_CODEC_PROPERTY_VALUE;
   
   public static final String CASCADING_DOT_FILE_PATH = "";
   public static final String CASCADING_ERROR_DOT_FILE_NAME = "stream-error.dot";

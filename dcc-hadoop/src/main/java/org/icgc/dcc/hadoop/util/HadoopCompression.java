@@ -17,28 +17,36 @@
  */
 package org.icgc.dcc.hadoop.util;
 
+import static com.google.common.base.Optional.of;
+import static com.google.common.base.Preconditions.checkState;
 import static org.icgc.dcc.hadoop.util.HadoopConstants.BZIP2_CODEC_PROPERTY_VALUE;
-import static org.icgc.dcc.hadoop.util.HadoopConstants.DEFAULT_CODEC_PROPERTY_VALUE;
+import static org.icgc.dcc.hadoop.util.HadoopConstants.DEFLATE_CODEC_PROPERTY_VALUE;
 import static org.icgc.dcc.hadoop.util.HadoopConstants.GZIP_CODEC_PROPERTY_VALUE;
 import static org.icgc.dcc.hadoop.util.HadoopConstants.LZOP_CODEC_PROPERTY_VALUE;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+
+import com.google.common.base.Optional;
 
 /**
  * Describes the different types of compression in hadoop, along with their corresponding codecs.
  */
 @RequiredArgsConstructor
 public enum HadoopCompression {
-  NONE(DEFAULT_CODEC_PROPERTY_VALUE),
-  GZIP(GZIP_CODEC_PROPERTY_VALUE),
-  BZIP2(BZIP2_CODEC_PROPERTY_VALUE),
-  LZO(LZOP_CODEC_PROPERTY_VALUE);
+  NONE(Optional.<String> absent()),
+  DEFLATE(of(DEFLATE_CODEC_PROPERTY_VALUE)), // The default codec actually
+  GZIP(of(GZIP_CODEC_PROPERTY_VALUE)),
+  BZIP2(of(BZIP2_CODEC_PROPERTY_VALUE)),
+  LZO(of(LZOP_CODEC_PROPERTY_VALUE));
 
-  @Getter
-  private final String codec;
+  private final Optional<String> codec;
+
+  public String getCodec() {
+    checkState(isEnabled(),
+        "Cannot ask for codec if compression is set to '%s'", NONE);
+    return codec.get();
+  }
 
   public boolean isEnabled() {
     return this != NONE;
   }
-
 }
