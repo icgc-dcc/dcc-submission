@@ -18,6 +18,8 @@
 package org.icgc.dcc.core.model;
 
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SAMPLE_TYPE;
+import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SPECIMEN_TYPE;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = PRIVATE)
@@ -31,6 +33,7 @@ public final class FieldNames {
   /**
    * Field names in the original submission format.
    */
+  @NoArgsConstructor(access = PRIVATE)
   public static class SubmissionFieldNames {
 
     public static final String SUBMISSION_DONOR_ID = "donor_id";
@@ -41,7 +44,7 @@ public final class FieldNames {
     public static final String SUBMISSION_TRANSCRIPT_AFFECTED = "transcript_affected";
 
     public static final String SUBMISSION_OBSERVATION_ANALYSIS_ID = "analysis_id";
-    public static final String SUBMISSION_OBSERVATION_ANALYZED_SAMPLE_ID = SUBMISSION_ANALYZED_SAMPLE_ID; // TODO: keep?
+    public static final String SUBMISSION_OBSERVATION_ANALYZED_SAMPLE_ID = SUBMISSION_ANALYZED_SAMPLE_ID;
 
     public static final String SUBMISSION_OBSERVATION_ASSEMBLY_VERSION = "assembly_version";
 
@@ -52,6 +55,14 @@ public final class FieldNames {
     public static final String SUBMISSION_OBSERVATION_MUTATION = "mutation";
 
     public static final String SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE = "reference_genome_allele";
+  }
+
+  @NoArgsConstructor(access = PRIVATE)
+  public static class LoaderArrayNames {
+
+    public static final String SPECIMEN_ARRAY_NAME = SPECIMEN_TYPE.getTypeName();
+    public static final String SAMPLE_ARRAY_NAME = SAMPLE_TYPE.getTypeName();
+    public static final String CONSEQUENCE_ARRAY_NAME = "consequence";
   }
 
   /**

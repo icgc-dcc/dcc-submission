@@ -19,12 +19,9 @@ package org.icgc.dcc.core.model;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
-import static org.icgc.dcc.core.model.FieldNames.DONOR_ID;
-import static org.icgc.dcc.core.model.FieldNames.GENE_ID;
 import static org.icgc.dcc.core.model.FieldNames.MONGO_INTERNAL_ID;
-import static org.icgc.dcc.core.model.FieldNames.MUTATION_ID;
-import static org.icgc.dcc.core.model.FieldNames.PROJECT_ID;
 import static org.icgc.dcc.core.model.FieldNames.RELEASE_ID;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_ANALYSIS_ID;
 
 import java.util.List;
 
@@ -39,14 +36,14 @@ import lombok.RequiredArgsConstructor;
 public enum ReleaseCollection {
 
   RELEASE_COLLECTION("Release", newArrayList(RELEASE_ID)),
-  PROJECT_COLLECTION("Project", newArrayList(PROJECT_ID)),
-  DONOR_COLLECTION("Donor", newArrayList(DONOR_ID)),
-  GENE_COLLECTION("Gene", newArrayList(GENE_ID)),
+  PROJECT_COLLECTION("Project", newArrayList(SurrogateKeys.PROJECT)),
+  DONOR_COLLECTION("Donor", newArrayList(SurrogateKeys.DONOR)),
+  GENE_COLLECTION("Gene", newArrayList(SurrogateKeys.GENE)),
   OBSERVATION_COLLECTION("Observation", newArrayList(
       SurrogateKeys.SAMPLE,
       SurrogateKeys.MUTATION,
-      FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_ANALYSIS_ID)),
-  MUTATION_COLLECTION("Mutation", newArrayList(MUTATION_ID));
+      SUBMISSION_OBSERVATION_ANALYSIS_ID)),
+  MUTATION_COLLECTION("Mutation", newArrayList(SurrogateKeys.MUTATION));
 
   /**
    * The name of the collection.
@@ -62,7 +59,7 @@ public enum ReleaseCollection {
    * Returns the field that uniquely describes documents. If there is one field in the primary key, it returns that
    * field, otherwise it returns mongodb's internal "_id" field.
    */
-  public String getKey() {
+  public String getSurrogateKey() {
     int size = primaryKey.size();
     checkState(size >= 1,
         "There should always be at least one field in the primary key, instead: '%s'", primaryKey);
