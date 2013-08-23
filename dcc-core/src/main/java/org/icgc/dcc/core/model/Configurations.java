@@ -46,7 +46,4 @@ public final class Configurations {
   public static final String IDENTIFIER_CLIENT_CLASS_NAME_KEY = "identifierClientClassName";
   public static final String IDENTIFIER_KEY = "identifier";
 
-  public static final String PROJECTS_CLASS_NAME_KEY = "projectsClassName";
-  public static final String PROJECTS_KEY = "projects";
-
 }

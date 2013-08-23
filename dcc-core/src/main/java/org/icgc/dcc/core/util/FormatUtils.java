@@ -61,6 +61,10 @@ public final class FormatUtils {
     return format("%.2f", percent);
   }
 
+  public static String formatPercent(double percent) {
+    return format("%.2f", percent);
+  }
+
   public static String formatDuration(Stopwatch watch) {
     return formatDuration(watch.elapsed(SECONDS));
   }
