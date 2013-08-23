@@ -17,6 +17,14 @@
  */
 package org.icgc.dcc.core.model;
 
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Lists.newArrayList;
+import static org.icgc.dcc.core.model.FieldNames.MONGO_INTERNAL_ID;
+import static org.icgc.dcc.core.model.FieldNames.RELEASE_ID;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_ANALYSIS_ID;
+
+import java.util.List;
+
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -27,22 +35,42 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public enum ReleaseCollection {
 
-  RELEASE_COLLECTION("Release", FieldNames.RELEASE_ID),
-  PROJECT_COLLECTION("Project", FieldNames.PROJECT_ID),
-  DONOR_COLLECTION("Donor", FieldNames.DONOR_ID),
-  GENE_COLLECTION("Gene", FieldNames.GENE_ID),
-  OBSERVATION_COLLECTION("Observation", FieldNames.OBSERVATION_ID),
-  MUTATION_COLLECTION("Mutation", FieldNames.MUTATION_ID);
+  RELEASE_COLLECTION("Release", newArrayList(RELEASE_ID)),
+  PROJECT_COLLECTION("Project", newArrayList(SurrogateKeys.PROJECT)),
+  DONOR_COLLECTION("Donor", newArrayList(SurrogateKeys.DONOR)),
+  GENE_COLLECTION("Gene", newArrayList(SurrogateKeys.GENE)),
+  OBSERVATION_COLLECTION("Observation", newArrayList(
+      SurrogateKeys.SAMPLE,
+      SurrogateKeys.MUTATION,
+      SUBMISSION_OBSERVATION_ANALYSIS_ID)),
+  MUTATION_COLLECTION("Mutation", newArrayList(SurrogateKeys.MUTATION));
 
   /**
    * The name of the collection.
    */
-  final private String name;
+  private final String name;
 
   /**
    * The primary key of the collection.
    */
-  final private String key;
+  private final List<String> primaryKey;
+
+  /**
+   * Returns the field that uniquely describes documents. If there is one field in the primary key, it returns that
+   * field, otherwise it returns mongodb's internal "_id" field.
+   */
+  public String getSurrogateKey() {
+    int size = primaryKey.size();
+    checkState(size >= 1,
+        "There should always be at least one field in the primary key, instead: '%s'", primaryKey);
+    return size == 1 ?
+        getFirstKey() :
+        MONGO_INTERNAL_ID;
+  }
+
+  private String getFirstKey() {
+    return primaryKey.get(0);
+  }
 
   @Override
   public String toString() {
