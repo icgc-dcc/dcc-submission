@@ -40,7 +40,6 @@ public final class Configurations {
 
   public static final String RELEASE_MONGO_URI_KEY = "releaseMongoUri";
 
-  public static final String SUBMISSIONS_KEY = "submissions";
   public static final String HADOOP_KEY = "hadoop";
 
   public static final String IDENTIFIER_CLIENT_CLASS_NAME_KEY = "identifierClientClassName";

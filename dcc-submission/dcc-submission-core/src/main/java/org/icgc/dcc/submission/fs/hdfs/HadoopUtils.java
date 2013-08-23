@@ -181,10 +181,6 @@ public class HadoopUtils {
     return ls;
   }
 
-  public static List<String> lsFile2(FileSystem fileSystem, Path path, Pattern pattern) {
-    return toFilenameList(lsFile(fileSystem, path, pattern));
-  }
-
   public static List<Path> lsFile(FileSystem fileSystem, Path path, Pattern pattern) {
     return ls(fileSystem, path, pattern, true, false, false);
   }
