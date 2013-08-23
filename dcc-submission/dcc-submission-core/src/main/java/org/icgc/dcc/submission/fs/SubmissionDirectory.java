@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.fs.hdfs.HadoopUtils;
 import org.icgc.dcc.submission.release.model.Release;
@@ -58,7 +59,16 @@ public class SubmissionDirectory {
    * (non-recursive) TODO: confirm
    */
   public Iterable<String> listFile(Pattern pattern) {
-    List<Path> pathList = HadoopUtils.lsFile(this.dccFileSystem.getFileSystem(), getSubmissionDirPath(), pattern);
+    FileSystem fileSystem = this.dccFileSystem.getFileSystem();
+    Path submissionDirPath = getSubmissionDirPath();
+    return listFile(fileSystem, submissionDirPath, pattern);
+  }
+
+  /**
+   * (non-recursive) TODO: confirm
+   */
+  public static Iterable<String> listFile(FileSystem fileSystem, Path submissionDirPath, Pattern pattern) {
+    List<Path> pathList = HadoopUtils.lsFile(fileSystem, submissionDirPath, pattern);
     return HadoopUtils.toFilenameList(pathList);
   }
 

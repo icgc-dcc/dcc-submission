@@ -39,7 +39,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 /**
- * Handles all hadoop API related methods - TODO: change to use proxy or decorator pattern?
+ * Handles all hadoop API related methods - TODO: change to use proxy or
+ * decorator pattern?
  */
 public class HadoopUtils {
 
@@ -113,6 +114,7 @@ public class HadoopUtils {
 
   /**
    * This does not work on HDFS as of yet (see DCC-835).
+   * 
    * @deprecated
    */
   @Deprecated
@@ -177,6 +179,10 @@ public class HadoopUtils {
       }
     }
     return ls;
+  }
+
+  public static List<String> lsFile2(FileSystem fileSystem, Path path, Pattern pattern) {
+    return toFilenameList(lsFile(fileSystem, path, pattern));
   }
 
   public static List<Path> lsFile(FileSystem fileSystem, Path path, Pattern pattern) {
