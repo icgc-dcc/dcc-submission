@@ -19,13 +19,13 @@ package org.icgc.dcc.core.model;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_ASSEMBLY_VERSION;
-import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_CHROMOSOME;
-import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_CHROMOSOME_END;
-import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_CHROMOSOME_START;
-import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_MUTATION;
-import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_MUTATION_TYPE;
-import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_REFERENCE_GENOME_ALLELE;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_ASSEMBLY_VERSION;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME_END;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME_START;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_MUTATION;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_MUTATION_TYPE;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE;
 
 import java.util.List;
 
@@ -43,24 +43,24 @@ public final class BusinessKeys {
    * Part of the business key for mutations that is found in the meta files and is part of the identifying fields.
    */
   public static final List<String> MUTATION_META_IDENTIFYING_PART = newArrayList(
-      OBSERVATION_ASSEMBLY_VERSION);
+      SUBMISSION_OBSERVATION_ASSEMBLY_VERSION);
 
   /**
    * Part of the business key for mutations that is found in the primary files and is part of the identifying fields.
    */
   public static final List<String> MUTATION_PRIMARY_IDENTIFYING_PART = newArrayList(
-      OBSERVATION_CHROMOSOME,
-      OBSERVATION_CHROMOSOME_START,
-      OBSERVATION_CHROMOSOME_END,
-      OBSERVATION_MUTATION_TYPE,
-      OBSERVATION_MUTATION);
+      SUBMISSION_OBSERVATION_CHROMOSOME,
+      SUBMISSION_OBSERVATION_CHROMOSOME_START,
+      SUBMISSION_OBSERVATION_CHROMOSOME_END,
+      SUBMISSION_OBSERVATION_MUTATION_TYPE,
+      SUBMISSION_OBSERVATION_MUTATION);
 
   /**
    * Part of the business key for mutations that is found in the primary files and is <b>not</b> part of the identifying
    * fields (redundant info added for convenience).
    */
   public static final List<String> MUTATION_PRIMARY_REDUNDANT_INFO_PART = newArrayList(
-      OBSERVATION_REFERENCE_GENOME_ALLELE);
+      SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE);
 
   /**
    * Part of the business key for mutations that constitutes the identifying fields.
