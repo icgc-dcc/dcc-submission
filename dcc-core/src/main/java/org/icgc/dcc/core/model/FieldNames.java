@@ -73,17 +73,18 @@ public final class FieldNames {
    * Project field names.
    */
   public static final String PROJECT_ID = "_project_id"; // "BRCA-UK" for instance
-  public static final String PROJECT_CODE = "project_code";
-  public static final String PROJECT_FORMER_SUBMISSION_ID = "former_submission_id"; // "1133.0" for instance
-  public static final String PROJECT_INTERNAL_ID = "internal_id"; // Not really used for now... "PR3" for instance
   public static final String PROJECT_ICGC_ID = "icgc_id"; // "1133" for instance
-  public static final String PROJECT_ALIAS = "alias";
+  public static final String PROJECT_FORMER_SUBMISSION_ID = "former_submission_id"; // "1133.0" for instance
+  public static final String PROJECT_ALIAS = "alias"; // "CLL Genome" for instance
   public static final String PROJECT_COLOUR = "colour";
-  public static final String PROJECT_DISPLAY_NAME = "project_name";
-  public static final String PROJECT_TUMOUR_TYPE = "tumour_type";
-  public static final String PROJECT_TUMOUR_SUBTYPE = "tumour_subtype";
-  public static final String PROJECT_PRIMARY_SITE = "primary_site";
-  public static final String PROJECT_COUNTRIES = "countries";
+  public static final String PROJECT_DISPLAY_NAME = "project_name"; // "Bladder Urothelial Cancer - TGCA, US" for
+                                                                    // instance
+  public static final String PROJECT_TUMOUR_TYPE = "tumour_type"; // "Bladder cancer" for instance
+  public static final String PROJECT_TUMOUR_SUBTYPE = "tumour_subtype"; // "Invasive urothelial bladder cancer" for
+                                                                        // instance
+  public static final String PROJECT_PRIMARY_SITE = "primary_site"; // "Bladder" for instance
+  public static final String PROJECT_PRIMARY_COUNTRIES = "primary_countries"; // "United States" for instance
+  public static final String PROJECT_PARTNER_COUNTRIES = "partner_countries"; // "Mexico" for instance
   public static final String PROJECT_PUBMED_IDS = "pubmed_ids";
   public static final String PROJECT_SUMMARY = "_summary";
   public static final String PROJECT_SUMMARY_TOTAL_DONOR_COUNT = "_total_donor_count";
