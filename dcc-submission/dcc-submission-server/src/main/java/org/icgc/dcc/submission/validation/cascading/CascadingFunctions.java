@@ -49,7 +49,8 @@ public final class CascadingFunctions {
   /**
    * Simple function that logs the incoming tuple entries (useful for debugging).
    * <p>
-   * Example of call: <code>pipe = new Each(pipe, new FunctionUtils.LogFunction("my_prefix"), Fields.RESULTS);</code>
+   * Example of call:
+   * <code>pipe = new Each(pipe, new CascadingFunctions.LogFunction("my_prefix"), Fields.RESULTS);</code>
    */
   @SuppressWarnings("rawtypes")
   public static class LogFunction extends BaseOperation implements Function {
