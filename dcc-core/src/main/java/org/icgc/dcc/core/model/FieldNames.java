@@ -83,8 +83,8 @@ public final class FieldNames {
   public static final String PROJECT_TUMOUR_SUBTYPE = "tumour_subtype"; // "Invasive urothelial bladder cancer" for
                                                                         // instance
   public static final String PROJECT_PRIMARY_SITE = "primary_site"; // "Bladder" for instance
-  public static final String PROJECT_PRIMARY_COUNTRIES = "primary_country"; // "United States" for instance
-  public static final String PROJECT_PARTNER_COUNTRIES = "partner_countries"; // "United States" for instance
+  public static final String PROJECT_PRIMARY_COUNTRIES = "primary_countries"; // "United States" for instance
+  public static final String PROJECT_PARTNER_COUNTRIES = "partner_countries"; // "Mexico" for instance
   public static final String PROJECT_PUBMED_IDS = "pubmed_ids";
   public static final String PROJECT_SUMMARY = "_summary";
   public static final String PROJECT_SUMMARY_TOTAL_DONOR_COUNT = "_total_donor_count";
