@@ -15,21 +15,38 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.model;
+package org.icgc.dcc.hadoop.util;
 
-import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
+import static com.google.common.base.Optional.of;
+import static com.google.common.base.Preconditions.checkState;
+import static org.icgc.dcc.hadoop.util.HadoopConstants.BZIP2_CODEC_PROPERTY_VALUE;
+import static org.icgc.dcc.hadoop.util.HadoopConstants.DEFLATE_CODEC_PROPERTY_VALUE;
+import static org.icgc.dcc.hadoop.util.HadoopConstants.GZIP_CODEC_PROPERTY_VALUE;
+import static org.icgc.dcc.hadoop.util.HadoopConstants.LZOP_CODEC_PROPERTY_VALUE;
+import lombok.RequiredArgsConstructor;
+
+import com.google.common.base.Optional;
 
 /**
- * Utilities for working with ICGC file types.
- * <p>
- * For experimental feature types, see {@link FeatureTypes} instead.
+ * Describes the different types of compression in hadoop, along with their corresponding codecs.
  */
-@NoArgsConstructor(access = PRIVATE)
-public final class FileTypes {
+@RequiredArgsConstructor
+public enum HadoopCompression {
+  NONE(Optional.<String> absent()),
+  DEFLATE(of(DEFLATE_CODEC_PROPERTY_VALUE)), // The default codec actually
+  GZIP(of(GZIP_CODEC_PROPERTY_VALUE)),
+  BZIP2(of(BZIP2_CODEC_PROPERTY_VALUE)),
+  LZO(of(LZOP_CODEC_PROPERTY_VALUE));
 
-  public static final String DONOR_TYPE = "donor";
-  public static final String SPECIMEN_TYPE = "specimen";
-  public static final String SAMPLE_TYPE = "sample";
+  private final Optional<String> codec;
 
+  public String getCodec() {
+    checkState(isEnabled(),
+        "Cannot ask for codec if compression is set to '%s'", NONE);
+    return codec.get();
+  }
+
+  public boolean isEnabled() {
+    return this != NONE;
+  }
 }

@@ -18,6 +18,8 @@
 package org.icgc.dcc.core.model;
 
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SAMPLE_TYPE;
+import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SPECIMEN_TYPE;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = PRIVATE)
@@ -26,36 +28,66 @@ public final class FieldNames {
   /**
    * Internal mongo ID field name.
    */
-  public static final String MONGO_INTERNAL_ID_FIELD = "_id";
+  public static final String MONGO_INTERNAL_ID = "_id";
 
   /**
-   * Field names in the original input format.
+   * Field names in the original submission format.
    */
-  public static final String DONOR_ID_FIELD = "donor_id";
-  public static final String SPECIMEN_ID_FIELD = "specimen_id";
-  public static final String SAMPLE_ID_FIELD = "sample_id";
-  public static final String ANALYZED_SAMPLE_ID_FIELD = "analyzed_sample_id";
-  public static final String MATCHED_SAMPLE_ID_FIELD = "matched_sample_id";
-  public static final String GENE_ID_FIELD = "gene_affected";
-  public static final String TRANSCRIPT_ID_FIELD = "transcript_affected";
+  @NoArgsConstructor(access = PRIVATE)
+  public static class SubmissionFieldNames {
+
+    public static final String SUBMISSION_DONOR_ID = "donor_id";
+    public static final String SUBMISSION_SPECIMEN_ID = "specimen_id";
+    public static final String SUBMISSION_ANALYZED_SAMPLE_ID = "analyzed_sample_id";
+    public static final String SUBMISSION_MATCHED_SAMPLE_ID = "matched_sample_id";
+    public static final String SUBMISSION_GENE_AFFECTED = "gene_affected";
+    public static final String SUBMISSION_TRANSCRIPT_AFFECTED = "transcript_affected";
+
+    public static final String SUBMISSION_OBSERVATION_ANALYSIS_ID = "analysis_id";
+    public static final String SUBMISSION_OBSERVATION_ANALYZED_SAMPLE_ID = SUBMISSION_ANALYZED_SAMPLE_ID;
+
+    public static final String SUBMISSION_OBSERVATION_ASSEMBLY_VERSION = "assembly_version";
+
+    public static final String SUBMISSION_OBSERVATION_CHROMOSOME = "chromosome";
+    public static final String SUBMISSION_OBSERVATION_CHROMOSOME_START = "chromosome_start";
+    public static final String SUBMISSION_OBSERVATION_CHROMOSOME_END = "chromosome_end";
+    public static final String SUBMISSION_OBSERVATION_MUTATION_TYPE = "mutation_type";
+    public static final String SUBMISSION_OBSERVATION_MUTATION = "mutation";
+
+    public static final String SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE = "reference_genome_allele";
+  }
+
+  /**
+   * Names for the array fields in the loader.
+   */
+  @NoArgsConstructor(access = PRIVATE)
+  public static class LoaderArrayNames {
+
+    public static final String SPECIMEN_ARRAY_NAME = SPECIMEN_TYPE.getTypeName();
+    public static final String SAMPLE_ARRAY_NAME = SAMPLE_TYPE.getTypeName();
+    public static final String CONSEQUENCE_ARRAY_NAME = "consequence";
+
+  }
 
   /**
    * Project field names.
    */
-  public static final String PROJECT_ID = "_project_id"; // Same as project_code for now
-  public static final String PROJECT_CODE = "project_code"; // "BRCA-UK" for instance
-  public static final String PROJECT_FORMER_SUBMISSION_ID = "former_submission_id"; // "1133.0" for instance
-  public static final String PROJECT_INTERNAL_ID = "internal_id"; // Not really used for now... "PR3" for instance
+  public static final String PROJECT_ID = "_project_id"; // "BRCA-UK" for instance
   public static final String PROJECT_ICGC_ID = "icgc_id"; // "1133" for instance
-  public static final String PROJECT_ALIAS = "alias";
+  public static final String PROJECT_FORMER_SUBMISSION_ID = "former_submission_id"; // "1133.0" for instance
+  public static final String PROJECT_ALIAS = "alias"; // "CLL Genome" for instance
   public static final String PROJECT_COLOUR = "colour";
-  public static final String PROJECT_DISPLAY_NAME = "project_name";
-  public static final String PROJECT_TUMOUR_TYPE = "tumour_type";
-  public static final String PROJECT_TUMOUR_SUBTYPE = "tumour_subtype";
-  public static final String PROJECT_PRIMARY_SITE = "primary_site";
-  public static final String PROJECT_COUNTRIES = "countries";
+  public static final String PROJECT_DISPLAY_NAME = "project_name"; // "Bladder Urothelial Cancer - TGCA, US" for
+                                                                    // instance
+  public static final String PROJECT_TUMOUR_TYPE = "tumour_type"; // "Bladder cancer" for instance
+  public static final String PROJECT_TUMOUR_SUBTYPE = "tumour_subtype"; // "Invasive urothelial bladder cancer" for
+                                                                        // instance
+  public static final String PROJECT_PRIMARY_SITE = "primary_site"; // "Bladder" for instance
+  public static final String PROJECT_PRIMARY_COUNTRIES = "primary_countries"; // "United States" for instance
+  public static final String PROJECT_PARTNER_COUNTRIES = "partner_countries"; // "Mexico" for instance
   public static final String PROJECT_PUBMED_IDS = "pubmed_ids";
   public static final String PROJECT_SUMMARY = "_summary";
+  public static final String PROJECT_SUMMARY_TOTAL_DONOR_COUNT = "_total_donor_count";
 
   /**
    * Special fields, usually appearing in all clinical files as well as primary/meta experimental files.
@@ -128,7 +160,7 @@ public final class FieldNames {
   /**
    * Observation field names.
    */
-  public static final String OBSERVATION_ID = "_id";
+  public static final String OBSERVATION_ID = MONGO_INTERNAL_ID;
   public static final String OBSERVATION_MUTATION_ID = "_mutation_id";
   public static final String OBSERVATION_TYPE = "_type";
   public static final String OBSERVATION_DONOR = "donor";
@@ -148,16 +180,6 @@ public final class FieldNames {
   public static final String OBSERVATION_VERIFICATION_STATUS = "verification_status";
   public static final String OBSERVATION_VERIFICATION_PLATFORM = "verification_platform";
   public static final String OBSERVATION_IS_ANNOTATED = "is_annotated";
-
-  public static final String OBSERVATION_ASSEMBLY_VERSION = "assembly_version";
-  public static final String OBSERVATION_ANALYSIS_ID = "analysis_id";
-  public static final String OBSERVATION_ANALYZED_SAMPLE_ID = "analyzed_sample_id";
-
-  public static final String OBSERVATION_CHROMOSOME = "chromosome";
-  public static final String OBSERVATION_CHROMOSOME_START = "chromosome_start";
-  public static final String OBSERVATION_CHROMOSOME_END = "chromosome_end";
-  public static final String OBSERVATION_MUTATION_TYPE = "mutation_type";
-  public static final String OBSERVATION_MUTATION = "mutation";
 
   public static String getPartitionTypeFieldName(String type) {
     return type;
@@ -185,6 +207,7 @@ public final class FieldNames {
   public static final String MUTATION_SUMMARY_AFFECTED_PROJECT_IDS = "_affected_project_id";
   public static final String MUTATION_SUMMARY_AFFECTED_PROJECT_COUNT = "_affected_project_count";
   public static final String MUTATION_SUMMARY_AFFECTED_DONOR_COUNT = "_affected_donor_count";
+  public static final String MUTATION_SUMMARY_TESTED_DONOR_COUNT = "_tested_donor_count";
 
   /**
    * Release field names.

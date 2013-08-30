@@ -17,69 +17,46 @@
  */
 package org.icgc.dcc.core.util;
 
-import static java.lang.String.format;
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static lombok.AccessLevel.PRIVATE;
-import static org.joda.time.Duration.standardSeconds;
-import lombok.NoArgsConstructor;
+import static com.google.common.collect.Lists.newArrayList;
 
-import org.joda.time.Duration;
-import org.joda.time.Period;
+import java.util.ArrayList;
+import java.util.List;
 
-import com.google.common.base.Stopwatch;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
-@NoArgsConstructor(access = PRIVATE)
-public final class FormatUtils {
+/**
+ * Utils class for mongodb related operations.
+ */
+public class MongoDbUtils {
 
-  public static String formatBytes(long bytes) {
-    return formatBytes(bytes, true);
+  private static final ObjectMapper MAPPER = new ObjectMapper();
+
+  public static String fields(String includedField) {
+    return fields(newArrayList(includedField));
   }
 
-  public static String formatBytes(long bytes, boolean si) {
-    int unit = si ? 1000 : 1024;
-    if (bytes < unit) return bytes + " B";
-
-    int exp = (int) (Math.log(bytes) / Math.log(unit));
-    String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp - 1) + (si ? "" : "i");
-
-    return format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
+  public static String fields(List<String> includedFields) {
+    return fields(new ArrayList<String>(), includedFields);
   }
 
-  public static String formatCount(int count) {
-    return format("%,d", count);
-  }
+  /**
+   * Returns a {@link String} representing the selection/un-selection of fields using mongodb's syntax.
+   * <p>
+   * For instance: {"field1": 1, "field3": 0, "field4": 0, "field5": 1} where fields 1 and 5 are explicitly selected and
+   * fields 3 and 4 explicitly unselected.
+   */
+  public static String fields(List<String> excludedFields, List<String> includedFields) {
+    ObjectNode fields = MAPPER.createObjectNode();
 
-  public static String formatCount(long count) {
-    return format("%,d", count);
-  }
+    for (String excludedField : excludedFields) {
+      fields.put(excludedField, 0);
+    }
+    for (String excludedField : includedFields) {
+      fields.put(excludedField, 1);
+    }
 
-  public static String formatRate(float count) {
-    return format("%,.2f", count);
-  }
-
-  public static String formatPercent(float percent) {
-    return format("%.2f", percent);
-  }
-
-  public static String formatPercent(double percent) {
-    return format("%.2f", percent);
-  }
-
-  public static String formatDuration(Stopwatch watch) {
-    return formatDuration(watch.elapsed(SECONDS));
-  }
-
-  public static String formatDuration(long seconds) {
-    Duration duration = standardSeconds(seconds);
-
-    return formatPeriod(duration.toPeriod());
-  }
-
-  public static String formatPeriod(Period period) {
-    period = period.normalizedStandard();
-
-    return format("%02d:%02d:%02d (hh:mm:ss)",//
-        period.getHours(), period.getMinutes(), period.getSeconds());
+    return fields.toString();
   }
 
 }

@@ -17,26 +17,36 @@
  */
 package org.icgc.dcc.core.model;
 
-import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.core.model.FieldNames.DONOR_ID;
-import static org.icgc.dcc.core.model.FieldNames.DONOR_SAMPLE_ID;
-import static org.icgc.dcc.core.model.FieldNames.DONOR_SPECIMEN_ID;
-import static org.icgc.dcc.core.model.FieldNames.GENE_ID;
-import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_MUTATION_ID;
-import static org.icgc.dcc.core.model.FieldNames.PROJECT_ID;
-import lombok.NoArgsConstructor;
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Sets.newLinkedHashSet;
+import static org.fest.assertions.api.Assertions.assertThat;
 
-/**
- * Contains surrogate keys for the ICGC DCC portal.
- */
-@NoArgsConstructor(access = PRIVATE)
-public final class SurrogateKeys {
+import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
+import org.junit.Test;
 
-  public static final String PROJECT = PROJECT_ID;
-  public static final String GENE = GENE_ID;
-  public static final String DONOR = DONOR_ID;
-  public static final String SPECIMEN = DONOR_SPECIMEN_ID;
-  public static final String SAMPLE = DONOR_SAMPLE_ID;
-  public static final String MUTATION = OBSERVATION_MUTATION_ID;
+public class FeatureTypesTest {
+
+  @Test
+  public void test_FeatureType() {
+    assertThat(FeatureType.from("ssm")).isEqualTo(FeatureType.SSM_TYPE);
+    assertThat(FeatureType.from("exp")).isEqualTo(FeatureType.EXP_TYPE);
+    assertThat(FeatureType.from("pexp")).isEqualTo(FeatureType.PEXP_TYPE);
+
+    assertThat(FeatureType.complement(
+        newLinkedHashSet(newArrayList(
+            FeatureType.SSM_TYPE,
+            FeatureType.CNSM_TYPE,
+            FeatureType.SGV_TYPE,
+            FeatureType.METH_TYPE,
+            FeatureType.EXP_TYPE,
+            FeatureType.PEXP_TYPE))))
+        .isEqualTo(
+            newLinkedHashSet(newArrayList(
+                FeatureType.STSM_TYPE,
+                FeatureType.CNGV_TYPE,
+                FeatureType.STGV_TYPE,
+                FeatureType.MIRNA_TYPE,
+                FeatureType.JCN_TYPE)));
+  }
 
 }

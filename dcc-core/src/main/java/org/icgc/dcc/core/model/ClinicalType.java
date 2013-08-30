@@ -17,26 +17,59 @@
  */
 package org.icgc.dcc.core.model;
 
-import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.core.model.FieldNames.DONOR_ID;
-import static org.icgc.dcc.core.model.FieldNames.DONOR_SAMPLE_ID;
-import static org.icgc.dcc.core.model.FieldNames.DONOR_SPECIMEN_ID;
-import static org.icgc.dcc.core.model.FieldNames.GENE_ID;
-import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_MUTATION_ID;
-import static org.icgc.dcc.core.model.FieldNames.PROJECT_ID;
-import lombok.NoArgsConstructor;
+import static com.google.common.base.Preconditions.checkState;
+import lombok.Getter;
+
+import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
+import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileSubType;
 
 /**
- * Contains surrogate keys for the ICGC DCC portal.
+ * Represents a (the only one for now) type of clinical data, see {@link FeatureType} for the observation counterpart.
+ * <p>
+ * The "donor" name is reused here (which makes things a bit confusing...).
  */
-@NoArgsConstructor(access = PRIVATE)
-public final class SurrogateKeys {
+public enum ClinicalType implements SubmissionDataType {
 
-  public static final String PROJECT = PROJECT_ID;
-  public static final String GENE = GENE_ID;
-  public static final String DONOR = DONOR_ID;
-  public static final String SPECIMEN = DONOR_SPECIMEN_ID;
-  public static final String SAMPLE = DONOR_SAMPLE_ID;
-  public static final String MUTATION = OBSERVATION_MUTATION_ID;
+  CLINICAL_CORE_TYPE(SubmissionFileSubType.DONOR_SUBTYPE.getFullName()),
+  CLINICAL_OPTIONAL_TYPE(CLINICAL_OPTIONAL_TYPE_NAME);
+
+  private ClinicalType(String typeName) {
+    this.typeName = typeName;
+  }
+
+  @Getter
+  private final String typeName;
+
+  @Override
+  public boolean isClinicalType() {
+    return true;
+  }
+
+  @Override
+  public boolean isFeatureType() {
+    return false;
+  }
+
+  @Override
+  public ClinicalType asClinicalType() {
+    return this;
+  }
+
+  @Override
+  public FeatureType asFeatureType() {
+    checkState(false, "Not a '%s': '%s'",
+        FeatureType.class.getSimpleName(), this);
+    return null;
+  }
+
+  /**
+   * Returns an enum matching the type name provided.
+   */
+  public static SubmissionDataType from(String typeName) {
+    checkState(CLINICAL_CORE_TYPE.getTypeName().equals(typeName),
+        "Only '%s' is allowed for now, '{}' provided instead",
+        CLINICAL_CORE_TYPE.getTypeName(), typeName);
+    return CLINICAL_CORE_TYPE;
+  }
 
 }

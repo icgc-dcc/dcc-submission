@@ -17,26 +17,15 @@
  */
 package org.icgc.dcc.core.model;
 
-import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.core.model.FieldNames.DONOR_ID;
-import static org.icgc.dcc.core.model.FieldNames.DONOR_SAMPLE_ID;
-import static org.icgc.dcc.core.model.FieldNames.DONOR_SPECIMEN_ID;
-import static org.icgc.dcc.core.model.FieldNames.GENE_ID;
-import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_MUTATION_ID;
-import static org.icgc.dcc.core.model.FieldNames.PROJECT_ID;
-import lombok.NoArgsConstructor;
+import static org.fest.assertions.api.Assertions.assertThat;
 
-/**
- * Contains surrogate keys for the ICGC DCC portal.
- */
-@NoArgsConstructor(access = PRIVATE)
-public final class SurrogateKeys {
+import org.junit.Test;
 
-  public static final String PROJECT = PROJECT_ID;
-  public static final String GENE = GENE_ID;
-  public static final String DONOR = DONOR_ID;
-  public static final String SPECIMEN = DONOR_SPECIMEN_ID;
-  public static final String SAMPLE = DONOR_SAMPLE_ID;
-  public static final String MUTATION = OBSERVATION_MUTATION_ID;
+public class ClinicalTypeTest {
+
+  @Test
+  public void test_ClinicalType() {
+    assertThat(ClinicalType.from("donor")).isEqualTo(ClinicalType.CLINICAL_CORE_TYPE);
+  }
 
 }

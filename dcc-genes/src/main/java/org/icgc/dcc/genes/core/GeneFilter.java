@@ -15,28 +15,21 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.model;
+package org.icgc.dcc.genes.core;
 
-import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.core.model.FieldNames.DONOR_ID;
-import static org.icgc.dcc.core.model.FieldNames.DONOR_SAMPLE_ID;
-import static org.icgc.dcc.core.model.FieldNames.DONOR_SPECIMEN_ID;
-import static org.icgc.dcc.core.model.FieldNames.GENE_ID;
-import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_MUTATION_ID;
-import static org.icgc.dcc.core.model.FieldNames.PROJECT_ID;
-import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.databind.JsonNode;
 
 /**
- * Contains surrogate keys for the ICGC DCC portal.
+ * Callback to determine if a gene should be filtered.
  */
-@NoArgsConstructor(access = PRIVATE)
-public final class SurrogateKeys {
+public interface GeneFilter {
 
-  public static final String PROJECT = PROJECT_ID;
-  public static final String GENE = GENE_ID;
-  public static final String DONOR = DONOR_ID;
-  public static final String SPECIMEN = DONOR_SPECIMEN_ID;
-  public static final String SAMPLE = DONOR_SAMPLE_ID;
-  public static final String MUTATION = OBSERVATION_MUTATION_ID;
+  /**
+   * Callback method that returns {@code true} to include and {@code false} to exclude.
+   * 
+   * @param gene - the gene to examine
+   * @return include status
+   */
+  boolean filter(JsonNode gene);
 
 }

@@ -17,8 +17,22 @@
  */
 package org.icgc.dcc.submission.validation;
 
+import static cascading.scheme.hadoop.TextLine.Compress.ENABLE;
 import static com.google.common.base.Joiner.on;
 import static com.google.common.collect.Maps.newHashMap;
+import static org.icgc.dcc.hadoop.util.HadoopConstants.BZIP2_CODEC_PROPERTY_VALUE;
+import static org.icgc.dcc.hadoop.util.HadoopConstants.DEFAULT_CODEC_PROPERTY_VALUE;
+import static org.icgc.dcc.hadoop.util.HadoopConstants.ENABLED_COMPRESSION;
+import static org.icgc.dcc.hadoop.util.HadoopConstants.GZIP_CODEC_PROPERTY_VALUE;
+import static org.icgc.dcc.hadoop.util.HadoopConstants.IO_COMPRESSION_CODECS_PROPERTY_NAME;
+import static org.icgc.dcc.hadoop.util.HadoopConstants.MAPRED_COMPRESSION_MAP_OUTPUT_PROPERTY_NAME;
+import static org.icgc.dcc.hadoop.util.HadoopConstants.MAPRED_MAP_OUTPUT_COMPRESSION_CODEC_PROPERTY_NAME;
+import static org.icgc.dcc.hadoop.util.HadoopConstants.MAPRED_OUTPUT_COMPRESSION_CODE_PROPERTY_NAME;
+import static org.icgc.dcc.hadoop.util.HadoopConstants.MAPRED_OUTPUT_COMPRESSION_TYPE_PROPERTY_BLOCK_VALUE;
+import static org.icgc.dcc.hadoop.util.HadoopConstants.MAPRED_OUTPUT_COMPRESSION_TYPE_PROPERTY_NAME;
+import static org.icgc.dcc.hadoop.util.HadoopConstants.MAPRED_OUTPUT_COMPRESS_PROPERTY_NAME;
+import static org.icgc.dcc.hadoop.util.HadoopConstants.PROPERTY_VALUES_SEPARATOR;
+import static org.icgc.dcc.hadoop.util.HadoopConstants.SNAPPY_CODEC_PROPERTY_VALUE;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,6 +41,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
+
+import lombok.Cleanup;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileContext;
@@ -55,7 +71,6 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 import com.google.common.io.ByteStreams;
-import com.google.common.io.Closeables;
 import com.google.common.io.InputSupplier;
 import com.google.common.io.LineReader;
 import com.typesafe.config.Config;
@@ -70,61 +85,76 @@ public class HadoopCascadingStrategy extends BaseCascadingStrategy {
     this.hadoopConfig = hadoopConfig;
   }
 
+  /**
+   * TODO: bring together with the loader's counterpart (create a dcc-hadoop module).
+   */
   @Override
   public FlowConnector getFlowConnector() {
-    Map<Object, Object> properties = newHashMap();
+    Map<Object, Object> flowProperties = newHashMap();
 
     // Custom serialization
-    TupleSerializationProps.addSerialization(properties, TupleStateSerialization.class.getName());
+    TupleSerializationProps.addSerialization(flowProperties, TupleStateSerialization.class.getName());
 
     // From external application configuration file
-    for(Map.Entry<String, ConfigValue> configEntry : hadoopConfig.entrySet()) {
-      properties.put(configEntry.getKey(), configEntry.getValue().unwrapped());
+    for (Map.Entry<String, ConfigValue> configEntry : hadoopConfig.entrySet()) {
+      flowProperties.put(configEntry.getKey(), configEntry.getValue().unwrapped());
     }
 
     // Specify available compression codecs
-    String availableCodecs = on(',').join(//
-        "org.apache.hadoop.io.compress.DefaultCodec", //
-        "org.apache.hadoop.io.compress.GzipCodec", //
-        "org.apache.hadoop.io.compress.BZip2Codec");
-    properties.put("io.compression.codecs", availableCodecs);
+    flowProperties.put(IO_COMPRESSION_CODECS_PROPERTY_NAME,
+        on(PROPERTY_VALUES_SEPARATOR)
+            .join(
+                DEFAULT_CODEC_PROPERTY_VALUE,
+                GZIP_CODEC_PROPERTY_VALUE,
+                BZIP2_CODEC_PROPERTY_VALUE));
 
     // Enable compression on intermediate map outputs
-    properties.put("mapred.compress.map.output", true);
-    properties.put("mapred.output.compression.type", "BLOCK");
-    properties.put("mapred.map.output.compression.codec", "org.apache.hadoop.io.compress.SnappyCodec");
+    flowProperties.put(
+        MAPRED_COMPRESSION_MAP_OUTPUT_PROPERTY_NAME,
+        ENABLED_COMPRESSION);
+    flowProperties.put(
+        MAPRED_OUTPUT_COMPRESSION_TYPE_PROPERTY_NAME,
+        MAPRED_OUTPUT_COMPRESSION_TYPE_PROPERTY_BLOCK_VALUE);
+    flowProperties.put(
+        MAPRED_MAP_OUTPUT_COMPRESSION_CODEC_PROPERTY_NAME,
+        SNAPPY_CODEC_PROPERTY_VALUE);
 
     // Enable compression on job outputs
-    properties.put("mapred.output.compression.codec", "org.apache.hadoop.io.compress.GzipCodec");
+    flowProperties.put(
+        MAPRED_OUTPUT_COMPRESS_PROPERTY_NAME,
+        ENABLED_COMPRESSION);
+    flowProperties.put(
+        MAPRED_OUTPUT_COMPRESSION_CODE_PROPERTY_NAME,
+        GZIP_CODEC_PROPERTY_VALUE);
 
     // M/R job entry point
-    AppProps.setApplicationJarClass(properties, org.icgc.dcc.submission.Main.class);
+    AppProps.setApplicationJarClass(flowProperties, org.icgc.dcc.submission.Main.class);
 
-    return new HadoopFlowConnector(properties);
+    return new HadoopFlowConnector(flowProperties);
   }
 
   @Override
   public Tap<?, ?, ?> getReportTap(FileSchema schema, FlowType type, String reportName) {
     Path path = reportPath(schema, type, reportName);
     HadoopJsonScheme scheme = new HadoopJsonScheme();
-    scheme.setSinkCompression(Compress.ENABLE);
-
+    scheme.setSinkCompression(ENABLE);
     return new Hfs(scheme, path.toUri().getPath());
   }
 
   @Override
   public InputStream readReportTap(FileSchema schema, FlowType type, String reportName) throws IOException {
     Path reportPath = reportPath(schema, type, reportName);
-    if(fileSystem.isFile(reportPath)) {
+    if (fileSystem.isFile(reportPath)) {
       return new GZIPInputStream(fileSystem.open(reportPath));
     }
 
     List<InputSupplier<InputStream>> inputSuppliers = new ArrayList<InputSupplier<InputStream>>();
-    for(FileStatus fileStatus : fileSystem.listStatus(reportPath)) {
+    for (FileStatus fileStatus : fileSystem.listStatus(reportPath)) {
       final Path filePath = fileStatus.getPath();
 
-      if(fileStatus.isFile() && filePath.getName().startsWith("part-")) {
+      if (fileStatus.isFile() && filePath.getName().startsWith("part-")) {
         InputSupplier<InputStream> inputSupplier = new InputSupplier<InputStream>() {
+
           @Override
           public InputStream getInput() throws IOException {
             return new GZIPInputStream(fileSystem.open(filePath));
@@ -166,28 +196,27 @@ public class HadoopCascadingStrategy extends BaseCascadingStrategy {
   public Fields getFileHeader(FileSchema fileSchema) throws IOException {
     Path path = this.path(fileSchema);
 
-    InputStreamReader isr = null;
     Configuration conf = this.fileSystem.getConf();
     CompressionCodecFactory factory = new CompressionCodecFactory(conf);
-    try {
-      Path resolvedPath = FileContext.getFileContext(fileSystem.getUri()).resolvePath(path);
-      CompressionCodec codec = factory.getCodec(resolvedPath);
 
-      isr = (codec == null) ? //
-      new InputStreamReader(fileSystem.open(resolvedPath), Charsets.UTF_8) : //
-      new InputStreamReader(codec.createInputStream(fileSystem.open(resolvedPath)), Charsets.UTF_8);
+    Path resolvedPath = FileContext.getFileContext(fileSystem.getUri()).resolvePath(path);
+    CompressionCodec codec = factory.getCodec(resolvedPath);
 
-      LineReader lineReader = new LineReader(isr);
-      String firstLine = lineReader.readLine();
-      Iterable<String> header = Splitter.on('\t').split(firstLine);
-      List<String> dupHeader = this.checkDuplicateHeader(header);
-      if(!dupHeader.isEmpty()) {
-        throw new DuplicateHeaderException(dupHeader);
-      }
-      return new Fields(Iterables.toArray(header, String.class));
-    } finally {
-      Closeables.closeQuietly(isr);
+    @Cleanup
+    InputStreamReader isr = (codec == null) ? //
+    new InputStreamReader(fileSystem.open(resolvedPath), Charsets.UTF_8) : //
+    new InputStreamReader(codec.createInputStream(fileSystem.open(resolvedPath)), Charsets.UTF_8);
+
+    LineReader lineReader = new LineReader(isr);
+    String firstLine = lineReader.readLine();
+    Iterable<String> header = Splitter.on('\t').split(firstLine);
+    List<String> dupHeader = this.checkDuplicateHeader(header);
+    if (!dupHeader.isEmpty()) {
+      throw new DuplicateHeaderException(dupHeader);
     }
+
+    return new Fields(Iterables.toArray(header, String.class));
+
   }
 
 }

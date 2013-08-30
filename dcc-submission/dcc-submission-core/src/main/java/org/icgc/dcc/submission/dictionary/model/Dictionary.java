@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.submission.dictionary.model;
 
+import static com.google.common.collect.Iterables.filter;
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newLinkedHashSet;
 import static org.icgc.dcc.submission.core.util.Constants.CodeListRestriction_FIELD;
 import static org.icgc.dcc.submission.core.util.Constants.CodeListRestriction_NAME;
@@ -29,9 +31,12 @@ import java.util.Set;
 import javax.validation.Valid;
 
 import lombok.ToString;
+import lombok.val;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.hibernate.validator.constraints.NotBlank;
+import org.icgc.dcc.core.model.FeatureTypes.FeatureType;
+import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 import org.icgc.dcc.submission.core.model.BaseEntity;
 import org.icgc.dcc.submission.core.model.HasName;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryElement;
@@ -45,7 +50,6 @@ import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import com.mongodb.BasicDBObject;
 
 /**
@@ -122,12 +126,19 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
     this.files = files;
   }
 
-  public Optional<FileSchema> fileSchema(final String fileName) {
+  public Optional<FileSchema> fileSchema(SubmissionFileType fileSchemaType) {
+    return fileSchema(fileSchemaType.getTypeName());
+  }
+
+  /**
+   * TODO: phase out in favor of {@link #fileSchema(SubmissionFileType)}.
+   */
+  public Optional<FileSchema> fileSchema(final String fileSchemaName) {
     return Iterables.tryFind(this.files, new Predicate<FileSchema>() {
 
       @Override
       public boolean apply(FileSchema input) {
-        return input.getName().equals(fileName);
+        return input.getName().equals(fileSchemaName);
       }
     });
   }
@@ -138,13 +149,29 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
    * @return the list of {@code FileSchema} names
    */
   public List<String> fileSchemaNames() {
-    return Lists.newArrayList(Iterables.transform(this.files, new Function<FileSchema, String>() {
+    return newArrayList(Iterables.transform(this.files, new Function<FileSchema, String>() {
 
       @Override
       public String apply(FileSchema input) {
         return input.getName();
       }
     }));
+  }
+
+  /**
+   * Returns a list of {@link FileSchema}s for a given {@link FeatureType}.
+   */
+  public List<FileSchema> fileSchemata(final FeatureType featureType) {
+    val filter = filter(files, new Predicate<FileSchema>() {
+
+      @Override
+      public boolean apply(FileSchema input) {
+        SubmissionFileType type = SubmissionFileType.from(input.getName());
+        return type.getDataType() == featureType;
+      }
+    });
+
+    return newArrayList(filter);
   }
 
   public boolean hasFileSchema(String fileName) {

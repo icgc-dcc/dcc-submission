@@ -47,6 +47,7 @@ public class GeneTransformer {
     result.put("start", asInteger(location(node).get("txStart")));
     result.put("end", asInteger(location(node).get("txEnd")));
     result.put("canonical_transcript_id", canonicalTranscriptId(node));
+    result.put("external_db_ids", externalDbIds(node));
 
     // Collection
     result.put("transcripts", transcripts(node));
@@ -83,10 +84,10 @@ public class GeneTransformer {
     ArrayNode values = mapper.createArrayNode();
 
     // Project additional values
-    for(JsonNode synonym : synonyms) {
+    for (JsonNode synonym : synonyms) {
       String value = synonym.asText();
       final boolean additional = value.equals(symbol) == false;
-      if(additional) {
+      if (additional) {
         values.add(value);
       }
     }
@@ -108,7 +109,7 @@ public class GeneTransformer {
     ArrayNode transcripts = mapper.createArrayNode();
 
     // Project transformed transcripts
-    for(JsonNode value : values) {
+    for (JsonNode value : values) {
       transcripts.add(transcript(value));
     }
 
@@ -151,7 +152,7 @@ public class GeneTransformer {
     JsonNode values = node.path("exons");
 
     ArrayNode exons = mapper.createArrayNode();
-    for(JsonNode value : values) {
+    for (JsonNode value : values) {
       exons.add(exon(value));
     }
 
@@ -181,12 +182,12 @@ public class GeneTransformer {
     JsonNode values = node.path("domains");
 
     ArrayNode domains = mapper.createArrayNode();
-    for(JsonNode value : values) {
+    for (JsonNode value : values) {
       final String gffSource = value.path("gffSource").asText();
 
       // Only add "Pfam" sources - Junjun
       final boolean pFam = "Pfam".equals(gffSource);
-      if(pFam) {
+      if (pFam) {
         domains.add(domain(value));
       }
     }
@@ -206,6 +207,10 @@ public class GeneTransformer {
     domain.put("end", asInteger(node.get("end")));
 
     return domain;
+  }
+
+  private JsonNode externalDbIds(JsonNode node) {
+    return node.path("sections").path("external_db_ids").path("data");
   }
 
   private static Integer asInteger(JsonNode node) {

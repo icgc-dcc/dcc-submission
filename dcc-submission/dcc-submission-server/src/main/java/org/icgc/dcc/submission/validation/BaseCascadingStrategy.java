@@ -67,7 +67,7 @@ public abstract class BaseCascadingStrategy implements CascadingStrategy {
       Path path = path(schema);
       Path resolvedPath = FileContext.getFileContext(fileSystem.getUri()).resolvePath(path);
       return tapSource(resolvedPath);
-    } catch(IOException e) {
+    } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
@@ -83,14 +83,14 @@ public abstract class BaseCascadingStrategy implements CascadingStrategy {
   }
 
   protected Path trimmedPath(Key key) {
-    if(key.getSchema().getRole() == FileSchemaRole.SUBMISSION) {
+    if (key.getSchema().getRole() == FileSchemaRole.SUBMISSION) {
       return new Path(output, key.getName() + ".tsv");
-    } else if(key.getSchema().getRole() == FileSchemaRole.SYSTEM) {
+    } else if (key.getSchema().getRole() == FileSchemaRole.SYSTEM) {
       return new Path(new Path(system, DccFileSystem.VALIDATION_DIRNAME), key.getName() + ".tsv"); // TODO: should use
                                                                                                    // DccFileSystem
                                                                                                    // abstraction
     } else {
-      throw new RuntimeException("undefined File Schema Role " + key.getSchema().getRole());
+      throw new RuntimeException("Undefined File Schema Role " + key.getSchema().getRole());
     }
   }
 
@@ -108,19 +108,19 @@ public abstract class BaseCascadingStrategy implements CascadingStrategy {
   public Path path(final FileSchema fileSchema) throws FileNotFoundException, IOException {
 
     RemoteIterator<LocatedFileStatus> files;
-    if(fileSchema.getRole() == FileSchemaRole.SUBMISSION) {
+    if (fileSchema.getRole() == FileSchemaRole.SUBMISSION) {
       files = fileSystem.listFiles(input, false);
-    } else if(fileSchema.getRole() == FileSchemaRole.SYSTEM) {
+    } else if (fileSchema.getRole() == FileSchemaRole.SYSTEM) {
       files = fileSystem.listFiles(system, false);
     } else {
       throw new RuntimeException("undefined File Schema Role " + fileSchema.getRole());
     }
 
-    while(files.hasNext()) {
+    while (files.hasNext()) {
       LocatedFileStatus file = files.next();
-      if(file.isFile()) {
+      if (file.isFile()) {
         Path path = file.getPath();
-        if(Pattern.matches(fileSchema.getPattern(), path.getName())) {
+        if (Pattern.matches(fileSchema.getPattern(), path.getName())) {
           return path;
         }
       }
@@ -142,8 +142,8 @@ public abstract class BaseCascadingStrategy implements CascadingStrategy {
     Set<String> headerSet = Sets.newHashSet();
     List<String> dupHeaders = Lists.newArrayList();
 
-    for(String strHeader : header) {
-      if(!headerSet.add(strHeader)) {
+    for (String strHeader : header) {
+      if (!headerSet.add(strHeader)) {
         dupHeaders.add(strHeader);
       }
     }

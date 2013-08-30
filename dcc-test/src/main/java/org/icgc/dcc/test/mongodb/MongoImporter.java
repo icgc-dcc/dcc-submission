@@ -17,6 +17,10 @@
  */
 package org.icgc.dcc.test.mongodb;
 
+import static com.google.common.collect.Iterables.filter;
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.io.Files.getFileExtension;
+import static com.google.common.net.MediaType.JSON_UTF_8;
 import static org.icgc.dcc.test.json.JsonNodes.MAPPER;
 
 import java.io.File;
@@ -34,6 +38,7 @@ import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.POJONode;
+import com.google.common.base.Predicate;
 import com.mongodb.DB;
 
 @Slf4j
@@ -57,7 +62,7 @@ public class MongoImporter extends BaseMongoImportExport {
   @Override
   @SneakyThrows
   public void execute() {
-    for(File collectionFile : directory.listFiles()) {
+    for (File collectionFile : listJsonFiles()) {
       String collectionName = getCollectionName(collectionFile);
       MongoCollection collection = jongo.getCollection(collectionName);
 
@@ -70,7 +75,7 @@ public class MongoImporter extends BaseMongoImportExport {
     log.info("Importing to '{}' from '{}'...", collection, collectionFile);
     MappingIterator<JsonNode> iterator = READER.readValues(collectionFile);
 
-    while(iterator.hasNext()) {
+    while (iterator.hasNext()) {
       JsonNode object = iterator.next();
       handleObjectId(object);
 
@@ -86,7 +91,7 @@ public class MongoImporter extends BaseMongoImportExport {
     log.info("Importing to '{}' from '{}'...", collection, collectionFile);
     MappingIterator<JsonNode> iterator = READER.readValues(collectionFile);
 
-    while(iterator.hasNext()) {
+    while (iterator.hasNext()) {
       JsonNode object = iterator.next();
       handleObjectId(object);
 
@@ -95,12 +100,27 @@ public class MongoImporter extends BaseMongoImportExport {
   }
 
   private void handleObjectId(JsonNode object) {
-    if(object.has(ID_FIELD)) {
+    if (object.has(ID_FIELD)) {
       String value = object.get(ID_FIELD).textValue();
-      if(ObjectId.isValid(value)) {
+      if (ObjectId.isValid(value)) {
         ((ObjectNode) object).put(ID_FIELD, new POJONode(new ObjectId(value)));
       }
     }
+  }
+
+  private Iterable<File> listJsonFiles() {
+    return filter(newArrayList(directory.listFiles()), new Predicate<File>() {
+
+      @Override
+      public boolean apply(File file) {
+        return isJsonFile(file.getName());
+      }
+
+      private boolean isJsonFile(String fileName) {
+        return JSON_UTF_8.subtype().equals(getFileExtension(fileName));
+      }
+
+    });
   }
 
 }

@@ -15,28 +15,29 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.core.model;
+package org.icgc.dcc.hadoop.cascading;
 
-import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.core.model.FieldNames.DONOR_ID;
-import static org.icgc.dcc.core.model.FieldNames.DONOR_SAMPLE_ID;
-import static org.icgc.dcc.core.model.FieldNames.DONOR_SPECIMEN_ID;
-import static org.icgc.dcc.core.model.FieldNames.GENE_ID;
-import static org.icgc.dcc.core.model.FieldNames.OBSERVATION_MUTATION_ID;
-import static org.icgc.dcc.core.model.FieldNames.PROJECT_ID;
+import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import cascading.tuple.Tuple;
 
 /**
- * Contains surrogate keys for the ICGC DCC portal.
+ * Utility class to help with the {@link Tuple} object from cascading.
  */
-@NoArgsConstructor(access = PRIVATE)
-public final class SurrogateKeys {
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class Tuples2 {
 
-  public static final String PROJECT = PROJECT_ID;
-  public static final String GENE = GENE_ID;
-  public static final String DONOR = DONOR_ID;
-  public static final String SPECIMEN = DONOR_SPECIMEN_ID;
-  public static final String SAMPLE = DONOR_SAMPLE_ID;
-  public static final String MUTATION = OBSERVATION_MUTATION_ID;
+  /**
+   * Nests a tuple within a tuple.
+   */
+  public static Tuple nestTuple(Tuple tuple) {
+    Tuple nestedTuple = new Tuple();
+    nestedTuple.add(tuple);
 
+    return nestedTuple;
+  }
+
+  public static boolean isNullField(Tuple tuple, int fieldIndex) {
+    return tuple.getObject(fieldIndex) == null;
+  }
 }
