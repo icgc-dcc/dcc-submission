@@ -17,6 +17,12 @@
  */
 package org.icgc.dcc.submission.validation.cascading;
 
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Lists.newArrayList;
+import static org.apache.commons.lang.StringUtils.isBlank;
+import static org.icgc.dcc.hadoop.cascading.Fields2.buildSortedList;
+import static org.icgc.dcc.hadoop.cascading.Fields2.indicesOf;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -34,12 +40,6 @@ import cascading.tuple.TupleEntry;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-
-import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.collect.Lists.newArrayList;
-import static org.apache.commons.lang.StringUtils.isBlank;
-import static org.icgc.dcc.hadoop.cascading.Fields2.buildSortedList;
-import static org.icgc.dcc.hadoop.cascading.Fields2.indicesOf;
 
 /**
  * Checks structural aspects of an input data file (header, format, ...)
@@ -60,11 +60,16 @@ public class StructuralCheckFunction extends BaseOperation implements Function {
   public static final char FIELD_SEPARATOR = '\t';
 
   /**
+   * Code used in legacy submissions to fill in a value that is strictly required but wasn't before.
+   */
+  private static final String LEGACY_CODE = "-9999";
+
+  /**
    * Values representing absent values.
    * <p>
    * "-999" has been deprecated {@link ForbiddenValuesFunction}
    */
-  public static final List<String> MISSING_CODES = newArrayList("-777", "-888"); // TODO: move elsewhere?
+  public static final List<String> MISSING_CODES = newArrayList("-777", "-888", LEGACY_CODE); // TODO: move elsewhere?
 
   private static boolean REPORT_WARNINGS = false; // see DCC-270 & DCC-411
 
@@ -122,12 +127,12 @@ public class StructuralCheckFunction extends BaseOperation implements Function {
   private List<String> adjustValues(List<String> values, TupleState tupleState) {
     List<String> adjustedValues = null;
     int dataSize = values.size();
-    if(headerSize == dataSize) {
+    if (headerSize == dataSize) {
       adjustedValues = filterUnknownColumns(values); // existing valid fields first
       adjustedValues = padMissingColumns(adjustedValues); // then missing fields to be emulated
       adjustedValues = convertMissingCodes(adjustedValues, tupleState);
       adjustedValues = replaceEmptyStrings(adjustedValues);
-      if(REPORT_WARNINGS && unknownHeaderIndices.isEmpty() == false) {
+      if (REPORT_WARNINGS && unknownHeaderIndices.isEmpty() == false) {
         // FIXME: not working as expected anyway: this would report the error on all tuples
         // tupleState.reportError(ValidationErrorCode.UNKNOWN_COLUMNS_WARNING,
         // ValidationErrorCode.FILE_LEVEL_ERROR_COLUMN_NAME, unknownHeaderIndices);
@@ -146,9 +151,9 @@ public class StructuralCheckFunction extends BaseOperation implements Function {
 
   private List<String> convertMissingCodes(List<String> values, TupleState tupleState) {
     List<String> adjustedValues = new ArrayList<String>(values.size());
-    for(int i = 0; i < values.size(); i++) {
+    for (int i = 0; i < values.size(); i++) {
       String value = values.get(i);
-      if(MISSING_CODES.contains(value)) {
+      if (MISSING_CODES.contains(value)) {
         adjustedValues.add(null);
         tupleState.addMissingField((String) this.getFieldDeclaration().get(i));
       } else {
@@ -163,8 +168,8 @@ public class StructuralCheckFunction extends BaseOperation implements Function {
    */
   private List<String> filterUnknownColumns(List<String> values) {
     List<String> adjustedValues = new ArrayList<String>();
-    for(int i = 0; i < values.size(); i++) {
-      if(unknownHeaderIndices.contains(i) == false) {
+    for (int i = 0; i < values.size(); i++) {
+      if (unknownHeaderIndices.contains(i) == false) {
         adjustedValues.add(values.get(i));
       }
     }
@@ -175,16 +180,16 @@ public class StructuralCheckFunction extends BaseOperation implements Function {
     int adjustedDataSize = adjustedValues.size();
     int size = dictionaryFields.size();
     checkState(adjustedDataSize <= size); // by design (since we discarded unknown columns)
-    if(adjustedDataSize < size) { // padding with nulls
+    if (adjustedDataSize < size) { // padding with nulls
       adjustedValues.addAll(Arrays.asList(new String[size - adjustedDataSize]));
     }
     return adjustedValues;
   }
 
   private List<String> replaceEmptyStrings(List<String> adjustedValues) {
-    for(int i = 0; i < adjustedValues.size(); i++) {
+    for (int i = 0; i < adjustedValues.size(); i++) {
       String value = adjustedValues.get(i);
-      if(value != null && isBlank(value)) {
+      if (value != null && isBlank(value)) {
         adjustedValues.set(i, null);
       }
     }
