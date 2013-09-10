@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.submission.core;
 
-import static org.icgc.dcc.submission.release.ReleaseService.filterOutFakeReleasesForETL;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -152,12 +150,8 @@ public class ProjectService extends BaseMorphiaService<Project> {
         .singleResult();
   }
 
-  /**
-   * Ignoring releases whose name is starting with a specific prefix (see https://jira.oicr.on.ca/browse/DCC-1409 for
-   * more details).
-   */
   private List<Release> listReleases() {
-    return filterOutFakeReleasesForETL(getReleaseQuery().list());
+    return getReleaseQuery().list();
   }
 
   private MorphiaQuery<Release> getReleaseQuery() {
