@@ -18,6 +18,7 @@
 package org.icgc.dcc.hadoop.cascading;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 import static lombok.AccessLevel.PRIVATE;
 
 import java.util.ArrayList;
@@ -27,6 +28,7 @@ import java.util.Collections;
 import java.util.List;
 
 import lombok.NoArgsConstructor;
+import lombok.val;
 import cascading.tuple.Fields;
 
 import com.google.common.collect.ImmutableList;
@@ -111,6 +113,15 @@ public final class Fields2 {
   public static List<Comparable> getFieldComparables(Fields fields) {
     List<Comparable> fieldNames = buildMutableFieldNames(fields);
     return ImmutableList.<Comparable> copyOf(fieldNames);
+  }
+
+  /**
+   * indexOf(new Fields("a", "b", "c", "d"), new Fields("c")) // returns 2
+   */
+  public static Integer indexOf(Fields fields, Fields subfield) {
+    checkState(subfield.size() == 1, "Expecting only 1 field, instead got '%s'", subfield);
+    val indices = indicesOf(fields, subfield);
+    return indices.get(0);
   }
 
   /**
