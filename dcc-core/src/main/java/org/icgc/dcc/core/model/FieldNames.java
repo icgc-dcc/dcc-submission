@@ -124,6 +124,7 @@ public final class FieldNames {
   /**
    * CGHub field names.
    */
+  public static final String SEQUENCE_DATA_PROJECT_ID = "_project_id";
   public static final String SEQUENCE_DATA_LEGACY_SAMPLE_ID = "legacy_sample_id";
   public static final String SEQUENCE_DATA_LIBRARY_STRATEGY = "library_strategy";
 
