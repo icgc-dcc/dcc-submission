@@ -74,7 +74,6 @@ import com.google.code.morphia.query.UpdateOperations;
 import com.google.code.morphia.query.UpdateResults;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -87,12 +86,6 @@ import com.typesafe.config.Config;
 
 @Slf4j
 public class ReleaseService extends BaseMorphiaService<Release> {
-
-  /**
-   * Ignoring releases whose name is starting with a specific prefix (see https://jira.oicr.on.ca/browse/DCC-1409 for
-   * more details).
-   */
-  private static final String SPECIAL_RELEASE_PREFIX = "r--";
 
   private final DccLocking dccLocking;
 
@@ -850,29 +843,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     MongodbQuery<Release> query = mysemaPredicate.isPresent() ?
         where(mysemaPredicate.get()) :
         query();
-    return filterOutFakeReleasesForETL(query.list());
-  }
-
-  /**
-   * Filters out fake releases used by the ETL component (see https://jira.oicr.on.ca/browse/DCC-1409 for more details).
-   */
-  public static List<Release> filterOutFakeReleasesForETL(List<Release> list) {
-    return newArrayList(Iterables.filter(list,
-        new com.google.common.base.Predicate<Release>() { // guava predicate (not mysema)
-
-          @Override
-          public boolean apply(Release release) {
-            String releaseName = release.getName();
-            return isFakeReleaseForETL(releaseName) == false;
-          }
-        }));
-  }
-
-  /**
-   * Returns true if the release should be ignored (see https://jira.oicr.on.ca/browse/DCC-1409 for more details).
-   */
-  private static boolean isFakeReleaseForETL(String releaseName) {
-    return releaseName.startsWith(SPECIAL_RELEASE_PREFIX);
+    return query.list();
   }
 
 }
