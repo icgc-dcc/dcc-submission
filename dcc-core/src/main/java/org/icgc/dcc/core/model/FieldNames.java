@@ -87,6 +87,7 @@ public final class FieldNames {
   public static final String PROJECT_PARTNER_COUNTRIES = "partner_countries"; // "Mexico" for instance
   public static final String PROJECT_PUBMED_IDS = "pubmed_ids";
   public static final String PROJECT_SUMMARY = "_summary";
+  public static final String PROJECT_SUMMARY_REPOSITORY = "repository";
   public static final String PROJECT_SUMMARY_TOTAL_DONOR_COUNT = "_total_donor_count";
 
   /**
@@ -101,6 +102,7 @@ public final class FieldNames {
   public static final String DONOR_ID = "_donor_id";
 
   public static final String DONOR_SUMMARY = "_summary";
+  public static final String DONOR_SUMMARY_REPOSITORY = "repository";
   public static final String DONOR_SUMMARY_EXPERIMENTAL_ANALYSIS = "experimental_analysis_performed";
   public static final String DONOR_SUMMARY_EXPERIMENTAL_ANALYSIS_SAMPLE_COUNTS =
       "experimental_analysis_performed_sample_count";
@@ -127,6 +129,7 @@ public final class FieldNames {
   public static final String SEQUENCE_DATA_PROJECT_ID = "_project_id";
   public static final String SEQUENCE_DATA_LEGACY_SAMPLE_ID = "legacy_sample_id";
   public static final String SEQUENCE_DATA_LIBRARY_STRATEGY = "library_strategy";
+  public static final String SEQUENCE_DATA_REPOSITORY = "repository";
 
   /**
    * Gene field names.
