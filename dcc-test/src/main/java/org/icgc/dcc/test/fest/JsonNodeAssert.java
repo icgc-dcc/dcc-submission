@@ -29,7 +29,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class JsonNodeAssert extends AbstractAssert<JsonNodeAssert, JsonNode> {
 
-  private static ObjectMapper MAPPER = new ObjectMapper().enable(INDENT_OUTPUT);;
+  private static ObjectMapper MAPPER = new ObjectMapper().enable(INDENT_OUTPUT);
 
   public JsonNodeAssert(JsonNode actual) {
     super(actual, JsonNodeAssert.class);
@@ -41,7 +41,7 @@ public class JsonNodeAssert extends AbstractAssert<JsonNodeAssert, JsonNode> {
 
   @Override
   public JsonNodeAssert isEqualTo(JsonNode expected) {
-    if(!actual.equals(expected)) {
+    if (!actual.equals(expected)) {
       String expectedJson = toString(expected);
       String actualJson = toString(actual);
       String errorMessage = format("Expected JsonNode to be%n%s%nbut was%n%s", expectedJson, actualJson);
