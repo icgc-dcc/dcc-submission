@@ -61,7 +61,7 @@ public final class HadoopConstants {
   public static final String LZOP_CODEC_PROPERTY_VALUE =    "com.hadoop.compression.lzo.LzopCodec";
   public static final String DEFLATE_CODEC_PROPERTY_VALUE = DEFAULT_CODEC_PROPERTY_VALUE;
   
-  public static final String CASCADING_DOT_FILE_PATH = "stepPlan";
+  public static final String CASCADING_DOT_FILE_PATH = "";
   public static final String CASCADING_ERROR_DOT_FILE_NAME = "stream-error.dot";
 }
 //@formatter:on
