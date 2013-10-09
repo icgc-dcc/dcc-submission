@@ -37,6 +37,11 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
+      <artifactId>dcc-submission-ui</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
       <artifactId>dcc-hadoop</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -269,6 +274,7 @@
         <configuration>
           <artifactSet>
             <excludes>
+              <exclude>${project.groupId}:dcc-submission-ui</exclude>
               <exclude>com.sun.jersey:*</exclude>
             </excludes>
           </artifactSet>
@@ -294,11 +300,13 @@
         <artifactId>maven-assembly-plugin</artifactId>
         <executions>
           <execution>
-            <id>bin</id>
+            <id>create-dist</id>
             <phase>package</phase>
-            <!-- Enable this when we actually use the distribution (unfinished) -->
-            <!-- <goals> <goal>single</goal> </goals> -->
+            <goals>
+              <goal>single</goal>
+            </goals>
             <configuration>
+              <attach>${package.attach}</attach>
               <descriptors>
                 <descriptor>src/main/assembly/bin.xml</descriptor>
               </descriptors>
