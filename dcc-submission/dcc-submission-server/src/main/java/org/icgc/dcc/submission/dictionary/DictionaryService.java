@@ -84,7 +84,7 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
     datastore().updateFirst(updateQuery, dictionary, false);
 
     // Reset submissions if applicable
-    Release release = releases.getNextRelease().getRelease();
+    Release release = releases.createNextRelease().getRelease();
     if (dictionary.getVersion().equals(release.getDictionaryVersion())) {
       releases.resetSubmissions(release.getName(), release.getProjectKeys());
     }
@@ -214,7 +214,7 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
         datastore.createUpdateOperations(CodeList.class).add("terms", term));
 
     // Reset INVALID submissions if applicable
-    Release openRelease = releases.getNextRelease().getRelease();
+    Release openRelease = releases.createNextRelease().getRelease();
     Dictionary currentDictionary = getCurrentDictionary(openRelease);
     if (currentDictionary.usesCodeList(codeListName)) {
       releases.resetSubmissions(openRelease.getName(), openRelease.getInvalidProjectKeys());
@@ -222,7 +222,7 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
   }
 
   public Dictionary getCurrentDictionary() {
-    Release openRelease = releases.getNextRelease().getRelease();
+    Release openRelease = releases.createNextRelease().getRelease();
     return getCurrentDictionary(openRelease);
   }
 

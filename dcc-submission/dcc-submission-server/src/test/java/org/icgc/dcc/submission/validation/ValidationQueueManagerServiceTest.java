@@ -23,6 +23,7 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.release.NextRelease;
 import org.icgc.dcc.submission.release.ReleaseService;
 import org.icgc.dcc.submission.release.model.Release;
@@ -31,18 +32,20 @@ import org.icgc.dcc.submission.validation.service.ValidationService;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.mockito.Mock;
 
 import com.typesafe.config.Config;
 
 public class ValidationQueueManagerServiceTest {
 
   private Release mockRelease;
-
   private NextRelease mockNextRelease;
 
   private ReleaseService mockReleaseService;
-
   private ValidationService mockValidationService;
+
+  @Mock
+  private MailService mockMailService;
 
   private Config mockConfig;
 
@@ -58,13 +61,15 @@ public class ValidationQueueManagerServiceTest {
 
     when(mockRelease.getName()).thenReturn("release1");
     when(mockNextRelease.getRelease()).thenReturn(mockRelease);
-    when(mockReleaseService.getNextRelease()).thenReturn(mockNextRelease);
-    when(mockNextRelease.getQueued()).thenReturn(Arrays.asList("project1", "project2", "project3"))
-        .thenReturn(Arrays.asList("project2", "project3")).thenReturn(Arrays.asList("project3"))
+    when(mockReleaseService.createNextRelease()).thenReturn(mockNextRelease);
+    when(mockNextRelease.getQueued())
+        .thenReturn(Arrays.asList("project1", "project2", "project3"))
+        .thenReturn(Arrays.asList("project2", "project3"))
+        .thenReturn(Arrays.asList("project3"))
         .thenReturn(new ArrayList<String>());
 
     validationQueueManagerService =
-        new ValidationQueueManagerService(mockReleaseService, mockValidationService, mockConfig);
+        new ValidationQueueManagerService(mockReleaseService, mockValidationService, mockMailService, mockConfig);
   }
 
   @Ignore

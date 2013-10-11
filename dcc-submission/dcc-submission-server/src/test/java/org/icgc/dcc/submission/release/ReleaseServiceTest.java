@@ -37,9 +37,6 @@ import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.dictionary.DictionaryService;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
-import org.icgc.dcc.submission.release.DccLocking;
-import org.icgc.dcc.submission.release.NextRelease;
-import org.icgc.dcc.submission.release.ReleaseService;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
@@ -126,15 +123,15 @@ public class ReleaseServiceTest {
       dictionaryService = new DictionaryService(morphia, datastore, releaseService);
       dictionaryService.addDictionary(dictionary);
       releaseService.createInitialRelease(release);
-    } catch(UnknownHostException e) {
+    } catch (UnknownHostException e) {
       e.printStackTrace();
 
       fail(e.getMessage());
-    } catch(MongoException e) {
+    } catch (MongoException e) {
       e.printStackTrace();
 
       fail(e.getMessage());
-    } catch(NullPointerException e) {
+    } catch (NullPointerException e) {
       e.printStackTrace();
 
       fail(e.getMessage());
@@ -149,9 +146,9 @@ public class ReleaseServiceTest {
   // @Test; cannot test release() anymore since we can't mock this: new MorphiaQuery<Project>(morphia, datastore,
   // QProject.project); TODO: find a solution
   public void test_getNextRelease_isCorrectRelease() {
-    assertEquals(release.getId(), releaseService.getNextRelease().getRelease().getId());
+    assertEquals(release.getId(), releaseService.createNextRelease().getRelease().getId());
     Release newRelease = addNewRelease("release2");
-    assertEquals(newRelease.getName(), releaseService.getNextRelease().getRelease().getName());
+    assertEquals(newRelease.getName(), releaseService.createNextRelease().getRelease().getName());
   }
 
   @Test
@@ -192,7 +189,7 @@ public class ReleaseServiceTest {
 
   // @Test
   public void test_can_release() throws InvalidStateException, DccModelOptimisticLockException {
-    NextRelease nextRelease = releaseService.getNextRelease();
+    NextRelease nextRelease = releaseService.createNextRelease();
     Release nextReleaseRelease = nextRelease.getRelease();
     assertTrue(!nextRelease.atLeastOneSignedOff(nextReleaseRelease));
 
@@ -201,7 +198,7 @@ public class ReleaseServiceTest {
     String user = "admin";
     releaseService.signOff(nextReleaseRelease, projectKeys, user);
 
-    nextRelease = releaseService.getNextRelease();
+    nextRelease = releaseService.createNextRelease();
     assertTrue(nextRelease.atLeastOneSignedOff(nextReleaseRelease));
   }
 
@@ -221,19 +218,20 @@ public class ReleaseServiceTest {
     String user = "admin";
     try {
       releaseService.signOff(newRelease, projectKeys, user);
-    } catch(InvalidStateException e) {
+    } catch (InvalidStateException e) {
       throw new RuntimeException(e);
-    } catch(DccModelOptimisticLockException e) {
+    } catch (DccModelOptimisticLockException e) {
       throw new RuntimeException(e);
     }
 
     NextRelease nextRelease = null;
     try {
-      nextRelease = releaseService.getNextRelease().release(newRelease.getName());
-    } catch(InvalidStateException e) {
+      nextRelease = releaseService.createNextRelease().release(newRelease.getName());
+    } catch (InvalidStateException e) {
       Throwables.propagate(e);
     }
 
     return nextRelease.getRelease();
   }
+
 }

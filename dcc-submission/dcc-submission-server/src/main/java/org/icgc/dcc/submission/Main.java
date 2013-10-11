@@ -44,7 +44,11 @@ import com.google.inject.Injector;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
+/**
+ * Main class for the submission system.
+ */
 public class Main {
+
   private static final Logger log = LoggerFactory.getLogger(Main.class);
 
   private static final String HADOOP_USER_NAME_PARAM = "HADOOP_USER_NAME";
@@ -67,6 +71,9 @@ public class Main {
 
   private static Injector injector;
 
+  /**
+   * Main method for the submission system.
+   */
   public static void main(String[] args) throws IOException {
 
     Config parsedConfig = loadConfig(args);
@@ -89,11 +96,12 @@ public class Main {
         , new ValidationModule());
 
     Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+
       @Override
       public void run() {
         // No one call shutdown?
         boolean running = injector != null;
-        if(running) {
+        if (running) {
           injector.getInstance(DccRuntime.class).stop();
         }
       }
@@ -107,19 +115,19 @@ public class Main {
     CONFIG configType;
     try {
       configType = (args != null && args.length > 0) ? CONFIG.valueOf(args[0]) : CONFIG.local;
-    } catch(IllegalArgumentException e) {
+    } catch (IllegalArgumentException e) {
       throw new IllegalArgumentException(args[0] + " is not a valid argument. Valid arguments are "
           + CONFIG.listValues());
     }
     log.info("Using config type {}", configType);
     Config parsedConfig;
-    if(configType == CONFIG.external) {
-      if(args.length < 2) {
+    if (configType == CONFIG.external) {
+      if (args.length < 2) {
         throw new IllegalArgumentException("The argument 'external' requires a filename as an additional parameter");
       }
       File configFile = new File(args[1]);
       log.info("Using config file {}", configFile.getAbsoluteFile());
-      if(configFile.exists() == false) {
+      if (configFile.exists() == false) {
         throw new FileNotFoundException(args[1]);
       }
       parsedConfig = ConfigFactory.parseFile(configFile).resolve();

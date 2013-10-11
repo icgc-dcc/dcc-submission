@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.submission.validation;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.Arrays;
@@ -31,8 +33,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
-
-import static com.google.common.base.Preconditions.checkArgument;
 
 /**
  * A directory that contains files associated with {@code FileSchema}. Each {@code FileSchema} is expected to have at
@@ -59,23 +59,26 @@ public class FileSchemaDirectory {
 
   public boolean hasFile(final FileSchema fileSchema) {
     List<Path> paths = matches(fileSchema.getPattern());
-    if(paths == null) {
+    if (paths == null) {
       return false;
     }
-    if(paths.size() > 1) {
+    if (paths.size() > 1) {
       List<String> pathNames = Lists.newArrayList();
-      for(Path path : paths) {
+      for (Path path : paths) {
         pathNames.add(path.getName());
       }
       throw new PlanningFileLevelException(paths.get(0).getName().toString(), ValidationErrorCode.TOO_MANY_FILES_ERROR,
           fileSchema.getName(), pathNames);
     }
-    if(paths.size() > 0) {
+    if (paths.size() > 0) {
       checkCompression(fileSchema, paths.get(0));
     }
     return paths.size() == 1;
   }
 
+  /**
+   * FIXME: https://jira.oicr.on.ca/browse/DCC-1233.
+   */
   private void checkCompression(final FileSchema fileSchema, final Path path) {
     try {
       DataInputStream testis = fs.open(path);
@@ -86,11 +89,11 @@ public class FileSchemaDirectory {
       testis.readFully(magicNumber);
       testis.close();
 
-      if(Arrays.equals(magicNumber, BZ2_MAGIC_NUMBER) != path.getName().endsWith(BZ2_EXTENSION)) {
+      if (Arrays.equals(magicNumber, BZ2_MAGIC_NUMBER) != path.getName().endsWith(BZ2_EXTENSION)) {
         throw new PlanningFileLevelException(path.getName().toString(), ValidationErrorCode.COMPRESSION_CODEC_ERROR,
             fileSchema.getName());
       }
-    } catch(IOException e) {
+    } catch (IOException e) {
       log.error("Problem opening file to check compression scheme", e);
       throw new PlanningFileLevelException(path.getName().toString(), ValidationErrorCode.COMPRESSION_CODEC_ERROR,
           fileSchema.getName());
@@ -98,7 +101,7 @@ public class FileSchemaDirectory {
   }
 
   private List<Path> matches(final String pattern) {
-    if(pattern == null) {
+    if (pattern == null) {
       return null;
     }
     return HadoopUtils.lsFile(fs, directory, Pattern.compile(pattern));

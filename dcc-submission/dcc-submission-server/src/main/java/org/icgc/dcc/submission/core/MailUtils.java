@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 import com.typesafe.config.Config;
 
 /**
- * TODO (DCC-686)
+ * TODO (DCC-686, merge into {@link MailService}).
  */
 public class MailUtils { // TODO: DCC-686 - make it a service (inject Config)
 
@@ -85,11 +85,11 @@ public class MailUtils { // TODO: DCC-686 - make it a service (inject Config)
       msg.setSubject(subject);
       msg.setText(text);
       Transport.send(msg);
-    } catch(AddressException e) {
+    } catch (AddressException e) {
       log.error("an error occured while emailing: ", e);
-    } catch(MessagingException e) {
+    } catch (MessagingException e) {
       log.error("an error occured while emailing: ", e);
-    } catch(UnsupportedEncodingException e) {
+    } catch (UnsupportedEncodingException e) {
       log.error("an error occured while emailing: ", e);
     }
   }
@@ -108,9 +108,9 @@ public class MailUtils { // TODO: DCC-686 - make it a service (inject Config)
       msg.addRecipient(Message.RecipientType.TO, new InternetAddress(recipient));
 
       Transport.send(msg);
-    } catch(AddressException e) {
+    } catch (AddressException e) {
       log.error("an error occured while emailing: " + e);
-    } catch(MessagingException e) {
+    } catch (MessagingException e) {
       log.error("an error occured while emailing: " + e);
     }
   }
@@ -125,7 +125,7 @@ public class MailUtils { // TODO: DCC-686 - make it a service (inject Config)
 
       msg.setSubject(String.format(config.getString(SUBJECT), projectKey, state));
       String fromEmail;
-      if(state == SubmissionState.ERROR) {
+      if (state == SubmissionState.ERROR) {
         fromEmail = config.getString(PROBLEM_FROM);
 
         // send email to admin when Error occurs
@@ -134,9 +134,9 @@ public class MailUtils { // TODO: DCC-686 - make it a service (inject Config)
         msg.setText(String.format(config.getString(ERROR_BODY), projectKey, state));
       } else {
         fromEmail = config.getString(NORMAL_FROM);
-        if(state == SubmissionState.VALID) {
+        if (state == SubmissionState.VALID) {
           msg.setText(String.format(config.getString(VALID_BODY), projectKey, state, releaseName, projectKey));
-        } else if(state == SubmissionState.INVALID) {
+        } else if (state == SubmissionState.INVALID) {
           msg.setText(String.format(config.getString(INVALID_BODY), projectKey, state, releaseName, projectKey));
         }
       }
@@ -145,7 +145,7 @@ public class MailUtils { // TODO: DCC-686 - make it a service (inject Config)
       Address[] recipients = new Address[addresses.size()]; // TODO: not efficient as is
 
       int i = 0;
-      for(Address email : addresses) {
+      for (Address email : addresses) {
         recipients[i++] = email;
       }
       msg.addRecipients(Message.RecipientType.TO, recipients);
@@ -153,11 +153,11 @@ public class MailUtils { // TODO: DCC-686 - make it a service (inject Config)
       Transport.send(msg);
       log.info("Emails for {} sent to {}: ", projectKey, addresses);
 
-    } catch(AddressException e) {
+    } catch (AddressException e) {
       log.error("an error occured while emailing: ", e);
-    } catch(MessagingException e) {
+    } catch (MessagingException e) {
       log.error("an error occured while emailing: ", e);
-    } catch(UnsupportedEncodingException e) {
+    } catch (UnsupportedEncodingException e) {
       log.error("an error occured while emailing: ", e);
     }
   }

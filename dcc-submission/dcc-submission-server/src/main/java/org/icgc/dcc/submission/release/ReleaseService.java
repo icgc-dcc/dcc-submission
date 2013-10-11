@@ -25,6 +25,7 @@ import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
 import static org.icgc.dcc.submission.core.MailUtils.email;
+import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.NOT_VALIDATED;
 
 import java.util.ArrayList;
@@ -152,8 +153,14 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     fs.ensureReleaseFilesystem(nextRelease, projects);
   }
 
-  public boolean hasNextRelease() {
-    return this.query().where(QRelease.release.state.eq(ReleaseState.OPENED)).singleResult() != null;
+  /**
+   * TODO
+   */
+  public long countOpenReleases() {
+    return query()
+        .where(
+            QRelease.release.state.eq(OPENED))
+        .count();
   }
 
   public Release getFromName(String releaseName) {
@@ -182,10 +189,17 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   /**
    * Returns the {@code NextRelease} (guaranteed not to be null if returned).
    */
-  public NextRelease getNextRelease() throws IllegalReleaseStateException {
-    Release nextRelease = this.query().where(QRelease.release.state.eq(ReleaseState.OPENED)).singleResult();
-    return new NextRelease(dccLocking, checkNotNull(nextRelease, "There is no next release in the database."),
-        morphia(), datastore(), this.fs);
+  public NextRelease createNextRelease() throws IllegalReleaseStateException {
+    Release nextRelease = this.query()
+        .where(
+            QRelease.release.state.eq(OPENED))
+        .singleResult();
+    return new NextRelease(
+        dccLocking,
+        checkNotNull(nextRelease, "There is no next release in the database."),
+        morphia(),
+        datastore(),
+        this.fs);
   }
 
   /**
@@ -194,7 +208,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
    * This is the dictionary, open or not, that the {@code NextRelease}'s {@code Release} points to.
    */
   public Dictionary getNextDictionary() {
-    NextRelease nextRelease = getNextRelease();
+    NextRelease nextRelease = createNextRelease();
     Release release = checkNotNull(nextRelease, "There are currently no open releases...").getRelease();
     String version = checkNotNull(release).getDictionaryVersion();
     Dictionary dictionary = getDictionaryFromVersion(checkNotNull(version));
@@ -312,7 +326,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     log.info("emptying queue");
 
     SubmissionState newState = SubmissionState.NOT_VALIDATED;
-    Release release = getNextRelease().getRelease();
+    Release release = createNextRelease().getRelease();
     List<String> projectKeys = release.getQueuedProjectKeys(); // TODO: what if nextrelease changes in the meantime?
 
     updateSubmisions(projectKeys, newState); // FIXME: DCC-901
@@ -363,7 +377,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     while (attempts < MAX_ATTEMPTS) {
 
       try {
-        Release nextRelease = getNextRelease().getRelease();
+        Release nextRelease = createNextRelease().getRelease();
         nextReleaseName = nextRelease.getName();
         log.info("Dequeuing {} to validating for {}", nextProjectKey, nextReleaseName);
 
@@ -431,7 +445,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     while (attempts < MAX_ATTEMPTS) {
 
       try {
-        Release nextRelease = getNextRelease().getRelease();
+        Release nextRelease = createNextRelease().getRelease();
         nextReleaseName = nextRelease.getName();
         log.info("Resolving {} (as {}) for {}", new Object[] { projectKey, destinationState, nextReleaseName });
 
@@ -479,7 +493,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
    */
   public Release update(String newReleaseName, String newDictionaryVersion) {
 
-    Release release = getNextRelease().getRelease();
+    Release release = createNextRelease().getRelease();
     String oldReleaseName = release.getName();
     String oldDictionaryVersion = release.getDictionaryVersion();
     checkState(release.getState() == ReleaseState.OPENED);
@@ -601,7 +615,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
    */
   @Deprecated
   private void updateSubmisions(List<String> projectKeys, final SubmissionState state) {
-    final String releaseName = getNextRelease().getRelease().getName();
+    final String releaseName = createNextRelease().getRelease().getName();
     for (String projectKey : projectKeys) {
       getSubmission(releaseName, projectKey).setState(state);
     }
@@ -723,7 +737,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
   private List<String> getSubmission(final SubmissionState state) {
     List<String> projectKeys = new ArrayList<String>();
-    List<Submission> submissions = this.getNextRelease().getRelease().getSubmissions();
+    List<Submission> submissions = this.createNextRelease().getRelease().getSubmissions();
     for (Submission submission : submissions) {
       if (state.equals(submission.getState())) {
         projectKeys.add(submission.getProjectKey());

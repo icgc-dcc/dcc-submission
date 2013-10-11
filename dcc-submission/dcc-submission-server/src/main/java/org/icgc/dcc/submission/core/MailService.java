@@ -15,15 +15,26 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation;
+package org.icgc.dcc.submission.core;
+
+import lombok.extern.slf4j.Slf4j;
+
+import org.icgc.dcc.submission.release.model.QueuedProject;
 
 /**
- * Describe set of keys used of error parameters.
+ * TODO
  * <p>
- * Field name(s) and current value(s) are systematically recorded, so these keys only reflect extra parameters needed to
- * describe the error
+ * TODO: merge {@link MailUtils} in here. This should handle tests and dev, where we may not want to actually get
+ * emails.
  */
-public enum ErrorParameterKey {
-  EXPECTED, MIN, MAX, SCHEMA, OTHER_SCHEMA, FILES, FIELDS, OTHER_FIELDS, VALUE; // TODO: change EXPECTED to use VALUE
-                                                                                // instead (more generic)
+@Slf4j
+public class MailService {
+
+  /**
+   * TODO
+   */
+  public void sendProcessingProjectNotification(QueuedProject project) {
+    // TODO
+    log.info("Sending email");
+  }
 }

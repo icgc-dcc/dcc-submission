@@ -15,15 +15,19 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation;
+package org.icgc.dcc.submission.validation.wellformedness;
 
 /**
- * Describe set of keys used of error parameters.
- * <p>
- * Field name(s) and current value(s) are systematically recorded, so these keys only reflect extra parameters needed to
- * describe the error
+ * TODO
  */
-public enum ErrorParameterKey {
-  EXPECTED, MIN, MAX, SCHEMA, OTHER_SCHEMA, FILES, FIELDS, OTHER_FIELDS, VALUE; // TODO: change EXPECTED to use VALUE
-                                                                                // instead (more generic)
+public class WellFormednessChecker {
+
+  /**
+   * 
+   */
+  public static boolean check() { // TODO: determine minimum parameters necessary
+    // TODO Auto-generated method stub
+    return true;
+  }
+
 }

@@ -82,7 +82,7 @@ public class NextReleaseResource {
       return Responses.unauthorizedResponse();
     }
 
-    NextRelease nextRelease = releaseService.getNextRelease();
+    NextRelease nextRelease = releaseService.createNextRelease();
     Release release = nextRelease.getRelease(); // guaranteed not to be null
     String prefix = config.getString("http.ws.path");
     String redirectionPath = Joiner.on("/").join(prefix, "releases", release.getName());
@@ -117,7 +117,7 @@ public class NextReleaseResource {
       return Responses.unauthorizedResponse();
     }
 
-    NextRelease oldRelease = releaseService.getNextRelease(); // guaranteed not null
+    NextRelease oldRelease = releaseService.createNextRelease(); // guaranteed not null
     Release release = oldRelease.getRelease();
     String oldReleaseName = release.getName();
     log.info("Releasing {}", oldReleaseName);
@@ -147,7 +147,7 @@ public class NextReleaseResource {
     /* no authorization check necessary */
 
     log.debug("Getting the queue for nextRelease");
-    NextRelease nextRelease = releaseService.getNextRelease();
+    NextRelease nextRelease = releaseService.createNextRelease();
     List<String> projectIds = nextRelease.getQueued(); // TODO: ensure cannot be null (DCC-820)
     Object[] projectIdArray = projectIds.toArray();
     return Response.ok(projectIdArray).build();
@@ -172,7 +172,7 @@ public class NextReleaseResource {
       projectKeys.add(projectKey);
     }
 
-    Release nextRelease = this.releaseService.getNextRelease().getRelease();
+    Release nextRelease = this.releaseService.createNextRelease().getRelease();
     ResponseTimestamper.evaluate(req, nextRelease);
 
     try {
@@ -230,7 +230,7 @@ public class NextReleaseResource {
       return Responses.unauthorizedResponse();
     }
 
-    Release nextRelease = this.releaseService.getNextRelease().getRelease();
+    Release nextRelease = this.releaseService.createNextRelease().getRelease();
     ResponseTimestamper.evaluate(req, nextRelease);
 
     try {
