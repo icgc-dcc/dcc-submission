@@ -17,32 +17,50 @@
  */
 package org.icgc.dcc.submission.core.morphia;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.util.concurrent.Uninterruptibles.sleepUninterruptibly;
+import static java.lang.String.format;
+import static java.util.concurrent.TimeUnit.SECONDS;
+
+import java.util.concurrent.Callable;
+
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+
+import org.icgc.dcc.submission.core.MailService;
+import org.icgc.dcc.submission.core.model.DccConcurrencyException;
+import org.icgc.dcc.submission.core.model.DccModelOptimisticLockException;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
+import com.google.common.base.Optional;
 import com.google.inject.Inject;
 import com.mysema.query.mongodb.MongodbQuery;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
 import com.mysema.query.types.EntityPath;
 import com.mysema.query.types.Predicate;
 
+@Slf4j
 public abstract class BaseMorphiaService<T> {
 
+  /**
+   * The number of attempts that should be sufficient to obtain a lock. Otherwise the problem is probably not
+   * recoverable - deadlock or other.
+   */
+  protected static final int MAX_ATTEMPTS = 10;
+
   private final Morphia morphia;
-
   private final Datastore datastore;
-
   private final EntityPath<T> entityPath;
 
+  protected final MailService mailService;
+
   @Inject
-  public BaseMorphiaService(Morphia morphia, Datastore datastore, EntityPath<T> entityPath) {
-    super();
-    checkArgument(morphia != null);
-    checkArgument(datastore != null);
-    this.morphia = morphia;
-    this.datastore = datastore;
-    this.entityPath = entityPath;
+  public BaseMorphiaService(Morphia morphia, Datastore datastore, EntityPath<T> entityPath, MailService mailService) {
+    this.morphia = checkNotNull(morphia);
+    this.datastore = checkNotNull(datastore);
+    this.entityPath = checkNotNull(entityPath);
+    this.mailService = checkNotNull(mailService);
   }
 
   public Datastore datastore() {
@@ -62,11 +80,43 @@ public abstract class BaseMorphiaService<T> {
   }
 
   protected void registerModelClasses(Class<?>... entities) {
-    if(entities != null) {
-      for(Class<?> e : entities) {
+    if (entities != null) {
+      for (Class<?> e : entities) {
         morphia.map(e);
         datastore.ensureIndexes(e);
       }
     }
   }
+
+  /**
+   * Calls the supplied {@code callback} a "reasonable" number times until a {@link DccModelOptimisticLockException} is
+   * not thrown. If a retry fails, an email will be sent.
+   * 
+   * @param description - a description of what the {@code callback} does
+   * @param callback - the action to perform with retry
+   * @return the return value of the {@code callback}
+   */
+  @SneakyThrows
+  protected <R> Optional<R> withRetry(String description, Callable<R> callback) {
+    int attempts = 0;
+    while (attempts < MAX_ATTEMPTS) {
+      try {
+        return Optional.<R> fromNullable(callback.call());
+      } catch (DccModelOptimisticLockException e) {
+        attempts++;
+
+        log.warn("There was a concurrency issue while attempting to {}, number of attempts: {}", description, attempts);
+        sleepUninterruptibly(1, SECONDS);
+      }
+    }
+    if (attempts >= MAX_ATTEMPTS) {
+      String message = format("Failed to %s, could not acquire lock", description);
+      mailService.sendAdminProblem(message);
+
+      throw new DccConcurrencyException(message);
+    }
+
+    return Optional.absent();
+  }
+
 }

@@ -23,6 +23,7 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.release.NextRelease;
 import org.icgc.dcc.submission.release.ReleaseService;
 import org.icgc.dcc.submission.release.model.Release;
@@ -48,12 +49,15 @@ public class ValidationQueueManagerServiceTest {
 
   private ValidationQueueManagerService validationQueueManagerService;
 
+  private MailService mockMailService;
+
   @Before
   public void setUp() {
     mockRelease = mock(Release.class);
     mockNextRelease = mock(NextRelease.class);
     mockReleaseService = mock(ReleaseService.class);
     mockValidationService = mock(ValidationService.class);
+    mockMailService = mock(MailService.class);
     mockConfig = mock(Config.class);
 
     when(mockRelease.getName()).thenReturn("release1");
@@ -64,7 +68,7 @@ public class ValidationQueueManagerServiceTest {
         .thenReturn(new ArrayList<String>());
 
     validationQueueManagerService =
-        new ValidationQueueManagerService(mockReleaseService, mockValidationService, mockConfig);
+        new ValidationQueueManagerService(mockReleaseService, mockValidationService, mockMailService, mockConfig);
   }
 
   @Ignore
@@ -85,4 +89,5 @@ public class ValidationQueueManagerServiceTest {
     Thread.sleep(4000);
     validationQueueManagerService.stop();
   }
+
 }
