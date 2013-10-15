@@ -129,36 +129,25 @@ public class ValidationQueueManagerService extends AbstractService {
 
   @Override
   protected void doStart() {
-    try {
-      notifyStarted();
-      startScheduler();
-    } catch (Throwable e) {
-      log.error("TODO: {}", e);
-      System.exit(1); // FIXME
-    }
+    startScheduler();
+    notifyStarted(); // MUST happen after the above method, by contract
   }
 
   @Override
   protected void doStop() {
-    try {
-      stopScheduler();
-      notifyStopped();
-    } catch (Exception e) {
-      log.error("TODO: {}", e);
-      System.exit(1); // FIXME
-    }
+    stopScheduler();
+    notifyStopped(); // MUST happen after the above method, by contract
   }
 
   private void startScheduler() {
     log.info("Polling queue every {} second", POLLING_FREQUENCY_PER_SEC);
-
-    checkState(isRunning(), "Expecting service to be running.");
 
     schedule = scheduler.scheduleWithFixedDelay(
         new Runnable() {
 
           @Override
           public void run() {
+            checkState(isRunning(), "Expecting service to be running."); // Thanks to the initial delay we set
 
             /*
              * TODO: SUBM-1 - Ideally we wouldn't do that every time (but requires creating yet a separate thread for

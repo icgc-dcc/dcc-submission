@@ -17,18 +17,21 @@
  */
 package org.icgc.dcc.submission.core;
 
+import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.util.concurrent.Service.State.RUNNING;
+import static com.google.common.util.concurrent.Service.State.TERMINATED;
+
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import com.google.common.util.concurrent.Service;
+import com.google.common.util.concurrent.Service.State;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 import com.google.inject.Inject;
 
+@Slf4j
 public class DccRuntime {
-
-  private static final Logger log = LoggerFactory.getLogger(DccRuntime.class);
 
   private final Set<Service> services;
 
@@ -38,34 +41,38 @@ public class DccRuntime {
   }
 
   public void start() {
-    for(Service service : services) {
+    for (Service service : services) {
       tryStartService(service);
     }
   }
 
   public void stop() {
-    for(Service service : services) {
+    for (Service service : services) {
       tryStopService(service);
-    }
-  }
-
-  private void tryStopService(Service service) {
-    try {
-      log.info("Service {} is [{}]. Stoping.", service.getClass(), service.state());
-      service.stopAndWait();
-      log.info("Service {} is now [{}]", service.getClass(), service.state());
-    } catch(UncheckedExecutionException e) {
-      log.warn("Failed to stop service {}: {}", service.getClass(), e.getCause().getMessage());
     }
   }
 
   private void tryStartService(Service service) {
     try {
       log.info("Service {} is [{}]. Starting.", service.getClass(), service.state());
-      service.startAndWait();
+      State state = service.startAndWait();
+      checkState(state == RUNNING, "Service should be '%s', instead was found '%s'", RUNNING, state);
       log.info("Service {} is now [{}]", service.getClass(), service.state());
-    } catch(UncheckedExecutionException e) {
+    } catch (UncheckedExecutionException e) {
       log.warn("Failed to start service {}: {}", service.getClass(), e.getCause().getMessage());
+      throw e;
+    }
+  }
+
+  private void tryStopService(Service service) {
+    try {
+      log.info("Service {} is [{}]. Stoping.", service.getClass(), service.state());
+      State state = service.stopAndWait();
+      checkState(state == TERMINATED, "Service should be '%s', instead was found '%s'", TERMINATED, state);
+      log.info("Service {} is now [{}]", service.getClass(), service.state());
+    } catch (UncheckedExecutionException e) {
+      log.error("Failed to stop service {}: {}", service.getClass(), e.getCause().getMessage());
+      throw e;
     }
   }
 

@@ -154,7 +154,8 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   }
 
   /**
-   * TODO
+   * Returns the number of releases that are in the {@link ReleaseState#OPENED} state. It is expected that there always
+   * ever be one at a time.
    */
   public long countOpenReleases() {
     return query()

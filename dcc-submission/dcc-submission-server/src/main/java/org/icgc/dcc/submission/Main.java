@@ -19,8 +19,9 @@ package org.icgc.dcc.submission;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.Arrays;
+
+import lombok.SneakyThrows;
 
 import org.icgc.dcc.submission.config.ConfigModule;
 import org.icgc.dcc.submission.core.CoreModule;
@@ -55,44 +56,30 @@ public class Main {
 
   private static final String HADOOP_USER_NAME = "hdfs";
 
-  private static enum CONFIG {
-    qa("application_qa"), dev("application_dev"), local("application"), external(null);
-
-    String filename;
-
-    private CONFIG(String filename) {
-      this.filename = filename;
-    }
-
-    public static String listValues() {
-      return Arrays.asList(CONFIG.values()).toString();
-    }
-  };
-
   private static Injector injector;
 
   /**
    * Main method for the submission system.
    */
-  public static void main(String[] args) throws IOException {
+  public static void main(String[] args) {
 
     Config parsedConfig = loadConfig(args);
 
     System.setProperty(HADOOP_USER_NAME_PARAM, HADOOP_USER_NAME); // see DCC-572
-    Main.injector = Guice.createInjector(new ConfigModule(parsedConfig) //
+    Main.injector = Guice.createInjector(new ConfigModule(parsedConfig)
         // Infrastructure modules
-        , new CoreModule()//
-        , new HttpModule()//
-        , new JerseyModule()//
-        , new WebModule()//
-        , new MorphiaModule()//
-        , new ShiroModule()//
-        , new FileSystemModule()//
-        , new SftpModule()//
+        , new CoreModule()
+        , new HttpModule()
+        , new JerseyModule()
+        , new WebModule()
+        , new MorphiaModule()
+        , new ShiroModule()
+        , new FileSystemModule()
+        , new SftpModule()
 
         // Business modules
-        , new DictionaryModule()//
-        , new ReleaseModule()//
+        , new DictionaryModule()
+        , new ReleaseModule()
         , new ValidationModule());
 
     Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
@@ -108,10 +95,18 @@ public class Main {
 
     }, "Shutdown-thread"));
 
-    injector.getInstance(DccRuntime.class).start();
+    try {
+      injector.getInstance(DccRuntime.class).start();
+    } catch (Throwable t) {
+      log.error("An unknown error was caught", t);
+      System.exit(1); // Will call shutdown hook
+    }
+
+    log.info("Exiting main method.");
   }
 
-  private static Config loadConfig(String[] args) throws FileNotFoundException {
+  @SneakyThrows
+  private static Config loadConfig(String[] args) {
     CONFIG configType;
     try {
       configType = (args != null && args.length > 0) ? CONFIG.valueOf(args[0]) : CONFIG.local;
@@ -145,5 +140,19 @@ public class Main {
     injector.getInstance(DccRuntime.class).stop();
     injector = null;
   }
+
+  private static enum CONFIG {
+    qa("application_qa"), dev("application_dev"), local("application"), external(null);
+
+    String filename;
+
+    private CONFIG(String filename) {
+      this.filename = filename;
+    }
+
+    public static String listValues() {
+      return Arrays.asList(CONFIG.values()).toString();
+    }
+  };
 
 }
