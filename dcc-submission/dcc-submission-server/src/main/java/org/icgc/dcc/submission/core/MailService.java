@@ -35,6 +35,7 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.core.model.Feedback;
@@ -44,6 +45,7 @@ import com.google.inject.Inject;
 import com.typesafe.config.Config;
 
 @Slf4j
+@RequiredArgsConstructor(onConstructor = @_(@Inject))
 public class MailService {
 
   /**
@@ -83,31 +85,26 @@ public class MailService {
    */
   private final Config config;
 
-  @Inject
-  public MailService(Config config) {
-    this.config = config;
-  }
-
   public void sendAdminProblem(String message) {
     send(
-        config.getString(MAIL_PROBLEM_FROM),
-        config.getString(MAIL_ADMIN_RECIPIENT),
+        get(MAIL_PROBLEM_FROM),
+        get(MAIL_ADMIN_RECIPIENT),
         message,
         message);
   }
 
   public void sendSupportProblem(String subject, String message) {
     send(
-        config.getString(MAIL_PROBLEM_FROM),
-        config.getString(MAIL_AUTOMATIC_SUPPORT_RECIPIENT),
+        get(MAIL_PROBLEM_FROM),
+        get(MAIL_AUTOMATIC_SUPPORT_RECIPIENT),
         subject,
         message);
   }
 
   public void sendSignoff(String user, List<String> projectKeys, String nextReleaseName) {
     send(
-        config.getString(MAIL_NORMAL_FROM),
-        config.getString(MAIL_AUTOMATIC_SUPPORT_RECIPIENT),
+        get(MAIL_NORMAL_FROM),
+        get(MAIL_AUTOMATIC_SUPPORT_RECIPIENT),
         format("Signed off Projects: %s", projectKeys),
         template(MAIL_SIGNOFF_BODY, user, projectKeys, nextReleaseName));
   }
@@ -115,34 +112,27 @@ public class MailService {
   public void sendFeedback(Feedback feedback) {
     send(
         feedback.getEmail(),
-        config.getString(MAIL_MANUAL_SUPPORT_RECIPIENT),
+        get(MAIL_MANUAL_SUPPORT_RECIPIENT),
         feedback.getSubject(),
         feedback.getMessage());
   }
 
   public void sendValidated(String releaseName, String projectKey, SubmissionState state, Set<Address> addresses) {
     try {
-      Message message = message();
-      message.setSubject(template(MAIL_VALIDATION_SUBJECT, projectKey, state));
-
-      String fromEmail;
       if (state == ERROR) {
-        fromEmail = config.getString(MAIL_PROBLEM_FROM);
-
-        // Send email to admin when Error occurs
-        addresses.add(address(config.getString(MAIL_ADMIN_RECIPIENT)));
-        message.setText(template(MAIL_ERROR_BODY, projectKey, state));
-      } else {
-        fromEmail = config.getString(MAIL_NORMAL_FROM);
-        if (state == VALID) {
-          message.setText(template(MAIL_VALID_BODY, projectKey, state, projectKey, projectKey));
-        } else if (state == INVALID) {
-          message.setText(template(MAIL_INVALID_BODY, projectKey, state, projectKey, projectKey));
-        }
+        // Always send an email to admin when an error occurs
+        addresses.add(address(get(MAIL_ADMIN_RECIPIENT)));
       }
 
-      message.setFrom(address(fromEmail));
+      Message message = message();
+      message.setFrom(address(get(state == ERROR ? MAIL_PROBLEM_FROM : MAIL_NORMAL_FROM)));
       message.addRecipients(TO, recipients(addresses));
+      message.setSubject(template(MAIL_VALIDATION_SUBJECT, projectKey, state));
+      message.setText(
+          state == ERROR ? template(MAIL_ERROR_BODY, projectKey, state) : //
+          state == VALID ? template(MAIL_VALID_BODY, projectKey, state, projectKey, projectKey) : //
+          state == INVALID ? template(MAIL_INVALID_BODY, projectKey, state, projectKey, projectKey) : //
+          format("Unexpected validation state '%s' prevented loading email text. Please see server log.", state));
 
       Transport.send(message);
       log.info("Emails for '{}' sent to '{}'", projectKey, addresses);
@@ -155,7 +145,7 @@ public class MailService {
     try {
       Message message = message();
       message.setFrom(address(from));
-      message.addRecipient(TO, new InternetAddress(recipient));
+      message.addRecipient(TO, address(recipient));
       message.setSubject(subject);
       message.setText(text);
 
@@ -168,13 +158,17 @@ public class MailService {
 
   private Message message() {
     Properties props = new Properties();
-    props.put(MAIL_SMTP_HOST, config.getString(MAIL_SMTP_HOST));
+    props.put(MAIL_SMTP_HOST, get(MAIL_SMTP_HOST));
 
     return new MimeMessage(Session.getDefaultInstance(props, null));
   }
 
   private String template(String templateName, Object... arguments) {
-    return format(config.getString(templateName), arguments);
+    return format(get(templateName), arguments);
+  }
+
+  private String get(String name) {
+    return config.getString(name);
   }
 
   private static InternetAddress address(String email) throws UnsupportedEncodingException {

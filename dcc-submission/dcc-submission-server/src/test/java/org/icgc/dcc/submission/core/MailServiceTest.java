@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.submission.core;
 
+import static java.lang.String.format;
+import static org.elasticsearch.common.collect.Sets.newHashSet;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.icgc.dcc.submission.core.MailService.MAIL_ADMIN_RECIPIENT;
 import static org.icgc.dcc.submission.core.MailService.MAIL_AUTOMATIC_SUPPORT_RECIPIENT;
@@ -29,6 +31,7 @@ import static org.icgc.dcc.submission.core.MailService.MAIL_SIGNOFF_BODY;
 import static org.icgc.dcc.submission.core.MailService.MAIL_SMTP_HOST;
 import static org.icgc.dcc.submission.core.MailService.MAIL_VALIDATION_SUBJECT;
 import static org.icgc.dcc.submission.core.MailService.MAIL_VALID_BODY;
+import static org.icgc.dcc.submission.release.model.SubmissionState.ERROR;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
@@ -82,12 +85,36 @@ public class MailServiceTest {
       public void run() {
         mailService.sendSupportProblem(subject, text);
       }
+
     });
 
+    assertThat(message.getFrom()).contains(address(get(MAIL_PROBLEM_FROM)));
+    assertThat(message.getAllRecipients()).contains(address(get(MAIL_AUTOMATIC_SUPPORT_RECIPIENT)));
     assertThat(message.getSubject()).isEqualTo(subject);
     assertThat(message.getContent()).isEqualTo(text);
-    assertThat(message.getFrom()).contains(address(value(MAIL_PROBLEM_FROM)));
-    assertThat(message.getAllRecipients()).contains(address(value(MAIL_AUTOMATIC_SUPPORT_RECIPIENT)));
+  }
+
+  @Test
+  @SneakyThrows
+  public void test_sendValidated_with_ERROR_state() {
+    val releaseName = "releaseName";
+    val projectKey = "projectKey";
+    val state = ERROR;
+    val addresses = newHashSet(address("email@domain.com"));
+
+    val message = verify(new Runnable() {
+
+      @Override
+      public void run() {
+        mailService.sendValidated(releaseName, projectKey, state, addresses);
+      }
+
+    });
+
+    assertThat(message.getFrom()).contains(address(get(MAIL_PROBLEM_FROM)));
+    assertThat(message.getAllRecipients()).contains(address(get(MAIL_ADMIN_RECIPIENT))).containsAll(addresses);
+    assertThat(message.getSubject()).isEqualTo(template(MAIL_VALIDATION_SUBJECT, projectKey, state));
+    assertThat(message.getContent()).isEqualTo(template(MAIL_ERROR_BODY, projectKey, state));
   }
 
   @SneakyThrows
@@ -107,11 +134,14 @@ public class MailServiceTest {
     for (val name : new String[] { MAIL_SMTP_HOST, MAIL_NORMAL_FROM, MAIL_PROBLEM_FROM, MAIL_ADMIN_RECIPIENT, MAIL_MANUAL_SUPPORT_RECIPIENT, MAIL_AUTOMATIC_SUPPORT_RECIPIENT }) {
       when(config.getString(name)).thenReturn(name);
     }
-    for (val name : new String[] { MAIL_VALIDATION_SUBJECT }) {
+    for (val name : new String[] { MAIL_VALIDATION_SUBJECT, MAIL_ERROR_BODY }) {
       when(config.getString(name)).thenReturn("%s:%s");
     }
-    for (val name : new String[] { MAIL_VALID_BODY, MAIL_INVALID_BODY, MAIL_SIGNOFF_BODY, MAIL_ERROR_BODY }) {
+    for (val name : new String[] { MAIL_SIGNOFF_BODY }) {
       when(config.getString(name)).thenReturn("%s:%s:%s");
+    }
+    for (val name : new String[] { MAIL_VALID_BODY, MAIL_INVALID_BODY }) {
+      when(config.getString(name)).thenReturn("%s:%s:%s:%s");
     }
 
     return config;
@@ -122,8 +152,12 @@ public class MailServiceTest {
     return new InternetAddress(email, email);
   }
 
-  private String value(String key) {
+  private String get(String key) {
     return config.getString(key);
+  }
+
+  private String template(String templateName, Object... arguments) {
+    return format(get(templateName), arguments);
   }
 
 }
