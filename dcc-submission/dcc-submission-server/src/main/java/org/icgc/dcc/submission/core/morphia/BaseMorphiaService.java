@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.core.morphia;
 
+import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.util.concurrent.Uninterruptibles.sleepUninterruptibly;
 import static java.lang.String.format;
@@ -49,10 +50,12 @@ public abstract class BaseMorphiaService<T> {
    */
   protected static final int MAX_ATTEMPTS = 10;
 
+  /**
+   * Dependencies.
+   */
   private final Morphia morphia;
   private final Datastore datastore;
   private final EntityPath<T> entityPath;
-
   protected final MailService mailService;
 
   @Inject
@@ -90,7 +93,7 @@ public abstract class BaseMorphiaService<T> {
 
   /**
    * Calls the supplied {@code callback} a "reasonable" number times until a {@link DccModelOptimisticLockException} is
-   * not thrown. If a retry fails, an email will be sent.
+   * not thrown. If a retry is exhausted, an "admin problem" email will be sent.
    * 
    * @param description - a description of what the {@code callback} does
    * @param callback - the action to perform with retry
@@ -116,7 +119,7 @@ public abstract class BaseMorphiaService<T> {
       throw new DccConcurrencyException(message);
     }
 
-    return Optional.absent();
+    return absent();
   }
 
 }
