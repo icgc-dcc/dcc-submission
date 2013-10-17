@@ -33,7 +33,6 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.typesafe.config.Config;
@@ -47,12 +46,11 @@ public class ValidationQueueManagerServiceTest {
   private ReleaseService mockReleaseService;
   private ValidationService mockValidationService;
 
-  @Mock
-  private MailService mockMailService;
-
   private Config mockConfig;
 
   private ValidationQueueManagerService validationQueueManagerService;
+
+  private MailService mockMailService;
 
   @Before
   public void setUp() {
@@ -60,6 +58,7 @@ public class ValidationQueueManagerServiceTest {
     mockNextRelease = mock(NextRelease.class);
     mockReleaseService = mock(ReleaseService.class);
     mockValidationService = mock(ValidationService.class);
+    mockMailService = mock(MailService.class);
     mockConfig = mock(Config.class);
 
     when(mockRelease.getName()).thenReturn("release1");
@@ -93,4 +92,5 @@ public class ValidationQueueManagerServiceTest {
     Thread.sleep(4000);
     validationQueueManagerService.stop();
   }
+
 }

@@ -49,7 +49,6 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.core.MailService;
-import org.icgc.dcc.submission.core.MailUtils;
 import org.icgc.dcc.submission.release.ReleaseService;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
@@ -100,7 +99,6 @@ public class ValidationQueueManagerService extends AbstractService {
   private final int maxValidating;
   private final ReleaseService releaseService;
   private final ValidationService validationService;
-  private final Config config;
   private final MailService mailService;
 
   /**
@@ -112,17 +110,13 @@ public class ValidationQueueManagerService extends AbstractService {
   private ScheduledFuture<?> schedule;
 
   @Inject
-  public ValidationQueueManagerService(
-      ReleaseService releaseService,
-      ValidationService validationService,
-      MailService mailService,
-      Config config) {
-    this.config = checkNotNull(config);
+  public ValidationQueueManagerService(final ReleaseService releaseService, ValidationService validationService,
+      MailService mailService, Config config) {
     this.releaseService = checkNotNull(releaseService);
     this.validationService = checkNotNull(validationService);
-    this.mailService = checkNotNull(mailService);
+    this.mailService = mailService;
 
-    this.maxValidating = config.hasPath(MAX_VALIDATING_CONFIG_PARAM) ?
+    this.maxValidating = checkNotNull(config).hasPath(MAX_VALIDATING_CONFIG_PARAM) ?
         config.getInt(MAX_VALIDATING_CONFIG_PARAM) :
         DEFAULT_MAX_VALIDATING;
   }
@@ -230,7 +224,7 @@ public class ValidationQueueManagerService extends AbstractService {
    */
   private void processNext(Release release, QueuedProject project) throws FilePresenceException { // TODO: DCC-1820;
     log.info("Processing next project in queue: '{}'", project);
-    mailService.sendProcessingProjectNotification(project);
+    mailService.sendProcessingStarted(project.getKey(), project.getEmails());
 
     releaseService.dequeueToValidating(project);
     Plan plan = validationService.prepareValidation(release, project, new ValidationCascadeListener());
@@ -414,7 +408,7 @@ public class ValidationQueueManagerService extends AbstractService {
     }
 
     if (aCheck.isEmpty() == false) {
-      MailUtils.validationEndEmail(config, release.getName(), project.getKey(), state, aCheck);
+      mailService.sendValidated(release.getName(), project.getKey(), state, aCheck);
     }
   }
 

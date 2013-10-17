@@ -20,6 +20,7 @@ package org.icgc.dcc.submission.validation.service;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.core.ProjectService;
@@ -35,10 +36,8 @@ import org.icgc.dcc.submission.validation.FilePresenceException;
 import org.icgc.dcc.submission.validation.Plan;
 import org.icgc.dcc.submission.validation.Planner;
 import org.icgc.dcc.submission.validation.factory.CascadingStrategyFactory;
+import org.icgc.dcc.submission.validation.firstpass.FirstPassChecker;
 import org.icgc.dcc.submission.validation.service.ValidationQueueManagerService.ValidationCascadeListener;
-import org.icgc.dcc.submission.validation.wellformedness.FirstPassChecker;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import cascading.cascade.Cascade;
 import cascading.cascade.CascadeListener;
@@ -50,9 +49,8 @@ import com.google.inject.Inject;
 /**
  * Wraps validation call for the {@code ValidationQueueManagerService} and {@Main} (the validation one) to use
  */
+@Slf4j
 public class ValidationService {
-
-  private static final Logger log = LoggerFactory.getLogger(ValidationService.class);
 
   private final Planner planner;
 
@@ -102,6 +100,8 @@ public class ValidationService {
       log.info("rootDir = {} ", rootDir);
       log.info("outputDir = {} ", outputDir);
       log.info("systemDir = {} ", systemDir);
+
+      // TODO: File Checker
 
       CascadingStrategy cascadingStrategy = cascadingStrategyFactory.get(rootDir, outputDir, systemDir);
       checkWellFormedness();

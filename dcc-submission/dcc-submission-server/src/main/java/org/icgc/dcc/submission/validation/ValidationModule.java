@@ -18,7 +18,6 @@
 package org.icgc.dcc.submission.validation;
 
 import org.icgc.dcc.submission.core.AbstractDccModule;
-import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.validation.factory.CascadingStrategyFactory;
 import org.icgc.dcc.submission.validation.report.ByteOffsetToLineNumber;
 import org.icgc.dcc.submission.validation.restriction.CodeListRestriction;
@@ -41,7 +40,6 @@ public class ValidationModule extends AbstractDccModule {
   protected void configure() {
     bindService(ValidationQueueManagerService.class);
     bind(ValidationService.class);
-    bind(MailService.class);
     bind(Planner.class).to(DefaultPlanner.class);
     bind(CascadingStrategyFactory.class).toProvider(CascadingStrategyFactoryProvider.class).in(Singleton.class);
     bindRestrictionTypes();
