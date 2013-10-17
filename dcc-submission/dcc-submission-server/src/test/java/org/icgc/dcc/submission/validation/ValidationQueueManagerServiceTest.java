@@ -32,10 +32,13 @@ import org.icgc.dcc.submission.validation.service.ValidationService;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import com.typesafe.config.Config;
 
+@RunWith(MockitoJUnitRunner.class)
 public class ValidationQueueManagerServiceTest {
 
   private Release mockRelease;
