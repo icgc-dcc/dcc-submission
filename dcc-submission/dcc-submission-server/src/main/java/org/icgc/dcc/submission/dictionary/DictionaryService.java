@@ -217,7 +217,10 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
     Release openRelease = releases.getNextRelease().getRelease();
     Dictionary currentDictionary = getCurrentDictionary(openRelease);
     if (currentDictionary.usesCodeList(codeListName)) {
+      log.info("Resetting submission due to active dictionary code list term addition...");
       releases.resetSubmissions(openRelease.getName(), openRelease.getInvalidProjectKeys());
+    } else {
+      log.info("No need to reset submissions due to active dictionary code list term addition...");
     }
   }
 

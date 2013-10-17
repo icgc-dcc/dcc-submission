@@ -17,9 +17,14 @@
  */
 package org.icgc.dcc.submission;
 
+import static com.google.common.base.Charsets.UTF_8;
+import static com.google.common.io.Resources.getResource;
+import static lombok.AccessLevel.PRIVATE;
 import static org.apache.commons.lang.StringUtils.abbreviate;
 
 import java.io.IOException;
+import java.net.URL;
+import java.util.Iterator;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
@@ -27,76 +32,109 @@ import javax.ws.rs.client.Invocation.Builder;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+
 import org.codehaus.jackson.map.ObjectMapper;
 import org.glassfish.grizzly.http.util.Header;
 import org.glassfish.jersey.internal.util.Base64;
+import org.icgc.dcc.submission.dictionary.model.CodeList;
+import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.release.model.DetailedSubmission;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseView;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 
 /**
- * Utils class for integration test (to help un-clutter it). TODO: should probably make decorator for Client instead
+ * Utility class for integration test (to help un-clutter it).
  */
+@Slf4j
+@NoArgsConstructor(access = PRIVATE)
 public final class TestUtils {
 
-  private static final Logger log = LoggerFactory.getLogger(TestUtils.class);
+  /**
+   * Endpoint path constants.
+   */
+  public static final String SEED_ENDPOINT = "/seed";
+  public static final String SEED_CODELIST_ENDPOINT = SEED_ENDPOINT + "/codelists";
+  public static final String SEED_DICTIONARIES_ENDPOINT = SEED_ENDPOINT + "/dictionaries";
+  public static final String DICTIONARIES_ENDPOINT = "/dictionaries";
+  public static final String CODELISTS_ENDPOINT = "/codeLists";
+  public static final String PROJECTS_ENDPOINT = "/projects";
+  public static final String RELEASES_ENDPOINT = "/releases";
+  public static final String NEXT_RELEASE_ENPOINT = "/nextRelease";
+  public static final String UPDATE_RELEASE_ENDPOINT = NEXT_RELEASE_ENPOINT + "/update";
+  public static final String SIGNOFF_ENDPOINT = NEXT_RELEASE_ENPOINT + "/signed";
+  public static final String QUEUE_ENDPOINT = NEXT_RELEASE_ENPOINT + "/queue";
 
-  private static final String AUTHORIZATION = "X-DCC-Auth " //
-      + Base64.encodeAsString("admin:adminspasswd"); // only true for development realm
+  public static final String BASEURI = "http://localhost:5380/ws";
+  public static final String AUTHORIZATION_HEADER_VALUE = "X-DCC-Auth "
+      + Base64.encodeAsString("admin:adminspasswd");
 
-  private static final String BASEURI = "http://localhost:5380/ws";
-
-  static String resourceToString(String resourcePath) throws IOException {
-    return Resources.toString(TestUtils.class.getResource(resourcePath), Charsets.UTF_8);
+  public static String resourceToString(String resourcePath) throws IOException {
+    return Resources.toString(TestUtils.class.getResource(resourcePath), UTF_8);
   }
 
-  static String resourceToJsonArray(String resourcePath) throws IOException {
+  public static String resourceToString(URL resourceUrl) throws IOException {
+    return Resources.toString(resourceUrl, UTF_8);
+  }
+
+  @SneakyThrows
+  public static String codeListsToString() {
+    ObjectMapper mapper = new ObjectMapper();
+    Iterator<CodeList> codeLists =
+        mapper.reader(CodeList.class).readValues(getResource("org/icgc/dcc/resources/CodeList.json"));
+    return mapper.writeValueAsString(codeLists);
+  }
+
+  @SneakyThrows
+  public static String dictionaryToString() {
+    ObjectMapper mapper = new ObjectMapper();
+    Dictionary dictionary =
+        mapper.reader(Dictionary.class).readValue(getResource("org/icgc/dcc/resources/Dictionary.json"));
+    return mapper.writeValueAsString(dictionary);
+  }
+
+  public static String resourceToJsonArray(String resourcePath) throws IOException {
     return "[" + resourceToString(resourcePath) + "]";
   }
 
-  static Builder build(Client client, String endPoint) {
+  public static Builder build(Client client, String endPoint) {
     return client.target(BASEURI).path(endPoint).request(MediaType.APPLICATION_JSON)
-        .header(Header.Authorization.toString(), AUTHORIZATION);
+        .header(Header.Authorization.toString(), AUTHORIZATION_HEADER_VALUE);
   }
 
-  static Response get(Client client, String endPoint) throws IOException {
+  public static Response get(Client client, String endPoint) throws IOException {
     log.info("GET {}", endPoint);
     return build(client, endPoint).get();
   }
 
-  static Response post(Client client, String endPoint, String payload) {
+  public static Response post(Client client, String endPoint, String payload) {
     log.info("POST {} {}", new Object[] { endPoint, abbreviate(payload, 1000) });
     return build(client, endPoint).post(Entity.entity(payload, MediaType.APPLICATION_JSON));
   }
 
-  static Response put(Client client, String endPoint, String payload) {
+  public static Response put(Client client, String endPoint, String payload) {
     log.info("PUT {} {}", new Object[] { endPoint, abbreviate(payload, 1000) });
     return build(client, endPoint).put(Entity.entity(payload, MediaType.APPLICATION_JSON));
   }
 
-  static String asString(Response response) {
+  public static String asString(Response response) {
     return response.readEntity(String.class);
   }
 
-  static Release asRelease(Response response) throws Exception {
+  public static Release asRelease(Response response) throws Exception {
     return new ObjectMapper().readValue(asString(response), Release.class);
   }
 
-  static ReleaseView asReleaseView(Response response) throws Exception {
+  public static ReleaseView asReleaseView(Response response) throws Exception {
     return new ObjectMapper().readValue(asString(response), ReleaseView.class);
   }
 
-  static DetailedSubmission asDetailedSubmission(Response response) throws Exception {
+  public static DetailedSubmission asDetailedSubmission(Response response) throws Exception {
     return new ObjectMapper().readValue(asString(response), DetailedSubmission.class);
-  }
-
-  private TestUtils() {
-    // Prevent construction
   }
 
 }

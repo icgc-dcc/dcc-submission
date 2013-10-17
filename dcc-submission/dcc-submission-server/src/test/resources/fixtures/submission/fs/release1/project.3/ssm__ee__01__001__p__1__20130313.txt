@@ -1,0 +1,5 @@
+analysis_id	analyzed_sample_id	mutation_id	mutation_type	chromosome	chromosome_start	chromosome_end	chromosome_strand	refsnp_allele	refsnp_strand	reference_genome_allele	control_genotype	tumour_genotype	mutation	expressed_allele	quality_score	probability	read_count	is_annotated	verification_status	verification_platform	xref_ensembl_var_id	uri	db_xref	note
+0040	00312	0050	1	5	140030412	140030412	1	cHGHKwOtnN	-1	G	C/C	C/G	C>G	sGRbBljSfw	1.748965351665932			2	3	64	rs0	http://www.icgc.org	00:a	
+0040	00312	0051	1	17	67469856	67469856	1	-9999		G	A/G	A/A	G>A	JNhzBioaqn	21.219786448837898	30.36309906417094	6.9422600604864435	2	1	70		http://www.icgc.org	00:a	tJfVeTbWjq
+0040	00312	0052	1	4	68607188	68607188	-1	-888	-1	C	A/C	C/C	A>C		27.85541541028777	18.645080024757448	31.45298785007593	1	1	42	rs0	http://www.icgc.org	00:a	INmdSylljy
+0041	00312	0053	1	2	213285429	213285429	1	-888		A	A/G	G/G	A>G		39.58561923577912		20.097026999933025	-777	2	9	rs0	http://www.icgc.org	00:a	

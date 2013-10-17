@@ -17,7 +17,11 @@
  */
 package org.icgc.dcc.submission.validation;
 
+import static com.google.common.util.concurrent.Uninterruptibles.sleepUninterruptibly;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.icgc.dcc.submission.TestUtils.dictionaryToString;
 import static org.icgc.dcc.submission.validation.CascadingStrategy.SEPARATOR;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -26,7 +30,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 
@@ -57,14 +60,13 @@ import org.junit.runner.RunWith;
 import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
 import com.google.common.io.Files;
-import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.inject.Inject;
 
 @RunWith(GuiceJUnitRunner.class)
 @GuiceModules({ ValidationTestModule.class })
 public class ValidationExternalIntegrityTest { // TODO create base class for this and ValidationInternalIntegrityTest
 
-  private static final String ROOTDIR = "/integration/validation/external";
+  private static final String ROOTDIR = "/fixtures/validation/external";
 
   private static final QueuedProject QUEUED_PROJECT = new QueuedProject("dummyProject", null); // TODO: mock
 
@@ -85,6 +87,7 @@ public class ValidationExternalIntegrityTest { // TODO create base class for thi
     DccFileSystem dccFileSystem = mock(DccFileSystem.class);
     ProjectService projectService = mock(ProjectService.class);
 
+    CodeList codeList0 = mock(CodeList.class);
     CodeList codeList1 = mock(CodeList.class);
     CodeList codeList2 = mock(CodeList.class);
     CodeList codeList3 = mock(CodeList.class);
@@ -103,19 +106,24 @@ public class ValidationExternalIntegrityTest { // TODO create base class for thi
     List<Term> termList5 =
         Arrays.asList(new Term("1", "dummy", null), new Term("2", "dummy", null), new Term("3", "dummy", null));
 
-    when(dictionaryService.getCodeList("dr__donor_sex")).thenReturn(Optional.of(codeList1));
-    when(dictionaryService.getCodeList("dr__donor_vital_status")).thenReturn(Optional.of(codeList2));
-    when(dictionaryService.getCodeList("dr__disease_status_last_followup")).thenReturn(Optional.of(codeList3));
-    when(dictionaryService.getCodeList("dr__donor_relapse_type")).thenReturn(Optional.of(codeList4));
+    when(dictionaryService.getCodeList(anyString())).thenReturn(Optional.<CodeList> absent());
 
-    when(dictionaryService.getCodeList("specimen__specimen_type")).thenReturn(Optional.of(codeList1));
-    when(dictionaryService.getCodeList("specimen__specimen_donor_treatment_type")).thenReturn(Optional.of(codeList1));
-    when(dictionaryService.getCodeList("specimen__specimen_processing")).thenReturn(Optional.of(codeList1));
-    when(dictionaryService.getCodeList("specimen__specimen_storage")).thenReturn(Optional.of(codeList1));
-    when(dictionaryService.getCodeList("specimen__tumour_confirmed")).thenReturn(Optional.of(codeList1));
-    when(dictionaryService.getCodeList("specimen__specimen_available")).thenReturn(Optional.of(codeList1));
+    when(dictionaryService.getCodeList("GLOBAL.0.yes_no.v1")).thenReturn(Optional.of(codeList0));
 
-    when(dictionaryService.getCodeList("sp__analyzed_sample_type")).thenReturn(Optional.of(codeList5));
+    when(dictionaryService.getCodeList("donor.0.donor_sex.v1")).thenReturn(Optional.of(codeList1));
+    when(dictionaryService.getCodeList("donor.0.donor_vital_status.v1")).thenReturn(Optional.of(codeList2));
+    when(dictionaryService.getCodeList("donor.0.disease_status_last_followup.v1")).thenReturn(Optional.of(codeList3));
+    when(dictionaryService.getCodeList("donor.0.donor_relapse_type.v1")).thenReturn(Optional.of(codeList4));
+
+    when(dictionaryService.getCodeList("specimen.0.specimen_type.v1")).thenReturn(Optional.of(codeList1));
+    when(dictionaryService.getCodeList("specimen.0.specimen_donor_treatment_type.v1")).thenReturn(
+        Optional.of(codeList1));
+    when(dictionaryService.getCodeList("specimen.0.specimen_processing.v1")).thenReturn(Optional.of(codeList1));
+    when(dictionaryService.getCodeList("specimen.0.specimen_storage.v1")).thenReturn(Optional.of(codeList1));
+    when(dictionaryService.getCodeList("specimen.0.tumour_confirmed.v1")).thenReturn(Optional.of(codeList1));
+    when(dictionaryService.getCodeList("specimen.0.specimen_available.v1")).thenReturn(Optional.of(codeList1));
+
+    when(dictionaryService.getCodeList("sample.0.analyzed_sample_type.v1")).thenReturn(Optional.of(codeList5));
 
     when(codeList1.getTerms()).thenReturn(termList1);
     when(codeList2.getTerms()).thenReturn(termList2);
@@ -136,11 +144,11 @@ public class ValidationExternalIntegrityTest { // TODO create base class for thi
     Assert.assertTrue(content, content.isEmpty());
 
     String donorTrim = getUnsortedFileContent(ROOTDIR, "/.validation/donor" + SEPARATOR + "donor_id-offset.tsv");
-    String donorTrimExpected = getUnsortedFileContent("/ref/fk_donor_trim.tsv");
+    String donorTrimExpected = getUnsortedFileContent("/fixtures/validation/reference/fk_donor_trim.tsv");
     Assert.assertEquals("Incorrect donor ID trim list", donorTrimExpected.trim(), donorTrim.trim());
 
     String specimenTrim = getUnsortedFileContent(ROOTDIR, "/.validation/specimen" + SEPARATOR + "donor_id-offset.tsv");
-    String specimenTrimExpected = getUnsortedFileContent("/ref/fk_specimen_trim.tsv");
+    String specimenTrimExpected = getUnsortedFileContent("/fixtures/validation/reference/fk_specimen_trim.tsv");
     Assert.assertEquals("Incorrect specimen ID trim list", specimenTrimExpected.trim(), specimenTrim.trim());
 
     resetDictionary();
@@ -173,13 +181,13 @@ public class ValidationExternalIntegrityTest { // TODO create base class for thi
 
     String donorTrim =
         getUnsortedFileContent(ROOTDIR, "/error/fk_1/.validation/donor" + SEPARATOR + "donor_id-fakecolumn-offset.tsv");
-    String donorTrimExpected = getUnsortedFileContent("/ref/fk_1_donor_trim.tsv");
+    String donorTrimExpected = getUnsortedFileContent("/fixtures/validation/reference/fk_1_donor_trim.tsv");
     Assert.assertEquals("Incorrect donor ID trim list", donorTrimExpected.trim(), donorTrim.trim());
 
     String specimenTrim =
         getUnsortedFileContent(ROOTDIR, "/error/fk_1/.validation/specimen" + SEPARATOR
             + "donor_id-fakecolumn-offset.tsv");
-    String specimenTrimExpected = getUnsortedFileContent("/ref/fk_1_specimen_trim.tsv");
+    String specimenTrimExpected = getUnsortedFileContent("/fixtures/validation/reference/fk_1_specimen_trim.tsv");
     Assert.assertEquals("Incorrect specimen ID trim list", specimenTrimExpected.trim(), specimenTrim.trim());
   }
 
@@ -202,7 +210,9 @@ public class ValidationExternalIntegrityTest { // TODO create base class for thi
   private void testErrorType(String errorType) throws IOException, FilePresenceException {
     String content = validate(dictionary, ROOTDIR + "/error/" + errorType);
     String expected =
-        FileUtils.readFileToString(new File(this.getClass().getResource("/ref/" + errorType + ".json").getFile()));
+        FileUtils
+            .readFileToString(new File(this.getClass()
+                .getResource("/fixtures/validation/reference/" + errorType + ".json").getFile()));
     Assert.assertEquals(content, expected.trim(), content.trim());
   }
 
@@ -218,7 +228,7 @@ public class ValidationExternalIntegrityTest { // TODO create base class for thi
 
     Path rootDir = new Path(rootDirString);
     Path outputDir = new Path(outputDirString);
-    Path systemDir = new Path("src/test/resources/integrationtest/fs/SystemFiles");
+    Path systemDir = new Path("src/test/resources/fixtures/submission/fs/SystemFiles");
 
     CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir, systemDir);
 
@@ -230,16 +240,14 @@ public class ValidationExternalIntegrityTest { // TODO create base class for thi
 
     plan.startCascade();
     while (listener.isRunning()) {
-      Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
+      sleepUninterruptibly(1, SECONDS);
     }
     Assert.assertTrue(errorFileString, errorFile.exists());
     return FileUtils.readFileToString(errorFile);
   }
 
   private void resetDictionary() throws IOException, JsonProcessingException {
-    dictionary =
-        new ObjectMapper().reader(Dictionary.class).readValue(
-            new File(this.getClass().getResource("/dictionary.json").getFile()));
+    dictionary = new ObjectMapper().reader(Dictionary.class).readValue(dictionaryToString());
   }
 
   private FileSchema getFileSchemaByName(Dictionary dictionary, String name) {
