@@ -102,6 +102,8 @@ public class ValidationService {
       log.info("outputDir = {} ", outputDir);
       log.info("systemDir = {} ", systemDir);
 
+      // TODO: File Checker
+
       CascadingStrategy cascadingStrategy = cascadingStrategyFactory.get(rootDir, outputDir, systemDir);
       Plan plan =
           planAndConnectCascade(qProject, submissionDirectory, cascadingStrategy, dictionary, validationCascadeListener);
