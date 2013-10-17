@@ -31,15 +31,13 @@ import java.util.Set;
 
 import junit.framework.Assert;
 
+import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.core.model.DccModelOptimisticLockException;
 import org.icgc.dcc.submission.core.model.InvalidStateException;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.dictionary.DictionaryService;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
-import org.icgc.dcc.submission.release.DccLocking;
-import org.icgc.dcc.submission.release.NextRelease;
-import org.icgc.dcc.submission.release.ReleaseService;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
@@ -53,7 +51,6 @@ import com.google.common.base.Throwables;
 import com.mongodb.Mongo;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
-import com.typesafe.config.Config;
 
 public class ReleaseServiceTest {
 
@@ -67,11 +64,11 @@ public class ReleaseServiceTest {
 
   private ReleaseService releaseService;
 
+  private MailService mailService;
+
   private Release release;
 
   private DccFileSystem fs;
-
-  private Config config;
 
   private final static String testDbName = "dcc-test";
 
@@ -86,8 +83,6 @@ public class ReleaseServiceTest {
       dccLocking = mock(DccLocking.class);
       fs = mock(DccFileSystem.class);
 
-      config = mock(Config.class);
-
       // Clear out the test database before each test
       datastore.delete(datastore.createQuery(Dictionary.class));
       datastore.delete(datastore.createQuery(Release.class));
@@ -96,6 +91,8 @@ public class ReleaseServiceTest {
       // Set up a minimal test case
       dictionary = new Dictionary();
       dictionary.setVersion("foo");
+
+      mailService = mock(MailService.class);
 
       release = new Release("release1");
 
@@ -122,19 +119,19 @@ public class ReleaseServiceTest {
       release.setDictionaryVersion(dictionary.getVersion());
 
       // Create the releaseService and populate it with the initial release
-      releaseService = new ReleaseService(dccLocking, morphia, datastore, fs, config);
-      dictionaryService = new DictionaryService(morphia, datastore, releaseService);
+      releaseService = new ReleaseService(dccLocking, morphia, datastore, fs, mailService);
+      dictionaryService = new DictionaryService(morphia, datastore, releaseService, mailService);
       dictionaryService.addDictionary(dictionary);
       releaseService.createInitialRelease(release);
-    } catch(UnknownHostException e) {
+    } catch (UnknownHostException e) {
       e.printStackTrace();
 
       fail(e.getMessage());
-    } catch(MongoException e) {
+    } catch (MongoException e) {
       e.printStackTrace();
 
       fail(e.getMessage());
-    } catch(NullPointerException e) {
+    } catch (NullPointerException e) {
       e.printStackTrace();
 
       fail(e.getMessage());
@@ -221,16 +218,16 @@ public class ReleaseServiceTest {
     String user = "admin";
     try {
       releaseService.signOff(newRelease, projectKeys, user);
-    } catch(InvalidStateException e) {
+    } catch (InvalidStateException e) {
       throw new RuntimeException(e);
-    } catch(DccModelOptimisticLockException e) {
+    } catch (DccModelOptimisticLockException e) {
       throw new RuntimeException(e);
     }
 
     NextRelease nextRelease = null;
     try {
       nextRelease = releaseService.getNextRelease().release(newRelease.getName());
-    } catch(InvalidStateException e) {
+    } catch (InvalidStateException e) {
       Throwables.propagate(e);
     }
 

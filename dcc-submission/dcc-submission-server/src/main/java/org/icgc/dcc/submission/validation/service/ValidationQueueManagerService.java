@@ -41,7 +41,7 @@ import javax.mail.Address;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 
-import org.icgc.dcc.submission.core.MailUtils;
+import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.release.NextRelease;
 import org.icgc.dcc.submission.release.ReleaseService;
 import org.icgc.dcc.submission.release.model.QueuedProject;
@@ -91,7 +91,7 @@ public class ValidationQueueManagerService extends AbstractService {
 
   private final ValidationService validationService;
 
-  private final Config config;
+  private final MailService mailService;
 
   private ScheduledFuture<?> schedule;
 
@@ -102,10 +102,10 @@ public class ValidationQueueManagerService extends AbstractService {
 
   @Inject
   public ValidationQueueManagerService(final ReleaseService releaseService, ValidationService validationService,
-      Config config) {
-    this.config = checkNotNull(config);
+      MailService mailService, Config config) {
     this.releaseService = checkNotNull(releaseService);
     this.validationService = checkNotNull(validationService);
+    this.mailService = mailService;
 
     this.MAX_VALIDATING =
         config.hasPath("validator.max_simultaneous") ? config.getInt("validator.max_simultaneous") : DEFAULT_MAX_VALIDATING;
@@ -381,7 +381,7 @@ public class ValidationQueueManagerService extends AbstractService {
     }
 
     if (aCheck.isEmpty() == false) {
-      MailUtils.validationEndEmail(config, release.getName(), project.getKey(), state, aCheck);
+      mailService.sendValidated(release.getName(), project.getKey(), state, aCheck);
     }
   }
 

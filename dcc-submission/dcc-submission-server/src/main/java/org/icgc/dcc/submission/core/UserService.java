@@ -36,8 +36,8 @@ public class UserService extends BaseMorphiaService<User> {
   private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
   @Inject
-  public UserService(Morphia morphia, Datastore datastore) {
-    super(morphia, datastore, QUser.user);
+  public UserService(Morphia morphia, Datastore datastore, MailService mailService) {
+    super(morphia, datastore, QUser.user, mailService);
     registerModelClasses(User.class);
   }
 

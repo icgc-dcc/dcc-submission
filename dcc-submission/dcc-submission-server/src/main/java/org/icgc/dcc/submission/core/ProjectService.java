@@ -49,8 +49,8 @@ public class ProjectService extends BaseMorphiaService<Project> {
   private final DccFileSystem fs;
 
   @Inject
-  public ProjectService(Morphia morphia, Datastore datastore, DccFileSystem fs) {
-    super(morphia, datastore, QProject.project);
+  public ProjectService(Morphia morphia, Datastore datastore, DccFileSystem fs, MailService mailService) {
+    super(morphia, datastore, QProject.project, mailService);
     super.registerModelClasses(Project.class);
     this.fs = fs;
   }

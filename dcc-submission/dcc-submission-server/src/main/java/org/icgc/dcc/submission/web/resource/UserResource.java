@@ -30,7 +30,9 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 
-import org.icgc.dcc.submission.core.MailUtils;
+import lombok.extern.slf4j.Slf4j;
+
+import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.core.UserService;
 import org.icgc.dcc.submission.core.model.Feedback;
 import org.icgc.dcc.submission.core.model.User;
@@ -40,26 +42,22 @@ import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
 import org.icgc.dcc.submission.web.util.Authorizations;
 import org.icgc.dcc.submission.web.util.ResponseTimestamper;
 import org.icgc.dcc.submission.web.util.Responses;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
 import com.google.inject.Inject;
-import com.typesafe.config.Config;
 
 /**
  * Resource (REST end-points) for users.
  */
+@Slf4j
 @Path("users")
 public class UserResource {
 
-  private static final Logger log = LoggerFactory.getLogger(UserResource.class);
-
-  @Inject
-  private Config config;
-
   @Inject
   private UserService users;
+
+  @Inject
+  private MailService mailService;
 
   @GET
   @Path("self")
@@ -77,7 +75,7 @@ public class UserResource {
     /* no authorization check necessary */
 
     log.debug("Sending feedback email: {}", feedback);
-    MailUtils.feedbackEmail(config, feedback);
+    mailService.sendFeedback(feedback);
 
     return Response.ok().build();
   }
@@ -109,4 +107,5 @@ public class UserResource {
       return ResponseTimestamper.ok(user).build();
     }
   }
+
 }

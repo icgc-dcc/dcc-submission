@@ -21,6 +21,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.List;
 
+import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.core.morphia.BaseMorphiaService;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
@@ -51,8 +52,8 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
   private final ReleaseService releases;
 
   @Inject
-  public DictionaryService(Morphia morphia, Datastore datastore, ReleaseService releases) {
-    super(morphia, datastore, QDictionary.dictionary);
+  public DictionaryService(Morphia morphia, Datastore datastore, ReleaseService releases, MailService mailService) {
+    super(morphia, datastore, QDictionary.dictionary, mailService);
     checkArgument(releases != null);
     this.releases = releases;
     registerModelClasses(Dictionary.class, CodeList.class);
