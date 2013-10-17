@@ -132,15 +132,21 @@ public class RangeFieldRestriction implements InternalPlanElement {
 
       Object fieldName = tupleEntry.getFields().get(0);
 
-      checkState(value instanceof Number, "TODO");
-      Number num = (Number) value;
-      if (num.longValue() < this.min.longValue() || num.longValue() > this.max.longValue()) {
+      if (isValue(value)) { // Nothing to check if there is no value (null or empty string)
+        checkState(value instanceof Number, "Value is expected to be a number at this point, instead got '%s'", value);
+        Number num = (Number) value;
+        if (num.longValue() < this.min.longValue() || num.longValue() > this.max.longValue()) {
 
-        ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.OUT_OF_RANGE_ERROR, fieldName.toString(),
-            num.longValue(), min.longValue(), max.longValue());
+          ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.OUT_OF_RANGE_ERROR, fieldName.toString(),
+              num.longValue(), min.longValue(), max.longValue());
+        }
       }
 
       functionCall.getOutputCollector().add(tupleEntry.getTupleCopy());
+    }
+
+    private boolean isValue(Object value) {
+      return value != null && !String.valueOf(value).isEmpty();
     }
   }
 }

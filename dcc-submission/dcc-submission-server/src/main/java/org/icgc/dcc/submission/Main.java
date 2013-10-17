@@ -22,6 +22,7 @@ import java.io.FileNotFoundException;
 import java.util.Arrays;
 
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.config.ConfigModule;
 import org.icgc.dcc.submission.core.CoreModule;
@@ -36,8 +37,6 @@ import org.icgc.dcc.submission.sftp.SftpModule;
 import org.icgc.dcc.submission.shiro.ShiroModule;
 import org.icgc.dcc.submission.validation.ValidationModule;
 import org.icgc.dcc.submission.web.WebModule;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Guice;
@@ -48,9 +47,8 @@ import com.typesafe.config.ConfigFactory;
 /**
  * Main class for the submission system.
  */
+@Slf4j
 public class Main {
-
-  private static final Logger log = LoggerFactory.getLogger(Main.class);
 
   private static final String HADOOP_USER_NAME_PARAM = "HADOOP_USER_NAME";
 

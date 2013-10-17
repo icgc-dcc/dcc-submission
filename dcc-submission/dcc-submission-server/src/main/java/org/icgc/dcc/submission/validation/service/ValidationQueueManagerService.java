@@ -22,6 +22,7 @@ import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.util.concurrent.Uninterruptibles.sleepUninterruptibly;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
@@ -67,7 +68,6 @@ import cascading.cascade.CascadeListener;
 import cascading.stats.CascadingStats.Status;
 
 import com.google.common.base.Optional;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.AbstractService;
 import com.google.inject.Inject;
@@ -252,7 +252,7 @@ public class ValidationQueueManagerService extends AbstractService {
     }
 
     Map<String, TupleState> fileLevelErrors = plan.getFileLevelErrors();
-    log.error("There are file-level errors (fatal ones):\n\t{}", fileLevelErrors);
+    log.info("There are file-level errors (fatal ones):\n\t{}", fileLevelErrors);
 
     QueuedProject queuedProject = checkNotNull(plan.getQueuedProject());
     String projectKey = queuedProject.getKey();
@@ -265,7 +265,7 @@ public class ValidationQueueManagerService extends AbstractService {
     for (String schema : fileLevelErrors.keySet()) {
       SchemaReport schemaReport = new SchemaReport();
       Iterator<TupleState.TupleError> es = fileLevelErrors.get(schema).getErrors().iterator();
-      List<ValidationErrorReport> errReport = Lists.newArrayList();
+      List<ValidationErrorReport> errReport = newArrayList();
       while (es.hasNext()) {
         errReport.add(new ValidationErrorReport(es.next()));
       }
@@ -315,7 +315,7 @@ public class ValidationQueueManagerService extends AbstractService {
   private void setSubmissionReport(String projectKey, SubmissionReport report) {
     log.info("starting report collecting on project {}", projectKey);
 
-    Release release = releaseService.createNextRelease().getRelease(); // TODO: should we create it here?
+    Release release = fetchOpenRelease(); // TODO: should we create it here?
 
     Submission submission = this.releaseService.getSubmission(release.getName(), projectKey);
 
@@ -400,7 +400,7 @@ public class ValidationQueueManagerService extends AbstractService {
   }
 
   private void email(QueuedProject project, SubmissionState state) { // TODO: SUBM-5
-    Release release = releaseService.createNextRelease().getRelease();
+    Release release = fetchOpenRelease();
 
     Set<Address> aCheck = Sets.newHashSet();
 

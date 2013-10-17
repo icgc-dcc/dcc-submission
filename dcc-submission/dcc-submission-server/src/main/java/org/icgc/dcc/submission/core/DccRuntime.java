@@ -66,7 +66,7 @@ public class DccRuntime {
 
   private void tryStopService(Service service) {
     try {
-      log.info("Service {} is [{}]. Stoping.", service.getClass(), service.state());
+      log.info("Service {} is [{}]. Stopping.", service.getClass(), service.state());
       State state = service.stopAndWait();
       checkState(state == TERMINATED, "Service should be '%s', instead was found '%s'", TERMINATED, state);
       log.info("Service {} is now [{}]", service.getClass(), service.state());

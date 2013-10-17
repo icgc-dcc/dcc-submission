@@ -36,7 +36,7 @@ import org.icgc.dcc.submission.validation.Plan;
 import org.icgc.dcc.submission.validation.Planner;
 import org.icgc.dcc.submission.validation.factory.CascadingStrategyFactory;
 import org.icgc.dcc.submission.validation.service.ValidationQueueManagerService.ValidationCascadeListener;
-import org.icgc.dcc.submission.validation.wellformedness.WellFormednessChecker;
+import org.icgc.dcc.submission.validation.wellformedness.FirstPassChecker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -119,7 +119,7 @@ public class ValidationService {
    * Temporarily and until properly re-written (DCC-1820).
    */
   private void checkWellFormedness() throws FilePresenceException {
-    if (WellFormednessChecker.check()) { // Always returns true for now
+    if (FirstPassChecker.check()) { // Always returns true for now
       log.info("Submission is well-formed.");
     } else {
       log.info("Submission has well-formedness problems"); // TODO: expand

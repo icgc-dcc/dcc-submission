@@ -20,7 +20,6 @@ package org.icgc.dcc.submission.validation.restriction;
 import java.util.Iterator;
 
 import org.icgc.dcc.submission.validation.cascading.TupleState;
-import org.icgc.dcc.submission.validation.restriction.RangeFieldRestriction;
 import org.icgc.dcc.submission.validation.restriction.RangeFieldRestriction.RangeFunction;
 import org.junit.Test;
 
@@ -76,7 +75,7 @@ public class RangeFieldRestrictionTest extends CascadingTestCase {
   @Test
   public void test_emptyString() {
     TupleState state = this.test_RangeFunction("", new Integer(1), new Integer(10));
-    assertTrue(state.isInvalid());
+    assertTrue(state.isValid());
   }
 
   private TupleState test_RangeFunction(Object tupleValue, Number minValue, Number maxValue) {
