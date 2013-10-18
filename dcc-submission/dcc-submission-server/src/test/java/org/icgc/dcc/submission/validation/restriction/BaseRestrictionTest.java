@@ -17,63 +17,19 @@
  */
 package org.icgc.dcc.submission.validation.restriction;
 
-import java.util.Iterator;
-
-import org.icgc.dcc.submission.validation.cascading.TupleState;
-import org.icgc.dcc.submission.validation.restriction.RequiredRestriction.SpecifiedFunction;
-import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.BlockJUnit4ClassRunner;
 
 import cascading.CascadingTestCase;
-import cascading.tuple.Fields;
-import cascading.tuple.Tuple;
-import cascading.tuple.TupleEntry;
-import cascading.tuple.TupleListCollector;
 
-/**
- * 
- */
-public class RequiredRestrictionTest extends CascadingTestCase {
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
 
-  @Test
-  public void test_requiredRestriction_describe() {
-    RequiredRestriction restriction = new RequiredRestriction("field", true);
+@RunWith(BlockJUnit4ClassRunner.class)
+public class BaseRestrictionTest extends CascadingTestCase {
 
-    assertEquals("required[field]", restriction.describe());
+  protected static Builder<String, Object> row() {
+    return ImmutableMap.builder();
   }
 
-  @Test
-  public void test_enteredValue() {
-    TupleState state = this.test_SpecifiedFunction("anything");
-    assertTrue(state.isValid());
-  }
-
-  @Test
-  public void test_null() {
-    TupleState state = this.test_SpecifiedFunction(null);
-    assertTrue(state.isInvalid());
-  }
-
-  @Test
-  public void test_emptyString() {
-    TupleState state = this.test_SpecifiedFunction("");
-    assertTrue(state.isInvalid());
-  }
-
-  private TupleState test_SpecifiedFunction(Object tupleValue) {
-    SpecifiedFunction function = new SpecifiedFunction(true);
-
-    Fields incoming = new Fields("field", "_state");
-    TupleEntry[] tuples = new TupleEntry[] { new TupleEntry(incoming, new Tuple(tupleValue, new TupleState())) };
-
-    TupleListCollector c = invokeFunction(function, tuples, incoming);
-
-    Iterator<Tuple> iterator = c.iterator();
-
-    Tuple t = iterator.next();
-
-    assertEquals(tupleValue, t.getObject(0));
-    TupleState state = (TupleState) t.getObject(1);
-
-    return state;
-  }
 }

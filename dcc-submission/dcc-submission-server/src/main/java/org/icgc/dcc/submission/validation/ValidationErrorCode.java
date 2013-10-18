@@ -190,6 +190,19 @@ public enum ValidationErrorCode { // TODO: DCC-505 to fix the message (currently
     }
   },
   /**
+   * Values do not pass script.
+   */
+  SCRIPT_ERROR("Invalid value %s for field %s. Expected to pass script: %s") {
+
+    @Override
+    public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
+      checkArgument(params != null);
+      checkArgument(params.length == 1);
+      checkArgument(params[0] instanceof String);
+      return ImmutableMap.of(EXPECTED, params[0]);
+    }
+  },
+  /**
    * More than one file matches the schema pattern.
    */
   TOO_MANY_FILES_ERROR("more than one file matches the schema pattern") {
