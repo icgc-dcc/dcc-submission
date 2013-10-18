@@ -21,7 +21,6 @@ import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newLinkedHashSet;
 import static org.icgc.dcc.submission.core.util.Constants.CodeListRestriction_FIELD;
-import static org.icgc.dcc.submission.core.util.Constants.CodeListRestriction_NAME;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -190,10 +189,10 @@ public class Dictionary extends BaseEntity implements HasName, DictionaryElement
   @JsonIgnore
   public Set<String> getCodeListNames() { // TODO: add corresponding unit test(s) - see DCC-905
     Set<String> codeListNames = newLinkedHashSet();
-    for (FileSchema fileSchema : getFiles()) { // TODO: use visitor instead
+    for (FileSchema fileSchema : getFiles()) {
       for (Field field : fileSchema.getFields()) {
         for (Restriction restriction : field.getRestrictions()) {
-          if (restriction.getType().equals(CodeListRestriction_NAME)) {
+          if (restriction.getType() == RestrictionType.CODELIST) {
             BasicDBObject config = restriction.getConfig();
             String codeListName = config.getString(CodeListRestriction_FIELD);
             codeListNames.add(codeListName);

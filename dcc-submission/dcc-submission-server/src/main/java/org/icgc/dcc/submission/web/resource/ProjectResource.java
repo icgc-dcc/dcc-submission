@@ -99,7 +99,7 @@ public class ProjectResource {
 
   @GET
   @Path("{projectKey}")
-  public Response getRessource(@PathParam("projectKey")
+  public Response getProject(@PathParam("projectKey")
   String projectKey, @Context
   SecurityContext securityContext) {
 

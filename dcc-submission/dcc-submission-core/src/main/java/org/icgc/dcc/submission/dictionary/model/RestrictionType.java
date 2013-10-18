@@ -15,21 +15,67 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.util;
+package org.icgc.dcc.submission.dictionary.model;
 
-import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
 
-/**
- * DCC-799: Temporary support to untangle cyclic dependencies between dcc-submission-server and dcc-submission-core.
- * <p>
- * Convention: OriginalClassName_CONSTANT_NAME;
- */
-@NoArgsConstructor(access = PRIVATE)
-public final class Constants {
+import org.codehaus.jackson.annotate.JsonCreator;
+import org.codehaus.jackson.annotate.JsonValue;
 
-  public static final String Authorizations_ADMIN_ROLE = "admin";
+import com.google.code.morphia.converters.TypeConverter;
+import com.google.code.morphia.mapping.MappedField;
+import com.google.code.morphia.mapping.MappingException;
 
-  public static final String CodeListRestriction_FIELD = "name";
+@RequiredArgsConstructor
+public enum RestrictionType {
+
+  CODELIST("codelist"),
+  DISCRETE_VALUES("in"),
+  RANGE("range"),
+  REGEX("regex"),
+  REQUIRED("required");
+
+  private final String id;
+
+  @JsonValue
+  @com.fasterxml.jackson.annotation.JsonValue
+  public String getId() {
+    return id;
+  }
+
+  @JsonCreator
+  @com.fasterxml.jackson.annotation.JsonCreator
+  public static RestrictionType byId(String id) {
+    if (id == null) return null;
+    for (val restriction : values()) {
+      if (restriction.id.equals(id)) {
+        return restriction;
+      }
+    }
+
+    return null;
+  }
+
+  public static class RestrictionTypeConverter extends TypeConverter {
+
+    public RestrictionTypeConverter() {
+      super(RestrictionType.class);
+    }
+
+    @SuppressWarnings("rawtypes")
+    @Override
+    public Object decode(Class targetClass, Object fromDBObject, MappedField optionalExtraInfo)
+        throws MappingException {
+      return RestrictionType.byId((String) fromDBObject);
+    }
+
+    @Override
+    public Object encode(Object value, MappedField optionalExtraInfo) {
+      if (value == null) return null;
+      return ((RestrictionType) value).getId();
+    }
+
+  }
 
 }

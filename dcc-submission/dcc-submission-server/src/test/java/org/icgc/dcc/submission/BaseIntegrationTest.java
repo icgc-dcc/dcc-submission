@@ -15,21 +15,39 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.util;
+package org.icgc.dcc.submission;
 
-import static lombok.AccessLevel.PRIVATE;
-import lombok.NoArgsConstructor;
+import static org.junit.Assert.assertTrue;
 
-/**
- * DCC-799: Temporary support to untangle cyclic dependencies between dcc-submission-server and dcc-submission-core.
- * <p>
- * Convention: OriginalClassName_CONSTANT_NAME;
- */
-@NoArgsConstructor(access = PRIVATE)
-public final class Constants {
+import java.io.File;
+import java.io.IOException;
 
-  public static final String Authorizations_ADMIN_ROLE = "admin";
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientFactory;
 
-  public static final String CodeListRestriction_FIELD = "name";
+import org.apache.commons.io.FileUtils;
+
+public class BaseIntegrationTest {
+
+  /**
+   * Sets key system properties before test initialization.
+   */
+  private static void setProperties() {
+    // See http://stackoverflow.com/questions/7134723/hadoop-on-osx-unable-to-load-realm-info-from-scdynamicstore
+    System.setProperty("java.security.krb5.realm", "OX.AC.UK");
+    System.setProperty("java.security.krb5.kdc", "kdc0.ox.ac.uk:kdc1.ox.ac.uk");
+  }
+
+  static {
+    setProperties();
+  }
+
+  protected final Client client = ClientFactory.newClient();
+
+  protected static void assertEmptyFile(String dir, String path) throws IOException {
+    File errorFile = new File(dir, path);
+    assertTrue("Expected file does not exist: " + path, errorFile.exists());
+    assertTrue("Expected empty file: " + path, FileUtils.readFileToString(errorFile).isEmpty());
+  }
 
 }

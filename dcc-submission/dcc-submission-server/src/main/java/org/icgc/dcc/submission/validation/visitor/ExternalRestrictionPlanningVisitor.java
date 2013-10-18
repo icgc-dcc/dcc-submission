@@ -46,8 +46,8 @@ public class ExternalRestrictionPlanningVisitor extends ExternalFlowPlanningVisi
 
   @Override
   public void visit(Restriction restriction) {
-    for(RestrictionType type : restrictionTypes) {
-      if(type.builds(restriction.getType())) {
+    for (RestrictionType type : restrictionTypes) {
+      if (type.builds(restriction.getType().getId())) {
         PlanElement element = type.build(getCurrentField(), restriction);
         collect((ExternalPlanElement) element);
       }
