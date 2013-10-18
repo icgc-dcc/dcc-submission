@@ -21,20 +21,26 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.getFirst;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.difference;
+import static com.google.common.collect.Sets.newCopyOnWriteArraySet;
 import static com.google.common.collect.Sets.newHashSet;
 import static com.google.common.collect.Sets.newLinkedHashSet;
 import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.apache.commons.lang.StringUtils.split;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_DONOR_ID;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_ASSEMBLY_VERSION;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import lombok.Value;
 import lombok.val;
 
+import org.icgc.dcc.core.model.BusinessKeys;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.Field;
@@ -53,7 +59,6 @@ import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Multiset;
-import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
 import com.google.common.collect.Table;
 import com.google.common.primitives.Doubles;
@@ -83,16 +88,24 @@ public class DictionaryValidator {
 
   private void validateSchemata(Set<DictionaryObservation> errors, Set<DictionaryObservation> warnings) {
     for (val schema : dictionary.getFiles()) {
+      try {
+        Pattern.compile(schema.getPattern());
+      } catch (PatternSyntaxException e) {
+        errors.add(new DictionaryObservation("Invalid schema file pattern", schema.getName(), schema.getPattern()));
+      }
+
       validateFieldNames(errors, schema);
       validateFields(errors, warnings, schema);
       validateRelations(errors, schema);
     }
+
+    validateBusinessKeys(errors, warnings);
   }
 
   private void validateFields(Set<DictionaryObservation> errors, Set<DictionaryObservation> warnings, FileSchema schema) {
     for (val field : schema.getFields()) {
       Set<RestrictionType> restrictionTypes =
-          Sets.newCopyOnWriteArraySet(dictionaryIndex.getRestrictionTypes(schema.getName(), field.getName()));
+          newCopyOnWriteArraySet(dictionaryIndex.getRestrictionTypes(schema.getName(), field.getName()));
       restrictionTypes.remove(RestrictionType.REQUIRED);
       if (restrictionTypes.size() > 2) {
         errors.add(new DictionaryObservation("Incompatible field restrictions", schema.getName(), field.getName(),
@@ -205,9 +218,49 @@ public class DictionaryValidator {
     }
   }
 
+  private void validateBusinessKeys(Set<DictionaryObservation> errors, Set<DictionaryObservation> warnings) {
+    FileSchema ssm_p = dictionaryIndex.getSchema("ssm_p");
+    if (ssm_p == null) {
+      errors.add(new DictionaryObservation(
+          "'ssm_p' schema is missing but is required for required business key field validation"));
+    } else {
+      for (val keyField : BusinessKeys.MUTATION) {
+        val required = dictionaryIndex.hasRestrictionType(ssm_p.getName(), keyField, RestrictionType.REQUIRED);
+        val assemblyVersion = SUBMISSION_OBSERVATION_ASSEMBLY_VERSION.equals(keyField);
+        if (!required && !assemblyVersion) {
+          errors.add(new DictionaryObservation(
+              "'ssm_p' schema field is required for business key field", keyField, BusinessKeys.MUTATION));
+        }
+
+        // TODO: Make this an error when the dictionary has been fixed!
+        if (!required && assemblyVersion) {
+          warnings
+              .add(new DictionaryObservation(
+                  "'ssm_p' schema field is required downstream for business key field. Currently not error for backwards compatibility.",
+                  keyField, BusinessKeys.MUTATION));
+        }
+      }
+    }
+
+    FileSchema donor = dictionaryIndex.getSchema("donor");
+    if (donor == null) {
+      errors.add(new DictionaryObservation(
+          "'donor' schema is missing but is required for required business key field validation"));
+    } else {
+      val keyField = SUBMISSION_DONOR_ID;
+      val required = dictionaryIndex.hasRestrictionType(donor.getName(), keyField, RestrictionType.REQUIRED);
+      if (!required) {
+        errors.add(new DictionaryObservation(
+            "'donor' schema field is required for business key field", keyField));
+      }
+    }
+
+    // TODO: Add validations for remaining business keys
+  }
+
   private void validateCodeLists(Set<DictionaryObservation> errors, Set<DictionaryObservation> warnings) {
     for (val codeListName : dictionary.getCodeListNames()) {
-      Collection<CodeList> collection = codeListIndex.get(codeListName);
+      val collection = codeListIndex.get(codeListName);
       int count = collection.size();
       if (count == 0) {
         warnings.add(new DictionaryObservation("Missing code list", codeListName));
@@ -217,7 +270,7 @@ public class DictionaryValidator {
         errors.add(new DictionaryObservation("Duplicate code lists", collection));
       }
 
-      CodeList codeList = getFirst(collection, null);
+      val codeList = getFirst(collection, null);
 
       Multiset<String> codes = HashMultiset.create();
       Multiset<String> values = HashMultiset.create();
@@ -309,7 +362,7 @@ public class DictionaryValidator {
       return restrictionTypes.get(schemaName, fieldName);
     }
 
-    public boolean hasRestrictionType(String schemaName, String fieldName, String type) {
+    public boolean hasRestrictionType(String schemaName, String fieldName, RestrictionType type) {
       val types = restrictionTypes.get(schemaName, fieldName);
       return types != null && types.containsKey(type);
     }
