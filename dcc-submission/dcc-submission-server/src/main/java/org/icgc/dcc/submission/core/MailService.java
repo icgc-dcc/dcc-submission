@@ -141,6 +141,18 @@ public class MailService {
     }
   }
 
+  public void sendProcessingStarted(String projectKey, List<String> emails) {
+    sendSeNotification(format("Processing started for project '%s' (on behalf of '%s')", projectKey, emails));
+  }
+
+  private void sendSeNotification(String subject) {
+    send(
+        get(MAIL_NORMAL_FROM),
+        get(MAIL_MANUAL_SUPPORT_RECIPIENT), // TODO: use new mailing list to be created
+        subject,
+        "");
+  }
+
   private void send(String from, String recipient, String subject, String text) {
     try {
       Message message = message();

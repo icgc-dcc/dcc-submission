@@ -17,6 +17,17 @@
  */
 package org.icgc.dcc.submission.validation;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static org.icgc.dcc.submission.validation.ErrorParameterKey.EXPECTED;
+import static org.icgc.dcc.submission.validation.ErrorParameterKey.FIELDS;
+import static org.icgc.dcc.submission.validation.ErrorParameterKey.FILES;
+import static org.icgc.dcc.submission.validation.ErrorParameterKey.MAX;
+import static org.icgc.dcc.submission.validation.ErrorParameterKey.MIN;
+import static org.icgc.dcc.submission.validation.ErrorParameterKey.OTHER_FIELDS;
+import static org.icgc.dcc.submission.validation.ErrorParameterKey.OTHER_SCHEMA;
+import static org.icgc.dcc.submission.validation.ErrorParameterKey.SCHEMA;
+import static org.icgc.dcc.submission.validation.ErrorParameterKey.VALUE;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -28,21 +39,13 @@ import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
 
 import com.google.common.collect.ImmutableMap;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static org.icgc.dcc.submission.validation.ErrorParameterKey.EXPECTED;
-import static org.icgc.dcc.submission.validation.ErrorParameterKey.FIELDS;
-import static org.icgc.dcc.submission.validation.ErrorParameterKey.FILES;
-import static org.icgc.dcc.submission.validation.ErrorParameterKey.MAX;
-import static org.icgc.dcc.submission.validation.ErrorParameterKey.MIN;
-import static org.icgc.dcc.submission.validation.ErrorParameterKey.SCHEMA;
-import static org.icgc.dcc.submission.validation.ErrorParameterKey.VALUE;
-
 public enum ValidationErrorCode { // TODO: DCC-505 to fix the message (currently not used for anything)
 
   /**
    * Number of columns does not match that of header.
    */
   STRUCTURALLY_INVALID_ROW_ERROR("structurally invalid row: %s columns against %s declared in the header (row will be ignored by the rest of validation)", true) {
+
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
       checkArgument(params != null);
@@ -50,11 +53,12 @@ public enum ValidationErrorCode { // TODO: DCC-505 to fix the message (currently
       checkArgument(params[0] instanceof Integer);
       return ImmutableMap.of(EXPECTED, params[0]);
     }
-  }, //
+  },
   /**
    * A forbidden value was found (for instance deprecated "-999" value).
    */
   FORBIDDEN_VALUE_ERROR("Invalid value (%s) for field %s. Cannot use forbidden value: %s") {
+
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
       checkArgument(params != null);
@@ -62,7 +66,7 @@ public enum ValidationErrorCode { // TODO: DCC-505 to fix the message (currently
       checkArgument(params[0] instanceof String);
       return ImmutableMap.of(VALUE, params[0]);
     }
-  }, //
+  },
   /**
    * No matching value(s) for referencED field(s).
    * <p>
@@ -71,15 +75,16 @@ public enum ValidationErrorCode { // TODO: DCC-505 to fix the message (currently
    * Not to be confused with its file counterpart {@code RELATION_FILE_ERROR}
    */
   RELATION_VALUE_ERROR("invalid value(s) (%s) for field(s) %s.%s. Expected to match value(s) in: %s.%s") {
+
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
       checkArgument(params != null);
       checkArgument(params.length == 2);
       checkArgument(params[0] instanceof String);
       checkArgument(params[1] instanceof List);
-      return ImmutableMap.of(SCHEMA, params[0], FIELDS, params[1]);
+      return ImmutableMap.of(OTHER_SCHEMA, params[0], OTHER_FIELDS, params[1]);
     }
-  }, //
+  },
   /**
    * No matching value(s) for referencING field(s) (only applicable if relation is set to bidirectional).
    * <p>
@@ -90,28 +95,31 @@ public enum ValidationErrorCode { // TODO: DCC-505 to fix the message (currently
    * Not quite the value-counterpart to {@code REVERSE_RELATION_FILE_ERROR}
    */
   RELATION_PARENT_VALUE_ERROR("no corresponding values in %s.%s for value(s) %s in %s.%s") {
+
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
       checkArgument(params != null);
       checkArgument(params.length == 2);
       checkArgument(params[0] instanceof String);
       checkArgument(params[1] instanceof List);
-      return ImmutableMap.of(SCHEMA, params[0], FIELDS, params[1]);
+      return ImmutableMap.of(OTHER_SCHEMA, params[0], OTHER_FIELDS, params[1]);
     }
-  }, //
+  },
   /**
    * Duplicate values in unique field(s).
    */
   UNIQUE_VALUE_ERROR("invalid set of values (%s) for fields %s. Expected to be unique") {
+
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
       return ImmutableMap.of();
     }
-  }, //
+  },
   /**
    * Invalid value type (i.e. a string where an integer is expected).
    */
   VALUE_TYPE_ERROR("invalid value (%s) for field %s. Expected type is: %s") {
+
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
       checkArgument(params != null);
@@ -119,11 +127,12 @@ public enum ValidationErrorCode { // TODO: DCC-505 to fix the message (currently
       checkArgument(params[0] instanceof ValueType);
       return ImmutableMap.of(EXPECTED, params[0]);
     }
-  }, //
+  },
   /**
    * Value out for (inclusive) range.
    */
   OUT_OF_RANGE_ERROR("number %d is out of range for field %s. Expected value between %d and %d") {
+
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
       checkArgument(params != null);
@@ -133,38 +142,32 @@ public enum ValidationErrorCode { // TODO: DCC-505 to fix the message (currently
 
       return ImmutableMap.of(MIN, params[0], MAX, params[1]);
     }
-  }, //
-  /**
-   * Range value is not numerical.
-   */
-  NOT_A_NUMBER_ERROR("%s is not a number for field %s. Expected a number") {
-    @Override
-    public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
-      return ImmutableMap.of();
-    }
-  }, //
+  },
   /**
    * Missing required value.
    */
   MISSING_VALUE_ERROR("value missing for required field: %s") {
+
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
       return ImmutableMap.of();
     }
-  }, //
+  },
   /**
    * Values not in code list (as codes)
    */
   CODELIST_ERROR("invalid value %s for field %s. Expected code or value from CodeList %s") {
+
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
       return ImmutableMap.of();
     }
-  }, //
+  },
   /**
    * Values not in set of discrete values.
    */
   DISCRETE_VALUES_ERROR("invalid value %s for field %s. Expected one of the following values: %s") {
+
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
       checkArgument(params != null);
@@ -172,11 +175,12 @@ public enum ValidationErrorCode { // TODO: DCC-505 to fix the message (currently
       checkArgument(params[0] instanceof Set);
       return ImmutableMap.of(EXPECTED, params[0]);
     }
-  }, //
+  },
   /**
    * Values do not match regex.
    */
   REGEX_ERROR("Invalid value %s for field %s. Expected to match regex: %s") {
+
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
       checkArgument(params != null);
@@ -184,11 +188,12 @@ public enum ValidationErrorCode { // TODO: DCC-505 to fix the message (currently
       checkArgument(params[0] instanceof String);
       return ImmutableMap.of(EXPECTED, params[0]);
     }
-  }, //
+  },
   /**
    * More than one file matches the schema pattern.
    */
   TOO_MANY_FILES_ERROR("more than one file matches the schema pattern") {
+
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
       checkArgument(params != null);
@@ -197,7 +202,7 @@ public enum ValidationErrorCode { // TODO: DCC-505 to fix the message (currently
       checkArgument(params[1] instanceof List);
       return ImmutableMap.of(SCHEMA, params[0], FILES, params[1]);
     }
-  }, //
+  },
   /**
    * No matching file for referencED schema.
    * <p>
@@ -206,6 +211,7 @@ public enum ValidationErrorCode { // TODO: DCC-505 to fix the message (currently
    * Not to be confused with its value counterpart {@code RELATION_VALUE_ERROR}
    */
   RELATION_FILE_ERROR("relation to schema %s has no matching file") {
+
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
       checkArgument(params != null);
@@ -213,7 +219,7 @@ public enum ValidationErrorCode { // TODO: DCC-505 to fix the message (currently
       checkArgument(params[0] instanceof String);
       return ImmutableMap.of(SCHEMA, params[0]);
     }
-  }, //
+  },
   /**
    * No matching file for referencING schema (only applicable if relation is set to bidirectional).
    * <p>
@@ -223,6 +229,7 @@ public enum ValidationErrorCode { // TODO: DCC-505 to fix the message (currently
    * Not quite the file-counterpart to {@code RELATION_PARENT_VALUE_ERROR}
    */
   REVERSE_RELATION_FILE_ERROR("relation from schema %s has no matching file and this relation imposes that there be one") {
+
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
       checkArgument(params != null);
@@ -230,11 +237,12 @@ public enum ValidationErrorCode { // TODO: DCC-505 to fix the message (currently
       checkArgument(params[0] instanceof String);
       return ImmutableMap.of(SCHEMA, params[0]);
     }
-  }, //
+  },
   /**
    * Compression codec doesn't match file extension
    */
   COMPRESSION_CODEC_ERROR("file compression type does not match file extension") {
+
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
       checkArgument(params != null);
@@ -242,11 +250,12 @@ public enum ValidationErrorCode { // TODO: DCC-505 to fix the message (currently
       checkArgument(params[0] instanceof String);
       return ImmutableMap.of(SCHEMA, params[0]);
     }
-  }, //
+  },
   /**
    * Repeated field names found in header.
    */
   DUPLICATE_HEADER_ERROR("duplicate header found: %s") {
+
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
       checkArgument(params != null);
@@ -260,7 +269,8 @@ public enum ValidationErrorCode { // TODO: DCC-505 to fix the message (currently
 
   private final boolean structural;
 
-  public abstract ImmutableMap<ErrorParameterKey, Object> build(@Nullable Object... params);
+  public abstract ImmutableMap<ErrorParameterKey, Object> build(@Nullable
+  Object... params);
 
   ValidationErrorCode(String message) {
     this(message, false);

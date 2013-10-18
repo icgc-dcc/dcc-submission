@@ -20,6 +20,7 @@ package org.icgc.dcc.submission.validation.service;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.core.ProjectService;
@@ -35,9 +36,8 @@ import org.icgc.dcc.submission.validation.FilePresenceException;
 import org.icgc.dcc.submission.validation.Plan;
 import org.icgc.dcc.submission.validation.Planner;
 import org.icgc.dcc.submission.validation.factory.CascadingStrategyFactory;
+import org.icgc.dcc.submission.validation.firstpass.FirstPassChecker;
 import org.icgc.dcc.submission.validation.service.ValidationQueueManagerService.ValidationCascadeListener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import cascading.cascade.Cascade;
 import cascading.cascade.CascadeListener;
@@ -49,9 +49,8 @@ import com.google.inject.Inject;
 /**
  * Wraps validation call for the {@code ValidationQueueManagerService} and {@Main} (the validation one) to use
  */
+@Slf4j
 public class ValidationService {
-
-  private static final Logger log = LoggerFactory.getLogger(ValidationService.class);
 
   private final Planner planner;
 
@@ -105,6 +104,7 @@ public class ValidationService {
       // TODO: File Checker
 
       CascadingStrategy cascadingStrategy = cascadingStrategyFactory.get(rootDir, outputDir, systemDir);
+      checkWellFormedness();
       Plan plan =
           planAndConnectCascade(qProject, submissionDirectory, cascadingStrategy, dictionary, validationCascadeListener);
 
@@ -112,6 +112,19 @@ public class ValidationService {
 
       log.info("Prepared cascade for project {}", qProject.getKey());
       return plan;
+    }
+  }
+
+  /**
+   * Temporarily and until properly re-written (DCC-1820).
+   */
+  private void checkWellFormedness() throws FilePresenceException {
+    if (FirstPassChecker.check()) { // Always returns true for now
+      log.info("Submission is well-formed.");
+    } else {
+      log.info("Submission has well-formedness problems"); // TODO: expand
+      throw new FilePresenceException(null); // FIXME: pass appropriate objects: offending project key and Map<String,
+                                             // TupleState> fileLevelErrors
     }
   }
 

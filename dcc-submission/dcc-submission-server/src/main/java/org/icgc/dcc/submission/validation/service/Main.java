@@ -38,6 +38,9 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.typesafe.config.ConfigFactory;
 
+/**
+ * Main class for the validation sub-system (mostly used for tests right now).
+ */
 public class Main {
 
   private static final Logger log = LoggerFactory.getLogger(Main.class);
@@ -46,16 +49,9 @@ public class Main {
 
   private static final String HADOOP_USER_NAME = "hdfs";
 
-  public static enum CONFIG {
-    qa("application_qa"), dev("application_dev"), local("application");
-
-    public String filename;
-
-    private CONFIG(String filename) {
-      this.filename = filename;
-    }
-  }
-
+  /**
+   * Main method for the validation sub-system.
+   */
   public static void main(String[] args) throws Exception {
     final String env = args[0];
     final String releaseName = args[1];
@@ -80,7 +76,7 @@ public class Main {
 
     ReleaseService releaseService = injector.getInstance(ReleaseService.class);
     Release release = getRelease(releaseService, releaseName);
-    if(null != release) {
+    if (null != release) {
       ValidationService validationService = injector.getInstance(ValidationService.class);
       ValidationQueueManagerService validationQueueManagerService =
           injector.getInstance(ValidationQueueManagerService.class);
@@ -94,17 +90,18 @@ public class Main {
   }
 
   private static Release getRelease(ReleaseService releaseService, final String releaseName) {
-    NextRelease nextRelease = releaseService.getNextRelease();
-    if(null != nextRelease) {
+    NextRelease nextRelease = releaseService.createNextRelease();
+    if (null != nextRelease) {
       Release release = nextRelease.getRelease();
-      if(releaseName.equals(release.getName())) {
+      if (releaseName.equals(release.getName())) {
         return release;
       } else {
         Iterable<CompletedRelease> filter =
             Iterables.filter(releaseService.getCompletedReleases(), new Predicate<CompletedRelease>() {
+
               @Override
               public boolean apply(CompletedRelease input) {
-                if(input == null) {
+                if (input == null) {
                   return false;
                 }
 
@@ -115,6 +112,16 @@ public class Main {
       }
     } else {
       return null;
+    }
+  }
+
+  private static enum CONFIG {
+    qa("application_qa"), dev("application_dev"), local("application");
+
+    public String filename;
+
+    private CONFIG(String filename) {
+      this.filename = filename;
     }
   }
 }

@@ -19,8 +19,10 @@ package org.icgc.dcc.submission;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.Arrays;
+
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.config.ConfigModule;
 import org.icgc.dcc.submission.core.CoreModule;
@@ -35,8 +37,6 @@ import org.icgc.dcc.submission.sftp.SftpModule;
 import org.icgc.dcc.submission.shiro.ShiroModule;
 import org.icgc.dcc.submission.validation.ValidationModule;
 import org.icgc.dcc.submission.web.WebModule;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Guice;
@@ -44,82 +44,83 @@ import com.google.inject.Injector;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
+/**
+ * Main class for the submission system.
+ */
+@Slf4j
 public class Main {
-  private static final Logger log = LoggerFactory.getLogger(Main.class);
 
   private static final String HADOOP_USER_NAME_PARAM = "HADOOP_USER_NAME";
 
   private static final String HADOOP_USER_NAME = "hdfs";
 
-  private static enum CONFIG {
-    qa("application_qa"), dev("application_dev"), local("application"), external(null);
-
-    String filename;
-
-    private CONFIG(String filename) {
-      this.filename = filename;
-    }
-
-    public static String listValues() {
-      return Arrays.asList(CONFIG.values()).toString();
-    }
-  };
-
   private static Injector injector;
 
-  public static void main(String[] args) throws IOException {
+  /**
+   * Main method for the submission system.
+   */
+  public static void main(String[] args) {
 
     Config parsedConfig = loadConfig(args);
 
     System.setProperty(HADOOP_USER_NAME_PARAM, HADOOP_USER_NAME); // see DCC-572
-    Main.injector = Guice.createInjector(new ConfigModule(parsedConfig) //
+    Main.injector = Guice.createInjector(new ConfigModule(parsedConfig)
         // Infrastructure modules
-        , new CoreModule()//
-        , new HttpModule()//
-        , new JerseyModule()//
-        , new WebModule()//
-        , new MorphiaModule()//
-        , new ShiroModule()//
-        , new FileSystemModule()//
-        , new SftpModule()//
+        , new CoreModule()
+        , new HttpModule()
+        , new JerseyModule()
+        , new WebModule()
+        , new MorphiaModule()
+        , new ShiroModule()
+        , new FileSystemModule()
+        , new SftpModule()
 
         // Business modules
-        , new DictionaryModule()//
-        , new ReleaseModule()//
+        , new DictionaryModule()
+        , new ReleaseModule()
         , new ValidationModule());
 
     Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+
       @Override
       public void run() {
         // No one call shutdown?
         boolean running = injector != null;
-        if(running) {
+        if (running) {
           injector.getInstance(DccRuntime.class).stop();
         }
       }
 
     }, "Shutdown-thread"));
 
-    injector.getInstance(DccRuntime.class).start();
+    try {
+      injector.getInstance(DccRuntime.class).start();
+    } catch (Throwable t) {
+      log.error("An unknown error was caught", t);
+      System.exit(1); // Will call shutdown hook
+    }
+
+    log.info("Exiting main method.");
   }
 
-  private static Config loadConfig(String[] args) throws FileNotFoundException {
+  @SneakyThrows
+  private static Config loadConfig(String[] args) {
     CONFIG configType;
     try {
       configType = (args != null && args.length > 0) ? CONFIG.valueOf(args[0]) : CONFIG.local;
-    } catch(IllegalArgumentException e) {
+    } catch (IllegalArgumentException e) {
       throw new IllegalArgumentException(args[0] + " is not a valid argument. Valid arguments are "
           + CONFIG.listValues());
     }
     log.info("Using config type {}", configType);
     Config parsedConfig;
-    if(configType == CONFIG.external) {
-      if(args.length < 2) {
+    if (configType == CONFIG.external) {
+      if (args.length < 2) {
         throw new IllegalArgumentException("The argument 'external' requires a filename as an additional parameter");
       }
       File configFile = new File(args[1]);
       log.info("Using config file {}", configFile.getAbsoluteFile());
-      if(configFile.exists() == false) {
+      if (configFile.exists() == false) {
         throw new FileNotFoundException(args[1]);
       }
       parsedConfig = ConfigFactory.parseFile(configFile).resolve();
@@ -137,5 +138,19 @@ public class Main {
     injector.getInstance(DccRuntime.class).stop();
     injector = null;
   }
+
+  private static enum CONFIG {
+    qa("application_qa"), dev("application_dev"), local("application"), external(null);
+
+    String filename;
+
+    private CONFIG(String filename) {
+      this.filename = filename;
+    }
+
+    public static String listValues() {
+      return Arrays.asList(CONFIG.values()).toString();
+    }
+  };
 
 }

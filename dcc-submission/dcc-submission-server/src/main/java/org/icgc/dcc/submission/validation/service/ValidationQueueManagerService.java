@@ -18,9 +18,14 @@
 package org.icgc.dcc.submission.validation.service;
 
 import static cascading.stats.CascadingStats.Status.FAILED;
+import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.util.concurrent.Uninterruptibles.sleepUninterruptibly;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.ERROR;
 import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
 import static org.icgc.dcc.submission.release.model.SubmissionState.VALID;
@@ -34,19 +39,19 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.mail.Address;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 import org.icgc.dcc.submission.core.MailService;
-import org.icgc.dcc.submission.release.NextRelease;
 import org.icgc.dcc.submission.release.ReleaseService;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
-import org.icgc.dcc.submission.release.model.ReleaseState;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 import org.icgc.dcc.submission.validation.FilePresenceException;
@@ -56,49 +61,53 @@ import org.icgc.dcc.submission.validation.report.Outcome;
 import org.icgc.dcc.submission.validation.report.SchemaReport;
 import org.icgc.dcc.submission.validation.report.SubmissionReport;
 import org.icgc.dcc.submission.validation.report.ValidationErrorReport;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import cascading.cascade.Cascade;
 import cascading.cascade.CascadeListener;
 import cascading.stats.CascadingStats.Status;
 
 import com.google.common.base.Optional;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.AbstractService;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
 
 /**
- * Manages validation queue that:<br>
- * - launches validation for queue submissions<br>
- * - updates submission states upon termination of the validation process
+ * Manages validation queue:<br>
+ * - Launches validation for queued submissions<br>
+ * - Updates submission states upon termination of the validation process
  */
+@Slf4j
 public class ValidationQueueManagerService extends AbstractService {
 
-  private static final Logger log = LoggerFactory.getLogger(ValidationQueueManagerService.class);
-
+  /**
+   * Frequency at which the service polls for an open release and for enqueued projects there is one.
+   */
   private static final int POLLING_FREQUENCY_PER_SEC = 1;
 
+  /**
+   * Default value for maximum number of concurrent validations.
+   */
   private static final int DEFAULT_MAX_VALIDATING = 1;
 
-  private final int MAX_VALIDATING;
+  private static final String MAX_VALIDATING_CONFIG_PARAM = "validator.max_simultaneous";
+
+  private static final Optional<QueuedProject> ABSENT_QUEUED_PROJECT = absent(); // TODO: SUBM-2
+  private static final Optional<Throwable> ABSENT_THROWABLE = absent();
 
   private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-
+  private final int maxValidating;
   private final ReleaseService releaseService;
-
   private final ValidationService validationService;
-
   private final MailService mailService;
 
-  private ScheduledFuture<?> schedule;
-
   /**
-   * To keep track of parallel validations.
+   * To keep track of parallel validations. Volatility is guaranteed according to
+   * http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/atomic/package-summary.html.
    */
   private final AtomicInteger parallelValidationCount = new AtomicInteger();
+
+  private ScheduledFuture<?> schedule;
 
   @Inject
   public ValidationQueueManagerService(final ReleaseService releaseService, ValidationService validationService,
@@ -107,60 +116,102 @@ public class ValidationQueueManagerService extends AbstractService {
     this.validationService = checkNotNull(validationService);
     this.mailService = mailService;
 
-    this.MAX_VALIDATING =
-        config.hasPath("validator.max_simultaneous") ? config.getInt("validator.max_simultaneous") : DEFAULT_MAX_VALIDATING;
+    this.maxValidating = checkNotNull(config).hasPath(MAX_VALIDATING_CONFIG_PARAM) ?
+        config.getInt(MAX_VALIDATING_CONFIG_PARAM) :
+        DEFAULT_MAX_VALIDATING;
   }
 
   @Override
   protected void doStart() {
-    notifyStarted();
     startScheduler();
+    notifyStarted(); // MUST happen after the above method, by contract
   }
 
   @Override
   protected void doStop() {
     stopScheduler();
-    notifyStopped();
+    notifyStopped(); // MUST happen after the above method, by contract
   }
 
   private void startScheduler() {
-    log.info("polling queue every {} second", POLLING_FREQUENCY_PER_SEC);
+    log.info("Polling queue every {} second", POLLING_FREQUENCY_PER_SEC);
 
-    schedule = scheduler.scheduleWithFixedDelay(new Runnable() {
+    schedule = scheduler.scheduleWithFixedDelay(
+        new Runnable() {
 
-      @Override
-      public void run() {
-        log.debug("polling");
+          @Override
+          public void run() {
+            checkState(isRunning(), "Expecting service to be running."); // Thanks to the initial delay we set
 
-        Optional<QueuedProject> optionalNextProject = Optional.absent();
-        Optional<Throwable> criticalThrowable = Optional.absent();
-        try {
-          if (isRunning() && releaseService.hasNextRelease()) {
-            optionalNextProject = processNext();
+            /*
+             * TODO: SUBM-1 - Ideally we wouldn't do that every time (but requires creating yet a separate thread for
+             * that)
+             */
+            // TODO: if first time, send out email (wait for SUBM-1 to be done)
+            {
+              long count = waitForAnOpenRelease();
+              checkState(
+                  count == 1,
+                  "Expecting one and only one '%s' release, instead getting '%s'",
+                  OPENED, count);
+            }
+
+            pollQueue();
           }
-        } catch (FilePresenceException e) {
-          try {
-            handleAbortedValidation(e);
-          } catch (Throwable t) {
-            criticalThrowable = Optional.fromNullable(t);
-          }
-        } catch (Throwable t) { // exception thrown within the run method are not logged otherwise (NullPointerException
-                                // for instance)
-          criticalThrowable = Optional.fromNullable(t);
-        } finally {
+        },
+        POLLING_FREQUENCY_PER_SEC,
+        POLLING_FREQUENCY_PER_SEC,
+        SECONDS);
+  }
 
-          /*
-           * When a scheduled job throws an exception to the executor, all future runs of the job are cancelled. Thus,
-           * we should never throw an exception to our executor otherwise a server restart is necessary.
-           */
-          if (criticalThrowable.isPresent()) {
-            processCriticalThrowable(criticalThrowable.get(), optionalNextProject);
-          }
-        }
-
-        log.debug("polled");
+  private void stopScheduler() {
+    try {
+      if (schedule.cancel(true)) {
+        log.info("Successfully cancelled the schedule");
+      } else {
+        log.error("Failed to cancel schedule");
       }
-    }, POLLING_FREQUENCY_PER_SEC, POLLING_FREQUENCY_PER_SEC, TimeUnit.SECONDS);
+    } finally {
+      log.info("Shutting down scheduler");
+      scheduler.shutdown();
+    }
+  }
+
+  /**
+   * Kicks off processing for the next project if there is one and handles potential errors.
+   */
+  private void pollQueue() {
+    log.debug("Polling queue.");
+    Optional<QueuedProject> optionalNextProject = ABSENT_QUEUED_PROJECT;
+    Optional<Throwable> criticalThrowable = ABSENT_THROWABLE;
+    try {
+      val release = fetchOpenRelease();
+      optionalNextProject = release.nextInQueue();
+      if (optionalNextProject.isPresent() && hasEmptyValidationSlot()) {
+        processNext(release, optionalNextProject.get());
+      }
+    } catch (FilePresenceException e) { // TODO: DCC-1820
+      try {
+        handleAbortedValidation(e);
+      } catch (Throwable t) {
+        log.info("Caught an unexpected {} upon trying to abort validation", t.getClass().getSimpleName());
+        criticalThrowable = Optional.fromNullable(t);
+      }
+    } catch (Throwable t) { // exception thrown within the run method are not logged otherwise (NullPointerException
+                            // for instance)
+      log.info("Caught an unexpected {}", t.getClass().getSimpleName());
+      criticalThrowable = Optional.fromNullable(t);
+    } finally {
+      /*
+       * When a scheduled job throws an exception to the executor, all future runs of the job are cancelled. Thus, we
+       * should never throw an exception to our executor otherwise a server restart is necessary.
+       */
+      if (criticalThrowable.isPresent()) {
+        processCriticalThrowable(
+            criticalThrowable.get(),
+            optionalNextProject);
+      }
+    }
   }
 
   /**
@@ -171,57 +222,17 @@ public class ValidationQueueManagerService extends AbstractService {
    * 
    * @throws FilePresenceException
    */
-  private Optional<QueuedProject> processNext() throws FilePresenceException {
-    Optional<QueuedProject> optionalNextProject = Optional.absent();
+  private void processNext(Release release, QueuedProject project) throws FilePresenceException { // TODO: DCC-1820;
+    log.info("Processing next project in queue: '{}'", project);
+    mailService.sendProcessingStarted(project.getKey(), project.getEmails());
 
-    NextRelease nextRelease = releaseService.getNextRelease();
-    Release release = nextRelease.getRelease();
-    if (release == null || release.getState() != ReleaseState.OPENED) {
-      throw new ValidationServiceException("cannot access the release");
-    } else {
-      optionalNextProject = release.nextInQueue();
-      if (optionalNextProject.isPresent()) {
-        if (isRunnable()) {
-          QueuedProject nextProject = optionalNextProject.get();
-          String projectKey = nextProject.getKey();
-          log.info("next in queue {}", projectKey);
-
-          releaseService.dequeueToValidating(nextProject);
-          Plan plan = validationService.prepareValidation(release, nextProject, new ValidationCascadeListener());
-          /**
-           * Note that emptying of the .validation directory happens right before launching the cascade in
-           * {@link Plan#startCascade()}
-           */
-          validationService.startValidation(plan); // non-blocking
-        }
-      }
-    }
-    return optionalNextProject;
-  }
-
-  private void processCriticalThrowable(Throwable t, Optional<QueuedProject> optionalNextProject) {
-    log.error("a critical error occured while processing the validation queue", t);
-
-    if (checkNotNull(optionalNextProject.isPresent())) {
-      QueuedProject project = optionalNextProject.get();
-      try {
-        resolveSubmission(project, SubmissionState.ERROR);
-      } catch (Throwable t2) {
-        log.error("a critical error occured while attempting to dequeue project " + project.getKey(), t2);
-      }
-    } else {
-      log.error("next project in queue not present, could not dequeue nor set submission state to {}",
-          SubmissionState.ERROR);
-    }
-  }
-
-  private void stopScheduler() {
-    try {
-      boolean cancel = schedule.cancel(true);
-      log.info("attempt to cancel returned {}", cancel);
-    } finally {
-      scheduler.shutdown();
-    }
+    releaseService.dequeueToValidating(project);
+    Plan plan = validationService.prepareValidation(release, project, new ValidationCascadeListener());
+    /**
+     * Note that emptying of the .validation directory happens right before launching the cascade in
+     * {@link Plan#startCascade()}
+     */
+    validationService.startValidation(plan); // non-blocking
   }
 
   /**
@@ -235,7 +246,7 @@ public class ValidationQueueManagerService extends AbstractService {
     }
 
     Map<String, TupleState> fileLevelErrors = plan.getFileLevelErrors();
-    log.error("There are file-level errors (fatal ones):\n\t{}", fileLevelErrors);
+    log.info("There are file-level errors (fatal ones):\n\t{}", fileLevelErrors);
 
     QueuedProject queuedProject = checkNotNull(plan.getQueuedProject());
     String projectKey = queuedProject.getKey();
@@ -248,7 +259,7 @@ public class ValidationQueueManagerService extends AbstractService {
     for (String schema : fileLevelErrors.keySet()) {
       SchemaReport schemaReport = new SchemaReport();
       Iterator<TupleState.TupleError> es = fileLevelErrors.get(schema).getErrors().iterator();
-      List<ValidationErrorReport> errReport = Lists.newArrayList();
+      List<ValidationErrorReport> errReport = newArrayList();
       while (es.hasNext()) {
         errReport.add(new ValidationErrorReport(es.next()));
       }
@@ -298,7 +309,7 @@ public class ValidationQueueManagerService extends AbstractService {
   private void setSubmissionReport(String projectKey, SubmissionReport report) {
     log.info("starting report collecting on project {}", projectKey);
 
-    Release release = releaseService.getNextRelease().getRelease();
+    Release release = fetchOpenRelease(); // TODO: should we create it here?
 
     Submission submission = this.releaseService.getSubmission(release.getName(), projectKey);
 
@@ -310,6 +321,22 @@ public class ValidationQueueManagerService extends AbstractService {
     this.releaseService
         .updateSubmissionReport(release.getName(), projectKey, (SubmissionReport) submission.getReport());
     log.info("report collecting finished on project {}", projectKey);
+  }
+
+  private void processCriticalThrowable(Throwable t, Optional<QueuedProject> optionalNextProject) {
+    log.error("a critical error occured while processing the validation queue", t);
+
+    if (checkNotNull(optionalNextProject.isPresent())) {
+      QueuedProject project = optionalNextProject.get();
+      try {
+        resolveSubmission(project, SubmissionState.ERROR);
+      } catch (Throwable t2) {
+        log.error("a critical error occured while attempting to dequeue project " + project.getKey(), t2);
+      }
+    } else {
+      log.error("next project in queue not present, could not dequeue nor set submission state to {}",
+          SubmissionState.ERROR);
+    }
   }
 
   /**
@@ -348,10 +375,10 @@ public class ValidationQueueManagerService extends AbstractService {
    * <p>
    * Counterpart operation to <code>{@link ValidationQueueManagerService#decrementParallelValidationCount()}</code>
    */
-  private synchronized boolean isRunnable() {
+  private synchronized boolean hasEmptyValidationSlot() {
     int original = parallelValidationCount.intValue();
-    if (original < MAX_VALIDATING) {
-      checkState(parallelValidationCount.incrementAndGet() <= MAX_VALIDATING, "by design: %s",
+    if (original < maxValidating) {
+      checkState(parallelValidationCount.incrementAndGet() <= maxValidating, "by design: %s",
           parallelValidationCount.intValue());
     }
     return original < parallelValidationCount.intValue();
@@ -360,14 +387,14 @@ public class ValidationQueueManagerService extends AbstractService {
   /**
    * Decrements the parallel validation counter.
    * <p>
-   * Counterpart operation to <code>{@link ValidationQueueManagerService#isRunnable()}</code>
+   * Counterpart operation to <code>{@link ValidationQueueManagerService#hasEmptyValidationSlot()}</code>
    */
   private synchronized void decrementParallelValidationCount() {
     checkState(parallelValidationCount.decrementAndGet() >= 0);
   }
 
-  private void email(QueuedProject project, SubmissionState state) {
-    Release release = releaseService.getNextRelease().getRelease();
+  private void email(QueuedProject project, SubmissionState state) { // TODO: SUBM-5
+    Release release = fetchOpenRelease();
 
     Set<Address> aCheck = Sets.newHashSet();
 
@@ -383,6 +410,24 @@ public class ValidationQueueManagerService extends AbstractService {
     if (aCheck.isEmpty() == false) {
       mailService.sendValidated(release.getName(), project.getKey(), state, aCheck);
     }
+  }
+
+  private Release fetchOpenRelease() {
+    val release = releaseService.createNextRelease().getRelease();
+    checkState(release.getState() == OPENED, "Release is expected to be '%s'", OPENED);
+    return release;
+  }
+
+  private long waitForAnOpenRelease() {
+    long count;
+    do {
+      log.info("Waiting for an '{}' release to be created.", OPENED);
+      sleepUninterruptibly(
+          POLLING_FREQUENCY_PER_SEC,
+          SECONDS);
+      count = releaseService.countOpenReleases();
+    } while (count == 0);
+    return count;
   }
 
   /**

@@ -48,17 +48,17 @@ public class DefaultPlanner implements Planner {
   @Inject
   public DefaultPlanner(Set<RestrictionType> restrictionTypes) {
     checkArgument(restrictionTypes != null);
-    planningVisitors = ImmutableList.of(//
+    planningVisitors = ImmutableList.of(
         // Internal
-        new ValueTypePlanningVisitor(),//
-        new UniqueFieldsPlanningVisitor(),//
-        new InternalRestrictionPlanningVisitor(restrictionTypes), //
+        new ValueTypePlanningVisitor(), // Must happen before RangeRestriction
+        new UniqueFieldsPlanningVisitor(),
+        new InternalRestrictionPlanningVisitor(restrictionTypes),
         // Reporting
-        new SummaryPlanningVisitor(),//
+        new SummaryPlanningVisitor(),
         new ErrorPlanningVisitor(FlowType.INTERNAL),
         // External
-        new RelationPlanningVisitor(),//
-        new ExternalRestrictionPlanningVisitor(restrictionTypes),//
+        new RelationPlanningVisitor(),
+        new ExternalRestrictionPlanningVisitor(restrictionTypes),
         new ErrorPlanningVisitor(FlowType.EXTERNAL));
   }
 
@@ -71,11 +71,11 @@ public class DefaultPlanner implements Planner {
     FileSchemaDirectory systemDirectory = strategy.getSystemDirectory();
 
     Plan plan = new Plan(queuedProject, dictionary, strategy, submissionDirectory);
-    for(FileSchema fileSchema : dictionary.getFiles()) {
+    for (FileSchema fileSchema : dictionary.getFiles()) {
       try {
         FileSchemaDirectory fileSchemaDirectory = strategy.getFileSchemaDirectory();
         String fileSchemaName = fileSchema.getName();
-        if(fileSchemaDirectory.hasFile(fileSchema) || systemDirectory.hasFile(fileSchema)) {
+        if (fileSchemaDirectory.hasFile(fileSchema) || systemDirectory.hasFile(fileSchema)) {
           log.info("including flow planners for file schema {}", fileSchemaName);
           plan.include(fileSchema, new DefaultInternalFlowPlanner(fileSchema), new DefaultExternalFlowPlanner(plan,
               fileSchema));
@@ -83,14 +83,14 @@ public class DefaultPlanner implements Planner {
           log.info("file schema {} has no matching datafile in submission directory {}", fileSchemaName,
               fileSchemaDirectory.getDirectoryPath());
         }
-      } catch(PlanningFileLevelException e) {
+      } catch (PlanningFileLevelException e) {
         plan.addFileLevelError(e);
       }
     }
-    for(PlanningVisitor<?> visitor : planningVisitors) {
+    for (PlanningVisitor<?> visitor : planningVisitors) {
       try {
         visitor.apply(plan);
-      } catch(PlanningFileLevelException e) {
+      } catch (PlanningFileLevelException e) {
         plan.addFileLevelError(e);
       }
     }

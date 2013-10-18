@@ -69,7 +69,7 @@ public class FileHdfsSshFileTest {
     // Mock release / project
     when(project.getKey()).thenReturn(PROJECT_KEY);
     when(nextRelease.getRelease()).thenReturn(release);
-    when(releaseService.getNextRelease()).thenReturn(nextRelease);
+    when(releaseService.createNextRelease()).thenReturn(nextRelease);
     when(projectService.getProject(PROJECT_KEY)).thenReturn(project);
 
     // Mock file system

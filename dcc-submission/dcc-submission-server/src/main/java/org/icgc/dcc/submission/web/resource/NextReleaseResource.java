@@ -40,6 +40,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.glassfish.grizzly.http.util.Header;
 import org.icgc.dcc.submission.core.model.DccModelOptimisticLockException;
 import org.icgc.dcc.submission.core.model.InvalidStateException;
@@ -54,8 +56,6 @@ import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
 import org.icgc.dcc.submission.web.util.Authorizations;
 import org.icgc.dcc.submission.web.util.ResponseTimestamper;
 import org.icgc.dcc.submission.web.util.Responses;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
@@ -64,9 +64,10 @@ import com.google.inject.Inject;
 import com.typesafe.config.Config;
 
 @Path("nextRelease")
+@Slf4j
 public class NextReleaseResource {
 
-  private static final Logger log = LoggerFactory.getLogger(NextReleaseResource.class);
+  private static final Joiner JOINER = Joiner.on("/");
 
   @Inject
   private Config config;
@@ -82,10 +83,12 @@ public class NextReleaseResource {
       return Responses.unauthorizedResponse();
     }
 
-    NextRelease nextRelease = releaseService.getNextRelease();
-    Release release = nextRelease.getRelease(); // guaranteed not to be null
     String prefix = config.getString("http.ws.path");
-    String redirectionPath = Joiner.on("/").join(prefix, "releases", release.getName());
+    String redirectionPath = JOINER.join(
+        prefix,
+        "releases",
+        fetchOpenRelease() // guaranteed not to be null
+            .getName());
     return Response.status(Status.MOVED_PERMANENTLY).header(HttpHeaders.LOCATION, redirectionPath).build();
   }
 
@@ -117,7 +120,7 @@ public class NextReleaseResource {
       return Responses.unauthorizedResponse();
     }
 
-    NextRelease oldRelease = releaseService.getNextRelease(); // guaranteed not null
+    NextRelease oldRelease = releaseService.createNextRelease(); // guaranteed not null
     Release release = oldRelease.getRelease();
     String oldReleaseName = release.getName();
     log.info("Releasing {}", oldReleaseName);
@@ -147,7 +150,7 @@ public class NextReleaseResource {
     /* no authorization check necessary */
 
     log.debug("Getting the queue for nextRelease");
-    NextRelease nextRelease = releaseService.getNextRelease();
+    NextRelease nextRelease = releaseService.createNextRelease();
     List<String> projectIds = nextRelease.getQueued(); // TODO: ensure cannot be null (DCC-820)
     Object[] projectIdArray = projectIds.toArray();
     return Response.ok(projectIdArray).build();
@@ -172,7 +175,7 @@ public class NextReleaseResource {
       projectKeys.add(projectKey);
     }
 
-    Release nextRelease = this.releaseService.getNextRelease().getRelease();
+    Release nextRelease = this.releaseService.createNextRelease().getRelease();
     ResponseTimestamper.evaluate(req, nextRelease);
 
     try {
@@ -230,7 +233,7 @@ public class NextReleaseResource {
       return Responses.unauthorizedResponse();
     }
 
-    Release nextRelease = this.releaseService.getNextRelease().getRelease();
+    Release nextRelease = this.releaseService.createNextRelease().getRelease();
     ResponseTimestamper.evaluate(req, nextRelease);
 
     try {
@@ -288,4 +291,9 @@ public class NextReleaseResource {
       return Response.status(Status.BAD_REQUEST).build();
     }
   }
+
+  private Release fetchOpenRelease() {
+    return releaseService.createNextRelease().getRelease();
+  }
+
 }

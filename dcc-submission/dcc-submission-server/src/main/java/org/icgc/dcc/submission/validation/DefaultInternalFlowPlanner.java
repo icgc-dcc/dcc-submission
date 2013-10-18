@@ -100,7 +100,7 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
         ObjectArrays.concat(fields, ValidationFields.OFFSET_FIELD_NAME);
 
     Key key = new Key(getSchema(), keyFields);
-    if(trimmedTails.containsKey(key) == false) {
+    if (trimmedTails.containsKey(key) == false) {
       String[] preKeyFields = ObjectArrays.concat(fields, ValidationFields.STATE_FIELD_NAME);
 
       Pipe newHead = new Pipe(key.getName(), structurallyValidTail);
@@ -139,15 +139,15 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
       Fields header = strategy.getFileHeader(getSchema());
       structuralCheck.declareFieldsPostPlanning(header);
 
-    } catch(IOException e) {
+    } catch (IOException e) {
       throw new PlanningException("Error processing file header");
-    } catch(DuplicateHeaderException e) {
+    } catch (DuplicateHeaderException e) {
       String fileName = null;
       try {
         fileName = strategy.path(getSchema()).getName();
-      } catch(FileNotFoundException fnfe) {
+      } catch (FileNotFoundException fnfe) {
         throw new PlanningException(fnfe);
-      } catch(IOException ioe) {
+      } catch (IOException ioe) {
         throw new PlanningException(ioe);
       }
       throw new PlanningFileLevelException(fileName, ValidationErrorCode.DUPLICATE_HEADER_ERROR,
@@ -156,7 +156,7 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
 
     flowDef.addSource(head, source);
 
-    for(Map.Entry<Key, Pipe> e : trimmedTails.entrySet()) {
+    for (Map.Entry<Key, Pipe> e : trimmedTails.entrySet()) {
       flowDef.addTailSink(e.getValue(), strategy.getTrimmedTap(e.getKey()));
     }
     return flowDef;
@@ -188,8 +188,8 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
    */
   private List<String> computeRequiredFieldnames() {
     List<String> requiredFieldnames = newArrayList();
-    for(Field field : getSchema().getFields()) {
-      if(field.hasRequiredRestriction()) {
+    for (Field field : getSchema().getFields()) {
+      if (field.hasRequiredRestriction()) {
         requiredFieldnames.add(field.getName());
       }
     }
