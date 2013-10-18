@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.fs;
 
+import java.io.File;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
@@ -38,12 +39,14 @@ import com.typesafe.config.ConfigFactory;
  * TODO: move elsewhere if acceptable
  */
 public class GuiceJUnitRunner extends BlockJUnit4ClassRunner {
+
   private final Injector injector;
 
   @Target(ElementType.TYPE)
   @Retention(RetentionPolicy.RUNTIME)
   @Inherited
   public @interface GuiceModules {
+
     Class<?>[] value();
   }
 
@@ -62,17 +65,18 @@ public class GuiceJUnitRunner extends BlockJUnit4ClassRunner {
 
   private Injector createInjectorFor(Class<?>[] classes) throws InitializationError {
     Module[] modules = new Module[classes.length];
-    for(int i = 0; i < classes.length; i++) {
+    for (int i = 0; i < classes.length; i++) {
       try {
         Class<?> klass = classes[i];
-        if(klass == ConfigModule.class) {
-          modules[i] = new ConfigModule(ConfigFactory.load());// TODO: better way?
+        if (klass == ConfigModule.class) {
+          modules[i] =
+              new ConfigModule(ConfigFactory.parseFile(new File("src/test/resources/application.conf")).resolve());
         } else {
           modules[i] = (Module) klass.newInstance();
         }
-      } catch(InstantiationException e) {
+      } catch (InstantiationException e) {
         throw new InitializationError(e);
-      } catch(IllegalAccessException e) {
+      } catch (IllegalAccessException e) {
         throw new InitializationError(e);
       }
     }
@@ -81,7 +85,7 @@ public class GuiceJUnitRunner extends BlockJUnit4ClassRunner {
 
   private Class<?>[] getModulesFor(Class<?> klass) throws InitializationError {
     GuiceModules annotation = klass.getAnnotation(GuiceModules.class);
-    if(annotation == null) throw new InitializationError("Missing @GuiceModules annotation for unit test '"
+    if (annotation == null) throw new InitializationError("Missing @GuiceModules annotation for unit test '"
         + klass.getName() + "'");
     return annotation.value();
   }
