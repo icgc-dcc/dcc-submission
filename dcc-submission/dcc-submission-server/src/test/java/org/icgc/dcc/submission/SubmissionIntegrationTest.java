@@ -19,7 +19,6 @@ package org.icgc.dcc.submission;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.util.concurrent.Uninterruptibles.sleepUninterruptibly;
-import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
@@ -38,6 +37,8 @@ import static org.icgc.dcc.submission.TestUtils.RELEASES_ENDPOINT;
 import static org.icgc.dcc.submission.TestUtils.SEED_CODELIST_ENDPOINT;
 import static org.icgc.dcc.submission.TestUtils.SEED_DICTIONARIES_ENDPOINT;
 import static org.icgc.dcc.submission.TestUtils.SIGNOFF_ENDPOINT;
+import static org.icgc.dcc.submission.TestUtils.TEST_CONFIG;
+import static org.icgc.dcc.submission.TestUtils.TEST_CONFIG_FILE;
 import static org.icgc.dcc.submission.TestUtils.UPDATE_RELEASE_ENDPOINT;
 import static org.icgc.dcc.submission.TestUtils.asDetailedSubmission;
 import static org.icgc.dcc.submission.TestUtils.asRelease;
@@ -45,11 +46,13 @@ import static org.icgc.dcc.submission.TestUtils.asReleaseView;
 import static org.icgc.dcc.submission.TestUtils.asString;
 import static org.icgc.dcc.submission.TestUtils.codeListsToString;
 import static org.icgc.dcc.submission.TestUtils.dictionaryToString;
+import static org.icgc.dcc.submission.TestUtils.dictionaryVersion;
 import static org.icgc.dcc.submission.TestUtils.get;
 import static org.icgc.dcc.submission.TestUtils.post;
 import static org.icgc.dcc.submission.TestUtils.put;
 import static org.icgc.dcc.submission.TestUtils.resourceToJsonArray;
 import static org.icgc.dcc.submission.TestUtils.resourceToString;
+import static org.icgc.dcc.submission.fs.FsConfig.FS_ROOT;
 import static org.icgc.dcc.submission.release.model.ReleaseState.COMPLETED;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
@@ -85,7 +88,6 @@ import org.icgc.dcc.submission.http.jersey.JerseyModule;
 import org.icgc.dcc.submission.release.model.DetailedSubmission;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseState;
-import org.icgc.dcc.submission.release.model.ReleaseView;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 import org.icgc.dcc.submission.sftp.SftpModule;
 import org.icgc.dcc.submission.shiro.ShiroModule;
@@ -95,11 +97,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import com.dumbster.smtp.SimpleSmtpServer;
 import com.google.code.morphia.Datastore;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import com.google.inject.Inject;
-import com.typesafe.config.ConfigFactory;
 
 @Slf4j
 @RunWith(GuiceJUnitRunner.class)
@@ -107,27 +108,23 @@ import com.typesafe.config.ConfigFactory;
 public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
   /**
-   * Dictionaries.
-   */
-  // TODO: Parse from files
-  private static final String FIRST_DICTIONARY_VERSION = "0.6d";
-  private static final String SECOND_DICTIONARY_VERSION = "0.6e";
-
-  /**
    * Projects.
    * 
    * If changing project names, must also change their directory counterparts under
    * server/src/test/resources/fixtures/submission/fs/release1
    */
-  private static final String PROJECT1_NAME = "project.1";
-  private static final String PROJECT1 = "{\"name\":\"Project One\",\"key\":\"" + PROJECT1_NAME
-      + "\",\"users\":[\"admin\"],\"groups\":[\"admin\"]}";
-  private static final String PROJECT2_NAME = "project.2";
-  private static final String PROJECT2 = "{\"name\":\"Project Two\",\"key\":\"" + PROJECT2_NAME
-      + "\",\"users\":[\"admin\", \"brett\"],\"groups\":[\"admin\"]}";
-  private static final String PROJECT3_NAME = "project.3";
-  private static final String PROJECT3 = "{\"name\":\"Project Three\",\"key\":\"" + PROJECT3_NAME
-      + "\",\"users\":[\"admin\"],\"groups\":[\"admin\"]}";
+  private static final String PROJECT1_KEY = "project.1";
+  private static final String PROJECT1 =
+      _("{\"name\":\"Project One\",\"key\":\"%s\",\"users\":[\"admin\"],\"groups\":[\"admin\"]}",
+          PROJECT1_KEY);
+  private static final String PROJECT2_KEY = "project.2";
+  private static final String PROJECT2 =
+      _("{\"name\":\"Project Two\",\"key\":\"%s\",\"users\":[\"admin\", \"brett\"],\"groups\":[\"admin\"]}",
+          PROJECT2_KEY);
+  private static final String PROJECT3_KEY = "project.3";
+  private static final String PROJECT3 =
+      _("{\"name\":\"Project Three\",\"key\":\"%s\",\"users\":[\"admin\"],\"groups\":[\"admin\"]}",
+          PROJECT3_KEY);
 
   /**
    * Releases.
@@ -137,39 +134,52 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
   private static final String INITIAL_RELEASE_SUBMISSIONS_ENDPOINT = INITIAL_RELEASE_ENDPOINT + "/submissions";
 
   private static final String NEXT_RELEASE_NAME = "release2";
-  private static final String NEXT_RELEASE = "{\"name\": \"release2\"}";
+  private static final String NEXT_RELEASE = "{\"name\": \"" + NEXT_RELEASE_NAME + "\"}";
 
   /**
    * Resources.
+   * 
+   * @see http://stackoverflow.com/questions/1368163/is-there-a-standard-domain-for-testing-throwaway-email
    */
-  private static final String INTEGRATION_TEST_DIR_RESOURCE = "/fixtures/submission";
-  private static final String FIRST_DICTIONARY_RESOURCE = INTEGRATION_TEST_DIR_RESOURCE + "/initDictionary.json";
-  private static final String INITIAL_RELEASE_RESOURCE = INTEGRATION_TEST_DIR_RESOURCE + "/initRelease.json";
-  private static final String UPDATED_INITIAL_RELEASE_RESOURCE = INTEGRATION_TEST_DIR_RESOURCE + "/updatedRelease.json";
+  private static final String INTEGRATION_TEST_DIR = "/fixtures/submission";
+  private static final String FIRST_DICTIONARY_RESOURCE = INTEGRATION_TEST_DIR + "/initDictionary.json";
+  private static final String INITIAL_RELEASE_RESOURCE = INTEGRATION_TEST_DIR + "/initRelease.json";
+  private static final String UPDATED_INITIAL_RELEASE_RESOURCE = INTEGRATION_TEST_DIR + "/updatedRelease.json";
 
-  private static final String PROJECT_TO_SIGN_OFF = "[\"" + PROJECT1_NAME + "\"]";
-  private static final String PROJECTS_TO_ENQUEUE = "[{\"key\": \"" + PROJECT1_NAME
-      + "\", \"emails\": [\"a@a.ca\"]}, {\"key\": \"" + PROJECT2_NAME + "\", \"emails\": [\"a@a.ca\"]}, {\"key\": \""
-      + PROJECT3_NAME + "\", \"emails\": [\"a@a.ca\"]}]";
-  private static final String PROJECTS_TO_ENQUEUE2 = "[{\"key\": \"" + PROJECT2_NAME
-      + "\", \"emails\": [\"a@a.ca\"]}, {\"key\": \"" + PROJECT3_NAME + "\", \"emails\": [\"a@a.ca\"]}]";
+  private static final String PROJECT_TO_SIGN_OFF = "[\"" + PROJECT1_KEY + "\"]";
+  private static final String PROJECTS_TO_ENQUEUE = "["
+      + "{\"key\": \"" + PROJECT1_KEY + "\", \"emails\": [\"project1@example.org\"]}, "
+      + "{\"key\": \"" + PROJECT2_KEY + "\", \"emails\": [\"project2@example.org\"]}, "
+      + "{\"key\": \"" + PROJECT3_KEY + "\", \"emails\": [\"project3@example.org\"]}]";
+  private static final String PROJECTS_TO_ENQUEUE2 = "["
+      + "{\"key\": \"" + PROJECT2_KEY + "\", \"emails\": [\"project2@example.org\"]}, "
+      + "{\"key\": \"" + PROJECT3_KEY + "\", \"emails\": [\"project3@example.org\"]}]";
 
-  private static final String FS_DIR = "src/test/resources/fixtures/submission/fs";
-  private static final String SYSTEM_FILES_DIR = "src/test/resources/fixtures/submission/fs/SystemFiles";
-  private static final String DCC_ROOT_DIR = ConfigFactory.load().getString("fs.root");
+  private static final String FS_DIR = "src/test/resources" + INTEGRATION_TEST_DIR + "/fs";
+  private static final String SYSTEM_FILES_DIR = FS_DIR + "/SystemFiles";
+  private static final String DCC_ROOT_DIR = TEST_CONFIG.getString(FS_ROOT);
 
-  private static final String INITIAL_RELEASE_SYSTEM_FILES_DIR = DCC_ROOT_DIR + "/release1/SystemFiles";
-  private static final String PROJECT1_VALIDATION_DIR = "release1/" + PROJECT1_NAME + "/.validation";
+  private static final String INITIAL_RELEASE_SYSTEM_FILES_DIR = DCC_ROOT_DIR + "/" + INITITAL_RELEASE_NAME
+      + "/SystemFiles";
+  private static final String PROJECT1_VALIDATION_DIR = INITITAL_RELEASE_NAME + "/" + PROJECT1_KEY + "/.validation";
+
+  /**
+   * Dictionaries.
+   */
+  private static final String FIRST_DICTIONARY_VERSION = dictionaryVersion(resourceToString(FIRST_DICTIONARY_RESOURCE));
+  private static final String SECOND_DICTIONARY_VERSION = dictionaryVersion(dictionaryToString());
 
   private int dictionaryUpdateCount = 0;
 
   @Inject
   private Datastore datastore;
 
+  private SimpleSmtpServer smtpServer;
+
   @Before
-  public void startServer() throws IOException {
+  public void setUp() throws IOException {
     log.info(repeat("-", 100));
-    log.info("Submission Integration Test");
+    log.info("Setting up ...");
     log.info(repeat("-", 100));
 
     status("init", "Deleting filesystem...");
@@ -178,21 +188,30 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     status("init", "Dropping database...");
     datastore.getDB().dropDatabase();
 
-    try {
-      status("init", "Starting server...");
-      Main.main(null);
-    } catch (Exception e) {
-      e.printStackTrace();
-    } finally {
-      status("init", "Main thread ending...");
-    }
+    status("init", "Starting SMTP server...");
+    smtpServer = SimpleSmtpServer.start(TEST_CONFIG.getInt("mail.smtp.port"));
+
+    status("init", "Starting submission server...");
+    Main.main("external", TEST_CONFIG_FILE.getAbsolutePath());
   }
 
   @After
-  public void stopServer() {
-    status("shutdown", "Shutting down server...");
+  public void tearDown() {
+    log.info(repeat("-", 100));
+    log.info("Tearing down ...");
+    log.info(repeat("-", 100));
+
+    status("shutdown", "Closing REST client...");
+    client.close();
+    status("shutdown", "REST client closed.");
+
+    status("shutdown", "Shutting down SMTP server...");
+    smtpServer.stop();
+    status("shutdown", "SMTP server shut down.");
+
+    status("shutdown", "Shutting down submission server...");
     Main.shutdown();
-    status("shutdown", "Server shut down.");
+    status("shutdown", "Submission server shut down.");
   }
 
   @Test
@@ -221,7 +240,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     status("seed", "Seeding dictionary 1 ({})...", FIRST_DICTIONARY_VERSION);
     post(client, SEED_DICTIONARIES_ENDPOINT, resourceToJsonArray(FIRST_DICTIONARY_RESOURCE));
 
-    status("seed", "Seeding dictionary 2 (dcc-resources)...");
+    status("seed", "Seeding dictionary 2 ({} from dcc-resources)...", SECOND_DICTIONARY_VERSION);
     post(client, SEED_DICTIONARIES_ENDPOINT, "[" + dictionaryToString() + "]");
 
     status("seed", "Seeding code lists...");
@@ -235,15 +254,15 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     status("admin", "Creating initial release...");
     createInitialRelease();
     checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
-        Lists.<SubmissionState> newArrayList());
+        hasSubmisisonStates());
 
     status("admin", "Adding projects...");
     addProjects();
     checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
-        newArrayList(NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED));
+        hasSubmisisonStates(NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED));
 
-    status("admin", "Updating dictionary...");
-    updateDictionary( // dictionary is OPENED
+    status("admin", "Updating OPEN dictionary...");
+    updateDictionary(
         resourceToString(FIRST_DICTIONARY_RESOURCE), FIRST_DICTIONARY_VERSION, NO_CONTENT.getStatusCode());
   }
 
@@ -265,13 +284,13 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
   private void adminTweaksCodeListAndTerms() throws IOException, Exception {
     status("admin", "Adding offending code list...");
-    addOffendingCodeList();
+    addInvalidCodeList();
 
     status("admin", "Adding valid code list...");
     addValidCodeLists();
 
     status("admin", "Adding code list term...");
-    addCodeListTerm();
+    addCodeListTerms();
   }
 
   private void adminRevalidates() throws Exception {
@@ -279,33 +298,33 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     enqueueProjects(PROJECTS_TO_ENQUEUE2, NO_CONTENT);
 
     status("admin", "Checking validated submission 1...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT1_NAME, VALID);
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT1_KEY, VALID);
 
     status("admin", "Checking validated submission 2...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT2_NAME, INVALID);
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT2_KEY, INVALID);
 
     status("admin", "Checking validated submission 3...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT2_NAME, INVALID);
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT2_KEY, INVALID);
 
-    // TODO: make it such that adding a term fixed one of the submissions
+    // TODO: Make it such that adding a term fixed one of the submissions
     checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
-        newArrayList(VALID, INVALID, INVALID));
+        hasSubmisisonStates(VALID, INVALID, INVALID));
   }
 
   private void adminPerformsRelease() throws Exception {
     releaseInitialRelease();
     checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, COMPLETED,
-        newArrayList(SIGNED_OFF));
+        hasSubmisisonStates(SIGNED_OFF));
     checkRelease(NEXT_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
-        newArrayList(NOT_VALIDATED, INVALID, INVALID));
+        hasSubmisisonStates(NOT_VALIDATED, INVALID, INVALID));
   }
 
   private void adminUpdatesDictionary() throws Exception, IOException {
-    // Try with CLOSED dictionary
+    status("admin", "Updating CLOSED dictionary...");
     updateDictionary(
         resourceToString(FIRST_DICTIONARY_RESOURCE), FIRST_DICTIONARY_VERSION, BAD_REQUEST.getStatusCode());
 
-    // Try with OPENED dictionary
+    status("admin", "Updating OPENED dictionary...");
     updateDictionary(
         dictionaryToString(), SECOND_DICTIONARY_VERSION, NO_CONTENT.getStatusCode());
   }
@@ -313,53 +332,28 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
   private void adminUpdatesRelease() throws Exception {
     updateRelease(UPDATED_INITIAL_RELEASE_RESOURCE);
     checkRelease(NEXT_RELEASE_NAME, SECOND_DICTIONARY_VERSION, OPENED,
-        newArrayList(NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED));
+        hasSubmisisonStates(NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED));
   }
 
   private void createInitialRelease() throws Exception {
-    Response response = put(client, RELEASES_ENDPOINT, resourceToString(INITIAL_RELEASE_RESOURCE));
+    val response = put(client, RELEASES_ENDPOINT, resourceToString(INITIAL_RELEASE_RESOURCE));
     assertEquals(OK.getStatusCode(), response.getStatus());
 
-    Release release = asRelease(response);
+    val release = asRelease(response);
     assertEquals(INITITAL_RELEASE_NAME, release.getName());
-  }
-
-  /**
-   * TODO: improve this to make expectedSubmissionStates a map rather than a list (else order of project names could
-   * break the test)
-   * <p>
-   * TODO: reuse checkValidatedSubmission() to while at it (since it's smarter and can poll)
-   */
-  private void checkRelease(String releaseName, String dictionaryVersion, ReleaseState expectedReleaseState,
-      List<SubmissionState> expectedSubmissionStates) throws Exception {
-    Response response = get(client, RELEASES_ENDPOINT + "/" + releaseName);
-    assertEquals(OK.getStatusCode(), response.getStatus());
-
-    ReleaseView releaseView = asReleaseView(response);
-    assertNotNull(releaseView);
-
-    assertEquals(dictionaryVersion, releaseView.getDictionaryVersion());
-    assertEquals(expectedReleaseState, releaseView.getState());
-    assertEquals(ImmutableList.<String> of(), releaseView.getQueue());
-    assertEquals(expectedSubmissionStates.size(), releaseView.getSubmissions().size());
-
-    int i = 0;
-    for (DetailedSubmission submission : releaseView.getSubmissions()) {
-      assertEquals(submission.getProjectKey(), expectedSubmissionStates.get(i++), submission.getState());
-    }
   }
 
   private void addProjects() throws IOException {
     status("admin", "Adding project 1...");
-    Response response1 = post(client, PROJECTS_ENDPOINT, PROJECT1);
+    val response1 = post(client, PROJECTS_ENDPOINT, PROJECT1);
     assertEquals(CREATED.getStatusCode(), response1.getStatus());
 
     status("admin", "Adding project 2...");
-    Response response2 = post(client, PROJECTS_ENDPOINT, PROJECT2);
+    val response2 = post(client, PROJECTS_ENDPOINT, PROJECT2);
     assertEquals(CREATED.getStatusCode(), response2.getStatus());
 
     status("admin", "Adding project 3...");
-    Response response3 = post(client, PROJECTS_ENDPOINT, PROJECT3);
+    val response3 = post(client, PROJECTS_ENDPOINT, PROJECT3);
     assertEquals(CREATED.getStatusCode(), response3.getStatus());
   }
 
@@ -381,72 +375,40 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     }
   }
 
-  private void checkValidations() throws Exception {
-    status("user", "Getting release 1...");
-    Response response = get(client, INITIAL_RELEASE_ENDPOINT);
-    assertEquals(OK.getStatusCode(), response.getStatus());
-
-    status("user", "Checking validated submission 1...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT1_NAME, VALID);
-
-    status("user", "Checking validated submission 2...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT2_NAME, INVALID);
-
-    status("user", "Checking validated submission 2...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT3_NAME, INVALID);
-
-    // check no errors for project 1
-    assertEmptyFile(DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/donor.internal" + SEPARATOR + "errors.json");
-    assertEmptyFile(DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/specimen.internal" + SEPARATOR + "errors.json");
-    assertEmptyFile(DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/specimen.external" + SEPARATOR + "errors.json");
-    // TODO add more
-  }
-
-  private void addOffendingCodeList() throws IOException {
+  private void addInvalidCodeList() throws IOException {
     // Ensure codelist is present
+    status("admin", "Getting code lists...");
     Response response = get(client, CODELISTS_ENDPOINT);
     assertEquals(OK.getStatusCode(), response.getStatus());
     val codeListName = "appendix_B10";
     assertTrue(asString(response).contains("\"" + codeListName + "\""));
 
     // Attempt to add it again
+    status("admin", "Adding invalid code list...");
     response = post(client, CODELISTS_ENDPOINT, "[{\"name\": \"someName\"}, {\"name\": \"" + codeListName + "\"}]");
     assertEquals(INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
   }
 
   private void addValidCodeLists() throws IOException {
-    Response response = post(client, CODELISTS_ENDPOINT, "[{\"name\": \"someName\"}, {\"name\": \"someNewName\"}]");
+    status("admin", "Adding valid code lists...");
+    val response = post(client, CODELISTS_ENDPOINT, "[{\"name\": \"someName\"}, {\"name\": \"someNewName\"}]");
     assertEquals(CREATED.getStatusCode(), response.getStatus());
   }
 
-  private void addCodeListTerm() throws Exception {
-    checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED, asList(VALID, INVALID, INVALID));
+  private void addCodeListTerms() throws Exception {
+    checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
+        hasSubmisisonStates(VALID, INVALID, INVALID));
 
     // TODO: Get codelist dynamically
-    Response response = post(client, CODELISTS_ENDPOINT + "/GLOBAL.0.platform.v1/terms",
+    status("admin", "Adding code list terms...");
+    val codeListName = "GLOBAL.0.platform.v1/terms";
+    val response = post(client, CODELISTS_ENDPOINT + "/" + codeListName,
         "[{\"code\": \"81\", \"value\": \"new value 1\"}, {\"code\": \"82\", \"value\": \"new value 2\"}]");
     assertEquals(CREATED.getStatusCode(), response.getStatus());
 
     // Only the INVALID ones should have been reset (DCC-851)
     checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
-        asList(VALID, NOT_VALIDATED, NOT_VALIDATED));
-  }
-
-  private void checkValidatedSubmission(String release, String project, SubmissionState expectedSubmissionState)
-      throws Exception {
-    DetailedSubmission detailedSubmission;
-    do {
-      sleepUninterruptibly(2, SECONDS);
-
-      status("user", "Polling submission status...");
-      Response response = get(client, INITIAL_RELEASE_SUBMISSIONS_ENDPOINT + "/" + project);
-      detailedSubmission = asDetailedSubmission(response);
-      status("user", "Received submission status: {}", detailedSubmission);
-
-      assertEquals(OK.getStatusCode(), response.getStatus());
-    } while (detailedSubmission.getState() == QUEUED || detailedSubmission.getState() == VALIDATING);
-
-    assertEquals(project, expectedSubmissionState, detailedSubmission.getState());
+        hasSubmisisonStates(VALID, NOT_VALIDATED, NOT_VALIDATED));
   }
 
   private void releaseInitialRelease() {
@@ -477,8 +439,8 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
         "Unique identifier for the donor (update" + ++dictionaryUpdateCount + ")");
     assertTrue(dictionary, dictionary.equals(updatedSecondDictionary) == false);
 
-    status("admin", "Updating dicionary...");
-    Response response = put(client, DICTIONARIES_ENDPOINT + "/" + dictionaryVersion, updatedSecondDictionary);
+    status("admin", "Updating dictionary...");
+    val response = put(client, DICTIONARIES_ENDPOINT + "/" + dictionaryVersion, updatedSecondDictionary);
     assertEquals(response.getHeaders().toString(), expectedStatus, response.getStatus());
   }
 
@@ -490,10 +452,76 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     assertEquals(NEXT_RELEASE_NAME, release.getName());
   }
 
+  /**
+   * TODO: improve this to make expectedSubmissionStates a map rather than a list (else order of project names could
+   * break the test)
+   * <p>
+   * TODO: reuse checkValidatedSubmission() to while at it (since it's smarter and can poll)
+   */
+  private void checkRelease(String releaseName, String dictionaryVersion, ReleaseState expectedReleaseState,
+      List<SubmissionState> expectedSubmissionStates) throws Exception {
+    status("admin", "Getting release '{}'...", releaseName);
+    val response = get(client, RELEASES_ENDPOINT + "/" + releaseName);
+    assertEquals(OK.getStatusCode(), response.getStatus());
+
+    val releaseView = asReleaseView(response);
+    assertNotNull(releaseView);
+
+    assertEquals(dictionaryVersion, releaseView.getDictionaryVersion());
+    assertEquals(expectedReleaseState, releaseView.getState());
+    assertEquals(ImmutableList.<String> of(), releaseView.getQueue());
+    assertEquals(expectedSubmissionStates.size(), releaseView.getSubmissions().size());
+
+    int i = 0;
+    for (DetailedSubmission submission : releaseView.getSubmissions()) {
+      assertEquals(submission.getProjectKey(), expectedSubmissionStates.get(i++), submission.getState());
+    }
+  }
+
+  private void checkValidations() throws Exception {
+    status("user", "Getting release 1...");
+    val response = get(client, INITIAL_RELEASE_ENDPOINT);
+    assertEquals(OK.getStatusCode(), response.getStatus());
+
+    status("user", "Checking validated submission 1...");
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT1_KEY, VALID);
+
+    status("user", "Checking validated submission 2...");
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT2_KEY, INVALID);
+
+    status("user", "Checking validated submission 2...");
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT3_KEY, INVALID);
+
+    // check no errors for project 1
+    assertEmptyFile(DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/donor.internal" + SEPARATOR + "errors.json");
+    assertEmptyFile(DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/specimen.internal" + SEPARATOR + "errors.json");
+    assertEmptyFile(DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/specimen.external" + SEPARATOR + "errors.json");
+    // TODO add more
+  }
+
+  private void checkValidatedSubmission(String release, String project, SubmissionState expectedSubmissionState)
+      throws Exception {
+    DetailedSubmission detailedSubmission;
+    do {
+      sleepUninterruptibly(2, SECONDS);
+
+      status("user", "Polling submission status...");
+      val response = get(client, INITIAL_RELEASE_SUBMISSIONS_ENDPOINT + "/" + project);
+      detailedSubmission = asDetailedSubmission(response);
+      status("user", "Received submission status: {}", detailedSubmission);
+
+      assertEquals(OK.getStatusCode(), response.getStatus());
+    } while (detailedSubmission.getState() == QUEUED || detailedSubmission.getState() == VALIDATING);
+
+    assertEquals(project, expectedSubmissionState, detailedSubmission.getState());
+  }
+
+  private static List<SubmissionState> hasSubmisisonStates(SubmissionState... states) {
+    return newArrayList(states);
+  }
+
   private static void status(String phase, String message, Object... args) {
-    log.info(repeat("-", 100));
     log.info("[" + phase + "] " + message, args);
-    log.info(repeat("-", 100));
   }
 
 }

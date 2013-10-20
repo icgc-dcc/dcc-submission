@@ -29,20 +29,17 @@ import org.apache.commons.io.FileUtils;
 
 public class BaseIntegrationTest {
 
-  /**
-   * Sets key system properties before test initialization.
-   */
-  private static void setProperties() {
+  static {
     // See http://stackoverflow.com/questions/7134723/hadoop-on-osx-unable-to-load-realm-info-from-scdynamicstore
     System.setProperty("java.security.krb5.realm", "OX.AC.UK");
     System.setProperty("java.security.krb5.kdc", "kdc0.ox.ac.uk:kdc1.ox.ac.uk");
   }
 
-  static {
-    setProperties();
-  }
-
   protected final Client client = ClientFactory.newClient();
+
+  protected static String _(String format, Object... args) {
+    return String.format(format, args);
+  }
 
   protected static void assertEmptyFile(String dir, String path) throws IOException {
     File errorFile = new File(dir, path);

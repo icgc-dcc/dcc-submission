@@ -78,7 +78,7 @@ public final class Authorizations {
     return subject.isPermitted(privilege);
   }
 
-  public static boolean isOmnipotentUser(SecurityContext securityContext) {
+  public static boolean isSuperUser(SecurityContext securityContext) {
     return hasPrivilege(securityContext, AuthorizationPrivileges.ALL.getPrefix());
   }
 

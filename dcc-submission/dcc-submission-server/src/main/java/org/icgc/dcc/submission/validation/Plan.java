@@ -174,6 +174,13 @@ public class Plan {
   }
 
   /**
+   * Stops the cascade in a blocking manner.
+   */
+  public void stopCascade() {
+    cascade.stop();
+  }
+
+  /**
    * startTime must have been set already (unit is milliseconds).
    */
   public long getDuration() {

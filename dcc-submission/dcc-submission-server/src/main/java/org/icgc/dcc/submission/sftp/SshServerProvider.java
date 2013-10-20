@@ -21,6 +21,8 @@ import static com.google.common.base.Joiner.on;
 import static java.lang.String.valueOf;
 import static org.apache.sshd.common.FactoryManager.DEFAULT_NIO_WORKERS;
 import static org.apache.sshd.common.FactoryManager.NIO_WORKERS;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.sshd.SshServer;
@@ -40,6 +42,7 @@ import com.typesafe.config.Config;
  * Factory class for encapsulating the complex logic of creating an {@link SshServer}.
  */
 @Slf4j
+@RequiredArgsConstructor(onConstructor = @_(@Inject))
 public class SshServerProvider implements Provider<SshServer> {
 
   /**
@@ -50,17 +53,12 @@ public class SshServerProvider implements Provider<SshServer> {
   /**
    * Provider dependencies.
    */
-  // TODO: Remove config
+  @NonNull
   private final Config config;
+  @NonNull
   private final SftpContext context;
+  @NonNull
   private final SftpAuthenticator authenticator;
-
-  @Inject
-  SshServerProvider(Config config, SftpContext context, SftpAuthenticator authenticator) {
-    this.config = config;
-    this.context = context;
-    this.authenticator = authenticator;
-  }
 
   @Override
   public SshServer get() {
