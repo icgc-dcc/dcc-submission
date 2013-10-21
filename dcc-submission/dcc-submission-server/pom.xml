@@ -351,6 +351,10 @@
               <value>target/logs</value>
             </systemProperty>
           </systemProperties>
+          <arguments>
+          	<argument>external</argument>
+          	<argument>src/test/conf/application.conf</argument>
+          </arguments>
         </configuration>
       </plugin>
     </plugins>

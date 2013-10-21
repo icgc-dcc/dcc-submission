@@ -421,7 +421,6 @@ public class ValidationQueueManagerService extends AbstractService {
   private long waitForAnOpenRelease() {
     long count;
     do {
-      log.info("Waiting for an '{}' release to be created.", OPENED);
       sleepUninterruptibly(
           POLLING_FREQUENCY_PER_SEC,
           SECONDS);

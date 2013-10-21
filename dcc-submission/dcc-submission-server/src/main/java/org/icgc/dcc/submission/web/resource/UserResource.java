@@ -50,7 +50,7 @@ import com.google.inject.Inject;
  * Resource (REST end-points) for userService.
  */
 @Slf4j
-@Path("userService")
+@Path("users")
 public class UserResource {
 
   @Inject
