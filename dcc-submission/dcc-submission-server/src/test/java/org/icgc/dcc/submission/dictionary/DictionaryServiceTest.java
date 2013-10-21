@@ -124,6 +124,6 @@ public class DictionaryServiceTest {
   @Ignore
   @Test(expected = DictionaryServiceException.class)
   public void test_addTerm_failOnExisting() {
-    dictionaryService.addTerm(mockCodeList.getName(), mockTerm);
+    dictionaryService.addCodeListTerm(mockCodeList.getName(), mockTerm);
   }
 }

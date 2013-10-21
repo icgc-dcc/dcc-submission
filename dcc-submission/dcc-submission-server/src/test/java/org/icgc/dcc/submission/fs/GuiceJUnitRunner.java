@@ -17,7 +17,8 @@
  */
 package org.icgc.dcc.submission.fs;
 
-import java.io.File;
+import static org.icgc.dcc.submission.TestUtils.TEST_CONFIG;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
@@ -31,7 +32,6 @@ import org.junit.runners.model.InitializationError;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
-import com.typesafe.config.ConfigFactory;
 
 /**
  * adapted (our ConfigModule takes a Config parameter) from http://fabiostrozzi.eu/2011/03/27/junit-tests-easy-guice/
@@ -63,16 +63,15 @@ public class GuiceJUnitRunner extends BlockJUnit4ClassRunner {
     injector = createInjectorFor(classes);
   }
 
-  private Injector createInjectorFor(Class<?>[] classes) throws InitializationError {
-    Module[] modules = new Module[classes.length];
-    for (int i = 0; i < classes.length; i++) {
+  private Injector createInjectorFor(Class<?>[] moduleClasses) throws InitializationError {
+    Module[] modules = new Module[moduleClasses.length];
+    for (int i = 0; i < moduleClasses.length; i++) {
       try {
-        Class<?> klass = classes[i];
-        if (klass == ConfigModule.class) {
-          modules[i] =
-              new ConfigModule(ConfigFactory.parseFile(new File("src/test/resources/application.conf")).resolve());
+        Class<?> moduleClass = moduleClasses[i];
+        if (moduleClass == ConfigModule.class) {
+          modules[i] = new ConfigModule(TEST_CONFIG);
         } else {
-          modules[i] = (Module) klass.newInstance();
+          modules[i] = (Module) moduleClass.newInstance();
         }
       } catch (InstantiationException e) {
         throw new InitializationError(e);
@@ -80,6 +79,7 @@ public class GuiceJUnitRunner extends BlockJUnit4ClassRunner {
         throw new InitializationError(e);
       }
     }
+
     return Guice.createInjector(modules);
   }
 

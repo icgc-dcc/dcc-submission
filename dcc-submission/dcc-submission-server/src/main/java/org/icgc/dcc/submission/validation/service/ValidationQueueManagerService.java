@@ -413,7 +413,7 @@ public class ValidationQueueManagerService extends AbstractService {
   }
 
   private Release fetchOpenRelease() {
-    val release = releaseService.createNextRelease().getRelease();
+    val release = releaseService.resolveNextRelease().getRelease();
     checkState(release.getState() == OPENED, "Release is expected to be '%s'", OPENED);
     return release;
   }
@@ -421,7 +421,6 @@ public class ValidationQueueManagerService extends AbstractService {
   private long waitForAnOpenRelease() {
     long count;
     do {
-      log.info("Waiting for an '{}' release to be created.", OPENED);
       sleepUninterruptibly(
           POLLING_FREQUENCY_PER_SEC,
           SECONDS);

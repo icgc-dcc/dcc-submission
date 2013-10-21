@@ -263,6 +263,14 @@
       <scope>test</scope>
     </dependency>
 
+    <!-- Testing - Mail -->
+    <dependency>
+      <groupId>dumbster</groupId>
+      <artifactId>dumbster</artifactId>
+      <version>1.6</version>
+      <scope>test</scope>
+    </dependency>
+
     <!-- Testing - Utilities -->
     <dependency>
       <groupId>com.google.code</groupId>
@@ -343,6 +351,10 @@
               <value>target/logs</value>
             </systemProperty>
           </systemProperties>
+          <arguments>
+          	<argument>external</argument>
+          	<argument>src/test/conf/application.conf</argument>
+          </arguments>
         </configuration>
       </plugin>
     </plugins>

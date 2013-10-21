@@ -183,7 +183,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   /**
    * Returns the {@code NextRelease} (guaranteed not to be null if returned).
    */
-  public NextRelease createNextRelease() throws IllegalReleaseStateException {
+  public NextRelease resolveNextRelease() throws IllegalReleaseStateException {
     Release nextRelease = this.query()
         .where(
             QRelease.release.state.eq(OPENED))
@@ -202,7 +202,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
    * This is the dictionary, open or not, that the {@code NextRelease}'s {@code Release} points to.
    */
   public Dictionary getNextDictionary() {
-    NextRelease nextRelease = createNextRelease();
+    NextRelease nextRelease = resolveNextRelease();
     Release release = checkNotNull(nextRelease, "There are currently no open releases...").getRelease();
     String version = checkNotNull(release).getDictionaryVersion();
     Dictionary dictionary = getDictionaryFromVersion(checkNotNull(version));
@@ -312,19 +312,20 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     log.info("signed off {} for {}", projectKeys, nextReleaseName);
   }
 
-  public void deleteQueuedRequest() {
+  public void deleteQueuedRequests() {
     log.info("emptying queue");
 
     SubmissionState newState = SubmissionState.NOT_VALIDATED;
-    Release release = createNextRelease().getRelease();
+    Release release = resolveNextRelease().getRelease();
     List<String> projectKeys = release.getQueuedProjectKeys(); // TODO: what if nextrelease changes in the meantime?
 
-    updateSubmisions(projectKeys, newState); // FIXME: DCC-901
+    // FIXME: DCC-901
+    updateSubmisions(projectKeys, newState);
     release.emptyQueue();
 
     this.dbUpdateSubmissions(release.getName(), release.getQueue(), projectKeys, newState); // FIXME: DCC-901
-    for (String projectKey : projectKeys) { // See spec at
-                                            // https://wiki.oicr.on.ca/display/DCCSOFT/Concurrency#Concurrency-Submissionstatesresetting
+    for (String projectKey : projectKeys) {
+      // See spec at https://wiki.oicr.on.ca/display/DCCSOFT/Concurrency#Concurrency-Submissionstatesresetting
       resetValidationFolder(projectKey, release);
     }
   }
@@ -365,7 +366,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
       @Override
       public Optional<?> call() throws DccModelOptimisticLockException {
-        Release nextRelease = createNextRelease().getRelease();
+        Release nextRelease = resolveNextRelease().getRelease();
         String nextReleaseName = nextRelease.getName();
 
         log.info("Dequeuing {} to validating for {}", nextProjectKey, nextReleaseName);
@@ -418,7 +419,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
       @Override
       public Optional<?> call() throws DccModelOptimisticLockException {
-        Release nextRelease = createNextRelease().getRelease();
+        Release nextRelease = resolveNextRelease().getRelease();
         String nextReleaseName = nextRelease.getName();
 
         log.info("Resolving {} (as {}) for {}", new Object[] { projectKey, destinationState, nextReleaseName });
@@ -454,7 +455,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
    */
   public Release update(String newReleaseName, String newDictionaryVersion) {
 
-    Release release = createNextRelease().getRelease();
+    Release release = resolveNextRelease().getRelease();
     String oldReleaseName = release.getName();
     String oldDictionaryVersion = release.getDictionaryVersion();
     checkState(release.getState() == ReleaseState.OPENED);
@@ -576,7 +577,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
    */
   @Deprecated
   private void updateSubmisions(List<String> projectKeys, final SubmissionState state) {
-    final String releaseName = createNextRelease().getRelease().getName();
+    final String releaseName = resolveNextRelease().getRelease().getName();
     for (String projectKey : projectKeys) {
       getSubmission(releaseName, projectKey).setState(state);
     }
@@ -698,7 +699,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
   private List<String> getSubmission(final SubmissionState state) {
     List<String> projectKeys = new ArrayList<String>();
-    List<Submission> submissions = this.createNextRelease().getRelease().getSubmissions();
+    List<Submission> submissions = this.resolveNextRelease().getRelease().getSubmissions();
     for (Submission submission : submissions) {
       if (state.equals(submission.getState())) {
         projectKeys.add(submission.getProjectKey());

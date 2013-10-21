@@ -19,17 +19,15 @@ package org.icgc.dcc.submission.web;
 
 import javax.ws.rs.core.Response.ResponseBuilder;
 
-/**
- * 
- */
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
+@Getter
 public class UnsatisfiedPreconditionException extends RuntimeException {
-  private final ResponseBuilder rb;
 
-  public UnsatisfiedPreconditionException(ResponseBuilder rb) {
-    this.rb = rb;
-  }
+  @NonNull
+  private final ResponseBuilder builder;
 
-  public ResponseBuilder getResponse() {
-    return this.rb;
-  }
 }
