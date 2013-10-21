@@ -21,7 +21,7 @@ import static javax.ws.rs.core.Response.ok;
 import static javax.ws.rs.core.Response.status;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static org.icgc.dcc.submission.web.model.ServerErrorCode.MISSING_REQUIRED_DATA;
-import static org.icgc.dcc.submission.web.util.Authorizations.isOmnipotentUser;
+import static org.icgc.dcc.submission.web.util.Authorizations.isSuperUser;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -42,33 +42,37 @@ import org.icgc.dcc.submission.web.util.Responses;
 import com.google.inject.Inject;
 
 /**
- * Endpoint for system related operations.
+ * Endpoint for systemService related operations.
  * 
  * @see http://stackoverflow.com/questions/6433480/restful-actions-services-that-dont-correspond-to-an-entity
  * @see http://stackoverflow.com/questions/8660003/restful-design-of-a-resource-with-binary-states
  * @see http://stackoverflow.com/questions/8914852/rest-interface-design-for-machine-control
  * @see http://stackoverflow.com/questions/6776198/rest-model-state-transitions
- * @see http
- * ://stackoverflow.com/questions/5591348/how-to-implement-a-restful-resource-for-a-state-machine-or-finite-automata
+ * @see http://stackoverflow.com/questions/5591348/how-to-implement-a-restful-resource-for-a-state-machine-or-finite-automata
  */
+@Slf4j
 @Path("/")
 @Consumes("application/json")
-@Slf4j
 public class SystemResource {
 
   @Inject
-  private SystemService system;
+  private SystemService systemService;
 
   @GET
   @Path("/systems/sftp")
-  public Response getStatus(@Context
-  SecurityContext securityContext) {
+  public Response getStatus(
+
+      @Context
+      SecurityContext securityContext
+
+      )
+  {
     log.info("Getting status...");
-    if (isOmnipotentUser(securityContext) == false) {
+    if (isSuperUser(securityContext) == false) {
       return Responses.unauthorizedResponse();
     }
 
-    Status status = system.getStatus();
+    Status status = systemService.getStatus();
 
     return Response.ok(status).build();
   }
@@ -76,12 +80,16 @@ public class SystemResource {
   @PATCH
   @Path("/systems/sftp")
   public Response patch(
+
       @Context
       SecurityContext securityContext,
 
-      JsonNode state) {
+      JsonNode state
+
+      )
+  {
     log.info("Setting SFTP state to {}...", state);
-    if (isOmnipotentUser(securityContext) == false) {
+    if (isSuperUser(securityContext) == false) {
       return Responses.unauthorizedResponse();
     }
 
@@ -93,12 +101,12 @@ public class SystemResource {
     }
 
     if (active.asBoolean()) {
-      system.enableSftp();
+      systemService.enableSftp();
     } else {
-      system.disableSftp();
+      systemService.disableSftp();
     }
 
-    Status status = system.getStatus();
+    Status status = systemService.getStatus();
 
     return ok(status).build();
   }

@@ -21,6 +21,8 @@ import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.List;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.val;
 
 import org.apache.hadoop.fs.FileSystem;
@@ -47,25 +49,20 @@ import com.google.inject.Inject;
  * @see http://www.two-sdg.demon.co.uk/curbralan/papers/europlop/ContextEncapsulation.pdf
  * @see http://www.allankelly.net/static/patterns/encapsulatecontext.pdf
  */
+@RequiredArgsConstructor(onConstructor = @_(@Inject))
 public class SftpContext {
 
   /**
    * Encapsulated context.
    */
+  @NonNull
   private final DccFileSystem fs;
+  @NonNull
   private final ReleaseService releaseService;
+  @NonNull
   private final ProjectService projectService;
+  @NonNull
   private final UsernamePasswordAuthenticator authenticator;
-
-  @Inject
-  public SftpContext(DccFileSystem fs, ReleaseService releaseService, ProjectService projectService,
-      UsernamePasswordAuthenticator authenticator) {
-    super();
-    this.fs = fs;
-    this.releaseService = releaseService;
-    this.projectService = projectService;
-    this.authenticator = authenticator;
-  }
 
   public boolean authenticate(String username, String password) {
     return authenticator.authenticate(username, password.toCharArray(), null) != null;
@@ -82,7 +79,7 @@ public class SftpContext {
 
   // TODO: This should not be needed once the other todos are addressed
   public Release getNextRelease() {
-    return releaseService.createNextRelease().getRelease();
+    return releaseService.resolveNextRelease().getRelease();
   }
 
   public String getNextReleaseName() {

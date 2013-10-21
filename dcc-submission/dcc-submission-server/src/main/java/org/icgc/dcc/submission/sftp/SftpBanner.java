@@ -24,8 +24,8 @@ import static lombok.AccessLevel.PACKAGE;
 import java.io.IOException;
 import java.util.List;
 
-import lombok.AllArgsConstructor;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
@@ -39,7 +39,7 @@ import com.google.common.io.Resources;
  * Helper class for generating SFTP user customized authentication banner message.
  */
 @Slf4j
-@AllArgsConstructor(access = PACKAGE)
+@RequiredArgsConstructor(access = PACKAGE)
 class SftpBanner {
 
   /**
