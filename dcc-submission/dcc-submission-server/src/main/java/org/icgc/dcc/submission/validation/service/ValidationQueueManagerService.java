@@ -413,7 +413,7 @@ public class ValidationQueueManagerService extends AbstractService {
   }
 
   private Release fetchOpenRelease() {
-    val release = releaseService.createNextRelease().getRelease();
+    val release = releaseService.resolveNextRelease().getRelease();
     checkState(release.getState() == OPENED, "Release is expected to be '%s'", OPENED);
     return release;
   }

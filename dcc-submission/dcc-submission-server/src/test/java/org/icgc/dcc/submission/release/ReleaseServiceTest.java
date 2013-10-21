@@ -146,9 +146,9 @@ public class ReleaseServiceTest {
   // @Test; cannot test release() anymore since we can't mock this: new MorphiaQuery<Project>(morphia, datastore,
   // QProject.project); TODO: find a solution
   public void test_getNextRelease_isCorrectRelease() {
-    assertEquals(release.getId(), releaseService.createNextRelease().getRelease().getId());
+    assertEquals(release.getId(), releaseService.resolveNextRelease().getRelease().getId());
     Release newRelease = addNewRelease("release2");
-    assertEquals(newRelease.getName(), releaseService.createNextRelease().getRelease().getName());
+    assertEquals(newRelease.getName(), releaseService.resolveNextRelease().getRelease().getName());
   }
 
   @Test
@@ -189,7 +189,7 @@ public class ReleaseServiceTest {
 
   // @Test
   public void test_can_release() throws InvalidStateException, DccModelOptimisticLockException {
-    NextRelease nextRelease = releaseService.createNextRelease();
+    NextRelease nextRelease = releaseService.resolveNextRelease();
     Release nextReleaseRelease = nextRelease.getRelease();
     assertTrue(!nextRelease.atLeastOneSignedOff(nextReleaseRelease));
 
@@ -198,7 +198,7 @@ public class ReleaseServiceTest {
     String user = "admin";
     releaseService.signOff(nextReleaseRelease, projectKeys, user);
 
-    nextRelease = releaseService.createNextRelease();
+    nextRelease = releaseService.resolveNextRelease();
     assertTrue(nextRelease.atLeastOneSignedOff(nextReleaseRelease));
   }
 
@@ -226,7 +226,7 @@ public class ReleaseServiceTest {
 
     NextRelease nextRelease = null;
     try {
-      nextRelease = releaseService.createNextRelease().release(newRelease.getName());
+      nextRelease = releaseService.resolveNextRelease().release(newRelease.getName());
     } catch (InvalidStateException e) {
       Throwables.propagate(e);
     }

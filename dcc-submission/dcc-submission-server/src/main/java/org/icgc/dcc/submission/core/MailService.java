@@ -52,6 +52,7 @@ public class MailService {
    * Server property names.
    */
   public static final String MAIL_SMTP_HOST = "mail.smtp.host";
+  public static final String MAIL_SMTP_PORT = "mail.smtp.port";
   public static final String MAIL_SMTP_SERVER = "smtp.oicr.on.ca";
 
   /**
@@ -171,6 +172,7 @@ public class MailService {
   private Message message() {
     Properties props = new Properties();
     props.put(MAIL_SMTP_HOST, get(MAIL_SMTP_HOST));
+    props.put(MAIL_SMTP_PORT, get(MAIL_SMTP_PORT, "25"));
 
     return new MimeMessage(Session.getDefaultInstance(props, null));
   }
@@ -181,6 +183,10 @@ public class MailService {
 
   private String get(String name) {
     return config.getString(name);
+  }
+
+  private String get(String name, String defaultValue) {
+    return config.hasPath(name) ? config.getString(name) : defaultValue;
   }
 
   private static InternetAddress address(String email) throws UnsupportedEncodingException {

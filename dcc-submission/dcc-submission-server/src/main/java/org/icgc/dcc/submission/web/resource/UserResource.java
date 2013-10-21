@@ -17,7 +17,10 @@
  */
 package org.icgc.dcc.submission.web.resource;
 
-import static org.icgc.dcc.submission.web.util.Authorizations.isOmnipotentUser;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static org.icgc.dcc.submission.web.model.ServerErrorCode.NO_SUCH_ENTITY;
+import static org.icgc.dcc.submission.web.util.Authorizations.isSuperUser;
+import static org.icgc.dcc.submission.web.util.Responses.unauthorizedResponse;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -27,9 +30,9 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.core.MailService;
@@ -37,43 +40,46 @@ import org.icgc.dcc.submission.core.UserService;
 import org.icgc.dcc.submission.core.model.Feedback;
 import org.icgc.dcc.submission.core.model.User;
 import org.icgc.dcc.submission.release.model.DetailedUser;
-import org.icgc.dcc.submission.web.model.ServerErrorCode;
 import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
 import org.icgc.dcc.submission.web.util.Authorizations;
 import org.icgc.dcc.submission.web.util.ResponseTimestamper;
-import org.icgc.dcc.submission.web.util.Responses;
 
-import com.google.common.base.Optional;
 import com.google.inject.Inject;
 
 /**
- * Resource (REST end-points) for users.
+ * Resource (REST end-points) for userService.
  */
 @Slf4j
-@Path("users")
+@Path("userService")
 public class UserResource {
 
   @Inject
-  private UserService users;
+  private UserService userService;
 
   @Inject
   private MailService mailService;
 
   @GET
   @Path("self")
-  public Response getResource(@Context
-  SecurityContext securityContext) {
-    String username = Authorizations.getUsername(securityContext);
-    boolean admin = isOmnipotentUser(securityContext);
-    return Response.ok(new DetailedUser(username, admin)).build();
+  public Response getResource(
+
+      @Context
+      SecurityContext securityContext
+
+      )
+  {
+    val username = Authorizations.getUsername(securityContext);
+    val admin = isSuperUser(securityContext);
+    val user = new DetailedUser(username, admin);
+
+    return Response.ok(user).build();
   }
 
   @POST
   @Path("self")
   @Consumes("application/json")
-  public Response feedback(Feedback feedback) { // TODO: merge with mail service (DCC-686)
-    /* no authorization check necessary */
-
+  public Response feedback(Feedback feedback) {
+    // No authorization check necessary
     log.debug("Sending feedback email: {}", feedback);
     mailService.sendFeedback(feedback);
 
@@ -82,28 +88,37 @@ public class UserResource {
 
   @PUT
   @Path("unlock/{username}")
-  public Response unlock(@PathParam("username")
-  String username, @Context
-  SecurityContext securityContext) {
+  public Response unlock(
 
+      @PathParam("username")
+      String username,
+
+      @Context
+      SecurityContext securityContext
+
+      )
+  {
     log.info("Unlocking user: {}", username);
-    if (isOmnipotentUser(securityContext) == false) {
-      return Responses.unauthorizedResponse();
+    if (isSuperUser(securityContext) == false) {
+      return unauthorizedResponse();
     }
 
-    Optional<User> optionalUser = users.getUserByUsername(username);
+    val optionalUser = userService.getUserByUsername(username);
     if (optionalUser.isPresent() == false) {
       log.warn("unknown user {} provided", username);
-      return Response.status(Status.BAD_REQUEST)
-          .entity(new ServerErrorResponseMessage(ServerErrorCode.NO_SUCH_ENTITY, new Object[] { username })).build();
+      return Response.
+          status(BAD_REQUEST)
+          .entity(new ServerErrorResponseMessage(NO_SUCH_ENTITY, username))
+          .build();
     } else {
       User user = optionalUser.get();
       if (user.isLocked()) {
-        user = users.resetUser(user);
+        user = userService.resetUser(user);
         log.info("user {} was unlocked", username);
       } else {
         log.warn("user {} was not locked, aborting unlocking procedure", username);
       }
+
       return ResponseTimestamper.ok(user).build();
     }
   }
