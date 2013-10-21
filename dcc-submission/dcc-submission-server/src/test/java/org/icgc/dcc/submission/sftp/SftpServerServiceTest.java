@@ -153,7 +153,7 @@ public class SftpServerServiceTest {
     when(project.getKey()).thenReturn(PROJECT_KEY);
     when(release.getName()).thenReturn(RELEASE_NAME);
     when(nextRelease.getRelease()).thenReturn(release);
-    when(releaseService.getNextRelease()).thenReturn(nextRelease);
+    when(releaseService.createNextRelease()).thenReturn(nextRelease);
     when(projectService.getProject(PROJECT_KEY)).thenReturn(project);
     when(projectService.getProject(not(eq(PROJECT_KEY)))).thenThrow(new ProjectServiceException(""));
     when(projectService.getProjectsBySubject(any(Subject.class))).thenReturn(newArrayList(project));

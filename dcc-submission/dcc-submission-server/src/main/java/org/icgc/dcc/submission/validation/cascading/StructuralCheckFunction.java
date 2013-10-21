@@ -141,6 +141,8 @@ public class StructuralCheckFunction extends BaseOperation implements Function {
       adjustedValues = Arrays.asList(new String[dictionaryFields.size()]); // can discard values but must match number
                                                                            // of fields in headers for later merge in
                                                                            // error reporting
+
+      // see SUBM-15
       tupleState.reportError(ValidationErrorCode.STRUCTURALLY_INVALID_ROW_ERROR,//
           ROW_LEVEL_ERROR_COLUMN_NAME, // because we don't have a specific column to report this on (TODO: revisit not
                                        // elegant)

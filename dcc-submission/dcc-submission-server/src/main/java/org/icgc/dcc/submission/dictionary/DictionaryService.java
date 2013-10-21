@@ -21,6 +21,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.List;
 
+import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.core.morphia.BaseMorphiaService;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
@@ -51,8 +52,8 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
   private final ReleaseService releases;
 
   @Inject
-  public DictionaryService(Morphia morphia, Datastore datastore, ReleaseService releases) {
-    super(morphia, datastore, QDictionary.dictionary);
+  public DictionaryService(Morphia morphia, Datastore datastore, ReleaseService releases, MailService mailService) {
+    super(morphia, datastore, QDictionary.dictionary, mailService);
     checkArgument(releases != null);
     this.releases = releases;
     registerModelClasses(Dictionary.class, CodeList.class);
@@ -84,7 +85,7 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
     datastore().updateFirst(updateQuery, dictionary, false);
 
     // Reset submissions if applicable
-    Release release = releases.getNextRelease().getRelease();
+    Release release = releases.createNextRelease().getRelease();
     if (dictionary.getVersion().equals(release.getDictionaryVersion())) {
       releases.resetSubmissions(release.getName(), release.getProjectKeys());
     }
@@ -214,15 +215,18 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
         datastore.createUpdateOperations(CodeList.class).add("terms", term));
 
     // Reset INVALID submissions if applicable
-    Release openRelease = releases.getNextRelease().getRelease();
+    Release openRelease = releases.createNextRelease().getRelease();
     Dictionary currentDictionary = getCurrentDictionary(openRelease);
     if (currentDictionary.usesCodeList(codeListName)) {
+      log.info("Resetting submission due to active dictionary code list term addition...");
       releases.resetSubmissions(openRelease.getName(), openRelease.getInvalidProjectKeys());
+    } else {
+      log.info("No need to reset submissions due to active dictionary code list term addition...");
     }
   }
 
   public Dictionary getCurrentDictionary() {
-    Release openRelease = releases.getNextRelease().getRelease();
+    Release openRelease = releases.createNextRelease().getRelease();
     return getCurrentDictionary(openRelease);
   }
 

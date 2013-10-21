@@ -17,8 +17,9 @@
  */
 package org.icgc.dcc.submission.dictionary;
 
-import org.icgc.dcc.submission.dictionary.DictionaryService;
-import org.icgc.dcc.submission.dictionary.DictionaryServiceException;
+import static org.mockito.Mockito.when;
+
+import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.release.ReleaseService;
 import org.junit.Before;
@@ -30,8 +31,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
 import com.google.common.collect.Lists;
-
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DictionaryServiceTest2 {
@@ -48,6 +47,9 @@ public class DictionaryServiceTest2 {
   private ReleaseService releaseService;
 
   @Mock
+  private MailService mailService;
+
+  @Mock
   private CodeList codeList1;
 
   @Mock
@@ -55,7 +57,7 @@ public class DictionaryServiceTest2 {
 
   @Before
   public void setUp() {
-    this.dictionaryService = new DictionaryService(morphia, datastore, releaseService);
+    this.dictionaryService = new DictionaryService(morphia, datastore, releaseService, mailService);
 
     // TODO: use partial mocking in order to mock queryCodeList() that has a constructor call (and is used by methods we
     // want to test) - DCC-897

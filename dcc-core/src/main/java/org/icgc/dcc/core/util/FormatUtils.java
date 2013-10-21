@@ -78,8 +78,8 @@ public final class FormatUtils {
   public static String formatPeriod(Period period) {
     period = period.normalizedStandard();
 
-    return format("%02d:%02d:%02d (hh:mm:ss)",//
-        period.getHours(), period.getMinutes(), period.getSeconds());
+    return format("%02d:%02d:%02d:%02d (dd:hh:mm:ss)",
+        period.getDays(), period.getHours(), period.getMinutes(), period.getSeconds());
   }
 
 }

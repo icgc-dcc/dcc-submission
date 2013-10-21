@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.cascading;
 
+import static com.google.common.base.Objects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.Serializable;
@@ -57,9 +58,9 @@ public class TupleState implements Serializable {
     this.offset = offset;
   }
 
-  public void reportError(ValidationErrorCode code, List<String> columnNames, Object value, Object... params) {
+  public void reportError(ValidationErrorCode code, List<String> columnNames, Object values, Object... params) {
     checkArgument(code != null);
-    ensureErrors().add(new TupleError(code, columnNames, value, this.getOffset(), code.build(params)));
+    ensureErrors().add(new TupleError(code, columnNames, values, this.getOffset(), code.build(params)));
     structurallyValid = code.isStructural() == false;
   }
 
@@ -143,7 +144,7 @@ public class TupleState implements Serializable {
         Map<ErrorParameterKey, Object> parameters) {
       this.code = code;
       this.columnNames = columnNames;
-      this.value = value != null ? value : "";
+      this.value = firstNonNull(value, "");
       this.line = line;
       this.parameters = parameters;
     }

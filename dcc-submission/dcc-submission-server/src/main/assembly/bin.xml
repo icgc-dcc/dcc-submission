@@ -1,36 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0 http://maven.apache.org/xsd/assembly-1.1.0.xsd">
   <id>dist</id>
   <formats>
     <format>tar.gz</format>
   </formats>
-  <includeBaseDirectory>false</includeBaseDirectory>
+  <fileSets>
+    <fileSet>
+      <directory>src/main/bin</directory>
+      <outputDirectory>bin</outputDirectory>
+      <includes>
+        <include>${artifactId}</include>
+        <include>install</include>
+        <include>wrapper-linux-x86-64</include>
+        <include>wrapper-macosx-universal-64</include>
+      </includes>
+      <fileMode>0755</fileMode>
+    </fileSet>
+    <fileSet>
+      <directory>src/main/lib</directory>
+      <outputDirectory>lib</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>src/main/assembly</directory>
+      <outputDirectory>logs</outputDirectory>
+      <excludes>
+        <exclude>**/*</exclude>
+      </excludes>
+    </fileSet>
+  </fileSets>
   <files>
     <file>
-      <source>src/main/bin/dcc-submission-server</source>
-      <outputDirectory>/bin</outputDirectory>
-    </file>  
-    <file>
-      <source>src/main/bin/install</source>
-      <outputDirectory>/bin</outputDirectory>
-    </file>  
-    <file>
       <source>${project.build.directory}/${artifactId}-${version}.jar</source>
+      <outputDirectory>lib</outputDirectory>
       <destName>${artifactId}.jar</destName>
-      <outputDirectory>/lib</outputDirectory>
     </file>
     <file>
       <source>src/main/conf/wrapper.conf</source>
       <outputDirectory>/conf</outputDirectory>
-    </file>    
+    </file>
     <file>
       <source>src/main/conf/realm.ini</source>
+      <outputDirectory>/conf</outputDirectory>
+    </file>
+    <file>
+      <source>src/main/conf/logback.xml</source>
       <outputDirectory>/conf</outputDirectory>
     </file>
     <file>
       <source>src/main/conf/application.hadoop.conf</source>
       <destName>application.conf</destName>
       <outputDirectory>/conf</outputDirectory>
-    </file>     
+    </file>
   </files>
+  <dependencySets>
+    <dependencySet>
+      <includes>
+        <include>${project.groupId}:dcc-submission-ui</include>
+      </includes>
+      <unpack>true</unpack>
+      <outputDirectory>www</outputDirectory>
+    </dependencySet>
+  </dependencySets>
 </assembly>

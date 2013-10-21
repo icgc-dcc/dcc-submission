@@ -17,9 +17,12 @@
  */
 package org.icgc.dcc.submission.validation;
 
+import static junit.framework.Assert.assertEquals;
+import static org.icgc.dcc.submission.TestUtils.dictionaryToString;
 import static org.icgc.dcc.submission.validation.CascadingStrategy.SEPARATOR;
 import static org.icgc.dcc.submission.validation.restriction.RegexRestriction.NAME;
 import static org.icgc.dcc.submission.validation.restriction.RegexRestriction.PARAM;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -43,6 +46,7 @@ import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.Restriction;
+import org.icgc.dcc.submission.dictionary.model.RestrictionType;
 import org.icgc.dcc.submission.dictionary.model.Term;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.GuiceJUnitRunner;
@@ -71,7 +75,7 @@ import com.mongodb.BasicDBObject;
 @GuiceModules({ ValidationTestModule.class })
 public class ValidationInternalIntegrityTest {
 
-  private static final String ROOT_DIR = "/integration/validation/internal";
+  private static final String ROOT_DIR = "/fixtures/validation/internal";
 
   private static final QueuedProject QUEUED_PROJECT = new QueuedProject("dummyProject", null); // TODO: mock
 
@@ -107,10 +111,12 @@ public class ValidationInternalIntegrityTest {
     List<Term> termList4 =
         Arrays.asList(new Term("1", "dummy", null), new Term("2", "dummy", null), new Term("3", "dummy", null));
 
-    when(dictionaryService.getCodeList("dr__donor_sex")).thenReturn(Optional.of(codeList1));
-    when(dictionaryService.getCodeList("dr__donor_vital_status")).thenReturn(Optional.of(codeList2));
-    when(dictionaryService.getCodeList("dr__disease_status_last_followup")).thenReturn(Optional.of(codeList3));
-    when(dictionaryService.getCodeList("dr__donor_relapse_type")).thenReturn(Optional.of(codeList4));
+    when(dictionaryService.getCodeList(anyString())).thenReturn(Optional.<CodeList> absent());
+
+    when(dictionaryService.getCodeList("donor.0.donor_sex.v1")).thenReturn(Optional.of(codeList1));
+    when(dictionaryService.getCodeList("donor.0.donor_vital_status.v1")).thenReturn(Optional.of(codeList2));
+    when(dictionaryService.getCodeList("donor.0.disease_status_last_followup.v1")).thenReturn(Optional.of(codeList3));
+    when(dictionaryService.getCodeList("donor.0.donor_relapse_type.v1")).thenReturn(Optional.of(codeList4));
 
     when(codeList1.getTerms()).thenReturn(termList1);
     when(codeList2.getTerms()).thenReturn(termList2);
@@ -156,7 +162,7 @@ public class ValidationInternalIntegrityTest {
     rangeConfig.put(RangeFieldRestriction.MAX, 200);
 
     Restriction rangeRestriction = new Restriction(); // can't easily mock this because used by visitor as well
-    rangeRestriction.setType(RangeFieldRestriction.NAME);
+    rangeRestriction.setType(RestrictionType.RANGE);
     rangeRestriction.setConfig(rangeConfig);
 
     // add a range restriction (none set at the moment); TODO: remove if range restrictions are added in the future
@@ -176,7 +182,7 @@ public class ValidationInternalIntegrityTest {
     inConfig.put(DiscreteValuesRestriction.PARAM, "CX,GL,FM");
 
     Restriction inRestriction = new Restriction();
-    inRestriction.setType(DiscreteValuesRestriction.NAME);
+    inRestriction.setType(RestrictionType.DISCRETE_VALUES);
     inRestriction.setConfig(inConfig);
 
     FileSchema donor = getFileSchemaByName(dictionary, "donor");
@@ -195,7 +201,7 @@ public class ValidationInternalIntegrityTest {
     config.put(PARAM, "^T[0-9] N[0-9] M[0-9]$");
 
     Restriction restriction = new Restriction();
-    restriction.setType(NAME);
+    restriction.setType(RestrictionType.REGEX);
     restriction.setConfig(config);
 
     FileSchema donor = getFileSchemaByName(dictionary, "donor");
@@ -219,10 +225,12 @@ public class ValidationInternalIntegrityTest {
   }
 
   private void testErrorType(String errorType) throws IOException {
-    String content = validate(validationService, dictionary, "/integration/validation/internal/error/" + errorType);
+    String content = validate(validationService, dictionary, "/fixtures/validation/internal/error/" + errorType);
     String expected =
-        FileUtils.readFileToString(new File(this.getClass().getResource("/ref/" + errorType + ".json").getFile()));
-    Assert.assertEquals(content, expected.trim(), content.trim());
+        FileUtils
+            .readFileToString(new File(this.getClass()
+                .getResource("/fixtures/validation/reference/" + errorType + ".json").getFile()));
+    assertEquals("errorType = " + errorType + ", content = " + content, expected.trim(), content.trim());
   }
 
   private String validate(ValidationService validationService, Dictionary dictionary, String relative)
@@ -237,7 +245,7 @@ public class ValidationInternalIntegrityTest {
 
     Path rootDir = new Path(rootDirString);
     Path outputDir = new Path(outputDirString);
-    Path systemDir = new Path("src/test/resources/integrationtest/fs/SystemFiles");
+    Path systemDir = new Path("src/test/resources/fixtures/submission/fs/SystemFiles");
 
     CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir, systemDir);
 
@@ -284,8 +292,7 @@ public class ValidationInternalIntegrityTest {
   }
 
   private void resetDictionary() throws IOException, JsonProcessingException {
-    dictionary =
-        new ObjectMapper().reader(Dictionary.class).readValue(
-            new File(this.getClass().getResource("/dictionary.json").getFile()));
+    dictionary = new ObjectMapper().reader(Dictionary.class).readValue(dictionaryToString());
   }
+
 }

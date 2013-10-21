@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.submission.core.util;
 
-import lombok.AccessLevel;
+import static lombok.AccessLevel.PRIVATE;
 import lombok.NoArgsConstructor;
 
 /**
@@ -25,15 +25,11 @@ import lombok.NoArgsConstructor;
  * <p>
  * Convention: OriginalClassName_CONSTANT_NAME;
  */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = PRIVATE)
 public final class Constants {
 
   public static final String Authorizations_ADMIN_ROLE = "admin";
 
   public static final String CodeListRestriction_FIELD = "name";
-  public static final String CodeListRestriction_NAME = "codelist";
-  public static final String DiscreteValuesRestriction_NAME = "in";
-  public static final String RequiredRestriction_NAME = "required";
-  public static final String RegexRestriction_NAME = "regex";
 
 }

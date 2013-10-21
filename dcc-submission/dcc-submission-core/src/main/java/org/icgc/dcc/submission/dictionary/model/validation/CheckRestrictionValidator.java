@@ -18,7 +18,6 @@
 package org.icgc.dcc.submission.dictionary.model.validation;
 
 import static java.util.regex.Pattern.compile;
-import static org.icgc.dcc.submission.core.util.Constants.RegexRestriction_NAME;
 
 import java.util.regex.PatternSyntaxException;
 
@@ -26,6 +25,7 @@ import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
 import org.icgc.dcc.submission.dictionary.model.Restriction;
+import org.icgc.dcc.submission.dictionary.model.RestrictionType;
 
 import com.mongodb.BasicDBObject;
 
@@ -45,9 +45,9 @@ public class CheckRestrictionValidator implements ConstraintValidator<CheckRestr
 
     // TODO: address properly instead of nesting (DCC-904)
     if (restriction != null) {
-      String type = restriction.getType();
+      RestrictionType type = restriction.getType();
       if (type != null) {
-        if (RegexRestriction_NAME.equals(type)) { // TODO: this really should go in an enum
+        if (type == RestrictionType.REGEX) {
           BasicDBObject config = restriction.getConfig();
           Object object = config.get("pattern");
           if (object instanceof String) {
