@@ -41,7 +41,6 @@ import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
-import org.icgc.dcc.submission.validation.service.ValidationQueueManagerService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -71,8 +70,6 @@ public class ReleaseServiceTest {
 
   private DccFileSystem fs;
 
-  private ValidationQueueManagerService validationQueueService;
-
   private final static String testDbName = "dcc-test";
 
   @Before
@@ -84,7 +81,6 @@ public class ReleaseServiceTest {
       Morphia morphia = new Morphia();
       datastore = morphia.createDatastore(mongo, testDbName);
       dccLocking = mock(DccLocking.class);
-      validationQueueService = mock(ValidationQueueManagerService.class);
       fs = mock(DccFileSystem.class);
 
       // Clear out the test database before each test
@@ -123,7 +119,7 @@ public class ReleaseServiceTest {
       release.setDictionaryVersion(dictionary.getVersion());
 
       // Create the releaseService and populate it with the initial release
-      releaseService = new ReleaseService(dccLocking, morphia, datastore, fs, validationQueueService, mailService);
+      releaseService = new ReleaseService(dccLocking, morphia, datastore, fs, mailService);
       dictionaryService = new DictionaryService(morphia, datastore, releaseService, mailService);
       dictionaryService.addDictionary(dictionary);
       releaseService.createInitialRelease(release);
