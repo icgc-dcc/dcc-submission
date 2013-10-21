@@ -28,6 +28,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import lombok.Getter;
+
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
@@ -68,6 +70,9 @@ public class Plan {
 
   private final Map<String, TupleState> fileLevelErrors = new LinkedHashMap<String, TupleState>();
 
+  @Getter
+  private volatile boolean killed;
+
   /**
    * So we can empty the .validation directory prior to running the cascade.
    */
@@ -87,6 +92,11 @@ public class Plan {
 
   public String path(final FileSchema schema) throws FileNotFoundException, IOException {
     return this.cascadingStrategy.path(schema).getName();
+  }
+
+  public void kill() {
+    checkState(!killed, "Attempted to kill plan multiple times");
+    this.killed = true;
   }
 
   public Dictionary getDictionary() {
@@ -188,7 +198,7 @@ public class Plan {
     return System.currentTimeMillis() - startTime;
   }
 
-  public Plan addCascaddeListener(final CascadeListener listener, final QueuedProject qProject) {
+  public Plan addCascadeListener(final CascadeListener listener, final QueuedProject qProject) {
     this.cascade.addListener(listener);
     return this;
   }

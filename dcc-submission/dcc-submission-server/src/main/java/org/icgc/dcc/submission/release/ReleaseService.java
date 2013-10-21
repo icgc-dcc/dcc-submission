@@ -24,6 +24,7 @@ import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
+import static java.util.Collections.singletonList;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.NOT_VALIDATED;
 
@@ -34,6 +35,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.Path;
@@ -85,17 +87,15 @@ import com.mysema.query.types.Predicate;
 public class ReleaseService extends BaseMorphiaService<Release> {
 
   private final DccLocking dccLocking;
-
   private final DccFileSystem fs;
 
   @Inject
   public ReleaseService(DccLocking dccLocking, Morphia morphia, Datastore datastore, DccFileSystem fs,
       MailService mailService) {
     super(morphia, datastore, QRelease.release, mailService);
-    checkArgument(dccLocking != null);
-    checkArgument(fs != null);
-    this.dccLocking = dccLocking;
-    this.fs = fs;
+    this.dccLocking = checkNotNull(dccLocking);
+    this.fs = checkNotNull(fs);
+
     registerModelClasses(Release.class);
   }
 
@@ -315,7 +315,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   public void deleteQueuedRequests() {
     log.info("emptying queue");
 
-    SubmissionState newState = SubmissionState.NOT_VALIDATED;
+    SubmissionState newState = NOT_VALIDATED;
     Release release = resolveNextRelease().getRelease();
     List<String> projectKeys = release.getQueuedProjectKeys(); // TODO: what if nextrelease changes in the meantime?
 
@@ -328,6 +328,32 @@ public class ReleaseService extends BaseMorphiaService<Release> {
       // See spec at https://wiki.oicr.on.ca/display/DCCSOFT/Concurrency#Concurrency-Submissionstatesresetting
       resetValidationFolder(projectKey, release);
     }
+  }
+
+  public void deleteQueuedRequest(String projectKey) throws InvalidStateException {
+    log.info("Emptying queue for: {}", projectKey);
+
+    val release = resolveNextRelease().getRelease();
+    val target = singletonList(projectKey);
+    val projectKeys = release.getQueuedProjectKeys();
+
+    val queued = projectKeys.contains(projectKey);
+    if (queued) {
+      log.info("Removing project form queue: {}", projectKey);
+      release.removeFromQueue(projectKey);
+    }
+
+    // Update database state
+    val newState = NOT_VALIDATED;
+    log.info("Setting '{}' project state to '{}'", projectKey, newState);
+    updateSubmisions(target, newState);
+    log.info("Setting '{}' release '{}' project queue state to '{}'",
+        new Object[] { release.getName(), projectKey, newState });
+    dbUpdateSubmissions(release.getName(), release.getQueue(), target, newState);
+
+    // Update file system state
+    log.info("Resetting '{}' project validation folder", projectKey);
+    resetValidationFolder(projectKey, release);
   }
 
   public void queue(Release nextRelease, List<QueuedProject> queuedProjects) //

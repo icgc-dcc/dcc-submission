@@ -25,7 +25,6 @@ import static org.apache.commons.lang.StringUtils.abbreviate;
 import static org.glassfish.grizzly.http.util.Header.Authorization;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 
 import javax.ws.rs.client.Client;
@@ -76,6 +75,7 @@ public final class TestUtils {
   public static final String UPDATE_RELEASE_ENDPOINT = NEXT_RELEASE_ENPOINT + "/update";
   public static final String SIGNOFF_ENDPOINT = NEXT_RELEASE_ENPOINT + "/signed";
   public static final String QUEUE_ENDPOINT = NEXT_RELEASE_ENPOINT + "/queue";
+  public static final String VALIDATION_ENDPOINT = NEXT_RELEASE_ENPOINT + "/validation";
 
   /**
    * URL constants.
@@ -137,7 +137,8 @@ public final class TestUtils {
         .header(Authorization.toString(), AUTHORIZATION_HEADER_VALUE);
   }
 
-  public static Response get(Client client, String endPoint) throws IOException {
+  @SneakyThrows
+  public static Response get(Client client, String endPoint) {
     log.info("GET {}", endPoint);
     return build(client, endPoint).get();
   }
@@ -152,19 +153,27 @@ public final class TestUtils {
     return build(client, endPoint).put(Entity.entity(payload, APPLICATION_JSON));
   }
 
+  public static Response delete(Client client, String endPoint) {
+    log.info("DELETE {}", endPoint);
+    return build(client, endPoint).delete();
+  }
+
   public static String asString(Response response) {
     return response.readEntity(String.class);
   }
 
-  public static Release asRelease(Response response) throws Exception {
+  @SneakyThrows
+  public static Release asRelease(Response response) {
     return MAPPER.readValue(asString(response), Release.class);
   }
 
-  public static ReleaseView asReleaseView(Response response) throws Exception {
+  @SneakyThrows
+  public static ReleaseView asReleaseView(Response response) {
     return MAPPER.readValue(asString(response), ReleaseView.class);
   }
 
-  public static DetailedSubmission asDetailedSubmission(Response response) throws Exception {
+  @SneakyThrows
+  public static DetailedSubmission asDetailedSubmission(Response response) {
     return MAPPER.readValue(asString(response), DetailedSubmission.class);
   }
 
