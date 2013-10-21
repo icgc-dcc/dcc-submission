@@ -269,6 +269,12 @@
       <artifactId>dumbster</artifactId>
       <version>1.6</version>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>javax.activation</groupId>
+          <artifactId>activation</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <!-- Testing - Utilities -->

@@ -78,20 +78,13 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.config.ConfigModule;
-import org.icgc.dcc.submission.core.CoreModule;
 import org.icgc.dcc.submission.core.morphia.MorphiaModule;
-import org.icgc.dcc.submission.fs.FileSystemModule;
 import org.icgc.dcc.submission.fs.GuiceJUnitRunner;
 import org.icgc.dcc.submission.fs.GuiceJUnitRunner.GuiceModules;
-import org.icgc.dcc.submission.http.HttpModule;
-import org.icgc.dcc.submission.http.jersey.JerseyModule;
 import org.icgc.dcc.submission.release.model.DetailedSubmission;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseState;
 import org.icgc.dcc.submission.release.model.SubmissionState;
-import org.icgc.dcc.submission.sftp.SftpModule;
-import org.icgc.dcc.submission.shiro.ShiroModule;
-import org.icgc.dcc.submission.web.WebModule;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -104,7 +97,7 @@ import com.google.inject.Inject;
 
 @Slf4j
 @RunWith(GuiceJUnitRunner.class)
-@GuiceModules({ ConfigModule.class, CoreModule.class, HttpModule.class, JerseyModule.class, MorphiaModule.class, FileSystemModule.class, SftpModule.class, WebModule.class, ShiroModule.class })
+@GuiceModules({ ConfigModule.class, MorphiaModule.class })
 public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
   /**
@@ -304,7 +297,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT2_KEY, INVALID);
 
     status("admin", "Checking validated submission 3...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT2_KEY, INVALID);
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT3_KEY, INVALID);
 
     // TODO: Make it such that adding a term fixed one of the submissions
     checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
