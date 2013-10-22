@@ -282,7 +282,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     return this.getSubmission(SubmissionState.SIGNED_OFF);
   }
 
-  public void signOff(Release nextRelease, List<String> projectKeys, String user) //
+  public void signOff(Release nextRelease, List<String> projectKeys, String user)
       throws InvalidStateException, DccModelOptimisticLockException {
 
     String nextReleaseName = nextRelease.getName();
@@ -367,18 +367,19 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     }
   }
 
-  public void queue(Release nextRelease, List<QueuedProject> queuedProjects) //
+  public void queue(Release nextRelease, List<QueuedProject> queuedProjects)
       throws InvalidStateException, DccModelOptimisticLockException {
     String nextReleaseName = nextRelease.getName();
     log.info("enqueuing {} for {}", queuedProjects, nextReleaseName);
 
-    // update release object
-    SubmissionState expectedState = SubmissionState.NOT_VALIDATED;
+    // Update release object
+    val expectedState = NOT_VALIDATED;
     nextRelease.enqueue(queuedProjects);
-    for (QueuedProject queuedProject : queuedProjects) {
-      String projectKey = queuedProject.getKey();
+
+    for (val queuedProject : queuedProjects) {
+      val projectKey = queuedProject.getKey();
       Submission submission = fetchAndCheckSubmission(nextRelease, projectKey, expectedState);
-      submission.setState(SubmissionState.QUEUED);
+      submission.setState(QUEUED);
     }
 
     updateRelease(nextReleaseName, nextRelease);
@@ -517,19 +518,19 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     }
 
     // Update release object and database entity (top-level entity only)
-    log.info("Updating release {} with {} and {}" + (sameDictionary ? " and emptying queue" : ""), //
+    log.info("Updating release {} with {} and {}" + (sameDictionary ? " and emptying queue" : ""),
         new Object[] { oldReleaseName, newReleaseName, newDictionaryVersion });
     release.setName(newReleaseName);
     release.setDictionaryVersion(newDictionaryVersion);
     if (sameDictionary == false) {
       release.emptyQueue();
     }
-    UpdateResults<Release> releaseUpdate = datastore().update( //
-        datastore().createQuery(Release.class) //
-            .filter("name = ", oldReleaseName), //
-        datastore().createUpdateOperations(Release.class) //
-            .set("name", newReleaseName) //
-            .set("dictionaryVersion", newDictionaryVersion) //
+    UpdateResults<Release> releaseUpdate = datastore().update(
+        datastore().createQuery(Release.class)
+            .filter("name = ", oldReleaseName),
+        datastore().createUpdateOperations(Release.class)
+            .set("name", newReleaseName)
+            .set("dictionaryVersion", newDictionaryVersion)
             .set("queue", release.getQueue()));
     if (releaseUpdate.getUpdatedCount() != 1) { // Ensure update was successful
       notifyUpdateError(oldReleaseName, on(",").join(newReleaseName, newDictionaryVersion, release.getQueue()));
@@ -542,17 +543,17 @@ public class ReleaseService extends BaseMorphiaService<Release> {
         SubmissionState newSubmissionState = NOT_VALIDATED;
         String report = "report";
 
-        log.info("Setting submission {} to {} and resetting {}", //
+        log.info("Setting submission {} to {} and resetting {}",
             new Object[] { on(".").join(newReleaseName, projectKey), newSubmissionState, report });
 
         submission.setState(newSubmissionState);
         submission.resetReport();
-        UpdateResults<Release> submissionUpdate = datastore().update( //
-            datastore().createQuery(Release.class) //
-                .filter("name = ", newReleaseName) //
-                .filter("submissions.projectKey = ", projectKey), //
-            allowDollarSignForMorphiaUpdatesBug(datastore().createUpdateOperations(Release.class)) //
-                .set("submissions.$.state", newSubmissionState) //
+        UpdateResults<Release> submissionUpdate = datastore().update(
+            datastore().createQuery(Release.class)
+                .filter("name = ", newReleaseName)
+                .filter("submissions.projectKey = ", projectKey),
+            allowDollarSignForMorphiaUpdatesBug(datastore().createUpdateOperations(Release.class))
+                .set("submissions.$.state", newSubmissionState)
                 .unset(report));
         if (submissionUpdate.getUpdatedCount() != 1) { // Ensure update was successful
           notifyUpdateError(on(".").join(newReleaseName, projectKey), newSubmissionState.name(), report);
@@ -580,12 +581,12 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     log.info("resetting submission for project {}", projectKey);
 
     // Reset state and report in database (TODO: queue + currently validating? - DCC-906)
-    Release release = datastore().findAndModify( //
-        datastore().createQuery(Release.class) //
-            .filter("name = ", releaseName) //
-            .filter("submissions.projectKey = ", projectKey), //
-        allowDollarSignForMorphiaUpdatesBug(datastore().createUpdateOperations(Release.class)) //
-            .set("submissions.$.state", SubmissionState.NOT_VALIDATED) //
+    Release release = datastore().findAndModify(
+        datastore().createQuery(Release.class)
+            .filter("name = ", releaseName)
+            .filter("submissions.projectKey = ", projectKey),
+        allowDollarSignForMorphiaUpdatesBug(datastore().createUpdateOperations(Release.class))
+            .set("submissions.$.state", SubmissionState.NOT_VALIDATED)
             .unset("submissions.$.report"), false);
 
     Submission submission = release.getSubmission(projectKey);
@@ -635,10 +636,10 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     checkArgument(currentReleaseName != null);
     checkArgument(queue != null);
 
-    datastore().update( //
-        datastore().createQuery(Release.class) //
-            .filter("name = ", currentReleaseName), //
-        datastore().createUpdateOperations(Release.class) //
+    datastore().update(
+        datastore().createQuery(Release.class)
+            .filter("name = ", currentReleaseName),
+        datastore().createUpdateOperations(Release.class)
             .set("queue", queue));
 
     for (String projectKey : projectKeys) {
@@ -647,11 +648,11 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   }
 
   private void updateSubmission(String currentReleaseName, SubmissionState newState, String projectKey) {
-    datastore().update( //
-        datastore().createQuery(Release.class) //
-            .filter("name = ", currentReleaseName) //
-            .filter("submissions.projectKey = ", projectKey), //
-        allowDollarSignForMorphiaUpdatesBug(datastore().createUpdateOperations(Release.class)) //
+    datastore().update(
+        datastore().createQuery(Release.class)
+            .filter("name = ", currentReleaseName)
+            .filter("submissions.projectKey = ", projectKey),
+        allowDollarSignForMorphiaUpdatesBug(datastore().createUpdateOperations(Release.class))
             .set("submissions.$.state", newState));
   }
 
@@ -660,12 +661,11 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   }
 
   public void updateSubmissionReport(String releaseName, String projectKey, SubmissionReport report) {
-
-    UpdateResults<Release> update = datastore().update( //
-        datastore().createQuery(Release.class) //
-            .filter("name = ", releaseName) //
-            .filter("submissions.projectKey = ", projectKey), //
-        allowDollarSignForMorphiaUpdatesBug(datastore().createUpdateOperations(Release.class)) //
+    UpdateResults<Release> update = datastore().update(
+        datastore().createQuery(Release.class)
+            .filter("name = ", releaseName)
+            .filter("submissions.projectKey = ", projectKey),
+        allowDollarSignForMorphiaUpdatesBug(datastore().createUpdateOperations(Release.class))
             .set("submissions.$.report", report));
 
     int updatedCount = update.getUpdatedCount();
@@ -756,9 +756,9 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   private void updateRelease(String originalReleaseName, Release updatedRelease) throws DccModelOptimisticLockException {
     UpdateResults<Release> update = null;
     try {
-      update = datastore().updateFirst( //
-          datastore().createQuery(Release.class) //
-              .filter("name = ", originalReleaseName), //
+      update = datastore().updateFirst(
+          datastore().createQuery(Release.class)
+              .filter("name = ", originalReleaseName),
           updatedRelease, false);
     } catch (ConcurrentModificationException e) { // see method comments for why this could be thrown
       log.warn("a possibly recoverable concurrency issue arose when trying to update release {}", originalReleaseName);
@@ -793,7 +793,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   }
 
   private Dictionary getDictionaryForVersion(String dictionaryVersion) {
-    return this.datastore().createQuery(Dictionary.class) //
+    return this.datastore().createQuery(Dictionary.class)
         .filter("version", dictionaryVersion).get();
   }
 

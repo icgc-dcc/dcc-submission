@@ -20,7 +20,6 @@ package org.icgc.dcc.submission.validation.service;
 import static cascading.stats.CascadingStats.Status.FAILED;
 import static cascading.stats.CascadingStats.Status.STOPPED;
 import static com.google.common.base.Optional.absent;
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
@@ -54,7 +53,6 @@ import org.icgc.dcc.submission.core.model.InvalidStateException;
 import org.icgc.dcc.submission.release.ReleaseService;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
-import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 import org.icgc.dcc.submission.validation.FilePresenceException;
 import org.icgc.dcc.submission.validation.Plan;
@@ -79,7 +77,7 @@ import com.typesafe.config.Config;
  * - Updates submission states upon termination of the validation process
  */
 @Slf4j
-public class ValidationQueueManagerService extends AbstractScheduledService {
+public class ValidationQueueService extends AbstractScheduledService {
 
   /**
    * Period at which the service polls for an open release and for enqueued projects there is one.
@@ -91,23 +89,31 @@ public class ValidationQueueManagerService extends AbstractScheduledService {
    */
   private static final int DEFAULT_MAX_VALIDATING = 1;
 
+  /**
+   * Config property name.
+   */
   private static final String MAX_VALIDATING_CONFIG_PARAM = "validator.max_simultaneous";
 
-  private final int maxValidating;
+  /**
+   * Dependencies.
+   */
   private final ReleaseService releaseService;
   private final ValidationService validationService;
   private final MailService mailService;
 
-  private final Map<String, Plan> validationSlots = new ConcurrentHashMap<String, Plan>();
+  /**
+   * Configuration.
+   */
+  private final int maxValidating;
 
   /**
-   * To keep track of parallel validations. Volatility is guaranteed according to
-   * http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/atomic/package-summary.html.
+   * Validation state.
    */
+  private final Map<String, Plan> validationSlots = new ConcurrentHashMap<String, Plan>();
   private final AtomicInteger parallelValidationCount = new AtomicInteger();
 
   @Inject
-  public ValidationQueueManagerService(final ReleaseService releaseService, ValidationService validationService,
+  public ValidationQueueService(final ReleaseService releaseService, ValidationService validationService,
       MailService mailService, Config config) {
     this.releaseService = checkNotNull(releaseService);
     this.validationService = checkNotNull(validationService);
@@ -258,7 +264,7 @@ public class ValidationQueueManagerService extends AbstractScheduledService {
     }
 
     report.setSchemaReports(schemaReports);
-    setSubmissionReport(projectKey, report);
+    storeSubmissionReport(projectKey, report);
   }
 
   /**
@@ -274,19 +280,24 @@ public class ValidationQueueManagerService extends AbstractScheduledService {
    * Triggered by cascading (via listener on cascade).
    */
   private void handleCompletedValidation(Plan plan) {
-    checkArgument(plan != null);
+    decrementParallelValidationCount();
+
     QueuedProject queuedProject = plan.getQueuedProject();
     String projectKey = queuedProject.getKey();
     Status cascadeStatus = plan.getCascade().getCascadeStats().getStatus();
 
     log.info("Cascade completed for project {} with cascade status: {}, killed: {}",
         new Object[] { projectKey, cascadeStatus, plan.isKilled() });
+
     if (FAILED == cascadeStatus) {
       log.error("Validation failed: cascade completed with a {} status; About to dequeue project key {}",
           cascadeStatus, projectKey);
+
       resolveSubmission(queuedProject, ERROR);
+      storeSubmissionReport(projectKey, null);
     } else if (STOPPED == cascadeStatus) {
       log.info("Validation successfully stopped: {}", projectKey);
+
     } else {
       log.info("Gathering report for project {}", projectKey);
       SubmissionReport report = new SubmissionReport();
@@ -294,32 +305,20 @@ public class ValidationQueueManagerService extends AbstractScheduledService {
       log.info("Gathered report for project {}", projectKey);
 
       // Resolving submission
-      if (outcome == PASSED) {
-        resolveSubmission(queuedProject, VALID);
-      } else {
-        resolveSubmission(queuedProject, INVALID);
-      }
+      resolveSubmission(queuedProject, outcome == PASSED ? VALID : INVALID);
+      storeSubmissionReport(projectKey, report);
 
-      setSubmissionReport(projectKey, report);
-
-      log.info("Validation finished normally for project {}, time spent on validation is {} seconds", projectKey,
-          plan.getDuration() / 1000.0);
+      log.info("Validation finished normally for project {}, time spent on validation is {} seconds",
+          projectKey, plan.getDuration() / 1000.0);
     }
   }
 
-  private void setSubmissionReport(String projectKey, SubmissionReport report) {
-    log.info("Starting report collecting on project {}", projectKey);
-
-    Release release = resolveOpenRelease();
-    Submission submission = this.releaseService.getSubmission(release.getName(), projectKey);
-    submission.setReport(report);
-
-    // persist the report to DB
-    // DCC-799: Runtime type will be SubmissionReport. Static type is Object to untangle cyclic dependencies between
-    // dcc-submission-server and dcc-submission-core.
-    this.releaseService
-        .updateSubmissionReport(release.getName(), projectKey, (SubmissionReport) submission.getReport());
-    log.info("Report collecting finished on project {}", projectKey);
+  private void storeSubmissionReport(String projectKey, SubmissionReport report) {
+    // Persist the report to DB
+    log.info("Storing validation submission report for project '{}'...", projectKey);
+    val releaseName = resolveOpenRelease().getName();
+    releaseService.updateSubmissionReport(releaseName, projectKey, report);
+    log.info("Finished storing validation submission report for project '{}'", projectKey);
   }
 
   private void processCriticalThrowable(Throwable t, Optional<QueuedProject> optionalNextProject) {
@@ -350,7 +349,6 @@ public class ValidationQueueManagerService extends AbstractScheduledService {
     log.info("Resolving project '{}' to submission state '{}'", key, state);
     releaseService.resolve(key, state);
 
-    decrementParallelValidationCount();
     if (project.getEmails().isEmpty() == false) {
       this.email(project, state);
     }
@@ -364,7 +362,7 @@ public class ValidationQueueManagerService extends AbstractScheduledService {
    * Whether there is a spot available for validation to occur (increment and give green light) or whether the
    * submission should remain in the queue.
    * <p>
-   * Counterpart operation to <code>{@link ValidationQueueManagerService#decrementParallelValidationCount()}</code>
+   * Counterpart operation to <code>{@link ValidationQueueService#decrementParallelValidationCount()}</code>
    */
   private synchronized boolean hasEmptyValidationSlot() {
     int original = parallelValidationCount.intValue();
@@ -378,7 +376,7 @@ public class ValidationQueueManagerService extends AbstractScheduledService {
   /**
    * Decrements the parallel validation counter.
    * <p>
-   * Counterpart operation to <code>{@link ValidationQueueManagerService#hasEmptyValidationSlot()}</code>
+   * Counterpart operation to <code>{@link ValidationQueueService#hasEmptyValidationSlot()}</code>
    */
   private synchronized void decrementParallelValidationCount() {
     checkState(parallelValidationCount.decrementAndGet() >= 0);
