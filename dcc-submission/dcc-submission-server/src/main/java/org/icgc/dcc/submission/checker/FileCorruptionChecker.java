@@ -18,65 +18,47 @@
 package org.icgc.dcc.submission.checker;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
-import org.elasticsearch.common.collect.Lists;
 import org.icgc.dcc.submission.checker.Util.CheckLevel;
-import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.fs.SubmissionDirectory;
+import org.icgc.dcc.submission.dictionary.model.FileSchema;
+import org.icgc.dcc.submission.validation.ValidationErrorCode;
 
-public abstract class CompositeFileChecker implements FileChecker {
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 
-  protected FileChecker compositeChecker;
-  protected List<FirstPassValidationError> errors;
-  protected boolean isFailFast;
+/**
+ * 
+ */
+public class FileCorruptionChecker extends CompositeFileChecker {
 
-  public CompositeFileChecker(FileChecker nestedChecker, boolean isFailFast) {
-    this.compositeChecker = nestedChecker;
-    errors = Lists.newLinkedList();
-    this.isFailFast = isFailFast;
+  public FileCorruptionChecker(FileChecker fileChecker, boolean isFailFast) {
+    super(fileChecker, isFailFast);
   }
 
-  public CompositeFileChecker(FileChecker nestedChecker) {
-    this(nestedChecker, false);
-  }
-
-  @Override
-  public List<FirstPassValidationError> check(String filePathname) {
-    errors.clear();
-    errors.addAll(compositeChecker.check(filePathname));
-    if (compositeChecker.isValid() || !compositeChecker.isFailFast()) errors.addAll(selfCheck(filePathname));
-    return errors;
-  }
-
-  public abstract List<FirstPassValidationError> selfCheck(String filePathname);
-
-  @Override
-  public boolean isValid() {
-    return (compositeChecker.isValid() && errors.isEmpty());
+  public FileCorruptionChecker(FileChecker fileChecker) {
+    this(fileChecker, true);
   }
 
   @Override
-  public CheckLevel getCheckLevel() {
-    return compositeChecker.getCheckLevel();
+  public List<FirstPassValidationError> selfCheck(String filePathname) {
+    Builder<FirstPassValidationError> errorBuilder = ImmutableList.<FirstPassValidationError> builder();
+    Optional<FileSchema> fileSchema = getDictionary().fileSchema(getFileSchemaName(filePathname));
+    if (fileSchema.isPresent()) {
+      // more than 1 file that match the same pattern
+      if (ImmutableList.copyOf(getSubmissionDirectory().listFile(Pattern.compile(fileSchema.get().getPattern())))
+          .size() > 1) {
+        errorBuilder.add(new FirstPassValidationError(CheckLevel.FILE_LEVEL,
+            "More than 1 file matching the file pattern: " + fileSchema.get().getPattern(),
+            ValidationErrorCode.TOO_MANY_FILES_ERROR));
+      }
+    }
+    return errorBuilder.build();
   }
 
   @Override
   public boolean isFailFast() {
     return isFailFast;
-  }
-
-  @Override
-  public String getFileSchemaName(String filePathname) {
-    return compositeChecker.getFileSchemaName(filePathname);
-  }
-
-  @Override
-  public Dictionary getDictionary() {
-    return compositeChecker.getDictionary();
-  }
-
-  @Override
-  public SubmissionDirectory getSubmissionDirectory() {
-    return compositeChecker.getSubmissionDirectory();
   }
 }

@@ -25,7 +25,6 @@ import lombok.val;
 
 import org.elasticsearch.common.collect.Lists;
 import org.elasticsearch.common.collect.Maps;
-import org.icgc.dcc.submission.checker.Util.CheckLevel;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.ValidationErrorCode;
 
@@ -36,15 +35,13 @@ import com.google.common.collect.ImmutableList.Builder;
 public class ReferentialFileChecker extends CompositeFileChecker {
 
   private Map<String, String> cachedFileNames;
-  private final boolean isFailFast;
 
   public ReferentialFileChecker(CompositeFileChecker compositeChecker) {
     this(compositeChecker, false);
   }
 
   public ReferentialFileChecker(CompositeFileChecker compositeChecker, boolean isFailFast) {
-    super(compositeChecker);
-    this.isFailFast = false;
+    super(compositeChecker, isFailFast);
     cacheFileSchemaNames();
   }
 
@@ -89,16 +86,6 @@ public class ReferentialFileChecker extends CompositeFileChecker {
       }
     }
     return errors;
-  }
-
-  @Override
-  public CheckLevel getCheckLevel() {
-    return CheckLevel.FILE_LEVEL;
-  }
-
-  @Override
-  public boolean isFailFast() {
-    return isFailFast;
   }
 
   private void cacheFileSchemaNames() {

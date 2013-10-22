@@ -27,20 +27,14 @@ import org.icgc.dcc.submission.validation.ValidationErrorCode;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
-import com.google.common.collect.Lists;
 
 /**
  * 
  */
 public class FileCollisionChecker extends CompositeFileChecker {
 
-  private final List<FirstPassValidationError> errors;
-  private final boolean isFailFast;
-
   public FileCollisionChecker(FileChecker fileChecker, boolean isFailFast) {
-    super(fileChecker);
-    this.isFailFast = isFailFast;
-    this.errors = Lists.newLinkedList();
+    super(fileChecker, isFailFast);
   }
 
   public FileCollisionChecker(FileChecker fileChecker) {
@@ -63,13 +57,4 @@ public class FileCollisionChecker extends CompositeFileChecker {
     return errorBuilder.build();
   }
 
-  @Override
-  public boolean isValid() {
-    return (super.isValid() && errors.isEmpty());
-  }
-
-  @Override
-  public boolean isFailFast() {
-    return isFailFast;
-  }
 }
