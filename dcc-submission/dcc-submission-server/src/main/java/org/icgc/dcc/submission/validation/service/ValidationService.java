@@ -129,6 +129,8 @@ public class ValidationService {
   public void startValidation(Plan plan) {
     log.info("starting validation on project {}", plan.getProjectKey());
     plan.startCascade();
+
+    log.info("Plan: plan.getCascade: {}", plan.getCascade());
   }
 
   /**

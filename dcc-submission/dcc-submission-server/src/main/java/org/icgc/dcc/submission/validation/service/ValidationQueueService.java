@@ -215,7 +215,7 @@ public class ValidationQueueService extends AbstractScheduledService {
     mailService.sendProcessingStarted(project.getKey(), project.getEmails());
 
     releaseService.dequeueToValidating(project);
-    Plan plan = validationService.prepareValidation(release, project, new ValidationCascadeListener());
+    val plan = validationService.prepareValidation(release, project, new ValidationCascadeListener());
 
     /**
      * Note that emptying of the .validation directory happens right before launching the cascade in

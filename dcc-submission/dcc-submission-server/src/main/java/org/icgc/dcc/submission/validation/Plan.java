@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
@@ -38,8 +39,6 @@ import org.icgc.dcc.submission.validation.cascading.TupleState;
 import org.icgc.dcc.submission.validation.report.Outcome;
 import org.icgc.dcc.submission.validation.report.SchemaReport;
 import org.icgc.dcc.submission.validation.report.SubmissionReport;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import cascading.cascade.Cascade;
 import cascading.cascade.CascadeConnector;
@@ -52,9 +51,8 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+@Slf4j
 public class Plan {
-
-  private static final Logger log = LoggerFactory.getLogger(Plan.class);
 
   private final List<FileSchema> plannedSchema = Lists.newArrayList();
 
@@ -78,7 +76,7 @@ public class Plan {
    */
   private final SubmissionDirectory submissionDirectory;
 
-  private Cascade cascade;
+  private volatile Cascade cascade;
 
   private long startTime; // TODO: use proper timer (see DCC-739)
 
@@ -154,8 +152,8 @@ public class Plan {
     }
   }
 
-  public void connect(CascadingStrategy cascadingStrategy) {
-    CascadeDef cascade = new CascadeDef();
+  synchronized public void connect(CascadingStrategy cascadingStrategy) {
+    CascadeDef cascade = new CascadeDef().setName(queuedProject.getKey() + " validation cascade");
     for (FileSchemaFlowPlanner planner : Iterables.concat(internalPlanners.values(), externalPlanners.values())) {
       try {
         Flow<?> flow = planner.connect(cascadingStrategy);
@@ -174,7 +172,7 @@ public class Plan {
    * Starts the cascade in a non-blocking manner and takes care of associated action like starting timer and emptying
    * the working directory.
    */
-  public void startCascade() {
+  synchronized public void startCascade() {
     startTime = System.currentTimeMillis();
     submissionDirectory.resetValidationDir();
 
@@ -186,7 +184,7 @@ public class Plan {
   /**
    * Stops the cascade in a blocking manner.
    */
-  public void stopCascade() {
+  synchronized public void stopCascade() {
     cascade.stop();
   }
 
@@ -198,12 +196,12 @@ public class Plan {
     return System.currentTimeMillis() - startTime;
   }
 
-  public Plan addCascadeListener(CascadeListener listener) {
+  synchronized public Plan addCascadeListener(CascadeListener listener) {
     this.cascade.addListener(listener);
     return this;
   }
 
-  public Cascade getCascade() {
+  synchronized public Cascade getCascade() {
     return this.cascade;
   }
 

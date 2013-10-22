@@ -49,6 +49,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 
+import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -263,6 +264,7 @@ public class NextReleaseResource {
 
   @DELETE
   @Path("validation/{projectKey}")
+  @SneakyThrows
   public Response cancelValidation(
 
       @PathParam("projectKey")
@@ -284,6 +286,9 @@ public class NextReleaseResource {
       ServerErrorCode code = e.getCode();
       log.error(code.getFrontEndString(), e);
       return badRequest(code, e.getMessage());
+    } catch (Throwable t) {
+      log.error("Error cancelling validation for '" + projectKey + "':", t);
+      throw t;
     }
 
     return Response.ok().build();
