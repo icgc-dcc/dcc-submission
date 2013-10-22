@@ -1,2 +1,0 @@
-donor_id	analyzed_sample_id	analysis_id	matched_sample_id	assembly_version	platform	experimental_protocol	base_calling_algorithm	alignment_algorithm	variation_calling_algorithm	other_analysis_algorithm	raw_data_repository	raw_data_accession	note	seq_coverage
-DR1001	SP1001T	AX1001T	SP1001T	1	15	-999	-999	-999	-999	-999	2	-999	simulation data	-999

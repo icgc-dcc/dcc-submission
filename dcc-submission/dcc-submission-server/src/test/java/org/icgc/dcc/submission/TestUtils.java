@@ -17,86 +17,155 @@
  */
 package org.icgc.dcc.submission;
 
+import static com.google.common.base.Charsets.UTF_8;
+import static com.google.common.io.Resources.getResource;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static lombok.AccessLevel.PRIVATE;
 import static org.apache.commons.lang.StringUtils.abbreviate;
+import static org.glassfish.grizzly.http.util.Header.Authorization;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation.Builder;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 import org.codehaus.jackson.map.ObjectMapper;
-import org.glassfish.grizzly.http.util.Header;
 import org.glassfish.jersey.internal.util.Base64;
+import org.icgc.dcc.submission.dictionary.model.CodeList;
+import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.release.model.DetailedSubmission;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseView;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 
 /**
- * Utils class for integration test (to help un-clutter it). TODO: should probably make decorator for Client instead
+ * Utility class for integration test (to help un-clutter it).
  */
+@Slf4j
+@NoArgsConstructor(access = PRIVATE)
 public final class TestUtils {
 
-  private static final Logger log = LoggerFactory.getLogger(TestUtils.class);
+  /**
+   * Jackson constants.
+   */
+  private static final ObjectMapper MAPPER = new ObjectMapper();
 
-  private static final String AUTHORIZATION = "X-DCC-Auth " //
-      + Base64.encodeAsString("admin:adminspasswd"); // only true for development realm
+  /**
+   * Endpoint path constants.
+   */
+  public static final String SEED_ENDPOINT = "/seed";
+  public static final String SEED_CODELIST_ENDPOINT = SEED_ENDPOINT + "/codelists";
+  public static final String SEED_DICTIONARIES_ENDPOINT = SEED_ENDPOINT + "/dictionaries";
+  public static final String DICTIONARIES_ENDPOINT = "/dictionaries";
+  public static final String CODELISTS_ENDPOINT = "/codeLists";
+  public static final String PROJECTS_ENDPOINT = "/projects";
+  public static final String RELEASES_ENDPOINT = "/releases";
+  public static final String NEXT_RELEASE_ENPOINT = "/nextRelease";
+  public static final String UPDATE_RELEASE_ENDPOINT = NEXT_RELEASE_ENPOINT + "/update";
+  public static final String SIGNOFF_ENDPOINT = NEXT_RELEASE_ENPOINT + "/signed";
+  public static final String QUEUE_ENDPOINT = NEXT_RELEASE_ENPOINT + "/queue";
 
-  private static final String BASEURI = "http://localhost:5380/ws";
+  /**
+   * URL constants.
+   */
+  public static final String BASEURI = "http://localhost:5380/ws";
+  public static final String AUTHORIZATION_HEADER_VALUE = "X-DCC-Auth " + Base64.encodeAsString("admin:adminspasswd");
 
-  static String resourceToString(String resourcePath) throws IOException {
-    return Resources.toString(TestUtils.class.getResource(resourcePath), Charsets.UTF_8);
+  /**
+   * Test configuration constants.
+   */
+  public static final File TEST_CONFIG_FILE = new File("src/test/conf/application.conf");
+  public static final Config TEST_CONFIG = ConfigFactory.parseFile(TEST_CONFIG_FILE).resolve();
+
+  @SneakyThrows
+  public static String resourceToString(String resourcePath) {
+    return Resources.toString(TestUtils.class.getResource(resourcePath), UTF_8);
   }
 
-  static String resourceToJsonArray(String resourcePath) throws IOException {
+  @SneakyThrows
+  public static String resourceToString(URL resourceUrl) {
+    return Resources.toString(resourceUrl, UTF_8);
+  }
+
+  @SneakyThrows
+  public static String codeListsToString() {
+    val codeLists = MAPPER.reader(CodeList.class).readValues(getDccResource("CodeList.json"));
+
+    return MAPPER.writeValueAsString(codeLists);
+  }
+
+  private static URL getDccResource(String resourceName) {
+    return getResource("org/icgc/dcc/resources/" + resourceName);
+  }
+
+  @SneakyThrows
+  public static String dictionaryToString() {
+    val dictionary = MAPPER.reader(Dictionary.class).readValue(getDccResource("Dictionary.json"));
+
+    return MAPPER.writeValueAsString(dictionary);
+  }
+
+  @SneakyThrows
+  public static String resourceToJsonArray(String resourcePath) {
     return "[" + resourceToString(resourcePath) + "]";
   }
 
-  static Builder build(Client client, String endPoint) {
-    return client.target(BASEURI).path(endPoint).request(MediaType.APPLICATION_JSON)
-        .header(Header.Authorization.toString(), AUTHORIZATION);
+  @SneakyThrows
+  public static String dictionaryVersion(String dictionaryJson) {
+    val dictionaryNode = MAPPER.readTree(dictionaryJson);
+
+    return dictionaryNode.get("version").asText();
   }
 
-  static Response get(Client client, String endPoint) throws IOException {
+  public static Builder build(Client client, String path) {
+    return client
+        .target(BASEURI)
+        .path(path)
+        .request(APPLICATION_JSON)
+        .header(Authorization.toString(), AUTHORIZATION_HEADER_VALUE);
+  }
+
+  public static Response get(Client client, String endPoint) throws IOException {
     log.info("GET {}", endPoint);
     return build(client, endPoint).get();
   }
 
-  static Response post(Client client, String endPoint, String payload) {
-    log.info("POST {} {}", new Object[] { endPoint, abbreviate(payload, 1000) });
-    return build(client, endPoint).post(Entity.entity(payload, MediaType.APPLICATION_JSON));
+  public static Response post(Client client, String endPoint, String payload) {
+    log.info("POST {} {}", endPoint, abbreviate(payload, 1000));
+    return build(client, endPoint).post(Entity.entity(payload, APPLICATION_JSON));
   }
 
-  static Response put(Client client, String endPoint, String payload) {
-    log.info("PUT {} {}", new Object[] { endPoint, abbreviate(payload, 1000) });
-    return build(client, endPoint).put(Entity.entity(payload, MediaType.APPLICATION_JSON));
+  public static Response put(Client client, String endPoint, String payload) {
+    log.info("PUT {} {}", endPoint, abbreviate(payload, 1000));
+    return build(client, endPoint).put(Entity.entity(payload, APPLICATION_JSON));
   }
 
-  static String asString(Response response) {
+  public static String asString(Response response) {
     return response.readEntity(String.class);
   }
 
-  static Release asRelease(Response response) throws Exception {
-    return new ObjectMapper().readValue(asString(response), Release.class);
+  public static Release asRelease(Response response) throws Exception {
+    return MAPPER.readValue(asString(response), Release.class);
   }
 
-  static ReleaseView asReleaseView(Response response) throws Exception {
-    return new ObjectMapper().readValue(asString(response), ReleaseView.class);
+  public static ReleaseView asReleaseView(Response response) throws Exception {
+    return MAPPER.readValue(asString(response), ReleaseView.class);
   }
 
-  static DetailedSubmission asDetailedSubmission(Response response) throws Exception {
-    return new ObjectMapper().readValue(asString(response), DetailedSubmission.class);
-  }
-
-  private TestUtils() {
-    // Prevent construction
+  public static DetailedSubmission asDetailedSubmission(Response response) throws Exception {
+    return MAPPER.readValue(asString(response), DetailedSubmission.class);
   }
 
 }

@@ -52,6 +52,7 @@ public class MailService {
    * Server property names.
    */
   public static final String MAIL_SMTP_HOST = "mail.smtp.host";
+  public static final String MAIL_SMTP_PORT = "mail.smtp.port";
   public static final String MAIL_SMTP_SERVER = "smtp.oicr.on.ca";
 
   /**
@@ -141,6 +142,18 @@ public class MailService {
     }
   }
 
+  public void sendProcessingStarted(String projectKey, List<String> emails) {
+    sendSeNotification(format("Processing started for project '%s' (on behalf of '%s')", projectKey, emails));
+  }
+
+  private void sendSeNotification(String subject) {
+    send(
+        get(MAIL_NORMAL_FROM),
+        get(MAIL_MANUAL_SUPPORT_RECIPIENT), // TODO: use new mailing list to be created
+        subject,
+        "");
+  }
+
   private void send(String from, String recipient, String subject, String text) {
     try {
       Message message = message();
@@ -159,6 +172,7 @@ public class MailService {
   private Message message() {
     Properties props = new Properties();
     props.put(MAIL_SMTP_HOST, get(MAIL_SMTP_HOST));
+    props.put(MAIL_SMTP_PORT, get(MAIL_SMTP_PORT, "25"));
 
     return new MimeMessage(Session.getDefaultInstance(props, null));
   }
@@ -169,6 +183,10 @@ public class MailService {
 
   private String get(String name) {
     return config.getString(name);
+  }
+
+  private String get(String name, String defaultValue) {
+    return config.hasPath(name) ? config.getString(name) : defaultValue;
   }
 
   private static InternetAddress address(String email) throws UnsupportedEncodingException {

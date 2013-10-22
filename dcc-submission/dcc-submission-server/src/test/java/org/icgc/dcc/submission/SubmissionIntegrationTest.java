@@ -17,289 +17,432 @@
  */
 package org.icgc.dcc.submission;
 
-import static java.util.Arrays.asList;
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.util.concurrent.Uninterruptibles.sleepUninterruptibly;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
+import static org.apache.commons.io.FileUtils.copyDirectory;
+import static org.apache.commons.io.FileUtils.deleteDirectory;
+import static org.apache.commons.lang.StringUtils.repeat;
+import static org.icgc.dcc.submission.TestUtils.CODELISTS_ENDPOINT;
+import static org.icgc.dcc.submission.TestUtils.DICTIONARIES_ENDPOINT;
+import static org.icgc.dcc.submission.TestUtils.NEXT_RELEASE_ENPOINT;
+import static org.icgc.dcc.submission.TestUtils.PROJECTS_ENDPOINT;
+import static org.icgc.dcc.submission.TestUtils.QUEUE_ENDPOINT;
+import static org.icgc.dcc.submission.TestUtils.RELEASES_ENDPOINT;
+import static org.icgc.dcc.submission.TestUtils.SEED_CODELIST_ENDPOINT;
+import static org.icgc.dcc.submission.TestUtils.SEED_DICTIONARIES_ENDPOINT;
+import static org.icgc.dcc.submission.TestUtils.SIGNOFF_ENDPOINT;
+import static org.icgc.dcc.submission.TestUtils.TEST_CONFIG;
+import static org.icgc.dcc.submission.TestUtils.TEST_CONFIG_FILE;
+import static org.icgc.dcc.submission.TestUtils.UPDATE_RELEASE_ENDPOINT;
+import static org.icgc.dcc.submission.TestUtils.asDetailedSubmission;
+import static org.icgc.dcc.submission.TestUtils.asRelease;
+import static org.icgc.dcc.submission.TestUtils.asReleaseView;
+import static org.icgc.dcc.submission.TestUtils.asString;
+import static org.icgc.dcc.submission.TestUtils.codeListsToString;
+import static org.icgc.dcc.submission.TestUtils.dictionaryToString;
+import static org.icgc.dcc.submission.TestUtils.dictionaryVersion;
+import static org.icgc.dcc.submission.TestUtils.get;
+import static org.icgc.dcc.submission.TestUtils.post;
+import static org.icgc.dcc.submission.TestUtils.put;
+import static org.icgc.dcc.submission.TestUtils.resourceToJsonArray;
+import static org.icgc.dcc.submission.TestUtils.resourceToString;
+import static org.icgc.dcc.submission.fs.FsConfig.FS_ROOT;
+import static org.icgc.dcc.submission.release.model.ReleaseState.COMPLETED;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
 import static org.icgc.dcc.submission.release.model.SubmissionState.NOT_VALIDATED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.QUEUED;
+import static org.icgc.dcc.submission.release.model.SubmissionState.SIGNED_OFF;
 import static org.icgc.dcc.submission.release.model.SubmissionState.VALID;
 import static org.icgc.dcc.submission.release.model.SubmissionState.VALIDATING;
 import static org.icgc.dcc.submission.validation.CascadingStrategy.SEPARATOR;
+import static org.icgc.dcc.submission.web.model.ServerErrorCode.INVALID_STATE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientFactory;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.apache.commons.io.FileUtils;
-import org.icgc.dcc.submission.Main;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 import org.icgc.dcc.submission.config.ConfigModule;
-import org.icgc.dcc.submission.core.CoreModule;
 import org.icgc.dcc.submission.core.morphia.MorphiaModule;
-import org.icgc.dcc.submission.fs.FileSystemModule;
 import org.icgc.dcc.submission.fs.GuiceJUnitRunner;
 import org.icgc.dcc.submission.fs.GuiceJUnitRunner.GuiceModules;
-import org.icgc.dcc.submission.http.HttpModule;
-import org.icgc.dcc.submission.http.jersey.JerseyModule;
 import org.icgc.dcc.submission.release.model.DetailedSubmission;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseState;
-import org.icgc.dcc.submission.release.model.ReleaseView;
 import org.icgc.dcc.submission.release.model.SubmissionState;
-import org.icgc.dcc.submission.sftp.SftpModule;
-import org.icgc.dcc.submission.shiro.ShiroModule;
-import org.icgc.dcc.submission.web.WebModule;
-import org.icgc.dcc.submission.web.model.ServerErrorCode;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import com.dumbster.smtp.SimpleSmtpServer;
 import com.google.code.morphia.Datastore;
 import com.google.common.collect.ImmutableList;
-import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.inject.Inject;
-import com.typesafe.config.ConfigFactory;
 
+@Slf4j
 @RunWith(GuiceJUnitRunner.class)
-@GuiceModules({ ConfigModule.class, CoreModule.class, HttpModule.class, JerseyModule.class, MorphiaModule.class, FileSystemModule.class, SftpModule.class, WebModule.class, ShiroModule.class })
-public class SubmissionIntegrationTest {
-
-  private static final Logger log = LoggerFactory.getLogger(SubmissionIntegrationTest.class);
-
-  private static final String FIRST_DICTIONARY_VERSION = "0.6c";
-
-  private static final String SECOND_DICTIONARY_VERSION = "0.6d";
-
-  // ===========================================================================
-  /*
-   * If changing project names, must also change their directory counterparts under
-   * server/src/test/resources/integrationtest/fs/release1
-   */
-  private static final String PROJECT1_NAME = "project.1";
-
-  private static final String PROJECT2_NAME = "project.2";
-
-  private static final String PROJECT3_NAME = "project.3";
-
-  // ===========================================================================
-
-  private static final String INITITAL_RELEASE_NAME = "release1";
-
-  private static final String NEXT_RELEASE_NAME = "release2";
-
-  private static final String SEED_ENDPOINT = "/seed";
-
-  private static final String SEED_CODELIST_ENDPOINT = SEED_ENDPOINT + "/codelists";
-
-  private static final String SEED_DICTIONARIES_ENDPOINT = SEED_ENDPOINT + "/dictionaries";
-
-  private static final String DICTIONARIES_ENDPOINT = "/dictionaries";
-
-  private static final String CODELISTS_ENDPOINT = "/codeLists";
-
-  private static final String PROJECTS_ENDPOINT = "/projects";
-
-  private static final String RELEASES_ENDPOINT = "/releases";
-
-  private static final String NEXT_RELEASE_ENPOINT = "/nextRelease";
-
-  private static final String UPDATE_RELEASE_ENDPOINT = NEXT_RELEASE_ENPOINT + "/update"; // TODO: ?
-
-  private static final String SIGNOFF_ENDPOINT = NEXT_RELEASE_ENPOINT + "/signed";
-
-  private static final String QUEUE_ENDPOINT = NEXT_RELEASE_ENPOINT + "/queue";
-
-  private static final String INITIAL_RELEASE_ENDPOINT = RELEASES_ENDPOINT + "/" + INITITAL_RELEASE_NAME;
-
-  private static final String INITIAL_RELEASE_SUBMISSIONS_ENDPOINT = INITIAL_RELEASE_ENDPOINT + "/submissions";
-
-  private static final String INTEGRATION_TEST_DIR_RESOURCE = "/integrationtest";
-
-  private static final String CODELISTS_RESOURCE = INTEGRATION_TEST_DIR_RESOURCE + "/codelists.json";
-
-  private static final String FIRST_DICTIONARY_RESOURCE = "/dictionary.json";// TODO: move to INTEGRATION_TEST_DIR
-
-  private static final String SECOND_DICTIONARY_RESOURCE = // careful, also updated by converter, do not edit manually,
-                                                           // update via
-                                                           // DictionaryConverterTest.updateSecondDictionaryContent()
-                                                           // instead
-      INTEGRATION_TEST_DIR_RESOURCE + "/secondDictionary.json";
-
-  private static final String INITIAL_RELEASE_RESOURCE = INTEGRATION_TEST_DIR_RESOURCE + "/initRelease.json";
-
-  private static final String UPDATED_INITIAL_RELEASE_RESOURCE = INTEGRATION_TEST_DIR_RESOURCE + "/updatedRelease.json";
-
-  private static final String SECOND_RELEASE = "{\"name\": \"release2\"}";
-
-  private static final String PROJECT1 = "{\"name\":\"Project One\",\"key\":\"" + PROJECT1_NAME
-      + "\",\"users\":[\"admin\"],\"groups\":[\"admin\"]}"; // TODO: use:
-                                                            // ./server/src/main/resources/integration/project1.json
-
-  private static final String PROJECT2 = "{\"name\":\"Project Two\",\"key\":\"" + PROJECT2_NAME
-      + "\",\"users\":[\"admin\", \"brett\"],\"groups\":[\"admin\"]}";
-
-  private static final String PROJECT3 = "{\"name\":\"Project Three\",\"key\":\"" + PROJECT3_NAME
-      + "\",\"users\":[\"admin\"],\"groups\":[\"admin\"]}";
-
-  private static final String PROJECT_TO_SIGN_OFF = "[\"" + PROJECT1_NAME + "\"]";
-
-  private static final String PROJECTS_TO_ENQUEUE = "[{\"key\": \"" + PROJECT1_NAME
-      + "\", \"emails\": [\"a@a.ca\"]}, {\"key\": \"" + PROJECT2_NAME + "\", \"emails\": [\"a@a.ca\"]}, {\"key\": \""
-      + PROJECT3_NAME + "\", \"emails\": [\"a@a.ca\"]}]";
-
-  private static final String PROJECTS_TO_ENQUEUE2 = "[{\"key\": \"" + PROJECT2_NAME
-      + "\", \"emails\": [\"a@a.ca\"]}, {\"key\": \"" + PROJECT3_NAME + "\", \"emails\": [\"a@a.ca\"]}]";
-
-  private static final String FS_DIR = "src/test/resources/integrationtest/fs";
-
-  private static final String SYSTEM_FILES_DIR = "src/test/resources/integrationtest/fs/SystemFiles";
-
-  private static final String DCC_ROOT_DIR = ConfigFactory.load().getString("fs.root");
-
-  private static final String INITIAL_RELEASE_SYSTEM_FILES_DIR = DCC_ROOT_DIR + "/release1/SystemFiles";
-
-  private static final String PROJECT1_VALIDATION_DIR = "release1/" + PROJECT1_NAME + "/.validation";
-
-  private final Client client = ClientFactory.newClient();
-
-  private int dictionaryUpdateCount = 0;
-
-  static {
-    setProperties();
-  }
+@GuiceModules({ ConfigModule.class, MorphiaModule.class })
+public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
   /**
-   * Sets key system properties before test initialization.
+   * Projects.
+   * 
+   * If changing project names, must also change their directory counterparts under
+   * server/src/test/resources/fixtures/submission/fs/release1
    */
-  private static void setProperties() {
-    // See http://stackoverflow.com/questions/7134723/hadoop-on-osx-unable-to-load-realm-info-from-scdynamicstore
-    System.setProperty("java.security.krb5.realm", "OX.AC.UK");
-    System.setProperty("java.security.krb5.kdc", "kdc0.ox.ac.uk:kdc1.ox.ac.uk");
-  }
+  private static final String PROJECT1_KEY = "project.1";
+  private static final String PROJECT1 =
+      _("{\"name\":\"Project One\",\"key\":\"%s\",\"users\":[\"admin\"],\"groups\":[\"admin\"]}",
+          PROJECT1_KEY);
+  private static final String PROJECT2_KEY = "project.2";
+  private static final String PROJECT2 =
+      _("{\"name\":\"Project Two\",\"key\":\"%s\",\"users\":[\"admin\", \"brett\"],\"groups\":[\"admin\"]}",
+          PROJECT2_KEY);
+  private static final String PROJECT3_KEY = "project.3";
+  private static final String PROJECT3 =
+      _("{\"name\":\"Project Three\",\"key\":\"%s\",\"users\":[\"admin\"],\"groups\":[\"admin\"]}",
+          PROJECT3_KEY);
+
+  /**
+   * Releases.
+   */
+  private static final String INITITAL_RELEASE_NAME = "release1";
+  private static final String INITIAL_RELEASE_ENDPOINT = RELEASES_ENDPOINT + "/" + INITITAL_RELEASE_NAME;
+  private static final String INITIAL_RELEASE_SUBMISSIONS_ENDPOINT = INITIAL_RELEASE_ENDPOINT + "/submissions";
+
+  private static final String NEXT_RELEASE_NAME = "release2";
+  private static final String NEXT_RELEASE = "{\"name\": \"" + NEXT_RELEASE_NAME + "\"}";
+
+  /**
+   * Resources.
+   * 
+   * @see http://stackoverflow.com/questions/1368163/is-there-a-standard-domain-for-testing-throwaway-email
+   */
+  private static final String INTEGRATION_TEST_DIR = "/fixtures/submission";
+  private static final String FIRST_DICTIONARY_RESOURCE = INTEGRATION_TEST_DIR + "/initDictionary.json";
+  private static final String INITIAL_RELEASE_RESOURCE = INTEGRATION_TEST_DIR + "/initRelease.json";
+  private static final String UPDATED_INITIAL_RELEASE_RESOURCE = INTEGRATION_TEST_DIR + "/updatedRelease.json";
+
+  private static final String PROJECT_TO_SIGN_OFF = "[\"" + PROJECT1_KEY + "\"]";
+  private static final String PROJECTS_TO_ENQUEUE = "["
+      + "{\"key\": \"" + PROJECT1_KEY + "\", \"emails\": [\"project1@example.org\"]}, "
+      + "{\"key\": \"" + PROJECT2_KEY + "\", \"emails\": [\"project2@example.org\"]}, "
+      + "{\"key\": \"" + PROJECT3_KEY + "\", \"emails\": [\"project3@example.org\"]}]";
+  private static final String PROJECTS_TO_ENQUEUE2 = "["
+      + "{\"key\": \"" + PROJECT2_KEY + "\", \"emails\": [\"project2@example.org\"]}, "
+      + "{\"key\": \"" + PROJECT3_KEY + "\", \"emails\": [\"project3@example.org\"]}]";
+
+  private static final String FS_DIR = "src/test/resources" + INTEGRATION_TEST_DIR + "/fs";
+  private static final String SYSTEM_FILES_DIR = FS_DIR + "/SystemFiles";
+  private static final String DCC_ROOT_DIR = TEST_CONFIG.getString(FS_ROOT);
+
+  private static final String INITIAL_RELEASE_SYSTEM_FILES_DIR = DCC_ROOT_DIR + "/" + INITITAL_RELEASE_NAME
+      + "/SystemFiles";
+  private static final String PROJECT1_VALIDATION_DIR = INITITAL_RELEASE_NAME + "/" + PROJECT1_KEY + "/.validation";
+
+  /**
+   * Dictionaries.
+   */
+  private static final String FIRST_DICTIONARY_VERSION = dictionaryVersion(resourceToString(FIRST_DICTIONARY_RESOURCE));
+  private static final String SECOND_DICTIONARY_VERSION = dictionaryVersion(dictionaryToString());
+
+  private int dictionaryUpdateCount = 0;
 
   @Inject
   private Datastore datastore;
 
+  private SimpleSmtpServer smtpServer;
+
   @Before
-  public void startServer() throws IOException {
+  public void setUp() throws IOException {
+    log.info(repeat("-", 100));
+    log.info("Setting up ...");
+    log.info(repeat("-", 100));
 
-    // clean up fs
-    FileUtils.deleteDirectory(new File(DCC_ROOT_DIR));
+    status("init", "Deleting filesystem...");
+    deleteDirectory(new File(DCC_ROOT_DIR));
 
-    // clean up db
+    status("init", "Dropping database...");
     datastore.getDB().dropDatabase();
 
-    // start server
-    log.info("starting server");
-    try {
-      log.info("server main thread started");
-      Main.main(null);
-    } catch (Exception e) {
-      e.printStackTrace();
-    } finally {
-      log.info("server main thread ended");
-    }
+    status("init", "Starting SMTP server...");
+    smtpServer = SimpleSmtpServer.start(TEST_CONFIG.getInt("mail.smtp.port"));
+
+    status("init", "Starting submission server...");
+    Main.main("external", TEST_CONFIG_FILE.getAbsolutePath());
   }
 
   @After
-  public void stopServer() {
+  public void tearDown() {
+    log.info(repeat("-", 100));
+    log.info("Tearing down ...");
+    log.info(repeat("-", 100));
+
+    status("shutdown", "Closing REST client...");
+    client.close();
+    status("shutdown", "REST client closed.");
+
+    status("shutdown", "Shutting down SMTP server...");
+    smtpServer.stop();
+    status("shutdown", "SMTP server shut down.");
+
+    status("shutdown", "Shutting down submission server...");
     Main.shutdown();
+    status("shutdown", "Submission server shut down.");
   }
 
   @Test
   public void testSystem() throws Exception {
-    log.info("starting tests");
+    status("test", "Starting test...");
     try {
-
-      // feed db
-      TestUtils.post(client, SEED_DICTIONARIES_ENDPOINT, TestUtils.resourceToJsonArray(FIRST_DICTIONARY_RESOURCE));
-      TestUtils.post(client, SEED_DICTIONARIES_ENDPOINT, TestUtils.resourceToJsonArray(SECOND_DICTIONARY_RESOURCE));
-      TestUtils.post(client, SEED_CODELIST_ENDPOINT, TestUtils.resourceToString(CODELISTS_RESOURCE));
-
-      // create initial release and projects (and therefore submissions)
-      createInitialRelease();
-      checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, ReleaseState.OPENED, //
-          Arrays.<SubmissionState> asList());
-      addProjects();
-      checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, ReleaseState.OPENED, //
-          Arrays.<SubmissionState> asList( //
-              SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED));
-
-      // feed filesystem; TODO: ideally we should use an sftp client to upload data files
-      FileUtils.copyDirectory(new File(FS_DIR), new File(DCC_ROOT_DIR));
-      FileUtils.copyDirectory(new File(SYSTEM_FILES_DIR), new File(INITIAL_RELEASE_SYSTEM_FILES_DIR));
-
-      // validate
-      updateDictionary( // dictionary is OPENED
-          FIRST_DICTIONARY_RESOURCE, FIRST_DICTIONARY_VERSION, NO_CONTENT.getStatusCode());
-      enqueueProjects(PROJECTS_TO_ENQUEUE, Status.NO_CONTENT); // triggers validations
-      checkValidations(); // will poll until all validated
-
-      // Test that only NOT_VALIDATED projects can be enqueued
-      enqueueProjects(PROJECTS_TO_ENQUEUE, Status.BAD_REQUEST);
-
-      // Tests codelists
-      addOffendingCodeLists();
-      addValidCodeLists();
-      addCodeListTerm();
-      enqueueProjects(PROJECTS_TO_ENQUEUE2, Status.NO_CONTENT); // reenqueue them since they have been reset by adding
-                                                                // the term
-      Uninterruptibles.sleepUninterruptibly(30, TimeUnit.SECONDS);
-      // TODO: make it such that adding a term fixed one of the submissions
-      checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, ReleaseState.OPENED, //
-          Arrays.<SubmissionState> asList( //
-              SubmissionState.VALID, SubmissionState.INVALID, SubmissionState.INVALID));
-
-      // release
-      releaseInitialRelease();
-      checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, ReleaseState.COMPLETED, //
-          Arrays.<SubmissionState> asList(SubmissionState.SIGNED_OFF));
-      checkRelease(NEXT_RELEASE_NAME, FIRST_DICTIONARY_VERSION, ReleaseState.OPENED, //
-          Arrays.<SubmissionState> asList( //
-              SubmissionState.NOT_VALIDATED, SubmissionState.INVALID, SubmissionState.INVALID));
-
-      // update dictionaries
-      updateDictionary( // dictionary is CLOSED
-          FIRST_DICTIONARY_RESOURCE, FIRST_DICTIONARY_VERSION, Status.BAD_REQUEST.getStatusCode());
-      updateDictionary( // dictionary is OPENED
-          SECOND_DICTIONARY_RESOURCE, SECOND_DICTIONARY_VERSION, Status.NO_CONTENT.getStatusCode());
-
-      // update release
-      updateRelease(UPDATED_INITIAL_RELEASE_RESOURCE);
-      checkRelease(NEXT_RELEASE_NAME, SECOND_DICTIONARY_VERSION, ReleaseState.OPENED, //
-          Arrays.<SubmissionState> asList( //
-              SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED, SubmissionState.NOT_VALIDATED));
-
+      seedSystem();
+      adminCreatesRelease();
+      userSubmitsFiles();
+      userValidates();
+      adminTriesToValidate();
+      adminTweaksCodeListAndTerms();
+      adminRevalidates();
+      adminPerformsRelease();
+      adminUpdatesDictionary();
+      adminUpdatesRelease();
     } catch (Exception e) {
-      e.printStackTrace(); // make sure we get stacktrace
+      status("test", "Caught exception: " + e);
       throw e;
     }
 
-    log.info("ending tests");
+    status("test", "Finished test.");
+  }
+
+  private void seedSystem() throws IOException {
+    status("seed", "Seeding dictionary 1 ({})...", FIRST_DICTIONARY_VERSION);
+    post(client, SEED_DICTIONARIES_ENDPOINT, resourceToJsonArray(FIRST_DICTIONARY_RESOURCE));
+
+    status("seed", "Seeding dictionary 2 ({} from dcc-resources)...", SECOND_DICTIONARY_VERSION);
+    post(client, SEED_DICTIONARIES_ENDPOINT, "[" + dictionaryToString() + "]");
+
+    status("seed", "Seeding code lists...");
+    post(client, SEED_CODELIST_ENDPOINT, codeListsToString());
+
+    status("seed", "Seeding system files...");
+    copyDirectory(new File(SYSTEM_FILES_DIR), new File(INITIAL_RELEASE_SYSTEM_FILES_DIR));
+  }
+
+  private void adminCreatesRelease() throws Exception, IOException {
+    status("admin", "Creating initial release...");
+    createInitialRelease();
+    checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
+        hasSubmisisonStates());
+
+    status("admin", "Adding projects...");
+    addProjects();
+    checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
+        hasSubmisisonStates(NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED));
+
+    status("admin", "Updating OPEN dictionary...");
+    updateDictionary(
+        resourceToString(FIRST_DICTIONARY_RESOURCE), FIRST_DICTIONARY_VERSION, NO_CONTENT.getStatusCode());
+  }
+
+  private void userSubmitsFiles() throws IOException {
+    status("user", "\"Submitting\" files...");
+    copyDirectory(new File(FS_DIR), new File(DCC_ROOT_DIR));
+  }
+
+  private void userValidates() throws Exception {
+    // Triggers validations
+    enqueueProjects(PROJECTS_TO_ENQUEUE, NO_CONTENT);
+    checkValidations();
+  }
+
+  private void adminTriesToValidate() throws Exception {
+    // Test that only NOT_VALIDATED projects can be enqueued
+    enqueueProjects(PROJECTS_TO_ENQUEUE, BAD_REQUEST);
+  }
+
+  private void adminTweaksCodeListAndTerms() throws IOException, Exception {
+    status("admin", "Adding offending code list...");
+    addInvalidCodeList();
+
+    status("admin", "Adding valid code list...");
+    addValidCodeLists();
+
+    status("admin", "Adding code list term...");
+    addCodeListTerms();
+  }
+
+  private void adminRevalidates() throws Exception {
+    // Re-enqueue them since they have been reset by adding the term
+    enqueueProjects(PROJECTS_TO_ENQUEUE2, NO_CONTENT);
+
+    status("admin", "Checking validated submission 1...");
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT1_KEY, VALID);
+
+    status("admin", "Checking validated submission 2...");
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT2_KEY, INVALID);
+
+    status("admin", "Checking validated submission 3...");
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT3_KEY, INVALID);
+
+    // TODO: Make it such that adding a term fixed one of the submissions
+    checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
+        hasSubmisisonStates(VALID, INVALID, INVALID));
+  }
+
+  private void adminPerformsRelease() throws Exception {
+    releaseInitialRelease();
+    checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, COMPLETED,
+        hasSubmisisonStates(SIGNED_OFF));
+    checkRelease(NEXT_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
+        hasSubmisisonStates(NOT_VALIDATED, INVALID, INVALID));
+  }
+
+  private void adminUpdatesDictionary() throws Exception, IOException {
+    status("admin", "Updating CLOSED dictionary...");
+    updateDictionary(
+        resourceToString(FIRST_DICTIONARY_RESOURCE), FIRST_DICTIONARY_VERSION, BAD_REQUEST.getStatusCode());
+
+    status("admin", "Updating OPENED dictionary...");
+    updateDictionary(
+        dictionaryToString(), SECOND_DICTIONARY_VERSION, NO_CONTENT.getStatusCode());
+  }
+
+  private void adminUpdatesRelease() throws Exception {
+    updateRelease(UPDATED_INITIAL_RELEASE_RESOURCE);
+    checkRelease(NEXT_RELEASE_NAME, SECOND_DICTIONARY_VERSION, OPENED,
+        hasSubmisisonStates(NOT_VALIDATED, NOT_VALIDATED, NOT_VALIDATED));
   }
 
   private void createInitialRelease() throws Exception {
-    Response response = TestUtils.put(client, RELEASES_ENDPOINT, TestUtils.resourceToString(INITIAL_RELEASE_RESOURCE));
-    assertEquals(Status.OK.getStatusCode(), response.getStatus());
+    val response = put(client, RELEASES_ENDPOINT, resourceToString(INITIAL_RELEASE_RESOURCE));
+    assertEquals(OK.getStatusCode(), response.getStatus());
 
-    Release release = TestUtils.asRelease(response);
+    val release = asRelease(response);
     assertEquals(INITITAL_RELEASE_NAME, release.getName());
+  }
+
+  private void addProjects() throws IOException {
+    status("admin", "Adding project 1...");
+    val response1 = post(client, PROJECTS_ENDPOINT, PROJECT1);
+    assertEquals(CREATED.getStatusCode(), response1.getStatus());
+
+    status("admin", "Adding project 2...");
+    val response2 = post(client, PROJECTS_ENDPOINT, PROJECT2);
+    assertEquals(CREATED.getStatusCode(), response2.getStatus());
+
+    status("admin", "Adding project 3...");
+    val response3 = post(client, PROJECTS_ENDPOINT, PROJECT3);
+    assertEquals(CREATED.getStatusCode(), response3.getStatus());
+  }
+
+  private void enqueueProjects(String projectsToEnqueue, Status expectedStatus) throws Exception {
+    status("user", "Getting queued projects...");
+    Response response = get(client, QUEUE_ENDPOINT);
+    String queued = asString(response);
+    status("user", "Received queued projects: {}", queued);
+
+    assertEquals(OK.getStatusCode(), response.getStatus());
+    assertEquals("[]", queued);
+
+    status("user", "Enqueuing projects...");
+    response = post(client, QUEUE_ENDPOINT, projectsToEnqueue);
+    assertEquals(expectedStatus.getStatusCode(), response.getStatus());
+    if (expectedStatus != NO_CONTENT) {
+      assertEquals("{\"code\":\"" + INVALID_STATE.getFrontEndString() + "\",\"parameters\":[\"" + VALID + "\"]}",
+          asString(response));
+    }
+  }
+
+  private void addInvalidCodeList() throws IOException {
+    // Ensure codelist is present
+    status("admin", "Getting code lists...");
+    Response response = get(client, CODELISTS_ENDPOINT);
+    assertEquals(OK.getStatusCode(), response.getStatus());
+    val codeListName = "appendix_B10";
+    assertTrue(asString(response).contains("\"" + codeListName + "\""));
+
+    // Attempt to add it again
+    status("admin", "Adding invalid code list...");
+    response = post(client, CODELISTS_ENDPOINT, "[{\"name\": \"someName\"}, {\"name\": \"" + codeListName + "\"}]");
+    assertEquals(INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
+  }
+
+  private void addValidCodeLists() throws IOException {
+    status("admin", "Adding valid code lists...");
+    val response = post(client, CODELISTS_ENDPOINT, "[{\"name\": \"someName\"}, {\"name\": \"someNewName\"}]");
+    assertEquals(CREATED.getStatusCode(), response.getStatus());
+  }
+
+  private void addCodeListTerms() throws Exception {
+    checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
+        hasSubmisisonStates(VALID, INVALID, INVALID));
+
+    // TODO: Get codelist dynamically
+    status("admin", "Adding code list terms...");
+    val codeListName = "GLOBAL.0.platform.v1/terms";
+    val response = post(client, CODELISTS_ENDPOINT + "/" + codeListName,
+        "[{\"code\": \"81\", \"value\": \"new value 1\"}, {\"code\": \"82\", \"value\": \"new value 2\"}]");
+    assertEquals(CREATED.getStatusCode(), response.getStatus());
+
+    // Only the INVALID ones should have been reset (DCC-851)
+    checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
+        hasSubmisisonStates(VALID, NOT_VALIDATED, NOT_VALIDATED));
+  }
+
+  private void releaseInitialRelease() {
+    // Attempts releasing (expect failure)
+    status("admin", "Releasing attempt 1 (should fail)...");
+    Response response = post(client, NEXT_RELEASE_ENPOINT, NEXT_RELEASE);
+    assertEquals(BAD_REQUEST.getStatusCode(), response.getStatus()); // no signed off projects
+
+    // Sign off
+    status("user", "Signing off project {}", PROJECT_TO_SIGN_OFF);
+    response = post(client, SIGNOFF_ENDPOINT, PROJECT_TO_SIGN_OFF);
+    assertEquals(OK.getStatusCode(), response.getStatus());
+
+    // Attempt releasing again
+    status("admin", "Releasing attempt 2 (should pass)...");
+    response = post(client, NEXT_RELEASE_ENPOINT, NEXT_RELEASE);
+    assertEquals(asString(response), OK.getStatusCode(), response.getStatus());
+
+    // Attempt releasing one too many times
+    status("admin", "Releasing attempt 3 (should fail)...");
+    response = post(client, NEXT_RELEASE_ENPOINT, NEXT_RELEASE);
+    assertEquals(BAD_REQUEST.getStatusCode(), response.getStatus());
+  }
+
+  private void updateDictionary(String dictionary, String dictionaryVersion, int expectedStatus)
+      throws Exception {
+    String updatedSecondDictionary = dictionary.replace("Unique identifier for the donor",
+        "Unique identifier for the donor (update" + ++dictionaryUpdateCount + ")");
+    assertTrue(dictionary, dictionary.equals(updatedSecondDictionary) == false);
+
+    status("admin", "Updating dictionary...");
+    val response = put(client, DICTIONARIES_ENDPOINT + "/" + dictionaryVersion, updatedSecondDictionary);
+    assertEquals(response.getHeaders().toString(), expectedStatus, response.getStatus());
+  }
+
+  private void updateRelease(String updatedReleaseRelPath) throws Exception {
+    Response response = put(client, UPDATE_RELEASE_ENDPOINT, resourceToString(updatedReleaseRelPath));
+    assertEquals(OK.getStatusCode(), response.getStatus());
+
+    Release release = asRelease(response);
+    assertEquals(NEXT_RELEASE_NAME, release.getName());
   }
 
   /**
@@ -310,149 +453,68 @@ public class SubmissionIntegrationTest {
    */
   private void checkRelease(String releaseName, String dictionaryVersion, ReleaseState expectedReleaseState,
       List<SubmissionState> expectedSubmissionStates) throws Exception {
+    status("admin", "Getting release '{}'...", releaseName);
+    val response = get(client, RELEASES_ENDPOINT + "/" + releaseName);
+    assertEquals(OK.getStatusCode(), response.getStatus());
 
-    Response response = TestUtils.get(client, RELEASES_ENDPOINT + "/" + releaseName);
-    assertEquals(Status.OK.getStatusCode(), response.getStatus());
-
-    ReleaseView releaseView = TestUtils.asReleaseView(response);
+    val releaseView = asReleaseView(response);
     assertNotNull(releaseView);
 
     assertEquals(dictionaryVersion, releaseView.getDictionaryVersion());
     assertEquals(expectedReleaseState, releaseView.getState());
     assertEquals(ImmutableList.<String> of(), releaseView.getQueue());
     assertEquals(expectedSubmissionStates.size(), releaseView.getSubmissions().size());
+
     int i = 0;
     for (DetailedSubmission submission : releaseView.getSubmissions()) {
       assertEquals(submission.getProjectKey(), expectedSubmissionStates.get(i++), submission.getState());
     }
   }
 
-  private void addProjects() throws IOException {
-    Response response1 = TestUtils.post(client, PROJECTS_ENDPOINT, PROJECT1);
-    assertEquals(Status.CREATED.getStatusCode(), response1.getStatus());
-
-    Response response2 = TestUtils.post(client, PROJECTS_ENDPOINT, PROJECT2);
-    assertEquals(Status.CREATED.getStatusCode(), response2.getStatus());
-
-    Response response3 = TestUtils.post(client, PROJECTS_ENDPOINT, PROJECT3);
-    assertEquals(Status.CREATED.getStatusCode(), response3.getStatus());
-  }
-
-  private void enqueueProjects(String projectsToEnqueue, Status expectedStatus) throws Exception {
-    Response response = TestUtils.get(client, QUEUE_ENDPOINT);
-    assertEquals(Status.OK.getStatusCode(), response.getStatus());
-    assertEquals("[]", TestUtils.asString(response));
-
-    response = TestUtils.post(client, QUEUE_ENDPOINT, projectsToEnqueue);
-    assertEquals(expectedStatus.getStatusCode(), response.getStatus());
-    if (expectedStatus != Status.NO_CONTENT) {
-      assertEquals("{\"code\":\"" + ServerErrorCode.INVALID_STATE.getFrontEndString() + "\",\"parameters\":[\""
-          + SubmissionState.VALID + "\"]}", TestUtils.asString(response));
-    }
-  }
-
   private void checkValidations() throws Exception {
-    Response response = TestUtils.get(client, INITIAL_RELEASE_ENDPOINT);
-    assertEquals(Status.OK.getStatusCode(), response.getStatus());
+    status("user", "Getting release 1...");
+    val response = get(client, INITIAL_RELEASE_ENDPOINT);
+    assertEquals(OK.getStatusCode(), response.getStatus());
 
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT1_NAME, SubmissionState.VALID);
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT2_NAME, SubmissionState.INVALID);
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT3_NAME, SubmissionState.INVALID);
+    status("user", "Checking validated submission 1...");
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT1_KEY, VALID);
+
+    status("user", "Checking validated submission 2...");
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT2_KEY, INVALID);
+
+    status("user", "Checking validated submission 2...");
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT3_KEY, INVALID);
 
     // check no errors for project 1
-    checkEmptyFile(DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/donor.internal" + SEPARATOR + "errors.json");
-    checkEmptyFile(DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/specimen.internal" + SEPARATOR + "errors.json");
-    checkEmptyFile(DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/specimen.external" + SEPARATOR + "errors.json");
+    assertEmptyFile(DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/donor.internal" + SEPARATOR + "errors.json");
+    assertEmptyFile(DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/specimen.internal" + SEPARATOR + "errors.json");
+    assertEmptyFile(DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/specimen.external" + SEPARATOR + "errors.json");
     // TODO add more
-  }
-
-  private void addOffendingCodeLists() throws IOException {
-
-    // Ensure codelist is present
-    Response response = TestUtils.get(client, CODELISTS_ENDPOINT);
-    assertEquals(Status.OK.getStatusCode(), response.getStatus());
-    final String CODELIST_NAME = "appendix_B10";
-    assertTrue(TestUtils.asString(response).contains("\"" + CODELIST_NAME + "\""));
-
-    // Attempt to add it again
-    response =
-        TestUtils.post(client, CODELISTS_ENDPOINT, "[{\"name\": \"someName\"}, {\"name\": \"" + CODELIST_NAME + "\"}]");
-    assertEquals(Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
-  }
-
-  private void addValidCodeLists() throws IOException {
-    Response response =
-        TestUtils.post(client, CODELISTS_ENDPOINT, "[{\"name\": \"someName\"}, {\"name\": \"someNewName\"}]");
-    assertEquals(Status.CREATED.getStatusCode(), response.getStatus());
-  }
-
-  private void addCodeListTerm() throws Exception {
-    checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED, asList(VALID, INVALID, INVALID));
-
-    Response response = // 1: deceased, 2: alive
-        TestUtils.post(client, CODELISTS_ENDPOINT + "/dr__donor_vital_status/terms",
-            "[{\"code\": \"3\", \"value\": \"new value 1\"}, {\"code\": \"4\", \"value\": \"new value 2\"}]");
-    assertEquals(CREATED.getStatusCode(), response.getStatus());
-
-    // Only the INVALID ones should have been reset (DCC-851)
-    checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED, asList(VALID, NOT_VALIDATED, NOT_VALIDATED));
   }
 
   private void checkValidatedSubmission(String release, String project, SubmissionState expectedSubmissionState)
       throws Exception {
     DetailedSubmission detailedSubmission;
     do {
-      Uninterruptibles.sleepUninterruptibly(2, SECONDS);
+      sleepUninterruptibly(2, SECONDS);
 
-      Response response = TestUtils.get(client, INITIAL_RELEASE_SUBMISSIONS_ENDPOINT + "/" + project);
+      status("user", "Polling submission status...");
+      val response = get(client, INITIAL_RELEASE_SUBMISSIONS_ENDPOINT + "/" + project);
+      detailedSubmission = asDetailedSubmission(response);
+      status("user", "Received submission status: {}", detailedSubmission);
+
       assertEquals(OK.getStatusCode(), response.getStatus());
-
-      detailedSubmission = TestUtils.asDetailedSubmission(response);
     } while (detailedSubmission.getState() == QUEUED || detailedSubmission.getState() == VALIDATING);
 
     assertEquals(project, expectedSubmissionState, detailedSubmission.getState());
   }
 
-  private void checkEmptyFile(String dir, String path) throws IOException {
-    File errorFile = new File(dir, path);
-    assertTrue("Expected file does not exist: " + path, errorFile.exists());
-    assertTrue("Expected empty file: " + path, FileUtils.readFileToString(errorFile).isEmpty());
+  private static List<SubmissionState> hasSubmisisonStates(SubmissionState... states) {
+    return newArrayList(states);
   }
 
-  private void releaseInitialRelease() {
-    // attempts releasing (expect failure)
-    Response response = TestUtils.post(client, NEXT_RELEASE_ENPOINT, SECOND_RELEASE);
-    assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus()); // no signed off projects
-
-    // sign off
-    response = TestUtils.post(client, SIGNOFF_ENDPOINT, PROJECT_TO_SIGN_OFF);
-    assertEquals(Status.OK.getStatusCode(), response.getStatus());
-
-    // attempt releasing again
-    response = TestUtils.post(client, NEXT_RELEASE_ENPOINT, SECOND_RELEASE);
-    assertEquals(TestUtils.asString(response), OK.getStatusCode(), response.getStatus());
-
-    // attempt releasing one too many times
-    response = TestUtils.post(client, NEXT_RELEASE_ENPOINT, SECOND_RELEASE);
-    assertEquals(Status.BAD_REQUEST.getStatusCode(), response.getStatus());
+  private static void status(String phase, String message, Object... args) {
+    log.info("[" + phase + "] " + message, args);
   }
 
-  private void updateDictionary(String dictionaryResource, String dictionaryVersion, int expectedStatus)
-      throws Exception {
-    String dictionary = TestUtils.resourceToString(dictionaryResource);
-    String updatedSecondDictionary = dictionary.replace("Unique identifier for the donor", //
-        "Unique identifier for the donor (update" + ++dictionaryUpdateCount + ")");
-    assertTrue(dictionary, dictionary.equals(updatedSecondDictionary) == false);
-    Response response = TestUtils.put(client, DICTIONARIES_ENDPOINT + "/" + dictionaryVersion, updatedSecondDictionary);
-    assertEquals(expectedStatus, response.getStatus());
-  }
-
-  private void updateRelease(String updatedReleaseRelPath) throws Exception {
-    Response response =
-        TestUtils.put(client, UPDATE_RELEASE_ENDPOINT, TestUtils.resourceToString(updatedReleaseRelPath));
-    assertEquals(Status.OK.getStatusCode(), response.getStatus());
-
-    Release release = TestUtils.asRelease(response);
-    assertEquals(NEXT_RELEASE_NAME, release.getName());
-  }
 }

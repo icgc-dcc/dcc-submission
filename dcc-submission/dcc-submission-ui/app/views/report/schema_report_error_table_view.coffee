@@ -83,17 +83,19 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       name: "Relation violation"
       description: (source) ->
         """
-        The following <em>#{source.parameters?.FIELDS.join ', '}</em> values
-        do not exist in the reference file
-        <em>#{source.parameters?.SCHEMA}</em>
+        The following values have no match in the reference schema
+        <em>#{source.parameters?.OTHER_SCHEMA}</em>
+        (fields <em>#{source.parameters?.OTHER_FIELDS}</em>)
         """
     RELATION_PARENT_VALUE_ERROR:
       name: "Relation violation"
       description: (source) ->
         """
-        The following <em>#{source.parameters?.FIELDS.join ', '}</em> values
-        from the reference file do not exist in the schema
-        <em>#{source.parameters?.SCHEMA}</em>
+        The following values in referenced shema
+        <em>#{source.parameters?.OTHER_SCHEMA}</em>
+        (fields <em>#{source.parameters?.OTHER_FIELDS.join ', '}</em>)
+        have no corresponding records in the current file,
+        yet they are expected to have at least one match each.
         """
     MISSING_VALUE_ERROR:
       name: "Missing value"
@@ -175,7 +177,11 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       <th style='border:none'>Line</th>
       <th style='border:none'>Value</th>"
     for i in source.lines
-      out += "<tr><td style='background:none;border:none'>#{i}</td>
+      if i==-1
+        display = "N/A"
+      else
+        display = i
+      out += "<tr><td style='background:none;border:none'>#{display}</td>
       <td style='background:none;border:none'>
       #{source.lineValueMap[i]}</td></tr>"
     out += "</table>"

@@ -229,6 +229,11 @@
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>dcc-resources</artifactId>
+      <scope>test</scope>
+    </dependency>
 
     <!-- Testing - SFTP -->
     <dependency>
@@ -256,6 +261,20 @@
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-minicluster</artifactId>
       <scope>test</scope>
+    </dependency>
+
+    <!-- Testing - Mail -->
+    <dependency>
+      <groupId>dumbster</groupId>
+      <artifactId>dumbster</artifactId>
+      <version>1.6</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>javax.activation</groupId>
+          <artifactId>activation</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <!-- Testing - Utilities -->
@@ -338,6 +357,10 @@
               <value>target/logs</value>
             </systemProperty>
           </systemProperties>
+          <arguments>
+          	<argument>external</argument>
+          	<argument>src/test/conf/application.conf</argument>
+          </arguments>
         </configuration>
       </plugin>
     </plugins>

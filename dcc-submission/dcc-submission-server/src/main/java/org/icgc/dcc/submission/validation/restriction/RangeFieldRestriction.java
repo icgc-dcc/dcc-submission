@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.submission.validation.restriction;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.Restriction;
 import org.icgc.dcc.submission.validation.FlowType;
@@ -24,10 +26,11 @@ import org.icgc.dcc.submission.validation.InternalPlanElement;
 import org.icgc.dcc.submission.validation.PlanElement;
 import org.icgc.dcc.submission.validation.RestrictionType;
 import org.icgc.dcc.submission.validation.RestrictionTypeSchema;
-import org.icgc.dcc.submission.validation.ValidationErrorCode;
 import org.icgc.dcc.submission.validation.RestrictionTypeSchema.FieldRestrictionParameter;
 import org.icgc.dcc.submission.validation.RestrictionTypeSchema.ParameterType;
+import org.icgc.dcc.submission.validation.ValidationErrorCode;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
+import org.icgc.dcc.submission.validation.visitor.ValueTypePlanningVisitor;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -40,6 +43,9 @@ import cascading.tuple.TupleEntry;
 
 import com.mongodb.DBObject;
 
+/**
+ * Must happen after {@link ValueTypePlanningVisitor} to ensure data types are correct to begin with.
+ */
 public class RangeFieldRestriction implements InternalPlanElement {
 
   public static final String NAME = "range";
@@ -126,19 +132,21 @@ public class RangeFieldRestriction implements InternalPlanElement {
 
       Object fieldName = tupleEntry.getFields().get(0);
 
-      if(value instanceof Number) {
+      if (isValue(value)) { // Nothing to check if there is no value (null or empty string)
+        checkState(value instanceof Number, "Value is expected to be a number at this point, instead got '%s'", value);
         Number num = (Number) value;
-        if(num.longValue() < this.min.longValue() || num.longValue() > this.max.longValue()) {
+        if (num.longValue() < this.min.longValue() || num.longValue() > this.max.longValue()) {
 
           ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.OUT_OF_RANGE_ERROR, fieldName.toString(),
               num.longValue(), min.longValue(), max.longValue());
         }
-      } else if(value != null) {
-        ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.NOT_A_NUMBER_ERROR, fieldName.toString(),
-            value.toString());
       }
+
       functionCall.getOutputCollector().add(tupleEntry.getTupleCopy());
     }
 
+    private boolean isValue(Object value) {
+      return value != null && !String.valueOf(value).isEmpty();
+    }
   }
 }

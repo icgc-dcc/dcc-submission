@@ -85,7 +85,7 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
     datastore().updateFirst(updateQuery, dictionary, false);
 
     // Reset submissions if applicable
-    Release release = releases.getNextRelease().getRelease();
+    Release release = releases.resolveNextRelease().getRelease();
     if (dictionary.getVersion().equals(release.getDictionaryVersion())) {
       releases.resetSubmissions(release.getName(), release.getProjectKeys());
     }
@@ -195,7 +195,7 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
    * Must reset INVALID submissions IF the nextRelease uses a dictionary that uses the corresponding codelist (as the
    * change may render them VALID). (TODO: point to spec).
    */
-  public void addTerm(String codeListName, Term term) {
+  public void addCodeListTerm(String codeListName, Term term) {
     checkArgument(codeListName != null);
     checkArgument(term != null);
 
@@ -215,15 +215,18 @@ public class DictionaryService extends BaseMorphiaService<Dictionary> {
         datastore.createUpdateOperations(CodeList.class).add("terms", term));
 
     // Reset INVALID submissions if applicable
-    Release openRelease = releases.getNextRelease().getRelease();
+    Release openRelease = releases.resolveNextRelease().getRelease();
     Dictionary currentDictionary = getCurrentDictionary(openRelease);
     if (currentDictionary.usesCodeList(codeListName)) {
+      log.info("Resetting submission due to active dictionary code list term addition...");
       releases.resetSubmissions(openRelease.getName(), openRelease.getInvalidProjectKeys());
+    } else {
+      log.info("No need to reset submissions due to active dictionary code list term addition...");
     }
   }
 
   public Dictionary getCurrentDictionary() {
-    Release openRelease = releases.getNextRelease().getRelease();
+    Release openRelease = releases.resolveNextRelease().getRelease();
     return getCurrentDictionary(openRelease);
   }
 

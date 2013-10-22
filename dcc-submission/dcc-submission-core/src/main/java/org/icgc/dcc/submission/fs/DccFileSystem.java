@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.fs;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
+import static org.icgc.dcc.submission.fs.FsConfig.FS_ROOT;
 import static org.icgc.dcc.submission.fs.hdfs.HadoopUtils.toFilenameList;
 
 import java.io.DataInputStream;
@@ -26,21 +27,20 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.submission.fs.hdfs.HadoopUtils;
 import org.icgc.dcc.submission.release.model.Release;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Joiner;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
 
+@Slf4j
 public class DccFileSystem {
-
-  private static final Logger log = LoggerFactory.getLogger(DccFileSystem.class);
 
   public static final String VALIDATION_DIRNAME = ".validation";
 
@@ -64,7 +64,7 @@ public class DccFileSystem {
     this.fileSystem = fileSystem;
 
     // grab root directory
-    this.rootStringPath = this.config.getString(FsConfig.FS_ROOT);
+    this.rootStringPath = this.config.getString(FS_ROOT);
     checkState(this.rootStringPath != null);
 
     log.info("fileSystem = " + this.fileSystem.getClass().getSimpleName());

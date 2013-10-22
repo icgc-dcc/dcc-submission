@@ -18,9 +18,14 @@
 package org.icgc.dcc.submission.web.resource;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Lists.newArrayList;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static org.icgc.dcc.submission.web.model.ServerErrorCode.ALREADY_EXISTS;
+import static org.icgc.dcc.submission.web.util.Authorizations.getSubject;
 import static org.icgc.dcc.submission.web.util.Authorizations.hasSpecificProjectPrivilege;
-import static org.icgc.dcc.submission.web.util.Authorizations.isOmnipotentUser;
+import static org.icgc.dcc.submission.web.util.Authorizations.isSuperUser;
 import static org.icgc.dcc.submission.web.util.Responses.noSuchEntityResponse;
+import static org.icgc.dcc.submission.web.util.Responses.unauthorizedResponse;
 
 import java.util.List;
 
@@ -34,84 +39,105 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriBuilder;
+
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.submission.core.ProjectService;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.core.model.QProject;
-import org.icgc.dcc.submission.web.model.ServerErrorCode;
 import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
-import org.icgc.dcc.submission.web.util.Authorizations;
 import org.icgc.dcc.submission.web.util.ResponseTimestamper;
 import org.icgc.dcc.submission.web.util.Responses;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.mongodb.MongoException.DuplicateKey;
 
+@Slf4j
 @Path("projects")
 public class ProjectResource {
 
-  private static final Logger log = LoggerFactory.getLogger(ProjectResource.class);
-
   @Inject
-  private ProjectService projects;
+  private ProjectService projectService;
 
   @GET
-  public Response getProjects(@Context
-  SecurityContext securityContext) {
-    /* Authorization is handled by the filtering of projects below */
+  public Response getProjects(
 
+      @Context
+      SecurityContext securityContext
+
+      )
+  {
+    // Authorization is handled by the filtering of projects below
     log.debug("Getting projects");
-    Subject subject = Authorizations.getSubject(securityContext);
-    List<Project> projectList = projects.getProjectsBySubject(subject);
+    Subject subject = getSubject(securityContext);
+
+    List<Project> projectList = projectService.getProjectsBySubject(subject);
     if (projectList == null) { // TODO: use Optional (see DCC-820)
-      projectList = Lists.newArrayList();
+      projectList = newArrayList();
     }
+
     return Response.ok(projectList).build();
   }
 
   @POST
   @Consumes("application/json")
-  public Response addProject(@Context
-  SecurityContext securityContext, @Valid
-  Project project) {
+  public Response addProject(
 
+      @Context
+      SecurityContext securityContext,
+
+      @Valid
+      Project project
+
+      )
+  {
     log.info("Adding project {}", project);
-    if (isOmnipotentUser(securityContext) == false) {
+    if (isSuperUser(securityContext) == false) {
       return Responses.unauthorizedResponse();
     }
 
     checkArgument(project != null);
     try {
-      this.projects.addProject(project);
-      return Response.created(UriBuilder.fromResource(ProjectResource.class).path(project.getKey()).build()).build();
+      this.projectService.addProject(project);
+
+      val url = UriBuilder.fromResource(ProjectResource.class).path(project.getKey()).build();
+      return Response
+          .created(url)
+          .build();
     } catch (DuplicateKey e) {
-      return Response.status(Status.BAD_REQUEST)
-          .entity(new ServerErrorResponseMessage(ServerErrorCode.ALREADY_EXISTS, project.getKey())).build();
+      return Response
+          .status(BAD_REQUEST)
+          .entity(new ServerErrorResponseMessage(ALREADY_EXISTS, project.getKey()))
+          .build();
     }
   }
 
   @GET
   @Path("{projectKey}")
-  public Response getRessource(@PathParam("projectKey")
-  String projectKey, @Context
-  SecurityContext securityContext) {
+  public Response getProject(
 
+      @PathParam("projectKey")
+      String projectKey,
+
+      @Context
+      SecurityContext securityContext
+
+      )
+  {
     log.debug("Getting project: {}", projectKey);
     if (hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
       return Responses.unauthorizedResponse();
     }
 
-    Project project = projects.where(QProject.project.key.eq(projectKey)).uniqueResult();
+    val project = projectService.where(QProject.project.key.eq(projectKey)).uniqueResult();
     if (project == null) { // TODO: use Optional
       return noSuchEntityResponse(projectKey);
     }
+
     return ResponseTimestamper.ok(project).build();
   }
 
@@ -120,25 +146,33 @@ public class ProjectResource {
    */
   @PUT
   @Path("{projectKey}")
-  public Response updateProject(@PathParam("projectKey")
-  String projectKey, @Valid
-  Project project,
-      @Context
-      Request req, @Context
-      SecurityContext securityContext) {
+  public Response updateProject(
 
+      @PathParam("projectKey")
+      String projectKey,
+
+      @Valid
+      Project project,
+      @Context
+      Request req,
+
+      @Context
+      SecurityContext securityContext
+
+      )
+  {
     log.info("Updating project {} with {}", projectKey, project);
-    if (isOmnipotentUser(securityContext) == false) {
-      return Responses.unauthorizedResponse();
+    if (isSuperUser(securityContext) == false) {
+      return unauthorizedResponse();
     }
 
     ResponseTimestamper.evaluate(req, project); // FIXME...
 
     // update project use morphia query
-    projects.datastore().update( //
-        projects.datastore().createQuery(Project.class).field("key").equal(projectKey), //
-        projects.datastore().createUpdateOperations(Project.class) //
-            .set("name", project.getName()) //
+    projectService.datastore().update(
+        projectService.datastore().createQuery(Project.class).field("key").equal(projectKey),
+        projectService.datastore().createUpdateOperations(Project.class) //
+            .set("name", project.getName())
             .set("alias", project.getAlias()));
 
     return ResponseTimestamper.ok(project).build();
@@ -146,19 +180,30 @@ public class ProjectResource {
 
   @GET
   @Path("{projectKey}/releases")
-  public Response getReleases(@PathParam("projectKey")
-  String projectKey, @Context
-  SecurityContext securityContext) {
+  public Response getReleases(
 
+      @PathParam("projectKey")
+      String projectKey,
+
+      @Context
+      SecurityContext securityContext
+
+      )
+  {
     log.debug("Getting releases for project: {}", projectKey);
     if (hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
       return Responses.unauthorizedResponse();
     }
 
-    Project project = projects.where(QProject.project.key.eq(projectKey)).uniqueResult();
+    // TODO: Encapsulate
+    val project = projectService.where(QProject.project.key.eq(projectKey)).uniqueResult();
     if (project == null) {
       return noSuchEntityResponse(projectKey);
     }
-    return Response.ok(projects.getReleases(project)).build();
+
+    val releases = projectService.getReleases(project);
+
+    return Response.ok(releases).build();
   }
+
 }

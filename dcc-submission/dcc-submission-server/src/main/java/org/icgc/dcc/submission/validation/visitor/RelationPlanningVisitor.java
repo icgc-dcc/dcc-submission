@@ -20,7 +20,12 @@ package org.icgc.dcc.submission.validation.visitor;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
+import static org.icgc.dcc.submission.validation.ValidationErrorCode.RELATION_PARENT_VALUE_ERROR;
+import static org.icgc.dcc.submission.validation.ValidationErrorCode.RELATION_VALUE_ERROR;
+import static org.icgc.dcc.submission.validation.cascading.TuplesUtils.getObjects;
+import static org.icgc.dcc.submission.validation.cascading.TuplesUtils.hasValues;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
@@ -39,7 +44,6 @@ import org.icgc.dcc.submission.dictionary.model.Relation;
 import org.icgc.dcc.submission.validation.ExternalFlowPlanningVisitor;
 import org.icgc.dcc.submission.validation.ExternalPlanElement;
 import org.icgc.dcc.submission.validation.Plan;
-import org.icgc.dcc.submission.validation.ValidationErrorCode;
 import org.icgc.dcc.submission.validation.cascading.TupleState;
 import org.icgc.dcc.submission.validation.cascading.TuplesUtils;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
@@ -59,8 +63,6 @@ import cascading.pipe.joiner.OuterJoin;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
-
-import com.google.common.collect.Lists;
 
 /**
  * Creates {@code PlanElement}s for {@code Relation}.
@@ -216,6 +218,9 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
 
     protected final String rhs;
 
+    /**
+     * LHS is also the current schema under scrutiny, that is to say on which errors are reported.
+     */
     protected final String[] lhsFields;
 
     protected final String[] rhsFields;
@@ -240,14 +245,13 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
       return entry.getLong(ValidationFields.OFFSET_FIELD_NAME);
     }
 
-    protected void reportRelationError(TupleState tupleState, Tuple offendingLhsTuple) {
-      List<String> columnNames = Lists.newArrayList(lhsFields);
-      String relationSchema = rhs;
-      List<String> relationColumnNames = Lists.newArrayList(rhsFields);
-      List<Object> value = TuplesUtils.getObjects(offendingLhsTuple);
+    protected void reportRelationError(TupleState tupleState, List<Object> offendingLhsValues) {
+      List<String> columnNames = newArrayList(lhsFields);
 
-      tupleState.reportError(ValidationErrorCode.RELATION_VALUE_ERROR, columnNames, value, relationSchema,
-          relationColumnNames);
+      tupleState.reportError(
+          RELATION_VALUE_ERROR,
+          columnNames, offendingLhsValues,
+          rhs, newArrayList(rhsFields));
     }
   }
 
@@ -330,7 +334,7 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
           if (reported.contains(lhsOffset) == false) {
             Tuple offendingLhsTuple = // so as to avoid storing it all in memory (memory/computing tradeoff)
                 rebuildLhsTuple(requiredLhsFields, optionalLhsFields, requiredLhsTuple, lhsOptionalTuple);
-            reportRelationError(tupleState, offendingLhsTuple);
+            reportRelationError(tupleState, getObjects(offendingLhsTuple));
 
             bufferCall.getOutputCollector().add(new Tuple(tupleState));
             reported.add(lhsOffset);
@@ -374,6 +378,9 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
       this.bidirectional = bidirectional;
     }
 
+    /**
+     * For instance specimen -> donor, specimen would be on the LHS and donor would be on the RHS.
+     */
     @Override
     public void operate(@SuppressWarnings("rawtypes")
     FlowProcess flowProcess, BufferCall<Void> bufferCall) {
@@ -381,27 +388,43 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
       while (iter.hasNext()) {
         TupleEntry entry = iter.next();
 
-        if (TuplesUtils.hasValues(entry, renamedRhsFields) == false) {
-          if (TuplesUtils.hasValues(entry, lhsFields)) { // no need to report the result of joining on nulls
-                                                         // (required restriction will report error if this is not
-                                                         // acceptable)
+        // For instance every specimen is supposed to match an existing donor.
+        if (hasValues(entry, renamedRhsFields) == false) {
+          if (hasValues(entry, lhsFields)) { // no need to report the result of joining on nulls
+                                             // (required restriction will report error if this is not
+                                             // acceptable)
+
+            List<Object> offendingLhsValues = getObjects(entry.selectTuple(new Fields(lhsFields)));
             TupleState state = new TupleState(getLhsOffset(entry));
-            reportRelationError(state, entry.selectTuple(new Fields(lhsFields)));
-            bufferCall.getOutputCollector().add(new Tuple(state));
+            reportRelationError(
+                state,
+                offendingLhsValues);
+
+            bufferCall
+                .getOutputCollector()
+                .add(
+                    new Tuple(state));
           }
         } else if (bidirectional) {
-          if (TuplesUtils.hasValues(entry, lhsFields) == false) {
+
+          // For instance every donor is expected to have at least one specimen matching it.
+          if (hasValues(entry, lhsFields) == false) {
             Tuple offendingRhsTuple = entry.selectTuple(new Fields(renamedRhsFields));
             TupleState state = new TupleState(CONVENTION_PARENT_OFFSET);
 
-            List<String> columnNames = Lists.newArrayList(lhsFields);
-            String relationSchema = rhs;
-            List<String> relationColumnNames = Lists.newArrayList(rhsFields);
-            List<Object> value = TuplesUtils.getObjects(offendingRhsTuple);
+            List<String> columnNames = newArrayList(lhsFields);
+            List<String> relationColumnNames = newArrayList(rhsFields);
+            List<Object> values = getObjects(offendingRhsTuple);
 
-            state.reportError(ValidationErrorCode.RELATION_PARENT_VALUE_ERROR, columnNames, value, relationSchema,
-                relationColumnNames);
-            bufferCall.getOutputCollector().add(new Tuple(state));
+            state.reportError(
+                RELATION_PARENT_VALUE_ERROR,
+                columnNames, values, // TODO: create a builder for TupleError instead, hard to read/use as is
+                rhs, relationColumnNames);
+
+            bufferCall
+                .getOutputCollector()
+                .add(
+                    new Tuple(state));
           }
         }
       }
