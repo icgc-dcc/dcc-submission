@@ -69,6 +69,7 @@ module.exports = class SubmissionTableView extends DataTableView
   cancelSubmissionPopup: (e) ->
     @subview("cancelSubmissionView"
       new cancelSubmissionView
+        "button": $('#cancel-submission-popup-button'),
         "submission": @collection.get $(e.currentTarget).data("submission")
     )
 

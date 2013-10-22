@@ -49,7 +49,7 @@ module.exports = class SubmissionView extends View
 
     @subscribeEvent "signOffSubmission", -> @model.fetch()
     @subscribeEvent "validateSubmission", -> @model.fetch()
-    @subscribeEvent "cancelValidation", -> @model.fetch()
+    @subscribeEvent "cancelSubmission", -> @model.fetch()
 
     @delegate 'click', '#signoff-submission-popup-button',
       @signOffSubmissionPopup
@@ -84,7 +84,8 @@ module.exports = class SubmissionView extends View
   cancelSubmissionPopup: (e) ->
     @subview("cancelSubmissionView"
       new CancelSubmissionView
-        "submission": @model
+        "submission": @model,
+        "button": $('#cancel-submission-popup-button')
     )
 
   render: ->

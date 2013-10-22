@@ -57,11 +57,12 @@ module.exports = class CancelSubmissionView extends View
 
     nextRelease = new NextRelease()
 
-    nextRelease.cancel [
-      {key: @options.submission.get("projectKey")}
-      ],
+    nextRelease.cancel {key: @options.submission.get("projectKey")},
       success: =>
         @$el.modal 'hide'
+        @options.button.html("Cancelling...")
+        @options.button.attr("disabled", "disabled")
+
         mediator.publish "cancelSubmission"
         mediator.publish "notify", "Validation for Project "+
           "#{@model.get('projectName')} has been cancelled."
