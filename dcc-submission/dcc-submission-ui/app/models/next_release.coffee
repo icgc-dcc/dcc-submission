@@ -38,7 +38,7 @@ module.exports = class NextRelease extends Release
     # Although the end point is DELETE, cancelling is really
     # a revert of status back to not_validated
     @attributes = attributes
-    validation = new Validation {'id': @attributes[0]?.key}
+    validation = new Validation {'id': @attributes?.key}
     validation.destroy(options)
 
   queue: (attributes, options)->
