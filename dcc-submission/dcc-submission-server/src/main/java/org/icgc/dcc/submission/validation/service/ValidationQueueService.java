@@ -344,16 +344,16 @@ public class ValidationQueueService extends AbstractScheduledService {
    * - 3. cascading listener's onStopping(): ERROR<br/>
    * - 4. catching of an unknown exception: ERROR<br/>
    */
-  private void resolveSubmission(QueuedProject project, SubmissionState state) {
-    String key = project.getKey();
-    log.info("Resolving project '{}' to submission state '{}'", key, state);
-    releaseService.resolve(key, state);
+  private void resolveSubmission(QueuedProject queuedProject, SubmissionState state) {
+    val projectKey = queuedProject.getKey();
+    log.info("Resolving project '{}' to submission state '{}'", projectKey, state);
+    releaseService.resolve(projectKey, state);
 
-    if (project.getEmails().isEmpty() == false) {
-      this.email(project, state);
+    if (queuedProject.getEmails().isEmpty() == false) {
+      this.email(queuedProject, state);
     }
 
-    log.info("Resolved {}", key);
+    log.info("Resolved {}", projectKey);
   }
 
   private void email(QueuedProject project, SubmissionState state) { // TODO: SUBM-5

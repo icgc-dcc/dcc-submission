@@ -333,18 +333,15 @@ public class ReleaseService extends BaseMorphiaService<Release> {
   }
 
   public void deleteQueuedRequest(String projectKey) throws InvalidStateException {
-    log.info("Emptying queue for: {}", projectKey);
+    log.info("Deleting queued request for project '{}'", projectKey);
 
     val release = resolveNextRelease().getRelease();
-    val target = singletonList(projectKey);
-
-    // Validation state
+    val projectKeys = singletonList(projectKey);
     val state = getSubmission(release, projectKey).getState();
     val queued = state == QUEUED;
     val validating = state == VALIDATING;
     val active = validating || queued;
-
-    log.info("Submission state when delete queue request called: {}", state);
+    log.info("Submission state for '{}' when delete queue request called is '{}'", projectKey, state);
 
     if (queued) {
       log.info("Removing project form queue: {}", projectKey);
@@ -352,17 +349,15 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     }
 
     if (active) {
-      // Update database state
       val newState = NOT_VALIDATED;
-      log.info("Setting '{}' project state to '{}'", projectKey, newState);
-      updateSubmisions(target, newState);
+      log.info("Updating in-memory '{}' project submission state to '{}'", projectKey, newState);
+      updateSubmisions(projectKeys, newState);
 
-      log.info("Setting '{}' release '{}' project queue state to '{}'",
-          new Object[] { release.getName(), projectKey, newState });
-      dbUpdateSubmissions(release.getName(), release.getQueue(), target, newState);
+      log.info("Updating database '{}' release queue to '{}' and project '{}' submission state to '{}'",
+          new Object[] { release.getName(), release.getQueue(), projectKey, newState });
+      dbUpdateSubmissions(release.getName(), release.getQueue(), projectKeys, newState);
 
-      // Update file system state
-      log.info("Resetting '{}' project validation folder", projectKey);
+      log.info("Resetting file system '{}' project validation folder", projectKey);
       resetValidationFolder(projectKey, release);
     }
   }
@@ -610,6 +605,8 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
   /**
    * TODO: should also take care of updating the queue, as the two should always go together
+   * <p>
+   * TODO: Isn't this a no-op?!?!
    * <p>
    * deprecation: see DCC-901
    */
