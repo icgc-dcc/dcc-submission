@@ -24,6 +24,7 @@
 DataTableView = require 'views/base/data_table_view'
 signOffSubmissionView = require 'views/submission/signoff_submission_view'
 validateSubmissionView = require 'views/submission/validate_submission_view'
+cancelSubmissionView = require 'views/submission/cancel_submission_view'
 utils = require 'lib/utils'
 
 module.exports = class SubmissionTableView extends DataTableView
@@ -44,6 +45,8 @@ module.exports = class SubmissionTableView extends DataTableView
       @signOffSubmissionPopup
     @delegate 'click', '#validate-submission-popup-button',
       @validateSubmissionPopup
+    @delegate 'click', '#cancel-submission-popup-button',
+      @cancelSubmissionPopup
 
   update: ->
     @collection = @model.get "submissions"
@@ -60,6 +63,12 @@ module.exports = class SubmissionTableView extends DataTableView
     #console.debug "ReleaseView#validateSubmissionPopup", e
     @subview("validateSubmissionView"
       new validateSubmissionView
+        "submission": @collection.get $(e.currentTarget).data("submission")
+    )
+
+  cancelSubmissionPopup: (e) ->
+    @subview("cancelSubmissionView"
+      new cancelSubmissionView
         "submission": @collection.get $(e.currentTarget).data("submission")
     )
 
@@ -146,6 +155,18 @@ module.exports = class SubmissionTableView extends DataTableView
           bVisible: not utils.is_released(@model.get "state")
           mData: (source) ->
             switch source.state
+              when "QUEUED", "VALIDATING"
+                ds = source.projectKey.replace(/<.*?>/g, '')
+                """
+                <button
+                  class="m-btn red-stripe mini"
+                  id="cancel-submission-popup-button"
+                  data-submission="#{ds}"
+                  data-toggle="modal"
+                  href="#cancel-submission-popup">
+                  Cancel Validation
+                </button>
+                """
               when "VALID"
                 ds = source.projectKey.replace(/<.*?>/g, '')
                 """
