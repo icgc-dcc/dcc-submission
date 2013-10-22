@@ -17,21 +17,11 @@
  */
 package org.icgc.dcc.submission.checker;
 
-import java.util.List;
-
 import org.icgc.dcc.submission.checker.Util.CheckLevel;
-import org.icgc.dcc.submission.validation.cascading.TupleState;
 
-/**
- * 
- */
 public interface Checker {
 
   public boolean isValid();
-
-  public List<String> getFileSchemaNames();
-
-  public List<TupleState.TupleError> getTupleErrors(String fileSchemaName);
 
   public CheckLevel getCheckLevel();
 

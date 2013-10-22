@@ -18,21 +18,75 @@
 package org.icgc.dcc.submission.checker;
 
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
 
+import lombok.Getter;
+
+import org.elasticsearch.common.collect.Maps;
+import org.icgc.dcc.submission.checker.Util.CheckLevel;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 
-/**
- * 
- */
-public interface FileChecker extends Checker {
+import com.google.common.collect.ImmutableList;
 
-  public List<FirstPassValidationError> check(String filePathname);
+public class BaseFileChecker implements FileChecker {
 
-  String getFileSchemaName(String filePathname);
+  @Getter
+  private final Dictionary dictionary;
+  @Getter
+  private final SubmissionDirectory submissionDirectory;
 
-  public SubmissionDirectory getSubmissionDirectory();
+  private final List<FirstPassValidationError> errors;
+  private Map<String, String> cachedFileNames;
+  private final boolean isFailFast;
 
-  public Dictionary getDictionary();
+  public BaseFileChecker(Dictionary dict, SubmissionDirectory submissionDir) {
+    this(dict, submissionDir, false);
+  }
 
+  public BaseFileChecker(Dictionary dict, SubmissionDirectory submissionDir, boolean isFailFast) {
+    this.dictionary = dict;
+    this.submissionDirectory = submissionDir;
+    this.errors = ImmutableList.of();
+    this.isFailFast = false;
+    cacheFileSchemaNames();
+  }
+
+  @Override
+  public String getFileSchemaName(String filePathname) {
+    return cachedFileNames.get(filePathname);
+  }
+
+  @Override
+  public List<FirstPassValidationError> check(String filePathname) {
+    return errors;
+  }
+
+  @Override
+  public boolean isValid() {
+    return true;
+  }
+
+  @Override
+  public CheckLevel getCheckLevel() {
+    return CheckLevel.FILE_LEVEL;
+  }
+
+  @Override
+  public boolean isFailFast() {
+    return isFailFast;
+  }
+
+  private void cacheFileSchemaNames() {
+    cachedFileNames = Maps.newHashMap();
+    for (String filename : submissionDirectory.listFile()) {
+      for (FileSchema schema : dictionary.getFiles()) {
+        if (Pattern.matches(schema.getPattern(), filename)) {
+          cachedFileNames.put(filename, schema.getName());
+        }
+      }
+    }
+  }
 }

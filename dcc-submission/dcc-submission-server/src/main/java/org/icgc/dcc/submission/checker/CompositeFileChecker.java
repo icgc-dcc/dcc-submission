@@ -19,20 +19,59 @@ package org.icgc.dcc.submission.checker;
 
 import java.util.List;
 
+import org.elasticsearch.common.collect.Lists;
+import org.icgc.dcc.submission.checker.Util.CheckLevel;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 
-/**
- * 
- */
-public interface FileChecker extends Checker {
+public abstract class CompositeFileChecker implements FileChecker {
 
-  public List<FirstPassValidationError> check(String filePathname);
+  protected FileChecker compositeChecker;
+  protected List<FirstPassValidationError> errors;
 
-  String getFileSchemaName(String filePathname);
+  public CompositeFileChecker(FileChecker nestedChecker) {
+    this.compositeChecker = nestedChecker;
+    errors = Lists.newLinkedList();
+  }
 
-  public SubmissionDirectory getSubmissionDirectory();
+  @Override
+  public List<FirstPassValidationError> check(String filePathname) {
+    errors.clear();
+    errors.addAll(compositeChecker.check(filePathname));
+    if (compositeChecker.isValid() || !compositeChecker.isFailFast()) errors.addAll(selfCheck(filePathname));
+    return errors;
+  }
 
-  public Dictionary getDictionary();
+  public abstract List<FirstPassValidationError> selfCheck(String filePathname);
 
+  @Override
+  public boolean isValid() {
+    return (compositeChecker.isValid() && errors.isEmpty());
+  }
+
+  @Override
+  public CheckLevel getCheckLevel() {
+    // TODO Auto-generated method stub
+    return compositeChecker.getCheckLevel();
+  }
+
+  @Override
+  public boolean isFailFast() {
+    return compositeChecker.isFailFast();
+  }
+
+  @Override
+  public String getFileSchemaName(String filePathname) {
+    return compositeChecker.getFileSchemaName(filePathname);
+  }
+
+  @Override
+  public Dictionary getDictionary() {
+    return compositeChecker.getDictionary();
+  }
+
+  @Override
+  public SubmissionDirectory getSubmissionDirectory() {
+    return compositeChecker.getSubmissionDirectory();
+  }
 }

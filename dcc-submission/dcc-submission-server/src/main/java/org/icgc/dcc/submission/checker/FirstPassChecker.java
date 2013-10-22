@@ -39,6 +39,7 @@ import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
+import com.google.common.collect.Iterables;
 
 /**
  * 
@@ -90,7 +91,7 @@ public class FirstPassChecker {
         errMap.put(fileSchemaName, errorsBuilder.build());
       }
     }
-    return errMap.isEmpty();
+    return !(Iterables.concat(errMap.values()).iterator().hasNext());
   }
 
   public Set<String> getFileSchemaNames() {

@@ -18,21 +18,58 @@
 package org.icgc.dcc.submission.checker;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
-import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.fs.SubmissionDirectory;
+import org.icgc.dcc.submission.checker.Util.CheckLevel;
+import org.icgc.dcc.submission.dictionary.model.FileSchema;
+import org.icgc.dcc.submission.validation.ValidationErrorCode;
+
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
+import com.google.common.collect.Lists;
 
 /**
  * 
  */
-public interface FileChecker extends Checker {
+public class FileCollisionChecker extends CompositeFileChecker {
 
-  public List<FirstPassValidationError> check(String filePathname);
+  private final List<FirstPassValidationError> errors;
+  private final boolean isFailFast;
 
-  String getFileSchemaName(String filePathname);
+  public FileCollisionChecker(FileChecker fileChecker, boolean isFailFast) {
+    super(fileChecker);
+    this.isFailFast = isFailFast;
+    this.errors = Lists.newLinkedList();
+  }
 
-  public SubmissionDirectory getSubmissionDirectory();
+  public FileCollisionChecker(FileChecker fileChecker) {
+    this(fileChecker, true);
+  }
 
-  public Dictionary getDictionary();
+  @Override
+  public List<FirstPassValidationError> selfCheck(String filePathname) {
+    Builder<FirstPassValidationError> errorBuilder = ImmutableList.<FirstPassValidationError> builder();
+    Optional<FileSchema> fileSchema = getDictionary().fileSchema(getFileSchemaName(filePathname));
+    if (fileSchema.isPresent()) {
+      // more than 1 file that match the same pattern
+      if (ImmutableList.copyOf(getSubmissionDirectory().listFile(Pattern.compile(fileSchema.get().getPattern())))
+          .size() > 1) {
+        errorBuilder.add(new FirstPassValidationError(CheckLevel.FILE_LEVEL,
+            "More than 1 file matching the file pattern: " + fileSchema.get().getPattern(),
+            ValidationErrorCode.TOO_MANY_FILES_ERROR));
+      }
+    }
+    return errorBuilder.build();
+  }
 
+  @Override
+  public boolean isValid() {
+    return (super.isValid() && errors.isEmpty());
+  }
+
+  @Override
+  public boolean isFailFast() {
+    return isFailFast;
+  }
 }
