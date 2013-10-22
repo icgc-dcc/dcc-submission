@@ -20,13 +20,13 @@ package org.icgc.dcc.submission.validation.service;
 import static java.lang.String.format;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.dictionary.DictionaryService;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
-import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
@@ -61,40 +61,31 @@ public class ValidationService {
   @NonNull
   private final CascadingStrategyFactory cascadingStrategyFactory;
 
-  public Plan prepareValidation(final Release release, final QueuedProject queuedProject,
-      final ValidationCascadeListener listener) throws FilePresenceException {
+  public Plan prepareValidation(Release release, QueuedProject queuedProject, ValidationCascadeListener listener)
+      throws FilePresenceException {
+    log.info("Preparing cascade for project '{}'", queuedProject.getKey());
+    val projectKey = queuedProject.getKey();
+    val dictionary = getReleaseDictionary(release);
+    val releaseFilesystem = dccFileSystem.getReleaseFilesystem(release);
+    val submissionDirectory = releaseFilesystem.getSubmissionDirectory(projectKey);
 
-    String dictionaryVersion = release.getDictionaryVersion();
-    Dictionary dictionary = dictionaryService.getFromVersion(dictionaryVersion);
+    Path rootDir = submissionDirectory.getSubmissionDirPath();
+    Path outputDir = new Path(submissionDirectory.getValidationDirPath());
+    Path systemDir = releaseFilesystem.getSystemDirectory();
 
-    if (dictionary == null) {
-      throw new ValidationServiceException(format("No dictionary found with version %s, in release %s",
-          dictionaryVersion, release.getName()));
-    } else {
-      log.info("Preparing cascade for project '{}'", queuedProject.getKey());
+    log.info("Validation for '{}' has rootDir = {} ", projectKey, rootDir);
+    log.info("Validation for '{}' has outputDir = {} ", projectKey, outputDir);
+    log.info("Validation for '{}' has systemDir = {} ", projectKey, systemDir);
 
-      ReleaseFileSystem releaseFilesystem = dccFileSystem.getReleaseFilesystem(release);
+    // TODO: File Checker
+    CascadingStrategy cascadingStrategy = cascadingStrategyFactory.get(rootDir, outputDir, systemDir);
+    checkWellFormedness();
 
-      SubmissionDirectory submissionDirectory = releaseFilesystem.getSubmissionDirectory(queuedProject.getKey());
+    Plan plan = planValidation(queuedProject, submissionDirectory, cascadingStrategy, dictionary, listener);
+    listener.setPlan(plan);
 
-      Path rootDir = submissionDirectory.getSubmissionDirPath();
-      Path outputDir = new Path(submissionDirectory.getValidationDirPath());
-      Path systemDir = releaseFilesystem.getSystemDirectory();
-
-      log.info("Validation for '{}' has rootDir = {} ", queuedProject.getKey(), rootDir);
-      log.info("Validation for '{}' has outputDir = {} ", queuedProject.getKey(), outputDir);
-      log.info("Validation for '{}' has systemDir = {} ", queuedProject.getKey(), systemDir);
-
-      // TODO: File Checker
-      CascadingStrategy cascadingStrategy = cascadingStrategyFactory.get(rootDir, outputDir, systemDir);
-      checkWellFormedness();
-      Plan plan = planValidation(queuedProject, submissionDirectory, cascadingStrategy, dictionary, listener);
-
-      listener.setPlan(plan);
-
-      log.info("Prepared cascade for project {}", queuedProject.getKey());
-      return plan;
-    }
+    log.info("Prepared cascade for project {}", projectKey);
+    return plan;
   }
 
   /**
@@ -107,23 +98,25 @@ public class ValidationService {
       CascadingStrategy cascadingStrategy, Dictionary dictionary, CascadeListener cascadeListener)
       throws FilePresenceException {
     // TODO: Separate plan and connect?
-    log.info("Planning cascade for project {}", queuedProject.getKey());
+    val projectKey = queuedProject.getKey();
+    log.info("Planning cascade for project {}...", projectKey);
     Plan plan = planner.plan(queuedProject, submissionDirectory, cascadingStrategy, dictionary);
-    log.info("Planned cascade for project {}", queuedProject.getKey());
 
+    log.info("Planned cascade for project {}", projectKey);
     log.info("# internal flows: {}", Iterables.size(plan.getInternalFlows()));
     log.info("# external flows: {}", Iterables.size(plan.getExternalFlows()));
 
-    log.info("Connecting cascade for project {}", queuedProject.getKey());
+    log.info("Connecting cascade for project {}", projectKey);
     plan.connect(cascadingStrategy);
-    log.info("Connected cascade for project {}", queuedProject.getKey());
+    log.info("Connected cascade for project {}", projectKey);
+
     if (plan.hasFileLevelErrors()) { // determined during connection
       log.info(format("Submission has file-level errors, throwing a '%s'",
           FilePresenceException.class.getSimpleName()));
       throw new FilePresenceException(plan); // the queue manager will handle it
     }
 
-    return plan.addCascadeListener(cascadeListener, queuedProject);
+    return plan.addCascadeListener(cascadeListener);
   }
 
   /**
@@ -134,10 +127,7 @@ public class ValidationService {
    * <code>{@link ValidationCascadeListener#onCompleted(Cascade)}</code>
    */
   public void startValidation(Plan plan) {
-    QueuedProject queuedProject = plan.getQueuedProject();
-    String projectKey = queuedProject.getKey();
-
-    log.info("starting validation on project {}", projectKey);
+    log.info("starting validation on project {}", plan.getProjectKey());
     plan.startCascade();
   }
 
@@ -153,6 +143,18 @@ public class ValidationService {
       // FIXME: pass appropriate objects: offending project key and Map<String, TupleState> fileLevelErrors
       throw new FilePresenceException(null);
     }
+  }
+
+  private Dictionary getReleaseDictionary(Release release) {
+    val dictionaryVersion = release.getDictionaryVersion();
+    val dictionary = dictionaryService.getFromVersion(dictionaryVersion);
+
+    if (dictionary == null) {
+      throw new ValidationServiceException(format("No dictionary found with version %s, in release %s",
+          dictionaryVersion, release.getName()));
+    }
+
+    return dictionary;
   }
 
 }

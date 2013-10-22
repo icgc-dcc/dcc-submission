@@ -198,7 +198,7 @@ public class Plan {
     return System.currentTimeMillis() - startTime;
   }
 
-  public Plan addCascadeListener(final CascadeListener listener, final QueuedProject qProject) {
+  public Plan addCascadeListener(CascadeListener listener) {
     this.cascade.addListener(listener);
     return this;
   }

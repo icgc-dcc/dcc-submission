@@ -39,7 +39,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.mail.Address;
 import javax.mail.internet.AddressException;
@@ -110,7 +109,6 @@ public class ValidationQueueService extends AbstractScheduledService {
    * Validation state.
    */
   private final Map<String, Plan> validationSlots = new ConcurrentHashMap<String, Plan>();
-  private final AtomicInteger parallelValidationCount = new AtomicInteger();
 
   @Inject
   public ValidationQueueService(final ReleaseService releaseService, ValidationService validationService,
@@ -171,11 +169,15 @@ public class ValidationQueueService extends AbstractScheduledService {
     log.debug("Polling queue...");
     Optional<QueuedProject> optionalNextProject = absent();
     Optional<Throwable> criticalThrowable = absent();
+
     try {
       val release = resolveOpenRelease();
       optionalNextProject = release.nextInQueue();
-      if (optionalNextProject.isPresent() && hasEmptyValidationSlot()) {
-        processNext(release, optionalNextProject.get());
+      synchronized (validationSlots) {
+        val slotsAvailable = validationSlots.size() < maxValidating;
+        if (optionalNextProject.isPresent() && slotsAvailable) {
+          processNext(release, optionalNextProject.get());
+        }
       }
     } catch (FilePresenceException e) { // TODO: DCC-1820
       try {
@@ -215,15 +217,15 @@ public class ValidationQueueService extends AbstractScheduledService {
     releaseService.dequeueToValidating(project);
     Plan plan = validationService.prepareValidation(release, project, new ValidationCascadeListener());
 
-    log.info("Adding to validation slots: '{}'", project);
-    validationSlots.put(project.getKey(), plan);
-
     /**
      * Note that emptying of the .validation directory happens right before launching the cascade in
      * {@link Plan#startCascade()}
      */
     log.info("Starting validation: '{}'", project);
     validationService.startValidation(plan); // non-blocking
+
+    log.info("Adding to validation slots: '{}'", project);
+    validationSlots.put(project.getKey(), plan);
   }
 
   private Release resolveOpenRelease() {
@@ -280,8 +282,6 @@ public class ValidationQueueService extends AbstractScheduledService {
    * Triggered by cascading (via listener on cascade).
    */
   private void handleCompletedValidation(Plan plan) {
-    decrementParallelValidationCount();
-
     QueuedProject queuedProject = plan.getQueuedProject();
     String projectKey = queuedProject.getKey();
     Status cascadeStatus = plan.getCascade().getCascadeStats().getStatus();
@@ -356,32 +356,6 @@ public class ValidationQueueService extends AbstractScheduledService {
     log.info("Resolved {}", key);
   }
 
-  /**
-   * Determines if runnable and increments counter if it is the case.
-   * <p>
-   * Whether there is a spot available for validation to occur (increment and give green light) or whether the
-   * submission should remain in the queue.
-   * <p>
-   * Counterpart operation to <code>{@link ValidationQueueService#decrementParallelValidationCount()}</code>
-   */
-  private synchronized boolean hasEmptyValidationSlot() {
-    int original = parallelValidationCount.intValue();
-    if (original < maxValidating) {
-      checkState(parallelValidationCount.incrementAndGet() <= maxValidating, "by design: %s",
-          parallelValidationCount.intValue());
-    }
-    return original < parallelValidationCount.intValue();
-  }
-
-  /**
-   * Decrements the parallel validation counter.
-   * <p>
-   * Counterpart operation to <code>{@link ValidationQueueService#hasEmptyValidationSlot()}</code>
-   */
-  private synchronized void decrementParallelValidationCount() {
-    checkState(parallelValidationCount.decrementAndGet() >= 0);
-  }
-
   private void email(QueuedProject project, SubmissionState state) { // TODO: SUBM-5
     val release = resolveOpenRelease();
 
@@ -445,8 +419,9 @@ public class ValidationQueueService extends AbstractScheduledService {
       log.info("{}: onCompleted, plan: {}", getName(), plan);
 
       synchronized (validationSlots) {
+        validationSlots.remove(plan.getProjectKey());
+
         handleCompletedValidation(plan);
-        validationSlots.remove(plan);
       }
     }
 
