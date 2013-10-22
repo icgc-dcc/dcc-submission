@@ -535,7 +535,6 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
       assertEquals(OK.getStatusCode(), response.getStatus());
     } while (detailedSubmission.getState() == QUEUED);
-    sleepUninterruptibly(2, SECONDS);
   }
 
   private static List<SubmissionState> hasSubmisisonStates(SubmissionState... states) {

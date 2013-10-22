@@ -78,7 +78,7 @@ public class ValidationService {
 
   }
 
-  Plan prepareValidation(final Release release, final QueuedProject qProject,
+  public Plan prepareValidation(final Release release, final QueuedProject qProject,
       final ValidationCascadeListener validationCascadeListener) throws FilePresenceException {
 
     String dictionaryVersion = release.getDictionaryVersion();

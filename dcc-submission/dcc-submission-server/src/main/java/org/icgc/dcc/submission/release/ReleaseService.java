@@ -27,6 +27,8 @@ import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.NOT_VALIDATED;
+import static org.icgc.dcc.submission.release.model.SubmissionState.QUEUED;
+import static org.icgc.dcc.submission.release.model.SubmissionState.VALIDATING;
 
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
@@ -335,25 +337,34 @@ public class ReleaseService extends BaseMorphiaService<Release> {
 
     val release = resolveNextRelease().getRelease();
     val target = singletonList(projectKey);
-    val projectKeys = release.getQueuedProjectKeys();
 
-    val queued = projectKeys.contains(projectKey);
+    // Validation state
+    val state = getSubmission(release, projectKey).getState();
+    val queued = state == QUEUED;
+    val validating = state == VALIDATING;
+    val active = validating || queued;
+
+    log.info("Submission state when delete queue request called: {}", state);
+
     if (queued) {
       log.info("Removing project form queue: {}", projectKey);
       release.removeFromQueue(projectKey);
     }
 
-    // Update database state
-    val newState = NOT_VALIDATED;
-    log.info("Setting '{}' project state to '{}'", projectKey, newState);
-    updateSubmisions(target, newState);
-    log.info("Setting '{}' release '{}' project queue state to '{}'",
-        new Object[] { release.getName(), projectKey, newState });
-    dbUpdateSubmissions(release.getName(), release.getQueue(), target, newState);
+    if (active) {
+      // Update database state
+      val newState = NOT_VALIDATED;
+      log.info("Setting '{}' project state to '{}'", projectKey, newState);
+      updateSubmisions(target, newState);
 
-    // Update file system state
-    log.info("Resetting '{}' project validation folder", projectKey);
-    resetValidationFolder(projectKey, release);
+      log.info("Setting '{}' release '{}' project queue state to '{}'",
+          new Object[] { release.getName(), projectKey, newState });
+      dbUpdateSubmissions(release.getName(), release.getQueue(), target, newState);
+
+      // Update file system state
+      log.info("Resetting '{}' project validation folder", projectKey);
+      resetValidationFolder(projectKey, release);
+    }
   }
 
   public void queue(Release nextRelease, List<QueuedProject> queuedProjects) //

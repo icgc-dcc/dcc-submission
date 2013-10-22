@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission.validation.service;
 
 import static cascading.stats.CascadingStats.Status.FAILED;
+import static cascading.stats.CascadingStats.Status.STOPPED;
 import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -26,7 +27,6 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 import static com.google.common.util.concurrent.Uninterruptibles.sleepUninterruptibly;
 import static java.lang.String.format;
-import static java.util.Collections.newSetFromMap;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.ERROR;
@@ -40,9 +40,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.mail.Address;
@@ -72,7 +69,7 @@ import cascading.cascade.CascadeListener;
 import cascading.stats.CascadingStats.Status;
 
 import com.google.common.base.Optional;
-import com.google.common.util.concurrent.AbstractService;
+import com.google.common.util.concurrent.AbstractScheduledService;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
 
@@ -82,12 +79,12 @@ import com.typesafe.config.Config;
  * - Updates submission states upon termination of the validation process
  */
 @Slf4j
-public class ValidationQueueManagerService extends AbstractService {
+public class ValidationQueueManagerService extends AbstractScheduledService {
 
   /**
-   * Frequency at which the service polls for an open release and for enqueued projects there is one.
+   * Period at which the service polls for an open release and for enqueued projects there is one.
    */
-  private static final int POLLING_FREQUENCY_PER_SEC = 1;
+  private static final int POLLING_PERIOD_SECONDS = 1;
 
   /**
    * Default value for maximum number of concurrent validations.
@@ -96,24 +93,18 @@ public class ValidationQueueManagerService extends AbstractService {
 
   private static final String MAX_VALIDATING_CONFIG_PARAM = "validator.max_simultaneous";
 
-  private static final Optional<QueuedProject> ABSENT_QUEUED_PROJECT = absent(); // TODO: SUBM-2
-  private static final Optional<Throwable> ABSENT_THROWABLE = absent();
-
-  private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
   private final int maxValidating;
   private final ReleaseService releaseService;
   private final ValidationService validationService;
   private final MailService mailService;
 
-  private final Set<Plan> validationSlots = newSetFromMap(new ConcurrentHashMap<Plan, Boolean>());
+  private final Map<String, Plan> validationSlots = new ConcurrentHashMap<String, Plan>();
 
   /**
    * To keep track of parallel validations. Volatility is guaranteed according to
    * http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/atomic/package-summary.html.
    */
   private final AtomicInteger parallelValidationCount = new AtomicInteger();
-
-  private ScheduledFuture<?> schedule;
 
   @Inject
   public ValidationQueueManagerService(final ReleaseService releaseService, ValidationService validationService,
@@ -122,101 +113,58 @@ public class ValidationQueueManagerService extends AbstractService {
     this.validationService = checkNotNull(validationService);
     this.mailService = mailService;
 
-    this.maxValidating = checkNotNull(config).hasPath(MAX_VALIDATING_CONFIG_PARAM) ?
-        config.getInt(MAX_VALIDATING_CONFIG_PARAM) :
-        DEFAULT_MAX_VALIDATING;
+    this.maxValidating = getMaxValidating(config);
   }
 
   public void killValidation(String projectKey) throws InvalidStateException {
-    val plan = findValidation(projectKey);
-    if (plan.isPresent()) {
-      log.info("Setting 'killed' flag validation for project: {}, plan: {}", projectKey, plan);
-      plan.get().kill();
-      log.info("Stopping cascade for project: {}", projectKey);
-      plan.get().stopCascade();
-      log.info("Successfully killed validation for project: {}", projectKey);
-    } else {
-      log.info("Validation plan not found for project validation: {}", projectKey);
-    }
-
-    log.info("Re-setting database and file system state for killed project validation: {}", projectKey);
-    releaseService.deleteQueuedRequest(projectKey);
-  }
-
-  @Override
-  protected void doStart() {
-    startScheduler();
-    notifyStarted(); // MUST happen after the above method, by contract
-  }
-
-  @Override
-  protected void doStop() {
-    stopScheduler();
-    notifyStopped(); // MUST happen after the above method, by contract
-  }
-
-  private void startScheduler() {
-    log.info("Polling queue every {} second", POLLING_FREQUENCY_PER_SEC);
-
-    schedule = scheduler.scheduleWithFixedDelay(
-        new Runnable() {
-
-          @Override
-          public void run() {
-            checkState(isRunning(), "Expecting service to be running."); // Thanks to the initial delay we set
-
-            /*
-             * TODO: SUBM-1 - Ideally we wouldn't do that every time (but requires creating yet a separate thread for
-             * that)
-             */
-            // TODO: if first time, send out email (wait for SUBM-1 to be done)
-            {
-              long count = waitForAnOpenRelease();
-              checkState(
-                  count == 1,
-                  "Expecting one and only one '%s' release, instead getting '%s'",
-                  OPENED, count);
-            }
-
-            pollQueue();
-          }
-        },
-        POLLING_FREQUENCY_PER_SEC,
-        POLLING_FREQUENCY_PER_SEC,
-        SECONDS);
-  }
-
-  private void stopScheduler() {
-    try {
-      if (schedule.cancel(true)) {
-        log.info("Successfully cancelled the schedule");
+    synchronized (validationSlots) {
+      val plan = validationSlots.get(projectKey);
+      if (plan != null) {
+        log.info("Setting 'killed' flag validation for project: {}, plan: {}", projectKey, plan);
+        plan.kill();
+        log.info("Stopping cascade for project: {}", projectKey);
+        plan.stopCascade();
+        log.info("Successfully killed validation for project: {}", projectKey);
       } else {
-        log.error("Failed to cancel schedule");
+        log.info("Validation plan not found for project validation: {}", projectKey);
       }
-    } finally {
-      log.info("Shutting down scheduler");
-      scheduler.shutdown();
+
+      log.info("Resetting database and file system state for killed project validation: {}...", projectKey);
+      releaseService.deleteQueuedRequest(projectKey);
     }
   }
 
-  private long waitForAnOpenRelease() {
+  @Override
+  protected void runOneIteration() throws Exception {
+    // TODO: SUBM-1 - Ideally we wouldn't do that every time (but requires creating yet a separate thread for that)
+    // TODO: If first time, send out email (wait for SUBM-1 to be done)
+    pollOpenRelease();
+    pollQueue();
+  }
+
+  @Override
+  protected Scheduler scheduler() {
+    return Scheduler.newFixedDelaySchedule(POLLING_PERIOD_SECONDS, POLLING_PERIOD_SECONDS, SECONDS);
+  }
+
+  private void pollOpenRelease() {
     long count;
     do {
-      sleepUninterruptibly(
-          POLLING_FREQUENCY_PER_SEC,
-          SECONDS);
+      sleepUninterruptibly(POLLING_PERIOD_SECONDS, SECONDS);
       count = releaseService.countOpenReleases();
     } while (count == 0);
-    return count;
+
+    checkState(count == 1, "Expecting one and only one '%s' release, instead getting '%s'",
+        OPENED, count);
   }
 
   /**
    * Kicks off processing for the next project if there is one and handles potential errors.
    */
   private void pollQueue() {
-    log.debug("Polling queue.");
-    Optional<QueuedProject> optionalNextProject = ABSENT_QUEUED_PROJECT;
-    Optional<Throwable> criticalThrowable = ABSENT_THROWABLE;
+    log.debug("Polling queue...");
+    Optional<QueuedProject> optionalNextProject = absent();
+    Optional<Throwable> criticalThrowable = absent();
     try {
       val release = resolveOpenRelease();
       optionalNextProject = release.nextInQueue();
@@ -225,20 +173,19 @@ public class ValidationQueueManagerService extends AbstractService {
       }
     } catch (FilePresenceException e) { // TODO: DCC-1820
       try {
-        handleAbortedValidation(e);
+        handleMalformedValidation(e);
       } catch (Throwable t) {
         log.info("Caught an unexpected {} upon trying to abort validation", t.getClass().getSimpleName());
         criticalThrowable = Optional.fromNullable(t);
       }
-    } catch (Throwable t) { // exception thrown within the run method are not logged otherwise (NullPointerException
-                            // for instance)
+    } catch (Throwable t) {
+      // Exception thrown within the run method are not logged otherwise (NullPointerException
+      // for instance)
       log.info("Caught an unexpected {}", t.getClass().getSimpleName());
       criticalThrowable = Optional.fromNullable(t);
     } finally {
-      /*
-       * When a scheduled job throws an exception to the executor, all future runs of the job are cancelled. Thus, we
-       * should never throw an exception to our executor otherwise a server restart is necessary.
-       */
+      // When a scheduled job throws an exception to the executor, all future runs of the job are cancelled. Thus, we
+      // should never throw an exception to our executor otherwise a server restart is necessary.
       if (criticalThrowable.isPresent()) {
         processCriticalThrowable(
             criticalThrowable.get(),
@@ -262,12 +209,13 @@ public class ValidationQueueManagerService extends AbstractService {
     releaseService.dequeueToValidating(project);
     Plan plan = validationService.prepareValidation(release, project, new ValidationCascadeListener());
 
+    log.info("Adding to validation slots: '{}'", project);
+    validationSlots.put(project.getKey(), plan);
+
     /**
      * Note that emptying of the .validation directory happens right before launching the cascade in
      * {@link Plan#startCascade()}
      */
-    log.info("Adding to validation slots: '{}'", project);
-    validationSlots.add(plan);
     log.info("Starting validation: '{}'", project);
     validationService.startValidation(plan); // non-blocking
   }
@@ -281,12 +229,10 @@ public class ValidationQueueManagerService extends AbstractService {
   /**
    * Triggered by our application.
    */
-  private void handleAbortedValidation(FilePresenceException e) {
-    Plan plan = e.getPlan();
-    if (plan.hasFileLevelErrors() == false) {
-      throw new AssertionError(); // by design since this should be the condition for throwing the
-                                  // FatalPlanningException
-    }
+  private void handleMalformedValidation(FilePresenceException e) {
+    val plan = e.getPlan();
+    checkState(!plan.hasFileLevelErrors(),
+        "Unexpected by design since this should be the condition for throwing the FatalPlanningException");
 
     Map<String, TupleState> fileLevelErrors = plan.getFileLevelErrors();
     log.info("There are file-level errors (fatal ones):\n\t{}", fileLevelErrors);
@@ -310,8 +256,18 @@ public class ValidationQueueManagerService extends AbstractService {
       schemaReport.setName(schema);
       schemaReports.add(schemaReport);
     }
+
     report.setSchemaReports(schemaReports);
     setSubmissionReport(projectKey, report);
+  }
+
+  /**
+   * Triggered by cascading (via listener on cascade).
+   */
+  private void handleUnexpectedTermination(Plan plan) {
+    log.error("Unexpected termination of project '{}' validaton. Resolving to {} submission state.",
+        plan.getProjectKey(), ERROR);
+    resolveSubmission(plan.getQueuedProject(), ERROR);
   }
 
   /**
@@ -321,26 +277,29 @@ public class ValidationQueueManagerService extends AbstractService {
     checkArgument(plan != null);
     QueuedProject queuedProject = plan.getQueuedProject();
     String projectKey = queuedProject.getKey();
-    log.info("Cascade completed for project {}", projectKey);
-
     Status cascadeStatus = plan.getCascade().getCascadeStats().getStatus();
-    if (FAILED == cascadeStatus) { // Completion does not guarantee success (at least in current version of
-                                   // cascading)
+
+    log.info("Cascade completed for project {} with cascade status: {}, killed: {}",
+        new Object[] { projectKey, cascadeStatus, plan.isKilled() });
+    if (FAILED == cascadeStatus) {
       log.error("Validation failed: cascade completed with a {} status; About to dequeue project key {}",
           cascadeStatus, projectKey);
       resolveSubmission(queuedProject, ERROR);
+    } else if (STOPPED == cascadeStatus) {
+      log.info("Validation successfully stopped: {}", projectKey);
     } else {
       log.info("Gathering report for project {}", projectKey);
       SubmissionReport report = new SubmissionReport();
       Outcome outcome = plan.collect(report);
       log.info("Gathered report for project {}", projectKey);
 
-      // resolving submission
+      // Resolving submission
       if (outcome == PASSED) {
         resolveSubmission(queuedProject, VALID);
       } else {
         resolveSubmission(queuedProject, INVALID);
       }
+
       setSubmissionReport(projectKey, report);
 
       log.info("Validation finished normally for project {}, time spent on validation is {} seconds", projectKey,
@@ -348,22 +307,11 @@ public class ValidationQueueManagerService extends AbstractService {
     }
   }
 
-  /**
-   * Triggered by cascading (via listener on cascade).
-   */
-  private void handleUnexpectedException(QueuedProject project) {
-    checkArgument(project != null);
-    log.info("failed validation from unknown error - about to dequeue project key {}", project.getKey());
-    resolveSubmission(project, SubmissionState.ERROR);
-  }
-
   private void setSubmissionReport(String projectKey, SubmissionReport report) {
-    log.info("starting report collecting on project {}", projectKey);
+    log.info("Starting report collecting on project {}", projectKey);
 
-    Release release = resolveOpenRelease(); // TODO: should we create it here?
-
+    Release release = resolveOpenRelease();
     Submission submission = this.releaseService.getSubmission(release.getName(), projectKey);
-
     submission.setReport(report);
 
     // persist the report to DB
@@ -371,22 +319,22 @@ public class ValidationQueueManagerService extends AbstractService {
     // dcc-submission-server and dcc-submission-core.
     this.releaseService
         .updateSubmissionReport(release.getName(), projectKey, (SubmissionReport) submission.getReport());
-    log.info("report collecting finished on project {}", projectKey);
+    log.info("Report collecting finished on project {}", projectKey);
   }
 
   private void processCriticalThrowable(Throwable t, Optional<QueuedProject> optionalNextProject) {
-    log.error("a critical error occured while processing the validation queue", t);
+    log.error("A critical error occured while processing the validation queue", t);
 
-    if (checkNotNull(optionalNextProject.isPresent())) {
+    if (optionalNextProject.isPresent()) {
       QueuedProject project = optionalNextProject.get();
       try {
-        resolveSubmission(project, SubmissionState.ERROR);
+        resolveSubmission(project, ERROR);
       } catch (Throwable t2) {
         log.error("a critical error occured while attempting to dequeue project " + project.getKey(), t2);
       }
     } else {
       log.error("next project in queue not present, could not dequeue nor set submission state to {}",
-          SubmissionState.ERROR);
+          ERROR);
     }
   }
 
@@ -399,13 +347,14 @@ public class ValidationQueueManagerService extends AbstractService {
    */
   private void resolveSubmission(QueuedProject project, SubmissionState state) {
     String key = project.getKey();
-    log.info("Resolving {}", key);
+    log.info("Resolving project '{}' to submission state '{}'", key, state);
     releaseService.resolve(key, state);
 
     decrementParallelValidationCount();
     if (project.getEmails().isEmpty() == false) {
       this.email(project, state);
     }
+
     log.info("Resolved {}", key);
   }
 
@@ -453,14 +402,10 @@ public class ValidationQueueManagerService extends AbstractService {
     }
   }
 
-  private Optional<Plan> findValidation(String projectKey) {
-    for (val plan : validationSlots) {
-      if (plan.getProjectKey().equals(projectKey)) {
-        return Optional.<Plan> of(plan);
-      }
-    }
-
-    return Optional.<Plan> absent();
+  private static int getMaxValidating(Config config) {
+    return config.hasPath(MAX_VALIDATING_CONFIG_PARAM) ?
+        config.getInt(MAX_VALIDATING_CONFIG_PARAM) :
+        DEFAULT_MAX_VALIDATING;
   }
 
   class ValidationCascadeListener implements CascadeListener {
@@ -473,42 +418,38 @@ public class ValidationQueueManagerService extends AbstractService {
 
     @Override
     public void onStarting(Cascade cascade) {
-      log.info("{}: onStarting", getName());
+      // cascade.start() called
+      log.info("{}: onStarting, plan: {}", getName(), plan);
     }
 
     @Override
     public void onStopping(Cascade cascade) {
+      // cascade.stop() called
       log.info("{}: onStopping, plan: {}", getName(), plan);
-      validationSlots.remove(plan);
 
-      if (plan.isKilled()) {
-        log.info("{}: onStopping  - Finished killing.", getName());
-        return;
+      if (!plan.isKilled()) {
+        handleUnexpectedTermination(plan);
       }
-
-      handleUnexpectedException(plan.getQueuedProject());
-    }
-
-    @Override
-    public void onCompleted(Cascade cascade) {
-      log.info("{}: onCompleted", getName());
-      validationSlots.remove(plan);
-
-      if (plan.isKilled()) {
-        log.info("{}: onCompleted  - Finished killing.", getName());
-        return;
-      }
-
-      handleCompletedValidation(plan);
     }
 
     @Override
     public boolean onThrowable(Cascade cascade, Throwable throwable) {
-      validationSlots.remove(plan);
-      log.error(getName() + ": onThrowable: {}", throwable);
+      log.error(getName() + ": onThrowable:", throwable);
 
       // No-op for now; false indicates that the throwable was not handled and needs to be re-thrown
-      return false;
+      val handled = false;
+      return handled;
+    }
+
+    @Override
+    public void onCompleted(Cascade cascade) {
+      // Always called, regardless of cascade status and thrown throwables
+      log.info("{}: onCompleted, plan: {}", getName(), plan);
+
+      synchronized (validationSlots) {
+        handleCompletedValidation(plan);
+        validationSlots.remove(plan);
+      }
     }
 
     private String getName() {
