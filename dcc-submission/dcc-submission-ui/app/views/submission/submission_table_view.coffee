@@ -41,6 +41,11 @@ module.exports = class SubmissionTableView extends DataTableView
 
     @modelBind 'change', @update
 
+    @subscribeEvent "cancelSubmission", ->
+      $('#cancel-submission-popup-button').html('Cancelling...')
+      $('#cancel-submission-popup-button').attr('disabled', 'disabled')
+      
+
     @delegate 'click', '#signoff-submission-popup-button',
       @signOffSubmissionPopup
     @delegate 'click', '#validate-submission-popup-button',
@@ -69,7 +74,6 @@ module.exports = class SubmissionTableView extends DataTableView
   cancelSubmissionPopup: (e) ->
     @subview("cancelSubmissionView"
       new cancelSubmissionView
-        "button": $('#cancel-submission-popup-button'),
         "submission": @collection.get $(e.currentTarget).data("submission")
     )
 

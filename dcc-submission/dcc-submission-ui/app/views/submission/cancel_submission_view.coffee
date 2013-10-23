@@ -53,15 +53,16 @@ module.exports = class CancelSubmissionView extends View
     @delegate 'click', '#cancel-submission-button', @cancelSubmission
 
   cancelSubmission: (e) ->
-    console.debug "CancelSubmissionView", @model
+    #console.debug "CancelSubmissionView", @model
+
+    @$el.find('#cancel-submission-button').attr('disabled', 'disabled')
+    @$el.find('#cancel-submission-button').html('Cancelling...')
 
     nextRelease = new NextRelease()
 
     nextRelease.cancel {key: @options.submission.get("projectKey")},
       success: =>
         @$el.modal 'hide'
-        @options.button.html("Cancelling...")
-        @options.button.attr("disabled", "disabled")
 
         mediator.publish "cancelSubmission"
         mediator.publish "notify", "Validation for Project "+
