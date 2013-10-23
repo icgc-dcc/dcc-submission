@@ -1,5 +1,5 @@
 """
-* Copyright 2012(c) The Ontario Institute for Cancer Research.
+* Copyright 2013(c) The Ontario Institute for Cancer Research.
 * All rights reserved.
 *
 * This program and the accompanying materials are made available under the
@@ -20,39 +20,12 @@
 * POSSIBILITY OF SUCH DAMAGE.
 """
 
+Model = require 'models/base/model'
 
-Release = require 'models/release'
-Validation = require 'models/validation'
-
-module.exports = class NextRelease extends Release
+module.exports = class Validation extends Model
   urlKey: "id"
   urlPath: ->
-    "nextRelease/"
+    "nextRelease/validation/"
 
   initialize: ->
-    #console.debug? 'NextRelease#initialize', @
-
-  cancel: (attributes, options)->
-    #console.debug "Cancelling"
-
-    # Although the end point is DELETE, cancelling is really
-    # a revert of status back to not_validated
-    @attributes = attributes
-    validation = new Validation {'id': @attributes?.key}
-    validation.destroy(options)
-
-  queue: (attributes, options)->
-    @urlPath = ->
-      "nextRelease/queue"
-
-    @attributes = attributes
-
-    @save(attributes, options)
-
-  signOff: (attributes, options)->
-    @urlPath = ->
-      "nextRelease/signed"
-
-    @attributes = attributes
-
-    @save(attributes, options)
+    super

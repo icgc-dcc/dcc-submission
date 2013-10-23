@@ -25,20 +25,20 @@ import org.icgc.dcc.submission.validation.restriction.DiscreteValuesRestriction;
 import org.icgc.dcc.submission.validation.restriction.RangeFieldRestriction;
 import org.icgc.dcc.submission.validation.restriction.RegexRestriction;
 import org.icgc.dcc.submission.validation.restriction.RequiredRestriction;
-import org.icgc.dcc.submission.validation.service.ValidationQueueManagerService;
+import org.icgc.dcc.submission.validation.service.ValidationQueueService;
 import org.icgc.dcc.submission.validation.service.ValidationService;
 
 import com.google.inject.Singleton;
 import com.google.inject.multibindings.Multibinder;
 
 /**
- * Module for the ({@code ValidationQueueManagerService})
+ * Module for the ({@code ValidationQueueService})
  */
 public class ValidationModule extends AbstractDccModule {
 
   @Override
   protected void configure() {
-    bindService(ValidationQueueManagerService.class);
+    bindService(ValidationQueueService.class);
     bind(ValidationService.class);
     bind(Planner.class).to(DefaultPlanner.class);
     bind(CascadingStrategyFactory.class).toProvider(CascadingStrategyFactoryProvider.class).in(Singleton.class);

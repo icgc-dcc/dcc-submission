@@ -21,6 +21,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.List;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.core.morphia.BaseMorphiaService;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
@@ -32,8 +34,6 @@ import org.icgc.dcc.submission.dictionary.model.Term;
 import org.icgc.dcc.submission.dictionary.visitor.DictionaryCloneVisitor;
 import org.icgc.dcc.submission.release.ReleaseService;
 import org.icgc.dcc.submission.release.model.Release;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
@@ -45,9 +45,8 @@ import com.mysema.query.mongodb.morphia.MorphiaQuery;
 /**
  * Offers various CRUD operations pertaining to {@code Dictionary}
  */
+@Slf4j
 public class DictionaryService extends BaseMorphiaService<Dictionary> {
-
-  private static final Logger log = LoggerFactory.getLogger(DictionaryService.class);
 
   private final ReleaseService releases;
 
