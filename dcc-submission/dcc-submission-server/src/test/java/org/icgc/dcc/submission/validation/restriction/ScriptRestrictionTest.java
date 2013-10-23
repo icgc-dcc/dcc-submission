@@ -27,10 +27,10 @@ import java.util.List;
 import lombok.val;
 
 import org.icgc.dcc.submission.validation.cascading.TupleState;
+import org.icgc.dcc.submission.validation.restriction.ScriptRestriction.InvalidScriptException;
 import org.icgc.dcc.submission.validation.restriction.ScriptRestriction.ScriptFunction;
 import org.junit.Test;
 
-import cascading.operation.OperationException;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
@@ -81,8 +81,8 @@ public class ScriptRestrictionTest extends BaseRestrictionTest {
     assertTrue(state.isInvalid());
   }
 
-  @Test(expected = OperationException.class)
-  public void test_ScriptFunction_error_return_type() {
+  @Test(expected = InvalidScriptException.class)
+  public void test_ScriptFunction_compile_error_return_type() {
     invokeFunction(
         script("1"),
         row("x", 1));
@@ -106,7 +106,7 @@ public class ScriptRestrictionTest extends BaseRestrictionTest {
     // Simulate a singleton tuple stream
     val tupleEntry = new TupleEntry(fields, tuple);
     val tuples = new TupleEntry[] { tupleEntry };
-    val function = new ScriptFunction(script);
+    val function = new ScriptFunction("fieldName", script);
     val results = invokeFunction(function, tuples, fields);
 
     return newArrayList(results.iterator());

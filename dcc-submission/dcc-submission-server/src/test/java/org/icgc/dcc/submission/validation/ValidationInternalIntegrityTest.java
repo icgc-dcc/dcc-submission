@@ -21,7 +21,7 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 import static org.apache.commons.io.FileUtils.readFileToString;
-import static org.icgc.dcc.submission.TestUtils.dictionaryToString;
+import static org.icgc.dcc.submission.TestUtils.dictionary;
 import static org.icgc.dcc.submission.TestUtils.resourceToString;
 import static org.icgc.dcc.submission.validation.CascadingStrategy.SEPARATOR;
 import static org.mockito.Matchers.anyString;
@@ -39,7 +39,6 @@ import lombok.val;
 
 import org.apache.hadoop.fs.Path;
 import org.codehaus.jackson.JsonProcessingException;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.submission.dictionary.DictionaryService;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
@@ -65,7 +64,6 @@ import org.icgc.dcc.submission.validation.service.ValidationService;
 import org.icgc.dcc.submission.validation.visitor.UniqueFieldsPlanningVisitor;
 import org.icgc.dcc.submission.validation.visitor.ValueTypePlanningVisitor;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -129,7 +127,7 @@ public class ValidationInternalIntegrityTest {
     validationService =
         new ValidationService(planner, dccFileSystem, dictionaryService, new LocalCascadingStrategyFactory());
 
-    dictionary = createDictionary();
+    dictionary = dictionary();
   }
 
   @Test
@@ -210,7 +208,6 @@ public class ValidationInternalIntegrityTest {
   }
 
   @Test
-  @Ignore
   public void test_validate_invalidScriptValues() {
     BasicDBObject config = new BasicDBObject();
     config.put(ScriptRestriction.NAME, "donor_sex == 1");
@@ -236,15 +233,16 @@ public class ValidationInternalIntegrityTest {
   }
 
   private void testErrorType(String errorType) {
-    String content = validate(validationService, dictionary, "/fixtures/validation/internal/error/" + errorType);
+    val submissionFilePath = "/fixtures/validation/internal/error/" + errorType;
+    val content = validate(validationService, dictionary, submissionFilePath);
 
-    String expected = resourceToString("/fixtures/validation/reference/" + errorType + ".json");
+    val expected = resourceToString("/fixtures/validation/reference/" + errorType + ".json");
     assertEquals("errorType = " + errorType + ", content = " + content, expected.trim(), content.trim());
   }
 
   @SneakyThrows
-  private String validate(ValidationService validationService, Dictionary dictionary, String relative) {
-    String rootDirString = this.getClass().getResource(relative).getFile();
+  private String validate(ValidationService validationService, Dictionary dictionary, String submissionFilePath) {
+    String rootDirString = this.getClass().getResource(submissionFilePath).getFile();
     String outputDirString = rootDirString + "/" + ".validation";
     String errorFileString = outputDirString + "/" + "donor.internal" + SEPARATOR + "errors.json";
 
@@ -286,11 +284,6 @@ public class ValidationInternalIntegrityTest {
     }
 
     return null;
-  }
-
-  @SneakyThrows
-  private static Dictionary createDictionary() {
-    return new ObjectMapper().reader(Dictionary.class).readValue(dictionaryToString());
   }
 
 }

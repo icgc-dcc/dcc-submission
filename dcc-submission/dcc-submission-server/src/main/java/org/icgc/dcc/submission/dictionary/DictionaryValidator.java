@@ -52,6 +52,8 @@ import org.icgc.dcc.submission.dictionary.model.ValueType;
 import org.icgc.dcc.submission.validation.restriction.CodeListRestriction;
 import org.icgc.dcc.submission.validation.restriction.DiscreteValuesRestriction;
 import org.icgc.dcc.submission.validation.restriction.RangeFieldRestriction;
+import org.icgc.dcc.submission.validation.restriction.ScriptRestriction;
+import org.icgc.dcc.submission.validation.restriction.ScriptRestriction.InvalidScriptException;
 
 import com.google.common.base.Function;
 import com.google.common.collect.HashBasedTable;
@@ -175,6 +177,15 @@ public class DictionaryValidator {
         }
         if (field.getValueType() == ValueType.DECIMAL && Doubles.tryParse(max) == null) {
           errors.add(new DictionaryObservation("Non DECIMAL range max value", schema, field, restriction, max));
+        }
+      }
+
+      if (restriction.getType() == RestrictionType.SCRIPT) {
+        String script = config.getString(ScriptRestriction.PARAM);
+        try {
+          ScriptRestriction.validateScript(script);
+        } catch (InvalidScriptException e) {
+          errors.add(new DictionaryObservation(e.getMessage(), schema, field, restriction, script));
         }
       }
     }

@@ -113,7 +113,7 @@ public class CodeListRestriction implements InternalPlanElement {
     }
 
     @Override
-    public FlowType flow() {
+    public FlowType flowType() {
       return FlowType.INTERNAL;
     }
 

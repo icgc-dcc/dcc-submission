@@ -17,11 +17,9 @@
  */
 package org.icgc.dcc.submission.validation.cascading;
 
-import java.beans.ConstructorProperties;
-
+import static org.icgc.dcc.hadoop.cascading.Fields2.concat;
 import cascading.tuple.Fields;
 import cascading.tuple.TupleEntry;
-import static org.icgc.dcc.hadoop.cascading.Fields2.concat;
 
 /**
  * An extension of {@code Fields} that always includes the {@code TupleState} field.
@@ -37,12 +35,11 @@ public class ValidationFields extends Fields {
   /**
    * Extract the {@code TupleState} field from a {@cude TupleEntry}.
    */
-  public static TupleState state(TupleEntry te) {
-    return (TupleState) te.getObject(STATE_FIELD_NAME);
+  public static TupleState state(TupleEntry tupleEntry) {
+    return (TupleState) tupleEntry.getObject(STATE_FIELD_NAME);
   }
 
   @SuppressWarnings("rawtypes")
-  @ConstructorProperties({ "fields" })
   public ValidationFields(Comparable... fields) {
     super(concat(fields, STATE_FIELD_NAME));
   }

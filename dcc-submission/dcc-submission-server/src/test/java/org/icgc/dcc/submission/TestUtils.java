@@ -111,10 +111,13 @@ public final class TestUtils {
   }
 
   @SneakyThrows
-  public static String dictionaryToString() {
-    val dictionary = MAPPER.reader(Dictionary.class).readValue(getDccResource("Dictionary.json"));
+  public static Dictionary dictionary() {
+    return MAPPER.reader(Dictionary.class).readValue(getDccResource("Dictionary.json"));
+  }
 
-    return MAPPER.writeValueAsString(dictionary);
+  @SneakyThrows
+  public static String dictionaryToString() {
+    return MAPPER.writeValueAsString(dictionary());
   }
 
   @SneakyThrows

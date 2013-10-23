@@ -38,7 +38,7 @@ public class InternalRestrictionPlanningVisitor extends InternalFlowPlanningVisi
 
       @Override
       public boolean apply(RestrictionType input) {
-        return input.flow() == FlowType.INTERNAL;
+        return input.flowType() == FlowType.INTERNAL;
       }
 
     });

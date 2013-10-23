@@ -73,20 +73,25 @@ public class ScriptRestriction implements InternalPlanElement {
   /**
    * Configuration.
    */
-  private final String field;
+  private final String reportedField;
   private final String script;
 
   @Override
   public String describe() {
-    return format("%s[%s:%s]", NAME, field, script);
+    return format("%s[%s:%s]", NAME, reportedField, script);
   }
 
   @Override
   public Pipe extend(Pipe pipe) {
-    val fields = new ValidationFields(ALL);
-    val function = new ScriptFunction(script);
+    val fields = ALL;
+    val function = new ScriptFunction(reportedField, script);
 
     return new Each(pipe, fields, function, REPLACE);
+  }
+
+  public static void validateScript(String script) {
+    ExecutableStatement compileScript = ScriptFunction.compile(script);
+    ScriptFunction.validate(compileScript);
   }
 
   public static class Type implements RestrictionType {
@@ -100,7 +105,7 @@ public class ScriptRestriction implements InternalPlanElement {
     }
 
     @Override
-    public FlowType flow() {
+    public FlowType flowType() {
       return FlowType.INTERNAL;
     }
 
@@ -123,20 +128,32 @@ public class ScriptRestriction implements InternalPlanElement {
 
   }
 
+  public static class InvalidScriptException extends RuntimeException {
+
+    private InvalidScriptException(String message) {
+      super(message);
+    }
+
+  }
+
   @SuppressWarnings("rawtypes")
   public static class ScriptFunction extends BaseOperation<ExecutableStatement> implements
       Function<ExecutableStatement> {
 
+    private final String reportedField;
     private final String script;
 
-    protected ScriptFunction(String script) {
+    protected ScriptFunction(String reportedField, String script) {
       super(2, Fields.ARGS);
+      this.reportedField = reportedField;
       this.script = script;
     }
 
     @Override
     public void prepare(FlowProcess flowProcess, OperationCall<ExecutableStatement> operationCall) {
-      ExecutableStatement compiledScript = compile();
+      val compiledScript = compile(script);
+      validate(compiledScript);
+
       operationCall.setContext(compiledScript);
     }
 
@@ -149,11 +166,10 @@ public class ScriptRestriction implements InternalPlanElement {
       boolean valid = eval(compiledScript, arguments);
       if (!valid) {
         val state = ValidationFields.state(arguments);
-        val fieldName = arguments.getFields().get(0).toString();
 
         state.reportError(
             SCRIPT_ERROR,
-            fieldName,
+            reportedField,
             "Invalid script result for values: " + arguments,
             script);
       }
@@ -162,13 +178,13 @@ public class ScriptRestriction implements InternalPlanElement {
       functionCall.getOutputCollector().add(result);
     }
 
-    private ExecutableStatement compile() {
+    private static ExecutableStatement compile(String script) {
       val context = new ParserContext(configure());
 
       return (ExecutableStatement) MVEL.compileExpression(script, context);
     }
 
-    private ParserConfiguration configure() {
+    private static ParserConfiguration configure() {
       val config = new ParserConfiguration();
       config.addPackageImport("java.util");
 
@@ -181,6 +197,13 @@ public class ScriptRestriction implements InternalPlanElement {
       }
 
       return config;
+    }
+
+    private static void validate(ExecutableStatement compiledScript) {
+      Class<?> returnType = compiledScript.getKnownEgressType();
+      if (!returnType.equals(Boolean.class)) {
+        throw new InvalidScriptException("Script restriction has non boolean return type: '" + returnType + "'");
+      }
     }
 
     private boolean eval(ExecutableStatement compiledScript, TupleEntry tupleEntry) {
@@ -199,7 +222,6 @@ public class ScriptRestriction implements InternalPlanElement {
     }
 
     private VariableResolverFactory variableResolverFactory(TupleEntry tupleEntry) {
-      // TODO: Create custom TupleVariableResolver to prevent map creation?
       Map<String, Object> variables = newHashMap();
       for (int i = 0; i < tupleEntry.size(); i++) {
         val fieldName = tupleEntry.getFields().get(i).toString();
