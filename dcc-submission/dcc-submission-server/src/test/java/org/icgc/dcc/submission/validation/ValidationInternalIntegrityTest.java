@@ -39,7 +39,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.fs.Path;
 import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.icgc.dcc.submission.core.ProjectService;
 import org.icgc.dcc.submission.dictionary.DictionaryService;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
@@ -94,7 +93,6 @@ public class ValidationInternalIntegrityTest {
   @Before
   public void setUp() throws JsonProcessingException, IOException {
     DccFileSystem dccFileSystem = mock(DccFileSystem.class);
-    ProjectService projectService = mock(ProjectService.class);
 
     CodeList codeList1 = mock(CodeList.class);
     CodeList codeList2 = mock(CodeList.class);
@@ -124,8 +122,8 @@ public class ValidationInternalIntegrityTest {
     when(codeList4.getTerms()).thenReturn(termList4);
 
     validationService =
-        new ValidationService(dccFileSystem, projectService, planner, dictionaryService,
-            new LocalCascadingStrategyFactory());
+        new ValidationService(planner, dccFileSystem, dictionaryService, new LocalCascadingStrategyFactory());
+
     resetDictionary();
   }
 
@@ -253,7 +251,7 @@ public class ValidationInternalIntegrityTest {
     Plan plan;
     try {
       plan =
-          validationService.planAndConnectCascade(QUEUED_PROJECT, submissionDirectory, cascadingStrategy, dictionary,
+          validationService.planValidation(QUEUED_PROJECT, submissionDirectory, cascadingStrategy, dictionary,
               listener);
     } catch (FilePresenceException e) {
       throw new RuntimeException();

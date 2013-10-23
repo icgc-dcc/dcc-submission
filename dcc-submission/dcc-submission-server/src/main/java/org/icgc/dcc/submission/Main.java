@@ -129,6 +129,7 @@ public class Main {
 
       // Allow GC to cleanup
       dccRuntime = null;
+      instance = null;
     } catch (Throwable t) {
       log.error("An unknown error was caught stopping:", t);
       throw t;
