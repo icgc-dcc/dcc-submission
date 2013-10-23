@@ -116,7 +116,11 @@ public class ValidationService {
       throw new FilePresenceException(plan); // the queue manager will handle it
     }
 
-    return plan.addCascadeListener(cascadeListener);
+    if (cascadeListener != null) {
+      plan.addCascadeListener(cascadeListener);
+    }
+
+    return plan;
   }
 
   /**

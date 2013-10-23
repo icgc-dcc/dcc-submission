@@ -18,10 +18,12 @@
 package org.icgc.dcc.submission.validation;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
+import static org.apache.commons.io.FileUtils.readFileToString;
 import static org.icgc.dcc.submission.TestUtils.dictionaryToString;
+import static org.icgc.dcc.submission.TestUtils.resourceToString;
 import static org.icgc.dcc.submission.validation.CascadingStrategy.SEPARATOR;
-import static org.icgc.dcc.submission.validation.restriction.RegexRestriction.NAME;
-import static org.icgc.dcc.submission.validation.restriction.RegexRestriction.PARAM;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -31,11 +33,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
-import junit.framework.Assert;
+import lombok.SneakyThrows;
+import lombok.val;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.fs.Path;
 import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -57,16 +58,18 @@ import org.icgc.dcc.submission.validation.factory.LocalCascadingStrategyFactory;
 import org.icgc.dcc.submission.validation.restriction.CodeListRestriction;
 import org.icgc.dcc.submission.validation.restriction.DiscreteValuesRestriction;
 import org.icgc.dcc.submission.validation.restriction.RangeFieldRestriction;
+import org.icgc.dcc.submission.validation.restriction.RegexRestriction;
 import org.icgc.dcc.submission.validation.restriction.RequiredRestriction;
+import org.icgc.dcc.submission.validation.restriction.ScriptRestriction;
 import org.icgc.dcc.submission.validation.service.ValidationService;
 import org.icgc.dcc.submission.validation.visitor.UniqueFieldsPlanningVisitor;
 import org.icgc.dcc.submission.validation.visitor.ValueTypePlanningVisitor;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import com.google.common.base.Optional;
-import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.inject.Inject;
 import com.mongodb.BasicDBObject;
 
@@ -74,20 +77,22 @@ import com.mongodb.BasicDBObject;
 @GuiceModules({ ValidationTestModule.class })
 public class ValidationInternalIntegrityTest {
 
+  /**
+   * Test data.
+   */
   private static final String ROOT_DIR = "/fixtures/validation/internal";
-
   private static final QueuedProject QUEUED_PROJECT = new QueuedProject("dummyProject", null); // TODO: mock
 
+  /**
+   * Dependencies.
+   */
   @Inject
   private DictionaryService dictionaryService;
-
   @Inject
   private Planner planner;
 
   private ValidationService validationService;
-
   private SubmissionDirectory submissionDirectory;
-
   private Dictionary dictionary;
 
   @Before
@@ -124,37 +129,37 @@ public class ValidationInternalIntegrityTest {
     validationService =
         new ValidationService(planner, dccFileSystem, dictionaryService, new LocalCascadingStrategyFactory());
 
-    resetDictionary();
+    dictionary = createDictionary();
   }
 
   @Test
-  public void test_validate_valid() throws IOException {
+  public void test_validate_valid() {
     String content = validate(validationService, dictionary, ROOT_DIR);
-    Assert.assertTrue(content, content.isEmpty());
+    assertTrue(content, content.isEmpty());
   }
 
   @Test
-  public void test_validate_forbiddenValues() throws IOException {
+  public void test_validate_forbiddenValues() {
     testErrorType(ForbiddenValuesFunction.NAME);
   }
 
   @Test
-  public void test_validate_invalidValueType() throws IOException {
+  public void test_validate_invalidValueType() {
     testErrorType(ValueTypePlanningVisitor.NAME);
   }
 
   @Test
-  public void test_validate_invalidCodeList() throws IOException {
+  public void test_validate_invalidCodeList() {
     testErrorType(CodeListRestriction.NAME);
   }
 
   @Test
-  public void test_validate_invalidRequired() throws IOException {
+  public void test_validate_invalidRequired() {
     testErrorType(RequiredRestriction.NAME);
   }
 
   @Test
-  public void test_validate_invalidRange() throws IOException {
+  public void test_validate_invalidRange() {
     BasicDBObject rangeConfig = new BasicDBObject();
     rangeConfig.put(RangeFieldRestriction.MIN, 0);
     rangeConfig.put(RangeFieldRestriction.MAX, 200);
@@ -169,13 +174,10 @@ public class ValidationInternalIntegrityTest {
     age.addRestriction(rangeRestriction);
 
     testErrorType(RangeFieldRestriction.NAME);
-
-    resetDictionary();
   }
 
   @Test
-  public void test_validate_invalidDiscreteValues() throws IOException {
-
+  public void test_validate_invalidDiscreteValues() {
     BasicDBObject inConfig = new BasicDBObject();
     inConfig.put(DiscreteValuesRestriction.PARAM, "CX,GL,FM");
 
@@ -188,15 +190,12 @@ public class ValidationInternalIntegrityTest {
     region.addRestriction(inRestriction);
 
     testErrorType(DiscreteValuesRestriction.NAME);
-
-    resetDictionary();
   }
 
   @Test
-  public void test_validate_invalidRegexValues() throws IOException {
-
+  public void test_validate_invalidRegexValues() {
     BasicDBObject config = new BasicDBObject();
-    config.put(PARAM, "^T[0-9] N[0-9] M[0-9]$");
+    config.put(RegexRestriction.PARAM, "^T[0-9] N[0-9] M[0-9]$");
 
     Restriction restriction = new Restriction();
     restriction.setType(RestrictionType.REGEX);
@@ -207,39 +206,51 @@ public class ValidationInternalIntegrityTest {
     stage.setRestrictions(new ArrayList<Restriction>());
     stage.addRestriction(restriction);
 
-    testErrorType(NAME);
-
-    resetDictionary();
+    testErrorType(RegexRestriction.NAME);
   }
 
   @Test
-  public void test_validate_invalidUniqueFieldsCombination() throws IOException {
+  @Ignore
+  public void test_validate_invalidScriptValues() {
+    BasicDBObject config = new BasicDBObject();
+    config.put(ScriptRestriction.NAME, "donor_sex == 1");
+
+    Restriction restriction = new Restriction();
+    restriction.setType(RestrictionType.SCRIPT);
+    restriction.setConfig(config);
+
+    FileSchema donor = getFileSchemaByName(dictionary, "donor");
+    Field stage = getFieldByName(donor, "donor_sex");
+    stage.setRestrictions(new ArrayList<Restriction>());
+    stage.addRestriction(restriction);
+
+    testErrorType(ScriptRestriction.NAME);
+  }
+
+  @Test
+  public void test_validate_invalidUniqueFieldsCombination() {
     FileSchema donor = getFileSchemaByName(dictionary, "donor");
     donor.setUniqueFields(Arrays.asList("donor_sex", "donor_region_of_residence", "donor_vital_status"));
 
     testErrorType(UniqueFieldsPlanningVisitor.NAME);
-
-    resetDictionary();
   }
 
-  private void testErrorType(String errorType) throws IOException {
+  private void testErrorType(String errorType) {
     String content = validate(validationService, dictionary, "/fixtures/validation/internal/error/" + errorType);
-    String expected =
-        FileUtils
-            .readFileToString(new File(this.getClass()
-                .getResource("/fixtures/validation/reference/" + errorType + ".json").getFile()));
+
+    String expected = resourceToString("/fixtures/validation/reference/" + errorType + ".json");
     assertEquals("errorType = " + errorType + ", content = " + content, expected.trim(), content.trim());
   }
 
-  private String validate(ValidationService validationService, Dictionary dictionary, String relative)
-      throws IOException {
+  @SneakyThrows
+  private String validate(ValidationService validationService, Dictionary dictionary, String relative) {
     String rootDirString = this.getClass().getResource(relative).getFile();
     String outputDirString = rootDirString + "/" + ".validation";
     String errorFileString = outputDirString + "/" + "donor.internal" + SEPARATOR + "errors.json";
 
     File errorFile = new File(errorFileString);
     errorFile.delete();
-    Assert.assertFalse(errorFileString, errorFile.exists());
+    assertFalse(errorFileString, errorFile.exists());
 
     Path rootDir = new Path(rootDirString);
     Path outputDir = new Path(outputDirString);
@@ -247,50 +258,39 @@ public class ValidationInternalIntegrityTest {
 
     CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir, systemDir);
 
-    TestCascadeListener listener = new TestCascadeListener();
-    Plan plan;
-    try {
-      plan =
-          validationService.planValidation(QUEUED_PROJECT, submissionDirectory, cascadingStrategy, dictionary,
-              listener);
-    } catch (FilePresenceException e) {
-      throw new RuntimeException();
-    }
-    Assert.assertEquals(1, plan.getCascade().getFlows().size());
+    Plan plan = validationService.planValidation(
+        QUEUED_PROJECT, submissionDirectory, cascadingStrategy, dictionary, null);
+    assertEquals(1, plan.getCascade().getFlows().size());
 
-    plan.startCascade();
-    while (listener.isRunning()) {
-      Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
-    }
+    plan.getCascade().complete();
 
-    Assert.assertTrue(errorFileString, errorFile.exists());
-    return FileUtils.readFileToString(errorFile);
+    assertTrue(errorFileString, errorFile.exists());
+    return readFileToString(errorFile);
   }
 
-  private FileSchema getFileSchemaByName(Dictionary dictionary, String name) {
-    FileSchema fileSchema = null;
-    for (FileSchema fileSchemaTmp : dictionary.getFiles()) {
-      if (name.equals(fileSchemaTmp.getName())) {
-        fileSchema = fileSchemaTmp;
-        break;
+  private static FileSchema getFileSchemaByName(Dictionary dictionary, String name) {
+    for (val fileSchema : dictionary.getFiles()) {
+      if (name.equals(fileSchema.getName())) {
+        return fileSchema;
       }
     }
-    return fileSchema;
+
+    return null;
   }
 
-  private Field getFieldByName(FileSchema fileSchema, String name) {
-    Field field = null;
-    for (Field fieldTmp : fileSchema.getFields()) {
-      if (name.equals(fieldTmp.getName())) {
-        field = fieldTmp;
-        break;
+  private static Field getFieldByName(FileSchema fileSchema, String name) {
+    for (val field : fileSchema.getFields()) {
+      if (name.equals(field.getName())) {
+        return field;
       }
     }
-    return field;
+
+    return null;
   }
 
-  private void resetDictionary() throws IOException, JsonProcessingException {
-    dictionary = new ObjectMapper().reader(Dictionary.class).readValue(dictionaryToString());
+  @SneakyThrows
+  private static Dictionary createDictionary() {
+    return new ObjectMapper().reader(Dictionary.class).readValue(dictionaryToString());
   }
 
 }
