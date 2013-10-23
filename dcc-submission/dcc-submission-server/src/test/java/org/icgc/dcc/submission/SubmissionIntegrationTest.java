@@ -40,11 +40,13 @@ import static org.icgc.dcc.submission.TestUtils.SIGNOFF_ENDPOINT;
 import static org.icgc.dcc.submission.TestUtils.TEST_CONFIG;
 import static org.icgc.dcc.submission.TestUtils.TEST_CONFIG_FILE;
 import static org.icgc.dcc.submission.TestUtils.UPDATE_RELEASE_ENDPOINT;
+import static org.icgc.dcc.submission.TestUtils.VALIDATION_ENDPOINT;
 import static org.icgc.dcc.submission.TestUtils.asDetailedSubmission;
 import static org.icgc.dcc.submission.TestUtils.asRelease;
 import static org.icgc.dcc.submission.TestUtils.asReleaseView;
 import static org.icgc.dcc.submission.TestUtils.asString;
 import static org.icgc.dcc.submission.TestUtils.codeListsToString;
+import static org.icgc.dcc.submission.TestUtils.delete;
 import static org.icgc.dcc.submission.TestUtils.dictionaryToString;
 import static org.icgc.dcc.submission.TestUtils.dictionaryVersion;
 import static org.icgc.dcc.submission.TestUtils.get;
@@ -267,6 +269,13 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
   private void userValidates() throws Exception {
     // Triggers validations
     enqueueProjects(PROJECTS_TO_ENQUEUE, NO_CONTENT);
+
+    status("user", "Awaiting validation for project '{}'...", PROJECT2_KEY);
+    awaitValidatingState(PROJECT2_KEY);
+
+    status("user", "Cancelling validation for project '{}'...", PROJECT2_KEY);
+    cancelValidation(PROJECT2_KEY, OK);
+
     checkValidations();
   }
 
@@ -368,6 +377,11 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     }
   }
 
+  private void cancelValidation(String projectKey, Status expectedStatus) throws Exception {
+    val response = delete(client, VALIDATION_ENDPOINT + "/" + projectKey);
+    assertEquals(expectedStatus.getStatusCode(), response.getStatus());
+  }
+
   private void addInvalidCodeList() throws IOException {
     // Ensure codelist is present
     status("admin", "Getting code lists...");
@@ -390,7 +404,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
 
   private void addCodeListTerms() throws Exception {
     checkRelease(INITITAL_RELEASE_NAME, FIRST_DICTIONARY_VERSION, OPENED,
-        hasSubmisisonStates(VALID, INVALID, INVALID));
+        hasSubmisisonStates(VALID, NOT_VALIDATED, INVALID));
 
     // TODO: Get codelist dynamically
     status("admin", "Adding code list terms...");
@@ -480,7 +494,7 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT1_KEY, VALID);
 
     status("user", "Checking validated submission 2...");
-    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT2_KEY, INVALID);
+    checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT2_KEY, NOT_VALIDATED);
 
     status("user", "Checking validated submission 2...");
     checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT3_KEY, INVALID);
@@ -507,6 +521,20 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     } while (detailedSubmission.getState() == QUEUED || detailedSubmission.getState() == VALIDATING);
 
     assertEquals(project, expectedSubmissionState, detailedSubmission.getState());
+  }
+
+  private void awaitValidatingState(String project) {
+    DetailedSubmission detailedSubmission;
+    do {
+      sleepUninterruptibly(2, SECONDS);
+
+      status("user", "Polling submission validation status...");
+      val response = get(client, INITIAL_RELEASE_SUBMISSIONS_ENDPOINT + "/" + project);
+      detailedSubmission = asDetailedSubmission(response);
+      status("user", "Received submission validation status: {}", detailedSubmission);
+
+      assertEquals(OK.getStatusCode(), response.getStatus());
+    } while (detailedSubmission.getState() == QUEUED);
   }
 
   private static List<SubmissionState> hasSubmisisonStates(SubmissionState... states) {

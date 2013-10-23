@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation;
+package org.icgc.dcc.submission.validation.service;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -27,8 +27,6 @@ import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.release.NextRelease;
 import org.icgc.dcc.submission.release.ReleaseService;
 import org.icgc.dcc.submission.release.model.Release;
-import org.icgc.dcc.submission.validation.service.ValidationQueueManagerService;
-import org.icgc.dcc.submission.validation.service.ValidationService;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -38,7 +36,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import com.typesafe.config.Config;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ValidationQueueManagerServiceTest {
+public class ValidationQueueServiceTest {
 
   private Release mockRelease;
   private NextRelease mockNextRelease;
@@ -48,7 +46,7 @@ public class ValidationQueueManagerServiceTest {
 
   private Config mockConfig;
 
-  private ValidationQueueManagerService validationQueueManagerService;
+  private ValidationQueueService validationQueueService;
 
   private MailService mockMailService;
 
@@ -70,27 +68,27 @@ public class ValidationQueueManagerServiceTest {
         .thenReturn(Arrays.asList("project3"))
         .thenReturn(new ArrayList<String>());
 
-    validationQueueManagerService =
-        new ValidationQueueManagerService(mockReleaseService, mockValidationService, mockMailService, mockConfig);
+    validationQueueService =
+        new ValidationQueueService(mockReleaseService, mockValidationService, mockMailService, mockConfig);
   }
 
   @Ignore
   @Test
   public void test_handleSuccessfulValidation_invalidProjectKey() {
-    // validationQueueManagerService.handleCompletedValidation("project0", null);
+    // validationQueueService.handleCompletedValidation("project0", null);
   }
 
   @Ignore
   @Test
   public void test_handleFailedValidation_invalidProjectKey() {
-    // validationQueueManagerService.handleUnexpectedException("project0");
+    // validationQueueService.handleUnexpectedException("project0");
   }
 
   @Test
   public void test_startScheduler_valid() throws Exception {
-    validationQueueManagerService.start();
+    validationQueueService.start();
     Thread.sleep(4000);
-    validationQueueManagerService.stop();
+    validationQueueService.stop();
   }
 
 }

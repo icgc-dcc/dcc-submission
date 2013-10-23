@@ -17,9 +17,10 @@
  */
 package org.icgc.dcc.submission.web.resource;
 
+import static com.google.common.collect.Lists.newArrayList;
+import static com.sun.jersey.api.Responses.noContent;
 import static javax.ws.rs.core.Response.status;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
 import static org.icgc.dcc.submission.web.model.ServerErrorCode.NO_SUCH_ENTITY;
 import static org.icgc.dcc.submission.web.model.ServerErrorCode.RELEASE_EXCEPTION;
@@ -30,6 +31,7 @@ import static org.icgc.dcc.submission.web.util.Authorizations.hasReleaseViewPriv
 import static org.icgc.dcc.submission.web.util.Authorizations.hasSpecificProjectPrivilege;
 import static org.icgc.dcc.submission.web.util.Authorizations.hasSubmissionSignoffPrivilege;
 import static org.icgc.dcc.submission.web.util.Authorizations.isSuperUser;
+import static org.icgc.dcc.submission.web.util.Responses.badRequest;
 import static org.icgc.dcc.submission.web.util.Responses.unauthorizedResponse;
 
 import java.util.List;
@@ -40,12 +42,15 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 
+import lombok.SneakyThrows;
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.glassfish.grizzly.http.util.Header;
@@ -57,6 +62,7 @@ import org.icgc.dcc.submission.release.ReleaseException;
 import org.icgc.dcc.submission.release.ReleaseService;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
+import org.icgc.dcc.submission.validation.service.ValidationQueueService;
 import org.icgc.dcc.submission.web.model.ServerErrorCode;
 import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
 import org.icgc.dcc.submission.web.util.Authorizations;
@@ -64,7 +70,6 @@ import org.icgc.dcc.submission.web.util.ResponseTimestamper;
 import org.icgc.dcc.submission.web.util.Responses;
 
 import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
 import com.google.common.net.HttpHeaders;
 import com.google.inject.Inject;
 import com.typesafe.config.Config;
@@ -76,10 +81,11 @@ public class NextReleaseResource {
   private static final Joiner JOINER = Joiner.on("/");
 
   @Inject
-  private Config config;
-
+  protected Config config;
   @Inject
-  private ReleaseService releaseService;
+  protected ReleaseService releaseService;
+  @Inject
+  protected ValidationQueueService validationQueueService;
 
   @GET
   public Response getNextRelease(
@@ -198,11 +204,11 @@ public class NextReleaseResource {
       )
   {
     log.info("Enqueuing projects for nextRelease: {}", queuedProjects);
-    List<String> projectKeys = Lists.newArrayList();
-    for (QueuedProject qp : queuedProjects) {
-      String projectKey = qp.getKey();
+    List<String> projectKeys = newArrayList();
+    for (val queuedProject : queuedProjects) {
+      val projectKey = queuedProject.getKey();
       if (hasSpecificProjectPrivilege(securityContext, projectKey) == false) {
-        return Responses.unauthorizedResponse();
+        return unauthorizedResponse();
       }
 
       projectKeys.add(projectKey);
@@ -214,22 +220,19 @@ public class NextReleaseResource {
     try {
       releaseService.queue(nextRelease, queuedProjects);
     } catch (ReleaseException e) {
-      log.error("ProjectKeyNotFound", e); // FIXME: this isn't correct
-      return Response
-          .status(BAD_REQUEST)
-          .entity(new ServerErrorResponseMessage(NO_SUCH_ENTITY, projectKeys))
-          .build();
+      log.error("ProjectKeyNotFound", e);
+
+      // FIXME: This isn't correct
+      return badRequest(NO_SUCH_ENTITY, projectKeys);
     } catch (InvalidStateException e) {
-      ServerErrorCode code = e.getCode();
-      Object offendingState = e.getState();
+      val code = e.getCode();
+      val offendingState = e.getState();
       log.error(code.getFrontEndString(), e);
 
-      return Response
-          .status(BAD_REQUEST)
-          .entity(new ServerErrorResponseMessage(code, offendingState))
-          .build();
-    } catch (DccModelOptimisticLockException e) { // not very likely
-      ServerErrorCode code = UNAVAILABLE;
+      return badRequest(code, offendingState);
+    } catch (DccModelOptimisticLockException e) {
+      // Not very likely
+      val code = UNAVAILABLE;
       log.error(code.getFrontEndString(), e);
 
       return Response
@@ -237,7 +240,8 @@ public class NextReleaseResource {
           .header(Header.RetryAfter.toString(), 3) //
           .entity(new ServerErrorResponseMessage(code)).build();
     }
-    return Response.status(NO_CONTENT).build();
+
+    return noContent().build();
   }
 
   @DELETE
@@ -249,12 +253,43 @@ public class NextReleaseResource {
 
       )
   {
-
     log.info("Emptying queue for nextRelease");
     if (isSuperUser(securityContext) == false) {
       return unauthorizedResponse();
     }
     releaseService.deleteQueuedRequests();
+
+    return Response.ok().build();
+  }
+
+  @DELETE
+  @Path("validation/{projectKey}")
+  @SneakyThrows
+  public Response cancelValidation(
+
+      @PathParam("projectKey")
+      String projectKey,
+
+      @Context
+      SecurityContext securityContext
+
+      )
+  {
+    log.info("Cancelling validation for {}", projectKey);
+    if (!hasSpecificProjectPrivilege(securityContext, projectKey)) {
+      return unauthorizedResponse();
+    }
+
+    try {
+      validationQueueService.killValidation(projectKey);
+    } catch (InvalidStateException e) {
+      ServerErrorCode code = e.getCode();
+      log.error(code.getFrontEndString(), e);
+      return badRequest(code, e.getMessage());
+    } catch (Throwable t) {
+      log.error("Error cancelling validation for '" + projectKey + "':", t);
+      throw t;
+    }
 
     return Response.ok().build();
   }

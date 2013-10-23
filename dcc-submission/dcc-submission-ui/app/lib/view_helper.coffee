@@ -89,6 +89,17 @@ Handlebars.registerHelper 'submission_action', (state) ->
         Launch Validation
       </button>
       """
+    when "QUEUED", "VALIDATING"
+      new Handlebars.SafeString """
+      <button
+        class="m-btn red"
+        id="cancel-submission-popup-button"
+        data-toggle="modal"
+        href="#cancel-submission-popup">
+        Cancel Validation
+      </button>
+      """
+
 # Return a Unreleased if no release date
 Handlebars.registerHelper 'release_date', (date) ->
   return new Handlebars.SafeString '<em>Unreleased</em>' unless date

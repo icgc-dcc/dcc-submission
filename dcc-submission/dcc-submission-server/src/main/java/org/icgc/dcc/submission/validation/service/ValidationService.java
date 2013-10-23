@@ -17,17 +17,16 @@
  */
 package org.icgc.dcc.submission.validation.service;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.submission.core.ProjectService;
 import org.icgc.dcc.submission.dictionary.DictionaryService;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
-import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
@@ -37,7 +36,7 @@ import org.icgc.dcc.submission.validation.Plan;
 import org.icgc.dcc.submission.validation.Planner;
 import org.icgc.dcc.submission.validation.factory.CascadingStrategyFactory;
 import org.icgc.dcc.submission.validation.firstpass.FirstPassChecker;
-import org.icgc.dcc.submission.validation.service.ValidationQueueManagerService.ValidationCascadeListener;
+import org.icgc.dcc.submission.validation.service.ValidationQueueService.ValidationCascadeListener;
 
 import cascading.cascade.Cascade;
 import cascading.cascade.CascadeListener;
@@ -47,85 +46,46 @@ import com.google.common.collect.Iterables;
 import com.google.inject.Inject;
 
 /**
- * Wraps validation call for the {@code ValidationQueueManagerService} and {@Main} (the validation one) to use
+ * Wraps validation call for the {@code ValidationQueueService} and {@Main} (the validation one) to use
  */
 @Slf4j
+@RequiredArgsConstructor(onConstructor = @_(@Inject))
 public class ValidationService {
 
+  @NonNull
   private final Planner planner;
-
+  @NonNull
   private final DccFileSystem dccFileSystem;
-
-  private final DictionaryService dictionaries;
-
+  @NonNull
+  private final DictionaryService dictionaryService;
+  @NonNull
   private final CascadingStrategyFactory cascadingStrategyFactory;
 
-  @Inject
-  public ValidationService(final DccFileSystem dccFileSystem, final ProjectService projectService,
-      final Planner planner, final DictionaryService dictionaries,
-      final CascadingStrategyFactory cascadingStrategyFactory) {
+  public Plan prepareValidation(Release release, QueuedProject queuedProject, ValidationCascadeListener listener)
+      throws FilePresenceException {
+    log.info("Preparing cascade for project '{}'", queuedProject.getKey());
+    val projectKey = queuedProject.getKey();
+    val dictionary = getReleaseDictionary(release);
+    val releaseFilesystem = dccFileSystem.getReleaseFilesystem(release);
+    val submissionDirectory = releaseFilesystem.getSubmissionDirectory(projectKey);
 
-    checkArgument(dccFileSystem != null);
-    checkArgument(projectService != null);
-    checkArgument(planner != null);
-    checkArgument(dictionaries != null);
-    checkArgument(cascadingStrategyFactory != null);
+    Path rootDir = submissionDirectory.getSubmissionDirPath();
+    Path outputDir = new Path(submissionDirectory.getValidationDirPath());
+    Path systemDir = releaseFilesystem.getSystemDirectory();
 
-    this.dccFileSystem = dccFileSystem;
-    this.planner = planner;
-    this.dictionaries = dictionaries;
-    this.cascadingStrategyFactory = cascadingStrategyFactory;
+    log.info("Validation for '{}' has rootDir = {} ", projectKey, rootDir);
+    log.info("Validation for '{}' has outputDir = {} ", projectKey, outputDir);
+    log.info("Validation for '{}' has systemDir = {} ", projectKey, systemDir);
 
-  }
+    // TODO: File Checker
+    CascadingStrategy cascadingStrategy = cascadingStrategyFactory.get(rootDir, outputDir, systemDir);
+    checkWellFormedness();
 
-  Plan prepareValidation(final Release release, final QueuedProject qProject,
-      final ValidationCascadeListener validationCascadeListener) throws FilePresenceException {
+    Plan plan = planValidation(queuedProject, submissionDirectory, cascadingStrategy, dictionary, listener);
+    listener.setPlan(plan);
 
-    String dictionaryVersion = release.getDictionaryVersion();
-    Dictionary dictionary = this.dictionaries.getFromVersion(dictionaryVersion);
-    if (dictionary == null) {
-      throw new ValidationServiceException(format("no dictionary found with version %s, in release %s",
-          dictionaryVersion, release.getName()));
-    } else {
-      log.info("Preparing cascade for project {}", qProject.getKey());
-
-      ReleaseFileSystem releaseFilesystem = dccFileSystem.getReleaseFilesystem(release);
-
-      SubmissionDirectory submissionDirectory = releaseFilesystem.getSubmissionDirectory(qProject.getKey());
-
-      Path rootDir = submissionDirectory.getSubmissionDirPath();
-      Path outputDir = new Path(submissionDirectory.getValidationDirPath());
-      Path systemDir = releaseFilesystem.getSystemDirectory();
-
-      log.info("rootDir = {} ", rootDir);
-      log.info("outputDir = {} ", outputDir);
-      log.info("systemDir = {} ", systemDir);
-
-      // TODO: File Checker
-
-      CascadingStrategy cascadingStrategy = cascadingStrategyFactory.get(rootDir, outputDir, systemDir);
-      checkWellFormedness();
-      Plan plan =
-          planAndConnectCascade(qProject, submissionDirectory, cascadingStrategy, dictionary, validationCascadeListener);
-
-      validationCascadeListener.setPlan(plan);
-
-      log.info("Prepared cascade for project {}", qProject.getKey());
-      return plan;
-    }
-  }
-
-  /**
-   * Temporarily and until properly re-written (DCC-1820).
-   */
-  private void checkWellFormedness() throws FilePresenceException {
-    if (FirstPassChecker.check()) { // Always returns true for now
-      log.info("Submission is well-formed.");
-    } else {
-      log.info("Submission has well-formedness problems"); // TODO: expand
-      throw new FilePresenceException(null); // FIXME: pass appropriate objects: offending project key and Map<String,
-                                             // TupleState> fileLevelErrors
-    }
+    log.info("Prepared cascade for project {}", projectKey);
+    return plan;
   }
 
   /**
@@ -134,28 +94,29 @@ public class ValidationService {
    * Note that emptying of the .validation dir happens right before launching the cascade in {@link Plan#startCascade()}
    */
   @VisibleForTesting
-  public Plan planAndConnectCascade(QueuedProject queuedProject, SubmissionDirectory submissionDirectory,
-      CascadingStrategy cascadingStrategy, Dictionary dictionary, final CascadeListener cascadeListener)
-      throws FilePresenceException { // TODO: separate
-                                     // plan and connect?
-
-    log.info("Planning cascade for project {}", queuedProject.getKey());
+  public Plan planValidation(QueuedProject queuedProject, SubmissionDirectory submissionDirectory,
+      CascadingStrategy cascadingStrategy, Dictionary dictionary, CascadeListener cascadeListener)
+      throws FilePresenceException {
+    // TODO: Separate plan and connect?
+    val projectKey = queuedProject.getKey();
+    log.info("Planning cascade for project {}...", projectKey);
     Plan plan = planner.plan(queuedProject, submissionDirectory, cascadingStrategy, dictionary);
-    log.info("Planned cascade for project {}", queuedProject.getKey());
 
+    log.info("Planned cascade for project {}", projectKey);
     log.info("# internal flows: {}", Iterables.size(plan.getInternalFlows()));
     log.info("# external flows: {}", Iterables.size(plan.getExternalFlows()));
 
-    log.info("Connecting cascade for project {}", queuedProject.getKey());
+    log.info("Connecting cascade for project {}", projectKey);
     plan.connect(cascadingStrategy);
-    log.info("Connected cascade for project {}", queuedProject.getKey());
+    log.info("Connected cascade for project {}", projectKey);
+
     if (plan.hasFileLevelErrors()) { // determined during connection
-      log.info(String.format("Submission has file-level errors, throwing a '%s'",
+      log.info(format("Submission has file-level errors, throwing a '%s'",
           FilePresenceException.class.getSimpleName()));
       throw new FilePresenceException(plan); // the queue manager will handle it
     }
 
-    return plan.addCascaddeListener(cascadeListener, queuedProject);
+    return plan.addCascadeListener(cascadeListener);
   }
 
   /**
@@ -165,12 +126,37 @@ public class ValidationService {
    * This is a non-blocking call, completion is handled by
    * <code>{@link ValidationCascadeListener#onCompleted(Cascade)}</code>
    */
-  void startValidation(Plan plan) {
-    QueuedProject queuedProject = plan.getQueuedProject();
-    checkNotNull(queuedProject);
-    String projectKey = queuedProject.getKey();
-    log.info("starting validation on project {}", projectKey);
+  public void startValidation(Plan plan) {
+    log.info("starting validation on project {}", plan.getProjectKey());
     plan.startCascade();
+
+    log.info("Plan: plan.getCascade: {}", plan.getCascade());
+  }
+
+  /**
+   * Temporarily and until properly re-written (DCC-1820).
+   */
+  private void checkWellFormedness() throws FilePresenceException {
+    if (FirstPassChecker.check()) {
+      // Always returns true for now
+      log.info("Submission is well-formed.");
+    } else {
+      log.info("Submission has well-formedness problems"); // TODO: expand
+      // FIXME: pass appropriate objects: offending project key and Map<String, TupleState> fileLevelErrors
+      throw new FilePresenceException(null);
+    }
+  }
+
+  private Dictionary getReleaseDictionary(Release release) {
+    val dictionaryVersion = release.getDictionaryVersion();
+    val dictionary = dictionaryService.getFromVersion(dictionaryVersion);
+
+    if (dictionary == null) {
+      throw new ValidationServiceException(format("No dictionary found with version %s, in release %s",
+          dictionaryVersion, release.getName()));
+    }
+
+    return dictionary;
   }
 
 }

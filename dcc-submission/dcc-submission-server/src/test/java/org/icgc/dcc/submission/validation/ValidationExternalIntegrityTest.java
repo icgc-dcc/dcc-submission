@@ -37,7 +37,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.fs.Path;
 import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.icgc.dcc.submission.core.ProjectService;
 import org.icgc.dcc.submission.dictionary.DictionaryService;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
@@ -85,7 +84,6 @@ public class ValidationExternalIntegrityTest { // TODO create base class for thi
   @Before
   public void setUp() throws JsonProcessingException, IOException {
     DccFileSystem dccFileSystem = mock(DccFileSystem.class);
-    ProjectService projectService = mock(ProjectService.class);
 
     CodeList codeList0 = mock(CodeList.class);
     CodeList codeList1 = mock(CodeList.class);
@@ -132,8 +130,7 @@ public class ValidationExternalIntegrityTest { // TODO create base class for thi
     when(codeList5.getTerms()).thenReturn(termList5);
 
     validationService =
-        new ValidationService(dccFileSystem, projectService, planner, dictionaryService,
-            new LocalCascadingStrategyFactory());
+        new ValidationService(planner, dccFileSystem, dictionaryService, new LocalCascadingStrategyFactory());
 
     resetDictionary();
   }
@@ -234,7 +231,7 @@ public class ValidationExternalIntegrityTest { // TODO create base class for thi
 
     TestCascadeListener listener = new TestCascadeListener();
     Plan plan =
-        validationService.planAndConnectCascade(QUEUED_PROJECT, submissionDirectory, cascadingStrategy, dictionary,
+        validationService.planValidation(QUEUED_PROJECT, submissionDirectory, cascadingStrategy, dictionary,
             listener);
     Assert.assertEquals(5, plan.getCascade().getFlows().size());
 
