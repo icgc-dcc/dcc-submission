@@ -53,16 +53,15 @@ final class Util {
     Metadata md = new Metadata();
     md.add(Metadata.RESOURCE_NAME_KEY, filename);
     String mediaType = detector.detect(bis, md).toString();
-    if (mediaType.equals("gzip")) {
+    if (mediaType.equals("application/x-gzip")) {
       return CodecType.GZIP;
-    } else if (mediaType.equals("bzip")) {
+    } else if (mediaType.equals("application/x-bzip2")) {
       return CodecType.BZIP2;
     }
     return CodecType.PLAIN_TEXT;
   }
 
   public static InputStream createInputStream(DccFileSystem dccFileSystem, String filePathname) throws IOException {
-    // TODO: need to handle gzip and bzip2
     Configuration conf = dccFileSystem.getFileSystem().getConf();
     CompressionCodecFactory factory = new CompressionCodecFactory(conf);
     Path filePath = new Path(filePathname);

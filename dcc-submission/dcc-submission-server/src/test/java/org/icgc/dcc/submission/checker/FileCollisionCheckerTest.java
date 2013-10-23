@@ -27,11 +27,9 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import org.icgc.dcc.submission.checker.Util.CheckLevel;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
-import org.icgc.dcc.submission.validation.ValidationErrorCode;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -42,11 +40,6 @@ import com.google.common.collect.ImmutableList;
  * 
  */
 public class FileCollisionCheckerTest {
-
-  private final FirstPassValidationError DUMMY_FILE_ERROR = new FirstPassValidationError(CheckLevel.FILE_LEVEL,
-      "DummyFileError", ValidationErrorCode.REVERSE_RELATION_FILE_ERROR);
-  private final FirstPassValidationError DUMMY_ROW_ERROR = new FirstPassValidationError(CheckLevel.ROW_LEVEL,
-      "DummyFileError", ValidationErrorCode.REVERSE_RELATION_FILE_ERROR);
 
   private SubmissionDirectory submissionDir;
   private Dictionary dict;

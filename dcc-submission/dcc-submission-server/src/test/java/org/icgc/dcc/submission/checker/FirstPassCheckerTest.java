@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.checker;
 
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -37,12 +38,18 @@ import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.validation.ValidationErrorCode;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 import com.google.common.collect.ImmutableList;
 
 /**
  * 
  */
+@RunWith(PowerMockRunner.class)
+@PrepareForTest(Util.class)
 public class FirstPassCheckerTest {
 
   private final FirstPassValidationError DUMMY_FILE_ERROR = new FirstPassValidationError(CheckLevel.FILE_LEVEL,
@@ -58,7 +65,7 @@ public class FirstPassCheckerTest {
   public void setup() throws IOException {
     submissionDir = mock(SubmissionDirectory.class);
     dict = mock(Dictionary.class);
-    fs = mock(DccFileSystem.class);
+    PowerMockito.mockStatic(Util.class);
 
     when(submissionDir.listFile()).thenReturn(ImmutableList.of("anyfile"));
     when(submissionDir.getDataFilePath(anyString())).thenReturn("/tmp/anyfile");
@@ -68,7 +75,7 @@ public class FirstPassCheckerTest {
     when(dict.getFiles()).thenReturn(ImmutableList.of(schema));
 
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream("JUST-A-TEST".getBytes()));
-    when(fs.open(anyString())).thenReturn(fis);
+    when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
   }
 
   @Test
