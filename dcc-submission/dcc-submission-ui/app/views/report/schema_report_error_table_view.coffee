@@ -60,6 +60,13 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
         Values do not match the regular expression set for
         this field: <em>#{source.parameters?.EXPECTED}</em>
         """
+    SCRIPT_ERROR:
+      name: "Failed script expression"
+      description: (source) ->
+        """
+        Values do not pass the script expression set for
+        this field: <br><code>#{source.parameters?.EXPECTED}</code>
+        """
     DUPLICATE_HEADER_ERROR:
       name: "Duplicate field name"
       description: (source) ->
