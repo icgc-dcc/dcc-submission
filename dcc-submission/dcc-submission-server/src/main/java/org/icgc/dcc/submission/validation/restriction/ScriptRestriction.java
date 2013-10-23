@@ -19,14 +19,17 @@ package org.icgc.dcc.submission.validation.restriction;
 
 import static cascading.tuple.Fields.ALL;
 import static cascading.tuple.Fields.REPLACE;
-import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Maps.newLinkedHashMap;
 import static java.lang.String.format;
 import static java.lang.reflect.Modifier.STATIC;
 import static lombok.AccessLevel.PROTECTED;
 import static org.icgc.dcc.submission.validation.ValidationErrorCode.SCRIPT_ERROR;
+import static org.icgc.dcc.submission.validation.cascading.ValidationFields.OFFSET_FIELD_NAME;
+import static org.icgc.dcc.submission.validation.cascading.ValidationFields.STATE_FIELD_NAME;
 
 import java.util.Map;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.val;
@@ -40,6 +43,7 @@ import org.icgc.dcc.submission.validation.RestrictionType;
 import org.icgc.dcc.submission.validation.RestrictionTypeSchema;
 import org.icgc.dcc.submission.validation.RestrictionTypeSchema.FieldRestrictionParameter;
 import org.icgc.dcc.submission.validation.RestrictionTypeSchema.ParameterType;
+import org.icgc.dcc.submission.validation.cascading.TupleState;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
 import org.mvel2.MVEL;
 import org.mvel2.ParserConfiguration;
@@ -59,6 +63,14 @@ import cascading.pipe.Pipe;
 import cascading.tuple.Fields;
 import cascading.tuple.TupleEntry;
 
+import com.google.common.base.Joiner;
+
+/**
+ * Restriction implementation that supports predicate expressions using the MVEL language.
+ * 
+ * @see http://mvel.codehaus.org/
+ * @see https://github.com/mvel/mvel
+ */
 @Value
 @RequiredArgsConstructor(access = PROTECTED)
 public class ScriptRestriction implements InternalPlanElement {
@@ -87,11 +99,6 @@ public class ScriptRestriction implements InternalPlanElement {
     val function = new ScriptFunction(reportedField, script);
 
     return new Each(pipe, fields, function, REPLACE);
-  }
-
-  public static void validateScript(String script) {
-    ExecutableStatement compileScript = ScriptFunction.compile(script);
-    ScriptFunction.validate(compileScript);
   }
 
   public static class Type implements RestrictionType {
@@ -136,9 +143,18 @@ public class ScriptRestriction implements InternalPlanElement {
 
   }
 
+  public static class ScriptFunctionException extends OperationException {
+
+    private ScriptFunctionException(String message, Object... args) {
+      super(format(message, args));
+    }
+
+  }
+
   @SuppressWarnings("rawtypes")
-  public static class ScriptFunction extends BaseOperation<ExecutableStatement> implements
-      Function<ExecutableStatement> {
+  public static class ScriptFunction extends BaseOperation<ScriptContext> implements Function<ScriptContext> {
+
+    private final Joiner.MapJoiner JOINER = Joiner.on(",").withKeyValueSeparator(" = ");
 
     private final String reportedField;
     private final String script;
@@ -150,45 +166,101 @@ public class ScriptRestriction implements InternalPlanElement {
     }
 
     @Override
-    public void prepare(FlowProcess flowProcess, OperationCall<ExecutableStatement> operationCall) {
-      val compiledScript = compile(script);
-      validate(compiledScript);
+    public void prepare(FlowProcess flowProcess, OperationCall<ScriptContext> operationCall) {
+      val context = new ScriptContext(script);
 
-      operationCall.setContext(compiledScript);
+      operationCall.setContext(context);
     }
 
     @Override
-    public void operate(FlowProcess flowProcess, FunctionCall<ExecutableStatement> functionCall) {
-      // Shorthands
+    public void operate(FlowProcess flowProcess, FunctionCall<ScriptContext> functionCall) {
       val arguments = functionCall.getArguments();
-      val compiledScript = functionCall.getContext();
+      val context = functionCall.getContext();
 
-      boolean valid = eval(compiledScript, arguments);
-      if (!valid) {
+      boolean passed = context.evaluate(arguments);
+      if (!passed) {
         val state = ValidationFields.state(arguments);
+        val values = context.references(arguments);
 
-        state.reportError(
-            SCRIPT_ERROR,
-            reportedField,
-            "Invalid script result for values: " + arguments,
-            script);
+        reportError(state, values);
       }
 
       val result = arguments.getTupleCopy();
       functionCall.getOutputCollector().add(result);
     }
 
-    private static ExecutableStatement compile(String script) {
-      val context = new ParserContext(configure());
-
-      return (ExecutableStatement) MVEL.compileExpression(script, context);
+    private void reportError(TupleState state, Map<String, Object> values) {
+      val reportedValue = JOINER.join(values);
+      state.reportError(SCRIPT_ERROR, reportedField, reportedValue, script);
     }
 
-    private static ParserConfiguration configure() {
+  }
+
+  @SuppressWarnings({ "unchecked", "rawtypes" })
+  public static class ScriptContext {
+
+    private final String script;
+
+    @Getter
+    private final Map<String, Class<?>> inputs;
+    private final ParserContext parserContext;
+    private final ExecutableStatement compiledScript;
+
+    public ScriptContext(String script) {
+      this.script = script;
+      this.parserContext = new ParserContext(configuration());
+      this.compiledScript = (ExecutableStatement) MVEL.compileExpression(script, parserContext);
+      this.inputs = (Map<String, Class<?>>) (Object) parserContext.getInputs();
+
+      validate();
+    }
+
+    public boolean evaluate(TupleEntry tupleEntry) {
+      val result = compiledScript.getValue(null, variableResolverFactory(tupleEntry));
+
+      boolean valid = result instanceof Boolean;
+      if (!valid) {
+        val resultClass = result == null ? null : result.getClass();
+
+        throw new ScriptFunctionException(
+            "Result of script restriction evaluation is not boolean: result = %s, class = %s, script = '%s'",
+            result, resultClass, script);
+      }
+
+      return (Boolean) result;
+    }
+
+    public Map<String, Object> references(TupleEntry tupleEntry) {
+      val variables = variables();
+
+      for (int i = 0; i < tupleEntry.size(); i++) {
+        val fieldName = tupleEntry.getFields().get(i).toString();
+        val fieldValue = tupleEntry.getObject(i);
+
+        // Referenced in script
+        val referenced = inputs.keySet().contains(fieldName);
+        if (!referenced) {
+          continue;
+        }
+
+        variables.put(fieldName, fieldValue);
+      }
+
+      return variables;
+    }
+
+    private void validate() {
+      val returnType = compiledScript.getKnownEgressType();
+      val predicate = returnType.equals(Boolean.class);
+      if (!predicate) {
+        throw new InvalidScriptException("Script restriction has non boolean return type: '" + returnType + "'");
+      }
+    }
+
+    private static ParserConfiguration configuration() {
       val config = new ParserConfiguration();
       config.addPackageImport("java.util");
 
-      // TODO: Any more imports that may aid admins?
       for (val method : Math.class.getMethods()) {
         val staticMethod = (method.getModifiers() & STATIC) > 0;
         if (staticMethod) {
@@ -199,38 +271,31 @@ public class ScriptRestriction implements InternalPlanElement {
       return config;
     }
 
-    private static void validate(ExecutableStatement compiledScript) {
-      Class<?> returnType = compiledScript.getKnownEgressType();
-      if (!returnType.equals(Boolean.class)) {
-        throw new InvalidScriptException("Script restriction has non boolean return type: '" + returnType + "'");
-      }
-    }
-
-    private boolean eval(ExecutableStatement compiledScript, TupleEntry tupleEntry) {
-      val result = compiledScript.getValue(null, variableResolverFactory(tupleEntry));
-
-      boolean bool = result instanceof Boolean;
-      if (!bool) {
-        val message =
-            format("Result of script restriction evaluation is not boolean: result = %s, class = %s, script = '%s'",
-                result, (result == null ? null : result.getClass()), script);
-
-        throw new OperationException(message);
-      }
-
-      return (Boolean) result;
-    }
-
-    private VariableResolverFactory variableResolverFactory(TupleEntry tupleEntry) {
-      Map<String, Object> variables = newHashMap();
+    private static Map<String, Object> variables(TupleEntry tupleEntry) {
+      val variables = variables();
       for (int i = 0; i < tupleEntry.size(); i++) {
         val fieldName = tupleEntry.getFields().get(i).toString();
         val fieldValue = tupleEntry.getObject(i);
 
+        // Skip validation book-keeping
+        val internal = fieldName.equals(STATE_FIELD_NAME) || fieldName.equals(OFFSET_FIELD_NAME);
+        if (internal) {
+          continue;
+        }
+
         variables.put(fieldName, fieldValue);
       }
 
-      return new MapVariableResolverFactory(variables);
+      return variables;
+    }
+
+    private static Map<String, Object> variables() {
+      // Preserve order
+      return newLinkedHashMap();
+    }
+
+    private static VariableResolverFactory variableResolverFactory(TupleEntry tupleEntry) {
+      return new MapVariableResolverFactory(variables(tupleEntry));
     }
 
   }

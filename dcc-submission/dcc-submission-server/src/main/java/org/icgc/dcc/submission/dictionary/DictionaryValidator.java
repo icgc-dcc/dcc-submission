@@ -183,7 +183,28 @@ public class DictionaryValidator {
       if (restriction.getType() == RestrictionType.SCRIPT) {
         String script = config.getString(ScriptRestriction.PARAM);
         try {
-          ScriptRestriction.validateScript(script);
+          val scriptContext = new ScriptRestriction.ScriptContext(script);
+
+          val inputs = scriptContext.getInputs();
+          for (val entry : inputs.entrySet()) {
+            val inputName = entry.getKey();
+            val inputClass = entry.getValue();
+
+            Field inputField = dictionaryIndex.getField(schema.getName(), inputName);
+            if (inputField == null) {
+              errors.add(new DictionaryObservation("Schema is missing referenced script field: ",
+                  schema, field, restriction, script, inputName));
+
+              continue;
+            }
+
+            val javaType = inputField.getValueType().getJavaType();
+            if (inputClass.isAssignableFrom(javaType)) {
+              errors.add(new DictionaryObservation("Schema field is not assignable from  referenced script field: ",
+                  schema, field, restriction, script, inputName, inputClass, javaType));
+            }
+          }
+
         } catch (InvalidScriptException e) {
           errors.add(new DictionaryObservation(e.getMessage(), schema, field, restriction, script));
         }
