@@ -41,6 +41,7 @@ public class DictionaryValidatorTest {
 
   @Test
   public void testValidateScriptRestriction() {
+    // Build test dictionary bottom up
     val config = new BasicDBObject();
     config.put(ScriptRestriction.PARAM, "x == 1");
 
@@ -62,15 +63,17 @@ public class DictionaryValidatorTest {
     val dictionary = new Dictionary();
     dictionary.addFile(fileSchema);
 
+    // No code lists needed
     List<CodeList> codeLists = newArrayList();
 
+    // Invoke
     val validator = new DictionaryValidator(dictionary, codeLists);
-    val observations = validator.validate();
+    val violations = validator.validate();
 
-    assertThat(observations.getWarnings()).isEmpty();
-    assertThat(observations.getErrors()).hasSize(3);
-    System.out.println("**** ERRORS ****");
-    for (val error : observations.getErrors()) {
+    // Verify
+    assertThat(violations.getWarnings()).isEmpty();
+    assertThat(violations.getErrors()).hasSize(3);
+    for (val error : violations.getErrors()) {
       System.out.println(error);
     }
   }

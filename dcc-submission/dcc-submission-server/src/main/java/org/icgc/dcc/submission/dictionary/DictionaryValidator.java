@@ -78,26 +78,27 @@ public class DictionaryValidator {
     this.codeListIndex = new CodeListIndex(codeLists);
   }
 
-  public DictionaryObservations validate() {
-    Set<DictionaryObservation> errors = newLinkedHashSet();
-    Set<DictionaryObservation> warnings = newLinkedHashSet();
+  public DictionaryConstraintViolations validate() {
+    Set<DictionaryConstraintViolation> errors = newLinkedHashSet();
+    Set<DictionaryConstraintViolation> warnings = newLinkedHashSet();
 
     validateSchemata(errors, warnings);
     validateCodeLists(errors, warnings);
 
-    return new DictionaryObservations(warnings, errors);
+    return new DictionaryConstraintViolations(warnings, errors);
   }
 
-  private void validateSchemata(Set<DictionaryObservation> errors, Set<DictionaryObservation> warnings) {
+  private void validateSchemata(Set<DictionaryConstraintViolation> errors, Set<DictionaryConstraintViolation> warnings) {
     for (val schema : dictionary.getFiles()) {
       try {
         if (isBlank(schema.getPattern())) {
-          errors.add(new DictionaryObservation("Missing schema file pattern", schema.getName()));
+          errors.add(new DictionaryConstraintViolation("Missing schema file pattern", schema.getName()));
         } else {
           Pattern.compile(schema.getPattern());
         }
       } catch (PatternSyntaxException e) {
-        errors.add(new DictionaryObservation("Invalid schema file pattern", schema.getName(), schema.getPattern()));
+        errors.add(new DictionaryConstraintViolation("Invalid schema file pattern", schema.getName(), schema
+            .getPattern()));
       }
 
       validateFieldNames(errors, schema);
@@ -108,27 +109,31 @@ public class DictionaryValidator {
     validateBusinessKeys(errors, warnings);
   }
 
-  private void validateFields(Set<DictionaryObservation> errors, Set<DictionaryObservation> warnings, FileSchema schema) {
+  private void validateFields(Set<DictionaryConstraintViolation> errors, Set<DictionaryConstraintViolation> warnings,
+      FileSchema schema) {
     for (val field : schema.getFields()) {
       Set<RestrictionType> restrictionTypes =
           newCopyOnWriteArraySet(dictionaryIndex.getRestrictionTypes(schema.getName(), field.getName()));
       restrictionTypes.remove(RestrictionType.REQUIRED);
       if (restrictionTypes.size() > 2) {
-        errors.add(new DictionaryObservation("Incompatible field restrictions", schema.getName(), field.getName(),
+        errors.add(new DictionaryConstraintViolation("Incompatible field restrictions", schema.getName(), field
+            .getName(),
             restrictionTypes));
       }
 
       val summaryType = field.getSummaryType();
       if (summaryType == SummaryType.FREQUENCY && field.getValueType().isNumeric()) {
-        warnings.add(new DictionaryObservation("Potentially large field summary value set", schema, field,
+        warnings.add(new DictionaryConstraintViolation("Potentially large field summary value set", schema, field,
             summaryType));
       }
       if (summaryType == SummaryType.AVERAGE && !field.getValueType().isNumeric()) {
-        errors.add(new DictionaryObservation("Incompatible numeric field summary type", schema, field, summaryType));
+        errors.add(new DictionaryConstraintViolation("Incompatible numeric field summary type", schema, field,
+            summaryType));
       }
       if (summaryType == SummaryType.FREQUENCY && schema.getUniqueFields().size() == 1
           && schema.getUniqueFields().contains(field.getName())) {
-        warnings.add(new DictionaryObservation("Frequency defined for unique field", schema, field, summaryType,
+        warnings.add(new DictionaryConstraintViolation("Frequency defined for unique field", schema, field,
+            summaryType,
             schema.getUniqueFields()));
       }
 
@@ -136,19 +141,20 @@ public class DictionaryValidator {
     }
   }
 
-  private void validateRestrictions(Set<DictionaryObservation> errors, FileSchema schema, Field field) {
+  private void validateRestrictions(Set<DictionaryConstraintViolation> errors, FileSchema schema, Field field) {
     for (val restriction : field.getRestrictions()) {
       val config = restriction.getConfig();
       if (restriction.getType() == null) {
-        errors.add(new DictionaryObservation("Field restriction type is blank", schema, field, restriction));
+        errors.add(new DictionaryConstraintViolation("Field restriction type is blank", schema, field, restriction));
       }
 
       if (restriction.getType() == RestrictionType.CODELIST) {
         String codeListName = config.getString(CodeListRestriction.FIELD);
         if (isBlank(codeListName)) {
-          errors.add(new DictionaryObservation("Field code list name is blank", schema, field, restriction));
+          errors.add(new DictionaryConstraintViolation("Field code list name is blank", schema, field, restriction));
         } else if (!codeListIndex.has(codeListName)) {
-          errors.add(new DictionaryObservation("Field invalid code list reference", schema, field, restriction));
+          errors
+              .add(new DictionaryConstraintViolation("Field invalid code list reference", schema, field, restriction));
         }
       }
 
@@ -157,7 +163,7 @@ public class DictionaryValidator {
         String[] values = split(text, ",");
         for (val value : values) {
           if (isBlank(value)) {
-            errors.add(new DictionaryObservation("Blank discrete value", schema, field, restriction));
+            errors.add(new DictionaryConstraintViolation("Blank discrete value", schema, field, restriction));
             break;
           }
         }
@@ -167,20 +173,21 @@ public class DictionaryValidator {
         String min = config.getString(RangeFieldRestriction.MIN);
         String max = config.getString(RangeFieldRestriction.MAX);
         if (!field.getValueType().isNumeric()) {
-          errors.add(new DictionaryObservation("Non-numeric range field value type", schema, field, restriction,
+          errors.add(new DictionaryConstraintViolation("Non-numeric range field value type", schema, field,
+              restriction,
               field.getValueType()));
         }
         if (field.getValueType() == ValueType.INTEGER && Longs.tryParse(min) == null) {
-          errors.add(new DictionaryObservation("Non INTEGER range min value", schema, field, restriction, min));
+          errors.add(new DictionaryConstraintViolation("Non INTEGER range min value", schema, field, restriction, min));
         }
         if (field.getValueType() == ValueType.DECIMAL && Doubles.tryParse(min) == null) {
-          errors.add(new DictionaryObservation("Non DECIMAL range min value", schema, field, restriction, min));
+          errors.add(new DictionaryConstraintViolation("Non DECIMAL range min value", schema, field, restriction, min));
         }
         if (field.getValueType() == ValueType.INTEGER && Longs.tryParse(max) == null) {
-          errors.add(new DictionaryObservation("Non INTEGER range max value", schema, field, restriction, max));
+          errors.add(new DictionaryConstraintViolation("Non INTEGER range max value", schema, field, restriction, max));
         }
         if (field.getValueType() == ValueType.DECIMAL && Doubles.tryParse(max) == null) {
-          errors.add(new DictionaryObservation("Non DECIMAL range max value", schema, field, restriction, max));
+          errors.add(new DictionaryConstraintViolation("Non DECIMAL range max value", schema, field, restriction, max));
         }
       }
 
@@ -196,7 +203,7 @@ public class DictionaryValidator {
 
             Field inputField = dictionaryIndex.getField(schema.getName(), inputName);
             if (inputField == null) {
-              errors.add(new DictionaryObservation("File schema is missing referenced script field",
+              errors.add(new DictionaryConstraintViolation("File schema is missing referenced script field",
                   schema, field, restriction, script, inputName));
 
               continue;
@@ -204,42 +211,44 @@ public class DictionaryValidator {
 
             val javaType = inputField.getValueType().getJavaType();
             if (inputClass.isAssignableFrom(javaType)) {
-              errors.add(new DictionaryObservation("File chema field is not assignable from referenced script field",
+              errors.add(new DictionaryConstraintViolation(
+                  "File chema field is not assignable from referenced script field",
                   schema, field, restriction, script, inputName, inputClass, javaType));
             }
           }
 
         } catch (InvalidScriptException e) {
-          errors.add(new DictionaryObservation(e.getMessage(), schema, field, restriction, script));
+          errors.add(new DictionaryConstraintViolation(e.getMessage(), schema, field, restriction, script));
         }
       }
     }
   }
 
-  private void validateFieldNames(Set<DictionaryObservation> errors, FileSchema schema) {
+  private void validateFieldNames(Set<DictionaryConstraintViolation> errors, FileSchema schema) {
     val fieldNames = HashMultiset.create(schema.getFieldNames());
     for (String fieldName : fieldNames) {
       if (fieldNames.count(fieldName) > 1) {
-        errors.add(new DictionaryObservation("Duplicate field name", schema.getName(), fieldName));
+        errors.add(new DictionaryConstraintViolation("Duplicate field name", schema.getName(), fieldName));
       }
     }
   }
 
-  private void validateRelations(Set<DictionaryObservation> errors, FileSchema schema) {
+  private void validateRelations(Set<DictionaryConstraintViolation> errors, FileSchema schema) {
     for (val relation : schema.getRelations()) {
       for (val fieldName : relation.getFields()) {
         if (!dictionaryIndex.hasField(schema.getName(), fieldName)) {
-          errors.add(new DictionaryObservation("Missing schema field for relation", schema, relation, fieldName));
+          errors
+              .add(new DictionaryConstraintViolation("Missing schema field for relation", schema, relation, fieldName));
         }
       }
       if (!dictionaryIndex.hasSchema(relation.getOther())) {
-        errors.add(new DictionaryObservation("Missing other schema for relation", schema, relation, relation
+        errors.add(new DictionaryConstraintViolation("Missing other schema for relation", schema, relation, relation
             .getOther()));
       }
       for (val otherFieldName : relation.getOtherFields()) {
         if (!dictionaryIndex.hasField(schema.getName(), otherFieldName)) {
           errors
-              .add(new DictionaryObservation("Missing other schema field for relation", schema, relation,
+              .add(new DictionaryConstraintViolation("Missing other schema field for relation", schema, relation,
                   otherFieldName));
         }
       }
@@ -248,30 +257,32 @@ public class DictionaryValidator {
       SetView<String> difference =
           difference(newHashSet(otherSchema.getUniqueFields()), newHashSet(relation.getOtherFields()));
       if (!difference.isEmpty()) {
-        errors.add(new DictionaryObservation("Other schema fields are not unique for relation", schema, relation,
+        errors.add(new DictionaryConstraintViolation("Other schema fields are not unique for relation", schema,
+            relation,
             difference));
       }
     }
   }
 
-  private void validateBusinessKeys(Set<DictionaryObservation> errors, Set<DictionaryObservation> warnings) {
+  private void validateBusinessKeys(Set<DictionaryConstraintViolation> errors,
+      Set<DictionaryConstraintViolation> warnings) {
     FileSchema ssm_p = dictionaryIndex.getSchema("ssm_p");
     if (ssm_p == null) {
-      errors.add(new DictionaryObservation(
+      errors.add(new DictionaryConstraintViolation(
           "'ssm_p' schema is missing but is required for required business key field validation"));
     } else {
       for (val keyField : BusinessKeys.MUTATION) {
         val required = dictionaryIndex.hasRestrictionType(ssm_p.getName(), keyField, RestrictionType.REQUIRED);
         val assemblyVersion = SUBMISSION_OBSERVATION_ASSEMBLY_VERSION.equals(keyField);
         if (!required && !assemblyVersion) {
-          errors.add(new DictionaryObservation(
+          errors.add(new DictionaryConstraintViolation(
               "'ssm_p' schema field is required for business key field", keyField, BusinessKeys.MUTATION));
         }
 
         // TODO: Make this an error when the dictionary has been fixed!
         if (!required && assemblyVersion) {
           warnings
-              .add(new DictionaryObservation(
+              .add(new DictionaryConstraintViolation(
                   "'ssm_p' schema field is required downstream for business key field. Currently not error for backwards compatibility.",
                   keyField, BusinessKeys.MUTATION));
         }
@@ -280,13 +291,13 @@ public class DictionaryValidator {
 
     FileSchema donor = dictionaryIndex.getSchema("donor");
     if (donor == null) {
-      errors.add(new DictionaryObservation(
+      errors.add(new DictionaryConstraintViolation(
           "'donor' schema is missing but is required for required business key field validation"));
     } else {
       val keyField = SUBMISSION_DONOR_ID;
       val required = dictionaryIndex.hasRestrictionType(donor.getName(), keyField, RestrictionType.REQUIRED);
       if (!required) {
-        errors.add(new DictionaryObservation(
+        errors.add(new DictionaryConstraintViolation(
             "'donor' schema field is required for business key field", keyField));
       }
     }
@@ -294,16 +305,16 @@ public class DictionaryValidator {
     // TODO: Add validations for remaining business keys
   }
 
-  private void validateCodeLists(Set<DictionaryObservation> errors, Set<DictionaryObservation> warnings) {
+  private void validateCodeLists(Set<DictionaryConstraintViolation> errors, Set<DictionaryConstraintViolation> warnings) {
     for (val codeListName : dictionary.getCodeListNames()) {
       val collection = codeListIndex.get(codeListName);
       int count = collection.size();
       if (count == 0) {
-        warnings.add(new DictionaryObservation("Missing code list", codeListName));
+        warnings.add(new DictionaryConstraintViolation("Missing code list", codeListName));
         break;
       }
       if (count > 1) {
-        errors.add(new DictionaryObservation("Duplicate code lists", collection));
+        errors.add(new DictionaryConstraintViolation("Duplicate code lists", collection));
       }
 
       val codeList = getFirst(collection, null);
@@ -320,13 +331,13 @@ public class DictionaryValidator {
         val value = term.getValue();
 
         if (codes.count(code) > 1) {
-          errors.add(new DictionaryObservation("Duplicate code list codes", term, code, codeList));
+          errors.add(new DictionaryConstraintViolation("Duplicate code list codes", term, code, codeList));
         }
         if (values.count(value) > 1) {
-          errors.add(new DictionaryObservation("Duplicate code list values", term, value, codeList));
+          errors.add(new DictionaryConstraintViolation("Duplicate code list values", term, value, codeList));
         }
         if (codes.contains(value) && !code.equals(value)) {
-          errors.add(new DictionaryObservation("Non-disjoint code list code and value", term, value, codeList));
+          errors.add(new DictionaryConstraintViolation("Non-disjoint code list code and value", term, value, codeList));
         }
       }
     }
@@ -435,10 +446,10 @@ public class DictionaryValidator {
   }
 
   @Value
-  public static class DictionaryObservations {
+  public static class DictionaryConstraintViolations {
 
-    private final Set<DictionaryObservation> warnings;
-    private final Set<DictionaryObservation> errors;
+    private final Set<DictionaryConstraintViolation> warnings;
+    private final Set<DictionaryConstraintViolation> errors;
 
     public boolean hasWarnings() {
       return !warnings.isEmpty();
@@ -451,12 +462,12 @@ public class DictionaryValidator {
   }
 
   @Value
-  public static class DictionaryObservation {
+  public static class DictionaryConstraintViolation {
 
     private final String description;
     private final Object[] context;
 
-    public DictionaryObservation(String description, Object... context) {
+    public DictionaryConstraintViolation(String description, Object... context) {
       this.description = description;
       this.context = context;
     }

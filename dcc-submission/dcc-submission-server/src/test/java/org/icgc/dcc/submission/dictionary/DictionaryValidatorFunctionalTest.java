@@ -36,16 +36,16 @@ public class DictionaryValidatorFunctionalTest {
   }
 
   @Test
-  public void testValidate() {
-    val observations = validator.validate();
+  public void testDictionary() {
+    val violations = validator.validate();
 
     System.out.println("**** WARNINGS ****");
-    for (val warning : observations.getWarnings()) {
+    for (val warning : violations.getWarnings()) {
       System.out.println(warning);
     }
 
     System.out.println("**** ERRORS ****");
-    for (val error : observations.getErrors()) {
+    for (val error : violations.getErrors()) {
       System.out.println(error);
     }
   }
