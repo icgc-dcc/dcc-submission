@@ -23,13 +23,13 @@ import java.util.regex.Pattern;
 
 import lombok.Getter;
 
-import org.elasticsearch.common.collect.Maps;
 import org.icgc.dcc.submission.checker.Util.CheckLevel;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Maps;
 
 public class BaseFileChecker implements FileChecker {
 
@@ -40,17 +40,17 @@ public class BaseFileChecker implements FileChecker {
 
   private final List<FirstPassValidationError> errors;
   private Map<String, String> cachedFileNames;
-  private final boolean isFailFast;
+  private final boolean failFast;
 
   public BaseFileChecker(Dictionary dict, SubmissionDirectory submissionDir) {
     this(dict, submissionDir, false);
   }
 
-  public BaseFileChecker(Dictionary dict, SubmissionDirectory submissionDir, boolean isFailFast) {
+  public BaseFileChecker(Dictionary dict, SubmissionDirectory submissionDir, boolean failFast) {
     this.dictionary = dict;
     this.submissionDirectory = submissionDir;
     this.errors = ImmutableList.of();
-    this.isFailFast = false;
+    this.failFast = false;
     cacheFileSchemaNames();
   }
 
@@ -76,7 +76,7 @@ public class BaseFileChecker implements FileChecker {
 
   @Override
   public boolean isFailFast() {
-    return isFailFast;
+    return failFast;
   }
 
   private void cacheFileSchemaNames() {

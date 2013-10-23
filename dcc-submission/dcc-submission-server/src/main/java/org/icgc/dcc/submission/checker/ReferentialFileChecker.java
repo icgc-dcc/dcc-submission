@@ -23,14 +23,14 @@ import java.util.regex.Pattern;
 
 import lombok.val;
 
-import org.elasticsearch.common.collect.Lists;
-import org.elasticsearch.common.collect.Maps;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.ValidationErrorCode;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 public class ReferentialFileChecker extends CompositeFileChecker {
 
@@ -40,8 +40,8 @@ public class ReferentialFileChecker extends CompositeFileChecker {
     this(compositeChecker, false);
   }
 
-  public ReferentialFileChecker(CompositeFileChecker compositeChecker, boolean isFailFast) {
-    super(compositeChecker, isFailFast);
+  public ReferentialFileChecker(CompositeFileChecker compositeChecker, boolean failFast) {
+    super(compositeChecker, failFast);
     cacheFileSchemaNames();
   }
 
@@ -77,7 +77,6 @@ public class ReferentialFileChecker extends CompositeFileChecker {
     List<FirstPassValidationError> errors = Lists.newLinkedList();
     Optional<FileSchema> fileSchema = getDictionary().fileSchema(cachedFileNames.get(filePathname));
     if (fileSchema.isPresent()) {
-      ;
       for (val otherFileSchema : fileSchema.get().getBidirectionalAfferentFileSchemata(getDictionary())) {
         if (Lists.newArrayList(getSubmissionDirectory().listFile(Pattern.compile(otherFileSchema.getPattern()))).size() == 0) {
           errors.add(new FirstPassValidationError(getCheckLevel(), "Fail referencing check: missing referencing file ("

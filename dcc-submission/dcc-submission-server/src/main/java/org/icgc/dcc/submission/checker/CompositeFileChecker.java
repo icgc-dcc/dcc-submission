@@ -19,21 +19,22 @@ package org.icgc.dcc.submission.checker;
 
 import java.util.List;
 
-import org.elasticsearch.common.collect.Lists;
 import org.icgc.dcc.submission.checker.Util.CheckLevel;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
+
+import com.google.common.collect.Lists;
 
 public abstract class CompositeFileChecker implements FileChecker {
 
   protected FileChecker compositeChecker;
   protected List<FirstPassValidationError> errors;
-  protected boolean isFailFast;
+  protected boolean failFast;
 
-  public CompositeFileChecker(FileChecker nestedChecker, boolean isFailFast) {
+  public CompositeFileChecker(FileChecker nestedChecker, boolean failFast) {
     this.compositeChecker = nestedChecker;
     errors = Lists.newLinkedList();
-    this.isFailFast = isFailFast;
+    this.failFast = failFast;
   }
 
   public CompositeFileChecker(FileChecker nestedChecker) {
@@ -62,7 +63,7 @@ public abstract class CompositeFileChecker implements FileChecker {
 
   @Override
   public boolean isFailFast() {
-    return isFailFast;
+    return failFast;
   }
 
   @Override

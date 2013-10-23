@@ -28,7 +28,7 @@ import org.icgc.dcc.submission.validation.ValidationErrorCode;
 @Value
 public class FirstPassValidationError {
 
-  final private CheckLevel level;
-  final private String errMsg;
-  final private ValidationErrorCode code;
+  private final CheckLevel level;
+  private final String errMsg;
+  private final ValidationErrorCode code;
 }

@@ -92,7 +92,6 @@ public class FirstPassCheckerTest {
 
   @Test
   public void sanityNotValid() throws Exception {
-
     FileChecker fileChecker = mock(FileChecker.class);
     when(fileChecker.check(anyString())).thenReturn(ImmutableList.of(DUMMY_FILE_ERROR));
     when(fileChecker.isValid()).thenReturn(false);

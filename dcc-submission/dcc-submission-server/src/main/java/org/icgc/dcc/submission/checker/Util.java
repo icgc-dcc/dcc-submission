@@ -24,7 +24,6 @@ public final class Util {
 
   public enum CheckLevel {
     FILE_LEVEL, ROW_LEVEL, CELL_LEVEL;
-
   }
 
 }

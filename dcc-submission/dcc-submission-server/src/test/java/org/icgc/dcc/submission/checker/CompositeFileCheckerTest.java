@@ -4,7 +4,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -12,19 +11,18 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 
-import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.common.collect.ImmutableList;
 
+@RunWith(MockitoJUnitRunner.class)
 public class CompositeFileCheckerTest {
 
+  @Mock
   private FileChecker baseChecker;
-
-  @Before
-  public void setup() {
-    baseChecker = mock(FileChecker.class);
-  }
 
   @Test
   public void valid() throws Exception {
@@ -125,11 +123,11 @@ public class CompositeFileCheckerTest {
 
   private class CompositeCheckerUnderTest extends CompositeFileChecker {
 
-    private final boolean isFailFast;
+    private final boolean failFast;
 
-    public CompositeCheckerUnderTest(FileChecker nestedChecker, boolean isFailFast) {
+    public CompositeCheckerUnderTest(FileChecker nestedChecker, boolean failFast) {
       super(nestedChecker);
-      this.isFailFast = isFailFast;
+      this.failFast = failFast;
     }
 
     public CompositeCheckerUnderTest(FileChecker nestedChecker) {
@@ -138,7 +136,7 @@ public class CompositeFileCheckerTest {
 
     @Override
     public boolean isFailFast() {
-      return isFailFast;
+      return failFast;
     }
 
     @Override

@@ -20,8 +20,11 @@ package org.icgc.dcc.submission.checker;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.compress.CompressionCodecFactory;
 import org.icgc.dcc.submission.checker.Util.CheckLevel;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
+import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.validation.ValidationErrorCode;
 
 import com.google.common.base.Optional;
@@ -33,32 +36,37 @@ import com.google.common.collect.ImmutableList.Builder;
  */
 public class FileCorruptionChecker extends CompositeFileChecker {
 
-  public FileCorruptionChecker(FileChecker fileChecker, boolean isFailFast) {
-    super(fileChecker, isFailFast);
+  final private DccFileSystem fs;
+
+  public FileCorruptionChecker(FileChecker fileChecker, DccFileSystem fs, boolean failFast) {
+    super(fileChecker, failFast);
+    this.fs = fs;
   }
 
-  public FileCorruptionChecker(FileChecker fileChecker) {
-    this(fileChecker, true);
+  public FileCorruptionChecker(FileChecker fileChecker, DccFileSystem fs) {
+    this(fileChecker, fs, true);
   }
 
   @Override
   public List<FirstPassValidationError> selfCheck(String filePathname) {
-    Builder<FirstPassValidationError> errorBuilder = ImmutableList.<FirstPassValidationError> builder();
+    CompressionCodecFactory codecFactory = new CompressionCodecFactory(fs.getFileSystem().getConf());
+    codecFactory.getCodec(new Path(""));
+    Builder<FirstPassValidationError> errors = ImmutableList.builder();
     Optional<FileSchema> fileSchema = getDictionary().fileSchema(getFileSchemaName(filePathname));
     if (fileSchema.isPresent()) {
       // more than 1 file that match the same pattern
       if (ImmutableList.copyOf(getSubmissionDirectory().listFile(Pattern.compile(fileSchema.get().getPattern())))
           .size() > 1) {
-        errorBuilder.add(new FirstPassValidationError(CheckLevel.FILE_LEVEL,
+        errors.add(new FirstPassValidationError(CheckLevel.FILE_LEVEL,
             "More than 1 file matching the file pattern: " + fileSchema.get().getPattern(),
             ValidationErrorCode.TOO_MANY_FILES_ERROR));
       }
     }
-    return errorBuilder.build();
+    return errors.build();
   }
 
   @Override
   public boolean isFailFast() {
-    return isFailFast;
+    return failFast;
   }
 }

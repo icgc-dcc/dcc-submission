@@ -33,8 +33,8 @@ import com.google.common.collect.ImmutableList.Builder;
  */
 public class FileCollisionChecker extends CompositeFileChecker {
 
-  public FileCollisionChecker(FileChecker fileChecker, boolean isFailFast) {
-    super(fileChecker, isFailFast);
+  public FileCollisionChecker(FileChecker fileChecker, boolean failFast) {
+    super(fileChecker, failFast);
   }
 
   public FileCollisionChecker(FileChecker fileChecker) {
@@ -43,18 +43,18 @@ public class FileCollisionChecker extends CompositeFileChecker {
 
   @Override
   public List<FirstPassValidationError> selfCheck(String filePathname) {
-    Builder<FirstPassValidationError> errorBuilder = ImmutableList.<FirstPassValidationError> builder();
+    Builder<FirstPassValidationError> errors = ImmutableList.<FirstPassValidationError> builder();
     Optional<FileSchema> fileSchema = getDictionary().fileSchema(getFileSchemaName(filePathname));
     if (fileSchema.isPresent()) {
       // more than 1 file that match the same pattern
       if (ImmutableList.copyOf(getSubmissionDirectory().listFile(Pattern.compile(fileSchema.get().getPattern())))
           .size() > 1) {
-        errorBuilder.add(new FirstPassValidationError(CheckLevel.FILE_LEVEL,
+        errors.add(new FirstPassValidationError(CheckLevel.FILE_LEVEL,
             "More than 1 file matching the file pattern: " + fileSchema.get().getPattern(),
             ValidationErrorCode.TOO_MANY_FILES_ERROR));
       }
     }
-    return errorBuilder.build();
+    return errors.build();
   }
 
 }

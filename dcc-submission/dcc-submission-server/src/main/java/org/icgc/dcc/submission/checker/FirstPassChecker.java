@@ -29,7 +29,6 @@ import lombok.Cleanup;
 import lombok.val;
 
 import org.apache.hadoop.fs.Path;
-import org.elasticsearch.common.collect.Maps;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
@@ -40,10 +39,8 @@ import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
 
-/**
- * 
- */
 public class FirstPassChecker {
 
   final private Dictionary dict;
@@ -53,7 +50,7 @@ public class FirstPassChecker {
   final private RowChecker rowChecker;
   final private FileChecker fileChecker;
 
-  private final Map<String, List<FirstPassValidationError>> errMap;
+  private final Map<String, List<FirstPassValidationError>> errorMap;
 
   public FirstPassChecker(DccFileSystem dccFileSystem, Dictionary dict, SubmissionDirectory submissionDir,
       FileChecker fileChecker, RowChecker rowChecker) {
@@ -62,8 +59,7 @@ public class FirstPassChecker {
     this.submissionDir = submissionDir;
     this.fileChecker = fileChecker;
     this.rowChecker = rowChecker;
-    this.errMap = Maps.newHashMap();
-
+    this.errorMap = Maps.newHashMap();
   }
 
   public FirstPassChecker(DccFileSystem dccFileSystem, Dictionary dict, SubmissionDirectory submissionDir) {
@@ -72,34 +68,34 @@ public class FirstPassChecker {
   }
 
   public boolean isValid() throws IOException {
-    errMap.clear();
+    errorMap.clear();
     for (String filename : submissionDir.listFile()) {
       String fileSchemaName = getFileSchemaName(filename);
       if (fileSchemaName != null) {
-        Builder<FirstPassValidationError> errorsBuilder = ImmutableList.<FirstPassValidationError> builder();
+        Builder<FirstPassValidationError> errors = ImmutableList.<FirstPassValidationError> builder();
         String filePathname = submissionDir.getDataFilePath(filename);
         Path filePath = new Path(filePathname);
-        errorsBuilder.addAll(fileChecker.check(filePathname));
+        errors.addAll(fileChecker.check(filePathname));
         if (fileChecker.isValid() || !fileChecker.isFailFast()) {
           @Cleanup
           BufferedReader reader = new BufferedReader(new InputStreamReader(dccFileSystem.open(filePath)));
           String line;
           while ((line = reader.readLine()) != null) {
-            errorsBuilder.addAll(rowChecker.check(line));
+            errors.addAll(rowChecker.check(line));
           }
         }
-        errMap.put(fileSchemaName, errorsBuilder.build());
+        errorMap.put(fileSchemaName, errors.build());
       }
     }
-    return !(Iterables.concat(errMap.values()).iterator().hasNext());
+    return !(Iterables.concat(errorMap.values()).iterator().hasNext());
   }
 
   public Set<String> getFileSchemaNames() {
-    return errMap.keySet();
+    return errorMap.keySet();
   }
 
   public List<TupleError> getTupleErrors(String fileSchemaName) {
-    List<FirstPassValidationError> errors = errMap.get(fileSchemaName);
+    List<FirstPassValidationError> errors = errorMap.get(fileSchemaName);
     TupleState state = new TupleState();
     for (val error : errors) {
       state.reportError(error.getCode(), error.getLevel().toString(), error.toString());
