@@ -73,7 +73,7 @@ public class CompositeFileCheckerTest {
 
     CompositeCheckerUnderTest spy = spy(checker);
     checker.check(anyString());
-    verify(spy, never()).selfCheck(anyString());
+    verify(spy, never()).performSelfCheck(anyString());
   }
 
   @Test
@@ -85,8 +85,8 @@ public class CompositeFileCheckerTest {
 
     checker2.check(anyString());
 
-    verify(checker1, atLeastOnce()).selfCheck(anyString());
-    verify(checker2, atLeastOnce()).selfCheck(anyString());
+    verify(checker1, atLeastOnce()).performSelfCheck(anyString());
+    verify(checker2, atLeastOnce()).performSelfCheck(anyString());
   }
 
   @Test
@@ -101,8 +101,8 @@ public class CompositeFileCheckerTest {
 
     assertFalse(checker2.isValid());
 
-    verify(spy1, never()).selfCheck(anyString());
-    verify(spy2, never()).selfCheck(anyString());
+    verify(spy1, never()).performSelfCheck(anyString());
+    verify(spy2, never()).performSelfCheck(anyString());
   }
 
   @Test
@@ -117,8 +117,8 @@ public class CompositeFileCheckerTest {
 
     checker2.check(anyString());
 
-    verify(checker1, atLeastOnce()).selfCheck(anyString());
-    verify(checker2, never()).selfCheck(anyString());
+    verify(checker1, atLeastOnce()).performSelfCheck(anyString());
+    verify(checker2, never()).performSelfCheck(anyString());
   }
 
   private class CompositeCheckerUnderTest extends CompositeFileChecker {
@@ -140,7 +140,7 @@ public class CompositeFileCheckerTest {
     }
 
     @Override
-    public List<FirstPassValidationError> selfCheck(String filePathname) {
+    public List<FirstPassValidationError> performSelfCheck(String filePathname) {
       return ImmutableList.of();
     }
   }

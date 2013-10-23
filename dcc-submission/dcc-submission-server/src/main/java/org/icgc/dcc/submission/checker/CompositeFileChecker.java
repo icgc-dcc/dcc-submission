@@ -42,14 +42,14 @@ public abstract class CompositeFileChecker implements FileChecker {
   }
 
   @Override
-  public List<FirstPassValidationError> check(String filePathname) {
+  public List<FirstPassValidationError> check(String filename) {
     errors.clear();
-    errors.addAll(compositeChecker.check(filePathname));
-    if (compositeChecker.isValid() || !compositeChecker.isFailFast()) errors.addAll(selfCheck(filePathname));
+    errors.addAll(compositeChecker.check(filename));
+    if (compositeChecker.isValid() || !compositeChecker.isFailFast()) errors.addAll(performSelfCheck(filename));
     return errors;
   }
 
-  public abstract List<FirstPassValidationError> selfCheck(String filePathname);
+  public abstract List<FirstPassValidationError> performSelfCheck(String filePathname);
 
   @Override
   public boolean isValid() {

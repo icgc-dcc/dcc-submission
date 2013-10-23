@@ -19,7 +19,6 @@ package org.icgc.dcc.submission.checker;
 
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -30,7 +29,6 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 
-import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.checker.Util.CheckLevel;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
@@ -70,7 +68,7 @@ public class FirstPassCheckerTest {
     when(dict.getFiles()).thenReturn(ImmutableList.of(schema));
 
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream("JUST-A-TEST".getBytes()));
-    when(fs.open(any(Path.class))).thenReturn(fis);
+    when(fs.open(anyString())).thenReturn(fis);
   }
 
   @Test

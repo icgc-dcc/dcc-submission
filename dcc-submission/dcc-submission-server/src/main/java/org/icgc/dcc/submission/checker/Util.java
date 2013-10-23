@@ -17,13 +17,61 @@
  */
 package org.icgc.dcc.submission.checker;
 
-/**
- * 
- */
-public final class Util {
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
+import lombok.Cleanup;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.compress.CompressionCodec;
+import org.apache.hadoop.io.compress.CompressionCodecFactory;
+import org.apache.tika.detect.Detector;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.parser.AutoDetectParser;
+import org.icgc.dcc.submission.fs.DccFileSystem;
+import org.icgc.dcc.submission.fs.SubmissionDirectory;
+
+final class Util {
 
   public enum CheckLevel {
     FILE_LEVEL, ROW_LEVEL, CELL_LEVEL;
   }
 
+  public enum CodecType {
+    GZIP, BZIP2, PLAIN_TEXT;
+  }
+
+  public static CodecType determineCodec(DccFileSystem fs, SubmissionDirectory submissionDirectory, String filename)
+      throws IOException {
+    @Cleanup
+    BufferedInputStream bis =
+        new BufferedInputStream(fs.open(submissionDirectory.getDataFilePath(filename)));
+    AutoDetectParser parser = new AutoDetectParser();
+    Detector detector = parser.getDetector();
+    Metadata md = new Metadata();
+    md.add(Metadata.RESOURCE_NAME_KEY, filename);
+    String mediaType = detector.detect(bis, md).toString();
+    if (mediaType.equals("gzip")) {
+      return CodecType.GZIP;
+    } else if (mediaType.equals("bzip")) {
+      return CodecType.BZIP2;
+    }
+    return CodecType.PLAIN_TEXT;
+  }
+
+  public static InputStream createInputStream(DccFileSystem dccFileSystem, String filePathname) throws IOException {
+    // TODO: need to handle gzip and bzip2
+    Configuration conf = dccFileSystem.getFileSystem().getConf();
+    CompressionCodecFactory factory = new CompressionCodecFactory(conf);
+    Path filePath = new Path(filePathname);
+    CompressionCodec codec = factory.getCodec(filePath);
+    if (codec == null) {
+      // This is assumed to be PLAIN_TEXT
+      return dccFileSystem.open(filePathname);
+    } else {
+      return codec.createInputStream(dccFileSystem.open(filePathname));
+    }
+  }
 }

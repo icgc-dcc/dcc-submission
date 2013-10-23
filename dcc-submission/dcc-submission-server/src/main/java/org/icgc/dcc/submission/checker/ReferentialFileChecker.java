@@ -46,7 +46,7 @@ public class ReferentialFileChecker extends CompositeFileChecker {
   }
 
   @Override
-  public List<FirstPassValidationError> selfCheck(String filePathname) {
+  public List<FirstPassValidationError> performSelfCheck(String filePathname) {
     Builder<FirstPassValidationError> errors = ImmutableList.builder();
     errors.addAll(referencedCheck(filePathname));
     errors.addAll(referencingCheck(filePathname));

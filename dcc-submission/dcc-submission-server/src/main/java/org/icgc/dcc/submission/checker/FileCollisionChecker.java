@@ -42,7 +42,7 @@ public class FileCollisionChecker extends CompositeFileChecker {
   }
 
   @Override
-  public List<FirstPassValidationError> selfCheck(String filePathname) {
+  public List<FirstPassValidationError> performSelfCheck(String filePathname) {
     Builder<FirstPassValidationError> errors = ImmutableList.<FirstPassValidationError> builder();
     Optional<FileSchema> fileSchema = getDictionary().fileSchema(getFileSchemaName(filePathname));
     if (fileSchema.isPresent()) {

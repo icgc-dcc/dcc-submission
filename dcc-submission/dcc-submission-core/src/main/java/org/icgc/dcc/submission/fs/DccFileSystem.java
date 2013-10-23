@@ -238,9 +238,9 @@ public class DccFileSystem {
    * @param filePath
    * @throws IOException
    */
-  public DataInputStream open(Path filePath) throws IOException {
-    checkArgument(filePath != null);
-    return fileSystem.open(filePath);
+  public DataInputStream open(String filePathname) throws IOException {
+    checkArgument(filePathname != null);
+    return fileSystem.open(new Path(filePathname));
   }
 
 }

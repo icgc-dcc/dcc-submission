@@ -17,25 +17,22 @@
  */
 package org.icgc.dcc.submission.checker;
 
+import java.io.IOException;
 import java.util.List;
-import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
 
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.compress.CompressionCodecFactory;
-import org.icgc.dcc.submission.checker.Util.CheckLevel;
-import org.icgc.dcc.submission.dictionary.model.FileSchema;
+import lombok.Cleanup;
+
+import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.validation.ValidationErrorCode;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 
-/**
- * 
- */
 public class FileCorruptionChecker extends CompositeFileChecker {
 
+  private static final int BUFFER_SIZE = 65536;
   final private DccFileSystem fs;
 
   public FileCorruptionChecker(FileChecker fileChecker, DccFileSystem fs, boolean failFast) {
@@ -48,25 +45,58 @@ public class FileCorruptionChecker extends CompositeFileChecker {
   }
 
   @Override
-  public List<FirstPassValidationError> selfCheck(String filePathname) {
-    CompressionCodecFactory codecFactory = new CompressionCodecFactory(fs.getFileSystem().getConf());
-    codecFactory.getCodec(new Path(""));
+  public List<FirstPassValidationError> performSelfCheck(String filename) {
     Builder<FirstPassValidationError> errors = ImmutableList.builder();
-    Optional<FileSchema> fileSchema = getDictionary().fileSchema(getFileSchemaName(filePathname));
-    if (fileSchema.isPresent()) {
-      // more than 1 file that match the same pattern
-      if (ImmutableList.copyOf(getSubmissionDirectory().listFile(Pattern.compile(fileSchema.get().getPattern())))
-          .size() > 1) {
-        errors.add(new FirstPassValidationError(CheckLevel.FILE_LEVEL,
-            "More than 1 file matching the file pattern: " + fileSchema.get().getPattern(),
-            ValidationErrorCode.TOO_MANY_FILES_ERROR));
+    try {
+      switch (Util.determineCodec(fs, getSubmissionDirectory(), filename)) {
+      case GZIP:
+        checkGzip(filename);
+        break;
+      case BZIP2:
+        checkBzip(filename);
+        break;
       }
+    } catch (IOException e) {
+      errors.add(new FirstPassValidationError(getCheckLevel(), "Error in reading the file (corruption): "
+          + filename,
+          ValidationErrorCode.COMPRESSION_CODEC_ERROR));
     }
     return errors.build();
   }
 
-  @Override
-  public boolean isFailFast() {
-    return failFast;
+  private List<FirstPassValidationError> checkBzip(String filename) {
+    Builder<FirstPassValidationError> errors = ImmutableList.builder();
+    try {
+      // check the bzip2 header
+      @Cleanup
+      BZip2CompressorInputStream in =
+          new BZip2CompressorInputStream(fs.open(getSubmissionDirectory().getDataFilePath(filename)));
+      // see if it can be read through
+      byte[] buf = new byte[BUFFER_SIZE];
+      while (in.read(buf) > 0) {
+      }
+    } catch (IOException e) {
+      errors.add(new FirstPassValidationError(getCheckLevel(), "Corrupted bzip file: " + filename,
+          ValidationErrorCode.COMPRESSION_CODEC_ERROR));
+    }
+    return errors.build();
   }
+
+  private List<FirstPassValidationError> checkGzip(String filename) {
+    Builder<FirstPassValidationError> errors = ImmutableList.builder();
+    try {
+      // check the gzip header
+      @Cleanup
+      GZIPInputStream in = new GZIPInputStream(fs.open(getSubmissionDirectory().getDataFilePath(filename)));
+      // see if it can be read through
+      byte[] buf = new byte[BUFFER_SIZE];
+      while (in.read(buf) > 0) {
+      }
+    } catch (IOException e) {
+      errors.add(new FirstPassValidationError(getCheckLevel(), "Corrupted gzip file: " + filename,
+          ValidationErrorCode.COMPRESSION_CODEC_ERROR));
+    }
+    return errors.build();
+  }
+
 }

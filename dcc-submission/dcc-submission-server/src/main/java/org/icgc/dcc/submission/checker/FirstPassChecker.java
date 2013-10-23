@@ -28,7 +28,6 @@ import java.util.regex.Pattern;
 import lombok.Cleanup;
 import lombok.val;
 
-import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
@@ -74,11 +73,11 @@ public class FirstPassChecker {
       if (fileSchemaName != null) {
         Builder<FirstPassValidationError> errors = ImmutableList.<FirstPassValidationError> builder();
         String filePathname = submissionDir.getDataFilePath(filename);
-        Path filePath = new Path(filePathname);
         errors.addAll(fileChecker.check(filePathname));
         if (fileChecker.isValid() || !fileChecker.isFailFast()) {
           @Cleanup
-          BufferedReader reader = new BufferedReader(new InputStreamReader(dccFileSystem.open(filePath)));
+          BufferedReader reader =
+              new BufferedReader(new InputStreamReader(Util.createInputStream(dccFileSystem, filePathname)));
           String line;
           while ((line = reader.readLine()) != null) {
             errors.addAll(rowChecker.check(line));
@@ -87,7 +86,8 @@ public class FirstPassChecker {
         errorMap.put(fileSchemaName, errors.build());
       }
     }
-    return !(Iterables.concat(errorMap.values()).iterator().hasNext());
+    List<FirstPassValidationError> flattenListOfErrors = ImmutableList.copyOf(Iterables.concat(errorMap.values()));
+    return (flattenListOfErrors.size() == 0);
   }
 
   public Set<String> getFileSchemaNames() {
