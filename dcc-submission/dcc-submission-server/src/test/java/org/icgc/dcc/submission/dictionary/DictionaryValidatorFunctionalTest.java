@@ -17,58 +17,33 @@
  */
 package org.icgc.dcc.submission.dictionary;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.icgc.dcc.submission.dictionary.model.SummaryType.AVERAGE;
-import static org.icgc.dcc.submission.dictionary.model.ValueType.INTEGER;
-
-import java.util.List;
-
+import static org.icgc.dcc.submission.TestUtils.codeLists;
+import static org.icgc.dcc.submission.TestUtils.dictionary;
+import lombok.SneakyThrows;
 import lombok.val;
 
-import org.icgc.dcc.submission.dictionary.model.CodeList;
-import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.dictionary.model.Field;
-import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.dictionary.model.Restriction;
-import org.icgc.dcc.submission.dictionary.model.RestrictionType;
-import org.icgc.dcc.submission.validation.restriction.ScriptRestriction;
+import org.junit.Before;
 import org.junit.Test;
 
-import com.mongodb.BasicDBObject;
+public class DictionaryValidatorFunctionalTest {
 
-public class DictionaryValidatorTest {
+  DictionaryValidator validator;
+
+  @Before
+  @SneakyThrows
+  public void setUp() {
+    this.validator = new DictionaryValidator(dictionary(), codeLists());
+  }
 
   @Test
-  public void testValidateScriptRestriction() {
-    val config = new BasicDBObject();
-    config.put(ScriptRestriction.PARAM, "x == 1");
-
-    val restriction = new Restriction();
-    restriction.setType(RestrictionType.SCRIPT);
-    restriction.setConfig(config);
-
-    val field = new Field();
-    field.setName("testField");
-    field.setValueType(INTEGER);
-    field.setLabel("Test field");
-    field.setSummaryType(AVERAGE);
-    field.addRestriction(restriction);
-
-    val fileSchema = new FileSchema("testSchema");
-    fileSchema.setPattern("testSchema");
-    fileSchema.addField(field);
-
-    val dictionary = new Dictionary();
-    dictionary.addFile(fileSchema);
-
-    List<CodeList> codeLists = newArrayList();
-
-    val validator = new DictionaryValidator(dictionary, codeLists);
+  public void testValidate() {
     val observations = validator.validate();
 
-    assertThat(observations.getWarnings()).isEmpty();
-    assertThat(observations.getErrors()).hasSize(3);
+    System.out.println("**** WARNINGS ****");
+    for (val warning : observations.getWarnings()) {
+      System.out.println(warning);
+    }
+
     System.out.println("**** ERRORS ****");
     for (val error : observations.getErrors()) {
       System.out.println(error);

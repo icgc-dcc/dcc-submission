@@ -91,7 +91,11 @@ public class DictionaryValidator {
   private void validateSchemata(Set<DictionaryObservation> errors, Set<DictionaryObservation> warnings) {
     for (val schema : dictionary.getFiles()) {
       try {
-        Pattern.compile(schema.getPattern());
+        if (isBlank(schema.getPattern())) {
+          errors.add(new DictionaryObservation("Missing schema file pattern", schema.getName()));
+        } else {
+          Pattern.compile(schema.getPattern());
+        }
       } catch (PatternSyntaxException e) {
         errors.add(new DictionaryObservation("Invalid schema file pattern", schema.getName(), schema.getPattern()));
       }
@@ -192,7 +196,7 @@ public class DictionaryValidator {
 
             Field inputField = dictionaryIndex.getField(schema.getName(), inputName);
             if (inputField == null) {
-              errors.add(new DictionaryObservation("Schema is missing referenced script field: ",
+              errors.add(new DictionaryObservation("File schema is missing referenced script field",
                   schema, field, restriction, script, inputName));
 
               continue;
@@ -200,7 +204,7 @@ public class DictionaryValidator {
 
             val javaType = inputField.getValueType().getJavaType();
             if (inputClass.isAssignableFrom(javaType)) {
-              errors.add(new DictionaryObservation("Schema field is not assignable from  referenced script field: ",
+              errors.add(new DictionaryObservation("File chema field is not assignable from referenced script field",
                   schema, field, restriction, script, inputName, inputClass, javaType));
             }
           }
