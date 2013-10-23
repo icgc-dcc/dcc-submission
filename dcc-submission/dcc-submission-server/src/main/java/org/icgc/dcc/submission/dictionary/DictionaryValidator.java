@@ -210,9 +210,9 @@ public class DictionaryValidator {
             }
 
             val javaType = inputField.getValueType().getJavaType();
-            if (inputClass.isAssignableFrom(javaType)) {
+            if (!inputClass.equals(Object.class) && inputClass.isAssignableFrom(javaType)) {
               errors.add(new DictionaryConstraintViolation(
-                  "File chema field is not assignable from referenced script field",
+                  "File schema field is not assignable from referenced script field",
                   schema, field, restriction, script, inputName, inputClass, javaType));
             }
           }
