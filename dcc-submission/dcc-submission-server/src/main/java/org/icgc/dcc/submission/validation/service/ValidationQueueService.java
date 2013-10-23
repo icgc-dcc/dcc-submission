@@ -125,7 +125,7 @@ public class ValidationQueueService extends AbstractScheduledService {
       val plan = validationSlots.get(projectKey);
       if (plan != null) {
         log.info("Setting 'killed' flag validation for project: {}, plan: {}", projectKey, plan);
-        plan.kill();
+        plan.markKilled();
         log.info("Stopping cascade for project: {}", projectKey);
         plan.stopCascade();
         log.info("Successfully killed validation for project: {}", projectKey);

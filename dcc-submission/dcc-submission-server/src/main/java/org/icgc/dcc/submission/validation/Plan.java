@@ -17,8 +17,8 @@
  */
 package org.icgc.dcc.submission.validation;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Iterables.concat;
 import static com.google.common.collect.Iterables.unmodifiableIterable;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
@@ -52,7 +52,6 @@ import cascading.cascade.Cascade;
 import cascading.cascade.CascadeConnector;
 import cascading.cascade.CascadeDef;
 import cascading.cascade.CascadeListener;
-import cascading.flow.Flow;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
@@ -89,6 +88,7 @@ public class Plan {
    * Transient state
    */
   private Cascade cascade;
+
   @Getter
   private volatile boolean killed;
 
@@ -99,9 +99,36 @@ public class Plan {
     return cascadingStrategy.path(schema).getName();
   }
 
-  public void kill() {
+  public void markKilled() {
     checkState(!killed, "Attempted to kill plan multiple times");
-    this.killed = true;
+    killed = true;
+  }
+
+  /**
+   * startTime must have been set already (unit is milliseconds).
+   */
+  public long getDuration() {
+    if (startTime == 0L) {
+      return 0L;
+    }
+
+    return System.currentTimeMillis() - startTime;
+  }
+
+  public void include(FileSchema fileSchema, InternalFlowPlanner internal, ExternalFlowPlanner external) {
+    plannedSchema.add(fileSchema);
+    internalPlanners.put(fileSchema.getName(), internal);
+    externalPlanners.put(fileSchema.getName(), external);
+  }
+
+  public FileSchema getFileSchema(String name) {
+    for (val schema : plannedSchema) {
+      if (schema.getName().equals(name)) {
+        return schema;
+      }
+    }
+
+    return null;
   }
 
   public Dictionary getDictionary() {
@@ -116,14 +143,8 @@ public class Plan {
     return queuedProject.getKey();
   }
 
-  public void include(FileSchema fileSchema, InternalFlowPlanner internal, ExternalFlowPlanner external) {
-    plannedSchema.add(fileSchema);
-    internalPlanners.put(fileSchema.getName(), internal);
-    externalPlanners.put(fileSchema.getName(), external);
-  }
-
   public InternalFlowPlanner getInternalFlow(String schema) throws MissingFileException {
-    InternalFlowPlanner schemaPlan = internalPlanners.get(schema);
+    val schemaPlan = internalPlanners.get(schema);
     if (schemaPlan == null) {
       log.error(format("No corresponding file for schema %s, schemata with files are %s", schema,
           internalPlanners.keySet()));
@@ -139,10 +160,11 @@ public class Plan {
   }
 
   public ExternalFlowPlanner getExternalFlow(String schema) throws MissingFileException {
-    ExternalFlowPlanner schemaPlan = externalPlanners.get(schema);
+    val schemaPlan = externalPlanners.get(schema);
     if (schemaPlan == null) {
       throw new MissingFileException(schema);
     }
+
     return schemaPlan;
   }
 
@@ -153,28 +175,28 @@ public class Plan {
   public Iterable<? extends FileSchemaFlowPlanner> getFlows(FlowType type) {
     switch (type) {
     case INTERNAL:
-      return Iterables.unmodifiableIterable(internalPlanners.values());
+      return unmodifiableIterable(internalPlanners.values());
     case EXTERNAL:
-      return Iterables.unmodifiableIterable(externalPlanners.values());
+      return unmodifiableIterable(externalPlanners.values());
     default:
       throw new IllegalArgumentException();
     }
   }
 
   synchronized public void connect(CascadingStrategy cascadingStrategy) {
-    CascadeDef cascade = new CascadeDef().setName(queuedProject.getKey() + " validation cascade");
-    for (FileSchemaFlowPlanner planner : Iterables.concat(internalPlanners.values(), externalPlanners.values())) {
+    val cascadeDef = new CascadeDef().setName(queuedProject.getKey() + " validation cascade");
+    for (val planner : Iterables.concat(internalPlanners.values(), externalPlanners.values())) {
       try {
-        Flow<?> flow = planner.connect(cascadingStrategy);
+        val flow = planner.connect(cascadingStrategy);
         if (flow != null) {
-          cascade.addFlow(flow);
+          cascadeDef.addFlow(flow);
         }
       } catch (PlanningFileLevelException e) {
         addFileLevelError(e);
       }
     }
 
-    this.cascade = new CascadeConnector().connect(cascade);
+    cascade = new CascadeConnector().connect(cascadeDef);
   }
 
   /**
@@ -203,14 +225,6 @@ public class Plan {
     cascade.stop();
   }
 
-  /**
-   * startTime must have been set already (unit is milliseconds).
-   */
-  public long getDuration() {
-    checkNotNull(startTime);
-    return System.currentTimeMillis() - startTime;
-  }
-
   synchronized public Plan addCascadeListener(CascadeListener listener) {
     cascade.addListener(listener);
     return this;
@@ -223,12 +237,14 @@ public class Plan {
   public Outcome collect(SubmissionReport report) {
     Outcome result = Outcome.PASSED;
     Map<String, SchemaReport> schemaReports = newLinkedHashMap();
-    for (FileSchemaFlowPlanner planner : Iterables.concat(internalPlanners.values(), externalPlanners.values())) {
+    for (val planner : concat(internalPlanners.values(), externalPlanners.values())) {
       SchemaReport schemaReport = new SchemaReport();
       Outcome outcome = planner.collect(cascadingStrategy, schemaReport);
+
       if (outcome == Outcome.FAILED) {
         result = Outcome.FAILED;
       }
+
       if (!schemaReports.containsKey(schemaReport.getName())) {
         schemaReports.put(schemaReport.getName(), schemaReport);
       } else {
@@ -245,16 +261,6 @@ public class Plan {
 
     report.setSchemaReports(new ArrayList<SchemaReport>(schemaReports.values()));
     return result;
-  }
-
-  public FileSchema getFileSchema(String name) {
-    for (val schema : plannedSchema) {
-      if (schema.getName().equals(name)) {
-        return schema;
-      }
-    }
-
-    return null;
   }
 
   public void addFileLevelError(PlanningFileLevelException e) {
