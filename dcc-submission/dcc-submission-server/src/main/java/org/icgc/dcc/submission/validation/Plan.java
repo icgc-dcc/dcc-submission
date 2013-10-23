@@ -19,16 +19,24 @@ package org.icgc.dcc.submission.validation;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Iterables.unmodifiableIterable;
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Maps.newLinkedHashMap;
+import static com.google.common.util.concurrent.Uninterruptibles.sleepUninterruptibly;
+import static java.lang.String.format;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
@@ -48,48 +56,47 @@ import cascading.flow.Flow;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 @Slf4j
+@RequiredArgsConstructor
 public class Plan {
 
-  private final List<FileSchema> plannedSchema = Lists.newArrayList();
-
-  private final Map<String, InternalFlowPlanner> internalPlanners = Maps.newHashMap();
-
-  private final Map<String, ExternalFlowPlanner> externalPlanners = Maps.newHashMap();
-
-  private final Dictionary dictionary;
-
+  /**
+   * Inputs.
+   */
+  @NonNull
   private final QueuedProject queuedProject;
-
+  @NonNull
+  private final Dictionary dictionary;
+  @NonNull
   private final CascadingStrategy cascadingStrategy;
+  @NonNull
+  private final SubmissionDirectory submissionDirectory;
 
-  private final Map<String, TupleState> fileLevelErrors = new LinkedHashMap<String, TupleState>();
+  /**
+   * Metadata.
+   */
+  private final List<FileSchema> plannedSchema = newArrayList();
+  private final Map<String, InternalFlowPlanner> internalPlanners = newHashMap();
+  private final Map<String, ExternalFlowPlanner> externalPlanners = newHashMap();
 
+  /**
+   * Outputs.
+   */
+  private final Map<String, TupleState> fileLevelErrors = newLinkedHashMap();
+
+  /**
+   * Transient state
+   */
+  private Cascade cascade;
   @Getter
   private volatile boolean killed;
 
-  /**
-   * So we can empty the .validation directory prior to running the cascade.
-   */
-  private final SubmissionDirectory submissionDirectory;
+  // TODO: Use proper timer (see DCC-739)
+  private long startTime;
 
-  private volatile Cascade cascade;
-
-  private long startTime; // TODO: use proper timer (see DCC-739)
-
-  public Plan(QueuedProject queuedProject, Dictionary dictionary, CascadingStrategy cascadingStrategy,
-      SubmissionDirectory submissionDirectory) {
-    this.queuedProject = checkNotNull(queuedProject);
-    this.dictionary = checkNotNull(dictionary);
-    this.cascadingStrategy = checkNotNull(cascadingStrategy);
-    this.submissionDirectory = checkNotNull(submissionDirectory);
-  }
-
-  public String path(final FileSchema schema) throws FileNotFoundException, IOException {
-    return this.cascadingStrategy.path(schema).getName();
+  public String path(FileSchema schema) throws FileNotFoundException, IOException {
+    return cascadingStrategy.path(schema).getName();
   }
 
   public void kill() {
@@ -110,23 +117,25 @@ public class Plan {
   }
 
   public void include(FileSchema fileSchema, InternalFlowPlanner internal, ExternalFlowPlanner external) {
-    this.plannedSchema.add(fileSchema);
-    this.internalPlanners.put(fileSchema.getName(), internal);
-    this.externalPlanners.put(fileSchema.getName(), external);
+    plannedSchema.add(fileSchema);
+    internalPlanners.put(fileSchema.getName(), internal);
+    externalPlanners.put(fileSchema.getName(), external);
   }
 
   public InternalFlowPlanner getInternalFlow(String schema) throws MissingFileException {
     InternalFlowPlanner schemaPlan = internalPlanners.get(schema);
     if (schemaPlan == null) {
-      log.error(String.format("no corresponding file for schema %s, schemata with files are %s", schema,
+      log.error(format("No corresponding file for schema %s, schemata with files are %s", schema,
           internalPlanners.keySet()));
+
       throw new MissingFileException(schema);
     }
+
     return schemaPlan;
   }
 
   public Iterable<InternalFlowPlanner> getInternalFlows() {
-    return Iterables.unmodifiableIterable(internalPlanners.values());
+    return unmodifiableIterable(internalPlanners.values());
   }
 
   public ExternalFlowPlanner getExternalFlow(String schema) throws MissingFileException {
@@ -138,7 +147,7 @@ public class Plan {
   }
 
   public Iterable<ExternalFlowPlanner> getExternalFlows() {
-    return Iterables.unmodifiableIterable(externalPlanners.values());
+    return unmodifiableIterable(externalPlanners.values());
   }
 
   public Iterable<? extends FileSchemaFlowPlanner> getFlows(FlowType type) {
@@ -171,6 +180,8 @@ public class Plan {
   /**
    * Starts the cascade in a non-blocking manner and takes care of associated action like starting timer and emptying
    * the working directory.
+   * 
+   * @see https://groups.google.com/d/msg/cascading-user/gjxB2Bg-56w/R1h5lhn-g2IJ
    */
   synchronized public void startCascade() {
     startTime = System.currentTimeMillis();
@@ -179,6 +190,10 @@ public class Plan {
     int size = cascade.getFlows().size();
     log.info("starting cascade with {} flows", size);
     cascade.start();
+
+    // See link above
+    log.info("Pausing for flows to start so that cancellation won't find an empty jobMap", size);
+    sleepUninterruptibly(2, SECONDS);
   }
 
   /**
@@ -197,12 +212,12 @@ public class Plan {
   }
 
   synchronized public Plan addCascadeListener(CascadeListener listener) {
-    this.cascade.addListener(listener);
+    cascade.addListener(listener);
     return this;
   }
 
   synchronized public Cascade getCascade() {
-    return this.cascade;
+    return cascade;
   }
 
   public Outcome collect(SubmissionReport report) {
@@ -233,11 +248,12 @@ public class Plan {
   }
 
   public FileSchema getFileSchema(String name) {
-    for (FileSchema schema : plannedSchema) {
+    for (val schema : plannedSchema) {
       if (schema.getName().equals(name)) {
         return schema;
       }
     }
+
     return null;
   }
 
@@ -256,10 +272,11 @@ public class Plan {
   }
 
   public boolean hasFileLevelErrors() {
-    return fileLevelErrors.isEmpty() == false;
+    return !fileLevelErrors.isEmpty();
   }
 
   public Map<String, TupleState> getFileLevelErrors() {
     return ImmutableMap.<String, TupleState> copyOf(fileLevelErrors);
   }
+
 }
