@@ -38,7 +38,7 @@ public class ExternalRestrictionPlanningVisitor extends ExternalFlowPlanningVisi
 
       @Override
       public boolean apply(RestrictionType input) {
-        return input.flow() == FlowType.EXTERNAL;
+        return input.flowType() == FlowType.EXTERNAL;
       }
 
     });

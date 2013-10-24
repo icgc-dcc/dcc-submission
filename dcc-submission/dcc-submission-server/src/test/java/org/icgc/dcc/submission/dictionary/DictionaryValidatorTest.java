@@ -18,58 +18,63 @@
 package org.icgc.dcc.submission.dictionary;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.io.Resources.getResource;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.icgc.dcc.submission.dictionary.model.SummaryType.AVERAGE;
+import static org.icgc.dcc.submission.dictionary.model.ValueType.INTEGER;
 
-import java.net.URL;
-import java.util.Iterator;
+import java.util.List;
 
-import lombok.SneakyThrows;
 import lombok.val;
 
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.ObjectReader;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.junit.Before;
+import org.icgc.dcc.submission.dictionary.model.Field;
+import org.icgc.dcc.submission.dictionary.model.FileSchema;
+import org.icgc.dcc.submission.dictionary.model.Restriction;
+import org.icgc.dcc.submission.dictionary.model.RestrictionType;
+import org.icgc.dcc.submission.validation.restriction.ScriptRestriction;
 import org.junit.Test;
+
+import com.mongodb.BasicDBObject;
 
 public class DictionaryValidatorTest {
 
-  /**
-   * Dictionary.
-   */
-  private static final ObjectReader DICTIONARY_READER = new ObjectMapper().reader(Dictionary.class);
-  private static final String DEFAULT_DICTIONARY_PATH = "org/icgc/dcc/resources/Dictionary.json";
-  private static final URL DEFAULT_DICTIONARY_URL = getResource(DEFAULT_DICTIONARY_PATH);
-
-  /**
-   * Code lists.
-   */
-  private static final ObjectReader CODELISTS_READER = new ObjectMapper().reader(CodeList.class);
-  private static final String DEFAULT_CODELISTS_PATH = "org/icgc/dcc/resources/CodeList.json";
-  private static final URL DEFAULT_CODELISTS_URL = getResource(DEFAULT_CODELISTS_PATH);
-
-  DictionaryValidator validator;
-
-  @Before
-  @SneakyThrows
-  public void setUp() {
-    Dictionary dictionary = DICTIONARY_READER.readValue(DEFAULT_DICTIONARY_URL);
-    Iterator<CodeList> codeLists = CODELISTS_READER.readValues(DEFAULT_CODELISTS_URL);
-    this.validator = new DictionaryValidator(dictionary, newArrayList(codeLists));
-  }
-
   @Test
-  public void testValidate() {
-    val observations = validator.validate();
+  public void testValidateScriptRestriction() {
+    // Build test dictionary bottom up
+    val config = new BasicDBObject();
+    config.put(ScriptRestriction.PARAM, "x == 1");
+    config.put(ScriptRestriction.PARAM_DESCRIPTION, "x is one");
 
-    System.out.println("**** WARNINGS ****");
-    for (val warning : observations.getWarnings()) {
-      System.out.println(warning);
-    }
+    val restriction = new Restriction();
+    restriction.setType(RestrictionType.SCRIPT);
+    restriction.setConfig(config);
 
-    System.out.println("**** ERRORS ****");
-    for (val error : observations.getErrors()) {
+    val field = new Field();
+    field.setName("testField");
+    field.setValueType(INTEGER);
+    field.setLabel("Test field");
+    field.setSummaryType(AVERAGE);
+    field.addRestriction(restriction);
+
+    val fileSchema = new FileSchema("testSchema");
+    fileSchema.setPattern("testSchema");
+    fileSchema.addField(field);
+
+    val dictionary = new Dictionary();
+    dictionary.addFile(fileSchema);
+
+    // No code lists needed
+    List<CodeList> codeLists = newArrayList();
+
+    // Invoke
+    val validator = new DictionaryValidator(dictionary, codeLists);
+    val violations = validator.validate();
+
+    // Verify
+    assertThat(violations.getWarnings()).isEmpty();
+    assertThat(violations.getErrors()).hasSize(3);
+    for (val error : violations.getErrors()) {
       System.out.println(error);
     }
   }

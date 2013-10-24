@@ -83,7 +83,7 @@ public class DiscreteValuesRestriction implements InternalPlanElement {
     }
 
     @Override
-    public FlowType flow() {
+    public FlowType flowType() {
       return FlowType.INTERNAL;
     }
 

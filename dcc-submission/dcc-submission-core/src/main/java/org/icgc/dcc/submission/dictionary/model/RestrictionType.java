@@ -34,7 +34,8 @@ public enum RestrictionType {
   DISCRETE_VALUES("in"),
   RANGE("range"),
   REGEX("regex"),
-  REQUIRED("required");
+  REQUIRED("required"),
+  SCRIPT("script");
 
   private final String id;
 

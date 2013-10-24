@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.submission.validation;
 
-import static com.google.common.util.concurrent.Uninterruptibles.sleepUninterruptibly;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.icgc.dcc.submission.TestUtils.dictionaryToString;
 import static org.icgc.dcc.submission.validation.CascadingStrategy.SEPARATOR;
 import static org.mockito.Matchers.anyString;
@@ -229,16 +227,13 @@ public class ValidationExternalIntegrityTest { // TODO create base class for thi
 
     CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir, systemDir);
 
-    TestCascadeListener listener = new TestCascadeListener();
     Plan plan =
         validationService.planValidation(QUEUED_PROJECT, submissionDirectory, cascadingStrategy, dictionary,
-            listener);
+            null);
     Assert.assertEquals(5, plan.getCascade().getFlows().size());
 
-    plan.startCascade();
-    while (listener.isRunning()) {
-      sleepUninterruptibly(1, SECONDS);
-    }
+    plan.getCascade().complete();
+
     Assert.assertTrue(errorFileString, errorFile.exists());
     return FileUtils.readFileToString(errorFile);
   }
