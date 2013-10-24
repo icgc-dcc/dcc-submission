@@ -3,9 +3,9 @@ package org.icgc.dcc.submission.checker;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -61,8 +61,8 @@ public class CompositeFileCheckerTest {
     when(baseChecker.isValid()).thenReturn(true);
     assertTrue(checker2.isValid());
 
-    verify(baseChecker, atLeastOnce()).isValid();
-    verify(checker1, atLeastOnce()).isValid();
+    verify(baseChecker, times(1)).isValid();
+    verify(checker1, times(1)).isValid();
   }
 
   @Test
@@ -85,8 +85,8 @@ public class CompositeFileCheckerTest {
 
     checker2.check(anyString());
 
-    verify(checker1, atLeastOnce()).performSelfCheck(anyString());
-    verify(checker2, atLeastOnce()).performSelfCheck(anyString());
+    verify(checker1, times(1)).performSelfCheck(anyString());
+    verify(checker2, times(1)).performSelfCheck(anyString());
   }
 
   @Test
@@ -117,7 +117,7 @@ public class CompositeFileCheckerTest {
 
     checker2.check(anyString());
 
-    verify(checker1, atLeastOnce()).performSelfCheck(anyString());
+    verify(checker1, times(1)).performSelfCheck(anyString());
     verify(checker2, never()).performSelfCheck(anyString());
   }
 

@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.zip.GZIPInputStream;
 
 import lombok.Cleanup;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.icgc.dcc.submission.fs.DccFileSystem;
@@ -30,6 +31,7 @@ import org.icgc.dcc.submission.validation.ValidationErrorCode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 
+@Slf4j
 public class FileCorruptionChecker extends CompositeFileChecker {
 
   private static final int BUFFER_SIZE = 65536;
@@ -50,13 +52,14 @@ public class FileCorruptionChecker extends CompositeFileChecker {
     try {
       switch (Util.determineCodec(fs, getSubmissionDirectory(), filename)) {
       case GZIP:
-        checkGzip(filename);
+        errors.addAll(checkGZip(filename));
         break;
       case BZIP2:
-        checkBzip(filename);
+        errors.addAll(checkBZip2(filename));
         break;
       }
     } catch (IOException e) {
+      log.info("Exception caught in reading file (corruption): {}", filename, e);
       errors.add(new FirstPassValidationError(getCheckLevel(), "Error in reading the file (corruption): "
           + filename,
           ValidationErrorCode.COMPRESSION_CODEC_ERROR));
@@ -64,7 +67,7 @@ public class FileCorruptionChecker extends CompositeFileChecker {
     return errors.build();
   }
 
-  private List<FirstPassValidationError> checkBzip(String filename) {
+  private List<FirstPassValidationError> checkBZip2(String filename) {
     Builder<FirstPassValidationError> errors = ImmutableList.builder();
     try {
       // check the bzip2 header
@@ -76,13 +79,14 @@ public class FileCorruptionChecker extends CompositeFileChecker {
       while (in.read(buf) > 0) {
       }
     } catch (IOException e) {
+      log.info("Exception caught in decoding bzip2 file: {}", filename, e);
       errors.add(new FirstPassValidationError(getCheckLevel(), "Corrupted bzip file: " + filename,
           ValidationErrorCode.COMPRESSION_CODEC_ERROR));
     }
     return errors.build();
   }
 
-  private List<FirstPassValidationError> checkGzip(String filename) {
+  private List<FirstPassValidationError> checkGZip(String filename) {
     Builder<FirstPassValidationError> errors = ImmutableList.builder();
     try {
       // check the gzip header
@@ -93,6 +97,7 @@ public class FileCorruptionChecker extends CompositeFileChecker {
       while (in.read(buf) > 0) {
       }
     } catch (IOException e) {
+      log.info("Exception caught in decoding gzip file: {}", filename, e);
       errors.add(new FirstPassValidationError(getCheckLevel(), "Corrupted gzip file: " + filename,
           ValidationErrorCode.COMPRESSION_CODEC_ERROR));
     }

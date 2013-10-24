@@ -1,17 +1,23 @@
 package org.icgc.dcc.submission.checker;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
+import java.io.FilterInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.Random;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream;
@@ -59,8 +65,7 @@ public class FileCorruptionCheckerTest {
 
   @Test
   public void testGZipInputValid() throws Exception {
-    DataInputStream testInputStream = getTestInputStream(CodecType.GZIP);
-    when(fs.open(anyString())).thenReturn(testInputStream);
+    when(fs.open(anyString())).thenReturn(getTestInputStream(CodecType.GZIP), getTestInputStream(CodecType.GZIP));
     FileCorruptionChecker checker = new FileCorruptionChecker(new BaseFileChecker(dict, submissionDir), fs);
     List<FirstPassValidationError> errors = checker.check(anyString());
     assertTrue(errors.isEmpty());
@@ -69,19 +74,74 @@ public class FileCorruptionCheckerTest {
 
   @Test
   public void testBZip2InputValid() throws Exception {
-    DataInputStream testInputStream = getTestInputStream(CodecType.BZIP2);
-    when(fs.open(anyString())).thenReturn(testInputStream);
+    when(fs.open(anyString())).thenReturn(getTestInputStream(CodecType.BZIP2), getTestInputStream(CodecType.BZIP2));
+
     FileCorruptionChecker checker = new FileCorruptionChecker(new BaseFileChecker(dict, submissionDir), fs);
     List<FirstPassValidationError> errors = checker.check(anyString());
     assertTrue(errors.isEmpty());
     assertTrue(checker.isValid());
   }
 
-  /**
-   * @param plainText
-   * @return
-   * @throws IOException
-   */
+  @Test
+  public void testGZipInputNotValid() throws Exception {
+    when(fs.open(anyString())).thenReturn(getTestInputStream(CodecType.GZIP),
+        corruptInputStream(getTestInputStream(CodecType.GZIP)));
+
+    FileCorruptionChecker checker = new FileCorruptionChecker(new BaseFileChecker(dict, submissionDir), fs);
+
+    List<FirstPassValidationError> errors = checker.check(anyString());
+    verify(fs, times(2)).open(anyString());
+
+    assertFalse(errors.isEmpty());
+    assertFalse(checker.isValid());
+  }
+
+  @Test
+  public void testBZip2InputNotValid() throws Exception {
+    when(fs.open(anyString())).thenReturn(getTestInputStream(CodecType.BZIP2),
+        corruptInputStream(getTestInputStream(CodecType.BZIP2)));
+
+    FileCorruptionChecker checker = new FileCorruptionChecker(new BaseFileChecker(dict, submissionDir), fs);
+
+    List<FirstPassValidationError> errors = checker.check(anyString());
+    verify(fs, times(2)).open(anyString());
+
+    assertFalse(errors.isEmpty());
+    assertFalse(checker.isValid());
+
+  }
+
+  private static DataInputStream corruptInputStream(DataInputStream is) {
+    return new DataInputStream(new DataCorruptionInputStream(is));
+  }
+
+  private static class DataCorruptionInputStream extends FilterInputStream {
+
+    public DataCorruptionInputStream(InputStream is) {
+      super(is);
+    }
+
+    @Override
+    public int read() {
+      return 0;
+    }
+
+    @Override
+    public int read(byte[] paramArrayOfByte, int paramInt1, int paramInt2)
+        throws IOException
+    {
+      int returnCode = this.in.read(paramArrayOfByte, paramInt1, paramInt2);
+
+      Random ran = new Random();
+      ran.nextBytes(paramArrayOfByte);
+      // corrupt only the last byte (set it to zero)
+      // paramArrayOfByte[paramArrayOfByte.length - 1] = 0;
+      // paramArrayOfByte[paramArrayOfByte.length - 2] = 0;
+
+      return returnCode;
+    }
+  }
+
   private static DataInputStream getTestInputStream(CodecType type) throws IOException {
     ByteArrayOutputStream bytes = new ByteArrayOutputStream();
     OutputStream out = bytes;
