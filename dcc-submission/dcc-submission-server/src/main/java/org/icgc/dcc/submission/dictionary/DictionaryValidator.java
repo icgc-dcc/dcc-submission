@@ -210,10 +210,7 @@ public class DictionaryValidator {
           val scriptContext = new ScriptRestriction.ScriptContext(script);
 
           val inputs = scriptContext.getInputs();
-          for (val entry : inputs.entrySet()) {
-            val inputName = entry.getKey();
-            val inputClass = entry.getValue();
-
+          for (val inputName : inputs.keySet()) {
             Field inputField = dictionaryIndex.getField(schema.getName(), inputName);
             if (inputField == null) {
               errors.add(new DictionaryConstraintViolation("File schema is missing referenced script field",
@@ -221,15 +218,7 @@ public class DictionaryValidator {
 
               continue;
             }
-
-            val fieldClass = inputField.getValueType().getJavaType();
-            if (!inputClass.equals(Object.class) && inputClass.isAssignableFrom(fieldClass)) {
-              errors.add(new DictionaryConstraintViolation(
-                  "File schema field is not assignable from referenced script field",
-                  schema, field, restriction, script, inputName, inputClass, fieldClass));
-            }
           }
-
         } catch (InvalidScriptException e) {
           errors.add(new DictionaryConstraintViolation(e.getMessage(), schema, field, restriction, script));
         }
