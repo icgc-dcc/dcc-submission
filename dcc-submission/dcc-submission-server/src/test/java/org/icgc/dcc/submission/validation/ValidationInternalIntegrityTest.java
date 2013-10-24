@@ -210,7 +210,8 @@ public class ValidationInternalIntegrityTest {
   @Test
   public void test_validate_invalidScriptValues() {
     BasicDBObject config = new BasicDBObject();
-    config.put(ScriptRestriction.NAME, "donor_sex == 1");
+    config.put(ScriptRestriction.PARAM, "donor_sex == 1");
+    config.put(ScriptRestriction.PARAM_DESCRIPTION, "Donor's sex must be male");
 
     Restriction restriction = new Restriction();
     restriction.setType(RestrictionType.SCRIPT);

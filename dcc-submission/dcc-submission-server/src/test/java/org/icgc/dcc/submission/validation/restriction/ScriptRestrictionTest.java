@@ -39,7 +39,7 @@ public class ScriptRestrictionTest extends BaseRestrictionTest {
 
   @Test
   public void test_ScriptRestriction_describe() {
-    ScriptRestriction restriction = new ScriptRestriction("x", "x > 0");
+    ScriptRestriction restriction = new ScriptRestriction("x", "x > 0", "Positive values for x");
 
     assertThat(restriction.describe()).isEqualTo("script[x:x > 0]");
   }
@@ -48,6 +48,7 @@ public class ScriptRestrictionTest extends BaseRestrictionTest {
   public void test_ScriptFunction_pass() {
     val results = invokeFunction(
         script("x > 0 && x < y && y <= z"),
+        description("x, y, z are increasing"),
         row(
             "x", 1,
             "y", 2,
@@ -68,6 +69,7 @@ public class ScriptRestrictionTest extends BaseRestrictionTest {
   public void test_ScriptFunction_fail() {
     val results = invokeFunction(
         script("x == 0"),
+        description("x is zero"),
         row("x", 1));
 
     assertThat(results).hasSize(1);
@@ -85,10 +87,11 @@ public class ScriptRestrictionTest extends BaseRestrictionTest {
   public void test_ScriptFunction_compile_error_return_type() {
     invokeFunction(
         script("1"),
+        description("x is one"),
         row("x", 1));
   }
 
-  private static List<Tuple> invokeFunction(String script, Object... values) {
+  private static List<Tuple> invokeFunction(String script, String description, Object... values) {
     checkArgument(values.length % 2 == 0);
 
     // Pairwise splitting
@@ -106,13 +109,17 @@ public class ScriptRestrictionTest extends BaseRestrictionTest {
     // Simulate a singleton tuple stream
     val tupleEntry = new TupleEntry(fields, tuple);
     val tuples = new TupleEntry[] { tupleEntry };
-    val function = new ScriptFunction("fieldName", script);
+    val function = new ScriptFunction("fieldName", script, description);
     val results = invokeFunction(function, tuples, fields);
 
     return newArrayList(results.iterator());
   }
 
   private static String script(String value) {
+    return value;
+  }
+
+  private static String description(String value) {
     return value;
   }
 

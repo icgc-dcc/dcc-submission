@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission.validation;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.icgc.dcc.submission.validation.ErrorParameterKey.DESCRIPTION;
 import static org.icgc.dcc.submission.validation.ErrorParameterKey.EXPECTED;
 import static org.icgc.dcc.submission.validation.ErrorParameterKey.FIELDS;
 import static org.icgc.dcc.submission.validation.ErrorParameterKey.FILES;
@@ -197,9 +198,11 @@ public enum ValidationErrorCode { // TODO: DCC-505 to fix the message (currently
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
       checkArgument(params != null);
-      checkArgument(params.length == 1);
+      checkArgument(params.length == 2);
       checkArgument(params[0] instanceof String);
-      return ImmutableMap.of(EXPECTED, params[0]);
+      return ImmutableMap.of(
+          EXPECTED, params[0],
+          DESCRIPTION, params[1]);
     }
   },
   /**

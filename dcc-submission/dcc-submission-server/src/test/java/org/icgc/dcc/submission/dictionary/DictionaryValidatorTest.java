@@ -44,6 +44,7 @@ public class DictionaryValidatorTest {
     // Build test dictionary bottom up
     val config = new BasicDBObject();
     config.put(ScriptRestriction.PARAM, "x == 1");
+    config.put(ScriptRestriction.PARAM_DESCRIPTION, "x is one");
 
     val restriction = new Restriction();
     restriction.setType(RestrictionType.SCRIPT);

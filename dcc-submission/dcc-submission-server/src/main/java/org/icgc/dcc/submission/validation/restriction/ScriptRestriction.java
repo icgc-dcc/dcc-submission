@@ -81,12 +81,14 @@ public class ScriptRestriction implements InternalPlanElement {
   public static final String NAME = "script";
   public static final String DESCRIPTION = "MVEL script based restriction used to express procedural constraints";
   public static final String PARAM = "script";
+  public static final String PARAM_DESCRIPTION = "description";
 
   /**
    * Configuration.
    */
   private final String reportedField;
   private final String script;
+  private final String description;
 
   @Override
   public String describe() {
@@ -96,7 +98,7 @@ public class ScriptRestriction implements InternalPlanElement {
   @Override
   public Pipe extend(Pipe pipe) {
     val fields = ALL;
-    val function = new ScriptFunction(reportedField, script);
+    val function = new ScriptFunction(reportedField, script, description);
 
     return new Each(pipe, fields, function, REPLACE);
   }
@@ -129,8 +131,9 @@ public class ScriptRestriction implements InternalPlanElement {
     @Override
     public PlanElement build(Field field, Restriction restriction) {
       val script = restriction.getConfig().getString(PARAM);
+      val description = restriction.getConfig().getString(PARAM_DESCRIPTION);
 
-      return new ScriptRestriction(field.getName(), script);
+      return new ScriptRestriction(field.getName(), script, description);
     }
 
   }
@@ -158,11 +161,13 @@ public class ScriptRestriction implements InternalPlanElement {
 
     private final String reportedField;
     private final String script;
+    private final String description;
 
-    protected ScriptFunction(String reportedField, String script) {
+    protected ScriptFunction(String reportedField, String script, String description) {
       super(2, Fields.ARGS);
       this.reportedField = reportedField;
       this.script = script;
+      this.description = description;
     }
 
     @Override
@@ -191,7 +196,7 @@ public class ScriptRestriction implements InternalPlanElement {
 
     private void reportError(TupleState state, Map<String, Object> values) {
       val reportedValue = JOINER.join(values);
-      state.reportError(SCRIPT_ERROR, reportedField, reportedValue, script);
+      state.reportError(SCRIPT_ERROR, reportedField, reportedValue, script, description);
     }
 
   }
@@ -218,8 +223,8 @@ public class ScriptRestriction implements InternalPlanElement {
     public boolean evaluate(TupleEntry tupleEntry) {
       val result = compiledScript.getValue(null, variableResolverFactory(tupleEntry));
 
-      boolean valid = result instanceof Boolean;
-      if (!valid) {
+      boolean predicate = result instanceof Boolean;
+      if (!predicate) {
         val resultClass = result == null ? null : result.getClass();
 
         throw new ScriptFunctionException(

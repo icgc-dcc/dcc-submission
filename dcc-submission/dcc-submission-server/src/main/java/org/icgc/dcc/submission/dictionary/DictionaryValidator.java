@@ -192,7 +192,20 @@ public class DictionaryValidator {
       }
 
       if (restriction.getType() == RestrictionType.SCRIPT) {
-        String script = config.getString(ScriptRestriction.PARAM);
+        val description = config.getString(ScriptRestriction.PARAM_DESCRIPTION);
+        if (isBlank(description)) {
+          errors.add(new DictionaryConstraintViolation("Script restriction is missing description parameter",
+              schema, field, restriction));
+        }
+
+        val script = config.getString(ScriptRestriction.PARAM);
+        if (isBlank(script)) {
+          errors.add(new DictionaryConstraintViolation("Script restriction is missing script parameter",
+              schema, field, restriction));
+
+          continue;
+        }
+
         try {
           val scriptContext = new ScriptRestriction.ScriptContext(script);
 
@@ -209,11 +222,11 @@ public class DictionaryValidator {
               continue;
             }
 
-            val javaType = inputField.getValueType().getJavaType();
-            if (!inputClass.equals(Object.class) && inputClass.isAssignableFrom(javaType)) {
+            val fieldClass = inputField.getValueType().getJavaType();
+            if (!inputClass.equals(Object.class) && inputClass.isAssignableFrom(fieldClass)) {
               errors.add(new DictionaryConstraintViolation(
                   "File schema field is not assignable from referenced script field",
-                  schema, field, restriction, script, inputName, inputClass, javaType));
+                  schema, field, restriction, script, inputName, inputClass, fieldClass));
             }
           }
 

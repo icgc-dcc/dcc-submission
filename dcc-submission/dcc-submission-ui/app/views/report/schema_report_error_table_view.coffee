@@ -64,8 +64,9 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
       name: "Failed script expression"
       description: (source) ->
         """
-        Values do not pass the script expression associated with this
-        this field: <br><code>#{source.parameters?.EXPECTED}</code>
+        #{source.parameters?.DESCRIPTION}. Values do not pass the script expression associated with this
+        this field: <br><br>
+        <code>#{source.parameters?.EXPECTED}</code>
         """
     DUPLICATE_HEADER_ERROR:
       name: "Duplicate field name"

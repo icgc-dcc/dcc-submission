@@ -24,7 +24,16 @@ package org.icgc.dcc.submission.validation;
  * describe the error
  */
 public enum ErrorParameterKey {
-  EXPECTED, MIN, MAX, SCHEMA, OTHER_SCHEMA, FILES, FIELDS, OTHER_FIELDS, VALUE; // TODO: change EXPECTED to use
-                                                                                // VALUE
-  // instead (more generic)
+
+  EXPECTED,
+  MIN,
+  MAX,
+  SCHEMA,
+  OTHER_SCHEMA,
+  FILES,
+  FIELDS,
+  OTHER_FIELDS,
+  VALUE,
+  DESCRIPTION;
+
 }
