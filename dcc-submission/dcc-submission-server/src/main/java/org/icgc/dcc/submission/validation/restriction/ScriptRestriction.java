@@ -26,6 +26,7 @@ import static lombok.AccessLevel.PROTECTED;
 import static org.icgc.dcc.submission.validation.ValidationErrorCode.SCRIPT_ERROR;
 import static org.icgc.dcc.submission.validation.cascading.ValidationFields.OFFSET_FIELD_NAME;
 import static org.icgc.dcc.submission.validation.cascading.ValidationFields.STATE_FIELD_NAME;
+import static org.icgc.dcc.submission.validation.cascading.ValidationFields.state;
 
 import java.util.Map;
 
@@ -33,6 +34,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.Restriction;
@@ -44,7 +46,6 @@ import org.icgc.dcc.submission.validation.RestrictionTypeSchema;
 import org.icgc.dcc.submission.validation.RestrictionTypeSchema.FieldRestrictionParameter;
 import org.icgc.dcc.submission.validation.RestrictionTypeSchema.ParameterType;
 import org.icgc.dcc.submission.validation.cascading.TupleState;
-import org.icgc.dcc.submission.validation.cascading.ValidationFields;
 import org.mvel2.MVEL;
 import org.mvel2.ParserConfiguration;
 import org.mvel2.ParserContext;
@@ -155,6 +156,7 @@ public class ScriptRestriction implements InternalPlanElement {
   }
 
   @SuppressWarnings("rawtypes")
+  @Slf4j
   public static class ScriptFunction extends BaseOperation<ScriptContext> implements Function<ScriptContext> {
 
     private final Joiner.MapJoiner JOINER = Joiner.on(",").withKeyValueSeparator(" = ").useForNull("null");
@@ -181,13 +183,21 @@ public class ScriptRestriction implements InternalPlanElement {
     public void operate(FlowProcess flowProcess, FunctionCall<ScriptContext> functionCall) {
       val arguments = functionCall.getArguments();
       val context = functionCall.getContext();
+      val state = state(arguments);
 
-      boolean passed = context.evaluate(arguments);
-      if (!passed) {
-        val state = ValidationFields.state(arguments);
-        val values = context.references(arguments);
+      try {
+        boolean passed = context.evaluate(arguments);
+        if (!passed) {
+          val values = context.references(arguments);
 
-        reportError(state, values);
+          reportError(state, values);
+        }
+      } catch (Exception e) {
+        val errorMessage = format("Error invoking script restriction: '%s', arguments: '%s'",
+            e.getMessage(), arguments);
+        log.error(errorMessage + ", context: " + context, e);
+
+        reportError(state, errorMessage);
       }
 
       val result = arguments.getTupleCopy();
@@ -196,12 +206,15 @@ public class ScriptRestriction implements InternalPlanElement {
 
     private void reportError(TupleState state, Map<String, Object> values) {
       val reportedValue = JOINER.join(values);
+      reportError(state, reportedValue);
+    }
+
+    private void reportError(TupleState state, String reportedValue) {
       state.reportError(SCRIPT_ERROR, reportedField, reportedValue, script, description);
     }
 
   }
 
-  @SuppressWarnings({ "unchecked", "rawtypes" })
   public static class ScriptContext {
 
     private final String script;
@@ -215,7 +228,7 @@ public class ScriptRestriction implements InternalPlanElement {
       this.script = script;
       this.parserContext = new ParserContext(configuration());
       this.compiledScript = (ExecutableStatement) MVEL.compileExpression(script, parserContext);
-      this.inputs = (Map<String, Class<?>>) (Object) parserContext.getInputs();
+      this.inputs = inputs();
 
       validate();
     }
@@ -223,8 +236,7 @@ public class ScriptRestriction implements InternalPlanElement {
     public boolean evaluate(TupleEntry tupleEntry) {
       val result = compiledScript.getValue(null, variableResolverFactory(tupleEntry));
 
-      boolean predicate = result instanceof Boolean;
-      if (!predicate) {
+      if (!isPredicate(result)) {
         val resultClass = result == null ? null : result.getClass();
 
         throw new ScriptFunctionException(
@@ -243,7 +255,7 @@ public class ScriptRestriction implements InternalPlanElement {
         val fieldValue = tupleEntry.getObject(i);
 
         // Referenced in script
-        val referenced = inputs.keySet().contains(fieldName);
+        val referenced = isInput(fieldName);
         if (!referenced) {
           continue;
         }
@@ -255,11 +267,17 @@ public class ScriptRestriction implements InternalPlanElement {
     }
 
     private void validate() {
-      val returnType = compiledScript.getKnownEgressType();
-      val predicate = returnType.equals(Boolean.class);
-      if (!predicate) {
+      val returnType = returnType();
+      if (!isPredicate(returnType)) {
         throw new InvalidScriptException("Script restriction has non boolean return type: '" + returnType + "'");
       }
+    }
+
+    @SuppressWarnings("rawtypes")
+    private Class<?> returnType() {
+      val returnType = compiledScript.getKnownEgressType();
+
+      return returnType;
     }
 
     private static ParserConfiguration configuration() {
@@ -274,6 +292,23 @@ public class ScriptRestriction implements InternalPlanElement {
       }
 
       return config;
+    }
+
+    private boolean isInput(final java.lang.String fieldName) {
+      return inputs.keySet().contains(fieldName);
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Class<?>> inputs() {
+      return (Map<String, Class<?>>) (Object) parserContext.getInputs();
+    }
+
+    private static boolean isPredicate(Class<?> clazz) {
+      return clazz.equals(Boolean.class);
+    }
+
+    private static boolean isPredicate(Object result) {
+      return result instanceof Boolean;
     }
 
     private static Map<String, Object> variables(TupleEntry tupleEntry) {

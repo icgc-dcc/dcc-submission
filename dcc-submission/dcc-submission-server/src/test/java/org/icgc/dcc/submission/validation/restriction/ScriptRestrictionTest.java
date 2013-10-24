@@ -83,6 +83,24 @@ public class ScriptRestrictionTest extends BaseRestrictionTest {
     assertTrue(state.isInvalid());
   }
 
+  @Test
+  public void test_ScriptFunction_runtime_exception() {
+    val results = invokeFunction(
+        script("x.toString() == null"),
+        description("null check"),
+        row("x", null));
+
+    assertThat(results).hasSize(1);
+
+    val result = results.get(0);
+
+    val x = result.getObject(0);
+    assertThat(x).isNull();
+
+    val state = (TupleState) result.getObject(1);
+    assertTrue(state.isInvalid());
+  }
+
   @Test(expected = InvalidScriptException.class)
   public void test_ScriptFunction_compile_error_return_type() {
     invokeFunction(

@@ -26,7 +26,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 
 @RunWith(BlockJUnit4ClassRunner.class)
-public class BaseRestrictionTest extends CascadingTestCase {
+public abstract class BaseRestrictionTest extends CascadingTestCase {
 
   protected static Builder<String, Object> row() {
     return ImmutableMap.builder();
