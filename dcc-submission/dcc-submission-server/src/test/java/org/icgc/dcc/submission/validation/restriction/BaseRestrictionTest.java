@@ -15,33 +15,21 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.cascading;
+package org.icgc.dcc.submission.validation.restriction;
 
-import static org.icgc.dcc.hadoop.cascading.Fields2.concat;
-import cascading.tuple.Fields;
-import cascading.tuple.TupleEntry;
+import org.junit.runner.RunWith;
+import org.junit.runners.BlockJUnit4ClassRunner;
 
-/**
- * An extension of {@code Fields} that always includes the {@code TupleState} field.
- */
-public class ValidationFields extends Fields {
+import cascading.CascadingTestCase;
 
-  public static final String STATE_FIELD_NAME = "_state";
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
 
-  public static final String OFFSET_FIELD_NAME = "offset";
+@RunWith(BlockJUnit4ClassRunner.class)
+public abstract class BaseRestrictionTest extends CascadingTestCase {
 
-  public static final Fields STATE_FIELD = new Fields(STATE_FIELD_NAME);
-
-  /**
-   * Extract the {@code TupleState} field from a {@cude TupleEntry}.
-   */
-  public static TupleState state(TupleEntry tupleEntry) {
-    return (TupleState) tupleEntry.getObject(STATE_FIELD_NAME);
-  }
-
-  @SuppressWarnings("rawtypes")
-  public ValidationFields(Comparable... fields) {
-    super(concat(fields, STATE_FIELD_NAME));
+  protected static Builder<String, Object> row() {
+    return ImmutableMap.builder();
   }
 
 }

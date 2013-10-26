@@ -15,52 +15,39 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation;
+package org.icgc.dcc.submission.dictionary;
 
-import cascading.cascade.Cascade;
-import cascading.cascade.CascadeListener;
+import static org.icgc.dcc.submission.TestUtils.codeLists;
+import static org.icgc.dcc.submission.TestUtils.dictionary;
+import lombok.SneakyThrows;
+import lombok.val;
 
-/**
- * Class to allow tests that run a validation to block until it is complete
- */
-public class TestCascadeListener implements CascadeListener {
+import org.junit.Before;
+import org.junit.Test;
 
-  private boolean isRunning = true;
+public class DictionaryValidatorFunctionalTest {
 
-  @Override
-  public void onStarting(Cascade cascade) {
-    // TODO Auto-generated method stub
+  DictionaryValidator validator;
 
+  @Before
+  @SneakyThrows
+  public void setUp() {
+    this.validator = new DictionaryValidator(dictionary(), codeLists());
   }
 
-  @Override
-  public void onStopping(Cascade cascade) {
-    isRunning = false;
-  }
+  @Test
+  public void testDictionary() {
+    val violations = validator.validate();
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see cascading.cascade.CascadeListener#onCompleted(cascading.cascade.Cascade)
-   */
-  @Override
-  public void onCompleted(Cascade cascade) {
-    isRunning = false;
-  }
+    System.out.println("**** WARNINGS ****");
+    for (val warning : violations.getWarnings()) {
+      System.out.println(warning);
+    }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see cascading.cascade.CascadeListener#onThrowable(cascading.cascade.Cascade, java.lang.Throwable)
-   */
-  @Override
-  public boolean onThrowable(Cascade cascade, Throwable throwable) {
-    isRunning = false;
-    return false;
-  }
-
-  public boolean isRunning() {
-    return isRunning;
+    System.out.println("**** ERRORS ****");
+    for (val error : violations.getErrors()) {
+      System.out.println(error);
+    }
   }
 
 }

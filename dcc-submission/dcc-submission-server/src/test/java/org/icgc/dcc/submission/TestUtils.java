@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission;
 
 import static com.google.common.base.Charsets.UTF_8;
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.io.Resources.getResource;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static lombok.AccessLevel.PRIVATE;
@@ -25,7 +26,10 @@ import static org.apache.commons.lang.StringUtils.abbreviate;
 import static org.glassfish.grizzly.http.util.Header.Authorization;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
@@ -37,6 +41,7 @@ import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.glassfish.jersey.internal.util.Base64;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
@@ -100,26 +105,29 @@ public final class TestUtils {
   }
 
   @SneakyThrows
-  public static String codeListsToString() {
-    val codeLists = MAPPER.reader(CodeList.class).readValues(getDccResource("CodeList.json"));
-
-    return MAPPER.writeValueAsString(codeLists);
+  public static String resourceToJsonArray(String resourcePath) {
+    return "[" + resourceToString(resourcePath) + "]";
   }
 
-  private static URL getDccResource(String resourceName) {
-    return getResource("org/icgc/dcc/resources/" + resourceName);
+  @SneakyThrows
+  public static List<CodeList> codeLists() throws IOException, JsonProcessingException {
+    Iterator<CodeList> codeLists = MAPPER.reader(CodeList.class).readValues(getDccResource("CodeList.json"));
+    return newArrayList(codeLists);
+  }
+
+  @SneakyThrows
+  public static String codeListsToString() {
+    return MAPPER.writeValueAsString(codeLists());
+  }
+
+  @SneakyThrows
+  public static Dictionary dictionary() {
+    return MAPPER.reader(Dictionary.class).readValue(getDccResource("Dictionary.json"));
   }
 
   @SneakyThrows
   public static String dictionaryToString() {
-    val dictionary = MAPPER.reader(Dictionary.class).readValue(getDccResource("Dictionary.json"));
-
-    return MAPPER.writeValueAsString(dictionary);
-  }
-
-  @SneakyThrows
-  public static String resourceToJsonArray(String resourcePath) {
-    return "[" + resourceToString(resourcePath) + "]";
+    return MAPPER.writeValueAsString(dictionary());
   }
 
   @SneakyThrows
@@ -175,6 +183,10 @@ public final class TestUtils {
   @SneakyThrows
   public static DetailedSubmission asDetailedSubmission(Response response) {
     return MAPPER.readValue(asString(response), DetailedSubmission.class);
+  }
+
+  private static URL getDccResource(String resourceName) {
+    return getResource("org/icgc/dcc/resources/" + resourceName);
   }
 
 }

@@ -51,7 +51,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.dictionary.DictionaryService;
 import org.icgc.dcc.submission.dictionary.DictionaryValidator;
-import org.icgc.dcc.submission.dictionary.DictionaryValidator.DictionaryObservations;
+import org.icgc.dcc.submission.dictionary.DictionaryValidator.DictionaryConstraintViolations;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
 import org.icgc.dcc.submission.web.util.ResponseTimestamper;
@@ -124,10 +124,10 @@ public class DictionaryResource {
       return unauthorizedResponse();
     }
 
-    val observations = validateDictionary(dict);
-    if (observations.hasErrors()) {
+    val violations = validateDictionary(dict);
+    if (violations.hasErrors()) {
       val errors = new StringBuilder("The request entity had the following errors:\n");
-      for (val error : observations.getErrors()) {
+      for (val error : violations.getErrors()) {
         errors.append("  * ").append(error).append('\n');
       }
 
@@ -141,9 +141,9 @@ public class DictionaryResource {
 
     val url = UriBuilder.fromResource(DictionaryResource.class).path(dict.getVersion()).build();
 
-    if (observations.hasWarnings()) {
+    if (violations.hasWarnings()) {
       val warnings = new StringBuilder("Created, but request entity had the following warnings:\n");
-      for (val error : observations.getErrors()) {
+      for (val error : violations.getErrors()) {
         warnings.append("  * ").append(error).append('\n');
       }
 
@@ -209,10 +209,10 @@ public class DictionaryResource {
 
     ResponseTimestamper.evaluate(request, oldDictionary);
 
-    val observations = validateDictionary(newDictionary);
-    if (observations.hasErrors()) {
+    val violations = validateDictionary(newDictionary);
+    if (violations.hasErrors()) {
       val errors = new StringBuilder("The request entity had the following errors:\n");
-      for (val error : observations.getErrors()) {
+      for (val error : violations.getErrors()) {
         errors.append("  * ").append(error).append('\n');
       }
 
@@ -224,9 +224,9 @@ public class DictionaryResource {
 
     dictionaryService.update(newDictionary);
 
-    if (observations.hasWarnings()) {
+    if (violations.hasWarnings()) {
       val warnings = new StringBuilder("Created, but request entity had the following warnings:\n");
-      for (val error : observations.getErrors()) {
+      for (val error : violations.getErrors()) {
         warnings.append("  * ").append(error).append('\n');
       }
 
@@ -242,13 +242,13 @@ public class DictionaryResource {
         .build();
   }
 
-  private DictionaryObservations validateDictionary(Dictionary dictionary) {
+  private DictionaryConstraintViolations validateDictionary(Dictionary dictionary) {
     if (validate) {
       val validator = new DictionaryValidator(dictionary, dictionaryService.listCodeList());
       return validator.validate();
     } else {
-      val empty = Collections.<DictionaryValidator.DictionaryObservation> emptySet();
-      return new DictionaryObservations(empty, empty);
+      val empty = Collections.<DictionaryValidator.DictionaryConstraintViolation> emptySet();
+      return new DictionaryConstraintViolations(empty, empty);
     }
   }
 

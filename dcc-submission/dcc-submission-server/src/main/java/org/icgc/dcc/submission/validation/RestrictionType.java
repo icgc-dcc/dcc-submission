@@ -26,7 +26,7 @@ public interface RestrictionType {
 
   public boolean builds(String type);
 
-  public FlowType flow();
+  public FlowType flowType();
 
   public RestrictionTypeSchema getSchema();
 

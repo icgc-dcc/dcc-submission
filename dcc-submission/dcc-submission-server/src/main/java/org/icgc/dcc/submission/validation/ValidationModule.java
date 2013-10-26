@@ -25,6 +25,7 @@ import org.icgc.dcc.submission.validation.restriction.DiscreteValuesRestriction;
 import org.icgc.dcc.submission.validation.restriction.RangeFieldRestriction;
 import org.icgc.dcc.submission.validation.restriction.RegexRestriction;
 import org.icgc.dcc.submission.validation.restriction.RequiredRestriction;
+import org.icgc.dcc.submission.validation.restriction.ScriptRestriction;
 import org.icgc.dcc.submission.validation.service.ValidationQueueService;
 import org.icgc.dcc.submission.validation.service.ValidationService;
 
@@ -55,6 +56,7 @@ public class ValidationModule extends AbstractDccModule {
     bindRestriction(types, RequiredRestriction.Type.class);
     bindRestriction(types, CodeListRestriction.Type.class);
     bindRestriction(types, RegexRestriction.Type.class);
+    bindRestriction(types, ScriptRestriction.Type.class);
     requestStaticInjection(ByteOffsetToLineNumber.class);
   }
 

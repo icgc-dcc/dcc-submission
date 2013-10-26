@@ -20,7 +20,6 @@ package org.icgc.dcc.submission.validation.restriction;
 import java.util.Iterator;
 
 import org.icgc.dcc.submission.validation.cascading.TupleState;
-import org.icgc.dcc.submission.validation.restriction.RequiredRestriction;
 import org.icgc.dcc.submission.validation.restriction.RequiredRestriction.SpecifiedFunction;
 import org.junit.Test;
 
@@ -66,7 +65,7 @@ public class RequiredRestrictionTest extends CascadingTestCase {
     Fields incoming = new Fields("field", "_state");
     TupleEntry[] tuples = new TupleEntry[] { new TupleEntry(incoming, new Tuple(tupleValue, new TupleState())) };
 
-    TupleListCollector c = CascadingTestCase.invokeFunction(function, tuples, incoming);
+    TupleListCollector c = invokeFunction(function, tuples, incoming);
 
     Iterator<Tuple> iterator = c.iterator();
 

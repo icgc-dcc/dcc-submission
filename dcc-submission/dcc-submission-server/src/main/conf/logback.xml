@@ -1,3 +1,6 @@
+<!--                                               -->
+<!-- DCC Submission Server - Logging configuration -->
+<!--                                               -->
 <configuration debug="false">
   <property name="log.name" value="dcc-server" />
   <property name="log.debug.name" value="dcc-server.debug" />

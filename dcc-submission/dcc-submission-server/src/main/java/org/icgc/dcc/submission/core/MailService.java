@@ -36,6 +36,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.core.model.Feedback;
@@ -72,6 +73,7 @@ public class MailService {
   public static final String MAIL_ADMIN_RECIPIENT = "mail.admin.email";
   public static final String MAIL_MANUAL_SUPPORT_RECIPIENT = "mail.manual_support.email";
   public static final String MAIL_AUTOMATIC_SUPPORT_RECIPIENT = "mail.automatic_support.email";
+  public static final String MAIL_NOTIFICATION_RECIPIENT = "mail.notification.email";
 
   /**
    * Body property names.
@@ -125,7 +127,7 @@ public class MailService {
         addresses.add(address(get(MAIL_ADMIN_RECIPIENT)));
       }
 
-      Message message = message();
+      val message = message();
       message.setFrom(address(get(state == ERROR ? MAIL_PROBLEM_FROM : MAIL_NORMAL_FROM)));
       message.addRecipients(TO, recipients(addresses));
       message.setSubject(template(MAIL_VALIDATION_SUBJECT, projectKey, state));
@@ -143,20 +145,20 @@ public class MailService {
   }
 
   public void sendProcessingStarted(String projectKey, List<String> emails) {
-    sendSeNotification(format("Processing started for project '%s' (on behalf of '%s')", projectKey, emails));
+    sendNotification(format("Processing started for project '%s' (on behalf of '%s')", projectKey, emails));
   }
 
-  private void sendSeNotification(String subject) {
+  private void sendNotification(String subject) {
     send(
         get(MAIL_NORMAL_FROM),
-        get(MAIL_MANUAL_SUPPORT_RECIPIENT), // TODO: use new mailing list to be created
+        get(MAIL_NOTIFICATION_RECIPIENT),
         subject,
-        "");
+        subject);
   }
 
   private void send(String from, String recipient, String subject, String text) {
     try {
-      Message message = message();
+      val message = message();
       message.setFrom(address(from));
       message.addRecipient(TO, address(recipient));
       message.setSubject(subject);
@@ -170,7 +172,7 @@ public class MailService {
   }
 
   private Message message() {
-    Properties props = new Properties();
+    val props = new Properties();
     props.put(MAIL_SMTP_HOST, get(MAIL_SMTP_HOST));
     props.put(MAIL_SMTP_PORT, get(MAIL_SMTP_PORT, "25"));
 

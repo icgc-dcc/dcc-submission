@@ -17,22 +17,19 @@
  */
 package org.icgc.dcc.submission.validation;
 
+import static org.mockito.Mockito.mock;
+
 import org.icgc.dcc.submission.core.AbstractDccModule;
 import org.icgc.dcc.submission.dictionary.DictionaryService;
-import org.icgc.dcc.submission.validation.DefaultPlanner;
-import org.icgc.dcc.submission.validation.Planner;
-import org.icgc.dcc.submission.validation.RestrictionType;
-import org.icgc.dcc.submission.validation.ValidationModule;
 import org.icgc.dcc.submission.validation.restriction.CodeListRestriction;
 import org.icgc.dcc.submission.validation.restriction.DiscreteValuesRestriction;
 import org.icgc.dcc.submission.validation.restriction.RangeFieldRestriction;
 import org.icgc.dcc.submission.validation.restriction.RegexRestriction;
 import org.icgc.dcc.submission.validation.restriction.RequiredRestriction;
+import org.icgc.dcc.submission.validation.restriction.ScriptRestriction;
 
 import com.google.inject.Singleton;
 import com.google.inject.multibindings.Multibinder;
-
-import static org.mockito.Mockito.mock;
 
 /**
  * Any restrictions added in here would likely have been added to {@link ValidationModule} for normal run.
@@ -53,9 +50,11 @@ public class ValidationTestModule extends AbstractDccModule {
     bindRestriction(RangeFieldRestriction.Type.class);
     bindRestriction(RequiredRestriction.Type.class);
     bindRestriction(CodeListRestriction.Type.class);
+    bindRestriction(ScriptRestriction.Type.class);
   }
 
   private void bindRestriction(Class<? extends RestrictionType> type) {
     types.addBinding().to(type).in(Singleton.class);
   }
+
 }
