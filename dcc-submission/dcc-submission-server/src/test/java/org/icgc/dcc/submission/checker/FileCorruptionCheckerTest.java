@@ -93,6 +93,7 @@ public class FileCorruptionCheckerTest {
     verify(fs, times(2)).open(anyString());
 
     assertFalse(errors.isEmpty());
+    assertEquals(1, errors.size());
     assertFalse(checker.isValid());
   }
 
@@ -107,6 +108,7 @@ public class FileCorruptionCheckerTest {
     verify(fs, times(2)).open(anyString());
 
     assertFalse(errors.isEmpty());
+    assertEquals(1, errors.size());
     assertFalse(checker.isValid());
 
   }
@@ -115,7 +117,7 @@ public class FileCorruptionCheckerTest {
     return new DataInputStream(new DataCorruptionInputStream(is));
   }
 
-  private static class DataCorruptionInputStream extends FilterInputStream {
+  private final static class DataCorruptionInputStream extends FilterInputStream {
 
     public DataCorruptionInputStream(InputStream is) {
       super(is);
@@ -131,13 +133,8 @@ public class FileCorruptionCheckerTest {
         throws IOException
     {
       int returnCode = this.in.read(paramArrayOfByte, paramInt1, paramInt2);
-
       Random ran = new Random();
       ran.nextBytes(paramArrayOfByte);
-      // corrupt only the last byte (set it to zero)
-      // paramArrayOfByte[paramArrayOfByte.length - 1] = 0;
-      // paramArrayOfByte[paramArrayOfByte.length - 2] = 0;
-
       return returnCode;
     }
   }

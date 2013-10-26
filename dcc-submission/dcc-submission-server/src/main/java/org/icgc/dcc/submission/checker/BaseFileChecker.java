@@ -55,8 +55,8 @@ public class BaseFileChecker implements FileChecker {
   }
 
   @Override
-  public String getFileSchemaName(String filePathname) {
-    return cachedFileNames.get(filePathname);
+  public String getFileSchemaName(String filename) {
+    return cachedFileNames.get(filename);
   }
 
   @Override

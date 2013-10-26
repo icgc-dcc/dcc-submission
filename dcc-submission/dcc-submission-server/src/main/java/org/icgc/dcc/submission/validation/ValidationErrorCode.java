@@ -263,6 +263,20 @@ public enum ValidationErrorCode { // TODO: DCC-505 to fix the message (currently
       checkArgument(params[0] instanceof List);
       return ImmutableMap.of(FIELDS, params[0]);
     }
+  },
+
+  /**
+   * Repeated field names found in header.
+   */
+  FILE_HEADER_ERROR("File header error: %s") {
+
+    @Override
+    public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
+      checkArgument(params != null);
+      checkArgument(params.length == 1);
+      checkArgument(params[0] instanceof List);
+      return ImmutableMap.of(FIELDS, params[0]);
+    }
   };
 
   private final String message;
