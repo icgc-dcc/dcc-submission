@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.submission.validation.service;
 
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -28,9 +27,9 @@ import org.icgc.dcc.submission.release.NextRelease;
 import org.icgc.dcc.submission.release.ReleaseService;
 import org.icgc.dcc.submission.release.model.Release;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.typesafe.config.Config;
@@ -38,27 +37,23 @@ import com.typesafe.config.Config;
 @RunWith(MockitoJUnitRunner.class)
 public class ValidationQueueServiceTest {
 
+  @Mock
   private Release mockRelease;
+  @Mock
   private NextRelease mockNextRelease;
-
+  @Mock
   private ReleaseService mockReleaseService;
+  @Mock
   private ValidationService mockValidationService;
-
+  @Mock
   private Config mockConfig;
+  @Mock
+  private MailService mockMailService;
 
   private ValidationQueueService validationQueueService;
 
-  private MailService mockMailService;
-
   @Before
   public void setUp() {
-    mockRelease = mock(Release.class);
-    mockNextRelease = mock(NextRelease.class);
-    mockReleaseService = mock(ReleaseService.class);
-    mockValidationService = mock(ValidationService.class);
-    mockMailService = mock(MailService.class);
-    mockConfig = mock(Config.class);
-
     when(mockRelease.getName()).thenReturn("release1");
     when(mockNextRelease.getRelease()).thenReturn(mockRelease);
     when(mockReleaseService.resolveNextRelease()).thenReturn(mockNextRelease);
@@ -72,23 +67,10 @@ public class ValidationQueueServiceTest {
         new ValidationQueueService(mockReleaseService, mockValidationService, mockMailService, mockConfig);
   }
 
-  @Ignore
-  @Test
-  public void test_handleSuccessfulValidation_invalidProjectKey() {
-    // validationQueueService.handleCompletedValidation("project0", null);
-  }
-
-  @Ignore
-  @Test
-  public void test_handleFailedValidation_invalidProjectKey() {
-    // validationQueueService.handleUnexpectedException("project0");
-  }
-
   @Test
   public void test_startScheduler_valid() throws Exception {
-    validationQueueService.start();
+    validationQueueService.startAsync();
     Thread.sleep(4000);
-    validationQueueService.stop();
+    validationQueueService.stopAsync();
   }
-
 }

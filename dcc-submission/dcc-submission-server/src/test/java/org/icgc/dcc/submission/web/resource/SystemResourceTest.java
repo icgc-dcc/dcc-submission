@@ -23,7 +23,7 @@ public class SystemResourceTest extends ResourceTest {
   @Before
   public void setUp() {
     service = injector.getInstance(SftpServerService.class);
-    service.startAndWait();
+    service.startAsync().awaitRunning();
   }
 
   @Test
@@ -64,7 +64,7 @@ public class SystemResourceTest extends ResourceTest {
   @Override
   @After
   public void tearDown() {
-    service.stopAndWait();
+    service.stopAsync().awaitTerminated();
   }
 
 }
