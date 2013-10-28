@@ -62,11 +62,13 @@ public class FirstPassChecker {
   }
 
   public static FileChecker getDefaultFileChecker(DccFileSystem fs, Dictionary dict, SubmissionDirectory submissionDir) {
+    // chaining multiple file checkers
     return new FileHeaderChecker(new FileCorruptionChecker(new FileCollisionChecker(new BaseFileChecker(fs, dict,
         submissionDir))));
   }
 
   public static RowChecker getDefaultRowChecker(DccFileSystem fs, Dictionary dict, SubmissionDirectory submissionDir) {
+    // chaining multiple row checkers
     return new RowColumnChecker(new RowCharsetChecker(new BaseRowChecker(fs, dict, submissionDir)));
 
   }

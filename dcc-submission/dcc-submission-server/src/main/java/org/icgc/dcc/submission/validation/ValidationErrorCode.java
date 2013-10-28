@@ -55,6 +55,21 @@ public enum ValidationErrorCode { // TODO: DCC-505 to fix the message (currently
       return ImmutableMap.of(EXPECTED, params[0]);
     }
   },
+
+  /**
+   * Number of columns does not match that of header.
+   */
+  INVALID_CHARSET_ROW_ERROR("Row contains invalid charset", true) {
+
+    @Override
+    public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
+      checkArgument(params != null);
+      checkArgument(params.length == 1);
+      checkArgument(params[0] instanceof Integer);
+      return ImmutableMap.of(EXPECTED, params[0]);
+    }
+  },
+
   /**
    * A forbidden value was found (for instance deprecated "-999" value).
    */

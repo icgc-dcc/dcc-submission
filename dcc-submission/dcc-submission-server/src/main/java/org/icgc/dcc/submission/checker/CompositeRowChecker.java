@@ -20,6 +20,7 @@ package org.icgc.dcc.submission.checker;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.List;
 
 import lombok.Cleanup;
@@ -28,12 +29,14 @@ import org.icgc.dcc.submission.checker.Util.CheckLevel;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 
 public abstract class CompositeRowChecker extends CompositeFileChecker implements RowChecker {
 
+  private static final Charset DEFAULT_CHARSET = Charsets.US_ASCII;
   protected RowChecker compositeChecker;
   protected boolean failFast;
 
@@ -48,6 +51,7 @@ public abstract class CompositeRowChecker extends CompositeFileChecker implement
 
   @Override
   public List<FirstPassValidationError> check(String filename) {
+    // check all rows in the file
     return performSelfCheck(filename);
   }
 
@@ -60,7 +64,8 @@ public abstract class CompositeRowChecker extends CompositeFileChecker implement
     try {
       @Cleanup
       BufferedReader reader =
-          new BufferedReader(new InputStreamReader(Util.createInputStream(getDccFileSystem(), filePathname)));
+          new BufferedReader(new InputStreamReader(Util.createInputStream(getDccFileSystem(), filePathname),
+              DEFAULT_CHARSET));
       String line;
       while ((line = reader.readLine()) != null) {
         errors.addAll(this.checkRow(fileSchema, line));
