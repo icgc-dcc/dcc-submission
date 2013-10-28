@@ -20,7 +20,6 @@ package org.icgc.dcc.submission.validation.restriction;
 import java.util.List;
 import java.util.Set;
 
-import org.icgc.dcc.submission.dictionary.DictionaryService;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.Restriction;
@@ -31,9 +30,10 @@ import org.icgc.dcc.submission.validation.PlanElement;
 import org.icgc.dcc.submission.validation.PlanningException;
 import org.icgc.dcc.submission.validation.RestrictionType;
 import org.icgc.dcc.submission.validation.RestrictionTypeSchema;
-import org.icgc.dcc.submission.validation.ValidationErrorCode;
 import org.icgc.dcc.submission.validation.RestrictionTypeSchema.FieldRestrictionParameter;
 import org.icgc.dcc.submission.validation.RestrictionTypeSchema.ParameterType;
+import org.icgc.dcc.submission.validation.ValidationContext;
+import org.icgc.dcc.submission.validation.ValidationErrorCode;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
 
 import cascading.flow.FlowProcess;
@@ -75,12 +75,14 @@ public class CodeListRestriction implements InternalPlanElement {
     this.codeListName = codeList.getName();
     List<Term> terms = codeList.getTerms();
     codes = Sets.newHashSet(Iterables.transform(terms, new com.google.common.base.Function<Term, String>() {
+
       @Override
       public String apply(Term term) {
         return term.getCode();
       }
     }));
     values = Sets.newHashSet(Iterables.transform(terms, new com.google.common.base.Function<Term, String>() {
+
       @Override
       public String apply(Term term) {
         return term.getValue();
@@ -100,8 +102,12 @@ public class CodeListRestriction implements InternalPlanElement {
 
   public static class Type implements RestrictionType {
 
+    private final ValidationContext context;
+
     @Inject
-    private DictionaryService dictionaries;
+    public Type(ValidationContext context) {
+      this.context = context;
+    }
 
     private final RestrictionTypeSchema schema = new RestrictionTypeSchema(//
         new FieldRestrictionParameter(FIELD, ParameterType.TEXT, "Name of codeList against which to check the value",
@@ -130,8 +136,8 @@ public class CodeListRestriction implements InternalPlanElement {
     @Override
     public PlanElement build(Field field, Restriction restriction) {
       String codeListName = restriction.getConfig().getString(FIELD);
-      Optional<CodeList> codeList = dictionaries.getCodeList(codeListName);
-      if(codeList.isPresent() == false) {
+      Optional<CodeList> codeList = context.getCodeList(codeListName);
+      if (codeList.isPresent() == false) {
         throw new PlanningException("Could not find codeList " + codeListName);
       }
       return new CodeListRestriction(field.getName(), codeList.get());
@@ -156,8 +162,8 @@ public class CodeListRestriction implements InternalPlanElement {
       TupleEntry tupleEntry = functionCall.getArguments();
       Object object = tupleEntry.getObject(0);
       String value = object == null ? null : object.toString();
-      if(value != null && codes.contains(value) == false && values.contains(value) == false) { // TODO: see note in
-                                                                                               // DCC-904
+      if (value != null && codes.contains(value) == false && values.contains(value) == false) { // TODO: see note in
+                                                                                                // DCC-904
         Object fieldName = tupleEntry.getFields().get(0);
         ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.CODELIST_ERROR, fieldName.toString(), value);
       }

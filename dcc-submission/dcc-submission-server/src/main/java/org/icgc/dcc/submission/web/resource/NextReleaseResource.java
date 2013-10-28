@@ -62,7 +62,7 @@ import org.icgc.dcc.submission.release.ReleaseException;
 import org.icgc.dcc.submission.release.ReleaseService;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
-import org.icgc.dcc.submission.validation.service.ValidationQueueService;
+import org.icgc.dcc.submission.validation.ValidationQueueService;
 import org.icgc.dcc.submission.web.model.ServerErrorCode;
 import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
 import org.icgc.dcc.submission.web.util.Authorizations;

@@ -128,7 +128,7 @@ public class HadoopCascadingStrategy extends BaseCascadingStrategy {
         GZIP_CODEC_PROPERTY_VALUE);
 
     // M/R job entry point
-    AppProps.setApplicationJarClass(flowProperties, org.icgc.dcc.submission.Main.class);
+    AppProps.setApplicationJarClass(flowProperties, this.getClass());
 
     return new HadoopFlowConnector(flowProperties);
   }

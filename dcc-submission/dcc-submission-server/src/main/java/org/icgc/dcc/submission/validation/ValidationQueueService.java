@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.service;
+package org.icgc.dcc.submission.validation;
 
 import static cascading.stats.CascadingStats.Status.FAILED;
 import static cascading.stats.CascadingStats.Status.STOPPED;
@@ -33,8 +33,6 @@ import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
 import static org.icgc.dcc.submission.release.model.SubmissionState.VALID;
 import static org.icgc.dcc.submission.validation.report.Outcome.PASSED;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -53,16 +51,14 @@ import org.icgc.dcc.submission.release.ReleaseService;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.SubmissionState;
-import org.icgc.dcc.submission.validation.FilePresenceException;
-import org.icgc.dcc.submission.validation.Plan;
 import org.icgc.dcc.submission.validation.cascading.TupleState;
 import org.icgc.dcc.submission.validation.report.Outcome;
 import org.icgc.dcc.submission.validation.report.SchemaReport;
 import org.icgc.dcc.submission.validation.report.SubmissionReport;
 import org.icgc.dcc.submission.validation.report.ValidationErrorReport;
+import org.icgc.dcc.submission.validation.service.ValidationService;
 
 import cascading.cascade.Cascade;
-import cascading.cascade.CascadeListener;
 import cascading.stats.CascadingStats.Status;
 
 import com.google.common.base.Optional;
@@ -215,7 +211,9 @@ public class ValidationQueueService extends AbstractScheduledService {
     mailService.sendProcessingStarted(project.getKey(), project.getEmails());
 
     releaseService.dequeueToValidating(project);
-    val plan = validationService.prepareValidation(release, project, new ValidationCascadeListener());
+
+    val dictionary = releaseService.getNextDictionary();
+    val plan = validationService.prepareValidation(release, dictionary, project, new ValidationExecutionListener());
 
     /**
      * Note that emptying of the .validation directory happens right before launching the cascade in
@@ -243,30 +241,31 @@ public class ValidationQueueService extends AbstractScheduledService {
         "Unexpected by design since this should be the condition for throwing the FatalPlanningException");
 
     Map<String, TupleState> fileLevelErrors = plan.getFileLevelErrors();
-    log.info("There are file-level errors (fatal ones):\n\t{}", fileLevelErrors);
+    log.info("There are fatal file-level errors:\n\t{}", fileLevelErrors);
 
     QueuedProject queuedProject = checkNotNull(plan.getQueuedProject());
     String projectKey = queuedProject.getKey();
     log.info("About to dequeue project key {}", projectKey);
     resolveSubmission(queuedProject, SubmissionState.INVALID);
 
-    SubmissionReport report = new SubmissionReport();
-
-    List<SchemaReport> schemaReports = new ArrayList<SchemaReport>();
-    for (String schema : fileLevelErrors.keySet()) {
-      SchemaReport schemaReport = new SchemaReport();
-      Iterator<TupleState.TupleError> es = fileLevelErrors.get(schema).getErrors().iterator();
-      List<ValidationErrorReport> errReport = newArrayList();
-      while (es.hasNext()) {
-        errReport.add(new ValidationErrorReport(es.next()));
+    List<SchemaReport> schemaReports = newArrayList();
+    for (val schema : fileLevelErrors.keySet()) {
+      List<ValidationErrorReport> schemaErrors = newArrayList();
+      for (val schemaError : fileLevelErrors.get(schema).getErrors()) {
+        schemaErrors.add(new ValidationErrorReport(schemaError));
       }
-      schemaReport.addErrors(errReport);
+
+      val schemaReport = new SchemaReport();
       schemaReport.setName(schema);
+      schemaReport.addErrors(schemaErrors);
+
       schemaReports.add(schemaReport);
     }
 
-    report.setSchemaReports(schemaReports);
-    storeSubmissionReport(projectKey, report);
+    val submissionReport = new SubmissionReport();
+    submissionReport.setSchemaReports(schemaReports);
+
+    storeSubmissionReport(projectKey, submissionReport);
   }
 
   /**
@@ -380,10 +379,11 @@ public class ValidationQueueService extends AbstractScheduledService {
         DEFAULT_MAX_VALIDATING;
   }
 
-  class ValidationCascadeListener implements CascadeListener {
+  class ValidationExecutionListener implements ValidationListener {
 
     Plan plan;
 
+    @Override
     public void setPlan(Plan plan) {
       this.plan = plan;
     }

@@ -34,7 +34,6 @@ import cascading.tuple.TupleEntry;
 import cascading.tuple.TupleListCollector;
 
 @Ignore
-// FIXME
 public class StructuralCheckFunctionTest {
 
   private final Fields LINE_FIELDS = new Fields("line");
