@@ -17,40 +17,69 @@
  */
 package org.icgc.dcc.submission.checker;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.List;
 
+import lombok.Cleanup;
+
 import org.icgc.dcc.submission.checker.Util.CheckLevel;
-import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
-import org.icgc.dcc.submission.fs.SubmissionDirectory;
 
-import com.google.common.collect.Lists;
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 
-public abstract class CompositeFileChecker implements FileChecker {
+public abstract class CompositeRowChecker extends CompositeFileChecker implements RowChecker {
 
-  protected FileChecker compositeChecker;
-  protected List<FirstPassValidationError> errors;
+  protected RowChecker compositeChecker;
   protected boolean failFast;
 
-  public CompositeFileChecker(FileChecker nestedChecker, boolean failFast) {
+  public CompositeRowChecker(RowChecker nestedChecker, boolean failFast) {
+    super(nestedChecker, failFast);
     this.compositeChecker = nestedChecker;
-    errors = Lists.newLinkedList();
-    this.failFast = failFast;
   }
 
-  public CompositeFileChecker(FileChecker nestedChecker) {
+  public CompositeRowChecker(RowChecker nestedChecker) {
     this(nestedChecker, false);
   }
 
   @Override
   public List<FirstPassValidationError> check(String filename) {
+    return performSelfCheck(filename);
+  }
+
+  @Override
+  public List<FirstPassValidationError> performSelfCheck(String filename) {
     errors.clear();
-    errors.addAll(compositeChecker.check(filename));
-    if (compositeChecker.isValid() || !compositeChecker.isFailFast()) errors.addAll(performSelfCheck(filename));
+
+    String filePathname = getSubmissionDirectory().getDataFilePath(filename);
+    FileSchema fileSchema = getFileSchema(filename);
+    try {
+      @Cleanup
+      BufferedReader reader =
+          new BufferedReader(new InputStreamReader(Util.createInputStream(getDccFileSystem(), filePathname)));
+      String line;
+      while ((line = reader.readLine()) != null) {
+        errors.addAll(this.checkRow(fileSchema, line));
+      }
+    } catch (IOException e) {
+      throw new RuntimeException("Unable to check the file: " + filename, e);
+    }
     return errors;
   }
 
-  public abstract List<FirstPassValidationError> performSelfCheck(String filePathname);
+  @Override
+  public List<FirstPassValidationError> checkRow(FileSchema fileSchema, String row) {
+    Builder<FirstPassValidationError> errors = ImmutableList.builder();
+    errors.addAll(compositeChecker.checkRow(fileSchema, row));
+    if (compositeChecker.isValid() || !compositeChecker.isFailFast()) errors.addAll(performSelfCheck(fileSchema, row));
+    return errors.build();
+  }
+
+  public abstract List<FirstPassValidationError> performSelfCheck(FileSchema fileSchema, String row);
 
   @Override
   public boolean isValid() {
@@ -68,22 +97,14 @@ public abstract class CompositeFileChecker implements FileChecker {
   }
 
   @Override
-  public String getFileSchemaName(String filePathname) {
-    return compositeChecker.getFileSchemaName(filePathname);
-  }
-
-  @Override
-  public Dictionary getDictionary() {
-    return compositeChecker.getDictionary();
-  }
-
-  @Override
-  public SubmissionDirectory getSubmissionDirectory() {
-    return compositeChecker.getSubmissionDirectory();
-  }
-
-  @Override
   public DccFileSystem getDccFileSystem() {
     return compositeChecker.getDccFileSystem();
+  }
+
+  private FileSchema getFileSchema(String filename) {
+    Optional<FileSchema> option = getDictionary().fileSchema(getFileSchemaName(filename));
+    if (option.isPresent()) return option.get();
+    else
+      throw new RuntimeException("File Schema for filename: " + filename + " does not exist.");
   }
 }

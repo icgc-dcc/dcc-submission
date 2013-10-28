@@ -88,7 +88,7 @@ public class FirstPassCheckerTest {
     when(rowChecker.check(anyString())).thenReturn(ImmutableList.<FirstPassValidationError> of());
     when(rowChecker.isValid()).thenReturn(true);
 
-    FirstPassChecker fpc = new FirstPassChecker(fs, dict, submissionDir, fileChecker, rowChecker);
+    FirstPassChecker fpc = new FirstPassChecker(dict, submissionDir, fileChecker, rowChecker);
     assertTrue(fpc.isValid());
 
     verify(fileChecker, times(1)).check(anyString());
@@ -107,7 +107,7 @@ public class FirstPassCheckerTest {
     when(rowChecker.isValid()).thenReturn(false);
     when(rowChecker.isFailFast()).thenReturn(false);
 
-    FirstPassChecker fpc = new FirstPassChecker(fs, dict, submissionDir, fileChecker, rowChecker);
+    FirstPassChecker fpc = new FirstPassChecker(dict, submissionDir, fileChecker, rowChecker);
     assertFalse(fpc.isValid());
 
     verify(fileChecker, times(1)).check(anyString());
@@ -125,7 +125,7 @@ public class FirstPassCheckerTest {
     when(rowChecker.check(anyString())).thenReturn(ImmutableList.<FirstPassValidationError> of());
     when(rowChecker.isValid()).thenReturn(true);
 
-    FirstPassChecker fpc = new FirstPassChecker(fs, dict, submissionDir, fileChecker, rowChecker);
+    FirstPassChecker fpc = new FirstPassChecker(dict, submissionDir, fileChecker, rowChecker);
     assertFalse(fpc.isValid());
 
     verify(fileChecker, times(1)).check(anyString());
@@ -143,7 +143,7 @@ public class FirstPassCheckerTest {
     when(rowChecker.check(anyString())).thenReturn(ImmutableList.<FirstPassValidationError> of());
     when(rowChecker.isValid()).thenReturn(true);
 
-    FirstPassChecker fpc = new FirstPassChecker(fs, dict, submissionDir, fileChecker, rowChecker);
+    FirstPassChecker fpc = new FirstPassChecker(dict, submissionDir, fileChecker, rowChecker);
     assertFalse(fpc.isValid());
 
     verify(fileChecker, times(1)).check(anyString());
@@ -161,7 +161,7 @@ public class FirstPassCheckerTest {
     when(rowChecker.check(anyString())).thenReturn(ImmutableList.of(DUMMY_ROW_ERROR));
     when(rowChecker.isValid()).thenReturn(false);
 
-    FirstPassChecker fpc = new FirstPassChecker(fs, dict, submissionDir, fileChecker, rowChecker);
+    FirstPassChecker fpc = new FirstPassChecker(dict, submissionDir, fileChecker, rowChecker);
     assertFalse(fpc.isValid());
 
     verify(fileChecker, times(1)).check(anyString());

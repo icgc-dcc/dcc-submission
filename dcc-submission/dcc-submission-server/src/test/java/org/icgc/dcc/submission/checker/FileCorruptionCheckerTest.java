@@ -57,7 +57,7 @@ public class FileCorruptionCheckerTest {
   public void testTextInputValid() throws Exception {
     DataInputStream textInputStream = getTestInputStream(CodecType.PLAIN_TEXT);
     when(fs.open(anyString())).thenReturn(textInputStream);
-    FileCorruptionChecker checker = new FileCorruptionChecker(new BaseFileChecker(dict, submissionDir), fs);
+    FileCorruptionChecker checker = new FileCorruptionChecker(new BaseFileChecker(fs, dict, submissionDir));
     List<FirstPassValidationError> errors = checker.check(anyString());
     assertTrue(errors.isEmpty());
     assertTrue(checker.isValid());
@@ -66,7 +66,7 @@ public class FileCorruptionCheckerTest {
   @Test
   public void testGZipInputValid() throws Exception {
     when(fs.open(anyString())).thenReturn(getTestInputStream(CodecType.GZIP), getTestInputStream(CodecType.GZIP));
-    FileCorruptionChecker checker = new FileCorruptionChecker(new BaseFileChecker(dict, submissionDir), fs);
+    FileCorruptionChecker checker = new FileCorruptionChecker(new BaseFileChecker(fs, dict, submissionDir));
     List<FirstPassValidationError> errors = checker.check(anyString());
     assertTrue(errors.isEmpty());
     assertTrue(checker.isValid());
@@ -76,7 +76,7 @@ public class FileCorruptionCheckerTest {
   public void testBZip2InputValid() throws Exception {
     when(fs.open(anyString())).thenReturn(getTestInputStream(CodecType.BZIP2), getTestInputStream(CodecType.BZIP2));
 
-    FileCorruptionChecker checker = new FileCorruptionChecker(new BaseFileChecker(dict, submissionDir), fs);
+    FileCorruptionChecker checker = new FileCorruptionChecker(new BaseFileChecker(fs, dict, submissionDir));
     List<FirstPassValidationError> errors = checker.check(anyString());
     assertTrue(errors.isEmpty());
     assertTrue(checker.isValid());
@@ -87,7 +87,7 @@ public class FileCorruptionCheckerTest {
     when(fs.open(anyString())).thenReturn(getTestInputStream(CodecType.GZIP),
         corruptInputStream(getTestInputStream(CodecType.GZIP)));
 
-    FileCorruptionChecker checker = new FileCorruptionChecker(new BaseFileChecker(dict, submissionDir), fs);
+    FileCorruptionChecker checker = new FileCorruptionChecker(new BaseFileChecker(fs, dict, submissionDir));
 
     List<FirstPassValidationError> errors = checker.check(anyString());
     verify(fs, times(2)).open(anyString());
@@ -102,7 +102,7 @@ public class FileCorruptionCheckerTest {
     when(fs.open(anyString())).thenReturn(getTestInputStream(CodecType.BZIP2),
         corruptInputStream(getTestInputStream(CodecType.BZIP2)));
 
-    FileCorruptionChecker checker = new FileCorruptionChecker(new BaseFileChecker(dict, submissionDir), fs);
+    FileCorruptionChecker checker = new FileCorruptionChecker(new BaseFileChecker(fs, dict, submissionDir));
 
     List<FirstPassValidationError> errors = checker.check(anyString());
     verify(fs, times(2)).open(anyString());

@@ -26,7 +26,6 @@ import java.util.List;
 import lombok.Cleanup;
 
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.validation.ValidationErrorCode;
 
 import com.google.common.base.Optional;
@@ -35,16 +34,12 @@ import com.google.common.collect.ImmutableList.Builder;
 
 public class FileHeaderChecker extends CompositeFileChecker {
 
-  private static final int BUFFER_SIZE = 65536;
-  final private DccFileSystem fs;
-
-  public FileHeaderChecker(FileChecker fileChecker, DccFileSystem fs, boolean failFast) {
+  public FileHeaderChecker(FileChecker fileChecker, boolean failFast) {
     super(fileChecker, failFast);
-    this.fs = fs;
   }
 
-  public FileHeaderChecker(FileChecker fileChecker, DccFileSystem fs) {
-    this(fileChecker, fs, true);
+  public FileHeaderChecker(FileChecker fileChecker) {
+    this(fileChecker, true);
   }
 
   @Override
@@ -77,7 +72,7 @@ public class FileHeaderChecker extends CompositeFileChecker {
   }
 
   private final List<String> peekFileHeader(String filename) throws IOException {
-    InputStream is = Util.createInputStream(fs, getSubmissionDirectory().getDataFilePath(filename));
+    InputStream is = Util.createInputStream(getDccFileSystem(), getSubmissionDirectory().getDataFilePath(filename));
     @Cleanup
     BufferedReader reader = new BufferedReader(new InputStreamReader(is));
     String header = reader.readLine();

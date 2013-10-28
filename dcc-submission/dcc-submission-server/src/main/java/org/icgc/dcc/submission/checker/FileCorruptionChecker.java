@@ -25,7 +25,6 @@ import lombok.Cleanup;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
-import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.validation.ValidationErrorCode;
 
 import com.google.common.collect.ImmutableList;
@@ -35,22 +34,20 @@ import com.google.common.collect.ImmutableList.Builder;
 public class FileCorruptionChecker extends CompositeFileChecker {
 
   private static final int BUFFER_SIZE = 65536;
-  final private DccFileSystem fs;
 
-  public FileCorruptionChecker(FileChecker fileChecker, DccFileSystem fs, boolean failFast) {
+  public FileCorruptionChecker(FileChecker fileChecker, boolean failFast) {
     super(fileChecker, failFast);
-    this.fs = fs;
   }
 
-  public FileCorruptionChecker(FileChecker fileChecker, DccFileSystem fs) {
-    this(fileChecker, fs, true);
+  public FileCorruptionChecker(FileChecker fileChecker) {
+    this(fileChecker, true);
   }
 
   @Override
   public List<FirstPassValidationError> performSelfCheck(String filename) {
     Builder<FirstPassValidationError> errors = ImmutableList.builder();
     try {
-      switch (Util.determineCodec(fs, getSubmissionDirectory(), filename)) {
+      switch (Util.determineCodec(getDccFileSystem(), getSubmissionDirectory(), filename)) {
       case GZIP:
         errors.addAll(checkGZip(filename));
         break;
@@ -73,7 +70,7 @@ public class FileCorruptionChecker extends CompositeFileChecker {
       // check the bzip2 header
       @Cleanup
       BZip2CompressorInputStream in =
-          new BZip2CompressorInputStream(fs.open(getSubmissionDirectory().getDataFilePath(filename)));
+          new BZip2CompressorInputStream(getDccFileSystem().open(getSubmissionDirectory().getDataFilePath(filename)));
       // see if it can be read through
       byte[] buf = new byte[BUFFER_SIZE];
       while (in.read(buf) > 0) {
@@ -91,7 +88,8 @@ public class FileCorruptionChecker extends CompositeFileChecker {
     try {
       // check the gzip header
       @Cleanup
-      GZIPInputStream in = new GZIPInputStream(fs.open(getSubmissionDirectory().getDataFilePath(filename)));
+      GZIPInputStream in =
+          new GZIPInputStream(getDccFileSystem().open(getSubmissionDirectory().getDataFilePath(filename)));
       // see if it can be read through
       byte[] buf = new byte[BUFFER_SIZE];
       while (in.read(buf) > 0) {

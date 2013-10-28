@@ -19,11 +19,10 @@ package org.icgc.dcc.submission.checker;
 
 import java.util.List;
 
-/**
- * 
- */
-public interface RowChecker extends Checker {
+import org.icgc.dcc.submission.dictionary.model.FileSchema;
 
-  public List<FirstPassValidationError> check(String row);
+public interface RowChecker extends FileChecker {
+
+  public List<FirstPassValidationError> checkRow(FileSchema fileSchema, String row);
 
 }

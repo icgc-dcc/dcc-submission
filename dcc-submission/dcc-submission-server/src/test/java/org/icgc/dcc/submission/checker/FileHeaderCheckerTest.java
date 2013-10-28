@@ -71,7 +71,7 @@ public class FileHeaderCheckerTest {
     PowerMockito.mockStatic(Util.class);
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
 
-    FileChecker checker = new FileHeaderChecker(new BaseFileChecker(dict, submissionDir), fs);
+    FileChecker checker = new FileHeaderChecker(new BaseFileChecker(fs, dict, submissionDir));
     val error = checker.check(anyString());
     assertTrue(error.isEmpty());
     assertTrue(checker.isValid());
@@ -84,7 +84,7 @@ public class FileHeaderCheckerTest {
     PowerMockito.mockStatic(Util.class);
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
 
-    FileChecker checker = new FileHeaderChecker(new BaseFileChecker(dict, submissionDir), fs);
+    FileChecker checker = new FileHeaderChecker(new BaseFileChecker(fs, dict, submissionDir));
     val error = checker.check(anyString());
     assertFalse(error.isEmpty());
     assertEquals(1, error.size());
@@ -98,7 +98,7 @@ public class FileHeaderCheckerTest {
     PowerMockito.mockStatic(Util.class);
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
 
-    FileChecker checker = new FileHeaderChecker(new BaseFileChecker(dict, submissionDir), fs);
+    FileChecker checker = new FileHeaderChecker(new BaseFileChecker(fs, dict, submissionDir));
     val error = checker.check(anyString());
     assertFalse(error.isEmpty());
     assertEquals(1, error.size());
@@ -111,7 +111,7 @@ public class FileHeaderCheckerTest {
     PowerMockito.mockStatic(Util.class);
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
 
-    FileChecker checker = new FileHeaderChecker(new BaseFileChecker(dict, submissionDir), fs);
+    FileChecker checker = new FileHeaderChecker(new BaseFileChecker(fs, dict, submissionDir));
     val error = checker.check(anyString());
     assertFalse(error.isEmpty());
     assertEquals(1, error.size());
@@ -124,7 +124,7 @@ public class FileHeaderCheckerTest {
     PowerMockito.mockStatic(Util.class);
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
 
-    FileChecker checker = new FileHeaderChecker(new BaseFileChecker(dict, submissionDir), fs);
+    FileChecker checker = new FileHeaderChecker(new BaseFileChecker(fs, dict, submissionDir));
     val error = checker.check(anyString());
     assertFalse(error.isEmpty());
     assertEquals(1, error.size());
@@ -138,7 +138,7 @@ public class FileHeaderCheckerTest {
     PowerMockito.mockStatic(Util.class);
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
 
-    FileChecker checker = new FileHeaderChecker(new BaseFileChecker(dict, submissionDir), fs);
+    FileChecker checker = new FileHeaderChecker(new BaseFileChecker(fs, dict, submissionDir));
     val error = checker.check(anyString());
     assertFalse(error.isEmpty());
     assertEquals(1, error.size());
@@ -152,7 +152,7 @@ public class FileHeaderCheckerTest {
     PowerMockito.mockStatic(Util.class);
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
 
-    FileChecker checker = new FileHeaderChecker(new BaseFileChecker(dict, submissionDir), fs);
+    FileChecker checker = new FileHeaderChecker(new BaseFileChecker(fs, dict, submissionDir));
     val error = checker.check(anyString());
     assertFalse(error.isEmpty());
     assertEquals(1, error.size());
@@ -166,7 +166,7 @@ public class FileHeaderCheckerTest {
     PowerMockito.mockStatic(Util.class);
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
 
-    FileChecker checker = new FileHeaderChecker(new BaseFileChecker(dict, submissionDir), fs);
+    FileChecker checker = new FileHeaderChecker(new BaseFileChecker(fs, dict, submissionDir));
     val error = checker.check(anyString());
     assertFalse(error.isEmpty());
     assertEquals(1, error.size());
@@ -180,7 +180,7 @@ public class FileHeaderCheckerTest {
     PowerMockito.mockStatic(Util.class);
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
 
-    FileChecker checker = new FileHeaderChecker(new BaseFileChecker(dict, submissionDir), fs);
+    FileChecker checker = new FileHeaderChecker(new BaseFileChecker(fs, dict, submissionDir));
     val error = checker.check(anyString());
     assertTrue(error.isEmpty());
     assertTrue(checker.isValid());
@@ -192,10 +192,9 @@ public class FileHeaderCheckerTest {
     PowerMockito.mockStatic(Util.class);
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
 
-    FileChecker checker = new FileHeaderChecker(new BaseFileChecker(dict, submissionDir), fs);
+    FileChecker checker = new FileHeaderChecker(new BaseFileChecker(fs, dict, submissionDir));
     val error = checker.check(anyString());
     assertTrue(error.isEmpty());
     assertTrue(checker.isValid());
   }
-
 }

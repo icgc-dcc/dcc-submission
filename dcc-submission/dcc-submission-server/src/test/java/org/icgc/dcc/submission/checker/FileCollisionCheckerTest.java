@@ -29,6 +29,7 @@ import java.util.regex.Pattern;
 
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
+import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,11 +44,13 @@ public class FileCollisionCheckerTest {
 
   private SubmissionDirectory submissionDir;
   private Dictionary dict;
+  private DccFileSystem fs;
 
   @Before
   public void setup() {
     submissionDir = mock(SubmissionDirectory.class);
     dict = mock(Dictionary.class);
+    fs = mock(DccFileSystem.class);
 
     FileSchema testSchema = mock(FileSchema.class);
     String paramString = "testfile1";
@@ -60,7 +63,7 @@ public class FileCollisionCheckerTest {
   public void matchNone() throws Exception {
     when(submissionDir.listFile(any(Pattern.class))).thenReturn(ImmutableList.<String> of());
 
-    FileCollisionChecker checker = new FileCollisionChecker(new BaseFileChecker(dict, submissionDir));
+    FileCollisionChecker checker = new FileCollisionChecker(new BaseFileChecker(fs, dict, submissionDir));
     List<FirstPassValidationError> errors = checker.check("testfile1");
     assertTrue(errors.isEmpty());
     assertTrue(checker.isValid());
@@ -70,7 +73,7 @@ public class FileCollisionCheckerTest {
   public void matchOne() throws Exception {
     when(submissionDir.listFile(any(Pattern.class))).thenReturn(ImmutableList.of("testfile1"));
 
-    FileCollisionChecker checker = new FileCollisionChecker(new BaseFileChecker(dict, submissionDir));
+    FileCollisionChecker checker = new FileCollisionChecker(new BaseFileChecker(fs, dict, submissionDir));
     List<FirstPassValidationError> errors = checker.check("testfile1");
     assertTrue(errors.isEmpty());
     assertTrue(checker.isValid());
@@ -81,7 +84,7 @@ public class FileCollisionCheckerTest {
   public void matchTwo() throws Exception {
     when(submissionDir.listFile(any(Pattern.class))).thenReturn(ImmutableList.of("testfile1", "testfile2"));
 
-    FileCollisionChecker checker = new FileCollisionChecker(new BaseFileChecker(dict, submissionDir));
+    FileCollisionChecker checker = new FileCollisionChecker(new BaseFileChecker(fs, dict, submissionDir));
     List<FirstPassValidationError> errors = checker.check("testfile1");
     assertTrue(errors.size() == 1);
     assertFalse(checker.isValid());

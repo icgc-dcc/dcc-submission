@@ -19,19 +19,32 @@ package org.icgc.dcc.submission.checker;
 
 import java.util.List;
 
-import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.fs.DccFileSystem;
-import org.icgc.dcc.submission.fs.SubmissionDirectory;
+import org.icgc.dcc.submission.dictionary.model.FileSchema;
+import org.icgc.dcc.submission.validation.ValidationErrorCode;
 
-public interface FileChecker extends Checker {
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 
-  public List<FirstPassValidationError> check(String filePathname);
+public class RowColumnChecker extends CompositeRowChecker {
 
-  String getFileSchemaName(String filePathname);
+  final private String DELIMITER = "\t";
 
-  public SubmissionDirectory getSubmissionDirectory();
+  public RowColumnChecker(RowChecker rowChecker, boolean failFast) {
+    super(rowChecker, failFast);
+  }
 
-  public Dictionary getDictionary();
+  public RowColumnChecker(RowChecker rowChecker) {
+    this(rowChecker, true);
+  }
 
-  public DccFileSystem getDccFileSystem();
+  @Override
+  public List<FirstPassValidationError> performSelfCheck(FileSchema fileSchema, String line) {
+    Builder<FirstPassValidationError> errors = ImmutableList.builder();
+    int expectedNumColumns = fileSchema.getFields().size();
+    int actualNumColumns = ImmutableList.copyOf(line.split(DELIMITER, -1)).size();
+    if (actualNumColumns != expectedNumColumns) errors.add(new FirstPassValidationError(getCheckLevel(),
+        "Row does not match the expected number of columns: " + expectedNumColumns + ", actual: " + actualNumColumns,
+        ValidationErrorCode.STRUCTURALLY_INVALID_ROW_ERROR));
+    return errors.build();
+  }
 }

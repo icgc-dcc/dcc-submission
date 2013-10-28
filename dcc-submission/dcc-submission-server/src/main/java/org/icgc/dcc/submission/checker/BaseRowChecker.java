@@ -19,19 +19,46 @@ package org.icgc.dcc.submission.checker;
 
 import java.util.List;
 
+import org.elasticsearch.common.collect.ImmutableList;
+import org.icgc.dcc.submission.checker.Util.CheckLevel;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 
-public interface FileChecker extends Checker {
+public class BaseRowChecker extends BaseFileChecker implements RowChecker {
 
-  public List<FirstPassValidationError> check(String filePathname);
+  public BaseRowChecker(DccFileSystem fs, Dictionary dict, SubmissionDirectory submissionDir, boolean failFast) {
+    super(fs, dict, submissionDir, failFast);
+  }
 
-  String getFileSchemaName(String filePathname);
+  public BaseRowChecker(DccFileSystem fs, Dictionary dict, SubmissionDirectory submissionDir) {
+    this(fs, dict, submissionDir, false);
+  }
 
-  public SubmissionDirectory getSubmissionDirectory();
+  @Override
+  public List<FirstPassValidationError> check(String filename) {
+    return ImmutableList.of();
+  }
 
-  public Dictionary getDictionary();
+  @Override
+  public boolean isValid() {
+    return true;
+  }
 
-  public DccFileSystem getDccFileSystem();
+  @Override
+  public CheckLevel getCheckLevel() {
+    return CheckLevel.ROW_LEVEL;
+  }
+
+  @Override
+  public boolean isFailFast() {
+    return super.isFailFast();
+  }
+
+  @Override
+  public List<FirstPassValidationError> checkRow(FileSchema fileSchema, String row) {
+    return ImmutableList.of();
+  }
+
 }

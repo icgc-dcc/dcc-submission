@@ -26,12 +26,16 @@ import lombok.Getter;
 import org.icgc.dcc.submission.checker.Util.CheckLevel;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
+import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
 public class BaseFileChecker implements FileChecker {
+
+  @Getter
+  private final DccFileSystem dccFileSystem;
 
   @Getter
   private final Dictionary dictionary;
@@ -42,11 +46,12 @@ public class BaseFileChecker implements FileChecker {
   private Map<String, String> cachedFileNames;
   private final boolean failFast;
 
-  public BaseFileChecker(Dictionary dict, SubmissionDirectory submissionDir) {
-    this(dict, submissionDir, false);
+  public BaseFileChecker(DccFileSystem fs, Dictionary dict, SubmissionDirectory submissionDir) {
+    this(fs, dict, submissionDir, false);
   }
 
-  public BaseFileChecker(Dictionary dict, SubmissionDirectory submissionDir, boolean failFast) {
+  public BaseFileChecker(DccFileSystem fs, Dictionary dict, SubmissionDirectory submissionDir, boolean failFast) {
+    this.dccFileSystem = fs;
     this.dictionary = dict;
     this.submissionDirectory = submissionDir;
     this.errors = ImmutableList.of();
@@ -59,6 +64,8 @@ public class BaseFileChecker implements FileChecker {
     return cachedFileNames.get(filename);
   }
 
+  // TODO: could be used to determine if submission directory is well-formed
+  // before the beginning of the other checks
   @Override
   public List<FirstPassValidationError> check(String filePathname) {
     return errors;

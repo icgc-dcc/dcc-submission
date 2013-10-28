@@ -17,15 +17,12 @@
  */
 package org.icgc.dcc.submission.checker;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import lombok.Cleanup;
 import lombok.val;
 
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
@@ -44,16 +41,14 @@ public class FirstPassChecker {
 
   final private Dictionary dict;
   final private SubmissionDirectory submissionDir;
-  final private DccFileSystem dccFileSystem;
 
   final private RowChecker rowChecker;
   final private FileChecker fileChecker;
 
   private final Map<String, List<FirstPassValidationError>> errorMap;
 
-  public FirstPassChecker(DccFileSystem dccFileSystem, Dictionary dict, SubmissionDirectory submissionDir,
+  public FirstPassChecker(Dictionary dict, SubmissionDirectory submissionDir,
       FileChecker fileChecker, RowChecker rowChecker) {
-    this.dccFileSystem = dccFileSystem;
     this.dict = dict;
     this.submissionDir = submissionDir;
     this.fileChecker = fileChecker;
@@ -62,8 +57,18 @@ public class FirstPassChecker {
   }
 
   public FirstPassChecker(DccFileSystem dccFileSystem, Dictionary dict, SubmissionDirectory submissionDir) {
-    // TODO: create default checkers
-    this(dccFileSystem, dict, submissionDir, null, null);
+    this(dict, submissionDir, getDefaultFileChecker(dccFileSystem, dict, submissionDir),
+        getDefaultRowChecker(dccFileSystem, dict, submissionDir));
+  }
+
+  public static FileChecker getDefaultFileChecker(DccFileSystem fs, Dictionary dict, SubmissionDirectory submissionDir) {
+    return new FileHeaderChecker(new FileCorruptionChecker(new FileCollisionChecker(new BaseFileChecker(fs, dict,
+        submissionDir))));
+  }
+
+  public static RowChecker getDefaultRowChecker(DccFileSystem fs, Dictionary dict, SubmissionDirectory submissionDir) {
+    return new RowColumnChecker(new RowCharsetChecker(new BaseRowChecker(fs, dict, submissionDir)));
+
   }
 
   public boolean isValid() throws IOException {
@@ -75,13 +80,7 @@ public class FirstPassChecker {
         String filePathname = submissionDir.getDataFilePath(filename);
         errors.addAll(fileChecker.check(filePathname));
         if (fileChecker.isValid() || !fileChecker.isFailFast()) {
-          @Cleanup
-          BufferedReader reader =
-              new BufferedReader(new InputStreamReader(Util.createInputStream(dccFileSystem, filePathname)));
-          String line;
-          while ((line = reader.readLine()) != null) {
-            errors.addAll(rowChecker.check(line));
-          }
+          errors.addAll(rowChecker.check(filePathname));
         }
         errorMap.put(fileSchemaName, errors.build());
       }
