@@ -24,7 +24,6 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.submission.dictionary.DictionaryService;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
@@ -34,12 +33,11 @@ import org.icgc.dcc.submission.validation.CascadingStrategy;
 import org.icgc.dcc.submission.validation.FilePresenceException;
 import org.icgc.dcc.submission.validation.Plan;
 import org.icgc.dcc.submission.validation.Planner;
+import org.icgc.dcc.submission.validation.ValidationListener;
 import org.icgc.dcc.submission.validation.factory.CascadingStrategyFactory;
 import org.icgc.dcc.submission.validation.firstpass.FirstPassChecker;
-import org.icgc.dcc.submission.validation.service.ValidationQueueService.ValidationCascadeListener;
 
 import cascading.cascade.Cascade;
-import cascading.cascade.CascadeListener;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Iterables;
@@ -57,15 +55,13 @@ public class ValidationService {
   @NonNull
   private final DccFileSystem dccFileSystem;
   @NonNull
-  private final DictionaryService dictionaryService;
-  @NonNull
   private final CascadingStrategyFactory cascadingStrategyFactory;
 
-  public Plan prepareValidation(Release release, QueuedProject queuedProject, ValidationCascadeListener listener)
+  public Plan prepareValidation(Release release, Dictionary dictionary, QueuedProject queuedProject,
+      ValidationListener listener)
       throws FilePresenceException {
     log.info("Preparing cascade for project '{}'", queuedProject.getKey());
     val projectKey = queuedProject.getKey();
-    val dictionary = getReleaseDictionary(release);
     val releaseFilesystem = dccFileSystem.getReleaseFilesystem(release);
     val submissionDirectory = releaseFilesystem.getSubmissionDirectory(projectKey);
 
@@ -95,7 +91,7 @@ public class ValidationService {
    */
   @VisibleForTesting
   public Plan planValidation(QueuedProject queuedProject, SubmissionDirectory submissionDirectory,
-      CascadingStrategy cascadingStrategy, Dictionary dictionary, CascadeListener cascadeListener)
+      CascadingStrategy cascadingStrategy, Dictionary dictionary, ValidationListener listener)
       throws FilePresenceException {
     // TODO: Separate plan and connect?
     val projectKey = queuedProject.getKey();
@@ -116,8 +112,8 @@ public class ValidationService {
       throw new FilePresenceException(plan); // the queue manager will handle it
     }
 
-    if (cascadeListener != null) {
-      plan.addCascadeListener(cascadeListener);
+    if (listener != null) {
+      plan.addCascadeListener(listener);
     }
 
     return plan;
@@ -149,18 +145,6 @@ public class ValidationService {
       // FIXME: pass appropriate objects: offending project key and Map<String, TupleState> fileLevelErrors
       throw new FilePresenceException(null);
     }
-  }
-
-  private Dictionary getReleaseDictionary(Release release) {
-    val dictionaryVersion = release.getDictionaryVersion();
-    val dictionary = dictionaryService.getFromVersion(dictionaryVersion);
-
-    if (dictionary == null) {
-      throw new ValidationServiceException(format("No dictionary found with version %s, in release %s",
-          dictionaryVersion, release.getName()));
-    }
-
-    return dictionary;
   }
 
 }

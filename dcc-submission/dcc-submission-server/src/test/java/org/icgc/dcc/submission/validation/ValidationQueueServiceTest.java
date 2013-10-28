@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.service;
+package org.icgc.dcc.submission.validation;
 
 import static org.mockito.Mockito.when;
 
@@ -26,6 +26,8 @@ import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.release.NextRelease;
 import org.icgc.dcc.submission.release.ReleaseService;
 import org.icgc.dcc.submission.release.model.Release;
+import org.icgc.dcc.submission.validation.service.ValidationService;
+import org.icgc.dcc.submission.validation.ValidationQueueService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -17,44 +17,20 @@
  */
 package org.icgc.dcc.submission.validation;
 
-import static org.mockito.Mockito.mock;
-
-import org.icgc.dcc.submission.core.AbstractDccModule;
-import org.icgc.dcc.submission.dictionary.DictionaryService;
-import org.icgc.dcc.submission.validation.restriction.CodeListRestriction;
-import org.icgc.dcc.submission.validation.restriction.DiscreteValuesRestriction;
-import org.icgc.dcc.submission.validation.restriction.RangeFieldRestriction;
-import org.icgc.dcc.submission.validation.restriction.RegexRestriction;
-import org.icgc.dcc.submission.validation.restriction.RequiredRestriction;
-import org.icgc.dcc.submission.validation.restriction.ScriptRestriction;
-
-import com.google.inject.Singleton;
-import com.google.inject.multibindings.Multibinder;
+import cascading.cascade.CascadeListener;
 
 /**
- * Any restrictions added in here would likely have been added to {@link ValidationModule} for normal run.
+ * {@link CascadeListener} refinement that accepts a reference to a {@link Plan}.
+ * <p>
+ * Used to decouple the validator from the submission system abstractions.
  */
-public class ValidationTestModule extends AbstractDccModule {
+public interface ValidationListener extends CascadeListener {
 
-  private Multibinder<RestrictionType> types;
-
-  @Override
-  protected void configure() {
-    bind(DictionaryService.class).toInstance(mock(DictionaryService.class));
-
-    bind(Planner.class).to(DefaultPlanner.class);
-    types = Multibinder.newSetBinder(binder(), RestrictionType.class);
-
-    bindRestriction(DiscreteValuesRestriction.Type.class);
-    bindRestriction(RegexRestriction.Type.class);
-    bindRestriction(RangeFieldRestriction.Type.class);
-    bindRestriction(RequiredRestriction.Type.class);
-    bindRestriction(CodeListRestriction.Type.class);
-    bindRestriction(ScriptRestriction.Type.class);
-  }
-
-  private void bindRestriction(Class<? extends RestrictionType> type) {
-    types.addBinding().to(type).in(Singleton.class);
-  }
+  /**
+   * Sets a {@code plan} to be handled by implementations.
+   * 
+   * @param plan
+   */
+  void setPlan(Plan plan);
 
 }

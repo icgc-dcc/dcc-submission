@@ -18,6 +18,8 @@
 package org.icgc.dcc.submission.validation;
 
 import org.icgc.dcc.submission.core.AbstractDccModule;
+import org.icgc.dcc.submission.dictionary.DictionaryService;
+import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.validation.factory.CascadingStrategyFactory;
 import org.icgc.dcc.submission.validation.report.ByteOffsetToLineNumber;
 import org.icgc.dcc.submission.validation.restriction.CodeListRestriction;
@@ -26,9 +28,10 @@ import org.icgc.dcc.submission.validation.restriction.RangeFieldRestriction;
 import org.icgc.dcc.submission.validation.restriction.RegexRestriction;
 import org.icgc.dcc.submission.validation.restriction.RequiredRestriction;
 import org.icgc.dcc.submission.validation.restriction.ScriptRestriction;
-import org.icgc.dcc.submission.validation.service.ValidationQueueService;
 import org.icgc.dcc.submission.validation.service.ValidationService;
 
+import com.google.common.base.Optional;
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.multibindings.Multibinder;
 
@@ -41,6 +44,17 @@ public class ValidationModule extends AbstractDccModule {
   protected void configure() {
     bindService(ValidationQueueService.class);
     bind(ValidationService.class);
+    bind(ValidationContext.class).toInstance(new ValidationContext() {
+
+      @Inject
+      DictionaryService dictionaryService;
+
+      @Override
+      public Optional<CodeList> getCodeList(String codeListName) {
+        return dictionaryService.getCodeList(codeListName);
+      }
+
+    });
     bind(Planner.class).to(DefaultPlanner.class);
     bind(CascadingStrategyFactory.class).toProvider(CascadingStrategyFactoryProvider.class).in(Singleton.class);
     bindRestrictionTypes();

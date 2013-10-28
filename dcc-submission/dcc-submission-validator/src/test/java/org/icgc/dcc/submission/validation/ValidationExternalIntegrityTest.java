@@ -17,25 +17,22 @@
  */
 package org.icgc.dcc.submission.validation;
 
-import static org.icgc.dcc.submission.TestUtils.dictionaryToString;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
 import static org.icgc.dcc.submission.validation.CascadingStrategy.SEPARATOR;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
-import junit.framework.Assert;
+import lombok.val;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.fs.Path;
 import org.codehaus.jackson.JsonProcessingException;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.icgc.dcc.submission.dictionary.DictionaryService;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.Field;
@@ -43,110 +40,70 @@ import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.Relation;
 import org.icgc.dcc.submission.dictionary.model.Term;
 import org.icgc.dcc.submission.dictionary.model.ValueType;
-import org.icgc.dcc.submission.fs.DccFileSystem;
-import org.icgc.dcc.submission.fs.GuiceJUnitRunner;
-import org.icgc.dcc.submission.fs.GuiceJUnitRunner.GuiceModules;
-import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.QueuedProject;
-import org.icgc.dcc.submission.validation.factory.LocalCascadingStrategyFactory;
-import org.icgc.dcc.submission.validation.service.ValidationService;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
-import com.google.common.io.Files;
-import com.google.inject.Inject;
 
-@RunWith(GuiceJUnitRunner.class)
-@GuiceModules({ ValidationTestModule.class })
-public class ValidationExternalIntegrityTest { // TODO create base class for this and ValidationInternalIntegrityTest
+public class ValidationExternalIntegrityTest extends BaseValidationIntegrityTest {
 
+  /**
+   * Test data.
+   */
   private static final String ROOTDIR = "/fixtures/validation/external";
-
-  private static final QueuedProject QUEUED_PROJECT = new QueuedProject("dummyProject", null); // TODO: mock
-
-  @Inject
-  private DictionaryService dictionaryService;
-
-  @Inject
-  private Planner planner;
-
-  private ValidationService validationService;
-
-  private SubmissionDirectory submissionDirectory;
-
-  private Dictionary dictionary;
+  private static final QueuedProject QUEUED_PROJECT = new QueuedProject("dummyProject", null);
 
   @Before
   public void setUp() throws JsonProcessingException, IOException {
-    DccFileSystem dccFileSystem = mock(DccFileSystem.class);
-
-    CodeList codeList0 = mock(CodeList.class);
-    CodeList codeList1 = mock(CodeList.class);
-    CodeList codeList2 = mock(CodeList.class);
-    CodeList codeList3 = mock(CodeList.class);
-    CodeList codeList4 = mock(CodeList.class);
-    CodeList codeList5 = mock(CodeList.class);
-
-    submissionDirectory = mock(SubmissionDirectory.class);
-
-    List<Term> termList1 = Arrays.asList(new Term("1", "dummy", null), new Term("2", "dummy", null));
-    List<Term> termList2 = Arrays.asList(new Term("1", "dummy", null), new Term("2", "dummy", null));
-    List<Term> termList3 =
+    val termList1 = Arrays.asList(new Term("1", "dummy", null), new Term("2", "dummy", null));
+    val termList2 = Arrays.asList(new Term("1", "dummy", null), new Term("2", "dummy", null));
+    val termList3 =
         Arrays.asList(new Term("1", "dummy", null), new Term("2", "dummy", null), new Term("3", "dummy", null),
             new Term("4", "dummy", null), new Term("5", "dummy", null));
-    List<Term> termList4 =
+    val termList4 =
         Arrays.asList(new Term("1", "dummy", null), new Term("2", "dummy", null), new Term("3", "dummy", null));
-    List<Term> termList5 =
+    val termList5 =
         Arrays.asList(new Term("1", "dummy", null), new Term("2", "dummy", null), new Term("3", "dummy", null));
 
-    when(dictionaryService.getCodeList(anyString())).thenReturn(Optional.<CodeList> absent());
+    when(context.getCodeList(anyString())).thenReturn(Optional.<CodeList> absent());
 
-    when(dictionaryService.getCodeList("GLOBAL.0.yes_no.v1")).thenReturn(Optional.of(codeList0));
+    when(context.getCodeList("GLOBAL.0.yes_no.v1")).thenReturn(Optional.of(codeList0));
 
-    when(dictionaryService.getCodeList("donor.0.donor_sex.v1")).thenReturn(Optional.of(codeList1));
-    when(dictionaryService.getCodeList("donor.0.donor_vital_status.v1")).thenReturn(Optional.of(codeList2));
-    when(dictionaryService.getCodeList("donor.0.disease_status_last_followup.v1")).thenReturn(Optional.of(codeList3));
-    when(dictionaryService.getCodeList("donor.0.donor_relapse_type.v1")).thenReturn(Optional.of(codeList4));
+    when(context.getCodeList("donor.0.donor_sex.v1")).thenReturn(Optional.of(codeList1));
+    when(context.getCodeList("donor.0.donor_vital_status.v1")).thenReturn(Optional.of(codeList2));
+    when(context.getCodeList("donor.0.disease_status_last_followup.v1")).thenReturn(Optional.of(codeList3));
+    when(context.getCodeList("donor.0.donor_relapse_type.v1")).thenReturn(Optional.of(codeList4));
 
-    when(dictionaryService.getCodeList("specimen.0.specimen_type.v1")).thenReturn(Optional.of(codeList1));
-    when(dictionaryService.getCodeList("specimen.0.specimen_donor_treatment_type.v1")).thenReturn(
+    when(context.getCodeList("specimen.0.specimen_type.v1")).thenReturn(Optional.of(codeList1));
+    when(context.getCodeList("specimen.0.specimen_donor_treatment_type.v1")).thenReturn(
         Optional.of(codeList1));
-    when(dictionaryService.getCodeList("specimen.0.specimen_processing.v1")).thenReturn(Optional.of(codeList1));
-    when(dictionaryService.getCodeList("specimen.0.specimen_storage.v1")).thenReturn(Optional.of(codeList1));
-    when(dictionaryService.getCodeList("specimen.0.tumour_confirmed.v1")).thenReturn(Optional.of(codeList1));
-    when(dictionaryService.getCodeList("specimen.0.specimen_available.v1")).thenReturn(Optional.of(codeList1));
+    when(context.getCodeList("specimen.0.specimen_processing.v1")).thenReturn(Optional.of(codeList1));
+    when(context.getCodeList("specimen.0.specimen_storage.v1")).thenReturn(Optional.of(codeList1));
+    when(context.getCodeList("specimen.0.tumour_confirmed.v1")).thenReturn(Optional.of(codeList1));
+    when(context.getCodeList("specimen.0.specimen_available.v1")).thenReturn(Optional.of(codeList1));
 
-    when(dictionaryService.getCodeList("sample.0.analyzed_sample_type.v1")).thenReturn(Optional.of(codeList5));
+    when(context.getCodeList("sample.0.analyzed_sample_type.v1")).thenReturn(Optional.of(codeList5));
 
     when(codeList1.getTerms()).thenReturn(termList1);
     when(codeList2.getTerms()).thenReturn(termList2);
     when(codeList3.getTerms()).thenReturn(termList3);
     when(codeList4.getTerms()).thenReturn(termList4);
     when(codeList5.getTerms()).thenReturn(termList5);
-
-    validationService =
-        new ValidationService(planner, dccFileSystem, dictionaryService, new LocalCascadingStrategyFactory());
-
-    resetDictionary();
   }
 
   @Test
   public void test_validate_valid() throws IOException, FilePresenceException {
     String content = validate(dictionary, ROOTDIR);
-    Assert.assertTrue(content, content.isEmpty());
+    assertTrue(content, content.isEmpty());
 
     String donorTrim = getUnsortedFileContent(ROOTDIR, "/.validation/donor" + SEPARATOR + "donor_id-offset.tsv");
     String donorTrimExpected = getUnsortedFileContent("/fixtures/validation/reference/fk_donor_trim.tsv");
-    Assert.assertEquals("Incorrect donor ID trim list", donorTrimExpected.trim(), donorTrim.trim());
+    assertEquals("Incorrect donor ID trim list", donorTrimExpected.trim(), donorTrim.trim());
 
     String specimenTrim = getUnsortedFileContent(ROOTDIR, "/.validation/specimen" + SEPARATOR + "donor_id-offset.tsv");
     String specimenTrimExpected = getUnsortedFileContent("/fixtures/validation/reference/fk_specimen_trim.tsv");
-    Assert.assertEquals("Incorrect specimen ID trim list", specimenTrimExpected.trim(), specimenTrim.trim());
-
-    resetDictionary();
+    assertEquals("Incorrect specimen ID trim list", specimenTrimExpected.trim(), specimenTrim.trim());
   }
 
   @Test
@@ -172,29 +129,16 @@ public class ValidationExternalIntegrityTest { // TODO create base class for thi
 
     testErrorType("fk_1");
 
-    resetDictionary();
-
     String donorTrim =
         getUnsortedFileContent(ROOTDIR, "/error/fk_1/.validation/donor" + SEPARATOR + "donor_id-fakecolumn-offset.tsv");
     String donorTrimExpected = getUnsortedFileContent("/fixtures/validation/reference/fk_1_donor_trim.tsv");
-    Assert.assertEquals("Incorrect donor ID trim list", donorTrimExpected.trim(), donorTrim.trim());
+    assertEquals("Incorrect donor ID trim list", donorTrimExpected.trim(), donorTrim.trim());
 
     String specimenTrim =
         getUnsortedFileContent(ROOTDIR, "/error/fk_1/.validation/specimen" + SEPARATOR
             + "donor_id-fakecolumn-offset.tsv");
     String specimenTrimExpected = getUnsortedFileContent("/fixtures/validation/reference/fk_1_specimen_trim.tsv");
-    Assert.assertEquals("Incorrect specimen ID trim list", specimenTrimExpected.trim(), specimenTrim.trim());
-  }
-
-  private String getUnsortedFileContent(String resourcePath) throws IOException {
-    return getUnsortedFileContent(resourcePath, "");
-  }
-
-  private String getUnsortedFileContent(String resourcePath, String append) throws IOException {
-    List<String> lines =
-        Files.readLines(new File(this.getClass().getResource(resourcePath).getFile() + append), Charsets.UTF_8);
-    Collections.sort(lines);
-    return lines.toString();
+    assertEquals("Incorrect specimen ID trim list", specimenTrimExpected.trim(), specimenTrim.trim());
   }
 
   @Test(expected = FilePresenceException.class)
@@ -208,7 +152,7 @@ public class ValidationExternalIntegrityTest { // TODO create base class for thi
         FileUtils
             .readFileToString(new File(this.getClass()
                 .getResource("/fixtures/validation/reference/" + errorType + ".json").getFile()));
-    Assert.assertEquals(content, expected.trim(), content.trim());
+    assertEquals(content, expected.trim(), content.trim());
   }
 
   private String validate(Dictionary dictionary, String relative) throws IOException, FilePresenceException {
@@ -219,37 +163,23 @@ public class ValidationExternalIntegrityTest { // TODO create base class for thi
 
     File errorFile = new File(errorFileString);
     errorFile.delete();
-    Assert.assertFalse(errorFileString, errorFile.exists());
+    assertFalse(errorFileString, errorFile.exists());
 
     Path rootDir = new Path(rootDirString);
     Path outputDir = new Path(outputDirString);
-    Path systemDir = new Path("src/test/resources/fixtures/submission/fs/SystemFiles");
+    Path systemDir = SYSTEM_DIR;
 
     CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir, systemDir);
 
     Plan plan =
         validationService.planValidation(QUEUED_PROJECT, submissionDirectory, cascadingStrategy, dictionary,
             null);
-    Assert.assertEquals(5, plan.getCascade().getFlows().size());
+    assertEquals(5, plan.getCascade().getFlows().size());
 
     plan.getCascade().complete();
 
-    Assert.assertTrue(errorFileString, errorFile.exists());
+    assertTrue(errorFileString, errorFile.exists());
     return FileUtils.readFileToString(errorFile);
   }
 
-  private void resetDictionary() throws IOException, JsonProcessingException {
-    dictionary = new ObjectMapper().reader(Dictionary.class).readValue(dictionaryToString());
-  }
-
-  private FileSchema getFileSchemaByName(Dictionary dictionary, String name) {
-    FileSchema fileSchema = null;
-    for (FileSchema fileSchemaTmp : dictionary.getFiles()) {
-      if (name.equals(fileSchemaTmp.getName())) {
-        fileSchema = fileSchemaTmp;
-        break;
-      }
-    }
-    return fileSchema;
-  }
 }
