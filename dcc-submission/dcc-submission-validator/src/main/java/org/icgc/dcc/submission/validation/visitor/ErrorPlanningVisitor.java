@@ -15,15 +15,15 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.report;
+package org.icgc.dcc.submission.validation.visitor;
 
+import static com.google.common.collect.Maps.newHashMap;
 import static org.icgc.dcc.submission.validation.cascading.TupleStates.keepInvalidTuplesFilter;
 import static org.icgc.dcc.submission.validation.cascading.ValidationFields.STATE_FIELD;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.Map;
 
 import lombok.Cleanup;
@@ -37,7 +37,10 @@ import org.icgc.dcc.submission.validation.core.FlowType;
 import org.icgc.dcc.submission.validation.core.ReportingPlanElement;
 import org.icgc.dcc.submission.validation.core.ValidationErrorCode;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
-import org.icgc.dcc.submission.validation.visitor.ReportingFlowPlanningVisitor;
+import org.icgc.dcc.submission.validation.report.Outcome;
+import org.icgc.dcc.submission.validation.report.ReportCollector;
+import org.icgc.dcc.submission.validation.report.SchemaReport;
+import org.icgc.dcc.submission.validation.report.ValidationErrorReport;
 
 import cascading.pipe.Each;
 import cascading.pipe.Pipe;
@@ -98,8 +101,7 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
 
     class ErrorReportCollector implements ReportCollector {
 
-      private final Map<ValidationErrorCode, ValidationErrorReport> errorMap =
-          new HashMap<ValidationErrorCode, ValidationErrorReport>();
+      private final Map<ValidationErrorCode, ValidationErrorReport> errorMap = newHashMap();
 
       public ErrorReportCollector() {
       }
@@ -130,9 +132,10 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
               }
             }
           }
+
           for (ValidationErrorReport e : errorMap.values()) {
             e.updateLineNumbers(strategy.path(getFileSchema()));
-            report.errors.add(e);
+            report.addError(e);
           }
           return outcome;
         } catch (FileNotFoundException fnfe) {
@@ -143,4 +146,5 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
       }
     }
   }
+
 }

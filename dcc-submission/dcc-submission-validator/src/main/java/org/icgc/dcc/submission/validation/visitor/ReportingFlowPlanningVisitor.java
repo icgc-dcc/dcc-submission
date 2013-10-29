@@ -18,14 +18,13 @@
 package org.icgc.dcc.submission.validation.visitor;
 
 import static org.icgc.dcc.submission.dictionary.model.FileSchemaRole.SUBMISSION;
+import lombok.val;
 
 import org.icgc.dcc.submission.validation.core.FlowType;
 import org.icgc.dcc.submission.validation.core.Plan;
 import org.icgc.dcc.submission.validation.core.ReportingPlanElement;
 
-import lombok.val;
-
-public class ReportingFlowPlanningVisitor extends PlanningVisitor<ReportingPlanElement> {
+public abstract class ReportingFlowPlanningVisitor extends PlanningVisitor<ReportingPlanElement> {
 
   public ReportingFlowPlanningVisitor(FlowType type) {
     super(type);
@@ -33,12 +32,12 @@ public class ReportingFlowPlanningVisitor extends PlanningVisitor<ReportingPlanE
 
   @Override
   public void apply(Plan plan) {
-    for (val planner : plan.getFlows(getFlowType())) {
-      planner.getSchema().accept(this);
+    for (val flowPlanner : plan.getFlows(getFlowType())) {
+      flowPlanner.getSchema().accept(this);
 
       for (val e : getElements()) {
-        if (planner.getSchema().getRole() == SUBMISSION) {
-          planner.apply(e);
+        if (flowPlanner.getSchema().getRole() == SUBMISSION) {
+          flowPlanner.apply(e);
         }
       }
     }
