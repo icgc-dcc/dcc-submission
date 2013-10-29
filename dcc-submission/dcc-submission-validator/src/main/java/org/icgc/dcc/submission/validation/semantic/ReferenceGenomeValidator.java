@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.submission.validation.semantic;
 
-import static com.google.common.base.Charsets.UTF_8;
-import static com.google.common.io.Files.readLines;
 import static java.util.Arrays.asList;
 
 import java.io.BufferedInputStream;
@@ -26,6 +24,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.List;
@@ -35,12 +34,17 @@ import lombok.Cleanup;
 import net.sf.picard.reference.IndexedFastaSequenceFile;
 import net.sf.picard.reference.ReferenceSequence;
 
-import org.icgc.dcc.submission.validation.ValidationErrorCode;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.compress.BZip2Codec;
+import org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames;
 import org.icgc.dcc.submission.validation.cascading.TupleState;
 import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
+import org.icgc.dcc.submission.validation.core.ValidationErrorCode;
 
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
+import com.google.common.io.LineReader;
 
 /**
  * Support querying a reference genome data file in the form for chromosome-start-end to validate submission input This
@@ -50,10 +54,6 @@ import com.google.common.io.ByteStreams;
 public class ReferenceGenomeValidator {
 
   private IndexedFastaSequenceFile sequenceFile = null;
-  private final String CHROMOSOME = "chromosome";
-  private final String CHROMOSOME_START = "chromosome_start";
-  private final String CHROMOSOME_END = "chromosome_end";
-  private final String REFERENCE_GENOME_ALLELE = "reference_genome_allele";
 
   private final String REFERENCE_GENOME_DATA_URL =
       "ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/human_g1k_v37.fasta.gz";
@@ -114,49 +114,61 @@ public class ReferenceGenomeValidator {
     sequenceFile = new IndexedFastaSequenceFile(new File(referenceFile));
   }
 
-  public List<TupleError> validate(File ssmPrimaryFile) throws IOException {
+  public List<TupleError> validate(Path ssmPrimaryFile, FileSystem fileSystem) throws IOException {
     // Validate genome reference aligns with reference genome of submitted primary file. We assume at this stage the
-    // file is well-formed, and that each field has been validated
+    // file is well-formed, and that each individual field is sane
+
+    LineReader reader = null;
+
+    // File extensions
+    if (ssmPrimaryFile.getName().endsWith(".gz")) {
+      reader = new LineReader(new InputStreamReader(new GZIPInputStream(fileSystem.open(ssmPrimaryFile))));
+    } else if (ssmPrimaryFile.getName().endsWith(".bz2")) {
+      BZip2Codec codec = new BZip2Codec();
+      reader = new LineReader(new InputStreamReader(codec.createInputStream((fileSystem.open(ssmPrimaryFile)))));
+    } else {
+      reader = new LineReader(new InputStreamReader(fileSystem.open(ssmPrimaryFile)));
+    }
+
+    List<TupleError> errors = Lists.newArrayList();
     long lineNumber = 1;
     int chromosomeIdx = -1;
     int startIdx = -1;
     int endIdx = -1;
     int referenceAlleleIdx = -1;
+    String line;
 
-    List<TupleError> errors = Lists.newArrayList();
-
-    for (String line : readLines(ssmPrimaryFile, UTF_8)) {
+    while ((line = reader.readLine()) != null) {
       List<String> fields = asList(line.split("\t"));
 
       if (lineNumber == 1) {
-        // Parse header
-        chromosomeIdx = fields.indexOf(CHROMOSOME);
-        startIdx = fields.indexOf(CHROMOSOME_START);
-        endIdx = fields.indexOf(CHROMOSOME_END);
-        referenceAlleleIdx = fields.indexOf(REFERENCE_GENOME_ALLELE);
+        // Get column position
+        chromosomeIdx = fields.indexOf(SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME);
+        startIdx = fields.indexOf(SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME_START);
+        endIdx = fields.indexOf(SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME_END);
+        referenceAlleleIdx = fields.indexOf(SubmissionFieldNames.SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE);
       } else {
-        // Parse and validate content
-        String refSequence = getReferenceGenome(fields.get(chromosomeIdx), fields.get(startIdx), fields.get(endIdx));
+        String refSequence =
+            getReferenceGenomeSequence(fields.get(chromosomeIdx), fields.get(startIdx), fields.get(endIdx));
 
         if (!fields.get(referenceAlleleIdx).equalsIgnoreCase(refSequence)) {
           errors.add(TupleState.createTupleError(ValidationErrorCode.REFERENCE_GENOME_VIOLATION,
-              REFERENCE_GENOME_ALLELE, fields.get(referenceAlleleIdx), refSequence));
+              SubmissionFieldNames.SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE, fields.get(referenceAlleleIdx),
+              lineNumber, refSequence));
         }
       }
-
-      ++lineNumber;
+      lineNumber++;
     }
-
     return errors;
   }
 
-  public String getReferenceGenome(String chromosome, String start, String end) {
+  public String getReferenceGenomeSequence(String chromosome, String start, String end) {
     long startPosition = Long.parseLong(start);
     long endPosition = Long.parseLong(end);
-    return getReferenceGenome(chromosome, startPosition, endPosition);
+    return getReferenceGenomeSequence(chromosome, startPosition, endPosition);
   }
 
-  public String getReferenceGenome(String chromosome, long start, long end) {
+  public String getReferenceGenomeSequence(String chromosome, long start, long end) {
     ReferenceSequence refSequence = sequenceFile.getSubsequenceAt(chromosome, start, end);
     return new String(refSequence.getBases());
   }

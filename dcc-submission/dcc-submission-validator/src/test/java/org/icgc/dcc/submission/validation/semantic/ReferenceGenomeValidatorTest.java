@@ -19,6 +19,13 @@ package org.icgc.dcc.submission.validation.semantic;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 
+import java.io.IOException;
+import java.util.List;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -40,22 +47,39 @@ public class ReferenceGenomeValidatorTest {
   }
 
   @Test
-  public void testBase() {
-    String ref = null;
-    ref = validator.getReferenceGenome(baseCorrect[0], baseCorrect[1], baseCorrect[2]);
+  public void testSingleSequenceCorrect() {
+    String ref = validator.getReferenceGenomeSequence(baseCorrect[0], baseCorrect[1], baseCorrect[2]);
     assertThat(ref).isEqualTo(baseCorrect[3]);
+  }
 
-    ref = validator.getReferenceGenome(baseWrong[0], baseWrong[1], baseWrong[2]);
+  @Test
+  public void testSingleSequenceIncorrect() {
+    String ref = validator.getReferenceGenomeSequence(baseWrong[0], baseWrong[1], baseWrong[2]);
     assertThat(ref).isNotEqualTo(baseWrong[3]);
   }
 
   @Test
-  public void testBases() {
-    String ref = null;
-    ref = validator.getReferenceGenome(basesCorrect[0], basesCorrect[1], basesCorrect[2]);
+  public void testLongSequenceCorrect() {
+    String ref = validator.getReferenceGenomeSequence(basesCorrect[0], basesCorrect[1], basesCorrect[2]);
     assertThat(ref).isEqualTo(basesCorrect[3]);
+  }
 
-    ref = validator.getReferenceGenome(basesWrong[0], basesWrong[1], basesWrong[2]);
+  @Test
+  public void testLongSequenceInCorrect() {
+    String ref = validator.getReferenceGenomeSequence(basesWrong[0], basesWrong[1], basesWrong[2]);
     assertThat(ref).isNotEqualTo(basesWrong[3]);
   }
+
+  @Test
+  public void testSSMSamplePrimaryFile() throws IOException {
+    Configuration conf = new Configuration();
+    FileSystem fs = FileSystem.getLocal(conf);
+    String root = "../dcc-submission-server/src/test/resources/fixtures/submission/fs/";
+
+    Path path = new Path(root + "release1/project.1/ssm__dd__01__001__p__1__20130313.txt");
+    List<TupleError> errors = validator.validate(path, fs);
+
+    assertThat(errors.size()).isEqualTo(7);
+  }
+
 }
