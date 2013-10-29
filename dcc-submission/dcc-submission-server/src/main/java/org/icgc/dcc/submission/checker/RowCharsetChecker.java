@@ -18,8 +18,8 @@
 package org.icgc.dcc.submission.checker;
 
 import static com.google.common.base.CharMatcher.ASCII;
-import static com.google.common.base.CharMatcher.INVISIBLE;
 import static com.google.common.base.CharMatcher.JAVA_ISO_CONTROL;
+import static com.google.common.base.CharMatcher.noneOf;
 
 import java.util.List;
 
@@ -32,7 +32,8 @@ import com.google.common.collect.ImmutableList.Builder;
 
 public class RowCharsetChecker extends CompositeRowChecker {
 
-  private final static CharMatcher DEFAULT_MATCHER = ASCII.negate().or(INVISIBLE).or(JAVA_ISO_CONTROL)
+  private final static CharMatcher DEFAULT_INVALID_MATCHER = ASCII.negate()
+      .or(JAVA_ISO_CONTROL).and(noneOf("\t"))
       .precomputed();
 
   public RowCharsetChecker(RowChecker rowChecker, boolean failFast) {
@@ -46,7 +47,7 @@ public class RowCharsetChecker extends CompositeRowChecker {
   @Override
   public List<FirstPassValidationError> performSelfCheck(FileSchema fileSchema, String line) {
     Builder<FirstPassValidationError> errors = ImmutableList.builder();
-    if (DEFAULT_MATCHER.matchesAllOf(line)) {
+    if (DEFAULT_INVALID_MATCHER.matchesAnyOf(line)) {
       errors
           .add(new FirstPassValidationError(getCheckLevel(),
               "Invalid character found in the row: " + line, ValidationErrorCode.INVALID_CHARSET_ROW_ERROR));
