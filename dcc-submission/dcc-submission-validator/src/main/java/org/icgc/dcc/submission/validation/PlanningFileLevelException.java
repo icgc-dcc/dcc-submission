@@ -20,6 +20,7 @@ package org.icgc.dcc.submission.validation;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import org.icgc.dcc.submission.validation.cascading.TupleState;
+import org.icgc.dcc.submission.validation.core.ValidationErrorCode;
 
 public class PlanningFileLevelException extends RuntimeException {
 

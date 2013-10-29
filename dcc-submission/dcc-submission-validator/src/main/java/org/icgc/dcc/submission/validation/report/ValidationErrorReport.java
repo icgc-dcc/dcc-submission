@@ -27,9 +27,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.submission.validation.ErrorParameterKey;
-import org.icgc.dcc.submission.validation.ValidationErrorCode;
 import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
+import org.icgc.dcc.submission.validation.core.ErrorParameterKey;
+import org.icgc.dcc.submission.validation.core.ValidationErrorCode;
 
 import com.google.common.collect.Lists;
 

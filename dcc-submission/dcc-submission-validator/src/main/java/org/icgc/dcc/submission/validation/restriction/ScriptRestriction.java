@@ -23,10 +23,10 @@ import static com.google.common.collect.Maps.newLinkedHashMap;
 import static java.lang.String.format;
 import static java.lang.reflect.Modifier.STATIC;
 import static lombok.AccessLevel.PROTECTED;
-import static org.icgc.dcc.submission.validation.ValidationErrorCode.SCRIPT_ERROR;
 import static org.icgc.dcc.submission.validation.cascading.ValidationFields.OFFSET_FIELD_NAME;
 import static org.icgc.dcc.submission.validation.cascading.ValidationFields.STATE_FIELD_NAME;
 import static org.icgc.dcc.submission.validation.cascading.ValidationFields.state;
+import static org.icgc.dcc.submission.validation.core.ValidationErrorCode.SCRIPT_ERROR;
 
 import java.util.Map;
 
@@ -38,14 +38,14 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.Restriction;
-import org.icgc.dcc.submission.validation.FlowType;
-import org.icgc.dcc.submission.validation.InternalPlanElement;
-import org.icgc.dcc.submission.validation.PlanElement;
-import org.icgc.dcc.submission.validation.RestrictionType;
-import org.icgc.dcc.submission.validation.RestrictionTypeSchema;
-import org.icgc.dcc.submission.validation.RestrictionTypeSchema.FieldRestrictionParameter;
-import org.icgc.dcc.submission.validation.RestrictionTypeSchema.ParameterType;
 import org.icgc.dcc.submission.validation.cascading.TupleState;
+import org.icgc.dcc.submission.validation.core.FlowType;
+import org.icgc.dcc.submission.validation.core.InternalPlanElement;
+import org.icgc.dcc.submission.validation.core.PlanElement;
+import org.icgc.dcc.submission.validation.core.RestrictionType;
+import org.icgc.dcc.submission.validation.core.RestrictionTypeSchema;
+import org.icgc.dcc.submission.validation.core.RestrictionTypeSchema.FieldRestrictionParameter;
+import org.icgc.dcc.submission.validation.core.RestrictionTypeSchema.ParameterType;
 import org.mvel2.MVEL;
 import org.mvel2.ParserConfiguration;
 import org.mvel2.ParserContext;

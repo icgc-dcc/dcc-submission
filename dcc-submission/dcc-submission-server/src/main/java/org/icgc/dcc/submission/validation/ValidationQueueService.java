@@ -52,6 +52,8 @@ import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 import org.icgc.dcc.submission.validation.cascading.TupleState;
+import org.icgc.dcc.submission.validation.core.Plan;
+import org.icgc.dcc.submission.validation.core.ValidationListener;
 import org.icgc.dcc.submission.validation.report.SchemaReport;
 import org.icgc.dcc.submission.validation.report.SubmissionReport;
 import org.icgc.dcc.submission.validation.report.ValidationErrorReport;
