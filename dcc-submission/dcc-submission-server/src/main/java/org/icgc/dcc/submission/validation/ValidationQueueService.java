@@ -52,7 +52,6 @@ import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 import org.icgc.dcc.submission.validation.cascading.TupleState;
-import org.icgc.dcc.submission.validation.report.Outcome;
 import org.icgc.dcc.submission.validation.report.SchemaReport;
 import org.icgc.dcc.submission.validation.report.SubmissionReport;
 import org.icgc.dcc.submission.validation.report.ValidationErrorReport;
@@ -299,8 +298,8 @@ public class ValidationQueueService extends AbstractScheduledService {
 
     } else {
       log.info("Gathering report for project {}", projectKey);
-      SubmissionReport report = new SubmissionReport();
-      Outcome outcome = plan.collect(report);
+      val report = new SubmissionReport();
+      val outcome = plan.collect(report);
       log.info("Gathered report for project {}", projectKey);
 
       // Resolving submission

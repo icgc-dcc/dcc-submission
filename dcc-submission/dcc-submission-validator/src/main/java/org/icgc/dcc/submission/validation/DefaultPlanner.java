@@ -22,8 +22,10 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.util.List;
 import java.util.Set;
 
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.validation.report.ErrorPlanningVisitor;
@@ -33,15 +35,12 @@ import org.icgc.dcc.submission.validation.visitor.InternalRestrictionPlanningVis
 import org.icgc.dcc.submission.validation.visitor.RelationPlanningVisitor;
 import org.icgc.dcc.submission.validation.visitor.UniqueFieldsPlanningVisitor;
 import org.icgc.dcc.submission.validation.visitor.ValueTypePlanningVisitor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
 
+@Slf4j
 public class DefaultPlanner implements Planner {
-
-  private static final Logger log = LoggerFactory.getLogger(DefaultPlanner.class);
 
   private final List<? extends PlanningVisitor<?>> planningVisitors;
 
@@ -53,9 +52,11 @@ public class DefaultPlanner implements Planner {
         new ValueTypePlanningVisitor(), // Must happen before RangeRestriction
         new UniqueFieldsPlanningVisitor(),
         new InternalRestrictionPlanningVisitor(restrictionTypes),
+
         // Reporting
         new SummaryPlanningVisitor(),
         new ErrorPlanningVisitor(FlowType.INTERNAL),
+
         // External
         new RelationPlanningVisitor(),
         new ExternalRestrictionPlanningVisitor(restrictionTypes),
@@ -70,31 +71,49 @@ public class DefaultPlanner implements Planner {
 
     FileSchemaDirectory systemDirectory = strategy.getSystemDirectory();
 
-    Plan plan = new Plan(queuedProject, dictionary, strategy, submissionDirectory);
-    for (FileSchema fileSchema : dictionary.getFiles()) {
+    val plan = new Plan(queuedProject, dictionary, strategy, submissionDirectory);
+
+    log.info("Including flow planners for '{}'", queuedProject);
+    includePlanners(queuedProject, strategy, dictionary, systemDirectory, plan);
+
+    log.info("Applying planning visitors for '{}'", queuedProject);
+    applyVisitors(queuedProject, plan);
+
+    return plan;
+  }
+
+  private void includePlanners(QueuedProject queuedProject, CascadingStrategy strategy, Dictionary dictionary,
+      FileSchemaDirectory systemDirectory, Plan plan) {
+    for (val fileSchema : dictionary.getFiles()) {
       try {
-        FileSchemaDirectory fileSchemaDirectory = strategy.getFileSchemaDirectory();
-        String fileSchemaName = fileSchema.getName();
-        if (fileSchemaDirectory.hasFile(fileSchema) || systemDirectory.hasFile(fileSchema)) {
-          log.info("including flow planners for file schema {}", fileSchemaName);
-          plan.include(fileSchema, new DefaultInternalFlowPlanner(fileSchema), new DefaultExternalFlowPlanner(plan,
-              fileSchema));
+        val fileSchemaDirectory = strategy.getFileSchemaDirectory();
+        val fileSchemaName = fileSchema.getName();
+
+        val include = fileSchemaDirectory.hasFile(fileSchema) || systemDirectory.hasFile(fileSchema);
+        if (include) {
+          log.info("Including file schema '{}' flow planners for '{}'", fileSchemaName, queuedProject);
+          plan.include(fileSchema,
+              new DefaultInternalFlowPlanner(fileSchema),
+              new DefaultExternalFlowPlanner(plan, fileSchema));
         } else {
-          log.info("file schema {} has no matching datafile in submission directory {}", fileSchemaName,
-              fileSchemaDirectory.getDirectoryPath());
+          log.info("File schema '{}' has no matching datafile in submission directory '{}' for '{}'",
+              new Object[] { fileSchemaName, fileSchemaDirectory.getDirectoryPath(), queuedProject });
         }
       } catch (PlanningFileLevelException e) {
         plan.addFileLevelError(e);
       }
     }
-    for (PlanningVisitor<?> visitor : planningVisitors) {
+  }
+
+  private void applyVisitors(QueuedProject queuedProject, Plan plan) {
+    for (val visitor : planningVisitors) {
       try {
+        log.info("Applying '{}' planning visitor to '{}'", visitor.getClass().getSimpleName(), queuedProject);
         visitor.apply(plan);
       } catch (PlanningFileLevelException e) {
         plan.addFileLevelError(e);
       }
     }
-
-    return plan;
   }
+
 }
