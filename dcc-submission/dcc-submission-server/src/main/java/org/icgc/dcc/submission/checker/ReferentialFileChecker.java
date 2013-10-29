@@ -18,7 +18,6 @@
 package org.icgc.dcc.submission.checker;
 
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Pattern;
 
 import lombok.val;
@@ -30,19 +29,15 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 public class ReferentialFileChecker extends CompositeFileChecker {
 
-  private Map<String, String> cachedFileNames;
-
-  public ReferentialFileChecker(CompositeFileChecker compositeChecker) {
+  public ReferentialFileChecker(FileChecker compositeChecker) {
     this(compositeChecker, false);
   }
 
-  public ReferentialFileChecker(CompositeFileChecker compositeChecker, boolean failFast) {
+  public ReferentialFileChecker(FileChecker compositeChecker, boolean failFast) {
     super(compositeChecker, failFast);
-    cacheFileSchemaNames();
   }
 
   @Override
@@ -54,47 +49,39 @@ public class ReferentialFileChecker extends CompositeFileChecker {
   }
 
   private List<FirstPassValidationError> referencedCheck(String filePathname) {
-    List<FirstPassValidationError> errors = Lists.newLinkedList();
-    Optional<FileSchema> fileSchema = getDictionary().fileSchema(cachedFileNames.get(filePathname));
+    Builder<FirstPassValidationError> errors = ImmutableList.builder();
+    Optional<FileSchema> fileSchema = getDictionary().fileSchema(getFileSchemaName(filePathname));
     if (fileSchema.isPresent()) {
       for (val relation : fileSchema.get().getRelations()) {
         // fileSchema.get().getBidirectionalAfferentFileSchemata(dict);
         Optional<FileSchema> otherFileSchema = getDictionary().fileSchema(relation.getOther());
         if (otherFileSchema.isPresent()) {
-          if (Lists
-              .newArrayList(getSubmissionDirectory().listFile(Pattern.compile(otherFileSchema.get().getPattern())))
-              .size() == 0) {
-            errors.add(new FirstPassValidationError(getCheckLevel(), "Fail referenced check: missing referenced file ("
-                + relation.getOther(), ValidationErrorCode.RELATION_FILE_ERROR));
+          List<String> files = ImmutableList.copyOf(
+              getSubmissionDirectory().listFile(Pattern.compile(otherFileSchema.get().getPattern())));
+          if (files.size() == 0) {
+            errors.add(new FirstPassValidationError(getCheckLevel(),
+                "Fail referenced check: missing referenced file ("
+                    + relation.getOther(), ValidationErrorCode.RELATION_FILE_ERROR));
           }
         }
       }
     }
-    return errors;
+    return errors.build();
   }
 
   private List<FirstPassValidationError> referencingCheck(String filePathname) {
     List<FirstPassValidationError> errors = Lists.newLinkedList();
-    Optional<FileSchema> fileSchema = getDictionary().fileSchema(cachedFileNames.get(filePathname));
+    Optional<FileSchema> fileSchema = getDictionary().fileSchema(getFileSchemaName(filePathname));
     if (fileSchema.isPresent()) {
       for (val otherFileSchema : fileSchema.get().getBidirectionalAfferentFileSchemata(getDictionary())) {
-        if (Lists.newArrayList(getSubmissionDirectory().listFile(Pattern.compile(otherFileSchema.getPattern()))).size() == 0) {
+        List<String> files =
+            ImmutableList.copyOf(getSubmissionDirectory().listFile(Pattern.compile(otherFileSchema.getPattern())));
+        if (files.size() == 0) {
           errors.add(new FirstPassValidationError(getCheckLevel(), "Fail referencing check: missing referencing file ("
               + otherFileSchema.getName(), ValidationErrorCode.REVERSE_RELATION_FILE_ERROR));
         }
       }
     }
     return errors;
-  }
-
-  private void cacheFileSchemaNames() {
-    cachedFileNames = Maps.newHashMap();
-    for (String filename : getSubmissionDirectory().listFile()) {
-      for (FileSchema schema : getDictionary().getFiles()) {
-        if (Pattern.matches(schema.getPattern(), filename)) {
-          cachedFileNames.put(filename, schema.getName());
-        }
-      }
-    }
   }
 }
