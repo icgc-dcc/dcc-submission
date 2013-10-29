@@ -52,12 +52,8 @@
               <executable>brunch</executable>
               <arguments>
                 <argument>b</argument>
-                <argument>m</argument>
+                <argument>-o</argument>
               </arguments>
-              <successCodes>
-                <successCode>0</successCode>
-                <successCode>1</successCode>
-              </successCodes>
             </configuration>
           </execution>
         </executions>

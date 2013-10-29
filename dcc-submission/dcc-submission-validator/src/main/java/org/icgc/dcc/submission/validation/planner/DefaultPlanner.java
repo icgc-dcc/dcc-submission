@@ -35,12 +35,12 @@ import org.icgc.dcc.submission.validation.core.Plan;
 import org.icgc.dcc.submission.validation.core.PlanElement;
 import org.icgc.dcc.submission.validation.core.RestrictionType;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
-import org.icgc.dcc.submission.validation.report.ErrorPlanningVisitor;
-import org.icgc.dcc.submission.validation.report.SummaryPlanningVisitor;
+import org.icgc.dcc.submission.validation.visitor.ErrorPlanningVisitor;
 import org.icgc.dcc.submission.validation.visitor.ExternalRestrictionPlanningVisitor;
 import org.icgc.dcc.submission.validation.visitor.InternalRestrictionPlanningVisitor;
 import org.icgc.dcc.submission.validation.visitor.PlanningVisitor;
 import org.icgc.dcc.submission.validation.visitor.RelationPlanningVisitor;
+import org.icgc.dcc.submission.validation.visitor.SummaryPlanningVisitor;
 import org.icgc.dcc.submission.validation.visitor.UniqueFieldsPlanningVisitor;
 import org.icgc.dcc.submission.validation.visitor.ValueTypePlanningVisitor;
 

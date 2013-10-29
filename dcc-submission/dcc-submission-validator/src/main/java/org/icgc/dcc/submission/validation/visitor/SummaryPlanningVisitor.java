@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.report;
+package org.icgc.dcc.submission.validation.visitor;
 
 import static com.google.common.collect.Lists.newArrayList;
 
@@ -29,7 +29,9 @@ import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.SummaryType;
 import org.icgc.dcc.submission.validation.core.FlowType;
-import org.icgc.dcc.submission.validation.visitor.ReportingFlowPlanningVisitor;
+import org.icgc.dcc.submission.validation.report.FrequencyPlanElement;
+import org.icgc.dcc.submission.validation.report.SummaryPlanElement;
+import org.icgc.dcc.submission.validation.report.UniqueCountPlanElement;
 
 public class SummaryPlanningVisitor extends ReportingFlowPlanningVisitor {
 

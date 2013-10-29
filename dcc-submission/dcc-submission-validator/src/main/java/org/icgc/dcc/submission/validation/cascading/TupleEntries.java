@@ -18,6 +18,8 @@
 package org.icgc.dcc.submission.validation.cascading;
 
 import static com.google.common.base.Preconditions.checkState;
+import static lombok.AccessLevel.PRIVATE;
+import lombok.NoArgsConstructor;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
@@ -25,11 +27,8 @@ import cascading.tuple.TupleEntry;
 /**
  * Utility class for working with cascading {@code TupleEntry} objects.
  */
-public class TupleEntryUtils {
-
-  private TupleEntryUtils() {
-    // Prevent construction
-  }
+@NoArgsConstructor(access = PRIVATE)
+public class TupleEntries {
 
   /**
    * Gives a string containing the json representation of the tupleEntry (with possibly multiple levels of
@@ -43,17 +42,17 @@ public class TupleEntryUtils {
 
     StringBuilder sb = new StringBuilder();
     sb.append("{");
-    for(int i = 0; i < fields.size(); i++) {
+    for (int i = 0; i < fields.size(); i++) {
       Comparable<?> field = fields.get(i);
       Object object = tuple.getObject(i);
       String value;
-      if(object instanceof TupleEntry) { // build sub-document
+      if (object instanceof TupleEntry) { // build sub-document
         value = toJson((TupleEntry) object);
-      } else if(object instanceof Tuple) { // build array
+      } else if (object instanceof Tuple) { // build array
         Tuple subTuple = (Tuple) object;
         StringBuilder subSb = new StringBuilder();
         subSb.append("[");
-        for(int j = 0; j < subTuple.size(); j++) {
+        for (int j = 0; j < subTuple.size(); j++) {
           Object subObject = subTuple.getObject(j);
           checkState(subObject instanceof TupleEntry); // by design; TODO: handle more cases?
           subSb.append((j == 0 ? "" : ", ") + toJson((TupleEntry) subObject));
@@ -65,6 +64,7 @@ public class TupleEntryUtils {
       }
       sb.append((i == 0 ? "" : ", ") + "\"" + field + "\"" + ":" + value);
     }
+
     sb.append("}");
     return sb.toString();
   }
