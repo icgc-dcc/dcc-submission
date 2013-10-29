@@ -18,8 +18,8 @@
 package org.icgc.dcc.submission.validation.factory;
 
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.submission.validation.CascadingStrategy;
-import org.icgc.dcc.submission.validation.LocalCascadingStrategy;
+import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
+import org.icgc.dcc.submission.validation.platform.LocalPlatformStrategy;
 
 /**
  * 
@@ -27,8 +27,8 @@ import org.icgc.dcc.submission.validation.LocalCascadingStrategy;
 public class LocalCascadingStrategyFactory implements CascadingStrategyFactory {
 
   @Override
-  public CascadingStrategy get(Path input, Path output, Path system) {
-    return new LocalCascadingStrategy(input, output, system);
+  public PlatformStrategy get(Path input, Path output, Path system) {
+    return new LocalPlatformStrategy(input, output, system);
   }
 
 }

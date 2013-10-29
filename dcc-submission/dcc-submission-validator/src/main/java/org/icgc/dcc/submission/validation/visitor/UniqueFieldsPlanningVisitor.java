@@ -22,10 +22,9 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.validation.InternalFlowPlanningVisitor;
-import org.icgc.dcc.submission.validation.InternalPlanElement;
-import org.icgc.dcc.submission.validation.ValidationErrorCode;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
+import org.icgc.dcc.submission.validation.core.InternalPlanElement;
+import org.icgc.dcc.submission.validation.core.ValidationErrorCode;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;

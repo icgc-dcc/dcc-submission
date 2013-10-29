@@ -23,10 +23,10 @@ import java.util.List;
 import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.SummaryType;
-import org.icgc.dcc.submission.validation.FlowType;
 import org.icgc.dcc.submission.validation.cascading.CompletenessBy;
 import org.icgc.dcc.submission.validation.cascading.TupleState;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
+import org.icgc.dcc.submission.validation.core.FlowType;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;

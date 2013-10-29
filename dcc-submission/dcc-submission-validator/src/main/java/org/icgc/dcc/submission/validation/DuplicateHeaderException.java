@@ -21,13 +21,11 @@ import java.util.List;
 
 import com.google.common.collect.Lists;
 
-/**
- * 
- */
 public class DuplicateHeaderException extends RuntimeException {
+
   private final List<String> duplicateHeaderFieldNames = Lists.newArrayList();
 
-  DuplicateHeaderException(List<String> duplicateHeaderFieldNames) {
+  public DuplicateHeaderException(List<String> duplicateHeaderFieldNames) {
     super();
     this.duplicateHeaderFieldNames.addAll(duplicateHeaderFieldNames);
   }

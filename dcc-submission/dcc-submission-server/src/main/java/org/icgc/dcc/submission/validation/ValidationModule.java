@@ -20,7 +20,12 @@ package org.icgc.dcc.submission.validation;
 import org.icgc.dcc.submission.core.AbstractDccModule;
 import org.icgc.dcc.submission.dictionary.DictionaryService;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
+import org.icgc.dcc.submission.validation.core.RestrictionType;
+import org.icgc.dcc.submission.validation.core.ValidationContext;
 import org.icgc.dcc.submission.validation.factory.CascadingStrategyFactory;
+import org.icgc.dcc.submission.validation.planner.DefaultPlanner;
+import org.icgc.dcc.submission.validation.planner.Planner;
+import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactoryProvider;
 import org.icgc.dcc.submission.validation.report.ByteOffsetToLineNumber;
 import org.icgc.dcc.submission.validation.restriction.CodeListRestriction;
 import org.icgc.dcc.submission.validation.restriction.DiscreteValuesRestriction;
@@ -56,7 +61,7 @@ public class ValidationModule extends AbstractDccModule {
 
     });
     bind(Planner.class).to(DefaultPlanner.class);
-    bind(CascadingStrategyFactory.class).toProvider(CascadingStrategyFactoryProvider.class).in(Singleton.class);
+    bind(CascadingStrategyFactory.class).toProvider(PlatformStrategyFactoryProvider.class).in(Singleton.class);
     bindRestrictionTypes();
   }
 

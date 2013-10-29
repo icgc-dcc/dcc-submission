@@ -22,10 +22,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
-import static org.icgc.dcc.submission.validation.ValidationErrorCode.RELATION_PARENT_VALUE_ERROR;
-import static org.icgc.dcc.submission.validation.ValidationErrorCode.RELATION_VALUE_ERROR;
 import static org.icgc.dcc.submission.validation.cascading.TuplesUtils.getObjects;
 import static org.icgc.dcc.submission.validation.cascading.TuplesUtils.hasValues;
+import static org.icgc.dcc.submission.validation.core.ValidationErrorCode.RELATION_PARENT_VALUE_ERROR;
+import static org.icgc.dcc.submission.validation.core.ValidationErrorCode.RELATION_VALUE_ERROR;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
@@ -41,12 +41,11 @@ import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.FileSchemaRole;
 import org.icgc.dcc.submission.dictionary.model.Relation;
-import org.icgc.dcc.submission.validation.ExternalFlowPlanningVisitor;
-import org.icgc.dcc.submission.validation.ExternalPlanElement;
-import org.icgc.dcc.submission.validation.Plan;
 import org.icgc.dcc.submission.validation.cascading.TupleState;
 import org.icgc.dcc.submission.validation.cascading.TuplesUtils;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
+import org.icgc.dcc.submission.validation.core.ExternalPlanElement;
+import org.icgc.dcc.submission.validation.core.Plan;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;

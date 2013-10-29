@@ -19,6 +19,8 @@ package org.icgc.dcc.submission.validation;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import org.icgc.dcc.submission.validation.core.Plan;
+
 public final class FilePresenceException extends Exception {
 
   private final Plan plan;

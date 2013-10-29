@@ -19,8 +19,8 @@ package org.icgc.dcc.submission.validation.factory;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.submission.validation.CascadingStrategy;
-import org.icgc.dcc.submission.validation.HadoopCascadingStrategy;
+import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
+import org.icgc.dcc.submission.validation.platform.HadoopPlatformStrategy;
 
 import com.typesafe.config.Config;
 
@@ -36,8 +36,8 @@ public class HadoopCascadingStrategyFactory implements CascadingStrategyFactory 
   }
 
   @Override
-  public CascadingStrategy get(Path input, Path output, Path system) {
-    return new HadoopCascadingStrategy(hadoopConfig, fileSystem, input, output, system);
+  public PlatformStrategy get(Path input, Path output, Path system) {
+    return new HadoopPlatformStrategy(hadoopConfig, fileSystem, input, output, system);
   }
 
 }

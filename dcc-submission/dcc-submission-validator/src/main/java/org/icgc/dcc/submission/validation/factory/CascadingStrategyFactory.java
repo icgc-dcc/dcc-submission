@@ -18,8 +18,8 @@
 package org.icgc.dcc.submission.validation.factory;
 
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.submission.validation.CascadingStrategy;
+import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 
 public interface CascadingStrategyFactory {
-  public CascadingStrategy get(Path input, Path output, Path system);
+  public PlatformStrategy get(Path input, Path output, Path system);
 }

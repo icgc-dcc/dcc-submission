@@ -28,8 +28,8 @@ import lombok.val;
 import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.SummaryType;
-import org.icgc.dcc.submission.validation.FlowType;
-import org.icgc.dcc.submission.validation.ReportingFlowPlanningVisitor;
+import org.icgc.dcc.submission.validation.core.FlowType;
+import org.icgc.dcc.submission.validation.visitor.ReportingFlowPlanningVisitor;
 
 public class SummaryPlanningVisitor extends ReportingFlowPlanningVisitor {
 
