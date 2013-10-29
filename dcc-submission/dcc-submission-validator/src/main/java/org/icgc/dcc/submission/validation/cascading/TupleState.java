@@ -28,8 +28,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
-import org.icgc.dcc.submission.validation.ErrorParameterKey;
-import org.icgc.dcc.submission.validation.ValidationErrorCode;
+import org.icgc.dcc.submission.validation.core.ErrorParameterKey;
+import org.icgc.dcc.submission.validation.core.ValidationErrorCode;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;

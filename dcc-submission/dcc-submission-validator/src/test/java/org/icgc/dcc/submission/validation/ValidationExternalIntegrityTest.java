@@ -20,7 +20,7 @@ package org.icgc.dcc.submission.validation;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
-import static org.icgc.dcc.submission.validation.CascadingStrategy.SEPARATOR;
+import static org.icgc.dcc.submission.validation.platform.PlatformStrategy.SEPARATOR;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 
@@ -41,6 +41,9 @@ import org.icgc.dcc.submission.dictionary.model.Relation;
 import org.icgc.dcc.submission.dictionary.model.Term;
 import org.icgc.dcc.submission.dictionary.model.ValueType;
 import org.icgc.dcc.submission.release.model.QueuedProject;
+import org.icgc.dcc.submission.validation.core.Plan;
+import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
+import org.icgc.dcc.submission.validation.platform.LocalPlatformStrategy;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -169,7 +172,7 @@ public class ValidationExternalIntegrityTest extends BaseValidationIntegrityTest
     Path outputDir = new Path(outputDirString);
     Path systemDir = SYSTEM_DIR;
 
-    CascadingStrategy cascadingStrategy = new LocalCascadingStrategy(rootDir, outputDir, systemDir);
+    PlatformStrategy cascadingStrategy = new LocalPlatformStrategy(rootDir, outputDir, systemDir);
 
     Plan plan =
         validationService.planValidation(QUEUED_PROJECT, submissionDirectory, cascadingStrategy, dictionary,

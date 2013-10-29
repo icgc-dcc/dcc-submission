@@ -20,11 +20,10 @@ package org.icgc.dcc.submission.validation.visitor;
 import java.util.Set;
 
 import org.icgc.dcc.submission.dictionary.model.Restriction;
-import org.icgc.dcc.submission.validation.ExternalFlowPlanningVisitor;
-import org.icgc.dcc.submission.validation.ExternalPlanElement;
-import org.icgc.dcc.submission.validation.FlowType;
-import org.icgc.dcc.submission.validation.PlanElement;
-import org.icgc.dcc.submission.validation.RestrictionType;
+import org.icgc.dcc.submission.validation.core.ExternalPlanElement;
+import org.icgc.dcc.submission.validation.core.FlowType;
+import org.icgc.dcc.submission.validation.core.PlanElement;
+import org.icgc.dcc.submission.validation.core.RestrictionType;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Sets;

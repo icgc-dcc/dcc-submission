@@ -31,13 +31,13 @@ import lombok.Cleanup;
 import org.codehaus.jackson.map.MappingIterator;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.validation.CascadingStrategy;
-import org.icgc.dcc.submission.validation.FlowType;
 import org.icgc.dcc.submission.validation.PlanExecutionException;
-import org.icgc.dcc.submission.validation.ReportingFlowPlanningVisitor;
-import org.icgc.dcc.submission.validation.ReportingPlanElement;
-import org.icgc.dcc.submission.validation.ValidationErrorCode;
 import org.icgc.dcc.submission.validation.cascading.TupleState;
+import org.icgc.dcc.submission.validation.core.FlowType;
+import org.icgc.dcc.submission.validation.core.ReportingPlanElement;
+import org.icgc.dcc.submission.validation.core.ValidationErrorCode;
+import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
+import org.icgc.dcc.submission.validation.visitor.ReportingFlowPlanningVisitor;
 
 import cascading.pipe.Each;
 import cascading.pipe.Pipe;
@@ -105,7 +105,7 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
       }
 
       @Override
-      public Outcome collect(CascadingStrategy strategy, SchemaReport report) {
+      public Outcome collect(PlatformStrategy strategy, SchemaReport report) {
         try {
           @Cleanup
           InputStream src = strategy.readReportTap(getFileSchema(), getFlowType(), getName());

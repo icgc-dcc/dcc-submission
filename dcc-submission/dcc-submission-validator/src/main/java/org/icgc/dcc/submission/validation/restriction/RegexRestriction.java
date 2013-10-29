@@ -21,13 +21,13 @@ import java.util.regex.Pattern;
 
 import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.Restriction;
-import org.icgc.dcc.submission.validation.FlowType;
-import org.icgc.dcc.submission.validation.InternalPlanElement;
-import org.icgc.dcc.submission.validation.PlanElement;
-import org.icgc.dcc.submission.validation.RestrictionType;
-import org.icgc.dcc.submission.validation.RestrictionTypeSchema;
-import org.icgc.dcc.submission.validation.RestrictionTypeSchema.FieldRestrictionParameter;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
+import org.icgc.dcc.submission.validation.core.FlowType;
+import org.icgc.dcc.submission.validation.core.InternalPlanElement;
+import org.icgc.dcc.submission.validation.core.PlanElement;
+import org.icgc.dcc.submission.validation.core.RestrictionType;
+import org.icgc.dcc.submission.validation.core.RestrictionTypeSchema;
+import org.icgc.dcc.submission.validation.core.RestrictionTypeSchema.FieldRestrictionParameter;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -41,8 +41,8 @@ import cascading.tuple.TupleEntry;
 import com.mongodb.BasicDBObject;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.icgc.dcc.submission.validation.RestrictionTypeSchema.ParameterType.TEXT;
-import static org.icgc.dcc.submission.validation.ValidationErrorCode.REGEX_ERROR;
+import static org.icgc.dcc.submission.validation.core.RestrictionTypeSchema.ParameterType.TEXT;
+import static org.icgc.dcc.submission.validation.core.ValidationErrorCode.REGEX_ERROR;
 
 public class RegexRestriction implements InternalPlanElement {
 

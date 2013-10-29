@@ -19,13 +19,13 @@ package org.icgc.dcc.submission.validation.restriction;
 
 import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.Restriction;
-import org.icgc.dcc.submission.validation.FlowType;
-import org.icgc.dcc.submission.validation.InternalPlanElement;
-import org.icgc.dcc.submission.validation.PlanElement;
-import org.icgc.dcc.submission.validation.RestrictionType;
-import org.icgc.dcc.submission.validation.RestrictionTypeSchema;
-import org.icgc.dcc.submission.validation.ValidationErrorCode;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
+import org.icgc.dcc.submission.validation.core.FlowType;
+import org.icgc.dcc.submission.validation.core.InternalPlanElement;
+import org.icgc.dcc.submission.validation.core.PlanElement;
+import org.icgc.dcc.submission.validation.core.RestrictionType;
+import org.icgc.dcc.submission.validation.core.RestrictionTypeSchema;
+import org.icgc.dcc.submission.validation.core.ValidationErrorCode;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;

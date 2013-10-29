@@ -29,13 +29,13 @@ import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
-import org.icgc.dcc.submission.validation.CascadingStrategy;
 import org.icgc.dcc.submission.validation.FilePresenceException;
-import org.icgc.dcc.submission.validation.Plan;
-import org.icgc.dcc.submission.validation.Planner;
-import org.icgc.dcc.submission.validation.ValidationListener;
-import org.icgc.dcc.submission.validation.factory.CascadingStrategyFactory;
+import org.icgc.dcc.submission.validation.core.Plan;
+import org.icgc.dcc.submission.validation.core.ValidationListener;
 import org.icgc.dcc.submission.validation.firstpass.FirstPassChecker;
+import org.icgc.dcc.submission.validation.planner.Planner;
+import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
+import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactory;
 
 import cascading.cascade.Cascade;
 
@@ -55,7 +55,7 @@ public class ValidationService {
   @NonNull
   private final DccFileSystem dccFileSystem;
   @NonNull
-  private final CascadingStrategyFactory cascadingStrategyFactory;
+  private final PlatformStrategyFactory cascadingStrategyFactory;
 
   public Plan prepareValidation(Release release, Dictionary dictionary, QueuedProject queuedProject,
       ValidationListener listener)
@@ -74,7 +74,7 @@ public class ValidationService {
     log.info("Validation for '{}' has systemDir = {} ", projectKey, systemDir);
 
     // TODO: File Checker
-    CascadingStrategy cascadingStrategy = cascadingStrategyFactory.get(rootDir, outputDir, systemDir);
+    PlatformStrategy cascadingStrategy = cascadingStrategyFactory.get(rootDir, outputDir, systemDir);
     checkWellFormedness();
 
     Plan plan = planValidation(queuedProject, submissionDirectory, cascadingStrategy, dictionary, listener);
@@ -91,7 +91,7 @@ public class ValidationService {
    */
   @VisibleForTesting
   public Plan planValidation(QueuedProject queuedProject, SubmissionDirectory submissionDirectory,
-      CascadingStrategy cascadingStrategy, Dictionary dictionary, ValidationListener listener)
+      PlatformStrategy cascadingStrategy, Dictionary dictionary, ValidationListener listener)
       throws FilePresenceException {
     // TODO: Separate plan and connect?
     val projectKey = queuedProject.getKey();

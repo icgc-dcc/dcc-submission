@@ -17,10 +17,10 @@
  */
 package org.icgc.dcc.submission.validation.report;
 
-import org.icgc.dcc.submission.validation.CascadingStrategy;
+import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 
 public interface ReportCollector {
 
-  Outcome collect(CascadingStrategy strategy, SchemaReport report);
+  Outcome collect(PlatformStrategy strategy, SchemaReport report);
 
 }
