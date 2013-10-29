@@ -189,11 +189,11 @@ public class Plan {
     }
   }
 
-  synchronized public void connect(PlatformStrategy cascadingStrategy) {
+  synchronized public void connect(PlatformStrategy platformStrategy) {
     val cascadeDef = new CascadeDef().setName(queuedProject.getKey() + " validation cascade");
-    for (val planner : Iterables.concat(internalPlanners.values(), externalPlanners.values())) {
+    for (val planner : getPlanners()) {
       try {
-        val flow = planner.connect(cascadingStrategy);
+        val flow = planner.connect(platformStrategy);
         if (flow != null) {
           cascadeDef.addFlow(flow);
         }
@@ -289,6 +289,10 @@ public class Plan {
 
   public Map<String, TupleState> getFileLevelErrors() {
     return ImmutableMap.<String, TupleState> copyOf(fileLevelErrors);
+  }
+
+  private Iterable<FileSchemaFlowPlanner> getPlanners() {
+    return Iterables.concat(internalPlanners.values(), externalPlanners.values());
   }
 
 }

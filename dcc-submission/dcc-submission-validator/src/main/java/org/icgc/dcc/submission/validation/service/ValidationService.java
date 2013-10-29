@@ -55,7 +55,7 @@ public class ValidationService {
   @NonNull
   private final DccFileSystem dccFileSystem;
   @NonNull
-  private final PlatformStrategyFactory cascadingStrategyFactory;
+  private final PlatformStrategyFactory platformStrategyFactory;
 
   public Plan prepareValidation(Release release, Dictionary dictionary, QueuedProject queuedProject,
       ValidationListener listener)
@@ -74,10 +74,10 @@ public class ValidationService {
     log.info("Validation for '{}' has systemDir = {} ", projectKey, systemDir);
 
     // TODO: File Checker
-    PlatformStrategy cascadingStrategy = cascadingStrategyFactory.get(rootDir, outputDir, systemDir);
+    PlatformStrategy platformStrategy = platformStrategyFactory.get(rootDir, outputDir, systemDir);
     checkWellFormedness();
 
-    Plan plan = planValidation(queuedProject, submissionDirectory, cascadingStrategy, dictionary, listener);
+    Plan plan = planValidation(queuedProject, submissionDirectory, platformStrategy, dictionary, listener);
     listener.setPlan(plan);
 
     log.info("Prepared cascade for project {}", projectKey);
@@ -91,19 +91,19 @@ public class ValidationService {
    */
   @VisibleForTesting
   public Plan planValidation(QueuedProject queuedProject, SubmissionDirectory submissionDirectory,
-      PlatformStrategy cascadingStrategy, Dictionary dictionary, ValidationListener listener)
+      PlatformStrategy platformStategy, Dictionary dictionary, ValidationListener listener)
       throws FilePresenceException {
     // TODO: Separate plan and connect?
     val projectKey = queuedProject.getKey();
     log.info("Planning cascade for project {}...", projectKey);
-    Plan plan = planner.plan(queuedProject, submissionDirectory, cascadingStrategy, dictionary);
+    Plan plan = planner.plan(queuedProject, submissionDirectory, platformStategy, dictionary);
 
     log.info("Planned cascade for project {}", projectKey);
     log.info("# internal flows: {}", Iterables.size(plan.getInternalFlows()));
     log.info("# external flows: {}", Iterables.size(plan.getExternalFlows()));
 
     log.info("Connecting cascade for project {}", projectKey);
-    plan.connect(cascadingStrategy);
+    plan.connect(platformStategy);
     log.info("Connected cascade for project {}", projectKey);
 
     if (plan.hasFileLevelErrors()) { // determined during connection
