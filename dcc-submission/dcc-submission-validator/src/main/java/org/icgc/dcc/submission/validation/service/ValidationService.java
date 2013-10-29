@@ -32,10 +32,10 @@ import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.validation.FilePresenceException;
 import org.icgc.dcc.submission.validation.core.Plan;
 import org.icgc.dcc.submission.validation.core.ValidationListener;
-import org.icgc.dcc.submission.validation.factory.CascadingStrategyFactory;
 import org.icgc.dcc.submission.validation.firstpass.FirstPassChecker;
 import org.icgc.dcc.submission.validation.planner.Planner;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
+import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactory;
 
 import cascading.cascade.Cascade;
 
@@ -55,7 +55,7 @@ public class ValidationService {
   @NonNull
   private final DccFileSystem dccFileSystem;
   @NonNull
-  private final CascadingStrategyFactory cascadingStrategyFactory;
+  private final PlatformStrategyFactory cascadingStrategyFactory;
 
   public Plan prepareValidation(Release release, Dictionary dictionary, QueuedProject queuedProject,
       ValidationListener listener)

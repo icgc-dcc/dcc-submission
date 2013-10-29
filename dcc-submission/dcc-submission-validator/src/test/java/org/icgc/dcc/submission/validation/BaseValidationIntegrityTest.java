@@ -37,9 +37,9 @@ import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.validation.core.RestrictionType;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
-import org.icgc.dcc.submission.validation.factory.LocalCascadingStrategyFactory;
 import org.icgc.dcc.submission.validation.planner.DefaultPlanner;
 import org.icgc.dcc.submission.validation.planner.Planner;
+import org.icgc.dcc.submission.validation.platform.LocalPlatformStrategyFactory;
 import org.icgc.dcc.submission.validation.restriction.CodeListRestriction;
 import org.icgc.dcc.submission.validation.restriction.DiscreteValuesRestriction;
 import org.icgc.dcc.submission.validation.restriction.RangeFieldRestriction;
@@ -110,7 +110,7 @@ public abstract class BaseValidationIntegrityTest {
         .build());
 
     this.dictionary = getDictionary();
-    this.validationService = new ValidationService(planner, dccFileSystem, new LocalCascadingStrategyFactory());
+    this.validationService = new ValidationService(planner, dccFileSystem, new LocalPlatformStrategyFactory());
   }
 
   protected static FileSchema getFileSchemaByName(Dictionary dictionary, String name) {

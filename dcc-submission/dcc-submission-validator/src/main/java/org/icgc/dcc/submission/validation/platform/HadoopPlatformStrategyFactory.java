@@ -15,22 +15,20 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.factory;
+package org.icgc.dcc.submission.validation.platform;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
-import org.icgc.dcc.submission.validation.platform.HadoopPlatformStrategy;
 
 import com.typesafe.config.Config;
 
-public class HadoopCascadingStrategyFactory implements CascadingStrategyFactory {
+public class HadoopPlatformStrategyFactory implements PlatformStrategyFactory {
 
   private final FileSystem fileSystem;
 
   private final Config hadoopConfig;
 
-  public HadoopCascadingStrategyFactory(Config hadoopConfig, FileSystem fs) {
+  public HadoopPlatformStrategyFactory(Config hadoopConfig, FileSystem fs) {
     this.fileSystem = fs;
     this.hadoopConfig = hadoopConfig;
   }

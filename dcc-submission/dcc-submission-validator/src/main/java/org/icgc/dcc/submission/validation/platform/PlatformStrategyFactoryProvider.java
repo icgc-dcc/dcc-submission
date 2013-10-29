@@ -21,9 +21,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static org.icgc.dcc.core.model.Configurations.HADOOP_KEY;
 
 import org.apache.hadoop.fs.FileSystem;
-import org.icgc.dcc.submission.validation.factory.CascadingStrategyFactory;
-import org.icgc.dcc.submission.validation.factory.HadoopCascadingStrategyFactory;
-import org.icgc.dcc.submission.validation.factory.LocalCascadingStrategyFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +28,7 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.typesafe.config.Config;
 
-public class PlatformStrategyFactoryProvider implements Provider<CascadingStrategyFactory> {
+public class PlatformStrategyFactoryProvider implements Provider<PlatformStrategyFactory> {
 
   private static final Logger log = LoggerFactory.getLogger(PlatformStrategyFactoryProvider.class);
 
@@ -48,15 +45,15 @@ public class PlatformStrategyFactoryProvider implements Provider<CascadingStrate
   }
 
   @Override
-  public CascadingStrategyFactory get() {
+  public PlatformStrategyFactory get() {
     String fsUrl = fs.getScheme();
 
     if(fsUrl.equals("file")) {
       log.info("System configured for local filesystem");
-      return new LocalCascadingStrategyFactory();
+      return new LocalPlatformStrategyFactory();
     } else if(fsUrl.equals("hdfs")) {
       log.info("System configured for Hadoop filesystem");
-      return new HadoopCascadingStrategyFactory(config.getConfig(HADOOP_KEY), fs);
+      return new HadoopPlatformStrategyFactory(config.getConfig(HADOOP_KEY), fs);
     } else {
       throw new RuntimeException("Unknown file system type: " + fsUrl + ". Expected file or hdfs");
     }

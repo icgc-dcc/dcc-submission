@@ -15,11 +15,10 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.factory;
+package org.icgc.dcc.submission.validation.platform;
 
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 
-public interface CascadingStrategyFactory {
+public interface PlatformStrategyFactory {
   public PlatformStrategy get(Path input, Path output, Path system);
 }
