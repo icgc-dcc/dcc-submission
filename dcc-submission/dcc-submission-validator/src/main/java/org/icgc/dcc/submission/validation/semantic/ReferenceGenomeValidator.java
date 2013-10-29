@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.zip.GZIPInputStream;
 
 import lombok.Cleanup;
+import lombok.SneakyThrows;
 import net.sf.picard.reference.IndexedFastaSequenceFile;
 import net.sf.picard.reference.ReferenceSequence;
 
@@ -55,11 +56,6 @@ public class ReferenceGenomeValidator {
 
   private IndexedFastaSequenceFile sequenceFile = null;
 
-  private final String REFERENCE_GENOME_DATA_URL =
-      "ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/human_g1k_v37.fasta.gz";
-  private final String REFERENCE_GENOME_INDEX_URL =
-      "ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/human_g1k_v37.fasta.fai";
-
   public ReferenceGenomeValidator() {
   }
 
@@ -72,7 +68,8 @@ public class ReferenceGenomeValidator {
    * downloading them every time.
    * @throws Exception
    */
-  public void downloadAndSetGenomeDataFiles() throws Exception {
+  @SneakyThrows
+  public void downloadAndSetGenomeDataFiles() {
     @Cleanup
     BufferedInputStream bufferedInputStream = null;
 
@@ -88,8 +85,12 @@ public class ReferenceGenomeValidator {
     URL url = null;
     URLConnection conn = null;
 
-    String referenceFile = "/tmp/referenceGenome.fasta";
-    String indexFile = "/tmp/referenceGenome.fasta.fai";
+    final String REFERENCE_GENOME_DATA_URL =
+        "ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/human_g1k_v37.fasta.gz";
+    final String REFERENCE_GENOME_INDEX_URL =
+        "ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/human_g1k_v37.fasta.fai";
+    final String referenceFile = "/tmp/referenceGenome.fasta";
+    final String indexFile = "/tmp/referenceGenome.fasta.fai";
 
     // Exit if files already exist
     if (new File(referenceFile).exists() && new File(indexFile).exists()) {
