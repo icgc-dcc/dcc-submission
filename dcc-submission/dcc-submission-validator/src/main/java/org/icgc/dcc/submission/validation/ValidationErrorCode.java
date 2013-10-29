@@ -35,6 +35,8 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import lombok.NonNull;
+
 import org.icgc.dcc.submission.dictionary.model.ValueType;
 import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
 
@@ -307,7 +309,8 @@ public enum ValidationErrorCode { // TODO: DCC-505 to fix the message (currently
     return structural;
   }
 
-  public static String format(TupleError error) {
+  public static String format(@NonNull
+  TupleError error) {
     checkArgument(error != null);
     return error.getCode().format(error.getParameters());
   }

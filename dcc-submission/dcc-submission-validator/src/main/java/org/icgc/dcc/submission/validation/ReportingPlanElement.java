@@ -23,13 +23,14 @@ import cascading.pipe.Pipe;
 
 public interface ReportingPlanElement extends PlanElement {
 
-  public String getName();
+  String getName();
 
   /**
    * Produces a new derived report from the Pipe. The provided pipe is a unique split for this report. The value
    * returned by this method will be written to an output tap.
    */
-  public Pipe report(Pipe pipe);
+  Pipe report(Pipe pipe);
 
-  public ReportCollector getCollector();
+  ReportCollector getCollector();
+
 }

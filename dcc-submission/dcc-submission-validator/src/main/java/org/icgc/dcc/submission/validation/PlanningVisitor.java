@@ -17,13 +17,17 @@
  */
 package org.icgc.dcc.submission.validation;
 
+import static com.google.common.collect.Lists.newArrayList;
+
 import java.util.List;
+
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.visitor.BaseDictionaryVisitor;
-
-import com.google.common.collect.Lists;
 
 /**
  * A {@code DictionaryVisitor} that collects {@code PlanElement} during its visit. Elements are cleared upon each visit
@@ -31,42 +35,30 @@ import com.google.common.collect.Lists;
  * 
  * @param <T> the type of {@code PlanElement} collected by this visitor
  */
+@RequiredArgsConstructor
+@Getter
 public abstract class PlanningVisitor<T extends PlanElement> extends BaseDictionaryVisitor {
 
-  private final FlowType phase;
+  @NonNull
+  private final FlowType flowType;
+  private final List<T> elements = newArrayList();
 
-  private final List<T> elements = Lists.newArrayList();
-
+  /**
+   * Transient state.
+   */
   private FileSchema currentSchema;
-
   private Field currentField;
-
-  public PlanningVisitor(FlowType phase) {
-    this.phase = phase;
-  }
-
-  public FlowType getFlow() {
-    return phase;
-  }
-
-  public Field getCurrentField() {
-    return currentField;
-  }
-
-  public FileSchema getCurrentSchema() {
-    return currentSchema;
-  }
 
   @Override
   public void visit(FileSchema fileSchema) {
     // Clear the collected elements. This allows re-using this instance for multiple plans
     elements.clear();
-    this.currentSchema = fileSchema;
+    currentSchema = fileSchema;
   }
 
   @Override
   public void visit(Field field) {
-    this.currentField = field;
+    currentField = field;
   }
 
   /**
@@ -80,7 +72,7 @@ public abstract class PlanningVisitor<T extends PlanElement> extends BaseDiction
   }
 
   protected void collect(T element) {
-    this.elements.add(element);
+    elements.add(element);
   }
 
 }

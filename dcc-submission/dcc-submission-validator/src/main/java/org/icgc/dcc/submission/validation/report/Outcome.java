@@ -18,5 +18,8 @@
 package org.icgc.dcc.submission.validation.report;
 
 public enum Outcome {
-  PASSED, FAILED
+
+  PASSED,
+  FAILED
+
 }

@@ -17,7 +17,8 @@
  */
 package org.icgc.dcc.submission.validation;
 
-import org.icgc.dcc.submission.dictionary.model.FileSchemaRole;
+import static org.icgc.dcc.submission.dictionary.model.FileSchemaRole.SUBMISSION;
+import lombok.val;
 
 public class ReportingFlowPlanningVisitor extends PlanningVisitor<ReportingPlanElement> {
 
@@ -27,10 +28,11 @@ public class ReportingFlowPlanningVisitor extends PlanningVisitor<ReportingPlanE
 
   @Override
   public void apply(Plan plan) {
-    for(FileSchemaFlowPlanner planner : plan.getFlows(getFlow())) {
+    for (val planner : plan.getFlows(getFlowType())) {
       planner.getSchema().accept(this);
-      for(ReportingPlanElement e : getElements()) {
-        if(planner.getSchema().getRole() == FileSchemaRole.SUBMISSION) {
+
+      for (val e : getElements()) {
+        if (planner.getSchema().getRole() == SUBMISSION) {
           planner.apply(e);
         }
       }

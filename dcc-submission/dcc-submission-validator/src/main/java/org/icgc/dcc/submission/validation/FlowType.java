@@ -17,15 +17,18 @@
  */
 package org.icgc.dcc.submission.validation;
 
+import static lombok.AccessLevel.PRIVATE;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor(access = PRIVATE)
 public enum FlowType {
 
-  INTERNAL("internal"), EXTERNAL("external");
+  INTERNAL("internal"),
+  EXTERNAL("external");
 
-  private String type;
-
-  private FlowType(String type) {
-    this.type = type;
-  }
+  @NonNull
+  private final String type;
 
   @Override
   public String toString() {

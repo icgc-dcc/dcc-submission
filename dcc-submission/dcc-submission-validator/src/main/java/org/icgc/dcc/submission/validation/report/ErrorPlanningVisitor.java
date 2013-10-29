@@ -54,7 +54,7 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
   @Override
   public void visit(FileSchema fileSchema) {
     super.visit(fileSchema);
-    collect(new ErrorsPlanElement(fileSchema, this.getFlow()));
+    collect(new ErrorsPlanElement(fileSchema, this.getFlowType()));
   }
 
   static class ErrorsPlanElement implements ReportingPlanElement {

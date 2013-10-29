@@ -19,113 +19,62 @@ package org.icgc.dcc.submission.validation.report;
 
 import java.io.Serializable;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.val;
+
 import org.icgc.dcc.submission.dictionary.model.SummaryType;
 import org.icgc.dcc.submission.validation.report.BaseStatsReportingPlanElement.FieldSummary;
 
 import com.google.code.morphia.annotations.Embedded;
 import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
 
 @Embedded
+@Getter
+@Setter
 public class FieldReport implements Serializable {
 
   protected String name;
-
-  protected double completeness;
-
   protected long nulls;
-
   protected long missing;
-
   protected long populated;
-
+  protected double completeness;
   protected BasicDBObject summary;
 
   protected String label;
-
   protected SummaryType type;
 
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public double getCompleteness() {
-    return completeness;
-  }
-
-  public void setCompleteness(double completeness) {
-    this.completeness = completeness;
-  }
-
-  public long getPopulated() {
-    return populated;
-  }
-
-  public void setPopulated(long populated) {
-    this.populated = populated;
-  }
-
-  public long getNulls() {
-    return nulls;
-  }
-
-  public void setNulls(long nulls) {
-    this.nulls = nulls;
-  }
-
-  public long getMissing() {
-    return missing;
-  }
-
-  public void setMissing(long missing) {
-    this.missing = missing;
-  }
-
-  public DBObject getSummary() {
-    return summary;
-  }
-
-  public void setSummary(BasicDBObject summary) {
-    this.summary = summary;
-  }
-
   public static FieldReport convert(FieldSummary fieldSummary) {
-    FieldReport fieldReport = new FieldReport();
+    val fieldReport = new FieldReport();
     fieldReport.setName(fieldSummary.field);
     fieldReport.setNulls(fieldSummary.nulls);
-
     fieldReport.setMissing(fieldSummary.missing);
     fieldReport.setPopulated(fieldSummary.populated);
-    fieldReport.setCompleteness(100 * fieldSummary.populated
-        / (fieldSummary.nulls + fieldSummary.missing + fieldSummary.populated));
+    fieldReport.setCompleteness(calculateCompleteness(fieldSummary));
+    fieldReport.setSummary(createSummary(fieldSummary));
 
-    BasicDBObject summary = new BasicDBObject();
-    for(String key : fieldSummary.summary.keySet()) {
-      // Note: periods and dollar signs must be replaced for MongoDB compatibility
-      summary.append(key.replace(".", "&#46;").replace("$", "&#36;"), fieldSummary.summary.get(key));
-    }
-    fieldReport.setSummary(summary);
     return fieldReport;
   }
 
-  public String getLabel() {
-    return label;
+  private static long calculateCompleteness(FieldSummary fieldSummary) {
+    val available = fieldSummary.populated;
+    val total = fieldSummary.nulls + fieldSummary.missing + available;
+
+    return 100 * available / total;
   }
 
-  public void setLabel(String label) {
-    this.label = label;
+  private static BasicDBObject createSummary(FieldSummary fieldSummary) {
+    val summary = new BasicDBObject();
+    for (val key : fieldSummary.summary.keySet()) {
+      summary.append(escape(key), fieldSummary.summary.get(key));
+    }
+
+    return summary;
   }
 
-  public SummaryType getType() {
-    return type;
-  }
-
-  public void setType(SummaryType type) {
-    this.type = type;
+  private static String escape(String value) {
+    // NOTE: periods and dollar signs must be replaced for MongoDB compatibility
+    return value.replace(".", "&#46;").replace("$", "&#36;");
   }
 
 }

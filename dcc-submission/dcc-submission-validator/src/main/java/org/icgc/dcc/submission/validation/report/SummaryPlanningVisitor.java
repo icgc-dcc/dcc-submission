@@ -17,10 +17,13 @@
  */
 package org.icgc.dcc.submission.validation.report;
 
-import java.util.ArrayList;
+import static com.google.common.collect.Lists.newArrayList;
+
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import lombok.val;
 
 import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
@@ -47,15 +50,17 @@ public class SummaryPlanningVisitor extends ReportingFlowPlanningVisitor {
    */
   private Map<SummaryType, List<Field>> buildSummaryTypeToFields(FileSchema fileSchema) {
     Map<SummaryType, List<Field>> summaryTypeToFields = new LinkedHashMap<SummaryType, List<Field>>();
-    for(Field field : fileSchema.getFields()) {
-      SummaryType summaryType = field.getSummaryType();
+    for (val field : fileSchema.getFields()) {
+      val summaryType = field.getSummaryType();
       List<Field> list = summaryTypeToFields.get(summaryType);
-      if(list == null) {
-        list = new ArrayList<Field>();
+      if (list == null) {
+        list = newArrayList();
         summaryTypeToFields.put(summaryType, list);
       }
+
       list.add(field);
     }
+
     return summaryTypeToFields;
   }
 
@@ -63,30 +68,32 @@ public class SummaryPlanningVisitor extends ReportingFlowPlanningVisitor {
    * Collects element based on the {@code Field}'s {@code SummaryType}, so they can later be applied
    */
   private void collectElements(FileSchema fileSchema, Map<SummaryType, List<Field>> summaryTypeToFields) {
-    for(SummaryType summaryType : summaryTypeToFields.keySet()) {
+    for (val summaryType : summaryTypeToFields.keySet()) {
       List<Field> fields = summaryTypeToFields.get(summaryType);
-      FlowType flow = this.getFlow();
-      if(summaryType == null) {
-        collect(new SummaryPlanElement.CompletenessPlanElement(fileSchema, fields, flow));
+      FlowType flowType = getFlowType();
+      if (summaryType == null) {
+        collect(new SummaryPlanElement.CompletenessPlanElement(fileSchema, fields, flowType));
         continue;
       }
-      switch(summaryType) {
+
+      switch (summaryType) {
       case AVERAGE:
-        collect(new SummaryPlanElement.AveragePlanElement(fileSchema, fields, flow));
+        collect(new SummaryPlanElement.AveragePlanElement(fileSchema, fields, flowType));
         break;
       case MIN_MAX:
-        collect(new SummaryPlanElement.MinMaxPlanElement(fileSchema, fields, flow));
+        collect(new SummaryPlanElement.MinMaxPlanElement(fileSchema, fields, flowType));
         break;
       case FREQUENCY:
-        collect(new FrequencyPlanElement(fileSchema, fields, flow));
+        collect(new FrequencyPlanElement(fileSchema, fields, flowType));
         break;
       case UNIQUE_COUNT:
-        collect(new UniqueCountPlanElement(fileSchema, fields, flow));
+        collect(new UniqueCountPlanElement(fileSchema, fields, flowType));
         break;
       default:
-        collect(new SummaryPlanElement.CompletenessPlanElement(fileSchema, fields, flow));
+        collect(new SummaryPlanElement.CompletenessPlanElement(fileSchema, fields, flowType));
         break;
       }
     }
   }
+
 }
