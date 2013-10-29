@@ -59,7 +59,6 @@ public class FirstPassCheckerTest {
 
   private SubmissionDirectory submissionDir;
   private Dictionary dict;
-  private DccFileSystem fs;
 
   @Before
   public void setup() throws IOException {
