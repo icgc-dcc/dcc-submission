@@ -56,11 +56,12 @@ public class FieldReport implements Serializable {
     return fieldReport;
   }
 
-  private static long calculateCompleteness(FieldSummary fieldSummary) {
+  private static double calculateCompleteness(FieldSummary fieldSummary) {
     val available = fieldSummary.populated;
     val total = fieldSummary.nulls + fieldSummary.missing + available;
+    val percentage = 100.0 * available / total;
 
-    return 100 * available / total;
+    return percentage;
   }
 
   private static BasicDBObject createSummary(FieldSummary fieldSummary) {
