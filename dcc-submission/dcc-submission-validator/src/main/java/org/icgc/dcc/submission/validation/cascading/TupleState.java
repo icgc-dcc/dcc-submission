@@ -71,6 +71,11 @@ public class TupleState implements Serializable {
     structurallyValid = code.isStructural() == false;
   }
 
+  // TODO: this is just temporary until a nicer error reporting is in place
+  public static TupleError createTupleError(ValidationErrorCode code, String columnName, Object value, Object... params) {
+    return new TupleError(code, Lists.newArrayList(columnName), value, 0L, code.build(params));
+  }
+
   public Iterable<TupleError> getErrors() {
     return ensureErrors();
   }

@@ -44,6 +44,17 @@ import com.google.common.collect.ImmutableMap;
 
 public enum ValidationErrorCode { // TODO: DCC-505 to fix the message (currently not used for anything)
 
+  REFERENCE_GENOME_VIOLATION("found value %s for column %s, reference genome is %s") {
+
+    @Override
+    public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
+      checkArgument(params != null);
+      checkArgument(params.length == 1);
+      checkArgument(params[0] instanceof String);
+      return ImmutableMap.of(EXPECTED, params[0]);
+    }
+  },
+
   /**
    * Number of columns does not match that of header.
    */
