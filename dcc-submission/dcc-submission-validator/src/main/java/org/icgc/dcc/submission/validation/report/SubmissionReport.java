@@ -17,34 +17,31 @@
  */
 package org.icgc.dcc.submission.validation.report;
 
+import static com.google.common.collect.Lists.newArrayList;
+
 import java.io.Serializable;
 import java.util.List;
 
+import lombok.Data;
+import lombok.NonNull;
+import lombok.val;
+
 import com.google.code.morphia.annotations.Embedded;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.collect.Lists.newArrayList;
-
 @Embedded
+@Data
 public class SubmissionReport implements Serializable {
+
+  @NonNull
   protected List<SchemaReport> schemaReports = newArrayList();
 
-  /**
-   * Guaranteed to return non-null list.
-   */
-  public List<SchemaReport> getSchemaReports() {
-    return schemaReports;
-  }
-
-  public void setSchemaReports(List<SchemaReport> schemaReports) {
-    checkArgument(schemaReports != null);
-    this.schemaReports = schemaReports;
-  }
-
   public SchemaReport getSchemaReport(String schema) {
-    for(SchemaReport report : this.schemaReports) {
-      if(report.getName().equals(schema)) return report;
+    for (val report : schemaReports) {
+      if (report.getName().equals(schema)) {
+        return report;
+      }
     }
+
     return null;
   }
 

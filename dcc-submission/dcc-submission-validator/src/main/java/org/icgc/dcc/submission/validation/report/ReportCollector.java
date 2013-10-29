@@ -20,5 +20,7 @@ package org.icgc.dcc.submission.validation.report;
 import org.icgc.dcc.submission.validation.CascadingStrategy;
 
 public interface ReportCollector {
-  public Outcome collect(CascadingStrategy strategy, SchemaReport report);
+
+  Outcome collect(CascadingStrategy strategy, SchemaReport report);
+
 }
