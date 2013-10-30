@@ -18,7 +18,7 @@ Development
 Start brunch (in another console):
 
 	cd dcc/dcc-submission/dcc-submission-ui
-	brunch w
+	brunch w -s
 
 Start the proxy (in yet another console)
 
