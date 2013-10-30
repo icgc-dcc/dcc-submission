@@ -159,7 +159,7 @@ public class ScriptRestriction implements InternalPlanElement {
   @Slf4j
   public static class ScriptFunction extends BaseOperation<ScriptContext> implements Function<ScriptContext> {
 
-    private final Joiner.MapJoiner JOINER = Joiner.on(",").withKeyValueSeparator(" = ").useForNull("null");
+    private static final Joiner.MapJoiner JOINER = Joiner.on(",").withKeyValueSeparator(" = ").useForNull("null");
 
     private final String reportedField;
     private final String script;
