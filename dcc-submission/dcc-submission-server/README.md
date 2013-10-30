@@ -26,5 +26,11 @@ To start the server from the command line:
 
 To see the client interface, point your browser to [http://localhost:5380/](http://localhost:5380/)
 
+To login to SFTP type
+
+	sftp -P5322 admin@localhost
+
+Use the username `admin` and password `adminspasswd` to login to both HTTP and SFTP interfaces.
+
 
 
