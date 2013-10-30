@@ -40,7 +40,7 @@ public class RowCharsetCheckerTest {
   public void sanity() throws Exception {
     String test_text = "<Hello-World> \t a b c F G Z 0 1 6 9 !?";
     RowCharsetChecker checker = new RowCharsetChecker(baseChecker);
-    val errors = checker.performSelfCheck(fileSchema, test_text);
+    val errors = checker.performSelfCheck(fileSchema, test_text, 1);
     assertTrue(errors.isEmpty());
   }
 
@@ -51,7 +51,7 @@ public class RowCharsetCheckerTest {
       sb.append((char) i);
     }
     RowCharsetChecker checker = new RowCharsetChecker(baseChecker);
-    val errors = checker.performSelfCheck(fileSchema, sb.toString());
+    val errors = checker.performSelfCheck(fileSchema, sb.toString(), 1);
     assertTrue(errors.isEmpty());
   }
 
@@ -65,7 +65,7 @@ public class RowCharsetCheckerTest {
       sb.append((char) i);
     }
     RowCharsetChecker checker = new RowCharsetChecker(baseChecker);
-    val errors = checker.performSelfCheck(fileSchema, sb.toString());
+    val errors = checker.performSelfCheck(fileSchema, sb.toString(), 1);
     assertFalse(errors.isEmpty());
   }
 
@@ -74,7 +74,7 @@ public class RowCharsetCheckerTest {
     char tabChar = 9;
     String test_string = Character.toString(tabChar);
     RowCharsetChecker checker = new RowCharsetChecker(baseChecker);
-    val errors = checker.performSelfCheck(fileSchema, test_string);
+    val errors = checker.performSelfCheck(fileSchema, test_string, 1);
     assertTrue(errors.isEmpty());
   }
 
@@ -83,7 +83,7 @@ public class RowCharsetCheckerTest {
     char nullChar = 0;
     String test_string = Character.toString(nullChar);
     RowCharsetChecker checker = new RowCharsetChecker(baseChecker);
-    val errors = checker.performSelfCheck(fileSchema, test_string);
+    val errors = checker.performSelfCheck(fileSchema, test_string, 1);
     assertFalse(errors.isEmpty());
   }
 
@@ -92,7 +92,7 @@ public class RowCharsetCheckerTest {
     char carriageReturnChar = 13;
     String test_string = Character.toString(carriageReturnChar);
     RowCharsetChecker checker = new RowCharsetChecker(baseChecker);
-    val errors = checker.performSelfCheck(fileSchema, test_string);
+    val errors = checker.performSelfCheck(fileSchema, test_string, 1);
     assertFalse(errors.isEmpty());
   }
 

@@ -29,6 +29,7 @@ import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
+import org.icgc.dcc.submission.validation.cascading.TupleState;
 import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
 
 import com.google.common.collect.ImmutableList;
@@ -102,8 +103,8 @@ public class FirstPassChecker {
     List<FirstPassValidationError> errors = errorMap.get(fileSchemaName);
     Builder<TupleError> tupleErrors = ImmutableList.builder();
     for (val error : errors) {
-      new TupleError();
-      // new TupleError(error.getCode(), error.getLevel().toString(), error.toString(), error.getParam());
+      tupleErrors.add(TupleState.createTupleError(error.getCode(), error.getLevel().toString(), error.toString(),
+          error.getLineNumber(), error.getParam()));
     }
     return tupleErrors.build();
   }
