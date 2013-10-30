@@ -20,7 +20,7 @@ package org.icgc.dcc.submission.validation.checker;
 import java.util.List;
 
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.validation.core.ValidationErrorCode;
+import org.icgc.dcc.submission.validation.core.ErrorCode;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -44,7 +44,7 @@ public class RowColumnChecker extends CompositeRowChecker {
     int actualNumColumns = ImmutableList.copyOf(line.split(DELIMITER, -1)).size();
     if (actualNumColumns != expectedNumColumns) errors.add(new FirstPassValidationError(getCheckLevel(),
         "Row does not match the expected number of columns: " + expectedNumColumns + ", actual: " + actualNumColumns,
-        ValidationErrorCode.STRUCTURALLY_INVALID_ROW_ERROR, expectedNumColumns));
+        ErrorCode.STRUCTURALLY_INVALID_ROW_ERROR, expectedNumColumns));
     return errors.build();
   }
 }

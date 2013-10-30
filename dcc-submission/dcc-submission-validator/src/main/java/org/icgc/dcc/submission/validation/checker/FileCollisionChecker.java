@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.checker.Util.CheckLevel;
-import org.icgc.dcc.submission.validation.core.ValidationErrorCode;
+import org.icgc.dcc.submission.validation.core.ErrorCode;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
@@ -55,7 +55,7 @@ public class FileCollisionChecker extends CompositeFileChecker {
         params[1] = ImmutableList.of(files);
         errors.add(new FirstPassValidationError(CheckLevel.FILE_LEVEL,
             "More than 1 file matching the file pattern: " + fileSchema.get().getPattern(),
-            ValidationErrorCode.TOO_MANY_FILES_ERROR, params));
+            ErrorCode.TOO_MANY_FILES_ERROR, params));
       }
     }
     return errors.build();

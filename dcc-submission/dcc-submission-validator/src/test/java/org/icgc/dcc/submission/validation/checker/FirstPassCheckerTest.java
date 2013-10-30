@@ -36,7 +36,7 @@ import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.validation.checker.Util.CheckLevel;
-import org.icgc.dcc.submission.validation.core.ValidationErrorCode;
+import org.icgc.dcc.submission.validation.core.ErrorCode;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -54,9 +54,9 @@ import com.google.common.collect.ImmutableList;
 public class FirstPassCheckerTest {
 
   private final FirstPassValidationError DUMMY_FILE_ERROR = new FirstPassValidationError(CheckLevel.FILE_LEVEL,
-      "DummyFileError", ValidationErrorCode.REVERSE_RELATION_FILE_ERROR, null);
+      "DummyFileError", ErrorCode.REVERSE_RELATION_FILE_ERROR, null);
   private final FirstPassValidationError DUMMY_ROW_ERROR = new FirstPassValidationError(CheckLevel.ROW_LEVEL,
-      "DummyFileError", ValidationErrorCode.REVERSE_RELATION_FILE_ERROR, null);
+      "DummyFileError", ErrorCode.REVERSE_RELATION_FILE_ERROR, null);
 
   private SubmissionDirectory submissionDir;
   private Dictionary dict;

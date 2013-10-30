@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
 import lombok.val;
 
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.validation.core.ValidationErrorCode;
+import org.icgc.dcc.submission.validation.core.ErrorCode;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
@@ -61,7 +61,7 @@ public class ReferentialFileChecker extends CompositeFileChecker {
           if (files.size() == 0) {
             errors.add(new FirstPassValidationError(getCheckLevel(),
                 "Fail referenced check: missing referenced file ("
-                    + relation.getOther(), ValidationErrorCode.RELATION_FILE_ERROR, fileSchema.get().getName()));
+                    + relation.getOther(), ErrorCode.RELATION_FILE_ERROR, fileSchema.get().getName()));
           }
         }
       }
@@ -79,7 +79,7 @@ public class ReferentialFileChecker extends CompositeFileChecker {
         if (files.size() == 0) {
           errors
               .add(new FirstPassValidationError(getCheckLevel(), "Fail referencing check: missing referencing file ("
-                  + otherFileSchema.getName(), ValidationErrorCode.REVERSE_RELATION_FILE_ERROR, fileSchema.get()
+                  + otherFileSchema.getName(), ErrorCode.REVERSE_RELATION_FILE_ERROR, fileSchema.get()
                   .getName()));
         }
       }
