@@ -32,6 +32,7 @@ import java.util.zip.GZIPInputStream;
 
 import lombok.Cleanup;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import net.sf.picard.reference.IndexedFastaSequenceFile;
 import net.sf.picard.reference.ReferenceSequence;
 
@@ -53,6 +54,7 @@ import com.google.common.io.LineReader;
  * uses the picard utilities to query an indexed fasta file, as a bench mark reference we can check roughly 3,000,000
  * reference genomes in 200 seconds.
  */
+@Slf4j
 public class ReferenceGenomeValidator {
 
   private IndexedFastaSequenceFile sequenceFile = null;
@@ -102,16 +104,21 @@ public class ReferenceGenomeValidator {
     // Copy the data index file
     url = new URL(REFERENCE_GENOME_INDEX_URL);
     conn = url.openConnection();
+
+    log.info("Downloading '{}'...", url);
     bufferedInputStream = new BufferedInputStream(conn.getInputStream());
     indexOutputStream = new FileOutputStream(indexFile);
     ByteStreams.copy(bufferedInputStream, indexOutputStream);
+    log.info("Finished downloading '{}'", url);
 
     // Copy the main data file (g-zipped)
+    log.info("Downloading '{}'...", url);
     url = new URL(REFERENCE_GENOME_DATA_URL);
     conn = url.openConnection();
     gzipInputStream = new GZIPInputStream(new BufferedInputStream(conn.getInputStream()));
     dataOutputStream = new FileOutputStream(referenceFile);
     ByteStreams.copy(gzipInputStream, dataOutputStream);
+    log.info("Finished downloading '{}'", url);
 
     sequenceFile = new IndexedFastaSequenceFile(new File(referenceFile));
   }

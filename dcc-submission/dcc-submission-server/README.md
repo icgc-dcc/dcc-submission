@@ -12,12 +12,16 @@ Build
 Development
 ---
 
-Start the server
+To start the server in an IDE:
+
+	org.icgc.dcc.submission.server.Main external src/test/conf/application.conf
+
+To start the server from the command line:
 
 	cd dcc/dcc-submission-server
 	mvn exec:java
 
 To see the client interface, point your browser to [http://localhost:5380/](http://localhost:5380/)
-	
+
 
 
