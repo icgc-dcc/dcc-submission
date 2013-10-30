@@ -15,19 +15,21 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.firstpass;
+package org.icgc.dcc.submission.validation;
 
-/**
- * TODO
- */
-public class FirstPassChecker {
+import java.util.Map;
 
-  /**
-   * 
-   */
-  public static boolean check() { // TODO: determine minimum parameters necessary
-    // TODO Auto-generated method stub
-    return true;
-  }
+import lombok.EqualsAndHashCode;
+import lombok.Value;
+
+import org.icgc.dcc.submission.release.model.QueuedProject;
+import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
+
+@Value
+@EqualsAndHashCode(callSuper = true)
+public class MalformedSubmissionException extends Exception {
+
+  final QueuedProject queuedProject;
+  final Map<String, Iterable<TupleError>> errors;
 
 }
