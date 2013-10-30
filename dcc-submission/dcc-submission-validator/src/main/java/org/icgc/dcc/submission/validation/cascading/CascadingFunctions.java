@@ -66,7 +66,7 @@ public final class CascadingFunctions {
     @Override
     public void operate(FlowProcess flowProcess, FunctionCall functionCall) {
       TupleEntry entry = functionCall.getArguments();
-      System.out.println(prefix + "\t" + TupleEntries.toJson(entry));
+      System.out.println(prefix + "\t" + org.icgc.dcc.hadoop.cascading.TupleEntries.toJson(entry));
       functionCall.getOutputCollector().add(entry);
     }
   }

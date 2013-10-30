@@ -42,7 +42,7 @@ import com.mongodb.BasicDBObject;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.icgc.dcc.submission.validation.core.RestrictionTypeSchema.ParameterType.TEXT;
-import static org.icgc.dcc.submission.validation.core.ValidationErrorCode.REGEX_ERROR;
+import static org.icgc.dcc.submission.validation.core.ErrorCode.REGEX_ERROR;
 
 public class RegexRestriction implements InternalPlanElement {
 

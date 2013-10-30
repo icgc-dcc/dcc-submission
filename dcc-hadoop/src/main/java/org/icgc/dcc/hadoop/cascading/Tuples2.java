@@ -17,6 +17,9 @@
  */
 package org.icgc.dcc.hadoop.cascading;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import cascading.tuple.Tuple;
@@ -39,5 +42,13 @@ public final class Tuples2 {
 
   public static boolean isNullField(Tuple tuple, int fieldIndex) {
     return tuple.getObject(fieldIndex) == null;
+  }
+
+  public static List<Object> getObjects(Tuple tuple) {
+    List<Object> objects = new ArrayList<Object>();
+    for (int i = 0; i < tuple.size(); i++) {
+      objects.add(tuple.getObject(i));
+    }
+    return objects;
   }
 }

@@ -19,22 +19,31 @@ package org.icgc.dcc.submission.validation.core;
 
 import java.util.List;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
 import com.google.common.collect.ImmutableList;
 
+@Getter
 public class RestrictionTypeSchema {
 
   public enum ParameterType {
     NUMBER, TEXT, FIELD_REFERENCE
   }
 
+  private final List<FieldRestrictionParameter> parameters;
+
+  public RestrictionTypeSchema(FieldRestrictionParameter... parameters) {
+    this.parameters = ImmutableList.copyOf(parameters);
+  }
+
+  @RequiredArgsConstructor
+  @Getter
   public static class FieldRestrictionParameter {
 
     private final String key;
-
     private final ParameterType type;
-
     private final String description;
-
     private final boolean repeated;
 
     public FieldRestrictionParameter(String key, ParameterType type) {
@@ -45,39 +54,6 @@ public class RestrictionTypeSchema {
       this(key, type, description, false);
     }
 
-    public FieldRestrictionParameter(String key, ParameterType type, String description, boolean repeated) {
-      this.key = key;
-      this.type = type;
-      this.description = description;
-      this.repeated = repeated;
-    }
-
-    public String getKey() {
-      return key;
-    }
-
-    public ParameterType getType() {
-      return type;
-    }
-
-    public boolean isRepeated() {
-      return repeated;
-    }
-
-    public String getDescription() {
-      return description;
-    }
-
-  }
-
-  private final List<FieldRestrictionParameter> parameters;
-
-  public RestrictionTypeSchema(FieldRestrictionParameter... parameters) {
-    this.parameters = ImmutableList.copyOf(parameters);
-  }
-
-  public List<FieldRestrictionParameter> getParameters() {
-    return parameters;
   }
 
 }

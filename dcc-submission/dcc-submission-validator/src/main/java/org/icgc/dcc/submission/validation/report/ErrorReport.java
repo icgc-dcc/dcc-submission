@@ -27,31 +27,31 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import lombok.NoArgsConstructor;
+
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
+import org.icgc.dcc.submission.validation.core.ErrorCode;
 import org.icgc.dcc.submission.validation.core.ErrorParameterKey;
-import org.icgc.dcc.submission.validation.core.ValidationErrorCode;
 
 import com.google.common.collect.Lists;
 
-public class ValidationErrorReport implements Serializable {
+@NoArgsConstructor
+public class ErrorReport implements Serializable {
 
-  private ValidationErrorCode errorType;
+  private ErrorCode errorType;
 
   private String description;
 
   private final List<ColumnErrorReport> columns = newLinkedList();
 
-  public ValidationErrorReport() {
-  }
-
-  public ValidationErrorReport(TupleError error) {
+  public ErrorReport(TupleError error) {
     this.setErrorType(error.getCode());
     this.setDescription(error.getMessage());
     this.addColumn(error);
   }
 
-  public ValidationErrorCode getErrorType() {
+  public ErrorCode getErrorType() {
     return errorType;
   }
 
@@ -107,7 +107,7 @@ public class ValidationErrorReport implements Serializable {
     this.description = description;
   }
 
-  private void setErrorType(ValidationErrorCode errorType) {
+  private void setErrorType(ErrorCode errorType) {
     this.errorType = errorType;
   }
 

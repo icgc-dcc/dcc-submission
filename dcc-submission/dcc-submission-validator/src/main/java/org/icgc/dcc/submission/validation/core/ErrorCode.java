@@ -42,7 +42,7 @@ import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
 
 import com.google.common.collect.ImmutableMap;
 
-public enum ValidationErrorCode { // TODO: DCC-505 to fix the message (currently not used for anything)
+public enum ErrorCode { // TODO: DCC-505 to fix the message (currently not used for anything)
 
   /**
    * Number of columns does not match that of header.
@@ -290,11 +290,11 @@ public enum ValidationErrorCode { // TODO: DCC-505 to fix the message (currently
   public abstract ImmutableMap<ErrorParameterKey, Object> build(@Nullable
   Object... params);
 
-  ValidationErrorCode(String message) {
+  ErrorCode(String message) {
     this(message, false);
   }
 
-  ValidationErrorCode(String message, boolean structural) {
+  ErrorCode(String message, boolean structural) {
     this.message = message;
     this.structural = structural;
   }
