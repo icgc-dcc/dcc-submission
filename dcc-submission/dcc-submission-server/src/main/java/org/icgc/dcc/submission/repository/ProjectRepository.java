@@ -44,13 +44,13 @@ public class ProjectRepository extends BaseMorphiaService<Project> {
     super.registerModelClasses(Project.class);
   }
 
-  final private boolean isAuthorized(Subject user, Project project) {
-    return project != null && user.isPermitted(AuthorizationPrivileges.projectViewPrivilege(project.key()));
+  final private boolean isAuthorized(Subject user, String projectKey) {
+    return projectKey != null && user.isPermitted(AuthorizationPrivileges.projectViewPrivilege(projectKey));
   }
 
-  final private void authorize(Subject user, Project project) {
-    if (isAuthorized(user, project) == false) {
-      throw new RuntimeException("No project found with key " + project.key());
+  final private void authorize(Subject user, String projectKey) {
+    if (isAuthorized(user, projectKey) == false) {
+      throw new RuntimeException("No project found with key " + projectKey);
     }
   }
 
@@ -58,7 +58,7 @@ public class ProjectRepository extends BaseMorphiaService<Project> {
     log.info("Filtering project based on user {}'s authorization", user.getPrincipal());
     ImmutableList.Builder<Project> builder = ImmutableList.builder();
     for (val project : projects) {
-      if (isAuthorized(user, project)) {
+      if (isAuthorized(user, project.key())) {
         log.info("{} authorized to see {}", user, project.key());
         builder.add(project);
       }
@@ -68,9 +68,9 @@ public class ProjectRepository extends BaseMorphiaService<Project> {
 
   final public Project getProject(Subject user, String projectKey) {
     log.info("Getting Project {} for user {}", projectKey, user.getPrincipal());
-    val project = this.query().where(QProject.project.key.eq(projectKey)).singleResult();
+    authorize(user, projectKey);
 
-    authorize(user, project);
+    val project = this.query().where(QProject.project.key.eq(projectKey)).singleResult();
 
     return project;
   }
