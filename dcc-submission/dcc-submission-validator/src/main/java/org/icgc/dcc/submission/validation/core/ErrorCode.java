@@ -57,6 +57,21 @@ public enum ErrorCode { // TODO: DCC-505 to fix the message (currently not used 
       return ImmutableMap.of(EXPECTED, params[0]);
     }
   },
+
+  /**
+   * Number of columns does not match that of header.
+   */
+  INVALID_CHARSET_ROW_ERROR("Row contains invalid charset", true) {
+
+    @Override
+    public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
+      checkArgument(params != null);
+      checkArgument(params.length == 1);
+      checkArgument(params[0] instanceof String);
+      return ImmutableMap.of(EXPECTED, params[0]);
+    }
+  },
+
   /**
    * A forbidden value was found (for instance deprecated "-999" value).
    */
@@ -273,6 +288,20 @@ public enum ErrorCode { // TODO: DCC-505 to fix the message (currently not used 
    * Repeated field names found in header.
    */
   DUPLICATE_HEADER_ERROR("duplicate header found: %s") {
+
+    @Override
+    public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
+      checkArgument(params != null);
+      checkArgument(params.length == 1);
+      checkArgument(params[0] instanceof List);
+      return ImmutableMap.of(FIELDS, params[0]);
+    }
+  },
+
+  /**
+   * Repeated field names found in header.
+   */
+  FILE_HEADER_ERROR("File header error: %s") {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
