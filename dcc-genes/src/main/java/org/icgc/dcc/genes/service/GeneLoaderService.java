@@ -82,7 +82,7 @@ public class GeneLoaderService {
 
   @SneakyThrows
   public void load(InputStream inputStream, GeneFilter filter) {
-    Stopwatch watch = new Stopwatch().start();
+    Stopwatch watch = Stopwatch.createStarted();
     log.info("Loading gene model from {} into {}...", inputStream, mongoUri);
 
     final MongoCollection genes = getTargetCollection(mongoUri);
@@ -152,7 +152,7 @@ public class GeneLoaderService {
     try {
       int insertCount = 0;
       int excludeCount = 0;
-      Stopwatch watch = new Stopwatch().start();
+      Stopwatch watch = Stopwatch.createStarted();
       while (hasNext(iterator)) {
         JsonNode gene = iterator.next();
 
@@ -195,8 +195,6 @@ public class GeneLoaderService {
 
   /**
    * Abstraction to allow for templated transformation and persistence.
-   * 
-   * @author btiernay
    */
   interface GeneCallback {
 

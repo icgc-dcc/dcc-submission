@@ -63,10 +63,6 @@ import org.icgc.dcc.submission.release.ReleaseService;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.security.UsernamePasswordAuthenticator;
-import org.icgc.dcc.submission.sftp.SftpAuthenticator;
-import org.icgc.dcc.submission.sftp.SftpContext;
-import org.icgc.dcc.submission.sftp.SftpServerService;
-import org.icgc.dcc.submission.sftp.SshServerProvider;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -172,14 +168,14 @@ public class SftpServerServiceTest {
     service = createService();
 
     // Start CUT
-    service.startAndWait();
+    service.startAsync().awaitRunning();
 
     sftp.connect();
   }
 
   @After
   public void tearDown() {
-    service.stop();
+    service.stopAsync().awaitTerminated();
     sftp.disconnect();
   }
 

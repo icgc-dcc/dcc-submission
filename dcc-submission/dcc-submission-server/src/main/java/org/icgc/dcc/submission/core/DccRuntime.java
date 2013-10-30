@@ -23,22 +23,21 @@ import static com.google.common.util.concurrent.Service.State.TERMINATED;
 
 import java.util.Set;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import com.google.common.util.concurrent.Service;
-import com.google.common.util.concurrent.Service.State;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 import com.google.inject.Inject;
 
 @Slf4j
+@RequiredArgsConstructor(onConstructor = @_(@Inject))
 public class DccRuntime {
 
+  @NonNull
   private final Set<Service> services;
-
-  @Inject
-  public DccRuntime(Set<Service> services) {
-    this.services = services;
-  }
 
   public void start() {
     for (Service service : services) {
@@ -55,9 +54,14 @@ public class DccRuntime {
   private void tryStartService(Service service) {
     try {
       log.info("Service {} is [{}]. Starting.", service.getClass(), service.state());
-      State state = service.startAndWait();
-      checkState(state == RUNNING, "Service should be '%s', instead was found '%s'", RUNNING, state);
-      log.info("Service {} is now [{}]", service.getClass(), service.state());
+      service.startAsync().awaitRunning();
+
+      val expectedState = RUNNING;
+      val actualState = service.state();
+      checkState(expectedState == actualState, "Service should be '%s', instead was found '%s'",
+          expectedState, actualState);
+
+      log.info("Service {} is now [{}]", service.getClass(), actualState);
     } catch (UncheckedExecutionException e) {
       log.warn("Failed to start service {}: {}", service.getClass(), e.getCause().getMessage());
       throw e;
@@ -67,9 +71,13 @@ public class DccRuntime {
   private void tryStopService(Service service) {
     try {
       log.info("Service {} is [{}]. Stopping.", service.getClass(), service.state());
-      State state = service.stopAndWait();
-      checkState(state == TERMINATED, "Service should be '%s', instead was found '%s'", TERMINATED, state);
-      log.info("Service {} is now [{}]", service.getClass(), service.state());
+      service.stopAsync().awaitTerminated();
+
+      val expectedState = TERMINATED;
+      val actualState = service.state();
+      checkState(expectedState == actualState, "Service should be '%s', instead was found '%s'",
+          expectedState, actualState);
+      log.info("Service {} is now [{}]", service.getClass(), actualState);
     } catch (UncheckedExecutionException e) {
       log.error("Failed to stop service {}: {}", service.getClass(), e.getCause().getMessage());
       throw e;
