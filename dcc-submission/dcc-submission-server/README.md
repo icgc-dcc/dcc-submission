@@ -14,7 +14,7 @@ Development
 
 To start the server in an IDE:
 
-	org.icgc.dcc.submission.server.Main external src/test/conf/application.conf
+	java -Dlogback.configurationFile=src/main/conf/logback.xml -Dlog.dir=target/logs org.icgc.dcc.submission.server.Main external src/test/conf/application.conf
 
 To start the server from the command line:
 
