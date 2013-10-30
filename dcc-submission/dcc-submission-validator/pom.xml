@@ -41,7 +41,7 @@
       <artifactId>jackson-mapper-asl</artifactId>
       <version>1.9.8</version>
     </dependency>
-    
+
     <!-- Cascading -->
     <dependency>
       <groupId>cascading</groupId>
@@ -96,6 +96,20 @@
       <artifactId>jsr305</artifactId>
     </dependency>
 
+    <!-- MIME detection -->
+    <dependency>
+      <groupId>org.apache.tika</groupId>
+      <artifactId>tika-core</artifactId>
+      <version>1.4</version>
+    </dependency>
+
+    <!-- Compression -->
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-compress</artifactId>
+      <version>1.5</version>
+    </dependency>
+
     <!-- Scripting -->
     <dependency>
       <groupId>org.mvel</groupId>
@@ -119,9 +133,9 @@
     </dependency>
 
     <dependency>
-    	<groupId>org.utgenome.thirdparty</groupId>
-    	<artifactId>picard</artifactId>
-    	<version>${picard.version}</version>
+      <groupId>org.utgenome.thirdparty</groupId>
+      <artifactId>picard</artifactId>
+      <version>${picard.version}</version>
     </dependency>
   </dependencies>
 
