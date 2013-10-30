@@ -51,12 +51,11 @@ import org.icgc.dcc.submission.release.ReleaseService;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.SubmissionState;
-import org.icgc.dcc.submission.validation.cascading.TupleState;
 import org.icgc.dcc.submission.validation.core.Plan;
 import org.icgc.dcc.submission.validation.core.ValidationListener;
+import org.icgc.dcc.submission.validation.report.ErrorReport;
 import org.icgc.dcc.submission.validation.report.SchemaReport;
 import org.icgc.dcc.submission.validation.report.SubmissionReport;
-import org.icgc.dcc.submission.validation.report.ErrorReport;
 import org.icgc.dcc.submission.validation.service.ValidationService;
 
 import cascading.cascade.Cascade;
@@ -176,7 +175,7 @@ public class ValidationQueueService extends AbstractScheduledService {
           processNext(release, optionalNextProject.get());
         }
       }
-    } catch (FilePresenceException e) { // TODO: DCC-1820
+    } catch (MalformedSubmissionException e) { // TODO: DCC-1820
       try {
         handleMalformedValidation(e);
       } catch (Throwable t) {
@@ -207,7 +206,8 @@ public class ValidationQueueService extends AbstractScheduledService {
    * 
    * @throws FilePresenceException
    */
-  private void processNext(Release release, QueuedProject project) throws FilePresenceException { // TODO: DCC-1820;
+  private void processNext(Release release, QueuedProject project) throws MalformedSubmissionException { // TODO:
+                                                                                                         // DCC-1820;
     log.info("Processing next project in queue: '{}'", project);
     mailService.sendProcessingStarted(project.getKey(), project.getEmails());
 
@@ -236,28 +236,21 @@ public class ValidationQueueService extends AbstractScheduledService {
   /**
    * Triggered by our application.
    */
-  private void handleMalformedValidation(FilePresenceException e) {
-    val plan = e.getPlan();
-    checkState(!plan.hasFileLevelErrors(),
-        "Unexpected by design since this should be the condition for throwing the FatalPlanningException");
-
-    Map<String, TupleState> fileLevelErrors = plan.getFileLevelErrors();
-    log.info("There are fatal file-level errors:\n\t{}", fileLevelErrors);
-
-    QueuedProject queuedProject = checkNotNull(plan.getQueuedProject());
+  private void handleMalformedValidation(MalformedSubmissionException e) {
+    QueuedProject queuedProject = e.getQueuedProject();
     String projectKey = queuedProject.getKey();
     log.info("About to dequeue project key {}", projectKey);
     resolveSubmission(queuedProject, SubmissionState.INVALID);
 
     List<SchemaReport> schemaReports = newArrayList();
-    for (val schema : fileLevelErrors.keySet()) {
+    for (val schemaName : e.getErrors().keySet()) {
       List<ErrorReport> schemaErrors = newArrayList();
-      for (val schemaError : fileLevelErrors.get(schema).getErrors()) {
+      for (val schemaError : e.getErrors().get(schemaName)) {
         schemaErrors.add(new ErrorReport(schemaError));
       }
 
       val schemaReport = new SchemaReport();
-      schemaReport.setName(schema);
+      schemaReport.setName(schemaName);
       schemaReport.addErrors(schemaErrors);
 
       schemaReports.add(schemaReport);
