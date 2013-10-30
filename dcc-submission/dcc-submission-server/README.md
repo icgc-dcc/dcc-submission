@@ -18,7 +18,9 @@ To start the server in an IDE:
 
 To start the server from the command line:
 
-	cd dcc/dcc-submission-server
+	cd dcc
+	mvn -am -pl dcc-submission/dcc-submission-server -DskipTests=true
+	cd dcc-submission/dcc-submission-server
 	mvn exec:java
 
 To see the client interface, point your browser to [http://localhost:5380/](http://localhost:5380/)
