@@ -64,7 +64,7 @@ public abstract class SummaryPlanElement extends BaseStatsReportingPlanElement {
     pipe = keepStructurallyValidTuples(pipe);
 
     ArrayList<AggregateBy> summaries = new ArrayList<AggregateBy>();
-    for(Field field : fields) {
+    for (Field field : fields) {
       Iterables.addAll(summaries, collectAggregateBys(field));
     }
 
@@ -162,7 +162,7 @@ public abstract class SummaryPlanElement extends BaseStatsReportingPlanElement {
     public SummaryFunction(List<Field> fields, Iterable<String> summaryFields) {
       super(REPORT_FIELDS);
       this.fields = Lists.newArrayListWithCapacity(fields.size());
-      for(Field f : fields) {
+      for (Field f : fields) {
         this.fields.add(f.getName());
       }
       this.summaryFields = ImmutableList.copyOf(summaryFields);
@@ -171,13 +171,13 @@ public abstract class SummaryPlanElement extends BaseStatsReportingPlanElement {
     @Override
     public void operate(FlowProcess flowProcess, FunctionCall functionCall) {
       TupleEntry te = functionCall.getArguments();
-      for(String field : fields) {
+      for (String field : fields) {
         FieldSummary fs = new FieldSummary();
         fs.field = field;
         fs.nulls = te.getInteger(fieldName(field, CompletenessBy.NULLS));
         fs.missing = te.getInteger(fieldName(field, CompletenessBy.MISSING));
         fs.populated = te.getInteger(fieldName(field, CompletenessBy.POPULATED));
-        for(String summaryField : summaryFields) {
+        for (String summaryField : summaryFields) {
           fs.summary.put(summaryField, te.getObject(fieldName(field, summaryField)));
         }
         functionCall.getOutputCollector().add(new Tuple(fs));
@@ -185,9 +185,9 @@ public abstract class SummaryPlanElement extends BaseStatsReportingPlanElement {
     }
   }
 
-  static class CompletenessPlanElement extends SummaryPlanElement {
+  public static class CompletenessPlanElement extends SummaryPlanElement {
 
-    protected CompletenessPlanElement(FileSchema fileSchema, List<Field> fields, FlowType flowType) {
+    public CompletenessPlanElement(FileSchema fileSchema, List<Field> fields, FlowType flowType) {
       super(fileSchema, null, fields, flowType);
     }
 
@@ -202,9 +202,9 @@ public abstract class SummaryPlanElement extends BaseStatsReportingPlanElement {
     }
   }
 
-  static class MinMaxPlanElement extends SummaryPlanElement {
+  public static class MinMaxPlanElement extends SummaryPlanElement {
 
-    protected MinMaxPlanElement(FileSchema fileSchema, List<Field> fields, FlowType flowType) {
+    public MinMaxPlanElement(FileSchema fileSchema, List<Field> fields, FlowType flowType) {
       super(fileSchema, SummaryType.MIN_MAX, fields, flowType);
     }
 
@@ -219,9 +219,9 @@ public abstract class SummaryPlanElement extends BaseStatsReportingPlanElement {
     }
   }
 
-  static class AveragePlanElement extends SummaryPlanElement {
+  public static class AveragePlanElement extends SummaryPlanElement {
 
-    protected AveragePlanElement(FileSchema fileSchema, List<Field> fields, FlowType flowType) {
+    public AveragePlanElement(FileSchema fileSchema, List<Field> fields, FlowType flowType) {
       super(fileSchema, SummaryType.AVERAGE, fields, flowType);
     }
 
@@ -235,4 +235,5 @@ public abstract class SummaryPlanElement extends BaseStatsReportingPlanElement {
       return ImmutableList.of(MinMaxBy.MIN, MinMaxBy.MAX, DeviationBy.AVG, DeviationBy.STDDEV);
     }
   }
+
 }

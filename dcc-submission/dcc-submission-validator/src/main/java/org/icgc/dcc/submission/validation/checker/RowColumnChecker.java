@@ -15,24 +15,36 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.planner;
+package org.icgc.dcc.submission.validation.checker;
 
-public class PlanningException extends RuntimeException {
+import java.util.List;
 
-  public PlanningException() {
-    super();
+import org.icgc.dcc.submission.dictionary.model.FileSchema;
+import org.icgc.dcc.submission.validation.core.ErrorCode;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
+
+public class RowColumnChecker extends CompositeRowChecker {
+
+  final private String DELIMITER = "\t";
+
+  public RowColumnChecker(RowChecker rowChecker, boolean failFast) {
+    super(rowChecker, failFast);
   }
 
-  public PlanningException(String message, Throwable cause) {
-    super(message, cause);
+  public RowColumnChecker(RowChecker rowChecker) {
+    this(rowChecker, false);
   }
 
-  public PlanningException(String message) {
-    super(message);
+  @Override
+  public List<FirstPassValidationError> performSelfCheck(FileSchema fileSchema, String line) {
+    Builder<FirstPassValidationError> errors = ImmutableList.builder();
+    int expectedNumColumns = fileSchema.getFields().size();
+    int actualNumColumns = ImmutableList.copyOf(line.split(DELIMITER, -1)).size();
+    if (actualNumColumns != expectedNumColumns) errors.add(new FirstPassValidationError(getCheckLevel(),
+        "Row does not match the expected number of columns: " + expectedNumColumns + ", actual: " + actualNumColumns,
+        ErrorCode.STRUCTURALLY_INVALID_ROW_ERROR, expectedNumColumns));
+    return errors.build();
   }
-
-  public PlanningException(Throwable cause) {
-    super(cause);
-  }
-
 }

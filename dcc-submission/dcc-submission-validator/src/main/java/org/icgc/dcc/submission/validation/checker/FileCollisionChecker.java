@@ -15,31 +15,49 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.cascading;
+package org.icgc.dcc.submission.validation.checker;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
-import cascading.tuple.Fields;
-import cascading.tuple.Tuple;
-import cascading.tuple.TupleEntry;
+import org.icgc.dcc.submission.dictionary.model.FileSchema;
+import org.icgc.dcc.submission.validation.checker.Util.CheckLevel;
+import org.icgc.dcc.submission.validation.core.ErrorCode;
+
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 
 /**
- * Offers various utils methods to handle {@code TupleEntry} and {@code Tuple} (at least until we find cleaner cascading
- * ways to do the same, or that they offer more utils themselves)
+ * 
  */
-public class TuplesUtils {
+public class FileCollisionChecker extends CompositeFileChecker {
 
-  public static boolean hasValues(TupleEntry tupleEntry, String[] fields) {
-    Tuple tuple = tupleEntry.selectTuple(new Fields(fields));
-    return tuple.equals(Tuple.size(tuple.size())) == false;
+  public FileCollisionChecker(FileChecker fileChecker, boolean failFast) {
+    super(fileChecker, failFast);
   }
 
-  public static List<Object> getObjects(Tuple tuple) {
-    List<Object> objects = new ArrayList<Object>();
-    for(int i = 0; i < tuple.size(); i++) {
-      objects.add(tuple.getObject(i));
+  public FileCollisionChecker(FileChecker fileChecker) {
+    this(fileChecker, true);
+  }
+
+  @Override
+  public List<FirstPassValidationError> performSelfCheck(String filename) {
+    Builder<FirstPassValidationError> errors = ImmutableList.<FirstPassValidationError> builder();
+    Optional<FileSchema> fileSchema = getDictionary().fileSchema(getFileSchemaName(filename));
+    if (fileSchema.isPresent()) {
+      // more than 1 file that match the same pattern
+      List<String> files =
+          ImmutableList.copyOf(getSubmissionDirectory().listFile(Pattern.compile(fileSchema.get().getPattern())));
+      if (files.size() > 1) {
+        Object[] params = new Object[2];
+        params[0] = fileSchema.get().getName();
+        params[1] = ImmutableList.of(files);
+        errors.add(new FirstPassValidationError(CheckLevel.FILE_LEVEL,
+            "More than 1 file matching the file pattern: " + fileSchema.get().getPattern(),
+            ErrorCode.TOO_MANY_FILES_ERROR, params));
+      }
     }
-    return objects;
+    return errors.build();
   }
 }

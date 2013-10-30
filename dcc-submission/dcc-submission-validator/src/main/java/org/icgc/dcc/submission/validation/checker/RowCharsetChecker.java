@@ -15,24 +15,43 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.planner;
+package org.icgc.dcc.submission.validation.checker;
 
-public class PlanningException extends RuntimeException {
+import static com.google.common.base.CharMatcher.ASCII;
+import static com.google.common.base.CharMatcher.JAVA_ISO_CONTROL;
+import static com.google.common.base.CharMatcher.noneOf;
 
-  public PlanningException() {
-    super();
+import java.util.List;
+
+import org.icgc.dcc.submission.dictionary.model.FileSchema;
+import org.icgc.dcc.submission.validation.core.ErrorCode;
+
+import com.google.common.base.CharMatcher;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
+
+public class RowCharsetChecker extends CompositeRowChecker {
+
+  private final static CharMatcher DEFAULT_INVALID_MATCHER = ASCII.negate()
+      .or(JAVA_ISO_CONTROL).and(noneOf("\t"))
+      .precomputed();
+
+  public RowCharsetChecker(RowChecker rowChecker, boolean failFast) {
+    super(rowChecker, failFast);
   }
 
-  public PlanningException(String message, Throwable cause) {
-    super(message, cause);
+  public RowCharsetChecker(RowChecker rowChecker) {
+    this(rowChecker, false);
   }
 
-  public PlanningException(String message) {
-    super(message);
+  @Override
+  public List<FirstPassValidationError> performSelfCheck(FileSchema fileSchema, String line) {
+    Builder<FirstPassValidationError> errors = ImmutableList.builder();
+    if (DEFAULT_INVALID_MATCHER.matchesAnyOf(line)) {
+      errors
+          .add(new FirstPassValidationError(getCheckLevel(),
+              "Invalid character found in the row: " + line, ErrorCode.INVALID_CHARSET_ROW_ERROR, ASCII));
+    }
+    return errors.build();
   }
-
-  public PlanningException(Throwable cause) {
-    super(cause);
-  }
-
 }

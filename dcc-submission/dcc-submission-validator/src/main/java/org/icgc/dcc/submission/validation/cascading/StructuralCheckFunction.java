@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.icgc.dcc.submission.validation.core.ValidationErrorCode;
+import org.icgc.dcc.submission.validation.core.ErrorCode;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -134,8 +134,8 @@ public class StructuralCheckFunction extends BaseOperation implements Function {
       adjustedValues = replaceEmptyStrings(adjustedValues);
       if (REPORT_WARNINGS && unknownHeaderIndices.isEmpty() == false) {
         // FIXME: not working as expected anyway: this would report the error on all tuples
-        // tupleState.reportError(ValidationErrorCode.UNKNOWN_COLUMNS_WARNING,
-        // ValidationErrorCode.FILE_LEVEL_ERROR_COLUMN_NAME, unknownHeaderIndices);
+        // tupleState.reportError(ErrorCode.UNKNOWN_COLUMNS_WARNING,
+        // ErrorCode.FILE_LEVEL_ERROR_COLUMN_NAME, unknownHeaderIndices);
       }
     } else {
       adjustedValues = Arrays.asList(new String[dictionaryFields.size()]); // can discard values but must match number
@@ -143,7 +143,7 @@ public class StructuralCheckFunction extends BaseOperation implements Function {
                                                                            // error reporting
 
       // see SUBM-15
-      tupleState.reportError(ValidationErrorCode.STRUCTURALLY_INVALID_ROW_ERROR,//
+      tupleState.reportError(ErrorCode.STRUCTURALLY_INVALID_ROW_ERROR,//
           ROW_LEVEL_ERROR_COLUMN_NAME, // because we don't have a specific column to report this on (TODO: revisit not
                                        // elegant)
           dataSize, headerSize); // we use dataSize as the value, and headerSize as an expected value parameter

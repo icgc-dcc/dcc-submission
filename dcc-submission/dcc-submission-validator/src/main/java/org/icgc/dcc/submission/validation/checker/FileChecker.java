@@ -15,24 +15,23 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.planner;
+package org.icgc.dcc.submission.validation.checker;
 
-public class PlanningException extends RuntimeException {
+import java.util.List;
 
-  public PlanningException() {
-    super();
-  }
+import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.fs.DccFileSystem;
+import org.icgc.dcc.submission.fs.SubmissionDirectory;
 
-  public PlanningException(String message, Throwable cause) {
-    super(message, cause);
-  }
+public interface FileChecker extends Checker {
 
-  public PlanningException(String message) {
-    super(message);
-  }
+  public List<FirstPassValidationError> check(String filename);
 
-  public PlanningException(Throwable cause) {
-    super(cause);
-  }
+  String getFileSchemaName(String filename);
 
+  public SubmissionDirectory getSubmissionDirectory();
+
+  public Dictionary getDictionary();
+
+  public DccFileSystem getDccFileSystem();
 }

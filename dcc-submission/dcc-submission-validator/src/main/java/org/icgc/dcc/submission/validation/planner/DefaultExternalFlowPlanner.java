@@ -31,7 +31,7 @@ import org.icgc.dcc.submission.validation.core.ExternalPlanElement;
 import org.icgc.dcc.submission.validation.core.FlowType;
 import org.icgc.dcc.submission.validation.core.Key;
 import org.icgc.dcc.submission.validation.core.Plan;
-import org.icgc.dcc.submission.validation.core.ValidationErrorCode;
+import org.icgc.dcc.submission.validation.core.ErrorCode;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.icgc.dcc.submission.validation.visitor.RelationPlanningVisitor.RelationPlanElement;
 import org.slf4j.Logger;
@@ -85,7 +85,7 @@ class DefaultExternalFlowPlanner extends BaseFileSchemaFlowPlanner implements Ex
     } catch(MissingFileException e) {
       log.error(String.format("missing corresponding file for %s in relation coming from %s", referencedFileSchema,
           currentFileSchemaName));
-      throw new PlanningFileLevelException(fileName, ValidationErrorCode.RELATION_FILE_ERROR, referencedFileSchema);
+      throw new PlanningFileLevelException(fileName, ErrorCode.RELATION_FILE_ERROR, referencedFileSchema);
     }
 
     if(element instanceof RelationPlanElement) { // FIXME: see DCC-391; lesser of all evils for now, file-level error
@@ -100,7 +100,7 @@ class DefaultExternalFlowPlanner extends BaseFileSchemaFlowPlanner implements Ex
         } catch(MissingFileException e) { // FIXME: this will only catch the first one (consider DCC-391)
           log.error(String.format("missing corresponding file for %s in relation going to %s", referencedFileSchema,
               currentFileSchemaName));
-          throw new PlanningFileLevelException(fileName, ValidationErrorCode.REVERSE_RELATION_FILE_ERROR,
+          throw new PlanningFileLevelException(fileName, ErrorCode.REVERSE_RELATION_FILE_ERROR,
               afferentFileSchemataName);
         }
       }

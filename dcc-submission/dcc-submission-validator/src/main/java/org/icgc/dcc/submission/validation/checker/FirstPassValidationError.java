@@ -15,24 +15,23 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.planner;
+package org.icgc.dcc.submission.validation.checker;
 
-public class PlanningException extends RuntimeException {
+import lombok.Value;
 
-  public PlanningException() {
-    super();
-  }
+import org.icgc.dcc.submission.validation.checker.Util.CheckLevel;
+import org.icgc.dcc.submission.validation.core.ErrorCode;
 
-  public PlanningException(String message, Throwable cause) {
-    super(message, cause);
-  }
+/**
+ * 
+ */
+@Value
+public class FirstPassValidationError {
 
-  public PlanningException(String message) {
-    super(message);
-  }
+  private final CheckLevel level;
+  private final String errMsg;
+  private final ErrorCode code;
 
-  public PlanningException(Throwable cause) {
-    super(cause);
-  }
-
+  // to be used to satisfy TupleError
+  private final Object param;
 }

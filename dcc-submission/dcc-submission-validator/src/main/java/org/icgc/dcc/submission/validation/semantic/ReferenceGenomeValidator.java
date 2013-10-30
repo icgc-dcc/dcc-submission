@@ -41,7 +41,7 @@ import org.apache.hadoop.io.compress.BZip2Codec;
 import org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames;
 import org.icgc.dcc.submission.validation.cascading.TupleState;
 import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
-import org.icgc.dcc.submission.validation.core.ValidationErrorCode;
+import org.icgc.dcc.submission.validation.core.ErrorCode;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -159,7 +159,7 @@ public class ReferenceGenomeValidator {
             getReferenceGenomeSequence(fields.get(chromosomeIdx), fields.get(startIdx), fields.get(endIdx));
 
         if (!fields.get(referenceAlleleIdx).equalsIgnoreCase(refSequence)) {
-          errors.add(TupleState.createTupleError(ValidationErrorCode.REFERENCE_GENOME_VIOLATION,
+          errors.add(TupleState.createTupleError(ErrorCode.REFERENCE_GENOME_VIOLATION,
               SubmissionFieldNames.SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE, fields.get(referenceAlleleIdx),
               lineNumber, refSequence));
         }

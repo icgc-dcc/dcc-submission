@@ -15,15 +15,15 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.report;
+package org.icgc.dcc.submission.validation.visitor;
 
+import static com.google.common.collect.Maps.newHashMap;
 import static org.icgc.dcc.submission.validation.cascading.TupleStates.keepInvalidTuplesFilter;
 import static org.icgc.dcc.submission.validation.cascading.ValidationFields.STATE_FIELD;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.Map;
 
 import lombok.Cleanup;
@@ -35,9 +35,12 @@ import org.icgc.dcc.submission.validation.PlanExecutionException;
 import org.icgc.dcc.submission.validation.cascading.TupleState;
 import org.icgc.dcc.submission.validation.core.FlowType;
 import org.icgc.dcc.submission.validation.core.ReportingPlanElement;
-import org.icgc.dcc.submission.validation.core.ValidationErrorCode;
+import org.icgc.dcc.submission.validation.core.ErrorCode;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
-import org.icgc.dcc.submission.validation.visitor.ReportingFlowPlanningVisitor;
+import org.icgc.dcc.submission.validation.report.Outcome;
+import org.icgc.dcc.submission.validation.report.ReportCollector;
+import org.icgc.dcc.submission.validation.report.SchemaReport;
+import org.icgc.dcc.submission.validation.report.ErrorReport;
 
 import cascading.pipe.Each;
 import cascading.pipe.Pipe;
@@ -98,8 +101,7 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
 
     class ErrorReportCollector implements ReportCollector {
 
-      private final Map<ValidationErrorCode, ValidationErrorReport> errorMap =
-          new HashMap<ValidationErrorCode, ValidationErrorReport>();
+      private final Map<ErrorCode, ErrorReport> errorMap = newHashMap();
 
       public ErrorReportCollector() {
       }
@@ -122,17 +124,18 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
               outcome = Outcome.FAILED;
               for (TupleState.TupleError error : tupleState.getErrors()) {
                 if (errorMap.containsKey(error.getCode()) == true) {
-                  ValidationErrorReport errorReport = errorMap.get(error.getCode());
+                  ErrorReport errorReport = errorMap.get(error.getCode());
                   errorReport.updateReport(error);
                 } else {
-                  errorMap.put(error.getCode(), new ValidationErrorReport(error));
+                  errorMap.put(error.getCode(), new ErrorReport(error));
                 }
               }
             }
           }
-          for (ValidationErrorReport e : errorMap.values()) {
+
+          for (ErrorReport e : errorMap.values()) {
             e.updateLineNumbers(strategy.path(getFileSchema()));
-            report.errors.add(e);
+            report.addError(e);
           }
           return outcome;
         } catch (FileNotFoundException fnfe) {
@@ -143,4 +146,5 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
       }
     }
   }
+
 }

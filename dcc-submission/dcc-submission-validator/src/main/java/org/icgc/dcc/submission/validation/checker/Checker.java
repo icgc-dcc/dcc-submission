@@ -15,24 +15,16 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.planner;
+package org.icgc.dcc.submission.validation.checker;
 
-public class PlanningException extends RuntimeException {
+import org.icgc.dcc.submission.validation.checker.Util.CheckLevel;
 
-  public PlanningException() {
-    super();
-  }
+public interface Checker {
 
-  public PlanningException(String message, Throwable cause) {
-    super(message, cause);
-  }
+  public boolean isValid();
 
-  public PlanningException(String message) {
-    super(message);
-  }
+  public CheckLevel getCheckLevel();
 
-  public PlanningException(Throwable cause) {
-    super(cause);
-  }
+  public boolean isFailFast();
 
 }

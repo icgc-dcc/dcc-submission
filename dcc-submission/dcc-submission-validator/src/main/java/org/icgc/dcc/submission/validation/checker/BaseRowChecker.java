@@ -15,24 +15,51 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.planner;
+package org.icgc.dcc.submission.validation.checker;
 
-public class PlanningException extends RuntimeException {
+import java.util.List;
 
-  public PlanningException() {
-    super();
+import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.dictionary.model.FileSchema;
+import org.icgc.dcc.submission.fs.DccFileSystem;
+import org.icgc.dcc.submission.fs.SubmissionDirectory;
+import org.icgc.dcc.submission.validation.checker.Util.CheckLevel;
+
+import com.google.common.collect.ImmutableList;
+
+public class BaseRowChecker extends BaseFileChecker implements RowChecker {
+
+  public BaseRowChecker(DccFileSystem fs, Dictionary dict, SubmissionDirectory submissionDir, boolean failFast) {
+    super(fs, dict, submissionDir, failFast);
   }
 
-  public PlanningException(String message, Throwable cause) {
-    super(message, cause);
+  public BaseRowChecker(DccFileSystem fs, Dictionary dict, SubmissionDirectory submissionDir) {
+    this(fs, dict, submissionDir, false);
   }
 
-  public PlanningException(String message) {
-    super(message);
+  @Override
+  public List<FirstPassValidationError> check(String filename) {
+    return ImmutableList.of();
   }
 
-  public PlanningException(Throwable cause) {
-    super(cause);
+  @Override
+  public boolean isValid() {
+    return true;
+  }
+
+  @Override
+  public CheckLevel getCheckLevel() {
+    return CheckLevel.ROW_LEVEL;
+  }
+
+  @Override
+  public boolean isFailFast() {
+    return super.isFailFast();
+  }
+
+  @Override
+  public List<FirstPassValidationError> checkRow(FileSchema fileSchema, String row) {
+    return ImmutableList.of();
   }
 
 }
