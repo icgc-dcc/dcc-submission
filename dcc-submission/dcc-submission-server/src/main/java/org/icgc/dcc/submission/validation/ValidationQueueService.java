@@ -304,8 +304,14 @@ public class ValidationQueueService extends AbstractScheduledService {
       val outcome = plan.collect(report);
       log.info("Gathered report for project {}", projectKey);
 
+      // TODO
+      val passed = outcome == PASSED;
+      if (passed) {
+        // TODO: actually plug things here
+      }
+
       // Resolving submission
-      resolveSubmission(queuedProject, outcome == PASSED ? VALID : INVALID);
+      resolveSubmission(queuedProject, passed ? VALID : INVALID);
       storeSubmissionReport(projectKey, report);
 
       log.info("Validation finished normally for project {}, time spent on validation is {} seconds",
