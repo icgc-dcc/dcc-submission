@@ -20,6 +20,7 @@ package org.icgc.dcc.submission.validation.service;
 import static java.lang.String.format;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,9 +31,9 @@ import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.validation.FilePresenceException;
+import org.icgc.dcc.submission.validation.checker.FirstPassChecker;
 import org.icgc.dcc.submission.validation.core.Plan;
 import org.icgc.dcc.submission.validation.core.ValidationListener;
-import org.icgc.dcc.submission.validation.firstpass.FirstPassChecker;
 import org.icgc.dcc.submission.validation.planner.Planner;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactory;
@@ -65,17 +66,18 @@ public class ValidationService {
     val releaseFilesystem = dccFileSystem.getReleaseFilesystem(release);
     val submissionDirectory = releaseFilesystem.getSubmissionDirectory(projectKey);
 
-    Path rootDir = submissionDirectory.getSubmissionDirPath();
+    Path inputDir = submissionDirectory.getSubmissionDirPath();
     Path outputDir = new Path(submissionDirectory.getValidationDirPath());
     Path systemDir = releaseFilesystem.getSystemDirectory();
 
-    log.info("Validation for '{}' has rootDir = {} ", projectKey, rootDir);
+    log.info("Validation for '{}' has inputDir = {} ", projectKey, inputDir);
     log.info("Validation for '{}' has outputDir = {} ", projectKey, outputDir);
     log.info("Validation for '{}' has systemDir = {} ", projectKey, systemDir);
 
     // TODO: File Checker
-    PlatformStrategy platformStrategy = platformStrategyFactory.get(rootDir, outputDir, systemDir);
-    checkWellFormedness();
+    PlatformStrategy platformStrategy = platformStrategyFactory.get(inputDir, outputDir, systemDir);
+    log.info("Checking validation for '{}' has inputDir = {} ", projectKey, inputDir);
+    checkValidation(dictionary, submissionDirectory);
 
     Plan plan = planValidation(queuedProject, submissionDirectory, platformStrategy, dictionary, listener);
     listener.setPlan(plan);
@@ -133,16 +135,13 @@ public class ValidationService {
     log.info("Plan: plan.getCascade: {}", plan.getCascade());
   }
 
-  /**
-   * Temporarily and until properly re-written (DCC-1820).
-   */
-  private void checkWellFormedness() throws FilePresenceException {
-    if (FirstPassChecker.check()) {
-      // Always returns true for now
-      log.info("Submission is well-formed.");
-    } else {
-      log.info("Submission has well-formedness problems"); // TODO: expand
-      // FIXME: pass appropriate objects: offending project key and Map<String, TupleState> fileLevelErrors
+  @SneakyThrows
+  private void checkValidation(Dictionary dictionary, SubmissionDirectory submissionDirectory) throws
+      FilePresenceException {
+    FirstPassChecker checker = new FirstPassChecker(dccFileSystem, dictionary, submissionDirectory);
+    boolean valid = checker.isValid();
+    if (!valid) {
+      // TODO: Add tuple errors.
       throw new FilePresenceException(null);
     }
   }
