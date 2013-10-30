@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.submission.validation.checker;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -73,7 +72,7 @@ public class FirstPassChecker {
 
   }
 
-  public boolean isValid() throws IOException {
+  public boolean isValid() {
     errorMap.clear();
     for (String filename : submissionDir.listFile()) {
       String fileSchemaName = getFileSchemaName(filename);
