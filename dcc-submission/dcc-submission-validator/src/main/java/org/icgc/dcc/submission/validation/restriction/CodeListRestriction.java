@@ -31,7 +31,7 @@ import org.icgc.dcc.submission.validation.core.PlanElement;
 import org.icgc.dcc.submission.validation.core.RestrictionType;
 import org.icgc.dcc.submission.validation.core.RestrictionTypeSchema;
 import org.icgc.dcc.submission.validation.core.ValidationContext;
-import org.icgc.dcc.submission.validation.core.ValidationErrorCode;
+import org.icgc.dcc.submission.validation.core.ErrorCode;
 import org.icgc.dcc.submission.validation.core.RestrictionTypeSchema.FieldRestrictionParameter;
 import org.icgc.dcc.submission.validation.core.RestrictionTypeSchema.ParameterType;
 import org.icgc.dcc.submission.validation.planner.PlanningException;
@@ -165,7 +165,7 @@ public class CodeListRestriction implements InternalPlanElement {
       if (value != null && codes.contains(value) == false && values.contains(value) == false) { // TODO: see note in
                                                                                                 // DCC-904
         Object fieldName = tupleEntry.getFields().get(0);
-        ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.CODELIST_ERROR, fieldName.toString(), value);
+        ValidationFields.state(tupleEntry).reportError(ErrorCode.CODELIST_ERROR, fieldName.toString(), value);
       }
       functionCall.getOutputCollector().add(tupleEntry.getTupleCopy());
     }

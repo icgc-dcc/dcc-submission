@@ -26,7 +26,7 @@ import static lombok.AccessLevel.PROTECTED;
 import static org.icgc.dcc.submission.validation.cascading.ValidationFields.OFFSET_FIELD_NAME;
 import static org.icgc.dcc.submission.validation.cascading.ValidationFields.STATE_FIELD_NAME;
 import static org.icgc.dcc.submission.validation.cascading.ValidationFields.state;
-import static org.icgc.dcc.submission.validation.core.ValidationErrorCode.SCRIPT_ERROR;
+import static org.icgc.dcc.submission.validation.core.ErrorCode.SCRIPT_ERROR;
 
 import java.util.Map;
 

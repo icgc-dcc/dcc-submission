@@ -21,6 +21,7 @@ import static org.icgc.dcc.submission.validation.platform.PlatformStrategy.SEPAR
 
 import java.io.Serializable;
 
+import lombok.NonNull;
 import lombok.Value;
 
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
@@ -39,7 +40,9 @@ public class Key implements Serializable {
   private static final char FIELD_SEPARATOR = '-';
   private static final Joiner JOINER = Joiner.on(FIELD_SEPARATOR);
 
+  @NonNull
   private final FileSchema schema;
+  @NonNull
   private final String[] fields;
 
   public Key(FileSchema schema, String... fields) {

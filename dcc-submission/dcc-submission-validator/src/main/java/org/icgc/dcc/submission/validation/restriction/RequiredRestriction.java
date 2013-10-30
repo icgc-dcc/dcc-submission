@@ -25,7 +25,7 @@ import org.icgc.dcc.submission.validation.core.InternalPlanElement;
 import org.icgc.dcc.submission.validation.core.PlanElement;
 import org.icgc.dcc.submission.validation.core.RestrictionType;
 import org.icgc.dcc.submission.validation.core.RestrictionTypeSchema;
-import org.icgc.dcc.submission.validation.core.ValidationErrorCode;
+import org.icgc.dcc.submission.validation.core.ErrorCode;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -122,11 +122,11 @@ public class RequiredRestriction implements InternalPlanElement {
       // TODO: DCC-1076 - This should also check for -999 rather than have {@link ForbiddenValuesFunction} do it.
       if(isFieldMissing == false && (value == null || value.isEmpty())) {
         Object fieldName = tupleEntry.getFields().get(0);
-        ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.MISSING_VALUE_ERROR, fieldName.toString(),
+        ValidationFields.state(tupleEntry).reportError(ErrorCode.MISSING_VALUE_ERROR, fieldName.toString(),
             value);
       } else if(isFieldMissing == true && !acceptMissingCode) {
         Object fieldName = tupleEntry.getFields().get(0);
-        ValidationFields.state(tupleEntry).reportError(ValidationErrorCode.MISSING_VALUE_ERROR, fieldName.toString(),
+        ValidationFields.state(tupleEntry).reportError(ErrorCode.MISSING_VALUE_ERROR, fieldName.toString(),
             value);
       }
       functionCall.getOutputCollector().add(tupleEntry.getTupleCopy());

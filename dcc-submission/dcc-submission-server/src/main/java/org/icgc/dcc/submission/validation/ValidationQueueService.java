@@ -56,7 +56,7 @@ import org.icgc.dcc.submission.validation.core.Plan;
 import org.icgc.dcc.submission.validation.core.ValidationListener;
 import org.icgc.dcc.submission.validation.report.SchemaReport;
 import org.icgc.dcc.submission.validation.report.SubmissionReport;
-import org.icgc.dcc.submission.validation.report.ValidationErrorReport;
+import org.icgc.dcc.submission.validation.report.ErrorReport;
 import org.icgc.dcc.submission.validation.service.ValidationService;
 
 import cascading.cascade.Cascade;
@@ -251,9 +251,9 @@ public class ValidationQueueService extends AbstractScheduledService {
 
     List<SchemaReport> schemaReports = newArrayList();
     for (val schema : fileLevelErrors.keySet()) {
-      List<ValidationErrorReport> schemaErrors = newArrayList();
+      List<ErrorReport> schemaErrors = newArrayList();
       for (val schemaError : fileLevelErrors.get(schema).getErrors()) {
-        schemaErrors.add(new ValidationErrorReport(schemaError));
+        schemaErrors.add(new ErrorReport(schemaError));
       }
 
       val schemaReport = new SchemaReport();
