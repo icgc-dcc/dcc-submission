@@ -4,7 +4,7 @@ ICGC DCC - Submission UI
 Setup
 ---
 
-Install [nodejs] (http://nodejs.org/#download) 0.10.13 or above. If you are using `brew` or `macports` please ensure the correct version has been installed.
+Install [nodejs] (http://nodejs.org/#download) 0.10.13 or above. If you are using a package manager such as `apt`, `brew` or `macports` please ensure the correct version has been installed.
 
 Install brunch and required modules:
 
