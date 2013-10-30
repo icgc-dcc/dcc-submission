@@ -19,6 +19,8 @@ package org.icgc.dcc.submission.validation.checker;
 
 import java.util.List;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
@@ -26,6 +28,7 @@ import org.icgc.dcc.submission.validation.checker.Util.CheckLevel;
 
 import com.google.common.collect.Lists;
 
+@Slf4j
 public abstract class CompositeFileChecker implements FileChecker {
 
   protected FileChecker compositeChecker;
@@ -46,7 +49,13 @@ public abstract class CompositeFileChecker implements FileChecker {
   public List<FirstPassValidationError> check(String filename) {
     errors.clear();
     errors.addAll(compositeChecker.check(filename));
-    if (compositeChecker.isValid() || !compositeChecker.isFailFast()) errors.addAll(performSelfCheck(filename));
+    if (compositeChecker.isValid() || !compositeChecker.isFailFast()) {
+      log.info("Start performing {} validation...", this.getClass().getSimpleName());
+      List<FirstPassValidationError> checkErrors = performSelfCheck(filename);
+      errors.addAll(checkErrors);
+      log.info("End performing {} validation. Number of errors found: {}", new Object[] { this.getClass()
+          .getSimpleName(), checkErrors.size() });
+    }
     return errors;
   }
 

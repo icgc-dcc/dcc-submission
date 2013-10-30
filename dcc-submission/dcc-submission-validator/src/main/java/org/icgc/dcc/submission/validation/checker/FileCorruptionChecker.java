@@ -59,7 +59,7 @@ public class FileCorruptionChecker extends CompositeFileChecker {
       log.info("Exception caught in reading file (corruption): {}", filename, e);
       errors.add(new FirstPassValidationError(getCheckLevel(), "Error in reading the file (corruption): "
           + filename,
-          ErrorCode.COMPRESSION_CODEC_ERROR, getFileSchemaName(filename)));
+          ErrorCode.COMPRESSION_CODEC_ERROR, new Object[] { getFileSchemaName(filename) }, -1));
     }
     return errors.build();
   }
@@ -78,7 +78,7 @@ public class FileCorruptionChecker extends CompositeFileChecker {
     } catch (IOException e) {
       log.info("Exception caught in decoding bzip2 file: {}", filename, e);
       errors.add(new FirstPassValidationError(getCheckLevel(), "Corrupted bzip file: " + filename,
-          ErrorCode.COMPRESSION_CODEC_ERROR, getFileSchemaName(filename)));
+          ErrorCode.COMPRESSION_CODEC_ERROR, new Object[] { getFileSchemaName(filename) }, -1));
     }
     return errors.build();
   }
@@ -97,7 +97,7 @@ public class FileCorruptionChecker extends CompositeFileChecker {
     } catch (IOException e) {
       log.info("Exception caught in decoding gzip file: {}", filename, e);
       errors.add(new FirstPassValidationError(getCheckLevel(), "Corrupted gzip file: " + filename,
-          ErrorCode.COMPRESSION_CODEC_ERROR, getFileSchemaName(filename)));
+          ErrorCode.COMPRESSION_CODEC_ERROR, new Object[] { getFileSchemaName(filename) }, -1));
     }
     return errors.build();
   }

@@ -165,6 +165,20 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
         """
         File compression type does not match file extension
         """
+    INVALID_CHARSET_ROW_ERROR:
+      name: "Row contains invalid charset"
+      description: (source) ->
+        """
+        Charset Invalid, expected charset for the line is
+        <em>#{source.parameters?.EXPECTED} with no control character except tab as a delimiter </em>
+        """
+    FILE_HEADER_ERROR
+      name: "File header error"
+      description: (source) ->
+        """
+        Different from the expected header
+        <em>#{source.parameters?.EXPECTED}</em>
+        """
 
 
   details: (source) ->

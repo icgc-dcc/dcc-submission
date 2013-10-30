@@ -17,13 +17,13 @@
  */
 package org.icgc.dcc.submission.validation.checker;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
@@ -37,6 +37,7 @@ import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 
+@Slf4j
 public class FirstPassChecker {
 
   final private Dictionary dict;
@@ -62,9 +63,12 @@ public class FirstPassChecker {
   }
 
   public static FileChecker getDefaultFileChecker(DccFileSystem fs, Dictionary dict, SubmissionDirectory submissionDir) {
-    // chaining multiple file checkers
-    return new FileHeaderChecker(new FileCorruptionChecker(new FileCollisionChecker(new BaseFileChecker(fs, dict,
-        submissionDir))));
+    // chaining multiple file checker
+    return new FileHeaderChecker( //
+        new FileCorruptionChecker(//
+            new FileCollisionChecker(//
+                new ReferentialFileChecker( //
+                    new BaseFileChecker(fs, dict, submissionDir)))));
   }
 
   public static RowChecker getDefaultRowChecker(DccFileSystem fs, Dictionary dict, SubmissionDirectory submissionDir) {
@@ -73,12 +77,13 @@ public class FirstPassChecker {
 
   }
 
-  public boolean isValid() throws IOException {
+  public boolean isValid() {
     errorMap.clear();
     for (String filename : submissionDir.listFile()) {
       String fileSchemaName = getFileSchemaName(filename);
       if (fileSchemaName != null) {
         Builder<FirstPassValidationError> errors = ImmutableList.<FirstPassValidationError> builder();
+        log.info("Validate file level well-formness for file schema: {}", fileSchemaName);
         errors.addAll(fileChecker.check(filename));
         if (fileChecker.isValid() || !fileChecker.isFailFast()) {
           errors.addAll(rowChecker.check(filename));
@@ -96,11 +101,12 @@ public class FirstPassChecker {
 
   public List<TupleError> getTupleErrors(String fileSchemaName) {
     List<FirstPassValidationError> errors = errorMap.get(fileSchemaName);
-    TupleState state = new TupleState();
+    Builder<TupleError> tupleErrors = ImmutableList.builder();
     for (val error : errors) {
-      state.reportError(error.getCode(), error.getLevel().toString(), error.toString(), error.getParam());
+      tupleErrors.add(TupleState.createTupleError(error.getCode(), error.getLevel().toString(), error.toString(),
+          error.getLineNumber(), error.getParam()));
     }
-    return ImmutableList.copyOf(state.getErrors());
+    return tupleErrors.build();
   }
 
   private String getFileSchemaName(String filename) {

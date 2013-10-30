@@ -45,12 +45,13 @@ public class RowCharsetChecker extends CompositeRowChecker {
   }
 
   @Override
-  public List<FirstPassValidationError> performSelfCheck(FileSchema fileSchema, String line) {
+  public List<FirstPassValidationError> performSelfCheck(FileSchema fileSchema, String line, long lineNumber) {
     Builder<FirstPassValidationError> errors = ImmutableList.builder();
     if (DEFAULT_INVALID_MATCHER.matchesAnyOf(line)) {
       errors
           .add(new FirstPassValidationError(getCheckLevel(),
-              "Invalid character found in the row: " + line, ErrorCode.INVALID_CHARSET_ROW_ERROR, ASCII));
+              "Invalid character found in the row: " + line, ErrorCode.INVALID_CHARSET_ROW_ERROR,
+              new Object[] { ASCII }, lineNumber));
     }
     return errors.build();
   }

@@ -58,7 +58,7 @@ public class BaseRowChecker extends BaseFileChecker implements RowChecker {
   }
 
   @Override
-  public List<FirstPassValidationError> checkRow(FileSchema fileSchema, String row) {
+  public List<FirstPassValidationError> checkRow(FileSchema fileSchema, String row, long lineNumber) {
     return ImmutableList.of();
   }
 

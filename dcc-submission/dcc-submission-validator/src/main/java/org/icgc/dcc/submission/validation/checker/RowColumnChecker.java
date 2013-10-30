@@ -38,13 +38,13 @@ public class RowColumnChecker extends CompositeRowChecker {
   }
 
   @Override
-  public List<FirstPassValidationError> performSelfCheck(FileSchema fileSchema, String line) {
+  public List<FirstPassValidationError> performSelfCheck(FileSchema fileSchema, String line, long lineNumber) {
     Builder<FirstPassValidationError> errors = ImmutableList.builder();
     int expectedNumColumns = fileSchema.getFields().size();
     int actualNumColumns = ImmutableList.copyOf(line.split(DELIMITER, -1)).size();
     if (actualNumColumns != expectedNumColumns) errors.add(new FirstPassValidationError(getCheckLevel(),
         "Row does not match the expected number of columns: " + expectedNumColumns + ", actual: " + actualNumColumns,
-        ErrorCode.STRUCTURALLY_INVALID_ROW_ERROR, expectedNumColumns));
+        ErrorCode.STRUCTURALLY_INVALID_ROW_ERROR, new Object[] { expectedNumColumns }, lineNumber));
     return errors.build();
   }
 }

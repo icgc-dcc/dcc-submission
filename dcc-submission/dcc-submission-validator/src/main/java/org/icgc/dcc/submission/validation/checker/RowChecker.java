@@ -23,6 +23,6 @@ import org.icgc.dcc.submission.dictionary.model.FileSchema;
 
 public interface RowChecker extends FileChecker {
 
-  public List<FirstPassValidationError> checkRow(FileSchema fileSchema, String row);
+  List<FirstPassValidationError> checkRow(FileSchema fileSchema, String row, long lineNumber);
 
 }
