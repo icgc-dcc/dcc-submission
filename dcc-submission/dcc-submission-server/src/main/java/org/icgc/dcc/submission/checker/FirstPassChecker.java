@@ -79,10 +79,9 @@ public class FirstPassChecker {
       String fileSchemaName = getFileSchemaName(filename);
       if (fileSchemaName != null) {
         Builder<FirstPassValidationError> errors = ImmutableList.<FirstPassValidationError> builder();
-        String filePathname = submissionDir.getDataFilePath(filename);
-        errors.addAll(fileChecker.check(filePathname));
+        errors.addAll(fileChecker.check(filename));
         if (fileChecker.isValid() || !fileChecker.isFailFast()) {
-          errors.addAll(rowChecker.check(filePathname));
+          errors.addAll(rowChecker.check(filename));
         }
         errorMap.put(fileSchemaName, errors.build());
       }
@@ -99,7 +98,7 @@ public class FirstPassChecker {
     List<FirstPassValidationError> errors = errorMap.get(fileSchemaName);
     TupleState state = new TupleState();
     for (val error : errors) {
-      state.reportError(error.getCode(), error.getLevel().toString(), error.toString());
+      state.reportError(error.getCode(), error.getLevel().toString(), error.toString(), error.getParam());
     }
     return ImmutableList.copyOf(state.getErrors());
   }

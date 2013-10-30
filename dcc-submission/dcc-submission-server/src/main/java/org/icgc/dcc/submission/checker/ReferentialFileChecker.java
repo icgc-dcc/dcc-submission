@@ -41,16 +41,16 @@ public class ReferentialFileChecker extends CompositeFileChecker {
   }
 
   @Override
-  public List<FirstPassValidationError> performSelfCheck(String filePathname) {
+  public List<FirstPassValidationError> performSelfCheck(String filename) {
     Builder<FirstPassValidationError> errors = ImmutableList.builder();
-    errors.addAll(referencedCheck(filePathname));
-    errors.addAll(referencingCheck(filePathname));
+    errors.addAll(referencedCheck(filename));
+    errors.addAll(referencingCheck(filename));
     return errors.build();
   }
 
-  private List<FirstPassValidationError> referencedCheck(String filePathname) {
+  private List<FirstPassValidationError> referencedCheck(String filename) {
     Builder<FirstPassValidationError> errors = ImmutableList.builder();
-    Optional<FileSchema> fileSchema = getDictionary().fileSchema(getFileSchemaName(filePathname));
+    Optional<FileSchema> fileSchema = getDictionary().fileSchema(getFileSchemaName(filename));
     if (fileSchema.isPresent()) {
       for (val relation : fileSchema.get().getRelations()) {
         // fileSchema.get().getBidirectionalAfferentFileSchemata(dict);
@@ -61,7 +61,7 @@ public class ReferentialFileChecker extends CompositeFileChecker {
           if (files.size() == 0) {
             errors.add(new FirstPassValidationError(getCheckLevel(),
                 "Fail referenced check: missing referenced file ("
-                    + relation.getOther(), ValidationErrorCode.RELATION_FILE_ERROR));
+                    + relation.getOther(), ValidationErrorCode.RELATION_FILE_ERROR, fileSchema.get().getName()));
           }
         }
       }
@@ -69,16 +69,18 @@ public class ReferentialFileChecker extends CompositeFileChecker {
     return errors.build();
   }
 
-  private List<FirstPassValidationError> referencingCheck(String filePathname) {
+  private List<FirstPassValidationError> referencingCheck(String filename) {
     List<FirstPassValidationError> errors = Lists.newLinkedList();
-    Optional<FileSchema> fileSchema = getDictionary().fileSchema(getFileSchemaName(filePathname));
+    Optional<FileSchema> fileSchema = getDictionary().fileSchema(getFileSchemaName(filename));
     if (fileSchema.isPresent()) {
       for (val otherFileSchema : fileSchema.get().getBidirectionalAfferentFileSchemata(getDictionary())) {
         List<String> files =
             ImmutableList.copyOf(getSubmissionDirectory().listFile(Pattern.compile(otherFileSchema.getPattern())));
         if (files.size() == 0) {
-          errors.add(new FirstPassValidationError(getCheckLevel(), "Fail referencing check: missing referencing file ("
-              + otherFileSchema.getName(), ValidationErrorCode.REVERSE_RELATION_FILE_ERROR));
+          errors
+              .add(new FirstPassValidationError(getCheckLevel(), "Fail referencing check: missing referencing file ("
+                  + otherFileSchema.getName(), ValidationErrorCode.REVERSE_RELATION_FILE_ERROR, fileSchema.get()
+                  .getName()));
         }
       }
     }

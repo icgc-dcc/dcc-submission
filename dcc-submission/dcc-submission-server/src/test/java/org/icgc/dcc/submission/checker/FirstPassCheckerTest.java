@@ -29,6 +29,7 @@ import static org.mockito.Mockito.when;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.List;
 
 import org.icgc.dcc.submission.checker.Util.CheckLevel;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
@@ -53,9 +54,9 @@ import com.google.common.collect.ImmutableList;
 public class FirstPassCheckerTest {
 
   private final FirstPassValidationError DUMMY_FILE_ERROR = new FirstPassValidationError(CheckLevel.FILE_LEVEL,
-      "DummyFileError", ValidationErrorCode.REVERSE_RELATION_FILE_ERROR);
+      "DummyFileError", ValidationErrorCode.REVERSE_RELATION_FILE_ERROR, null);
   private final FirstPassValidationError DUMMY_ROW_ERROR = new FirstPassValidationError(CheckLevel.ROW_LEVEL,
-      "DummyFileError", ValidationErrorCode.REVERSE_RELATION_FILE_ERROR);
+      "DummyFileError", ValidationErrorCode.REVERSE_RELATION_FILE_ERROR, null);
 
   private SubmissionDirectory submissionDir;
   private Dictionary dict;
@@ -120,14 +121,18 @@ public class FirstPassCheckerTest {
     when(fileChecker.check(anyString())).thenReturn(ImmutableList.of(DUMMY_FILE_ERROR));
     when(fileChecker.isFailFast()).thenReturn(true); // fail it right away
 
+    CompositeFileChecker moreChecker =
+        PowerMockito.spy(new DummyFileChecker(new DummyFileChecker(fileChecker, false), false));
+
     RowChecker rowChecker = mock(RowChecker.class);
     when(rowChecker.check(anyString())).thenReturn(ImmutableList.<FirstPassValidationError> of());
     when(rowChecker.isValid()).thenReturn(true);
 
-    FirstPassChecker fpc = new FirstPassChecker(dict, submissionDir, fileChecker, rowChecker);
+    FirstPassChecker fpc = new FirstPassChecker(dict, submissionDir, moreChecker, rowChecker);
     assertFalse(fpc.isValid());
 
     verify(fileChecker, times(1)).check(anyString());
+    verify(moreChecker, times(0)).performSelfCheck(anyString());
     verify(rowChecker, times(0)).check(anyString());
   }
 
@@ -165,5 +170,27 @@ public class FirstPassCheckerTest {
 
     verify(fileChecker, times(1)).check(anyString());
     verify(rowChecker, times(1)).check(anyString());
+  }
+
+  private static class DummyFileChecker extends CompositeFileChecker {
+
+    /**
+     * @param nestedChecker
+     */
+    public DummyFileChecker(FileChecker nestedChecker) {
+      super(nestedChecker);
+      // TODO Auto-generated constructor stub
+    }
+
+    public DummyFileChecker(FileChecker nestedChecker, boolean failsafe) {
+      super(nestedChecker, failsafe);
+      // TODO Auto-generated constructor stub
+    }
+
+    @Override
+    public List<FirstPassValidationError> performSelfCheck(String filename) {
+      return ImmutableList.of();
+    }
+
   }
 }

@@ -42,19 +42,22 @@ public class FileCollisionChecker extends CompositeFileChecker {
   }
 
   @Override
-  public List<FirstPassValidationError> performSelfCheck(String filePathname) {
+  public List<FirstPassValidationError> performSelfCheck(String filename) {
     Builder<FirstPassValidationError> errors = ImmutableList.<FirstPassValidationError> builder();
-    Optional<FileSchema> fileSchema = getDictionary().fileSchema(getFileSchemaName(filePathname));
+    Optional<FileSchema> fileSchema = getDictionary().fileSchema(getFileSchemaName(filename));
     if (fileSchema.isPresent()) {
       // more than 1 file that match the same pattern
-      if (ImmutableList.copyOf(getSubmissionDirectory().listFile(Pattern.compile(fileSchema.get().getPattern())))
-          .size() > 1) {
+      List<String> files =
+          ImmutableList.copyOf(getSubmissionDirectory().listFile(Pattern.compile(fileSchema.get().getPattern())));
+      if (files.size() > 1) {
+        Object[] params = new Object[2];
+        params[0] = fileSchema.get().getName();
+        params[1] = ImmutableList.of(files);
         errors.add(new FirstPassValidationError(CheckLevel.FILE_LEVEL,
             "More than 1 file matching the file pattern: " + fileSchema.get().getPattern(),
-            ValidationErrorCode.TOO_MANY_FILES_ERROR));
+            ValidationErrorCode.TOO_MANY_FILES_ERROR, params));
       }
     }
     return errors.build();
   }
-
 }

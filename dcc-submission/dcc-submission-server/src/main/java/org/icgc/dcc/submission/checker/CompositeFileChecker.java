@@ -50,7 +50,7 @@ public abstract class CompositeFileChecker implements FileChecker {
     return errors;
   }
 
-  public abstract List<FirstPassValidationError> performSelfCheck(String filePathname);
+  public abstract List<FirstPassValidationError> performSelfCheck(String filename);
 
   @Override
   public boolean isValid() {
@@ -64,12 +64,12 @@ public abstract class CompositeFileChecker implements FileChecker {
 
   @Override
   public boolean isFailFast() {
-    return failFast;
+    return compositeChecker.isFailFast() || failFast;
   }
 
   @Override
-  public String getFileSchemaName(String filePathname) {
-    return compositeChecker.getFileSchemaName(filePathname);
+  public String getFileSchemaName(String filename) {
+    return compositeChecker.getFileSchemaName(filename);
   }
 
   @Override

@@ -49,7 +49,7 @@ public class CompositeFileCheckerTest {
   public void testCheckNotEmpty() throws Exception {
     CompositeCheckerUnderTest checker = new CompositeCheckerUnderTest(baseChecker);
     when(baseChecker.check(anyString())).thenReturn(
-        ImmutableList.<FirstPassValidationError> of(new FirstPassValidationError(null, null, null)));
+        ImmutableList.<FirstPassValidationError> of(new FirstPassValidationError(null, null, null, null)));
     assertTrue(!checker.check("anything").isEmpty());
     assertTrue(checker.check("anything").size() == 1);
   }

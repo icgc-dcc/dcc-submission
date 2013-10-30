@@ -34,7 +34,7 @@ public class RowColumnChecker extends CompositeRowChecker {
   }
 
   public RowColumnChecker(RowChecker rowChecker) {
-    this(rowChecker, true);
+    this(rowChecker, false);
   }
 
   @Override
@@ -44,7 +44,7 @@ public class RowColumnChecker extends CompositeRowChecker {
     int actualNumColumns = ImmutableList.copyOf(line.split(DELIMITER, -1)).size();
     if (actualNumColumns != expectedNumColumns) errors.add(new FirstPassValidationError(getCheckLevel(),
         "Row does not match the expected number of columns: " + expectedNumColumns + ", actual: " + actualNumColumns,
-        ValidationErrorCode.STRUCTURALLY_INVALID_ROW_ERROR));
+        ValidationErrorCode.STRUCTURALLY_INVALID_ROW_ERROR, expectedNumColumns));
     return errors.build();
   }
 }

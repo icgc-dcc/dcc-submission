@@ -41,7 +41,7 @@ public class RowCharsetChecker extends CompositeRowChecker {
   }
 
   public RowCharsetChecker(RowChecker rowChecker) {
-    this(rowChecker, true);
+    this(rowChecker, false);
   }
 
   @Override
@@ -50,7 +50,7 @@ public class RowCharsetChecker extends CompositeRowChecker {
     if (DEFAULT_INVALID_MATCHER.matchesAnyOf(line)) {
       errors
           .add(new FirstPassValidationError(getCheckLevel(),
-              "Invalid character found in the row: " + line, ValidationErrorCode.INVALID_CHARSET_ROW_ERROR));
+              "Invalid character found in the row: " + line, ValidationErrorCode.INVALID_CHARSET_ROW_ERROR, ASCII));
     }
     return errors.build();
   }

@@ -244,7 +244,6 @@ public class ReferentialFileCheckerTest {
 
     public NoSchemaFound(String schemaName) {
       this.schemaName = schemaName;
-
     }
 
     @Override

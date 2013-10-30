@@ -139,7 +139,7 @@ public class FileCorruptionCheckerTest {
     }
   }
 
-  private static DataInputStream getTestInputStream(CodecType type) throws IOException {
+  public static DataInputStream getTestInputStream(String content, CodecType type) throws IOException {
     ByteArrayOutputStream bytes = new ByteArrayOutputStream();
     OutputStream out = bytes;
     switch (type) {
@@ -150,9 +150,13 @@ public class FileCorruptionCheckerTest {
       out = new BZip2CompressorOutputStream(bytes);
       break;
     }
-    IOUtils.write(TEST_TEXT.getBytes(), out);
+    IOUtils.write(content.getBytes(), out);
     IOUtils.closeQuietly(out);
     return new DataInputStream(new ByteArrayInputStream(bytes.toByteArray()));
+  }
+
+  private static DataInputStream getTestInputStream(CodecType type) throws IOException {
+    return getTestInputStream(TEST_TEXT, type);
   }
 
   @Test

@@ -31,4 +31,7 @@ public class FirstPassValidationError {
   private final CheckLevel level;
   private final String errMsg;
   private final ValidationErrorCode code;
+
+  // to be used to satisfy TupleError
+  private final Object param;
 }

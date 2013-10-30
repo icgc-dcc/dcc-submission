@@ -53,11 +53,11 @@ public class FileHeaderChecker extends CompositeFileChecker {
       if (!actualHeader.equals(expectedHeader)) {
         errors.add(new FirstPassValidationError(getCheckLevel(), "Different from the expected header: "
             + expectedHeader
-            + ", actual header: " + actualHeader, ValidationErrorCode.FILE_HEADER_ERROR));
+            + ", actual header: " + actualHeader, ValidationErrorCode.FILE_HEADER_ERROR, actualHeader));
       }
     } catch (IOException e) {
       errors.add(new FirstPassValidationError(getCheckLevel(), "Unable to peek the file header for file: "
-          + filename, ValidationErrorCode.FILE_HEADER_ERROR));
+          + filename, ValidationErrorCode.FILE_HEADER_ERROR, ImmutableList.<String> of()));
     }
     // check if they contain the same elements in the same order
     return errors.build();
