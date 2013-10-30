@@ -39,8 +39,9 @@ Point your browser to:
 Build
 ---
 
-For CI builds. Required to translate coffee script and minify. This is also required if you intend to run the `dcc-submission-server` without `cake` in development (for non-UI developers). Note that you will need to run this command and restart the server every time a file is modified. Results are put in `./public`:
+For CI builds. Required to translate coffee script and minify. This is also required if you intend to run the `dcc-submission-server` without `cake` in development (for non-UI developers). Results are put in `./public`:
 
 	cd dcc/dcc-submission/dcc-submission-ui
 	mvn	
 
+*Note:* If not using the proxy above you will need to run this command and restart the `dcc-submission-server` every time a file is modified. 
