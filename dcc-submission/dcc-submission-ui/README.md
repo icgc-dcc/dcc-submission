@@ -11,7 +11,8 @@ Install brunch:
 	sudo npm install -g coffee-script brunch
 	cd dcc/dcc-submission/dcc-submission-ui
 	npm install
-Run
+	
+Development
 ---
 
 Start brunch (in another console):
@@ -28,10 +29,12 @@ Point your browser to:
 
 [http://localhost:3334/](http://localhost:3334/)
 
+	
 Build
 ---
 
-Translate coffee script and minify. Results in `./public`:
+For CI builds. Required to translate coffee script and minify. This is also required if you intend to run the `dcc-submission-server` without `cake` in development (for non-UI developers). Note that you will need to run this command and restart the server every time a file is modified. Results are put in `./public`:
 
 	cd dcc/dcc-submission/dcc-submission-ui
-	brunch b m
+	mvn	
+
