@@ -28,8 +28,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
-import org.icgc.dcc.submission.validation.core.ErrorParameterKey;
 import org.icgc.dcc.submission.validation.core.ErrorCode;
+import org.icgc.dcc.submission.validation.core.ErrorParameterKey;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
@@ -69,6 +69,12 @@ public class TupleState implements Serializable {
     List<String> columnNames = Lists.newArrayList(columnName);
     ensureErrors().add(new TupleError(code, columnNames, value, this.getOffset(), code.build(params)));
     structurallyValid = code.isStructural() == false;
+  }
+
+  // TODO: this is just temporary until a nicer error reporting is in place
+  public static TupleError createTupleError(ErrorCode code, String columnName, Object value, long lineNumber,
+      Object... params) {
+    return new TupleError(code, Lists.newArrayList(columnName), value, lineNumber, code.build(params));
   }
 
   public Iterable<TupleError> getErrors() {
