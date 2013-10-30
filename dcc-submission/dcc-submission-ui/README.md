@@ -29,7 +29,7 @@ Start the proxy (in yet another console)
 	cd dcc/dcc-submission/dcc-submission-ui
 	cake proxy
 
-Start the [dcc-submission-server](../dcc-submission-server/README.MD)
+Start the [dcc-submission-server](dcc/dcc-submission/dcc-submission-server/README.MD)
 
 Point your browser to:
 
