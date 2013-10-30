@@ -15,64 +15,31 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.core.model;
 
-import static org.icgc.dcc.submission.core.util.NameValidator.PROJECT_ID_PATTERN;
+package org.icgc.dcc.submission.repository;
 
-import java.util.List;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.extern.slf4j.Slf4j;
 
-import javax.validation.constraints.Pattern;
+import org.icgc.dcc.submission.core.MailService;
+import org.icgc.dcc.submission.core.morphia.BaseMorphiaService;
+import org.icgc.dcc.submission.dictionary.model.CodeList;
+import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.dictionary.model.QDictionary;
 
-import lombok.Value;
-import lombok.experimental.Accessors;
-import lombok.experimental.NonFinal;
+import com.google.code.morphia.Datastore;
+import com.google.code.morphia.Morphia;
+import com.google.inject.Inject;
 
-import org.bson.types.ObjectId;
-import org.codehaus.jackson.annotate.JsonIgnore;
-import org.hibernate.validator.constraints.NotBlank;
+@Data
+@EqualsAndHashCode(callSuper = false)
+@Slf4j
+public class DictionaryRepository extends BaseMorphiaService<Dictionary> {
 
-import com.google.code.morphia.annotations.Entity;
-import com.google.code.morphia.annotations.Id;
-import com.google.code.morphia.annotations.Indexed;
-import com.google.common.collect.Lists;
-
-@Entity(noClassnameStored = true)
-@Value
-@Accessors(fluent = true)
-public class Project {
-
-  @Id
-  @JsonIgnore
-  @NonFinal
-  ObjectId id;
-
-  @NotBlank
-  @Pattern(regexp = PROJECT_ID_PATTERN)
-  @Indexed(unique = true)
-  String key;
-
-  @NotBlank
-  String name;
-
-  String alias;
-
-  @JsonIgnore
-  List<String> users = Lists.newArrayList();
-
-  @JsonIgnore
-  List<String> groups = Lists.newArrayList();
-
-  public Project(String key, String name, String alias) {
-    this.key = key;
-    this.name = name;
-    this.alias = alias;
-  }
-
-  public Project(String key, String name) {
-    this(key, name, key);
-  }
-
-  public boolean hasUser(String name) {
-    return users.contains(name);
+  @Inject
+  public DictionaryRepository(Morphia morphia, Datastore datastore, MailService mailService) {
+    super(morphia, datastore, QDictionary.dictionary, mailService);
+    registerModelClasses(Dictionary.class, CodeList.class);
   }
 }

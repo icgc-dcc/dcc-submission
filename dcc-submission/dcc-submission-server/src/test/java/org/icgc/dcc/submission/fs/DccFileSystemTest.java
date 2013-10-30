@@ -26,7 +26,6 @@ import java.io.IOException;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.junit.Test;
 
 import com.google.common.collect.Sets;
@@ -53,12 +52,12 @@ public class DccFileSystemTest extends FileSystemTest {
   public void test_ensureReleaseFilesystem_handlesUnexistingDirectory() throws IOException {
     when(this.mockFileSystem.exists(any(Path.class)))//
         .thenReturn(false).thenReturn(false).thenReturn(true); // did not exist, still doesn't exist, exists now
-    this.dccFileSystem.ensureReleaseFilesystem(this.mockRelease, Sets.newHashSet(this.mockProject.getKey()));
+    this.dccFileSystem.ensureReleaseFilesystem(this.mockRelease, Sets.newHashSet(this.mockProject.key()));
   }
 
   @Test
   public void test_ensureReleaseFilesystem_handlesExistingDirectory() throws IOException {
     when(this.mockFileSystem.exists(any(Path.class))).thenReturn(true).thenReturn(true); // existed before, still exists
-    this.dccFileSystem.ensureReleaseFilesystem(this.mockRelease, Sets.newHashSet(this.mockProject.getKey()));
+    this.dccFileSystem.ensureReleaseFilesystem(this.mockRelease, Sets.newHashSet(this.mockProject.key()));
   }
 }

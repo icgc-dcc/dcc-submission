@@ -146,7 +146,7 @@ public class SftpServerServiceTest {
     when(authenticator.getSubject()).thenReturn(subject);
 
     // Mock release / project
-    when(project.getKey()).thenReturn(PROJECT_KEY);
+    when(project.key()).thenReturn(PROJECT_KEY);
     when(release.getName()).thenReturn(RELEASE_NAME);
     when(nextRelease.getRelease()).thenReturn(release);
     when(releaseService.resolveNextRelease()).thenReturn(nextRelease);

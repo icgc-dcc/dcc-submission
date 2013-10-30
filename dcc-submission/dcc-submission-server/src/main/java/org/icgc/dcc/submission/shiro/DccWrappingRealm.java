@@ -68,10 +68,10 @@ public class DccWrappingRealm extends IniRealm {
 
   private Set<String> buildProjectSpecificPermissions(String username, Collection<String> roles) {
     Set<String> permissions = Sets.newLinkedHashSet();
-    for(Project project : projects.getProjects()) {
-      if(Authorizations.hasAdminRole(roles) || project.hasUser(username)
-          || CollectionUtils.containsAny(project.getGroups(), roles)) {
-        permissions.add(AuthorizationPrivileges.projectViewPrivilege(project.getKey()));
+    for (Project project : projects.getProjects()) {
+      if (Authorizations.hasAdminRole(roles) || project.hasUser(username)
+          || CollectionUtils.containsAny(project.groups(), roles)) {
+        permissions.add(AuthorizationPrivileges.projectViewPrivilege(project.key()));
       }
     }
     return permissions;

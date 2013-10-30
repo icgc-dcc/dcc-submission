@@ -18,7 +18,6 @@ import org.icgc.dcc.submission.release.ReleaseService;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.security.UsernamePasswordAuthenticator;
-import org.icgc.dcc.submission.sftp.SftpContext;
 import org.icgc.dcc.submission.sftp.fs.FileHdfsSshFile;
 import org.icgc.dcc.submission.sftp.fs.RootHdfsSshFile;
 import org.icgc.dcc.submission.sftp.fs.SubmissionDirectoryHdfsSshFile;
@@ -67,7 +66,7 @@ public class FileHdfsSshFileTest {
     projectDirectory.mkdir();    
     
     // Mock release / project
-    when(project.getKey()).thenReturn(PROJECT_KEY);
+    when(project.key()).thenReturn(PROJECT_KEY);
     when(nextRelease.getRelease()).thenReturn(release);
     when(releaseService.resolveNextRelease()).thenReturn(nextRelease);
     when(projectService.getProject(PROJECT_KEY)).thenReturn(project);

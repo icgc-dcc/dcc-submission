@@ -71,7 +71,7 @@ public class SftpContext {
   public List<String> getUserProjectKeys() {
     List<String> projectKeys = newArrayList();
     for (val project : projectService.getProjectsBySubject(getCurrentUser())) {
-      projectKeys.add(project.getKey());
+      projectKeys.add(project.key());
     }
 
     return projectKeys;

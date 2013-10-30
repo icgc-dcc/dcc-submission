@@ -87,7 +87,7 @@ public class FileSystemFunctionalTest extends FileSystemTest {
         filenameList0.toString());
     log.info("ls0 = " + filenameList0);
 
-    this.dccFileSystem.ensureReleaseFilesystem(this.mockRelease, Sets.newHashSet(this.mockProject.getKey()));
+    this.dccFileSystem.ensureReleaseFilesystem(this.mockRelease, Sets.newHashSet(this.mockProject.key()));
 
     Iterable<String> filenameList1 =
         HadoopUtils.toFilenameList(HadoopUtils.lsDir(fileSystem, new Path(this.dccFileSystem.getRootStringPath())));

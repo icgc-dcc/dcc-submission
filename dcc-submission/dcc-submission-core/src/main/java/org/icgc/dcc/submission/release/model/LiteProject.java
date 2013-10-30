@@ -28,9 +28,9 @@ public class LiteProject {
   private final String alias;
 
   public LiteProject(Project project) {
-    this.key = project.getKey();
-    this.name = project.getName();
-    this.alias = project.getAlias();
+    this.key = project.key();
+    this.name = project.name();
+    this.alias = project.alias();
   }
 
   public String getKey() {

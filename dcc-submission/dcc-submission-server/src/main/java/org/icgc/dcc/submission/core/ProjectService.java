@@ -59,7 +59,7 @@ public class ProjectService extends BaseMorphiaService<Project> {
     List<Release> releases = new ArrayList<Release>();
     for (Release release : listReleases()) {
       for (Submission submission : release.getSubmissions()) {
-        if (submission.getProjectKey().equals(project.getKey())) {
+        if (submission.getProjectKey().equals(project.key())) {
           releases.add(release);
           continue;
         }
@@ -72,22 +72,22 @@ public class ProjectService extends BaseMorphiaService<Project> {
   @SuppressWarnings("all")
   public void addProject(Project project) {
     // check for project key
-    if (!NameValidator.validateProjectId(project.getKey())) {
-      throw new InvalidNameException(project.getKey());
+    if (!NameValidator.validateProjectId(project.key())) {
+      throw new InvalidNameException(project.key());
     }
     // check for duplicate project key
-    if (this.hasProject(project.getKey())) {
-      throw new DuplicateNameException(project.getKey());
+    if (this.hasProject(project.key())) {
+      throw new DuplicateNameException(project.key());
     }
 
     this.saveProject(project);
 
     Release release = getOpenedRelease(QRelease.release.state.eq(ReleaseState.OPENED));
     Submission submission = new Submission();
-    submission.setProjectKey(project.getKey());
+    submission.setProjectKey(project.key());
     submission.setState(SubmissionState.NOT_VALIDATED);
     release.addSubmission(submission);
-    fs.mkdirProjectDirectory(release, project.getKey());
+    fs.mkdirProjectDirectory(release, project.key());
 
     Query<Release> updateQuery = datastore().createQuery(Release.class)//
         .filter("name = ", release.getName());
@@ -105,7 +105,7 @@ public class ProjectService extends BaseMorphiaService<Project> {
   public List<Project> getProjectsBySubject(Subject user) {
     List<Project> filteredProjects = new ArrayList<Project>();
     for (Project project : this.getProjects()) {
-      if (user.isPermitted(AuthorizationPrivileges.projectViewPrivilege(project.getKey()))) {
+      if (user.isPermitted(AuthorizationPrivileges.projectViewPrivilege(project.key()))) {
         filteredProjects.add(project);
       }
     }

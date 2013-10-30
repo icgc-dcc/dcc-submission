@@ -26,7 +26,6 @@ import java.util.List;
 
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.core.model.User;
-import org.icgc.dcc.submission.fs.FsConfig;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.Submission;
 import org.icgc.dcc.submission.release.model.SubmissionState;
@@ -92,16 +91,16 @@ public class FileSystemTest {
 
     when(this.mockUser.getName()).thenReturn(USERNAME);
 
-    when(this.mockProject.getName()).thenReturn(PROJECT_NAME);
-    when(this.mockProject.getKey()).thenReturn(PROJECT_KEY);
+    when(this.mockProject.name()).thenReturn(PROJECT_NAME);
+    when(this.mockProject.key()).thenReturn(PROJECT_KEY);
     when(this.mockProject.hasUser(this.mockUser.getName())).thenReturn(true);
 
     when(this.mockSubmission.getState()).thenReturn(SubmissionState.SIGNED_OFF);
 
-    when(this.mockRelease.getSubmission(this.mockProject.getKey())).thenReturn(this.mockSubmission);
-    List<String> projectKeys = Arrays.asList(this.mockProject.getKey()); // must be separated from thenReturn call
-                                                                         // (mockito bug:
-                                                                         // http://code.google.com/p/mockito/issues/detail?id=53)
+    when(this.mockRelease.getSubmission(this.mockProject.key())).thenReturn(this.mockSubmission);
+    List<String> projectKeys = Arrays.asList(this.mockProject.key()); // must be separated from thenReturn call
+                                                                      // (mockito bug:
+                                                                      // http://code.google.com/p/mockito/issues/detail?id=53)
     when(this.mockRelease.getProjectKeys()).thenReturn(projectKeys);
   }
 }
