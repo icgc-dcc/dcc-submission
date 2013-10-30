@@ -43,7 +43,8 @@ import org.icgc.dcc.submission.validation.cascading.TupleState;
 import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
 import org.icgc.dcc.submission.validation.core.ValidationErrorCode;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.LineReader;
 
@@ -115,23 +116,28 @@ public class ReferenceGenomeValidator {
     sequenceFile = new IndexedFastaSequenceFile(new File(referenceFile));
   }
 
+  private LineReader getLineReader(Path path, FileSystem fileSystem) throws IOException {
+    // Returns a LineReader capable of reading gz, bzip2 or plain text files
+    LineReader reader = null;
+    if (path.getName().endsWith(".gz")) {
+      reader = new LineReader(new InputStreamReader(new GZIPInputStream(fileSystem.open(path))));
+    } else if (path.getName().endsWith(".bz2")) {
+      BZip2Codec codec = new BZip2Codec();
+      reader = new LineReader(new InputStreamReader(codec.createInputStream((fileSystem.open(path)))));
+    } else {
+      reader = new LineReader(new InputStreamReader(fileSystem.open(path)));
+    }
+    return reader;
+  }
+
   public List<TupleError> validate(Path ssmPrimaryFile, FileSystem fileSystem) throws IOException {
     // Validate genome reference aligns with reference genome of submitted primary file. We assume at this stage the
     // file is well-formed, and that each individual field is sane
 
-    LineReader reader = null;
+    LineReader reader = getLineReader(ssmPrimaryFile, fileSystem);
 
-    // File extensions
-    if (ssmPrimaryFile.getName().endsWith(".gz")) {
-      reader = new LineReader(new InputStreamReader(new GZIPInputStream(fileSystem.open(ssmPrimaryFile))));
-    } else if (ssmPrimaryFile.getName().endsWith(".bz2")) {
-      BZip2Codec codec = new BZip2Codec();
-      reader = new LineReader(new InputStreamReader(codec.createInputStream((fileSystem.open(ssmPrimaryFile)))));
-    } else {
-      reader = new LineReader(new InputStreamReader(fileSystem.open(ssmPrimaryFile)));
-    }
+    Builder<TupleError> errors = new ImmutableList.Builder<TupleError>();
 
-    List<TupleError> errors = Lists.newArrayList();
     long lineNumber = 1;
     int chromosomeIdx = -1;
     int startIdx = -1;
@@ -160,7 +166,7 @@ public class ReferenceGenomeValidator {
       }
       lineNumber++;
     }
-    return errors;
+    return errors.build();
   }
 
   public String getReferenceGenomeSequence(String chromosome, String start, String end) {
