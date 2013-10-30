@@ -24,6 +24,7 @@ import java.nio.charset.Charset;
 import java.util.List;
 
 import lombok.Cleanup;
+import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
@@ -34,9 +35,10 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 
+@Slf4j
 public abstract class CompositeRowChecker extends CompositeFileChecker implements RowChecker {
 
-  private static final Charset DEFAULT_CHARSET = Charsets.US_ASCII;
+  private static final Charset DEFAULT_CHARSET = Charsets.UTF_8;
   protected RowChecker compositeChecker;
   protected boolean failFast;
 
@@ -67,8 +69,10 @@ public abstract class CompositeRowChecker extends CompositeFileChecker implement
           new BufferedReader(new InputStreamReader(Util.createInputStream(getDccFileSystem(), filePathname),
               DEFAULT_CHARSET));
       String line;
+      long lineNumber = 1;
       while ((line = reader.readLine()) != null) {
-        errors.addAll(this.checkRow(fileSchema, line));
+        errors.addAll(this.checkRow(fileSchema, line, lineNumber));
+        ++lineNumber;
       }
     } catch (IOException e) {
       throw new RuntimeException("Unable to check the file: " + filename, e);
@@ -77,14 +81,20 @@ public abstract class CompositeRowChecker extends CompositeFileChecker implement
   }
 
   @Override
-  public List<FirstPassValidationError> checkRow(FileSchema fileSchema, String row) {
+  public List<FirstPassValidationError> checkRow(FileSchema fileSchema, String row, long lineNumber) {
     Builder<FirstPassValidationError> errors = ImmutableList.builder();
-    errors.addAll(compositeChecker.checkRow(fileSchema, row));
-    if (compositeChecker.isValid() || !compositeChecker.isFailFast()) errors.addAll(performSelfCheck(fileSchema, row));
+    errors.addAll(compositeChecker.checkRow(fileSchema, row, lineNumber));
+    if (compositeChecker.isValid() || !compositeChecker.isFailFast()) {
+      log.info("Start performing {} validation...", this.getClass().getSimpleName());
+      List<FirstPassValidationError> checkErrors = performSelfCheck(fileSchema, row, lineNumber);
+      errors.addAll(checkErrors);
+      log.info("End performing {} validation. Number of errors found: {}", new Object[] { this.getClass()
+          .getSimpleName(), checkErrors.size() });
+    }
     return errors.build();
   }
 
-  public abstract List<FirstPassValidationError> performSelfCheck(FileSchema fileSchema, String row);
+  public abstract List<FirstPassValidationError> performSelfCheck(FileSchema fileSchema, String row, long lineNumber);
 
   @Override
   public boolean isValid() {

@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
@@ -36,6 +37,7 @@ import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 
+@Slf4j
 public class FirstPassChecker {
 
   final private Dictionary dict;
@@ -61,9 +63,12 @@ public class FirstPassChecker {
   }
 
   public static FileChecker getDefaultFileChecker(DccFileSystem fs, Dictionary dict, SubmissionDirectory submissionDir) {
-    // chaining multiple file checkers
-    return new FileHeaderChecker(new FileCorruptionChecker(new FileCollisionChecker(new BaseFileChecker(fs, dict,
-        submissionDir))));
+    // chaining multiple file checker
+    return new FileHeaderChecker( //
+        new FileCorruptionChecker(//
+            new FileCollisionChecker(//
+                new ReferentialFileChecker( //
+                    new BaseFileChecker(fs, dict, submissionDir)))));
   }
 
   public static RowChecker getDefaultRowChecker(DccFileSystem fs, Dictionary dict, SubmissionDirectory submissionDir) {
@@ -78,6 +83,7 @@ public class FirstPassChecker {
       String fileSchemaName = getFileSchemaName(filename);
       if (fileSchemaName != null) {
         Builder<FirstPassValidationError> errors = ImmutableList.<FirstPassValidationError> builder();
+        log.info("Validate file level well-formness for file schema: {}", fileSchemaName);
         errors.addAll(fileChecker.check(filename));
         if (fileChecker.isValid() || !fileChecker.isFailFast()) {
           errors.addAll(rowChecker.check(filename));

@@ -61,7 +61,8 @@ public class ReferentialFileChecker extends CompositeFileChecker {
           if (files.size() == 0) {
             errors.add(new FirstPassValidationError(getCheckLevel(),
                 "Fail referenced check: missing referenced file ("
-                    + relation.getOther(), ErrorCode.RELATION_FILE_ERROR, fileSchema.get().getName()));
+                    + relation.getOther(), ErrorCode.RELATION_FILE_ERROR,
+                new Object[] { fileSchema.get().getName() }, -1));
           }
         }
       }
@@ -79,8 +80,8 @@ public class ReferentialFileChecker extends CompositeFileChecker {
         if (files.size() == 0) {
           errors
               .add(new FirstPassValidationError(getCheckLevel(), "Fail referencing check: missing referencing file ("
-                  + otherFileSchema.getName(), ErrorCode.REVERSE_RELATION_FILE_ERROR, fileSchema.get()
-                  .getName()));
+                  + otherFileSchema.getName(), ErrorCode.REVERSE_RELATION_FILE_ERROR, new Object[] { fileSchema.get()
+                  .getName() }, -1));
         }
       }
     }

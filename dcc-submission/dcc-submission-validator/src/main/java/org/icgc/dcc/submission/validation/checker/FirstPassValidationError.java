@@ -33,5 +33,6 @@ public class FirstPassValidationError {
   private final ErrorCode code;
 
   // to be used to satisfy TupleError
-  private final Object param;
+  private final Object[] param;
+  private final long lineNumber;
 }

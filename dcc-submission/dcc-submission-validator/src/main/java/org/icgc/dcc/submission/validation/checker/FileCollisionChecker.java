@@ -55,7 +55,7 @@ public class FileCollisionChecker extends CompositeFileChecker {
         params[1] = ImmutableList.of(files);
         errors.add(new FirstPassValidationError(CheckLevel.FILE_LEVEL,
             "More than 1 file matching the file pattern: " + fileSchema.get().getPattern(),
-            ErrorCode.TOO_MANY_FILES_ERROR, params));
+            ErrorCode.TOO_MANY_FILES_ERROR, params, -1));
       }
     }
     return errors.build();
