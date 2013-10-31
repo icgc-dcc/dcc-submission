@@ -102,15 +102,15 @@ public class ReleaseServiceTest {
 
       Submission validSubmission = new Submission();
       validSubmission.setState(SubmissionState.VALID);
-      validSubmission.setProjectKey(project1.key());
+      validSubmission.setProjectKey(project1.getKey());
 
       Submission notValidatedSubmission = new Submission();
       notValidatedSubmission.setState(SubmissionState.NOT_VALIDATED);
-      notValidatedSubmission.setProjectKey(project2.key());
+      notValidatedSubmission.setProjectKey(project2.getKey());
 
       Submission queuedSubmission = new Submission();
       queuedSubmission.setState(SubmissionState.QUEUED);
-      queuedSubmission.setProjectKey(project3.key());
+      queuedSubmission.setProjectKey(project3.getKey());
 
       release.addSubmission(validSubmission);
       release.addSubmission(notValidatedSubmission);

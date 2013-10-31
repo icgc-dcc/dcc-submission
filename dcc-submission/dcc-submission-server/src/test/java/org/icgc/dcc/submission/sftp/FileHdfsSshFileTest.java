@@ -66,7 +66,7 @@ public class FileHdfsSshFileTest {
     projectDirectory.mkdir();    
     
     // Mock release / project
-    when(project.key()).thenReturn(PROJECT_KEY);
+    when(project.getKey()).thenReturn(PROJECT_KEY);
     when(nextRelease.getRelease()).thenReturn(release);
     when(releaseService.resolveNextRelease()).thenReturn(nextRelease);
     when(projectService.getProject(PROJECT_KEY)).thenReturn(project);

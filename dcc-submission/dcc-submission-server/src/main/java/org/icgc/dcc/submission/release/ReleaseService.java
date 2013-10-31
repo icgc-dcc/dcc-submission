@@ -304,7 +304,7 @@ public class ReleaseService extends BaseMorphiaService<Release> {
     ReleaseFileSystem releaseFS = this.fs.getReleaseFilesystem(nextRelease);
     List<Project> projects = this.getProjects(projectKeys);
     for (Project project : projects) {
-      SubmissionDirectory submissionDirectory = releaseFS.getSubmissionDirectory(project.key());
+      SubmissionDirectory submissionDirectory = releaseFS.getSubmissionDirectory(project.getKey());
       submissionDirectory.removeValidationDir();
     }
 

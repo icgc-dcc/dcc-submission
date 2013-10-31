@@ -23,7 +23,7 @@ import static org.icgc.dcc.submission.web.model.ServerErrorCode.ALREADY_EXISTS;
 import static org.icgc.dcc.submission.web.util.Authorizations.getSubject;
 import static org.icgc.dcc.submission.web.util.Authorizations.isSuperUser;
 
-import java.util.List;
+import java.util.Set;
 
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
@@ -48,7 +48,7 @@ import org.icgc.dcc.submission.shiro.AuthorizationPrivileges;
 import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
 import org.icgc.dcc.submission.web.util.Responses;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.inject.Inject;
 import com.mongodb.MongoException.DuplicateKey;
 
@@ -67,12 +67,12 @@ public class ProjectResource {
     return projectKey != null && user.isPermitted(AuthorizationPrivileges.projectViewPrivilege(projectKey));
   }
 
-  final private List<Project> filterUnauthorized(Subject user, List<Project> projects) {
+  final private Set<Project> filterUnauthorized(Subject user, Set<Project> projects) {
     log.info("Filtering project based on User [{}]'s authorization", user.getPrincipal());
-    ImmutableList.Builder<Project> builder = ImmutableList.builder();
+    ImmutableSet.Builder<Project> builder = ImmutableSet.builder();
     for (val project : projects) {
-      if (isAuthorized(user, project.key())) {
-        log.info("User [{}] authorized to see Project [{}]", user.getPrincipal(), project.key());
+      if (isAuthorized(user, project.getKey())) {
+        log.info("User [{}] authorized to see Project [{}]", user.getPrincipal(), project.getKey());
         builder.add(project);
       }
     }
@@ -104,14 +104,14 @@ public class ProjectResource {
     try {
       this.projectService.addProject(project);
 
-      val url = UriBuilder.fromResource(ProjectResource.class).path(project.key()).build();
+      val url = UriBuilder.fromResource(ProjectResource.class).path(project.getKey()).build();
       return Response
           .created(url)
           .build();
     } catch (DuplicateKey e) {
       return Response
           .status(BAD_REQUEST)
-          .entity(new ServerErrorResponseMessage(ALREADY_EXISTS, project.key()))
+          .entity(new ServerErrorResponseMessage(ALREADY_EXISTS, project.getKey()))
           .build();
     }
   }

@@ -18,7 +18,7 @@
 
 package org.icgc.dcc.submission.repository;
 
-import java.util.List;
+import java.util.Set;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -29,6 +29,7 @@ import org.icgc.dcc.submission.core.morphia.BaseMorphiaService;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
+import com.google.common.collect.ImmutableSet;
 import com.google.inject.Inject;
 
 @Slf4j
@@ -40,13 +41,13 @@ public class ProjectRepository extends BaseMorphiaService<Project> {
     super.registerModelClasses(Project.class);
   }
 
-  final public Project findProject(String projectKey) {
+  public Project findProject(String projectKey) {
     log.info("Finding Project {}", projectKey);
     return this.query().where(QProject.project.key.eq(projectKey)).singleResult();
   }
 
-  public List<Project> findProjects() {
+  public Set<Project> findProjects() {
     log.info("Finding all Projects");
-    return this.query().list();
+    return ImmutableSet.copyOf(this.query().list());
   }
 }

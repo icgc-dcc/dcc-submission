@@ -19,60 +19,67 @@ package org.icgc.dcc.submission.core.model;
 
 import static org.icgc.dcc.submission.core.util.NameValidator.PROJECT_ID_PATTERN;
 
-import java.util.List;
+import java.util.Set;
 
 import javax.validation.constraints.Pattern;
 
-import lombok.Value;
-import lombok.experimental.Accessors;
-import lombok.experimental.NonFinal;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 import org.bson.types.ObjectId;
 import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.hibernate.validator.constraints.NotBlank;
 
 import com.google.code.morphia.annotations.Entity;
 import com.google.code.morphia.annotations.Id;
 import com.google.code.morphia.annotations.Indexed;
-import com.google.common.collect.Lists;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 
-@Entity(noClassnameStored = true)
-@Value
-@Accessors(fluent = true)
+@Entity
+@Data
+@NoArgsConstructor
+@JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
 public class Project {
 
   @Id
   @JsonIgnore
-  @NonFinal
-  ObjectId id;
+  private ObjectId id;
 
   @NotBlank
   @Pattern(regexp = PROJECT_ID_PATTERN)
   @Indexed(unique = true)
-  String key;
+  private String key;
 
   @NotBlank
-  String name;
+  private String name;
 
-  String alias;
+  private String alias;
 
+  @NonNull
   @JsonIgnore
-  List<String> users = Lists.newArrayList();
+  private Set<String> users = Sets.newHashSet();
 
+  @NonNull
   @JsonIgnore
-  List<String> groups = Lists.newArrayList();
-
-  public Project(String key, String name, String alias) {
-    this.key = key;
-    this.name = name;
-    this.alias = alias;
-  }
+  private Set<String> groups = Sets.newHashSet();
 
   public Project(String key, String name) {
-    this(key, name, key);
+    this.key = key;
+    this.name = name;
   }
 
-  public boolean hasUser(String name) {
-    return users.contains(name);
+  public Set<String> getUsers() {
+    return ImmutableSet.copyOf(users);
+  }
+
+  public Set<String> getGroups() {
+    return ImmutableSet.copyOf(groups);
+  }
+
+  public boolean hasUser(String user) {
+    return users.contains(user);
   }
 }
