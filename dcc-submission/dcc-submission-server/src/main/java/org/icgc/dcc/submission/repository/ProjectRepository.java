@@ -20,19 +20,15 @@ package org.icgc.dcc.submission.repository;
 
 import java.util.List;
 
-import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.core.model.QProject;
 import org.icgc.dcc.submission.core.morphia.BaseMorphiaService;
-import org.icgc.dcc.submission.shiro.AuthorizationPrivileges;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
-import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
 
 @Slf4j
@@ -44,39 +40,13 @@ public class ProjectRepository extends BaseMorphiaService<Project> {
     super.registerModelClasses(Project.class);
   }
 
-  final private boolean isAuthorized(Subject user, String projectKey) {
-    return projectKey != null && user.isPermitted(AuthorizationPrivileges.projectViewPrivilege(projectKey));
+  final public Project findProject(String projectKey) {
+    log.info("Finding Project {}", projectKey);
+    return this.query().where(QProject.project.key.eq(projectKey)).singleResult();
   }
 
-  final private void authorize(Subject user, String projectKey) {
-    if (isAuthorized(user, projectKey) == false) {
-      throw new RuntimeException("No project found with key " + projectKey);
-    }
-  }
-
-  final private List<Project> filterUnauthorized(Subject user, List<Project> projects) {
-    log.info("Filtering project based on user {}'s authorization", user.getPrincipal());
-    ImmutableList.Builder<Project> builder = ImmutableList.builder();
-    for (val project : projects) {
-      if (isAuthorized(user, project.key())) {
-        log.info("{} authorized to see {}", user, project.key());
-        builder.add(project);
-      }
-    }
-    return builder.build();
-  }
-
-  final public Project getProject(Subject user, String projectKey) {
-    log.info("Getting Project {} for user {}", projectKey, user.getPrincipal());
-    authorize(user, projectKey);
-
-    val project = this.query().where(QProject.project.key.eq(projectKey)).singleResult();
-
-    return project;
-  }
-
-  public List<Project> getProjects(Subject user) {
-    log.info("Getting all Projects for user {}", user.getPrincipal());
-    return filterUnauthorized(user, this.query().list());
+  public List<Project> findProjects() {
+    log.info("Finding all Projects");
+    return this.query().list();
   }
 }

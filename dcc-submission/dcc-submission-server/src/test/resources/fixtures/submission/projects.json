@@ -14,7 +14,7 @@
 		"key":"project2",
 		"users":[
 			"admin",
-			"brett"
+			"richard"
 		],
 		"groups":[
 			"admin"
@@ -24,7 +24,8 @@
 		"name":"Project Three",
 		"key":"project3",
 		"users":[
-			"admin"
+			"admin",
+			"richard"
 		],
 		"groups":[
 			"admin"

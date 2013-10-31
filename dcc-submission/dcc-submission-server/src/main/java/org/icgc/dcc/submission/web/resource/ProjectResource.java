@@ -23,6 +23,8 @@ import static org.icgc.dcc.submission.web.model.ServerErrorCode.ALREADY_EXISTS;
 import static org.icgc.dcc.submission.web.util.Authorizations.getSubject;
 import static org.icgc.dcc.submission.web.util.Authorizations.isSuperUser;
 
+import java.util.List;
+
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -38,12 +40,15 @@ import javax.ws.rs.core.UriBuilder;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.submission.core.ProjectService;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.repository.ProjectRepository;
+import org.icgc.dcc.submission.shiro.AuthorizationPrivileges;
 import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
 import org.icgc.dcc.submission.web.util.Responses;
 
+import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
 import com.mongodb.MongoException.DuplicateKey;
 
@@ -55,14 +60,32 @@ public class ProjectResource {
 
   @Inject
   private ProjectService projectService;
+  @Inject
   private ProjectRepository projectRepository;
+
+  final private boolean isAuthorized(Subject user, String projectKey) {
+    return projectKey != null && user.isPermitted(AuthorizationPrivileges.projectViewPrivilege(projectKey));
+  }
+
+  final private List<Project> filterUnauthorized(Subject user, List<Project> projects) {
+    log.info("Filtering project based on User [{}]'s authorization", user.getPrincipal());
+    ImmutableList.Builder<Project> builder = ImmutableList.builder();
+    for (val project : projects) {
+      if (isAuthorized(user, project.key())) {
+        log.info("User [{}] authorized to see Project [{}]", user.getPrincipal(), project.key());
+        builder.add(project);
+      }
+    }
+    return builder.build();
+  }
 
   @GET
   public Response getProjects(@Context
   SecurityContext securityContext) {
-    log.info("Request for all projects");
+    val user = getSubject(securityContext);
+    log.info("Request for all Projects from User [{}]", user.getPrincipal());
 
-    val projects = projectRepository.getProjects(getSubject(securityContext));
+    val projects = filterUnauthorized(user, projectRepository.findProjects());
 
     return Response.ok(projects).build();
   }
@@ -98,9 +121,15 @@ public class ProjectResource {
   public Response getProject(@PathParam("projectKey")
   String projectKey, @Context
   SecurityContext securityContext) {
-    log.debug("Request for project {}", projectKey);
+    val user = getSubject(securityContext);
+    log.info("Request for Project [{}] from User [{}]", projectKey, user.getPrincipal());
 
-    val project = projectRepository.getProject(getSubject(securityContext), projectKey);
+    if (isAuthorized(user, projectKey) == false) {
+      // 404 instead of 403 to keep from leaking whether the project exists to an unauthorized user
+      return Responses.notFound(projectKey);
+    }
+
+    val project = projectRepository.findProject(projectKey);
 
     return Response.ok(project).build();
   }
