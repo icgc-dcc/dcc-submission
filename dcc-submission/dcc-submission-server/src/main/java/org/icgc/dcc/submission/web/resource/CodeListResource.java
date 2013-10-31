@@ -19,13 +19,13 @@ package org.icgc.dcc.submission.web.resource;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Lists.newArrayList;
-import static com.sun.jersey.api.Responses.noContent;
 import static javax.ws.rs.core.Response.ok;
 import static org.icgc.dcc.submission.web.model.ServerErrorCode.ALREADY_EXISTS;
 import static org.icgc.dcc.submission.web.model.ServerErrorCode.NAME_MISMATCH;
 import static org.icgc.dcc.submission.web.util.Authorizations.isSuperUser;
 import static org.icgc.dcc.submission.web.util.Responses.badRequest;
 import static org.icgc.dcc.submission.web.util.Responses.created;
+import static org.icgc.dcc.submission.web.util.Responses.noContent;
 import static org.icgc.dcc.submission.web.util.Responses.notFound;
 import static org.icgc.dcc.submission.web.util.Responses.unauthorizedResponse;
 
@@ -157,7 +157,7 @@ public class CodeListResource {
     dictionaryService.updateCodeList(newCodeList);
 
     // DCC-820: add ResponseTimestamper back here?
-    return noContent().build();
+    return noContent();
   }
 
   @POST
