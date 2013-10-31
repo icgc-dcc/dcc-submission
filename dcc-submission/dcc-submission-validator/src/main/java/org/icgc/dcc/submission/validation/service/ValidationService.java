@@ -80,7 +80,7 @@ public class ValidationService {
     // TODO: File Checker
     PlatformStrategy platformStrategy = platformStrategyFactory.get(inputDir, outputDir, systemDir);
     log.info("Checking validation for '{}' has inputDir = {} ", projectKey, inputDir);
-    checkValidation(dictionary, submissionDirectory, queuedProject);
+    // checkValidation(dictionary, submissionDirectory, queuedProject);
 
     Plan plan = planValidation(queuedProject, submissionDirectory, platformStrategy, dictionary, listener);
     listener.setPlan(plan);
