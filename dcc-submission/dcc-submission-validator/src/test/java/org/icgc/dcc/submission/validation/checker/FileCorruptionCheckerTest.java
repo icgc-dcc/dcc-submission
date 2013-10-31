@@ -113,6 +113,21 @@ public class FileCorruptionCheckerTest {
 
   }
 
+  @Test
+  public void testFilenameCodecMismatch() throws Exception {
+    when(fs.open(anyString())).thenReturn(getTestInputStream(CodecType.BZIP2));
+
+    FileCorruptionChecker checker = new FileCorruptionChecker(new BaseFileChecker(fs, dict, submissionDir));
+
+    List<FirstPassValidationError> errors = checker.check("file.gz");
+    verify(fs, times(1)).open(anyString());
+
+    assertFalse(errors.isEmpty());
+    assertEquals(1, errors.size());
+    assertFalse(checker.isValid());
+
+  }
+
   private static DataInputStream corruptInputStream(DataInputStream is) {
     return new DataInputStream(new DataCorruptionInputStream(is));
   }
