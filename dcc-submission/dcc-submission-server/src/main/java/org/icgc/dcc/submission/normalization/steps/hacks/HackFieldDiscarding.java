@@ -31,7 +31,7 @@ public class HackFieldDiscarding implements NormalizationStep {
   private final String fieldName;
 
   @Override
-  public String name() {
+  public String shortName() {
     return this.getClass().getSimpleName();
   }
 

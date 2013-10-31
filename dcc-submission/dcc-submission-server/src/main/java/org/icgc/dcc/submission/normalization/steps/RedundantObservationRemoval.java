@@ -19,8 +19,12 @@ package org.icgc.dcc.submission.normalization.steps;
 
 import static cascading.tuple.Fields.ALL;
 import static cascading.tuple.Fields.ARGS;
+import static cascading.tuple.Fields.REPLACE;
 import static com.google.common.base.Preconditions.checkState;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_ANALYSIS_ID;
 import static org.icgc.dcc.hadoop.cascading.Fields2.fields;
+import static org.icgc.dcc.submission.normalization.NormalizationCounter.DROPPED;
+import static org.icgc.dcc.submission.normalization.NormalizationCounter.UNIQUE_FILTERED;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -51,8 +55,6 @@ public class RedundantObservationRemoval implements NormalizationStep, OptionalS
    */
   private static final String SHORT_NAME = "duplicates";
 
-  // private static final Fields ANALYSIS_ID_FIELD = new Fields(SUBMISSION_OBSERVATION_ANALYSIS_ID);
-
   /**
    * The list of field names on which the GROUP BY should take place, and that will allow detecting duplicate
    * observations.
@@ -70,10 +72,15 @@ public class RedundantObservationRemoval implements NormalizationStep, OptionalS
   }
 
   @Override
-  public String name() {
+  public String shortName() {
     return SHORT_NAME;
   }
 
+  /**
+   * Will only emit the first match for a given group, effectively filtering out the others. In the loader component,
+   * this will result in rows from the meta file to be discarded as well by virtue of the inner join performed between
+   * them.
+   */
   @Override
   public Pipe extend(Pipe pipe) {
     final class FilterRedundantObservationBuffer extends BaseOperation<Void> implements Buffer<Void> {
@@ -99,8 +106,8 @@ public class RedundantObservationRemoval implements NormalizationStep, OptionalS
             val duplicate = tuples.next().getTuple();
             log.info("Found a duplicate of '{}' (group '{}'): ", // Should be rare enough an event
                 new Object[] { first, group, duplicate });
+            flowProcess.increment(DROPPED, COUNT_INCREMENT);
           }
-          // TODO: add report
         } else {
           log.debug("No duplicates found for '{}'", group);
         }
@@ -117,11 +124,20 @@ public class RedundantObservationRemoval implements NormalizationStep, OptionalS
             groupByFields(),
             secondarySortFields());
 
-    return new Every(
+    pipe = new Every(
         pipe,
         ALL,
         new FilterRedundantObservationBuffer(),
-        Fields.REPLACE); // TODO: or replace??
+        REPLACE);
+
+    pipe = new CountUnique( // Will leave the pipe unaltered
+        pipe,
+        shortName(),
+        new Fields(SUBMISSION_OBSERVATION_ANALYSIS_ID),
+        UNIQUE_FILTERED,
+        COUNT_INCREMENT);
+
+    return pipe;
   }
 
   private Fields groupByFields() {

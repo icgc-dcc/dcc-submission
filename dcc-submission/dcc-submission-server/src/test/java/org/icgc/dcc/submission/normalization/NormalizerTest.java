@@ -29,6 +29,8 @@ import java.util.List;
 import lombok.SneakyThrows;
 
 import org.icgc.dcc.submission.normalization.steps.AlleleMasking;
+import org.icgc.dcc.submission.normalization.steps.FinalCounting;
+import org.icgc.dcc.submission.normalization.steps.InitialCounting;
 import org.icgc.dcc.submission.normalization.steps.MutationRebuilding;
 import org.icgc.dcc.submission.normalization.steps.PrimaryKeyGeneration;
 import org.icgc.dcc.submission.normalization.steps.RedundantObservationRemoval;
@@ -44,9 +46,13 @@ public class NormalizerTest {
   @Test
   public void test_normalize() {
     new File("/tmp/deleteme").delete(); // TODO: improve
+    String projectKey = "dummy_project";
 
     new Normalizer( // TODO: service
+        projectKey,
         new ImmutableList.Builder<NormalizationStep>() // Order matters for some steps
+
+            .add(new InitialCounting())
 
             .add(new HackFieldDiscarding("mutation")) // Hack
             .add(new HackNewFieldsSynthesis("mutated_from_allele", "mutated_to_allele")) // Hack
@@ -66,15 +72,18 @@ public class NormalizerTest {
             .add(new HackFieldDiscarding("mutated_from_allele")) // Hack
             .add(new HackFieldDiscarding("mutated_to_allele")) // Hack
 
+            .add(new FinalCounting())
+
             .build())
         .normalize(null); // TODO: actually report
 
     List<String> result = readLines(new File("/tmp/deleteme"), UTF_8); // TODO: improve
     List<String> ref = readLines(new File("/home/tony/git/git0/data-submission/ref"), UTF_8); // TODO: improve
-    int size = ref.size();
+    int refSize = ref.size();
+    int resultSize = result.size();
 
-    checkState(result.size() == size);
-    for (int i = 0; i < size; i++) {
+    checkState(resultSize == refSize, resultSize + ", " + refSize);
+    for (int i = 0; i < refSize; i++) {
       String resultLine = removeRandomUUID(result.get(i));
       String refLine = removeRandomUUID(ref.get(i));
       checkState(resultLine.equals(refLine), "\n\t" + resultLine + "\n\t" + refLine);

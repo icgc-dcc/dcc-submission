@@ -45,7 +45,7 @@ public class HackNewFieldsSynthesis implements NormalizationStep {
   }
 
   @Override
-  public String name() {
+  public String shortName() {
     return this.getClass().getSimpleName();
   }
 

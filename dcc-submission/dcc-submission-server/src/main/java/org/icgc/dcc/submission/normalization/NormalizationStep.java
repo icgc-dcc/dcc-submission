@@ -24,10 +24,12 @@ import cascading.pipe.Pipe;
  */
 public interface NormalizationStep {
 
+  long COUNT_INCREMENT = 1;
+
   /**
    * 
    */
-  String name();
+  String shortName();
 
   /**
    * 

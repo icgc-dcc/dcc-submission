@@ -18,66 +18,42 @@
 package org.icgc.dcc.submission.normalization.steps;
 
 import static cascading.tuple.Fields.ALL;
-import static java.util.UUID.randomUUID;
-import static org.icgc.dcc.core.model.FieldNames.NormalizerFieldNames.NORMALIZER_PRIMARY_KEY;
-import lombok.val;
+import static cascading.tuple.Fields.RESULTS;
+import static java.lang.String.format;
 
-import org.icgc.dcc.submission.normalization.NormalizationStep;
+import org.icgc.dcc.submission.normalization.NormalizationCounter;
+import org.icgc.dcc.submission.validation.cascading.CascadingFunctions.Counter;
+import org.icgc.dcc.submission.validation.cascading.CascadingFunctions.EmitNothing;
 
-import cascading.flow.FlowProcess;
-import cascading.operation.BaseOperation;
-import cascading.operation.Function;
-import cascading.operation.FunctionCall;
 import cascading.pipe.Each;
+import cascading.pipe.Merge;
 import cascading.pipe.Pipe;
+import cascading.pipe.SubAssembly;
+import cascading.pipe.assembly.Unique;
 import cascading.tuple.Fields;
-import cascading.tuple.Tuple;
 
 /**
- * TODO
+ * TODO: Explain trick
  */
-public class PrimaryKeyGeneration implements NormalizationStep {
+public class CountUnique extends SubAssembly {
 
-  /**
-   * Short name for the step.
-   */
-  private static final String SHORT_NAME = "pk";
+  CountUnique(Pipe pipe, String stepShortName, Fields fields, NormalizationCounter counter, long increment) {
+    Pipe unique = new Pipe(
+        format("%s-%s-pipe", stepShortName, counter),
+        pipe);
 
-  @Override
-  public String shortName() {
-    return SHORT_NAME;
-  }
-
-  @Override
-  public Pipe extend(Pipe pipe) {
-
-    /**
-     * TODO
-     */
-    final class PrimaryKeyGenerator extends BaseOperation<Void> implements Function<Void> {
-
-      private PrimaryKeyGenerator() {
-        super(new Fields(NORMALIZER_PRIMARY_KEY));
-      }
-
-      @Override
-      public void operate(
-          @SuppressWarnings("rawtypes")
-          FlowProcess flowProcess,
-          FunctionCall<Void> functionCall) {
-
-        val primaryKey = randomUUID(); // Sub-optimal but approved by Bob for the time being
-        functionCall
-            .getOutputCollector()
-            .add(new Tuple(primaryKey));
-      }
-    }
-
-    return new Each(
-        pipe,
+    unique = new Unique(unique, fields);
+    unique = new Each(
+        unique,
         ALL,
-        new PrimaryKeyGenerator(),
-        ALL);
-  }
+        new Counter(counter, increment),
+        RESULTS);
 
+    // Trick to re-join main branch without consequences (else side branch does not get executed)
+    unique = new Each(unique, new EmitNothing());
+
+    setTails(new Merge(
+        pipe, // Will effectively remain unaltered
+        unique));
+  }
 }

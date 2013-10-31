@@ -15,69 +15,11 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.normalization.steps;
-
-import static cascading.tuple.Fields.ALL;
-import static java.util.UUID.randomUUID;
-import static org.icgc.dcc.core.model.FieldNames.NormalizerFieldNames.NORMALIZER_PRIMARY_KEY;
-import lombok.val;
-
-import org.icgc.dcc.submission.normalization.NormalizationStep;
-
-import cascading.flow.FlowProcess;
-import cascading.operation.BaseOperation;
-import cascading.operation.Function;
-import cascading.operation.FunctionCall;
-import cascading.pipe.Each;
-import cascading.pipe.Pipe;
-import cascading.tuple.Fields;
-import cascading.tuple.Tuple;
+package org.icgc.dcc.submission.normalization;
 
 /**
- * TODO
+ * 
  */
-public class PrimaryKeyGeneration implements NormalizationStep {
-
-  /**
-   * Short name for the step.
-   */
-  private static final String SHORT_NAME = "pk";
-
-  @Override
-  public String shortName() {
-    return SHORT_NAME;
-  }
-
-  @Override
-  public Pipe extend(Pipe pipe) {
-
-    /**
-     * TODO
-     */
-    final class PrimaryKeyGenerator extends BaseOperation<Void> implements Function<Void> {
-
-      private PrimaryKeyGenerator() {
-        super(new Fields(NORMALIZER_PRIMARY_KEY));
-      }
-
-      @Override
-      public void operate(
-          @SuppressWarnings("rawtypes")
-          FlowProcess flowProcess,
-          FunctionCall<Void> functionCall) {
-
-        val primaryKey = randomUUID(); // Sub-optimal but approved by Bob for the time being
-        functionCall
-            .getOutputCollector()
-            .add(new Tuple(primaryKey));
-      }
-    }
-
-    return new Each(
-        pipe,
-        ALL,
-        new PrimaryKeyGenerator(),
-        ALL);
-  }
-
+public enum NormalizationCounter {
+  TOTAL_START, TOTAL_END, UNIQUE_START, UNIQUE_FILTERED, DROPPED, MARKED_AS_CONTROLLED, MASKED
 }

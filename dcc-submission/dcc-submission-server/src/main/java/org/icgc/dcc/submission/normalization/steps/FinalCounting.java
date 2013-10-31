@@ -18,30 +18,24 @@
 package org.icgc.dcc.submission.normalization.steps;
 
 import static cascading.tuple.Fields.ALL;
-import static java.util.UUID.randomUUID;
-import static org.icgc.dcc.core.model.FieldNames.NormalizerFieldNames.NORMALIZER_PRIMARY_KEY;
-import lombok.val;
+import static cascading.tuple.Fields.RESULTS;
+import static org.icgc.dcc.submission.normalization.NormalizationCounter.TOTAL_END;
 
 import org.icgc.dcc.submission.normalization.NormalizationStep;
+import org.icgc.dcc.submission.validation.cascading.CascadingFunctions.Counter;
 
-import cascading.flow.FlowProcess;
-import cascading.operation.BaseOperation;
-import cascading.operation.Function;
-import cascading.operation.FunctionCall;
 import cascading.pipe.Each;
 import cascading.pipe.Pipe;
-import cascading.tuple.Fields;
-import cascading.tuple.Tuple;
 
 /**
  * TODO
  */
-public class PrimaryKeyGeneration implements NormalizationStep {
+public class FinalCounting implements NormalizationStep {
 
   /**
    * Short name for the step.
    */
-  private static final String SHORT_NAME = "pk";
+  private static final String SHORT_NAME = "final-count";
 
   @Override
   public String shortName() {
@@ -50,34 +44,11 @@ public class PrimaryKeyGeneration implements NormalizationStep {
 
   @Override
   public Pipe extend(Pipe pipe) {
-
-    /**
-     * TODO
-     */
-    final class PrimaryKeyGenerator extends BaseOperation<Void> implements Function<Void> {
-
-      private PrimaryKeyGenerator() {
-        super(new Fields(NORMALIZER_PRIMARY_KEY));
-      }
-
-      @Override
-      public void operate(
-          @SuppressWarnings("rawtypes")
-          FlowProcess flowProcess,
-          FunctionCall<Void> functionCall) {
-
-        val primaryKey = randomUUID(); // Sub-optimal but approved by Bob for the time being
-        functionCall
-            .getOutputCollector()
-            .add(new Tuple(primaryKey));
-      }
-    }
-
     return new Each(
         pipe,
         ALL,
-        new PrimaryKeyGenerator(),
-        ALL);
+        new Counter(TOTAL_END, COUNT_INCREMENT),
+        RESULTS);
   }
 
 }

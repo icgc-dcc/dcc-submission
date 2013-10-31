@@ -53,7 +53,7 @@ public class MutationRebuilding implements NormalizationStep {
   private static final Joiner MUTATION_JOINER = on(">");
 
   @Override
-  public String name() {
+  public String shortName() {
     return SHORT_NAME;
   }
 

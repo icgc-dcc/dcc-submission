@@ -26,8 +26,9 @@ import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_MUTATED_TO_ALLELE;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_TUMOUR_GENOTYPE;
+import static org.icgc.dcc.submission.normalization.NormalizationCounter.MARKED_AS_CONTROLLED;
+import static org.icgc.dcc.submission.normalization.NormalizationCounter.MASKED;
 import static org.icgc.dcc.submission.normalization.steps.AlleleMasking.Masking.CONTROLLED;
-import static org.icgc.dcc.submission.normalization.steps.AlleleMasking.Masking.MASKED;
 import static org.icgc.dcc.submission.normalization.steps.AlleleMasking.Masking.OPEN;
 import static org.icgc.dcc.submission.normalization.steps.AlleleMasking.Masking.valueOf;
 import lombok.val;
@@ -70,7 +71,7 @@ public class AlleleMasking implements NormalizationStep {
   private static final Object NO_VALUE = null;
 
   @Override
-  public String name() {
+  public String shortName() {
     return SHORT_NAME;
   }
 
@@ -102,6 +103,8 @@ public class AlleleMasking implements NormalizationStep {
             mutatedFromAllele)) {
           log.info("Marking sensitive row: '{}'", entry); // Should be rare enough
           masking = CONTROLLED;
+
+          flowProcess.increment(MARKED_AS_CONTROLLED, COUNT_INCREMENT);
         } else {
           log.debug("Marking open-access row: '{}'", entry);
           masking = OPEN;
@@ -156,6 +159,8 @@ public class AlleleMasking implements NormalizationStep {
             functionCall
                 .getOutputCollector()
                 .add(mask);
+
+            flowProcess.increment(MASKED, COUNT_INCREMENT);
           } else {
             log.info("Skipping trivial mask for '{}'", entry); // Rare enough that we can log
           }
