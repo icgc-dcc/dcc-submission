@@ -177,7 +177,14 @@ public class ValidationQueueService extends AbstractScheduledService {
       }
     } catch (MalformedSubmissionException e) { // TODO: DCC-1820
       try {
-        handleMalformedValidation(e);
+        handleMalformedErrors(e);
+      } catch (Throwable t) {
+        log.info("Caught an unexpected {} upon trying to abort validation", t.getClass().getSimpleName());
+        criticalThrowable = Optional.fromNullable(t);
+      }
+    } catch (SubmissionSemanticsException e) { // TODO: DCC-1820
+      try {
+        handleSemanticErrors(e);
       } catch (Throwable t) {
         log.info("Caught an unexpected {} upon trying to abort validation", t.getClass().getSimpleName());
         criticalThrowable = Optional.fromNullable(t);
@@ -206,8 +213,9 @@ public class ValidationQueueService extends AbstractScheduledService {
    * 
    * @throws FilePresenceException
    */
-  private void processNext(Release release, QueuedProject project) throws MalformedSubmissionException { // TODO:
-                                                                                                         // DCC-1820;
+  private void processNext(Release release, QueuedProject project) throws MalformedSubmissionException,
+      SubmissionSemanticsException {
+    // TODO: DCC-1820;
     log.info("Processing next project in queue: '{}'", project);
     mailService.sendProcessingStarted(project.getKey(), project.getEmails());
 
@@ -236,7 +244,7 @@ public class ValidationQueueService extends AbstractScheduledService {
   /**
    * Triggered by our application.
    */
-  private void handleMalformedValidation(MalformedSubmissionException e) {
+  private void handleMalformedErrors(MalformedSubmissionException e) {
     QueuedProject queuedProject = e.getQueuedProject();
     String projectKey = queuedProject.getKey();
     log.info("About to dequeue project key {}", projectKey);
@@ -252,6 +260,43 @@ public class ValidationQueueService extends AbstractScheduledService {
       val schemaReport = new SchemaReport();
       schemaReport.setName(schemaName);
       schemaReport.addErrors(schemaErrors);
+
+      schemaReports.add(schemaReport);
+    }
+
+    val submissionReport = new SubmissionReport();
+    submissionReport.setSchemaReports(schemaReports);
+
+    storeSubmissionReport(projectKey, submissionReport);
+  }
+
+  /**
+   * Triggered by our application.
+   */
+  private void handleSemanticErrors(SubmissionSemanticsException e) {
+    QueuedProject queuedProject = e.getQueuedProject();
+    String projectKey = queuedProject.getKey();
+    log.info("About to dequeue project key {}", projectKey);
+    resolveSubmission(queuedProject, SubmissionState.INVALID);
+
+    List<SchemaReport> schemaReports = newArrayList();
+
+    for (val entry : e.getErrors().entrySet()) {
+      val fileName = entry.getKey();
+      val fileSchemaErrors = entry.getValue();
+
+      ErrorReport errorReport = null;
+      for (val error : fileSchemaErrors) {
+        if (errorReport == null) {
+          errorReport = new ErrorReport(error);
+        } else {
+          errorReport.updateColumn(error);
+        }
+      }
+
+      val schemaReport = new SchemaReport();
+      schemaReport.setName(fileName);
+      schemaReport.addErrors(newArrayList(errorReport));
 
       schemaReports.add(schemaReport);
     }

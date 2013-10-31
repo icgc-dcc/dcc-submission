@@ -60,6 +60,7 @@ import com.google.common.io.LineReader;
 @NoArgsConstructor
 public class ReferenceGenomeValidator {
 
+  public static final String REFERENCE_GENOME_VERSION = "GrCh37";
   public static final String REFERENCE_GENOME_BASE_URL = "ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference";
   public static final String REFERENCE_GENOME_DATA_URL = REFERENCE_GENOME_BASE_URL + "/" + "human_g1k_v37.fasta.gz";
   public static final String REFERENCE_GENOME_INDEX_URL = REFERENCE_GENOME_BASE_URL + "/" + "human_g1k_v37.fasta.fai";
@@ -176,14 +177,16 @@ public class ReferenceGenomeValidator {
   }
 
   private static TupleError createError(long lineNumber, String referenceAllele, String referenceSequence) {
+    val value = "expected: " + referenceSequence + ", actual: " + referenceAllele;
+
     return TupleState.createTupleError(
         REFERENCE_GENOME_ERROR,
         SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE,
-        referenceAllele,
+        value,
         lineNumber,
 
         // Params
-        referenceSequence);
+        REFERENCE_GENOME_VERSION);
   }
 
   private static boolean isMatch(String controlAllele, String refSequence) {

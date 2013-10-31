@@ -37,6 +37,7 @@ import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.validation.FilePresenceException;
 import org.icgc.dcc.submission.validation.MalformedSubmissionException;
+import org.icgc.dcc.submission.validation.SubmissionSemanticsException;
 import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
 import org.icgc.dcc.submission.validation.checker.FirstPassChecker;
 import org.icgc.dcc.submission.validation.core.Plan;
@@ -69,7 +70,7 @@ public class ValidationService {
 
   public Plan prepareValidation(Release release, Dictionary dictionary, QueuedProject queuedProject,
       ValidationListener listener)
-      throws MalformedSubmissionException {
+      throws MalformedSubmissionException, SubmissionSemanticsException {
     log.info("Preparing cascade for project '{}'", queuedProject.getKey());
     val projectKey = queuedProject.getKey();
     val releaseFilesystem = dccFileSystem.getReleaseFilesystem(release);
@@ -86,7 +87,7 @@ public class ValidationService {
     // TODO: File Checker
     PlatformStrategy platformStrategy = platformStrategyFactory.get(inputDir, outputDir, systemDir);
     log.info("Checking validation for '{}' has inputDir = {} ", projectKey, inputDir);
-    checkValidation(dictionary, submissionDirectory, queuedProject);
+    checkerValidation(dictionary, submissionDirectory, queuedProject);
 
     semanticValidation(queuedProject, dictionary, submissionDirectory);
 
@@ -146,7 +147,7 @@ public class ValidationService {
     log.info("Plan: plan.getCascade: {}", plan.getCascade());
   }
 
-  private void checkValidation(Dictionary dictionary, SubmissionDirectory submissionDirectory,
+  private void checkerValidation(Dictionary dictionary, SubmissionDirectory submissionDirectory,
       QueuedProject queuedProject) throws MalformedSubmissionException {
     FirstPassChecker checker = new FirstPassChecker(dccFileSystem, dictionary, submissionDirectory);
     boolean valid = checker.isValid();
@@ -161,7 +162,7 @@ public class ValidationService {
   }
 
   private void semanticValidation(QueuedProject queuedProject, Dictionary dictionary,
-      SubmissionDirectory submissionDirectory) throws MalformedSubmissionException {
+      SubmissionDirectory submissionDirectory) throws SubmissionSemanticsException {
     val fileSchema = getSsmPrimaryFileSchema(dictionary);
     val fileSystem = dccFileSystem.getFileSystem();
     val regex = fileSchema.getPattern();
@@ -174,8 +175,8 @@ public class ValidationService {
 
         List<TupleError> errors = validator.validate(ssmPrimaryFile, fileSystem);
         if (!errors.isEmpty()) {
-          throw new MalformedSubmissionException(queuedProject, ImmutableMap.<String, Iterable<TupleError>> of(
-              fileSchema.getName(), errors));
+          throw new SubmissionSemanticsException(queuedProject, ImmutableMap.<String, Iterable<TupleError>> of(
+              fileName, errors));
         }
       }
     }
