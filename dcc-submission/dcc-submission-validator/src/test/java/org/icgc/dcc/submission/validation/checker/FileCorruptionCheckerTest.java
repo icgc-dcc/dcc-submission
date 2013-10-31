@@ -67,7 +67,7 @@ public class FileCorruptionCheckerTest {
   public void testGZipInputValid() throws Exception {
     when(fs.open(anyString())).thenReturn(getTestInputStream(CodecType.GZIP), getTestInputStream(CodecType.GZIP));
     FileCorruptionChecker checker = new FileCorruptionChecker(new BaseFileChecker(fs, dict, submissionDir));
-    List<FirstPassValidationError> errors = checker.check(anyString());
+    List<FirstPassValidationError> errors = checker.check("file1.gz");
     assertTrue(errors.isEmpty());
     assertTrue(checker.isValid());
   }
@@ -77,7 +77,7 @@ public class FileCorruptionCheckerTest {
     when(fs.open(anyString())).thenReturn(getTestInputStream(CodecType.BZIP2), getTestInputStream(CodecType.BZIP2));
 
     FileCorruptionChecker checker = new FileCorruptionChecker(new BaseFileChecker(fs, dict, submissionDir));
-    List<FirstPassValidationError> errors = checker.check(anyString());
+    List<FirstPassValidationError> errors = checker.check("file.bz2");
     assertTrue(errors.isEmpty());
     assertTrue(checker.isValid());
   }
@@ -89,7 +89,7 @@ public class FileCorruptionCheckerTest {
 
     FileCorruptionChecker checker = new FileCorruptionChecker(new BaseFileChecker(fs, dict, submissionDir));
 
-    List<FirstPassValidationError> errors = checker.check(anyString());
+    List<FirstPassValidationError> errors = checker.check("file.gz");
     verify(fs, times(2)).open(anyString());
 
     assertFalse(errors.isEmpty());
@@ -104,8 +104,53 @@ public class FileCorruptionCheckerTest {
 
     FileCorruptionChecker checker = new FileCorruptionChecker(new BaseFileChecker(fs, dict, submissionDir));
 
-    List<FirstPassValidationError> errors = checker.check(anyString());
+    List<FirstPassValidationError> errors = checker.check("file.bz2");
     verify(fs, times(2)).open(anyString());
+
+    assertFalse(errors.isEmpty());
+    assertEquals(1, errors.size());
+    assertFalse(checker.isValid());
+
+  }
+
+  @Test
+  public void testFilenameBzCodecMismatch() throws Exception {
+    when(fs.open(anyString())).thenReturn(getTestInputStream(CodecType.BZIP2));
+
+    FileCorruptionChecker checker = new FileCorruptionChecker(new BaseFileChecker(fs, dict, submissionDir));
+
+    List<FirstPassValidationError> errors = checker.check("file.gz");
+    verify(fs, times(1)).open(anyString());
+
+    assertFalse(errors.isEmpty());
+    assertEquals(1, errors.size());
+    assertFalse(checker.isValid());
+
+  }
+
+  @Test
+  public void testFilenameTextCodecMismatch() throws Exception {
+    when(fs.open(anyString())).thenReturn(getTestInputStream(CodecType.PLAIN_TEXT));
+
+    FileCorruptionChecker checker = new FileCorruptionChecker(new BaseFileChecker(fs, dict, submissionDir));
+
+    List<FirstPassValidationError> errors = checker.check("file.gz");
+    verify(fs, times(1)).open(anyString());
+
+    assertFalse(errors.isEmpty());
+    assertEquals(1, errors.size());
+    assertFalse(checker.isValid());
+
+  }
+
+  @Test
+  public void testFilenameGzCodecMismatch() throws Exception {
+    when(fs.open(anyString())).thenReturn(getTestInputStream(CodecType.GZIP));
+
+    FileCorruptionChecker checker = new FileCorruptionChecker(new BaseFileChecker(fs, dict, submissionDir));
+
+    List<FirstPassValidationError> errors = checker.check("file.txt");
+    verify(fs, times(1)).open(anyString());
 
     assertFalse(errors.isEmpty());
     assertEquals(1, errors.size());
@@ -163,21 +208,21 @@ public class FileCorruptionCheckerTest {
   public void testTextInputDetection() throws Exception {
     DataInputStream textInputStream = getTestInputStream(CodecType.PLAIN_TEXT);
     when(fs.open(anyString())).thenReturn(textInputStream);
-    assertEquals(CodecType.PLAIN_TEXT, Util.determineCodec(fs, submissionDir, anyString()));
+    assertEquals(CodecType.PLAIN_TEXT, Util.determineCodecFromContent(fs, submissionDir, anyString()));
   }
 
   @Test
   public void testGZipInputDetection() throws Exception {
     DataInputStream inputStream = getTestInputStream(CodecType.GZIP);
     when(fs.open(anyString())).thenReturn(inputStream);
-    assertEquals(CodecType.GZIP, Util.determineCodec(fs, submissionDir, anyString()));
+    assertEquals(CodecType.GZIP, Util.determineCodecFromContent(fs, submissionDir, anyString()));
   }
 
   @Test
   public void testBZipInputDetection() throws Exception {
     DataInputStream inputStream = getTestInputStream(CodecType.BZIP2);
     when(fs.open(anyString())).thenReturn(inputStream);
-    assertEquals(CodecType.BZIP2, Util.determineCodec(fs, submissionDir, anyString()));
+    assertEquals(CodecType.BZIP2, Util.determineCodecFromContent(fs, submissionDir, anyString()));
   }
 
 }

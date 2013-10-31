@@ -27,11 +27,13 @@ public interface FileChecker extends Checker {
 
   public List<FirstPassValidationError> check(String filename);
 
-  String getFileSchemaName(String filename);
+  public String getFileSchemaName(String filename);
 
   public SubmissionDirectory getSubmissionDirectory();
 
   public Dictionary getDictionary();
 
   public DccFileSystem getDccFileSystem();
+
+  public boolean canContinue();
 }

@@ -35,6 +35,8 @@ public class CompositeFileCheckerTest {
   public void notvalid() throws Exception {
     CompositeCheckerUnderTest checker = new CompositeCheckerUnderTest(baseChecker);
     when(baseChecker.isValid()).thenReturn(false);
+    when(baseChecker.check(anyString())).thenReturn(
+        ImmutableList.of(new FirstPassValidationError(null, null, null, null, -1)));
     assertFalse(checker.isValid());
   }
 
@@ -80,6 +82,7 @@ public class CompositeFileCheckerTest {
   public void compositeCheck() throws Exception {
     CompositeCheckerUnderTest checker1 = spy(new CompositeCheckerUnderTest(baseChecker, false));
     CompositeCheckerUnderTest checker2 = spy(new CompositeCheckerUnderTest(checker1, false));
+    when(baseChecker.canContinue()).thenReturn(true);
     when(baseChecker.isValid()).thenReturn(false);
     when(baseChecker.isFailFast()).thenReturn(false);
 
@@ -107,15 +110,15 @@ public class CompositeFileCheckerTest {
 
   @Test
   public void compositeCheckFaster() throws Exception {
-    CompositeCheckerUnderTest checker1 = spy(new CompositeCheckerUnderTest(baseChecker));
-    when(baseChecker.isValid()).thenReturn(false);
+    when(baseChecker.canContinue()).thenReturn(true);
     when(baseChecker.isFailFast()).thenReturn(false);
 
-    when(checker1.isFailFast()).thenReturn(true);
-    CompositeCheckerUnderTest checker2 = spy(new CompositeCheckerUnderTest(checker1));
-    when(checker2.isFailFast()).thenReturn(false);
+    CompositeCheckerUnderTest checker1 = spy(new CompositeCheckerUnderTest(baseChecker, true));
+    CompositeCheckerUnderTest checker2 = spy(new CompositeCheckerUnderTest(checker1, false));
 
-    checker2.check(anyString());
+    when(checker1.performSelfCheck(anyString())).thenReturn(
+        ImmutableList.<FirstPassValidationError> of(new FirstPassValidationError(null, null, null, null, -1)));
+    checker2.check("file.txt");
 
     verify(checker1, times(1)).performSelfCheck(anyString());
     verify(checker2, never()).performSelfCheck(anyString());
@@ -123,20 +126,12 @@ public class CompositeFileCheckerTest {
 
   private class CompositeCheckerUnderTest extends CompositeFileChecker {
 
-    private final boolean failFast;
-
     public CompositeCheckerUnderTest(FileChecker nestedChecker, boolean failFast) {
-      super(nestedChecker);
-      this.failFast = failFast;
+      super(nestedChecker, failFast);
     }
 
     public CompositeCheckerUnderTest(FileChecker nestedChecker) {
       this(nestedChecker, false);
-    }
-
-    @Override
-    public boolean isFailFast() {
-      return failFast;
     }
 
     @Override

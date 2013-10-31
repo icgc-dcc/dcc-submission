@@ -40,7 +40,6 @@ public abstract class CompositeRowChecker extends CompositeFileChecker implement
 
   private static final Charset DEFAULT_CHARSET = Charsets.UTF_8;
   protected RowChecker compositeChecker;
-  protected boolean failFast;
 
   public CompositeRowChecker(RowChecker nestedChecker, boolean failFast) {
     super(nestedChecker, failFast);
@@ -84,9 +83,9 @@ public abstract class CompositeRowChecker extends CompositeFileChecker implement
   public List<FirstPassValidationError> checkRow(FileSchema fileSchema, String row, long lineNumber) {
     Builder<FirstPassValidationError> errors = ImmutableList.builder();
     errors.addAll(compositeChecker.checkRow(fileSchema, row, lineNumber));
-    if (compositeChecker.isValid() || !compositeChecker.isFailFast()) {
+    if (compositeChecker.canContinue()) {
       log.info("Start performing {} validation...", this.getClass().getSimpleName());
-      List<FirstPassValidationError> checkErrors = performSelfCheck(fileSchema, row, lineNumber);
+      checkErrors = performSelfCheck(fileSchema, row, lineNumber);
       errors.addAll(checkErrors);
       log.info("End performing {} validation. Number of errors found: {}", new Object[] { this.getClass()
           .getSimpleName(), checkErrors.size() });
@@ -98,7 +97,7 @@ public abstract class CompositeRowChecker extends CompositeFileChecker implement
 
   @Override
   public boolean isValid() {
-    return (compositeChecker.isValid() && errors.isEmpty());
+    return errors.isEmpty();
   }
 
   @Override

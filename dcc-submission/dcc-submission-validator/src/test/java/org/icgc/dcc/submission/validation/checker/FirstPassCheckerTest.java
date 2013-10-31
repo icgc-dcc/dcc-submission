@@ -82,10 +82,12 @@ public class FirstPassCheckerTest {
   public void sanityValid() throws IOException {
     FileChecker fileChecker = mock(FileChecker.class);
     when(fileChecker.check(anyString())).thenReturn(ImmutableList.<FirstPassValidationError> of());
+    when(fileChecker.canContinue()).thenReturn(true);
     when(fileChecker.isValid()).thenReturn(true);
 
     RowChecker rowChecker = mock(RowChecker.class);
     when(rowChecker.check(anyString())).thenReturn(ImmutableList.<FirstPassValidationError> of());
+    when(rowChecker.canContinue()).thenReturn(true);
     when(rowChecker.isValid()).thenReturn(true);
 
     FirstPassChecker fpc = new FirstPassChecker(dict, submissionDir, fileChecker, rowChecker);
@@ -101,11 +103,13 @@ public class FirstPassCheckerTest {
     when(fileChecker.check(anyString())).thenReturn(ImmutableList.of(DUMMY_FILE_ERROR));
     when(fileChecker.isValid()).thenReturn(false);
     when(fileChecker.isFailFast()).thenReturn(false);
+    when(fileChecker.canContinue()).thenReturn(true);
 
     RowChecker rowChecker = mock(RowChecker.class);
     when(rowChecker.check(anyString())).thenReturn(ImmutableList.<FirstPassValidationError> of());
     when(rowChecker.isValid()).thenReturn(false);
     when(rowChecker.isFailFast()).thenReturn(false);
+    when(rowChecker.canContinue()).thenReturn(true);
 
     FirstPassChecker fpc = new FirstPassChecker(dict, submissionDir, fileChecker, rowChecker);
     assertFalse(fpc.isValid());
@@ -141,7 +145,8 @@ public class FirstPassCheckerTest {
     FileChecker fileChecker = mock(FileChecker.class);
     when(fileChecker.isValid()).thenReturn(false);
     when(fileChecker.check(anyString())).thenReturn(ImmutableList.of(DUMMY_FILE_ERROR));
-    when(fileChecker.isFailFast()).thenReturn(false); // fail it right away
+    when(fileChecker.isFailFast()).thenReturn(false);
+    when(fileChecker.canContinue()).thenReturn(true);
 
     RowChecker rowChecker = mock(RowChecker.class);
     when(rowChecker.check(anyString())).thenReturn(ImmutableList.<FirstPassValidationError> of());
@@ -160,6 +165,7 @@ public class FirstPassCheckerTest {
     when(fileChecker.isValid()).thenReturn(true);
     when(fileChecker.check(anyString())).thenReturn(ImmutableList.<FirstPassValidationError> of());
     when(fileChecker.isFailFast()).thenReturn(false);
+    when(fileChecker.canContinue()).thenReturn(true);
 
     RowChecker rowChecker = mock(RowChecker.class);
     when(rowChecker.check(anyString())).thenReturn(ImmutableList.of(DUMMY_ROW_ERROR));
