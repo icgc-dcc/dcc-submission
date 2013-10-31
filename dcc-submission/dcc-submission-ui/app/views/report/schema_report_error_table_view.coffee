@@ -180,6 +180,13 @@ module.exports = class SchemaReportErrorTableView extends DataTableView
         Different from the expected header
         <em>#{source.parameters?.EXPECTED}</em>
         """
+    REFERENCE_GENOME_ERROR:
+      name: "File header error"
+      description: (source) ->
+        """
+        Submitted reference genome allele does not match standard reference
+         genome allele <em>#{source.parameters?.EXPECTED}</em>
+        """
 
   details: (source) ->
     if source.errorType in [

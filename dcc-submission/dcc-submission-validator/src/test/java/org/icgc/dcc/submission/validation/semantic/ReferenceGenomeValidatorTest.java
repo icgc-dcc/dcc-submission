@@ -43,7 +43,7 @@ public class ReferenceGenomeValidatorTest {
   @Before
   public void setup() throws Exception {
     validator = new ReferenceGenomeValidator();
-    validator.downloadAndSetGenomeDataFiles();
+    validator.ensureDownload();
   }
 
   @Test
