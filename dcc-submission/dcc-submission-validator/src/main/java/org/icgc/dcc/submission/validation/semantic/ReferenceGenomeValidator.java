@@ -17,24 +17,28 @@
  */
 package org.icgc.dcc.submission.validation.semantic;
 
+import static com.google.common.io.ByteStreams.copy;
 import static java.util.Arrays.asList;
+import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE;
+import static org.icgc.dcc.submission.validation.core.ErrorCode.REFERENCE_GENOME_ERROR;
 
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 
 import lombok.Cleanup;
+import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.picard.reference.IndexedFastaSequenceFile;
-import net.sf.picard.reference.ReferenceSequence;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -42,25 +46,31 @@ import org.apache.hadoop.io.compress.BZip2Codec;
 import org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames;
 import org.icgc.dcc.submission.validation.cascading.TupleState;
 import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
-import org.icgc.dcc.submission.validation.core.ErrorCode;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
-import com.google.common.io.ByteStreams;
 import com.google.common.io.LineReader;
 
 /**
- * Support querying a reference genome data file in the form for chromosome-start-end to validate submission input This
- * uses the picard utilities to query an indexed fasta file, as a bench mark reference we can check roughly 3,000,000
- * reference genomes in 200 seconds.
+ * Support querying a reference genome data file in the form for chromosome-start-end to validate submission input.
+ * <p>
+ * This uses the picard utilities to query an indexed FASTA file, as a bench mark reference we can check roughly
+ * 3,000,000 reference genomes in 200 seconds.
  */
 @Slf4j
+@NoArgsConstructor
 public class ReferenceGenomeValidator {
 
-  private IndexedFastaSequenceFile sequenceFile = null;
+  public static final String REFERENCE_GENOME_BASE_URL = "ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference";
+  public static final String REFERENCE_GENOME_DATA_URL = REFERENCE_GENOME_BASE_URL + "/" + "human_g1k_v37.fasta.gz";
+  public static final String REFERENCE_GENOME_INDEX_URL = REFERENCE_GENOME_BASE_URL + "/" + "human_g1k_v37.fasta.fai";
 
-  public ReferenceGenomeValidator() {
-  }
+  public static final String LOCAL_DIR = "/tmp";
+  public static final String LOCAL_DATA_FILE = LOCAL_DIR + "/" + "referenceGenome.fasta";
+  public static final String LOCAL_INDEX_FILE = LOCAL_DIR + "/" + "referenceGenome.fasta.fai";
+
+  private static final String FIELD_SEPARATOR = "\t";
+
+  private IndexedFastaSequenceFile sequenceFile;
 
   public ReferenceGenomeValidator(File fastaFile) throws FileNotFoundException {
     sequenceFile = new IndexedFastaSequenceFile(fastaFile);
@@ -69,62 +79,120 @@ public class ReferenceGenomeValidator {
   /**
    * Currently this is for testing only. For production it makes more sense to have the files setup in-place instead of
    * downloading them every time.
-   * @throws Exception
    */
   @SneakyThrows
-  public void downloadAndSetGenomeDataFiles() {
-    @Cleanup
-    BufferedInputStream bufferedInputStream = null;
+  public void ensureDownload() {
+    val downloaded = new File(LOCAL_DATA_FILE).exists() && new File(LOCAL_INDEX_FILE).exists();
+    if (downloaded) {
+      sequenceFile = new IndexedFastaSequenceFile(new File(LOCAL_DATA_FILE));
 
-    @Cleanup
-    GZIPInputStream gzipInputStream = null;
-
-    @Cleanup
-    FileOutputStream dataOutputStream = null;
-
-    @Cleanup
-    FileOutputStream indexOutputStream = null;
-
-    URL url = null;
-    URLConnection conn = null;
-
-    final String REFERENCE_GENOME_DATA_URL =
-        "ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/human_g1k_v37.fasta.gz";
-    final String REFERENCE_GENOME_INDEX_URL =
-        "ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/human_g1k_v37.fasta.fai";
-    final String referenceFile = "/tmp/referenceGenome.fasta";
-    final String indexFile = "/tmp/referenceGenome.fasta.fai";
-
-    // Exit if files already exist
-    if (new File(referenceFile).exists() && new File(indexFile).exists()) {
-      sequenceFile = new IndexedFastaSequenceFile(new File(referenceFile));
       return;
     }
 
-    // Copy the data index file
-    url = new URL(REFERENCE_GENOME_INDEX_URL);
-    conn = url.openConnection();
+    download(REFERENCE_GENOME_INDEX_URL, LOCAL_INDEX_FILE, false);
+    download(REFERENCE_GENOME_DATA_URL, LOCAL_DATA_FILE, true);
 
-    log.info("Downloading '{}'...", url);
-    bufferedInputStream = new BufferedInputStream(conn.getInputStream());
-    indexOutputStream = new FileOutputStream(indexFile);
-    ByteStreams.copy(bufferedInputStream, indexOutputStream);
-    log.info("Finished downloading '{}'", url);
-
-    // Copy the main data file (g-zipped)
-    log.info("Downloading '{}'...", url);
-    url = new URL(REFERENCE_GENOME_DATA_URL);
-    conn = url.openConnection();
-    gzipInputStream = new GZIPInputStream(new BufferedInputStream(conn.getInputStream()));
-    dataOutputStream = new FileOutputStream(referenceFile);
-    ByteStreams.copy(gzipInputStream, dataOutputStream);
-    log.info("Finished downloading '{}'", url);
-
-    sequenceFile = new IndexedFastaSequenceFile(new File(referenceFile));
+    sequenceFile = new IndexedFastaSequenceFile(new File(LOCAL_DATA_FILE));
   }
 
-  private LineReader getLineReader(Path path, FileSystem fileSystem) throws IOException {
-    // Returns a LineReader capable of reading gz, bzip2 or plain text files
+  /**
+   * Validate genome reference aligns with reference genome of submitted primary file. We assume at this stage the file
+   * is well-formed, and that each individual field is sane.
+   */
+  public List<TupleError> validate(Path ssmPrimaryFile, FileSystem fileSystem) throws IOException {
+    LineReader reader = getLineReader(ssmPrimaryFile, fileSystem);
+
+    long lineNumber = 1;
+    int chromosomeIdx = -1;
+    int startIdx = -1;
+    int endIdx = -1;
+    int referenceAlleleIdx = -1;
+    String line;
+
+    val errors = new ImmutableList.Builder<TupleError>();
+    while ((line = reader.readLine()) != null) {
+      val fields = parseLine(line);
+
+      if (lineNumber == 1) {
+        // Get column position
+        chromosomeIdx = fields.indexOf(SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME);
+        startIdx = fields.indexOf(SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME_START);
+        endIdx = fields.indexOf(SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME_END);
+        referenceAlleleIdx = fields.indexOf(SubmissionFieldNames.SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE);
+      } else {
+        val start = fields.get(startIdx);
+        val end = fields.get(endIdx);
+        val chromosome = fields.get(chromosomeIdx);
+        val referenceAllele = fields.get(referenceAlleleIdx);
+        val referenceSequence = getReferenceGenomeSequence(chromosome, start, end);
+
+        if (!isMatch(referenceAllele, referenceSequence)) {
+          errors.add(createError(lineNumber, referenceAllele, referenceSequence));
+        }
+      }
+
+      lineNumber++;
+    }
+
+    return errors.build();
+  }
+
+  public String getReferenceGenomeSequence(String chromosome, String start, String end) {
+    val startPosition = Long.valueOf(start);
+    val endPosition = Long.valueOf(end);
+
+    return getReferenceGenomeSequence(chromosome, startPosition, endPosition);
+  }
+
+  public String getReferenceGenomeSequence(String chromosome, long start, long end) {
+    val sequence = sequenceFile.getSubsequenceAt(chromosome, start, end);
+    val text = new String(sequence.getBases());
+
+    return text;
+  }
+
+  @SneakyThrows
+  private static void download(String source, String target, boolean compressed) {
+    @Cleanup
+    val inputStream = new BufferedInputStream(createUrlStream(source, compressed));
+    @Cleanup
+    val outputStream = new FileOutputStream(target);
+
+    log.info("Downloading '{}' to '{}'...", source, target);
+    copy(inputStream, outputStream);
+    log.info("Finished downloading '{}' to '{}'", source, target);
+  }
+
+  private static InputStream createUrlStream(String source, boolean compressed) throws IOException {
+    val connection = new URL(source).openConnection();
+    val inputStream = connection.getInputStream();
+
+    return compressed ? new GZIPInputStream(inputStream) : inputStream;
+  }
+
+  private static List<String> parseLine(String line) {
+    return asList(line.split(FIELD_SEPARATOR));
+  }
+
+  private static TupleError createError(long lineNumber, String referenceAllele, String referenceSequence) {
+    return TupleState.createTupleError(
+        REFERENCE_GENOME_ERROR,
+        SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE,
+        referenceAllele,
+        lineNumber,
+
+        // Params
+        referenceSequence);
+  }
+
+  private static boolean isMatch(String controlAllele, String refSequence) {
+    return controlAllele.equalsIgnoreCase(refSequence);
+  }
+
+  /**
+   * Returns a LineReader capable of reading gz, bzip2 or plain text files
+   */
+  private static LineReader getLineReader(Path path, FileSystem fileSystem) throws IOException {
     LineReader reader = null;
     if (path.getName().endsWith(".gz")) {
       reader = new LineReader(new InputStreamReader(new GZIPInputStream(fileSystem.open(path))));
@@ -134,57 +202,8 @@ public class ReferenceGenomeValidator {
     } else {
       reader = new LineReader(new InputStreamReader(fileSystem.open(path)));
     }
+
     return reader;
-  }
-
-  public List<TupleError> validate(Path ssmPrimaryFile, FileSystem fileSystem) throws IOException {
-    // Validate genome reference aligns with reference genome of submitted primary file. We assume at this stage the
-    // file is well-formed, and that each individual field is sane
-
-    LineReader reader = getLineReader(ssmPrimaryFile, fileSystem);
-
-    Builder<TupleError> errors = new ImmutableList.Builder<TupleError>();
-
-    long lineNumber = 1;
-    int chromosomeIdx = -1;
-    int startIdx = -1;
-    int endIdx = -1;
-    int referenceAlleleIdx = -1;
-    String line;
-
-    while ((line = reader.readLine()) != null) {
-      List<String> fields = asList(line.split("\t"));
-
-      if (lineNumber == 1) {
-        // Get column position
-        chromosomeIdx = fields.indexOf(SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME);
-        startIdx = fields.indexOf(SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME_START);
-        endIdx = fields.indexOf(SubmissionFieldNames.SUBMISSION_OBSERVATION_CHROMOSOME_END);
-        referenceAlleleIdx = fields.indexOf(SubmissionFieldNames.SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE);
-      } else {
-        String refSequence =
-            getReferenceGenomeSequence(fields.get(chromosomeIdx), fields.get(startIdx), fields.get(endIdx));
-
-        if (!fields.get(referenceAlleleIdx).equalsIgnoreCase(refSequence)) {
-          errors.add(TupleState.createTupleError(ErrorCode.REFERENCE_GENOME_VIOLATION,
-              SubmissionFieldNames.SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE, fields.get(referenceAlleleIdx),
-              lineNumber, refSequence));
-        }
-      }
-      lineNumber++;
-    }
-    return errors.build();
-  }
-
-  public String getReferenceGenomeSequence(String chromosome, String start, String end) {
-    long startPosition = Long.parseLong(start);
-    long endPosition = Long.parseLong(end);
-    return getReferenceGenomeSequence(chromosome, startPosition, endPosition);
-  }
-
-  public String getReferenceGenomeSequence(String chromosome, long start, long end) {
-    ReferenceSequence refSequence = sequenceFile.getSubsequenceAt(chromosome, start, end);
-    return new String(refSequence.getBases());
   }
 
 }

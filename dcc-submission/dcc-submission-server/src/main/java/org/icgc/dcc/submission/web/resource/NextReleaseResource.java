@@ -18,7 +18,6 @@
 package org.icgc.dcc.submission.web.resource;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static com.sun.jersey.api.Responses.noContent;
 import static javax.ws.rs.core.Response.status;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.SERVICE_UNAVAILABLE;
@@ -32,6 +31,7 @@ import static org.icgc.dcc.submission.web.util.Authorizations.hasSpecificProject
 import static org.icgc.dcc.submission.web.util.Authorizations.hasSubmissionSignoffPrivilege;
 import static org.icgc.dcc.submission.web.util.Authorizations.isSuperUser;
 import static org.icgc.dcc.submission.web.util.Responses.badRequest;
+import static org.icgc.dcc.submission.web.util.Responses.noContent;
 import static org.icgc.dcc.submission.web.util.Responses.unauthorizedResponse;
 
 import java.util.List;
@@ -241,7 +241,7 @@ public class NextReleaseResource {
           .entity(new ServerErrorResponseMessage(code)).build();
     }
 
-    return noContent().build();
+    return noContent();
   }
 
   @DELETE

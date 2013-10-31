@@ -20,6 +20,7 @@ package org.icgc.dcc.submission.web.util;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.submission.web.model.ServerErrorCode.NO_SUCH_ENTITY;
@@ -85,6 +86,12 @@ public final class Responses {
   public static Response created() {
     return Response
         .status(CREATED)
+        .build();
+  }
+
+  public static Response noContent() {
+    return Response
+        .status(NO_CONTENT)
         .build();
   }
 
