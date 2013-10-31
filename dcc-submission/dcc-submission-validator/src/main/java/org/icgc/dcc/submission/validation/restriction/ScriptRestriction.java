@@ -304,7 +304,7 @@ public class ScriptRestriction implements InternalPlanElement {
     }
 
     private static boolean isPredicate(Class<?> clazz) {
-      return clazz.equals(Boolean.class);
+      return clazz == null || Boolean.class.equals(clazz);
     }
 
     private static boolean isPredicate(Object result) {
