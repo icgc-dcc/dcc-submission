@@ -18,6 +18,10 @@
 package org.icgc.dcc.submission.validation.service;
 
 import static java.lang.String.format;
+
+import java.util.List;
+import java.util.regex.Pattern;
+
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -26,6 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.QueuedProject;
@@ -39,6 +44,7 @@ import org.icgc.dcc.submission.validation.core.ValidationListener;
 import org.icgc.dcc.submission.validation.planner.Planner;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactory;
+import org.icgc.dcc.submission.validation.semantic.ReferenceGenomeValidator;
 
 import cascading.cascade.Cascade;
 
@@ -81,6 +87,8 @@ public class ValidationService {
     PlatformStrategy platformStrategy = platformStrategyFactory.get(inputDir, outputDir, systemDir);
     log.info("Checking validation for '{}' has inputDir = {} ", projectKey, inputDir);
     checkValidation(dictionary, submissionDirectory, queuedProject);
+
+    semanticValidation(queuedProject, dictionary, submissionDirectory);
 
     Plan plan = planValidation(queuedProject, submissionDirectory, platformStrategy, dictionary, listener);
     listener.setPlan(plan);
@@ -138,10 +146,8 @@ public class ValidationService {
     log.info("Plan: plan.getCascade: {}", plan.getCascade());
   }
 
-  @SneakyThrows
   private void checkValidation(Dictionary dictionary, SubmissionDirectory submissionDirectory,
-      QueuedProject queuedProject) throws
-      MalformedSubmissionException {
+      QueuedProject queuedProject) throws MalformedSubmissionException {
     FirstPassChecker checker = new FirstPassChecker(dccFileSystem, dictionary, submissionDirectory);
     boolean valid = checker.isValid();
     if (!valid) {
@@ -152,5 +158,36 @@ public class ValidationService {
 
       throw new MalformedSubmissionException(queuedProject, errors.build());
     }
+  }
+
+  private void semanticValidation(QueuedProject queuedProject, Dictionary dictionary,
+      SubmissionDirectory submissionDirectory) throws MalformedSubmissionException {
+    val fileSchema = getSsmPrimaryFileSchema(dictionary);
+    val fileSystem = dccFileSystem.getFileSystem();
+    val regex = fileSchema.getPattern();
+
+    for (val fileName : submissionDirectory.listFile()) {
+      if (Pattern.matches(regex, fileName)) {
+        Path ssmPrimaryFile = new Path(submissionDirectory.getDataFilePath(fileName));
+        ReferenceGenomeValidator validator = new ReferenceGenomeValidator();
+        validator.ensureDownload();
+
+        List<TupleError> errors = validator.validate(ssmPrimaryFile, fileSystem);
+        if (!errors.isEmpty()) {
+          throw new MalformedSubmissionException(queuedProject, ImmutableMap.<String, Iterable<TupleError>> of(
+              fileSchema.getName(), errors));
+        }
+      }
+    }
+  }
+
+  private static FileSchema getSsmPrimaryFileSchema(Dictionary dictionary) {
+    for (val fileSchema : dictionary.getFiles()) {
+      if (fileSchema.getName().equals("ssm_p")) {
+        return fileSchema;
+      }
+    }
+
+    return null;
   }
 }

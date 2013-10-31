@@ -290,7 +290,6 @@ public class ValidationQueueService extends AbstractScheduledService {
       storeSubmissionReport(projectKey, null);
     } else if (STOPPED == cascadeStatus) {
       log.info("Validation successfully stopped: {}", projectKey);
-
     } else {
       log.info("Gathering report for project {}", projectKey);
       val report = new SubmissionReport();

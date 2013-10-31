@@ -99,7 +99,8 @@ public class ReferenceGenomeValidator {
    * Validate genome reference aligns with reference genome of submitted primary file. We assume at this stage the file
    * is well-formed, and that each individual field is sane.
    */
-  public List<TupleError> validate(Path ssmPrimaryFile, FileSystem fileSystem) throws IOException {
+  @SneakyThrows
+  public List<TupleError> validate(Path ssmPrimaryFile, FileSystem fileSystem) {
     LineReader reader = getLineReader(ssmPrimaryFile, fileSystem);
 
     long lineNumber = 1;
