@@ -83,7 +83,7 @@ public class FirstPassChecker {
       String fileSchemaName = getFileSchemaName(filename);
       if (fileSchemaName != null) {
         Builder<FirstPassValidationError> errors = ImmutableList.<FirstPassValidationError> builder();
-        log.info("Validate file level well-formness for file schema: {}", fileSchemaName);
+        log.info("Validate file level well-formness for file: {}", filename);
         errors.addAll(fileChecker.check(filename));
         if (fileChecker.canContinue()) {
           errors.addAll(rowChecker.check(filename));

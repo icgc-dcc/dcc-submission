@@ -69,10 +69,12 @@ public abstract class CompositeRowChecker extends CompositeFileChecker implement
               DEFAULT_CHARSET));
       String line;
       long lineNumber = 1;
+      log.info("Start performing validations on rows in the file: {}", filePathname);
       while ((line = reader.readLine()) != null) {
         errors.addAll(this.checkRow(fileSchema, line, lineNumber));
         ++lineNumber;
       }
+      log.info("End row validation. Total number of errors found: {}", errors.size());
     } catch (IOException e) {
       throw new RuntimeException("Unable to check the file: " + filename, e);
     }
@@ -84,11 +86,14 @@ public abstract class CompositeRowChecker extends CompositeFileChecker implement
     Builder<FirstPassValidationError> errors = ImmutableList.builder();
     errors.addAll(compositeChecker.checkRow(fileSchema, row, lineNumber));
     if (compositeChecker.canContinue()) {
-      log.info("Start performing {} validation...", this.getClass().getSimpleName());
       checkErrors = performSelfCheck(fileSchema, row, lineNumber);
       errors.addAll(checkErrors);
-      log.info("End performing {} validation. Number of errors found: {}", new Object[] { this.getClass()
-          .getSimpleName(), checkErrors.size() });
+
+      if (checkErrors.size() != 0) {
+        log.info("Performed {} validation. Number of errors found: {}", new Object[] { this
+            .getClass()
+            .getSimpleName(), checkErrors.size() });
+      }
     }
     return errors.build();
   }

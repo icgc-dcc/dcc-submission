@@ -51,7 +51,7 @@ public class RowCharsetChecker extends CompositeRowChecker {
       errors
           .add(new FirstPassValidationError(getCheckLevel(),
               "Invalid character found in the row: " + line, ErrorCode.INVALID_CHARSET_ROW_ERROR,
-              new Object[] { ASCII }, lineNumber));
+              new Object[] { ASCII.toString() }, lineNumber));
     }
     return errors.build();
   }
