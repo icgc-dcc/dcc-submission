@@ -25,6 +25,7 @@ import lombok.Cleanup;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
+import org.icgc.dcc.submission.validation.checker.Util.CodecType;
 import org.icgc.dcc.submission.validation.core.ErrorCode;
 
 import com.google.common.collect.ImmutableList;
@@ -47,13 +48,21 @@ public class FileCorruptionChecker extends CompositeFileChecker {
   public List<FirstPassValidationError> performSelfCheck(String filename) {
     Builder<FirstPassValidationError> errors = ImmutableList.builder();
     try {
-      switch (Util.determineCodec(getDccFileSystem(), getSubmissionDirectory(), filename)) {
-      case GZIP:
-        errors.addAll(checkGZip(filename));
-        break;
-      case BZIP2:
-        errors.addAll(checkBZip2(filename));
-        break;
+      CodecType contentType = Util.determineCodecFromContent(getDccFileSystem(), getSubmissionDirectory(), filename);
+      CodecType filenameType = Util.determineCodecFromFilename(filename);
+      if (contentType == filenameType) {
+        switch (contentType) {
+        case GZIP:
+          errors.addAll(checkGZip(filename));
+          break;
+        case BZIP2:
+          errors.addAll(checkBZip2(filename));
+          break;
+        }
+      } else {
+        errors.add(new FirstPassValidationError(getCheckLevel(), "Content type does not match the extension for file: "
+            + filename,
+            ErrorCode.COMPRESSION_CODEC_ERROR, new Object[] { getFileSchemaName(filename) }, -1));
       }
     } catch (IOException e) {
       log.info("Exception caught in reading file (corruption): {}", filename, e);

@@ -86,6 +86,11 @@ public class BaseFileChecker implements FileChecker {
     return failFast;
   }
 
+  @Override
+  public boolean canContinue() {
+    return true;
+  }
+
   private void cacheFileSchemaNames() {
     cachedFileNames = Maps.newHashMap();
     for (String filename : submissionDirectory.listFile()) {

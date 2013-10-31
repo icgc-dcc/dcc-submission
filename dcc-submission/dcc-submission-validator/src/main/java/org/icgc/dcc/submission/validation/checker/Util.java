@@ -27,6 +27,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.io.compress.CompressionCodecFactory;
+import org.apache.tika.Tika;
 import org.apache.tika.detect.Detector;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
@@ -43,7 +44,20 @@ final class Util {
     GZIP, BZIP2, PLAIN_TEXT;
   }
 
-  public static CodecType determineCodec(DccFileSystem fs, SubmissionDirectory submissionDirectory, String filename)
+  public static CodecType determineCodecFromFilename(String filename)
+  {
+    Tika tika = new Tika();
+    String mediaType = tika.detect(filename);
+    if (mediaType.equals("application/x-gzip")) {
+      return CodecType.GZIP;
+    } else if (mediaType.equals("application/x-bzip2")) {
+      return CodecType.BZIP2;
+    }
+    return CodecType.PLAIN_TEXT;
+  }
+
+  public static CodecType determineCodecFromContent(DccFileSystem fs, SubmissionDirectory submissionDirectory,
+      String filename)
       throws IOException {
     @Cleanup
     BufferedInputStream bis =

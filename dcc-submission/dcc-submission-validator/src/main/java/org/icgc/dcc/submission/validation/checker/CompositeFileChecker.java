@@ -26,6 +26,7 @@ import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.validation.checker.Util.CheckLevel;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 @Slf4j
@@ -33,12 +34,14 @@ public abstract class CompositeFileChecker implements FileChecker {
 
   protected FileChecker compositeChecker;
   protected List<FirstPassValidationError> errors;
+  protected List<FirstPassValidationError> checkErrors;
   protected boolean failFast;
 
   public CompositeFileChecker(FileChecker nestedChecker, boolean failFast) {
     this.compositeChecker = nestedChecker;
     errors = Lists.newLinkedList();
     this.failFast = failFast;
+    checkErrors = ImmutableList.of();
   }
 
   public CompositeFileChecker(FileChecker nestedChecker) {
@@ -49,9 +52,9 @@ public abstract class CompositeFileChecker implements FileChecker {
   public List<FirstPassValidationError> check(String filename) {
     errors.clear();
     errors.addAll(compositeChecker.check(filename));
-    if (compositeChecker.isValid() || !compositeChecker.isFailFast()) {
+    if (compositeChecker.canContinue()) {
       log.info("Start performing {} validation...", this.getClass().getSimpleName());
-      List<FirstPassValidationError> checkErrors = performSelfCheck(filename);
+      checkErrors = performSelfCheck(filename);
       errors.addAll(checkErrors);
       log.info("End performing {} validation. Number of errors found: {}", new Object[] { this.getClass()
           .getSimpleName(), checkErrors.size() });
@@ -60,6 +63,11 @@ public abstract class CompositeFileChecker implements FileChecker {
   }
 
   public abstract List<FirstPassValidationError> performSelfCheck(String filename);
+
+  @Override
+  public boolean canContinue() {
+    return (compositeChecker.canContinue() && (checkErrors.isEmpty() || !failFast));
+  }
 
   @Override
   public boolean isValid() {
@@ -73,7 +81,8 @@ public abstract class CompositeFileChecker implements FileChecker {
 
   @Override
   public boolean isFailFast() {
-    return compositeChecker.isFailFast() || failFast;
+    return failFast;
+    // return compositeChecker.isFailFast() || failFast;
   }
 
   @Override
