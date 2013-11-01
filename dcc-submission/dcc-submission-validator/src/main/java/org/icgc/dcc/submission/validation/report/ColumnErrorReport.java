@@ -17,77 +17,51 @@
  */
 package org.icgc.dcc.submission.validation.report;
 
-import static com.google.common.collect.Iterables.tryFind;
-import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Lists.newLinkedList;
+import static lombok.AccessLevel.PACKAGE;
+import static lombok.AccessLevel.PRIVATE;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 
-import com.google.code.morphia.annotations.Embedded;
-import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableList;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Embedded
-public class SchemaReport implements Serializable {
+import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
+import org.icgc.dcc.submission.validation.core.ErrorParameterKey;
 
-  protected String name;
-  protected List<FieldReport> fieldReports;
-  protected List<ErrorReport> errors;
+@NoArgsConstructor
+@Getter
+@Setter(PRIVATE)
+public class ColumnErrorReport implements Serializable {
 
-  public SchemaReport() {
-    this.fieldReports = newArrayList();
-    this.errors = newArrayList();
+  private List<String> columnNames;
+  private long count;
+  @Setter(PACKAGE)
+  private List<Long> lines = newLinkedList();
+  private List<Object> values = newLinkedList();
+  private Map<ErrorParameterKey, Object> parameters;
+
+  public ColumnErrorReport(TupleError error) {
+    this.setColumnNames(error.getColumnNames());
+    this.setCount(1L);
+    this.addLine(error.getLine());
+    this.addValue(error.getValue());
+    this.setParameters(error.getParameters());
   }
 
-  public String getName() {
-    return name;
+  public void incrementCount() {
+    count++;
   }
 
-  public void setName(String name) {
-    this.name = name;
+  public void addLine(Long line) {
+    lines.add(line);
   }
 
-  public List<FieldReport> getFieldReports() {
-    return ImmutableList.copyOf(this.fieldReports);
+  public void addValue(Object value) {
+    values.add(value);
   }
 
-  public void setFieldReports(List<FieldReport> fieldReports) {
-    this.fieldReports = fieldReports;
-  }
-
-  public List<ErrorReport> getErrors() {
-    return ImmutableList.copyOf(this.errors);
-  }
-
-  public void setErrors(List<ErrorReport> errors) {
-    this.errors = errors;
-  }
-
-  public void addError(ErrorReport error) {
-    this.errors.add(error);
-  }
-
-  public void addErrors(List<ErrorReport> errors) {
-    this.errors.addAll(errors);
-  }
-
-  public Optional<FieldReport> getFieldReport(final String field) {
-    return tryFind(fieldReports, new Predicate<FieldReport>() {
-
-      @Override
-      public boolean apply(FieldReport input) {
-        return input.getName().equals(field);
-      }
-
-    });
-  }
-
-  public void addFieldReport(FieldReport fieldReport) {
-    this.fieldReports.add(fieldReport);
-  }
-
-  public void addFieldReports(List<FieldReport> fieldReports) {
-    this.fieldReports.addAll(fieldReports);
-  }
 }

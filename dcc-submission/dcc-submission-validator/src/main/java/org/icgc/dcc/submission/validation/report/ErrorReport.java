@@ -18,7 +18,7 @@
 package org.icgc.dcc.submission.validation.report;
 
 import static com.google.common.collect.Lists.newLinkedList;
-import static org.icgc.dcc.submission.validation.visitor.ErrorPlanningVisitor.MAX_ERROR_COUNT;
+import static lombok.AccessLevel.PRIVATE;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -27,40 +27,35 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
 import org.icgc.dcc.submission.validation.core.ErrorCode;
-import org.icgc.dcc.submission.validation.core.ErrorParameterKey;
 
 import com.google.common.collect.Lists;
 
 @NoArgsConstructor
+@Getter
+@Setter(PRIVATE)
 public class ErrorReport implements Serializable {
 
+  /**
+   * The maximum number of {@link ColumnErrorReport} {@code line} and {@code value} additions that will be accepted.
+   * Intended to limit reporting for the user.
+   */
+  public static final int MAX_ERROR_COUNT = 50;
+
   private ErrorCode errorType;
-
   private String description;
-
   private final List<ColumnErrorReport> columns = newLinkedList();
 
   public ErrorReport(TupleError error) {
     this.setErrorType(error.getCode());
     this.setDescription(error.getMessage());
     this.addColumn(error);
-  }
-
-  public ErrorCode getErrorType() {
-    return errorType;
-  }
-
-  public String getDescription() {
-    return description;
-  }
-
-  public List<ColumnErrorReport> getColumns() {
-    return columns;
   }
 
   public boolean hasColumn(List<String> columnNames) {
@@ -92,7 +87,7 @@ public class ErrorReport implements Serializable {
       column.addValue(error.getValue());
     }
 
-    column.incCount();
+    column.incrementCount();
   }
 
   public void updateReport(TupleError error) {
@@ -101,14 +96,6 @@ public class ErrorReport implements Serializable {
     } else {
       this.addColumn(error);
     }
-  }
-
-  private void setDescription(String description) {
-    this.description = description;
-  }
-
-  private void setErrorType(ErrorCode errorType) {
-    this.errorType = errorType;
   }
 
   public void updateLineNumbers(Path file) throws IOException {
@@ -128,89 +115,6 @@ public class ErrorReport implements Serializable {
       }
     }
 
-  }
-
-  private static class ColumnErrorReport implements Serializable {
-
-    private List<String> columnNames;
-
-    private long count;
-
-    private List<Long> lines = Lists.newLinkedList();
-
-    private List<Object> values = Lists.newLinkedList();
-
-    private Map<ErrorParameterKey, Object> parameters;
-
-    @SuppressWarnings("unused")
-    public ColumnErrorReport() {
-    }
-
-    public ColumnErrorReport(TupleError error) {
-      this.setColumnNames(error.getColumnNames());
-      this.setCount(1L);
-      this.lines.add(error.getLine());
-      this.values.add(error.getValue());
-
-      this.setParameters(error.getParameters());
-    }
-
-    public void incCount() {
-      this.count++;
-    }
-
-    public long getCount() {
-      return this.count;
-    }
-
-    @SuppressWarnings("unused")
-    public Map<ErrorParameterKey, Object> getParameters() {
-      return this.parameters;
-    }
-
-    public List<String> getColumnNames() {
-      return this.columnNames;
-    }
-
-    public List<Object> getValues() {
-      return this.values;
-    }
-
-    public void addValue(Object value) {
-      List<Object> values = this.getValues();
-      values.add(value);
-      this.setValues(values);
-    }
-
-    public List<Long> getLines() {
-      return this.lines;
-    }
-
-    public void addLine(Long line) {
-      List<Long> lines = this.getLines();
-      lines.add(line);
-      this.setLines(lines);
-    }
-
-    private void setValues(List<Object> values) {
-      this.values = values;
-    }
-
-    private void setLines(List<Long> lines) {
-      this.lines = lines;
-    }
-
-    private void setCount(long count) {
-      this.count = count;
-    }
-
-    private void setColumnNames(List<String> columnNames) {
-      this.columnNames = columnNames;
-    }
-
-    private void setParameters(Map<ErrorParameterKey, Object> params) {
-      this.parameters = params;
-    }
   }
 
 }
