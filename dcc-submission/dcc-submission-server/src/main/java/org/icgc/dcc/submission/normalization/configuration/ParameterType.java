@@ -43,6 +43,9 @@ public enum ParameterType {
     return defaultValue.getStringValue();
   }
 
+  /**
+   * 
+   */
   @RequiredArgsConstructor
   public enum Switch implements ParameterValue {
     ENABLED,
@@ -54,6 +57,9 @@ public enum ParameterType {
     }
   }
 
+  /**
+   * 
+   */
   public enum AlleleMaskingMode implements ParameterValue {
     ALL, MARK_ONLY;
 
@@ -63,10 +69,24 @@ public enum ParameterType {
     }
   }
 
+  /**
+   * 
+   */
   static final class NormalizerConfigurationParameters {
 
     public static String getStringValue(Enum<?> enuM) {
       return enuM.name();
     }
+  }
+
+  /**
+   * 
+   */
+  private interface ParameterValue {
+
+    /**
+     * 
+     */
+    String getStringValue();
   }
 }
