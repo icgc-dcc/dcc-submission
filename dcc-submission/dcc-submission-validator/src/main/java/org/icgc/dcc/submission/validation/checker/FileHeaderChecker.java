@@ -77,4 +77,5 @@ public class FileHeaderChecker extends CompositeFileChecker {
     String header = reader.readLine();
     return ImmutableList.copyOf(header.split("\\t"));
   }
+
 }

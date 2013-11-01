@@ -46,9 +46,6 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import com.google.common.collect.ImmutableList;
 
-/**
- * 
- */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(Util.class)
 public class FirstPassCheckerTest {
@@ -199,4 +196,5 @@ public class FirstPassCheckerTest {
     }
 
   }
+
 }

@@ -197,4 +197,5 @@ public class FileHeaderCheckerTest {
     assertTrue(error.isEmpty());
     assertTrue(checker.isValid());
   }
+
 }

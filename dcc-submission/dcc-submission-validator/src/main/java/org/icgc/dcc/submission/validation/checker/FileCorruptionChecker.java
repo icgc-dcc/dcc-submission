@@ -108,6 +108,7 @@ public class FileCorruptionChecker extends CompositeFileChecker {
       errors.add(new FirstPassValidationError(getCheckLevel(), "Corrupted gzip file: " + filename,
           ErrorCode.COMPRESSION_CODEC_ERROR, new Object[] { getFileSchemaName(filename) }, -1));
     }
+
     return errors.build();
   }
 

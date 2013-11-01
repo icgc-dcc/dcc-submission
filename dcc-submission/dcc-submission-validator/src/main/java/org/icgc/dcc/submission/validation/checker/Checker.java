@@ -21,10 +21,10 @@ import org.icgc.dcc.submission.validation.checker.Util.CheckLevel;
 
 public interface Checker {
 
-  public boolean isValid();
+  boolean isValid();
 
-  public CheckLevel getCheckLevel();
+  CheckLevel getCheckLevel();
 
-  public boolean isFailFast();
+  boolean isFailFast();
 
 }

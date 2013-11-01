@@ -25,15 +25,16 @@ import org.icgc.dcc.submission.fs.SubmissionDirectory;
 
 public interface FileChecker extends Checker {
 
-  public List<FirstPassValidationError> check(String filename);
+  List<FirstPassValidationError> check(String filename);
 
-  public String getFileSchemaName(String filename);
+  String getFileSchemaName(String filename);
 
-  public SubmissionDirectory getSubmissionDirectory();
+  SubmissionDirectory getSubmissionDirectory();
 
-  public Dictionary getDictionary();
+  Dictionary getDictionary();
 
-  public DccFileSystem getDccFileSystem();
+  DccFileSystem getDccFileSystem();
 
-  public boolean canContinue();
+  boolean canContinue();
+
 }

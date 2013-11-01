@@ -28,9 +28,6 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 
-/**
- * 
- */
 public class FileCollisionChecker extends CompositeFileChecker {
 
   public FileCollisionChecker(FileChecker fileChecker, boolean failFast) {

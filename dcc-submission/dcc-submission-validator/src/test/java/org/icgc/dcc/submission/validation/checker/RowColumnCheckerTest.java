@@ -58,7 +58,6 @@ public class RowColumnCheckerTest {
 
   @Before
   public void setup() {
-
     FileSchema testSchema = mock(FileSchema.class);
     String paramString = "testfile1";
     when(testSchema.getPattern()).thenReturn(paramString);
@@ -152,4 +151,5 @@ public class RowColumnCheckerTest {
     assertTrue(errors.isEmpty());
     assertTrue(checker.isValid());
   }
+
 }

@@ -110,7 +110,6 @@ public class FirstPassCheckerClientTest {
 
   @Before
   public void setup() throws IOException {
-
     final File file1 = File.createTempFile("testfile1", ".bz2");
     final File file2 = File.createTempFile("testfile2", ".gz", file1.getParentFile());
     final File file3 = File.createTempFile("testfile3", ".txt", file1.getParentFile());

@@ -27,7 +27,7 @@ import com.google.common.collect.ImmutableList.Builder;
 
 public class RowColumnChecker extends CompositeRowChecker {
 
-  final private String DELIMITER = "\t";
+  private static final String DELIMITER = "\t";
 
   public RowColumnChecker(RowChecker rowChecker, boolean failFast) {
     super(rowChecker, failFast);
@@ -42,9 +42,13 @@ public class RowColumnChecker extends CompositeRowChecker {
     Builder<FirstPassValidationError> errors = ImmutableList.builder();
     int expectedNumColumns = fileSchema.getFields().size();
     int actualNumColumns = ImmutableList.copyOf(line.split(DELIMITER, -1)).size();
-    if (actualNumColumns != expectedNumColumns) errors.add(new FirstPassValidationError(getCheckLevel(),
-        "Row does not match the expected number of columns: " + expectedNumColumns + ", actual: " + actualNumColumns,
-        ErrorCode.STRUCTURALLY_INVALID_ROW_ERROR, new Object[] { expectedNumColumns }, lineNumber));
+    if (actualNumColumns != expectedNumColumns) {
+      errors.add(new FirstPassValidationError(getCheckLevel(),
+          "Row does not match the expected number of columns: " + expectedNumColumns + ", actual: " + actualNumColumns,
+          ErrorCode.STRUCTURALLY_INVALID_ROW_ERROR, new Object[] { expectedNumColumns }, lineNumber));
+    }
+
     return errors.build();
   }
+
 }

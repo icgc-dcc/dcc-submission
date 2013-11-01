@@ -53,11 +53,6 @@ public class BaseRowChecker extends BaseFileChecker implements RowChecker {
   }
 
   @Override
-  public boolean isFailFast() {
-    return super.isFailFast();
-  }
-
-  @Override
   public List<FirstPassValidationError> checkRow(FileSchema fileSchema, String row, long lineNumber) {
     return ImmutableList.of();
   }

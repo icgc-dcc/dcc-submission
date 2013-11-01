@@ -33,9 +33,11 @@ import com.google.common.collect.ImmutableList.Builder;
 
 public class RowCharsetChecker extends CompositeRowChecker {
 
-  private final static CharMatcher DEFAULT_INVALID_MATCHER = ASCII.negate()
-      .or(JAVA_ISO_CONTROL).and(noneOf("\t"))
-      .precomputed();
+  private final static CharMatcher DEFAULT_INVALID_MATCHER =
+      ASCII
+          .negate()
+          .or(JAVA_ISO_CONTROL).and(noneOf("\t"))
+          .precomputed();
 
   public RowCharsetChecker(RowChecker rowChecker, boolean failFast) {
     super(rowChecker, failFast);
@@ -54,6 +56,7 @@ public class RowCharsetChecker extends CompositeRowChecker {
               "Invalid character found in the row: " + line, ErrorCode.INVALID_CHARSET_ROW_ERROR,
               new Object[] { Charsets.US_ASCII.name() }, lineNumber));
     }
+
     return errors.build();
   }
 }

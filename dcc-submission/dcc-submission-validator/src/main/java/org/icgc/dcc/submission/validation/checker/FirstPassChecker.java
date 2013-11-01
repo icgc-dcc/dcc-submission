@@ -42,11 +42,11 @@ import com.google.common.collect.Iterables;
 @RequiredArgsConstructor
 public class FirstPassChecker {
 
-  final private Dictionary dict;
-  final private SubmissionDirectory submissionDir;
+  private final Dictionary dictionary;
+  private final SubmissionDirectory submissionDir;
 
-  final private FileChecker fileChecker;
-  final private RowChecker rowChecker;
+  private final FileChecker fileChecker;
+  private final RowChecker rowChecker;
 
   private final Map<String, List<FirstPassValidationError>> errorMap = newHashMap();
 
@@ -64,9 +64,12 @@ public class FirstPassChecker {
                     new BaseFileChecker(fs, dict, submissionDir)))));
   }
 
-  public static RowChecker getDefaultRowChecker(DccFileSystem fs, Dictionary dict, SubmissionDirectory submissionDir) {
-    // chaining multiple row checkers
-    return new RowColumnChecker(new RowCharsetChecker(new BaseRowChecker(fs, dict, submissionDir)));
+  public static RowChecker getDefaultRowChecker(DccFileSystem fs, Dictionary dictionary,
+      SubmissionDirectory submissionDir) {
+    // Chaining multiple row checkers
+    return new RowColumnChecker(
+        new RowCharsetChecker(
+            new BaseRowChecker(fs, dictionary, submissionDir)));
 
   }
 
@@ -110,11 +113,12 @@ public class FirstPassChecker {
   }
 
   private String getFileSchemaName(String filename) {
-    for (val schema : dict.getFiles()) {
+    for (val schema : dictionary.getFiles()) {
       if (Pattern.matches(schema.getPattern(), filename)) {
         return schema.getName();
       }
     }
+
     return null;
   }
 

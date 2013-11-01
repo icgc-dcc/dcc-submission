@@ -22,21 +22,20 @@ import static lombok.AccessLevel.PRIVATE;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.val;
 
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
 import org.icgc.dcc.submission.validation.core.ErrorCode;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 @NoArgsConstructor
 @Getter
@@ -61,23 +60,23 @@ public class ErrorReport implements Serializable {
   }
 
   public boolean hasColumn(List<String> columnNames) {
-    return this.getColumnByName(columnNames) != null;
+    return getColumnByName(columnNames) != null;
   }
 
   public ColumnErrorReport getColumnByName(List<String> columnNames) {
-    ColumnErrorReport column = null;
-    for (ColumnErrorReport c : this.getColumns()) {
-      if (c.getColumnNames().equals(columnNames)) {
-        column = c;
-        break;
+    for (val column : getColumns()) {
+      if (column.getColumnNames().equals(columnNames)) {
+        return column;
       }
     }
-    return column;
+
+    return null;
   }
 
   public void addColumn(TupleError error) {
-    ColumnErrorReport column = new ColumnErrorReport(error);
-    this.columns.add(column);
+    val column = new ColumnErrorReport(error);
+
+    columns.add(column);
   }
 
   public void updateColumn(TupleError error) {
@@ -101,18 +100,20 @@ public class ErrorReport implements Serializable {
   }
 
   public void updateLineNumbers(Path file) throws IOException {
-    Collection<Long> offsets = new HashSet<Long>();
-    for (ColumnErrorReport column : this.columns) {
+    val offsets = Sets.<Long> newHashSet();
+    for (val column : columns) {
       offsets.addAll(column.getLines());
     }
-    Map<Long, Long> byteToLine = ByteOffsetToLineNumber.convert(file, offsets);
+
+    val byteToLine = ByteOffsetToLineNumber.convert(file, offsets);
 
     if (byteToLine != null) {
-      for (ColumnErrorReport column : this.columns) {
-        List<Long> newLines = Lists.newLinkedList();
-        for (Long oldLine : column.getLines()) {
+      for (val column : columns) {
+        val newLines = Lists.<Long> newLinkedList();
+        for (val oldLine : column.getLines()) {
           newLines.add(byteToLine.get(oldLine));
         }
+
         column.setLines(newLines);
       }
     }

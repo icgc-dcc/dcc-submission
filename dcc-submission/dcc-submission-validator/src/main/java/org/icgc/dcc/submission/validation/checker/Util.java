@@ -53,6 +53,7 @@ final class Util {
     } else if (mediaType.equals("application/x-bzip2")) {
       return CodecType.BZIP2;
     }
+
     return CodecType.PLAIN_TEXT;
   }
 
@@ -60,18 +61,19 @@ final class Util {
       String filename)
       throws IOException {
     @Cleanup
-    BufferedInputStream bis =
-        new BufferedInputStream(fs.open(submissionDirectory.getDataFilePath(filename)));
+    BufferedInputStream bis = new BufferedInputStream(fs.open(submissionDirectory.getDataFilePath(filename)));
     AutoDetectParser parser = new AutoDetectParser();
     Detector detector = parser.getDetector();
     Metadata md = new Metadata();
     md.add(Metadata.RESOURCE_NAME_KEY, filename);
+
     String mediaType = detector.detect(bis, md).toString();
     if (mediaType.equals("application/x-gzip")) {
       return CodecType.GZIP;
     } else if (mediaType.equals("application/x-bzip2")) {
       return CodecType.BZIP2;
     }
+
     return CodecType.PLAIN_TEXT;
   }
 
@@ -79,6 +81,7 @@ final class Util {
     Configuration conf = dccFileSystem.getFileSystem().getConf();
     CompressionCodecFactory factory = new CompressionCodecFactory(conf);
     Path filePath = new Path(filePathname);
+
     CompressionCodec codec = factory.getCodec(filePath);
     if (codec == null) {
       // This is assumed to be PLAIN_TEXT
@@ -87,4 +90,5 @@ final class Util {
       return codec.createInputStream(dccFileSystem.open(filePathname));
     }
   }
+
 }

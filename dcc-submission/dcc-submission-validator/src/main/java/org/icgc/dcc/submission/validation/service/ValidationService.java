@@ -144,14 +144,12 @@ public class ValidationService {
   public void startValidation(Plan plan) {
     log.info("Starting validation on project {}", plan.getProjectKey());
     plan.startCascade();
-
-    log.info("Plan: plan.getCascade: {}", plan.getCascade());
   }
 
   private void checkerValidation(Dictionary dictionary, SubmissionDirectory submissionDirectory,
       QueuedProject queuedProject) throws MalformedSubmissionException {
-    FirstPassChecker checker = new FirstPassChecker(dccFileSystem, dictionary, submissionDirectory);
-    boolean valid = checker.isValid();
+    val checker = new FirstPassChecker(dccFileSystem, dictionary, submissionDirectory);
+    val valid = checker.isValid();
     if (!valid) {
       val errors = ImmutableMap.<String, Iterable<TupleError>> builder();
       for (val schemaName : checker.getFileSchemaNames()) {
@@ -173,7 +171,7 @@ public class ValidationService {
         Path ssmPrimaryFile = new Path(submissionDirectory.getDataFilePath(fileName));
 
         log.info("Starting reference genome validation on project {}...", queuedProject.getKey());
-        ReferenceGenomeValidator validator = new ReferenceGenomeValidator();
+        val validator = new ReferenceGenomeValidator();
         validator.ensureDownload();
 
         List<TupleError> errors = validator.validate(ssmPrimaryFile, fileSystem);

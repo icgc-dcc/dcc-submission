@@ -17,8 +17,11 @@
  */
 package org.icgc.dcc.submission.validation.checker;
 
+import static com.google.common.collect.Lists.newLinkedList;
+
 import java.util.List;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
@@ -27,22 +30,16 @@ import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.validation.checker.Util.CheckLevel;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 
 @Slf4j
+@RequiredArgsConstructor
 public abstract class CompositeFileChecker implements FileChecker {
 
-  protected FileChecker compositeChecker;
-  protected List<FirstPassValidationError> errors;
-  protected List<FirstPassValidationError> checkErrors;
-  protected boolean failFast;
+  protected final FileChecker compositeChecker;
+  protected final boolean failFast;
 
-  public CompositeFileChecker(FileChecker nestedChecker, boolean failFast) {
-    this.compositeChecker = nestedChecker;
-    errors = Lists.newLinkedList();
-    this.failFast = failFast;
-    checkErrors = ImmutableList.of();
-  }
+  protected List<FirstPassValidationError> errors = newLinkedList();
+  protected List<FirstPassValidationError> checkErrors = ImmutableList.of();
 
   public CompositeFileChecker(FileChecker nestedChecker) {
     this(nestedChecker, false);

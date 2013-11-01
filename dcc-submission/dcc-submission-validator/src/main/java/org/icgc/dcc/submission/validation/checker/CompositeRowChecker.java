@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.submission.validation.checker;
 
+import static com.google.common.base.Charsets.UTF_8;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -30,7 +32,6 @@ import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.validation.checker.Util.CheckLevel;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -38,7 +39,7 @@ import com.google.common.collect.ImmutableList.Builder;
 @Slf4j
 public abstract class CompositeRowChecker extends CompositeFileChecker implements RowChecker {
 
-  private static final Charset DEFAULT_CHARSET = Charsets.UTF_8;
+  private static final Charset DEFAULT_CHARSET = UTF_8;
   protected RowChecker compositeChecker;
 
   public CompositeRowChecker(RowChecker nestedChecker, boolean failFast) {

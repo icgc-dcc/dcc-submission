@@ -23,6 +23,8 @@ import static com.google.common.collect.Lists.newArrayList;
 import java.io.Serializable;
 import java.util.List;
 
+import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 
 import com.google.code.morphia.annotations.Embedded;
@@ -31,40 +33,21 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 
 @Embedded
+@Setter
 @ToString
 public class SchemaReport implements Serializable {
 
+  @Getter
   protected String name;
-  protected List<FieldReport> fieldReports;
-  protected List<ErrorReport> errors;
-
-  public SchemaReport() {
-    this.fieldReports = newArrayList();
-    this.errors = newArrayList();
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
+  protected List<FieldReport> fieldReports = newArrayList();
+  protected List<ErrorReport> errors = newArrayList();
 
   public List<FieldReport> getFieldReports() {
     return ImmutableList.copyOf(this.fieldReports);
   }
 
-  public void setFieldReports(List<FieldReport> fieldReports) {
-    this.fieldReports = fieldReports;
-  }
-
   public List<ErrorReport> getErrors() {
     return ImmutableList.copyOf(this.errors);
-  }
-
-  public void setErrors(List<ErrorReport> errors) {
-    this.errors = errors;
   }
 
   public void addError(ErrorReport error) {
@@ -93,4 +76,5 @@ public class SchemaReport implements Serializable {
   public void addFieldReports(List<FieldReport> fieldReports) {
     this.fieldReports.addAll(fieldReports);
   }
+
 }

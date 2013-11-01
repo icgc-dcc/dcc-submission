@@ -28,11 +28,12 @@ import org.icgc.dcc.submission.validation.core.ErrorCode;
 @Value
 public class FirstPassValidationError {
 
-  private final CheckLevel level;
-  private final String errMsg;
-  private final ErrorCode code;
+  CheckLevel level;
+  String errMsg;
+  ErrorCode code;
 
-  // to be used to satisfy TupleError
-  private final Object[] param;
-  private final long lineNumber;
+  // To be used to satisfy TupleError
+  Object[] param;
+  long lineNumber;
+
 }

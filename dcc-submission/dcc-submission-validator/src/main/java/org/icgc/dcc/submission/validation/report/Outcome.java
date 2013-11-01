@@ -17,9 +17,19 @@
  */
 package org.icgc.dcc.submission.validation.report;
 
+/**
+ * Validation outcome.
+ */
 public enum Outcome {
 
+  /**
+   * Validation passed.
+   */
   PASSED,
+
+  /**
+   * Validation failed.
+   */
   FAILED
 
 }
