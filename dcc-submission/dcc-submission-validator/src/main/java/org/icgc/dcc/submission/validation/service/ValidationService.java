@@ -89,6 +89,7 @@ public class ValidationService {
     log.info("Checking validation for '{}' has inputDir = {} ", projectKey, inputDir);
     checkerValidation(dictionary, submissionDirectory, queuedProject);
 
+    log.info("Semantic validation for '{}' has inputDir = {} ", projectKey, inputDir);
     semanticValidation(queuedProject, dictionary, submissionDirectory);
 
     Plan plan = planValidation(queuedProject, submissionDirectory, platformStrategy, dictionary, listener);
@@ -141,7 +142,7 @@ public class ValidationService {
    * <code>{@link ValidationCascadeListener#onCompleted(Cascade)}</code>
    */
   public void startValidation(Plan plan) {
-    log.info("starting validation on project {}", plan.getProjectKey());
+    log.info("Starting validation on project {}", plan.getProjectKey());
     plan.startCascade();
 
     log.info("Plan: plan.getCascade: {}", plan.getCascade());
@@ -170,6 +171,8 @@ public class ValidationService {
     for (val fileName : submissionDirectory.listFile()) {
       if (Pattern.matches(regex, fileName)) {
         Path ssmPrimaryFile = new Path(submissionDirectory.getDataFilePath(fileName));
+
+        log.info("Starting reference genome validation on project {}...", queuedProject.getKey());
         ReferenceGenomeValidator validator = new ReferenceGenomeValidator();
         validator.ensureDownload();
 
