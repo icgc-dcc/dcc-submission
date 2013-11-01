@@ -125,11 +125,17 @@ public class ProjectResource {
     log.info("Request for Project [{}] from User [{}]", projectKey, user.getPrincipal());
 
     if (isAuthorized(user, projectKey) == false) {
-      // 404 instead of 403 to keep from leaking whether the project exists to an unauthorized user
+      // This check doubles as a project existence check for non-admin users.
+      // 404 instead of 401 to keep from leaking whether the project exists to an unauthorized user
       return Responses.notFound(projectKey);
     }
 
     val project = projectRepository.findProject(projectKey);
+
+    if (project == null) {
+      // This check is really only needed because admins bypass the check above
+      return Responses.notFound(projectKey);
+    }
 
     return Response.ok(project).build();
   }
