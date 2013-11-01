@@ -85,7 +85,7 @@ public class FileCorruptionChecker extends CompositeFileChecker {
       while (in.read(buf) > 0) {
       }
     } catch (IOException e) {
-      log.info("Exception caught in decoding bzip2 file: {}", filename, e);
+      log.info("Exception caught in decoding bzip2 file '{}': '{}'", filename, e.getMessage());
       errors.add(new FirstPassValidationError(getCheckLevel(), "Corrupted bzip file: " + filename,
           ErrorCode.COMPRESSION_CODEC_ERROR, new Object[] { getFileSchemaName(filename) }, -1));
     }

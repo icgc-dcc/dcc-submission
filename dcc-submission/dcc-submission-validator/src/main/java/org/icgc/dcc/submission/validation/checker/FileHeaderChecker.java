@@ -47,7 +47,6 @@ public class FileHeaderChecker extends CompositeFileChecker {
     Builder<FirstPassValidationError> errors = ImmutableList.builder();
 
     try {
-
       List<String> expectedHeader = retrieveExpectedHeader(filename);
       List<String> actualHeader = peekFileHeader(filename);
       if (!actualHeader.equals(expectedHeader)) {

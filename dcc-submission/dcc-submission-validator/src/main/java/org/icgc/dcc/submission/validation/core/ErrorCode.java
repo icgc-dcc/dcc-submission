@@ -40,7 +40,6 @@ import lombok.NonNull;
 import org.icgc.dcc.submission.dictionary.model.ValueType;
 import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
 
-import com.google.common.base.CharMatcher;
 import com.google.common.collect.ImmutableMap;
 
 public enum ErrorCode { // TODO: DCC-505 to fix the message (currently not used for anything)
@@ -68,8 +67,8 @@ public enum ErrorCode { // TODO: DCC-505 to fix the message (currently not used 
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
       checkArgument(params != null);
       checkArgument(params.length == 1);
-      checkArgument(params[0] instanceof CharMatcher);
-      return ImmutableMap.of(EXPECTED, (Object) params[0].toString());
+      checkArgument(params[0] instanceof String);
+      return ImmutableMap.of(EXPECTED, params[0]);
     }
   },
 
