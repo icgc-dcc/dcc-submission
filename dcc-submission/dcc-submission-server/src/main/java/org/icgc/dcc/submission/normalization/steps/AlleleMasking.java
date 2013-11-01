@@ -20,6 +20,7 @@ package org.icgc.dcc.submission.normalization.steps;
 import static cascading.tuple.Fields.ALL;
 import static cascading.tuple.Fields.ARGS;
 import static cascading.tuple.Fields.REPLACE;
+import static com.google.common.base.Preconditions.checkState;
 import static org.icgc.dcc.core.model.FieldNames.NormalizerFieldNames.NORMALIZER_MASKING;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_CONTROL_GENOTYPE;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_MUTATED_FROM_ALLELE;
@@ -28,14 +29,21 @@ import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_TUMOUR_GENOTYPE;
 import static org.icgc.dcc.submission.normalization.NormalizationCounter.MARKED_AS_CONTROLLED;
 import static org.icgc.dcc.submission.normalization.NormalizationCounter.MASKED;
-import static org.icgc.dcc.submission.normalization.steps.AlleleMasking.Masking.CONTROLLED;
-import static org.icgc.dcc.submission.normalization.steps.AlleleMasking.Masking.OPEN;
-import static org.icgc.dcc.submission.normalization.steps.AlleleMasking.Masking.valueOf;
+import static org.icgc.dcc.submission.normalization.steps.Masking.CONTROLLED;
+import static org.icgc.dcc.submission.normalization.steps.Masking.NORMALIZER_MASKING_FIELD;
+import static org.icgc.dcc.submission.normalization.steps.Masking.OPEN;
+import static org.icgc.dcc.submission.validation.cascading.CascadingFunctions.NO_VALUE;
+import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.hadoop.cascading.TupleEntries;
 import org.icgc.dcc.submission.normalization.NormalizationStep;
+import org.icgc.dcc.submission.normalization.configuration.ConfigurableStep;
+import org.icgc.dcc.submission.normalization.configuration.ConfigurableStep.OptionalStep;
+import org.icgc.dcc.submission.normalization.configuration.ParameterType;
+import org.icgc.dcc.submission.normalization.configuration.ParameterType.AlleleMaskingMode;
+import org.icgc.dcc.submission.normalization.configuration.ParameterType.Switch;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -47,44 +55,57 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntry;
 
+import com.typesafe.config.Config;
+
 /**
  * TODO
  */
 @Slf4j
-public class AlleleMasking implements NormalizationStep {
+@RequiredArgsConstructor
+public final class AlleleMasking implements NormalizationStep, OptionalStep, ConfigurableStep {
 
-  /**
-   * 
-   */
-  enum Masking {
-    CONTROLLED, OPEN, MASKED;
-  }
-
-  /**
-   * Short name for the step.
-   */
-  private static final String SHORT_NAME = "masking";
-
-  /**
-   * TODO + move to core?
-   */
-  private static final Object NO_VALUE = null;
+  private final Config config;
 
   @Override
   public String shortName() {
-    return SHORT_NAME;
+    return "masking";
+  }
+
+  @Override
+  public boolean isEnabled(Config config) {
+    return OptionalSteps.isEnabled(config, this);
+  }
+
+  @Override
+  public Switch getDefaultSwitchValue() {
+    return Switch.ENABLED;
+  }
+
+  @Override
+  public String getParameterValue(ParameterType paramType) {
+    return ConfigurableSteps.getParameterValue(config, paramType, (ConfigurableStep) this);
+  }
+
+  @Override
+  public String getOptionalStepKey() {
+    return shortName();
+  }
+
+  @Override
+  public String getConfigurableStepKey() {
+    return shortName();
   }
 
   @Override
   public Pipe extend(Pipe pipe) {
 
     /**
-     * TODO
+     * TODO expects flag already
      */
     final class SensitiveRowMarker extends BaseOperation<Void> implements Function<Void> {
 
       private SensitiveRowMarker() {
-        super(new Fields(NORMALIZER_MASKING));
+        super(ARGS);
       }
 
       @Override
@@ -94,6 +115,15 @@ public class AlleleMasking implements NormalizationStep {
           FunctionCall<Void> functionCall) {
 
         val entry = functionCall.getArguments();
+
+        {
+          val existingMasking = entry.getObject(Masking.NORMALIZER_MASKING_FIELD);
+          checkState(
+              existingMasking instanceof Masking
+                  && (Masking) existingMasking == OPEN,
+              "Masking flag is expected to have been set to '{}' already", OPEN);
+        }
+
         val referenceGenomeAllele = entry.getString(SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE);
         val mutatedFromAllele = entry.getString(SUBMISSION_OBSERVATION_MUTATED_FROM_ALLELE);
 
@@ -112,7 +142,7 @@ public class AlleleMasking implements NormalizationStep {
 
         functionCall
             .getOutputCollector()
-            .add(new Tuple(masking));
+            .add(new Tuple(referenceGenomeAllele, mutatedFromAllele, masking));
       }
 
       private boolean isSensitive(String referenceGenomeAllele, String mutatedFromAllele) {
@@ -182,7 +212,8 @@ public class AlleleMasking implements NormalizationStep {
        * Returns the value for masking as set by the previous step.
        */
       private Masking getMaskingState(TupleEntry entry) {
-        return valueOf(entry.getString(NORMALIZER_MASKING));
+        String maskingString = entry.getString(NORMALIZER_MASKING);
+        return Masking.valueOf(maskingString);
       }
 
       /**
@@ -193,16 +224,33 @@ public class AlleleMasking implements NormalizationStep {
       }
     }
 
-    pipe = new Each(
-        pipe,
-        ALL,
-        new SensitiveRowMarker(),
-        ALL);
+    {
+      Fields argumentSelector =
+          new Fields(
+              SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE,
+              SUBMISSION_OBSERVATION_MUTATED_FROM_ALLELE)
+              .append(NORMALIZER_MASKING_FIELD);
+      pipe =
+          new Each(
+              pipe,
+              argumentSelector,
+              new SensitiveRowMarker(),
+              REPLACE);
+    }
 
-    return new Each(
-        pipe,
-        ALL,
-        new MaskedRowGenerator(),
-        REPLACE);
+    if (!isMarkOnly()) {
+      pipe = new Each(
+          pipe,
+          ALL,
+          new MaskedRowGenerator(),
+          REPLACE);
+    }
+
+    return pipe;
+  }
+
+  private boolean isMarkOnly() {
+    String configuredMode = getParameterValue(ParameterType.ALLELE_MASKING_MODE);
+    return AlleleMaskingMode.MARK_ONLY == AlleleMaskingMode.valueOf(configuredMode);
   }
 }

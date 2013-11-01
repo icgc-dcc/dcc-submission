@@ -18,46 +18,60 @@
 package org.icgc.dcc.submission.normalization.steps;
 
 import static cascading.tuple.Fields.ALL;
-import static cascading.tuple.Fields.RESULTS;
-import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_ANALYSIS_ID;
-import static org.icgc.dcc.submission.normalization.NormalizationCounter.TOTAL_START;
-import static org.icgc.dcc.submission.normalization.NormalizationCounter.UNIQUE_START;
+import lombok.RequiredArgsConstructor;
 
 import org.icgc.dcc.submission.normalization.NormalizationStep;
-import org.icgc.dcc.submission.validation.cascading.CascadingFunctions.Counter;
 
+import cascading.flow.FlowProcess;
+import cascading.operation.BaseOperation;
+import cascading.operation.Function;
+import cascading.operation.FunctionCall;
 import cascading.pipe.Each;
 import cascading.pipe.Pipe;
-import cascading.tuple.Fields;
+import cascading.tuple.Tuple;
 
 /**
  * TODO
  */
-public final class InitialCounting implements NormalizationStep {
-
-  /**
-   * Short name for the step.
-   */
-  private static final String SHORT_NAME = "initial-count";
+@RequiredArgsConstructor
+public final class PreMasking implements NormalizationStep {
 
   @Override
   public String shortName() {
-    return SHORT_NAME;
+    return "pre-masking";
   }
 
   @Override
   public Pipe extend(Pipe pipe) {
-    pipe = new CountUnique( // Will leave the pipe unaltered
-        pipe,
-        shortName(),
-        new Fields(SUBMISSION_OBSERVATION_ANALYSIS_ID),
-        UNIQUE_START,
-        COUNT_INCREMENT);
+
+    /**
+     * TODO
+     */
+    final class PreMaskingMarker extends BaseOperation<Void> implements Function<Void> {
+
+      private PreMaskingMarker() {
+        super(Masking.NORMALIZER_MASKING_FIELD);
+      }
+
+      @Override
+      public void operate(
+          @SuppressWarnings("rawtypes")
+          FlowProcess flowProcess,
+          FunctionCall<Void> functionCall) {
+
+        functionCall
+            .getOutputCollector()
+            .add(
+                // Until specified otherwise (if applicable as it can be turned off)
+                new Tuple(Masking.OPEN)
+            );
+      }
+    }
 
     return new Each(
         pipe,
         ALL,
-        new Counter(TOTAL_START, COUNT_INCREMENT),
-        RESULTS);
+        new PreMaskingMarker(),
+        ALL);
   }
 }

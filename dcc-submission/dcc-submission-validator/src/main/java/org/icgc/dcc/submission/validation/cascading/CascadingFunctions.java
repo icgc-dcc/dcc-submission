@@ -48,6 +48,11 @@ import cascading.tuple.TupleEntry;
 public final class CascadingFunctions {
 
   /**
+   * TODO
+   */
+  public static final Object NO_VALUE = null;
+
+  /**
    * Simple function that logs the incoming tuple entries (useful for debugging).
    * <p>
    * Example of call:
@@ -296,11 +301,6 @@ public final class CascadingFunctions {
   public static class MissingFieldsAdder extends BaseOperation<Void> implements Function<Void> {
 
     /**
-     * At the moment we just nullify it.
-     */
-    public static final String MISSING_VALUE = null;
-
-    /**
      * {@link Tuple} to add to every record.
      */
     private final Tuple missingTuple;
@@ -311,7 +311,7 @@ public final class CascadingFunctions {
       // Create tuple to be added for every records
       missingTuple = new Tuple();
       for (int i = 0; i < missingFields.size(); i++) {
-        missingTuple.add(MISSING_VALUE);
+        missingTuple.add(NO_VALUE); // At the moment we just nullify it
       }
     }
 

@@ -25,12 +25,14 @@ import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION
 import static org.icgc.dcc.hadoop.cascading.Fields2.fields;
 import static org.icgc.dcc.submission.normalization.NormalizationCounter.DROPPED;
 import static org.icgc.dcc.submission.normalization.NormalizationCounter.UNIQUE_FILTERED;
+import static org.icgc.dcc.submission.normalization.configuration.ParameterType.Switch.ENABLED;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.normalization.NormalizationStep;
-import org.icgc.dcc.submission.normalization.OptionalStep;
+import org.icgc.dcc.submission.normalization.configuration.ConfigurableStep.OptionalStep;
+import org.icgc.dcc.submission.normalization.configuration.ParameterType.Switch;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -42,18 +44,14 @@ import cascading.pipe.Pipe;
 import cascading.tuple.Fields;
 
 import com.google.common.collect.ImmutableList;
+import com.typesafe.config.Config;
 
 /**
  * TODO
  */
 @RequiredArgsConstructor
 @Slf4j
-public class RedundantObservationRemoval implements NormalizationStep, OptionalStep {
-
-  /**
-   * Short name for the step.
-   */
-  private static final String SHORT_NAME = "duplicates";
+public final class RedundantObservationRemoval implements NormalizationStep, OptionalStep {
 
   /**
    * The list of field names on which the GROUP BY should take place, and that will allow detecting duplicate
@@ -67,13 +65,23 @@ public class RedundantObservationRemoval implements NormalizationStep, OptionalS
   private final String secondarySortFieldName;
 
   @Override
-  public boolean isEnabled(Object config) {
-    return true; // TODO
+  public String shortName() {
+    return "duplicates";
   }
 
   @Override
-  public String shortName() {
-    return SHORT_NAME;
+  public boolean isEnabled(Config config) {
+    return OptionalSteps.isEnabled(config, this);
+  }
+
+  @Override
+  public Switch getDefaultSwitchValue() {
+    return ENABLED;
+  }
+
+  @Override
+  public String getOptionalStepKey() {
+    return shortName();
   }
 
   /**

@@ -26,6 +26,7 @@ import lombok.Value;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import org.icgc.dcc.submission.normalization.configuration.ConfigurableStep.OptionalStep;
 import org.icgc.dcc.submission.validation.report.SubmissionReport;
 
 import cascading.cascade.Cascade;
@@ -38,6 +39,7 @@ import cascading.scheme.local.TextDelimited;
 import cascading.tap.local.FileTap;
 
 import com.google.common.collect.ImmutableList;
+import com.typesafe.config.Config;
 
 /**
  * TODO See https://wiki.oicr.on.ca/display/DCCSOFT/Data+Normalizer+Component
@@ -67,6 +69,11 @@ public final class Normalizer {
   /**
    * 
    */
+  private final Config config;
+
+  /**
+   * 
+   */
   public void normalize(SubmissionReport report) { // TODO: add platform strategy
     val pipes = planCascade();
     val connected = connectCascade(pipes);
@@ -79,7 +86,6 @@ public final class Normalizer {
    * 
    */
   private Pipes planCascade() {
-    Object config = null; // TODO: actual config
     Pipe startPipe = new Pipe(START_PIPE_NAME);
 
     Pipe pipe = startPipe;
@@ -169,7 +175,7 @@ public final class Normalizer {
   /**
    * 
    */
-  private boolean isEnabled(NormalizationStep step, Object config) {
+  private boolean isEnabled(NormalizationStep step, Config config) {
     return !(step instanceof OptionalStep)
         || ((OptionalStep) step).isEnabled(config);
   }

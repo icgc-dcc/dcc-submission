@@ -15,49 +15,16 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.normalization.steps;
-
-import static cascading.tuple.Fields.ALL;
-import static cascading.tuple.Fields.RESULTS;
-import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_ANALYSIS_ID;
-import static org.icgc.dcc.submission.normalization.NormalizationCounter.TOTAL_START;
-import static org.icgc.dcc.submission.normalization.NormalizationCounter.UNIQUE_START;
-
-import org.icgc.dcc.submission.normalization.NormalizationStep;
-import org.icgc.dcc.submission.validation.cascading.CascadingFunctions.Counter;
-
-import cascading.pipe.Each;
-import cascading.pipe.Pipe;
-import cascading.tuple.Fields;
+package org.icgc.dcc.submission.normalization.configuration;
 
 /**
- * TODO
+ * 
  */
-public final class InitialCounting implements NormalizationStep {
+public interface ParameterValue {
 
   /**
-   * Short name for the step.
+   * 
    */
-  private static final String SHORT_NAME = "initial-count";
+  String getStringValue();
 
-  @Override
-  public String shortName() {
-    return SHORT_NAME;
-  }
-
-  @Override
-  public Pipe extend(Pipe pipe) {
-    pipe = new CountUnique( // Will leave the pipe unaltered
-        pipe,
-        shortName(),
-        new Fields(SUBMISSION_OBSERVATION_ANALYSIS_ID),
-        UNIQUE_START,
-        COUNT_INCREMENT);
-
-    return new Each(
-        pipe,
-        ALL,
-        new Counter(TOTAL_START, COUNT_INCREMENT),
-        RESULTS);
-  }
 }

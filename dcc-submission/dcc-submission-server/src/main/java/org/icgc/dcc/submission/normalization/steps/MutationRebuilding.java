@@ -40,7 +40,7 @@ import com.google.common.base.Joiner;
 /**
  * TODO
  */
-public class MutationRebuilding implements NormalizationStep {
+public final class MutationRebuilding implements NormalizationStep {
 
   /**
    * Short name for the step.

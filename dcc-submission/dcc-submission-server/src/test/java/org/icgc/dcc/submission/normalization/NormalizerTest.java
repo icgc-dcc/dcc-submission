@@ -25,6 +25,8 @@ import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION
 
 import java.io.File;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import lombok.SneakyThrows;
 
@@ -32,6 +34,7 @@ import org.icgc.dcc.submission.normalization.steps.AlleleMasking;
 import org.icgc.dcc.submission.normalization.steps.FinalCounting;
 import org.icgc.dcc.submission.normalization.steps.InitialCounting;
 import org.icgc.dcc.submission.normalization.steps.MutationRebuilding;
+import org.icgc.dcc.submission.normalization.steps.PreMasking;
 import org.icgc.dcc.submission.normalization.steps.PrimaryKeyGeneration;
 import org.icgc.dcc.submission.normalization.steps.RedundantObservationRemoval;
 import org.icgc.dcc.submission.normalization.steps.hacks.HackFieldDiscarding;
@@ -39,6 +42,13 @@ import org.icgc.dcc.submission.normalization.steps.hacks.HackNewFieldsSynthesis;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigList;
+import com.typesafe.config.ConfigMergeable;
+import com.typesafe.config.ConfigObject;
+import com.typesafe.config.ConfigOrigin;
+import com.typesafe.config.ConfigResolveOptions;
+import com.typesafe.config.ConfigValue;
 
 public class NormalizerTest {
 
@@ -47,6 +57,227 @@ public class NormalizerTest {
   public void test_normalize() {
     new File("/tmp/deleteme").delete(); // TODO: improve
     String projectKey = "dummy_project";
+
+    Config config = new Config() {
+
+      @Override
+      public Config withoutPath(String path) {
+        return null;
+      }
+
+      @Override
+      public Config withOnlyPath(String path) {
+        return null;
+      }
+
+      @Override
+      public Config withFallback(ConfigMergeable other) {
+        return null;
+      }
+
+      @Override
+      public ConfigObject root() {
+        return null;
+      }
+
+      @Override
+      public Config resolve(ConfigResolveOptions options) {
+        // TODO Auto-generated method stub
+        return null;
+      }
+
+      @Override
+      public Config resolve() {
+        // TODO Auto-generated method stub
+        return null;
+      }
+
+      @Override
+      public ConfigOrigin origin() {
+        // TODO Auto-generated method stub
+        return null;
+      }
+
+      @Override
+      public boolean isEmpty() {
+        // TODO Auto-generated method stub
+        return false;
+      }
+
+      @Override
+      public boolean hasPath(String path) {
+        // TODO Auto-generated method stub
+        return false;
+      }
+
+      @Override
+      public ConfigValue getValue(String path) {
+        // TODO Auto-generated method stub
+        return null;
+      }
+
+      @Override
+      public List<String> getStringList(String path) {
+        // TODO Auto-generated method stub
+        return null;
+      }
+
+      @Override
+      public String getString(String path) {
+        // TODO Auto-generated method stub
+        return null;
+      }
+
+      @Override
+      public List<? extends ConfigObject> getObjectList(String path) {
+        // TODO Auto-generated method stub
+        return null;
+      }
+
+      @Override
+      public ConfigObject getObject(String path) {
+        // TODO Auto-generated method stub
+        return null;
+      }
+
+      @Override
+      public List<Number> getNumberList(String path) {
+        // TODO Auto-generated method stub
+        return null;
+      }
+
+      @Override
+      public Number getNumber(String path) {
+        // TODO Auto-generated method stub
+        return null;
+      }
+
+      @Override
+      public List<Long> getNanosecondsList(String path) {
+        // TODO Auto-generated method stub
+        return null;
+      }
+
+      @Override
+      public Long getNanoseconds(String path) {
+        // TODO Auto-generated method stub
+        return null;
+      }
+
+      @Override
+      public List<Long> getMillisecondsList(String path) {
+        // TODO Auto-generated method stub
+        return null;
+      }
+
+      @Override
+      public Long getMilliseconds(String path) {
+        // TODO Auto-generated method stub
+        return null;
+      }
+
+      @Override
+      public List<Long> getLongList(String path) {
+        // TODO Auto-generated method stub
+        return null;
+      }
+
+      @Override
+      public long getLong(String path) {
+        // TODO Auto-generated method stub
+        return 0;
+      }
+
+      @Override
+      public ConfigList getList(String path) {
+        // TODO Auto-generated method stub
+        return null;
+      }
+
+      @Override
+      public List<Integer> getIntList(String path) {
+        // TODO Auto-generated method stub
+        return null;
+      }
+
+      @Override
+      public int getInt(String path) {
+        // TODO Auto-generated method stub
+        return 0;
+      }
+
+      @Override
+      public List<Double> getDoubleList(String path) {
+        // TODO Auto-generated method stub
+        return null;
+      }
+
+      @Override
+      public double getDouble(String path) {
+        // TODO Auto-generated method stub
+        return 0;
+      }
+
+      @Override
+      public List<? extends Config> getConfigList(String path) {
+        // TODO Auto-generated method stub
+        return null;
+      }
+
+      @Override
+      public Config getConfig(String path) {
+        // TODO Auto-generated method stub
+        return null;
+      }
+
+      @Override
+      public List<Long> getBytesList(String path) {
+        // TODO Auto-generated method stub
+        return null;
+      }
+
+      @Override
+      public Long getBytes(String path) {
+        // TODO Auto-generated method stub
+        return null;
+      }
+
+      @Override
+      public List<Boolean> getBooleanList(String path) {
+        // TODO Auto-generated method stub
+        return null;
+      }
+
+      @Override
+      public boolean getBoolean(String path) {
+        // TODO Auto-generated method stub
+        return false;
+      }
+
+      @Override
+      public List<? extends Object> getAnyRefList(String path) {
+        // TODO Auto-generated method stub
+        return null;
+      }
+
+      @Override
+      public Object getAnyRef(String path) {
+        // TODO Auto-generated method stub
+        return null;
+      }
+
+      @Override
+      public Set<Entry<String, ConfigValue>> entrySet() {
+        // TODO Auto-generated method stub
+        return null;
+      }
+
+      @Override
+      public void checkValid(Config reference, String... restrictToPaths) {
+        // TODO Auto-generated method stub
+
+      }
+    };
 
     new Normalizer( // TODO: service
         projectKey,
@@ -58,12 +289,14 @@ public class NormalizerTest {
             .add(new HackNewFieldsSynthesis("mutated_from_allele", "mutated_to_allele")) // Hack
 
             // Must happen before rebuilding the mutation
-            .add(new AlleleMasking())
+            .add(new PreMasking()) // Must happen no matter what
+            .add(new AlleleMasking(config)) // May be skipped (partially or not)
 
             // Must happen after allele masking
-            .add(new RedundantObservationRemoval(
-                getGroup(),
-                SUBMISSION_OBSERVATION_ANALYSIS_ID))
+            .add(
+                new RedundantObservationRemoval( // May be skipped
+                    getGroup(),
+                    SUBMISSION_OBSERVATION_ANALYSIS_ID))
             .add(new MutationRebuilding())
 
             // Must happen after removing duplicates and allele masking
@@ -74,7 +307,8 @@ public class NormalizerTest {
 
             .add(new FinalCounting())
 
-            .build())
+            .build(),
+        config)
         .normalize(null); // TODO: actually report
 
     List<String> result = readLines(new File("/tmp/deleteme"), UTF_8); // TODO: improve

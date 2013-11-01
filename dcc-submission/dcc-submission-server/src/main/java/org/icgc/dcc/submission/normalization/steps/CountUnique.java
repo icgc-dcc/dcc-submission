@@ -35,7 +35,7 @@ import cascading.tuple.Fields;
 /**
  * TODO: Explain trick
  */
-public class CountUnique extends SubAssembly {
+public final class CountUnique extends SubAssembly {
 
   CountUnique(Pipe pipe, String stepShortName, Fields fields, NormalizationCounter counter, long increment) {
     Pipe unique = new Pipe(

@@ -36,7 +36,7 @@ import cascading.tuple.Tuple;
 /**
  * TODO
  */
-public class PrimaryKeyGeneration implements NormalizationStep {
+public final class PrimaryKeyGeneration implements NormalizationStep {
 
   /**
    * Short name for the step.

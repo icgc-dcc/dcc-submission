@@ -15,16 +15,58 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.normalization;
+package org.icgc.dcc.submission.normalization.configuration;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 /**
  * 
  */
-public interface OptionalStep {
+@RequiredArgsConstructor
+public enum ParameterType {
+
+  ALLELE_MASKING_MODE(AlleleMaskingMode.ALL),
+  SWITCH(Switch.ENABLED); // This default value isn't really used (TODO: make optional?)
+
+  @Getter
+  private final ParameterValue defaultValue;
 
   /**
-   * 
+   * Returns the sub key for the configuration parameter, for instance "switch" in "normalizer.mutation.switch".
    */
-  boolean isEnabled(Object config);
+  public String getSubKey() {
+    return name().toLowerCase();
+  }
 
+  public String getDefaultValueString() {
+    return defaultValue.getStringValue();
+  }
+
+  @RequiredArgsConstructor
+  public enum Switch implements ParameterValue {
+    ENABLED,
+    DISABLED;
+
+    @Override
+    public String getStringValue() {
+      return NormalizerConfigurationParameters.getStringValue(this);
+    }
+  }
+
+  public enum AlleleMaskingMode implements ParameterValue {
+    ALL, MARK_ONLY;
+
+    @Override
+    public String getStringValue() {
+      return NormalizerConfigurationParameters.getStringValue(this);
+    }
+  }
+
+  static final class NormalizerConfigurationParameters {
+
+    public static String getStringValue(Enum<?> enuM) {
+      return enuM.name();
+    }
+  }
 }

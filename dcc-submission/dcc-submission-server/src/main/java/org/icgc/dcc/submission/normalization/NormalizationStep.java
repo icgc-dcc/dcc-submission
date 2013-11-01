@@ -27,7 +27,7 @@ public interface NormalizationStep {
   long COUNT_INCREMENT = 1;
 
   /**
-   * 
+   * Returns a short name for the step.
    */
   String shortName();
 
