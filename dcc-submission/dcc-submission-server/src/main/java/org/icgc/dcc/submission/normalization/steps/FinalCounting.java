@@ -19,6 +19,7 @@ package org.icgc.dcc.submission.normalization.steps;
 
 import static cascading.tuple.Fields.ALL;
 import static cascading.tuple.Fields.RESULTS;
+import static org.icgc.dcc.submission.normalization.NormalizationCounter.COUNT_INCREMENT;
 import static org.icgc.dcc.submission.normalization.NormalizationCounter.TOTAL_END;
 
 import org.icgc.dcc.submission.normalization.NormalizationStep;

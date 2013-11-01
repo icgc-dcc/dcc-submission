@@ -21,5 +21,7 @@ package org.icgc.dcc.submission.normalization;
  * 
  */
 public enum NormalizationCounter {
-  TOTAL_START, TOTAL_END, UNIQUE_START, UNIQUE_FILTERED, DROPPED, MARKED_AS_CONTROLLED, MASKED
+  TOTAL_START, TOTAL_END, UNIQUE_START, UNIQUE_FILTERED, DROPPED, MARKED_AS_CONTROLLED, MASKED;
+
+  public static final long COUNT_INCREMENT = 1;
 }

@@ -23,6 +23,7 @@ import static cascading.tuple.Fields.REPLACE;
 import static com.google.common.base.Preconditions.checkState;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_ANALYSIS_ID;
 import static org.icgc.dcc.hadoop.cascading.Fields2.fields;
+import static org.icgc.dcc.submission.normalization.NormalizationCounter.COUNT_INCREMENT;
 import static org.icgc.dcc.submission.normalization.NormalizationCounter.DROPPED;
 import static org.icgc.dcc.submission.normalization.NormalizationCounter.UNIQUE_FILTERED;
 import static org.icgc.dcc.submission.normalization.configuration.ParameterType.Switch.ENABLED;
