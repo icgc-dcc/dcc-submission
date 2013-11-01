@@ -17,6 +17,9 @@
  */
 package org.icgc.dcc.submission.validation.report;
 
+import static com.google.common.collect.Iterables.tryFind;
+import static com.google.common.collect.Lists.newArrayList;
+
 import java.io.Serializable;
 import java.util.List;
 
@@ -24,21 +27,17 @@ import com.google.code.morphia.annotations.Embedded;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 
 @Embedded
 public class SchemaReport implements Serializable {
 
   protected String name;
-
   protected List<FieldReport> fieldReports;
-
   protected List<ErrorReport> errors;
 
   public SchemaReport() {
-    this.fieldReports = Lists.newArrayList();
-    this.errors = Lists.newArrayList();
+    this.fieldReports = newArrayList();
+    this.errors = newArrayList();
   }
 
   public String getName() {
@@ -74,12 +73,13 @@ public class SchemaReport implements Serializable {
   }
 
   public Optional<FieldReport> getFieldReport(final String field) {
-    return Iterables.tryFind(fieldReports, new Predicate<FieldReport>() {
+    return tryFind(fieldReports, new Predicate<FieldReport>() {
 
       @Override
       public boolean apply(FieldReport input) {
         return input.getName().equals(field);
       }
+
     });
   }
 

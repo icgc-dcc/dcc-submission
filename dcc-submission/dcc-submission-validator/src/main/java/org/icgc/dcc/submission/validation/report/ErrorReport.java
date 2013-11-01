@@ -19,7 +19,6 @@ package org.icgc.dcc.submission.validation.report;
 
 import static com.google.common.collect.Lists.newLinkedList;
 import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.submission.validation.visitor.ErrorPlanningVisitor.MAX_ERROR_COUNT;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -42,6 +41,12 @@ import com.google.common.collect.Lists;
 @Getter
 @Setter(PRIVATE)
 public class ErrorReport implements Serializable {
+
+  /**
+   * The maximum number of {@link ColumnErrorReport} {@code line} and {@code value} additions that will be accepted.
+   * Intended to limit reporting for the user.
+   */
+  public static final int MAX_ERROR_COUNT = 50;
 
   private ErrorCode errorType;
   private String description;

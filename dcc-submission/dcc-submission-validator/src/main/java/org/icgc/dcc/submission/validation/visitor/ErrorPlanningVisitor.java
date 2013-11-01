@@ -53,8 +53,6 @@ import cascading.pipe.assembly.Retain;
 
 public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
 
-  public static final int MAX_ERROR_COUNT = 50;
-
   public ErrorPlanningVisitor(FlowType type) {
     super(type);
   }
