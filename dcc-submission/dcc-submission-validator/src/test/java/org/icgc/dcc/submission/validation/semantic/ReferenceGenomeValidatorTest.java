@@ -74,9 +74,8 @@ public class ReferenceGenomeValidatorTest {
   public void testSSMSamplePrimaryFile() throws IOException {
     Configuration conf = new Configuration();
     FileSystem fs = FileSystem.getLocal(conf);
-    String root = "../dcc-submission-server/src/test/resources/fixtures/submission/fs/";
 
-    Path path = new Path(root + "release1/project.1/ssm__dd__01__001__p__1__20130313.txt");
+    Path path = new Path("src/test/resources/fixtures/validation/rgv/ssm_p.txt");
     List<TupleError> errors = validator.validate(path, fs);
 
     assertThat(errors.size()).isEqualTo(7);

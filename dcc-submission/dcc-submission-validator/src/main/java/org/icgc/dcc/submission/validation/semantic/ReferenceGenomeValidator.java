@@ -129,6 +129,8 @@ public class ReferenceGenomeValidator {
         val referenceSequence = getReferenceGenomeSequence(chromosome, start, end);
 
         if (!isMatch(referenceAllele, referenceSequence)) {
+          System.out.println(ssmPrimaryFile.getName() + ":" + lineNumber + " - " + "expected=" + referenceSequence
+              + ",actual=" + referenceAllele);
           errors.add(createError(lineNumber, referenceAllele, referenceSequence));
         }
       }
