@@ -15,19 +15,16 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.firstpass;
+package org.icgc.dcc.submission.validation.checker;
 
-/**
- * TODO
- */
-public class FirstPassChecker {
+import org.icgc.dcc.submission.validation.checker.Util.CheckLevel;
 
-  /**
-   * 
-   */
-  public static boolean check() { // TODO: determine minimum parameters necessary
-    // TODO Auto-generated method stub
-    return true;
-  }
+public interface Checker {
+
+  public boolean isValid();
+
+  public CheckLevel getCheckLevel();
+
+  public boolean isFailFast();
 
 }

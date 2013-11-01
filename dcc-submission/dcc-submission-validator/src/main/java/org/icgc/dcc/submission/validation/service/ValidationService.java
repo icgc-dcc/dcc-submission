@@ -20,6 +20,7 @@ package org.icgc.dcc.submission.validation.service;
 import static java.lang.String.format;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,9 +31,11 @@ import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.validation.FilePresenceException;
+import org.icgc.dcc.submission.validation.MalformedSubmissionException;
+import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
+import org.icgc.dcc.submission.validation.checker.FirstPassChecker;
 import org.icgc.dcc.submission.validation.core.Plan;
 import org.icgc.dcc.submission.validation.core.ValidationListener;
-import org.icgc.dcc.submission.validation.firstpass.FirstPassChecker;
 import org.icgc.dcc.submission.validation.planner.Planner;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactory;
@@ -40,6 +43,7 @@ import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactory;
 import cascading.cascade.Cascade;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.inject.Inject;
 
@@ -55,29 +59,30 @@ public class ValidationService {
   @NonNull
   private final DccFileSystem dccFileSystem;
   @NonNull
-  private final PlatformStrategyFactory cascadingStrategyFactory;
+  private final PlatformStrategyFactory platformStrategyFactory;
 
   public Plan prepareValidation(Release release, Dictionary dictionary, QueuedProject queuedProject,
       ValidationListener listener)
-      throws FilePresenceException {
+      throws MalformedSubmissionException {
     log.info("Preparing cascade for project '{}'", queuedProject.getKey());
     val projectKey = queuedProject.getKey();
     val releaseFilesystem = dccFileSystem.getReleaseFilesystem(release);
     val submissionDirectory = releaseFilesystem.getSubmissionDirectory(projectKey);
 
-    Path rootDir = submissionDirectory.getSubmissionDirPath();
+    Path inputDir = submissionDirectory.getSubmissionDirPath();
     Path outputDir = new Path(submissionDirectory.getValidationDirPath());
     Path systemDir = releaseFilesystem.getSystemDirectory();
 
-    log.info("Validation for '{}' has rootDir = {} ", projectKey, rootDir);
+    log.info("Validation for '{}' has inputDir = {} ", projectKey, inputDir);
     log.info("Validation for '{}' has outputDir = {} ", projectKey, outputDir);
     log.info("Validation for '{}' has systemDir = {} ", projectKey, systemDir);
 
     // TODO: File Checker
-    PlatformStrategy cascadingStrategy = cascadingStrategyFactory.get(rootDir, outputDir, systemDir);
-    checkWellFormedness();
+    PlatformStrategy platformStrategy = platformStrategyFactory.get(inputDir, outputDir, systemDir);
+    log.info("Checking validation for '{}' has inputDir = {} ", projectKey, inputDir);
+    // checkValidation(dictionary, submissionDirectory, queuedProject);
 
-    Plan plan = planValidation(queuedProject, submissionDirectory, cascadingStrategy, dictionary, listener);
+    Plan plan = planValidation(queuedProject, submissionDirectory, platformStrategy, dictionary, listener);
     listener.setPlan(plan);
 
     log.info("Prepared cascade for project {}", projectKey);
@@ -90,20 +95,20 @@ public class ValidationService {
    * Note that emptying of the .validation dir happens right before launching the cascade in {@link Plan#startCascade()}
    */
   @VisibleForTesting
+  @SneakyThrows
   public Plan planValidation(QueuedProject queuedProject, SubmissionDirectory submissionDirectory,
-      PlatformStrategy cascadingStrategy, Dictionary dictionary, ValidationListener listener)
-      throws FilePresenceException {
+      PlatformStrategy platformStategy, Dictionary dictionary, ValidationListener listener) {
     // TODO: Separate plan and connect?
     val projectKey = queuedProject.getKey();
     log.info("Planning cascade for project {}...", projectKey);
-    Plan plan = planner.plan(queuedProject, submissionDirectory, cascadingStrategy, dictionary);
+    Plan plan = planner.plan(queuedProject, submissionDirectory, platformStategy, dictionary);
 
     log.info("Planned cascade for project {}", projectKey);
     log.info("# internal flows: {}", Iterables.size(plan.getInternalFlows()));
     log.info("# external flows: {}", Iterables.size(plan.getExternalFlows()));
 
     log.info("Connecting cascade for project {}", projectKey);
-    plan.connect(cascadingStrategy);
+    plan.connect(platformStategy);
     log.info("Connected cascade for project {}", projectKey);
 
     if (plan.hasFileLevelErrors()) { // determined during connection
@@ -133,18 +138,19 @@ public class ValidationService {
     log.info("Plan: plan.getCascade: {}", plan.getCascade());
   }
 
-  /**
-   * Temporarily and until properly re-written (DCC-1820).
-   */
-  private void checkWellFormedness() throws FilePresenceException {
-    if (FirstPassChecker.check()) {
-      // Always returns true for now
-      log.info("Submission is well-formed.");
-    } else {
-      log.info("Submission has well-formedness problems"); // TODO: expand
-      // FIXME: pass appropriate objects: offending project key and Map<String, TupleState> fileLevelErrors
-      throw new FilePresenceException(null);
+  @SneakyThrows
+  private void checkValidation(Dictionary dictionary, SubmissionDirectory submissionDirectory,
+      QueuedProject queuedProject) throws
+      MalformedSubmissionException {
+    FirstPassChecker checker = new FirstPassChecker(dccFileSystem, dictionary, submissionDirectory);
+    boolean valid = checker.isValid();
+    if (!valid) {
+      val errors = ImmutableMap.<String, Iterable<TupleError>> builder();
+      for (val schemaName : checker.getFileSchemaNames()) {
+        errors.put(schemaName, checker.getTupleErrors(schemaName));
+      }
+
+      throw new MalformedSubmissionException(queuedProject, errors.build());
     }
   }
-
 }

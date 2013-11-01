@@ -26,7 +26,7 @@ import static lombok.AccessLevel.PROTECTED;
 import static org.icgc.dcc.submission.validation.cascading.ValidationFields.OFFSET_FIELD_NAME;
 import static org.icgc.dcc.submission.validation.cascading.ValidationFields.STATE_FIELD_NAME;
 import static org.icgc.dcc.submission.validation.cascading.ValidationFields.state;
-import static org.icgc.dcc.submission.validation.core.ValidationErrorCode.SCRIPT_ERROR;
+import static org.icgc.dcc.submission.validation.core.ErrorCode.SCRIPT_ERROR;
 
 import java.util.Map;
 
@@ -159,7 +159,7 @@ public class ScriptRestriction implements InternalPlanElement {
   @Slf4j
   public static class ScriptFunction extends BaseOperation<ScriptContext> implements Function<ScriptContext> {
 
-    private final Joiner.MapJoiner JOINER = Joiner.on(",").withKeyValueSeparator(" = ").useForNull("null");
+    private static final Joiner.MapJoiner JOINER = Joiner.on(",").withKeyValueSeparator(" = ").useForNull("null");
 
     private final String reportedField;
     private final String script;
@@ -304,7 +304,7 @@ public class ScriptRestriction implements InternalPlanElement {
     }
 
     private static boolean isPredicate(Class<?> clazz) {
-      return clazz.equals(Boolean.class);
+      return clazz == null || Boolean.class.equals(clazz);
     }
 
     private static boolean isPredicate(Object result) {

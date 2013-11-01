@@ -22,10 +22,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
-import static org.icgc.dcc.submission.validation.cascading.TuplesUtils.getObjects;
-import static org.icgc.dcc.submission.validation.cascading.TuplesUtils.hasValues;
-import static org.icgc.dcc.submission.validation.core.ValidationErrorCode.RELATION_PARENT_VALUE_ERROR;
-import static org.icgc.dcc.submission.validation.core.ValidationErrorCode.RELATION_VALUE_ERROR;
+import static org.icgc.dcc.submission.validation.core.ErrorCode.RELATION_PARENT_VALUE_ERROR;
+import static org.icgc.dcc.submission.validation.core.ErrorCode.RELATION_VALUE_ERROR;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
@@ -37,12 +35,12 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.icgc.dcc.hadoop.cascading.Tuples2;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.FileSchemaRole;
 import org.icgc.dcc.submission.dictionary.model.Relation;
 import org.icgc.dcc.submission.validation.cascading.TupleState;
-import org.icgc.dcc.submission.validation.cascading.TuplesUtils;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
 import org.icgc.dcc.submission.validation.core.ExternalPlanElement;
 import org.icgc.dcc.submission.validation.core.Plan;
@@ -308,12 +306,13 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
 
       while (iter.hasNext()) {
         TupleEntry entry = iter.next();
-        if (TuplesUtils.hasValues(entry, requiredRhsFields)) { // this already filters out join on nulls
-          if (TuplesUtils.hasValues(entry, optionalLhsFields)) {
+        if (org.icgc.dcc.hadoop.cascading.TupleEntries.hasValues(entry, requiredRhsFields)) { // this already filters
+                                                                                              // out join on nulls
+          if (org.icgc.dcc.hadoop.cascading.TupleEntries.hasValues(entry, optionalLhsFields)) {
             Tuple lhsOptionalTuple = entry.selectTuple(new Fields(optionalLhsFields));
             lhsOptionalTuples.add(new SimpleEntry<Tuple, Long>(lhsOptionalTuple, getLhsOffset(entry)));
           }
-          if (TuplesUtils.hasValues(entry, optionalRhsFields)) {
+          if (org.icgc.dcc.hadoop.cascading.TupleEntries.hasValues(entry, optionalRhsFields)) {
             rhsOptionalTuples.add(entry.selectTuple(new Fields(optionalRhsFields)));
           }
         } // if it does not, it is a problem that will be picked up by the corresponding non-conditional relation (see
@@ -333,7 +332,7 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
           if (reported.contains(lhsOffset) == false) {
             Tuple offendingLhsTuple = // so as to avoid storing it all in memory (memory/computing tradeoff)
                 rebuildLhsTuple(requiredLhsFields, optionalLhsFields, requiredLhsTuple, lhsOptionalTuple);
-            reportRelationError(tupleState, getObjects(offendingLhsTuple));
+            reportRelationError(tupleState, Tuples2.getObjects(offendingLhsTuple));
 
             bufferCall.getOutputCollector().add(new Tuple(tupleState));
             reported.add(lhsOffset);
@@ -388,12 +387,13 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
         TupleEntry entry = iter.next();
 
         // For instance every specimen is supposed to match an existing donor.
-        if (hasValues(entry, renamedRhsFields) == false) {
-          if (hasValues(entry, lhsFields)) { // no need to report the result of joining on nulls
-                                             // (required restriction will report error if this is not
-                                             // acceptable)
+        if (org.icgc.dcc.hadoop.cascading.TupleEntries.hasValues(entry, renamedRhsFields) == false) {
+          if (org.icgc.dcc.hadoop.cascading.TupleEntries.hasValues(entry, lhsFields)) { // no need to report the result
+                                                                                        // of joining on nulls
+            // (required restriction will report error if this is not
+            // acceptable)
 
-            List<Object> offendingLhsValues = getObjects(entry.selectTuple(new Fields(lhsFields)));
+            List<Object> offendingLhsValues = Tuples2.getObjects(entry.selectTuple(new Fields(lhsFields)));
             TupleState state = new TupleState(getLhsOffset(entry));
             reportRelationError(
                 state,
@@ -407,13 +407,13 @@ public class RelationPlanningVisitor extends ExternalFlowPlanningVisitor {
         } else if (bidirectional) {
 
           // For instance every donor is expected to have at least one specimen matching it.
-          if (hasValues(entry, lhsFields) == false) {
+          if (org.icgc.dcc.hadoop.cascading.TupleEntries.hasValues(entry, lhsFields) == false) {
             Tuple offendingRhsTuple = entry.selectTuple(new Fields(renamedRhsFields));
             TupleState state = new TupleState(CONVENTION_PARENT_OFFSET);
 
             List<String> columnNames = newArrayList(lhsFields);
             List<String> relationColumnNames = newArrayList(rhsFields);
-            List<Object> values = getObjects(offendingRhsTuple);
+            List<Object> values = Tuples2.getObjects(offendingRhsTuple);
 
             state.reportError(
                 RELATION_PARENT_VALUE_ERROR,

@@ -15,31 +15,24 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.cascading;
+package org.icgc.dcc.submission.validation.checker;
 
-import java.util.ArrayList;
-import java.util.List;
+import lombok.Value;
 
-import cascading.tuple.Fields;
-import cascading.tuple.Tuple;
-import cascading.tuple.TupleEntry;
+import org.icgc.dcc.submission.validation.checker.Util.CheckLevel;
+import org.icgc.dcc.submission.validation.core.ErrorCode;
 
 /**
- * Offers various utils methods to handle {@code TupleEntry} and {@code Tuple} (at least until we find cleaner cascading
- * ways to do the same, or that they offer more utils themselves)
+ * 
  */
-public class TuplesUtils {
+@Value
+public class FirstPassValidationError {
 
-  public static boolean hasValues(TupleEntry tupleEntry, String[] fields) {
-    Tuple tuple = tupleEntry.selectTuple(new Fields(fields));
-    return tuple.equals(Tuple.size(tuple.size())) == false;
-  }
+  private final CheckLevel level;
+  private final String errMsg;
+  private final ErrorCode code;
 
-  public static List<Object> getObjects(Tuple tuple) {
-    List<Object> objects = new ArrayList<Object>();
-    for(int i = 0; i < tuple.size(); i++) {
-      objects.add(tuple.getObject(i));
-    }
-    return objects;
-  }
+  // to be used to satisfy TupleError
+  private final Object[] param;
+  private final long lineNumber;
 }

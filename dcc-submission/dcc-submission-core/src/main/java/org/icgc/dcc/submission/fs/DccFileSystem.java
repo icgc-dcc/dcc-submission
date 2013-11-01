@@ -22,6 +22,8 @@ import static com.google.common.base.Preconditions.checkState;
 import static org.icgc.dcc.submission.fs.FsConfig.FS_ROOT;
 import static org.icgc.dcc.submission.fs.hdfs.HadoopUtils.toFilenameList;
 
+import java.io.DataInputStream;
+import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
@@ -230,6 +232,15 @@ public class DccFileSystem {
       HadoopUtils.mkdirs(this.fileSystem, this.rootStringPath);
       log.info("created " + this.rootStringPath);
     }
+  }
+
+  /**
+   * @param filePath
+   * @throws IOException
+   */
+  public DataInputStream open(String filePathname) throws IOException {
+    checkArgument(filePathname != null);
+    return fileSystem.open(new Path(filePathname));
   }
 
 }

@@ -79,4 +79,48 @@ public final class TupleEntries {
     return t;
   }
 
+  public static boolean hasValues(TupleEntry tupleEntry, String[] fields) {
+    Tuple tuple = tupleEntry.selectTuple(new Fields(fields));
+    return tuple.equals(Tuple.size(tuple.size())) == false;
+  }
+
+  /**
+   * Gives a string containing the json representation of the tupleEntry (with possibly multiple levels of
+   * tuple/tupleEntry nesting).
+   * <p>
+   * Very useful for debugging.
+   */
+  public static String toJson(TupleEntry tupleEntry) {
+    Fields fields = tupleEntry.getFields();
+    Tuple tuple = tupleEntry.getTuple();
+  
+    StringBuilder sb = new StringBuilder();
+    sb.append("{");
+    for (int i = 0; i < fields.size(); i++) {
+      Comparable<?> field = fields.get(i);
+      Object object = tuple.getObject(i);
+      String value;
+      if (object instanceof TupleEntry) { // build sub-document
+        value = toJson((TupleEntry) object);
+      } else if (object instanceof Tuple) { // build array
+        Tuple subTuple = (Tuple) object;
+        StringBuilder subSb = new StringBuilder();
+        subSb.append("[");
+        for (int j = 0; j < subTuple.size(); j++) {
+          Object subObject = subTuple.getObject(j);
+          checkState(subObject instanceof TupleEntry); // by design; TODO: handle more cases?
+          subSb.append((j == 0 ? "" : ", ") + toJson((TupleEntry) subObject));
+        }
+        subSb.append("]");
+        value = subSb.toString();
+      } else { // build primitive
+        value = "\"" + (object == null ? "null" : object.toString()) + "\"";
+      }
+      sb.append((i == 0 ? "" : ", ") + "\"" + field + "\"" + ":" + value);
+    }
+  
+    sb.append("}");
+    return sb.toString();
+  }
+
 }

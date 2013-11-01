@@ -20,7 +20,7 @@ package org.icgc.dcc.submission.validation.cascading;
 import static cascading.tuple.Fields.ARGS;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
-import static org.icgc.dcc.submission.validation.core.ValidationErrorCode.FORBIDDEN_VALUE_ERROR;
+import static org.icgc.dcc.submission.validation.core.ErrorCode.FORBIDDEN_VALUE_ERROR;
 
 import java.util.List;
 

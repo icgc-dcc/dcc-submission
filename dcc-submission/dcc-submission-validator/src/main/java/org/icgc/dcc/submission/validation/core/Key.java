@@ -20,7 +20,9 @@ package org.icgc.dcc.submission.validation.core;
 import static org.icgc.dcc.submission.validation.platform.PlatformStrategy.SEPARATOR;
 
 import java.io.Serializable;
-import java.util.Arrays;
+
+import lombok.NonNull;
+import lombok.Value;
 
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 
@@ -29,12 +31,18 @@ import com.google.common.base.Joiner;
 /**
  * Holds a reference to trimmed content. Used to plan outputs from the internal flow and inputs for the external flow.
  */
+@Value
 public class Key implements Serializable {
 
+  /**
+   * Constants.
+   */
   private static final char FIELD_SEPARATOR = '-';
+  private static final Joiner JOINER = Joiner.on(FIELD_SEPARATOR);
 
+  @NonNull
   private final FileSchema schema;
-
+  @NonNull
   private final String[] fields;
 
   public Key(FileSchema schema, String... fields) {
@@ -42,16 +50,8 @@ public class Key implements Serializable {
     this.fields = fields;
   }
 
-  public FileSchema getSchema() {
-    return schema;
-  }
-
-  public String[] getFields() {
-    return fields;
-  }
-
   public String getName() {
-    return schema.getName() + SEPARATOR + Joiner.on(FIELD_SEPARATOR).join(fields);
+    return schema.getName() + SEPARATOR + JOINER.join(fields);
   }
 
   @Override
@@ -59,22 +59,4 @@ public class Key implements Serializable {
     return getName();
   }
 
-  @Override
-  public boolean equals(Object obj) {
-    if(obj == null) {
-      return false;
-    }
-    if(obj instanceof Key == false) {
-      return super.equals(obj);
-    }
-    Key rhs = (Key) obj;
-    return this.schema.equals(rhs.schema) && Arrays.equals(fields, rhs.fields);
-  }
-
-  @Override
-  public int hashCode() {
-    int hashCode = schema.hashCode();
-    hashCode += 37 * Arrays.hashCode(fields);
-    return hashCode;
-  }
 }

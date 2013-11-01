@@ -28,8 +28,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
+import org.icgc.dcc.submission.validation.core.ErrorCode;
 import org.icgc.dcc.submission.validation.core.ErrorParameterKey;
-import org.icgc.dcc.submission.validation.core.ValidationErrorCode;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
@@ -58,17 +58,23 @@ public class TupleState implements Serializable {
     this.offset = offset;
   }
 
-  public void reportError(ValidationErrorCode code, List<String> columnNames, Object values, Object... params) {
+  public void reportError(ErrorCode code, List<String> columnNames, Object values, Object... params) {
     checkArgument(code != null);
     ensureErrors().add(new TupleError(code, columnNames, values, this.getOffset(), code.build(params)));
     structurallyValid = code.isStructural() == false;
   }
 
-  public void reportError(ValidationErrorCode code, String columnName, Object value, Object... params) {
+  public void reportError(ErrorCode code, String columnName, Object value, Object... params) {
     checkArgument(code != null);
     List<String> columnNames = Lists.newArrayList(columnName);
     ensureErrors().add(new TupleError(code, columnNames, value, this.getOffset(), code.build(params)));
     structurallyValid = code.isStructural() == false;
+  }
+
+  // TODO: this is just temporary until a nicer error reporting is in place
+  public static TupleError createTupleError(ErrorCode code, String columnName, Object value, long lineNumber,
+      Object... params) {
+    return new TupleError(code, Lists.newArrayList(columnName), value, lineNumber, code.build(params));
   }
 
   public Iterable<TupleError> getErrors() {
@@ -122,7 +128,7 @@ public class TupleState implements Serializable {
    */
   public static final class TupleError implements Serializable {
 
-    private final ValidationErrorCode code;
+    private final ErrorCode code;
 
     private final List<String> columnNames;
 
@@ -140,7 +146,7 @@ public class TupleState implements Serializable {
       this.parameters = new LinkedHashMap<ErrorParameterKey, Object>();
     }
 
-    private TupleError(ValidationErrorCode code, List<String> columnNames, Object value, Long line,
+    private TupleError(ErrorCode code, List<String> columnNames, Object value, Long line,
         Map<ErrorParameterKey, Object> parameters) {
       this.code = code;
       this.columnNames = columnNames;
@@ -149,7 +155,7 @@ public class TupleState implements Serializable {
       this.parameters = parameters;
     }
 
-    public ValidationErrorCode getCode() {
+    public ErrorCode getCode() {
       return this.code;
     }
 

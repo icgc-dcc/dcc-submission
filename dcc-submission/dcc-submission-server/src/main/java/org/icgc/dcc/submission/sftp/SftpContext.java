@@ -24,6 +24,7 @@ import java.util.List;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -49,6 +50,7 @@ import com.google.inject.Inject;
  * @see http://www.two-sdg.demon.co.uk/curbralan/papers/europlop/ContextEncapsulation.pdf
  * @see http://www.allankelly.net/static/patterns/encapsulatecontext.pdf
  */
+@Slf4j
 @RequiredArgsConstructor(onConstructor = @_(@Inject))
 public class SftpContext {
 
@@ -107,6 +109,7 @@ public class SftpContext {
 
   // TODO: Accept Paths or Strings and nothing in org.dcc.filesystem.*
   public void resetSubmission(Submission submission) {
+    log.info("Resetting submission '{}'...", submission.getProjectKey());
     releaseService.resetSubmission(getNextReleaseName(), submission.getProjectKey());
   }
 

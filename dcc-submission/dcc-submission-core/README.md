@@ -8,8 +8,8 @@ Core classes for the data submission sub-system.
 Build
 ---
 
-  mvn
-
+	cd dcc
+	mvn -am -pl dcc-submission/dcc-submission-core
 
 	
 

@@ -17,7 +17,8 @@
  */
 package org.icgc.dcc.submission.validation.report;
 
-import static org.icgc.dcc.submission.validation.report.ErrorPlanningVisitor.MAX_ERROR_COUNT;
+import static com.google.common.collect.Lists.newLinkedList;
+import static org.icgc.dcc.submission.validation.visitor.ErrorPlanningVisitor.MAX_ERROR_COUNT;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -26,31 +27,31 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import lombok.NoArgsConstructor;
+
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
+import org.icgc.dcc.submission.validation.core.ErrorCode;
 import org.icgc.dcc.submission.validation.core.ErrorParameterKey;
-import org.icgc.dcc.submission.validation.core.ValidationErrorCode;
 
 import com.google.common.collect.Lists;
 
-public class ValidationErrorReport implements Serializable {
+@NoArgsConstructor
+public class ErrorReport implements Serializable {
 
-  private ValidationErrorCode errorType;
+  private ErrorCode errorType;
 
   private String description;
 
-  private final List<ColumnErrorReport> columns = Lists.newLinkedList();
+  private final List<ColumnErrorReport> columns = newLinkedList();
 
-  public ValidationErrorReport() {
-  }
-
-  public ValidationErrorReport(TupleError error) {
+  public ErrorReport(TupleError error) {
     this.setErrorType(error.getCode());
     this.setDescription(error.getMessage());
     this.addColumn(error);
   }
 
-  public ValidationErrorCode getErrorType() {
+  public ErrorCode getErrorType() {
     return errorType;
   }
 
@@ -68,8 +69,8 @@ public class ValidationErrorReport implements Serializable {
 
   public ColumnErrorReport getColumnByName(List<String> columnNames) {
     ColumnErrorReport column = null;
-    for(ColumnErrorReport c : this.getColumns()) {
-      if(c.getColumnNames().equals(columnNames)) {
+    for (ColumnErrorReport c : this.getColumns()) {
+      if (c.getColumnNames().equals(columnNames)) {
         column = c;
         break;
       }
@@ -86,7 +87,7 @@ public class ValidationErrorReport implements Serializable {
     ColumnErrorReport column = this.getColumnByName(error.getColumnNames());
 
     // Append line/value to lines/values
-    if(column.getCount() < MAX_ERROR_COUNT) {
+    if (column.getCount() < MAX_ERROR_COUNT) {
       column.addLine(error.getLine());
       column.addValue(error.getValue());
     }
@@ -95,7 +96,7 @@ public class ValidationErrorReport implements Serializable {
   }
 
   public void updateReport(TupleError error) {
-    if(this.hasColumn(error.getColumnNames()) == true) {
+    if (this.hasColumn(error.getColumnNames()) == true) {
       this.updateColumn(error);
     } else {
       this.addColumn(error);
@@ -106,21 +107,21 @@ public class ValidationErrorReport implements Serializable {
     this.description = description;
   }
 
-  private void setErrorType(ValidationErrorCode errorType) {
+  private void setErrorType(ErrorCode errorType) {
     this.errorType = errorType;
   }
 
   public void updateLineNumbers(Path file) throws IOException {
     Collection<Long> offsets = new HashSet<Long>();
-    for(ColumnErrorReport column : this.columns) {
+    for (ColumnErrorReport column : this.columns) {
       offsets.addAll(column.getLines());
     }
     Map<Long, Long> byteToLine = ByteOffsetToLineNumber.convert(file, offsets);
 
-    if(byteToLine != null) {
-      for(ColumnErrorReport column : this.columns) {
+    if (byteToLine != null) {
+      for (ColumnErrorReport column : this.columns) {
         List<Long> newLines = Lists.newLinkedList();
-        for(Long oldLine : column.getLines()) {
+        for (Long oldLine : column.getLines()) {
           newLines.add(byteToLine.get(oldLine));
         }
         column.setLines(newLines);
@@ -130,6 +131,7 @@ public class ValidationErrorReport implements Serializable {
   }
 
   private static class ColumnErrorReport implements Serializable {
+
     private List<String> columnNames;
 
     private long count;
@@ -198,8 +200,8 @@ public class ValidationErrorReport implements Serializable {
       this.lines = lines;
     }
 
-    private void setCount(long c) {
-      this.count = c;
+    private void setCount(long count) {
+      this.count = count;
     }
 
     private void setColumnNames(List<String> columnNames) {
@@ -210,4 +212,5 @@ public class ValidationErrorReport implements Serializable {
       this.parameters = params;
     }
   }
+
 }

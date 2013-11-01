@@ -46,7 +46,7 @@ import org.icgc.dcc.submission.validation.cascading.ValidationFields;
 import org.icgc.dcc.submission.validation.core.FlowType;
 import org.icgc.dcc.submission.validation.core.InternalPlanElement;
 import org.icgc.dcc.submission.validation.core.Key;
-import org.icgc.dcc.submission.validation.core.ValidationErrorCode;
+import org.icgc.dcc.submission.validation.core.ErrorCode;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.icgc.dcc.submission.validation.restriction.RequiredRestriction;
 import org.slf4j.Logger;
@@ -157,7 +157,7 @@ class DefaultInternalFlowPlanner extends BaseFileSchemaFlowPlanner implements In
       } catch (IOException ioe) {
         throw new PlanningException(ioe);
       }
-      throw new PlanningFileLevelException(fileName, ValidationErrorCode.DUPLICATE_HEADER_ERROR,
+      throw new PlanningFileLevelException(fileName, ErrorCode.DUPLICATE_HEADER_ERROR,
           e.getDuplicateHeaderFieldNames());
     }
 
