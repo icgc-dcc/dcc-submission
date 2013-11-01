@@ -17,16 +17,18 @@
  */
 package org.icgc.dcc.submission.validation.checker;
 
+import static com.google.common.collect.Maps.newHashMap;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.validation.cascading.TupleState;
@@ -35,27 +37,18 @@ import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
 
 @Slf4j
+@RequiredArgsConstructor
 public class FirstPassChecker {
 
   final private Dictionary dict;
   final private SubmissionDirectory submissionDir;
 
-  final private RowChecker rowChecker;
   final private FileChecker fileChecker;
+  final private RowChecker rowChecker;
 
-  private final Map<String, List<FirstPassValidationError>> errorMap;
-
-  public FirstPassChecker(Dictionary dict, SubmissionDirectory submissionDir,
-      FileChecker fileChecker, RowChecker rowChecker) {
-    this.dict = dict;
-    this.submissionDir = submissionDir;
-    this.fileChecker = fileChecker;
-    this.rowChecker = rowChecker;
-    this.errorMap = Maps.newHashMap();
-  }
+  private final Map<String, List<FirstPassValidationError>> errorMap = newHashMap();
 
   public FirstPassChecker(DccFileSystem dccFileSystem, Dictionary dict, SubmissionDirectory submissionDir) {
     this(dict, submissionDir, getDefaultFileChecker(dccFileSystem, dict, submissionDir),
@@ -63,11 +56,11 @@ public class FirstPassChecker {
   }
 
   public static FileChecker getDefaultFileChecker(DccFileSystem fs, Dictionary dict, SubmissionDirectory submissionDir) {
-    // chaining multiple file checker
-    return new FileHeaderChecker( //
-        new FileCorruptionChecker(//
-            new FileCollisionChecker(//
-                new ReferentialFileChecker( //
+    // Chaining multiple file checker
+    return new FileHeaderChecker(
+        new FileCorruptionChecker(
+            new FileCollisionChecker(
+                new ReferentialFileChecker(
                     new BaseFileChecker(fs, dict, submissionDir)))));
   }
 
@@ -88,7 +81,7 @@ public class FirstPassChecker {
         if (fileChecker.canContinue()) {
           errors.addAll(rowChecker.check(filename));
         }
-        errorMap.put(fileSchemaName, errors.build());
+        errorMap.put(filename, errors.build());
       }
     }
     List<FirstPassValidationError> flattenListOfErrors = ImmutableList.copyOf(Iterables.concat(errorMap.values()));
@@ -103,18 +96,26 @@ public class FirstPassChecker {
     List<FirstPassValidationError> errors = errorMap.get(fileSchemaName);
     Builder<TupleError> tupleErrors = ImmutableList.builder();
     for (val error : errors) {
-      tupleErrors.add(TupleState.createTupleError(error.getCode(), error.getLevel().toString(), error.toString(),
-          error.getLineNumber(), error.getParam()));
+      val tupleError = TupleState.createTupleError(
+          error.getCode(),
+          error.getLevel().toString(),
+          error.toString(),
+          error.getLineNumber(),
+          error.getParam());
+
+      tupleErrors.add(tupleError);
     }
+
     return tupleErrors.build();
   }
 
   private String getFileSchemaName(String filename) {
-    for (FileSchema schema : dict.getFiles()) {
+    for (val schema : dict.getFiles()) {
       if (Pattern.matches(schema.getPattern(), filename)) {
         return schema.getName();
       }
     }
     return null;
   }
+
 }

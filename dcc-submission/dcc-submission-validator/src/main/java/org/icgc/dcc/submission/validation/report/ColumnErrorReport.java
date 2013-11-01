@@ -28,6 +28,7 @@ import java.util.Map;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
 import org.icgc.dcc.submission.validation.core.ErrorParameterKey;
@@ -35,6 +36,7 @@ import org.icgc.dcc.submission.validation.core.ErrorParameterKey;
 @NoArgsConstructor
 @Getter
 @Setter(PRIVATE)
+@ToString
 public class ColumnErrorReport implements Serializable {
 
   private List<String> columnNames;

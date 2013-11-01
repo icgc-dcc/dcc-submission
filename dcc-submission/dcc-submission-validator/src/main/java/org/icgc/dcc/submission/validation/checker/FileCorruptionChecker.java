@@ -104,7 +104,7 @@ public class FileCorruptionChecker extends CompositeFileChecker {
       while (in.read(buf) > 0) {
       }
     } catch (IOException e) {
-      log.info("Exception caught in decoding gzip file: {}", filename, e);
+      log.info("Exception caught in decoding gzip file '{}': '{}'", filename, e.getMessage());
       errors.add(new FirstPassValidationError(getCheckLevel(), "Corrupted gzip file: " + filename,
           ErrorCode.COMPRESSION_CODEC_ERROR, new Object[] { getFileSchemaName(filename) }, -1));
     }

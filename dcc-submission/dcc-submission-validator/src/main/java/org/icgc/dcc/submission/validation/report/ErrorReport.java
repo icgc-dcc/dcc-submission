@@ -30,6 +30,7 @@ import java.util.Map;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
@@ -40,6 +41,7 @@ import com.google.common.collect.Lists;
 @NoArgsConstructor
 @Getter
 @Setter(PRIVATE)
+@ToString
 public class ErrorReport implements Serializable {
 
   /**

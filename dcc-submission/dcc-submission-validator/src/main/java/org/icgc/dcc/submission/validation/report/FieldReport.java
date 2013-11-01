@@ -21,6 +21,7 @@ import java.io.Serializable;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.val;
 
 import org.icgc.dcc.submission.dictionary.model.SummaryType;
@@ -32,6 +33,7 @@ import com.mongodb.BasicDBObject;
 @Embedded
 @Getter
 @Setter
+@ToString
 public class FieldReport implements Serializable {
 
   protected String name;

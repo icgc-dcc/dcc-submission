@@ -23,12 +23,15 @@ import static com.google.common.collect.Lists.newArrayList;
 import java.io.Serializable;
 import java.util.List;
 
+import lombok.ToString;
+
 import com.google.code.morphia.annotations.Embedded;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 
 @Embedded
+@ToString
 public class SchemaReport implements Serializable {
 
   protected String name;
