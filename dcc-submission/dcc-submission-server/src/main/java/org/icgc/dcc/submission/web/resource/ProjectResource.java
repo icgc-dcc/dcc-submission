@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.submission.web.resource;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static org.icgc.dcc.submission.web.model.ServerErrorCode.ALREADY_EXISTS;
 import static org.icgc.dcc.submission.web.util.Authorizations.getSubject;
@@ -41,14 +40,12 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.shiro.subject.Subject;
-import org.icgc.dcc.submission.core.ProjectService;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.repository.ProjectRepository;
 import org.icgc.dcc.submission.shiro.AuthorizationPrivileges;
 import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
 import org.icgc.dcc.submission.web.util.Responses;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.inject.Inject;
 import com.mongodb.MongoException.DuplicateKey;
 
@@ -59,24 +56,10 @@ import com.mongodb.MongoException.DuplicateKey;
 public class ProjectResource {
 
   @Inject
-  private ProjectService projectService;
-  @Inject
   private ProjectRepository projectRepository;
 
   final private boolean isAuthorized(Subject user, String projectKey) {
     return projectKey != null && user.isPermitted(AuthorizationPrivileges.projectViewPrivilege(projectKey));
-  }
-
-  final private Set<Project> filterUnauthorized(Subject user, Set<Project> projects) {
-    log.info("Filtering project based on User [{}]'s authorization", user.getPrincipal());
-    ImmutableSet.Builder<Project> builder = ImmutableSet.builder();
-    for (val project : projects) {
-      if (isAuthorized(user, project.getKey())) {
-        log.info("User [{}] authorized to see Project [{}]", user.getPrincipal(), project.getKey());
-        builder.add(project);
-      }
-    }
-    return builder.build();
   }
 
   @GET
@@ -85,7 +68,15 @@ public class ProjectResource {
     val user = getSubject(securityContext);
     log.info("Request for all Projects from User [{}]", user.getPrincipal());
 
-    val projects = filterUnauthorized(user, projectRepository.findProjects());
+    Set<Project> projects;// = filterUnauthorized(user, projectRepository.findProjects());
+
+    if (isSuperUser(securityContext)) {
+      log.info("[{}] is super user", user.getPrincipal());
+      projects = projectRepository.findProjects();
+    } else {
+      log.info("[{}] is not super user", user.getPrincipal());
+      projects = projectRepository.findProjects(user);
+    }
 
     return Response.ok(projects).build();
   }
@@ -94,24 +85,22 @@ public class ProjectResource {
   public Response addProject(@Context
   SecurityContext securityContext, @Valid
   Project project) {
-    log.info("Request to add project {}", project);
+    val user = getSubject(securityContext);
+    log.info("Request to add Project [{}] from [{}]", project, user.getPrincipal());
 
     if (isSuperUser(securityContext) == false) {
+      log.info("[{}] is not super user", user.getPrincipal());
       return Responses.unauthorizedResponse();
     }
+    log.info("[{}] is super user", user.getPrincipal());
 
-    checkArgument(project != null);
     try {
-      this.projectService.addProject(project);
+      projectRepository.addProject(project);
 
       val url = UriBuilder.fromResource(ProjectResource.class).path(project.getKey()).build();
-      return Response
-          .created(url)
-          .build();
+      return Response.created(url).build();
     } catch (DuplicateKey e) {
-      return Response
-          .status(BAD_REQUEST)
-          .entity(new ServerErrorResponseMessage(ALREADY_EXISTS, project.getKey()))
+      return Response.status(BAD_REQUEST).entity(new ServerErrorResponseMessage(ALREADY_EXISTS, project.getKey()))
           .build();
     }
   }

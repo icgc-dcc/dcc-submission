@@ -22,6 +22,7 @@ import java.util.Set;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.core.model.QProject;
@@ -48,6 +49,16 @@ public class ProjectRepository extends BaseMorphiaService<Project> {
 
   public Set<Project> findProjects() {
     log.info("Finding all Projects");
-    return ImmutableSet.copyOf(this.query().list());
+    return ImmutableSet.copyOf(query().list());
+  }
+
+  public Set<Project> findProjects(Subject user) {
+    log.info("Finding all Projects for {}", user.getPrincipal());
+    return ImmutableSet.copyOf(where(QProject.project.users.contains(user.getPrincipal().toString())).list());
+  }
+
+  public void addProject(Project project) {
+    log.info("Adding Project {}", project);
+    this.datastore().save(project);
   }
 }
