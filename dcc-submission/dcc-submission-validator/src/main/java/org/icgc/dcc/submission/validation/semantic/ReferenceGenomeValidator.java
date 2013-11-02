@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission.validation.semantic;
 
 import static com.google.common.io.ByteStreams.copy;
+import static com.google.common.io.Files.getFileExtension;
 import static java.util.Arrays.asList;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE;
 import static org.icgc.dcc.submission.validation.core.ErrorType.REFERENCE_GENOME_ERROR;
@@ -44,10 +45,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.compress.BZip2Codec;
 import org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames;
-import org.icgc.dcc.submission.validation.cascading.TupleState;
-import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
+import org.icgc.dcc.submission.validation.report.ReportContext;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.io.LineReader;
 
 /**
@@ -101,7 +100,7 @@ public class ReferenceGenomeValidator {
    * is well-formed, and that each individual field is sane.
    */
   @SneakyThrows
-  public List<TupleError> validate(Path ssmPrimaryFile, FileSystem fileSystem) {
+  public void validate(ReportContext context, Path ssmPrimaryFile, FileSystem fileSystem) {
     LineReader reader = getLineReader(ssmPrimaryFile, fileSystem);
 
     long lineNumber = 1;
@@ -111,7 +110,6 @@ public class ReferenceGenomeValidator {
     int referenceAlleleIdx = -1;
     String line;
 
-    val errors = new ImmutableList.Builder<TupleError>();
     while ((line = reader.readLine()) != null) {
       val fields = parseLine(line);
 
@@ -129,14 +127,20 @@ public class ReferenceGenomeValidator {
         val referenceSequence = getReferenceGenomeSequence(chromosome, start, end);
 
         if (!isMatch(referenceAllele, referenceSequence)) {
-          errors.add(createError(lineNumber, referenceAllele, referenceSequence));
+          context.reportError(
+              ssmPrimaryFile.getName(),
+              lineNumber,
+              SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE,
+              formatValue(referenceSequence, referenceAllele),
+              REFERENCE_GENOME_ERROR,
+
+              // Params
+              REFERENCE_GENOME_VERSION);
         }
       }
 
       lineNumber++;
     }
-
-    return errors.build();
   }
 
   public String getReferenceGenomeSequence(String chromosome, String start, String end) {
@@ -176,38 +180,29 @@ public class ReferenceGenomeValidator {
     return asList(line.split(FIELD_SEPARATOR));
   }
 
-  private static TupleError createError(long lineNumber, String referenceAllele, String referenceSequence) {
-    val value = "expected: " + referenceSequence + ", actual: " + referenceAllele;
-
-    return TupleState.createTupleError(
-        REFERENCE_GENOME_ERROR,
-        SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE,
-        value,
-        lineNumber,
-
-        // Params
-        REFERENCE_GENOME_VERSION);
-  }
-
   private static boolean isMatch(String controlAllele, String refSequence) {
     return controlAllele.equalsIgnoreCase(refSequence);
+  }
+
+  private static String formatValue(String expected, String actual) {
+    return String.format("Expected: %s, Actual: %s", expected, actual);
   }
 
   /**
    * Returns a LineReader capable of reading gz, bzip2 or plain text files
    */
   private static LineReader getLineReader(Path path, FileSystem fileSystem) throws IOException {
-    LineReader reader = null;
-    if (path.getName().endsWith(".gz")) {
-      reader = new LineReader(new InputStreamReader(new GZIPInputStream(fileSystem.open(path))));
-    } else if (path.getName().endsWith(".bz2")) {
-      BZip2Codec codec = new BZip2Codec();
-      reader = new LineReader(new InputStreamReader(codec.createInputStream((fileSystem.open(path)))));
-    } else {
-      reader = new LineReader(new InputStreamReader(fileSystem.open(path)));
-    }
+    val extension = getFileExtension(path.getName());
+    val gzip = extension.equals("gz");
+    val bzip2 = extension.equals("bz2");
 
-    return reader;
+    // @formatter:off
+    val inputStream = fileSystem.open(path);
+    return new LineReader(new InputStreamReader(
+        gzip  ? new GZIPInputStream(inputStream)                : 
+        bzip2 ? new BZip2Codec().createInputStream(inputStream) :
+                inputStream
+        ));
+    // @formatter:on
   }
-
 }

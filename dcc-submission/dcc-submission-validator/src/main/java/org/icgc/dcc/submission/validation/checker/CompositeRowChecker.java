@@ -40,11 +40,11 @@ import com.google.common.collect.ImmutableList.Builder;
 public abstract class CompositeRowChecker extends CompositeFileChecker implements RowChecker {
 
   private static final Charset DEFAULT_CHARSET = UTF_8;
-  protected RowChecker compositeChecker;
+  protected RowChecker delegate;
 
-  public CompositeRowChecker(RowChecker nestedChecker, boolean failFast) {
-    super(nestedChecker, failFast);
-    this.compositeChecker = nestedChecker;
+  public CompositeRowChecker(RowChecker delegate, boolean failFast) {
+    super(delegate, failFast);
+    this.delegate = delegate;
   }
 
   public CompositeRowChecker(RowChecker nestedChecker) {
@@ -83,8 +83,8 @@ public abstract class CompositeRowChecker extends CompositeFileChecker implement
   @Override
   public List<FirstPassValidationError> checkRow(FileSchema fileSchema, String row, long lineNumber) {
     Builder<FirstPassValidationError> errors = ImmutableList.builder();
-    errors.addAll(compositeChecker.checkRow(fileSchema, row, lineNumber));
-    if (compositeChecker.canContinue()) {
+    errors.addAll(delegate.checkRow(fileSchema, row, lineNumber));
+    if (delegate.canContinue()) {
       log.info("Start performing {} validation...", this.getClass().getSimpleName());
       checkErrors = performSelfCheck(fileSchema, row, lineNumber);
       errors.addAll(checkErrors);
@@ -103,7 +103,7 @@ public abstract class CompositeRowChecker extends CompositeFileChecker implement
 
   @Override
   public CheckLevel getCheckLevel() {
-    return compositeChecker.getCheckLevel();
+    return delegate.getCheckLevel();
   }
 
   @Override
@@ -113,7 +113,7 @@ public abstract class CompositeRowChecker extends CompositeFileChecker implement
 
   @Override
   public DccFileSystem getDccFileSystem() {
-    return compositeChecker.getDccFileSystem();
+    return delegate.getDccFileSystem();
   }
 
   private FileSchema getFileSchema(String filename) {

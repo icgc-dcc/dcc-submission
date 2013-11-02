@@ -17,16 +17,20 @@
  */
 package org.icgc.dcc.submission.validation.report;
 
+import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
 import org.icgc.dcc.submission.validation.core.ErrorType;
 
 /**
  * "Encapsulated Context Object" class that insulates and decouples the validation logic from report collection and
- * storage.
+ * storage. Implementations should manage memory so that excessive reporting doesn't produce unstable memory pressure.
  * 
  * @see http://www.two-sdg.demon.co.uk/curbralan/papers/europlop/ContextEncapsulation.pdf
  * @see http://www.allankelly.net/static/patterns/encapsulatecontext.pdf
  */
 public interface ReportContext {
+
+  @Deprecated
+  void reportError(String fileName, TupleError tupleError);
 
   void reportError(String fileName, long lineNumber, String columnName, Object value, ErrorType type, Object... params);
 
@@ -37,5 +41,9 @@ public interface ReportContext {
   void reportError(String fileName, ErrorType type, Object... paramss);
 
   void reportError(String fileName, ErrorType type);
+
+  boolean hasErrors();
+
+  int getErrorCount();
 
 }

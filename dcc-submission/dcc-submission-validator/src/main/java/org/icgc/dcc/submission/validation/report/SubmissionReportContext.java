@@ -25,6 +25,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.val;
+import lombok.experimental.NonFinal;
 
 import org.icgc.dcc.submission.validation.cascading.TupleState;
 import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
@@ -37,15 +38,23 @@ public class SubmissionReportContext implements ReportContext {
   @NonNull
   SubmissionReport submissionReport;
 
+  @NonFinal
+  int errorCount;
+
   public SubmissionReportContext() {
     this(new SubmissionReport());
+  }
+
+  @Override
+  public void reportError(String fileName, TupleError tupleError) {
+    addErrorTuple(fileName, tupleError);
   }
 
   @Override
   public void reportError(String fileName, long lineNumber, String columnName, Object value, ErrorType type,
       Object... params) {
     val tupleError = createTupleError(type, columnName, value, lineNumber, params);
-    addErrorTuple(fileName, tupleError);
+    reportError(fileName, tupleError);
   }
 
   @Override
@@ -68,7 +77,13 @@ public class SubmissionReportContext implements ReportContext {
     reportError(fileName, -1, null, null, type, new Object[] {});
   }
 
+  @Override
+  public boolean hasErrors() {
+    return errorCount > 0;
+  }
+
   private void addErrorTuple(String fileName, TupleError tupleError) {
+    errorCount++;
     val schemaReport = resolveSchemaReport(fileName);
     addErrorTuple(schemaReport, tupleError);
   }

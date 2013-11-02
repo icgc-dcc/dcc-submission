@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission.validation.checker;
 
 import static com.google.common.collect.Maps.newHashMap;
+import static org.icgc.dcc.submission.validation.cascading.TupleState.createTupleError;
 
 import java.util.List;
 import java.util.Map;
@@ -31,8 +32,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
-import org.icgc.dcc.submission.validation.cascading.TupleState;
 import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
+import org.icgc.dcc.submission.validation.report.ReportContext;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -56,7 +57,69 @@ public class FirstPassValidator {
         getDefaultRowChecker(dccFileSystem, dict, submissionDir));
   }
 
-  public static FileChecker getDefaultFileChecker(DccFileSystem fs, Dictionary dict, SubmissionDirectory submissionDir) {
+  public void validate(ReportContext context) {
+    isValid();
+    for (val fileName : getFileSchemaNames()) {
+      for (val tupleError : getTupleErrors(fileName)) {
+        // TODO: Remove isValid and pass context to all checkers to prevent memory pressure of collecting errors within
+        // the checkers.
+        // TODO: Move away from using TupleError and use the other methods provided on the context
+        context.reportError(fileName, tupleError);
+      }
+    }
+  }
+
+  protected boolean isValid() {
+    errorMap.clear();
+    for (String filename : submissionDir.listFile()) {
+      String fileSchemaName = getFileSchemaName(dictionary, filename);
+      if (fileSchemaName != null) {
+        Builder<FirstPassValidationError> errors = ImmutableList.<FirstPassValidationError> builder();
+
+        log.info("Validate file level well-formedness for file schema: {}", fileSchemaName);
+        errors.addAll(fileChecker.check(filename));
+        if (fileChecker.canContinue()) {
+          errors.addAll(rowChecker.check(filename));
+        }
+
+        errorMap.put(filename, errors.build());
+      }
+    }
+
+    List<FirstPassValidationError> flattenListOfErrors = ImmutableList.copyOf(Iterables.concat(errorMap.values()));
+    return (flattenListOfErrors.size() == 0);
+  }
+
+  protected Set<String> getFileSchemaNames() {
+    return errorMap.keySet();
+  }
+
+  protected List<TupleError> getTupleErrors(String fileSchemaName) {
+    val errors = errorMap.get(fileSchemaName);
+    val tupleErrors = ImmutableList.<TupleError> builder();
+    for (val error : errors) {
+      tupleErrors.add(createTupleError(
+          error.getType(),
+          error.getLevel().toString(),
+          error.toString(),
+          error.getLineNumber(),
+          error.getParam()));
+    }
+
+    return tupleErrors.build();
+  }
+
+  private static String getFileSchemaName(Dictionary dictionary, String fileName) {
+    for (val schema : dictionary.getFiles()) {
+      if (Pattern.matches(schema.getPattern(), fileName)) {
+        return schema.getName();
+      }
+    }
+
+    return null;
+  }
+
+  private static FileChecker getDefaultFileChecker(DccFileSystem fs, Dictionary dict, SubmissionDirectory submissionDir) {
     // Chaining multiple file checker
     return new FileHeaderChecker(
         new FileCorruptionChecker(
@@ -65,62 +128,13 @@ public class FirstPassValidator {
                     new BaseFileChecker(fs, dict, submissionDir)))));
   }
 
-  public static RowChecker getDefaultRowChecker(DccFileSystem fs, Dictionary dictionary,
+  private static RowChecker getDefaultRowChecker(DccFileSystem fs, Dictionary dictionary,
       SubmissionDirectory submissionDir) {
     // Chaining multiple row checkers
     return new RowColumnChecker(
         new RowCharsetChecker(
             new BaseRowChecker(fs, dictionary, submissionDir)));
 
-  }
-
-  public boolean isValid() {
-    errorMap.clear();
-    for (String filename : submissionDir.listFile()) {
-      String fileSchemaName = getFileSchemaName(filename);
-      if (fileSchemaName != null) {
-        Builder<FirstPassValidationError> errors = ImmutableList.<FirstPassValidationError> builder();
-        log.info("Validate file level well-formness for file schema: {}", fileSchemaName);
-        errors.addAll(fileChecker.check(filename));
-        if (fileChecker.canContinue()) {
-          errors.addAll(rowChecker.check(filename));
-        }
-        errorMap.put(filename, errors.build());
-      }
-    }
-    List<FirstPassValidationError> flattenListOfErrors = ImmutableList.copyOf(Iterables.concat(errorMap.values()));
-    return (flattenListOfErrors.size() == 0);
-  }
-
-  public Set<String> getFileSchemaNames() {
-    return errorMap.keySet();
-  }
-
-  public List<TupleError> getTupleErrors(String fileSchemaName) {
-    List<FirstPassValidationError> errors = errorMap.get(fileSchemaName);
-    Builder<TupleError> tupleErrors = ImmutableList.builder();
-    for (val error : errors) {
-      val tupleError = TupleState.createTupleError(
-          error.getType(),
-          error.getLevel().toString(),
-          error.toString(),
-          error.getLineNumber(),
-          error.getParam());
-
-      tupleErrors.add(tupleError);
-    }
-
-    return tupleErrors.build();
-  }
-
-  private String getFileSchemaName(String filename) {
-    for (val schema : dictionary.getFiles()) {
-      if (Pattern.matches(schema.getPattern(), filename)) {
-        return schema.getName();
-      }
-    }
-
-    return null;
   }
 
 }

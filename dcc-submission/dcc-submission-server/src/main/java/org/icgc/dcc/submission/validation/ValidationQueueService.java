@@ -22,7 +22,6 @@ import static cascading.stats.CascadingStats.Status.STOPPED;
 import static com.google.common.base.Optional.absent;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 import static com.google.common.util.concurrent.Uninterruptibles.sleepUninterruptibly;
 import static java.lang.String.format;
@@ -33,7 +32,6 @@ import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
 import static org.icgc.dcc.submission.release.model.SubmissionState.VALID;
 import static org.icgc.dcc.submission.validation.report.Outcome.PASSED;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -53,8 +51,6 @@ import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.SubmissionState;
 import org.icgc.dcc.submission.validation.core.Plan;
 import org.icgc.dcc.submission.validation.core.ValidationListener;
-import org.icgc.dcc.submission.validation.report.ErrorReport;
-import org.icgc.dcc.submission.validation.report.SchemaReport;
 import org.icgc.dcc.submission.validation.report.SubmissionReport;
 import org.icgc.dcc.submission.validation.service.ValidationService;
 
@@ -169,6 +165,9 @@ public class ValidationQueueService extends AbstractScheduledService {
     try {
       val release = resolveOpenRelease();
       optionalNextProject = release.nextInQueue();
+
+      // FIXME: This will hold the lock on validationSlots until WFV and RGV are finished,
+      // which could be a long time. In this period no validations will be able to complete.
       synchronized (validationSlots) {
         val slotsAvailable = validationSlots.size() < maxValidating;
         if (optionalNextProject.isPresent() && slotsAvailable) {
@@ -249,25 +248,7 @@ public class ValidationQueueService extends AbstractScheduledService {
     String projectKey = queuedProject.getKey();
     log.info("About to dequeue project key {}", projectKey);
     resolveSubmission(queuedProject, SubmissionState.INVALID);
-
-    List<SchemaReport> schemaReports = newArrayList();
-    for (val schemaName : e.getErrors().keySet()) {
-      List<ErrorReport> schemaErrors = newArrayList();
-      for (val schemaError : e.getErrors().get(schemaName)) {
-        schemaErrors.add(new ErrorReport(schemaError));
-      }
-
-      val schemaReport = new SchemaReport();
-      schemaReport.setName(schemaName);
-      schemaReport.addErrors(schemaErrors);
-
-      schemaReports.add(schemaReport);
-    }
-
-    val submissionReport = new SubmissionReport();
-    submissionReport.setSchemaReports(schemaReports);
-
-    storeSubmissionReport(projectKey, submissionReport);
+    storeSubmissionReport(projectKey, e.getSubmissionReport());
   }
 
   /**
@@ -278,33 +259,7 @@ public class ValidationQueueService extends AbstractScheduledService {
     String projectKey = queuedProject.getKey();
     log.info("About to dequeue project key {}", projectKey);
     resolveSubmission(queuedProject, SubmissionState.INVALID);
-
-    List<SchemaReport> schemaReports = newArrayList();
-
-    for (val entry : e.getErrors().entrySet()) {
-      val fileName = entry.getKey();
-      val fileSchemaErrors = entry.getValue();
-
-      ErrorReport errorReport = null;
-      for (val error : fileSchemaErrors) {
-        if (errorReport == null) {
-          errorReport = new ErrorReport(error);
-        } else {
-          errorReport.updateColumn(error);
-        }
-      }
-
-      val schemaReport = new SchemaReport();
-      schemaReport.setName(fileName);
-      schemaReport.addErrors(newArrayList(errorReport));
-
-      schemaReports.add(schemaReport);
-    }
-
-    val submissionReport = new SubmissionReport();
-    submissionReport.setSchemaReports(schemaReports);
-
-    storeSubmissionReport(projectKey, submissionReport);
+    storeSubmissionReport(projectKey, e.getSubmissionReport());
   }
 
   /**

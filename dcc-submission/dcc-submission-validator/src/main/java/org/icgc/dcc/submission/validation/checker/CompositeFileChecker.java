@@ -41,8 +41,8 @@ public abstract class CompositeFileChecker implements FileChecker {
   protected List<FirstPassValidationError> errors = newLinkedList();
   protected List<FirstPassValidationError> checkErrors = ImmutableList.of();
 
-  public CompositeFileChecker(FileChecker nestedChecker) {
-    this(nestedChecker, false);
+  public CompositeFileChecker(FileChecker delegate) {
+    this(delegate, false);
   }
 
   @Override
@@ -79,7 +79,7 @@ public abstract class CompositeFileChecker implements FileChecker {
   @Override
   public boolean isFailFast() {
     return failFast;
-    // return compositeChecker.isFailFast() || failFast;
+    // return delegate.isFailFast() || failFast;
   }
 
   @Override

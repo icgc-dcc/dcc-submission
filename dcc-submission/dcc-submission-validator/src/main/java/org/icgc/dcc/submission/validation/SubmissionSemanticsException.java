@@ -17,19 +17,17 @@
  */
 package org.icgc.dcc.submission.validation;
 
-import java.util.Map;
-
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 
 import org.icgc.dcc.submission.release.model.QueuedProject;
-import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
+import org.icgc.dcc.submission.validation.report.SubmissionReport;
 
 @Value
 @EqualsAndHashCode(callSuper = true)
 public class SubmissionSemanticsException extends Exception {
 
-  final QueuedProject queuedProject;
-  final Map<String, Iterable<TupleError>> errors;
+  QueuedProject queuedProject;
+  SubmissionReport submissionReport;
 
 }

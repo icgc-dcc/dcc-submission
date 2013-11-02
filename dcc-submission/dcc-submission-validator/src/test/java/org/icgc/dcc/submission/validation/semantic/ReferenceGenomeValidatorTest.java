@@ -20,12 +20,13 @@ package org.icgc.dcc.submission.validation.semantic;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 import java.io.IOException;
-import java.util.List;
+
+import lombok.val;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
+import org.icgc.dcc.submission.validation.report.SubmissionReportContext;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -74,11 +75,12 @@ public class ReferenceGenomeValidatorTest {
   public void testSSMSamplePrimaryFile() throws IOException {
     Configuration conf = new Configuration();
     FileSystem fs = FileSystem.getLocal(conf);
-
     Path path = new Path("src/test/resources/fixtures/validation/rgv/ssm_p.txt");
-    List<TupleError> errors = validator.validate(path, fs);
 
-    assertThat(errors.size()).isEqualTo(7);
+    val context = new SubmissionReportContext();
+    validator.validate(context, path, fs);
+
+    assertThat(context.getErrorCount()).isEqualTo(7);
   }
 
 }
