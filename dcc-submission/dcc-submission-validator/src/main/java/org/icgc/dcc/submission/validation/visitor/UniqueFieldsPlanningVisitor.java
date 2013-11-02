@@ -24,7 +24,7 @@ import java.util.List;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
 import org.icgc.dcc.submission.validation.core.InternalPlanElement;
-import org.icgc.dcc.submission.validation.core.ErrorCode;
+import org.icgc.dcc.submission.validation.core.ErrorType;
 
 import cascading.flow.FlowProcess;
 import cascading.operation.BaseOperation;
@@ -95,7 +95,7 @@ public class UniqueFieldsPlanningVisitor extends InternalFlowPlanningVisitor {
             TupleEntry tupleEntry = i.next();
             List<String> values = fetchValues(tupleEntry);
 
-            ValidationFields.state(tupleEntry).reportError(ErrorCode.UNIQUE_VALUE_ERROR, fields, values);
+            ValidationFields.state(tupleEntry).reportError(ErrorType.UNIQUE_VALUE_ERROR, fields, values);
             bufferCall.getOutputCollector().add(tupleEntry.getTupleCopy());
           }
         }

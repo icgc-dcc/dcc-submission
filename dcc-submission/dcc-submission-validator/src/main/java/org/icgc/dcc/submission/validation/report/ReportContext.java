@@ -17,37 +17,25 @@
  */
 package org.icgc.dcc.submission.validation.report;
 
-import static com.google.common.collect.Lists.newArrayList;
+import org.icgc.dcc.submission.validation.core.ErrorType;
 
-import java.io.Serializable;
-import java.util.List;
+/**
+ * "Encapsulated Context Object" class that insulates and decouples the validation logic from report collection and
+ * storage.
+ * 
+ * @see http://www.two-sdg.demon.co.uk/curbralan/papers/europlop/ContextEncapsulation.pdf
+ * @see http://www.allankelly.net/static/patterns/encapsulatecontext.pdf
+ */
+public interface ReportContext {
 
-import lombok.Data;
-import lombok.NonNull;
-import lombok.val;
+  void reportError(String fileName, long lineNumber, String columnName, Object value, ErrorType type, Object... params);
 
-import com.google.code.morphia.annotations.Embedded;
+  void reportError(String fileName, long lineNumber, Object value, ErrorType type, Object... params);
 
-@Embedded
-@Data
-public class SubmissionReport implements Serializable {
+  void reportError(String fileName, Object value, ErrorType type, Object... params);
 
-  @NonNull
-  protected List<SchemaReport> schemaReports = newArrayList();
+  void reportError(String fileName, ErrorType type, Object... paramss);
 
-  public SchemaReport getSchemaReport(String schemaName) {
-    for (val schemaReport : schemaReports) {
-      val match = schemaReport.getName().equals(schemaName);
-      if (match) {
-        return schemaReport;
-      }
-    }
-
-    return null;
-  }
-
-  public void addSchemaReport(SchemaReport schemaReport) {
-    schemaReports.add(schemaReport);
-  }
+  void reportError(String fileName, ErrorType type);
 
 }

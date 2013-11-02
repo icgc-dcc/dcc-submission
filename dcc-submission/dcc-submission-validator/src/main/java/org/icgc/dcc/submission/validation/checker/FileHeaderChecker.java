@@ -26,7 +26,7 @@ import java.util.List;
 import lombok.Cleanup;
 
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.validation.core.ErrorCode;
+import org.icgc.dcc.submission.validation.core.ErrorType;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
@@ -52,11 +52,11 @@ public class FileHeaderChecker extends CompositeFileChecker {
       if (!actualHeader.equals(expectedHeader)) {
         errors.add(new FirstPassValidationError(getCheckLevel(), "Different from the expected header: "
             + expectedHeader
-            + ", actual header: " + actualHeader, ErrorCode.FILE_HEADER_ERROR, new Object[] { expectedHeader }, -1));
+            + ", actual header: " + actualHeader, ErrorType.FILE_HEADER_ERROR, new Object[] { expectedHeader }, -1));
       }
     } catch (IOException e) {
       errors.add(new FirstPassValidationError(getCheckLevel(), "Unable to peek the file header for file: "
-          + filename, ErrorCode.FILE_HEADER_ERROR, new Object[] { ImmutableList.<String> of() }, -1));
+          + filename, ErrorType.FILE_HEADER_ERROR, new Object[] { ImmutableList.<String> of() }, -1));
     }
     // check if they contain the same elements in the same order
     return errors.build();

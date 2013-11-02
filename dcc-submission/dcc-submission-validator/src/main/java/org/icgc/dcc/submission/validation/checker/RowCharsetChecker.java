@@ -24,7 +24,7 @@ import static com.google.common.base.CharMatcher.noneOf;
 import java.util.List;
 
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.validation.core.ErrorCode;
+import org.icgc.dcc.submission.validation.core.ErrorType;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Charsets;
@@ -53,7 +53,7 @@ public class RowCharsetChecker extends CompositeRowChecker {
     if (DEFAULT_INVALID_MATCHER.matchesAnyOf(line)) {
       errors
           .add(new FirstPassValidationError(getCheckLevel(),
-              "Invalid character found in the row: " + line, ErrorCode.INVALID_CHARSET_ROW_ERROR,
+              "Invalid character found in the row: " + line, ErrorType.INVALID_CHARSET_ROW_ERROR,
               new Object[] { Charsets.US_ASCII.name() }, lineNumber));
     }
 

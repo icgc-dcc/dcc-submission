@@ -38,7 +38,7 @@ import org.codehaus.jackson.map.ObjectReader;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.PlanExecutionException;
 import org.icgc.dcc.submission.validation.cascading.TupleState;
-import org.icgc.dcc.submission.validation.core.ErrorCode;
+import org.icgc.dcc.submission.validation.core.ErrorType;
 import org.icgc.dcc.submission.validation.core.FlowType;
 import org.icgc.dcc.submission.validation.core.ReportingPlanElement;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
@@ -105,7 +105,7 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
 
     class ErrorReportCollector implements ReportCollector {
 
-      private final Map<ErrorCode, ErrorReport> errorMap = newHashMap();
+      private final Map<ErrorType, ErrorReport> errorMap = newHashMap();
 
       public ErrorReportCollector() {
       }
@@ -157,11 +157,11 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
       }
 
       private void addErrorTuple(TupleState.TupleError error) {
-        if (errorMap.containsKey(error.getCode()) == true) {
-          ErrorReport errorReport = errorMap.get(error.getCode());
+        if (errorMap.containsKey(error.getType()) == true) {
+          ErrorReport errorReport = errorMap.get(error.getType());
           errorReport.updateReport(error);
         } else {
-          errorMap.put(error.getCode(), new ErrorReport(error));
+          errorMap.put(error.getType(), new ErrorReport(error));
         }
       }
 

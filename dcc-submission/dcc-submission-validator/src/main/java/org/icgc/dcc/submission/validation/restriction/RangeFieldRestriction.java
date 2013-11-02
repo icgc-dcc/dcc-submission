@@ -27,7 +27,7 @@ import org.icgc.dcc.submission.validation.core.InternalPlanElement;
 import org.icgc.dcc.submission.validation.core.PlanElement;
 import org.icgc.dcc.submission.validation.core.RestrictionType;
 import org.icgc.dcc.submission.validation.core.RestrictionTypeSchema;
-import org.icgc.dcc.submission.validation.core.ErrorCode;
+import org.icgc.dcc.submission.validation.core.ErrorType;
 import org.icgc.dcc.submission.validation.core.RestrictionTypeSchema.FieldRestrictionParameter;
 import org.icgc.dcc.submission.validation.core.RestrictionTypeSchema.ParameterType;
 import org.icgc.dcc.submission.validation.visitor.ValueTypePlanningVisitor;
@@ -137,7 +137,7 @@ public class RangeFieldRestriction implements InternalPlanElement {
         Number num = (Number) value;
         if (num.longValue() < this.min.longValue() || num.longValue() > this.max.longValue()) {
 
-          ValidationFields.state(tupleEntry).reportError(ErrorCode.OUT_OF_RANGE_ERROR, fieldName.toString(),
+          ValidationFields.state(tupleEntry).reportError(ErrorType.OUT_OF_RANGE_ERROR, fieldName.toString(),
               num.longValue(), min.longValue(), max.longValue());
         }
       }

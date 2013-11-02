@@ -20,7 +20,7 @@ package org.icgc.dcc.submission.validation.checker;
 import lombok.Value;
 
 import org.icgc.dcc.submission.validation.checker.Util.CheckLevel;
-import org.icgc.dcc.submission.validation.core.ErrorCode;
+import org.icgc.dcc.submission.validation.core.ErrorType;
 
 /**
  * 
@@ -29,8 +29,8 @@ import org.icgc.dcc.submission.validation.core.ErrorCode;
 public class FirstPassValidationError {
 
   CheckLevel level;
-  String errMsg;
-  ErrorCode code;
+  String message;
+  ErrorType type;
 
   // To be used to satisfy TupleError
   Object[] param;

@@ -55,7 +55,7 @@ public class SchemaReport implements Serializable {
   }
 
   public void addErrors(List<ErrorReport> errors) {
-    errors.addAll(errors);
+    this.errors.addAll(errors);
   }
 
   public Optional<FieldReport> getFieldReport(final String field) {
@@ -74,7 +74,7 @@ public class SchemaReport implements Serializable {
   }
 
   public void addFieldReports(List<FieldReport> fieldReports) {
-    fieldReports.addAll(fieldReports);
+    this.fieldReports.addAll(fieldReports);
   }
 
 }

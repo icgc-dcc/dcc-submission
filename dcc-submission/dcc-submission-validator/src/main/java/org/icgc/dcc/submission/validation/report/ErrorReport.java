@@ -32,7 +32,7 @@ import lombok.val;
 
 import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
-import org.icgc.dcc.submission.validation.core.ErrorCode;
+import org.icgc.dcc.submission.validation.core.ErrorType;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -49,12 +49,12 @@ public class ErrorReport implements Serializable {
    */
   public static final int MAX_ERROR_COUNT = 50;
 
-  private ErrorCode errorType;
+  private ErrorType errorType;
   private String description;
   private final List<ColumnErrorReport> columns = newLinkedList();
 
   public ErrorReport(TupleError error) {
-    this.setErrorType(error.getCode());
+    this.setErrorType(error.getType());
     this.setDescription(error.getMessage());
     this.addColumn(error);
   }

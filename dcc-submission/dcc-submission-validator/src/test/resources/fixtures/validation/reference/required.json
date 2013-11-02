@@ -1,7 +1,7 @@
 {
   "offset" : 1,
   "errors" : [ {
-    "code" : "MISSING_VALUE_ERROR",
+    "type" : "MISSING_VALUE_ERROR",
     "columnNames" : [ "donor_region_of_residence" ],
     "value" : "",
     "line" : 1,
@@ -10,13 +10,13 @@
 }{
   "offset" : 2,
   "errors" : [ {
-    "code" : "MISSING_VALUE_ERROR",
+    "type" : "MISSING_VALUE_ERROR",
     "columnNames" : [ "donor_region_of_residence" ],
     "value" : "",
     "line" : 2,
     "parameters" : { }
   }, {
-    "code" : "MISSING_VALUE_ERROR",
+    "type" : "MISSING_VALUE_ERROR",
     "columnNames" : [ "donor_vital_status" ],
     "value" : "",
     "line" : 2,
@@ -25,13 +25,13 @@
 }{
   "offset" : 3,
   "errors" : [ {
-    "code" : "MISSING_VALUE_ERROR",
+    "type" : "MISSING_VALUE_ERROR",
     "columnNames" : [ "donor_region_of_residence" ],
     "value" : "",
     "line" : 3,
     "parameters" : { }
   }, {
-    "code" : "MISSING_VALUE_ERROR",
+    "type" : "MISSING_VALUE_ERROR",
     "columnNames" : [ "donor_vital_status" ],
     "value" : "",
     "line" : 3,

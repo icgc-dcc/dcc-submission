@@ -20,7 +20,7 @@ package org.icgc.dcc.submission.validation.semantic;
 import static com.google.common.io.ByteStreams.copy;
 import static java.util.Arrays.asList;
 import static org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames.SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE;
-import static org.icgc.dcc.submission.validation.core.ErrorCode.REFERENCE_GENOME_ERROR;
+import static org.icgc.dcc.submission.validation.core.ErrorType.REFERENCE_GENOME_ERROR;
 
 import java.io.BufferedInputStream;
 import java.io.File;

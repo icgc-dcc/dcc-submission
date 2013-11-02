@@ -21,7 +21,7 @@ import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.ValueType;
 import org.icgc.dcc.submission.validation.cascading.ValidationFields;
 import org.icgc.dcc.submission.validation.core.InternalPlanElement;
-import org.icgc.dcc.submission.validation.core.ErrorCode;
+import org.icgc.dcc.submission.validation.core.ErrorType;
 import org.icgc.dcc.submission.validation.planner.PlanningException;
 
 import cascading.flow.FlowProcess;
@@ -92,7 +92,7 @@ public class ValueTypePlanningVisitor extends InternalFlowPlanningVisitor {
         } catch(IllegalArgumentException e) {
           Object fieldName = arguments.getFields().get(0);
 
-          ValidationFields.state(arguments).reportError(ErrorCode.VALUE_TYPE_ERROR, fieldName.toString(),
+          ValidationFields.state(arguments).reportError(ErrorType.VALUE_TYPE_ERROR, fieldName.toString(),
               value, type);
         }
         functionCall.getOutputCollector().add(new Tuple(parsedValue, ValidationFields.state(arguments)));

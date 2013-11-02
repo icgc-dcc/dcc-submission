@@ -101,7 +101,7 @@ public class FirstPassValidator {
     Builder<TupleError> tupleErrors = ImmutableList.builder();
     for (val error : errors) {
       val tupleError = TupleState.createTupleError(
-          error.getCode(),
+          error.getType(),
           error.getLevel().toString(),
           error.toString(),
           error.getLineNumber(),

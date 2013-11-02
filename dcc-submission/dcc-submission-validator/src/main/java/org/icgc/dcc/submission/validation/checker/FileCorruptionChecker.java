@@ -26,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.icgc.dcc.submission.validation.checker.Util.CodecType;
-import org.icgc.dcc.submission.validation.core.ErrorCode;
+import org.icgc.dcc.submission.validation.core.ErrorType;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -62,13 +62,13 @@ public class FileCorruptionChecker extends CompositeFileChecker {
       } else {
         errors.add(new FirstPassValidationError(getCheckLevel(), "Content type does not match the extension for file: "
             + filename,
-            ErrorCode.COMPRESSION_CODEC_ERROR, new Object[] { getFileSchemaName(filename) }, -1));
+            ErrorType.COMPRESSION_CODEC_ERROR, new Object[] { getFileSchemaName(filename) }, -1));
       }
     } catch (IOException e) {
       log.info("Exception caught in reading file (corruption): {}", filename, e);
       errors.add(new FirstPassValidationError(getCheckLevel(), "Error in reading the file (corruption): "
           + filename,
-          ErrorCode.COMPRESSION_CODEC_ERROR, new Object[] { getFileSchemaName(filename) }, -1));
+          ErrorType.COMPRESSION_CODEC_ERROR, new Object[] { getFileSchemaName(filename) }, -1));
     }
     return errors.build();
   }
@@ -87,7 +87,7 @@ public class FileCorruptionChecker extends CompositeFileChecker {
     } catch (IOException e) {
       log.info("Exception caught in decoding bzip2 file '{}': '{}'", filename, e.getMessage());
       errors.add(new FirstPassValidationError(getCheckLevel(), "Corrupted bzip file: " + filename,
-          ErrorCode.COMPRESSION_CODEC_ERROR, new Object[] { getFileSchemaName(filename) }, -1));
+          ErrorType.COMPRESSION_CODEC_ERROR, new Object[] { getFileSchemaName(filename) }, -1));
     }
     return errors.build();
   }
@@ -106,7 +106,7 @@ public class FileCorruptionChecker extends CompositeFileChecker {
     } catch (IOException e) {
       log.info("Exception caught in decoding gzip file '{}': '{}'", filename, e.getMessage());
       errors.add(new FirstPassValidationError(getCheckLevel(), "Corrupted gzip file: " + filename,
-          ErrorCode.COMPRESSION_CODEC_ERROR, new Object[] { getFileSchemaName(filename) }, -1));
+          ErrorType.COMPRESSION_CODEC_ERROR, new Object[] { getFileSchemaName(filename) }, -1));
     }
 
     return errors.build();

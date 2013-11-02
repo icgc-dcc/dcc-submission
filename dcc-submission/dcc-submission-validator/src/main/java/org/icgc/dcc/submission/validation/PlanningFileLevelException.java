@@ -20,7 +20,7 @@ package org.icgc.dcc.submission.validation;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import org.icgc.dcc.submission.validation.cascading.TupleState;
-import org.icgc.dcc.submission.validation.core.ErrorCode;
+import org.icgc.dcc.submission.validation.core.ErrorType;
 
 public class PlanningFileLevelException extends RuntimeException {
 
@@ -33,13 +33,13 @@ public class PlanningFileLevelException extends RuntimeException {
 
   private final TupleState tupleState;
 
-  public PlanningFileLevelException(String filename, ErrorCode errorCode, Object... params) {
+  public PlanningFileLevelException(String filename, ErrorType type, Object... params) {
     checkArgument(filename != null);
-    checkArgument(errorCode != null);
+    checkArgument(type != null);
     checkArgument(params != null);
     this.filename = filename;
     tupleState = new TupleState();
-    tupleState.reportError(errorCode, FILE_LEVEL_ERROR_COLUMN_NAME, FILE_LEVEL_ERROR_VALUE, params);
+    tupleState.reportError(type, FILE_LEVEL_ERROR_COLUMN_NAME, FILE_LEVEL_ERROR_VALUE, params);
   }
 
   public String getFilename() {

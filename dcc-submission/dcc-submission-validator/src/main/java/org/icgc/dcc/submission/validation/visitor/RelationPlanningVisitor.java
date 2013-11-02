@@ -22,8 +22,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
-import static org.icgc.dcc.submission.validation.core.ErrorCode.RELATION_PARENT_VALUE_ERROR;
-import static org.icgc.dcc.submission.validation.core.ErrorCode.RELATION_VALUE_ERROR;
+import static org.icgc.dcc.submission.validation.core.ErrorType.RELATION_PARENT_VALUE_ERROR;
+import static org.icgc.dcc.submission.validation.core.ErrorType.RELATION_VALUE_ERROR;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;

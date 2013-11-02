@@ -65,7 +65,7 @@ public class FileSchemaDirectory {
       for (Path path : paths) {
         pathNames.add(path.getName());
       }
-      throw new PlanningFileLevelException(paths.get(0).getName().toString(), ErrorCode.TOO_MANY_FILES_ERROR,
+      throw new PlanningFileLevelException(paths.get(0).getName().toString(), ErrorType.TOO_MANY_FILES_ERROR,
           fileSchema.getName(), pathNames);
     }
 
@@ -90,12 +90,12 @@ public class FileSchemaDirectory {
       testis.readFully(magicNumber);
 
       if (Arrays.equals(magicNumber, BZ2_MAGIC_NUMBER) != path.getName().endsWith(BZ2_EXTENSION)) {
-        throw new PlanningFileLevelException(path.getName().toString(), ErrorCode.COMPRESSION_CODEC_ERROR,
+        throw new PlanningFileLevelException(path.getName().toString(), ErrorType.COMPRESSION_CODEC_ERROR,
             fileSchema.getName());
       }
     } catch (IOException e) {
       log.error("Problem opening file to check compression scheme", e);
-      throw new PlanningFileLevelException(path.getName().toString(), ErrorCode.COMPRESSION_CODEC_ERROR,
+      throw new PlanningFileLevelException(path.getName().toString(), ErrorType.COMPRESSION_CODEC_ERROR,
           fileSchema.getName());
     }
   }

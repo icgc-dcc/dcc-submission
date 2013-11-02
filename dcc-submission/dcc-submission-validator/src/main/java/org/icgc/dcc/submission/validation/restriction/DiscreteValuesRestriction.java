@@ -28,7 +28,7 @@ import org.icgc.dcc.submission.validation.core.InternalPlanElement;
 import org.icgc.dcc.submission.validation.core.PlanElement;
 import org.icgc.dcc.submission.validation.core.RestrictionType;
 import org.icgc.dcc.submission.validation.core.RestrictionTypeSchema;
-import org.icgc.dcc.submission.validation.core.ErrorCode;
+import org.icgc.dcc.submission.validation.core.ErrorType;
 import org.icgc.dcc.submission.validation.core.RestrictionTypeSchema.FieldRestrictionParameter;
 import org.icgc.dcc.submission.validation.core.RestrictionTypeSchema.ParameterType;
 
@@ -122,7 +122,7 @@ public class DiscreteValuesRestriction implements InternalPlanElement {
       String value = tupleEntry.getString(0);
       if(value != null && values.contains(value) == false) {
         Object fieldName = tupleEntry.getFields().get(0);
-        ValidationFields.state(tupleEntry).reportError(ErrorCode.DISCRETE_VALUES_ERROR, fieldName.toString(),
+        ValidationFields.state(tupleEntry).reportError(ErrorType.DISCRETE_VALUES_ERROR, fieldName.toString(),
             value, values);
       }
       functionCall.getOutputCollector().add(tupleEntry.getTupleCopy());
