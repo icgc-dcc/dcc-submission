@@ -39,7 +39,7 @@ import org.icgc.dcc.submission.validation.FilePresenceException;
 import org.icgc.dcc.submission.validation.MalformedSubmissionException;
 import org.icgc.dcc.submission.validation.SubmissionSemanticsException;
 import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
-import org.icgc.dcc.submission.validation.checker.FirstPassChecker;
+import org.icgc.dcc.submission.validation.checker.FirstPassValidator;
 import org.icgc.dcc.submission.validation.core.Plan;
 import org.icgc.dcc.submission.validation.core.ValidationListener;
 import org.icgc.dcc.submission.validation.planner.Planner;
@@ -148,7 +148,7 @@ public class ValidationService {
 
   private void checkerValidation(Dictionary dictionary, SubmissionDirectory submissionDirectory,
       QueuedProject queuedProject) throws MalformedSubmissionException {
-    val checker = new FirstPassChecker(dccFileSystem, dictionary, submissionDirectory);
+    val checker = new FirstPassValidator(dccFileSystem, dictionary, submissionDirectory);
     val valid = checker.isValid();
     if (!valid) {
       val errors = ImmutableMap.<String, Iterable<TupleError>> builder();

@@ -24,6 +24,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -38,7 +39,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
@@ -77,7 +77,7 @@ public class RowColumnCheckerTest {
   @Test
   public void validColumns() throws Exception {
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream("a\tb\rf1\tf2\r".getBytes()));
-    PowerMockito.mockStatic(Util.class);
+    mockStatic(Util.class);
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
     // when(submissionDir.listFile(any(Pattern.class))).thenReturn(ImmutableList.<String> of());
 
@@ -90,7 +90,7 @@ public class RowColumnCheckerTest {
   @Test
   public void invalidColumnsHeader() throws Exception {
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream("a\rf1\t\f2\r".getBytes()));
-    PowerMockito.mockStatic(Util.class);
+    mockStatic(Util.class);
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
 
     RowColumnChecker checker = new RowColumnChecker(new BaseRowChecker(fs, dict, submissionDir));
@@ -103,7 +103,7 @@ public class RowColumnCheckerTest {
   @Test
   public void invalidColumnsContent() throws Exception {
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream("a\tb\rf2\r".getBytes()));
-    PowerMockito.mockStatic(Util.class);
+    mockStatic(Util.class);
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
 
     RowColumnChecker checker = new RowColumnChecker(new BaseRowChecker(fs, dict, submissionDir));
@@ -116,7 +116,7 @@ public class RowColumnCheckerTest {
   @Test
   public void invalidColumnsHeaderAndContent() throws Exception {
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream("a\rf2\r".getBytes()));
-    PowerMockito.mockStatic(Util.class);
+    mockStatic(Util.class);
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
 
     RowColumnChecker checker = new RowColumnChecker(new BaseRowChecker(fs, dict, submissionDir));
@@ -130,7 +130,7 @@ public class RowColumnCheckerTest {
   public void invalidIrregularColumns() throws Exception {
     DataInputStream fis =
         new DataInputStream(new ByteArrayInputStream("a\tb\tc\rf1\tf2\tf3\tf3\tf4\r\f1\r".getBytes()));
-    PowerMockito.mockStatic(Util.class);
+    mockStatic(Util.class);
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
 
     RowColumnChecker checker = new RowColumnChecker(new BaseRowChecker(fs, dict, submissionDir));
@@ -143,7 +143,7 @@ public class RowColumnCheckerTest {
   @Test
   public void validEmptyColumns() throws Exception {
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream("\t\r\t\r".getBytes()));
-    PowerMockito.mockStatic(Util.class);
+    mockStatic(Util.class);
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
 
     RowColumnChecker checker = new RowColumnChecker(new BaseRowChecker(fs, dict, submissionDir));

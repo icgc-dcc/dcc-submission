@@ -41,6 +41,7 @@ public class ColumnErrorReport implements Serializable {
 
   private List<String> columnNames;
   private long count;
+
   @Setter(PACKAGE)
   private List<Long> lines = newLinkedList();
   private List<Object> values = newLinkedList();
@@ -49,6 +50,7 @@ public class ColumnErrorReport implements Serializable {
   public ColumnErrorReport(TupleError error) {
     this.setColumnNames(error.getColumnNames());
     this.setCount(1L);
+
     this.addLine(error.getLine());
     this.addValue(error.getValue());
     this.setParameters(error.getParameters());

@@ -58,12 +58,11 @@ public final class FrequencyPlanElement extends BaseStatsReportingPlanElement {
 
   @Override
   public Pipe report(Pipe pipe) {
-
     pipe = keepStructurallyValidTuples(pipe);
 
     Pipe[] freqs = new Pipe[fields.size()];
     int i = 0;
-    for(Field field : fields) {
+    for (Field field : fields) {
       freqs[i++] = frequency(field.getName(), pipe);
     }
     pipe = new Merge(freqs);
@@ -155,17 +154,17 @@ public final class FrequencyPlanElement extends BaseStatsReportingPlanElement {
       Iterator<TupleEntry> tuples = bufferCall.getArgumentsIterator();
       FieldSummary fs = new FieldSummary();
       fs.field = bufferCall.getGroup().getString(0);
-      while(tuples.hasNext()) {
+      while (tuples.hasNext()) {
         TupleEntry tuple = tuples.next();
         String value = tuple.getString(0); // TODO: use field names...
         Long frequency = tuple.getLong(1);
-        if(value == null) {
-          if(tuple.getBoolean(MISSING_FLAG)) {
+        if (value == null) {
+          if (tuple.getBoolean(MISSING_FLAG)) {
             fs.missing += frequency;
           } else {
             fs.nulls += frequency;
           }
-        } else if(value.isEmpty()) {
+        } else if (value.isEmpty()) {
           fs.nulls += frequency;
         } else {
           fs.populated += frequency;

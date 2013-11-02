@@ -25,6 +25,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -48,7 +49,7 @@ import com.google.common.collect.ImmutableList;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(Util.class)
-public class FirstPassCheckerTest {
+public class FirstPassValidatorTest {
 
   private final FirstPassValidationError DUMMY_FILE_ERROR = new FirstPassValidationError(CheckLevel.FILE_LEVEL,
       "DummyFileError", ErrorCode.REVERSE_RELATION_FILE_ERROR, null, -1);
@@ -62,7 +63,7 @@ public class FirstPassCheckerTest {
   public void setup() throws IOException {
     submissionDir = mock(SubmissionDirectory.class);
     dict = mock(Dictionary.class);
-    PowerMockito.mockStatic(Util.class);
+    mockStatic(Util.class);
 
     when(submissionDir.listFile()).thenReturn(ImmutableList.of("anyfile"));
     when(submissionDir.getDataFilePath(anyString())).thenReturn("/tmp/anyfile");
@@ -87,7 +88,7 @@ public class FirstPassCheckerTest {
     when(rowChecker.canContinue()).thenReturn(true);
     when(rowChecker.isValid()).thenReturn(true);
 
-    FirstPassChecker fpc = new FirstPassChecker(dict, submissionDir, fileChecker, rowChecker);
+    FirstPassValidator fpc = new FirstPassValidator(dict, submissionDir, fileChecker, rowChecker);
     assertTrue(fpc.isValid());
 
     verify(fileChecker, times(1)).check(anyString());
@@ -108,7 +109,7 @@ public class FirstPassCheckerTest {
     when(rowChecker.isFailFast()).thenReturn(false);
     when(rowChecker.canContinue()).thenReturn(true);
 
-    FirstPassChecker fpc = new FirstPassChecker(dict, submissionDir, fileChecker, rowChecker);
+    FirstPassValidator fpc = new FirstPassValidator(dict, submissionDir, fileChecker, rowChecker);
     assertFalse(fpc.isValid());
 
     verify(fileChecker, times(1)).check(anyString());
@@ -129,7 +130,7 @@ public class FirstPassCheckerTest {
     when(rowChecker.check(anyString())).thenReturn(ImmutableList.<FirstPassValidationError> of());
     when(rowChecker.isValid()).thenReturn(true);
 
-    FirstPassChecker fpc = new FirstPassChecker(dict, submissionDir, moreChecker, rowChecker);
+    FirstPassValidator fpc = new FirstPassValidator(dict, submissionDir, moreChecker, rowChecker);
     assertFalse(fpc.isValid());
 
     verify(fileChecker, times(1)).check(anyString());
@@ -149,7 +150,7 @@ public class FirstPassCheckerTest {
     when(rowChecker.check(anyString())).thenReturn(ImmutableList.<FirstPassValidationError> of());
     when(rowChecker.isValid()).thenReturn(true);
 
-    FirstPassChecker fpc = new FirstPassChecker(dict, submissionDir, fileChecker, rowChecker);
+    FirstPassValidator fpc = new FirstPassValidator(dict, submissionDir, fileChecker, rowChecker);
     assertFalse(fpc.isValid());
 
     verify(fileChecker, times(1)).check(anyString());
@@ -168,7 +169,7 @@ public class FirstPassCheckerTest {
     when(rowChecker.check(anyString())).thenReturn(ImmutableList.of(DUMMY_ROW_ERROR));
     when(rowChecker.isValid()).thenReturn(false);
 
-    FirstPassChecker fpc = new FirstPassChecker(dict, submissionDir, fileChecker, rowChecker);
+    FirstPassValidator fpc = new FirstPassValidator(dict, submissionDir, fileChecker, rowChecker);
     assertFalse(fpc.isValid());
 
     verify(fileChecker, times(1)).check(anyString());
@@ -177,17 +178,12 @@ public class FirstPassCheckerTest {
 
   private static class DummyFileChecker extends CompositeFileChecker {
 
-    /**
-     * @param nestedChecker
-     */
     public DummyFileChecker(FileChecker nestedChecker) {
       super(nestedChecker);
-      // TODO Auto-generated constructor stub
     }
 
     public DummyFileChecker(FileChecker nestedChecker, boolean failsafe) {
       super(nestedChecker, failsafe);
-      // TODO Auto-generated constructor stub
     }
 
     @Override

@@ -53,7 +53,7 @@ import com.google.common.collect.ImmutableList;
 import com.typesafe.config.Config;
 
 @RunWith(MockitoJUnitRunner.class)
-public class FirstPassCheckerClientTest {
+public class FirstPassValidatorClientTest {
 
   private final static String VALID_CONTENT = "H1\tH2\tH3\nf1\tf2\tf3";
 
@@ -158,7 +158,7 @@ public class FirstPassCheckerClientTest {
 
   @Test
   public void sanity() throws IOException {
-    FirstPassChecker checker = new FirstPassChecker(fs, dict, submissionDir);
+    FirstPassValidator checker = new FirstPassValidator(fs, dict, submissionDir);
     System.out.println(checker.isValid());
     for (String schemaName : checker.getFileSchemaNames())
       System.out.println(checker.getTupleErrors(schemaName));

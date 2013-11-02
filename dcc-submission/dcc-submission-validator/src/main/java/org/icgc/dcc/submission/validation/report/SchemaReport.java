@@ -43,19 +43,19 @@ public class SchemaReport implements Serializable {
   protected List<ErrorReport> errors = newArrayList();
 
   public List<FieldReport> getFieldReports() {
-    return ImmutableList.copyOf(this.fieldReports);
+    return ImmutableList.copyOf(fieldReports);
   }
 
   public List<ErrorReport> getErrors() {
-    return ImmutableList.copyOf(this.errors);
+    return ImmutableList.copyOf(errors);
   }
 
   public void addError(ErrorReport error) {
-    this.errors.add(error);
+    errors.add(error);
   }
 
   public void addErrors(List<ErrorReport> errors) {
-    this.errors.addAll(errors);
+    errors.addAll(errors);
   }
 
   public Optional<FieldReport> getFieldReport(final String field) {
@@ -70,11 +70,11 @@ public class SchemaReport implements Serializable {
   }
 
   public void addFieldReport(FieldReport fieldReport) {
-    this.fieldReports.add(fieldReport);
+    fieldReports.add(fieldReport);
   }
 
   public void addFieldReports(List<FieldReport> fieldReports) {
-    this.fieldReports.addAll(fieldReports);
+    fieldReports.addAll(fieldReports);
   }
 
 }

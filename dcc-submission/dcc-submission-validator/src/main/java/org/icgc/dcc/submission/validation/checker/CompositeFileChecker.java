@@ -35,7 +35,7 @@ import com.google.common.collect.ImmutableList;
 @RequiredArgsConstructor
 public abstract class CompositeFileChecker implements FileChecker {
 
-  protected final FileChecker compositeChecker;
+  protected final FileChecker delegate;
   protected final boolean failFast;
 
   protected List<FirstPassValidationError> errors = newLinkedList();
@@ -48,13 +48,13 @@ public abstract class CompositeFileChecker implements FileChecker {
   @Override
   public List<FirstPassValidationError> check(String filename) {
     errors.clear();
-    errors.addAll(compositeChecker.check(filename));
-    if (compositeChecker.canContinue()) {
+    errors.addAll(delegate.check(filename));
+    if (delegate.canContinue()) {
       log.info("Start performing {} validation...", this.getClass().getSimpleName());
       checkErrors = performSelfCheck(filename);
       errors.addAll(checkErrors);
-      log.info("End performing {} validation. Number of errors found: {}", new Object[] { this.getClass()
-          .getSimpleName(), checkErrors.size() });
+      log.info("End performing {} validation. Number of errors found: {}",
+          getClass().getSimpleName(), checkErrors.size());
     }
     return errors;
   }
@@ -63,17 +63,17 @@ public abstract class CompositeFileChecker implements FileChecker {
 
   @Override
   public boolean canContinue() {
-    return (compositeChecker.canContinue() && (checkErrors.isEmpty() || !failFast));
+    return (delegate.canContinue() && (checkErrors.isEmpty() || !failFast));
   }
 
   @Override
   public boolean isValid() {
-    return (compositeChecker.isValid() && errors.isEmpty());
+    return (delegate.isValid() && errors.isEmpty());
   }
 
   @Override
   public CheckLevel getCheckLevel() {
-    return compositeChecker.getCheckLevel();
+    return delegate.getCheckLevel();
   }
 
   @Override
@@ -84,21 +84,21 @@ public abstract class CompositeFileChecker implements FileChecker {
 
   @Override
   public String getFileSchemaName(String filename) {
-    return compositeChecker.getFileSchemaName(filename);
+    return delegate.getFileSchemaName(filename);
   }
 
   @Override
   public Dictionary getDictionary() {
-    return compositeChecker.getDictionary();
+    return delegate.getDictionary();
   }
 
   @Override
   public SubmissionDirectory getSubmissionDirectory() {
-    return compositeChecker.getSubmissionDirectory();
+    return delegate.getSubmissionDirectory();
   }
 
   @Override
   public DccFileSystem getDccFileSystem() {
-    return compositeChecker.getDccFileSystem();
+    return delegate.getDccFileSystem();
   }
 }

@@ -35,10 +35,11 @@ public class SubmissionReport implements Serializable {
   @NonNull
   protected List<SchemaReport> schemaReports = newArrayList();
 
-  public SchemaReport getSchemaReport(String schema) {
-    for (val report : schemaReports) {
-      if (report.getName().equals(schema)) {
-        return report;
+  public SchemaReport getSchemaReport(String schemaName) {
+    for (val schemaReport : schemaReports) {
+      val match = schemaReport.getName().equals(schemaName);
+      if (match) {
+        return schemaReport;
       }
     }
 

@@ -40,7 +40,7 @@ import com.google.common.collect.Iterables;
 
 @Slf4j
 @RequiredArgsConstructor
-public class FirstPassChecker {
+public class FirstPassValidator {
 
   private final Dictionary dictionary;
   private final SubmissionDirectory submissionDir;
@@ -50,8 +50,9 @@ public class FirstPassChecker {
 
   private final Map<String, List<FirstPassValidationError>> errorMap = newHashMap();
 
-  public FirstPassChecker(DccFileSystem dccFileSystem, Dictionary dict, SubmissionDirectory submissionDir) {
-    this(dict, submissionDir, getDefaultFileChecker(dccFileSystem, dict, submissionDir),
+  public FirstPassValidator(DccFileSystem dccFileSystem, Dictionary dict, SubmissionDirectory submissionDir) {
+    this(dict, submissionDir,
+        getDefaultFileChecker(dccFileSystem, dict, submissionDir),
         getDefaultRowChecker(dccFileSystem, dict, submissionDir));
   }
 

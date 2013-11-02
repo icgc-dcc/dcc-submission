@@ -80,7 +80,7 @@ public class ErrorReport implements Serializable {
   }
 
   public void updateColumn(TupleError error) {
-    ColumnErrorReport column = this.getColumnByName(error.getColumnNames());
+    val column = getColumnByName(error.getColumnNames());
 
     // Append line/value to lines/values
     if (column.getCount() < MAX_ERROR_COUNT) {
@@ -92,10 +92,10 @@ public class ErrorReport implements Serializable {
   }
 
   public void updateReport(TupleError error) {
-    if (this.hasColumn(error.getColumnNames()) == true) {
-      this.updateColumn(error);
+    if (hasColumn(error.getColumnNames())) {
+      updateColumn(error);
     } else {
-      this.addColumn(error);
+      addColumn(error);
     }
   }
 
