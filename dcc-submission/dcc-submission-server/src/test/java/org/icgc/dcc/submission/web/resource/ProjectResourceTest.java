@@ -27,7 +27,7 @@ import lombok.val;
 import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.submission.core.AbstractDccModule;
 import org.icgc.dcc.submission.core.model.Project;
-import org.icgc.dcc.submission.repository.ProjectRepository;
+import org.icgc.dcc.submission.services.ProjectService;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -56,7 +56,7 @@ public class ProjectResourceTest extends ResourceTest {
     return "X-DCC-Auth " + encodeAsString(username + ":" + username + "spasswd");
   }
 
-  private ProjectRepository projectRepository;
+  private ProjectService projectService;
 
   private Project projectOne;
 
@@ -70,11 +70,11 @@ public class ProjectResourceTest extends ResourceTest {
 
     projectTwo = new Project("PRJ2", "Project Two");
 
-    projectRepository = mock(ProjectRepository.class);
-    when(projectRepository.findProject(projectOne.getKey())).thenReturn(projectOne);
-    when(projectRepository.findProject(projectTwo.getKey())).thenReturn(projectTwo);
-    when(projectRepository.findProjects(any(Subject.class))).thenReturn(Sets.newHashSet(projectOne));
-    when(projectRepository.findProjects()).thenReturn(Sets.newHashSet(projectOne, projectTwo));
+    projectService = mock(ProjectService.class);
+    when(projectService.findProject(projectOne.getKey())).thenReturn(projectOne);
+    when(projectService.findProject(projectTwo.getKey())).thenReturn(projectTwo);
+    when(projectService.findProjects(any(Subject.class))).thenReturn(Sets.newHashSet(projectOne));
+    when(projectService.findProjects()).thenReturn(Sets.newHashSet(projectOne, projectTwo));
 
     return super.configure();
   }
@@ -85,7 +85,7 @@ public class ProjectResourceTest extends ResourceTest {
 
       @Override
       protected void configure() {
-        bind(ProjectRepository.class).toInstance(projectRepository);
+        bind(ProjectService.class).toInstance(projectService);
       }
 
     });
@@ -95,7 +95,7 @@ public class ProjectResourceTest extends ResourceTest {
   public void testGetProjectsWhenNotAuthorized() {
     val reponse =
         target().path("projects").request(MIME_TYPE).header(AUTH_HEADER, getAuthValue(UNAUTH_USER)).get();
-    verifyZeroInteractions(projectRepository);
+    verifyZeroInteractions(projectService);
     assertThat(reponse.getStatus()).isEqualTo(UNAUTHORIZED.getStatusCode());
     assertThat(reponse.readEntity(String.class)).isEqualTo("");
   }
@@ -104,7 +104,7 @@ public class ProjectResourceTest extends ResourceTest {
   public void testGetProjectsWhenAuthorized() {
     val reponse =
         target().path("projects").request(MIME_TYPE).header(AUTH_HEADER, getAuthValue(AUTH_ALLOWED_USER)).get();
-    verify(projectRepository).findProjects(any(Subject.class));
+    verify(projectService).findProjects(any(Subject.class));
     assertThat(reponse.getStatus()).isEqualTo(OK.getStatusCode());
     assertThat(reponse.readEntity(String.class)).isEqualTo("[{\"key\":\"PRJ1\",\"name\":\"Project One\"}]");
   }
@@ -112,7 +112,7 @@ public class ProjectResourceTest extends ResourceTest {
   @Test
   public void testGetProjectsWhenAuthorizedAsAdmin() {
     val reponse = target().path("projects").request(MIME_TYPE).get();
-    verify(projectRepository, atLeast(1)).findProjects();
+    verify(projectService, atLeast(1)).findProjects();
     assertThat(reponse.getStatus()).isEqualTo(OK.getStatusCode());
     assertThat(reponse.readEntity(String.class))
         .isEqualTo("[{\"key\":\"PRJ2\",\"name\":\"Project Two\"},{\"key\":\"PRJ1\",\"name\":\"Project One\"}]");
@@ -123,7 +123,7 @@ public class ProjectResourceTest extends ResourceTest {
     val reponse =
         target().path("projects/" + projectOne.getKey()).request(MIME_TYPE)
             .header(AUTH_HEADER, getAuthValue(UNAUTH_USER)).get();
-    verifyZeroInteractions(projectRepository);
+    verifyZeroInteractions(projectService);
     assertThat(reponse.getStatus()).isEqualTo(UNAUTHORIZED.getStatusCode());
     assertThat(reponse.readEntity(String.class)).isEqualTo("");
   }
@@ -134,7 +134,7 @@ public class ProjectResourceTest extends ResourceTest {
         target().path("projects/" + projectOne.getKey()).request(MIME_TYPE)
             .header(AUTH_HEADER, getAuthValue(AUTH_NOT_ALLOWED_USER))
             .get();
-    verify(projectRepository, never()).findProject(any(String.class));
+    verify(projectService, never()).findProject(any(String.class));
     assertThat(reponse.getStatus()).isEqualTo(NOT_FOUND.getStatusCode());
     assertThat(reponse.readEntity(String.class)).isEqualTo("{\"code\":\"NoSuchEntity\",\"parameters\":[\"PRJ1\"]}");
   }
@@ -144,7 +144,7 @@ public class ProjectResourceTest extends ResourceTest {
     val reponse =
         target().path("projects/" + projectOne.getKey()).request(MIME_TYPE)
             .header(AUTH_HEADER, getAuthValue(AUTH_ALLOWED_USER)).get();
-    verify(projectRepository).findProject(projectOne.getKey());
+    verify(projectService).findProject(projectOne.getKey());
     assertThat(reponse.getStatus()).isEqualTo(OK.getStatusCode());
     assertThat(reponse.readEntity(String.class)).isEqualTo("{\"key\":\"PRJ1\",\"name\":\"Project One\"}");
   }
@@ -153,7 +153,7 @@ public class ProjectResourceTest extends ResourceTest {
   public void testGetProjectWhenAuthorizedAsAdmin() {
     val reponse =
         target().path("projects/" + projectOne.getKey()).request(MIME_TYPE).get();
-    verify(projectRepository).findProject(projectOne.getKey());
+    verify(projectService).findProject(projectOne.getKey());
     assertThat(reponse.getStatus()).isEqualTo(OK.getStatusCode());
     assertThat(reponse.readEntity(String.class)).isEqualTo("{\"key\":\"PRJ1\",\"name\":\"Project One\"}");
   }
@@ -170,7 +170,7 @@ public class ProjectResourceTest extends ResourceTest {
   public void testAddProjectWhenNotAuthorized() throws Exception {
     val reponse =
         target().path("projects").request(MIME_TYPE).header(AUTH_HEADER, getAuthValue(UNAUTH_USER)).post(json("{}"));
-    verifyZeroInteractions(projectRepository);
+    verifyZeroInteractions(projectService);
     assertThat(reponse.getStatus()).isEqualTo(UNAUTHORIZED.getStatusCode());
     assertThat(reponse.readEntity(String.class)).isEqualTo("");
   }
@@ -179,7 +179,7 @@ public class ProjectResourceTest extends ResourceTest {
   public void testAddProjectWithMissingFields() throws Exception {
     val projectJson = json("{\"keymissing\":\"PRJ1\",\"name\":\"Project One\"}");
     val reponse = target().path("projects").request(MIME_TYPE).post(projectJson);
-    verifyZeroInteractions(projectRepository);
+    verifyZeroInteractions(projectService);
     // Apparently JAX-RS doesn't have a '422 Unprocessable Entity' Status
     assertThat(reponse.getStatus()).isEqualTo(422);
   }
@@ -188,7 +188,7 @@ public class ProjectResourceTest extends ResourceTest {
   public void testAddProjectWithSymbolsInProjectKey() throws Exception {
     val projectJson = json("{\"key\":\"P#$%^&*RJ1\",\"name\":\"Project One\"}");
     val reponse = target().path("projects").request(MIME_TYPE).post(projectJson);
-    verifyZeroInteractions(projectRepository);
+    verifyZeroInteractions(projectService);
     // Apparently JAX-RS doesn't have a '422 Unprocessable Entity' Status
     assertThat(reponse.getStatus()).isEqualTo(422);
   }
@@ -197,7 +197,7 @@ public class ProjectResourceTest extends ResourceTest {
   public void testAddProjectWithSpaceInProjectKey() throws Exception {
     val projectJson = json("{\"key\":\"P RJ1\",\"name\":\"Project One\"}");
     val reponse = target().path("projects").request(MIME_TYPE).post(projectJson);
-    verifyZeroInteractions(projectRepository);
+    verifyZeroInteractions(projectService);
     // Apparently JAX-RS doesn't have a '422 Unprocessable Entity' Status
     assertThat(reponse.getStatus()).isEqualTo(422);
   }
@@ -208,7 +208,7 @@ public class ProjectResourceTest extends ResourceTest {
     val reponse =
         target().path("projects").request(MIME_TYPE).header(AUTH_HEADER, getAuthValue(AUTH_ALLOWED_USER))
             .post(projectJson);
-    verify(projectRepository, never()).addProject(any(Project.class));
+    verify(projectService, never()).addProject(any(Project.class));
     assertThat(reponse.getStatus()).isEqualTo(UNAUTHORIZED.getStatusCode());
     assertThat(reponse.readEntity(String.class)).isEqualTo("{\"code\":\"Unauthorized\",\"parameters\":[]}");
   }
@@ -217,7 +217,7 @@ public class ProjectResourceTest extends ResourceTest {
   public void testAddProjectWhenAdmin() throws Exception {
     val projectJson = json("{\"key\":\"PRJ1\",\"name\":\"Project One\"}");
     val reponse = target().path("projects").request(MIME_TYPE).post(projectJson);
-    verify(projectRepository).addProject(any(Project.class));
+    verify(projectService).addProject(any(Project.class));
     assertThat(reponse.getStatus()).isEqualTo(CREATED.getStatusCode());
     assertThat(reponse.getLocation().toString()).isEqualTo("projects/PRJ1");
   }
@@ -226,18 +226,18 @@ public class ProjectResourceTest extends ResourceTest {
   public void testAddProjectWithValidProjectKeyCharacters() throws Exception {
     val projectJson = json("{\"key\":\"ABC.abc_12-3\",\"name\":\"Project One\"}");
     val reponse = target().path("projects").request(MIME_TYPE).post(projectJson);
-    verify(projectRepository).addProject(any(Project.class));
+    verify(projectService).addProject(any(Project.class));
     assertThat(reponse.getStatus()).isEqualTo(CREATED.getStatusCode());
     assertThat(reponse.getLocation().toString()).isEqualTo("projects/ABC.abc_12-3");
   }
 
   @Test
   public void testAddProjectThatAlreadyExists() throws Exception {
-    doThrow(new DuplicateKey(mock(CommandResult.class))).when(projectRepository).addProject(any(Project.class));
+    doThrow(new DuplicateKey(mock(CommandResult.class))).when(projectService).addProject(any(Project.class));
 
     val projectJson = json("{\"key\":\"PRJ1\",\"name\":\"Project One\"}");
     val reponse = target().path("projects").request(MIME_TYPE).post(projectJson);
-    verify(projectRepository).addProject(any(Project.class));
+    verify(projectService).addProject(any(Project.class));
     assertThat(reponse.getStatus()).isEqualTo(BAD_REQUEST.getStatusCode());
     assertThat(reponse.readEntity(String.class)).isEqualTo("{\"code\":\"AlreadyExists\",\"parameters\":[\"PRJ1\"]}");
   }

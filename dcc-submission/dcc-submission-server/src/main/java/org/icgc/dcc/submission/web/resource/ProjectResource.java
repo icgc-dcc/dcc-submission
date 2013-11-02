@@ -41,7 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.submission.core.model.Project;
-import org.icgc.dcc.submission.repository.ProjectRepository;
+import org.icgc.dcc.submission.services.ProjectService;
 import org.icgc.dcc.submission.shiro.AuthorizationPrivileges;
 import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
 import org.icgc.dcc.submission.web.util.Responses;
@@ -56,7 +56,7 @@ import com.mongodb.MongoException.DuplicateKey;
 public class ProjectResource {
 
   @Inject
-  private ProjectRepository projectRepository;
+  private ProjectService projectService;
 
   final private boolean isAuthorized(Subject user, String projectKey) {
     return projectKey != null && user.isPermitted(AuthorizationPrivileges.projectViewPrivilege(projectKey));
@@ -72,10 +72,10 @@ public class ProjectResource {
 
     if (isSuperUser(securityContext)) {
       log.info("[{}] is super user", user.getPrincipal());
-      projects = projectRepository.findProjects();
+      projects = projectService.findProjects();
     } else {
       log.info("[{}] is not super user", user.getPrincipal());
-      projects = projectRepository.findProjects(user);
+      projects = projectService.findProjects(user);
     }
 
     return Response.ok(projects).build();
@@ -95,7 +95,7 @@ public class ProjectResource {
     log.info("[{}] is super user", user.getPrincipal());
 
     try {
-      projectRepository.addProject(project);
+      projectService.addProject(project);
 
       val url = UriBuilder.fromResource(ProjectResource.class).path(project.getKey()).build();
       return Response.created(url).build();
@@ -118,9 +118,9 @@ public class ProjectResource {
       // 404 instead of 401 to keep from leaking whether the project exists to an unauthorized user
       return Responses.notFound(projectKey);
     }
-
-    val project = projectRepository.findProject(projectKey);
-
+    log.info("Here?");
+    val project = projectService.findProject(projectKey);
+    log.info("Here2?");
     if (project == null) {
       // This check is really only needed because admins bypass the check above
       return Responses.notFound(projectKey);

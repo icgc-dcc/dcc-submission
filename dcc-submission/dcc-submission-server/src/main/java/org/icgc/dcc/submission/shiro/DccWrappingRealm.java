@@ -26,7 +26,7 @@ import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.realm.text.IniRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.icgc.dcc.submission.core.model.Project;
-import org.icgc.dcc.submission.repository.ProjectRepository;
+import org.icgc.dcc.submission.services.ProjectService;
 import org.icgc.dcc.submission.web.util.Authorizations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,10 +40,10 @@ public class DccWrappingRealm extends IniRealm {
 
   private static final Logger log = LoggerFactory.getLogger(DccWrappingRealm.class);
 
-  private final ProjectRepository projectRepository;
+  private final ProjectService projectService;
 
-  public DccWrappingRealm(ProjectRepository projectRepository) {
-    this.projectRepository = projectRepository;
+  public DccWrappingRealm(ProjectService projectService) {
+    this.projectService = projectService;
   }
 
   /**
@@ -68,7 +68,7 @@ public class DccWrappingRealm extends IniRealm {
 
   private Set<String> buildProjectSpecificPermissions(String username, Collection<String> roles) {
     Set<String> permissions = Sets.newLinkedHashSet();
-    for (Project project : projectRepository.findProjects()) {
+    for (Project project : projectService.findProjects()) {
       if (Authorizations.hasAdminRole(roles) || project.hasUser(username)
           || CollectionUtils.containsAny(project.getGroups(), roles)) {
         permissions.add(AuthorizationPrivileges.projectViewPrivilege(project.getKey()));

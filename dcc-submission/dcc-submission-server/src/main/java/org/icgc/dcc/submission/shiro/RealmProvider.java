@@ -21,7 +21,7 @@ import java.util.Collection;
 
 import org.apache.shiro.authc.credential.PasswordMatcher;
 import org.apache.shiro.realm.Realm;
-import org.icgc.dcc.submission.repository.ProjectRepository;
+import org.icgc.dcc.submission.services.ProjectService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +38,7 @@ public class RealmProvider implements Provider<Collection<Realm>> {
   private Config config;
 
   @Inject
-  private ProjectRepository projectRepository;
+  private ProjectService projectService;
 
   /**
    * TODO <code>{@link ShiroPasswordAuthenticator#authenticate()}</code>
@@ -53,7 +53,7 @@ public class RealmProvider implements Provider<Collection<Realm>> {
   }
 
   private DccWrappingRealm buildDccWrappingRealm(String shiroIniFilePath) {
-    DccWrappingRealm dccWrappingRealm = new DccWrappingRealm(projectRepository);
+    DccWrappingRealm dccWrappingRealm = new DccWrappingRealm(projectService);
     dccWrappingRealm.setResourcePath("file:" + shiroIniFilePath);// TODO: existing constant for that?
     dccWrappingRealm.init();
     dccWrappingRealm.setCredentialsMatcher(new PasswordMatcher());
