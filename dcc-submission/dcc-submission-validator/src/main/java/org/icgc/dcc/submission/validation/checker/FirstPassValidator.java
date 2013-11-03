@@ -33,7 +33,8 @@ import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
-import org.icgc.dcc.submission.validation.report.ReportContext;
+import org.icgc.dcc.submission.validation.service.ValidationContext;
+import org.icgc.dcc.submission.validation.service.Validator;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -41,7 +42,7 @@ import com.google.common.collect.Iterables;
 
 @Slf4j
 @RequiredArgsConstructor
-public class FirstPassValidator {
+public class FirstPassValidator implements Validator {
 
   private final Dictionary dictionary;
   private final SubmissionDirectory submissionDir;
@@ -57,7 +58,8 @@ public class FirstPassValidator {
         getDefaultRowChecker(dccFileSystem, dict, submissionDir));
   }
 
-  public void validate(ReportContext context) {
+  @Override
+  public void validate(ValidationContext context) {
     isValid();
     for (val fileName : getFileSchemaNames()) {
       for (val tupleError : getTupleErrors(fileName)) {

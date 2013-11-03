@@ -15,27 +15,60 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.core;
+package org.icgc.dcc.submission.validation.service;
 
-import org.icgc.dcc.submission.dictionary.model.CodeList;
+import java.util.List;
 
-import com.google.common.base.Optional;
+import lombok.Delegate;
+import lombok.Value;
 
-/**
- * "Encapsulated Context Object" class that insulates and decouples the validation subsystem from submission
- * abstractions.
- * 
- * @see http://www.two-sdg.demon.co.uk/curbralan/papers/europlop/ContextEncapsulation.pdf
- * @see http://www.allankelly.net/static/patterns/encapsulatecontext.pdf
- */
-public interface ValidationContext {
+import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.fs.DccFileSystem;
+import org.icgc.dcc.submission.fs.SubmissionDirectory;
+import org.icgc.dcc.submission.release.model.Release;
+import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactory;
+import org.icgc.dcc.submission.validation.report.SubmissionReportContext;
 
-  /**
-   * Get the {@link CodeList} with {@code name} {@code codeListName}
-   * 
-   * @param codeListName
-   * @return
-   */
-  Optional<CodeList> getCodeList(String codeListName);
+@Value
+public class DefaultValidationContext implements ValidationContext {
+
+  @Delegate
+  SubmissionReportContext reportContext;
+
+  // TODO: Add dependencies here and delegate
+  @Override
+  public String getProjectKey() {
+    return null;
+  }
+
+  @Override
+  public List<String> getEmails() {
+    return null;
+  }
+
+  @Override
+  public Release getRelease() {
+    return null;
+  }
+
+  @Override
+  public Dictionary getDictionary() {
+    return null;
+  }
+
+  @Override
+  public SubmissionDirectory getSubmissionDirectory() {
+    return null;
+  }
+
+  @Override
+  public DccFileSystem getDccFileSystem() {
+    return null;
+  }
+
+  @Override
+  public PlatformStrategyFactory getPlatformStategyFactory() {
+    return null;
+  }
 
 }

@@ -21,7 +21,7 @@ import org.icgc.dcc.submission.core.AbstractDccModule;
 import org.icgc.dcc.submission.dictionary.DictionaryService;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
 import org.icgc.dcc.submission.validation.core.RestrictionType;
-import org.icgc.dcc.submission.validation.core.ValidationContext;
+import org.icgc.dcc.submission.validation.core.RestrictionContext;
 import org.icgc.dcc.submission.validation.planner.DefaultPlanner;
 import org.icgc.dcc.submission.validation.planner.Planner;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactory;
@@ -49,7 +49,7 @@ public class ValidationModule extends AbstractDccModule {
   protected void configure() {
     bindService(ValidationQueueService.class);
     bind(ValidationService.class);
-    bind(ValidationContext.class).toInstance(new ValidationContext() {
+    bind(RestrictionContext.class).toInstance(new RestrictionContext() {
 
       @Inject
       DictionaryService dictionaryService;

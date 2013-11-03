@@ -101,6 +101,8 @@ public class ReferenceGenomeValidator {
    */
   @SneakyThrows
   public void validate(ReportContext context, Path ssmPrimaryFile, FileSystem fileSystem) {
+    ensureDownload();
+
     LineReader reader = getLineReader(ssmPrimaryFile, fileSystem);
 
     long lineNumber = 1;

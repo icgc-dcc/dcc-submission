@@ -30,7 +30,7 @@ import org.icgc.dcc.submission.validation.core.InternalPlanElement;
 import org.icgc.dcc.submission.validation.core.PlanElement;
 import org.icgc.dcc.submission.validation.core.RestrictionType;
 import org.icgc.dcc.submission.validation.core.RestrictionTypeSchema;
-import org.icgc.dcc.submission.validation.core.ValidationContext;
+import org.icgc.dcc.submission.validation.core.RestrictionContext;
 import org.icgc.dcc.submission.validation.core.ErrorType;
 import org.icgc.dcc.submission.validation.core.RestrictionTypeSchema.FieldRestrictionParameter;
 import org.icgc.dcc.submission.validation.core.RestrictionTypeSchema.ParameterType;
@@ -102,10 +102,10 @@ public class CodeListRestriction implements InternalPlanElement {
 
   public static class Type implements RestrictionType {
 
-    private final ValidationContext context;
+    private final RestrictionContext context;
 
     @Inject
-    public Type(ValidationContext context) {
+    public Type(RestrictionContext context) {
       this.context = context;
     }
 

@@ -148,12 +148,12 @@ public class ValidationService {
       SubmissionDirectory submissionDirectory) throws MalformedSubmissionException {
     val validator = new FirstPassValidator(dccFileSystem, dictionary, submissionDirectory);
 
-    SubmissionReportContext context = new SubmissionReportContext();
+    // TODO: Add additional context dependencies
+    ValidationContext context = new DefaultValidationContext(new SubmissionReportContext());
     validator.validate(context);
     if (context.hasErrors()) {
       throw new MalformedSubmissionException(queuedProject, context.getSubmissionReport());
     }
-
   }
 
   private void semanticValidation(QueuedProject queuedProject, Dictionary dictionary,
@@ -170,7 +170,8 @@ public class ValidationService {
         val validator = new ReferenceGenomeValidator();
         validator.ensureDownload();
 
-        SubmissionReportContext context = new SubmissionReportContext();
+        // TODO: Add additional context dependencies
+        ValidationContext context = new DefaultValidationContext(new SubmissionReportContext());
         validator.validate(context, ssmPrimaryFile, fileSystem);
         if (context.hasErrors()) {
           throw new SubmissionSemanticsException(queuedProject, context.getSubmissionReport());
