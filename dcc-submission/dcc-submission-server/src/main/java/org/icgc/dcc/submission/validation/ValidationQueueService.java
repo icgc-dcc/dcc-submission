@@ -71,6 +71,11 @@ import com.typesafe.config.Config;
 public class ValidationQueueService extends AbstractScheduledService {
 
   /**
+   * Config property name.
+   */
+  private static final String MAX_VALIDATING_CONFIG_PARAM = "validator.max_simultaneous";
+
+  /**
    * Period at which the service polls for an open release and for enqueued projects there is one.
    */
   private static final int POLLING_PERIOD_SECONDS = 1;
@@ -79,11 +84,6 @@ public class ValidationQueueService extends AbstractScheduledService {
    * Default value for maximum number of concurrent validations.
    */
   private static final int DEFAULT_MAX_VALIDATING = 1;
-
-  /**
-   * Config property name.
-   */
-  private static final String MAX_VALIDATING_CONFIG_PARAM = "validator.max_simultaneous";
 
   /**
    * Dependencies.
