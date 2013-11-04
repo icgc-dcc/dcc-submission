@@ -15,21 +15,21 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.checker;
+package org.icgc.dcc.submission.validation.checker.step;
+
+import static org.icgc.dcc.submission.validation.core.ErrorType.COMPRESSION_CODEC_ERROR;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.zip.GZIPInputStream;
 
 import lombok.Cleanup;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
+import org.icgc.dcc.submission.validation.checker.FileChecker;
+import org.icgc.dcc.submission.validation.checker.Util;
 import org.icgc.dcc.submission.validation.checker.Util.CodecType;
-import org.icgc.dcc.submission.validation.core.ErrorType;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
+import org.icgc.dcc.submission.validation.service.ValidationContext;
 
 @Slf4j
 public class FileCorruptionChecker extends CompositeFileChecker {
@@ -45,36 +45,44 @@ public class FileCorruptionChecker extends CompositeFileChecker {
   }
 
   @Override
-  public List<FirstPassValidationError> performSelfCheck(String filename) {
-    Builder<FirstPassValidationError> errors = ImmutableList.builder();
+  public void performSelfCheck(String filename) {
     try {
       CodecType contentType = Util.determineCodecFromContent(getDccFileSystem(), getSubmissionDirectory(), filename);
       CodecType filenameType = Util.determineCodecFromFilename(filename);
       if (contentType == filenameType) {
         switch (contentType) {
         case GZIP:
-          errors.addAll(checkGZip(filename));
+          checkGZip(filename, getValidationContext());
           break;
         case BZIP2:
-          errors.addAll(checkBZip2(filename));
+          checkBZip2(filename, getValidationContext());
           break;
         }
       } else {
-        errors.add(new FirstPassValidationError(getCheckLevel(), "Content type does not match the extension for file: "
-            + filename,
-            ErrorType.COMPRESSION_CODEC_ERROR, new Object[] { getFileSchemaName(filename) }, -1));
+        log.info("Content type does not match the extension for file: " + filename);
+        // TODO: create new error type rather?
+
+        incrementCheckErrorCount();
+        getValidationContext().reportError(
+            filename,
+            COMPRESSION_CODEC_ERROR,
+            new Object[] { getFileSchemaName(filename) });
       }
     } catch (IOException e) {
       log.info("Exception caught in reading file (corruption): {}", filename, e);
-      errors.add(new FirstPassValidationError(getCheckLevel(), "Error in reading the file (corruption): "
-          + filename,
-          ErrorType.COMPRESSION_CODEC_ERROR, new Object[] { getFileSchemaName(filename) }, -1));
+
+      incrementCheckErrorCount();
+      getValidationContext().reportError(
+          filename,
+          COMPRESSION_CODEC_ERROR,
+          getFileSchemaName(filename));
     }
-    return errors.build();
   }
 
-  private List<FirstPassValidationError> checkBZip2(String filename) {
-    Builder<FirstPassValidationError> errors = ImmutableList.builder();
+  /**
+   * TODO: merge with gzip one with a flag for the input stream based on the type.
+   */
+  private void checkBZip2(String filename, ValidationContext context) {
     try {
       // check the bzip2 header
       @Cleanup
@@ -86,14 +94,16 @@ public class FileCorruptionChecker extends CompositeFileChecker {
       }
     } catch (IOException e) {
       log.info("Exception caught in decoding bzip2 file '{}': '{}'", filename, e.getMessage());
-      errors.add(new FirstPassValidationError(getCheckLevel(), "Corrupted bzip file: " + filename,
-          ErrorType.COMPRESSION_CODEC_ERROR, new Object[] { getFileSchemaName(filename) }, -1));
+
+      incrementCheckErrorCount();
+      context.reportError(
+          filename,
+          COMPRESSION_CODEC_ERROR,
+          new Object[] { getFileSchemaName(filename) });
     }
-    return errors.build();
   }
 
-  private List<FirstPassValidationError> checkGZip(String filename) {
-    Builder<FirstPassValidationError> errors = ImmutableList.builder();
+  private void checkGZip(String filename, ValidationContext context) {
     try {
       // check the gzip header
       @Cleanup
@@ -105,11 +115,13 @@ public class FileCorruptionChecker extends CompositeFileChecker {
       }
     } catch (IOException e) {
       log.info("Exception caught in decoding gzip file '{}': '{}'", filename, e.getMessage());
-      errors.add(new FirstPassValidationError(getCheckLevel(), "Corrupted gzip file: " + filename,
-          ErrorType.COMPRESSION_CODEC_ERROR, new Object[] { getFileSchemaName(filename) }, -1));
-    }
 
-    return errors.build();
+      incrementCheckErrorCount();
+      context.reportError(
+          filename,
+          COMPRESSION_CODEC_ERROR,
+          new Object[] { getFileSchemaName(filename) });
+    }
   }
 
 }

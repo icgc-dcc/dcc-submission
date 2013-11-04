@@ -17,12 +17,37 @@
  */
 package org.icgc.dcc.submission.validation.checker;
 
-import java.util.List;
+import static lombok.AccessLevel.PRIVATE;
+import lombok.NoArgsConstructor;
 
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
+import org.icgc.dcc.submission.validation.checker.step.NoOpRowChecker;
+import org.icgc.dcc.submission.validation.checker.step.RowCharsetChecker;
+import org.icgc.dcc.submission.validation.checker.step.RowColumnChecker;
+import org.icgc.dcc.submission.validation.service.ValidationContext;
 
 public interface RowChecker extends FileChecker {
 
-  List<FirstPassValidationError> checkRow(FileSchema fileSchema, String row, long lineNumber);
+  void checkRow(
+      String filename,
+      FileSchema fileSchema,
+      String row,
+      long lineNumber);
+
+  /**
+   * Made non-final for power mock.
+   */
+  @NoArgsConstructor(access = PRIVATE)
+  class RowCheckers {
+
+    static RowChecker getDefaultRowChecker(ValidationContext validationContext) {
+
+      // Chaining multiple row checkers
+      return new RowColumnChecker(
+          new RowCharsetChecker(
+              // TODO: Enforce Law of Demeter (do we need the whole dictionary for instance)??
+              new NoOpRowChecker(validationContext)));
+    }
+  }
 
 }

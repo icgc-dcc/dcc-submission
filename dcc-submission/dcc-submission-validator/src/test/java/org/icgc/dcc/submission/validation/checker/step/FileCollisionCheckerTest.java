@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.checker;
+package org.icgc.dcc.submission.validation.checker.step;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -31,6 +31,8 @@ import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
+import org.icgc.dcc.submission.validation.checker.FirstPassValidationError;
+import org.icgc.dcc.submission.validation.checker.step.FileCollisionChecker;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -60,7 +62,7 @@ public class FileCollisionCheckerTest {
   public void matchNone() throws Exception {
     when(submissionDir.listFile(any(Pattern.class))).thenReturn(ImmutableList.<String> of());
 
-    FileCollisionChecker checker = new FileCollisionChecker(new BaseFileChecker(fs, dict, submissionDir));
+    FileCollisionChecker checker = new FileCollisionChecker(new NoOpFileChecker(fs, dict, submissionDir));
     List<FirstPassValidationError> errors = checker.check("testfile1");
     assertTrue(errors.isEmpty());
     assertTrue(checker.isValid());
@@ -70,7 +72,7 @@ public class FileCollisionCheckerTest {
   public void matchOne() throws Exception {
     when(submissionDir.listFile(any(Pattern.class))).thenReturn(ImmutableList.of("testfile1"));
 
-    FileCollisionChecker checker = new FileCollisionChecker(new BaseFileChecker(fs, dict, submissionDir));
+    FileCollisionChecker checker = new FileCollisionChecker(new NoOpFileChecker(fs, dict, submissionDir));
     List<FirstPassValidationError> errors = checker.check("testfile1");
     assertTrue(errors.isEmpty());
     assertTrue(checker.isValid());
@@ -81,7 +83,7 @@ public class FileCollisionCheckerTest {
   public void matchTwo() throws Exception {
     when(submissionDir.listFile(any(Pattern.class))).thenReturn(ImmutableList.of("testfile1", "testfile2"));
 
-    FileCollisionChecker checker = new FileCollisionChecker(new BaseFileChecker(fs, dict, submissionDir));
+    FileCollisionChecker checker = new FileCollisionChecker(new NoOpFileChecker(fs, dict, submissionDir));
     List<FirstPassValidationError> errors = checker.check("testfile1");
     assertTrue(errors.size() == 1);
     assertFalse(checker.isValid());

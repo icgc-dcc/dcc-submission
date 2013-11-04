@@ -1,4 +1,4 @@
-package org.icgc.dcc.submission.validation.checker;
+package org.icgc.dcc.submission.validation.checker.step;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -11,6 +11,8 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 
+import org.icgc.dcc.submission.validation.checker.FileChecker;
+import org.icgc.dcc.submission.validation.checker.step.CompositeFileChecker;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;

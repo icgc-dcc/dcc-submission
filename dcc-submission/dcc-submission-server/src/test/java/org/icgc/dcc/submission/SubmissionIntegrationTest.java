@@ -63,7 +63,7 @@ import static org.icgc.dcc.submission.release.model.SubmissionState.QUEUED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.SIGNED_OFF;
 import static org.icgc.dcc.submission.release.model.SubmissionState.VALID;
 import static org.icgc.dcc.submission.release.model.SubmissionState.VALIDATING;
-import static org.icgc.dcc.submission.validation.platform.PlatformStrategy.SEPARATOR;
+import static org.icgc.dcc.submission.validation.platform.PlatformStrategy.FILE_NAME_SEPARATOR;
 import static org.icgc.dcc.submission.web.model.ServerErrorCode.INVALID_STATE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -515,9 +515,9 @@ public class SubmissionIntegrationTest extends BaseIntegrationTest {
     checkValidatedSubmission(INITITAL_RELEASE_NAME, PROJECT3_KEY, INVALID);
 
     // check no errors for project 1
-    assertEmptyFile(DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/donor.internal" + SEPARATOR + "errors.json");
-    assertEmptyFile(DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/specimen.internal" + SEPARATOR + "errors.json");
-    assertEmptyFile(DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/specimen.external" + SEPARATOR + "errors.json");
+    assertEmptyFile(DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/donor.internal" + FILE_NAME_SEPARATOR + "errors.json");
+    assertEmptyFile(DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/specimen.internal" + FILE_NAME_SEPARATOR + "errors.json");
+    assertEmptyFile(DCC_ROOT_DIR, PROJECT1_VALIDATION_DIR + "/specimen.external" + FILE_NAME_SEPARATOR + "errors.json");
     // TODO add more
   }
 

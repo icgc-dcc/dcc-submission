@@ -15,13 +15,15 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.checker;
+package org.icgc.dcc.submission.validation.checker.step;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import lombok.val;
 
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
+import org.icgc.dcc.submission.validation.checker.step.NoOpRowChecker;
+import org.icgc.dcc.submission.validation.checker.step.RowCharsetChecker;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -31,7 +33,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class RowCharsetCheckerTest {
 
   @Mock
-  private BaseRowChecker baseChecker;
+  private NoOpRowChecker baseChecker;
 
   @Mock
   private FileSchema fileSchema;

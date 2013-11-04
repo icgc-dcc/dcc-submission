@@ -15,11 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.checker;
-
-import static com.google.common.collect.Lists.newLinkedList;
-
-import java.util.List;
+package org.icgc.dcc.submission.validation.checker.step;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,9 +23,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
-import org.icgc.dcc.submission.validation.checker.Util.CheckLevel;
-
-import com.google.common.collect.ImmutableList;
+import org.icgc.dcc.submission.validation.checker.Checker;
+import org.icgc.dcc.submission.validation.checker.FileChecker;
+import org.icgc.dcc.submission.validation.core.ErrorType.ErrorLevel;
+import org.icgc.dcc.submission.validation.service.ValidationContext;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -38,48 +35,54 @@ public abstract class CompositeFileChecker implements FileChecker {
   protected final FileChecker delegate;
   protected final boolean failFast;
 
-  protected List<FirstPassValidationError> errors = newLinkedList();
-  protected List<FirstPassValidationError> checkErrors = ImmutableList.of();
+  /**
+   * Count for the errors of a given {@link Checker}.
+   */
+  protected long checkErrorCount = 0;
 
   public CompositeFileChecker(FileChecker delegate) {
     this(delegate, false);
   }
 
   @Override
-  public List<FirstPassValidationError> check(String filename) {
-    errors.clear();
-    errors.addAll(delegate.check(filename));
+  public void check(String filename) {
+    delegate.check(filename);
     if (delegate.canContinue()) {
       log.info("Start performing {} validation...", this.getClass().getSimpleName());
-      checkErrors = performSelfCheck(filename);
-      errors.addAll(checkErrors);
-      log.info("End performing {} validation. Number of errors found: {}",
-          getClass().getSimpleName(), checkErrors.size());
+      performSelfCheck(filename);
+      log.info("End performing {} validation. Number of errors found: '{}'",
+          getClass().getSimpleName(),
+          checkErrorCount);
     }
-    return errors;
   }
 
-  public abstract List<FirstPassValidationError> performSelfCheck(String filename);
+  public abstract void performSelfCheck(String filename);
+
+  /**
+   * Must always increment when reporting an error (TODO: address this).
+   */
+  protected void incrementCheckErrorCount() {
+    checkErrorCount++;
+  }
 
   @Override
   public boolean canContinue() {
-    return (delegate.canContinue() && (checkErrors.isEmpty() || !failFast));
+    return (delegate.canContinue() && (checkErrorCount == 0 || !failFast));
   }
 
   @Override
   public boolean isValid() {
-    return (delegate.isValid() && errors.isEmpty());
+    return (delegate.isValid() && !getValidationContext().hasErrors());
   }
 
   @Override
-  public CheckLevel getCheckLevel() {
+  public ErrorLevel getCheckLevel() {
     return delegate.getCheckLevel();
   }
 
   @Override
   public boolean isFailFast() {
     return failFast;
-    // return delegate.isFailFast() || failFast;
   }
 
   @Override
@@ -100,5 +103,10 @@ public abstract class CompositeFileChecker implements FileChecker {
   @Override
   public DccFileSystem getDccFileSystem() {
     return delegate.getDccFileSystem();
+  }
+
+  @Override
+  public ValidationContext getValidationContext() {
+    return delegate.getValidationContext();
   }
 }

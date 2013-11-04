@@ -1,4 +1,4 @@
-package org.icgc.dcc.submission.validation.checker;
+package org.icgc.dcc.submission.validation.checker.step;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -26,7 +26,10 @@ import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
+import org.icgc.dcc.submission.validation.checker.FirstPassValidationError;
+import org.icgc.dcc.submission.validation.checker.Util;
 import org.icgc.dcc.submission.validation.checker.Util.CodecType;
+import org.icgc.dcc.submission.validation.checker.step.FileCorruptionChecker;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -57,7 +60,7 @@ public class FileCorruptionCheckerTest {
   public void testTextInputValid() throws Exception {
     DataInputStream textInputStream = getTestInputStream(CodecType.PLAIN_TEXT);
     when(fs.open(anyString())).thenReturn(textInputStream);
-    FileCorruptionChecker checker = new FileCorruptionChecker(new BaseFileChecker(fs, dict, submissionDir));
+    FileCorruptionChecker checker = new FileCorruptionChecker(new NoOpFileChecker(fs, dict, submissionDir));
     List<FirstPassValidationError> errors = checker.check(anyString());
     assertTrue(errors.isEmpty());
     assertTrue(checker.isValid());
@@ -66,7 +69,7 @@ public class FileCorruptionCheckerTest {
   @Test
   public void testGZipInputValid() throws Exception {
     when(fs.open(anyString())).thenReturn(getTestInputStream(CodecType.GZIP), getTestInputStream(CodecType.GZIP));
-    FileCorruptionChecker checker = new FileCorruptionChecker(new BaseFileChecker(fs, dict, submissionDir));
+    FileCorruptionChecker checker = new FileCorruptionChecker(new NoOpFileChecker(fs, dict, submissionDir));
     List<FirstPassValidationError> errors = checker.check("file1.gz");
     assertTrue(errors.isEmpty());
     assertTrue(checker.isValid());
@@ -76,7 +79,7 @@ public class FileCorruptionCheckerTest {
   public void testBZip2InputValid() throws Exception {
     when(fs.open(anyString())).thenReturn(getTestInputStream(CodecType.BZIP2), getTestInputStream(CodecType.BZIP2));
 
-    FileCorruptionChecker checker = new FileCorruptionChecker(new BaseFileChecker(fs, dict, submissionDir));
+    FileCorruptionChecker checker = new FileCorruptionChecker(new NoOpFileChecker(fs, dict, submissionDir));
     List<FirstPassValidationError> errors = checker.check("file.bz2");
     assertTrue(errors.isEmpty());
     assertTrue(checker.isValid());
@@ -87,7 +90,7 @@ public class FileCorruptionCheckerTest {
     when(fs.open(anyString())).thenReturn(getTestInputStream(CodecType.GZIP),
         corruptInputStream(getTestInputStream(CodecType.GZIP)));
 
-    FileCorruptionChecker checker = new FileCorruptionChecker(new BaseFileChecker(fs, dict, submissionDir));
+    FileCorruptionChecker checker = new FileCorruptionChecker(new NoOpFileChecker(fs, dict, submissionDir));
 
     List<FirstPassValidationError> errors = checker.check("file.gz");
     verify(fs, times(2)).open(anyString());
@@ -102,7 +105,7 @@ public class FileCorruptionCheckerTest {
     when(fs.open(anyString())).thenReturn(getTestInputStream(CodecType.BZIP2),
         corruptInputStream(getTestInputStream(CodecType.BZIP2)));
 
-    FileCorruptionChecker checker = new FileCorruptionChecker(new BaseFileChecker(fs, dict, submissionDir));
+    FileCorruptionChecker checker = new FileCorruptionChecker(new NoOpFileChecker(fs, dict, submissionDir));
 
     List<FirstPassValidationError> errors = checker.check("file.bz2");
     verify(fs, times(2)).open(anyString());
@@ -117,7 +120,7 @@ public class FileCorruptionCheckerTest {
   public void testFilenameBzCodecMismatch() throws Exception {
     when(fs.open(anyString())).thenReturn(getTestInputStream(CodecType.BZIP2));
 
-    FileCorruptionChecker checker = new FileCorruptionChecker(new BaseFileChecker(fs, dict, submissionDir));
+    FileCorruptionChecker checker = new FileCorruptionChecker(new NoOpFileChecker(fs, dict, submissionDir));
 
     List<FirstPassValidationError> errors = checker.check("file.gz");
     verify(fs, times(1)).open(anyString());
@@ -132,7 +135,7 @@ public class FileCorruptionCheckerTest {
   public void testFilenameTextCodecMismatch() throws Exception {
     when(fs.open(anyString())).thenReturn(getTestInputStream(CodecType.PLAIN_TEXT));
 
-    FileCorruptionChecker checker = new FileCorruptionChecker(new BaseFileChecker(fs, dict, submissionDir));
+    FileCorruptionChecker checker = new FileCorruptionChecker(new NoOpFileChecker(fs, dict, submissionDir));
 
     List<FirstPassValidationError> errors = checker.check("file.gz");
     verify(fs, times(1)).open(anyString());
@@ -147,7 +150,7 @@ public class FileCorruptionCheckerTest {
   public void testFilenameGzCodecMismatch() throws Exception {
     when(fs.open(anyString())).thenReturn(getTestInputStream(CodecType.GZIP));
 
-    FileCorruptionChecker checker = new FileCorruptionChecker(new BaseFileChecker(fs, dict, submissionDir));
+    FileCorruptionChecker checker = new FileCorruptionChecker(new NoOpFileChecker(fs, dict, submissionDir));
 
     List<FirstPassValidationError> errors = checker.check("file.txt");
     verify(fs, times(1)).open(anyString());

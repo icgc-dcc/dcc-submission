@@ -15,40 +15,38 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.checker;
-
-import java.util.List;
+package org.icgc.dcc.submission.validation.checker.step;
 
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.validation.core.ErrorType;
+import org.icgc.dcc.submission.validation.checker.RowChecker;
+import org.icgc.dcc.submission.validation.core.ErrorType.ErrorLevel;
+import org.icgc.dcc.submission.validation.service.ValidationContext;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
+public class NoOpRowChecker extends NoOpFileChecker implements RowChecker {
 
-public class RowColumnChecker extends CompositeRowChecker {
-
-  private static final String DELIMITER = "\t";
-
-  public RowColumnChecker(RowChecker rowChecker, boolean failFast) {
-    super(rowChecker, failFast);
+  public NoOpRowChecker(ValidationContext validationContext) {
+    this(validationContext, false);
   }
 
-  public RowColumnChecker(RowChecker rowChecker) {
-    this(rowChecker, false);
+  public NoOpRowChecker(ValidationContext validationContext, boolean failFast) {
+    super(validationContext, failFast);
   }
 
   @Override
-  public List<FirstPassValidationError> performSelfCheck(FileSchema fileSchema, String line, long lineNumber) {
-    Builder<FirstPassValidationError> errors = ImmutableList.builder();
-    int expectedNumColumns = fileSchema.getFields().size();
-    int actualNumColumns = ImmutableList.copyOf(line.split(DELIMITER, -1)).size();
-    if (actualNumColumns != expectedNumColumns) {
-      errors.add(new FirstPassValidationError(getCheckLevel(),
-          "Row does not match the expected number of columns: " + expectedNumColumns + ", actual: " + actualNumColumns,
-          ErrorType.STRUCTURALLY_INVALID_ROW_ERROR, new Object[] { expectedNumColumns }, lineNumber));
-    }
-
-    return errors.build();
+  public void check(String filename) {
   }
 
+  @Override
+  public void checkRow(String filename, FileSchema fileSchema, String row, long lineNumber) {
+  }
+
+  @Override
+  public boolean isValid() {
+    return true;
+  }
+
+  @Override
+  public ErrorLevel getCheckLevel() {
+    return ErrorLevel.ROW_LEVEL;
+  }
 }

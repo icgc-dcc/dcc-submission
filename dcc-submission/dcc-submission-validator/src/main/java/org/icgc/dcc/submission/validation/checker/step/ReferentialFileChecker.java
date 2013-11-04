@@ -15,22 +15,27 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.checker;
+package org.icgc.dcc.submission.validation.checker.step;
 
-import static com.google.common.collect.Lists.newLinkedList;
+import static org.icgc.dcc.submission.validation.core.ErrorType.RELATION_FILE_ERROR;
+import static org.icgc.dcc.submission.validation.core.ErrorType.REVERSE_RELATION_FILE_ERROR;
 
 import java.util.List;
 import java.util.regex.Pattern;
 
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.validation.core.ErrorType;
+import org.icgc.dcc.submission.validation.checker.FileChecker;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
 
+/**
+ * TODO: split in two
+ */
+@Slf4j
 public class ReferentialFileChecker extends CompositeFileChecker {
 
   public ReferentialFileChecker(FileChecker compositeChecker) {
@@ -42,57 +47,55 @@ public class ReferentialFileChecker extends CompositeFileChecker {
   }
 
   @Override
-  public List<FirstPassValidationError> performSelfCheck(String filename) {
-    Builder<FirstPassValidationError> errors = ImmutableList.builder();
-    errors.addAll(referencedCheck(filename));
-    errors.addAll(referencingCheck(filename));
-
-    return errors.build();
+  public void performSelfCheck(String filename) {
+    referencedCheck(filename);
+    referencingCheck(filename);
   }
 
-  private List<FirstPassValidationError> referencedCheck(String filename) {
-    Builder<FirstPassValidationError> errors = ImmutableList.builder();
+  private void referencedCheck(String filename) {
     Optional<FileSchema> fileSchema = getDictionary().fileSchema(getFileSchemaName(filename));
     if (fileSchema.isPresent()) {
       for (val relation : fileSchema.get().getRelations()) {
         Optional<FileSchema> otherFileSchema = getDictionary().fileSchema(relation.getOther());
         if (otherFileSchema.isPresent()) {
-          List<String> files = ImmutableList.copyOf(
-              getSubmissionDirectory().listFile(Pattern.compile(otherFileSchema.get().getPattern())));
+          String pattern = otherFileSchema.get().getPattern();
+          List<String> files = getFiles(pattern);
           if (files.size() == 0) {
-            errors.add(new FirstPassValidationError(getCheckLevel(),
-                "Fail referenced check: missing referenced file (" + relation.getOther(),
-                ErrorType.RELATION_FILE_ERROR,
-                new Object[] { fileSchema.get().getName() }, -1));
+            log.info("Fail referenced check: missing referenced file (" + relation.getOther());
+
+            incrementCheckErrorCount();
+            getValidationContext().reportError(
+                filename,
+                RELATION_FILE_ERROR,
+                fileSchema.get().getName());
           }
         }
       }
     }
-
-    return errors.build();
   }
 
-  private List<FirstPassValidationError> referencingCheck(String filename) {
-    List<FirstPassValidationError> errors = newLinkedList();
+  private void referencingCheck(String filename) {
     Optional<FileSchema> fileSchema = getDictionary().fileSchema(getFileSchemaName(filename));
 
     if (fileSchema.isPresent()) {
       for (val otherFileSchema : fileSchema.get().getBidirectionalAfferentFileSchemata(getDictionary())) {
-        List<String> files = getFiles(otherFileSchema);
+        List<String> files = getFiles(otherFileSchema.getPattern());
         if (files.size() == 0) {
-          errors
-              .add(new FirstPassValidationError(getCheckLevel(), "Fail referencing check: missing referencing file ("
-                  + otherFileSchema.getName(), ErrorType.REVERSE_RELATION_FILE_ERROR, new Object[] { fileSchema.get()
-                  .getName() }, -1));
+          log.info("Fail referencing check: missing referencing file (" + otherFileSchema.getName());
+
+          incrementCheckErrorCount();
+          getValidationContext().reportError(
+              filename,
+              REVERSE_RELATION_FILE_ERROR,
+              fileSchema.get().getName());
         }
       }
     }
-
-    return errors;
   }
 
-  private ImmutableList<String> getFiles(FileSchema otherFileSchema) {
-    return ImmutableList.copyOf(getSubmissionDirectory().listFile(Pattern.compile(otherFileSchema.getPattern())));
+  private List<String> getFiles(String pattern) {
+    return ImmutableList.copyOf(
+        getSubmissionDirectory().listFile(Pattern.compile(pattern)));
   }
 
 }

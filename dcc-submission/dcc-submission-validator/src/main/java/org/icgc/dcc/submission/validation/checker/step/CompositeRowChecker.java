@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.checker;
+package org.icgc.dcc.submission.validation.checker.step;
 
 import static com.google.common.base.Charsets.UTF_8;
 
@@ -23,18 +23,17 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
-import java.util.List;
 
 import lombok.Cleanup;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
-import org.icgc.dcc.submission.validation.checker.Util.CheckLevel;
+import org.icgc.dcc.submission.validation.checker.RowChecker;
+import org.icgc.dcc.submission.validation.checker.Util;
+import org.icgc.dcc.submission.validation.core.ErrorType.ErrorLevel;
 
 import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
 
 @Slf4j
 public abstract class CompositeRowChecker extends CompositeFileChecker implements RowChecker {
@@ -52,57 +51,54 @@ public abstract class CompositeRowChecker extends CompositeFileChecker implement
   }
 
   @Override
-  public List<FirstPassValidationError> check(String filename) {
+  public void check(String filename) {
     // check all rows in the file
-    return performSelfCheck(filename);
+    performSelfCheck(filename);
   }
 
   @Override
-  public List<FirstPassValidationError> performSelfCheck(String filename) {
-    errors.clear();
-
+  public void performSelfCheck(String filename) {
     String filePathname = getSubmissionDirectory().getDataFilePath(filename);
     FileSchema fileSchema = getFileSchema(filename);
     try {
       @Cleanup
       BufferedReader reader =
-          new BufferedReader(new InputStreamReader(Util.createInputStream(getDccFileSystem(), filePathname),
-              DEFAULT_CHARSET));
+          new BufferedReader(
+              new InputStreamReader(
+                  Util.createInputStream(
+                      getDccFileSystem(),
+                      filePathname),
+                  DEFAULT_CHARSET));
       String line;
       long lineNumber = 1;
       while ((line = reader.readLine()) != null) {
-        errors.addAll(this.checkRow(fileSchema, line, lineNumber));
+        checkRow(filename, fileSchema, line, lineNumber);
         ++lineNumber;
       }
     } catch (IOException e) {
       throw new RuntimeException("Unable to check the file: " + filename, e);
     }
-    return errors;
   }
 
   @Override
-  public List<FirstPassValidationError> checkRow(FileSchema fileSchema, String row, long lineNumber) {
-    Builder<FirstPassValidationError> errors = ImmutableList.builder();
-    errors.addAll(delegate.checkRow(fileSchema, row, lineNumber));
+  public void checkRow(String filename, FileSchema fileSchema, String row, long lineNumber) {
+    delegate.checkRow(filename, fileSchema, row, lineNumber);
     if (delegate.canContinue()) {
       log.info("Start performing {} validation...", this.getClass().getSimpleName());
-      checkErrors = performSelfCheck(fileSchema, row, lineNumber);
-      errors.addAll(checkErrors);
-      log.info("End performing {} validation. Number of errors found: {}", new Object[] { this.getClass()
-          .getSimpleName(), checkErrors.size() });
+      performSelfCheck(filename, fileSchema, row, lineNumber);
+      log.info("End performing {} validation. Number of errors found: '{}'", this.getClass(), checkErrorCount);
     }
-    return errors.build();
   }
 
-  public abstract List<FirstPassValidationError> performSelfCheck(FileSchema fileSchema, String row, long lineNumber);
+  public abstract void performSelfCheck(String filename, FileSchema fileSchema, String row, long lineNumber);
 
   @Override
   public boolean isValid() {
-    return errors.isEmpty();
+    return !getValidationContext().hasErrors();
   }
 
   @Override
-  public CheckLevel getCheckLevel() {
+  public ErrorLevel getCheckLevel() {
     return delegate.getCheckLevel();
   }
 
@@ -116,6 +112,9 @@ public abstract class CompositeRowChecker extends CompositeFileChecker implement
     return delegate.getDccFileSystem();
   }
 
+  /**
+   * TODO: remove
+   */
   private FileSchema getFileSchema(String filename) {
     Optional<FileSchema> option = getDictionary().fileSchema(getFileSchemaName(filename));
     if (option.isPresent()) return option.get();

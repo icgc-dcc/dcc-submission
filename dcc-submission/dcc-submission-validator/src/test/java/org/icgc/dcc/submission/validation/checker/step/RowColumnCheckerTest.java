@@ -15,7 +15,7 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.checker;
+package org.icgc.dcc.submission.validation.checker.step;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -35,6 +35,10 @@ import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
+import org.icgc.dcc.submission.validation.checker.FirstPassValidationError;
+import org.icgc.dcc.submission.validation.checker.Util;
+import org.icgc.dcc.submission.validation.checker.step.NoOpRowChecker;
+import org.icgc.dcc.submission.validation.checker.step.RowColumnChecker;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -81,7 +85,7 @@ public class RowColumnCheckerTest {
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
     // when(submissionDir.listFile(any(Pattern.class))).thenReturn(ImmutableList.<String> of());
 
-    RowColumnChecker checker = new RowColumnChecker(new BaseRowChecker(fs, dict, submissionDir));
+    RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(fs, dict, submissionDir));
     List<FirstPassValidationError> errors = checker.check(anyString());
     assertTrue(errors.isEmpty());
     assertTrue(checker.isValid());
@@ -93,7 +97,7 @@ public class RowColumnCheckerTest {
     mockStatic(Util.class);
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
 
-    RowColumnChecker checker = new RowColumnChecker(new BaseRowChecker(fs, dict, submissionDir));
+    RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(fs, dict, submissionDir));
     List<FirstPassValidationError> errors = checker.check(anyString());
     assertFalse(errors.isEmpty());
     assertEquals(1, errors.size());
@@ -106,7 +110,7 @@ public class RowColumnCheckerTest {
     mockStatic(Util.class);
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
 
-    RowColumnChecker checker = new RowColumnChecker(new BaseRowChecker(fs, dict, submissionDir));
+    RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(fs, dict, submissionDir));
     List<FirstPassValidationError> errors = checker.check(anyString());
     assertFalse(errors.isEmpty());
     assertEquals(1, errors.size());
@@ -119,7 +123,7 @@ public class RowColumnCheckerTest {
     mockStatic(Util.class);
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
 
-    RowColumnChecker checker = new RowColumnChecker(new BaseRowChecker(fs, dict, submissionDir));
+    RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(fs, dict, submissionDir));
     List<FirstPassValidationError> errors = checker.check(anyString());
     assertFalse(errors.isEmpty());
     assertEquals(2, errors.size());
@@ -133,7 +137,7 @@ public class RowColumnCheckerTest {
     mockStatic(Util.class);
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
 
-    RowColumnChecker checker = new RowColumnChecker(new BaseRowChecker(fs, dict, submissionDir));
+    RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(fs, dict, submissionDir));
     List<FirstPassValidationError> errors = checker.check(anyString());
     assertFalse(errors.isEmpty());
     assertEquals(3, errors.size());
@@ -146,7 +150,7 @@ public class RowColumnCheckerTest {
     mockStatic(Util.class);
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
 
-    RowColumnChecker checker = new RowColumnChecker(new BaseRowChecker(fs, dict, submissionDir));
+    RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(fs, dict, submissionDir));
     List<FirstPassValidationError> errors = checker.check(anyString());
     assertTrue(errors.isEmpty());
     assertTrue(checker.isValid());

@@ -15,23 +15,31 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.checker;
+package org.icgc.dcc.submission.validation.checker.step;
+
+import static org.icgc.dcc.submission.validation.core.ErrorType.FILE_HEADER_ERROR;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Dictionary;
 import java.util.List;
 
 import lombok.Cleanup;
+import lombok.SneakyThrows;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.validation.core.ErrorType;
+import org.icgc.dcc.submission.fs.SubmissionDirectory.SubmissionDirectoryFile;
+import org.icgc.dcc.submission.validation.checker.FileChecker;
+import org.icgc.dcc.submission.validation.checker.Util;
+import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
 
+@Slf4j
 public class FileHeaderChecker extends CompositeFileChecker {
 
   public FileHeaderChecker(FileChecker fileChecker, boolean failFast) {
@@ -43,39 +51,47 @@ public class FileHeaderChecker extends CompositeFileChecker {
   }
 
   @Override
-  public List<FirstPassValidationError> performSelfCheck(String filename) {
-    Builder<FirstPassValidationError> errors = ImmutableList.builder();
+  public void performSelfCheck(String filename) {
+    val expectedHeader = retrieveExpectedHeader(filename);
+    val actualHeader = peekFileHeader(filename);
+    if (isExactMatch(expectedHeader, actualHeader)) {
+      log.info("Different from the expected header: '{}', actual header: '{}'", expectedHeader, actualHeader);
 
-    try {
-      List<String> expectedHeader = retrieveExpectedHeader(filename);
-      List<String> actualHeader = peekFileHeader(filename);
-      if (!actualHeader.equals(expectedHeader)) {
-        errors.add(new FirstPassValidationError(getCheckLevel(), "Different from the expected header: "
-            + expectedHeader
-            + ", actual header: " + actualHeader, ErrorType.FILE_HEADER_ERROR, new Object[] { expectedHeader }, -1));
-      }
-    } catch (IOException e) {
-      errors.add(new FirstPassValidationError(getCheckLevel(), "Unable to peek the file header for file: "
-          + filename, ErrorType.FILE_HEADER_ERROR, new Object[] { ImmutableList.<String> of() }, -1));
+      incrementCheckErrorCount();
+      getValidationContext().reportError(
+          filename,
+          actualHeader,
+          FILE_HEADER_ERROR,
+          expectedHeader);
     }
-    // check if they contain the same elements in the same order
-    return errors.build();
   }
 
+  /**
+   * TODO: this class should be passed this as parameter, it shouldn't know about the {@link Dictionary}.
+   */
   private final List<String> retrieveExpectedHeader(String filename) {
     Optional<FileSchema> fileSchema = getDictionary().fileSchema(getFileSchemaName(filename));
     if (fileSchema.isPresent()) {
       return ImmutableList.copyOf(fileSchema.get().getFieldNames());
     }
-    return ImmutableList.of();
+    return ImmutableList.of(); // TODO: this is never a valid case
   }
 
-  private final List<String> peekFileHeader(String filename) throws IOException {
+  /**
+   * TODO: move to {@link SubmissionDirectoryFile}.
+   * <p>
+   * Files are expected to be present and uncorrupted at this stage.
+   */
+  @SneakyThrows
+  private final List<String> peekFileHeader(String filename) {
     InputStream is = Util.createInputStream(getDccFileSystem(), getSubmissionDirectory().getDataFilePath(filename));
     @Cleanup
     BufferedReader reader = new BufferedReader(new InputStreamReader(is));
     String header = reader.readLine();
-    return ImmutableList.copyOf(header.split("\\t"));
+    return ImmutableList.copyOf(header.split(PlatformStrategy.FIELD_SEPARATOR));
   }
 
+  private boolean isExactMatch(List<String> expectedHeader, List<String> actualHeader) {
+    return !actualHeader.equals(expectedHeader);
+  }
 }

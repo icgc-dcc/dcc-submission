@@ -33,7 +33,9 @@ import cascading.tuple.Fields;
 
 public interface PlatformStrategy {
 
-  public static final String SEPARATOR = "--";
+  String FIELD_SEPARATOR = "\t";
+
+  String FILE_NAME_SEPARATOR = "--";
 
   public FlowConnector getFlowConnector();
 

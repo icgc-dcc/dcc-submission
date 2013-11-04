@@ -74,12 +74,12 @@ public class LocalPlatformStrategy extends BasePlatformStrategy {
 
   @Override
   protected Tap<?, ?, ?> tap(Path path) {
-    return new FileTap(new TextDelimited(true, "\t"), path.toUri().getPath());
+    return new FileTap(new TextDelimited(true, FIELD_SEPARATOR), path.toUri().getPath());
   }
 
   @Override
   protected Tap<?, ?, ?> tap(Path path, Fields fields) {
-    return new FileTap(new TextDelimited(fields, true, "\t"), path.toUri().getPath());
+    return new FileTap(new TextDelimited(fields, true, FIELD_SEPARATOR), path.toUri().getPath());
   }
 
   @Override
@@ -108,7 +108,7 @@ public class LocalPlatformStrategy extends BasePlatformStrategy {
     InputStreamReader isr = new InputStreamReader(fileSystem.open(resolvedPath), Charsets.UTF_8);
     LineReader lineReader = new LineReader(isr);
     String firstLine = lineReader.readLine();
-    Iterable<String> header = Splitter.on('\t').split(firstLine);
+    Iterable<String> header = Splitter.on(FIELD_SEPARATOR).split(firstLine);
     List<String> dupHeader = this.checkDuplicateHeader(header);
     if (!dupHeader.isEmpty()) {
       throw new DuplicateHeaderException(dupHeader);

@@ -28,6 +28,9 @@ import static org.icgc.dcc.submission.validation.core.ErrorParameterKey.OTHER_FI
 import static org.icgc.dcc.submission.validation.core.ErrorParameterKey.OTHER_SCHEMA;
 import static org.icgc.dcc.submission.validation.core.ErrorParameterKey.SCHEMA;
 import static org.icgc.dcc.submission.validation.core.ErrorParameterKey.VALUE;
+import static org.icgc.dcc.submission.validation.core.ErrorType.ErrorLevel.CELL_LEVEL;
+import static org.icgc.dcc.submission.validation.core.ErrorType.ErrorLevel.FILE_LEVEL;
+import static org.icgc.dcc.submission.validation.core.ErrorType.ErrorLevel.ROW_LEVEL;
 
 import java.util.List;
 import java.util.Map;
@@ -35,7 +38,9 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 import org.icgc.dcc.submission.dictionary.model.ValueType;
 import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
@@ -43,12 +48,13 @@ import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
 import com.google.common.collect.ImmutableMap;
 
 // TODO: DCC-505 to fix the message (currently not used for anything)
-public enum ErrorType { 
+@RequiredArgsConstructor
+public enum ErrorType {
 
   /**
    * Number of columns does not match that of header.
    */
-  STRUCTURALLY_INVALID_ROW_ERROR("Structurally invalid row: %s columns against %s declared in the header (row will be ignored by the rest of validation)", true) {
+  STRUCTURALLY_INVALID_ROW_ERROR(ROW_LEVEL, "Structurally invalid row: %s columns against %s declared in the header (row will be ignored by the rest of validation)", true) {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
@@ -60,9 +66,9 @@ public enum ErrorType {
   },
 
   /**
-   * Number of columns does not match that of header.
+   * TODO.
    */
-  INVALID_CHARSET_ROW_ERROR("Row contains invalid charset", true) {
+  INVALID_CHARSET_ROW_ERROR(ROW_LEVEL, "Row contains invalid charset", true) {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
@@ -76,7 +82,7 @@ public enum ErrorType {
   /**
    * A forbidden value was found (for instance deprecated "-999" value).
    */
-  FORBIDDEN_VALUE_ERROR("Invalid value (%s) for field %s. Cannot use forbidden value: %s") {
+  FORBIDDEN_VALUE_ERROR(CELL_LEVEL, "Invalid value (%s) for field %s. Cannot use forbidden value: %s") {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
@@ -94,7 +100,7 @@ public enum ErrorType {
    * <p>
    * Not to be confused with its file counterpart {@code RELATION_FILE_ERROR}
    */
-  RELATION_VALUE_ERROR("Invalid value(s) (%s) for field(s) %s.%s. Expected to match value(s) in: %s.%s") {
+  RELATION_VALUE_ERROR(CELL_LEVEL, "Invalid value(s) (%s) for field(s) %s.%s. Expected to match value(s) in: %s.%s") {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
@@ -115,7 +121,7 @@ public enum ErrorType {
    * <p>
    * Not quite the value-counterpart to {@code REVERSE_RELATION_FILE_ERROR}
    */
-  RELATION_PARENT_VALUE_ERROR("No corresponding values in %s.%s for value(s) %s in %s.%s") {
+  RELATION_PARENT_VALUE_ERROR(CELL_LEVEL, "No corresponding values in %s.%s for value(s) %s in %s.%s") {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
@@ -130,7 +136,7 @@ public enum ErrorType {
   /**
    * Duplicate values in unique field(s).
    */
-  UNIQUE_VALUE_ERROR("Invalid set of values (%s) for fields %s. Expected to be unique") {
+  UNIQUE_VALUE_ERROR(CELL_LEVEL, "Invalid set of values (%s) for fields %s. Expected to be unique") {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
@@ -141,7 +147,7 @@ public enum ErrorType {
   /**
    * Invalid value type (i.e. a string where an integer is expected).
    */
-  VALUE_TYPE_ERROR("Invalid value (%s) for field %s. Expected type is: %s") {
+  VALUE_TYPE_ERROR(CELL_LEVEL, "Invalid value (%s) for field %s. Expected type is: %s") {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
@@ -155,7 +161,7 @@ public enum ErrorType {
   /**
    * Value out for (inclusive) range.
    */
-  OUT_OF_RANGE_ERROR("Number %d is out of range for field %s. Expected value between %d and %d") {
+  OUT_OF_RANGE_ERROR(CELL_LEVEL, "Number %d is out of range for field %s. Expected value between %d and %d") {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
@@ -171,7 +177,7 @@ public enum ErrorType {
   /**
    * Missing required value.
    */
-  MISSING_VALUE_ERROR("Value missing for required field: %s") {
+  MISSING_VALUE_ERROR(CELL_LEVEL, "Value missing for required field: %s") {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
@@ -182,7 +188,7 @@ public enum ErrorType {
   /**
    * Values not in code list (as codes)
    */
-  CODELIST_ERROR("Invalid value %s for field %s. Expected code or value from CodeList %s") {
+  CODELIST_ERROR(CELL_LEVEL, "Invalid value %s for field %s. Expected code or value from CodeList %s") {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
@@ -193,7 +199,7 @@ public enum ErrorType {
   /**
    * Values not in set of discrete values.
    */
-  DISCRETE_VALUES_ERROR("Invalid value %s for field %s. Expected one of the following values: %s") {
+  DISCRETE_VALUES_ERROR(CELL_LEVEL, "Invalid value %s for field %s. Expected one of the following values: %s") {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
@@ -207,7 +213,7 @@ public enum ErrorType {
   /**
    * Values do not match regex.
    */
-  REGEX_ERROR("Invalid value %s for field %s. Expected to match regex: %s") {
+  REGEX_ERROR(CELL_LEVEL, "Invalid value %s for field %s. Expected to match regex: %s") {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
@@ -221,7 +227,7 @@ public enum ErrorType {
   /**
    * Values do not pass script.
    */
-  SCRIPT_ERROR("Invalid value %s for field %s. Expected to pass script: %s") {
+  SCRIPT_ERROR(CELL_LEVEL, "Invalid value %s for field %s. Expected to pass script: %s") {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
@@ -237,7 +243,7 @@ public enum ErrorType {
   /**
    * More than one file matches the schema pattern.
    */
-  TOO_MANY_FILES_ERROR("More than one file matches the schema pattern") {
+  TOO_MANY_FILES_ERROR(FILE_LEVEL, "More than one file matches the schema pattern") {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
@@ -256,7 +262,7 @@ public enum ErrorType {
    * <p>
    * Not to be confused with its value counterpart {@code RELATION_VALUE_ERROR}
    */
-  RELATION_FILE_ERROR("Relation to schema %s has no matching file") {
+  RELATION_FILE_ERROR(FILE_LEVEL, "Relation to schema %s has no matching file") {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
@@ -275,7 +281,7 @@ public enum ErrorType {
    * <p>
    * Not quite the file-counterpart to {@code RELATION_PARENT_VALUE_ERROR}
    */
-  REVERSE_RELATION_FILE_ERROR("Relation from schema %s has no matching file and this relation imposes that there be one") {
+  REVERSE_RELATION_FILE_ERROR(FILE_LEVEL, "Relation from schema %s has no matching file and this relation imposes that there be one") {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
@@ -289,7 +295,7 @@ public enum ErrorType {
   /**
    * Compression codec doesn't match file extension
    */
-  COMPRESSION_CODEC_ERROR("File compression type does not match file extension") {
+  COMPRESSION_CODEC_ERROR(FILE_LEVEL, "File compression type does not match file extension") {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
@@ -303,7 +309,7 @@ public enum ErrorType {
   /**
    * Repeated field names found in header.
    */
-  DUPLICATE_HEADER_ERROR("Duplicate header found: %s") {
+  DUPLICATE_HEADER_ERROR(FILE_LEVEL, "Duplicate header found: %s") {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
@@ -317,7 +323,7 @@ public enum ErrorType {
   /**
    * Repeated field names found in header.
    */
-  FILE_HEADER_ERROR("File header error: %s") {
+  FILE_HEADER_ERROR(FILE_LEVEL, "File header error: %s") {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
@@ -331,7 +337,7 @@ public enum ErrorType {
   /**
    * Submitted reference genome does not match the starnde reference genome.
    */
-  REFERENCE_GENOME_ERROR("Found value %s for column %s, reference genome is %s") {
+  REFERENCE_GENOME_ERROR(CELL_LEVEL, "Found value %s for column %s, reference genome is %s") {
 
     @Override
     public final ImmutableMap<ErrorParameterKey, Object> build(Object... params) {
@@ -345,19 +351,16 @@ public enum ErrorType {
   /**
    * Metadata.
    */
+  @Getter
+  private final ErrorLevel level;
   private final String message;
   private final boolean structural;
 
   public abstract ImmutableMap<ErrorParameterKey, Object> build(@Nullable
   Object... params);
 
-  ErrorType(String message) {
-    this(message, false);
-  }
-
-  ErrorType(String message, boolean structural) {
-    this.message = message;
-    this.structural = structural;
+  ErrorType(ErrorLevel level, String message) {
+    this(level, message, false);
   }
 
   public String format(Map<ErrorParameterKey, ? extends Object> parameters) {
@@ -376,4 +379,7 @@ public enum ErrorType {
     return error.getType().format(error.getParameters());
   }
 
+  public enum ErrorLevel {
+    FILE_LEVEL, ROW_LEVEL, CELL_LEVEL;
+  }
 }

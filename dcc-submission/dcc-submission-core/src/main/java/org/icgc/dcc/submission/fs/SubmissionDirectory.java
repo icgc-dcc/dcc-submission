@@ -23,7 +23,10 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import lombok.Value;
+
 import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 import org.icgc.dcc.submission.fs.hdfs.HadoopUtils;
 import org.icgc.dcc.submission.release.model.Release;
 import org.icgc.dcc.submission.release.model.ReleaseState;
@@ -122,5 +125,28 @@ public class SubmissionDirectory {
    */
   public void createEmptyValidationDir() {
     dccFileSystem.createDirIfDoesNotExist(getValidationDirPath());
+  }
+
+  public List<SubmissionDirectoryFile> getSubmissionFiles() {
+    return null;
+  }
+
+  /**
+   * There's already a "SubmissionFile" class (for the UI)...
+   */
+  @Value
+  public final class SubmissionDirectoryFile {
+
+    String fileName;
+    SubmissionFileType type;
+    Pattern pattern;
+  }
+  @Value
+  public final class SubmissionDirectoryFile {
+
+    List<SubmissionDirectoryFile>
+    String fileName;
+    SubmissionFileType type;
+    Pattern pattern;
   }
 }

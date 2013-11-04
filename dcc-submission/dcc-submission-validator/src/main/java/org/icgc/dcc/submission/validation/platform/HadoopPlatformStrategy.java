@@ -172,14 +172,14 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
 
   @Override
   protected Tap<?, ?, ?> tap(Path path) {
-    TextDelimited textDelimited = new TextDelimited(true, "\t");
+    TextDelimited textDelimited = new TextDelimited(true, FIELD_SEPARATOR);
     textDelimited.setSinkCompression(Compress.ENABLE);
     return new Hfs(textDelimited, path.toUri().getPath());
   }
 
   @Override
   protected Tap<?, ?, ?> tap(Path path, Fields fields) {
-    TextDelimited textDelimited = new TextDelimited(fields, true, "\t");
+    TextDelimited textDelimited = new TextDelimited(fields, true, FIELD_SEPARATOR);
     textDelimited.setSinkCompression(Compress.ENABLE);
     return new Hfs(textDelimited, path.toUri().getPath());
   }
@@ -211,7 +211,7 @@ public class HadoopPlatformStrategy extends BasePlatformStrategy {
 
     LineReader lineReader = new LineReader(isr);
     String firstLine = lineReader.readLine();
-    Iterable<String> header = Splitter.on('\t').split(firstLine);
+    Iterable<String> header = Splitter.on(FIELD_SEPARATOR).split(firstLine);
     List<String> dupHeader = this.checkDuplicateHeader(header);
     if (!dupHeader.isEmpty()) {
       throw new DuplicateHeaderException(dupHeader);

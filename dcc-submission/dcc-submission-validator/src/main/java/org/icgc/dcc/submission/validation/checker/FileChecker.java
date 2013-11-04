@@ -17,16 +17,26 @@
  */
 package org.icgc.dcc.submission.validation.checker;
 
-import java.util.List;
+import static lombok.AccessLevel.PRIVATE;
+import lombok.NoArgsConstructor;
 
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
+import org.icgc.dcc.submission.validation.checker.step.FileCollisionChecker;
+import org.icgc.dcc.submission.validation.checker.step.FileCorruptionChecker;
+import org.icgc.dcc.submission.validation.checker.step.FileHeaderChecker;
+import org.icgc.dcc.submission.validation.checker.step.NoOpFileChecker;
+import org.icgc.dcc.submission.validation.checker.step.ReferentialFileChecker;
+import org.icgc.dcc.submission.validation.service.ValidationContext;
 
 public interface FileChecker extends Checker {
 
-  List<FirstPassValidationError> check(String filename);
+  void check(String filename);
 
+  /**
+   * TODO: remove
+   */
   String getFileSchemaName(String filename);
 
   SubmissionDirectory getSubmissionDirectory();
@@ -35,6 +45,25 @@ public interface FileChecker extends Checker {
 
   DccFileSystem getDccFileSystem();
 
+  ValidationContext getValidationContext();
+
   boolean canContinue();
 
+  /**
+   * Made non-final for power mock.
+   */
+  @NoArgsConstructor(access = PRIVATE)
+  class FileCheckers {
+
+    static FileChecker getDefaultFileChecker(ValidationContext validationContext) {
+
+      // Chaining multiple file checker
+      return new FileHeaderChecker(
+          new FileCorruptionChecker(
+              new FileCollisionChecker(
+                  new ReferentialFileChecker(
+                      // TODO: Enforce Law of Demeter (do we need the whole dictionary for instance)?
+                      new NoOpFileChecker(validationContext)))));
+    }
+  }
 }

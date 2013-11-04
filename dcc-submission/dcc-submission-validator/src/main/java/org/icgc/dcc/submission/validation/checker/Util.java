@@ -17,11 +17,14 @@
  */
 package org.icgc.dcc.submission.validation.checker;
 
+import static lombok.AccessLevel.PRIVATE;
+
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
 import lombok.Cleanup;
+import lombok.NoArgsConstructor;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -34,11 +37,8 @@ import org.apache.tika.parser.AutoDetectParser;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 
-final class Util {
-
-  public enum CheckLevel {
-    FILE_LEVEL, ROW_LEVEL, CELL_LEVEL;
-  }
+@NoArgsConstructor(access = PRIVATE)
+public final class Util {
 
   public enum CodecType {
     GZIP, BZIP2, PLAIN_TEXT;

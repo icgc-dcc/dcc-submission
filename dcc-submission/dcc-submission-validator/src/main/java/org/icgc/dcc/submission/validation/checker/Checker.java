@@ -17,13 +17,16 @@
  */
 package org.icgc.dcc.submission.validation.checker;
 
-import org.icgc.dcc.submission.validation.checker.Util.CheckLevel;
+import org.icgc.dcc.submission.validation.core.ErrorType.ErrorLevel;
 
 public interface Checker {
 
   boolean isValid();
 
-  CheckLevel getCheckLevel();
+  /**
+   * TODO: remove, not necessary anymore.
+   */
+  ErrorLevel getCheckLevel();
 
   boolean isFailFast();
 

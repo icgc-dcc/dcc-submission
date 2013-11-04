@@ -17,9 +17,10 @@
  */
 package org.icgc.dcc.submission.validation.checker;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -36,11 +37,16 @@ import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
-import org.icgc.dcc.submission.validation.checker.Util.CheckLevel;
+import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
+import org.icgc.dcc.submission.validation.checker.FileChecker.FileCheckers;
+import org.icgc.dcc.submission.validation.checker.RowChecker.RowCheckers;
+import org.icgc.dcc.submission.validation.checker.step.CompositeFileChecker;
 import org.icgc.dcc.submission.validation.core.ErrorType;
+import org.icgc.dcc.submission.validation.service.ValidationContext;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -51,13 +57,12 @@ import com.google.common.collect.ImmutableList;
 @PrepareForTest(Util.class)
 public class FirstPassValidatorTest {
 
-  private final FirstPassValidationError DUMMY_FILE_ERROR = new FirstPassValidationError(CheckLevel.FILE_LEVEL,
-      "DummyFileError", ErrorType.REVERSE_RELATION_FILE_ERROR, null, -1);
-  private final FirstPassValidationError DUMMY_ROW_ERROR = new FirstPassValidationError(CheckLevel.ROW_LEVEL,
-      "DummyFileError", ErrorType.REVERSE_RELATION_FILE_ERROR, null, -1);
-
   private SubmissionDirectory submissionDir;
   private Dictionary dict;
+  private FirstPassValidator fpc;
+
+  @Mock
+  ValidationContext validationContext;
 
   @Before
   public void setup() throws IOException {
@@ -70,27 +75,35 @@ public class FirstPassValidatorTest {
 
     FileSchema schema = new FileSchema("anyfile");
     schema.setPattern("anyfile");
-    when(dict.getFiles()).thenReturn(ImmutableList.of(schema));
+    when(dict.getFiles()).thenReturn(newArrayList(schema));
 
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream("JUST-A-TEST".getBytes()));
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
+
+    when(validationContext.getSubmissionDirectory()).thenReturn(submissionDir);
+    when(validationContext.getDictionary()).thenReturn(dict);
+
+    fpc = new FirstPassValidator();
   }
 
   @Test
   public void sanityValid() throws IOException {
     FileChecker fileChecker = mock(FileChecker.class);
-    when(fileChecker.check(anyString())).thenReturn(ImmutableList.<FirstPassValidationError> of());
     when(fileChecker.canContinue()).thenReturn(true);
     when(fileChecker.isValid()).thenReturn(true);
 
     RowChecker rowChecker = mock(RowChecker.class);
-    when(rowChecker.check(anyString())).thenReturn(ImmutableList.<FirstPassValidationError> of());
     when(rowChecker.canContinue()).thenReturn(true);
     when(rowChecker.isValid()).thenReturn(true);
 
-    FirstPassValidator fpc = new FirstPassValidator(dict, submissionDir, fileChecker, rowChecker);
-    assertTrue(fpc.isValid());
+    mockStatic(FileCheckers.class);
+    when(FileCheckers.getDefaultFileChecker(validationContext)).thenReturn(fileChecker);
+    mockStatic(RowCheckers.class);
+    when(RowCheckers.getDefaultRowChecker(validationContext)).thenReturn(rowChecker);
 
+    fpc.validate(validationContext);
+
+    checkNoErrorsReported(validationContext);
     verify(fileChecker, times(1)).check(anyString());
     verify(rowChecker, times(1)).check(anyString());
   }
@@ -124,7 +137,7 @@ public class FirstPassValidatorTest {
     when(fileChecker.isFailFast()).thenReturn(true); // fail it right away
 
     CompositeFileChecker moreChecker =
-        PowerMockito.spy(new DummyFileChecker(new DummyFileChecker(fileChecker, false), false));
+        PowerMockito.spy(new DummyFileCheckerUnderTest(new DummyFileCheckerUnderTest(fileChecker, false), false));
 
     RowChecker rowChecker = mock(RowChecker.class);
     when(rowChecker.check(anyString())).thenReturn(ImmutableList.<FirstPassValidationError> of());
@@ -176,13 +189,25 @@ public class FirstPassValidatorTest {
     verify(rowChecker, times(1)).check(anyString());
   }
 
-  private static class DummyFileChecker extends CompositeFileChecker {
+  /**
+   * 
+   */
+  private void checkNoErrorsReported(ValidationContext validationContext) {
+    verify(validationContext, times(0)).reportError(anyString(), any(ErrorType.class));
+    verify(validationContext, times(0)).reportError(anyString(), any(TupleError.class));
+    verify(validationContext, times(0)).reportError(anyString(), any(ErrorType.class), any());
+    verify(validationContext, times(0)).reportError(anyString(), any(), any(ErrorType.class));
+    verify(validationContext, times(0)).reportError(anyString(), anyLong(), any(), any(ErrorType.class));
+    verify(validationContext, times(0)).reportError(anyString(), anyLong(), anyString(), any(), any(ErrorType.class));
+  }
 
-    public DummyFileChecker(FileChecker nestedChecker) {
+  private static class DummyFileCheckerUnderTest extends CompositeFileChecker {
+
+    public DummyFileCheckerUnderTest(FileChecker nestedChecker) {
       super(nestedChecker);
     }
 
-    public DummyFileChecker(FileChecker nestedChecker, boolean failsafe) {
+    public DummyFileCheckerUnderTest(FileChecker nestedChecker, boolean failsafe) {
       super(nestedChecker, failsafe);
     }
 

@@ -17,109 +17,49 @@
  */
 package org.icgc.dcc.submission.validation.checker;
 
-import static com.google.common.collect.Iterables.concat;
-import static com.google.common.collect.Iterables.size;
-import static com.google.common.collect.Maps.newHashMap;
-import static org.icgc.dcc.submission.validation.cascading.TupleState.createTupleError;
+import static org.icgc.dcc.submission.validation.core.ErrorType.ErrorLevel.FILE_LEVEL;
+import static org.icgc.dcc.submission.validation.core.ErrorType.ErrorLevel.ROW_LEVEL;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.regex.Pattern;
 
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
-import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
+import org.icgc.dcc.submission.validation.checker.FileChecker.FileCheckers;
+import org.icgc.dcc.submission.validation.checker.RowChecker.RowCheckers;
+import org.icgc.dcc.submission.validation.core.FileSchemaDirectory;
 import org.icgc.dcc.submission.validation.service.ValidationContext;
 import org.icgc.dcc.submission.validation.service.Validator;
 
-import com.google.common.collect.ImmutableList;
-
 @Slf4j
-@RequiredArgsConstructor
+@NoArgsConstructor
 public class FirstPassValidator implements Validator {
 
-  private final Dictionary dictionary;
-  private final SubmissionDirectory submissionDir;
-
-  private final FileChecker fileChecker;
-  private final RowChecker rowChecker;
-
-  private final Map<String, List<FirstPassValidationError>> errorMap = newHashMap();
-
-  public FirstPassValidator(DccFileSystem dccFileSystem, Dictionary dict, SubmissionDirectory submissionDir) {
-    this(dict, submissionDir,
-        getDefaultFileChecker(dccFileSystem, dict, submissionDir),
-        getDefaultRowChecker(dccFileSystem, dict, submissionDir));
-  }
-
   @Override
-  public void validate(ValidationContext context) {
-    // TODO: Change the design of this object to not have any "validation" relate state.
+  public void validate(ValidationContext validationContext) {
+    val fileChecker = FileCheckers.getDefaultFileChecker(validationContext);
+    val rowChecker = RowCheckers.getDefaultRowChecker(validationContext);
 
-    // TODO: Remove isValid and pass context to all checkers to prevent memory pressure of collecting errors within
-    // the checkers.
-
-    // Call for side-effects
-    isValid();
-
-    for (val fileName : getFileSchemaNames()) {
-      for (val tupleError : getTupleErrors(fileName)) {
-
-        // TODO: Move away from using TupleError and use the other methods provided on the context
-        context.reportError(fileName, tupleError);
-      }
-    }
-  }
-
-  protected boolean isValid() {
-    errorMap.clear();
-    for (String filename : submissionDir.listFile()) {
-      String fileSchemaName = getFileSchemaName(dictionary, filename);
+    for (String filename : validationContext.getSubmissionDirectory().listFile()) {
+      String fileSchemaName = getFileSchemaName(validationContext.getDictionary(), filename);
       if (fileSchemaName != null) {
-        val errors = ImmutableList.<FirstPassValidationError> builder();
+        log.info("Validate '{}' level well-formedness for file schema: {}", FILE_LEVEL, fileSchemaName);
 
-        log.info("Validate file level well-formedness for file schema: {}", fileSchemaName);
-        errors.addAll(fileChecker.check(filename));
+        fileChecker.check(filename);
         if (fileChecker.canContinue()) {
-          errors.addAll(rowChecker.check(filename));
+          log.info("Validating '{}' well-formedness for file schema: '{}'", ROW_LEVEL, fileSchemaName);
+          rowChecker.check(filename);
         }
-
-        errorMap.put(filename, errors.build());
       }
     }
-
-    // Can't we just use errorMap.isEmpty()?
-    val errorCount = size(concat(errorMap.values()));
-    val valid = errorCount == 0;
-
-    return valid;
   }
 
-  protected Set<String> getFileSchemaNames() {
-    return errorMap.keySet();
-  }
-
-  protected List<TupleError> getTupleErrors(String fileSchemaName) {
-    val errors = errorMap.get(fileSchemaName);
-    val tupleErrors = ImmutableList.<TupleError> builder();
-    for (val error : errors) {
-      tupleErrors.add(createTupleError(
-          error.getType(),
-          error.getLevel().toString(),
-          error.toString(),
-          error.getLineNumber(),
-          error.getParam()));
-    }
-
-    return tupleErrors.build();
-  }
-
+  /**
+   * TODO: Move to proper {@link SubmissionDirectory} or {@link FileSchemaDirectory} abstraction.
+   */
   private static String getFileSchemaName(Dictionary dictionary, String fileName) {
     for (val schema : dictionary.getFiles()) {
       if (Pattern.matches(schema.getPattern(), fileName)) {
@@ -128,24 +68,6 @@ public class FirstPassValidator implements Validator {
     }
 
     return null;
-  }
-
-  private static FileChecker getDefaultFileChecker(DccFileSystem fs, Dictionary dict, SubmissionDirectory submissionDir) {
-    // Chaining multiple file checker
-    return new FileHeaderChecker(
-        new FileCorruptionChecker(
-            new FileCollisionChecker(
-                new ReferentialFileChecker(
-                    new BaseFileChecker(fs, dict, submissionDir)))));
-  }
-
-  private static RowChecker getDefaultRowChecker(DccFileSystem fs, Dictionary dictionary,
-      SubmissionDirectory submissionDir) {
-    // Chaining multiple row checkers
-    return new RowColumnChecker(
-        new RowCharsetChecker(
-            new BaseRowChecker(fs, dictionary, submissionDir)));
-
   }
 
 }

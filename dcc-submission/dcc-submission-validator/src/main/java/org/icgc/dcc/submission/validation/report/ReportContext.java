@@ -48,7 +48,7 @@ public interface ReportContext {
 
   void reportError(String fileName, Object value, ErrorType type, Object... params);
 
-  void reportError(String fileName, ErrorType type, Object... paramss);
+  void reportError(String fileName, ErrorType type, Object... params);
 
   void reportError(String fileName, ErrorType type);
 

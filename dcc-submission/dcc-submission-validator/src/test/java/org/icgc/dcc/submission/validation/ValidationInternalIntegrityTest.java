@@ -21,7 +21,7 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 import static org.apache.commons.io.FileUtils.readFileToString;
-import static org.icgc.dcc.submission.validation.platform.PlatformStrategy.SEPARATOR;
+import static org.icgc.dcc.submission.validation.platform.PlatformStrategy.FILE_NAME_SEPARATOR;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 
@@ -208,7 +208,7 @@ public class ValidationInternalIntegrityTest extends BaseValidationIntegrityTest
   private String validate(ValidationService validationService, Dictionary dictionary, String submissionFilePath) {
     String rootDirString = this.getClass().getResource(submissionFilePath).getFile();
     String outputDirString = rootDirString + "/" + ".validation";
-    String errorFileString = outputDirString + "/" + "donor.internal" + SEPARATOR + "errors.json";
+    String errorFileString = outputDirString + "/" + "donor.internal" + FILE_NAME_SEPARATOR + "errors.json";
 
     File errorFile = new File(errorFileString);
     errorFile.delete();

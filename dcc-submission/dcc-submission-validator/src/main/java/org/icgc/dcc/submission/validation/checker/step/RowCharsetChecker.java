@@ -15,46 +15,60 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.checker;
+package org.icgc.dcc.submission.validation.checker.step;
 
-import java.util.List;
-import java.util.regex.Pattern;
+import static com.google.common.base.CharMatcher.ASCII;
+import static com.google.common.base.CharMatcher.JAVA_ISO_CONTROL;
+import static com.google.common.base.CharMatcher.noneOf;
+import static com.google.common.base.Charsets.US_ASCII;
+import static org.icgc.dcc.submission.validation.core.ErrorType.INVALID_CHARSET_ROW_ERROR;
+import static org.icgc.dcc.submission.validation.platform.PlatformStrategy.FIELD_SEPARATOR;
+import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.validation.checker.Util.CheckLevel;
-import org.icgc.dcc.submission.validation.core.ErrorType;
+import org.icgc.dcc.submission.validation.checker.RowChecker;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
+import com.google.common.base.CharMatcher;
 
-public class FileCollisionChecker extends CompositeFileChecker {
+@Slf4j
+public class RowCharsetChecker extends CompositeRowChecker {
 
-  public FileCollisionChecker(FileChecker fileChecker, boolean failFast) {
-    super(fileChecker, failFast);
+  private final static CharMatcher DEFAULT_INVALID_MATCHER =
+      ASCII
+          .negate()
+          .or(JAVA_ISO_CONTROL)
+          .and(
+              noneOf(FIELD_SEPARATOR))
+          .precomputed();
+
+  public RowCharsetChecker(RowChecker rowChecker, boolean failFast) {
+    super(rowChecker, failFast);
   }
 
-  public FileCollisionChecker(FileChecker fileChecker) {
-    this(fileChecker, true);
+  public RowCharsetChecker(RowChecker rowChecker) {
+    this(rowChecker, false);
   }
 
   @Override
-  public List<FirstPassValidationError> performSelfCheck(String filename) {
-    Builder<FirstPassValidationError> errors = ImmutableList.<FirstPassValidationError> builder();
-    Optional<FileSchema> fileSchema = getDictionary().fileSchema(getFileSchemaName(filename));
-    if (fileSchema.isPresent()) {
-      // more than 1 file that match the same pattern
-      List<String> files =
-          ImmutableList.copyOf(getSubmissionDirectory().listFile(Pattern.compile(fileSchema.get().getPattern())));
-      if (files.size() > 1) {
-        Object[] params = new Object[2];
-        params[0] = fileSchema.get().getName();
-        params[1] = ImmutableList.of(files);
-        errors.add(new FirstPassValidationError(CheckLevel.FILE_LEVEL,
-            "More than 1 file matching the file pattern: " + fileSchema.get().getPattern(),
-            ErrorType.TOO_MANY_FILES_ERROR, params, -1));
-      }
+  public void performSelfCheck(
+      String fileName,
+      FileSchema fileSchema,
+      String line,
+      long lineNumber) {
+
+    if (containsInvalidCharacter(line)) {
+      log.debug("Invalid character found in the row: " + line);
+
+      incrementCheckErrorCount();
+      getValidationContext().reportError(
+          fileName,
+          lineNumber,
+          INVALID_CHARSET_ROW_ERROR,
+          US_ASCII.name()); // TODO: return actual list
     }
-    return errors.build();
+  }
+
+  private boolean containsInvalidCharacter(String line) {
+    return DEFAULT_INVALID_MATCHER.matchesAnyOf(line);
   }
 }

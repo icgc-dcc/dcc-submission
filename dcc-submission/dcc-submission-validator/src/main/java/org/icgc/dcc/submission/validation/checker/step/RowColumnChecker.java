@@ -15,46 +15,61 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation.checker;
+package org.icgc.dcc.submission.validation.checker.step;
 
-import java.util.List;
+import static org.icgc.dcc.submission.validation.core.ErrorType.STRUCTURALLY_INVALID_ROW_ERROR;
+import static org.icgc.dcc.submission.validation.platform.PlatformStrategy.FIELD_SEPARATOR;
+import lombok.extern.slf4j.Slf4j;
 
-import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.fs.DccFileSystem;
-import org.icgc.dcc.submission.fs.SubmissionDirectory;
-import org.icgc.dcc.submission.validation.checker.Util.CheckLevel;
+import org.icgc.dcc.submission.validation.checker.RowChecker;
 
-import com.google.common.collect.ImmutableList;
+@Slf4j
+public class RowColumnChecker extends CompositeRowChecker {
 
-public class BaseRowChecker extends BaseFileChecker implements RowChecker {
-
-  public BaseRowChecker(DccFileSystem fs, Dictionary dict, SubmissionDirectory submissionDir, boolean failFast) {
-    super(fs, dict, submissionDir, failFast);
+  public RowColumnChecker(RowChecker rowChecker, boolean failFast) {
+    super(rowChecker, failFast);
   }
 
-  public BaseRowChecker(DccFileSystem fs, Dictionary dict, SubmissionDirectory submissionDir) {
-    this(fs, dict, submissionDir, false);
+  public RowColumnChecker(RowChecker rowChecker) {
+    this(rowChecker, false);
   }
 
   @Override
-  public List<FirstPassValidationError> check(String filename) {
-    return ImmutableList.of();
+  public void performSelfCheck(
+      String filename,
+      FileSchema fileSchema,
+      String line,
+      long lineNumber) {
+
+    int expectedNumColumns = getExpectedCount(fileSchema);
+    int actualNumColumns = getActualCount(line);
+    if (isCountMismatch(
+        expectedNumColumns,
+        actualNumColumns)) {
+
+      log.debug("Row does not match the expected number of columns: " + expectedNumColumns + ", actual: "
+          + actualNumColumns);
+
+      incrementCheckErrorCount();
+      getValidationContext().reportError(
+          filename,
+          lineNumber,
+          STRUCTURALLY_INVALID_ROW_ERROR,
+          expectedNumColumns);
+    }
   }
 
-  @Override
-  public boolean isValid() {
-    return true;
+  private int getExpectedCount(FileSchema fileSchema) {
+    return fileSchema.getFields().size();
   }
 
-  @Override
-  public CheckLevel getCheckLevel() {
-    return CheckLevel.ROW_LEVEL;
+  private int getActualCount(String line) {
+    return line.split(FIELD_SEPARATOR, -1).length;
   }
 
-  @Override
-  public List<FirstPassValidationError> checkRow(FileSchema fileSchema, String row, long lineNumber) {
-    return ImmutableList.of();
+  private boolean isCountMismatch(int expectedNumColumns, int actualNumColumns) {
+    return actualNumColumns != expectedNumColumns;
   }
 
 }
