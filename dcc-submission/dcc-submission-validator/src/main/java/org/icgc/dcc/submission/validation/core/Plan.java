@@ -44,8 +44,6 @@ import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.validation.MissingFileException;
-import org.icgc.dcc.submission.validation.PlanningFileLevelException;
-import org.icgc.dcc.submission.validation.cascading.TupleState;
 import org.icgc.dcc.submission.validation.planner.ExternalFlowPlanner;
 import org.icgc.dcc.submission.validation.planner.FileSchemaFlowPlanner;
 import org.icgc.dcc.submission.validation.planner.InternalFlowPlanner;
@@ -59,7 +57,6 @@ import cascading.cascade.CascadeConnector;
 import cascading.cascade.CascadeDef;
 import cascading.cascade.CascadeListener;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 
 @Slf4j
@@ -84,11 +81,6 @@ public class Plan {
   private final List<FileSchema> plannedSchema = newArrayList();
   private final Map<String, InternalFlowPlanner> internalPlanners = newHashMap();
   private final Map<String, ExternalFlowPlanner> externalPlanners = newHashMap();
-
-  /**
-   * Outputs.
-   */
-  private final Map<String, TupleState> fileLevelErrors = newLinkedHashMap();
 
   /**
    * Transient state
@@ -192,13 +184,9 @@ public class Plan {
   synchronized public void connect(PlatformStrategy platformStrategy) {
     val cascadeDef = new CascadeDef().setName(queuedProject.getKey() + " validation cascade");
     for (val planner : getPlanners()) {
-      try {
-        val flow = planner.connect(platformStrategy);
-        if (flow != null) {
-          cascadeDef.addFlow(flow);
-        }
-      } catch (PlanningFileLevelException e) {
-        addFileLevelError(e);
+      val flow = planner.connect(platformStrategy);
+      if (flow != null) {
+        cascadeDef.addFlow(flow);
       }
     }
 
@@ -267,28 +255,6 @@ public class Plan {
 
     report.setSchemaReports(new ArrayList<SchemaReport>(schemaReports.values()));
     return result;
-  }
-
-  public void addFileLevelError(PlanningFileLevelException e) {
-    String filename = e.getFilename();
-    TupleState tupleState = e.getTupleState();
-    checkState(filename != null);
-    checkState(tupleState != null);
-
-    // Let it overwrite any previously reported file-level errors
-    // This is a band-aid in the context of https://jira.oicr.on.ca/browse/DCC-1289.
-    // It shouldn't be hard to report more than one error by augmenting the existing tupleState, but the file-level
-    // error reporting must be completely reworked anyway, see https://jira.oicr.on.ca/browse/DCC-391 and
-    // https://wiki.oicr.on.ca/display/DCCSOFT/File-Level+Errors
-    fileLevelErrors.put(filename, tupleState);
-  }
-
-  public boolean hasFileLevelErrors() {
-    return !fileLevelErrors.isEmpty();
-  }
-
-  public Map<String, TupleState> getFileLevelErrors() {
-    return ImmutableMap.<String, TupleState> copyOf(fileLevelErrors);
   }
 
   private Iterable<FileSchemaFlowPlanner> getPlanners() {

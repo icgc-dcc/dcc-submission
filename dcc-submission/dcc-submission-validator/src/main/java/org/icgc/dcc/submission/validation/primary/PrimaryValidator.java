@@ -17,10 +17,10 @@
  */
 package org.icgc.dcc.submission.validation.primary;
 
-import static com.google.common.base.Throwables.propagate;
 import static com.google.common.collect.Iterables.size;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,6 +32,12 @@ import org.icgc.dcc.submission.validation.service.Validator;
 
 import com.google.inject.Inject;
 
+/**
+ * {@code Validator} implementation that performs relation, restriction and data type validations using Cascading as the
+ * execution platform.
+ * 
+ * @see https://groups.google.com/d/msg/cascading-user/gjxB2Bg-56w/R1h5lhn-g2IJ
+ */
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @_(@Inject))
 public class PrimaryValidator implements Validator {
@@ -40,6 +46,7 @@ public class PrimaryValidator implements Validator {
   private final Planner planner;
 
   @Override
+  @SneakyThrows
   public void validate(ValidationContext context) {
     log.info("Preparing cascade for project '{}'", context.getProjectKey());
 
@@ -76,8 +83,8 @@ public class PrimaryValidator implements Validator {
       plan.getCascade().stop();
       log.info("Stopped cascade for project {}", projectKey);
 
-      // TODO: Use custom exception
-      propagate(t);
+      // Rethrow for {@link Validator}
+      throw t;
     }
   }
 

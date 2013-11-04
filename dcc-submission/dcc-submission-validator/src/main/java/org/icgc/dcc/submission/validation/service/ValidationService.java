@@ -17,7 +17,6 @@
  */
 package org.icgc.dcc.submission.validation.service;
 
-import static java.lang.String.format;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -29,7 +28,6 @@ import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.release.model.Release;
-import org.icgc.dcc.submission.validation.FilePresenceException;
 import org.icgc.dcc.submission.validation.MalformedSubmissionException;
 import org.icgc.dcc.submission.validation.SubmissionSemanticsException;
 import org.icgc.dcc.submission.validation.checker.FirstPassValidator;
@@ -109,12 +107,6 @@ public class ValidationService {
     log.info("Connecting cascade for project {}", projectKey);
     plan.connect(platformStategy);
     log.info("Connected cascade for project {}", projectKey);
-
-    if (plan.hasFileLevelErrors()) { // determined during connection
-      log.info(format("Submission has file-level errors, throwing a '%s'",
-          FilePresenceException.class.getSimpleName()));
-      throw new FilePresenceException(plan); // the queue manager will handle it
-    }
 
     if (listener != null) {
       plan.addCascadeListener(listener);

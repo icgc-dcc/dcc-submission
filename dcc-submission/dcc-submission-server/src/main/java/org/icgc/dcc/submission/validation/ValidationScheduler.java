@@ -88,26 +88,54 @@ public class ValidationScheduler extends AbstractScheduledService {
   @NonNull
   private final Set<Validator> validators;
 
+  /**
+   * Cancels a validation that was previously started in {@link #tryValidation(Release, QueuedProject)}.
+   * 
+   * @param projectKey the key of the project to cancel
+   * @throws InvalidStateException
+   */
   public void cancelValidation(String projectKey) throws InvalidStateException {
     val cancelled = validationExecutor.cancel(projectKey);
     if (cancelled) {
-      // TODO: Determine when this shouled be called
+      // TODO: Determine when this should / needs to be called
       log.info("Resetting database and file system state for killed project validation: {}...", projectKey);
       releaseService.deleteQueuedRequest(projectKey);
     }
   }
 
+  /**
+   * Creates a {@code Scheduler} instance that runs every {@link #POLLING_PERIOD_SECONDS}.
+   */
+  @Override
+  protected Scheduler scheduler() {
+    return newFixedDelaySchedule(POLLING_PERIOD_SECONDS, POLLING_PERIOD_SECONDS, SECONDS);
+  }
+
+  /**
+   * Main {@code Validation} dispatch loop that that is invoked by the {@link #scheduler()}.
+   * 
+   * @throws Exception
+   */
   @Override
   protected void runOneIteration() throws Exception {
     pollOpenRelease();
     pollQueue();
   }
 
+  /**
+   * Ensures that the underlying validation executor tasks are shutdown gracefully when the main shutdown hook is
+   * triggered.
+   * 
+   * @throws Exception
+   */
   @Override
-  protected Scheduler scheduler() {
-    return newFixedDelaySchedule(POLLING_PERIOD_SECONDS, POLLING_PERIOD_SECONDS, SECONDS);
+  protected void shutDown() throws Exception {
+    validationExecutor.shutdown();
   }
 
+  /**
+   * Polls for an open release to become available.
+   */
   private void pollOpenRelease() {
     long count;
     do {
@@ -119,6 +147,9 @@ public class ValidationScheduler extends AbstractScheduledService {
         OPENED, count);
   }
 
+  /**
+   * Polls for an enqueued project to become available
+   */
   private void pollQueue() {
     log.debug("Polling queue...");
     Optional<QueuedProject> nextProject = absent();
@@ -138,6 +169,13 @@ public class ValidationScheduler extends AbstractScheduledService {
     }
   }
 
+  /**
+   * Attempts to validate an enqueued project.
+   * 
+   * @param release the current release
+   * @param project the project to validate
+   * @throws ValidationRejectedException if the validation could not be executed
+   */
   private void tryValidation(Release release, final QueuedProject project) {
     // Prepare validation
     val validation = createValidation(release, project);

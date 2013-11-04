@@ -42,8 +42,6 @@ import com.google.common.util.concurrent.ListenableFuture;
 @Slf4j
 public class ValidationExecutor {
 
-  // TODO: Call shutdown from Main
-
   /**
    * Bookkeeping for canceling, indexed by {@link Validation#getId()}.
    */
@@ -64,7 +62,9 @@ public class ValidationExecutor {
   }
 
   /**
-   * Execute a validation job asynchronously. Uses {@link Validation#getId()} to identify in a {@link #cancel} call.
+   * Execute a validation job asynchronously.
+   * <p>
+   * Uses {@link Validation#getId()} to identify in a {@link #cancel} call.
    * 
    * @param validation
    * @throws RejectedExecutionException if there are no "slots" available
@@ -105,7 +105,9 @@ public class ValidationExecutor {
   }
 
   /**
-   * Cancel a running task.
+   * Cancel a running validation.
+   * <p>
+   * Will return {@code false} if the task has already completed, has already been cancelled, or could not be found
    * 
    * @param id the id of the task
    * @return whether the task was successfully cancelled
@@ -147,6 +149,7 @@ public class ValidationExecutor {
    * @return
    */
   private ThreadPoolExecutor createExecutor(int maxConcurrentValidations) {
+    // Bind all pool sizes to this value
     val poolSize = maxConcurrentValidations;
 
     // From the Javadoc:
@@ -178,7 +181,7 @@ public class ValidationExecutor {
   }
 
   /**
-   * Gets basic statistics about the underlying executor.
+   * Gets basic task statistics about the underlying executor.
    * 
    * @return a formatted stats string
    */
