@@ -68,14 +68,14 @@ public class ProjectResource {
     val user = getSubject(securityContext);
     log.info("Request for all Projects from User [{}]", user.getPrincipal());
 
-    Set<Project> projects;// = filterUnauthorized(user, projectRepository.findProjects());
+    Set<Project> projects;
 
     if (isSuperUser(securityContext)) {
       log.info("[{}] is super user", user.getPrincipal());
       projects = projectService.findProjects();
     } else {
       log.info("[{}] is not super user", user.getPrincipal());
-      projects = projectService.findProjects(user);
+      projects = projectService.findProjects(user.getPrincipal().toString());
     }
 
     return Response.ok(projects).build();
@@ -113,16 +113,17 @@ public class ProjectResource {
     val user = getSubject(securityContext);
     log.info("Request for Project [{}] from User [{}]", projectKey, user.getPrincipal());
 
-    if (isAuthorized(user, projectKey) == false) {
-      // This check doubles as a project existence check for non-admin users.
-      // 404 instead of 401 to keep from leaking whether the project exists to an unauthorized user
-      return Responses.notFound(projectKey);
+    Project project;
+
+    if (isSuperUser(securityContext)) {
+      log.info("[{}] is super user", user.getPrincipal());
+      project = projectService.findProject(projectKey);
+    } else {
+      log.info("[{}] is not super user", user.getPrincipal());
+      project = projectService.findProject(projectKey, user.getPrincipal().toString());
     }
-    log.info("Here?");
-    val project = projectService.findProject(projectKey);
-    log.info("Here2?");
+
     if (project == null) {
-      // This check is really only needed because admins bypass the check above
       return Responses.notFound(projectKey);
     }
 

@@ -7,7 +7,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import lombok.val;
 
-import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.repository.ProjectRepository;
 import org.junit.After;
@@ -24,8 +23,6 @@ public class ProjectServiceTest {
   private ProjectService projectService;
 
   private final ProjectRepository projectRepository = mock(ProjectRepository.class);
-
-  private final Subject user = mock(Subject.class);
 
   private final Project projectOne = new Project("PRJ1", "Project One");
 
@@ -53,12 +50,12 @@ public class ProjectServiceTest {
 
   @Test
   public void testFindProjectsForUser() throws Exception {
-    val expected = Sets.newHashSet(projectOne, projectTwo);
-    when(projectRepository.findProjects(any(Subject.class))).thenReturn(expected);
+    val expected = Sets.newHashSet(projectOne);
+    when(projectRepository.findProjects(any(String.class))).thenReturn(expected);
 
-    val actual = projectService.findProjects(user);
+    val actual = projectService.findProjects(any(String.class));
 
-    verify(projectRepository).findProjects();
+    verify(projectRepository).findProjects(any(String.class));
     assertThat(actual).isEqualTo(expected);
   }
 
@@ -69,7 +66,18 @@ public class ProjectServiceTest {
 
     val actual = projectService.findProject(projectOne.getKey());
 
-    verify(projectRepository).findProjects();
+    verify(projectRepository).findProject(projectOne.getKey());
+    assertThat(actual).isEqualTo(expected);
+  }
+
+  @Test
+  public void testFindProjectForUser() throws Exception {
+    val expected = projectOne;
+    when(projectRepository.findProject(projectOne.getKey(), "username")).thenReturn(expected);
+
+    val actual = projectService.findProject(projectOne.getKey(), "username");
+
+    verify(projectRepository).findProject(projectOne.getKey(), "username");
     assertThat(actual).isEqualTo(expected);
   }
 
@@ -80,6 +88,6 @@ public class ProjectServiceTest {
 
     projectService.addProject(projectOne);
 
-    verify(projectRepository).findProjects();
+    verify(projectRepository).addProject(projectOne);
   }
 }

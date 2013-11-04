@@ -24,7 +24,6 @@ import javax.ws.rs.core.Application;
 
 import lombok.val;
 
-import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.submission.core.AbstractDccModule;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.services.ProjectService;
@@ -72,8 +71,8 @@ public class ProjectResourceTest extends ResourceTest {
 
     projectService = mock(ProjectService.class);
     when(projectService.findProject(projectOne.getKey())).thenReturn(projectOne);
-    when(projectService.findProject(projectTwo.getKey())).thenReturn(projectTwo);
-    when(projectService.findProjects(any(Subject.class))).thenReturn(Sets.newHashSet(projectOne));
+    when(projectService.findProject(projectOne.getKey(), AUTH_ALLOWED_USER)).thenReturn(projectOne);
+    when(projectService.findProjects(any(String.class))).thenReturn(Sets.newHashSet(projectOne));
     when(projectService.findProjects()).thenReturn(Sets.newHashSet(projectOne, projectTwo));
 
     return super.configure();
@@ -104,7 +103,7 @@ public class ProjectResourceTest extends ResourceTest {
   public void testGetProjectsWhenAuthorized() {
     val reponse =
         target().path("projects").request(MIME_TYPE).header(AUTH_HEADER, getAuthValue(AUTH_ALLOWED_USER)).get();
-    verify(projectService).findProjects(any(Subject.class));
+    verify(projectService).findProjects(any(String.class));
     assertThat(reponse.getStatus()).isEqualTo(OK.getStatusCode());
     assertThat(reponse.readEntity(String.class)).isEqualTo("[{\"key\":\"PRJ1\",\"name\":\"Project One\"}]");
   }
@@ -144,7 +143,7 @@ public class ProjectResourceTest extends ResourceTest {
     val reponse =
         target().path("projects/" + projectOne.getKey()).request(MIME_TYPE)
             .header(AUTH_HEADER, getAuthValue(AUTH_ALLOWED_USER)).get();
-    verify(projectService).findProject(projectOne.getKey());
+    verify(projectService).findProject(projectOne.getKey(), AUTH_ALLOWED_USER);
     assertThat(reponse.getStatus()).isEqualTo(OK.getStatusCode());
     assertThat(reponse.readEntity(String.class)).isEqualTo("{\"key\":\"PRJ1\",\"name\":\"Project One\"}");
   }

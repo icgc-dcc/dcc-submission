@@ -22,7 +22,6 @@ import java.util.Set;
 
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.submission.core.MailService;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.core.model.QProject;
@@ -44,7 +43,12 @@ public class ProjectRepository extends BaseMorphiaService<Project> {
 
   public Project findProject(String projectKey) {
     log.info("Finding Project {}", projectKey);
-    return this.query().where(QProject.project.key.eq(projectKey)).singleResult();
+    return where(QProject.project.key.eq(projectKey)).singleResult();
+  }
+
+  public Project findProject(String projectKey, String username) {
+    log.info("Finding Project {} for User {}", projectKey, username);
+    return where(QProject.project.key.eq(projectKey)).where(QProject.project.users.contains(username)).singleResult();
   }
 
   public Set<Project> findProjects() {
@@ -52,9 +56,9 @@ public class ProjectRepository extends BaseMorphiaService<Project> {
     return ImmutableSet.copyOf(query().list());
   }
 
-  public Set<Project> findProjects(Subject user) {
-    log.info("Finding all Projects for {}", user.getPrincipal());
-    return ImmutableSet.copyOf(where(QProject.project.users.contains(user.getPrincipal().toString())).list());
+  public Set<Project> findProjects(String username) {
+    log.info("Finding all Projects for {}", username);
+    return ImmutableSet.copyOf(where(QProject.project.users.contains(username)).list());
   }
 
   public void addProject(Project project) {
