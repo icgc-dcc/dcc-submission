@@ -29,7 +29,6 @@ import static org.icgc.dcc.submission.release.model.SubmissionState.ERROR;
 import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
 import static org.icgc.dcc.submission.release.model.SubmissionState.VALID;
 
-import java.util.List;
 import java.util.Set;
 
 import javax.mail.Address;
@@ -86,27 +85,57 @@ public class ValidationScheduler extends AbstractScheduledService {
   private final DccFileSystem dccFileSystem;
   @NonNull
   private final PlatformStrategyFactory platformStrategyFactory;
+  @NonNull
+  private final Set<Validator> validators;
 
+  /**
+   * Cancels a validation that was previously started in {@link #tryValidation(Release, QueuedProject)}.
+   * 
+   * @param projectKey the key of the project to cancel
+   * @throws InvalidStateException
+   */
   public void cancelValidation(String projectKey) throws InvalidStateException {
     val cancelled = validationExecutor.cancel(projectKey);
     if (cancelled) {
-      // TODO: Determine when this shouled be called
+      // TODO: Determine when this should / needs to be called
       log.info("Resetting database and file system state for killed project validation: {}...", projectKey);
       releaseService.deleteQueuedRequest(projectKey);
     }
   }
 
+  /**
+   * Creates a {@code Scheduler} instance that runs every {@link #POLLING_PERIOD_SECONDS}.
+   */
+  @Override
+  protected Scheduler scheduler() {
+    return newFixedDelaySchedule(POLLING_PERIOD_SECONDS, POLLING_PERIOD_SECONDS, SECONDS);
+  }
+
+  /**
+   * Main {@code Validation} dispatch loop that that is invoked by the {@link #scheduler()}.
+   * 
+   * @throws Exception
+   */
   @Override
   protected void runOneIteration() throws Exception {
     pollOpenRelease();
     pollQueue();
   }
 
+  /**
+   * Ensures that the underlying validation executor tasks are shutdown gracefully when the main shutdown hook is
+   * triggered.
+   * 
+   * @throws Exception
+   */
   @Override
-  protected Scheduler scheduler() {
-    return newFixedDelaySchedule(POLLING_PERIOD_SECONDS, POLLING_PERIOD_SECONDS, SECONDS);
+  protected void shutDown() throws Exception {
+    validationExecutor.shutdown();
   }
 
+  /**
+   * Polls for an open release to become available.
+   */
   private void pollOpenRelease() {
     long count;
     do {
@@ -118,6 +147,9 @@ public class ValidationScheduler extends AbstractScheduledService {
         OPENED, count);
   }
 
+  /**
+   * Polls for an enqueued project to become available
+   */
   private void pollQueue() {
     log.debug("Polling queue...");
     Optional<QueuedProject> nextProject = absent();
@@ -127,16 +159,23 @@ public class ValidationScheduler extends AbstractScheduledService {
       nextProject = release.nextInQueue();
 
       if (nextProject.isPresent()) {
+        log.info("Trying to validate next eligible project in queue: '{}'", nextProject.get());
         tryValidation(release, nextProject.get());
       }
     } catch (ValidationRejectedException e) {
       log.info("Valdiation for '{}' was rejected:", nextProject.get());
-
     } catch (Throwable t) {
       log.error("Caught an unexpected exception: {}", t);
     }
   }
 
+  /**
+   * Attempts to validate an enqueued project.
+   * 
+   * @param release the current release
+   * @param project the project to validate
+   * @throws ValidationRejectedException if the validation could not be executed
+   */
   private void tryValidation(Release release, final QueuedProject project) {
     // Prepare validation
     val validation = createValidation(release, project);
@@ -144,32 +183,41 @@ public class ValidationScheduler extends AbstractScheduledService {
     // Submit validation asynchronously for execution
     val future = validationExecutor.execute(validation);
 
-    log.info("Processing next project in queue: '{}'", project);
+    // If we made it here then the validation was accepted
+    log.info("Validating next project in queue: '{}'", project);
     mailService.sendProcessingStarted(project.getKey(), project.getEmails());
     releaseService.dequeueToValidating(project);
 
-    addCallback(future, new FutureCallback<Throwable>() {
+    // Add callbacks to handle execution outcomes
+    addCallback(future, new FutureCallback<Validation>() {
 
       @Override
-      public void onSuccess(Throwable t) {
-        // TODO: Handle throwable
-        storeSubmissionReport(project.getKey(), validation.getContext().getSubmissionReport());
-        resolveSubmission(project, validation.getContext().hasErrors() ? INVALID : VALID);
+      public void onSuccess(Validation validation) {
+        log.info("Finished validation for '{}'", project.getKey());
+
+        try {
+          storeSubmissionReport(project.getKey(), validation.getContext().getSubmissionReport());
+        } finally {
+          resolveSubmission(project, validation.getContext().hasErrors() ? INVALID : VALID);
+        }
       }
 
       @Override
       public void onFailure(Throwable t) {
-        // TODO: Handle throwable
-        storeSubmissionReport(project.getKey(), null);
-        resolveSubmission(project, ERROR);
+        log.error("Exception occurred in '{}' validation: {}", project.getKey(), t);
+
+        try {
+          storeSubmissionReport(project.getKey(), null);
+        } finally {
+          resolveSubmission(project, ERROR);
+        }
       }
 
     });
-
   }
 
   private Validation createValidation(Release release, QueuedProject project) {
-    List<Validator> validators = ImmutableList.<Validator> of();
+    val validators = ImmutableList.<Validator> copyOf(this.validators);
     val context = createValidationContext(release, project);
     val validation = new Validation(context, validators);
 
@@ -208,14 +256,15 @@ public class ValidationScheduler extends AbstractScheduledService {
     log.info("Resolving project '{}' to submission state '{}'", projectKey, state);
     releaseService.resolve(projectKey, state);
 
-    if (queuedProject.getEmails().isEmpty() == false) {
-      this.email(queuedProject, state);
+    if (!queuedProject.getEmails().isEmpty()) {
+      log.info("Sending notification email for project '{}'...", queuedProject);
+      notifyRecipients(queuedProject, state);
     }
 
     log.info("Resolved {}", projectKey);
   }
 
-  private void email(QueuedProject project, SubmissionState state) {
+  private void notifyRecipients(QueuedProject project, SubmissionState state) {
     val release = resolveOpenRelease();
 
     Set<Address> addresses = newHashSet();

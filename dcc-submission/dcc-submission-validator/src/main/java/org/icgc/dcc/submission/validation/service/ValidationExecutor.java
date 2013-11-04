@@ -30,6 +30,7 @@ import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -44,7 +45,7 @@ public class ValidationExecutor {
   /**
    * Bookkeeping for canceling, indexed by {@link Validation#getId()}.
    */
-  private final ConcurrentMap<String, Future<Throwable>> futures = newConcurrentMap();
+  private final ConcurrentMap<String, Future<?>> futures = newConcurrentMap();
 
   /**
    * The executor used to execute validation tasks.
@@ -61,33 +62,40 @@ public class ValidationExecutor {
   }
 
   /**
-   * Execute a validation job asynchronously. Uses {@link Validation#getId()} to identify in a {@link #cancel} call.
+   * Execute a validation job asynchronously.
+   * <p>
+   * Uses {@link Validation#getId()} to identify in a {@link #cancel} call.
    * 
    * @param validation
    * @throws RejectedExecutionException if there are no "slots" available
    */
-  public ListenableFuture<Throwable> execute(final Validation validation) {
+  public ListenableFuture<Validation> execute(final Validation validation) {
     val id = validation.getId();
 
     log.info("execute: Submitting validation '{}' ... {}", id, getStats());
-    val future = listeningDecorator(executor).submit(new Callable<Throwable>() {
+    val future = listeningDecorator(executor).submit(new Callable<Validation>() {
 
       @Override
-      public Throwable call() throws Exception {
+      @SneakyThrows
+      public Validation call() throws Exception {
         try {
           log.info("call: Executing validation '{}'... {}", id, getStats());
           validation.execute();
           log.info("call: Finished executing validation '{}'... {}", id, getStats());
         } catch (Throwable t) {
           log.error("call: Exception executing validation '{}' {}: {}", new Object[] { id, getStats(), t });
-          return t;
+
+          // Propagate for {@link ListeningFuture#onError()}
+          throw t;
         } finally {
           futures.remove(id);
         }
 
+        // Make available for {@link ListeningFuture#onSuccess()}
         log.info("call: Exiting validation without error'{}'... {}", id, getStats());
-        return null;
+        return validation;
       }
+
     });
 
     // Track it for cancellation
@@ -97,7 +105,9 @@ public class ValidationExecutor {
   }
 
   /**
-   * Cancel a running task.
+   * Cancel a running validation.
+   * <p>
+   * Will return {@code false} if the task has already completed, has already been cancelled, or could not be found
    * 
    * @param id the id of the task
    * @return whether the task was successfully cancelled
@@ -105,7 +115,8 @@ public class ValidationExecutor {
   public boolean cancel(String id) {
     try {
       val future = futures.get(id);
-      if (future != null) {
+      val available = future != null;
+      if (available) {
         log.warn("cancel: Cancelling validation '{}'... {}", id, getStats());
         val cancelled = future.cancel(true);
         log.warn("cancel: Finshed cancelling validation '{}', cancelled: {}... {}",
@@ -126,7 +137,7 @@ public class ValidationExecutor {
   /**
    * Shuts down the internal executor.
    */
-  public void stop() {
+  public void shutdown() {
     log.info("Shutting down executor...");
     executor.shutdownNow();
   }
@@ -138,6 +149,7 @@ public class ValidationExecutor {
    * @return
    */
   private ThreadPoolExecutor createExecutor(int maxConcurrentValidations) {
+    // Bind all pool sizes to this value
     val poolSize = maxConcurrentValidations;
 
     // From the Javadoc:
@@ -158,10 +170,10 @@ public class ValidationExecutor {
         new RejectedExecutionHandler() {
 
           @Override
-          public void rejectedExecution(Runnable r, ThreadPoolExecutor t) {
+          public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
             log.info("Rejecting... {}", getStats());
 
-            // Custom exception
+            // Raison d'être
             throw new ValidationRejectedException();
           }
 
@@ -169,7 +181,7 @@ public class ValidationExecutor {
   }
 
   /**
-   * Gets basic statistics about the underlying executor.
+   * Gets basic task statistics about the underlying executor.
    * 
    * @return a formatted stats string
    */

@@ -20,12 +20,14 @@ package org.icgc.dcc.submission.validation;
 import org.icgc.dcc.submission.core.AbstractDccModule;
 import org.icgc.dcc.submission.dictionary.DictionaryService;
 import org.icgc.dcc.submission.dictionary.model.CodeList;
-import org.icgc.dcc.submission.validation.core.RestrictionType;
+import org.icgc.dcc.submission.validation.checker.FirstPassValidator;
 import org.icgc.dcc.submission.validation.core.RestrictionContext;
+import org.icgc.dcc.submission.validation.core.RestrictionType;
 import org.icgc.dcc.submission.validation.planner.DefaultPlanner;
 import org.icgc.dcc.submission.validation.planner.Planner;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactory;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactoryProvider;
+import org.icgc.dcc.submission.validation.primary.PrimaryValidator;
 import org.icgc.dcc.submission.validation.report.ByteOffsetToLineNumber;
 import org.icgc.dcc.submission.validation.restriction.CodeListRestriction;
 import org.icgc.dcc.submission.validation.restriction.DiscreteValuesRestriction;
@@ -33,7 +35,9 @@ import org.icgc.dcc.submission.validation.restriction.RangeFieldRestriction;
 import org.icgc.dcc.submission.validation.restriction.RegexRestriction;
 import org.icgc.dcc.submission.validation.restriction.RequiredRestriction;
 import org.icgc.dcc.submission.validation.restriction.ScriptRestriction;
+import org.icgc.dcc.submission.validation.semantic.ReferenceGenomeValidator;
 import org.icgc.dcc.submission.validation.service.ValidationService;
+import org.icgc.dcc.submission.validation.service.Validator;
 
 import com.google.common.base.Optional;
 import com.google.inject.Inject;
@@ -41,14 +45,47 @@ import com.google.inject.Singleton;
 import com.google.inject.multibindings.Multibinder;
 
 /**
- * Module for the ({@code ValidationQueueService})
+ * Module for the validation subsystem.
  */
 public class ValidationModule extends AbstractDccModule {
 
+  /**
+   * Config property name.
+   */
+  private static final String MAX_VALIDATING_CONFIG_PARAM = "validator.max_simultaneous";
+
+  /**
+   * Default value for maximum number of concurrent validations.
+   */
+  private static final int DEFAULT_MAX_VALIDATING = 1;
+
   @Override
   protected void configure() {
+    // TODO: Remove when integration is complete
     bindService(ValidationQueueService.class);
     bind(ValidationService.class);
+
+    // TODO: uncomment when integration is complete
+    // bindService(ValidationScheduler.class);
+    // bind(ValidationExecutor.class);
+    // bind(ValidationExecutor.class).toProvider(new Provider<ValidationExecutor>() {
+    //
+    // @Inject
+    // private Config config;
+    //
+    // @Override
+    // public ValidationExecutor get() {
+    // return new ValidationExecutor(getMaxValidating());
+    // }
+    //
+    // private int getMaxValidating() {
+    // return config.hasPath(MAX_VALIDATING_CONFIG_PARAM) ?
+    // config.getInt(MAX_VALIDATING_CONFIG_PARAM) :
+    // DEFAULT_MAX_VALIDATING;
+    // }
+    //
+    // }).in(Singleton.class);
+
     bind(RestrictionContext.class).toInstance(new RestrictionContext() {
 
       @Inject
@@ -63,6 +100,9 @@ public class ValidationModule extends AbstractDccModule {
     bind(Planner.class).to(DefaultPlanner.class);
     bind(PlatformStrategyFactory.class).toProvider(PlatformStrategyFactoryProvider.class).in(Singleton.class);
     bindRestrictionTypes();
+
+    // TODO: Enable when integration is complete
+    // bindValidators();
   }
 
   /**
@@ -81,6 +121,17 @@ public class ValidationModule extends AbstractDccModule {
 
   private void bindRestriction(Multibinder<RestrictionType> types, Class<? extends RestrictionType> type) {
     types.addBinding().to(type).in(Singleton.class);
+  }
+
+  private void bindValidators() {
+    Multibinder<Validator> validators = Multibinder.newSetBinder(binder(), Validator.class);
+    bindValidator(validators, FirstPassValidator.class);
+    bindValidator(validators, PrimaryValidator.class);
+    bindValidator(validators, ReferenceGenomeValidator.class);
+  }
+
+  private void bindValidator(Multibinder<Validator> validators, Class<? extends Validator> validator) {
+    validators.addBinding().to(validator).in(Singleton.class);
   }
 
 }

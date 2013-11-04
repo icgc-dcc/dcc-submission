@@ -42,8 +42,8 @@ import org.icgc.dcc.submission.dictionary.model.Term;
 import org.icgc.dcc.submission.dictionary.model.ValueType;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.validation.core.Plan;
-import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.icgc.dcc.submission.validation.platform.LocalPlatformStrategy;
+import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -96,7 +96,7 @@ public class ValidationExternalIntegrityTest extends BaseValidationIntegrityTest
   }
 
   @Test
-  public void test_validate_valid() throws IOException, FilePresenceException {
+  public void test_validate_valid() throws IOException {
     String content = validate(dictionary, ROOTDIR);
     assertTrue(content, content.isEmpty());
 
@@ -110,7 +110,7 @@ public class ValidationExternalIntegrityTest extends BaseValidationIntegrityTest
   }
 
   @Test
-  public void test_validate_invalidCompositeKeys() throws IOException, FilePresenceException {
+  public void test_validate_invalidCompositeKeys() throws IOException {
     FileSchema donor = getFileSchemaByName(dictionary, "donor");
     FileSchema specimen = getFileSchemaByName(dictionary, "specimen");
 
@@ -144,12 +144,11 @@ public class ValidationExternalIntegrityTest extends BaseValidationIntegrityTest
     assertEquals("Incorrect specimen ID trim list", specimenTrimExpected.trim(), specimenTrim.trim());
   }
 
-  @Test(expected = FilePresenceException.class)
-  public void test_validate_missingFile() throws IOException, FilePresenceException {
+  public void test_validate_missingFile() throws IOException {
     testErrorType("fk_2");
   }
 
-  private void testErrorType(String errorType) throws IOException, FilePresenceException {
+  private void testErrorType(String errorType) throws IOException {
     String content = validate(dictionary, ROOTDIR + "/error/" + errorType);
     String expected =
         FileUtils
@@ -158,7 +157,7 @@ public class ValidationExternalIntegrityTest extends BaseValidationIntegrityTest
     assertEquals(content, expected.trim(), content.trim());
   }
 
-  private String validate(Dictionary dictionary, String relative) throws IOException, FilePresenceException {
+  private String validate(Dictionary dictionary, String relative) throws IOException {
     String rootDirString = this.getClass().getResource(relative).getFile();
     String outputDirString = rootDirString + "/" + ".validation";
     System.err.println(outputDirString);

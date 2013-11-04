@@ -28,7 +28,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.QueuedProject;
-import org.icgc.dcc.submission.validation.PlanningFileLevelException;
 import org.icgc.dcc.submission.validation.core.FileSchemaDirectory;
 import org.icgc.dcc.submission.validation.core.FlowType;
 import org.icgc.dcc.submission.validation.core.Plan;
@@ -97,34 +96,26 @@ public class DefaultPlanner implements Planner {
   private static void includePlanners(QueuedProject queuedProject, PlatformStrategy strategy, Dictionary dictionary,
       FileSchemaDirectory systemDirectory, Plan plan) {
     for (val fileSchema : dictionary.getFiles()) {
-      try {
-        val fileSchemaDirectory = strategy.getFileSchemaDirectory();
-        val fileSchemaName = fileSchema.getName();
+      val fileSchemaDirectory = strategy.getFileSchemaDirectory();
+      val fileSchemaName = fileSchema.getName();
 
-        val include = fileSchemaDirectory.hasFile(fileSchema) || systemDirectory.hasFile(fileSchema);
-        if (include) {
-          log.info("Including file schema '{}' flow planners for '{}'", fileSchemaName, queuedProject);
-          plan.include(fileSchema,
-              new DefaultInternalFlowPlanner(fileSchema),
-              new DefaultExternalFlowPlanner(plan, fileSchema));
-        } else {
-          log.info("File schema '{}' has no matching datafile in submission directory '{}' for '{}'",
-              new Object[] { fileSchemaName, fileSchemaDirectory.getDirectoryPath(), queuedProject });
-        }
-      } catch (PlanningFileLevelException e) {
-        plan.addFileLevelError(e);
+      val include = fileSchemaDirectory.hasFile(fileSchema) || systemDirectory.hasFile(fileSchema);
+      if (include) {
+        log.info("Including file schema '{}' flow planners for '{}'", fileSchemaName, queuedProject);
+        plan.include(fileSchema,
+            new DefaultInternalFlowPlanner(fileSchema),
+            new DefaultExternalFlowPlanner(plan, fileSchema));
+      } else {
+        log.info("File schema '{}' has no matching datafile in submission directory '{}' for '{}'",
+            new Object[] { fileSchemaName, fileSchemaDirectory.getDirectoryPath(), queuedProject });
       }
     }
   }
 
   private void applyVisitors(QueuedProject queuedProject, Plan plan) {
     for (val visitor : planningVisitors) {
-      try {
-        log.info("Applying '{}' planning visitor to '{}'", visitor.getClass().getSimpleName(), queuedProject);
-        visitor.apply(plan);
-      } catch (PlanningFileLevelException e) {
-        plan.addFileLevelError(e);
-      }
+      log.info("Applying '{}' planning visitor to '{}'", visitor.getClass().getSimpleName(), queuedProject);
+      visitor.apply(plan);
     }
   }
 

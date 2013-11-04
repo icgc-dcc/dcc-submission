@@ -25,7 +25,6 @@ import static org.icgc.dcc.submission.validation.core.ErrorType.REFERENCE_GENOME
 
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -74,10 +73,6 @@ public class ReferenceGenomeValidator implements Validator {
   private static final String FIELD_SEPARATOR = "\t";
 
   private IndexedFastaSequenceFile sequenceFile;
-
-  public ReferenceGenomeValidator(File fastaFile) throws FileNotFoundException {
-    sequenceFile = new IndexedFastaSequenceFile(fastaFile);
-  }
 
   /**
    * Currently this is for testing only. For production it makes more sense to have the files setup in-place instead of
