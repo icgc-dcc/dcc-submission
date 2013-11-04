@@ -91,7 +91,7 @@ public class ReferenceGenomeValidatorTest {
   }
 
   @Test
-  public void testSSMSamplePrimaryFile() throws IOException {
+  public void testSsmSamplePrimaryFile() throws IOException {
     // Setup: Use local file system
     val fileSystem = FileSystem.getLocal(new Configuration());
     when(context.getFileSystem()).thenReturn(fileSystem);

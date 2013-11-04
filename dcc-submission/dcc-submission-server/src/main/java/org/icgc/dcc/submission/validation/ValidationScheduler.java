@@ -29,7 +29,6 @@ import static org.icgc.dcc.submission.release.model.SubmissionState.ERROR;
 import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
 import static org.icgc.dcc.submission.release.model.SubmissionState.VALID;
 
-import java.util.List;
 import java.util.Set;
 
 import javax.mail.Address;
@@ -86,6 +85,8 @@ public class ValidationScheduler extends AbstractScheduledService {
   private final DccFileSystem dccFileSystem;
   @NonNull
   private final PlatformStrategyFactory platformStrategyFactory;
+  @NonNull
+  private final Set<Validator> validators;
 
   public void cancelValidation(String projectKey) throws InvalidStateException {
     val cancelled = validationExecutor.cancel(projectKey);
@@ -127,11 +128,11 @@ public class ValidationScheduler extends AbstractScheduledService {
       nextProject = release.nextInQueue();
 
       if (nextProject.isPresent()) {
+        log.info("Trying to validate next eligible project in queue: '{}'", nextProject.get());
         tryValidation(release, nextProject.get());
       }
     } catch (ValidationRejectedException e) {
       log.info("Valdiation for '{}' was rejected:", nextProject.get());
-
     } catch (Throwable t) {
       log.error("Caught an unexpected exception: {}", t);
     }
@@ -144,7 +145,7 @@ public class ValidationScheduler extends AbstractScheduledService {
     // Submit validation asynchronously for execution
     val future = validationExecutor.execute(validation);
 
-    log.info("Processing next project in queue: '{}'", project);
+    log.info("Validating next project in queue: '{}'", project);
     mailService.sendProcessingStarted(project.getKey(), project.getEmails());
     releaseService.dequeueToValidating(project);
 
@@ -153,6 +154,7 @@ public class ValidationScheduler extends AbstractScheduledService {
       @Override
       public void onSuccess(Throwable t) {
         // TODO: Handle throwable
+        log.info("Finished validation for '{}'", project.getKey());
         storeSubmissionReport(project.getKey(), validation.getContext().getSubmissionReport());
         resolveSubmission(project, validation.getContext().hasErrors() ? INVALID : VALID);
       }
@@ -160,6 +162,7 @@ public class ValidationScheduler extends AbstractScheduledService {
       @Override
       public void onFailure(Throwable t) {
         // TODO: Handle throwable
+        log.error("Exception occurred in '{}' validation: {}", project.getKey(), t);
         storeSubmissionReport(project.getKey(), null);
         resolveSubmission(project, ERROR);
       }
@@ -169,7 +172,7 @@ public class ValidationScheduler extends AbstractScheduledService {
   }
 
   private Validation createValidation(Release release, QueuedProject project) {
-    List<Validator> validators = ImmutableList.<Validator> of();
+    val validators = ImmutableList.<Validator> copyOf(this.validators);
     val context = createValidationContext(release, project);
     val validation = new Validation(context, validators);
 

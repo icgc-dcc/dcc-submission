@@ -41,6 +41,8 @@ import com.google.common.util.concurrent.ListenableFuture;
 @Slf4j
 public class ValidationExecutor {
 
+  // TODO: Call shutdown from Main
+
   /**
    * Bookkeeping for canceling, indexed by {@link Validation#getId()}.
    */
@@ -126,7 +128,7 @@ public class ValidationExecutor {
   /**
    * Shuts down the internal executor.
    */
-  public void stop() {
+  public void shutdown() {
     log.info("Shutting down executor...");
     executor.shutdownNow();
   }

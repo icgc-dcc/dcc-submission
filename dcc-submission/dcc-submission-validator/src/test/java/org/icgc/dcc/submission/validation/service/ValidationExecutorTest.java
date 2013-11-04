@@ -45,7 +45,7 @@ public class ValidationExecutorTest {
 
   @After
   public void tearDown() {
-    executor.stop();
+    executor.shutdown();
   }
 
   @Test
