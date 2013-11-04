@@ -21,9 +21,9 @@ public class ProjectService {
     return projectRepository.findProject(projectKey);
   }
 
-  public Project findProject(String projectKey, String username) {
+  public Project findProjectForUser(String projectKey, String username) {
     log.info("Passing on request for Project [{}] for ", projectKey, username);
-    return projectRepository.findProject(projectKey, username);
+    return projectRepository.findProjectForUser(projectKey, username);
   }
 
   public Set<Project> findProjects() {
@@ -31,9 +31,9 @@ public class ProjectService {
     return projectRepository.findProjects();
   }
 
-  public Set<Project> findProjects(String username) {
+  public Set<Project> findProjectsForUser(String username) {
     log.info("Passing on request to find Projects for User [{}]", username);
-    return projectRepository.findProjects(username);
+    return projectRepository.findProjectsForUser(username);
   }
 
   public void addProject(Project project) {

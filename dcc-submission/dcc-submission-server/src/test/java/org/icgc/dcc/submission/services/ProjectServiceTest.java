@@ -2,7 +2,6 @@ package org.icgc.dcc.submission.services;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import lombok.val;
@@ -13,6 +12,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.common.collect.Sets;
@@ -22,7 +22,8 @@ public class ProjectServiceTest {
 
   private ProjectService projectService;
 
-  private final ProjectRepository projectRepository = mock(ProjectRepository.class);
+  @Mock
+  private ProjectRepository projectRepository;
 
   private final Project projectOne = new Project("PRJ1", "Project One");
 
@@ -51,11 +52,11 @@ public class ProjectServiceTest {
   @Test
   public void testFindProjectsForUser() throws Exception {
     val expected = Sets.newHashSet(projectOne);
-    when(projectRepository.findProjects(any(String.class))).thenReturn(expected);
+    when(projectRepository.findProjectsForUser(any(String.class))).thenReturn(expected);
 
-    val actual = projectService.findProjects(any(String.class));
+    val actual = projectService.findProjectsForUser(any(String.class));
 
-    verify(projectRepository).findProjects(any(String.class));
+    verify(projectRepository).findProjectsForUser(any(String.class));
     assertThat(actual).isEqualTo(expected);
   }
 
@@ -73,11 +74,11 @@ public class ProjectServiceTest {
   @Test
   public void testFindProjectForUser() throws Exception {
     val expected = projectOne;
-    when(projectRepository.findProject(projectOne.getKey(), "username")).thenReturn(expected);
+    when(projectRepository.findProjectForUser(projectOne.getKey(), "username")).thenReturn(expected);
 
-    val actual = projectService.findProject(projectOne.getKey(), "username");
+    val actual = projectService.findProjectForUser(projectOne.getKey(), "username");
 
-    verify(projectRepository).findProject(projectOne.getKey(), "username");
+    verify(projectRepository).findProjectForUser(projectOne.getKey(), "username");
     assertThat(actual).isEqualTo(expected);
   }
 

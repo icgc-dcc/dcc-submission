@@ -30,6 +30,8 @@ import org.icgc.dcc.submission.sftp.SftpModule;
 import org.icgc.dcc.submission.shiro.ShiroModule;
 import org.icgc.dcc.submission.validation.ValidationModule;
 import org.icgc.dcc.submission.web.WebModule;
+import org.junit.Before;
+import org.mockito.MockitoAnnotations;
 
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Guice;
@@ -45,6 +47,11 @@ public abstract class ResourceTest extends JerseyTest {
   protected static final String MIME_TYPE = APPLICATION_JSON;
 
   protected Injector injector;
+
+  @Before
+  public void initMocks() {
+    MockitoAnnotations.initMocks(this);
+  }
 
   @Override
   public TestContainerFactory getTestContainerFactory() {

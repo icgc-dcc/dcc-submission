@@ -30,8 +30,6 @@ import org.icgc.dcc.submission.services.ProjectService;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
@@ -39,7 +37,6 @@ import com.google.inject.Module;
 import com.mongodb.CommandResult;
 import com.mongodb.MongoException.DuplicateKey;
 
-@RunWith(MockitoJUnitRunner.class)
 public class ProjectResourceTest extends ResourceTest {
 
   @Rule
@@ -71,8 +68,8 @@ public class ProjectResourceTest extends ResourceTest {
 
     projectService = mock(ProjectService.class);
     when(projectService.findProject(projectOne.getKey())).thenReturn(projectOne);
-    when(projectService.findProject(projectOne.getKey(), AUTH_ALLOWED_USER)).thenReturn(projectOne);
-    when(projectService.findProjects(any(String.class))).thenReturn(Sets.newHashSet(projectOne));
+    when(projectService.findProjectForUser(projectOne.getKey(), AUTH_ALLOWED_USER)).thenReturn(projectOne);
+    when(projectService.findProjectsForUser(any(String.class))).thenReturn(Sets.newHashSet(projectOne));
     when(projectService.findProjects()).thenReturn(Sets.newHashSet(projectOne, projectTwo));
 
     return super.configure();
@@ -103,7 +100,7 @@ public class ProjectResourceTest extends ResourceTest {
   public void testGetProjectsWhenAuthorized() {
     val reponse =
         target().path("projects").request(MIME_TYPE).header(AUTH_HEADER, getAuthValue(AUTH_ALLOWED_USER)).get();
-    verify(projectService).findProjects(any(String.class));
+    verify(projectService).findProjectsForUser(any(String.class));
     assertThat(reponse.getStatus()).isEqualTo(OK.getStatusCode());
     assertThat(reponse.readEntity(String.class)).isEqualTo("[{\"key\":\"PRJ1\",\"name\":\"Project One\"}]");
   }
@@ -143,7 +140,7 @@ public class ProjectResourceTest extends ResourceTest {
     val reponse =
         target().path("projects/" + projectOne.getKey()).request(MIME_TYPE)
             .header(AUTH_HEADER, getAuthValue(AUTH_ALLOWED_USER)).get();
-    verify(projectService).findProject(projectOne.getKey(), AUTH_ALLOWED_USER);
+    verify(projectService).findProjectForUser(projectOne.getKey(), AUTH_ALLOWED_USER);
     assertThat(reponse.getStatus()).isEqualTo(OK.getStatusCode());
     assertThat(reponse.readEntity(String.class)).isEqualTo("{\"key\":\"PRJ1\",\"name\":\"Project One\"}");
   }

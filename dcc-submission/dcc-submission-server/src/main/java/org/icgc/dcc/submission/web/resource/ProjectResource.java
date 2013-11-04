@@ -75,7 +75,7 @@ public class ProjectResource {
       projects = projectService.findProjects();
     } else {
       log.info("[{}] is not super user", user.getPrincipal());
-      projects = projectService.findProjects(user.getPrincipal().toString());
+      projects = projectService.findProjectsForUser(user.getPrincipal().toString());
     }
 
     return Response.ok(projects).build();
@@ -120,7 +120,7 @@ public class ProjectResource {
       project = projectService.findProject(projectKey);
     } else {
       log.info("[{}] is not super user", user.getPrincipal());
-      project = projectService.findProject(projectKey, user.getPrincipal().toString());
+      project = projectService.findProjectForUser(projectKey, user.getPrincipal().toString());
     }
 
     if (project == null) {
