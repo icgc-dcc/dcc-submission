@@ -109,6 +109,24 @@ public class ScriptRestrictionTest extends BaseRestrictionTest {
         row("x", 1));
   }
 
+  @Test
+  public void test_ScriptFunction_compile_branch() {
+    val results = invokeFunction(
+        script("if ([1,2,3,4] contains mutation_type) { true } else { false }"),
+        description("mutation_type"),
+        row("mutation_type", 1));
+
+    assertThat(results).hasSize(1);
+
+    val result = results.get(0);
+
+    val mutation_type = result.getObject(0);
+    assertThat(mutation_type).isEqualTo(1);
+
+    val state = (TupleState) result.getObject(1);
+    assertTrue(state.isValid());
+  }
+
   private static List<Tuple> invokeFunction(String script, String description, Object... values) {
     checkArgument(values.length % 2 == 0);
 
