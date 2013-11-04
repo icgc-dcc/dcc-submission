@@ -30,6 +30,7 @@ import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -46,7 +47,7 @@ public class ValidationExecutor {
   /**
    * Bookkeeping for canceling, indexed by {@link Validation#getId()}.
    */
-  private final ConcurrentMap<String, Future<Throwable>> futures = newConcurrentMap();
+  private final ConcurrentMap<String, Future<?>> futures = newConcurrentMap();
 
   /**
    * The executor used to execute validation tasks.
@@ -68,28 +69,33 @@ public class ValidationExecutor {
    * @param validation
    * @throws RejectedExecutionException if there are no "slots" available
    */
-  public ListenableFuture<Throwable> execute(final Validation validation) {
+  public ListenableFuture<Validation> execute(final Validation validation) {
     val id = validation.getId();
 
     log.info("execute: Submitting validation '{}' ... {}", id, getStats());
-    val future = listeningDecorator(executor).submit(new Callable<Throwable>() {
+    val future = listeningDecorator(executor).submit(new Callable<Validation>() {
 
       @Override
-      public Throwable call() throws Exception {
+      @SneakyThrows
+      public Validation call() throws Exception {
         try {
           log.info("call: Executing validation '{}'... {}", id, getStats());
           validation.execute();
           log.info("call: Finished executing validation '{}'... {}", id, getStats());
         } catch (Throwable t) {
           log.error("call: Exception executing validation '{}' {}: {}", new Object[] { id, getStats(), t });
-          return t;
+
+          // Propagate for {@link ListeningFuture#onError()}
+          throw t;
         } finally {
           futures.remove(id);
         }
 
+        // Make available for {@link ListeningFuture#onSuccess()}
         log.info("call: Exiting validation without error'{}'... {}", id, getStats());
-        return null;
+        return validation;
       }
+
     });
 
     // Track it for cancellation
@@ -107,7 +113,8 @@ public class ValidationExecutor {
   public boolean cancel(String id) {
     try {
       val future = futures.get(id);
-      if (future != null) {
+      val available = future != null;
+      if (available) {
         log.warn("cancel: Cancelling validation '{}'... {}", id, getStats());
         val cancelled = future.cancel(true);
         log.warn("cancel: Finshed cancelling validation '{}', cancelled: {}... {}",
@@ -160,10 +167,10 @@ public class ValidationExecutor {
         new RejectedExecutionHandler() {
 
           @Override
-          public void rejectedExecution(Runnable r, ThreadPoolExecutor t) {
+          public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
             log.info("Rejecting... {}", getStats());
 
-            // Custom exception
+            // Raison d'être
             throw new ValidationRejectedException();
           }
 

@@ -145,30 +145,37 @@ public class ValidationScheduler extends AbstractScheduledService {
     // Submit validation asynchronously for execution
     val future = validationExecutor.execute(validation);
 
+    // If we made it here then the validation was accepted
     log.info("Validating next project in queue: '{}'", project);
     mailService.sendProcessingStarted(project.getKey(), project.getEmails());
     releaseService.dequeueToValidating(project);
 
-    addCallback(future, new FutureCallback<Throwable>() {
+    // Add callbacks to handle execution outcomes
+    addCallback(future, new FutureCallback<Validation>() {
 
       @Override
-      public void onSuccess(Throwable t) {
-        // TODO: Handle throwable
+      public void onSuccess(Validation validation) {
         log.info("Finished validation for '{}'", project.getKey());
-        storeSubmissionReport(project.getKey(), validation.getContext().getSubmissionReport());
-        resolveSubmission(project, validation.getContext().hasErrors() ? INVALID : VALID);
+
+        try {
+          storeSubmissionReport(project.getKey(), validation.getContext().getSubmissionReport());
+        } finally {
+          resolveSubmission(project, validation.getContext().hasErrors() ? INVALID : VALID);
+        }
       }
 
       @Override
       public void onFailure(Throwable t) {
-        // TODO: Handle throwable
         log.error("Exception occurred in '{}' validation: {}", project.getKey(), t);
-        storeSubmissionReport(project.getKey(), null);
-        resolveSubmission(project, ERROR);
+
+        try {
+          storeSubmissionReport(project.getKey(), null);
+        } finally {
+          resolveSubmission(project, ERROR);
+        }
       }
 
     });
-
   }
 
   private Validation createValidation(Release release, QueuedProject project) {
@@ -211,14 +218,15 @@ public class ValidationScheduler extends AbstractScheduledService {
     log.info("Resolving project '{}' to submission state '{}'", projectKey, state);
     releaseService.resolve(projectKey, state);
 
-    if (queuedProject.getEmails().isEmpty() == false) {
-      this.email(queuedProject, state);
+    if (!queuedProject.getEmails().isEmpty()) {
+      log.info("Sending notification email for project '{}'...", queuedProject);
+      notifyRecipients(queuedProject, state);
     }
 
     log.info("Resolved {}", projectKey);
   }
 
-  private void email(QueuedProject project, SubmissionState state) {
+  private void notifyRecipients(QueuedProject project, SubmissionState state) {
     val release = resolveOpenRelease();
 
     Set<Address> addresses = newHashSet();

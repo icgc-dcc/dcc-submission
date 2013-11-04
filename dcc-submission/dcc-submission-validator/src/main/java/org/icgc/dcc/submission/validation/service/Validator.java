@@ -26,7 +26,8 @@ public interface Validator {
    * Validation strategy method.
    * 
    * @param context the encapsulated context of the validation execution
+   * @throws InterruptedException thrown if the validation process is cancelled
    */
-  void validate(ValidationContext context);
+  void validate(ValidationContext context) throws InterruptedException;
 
 }
