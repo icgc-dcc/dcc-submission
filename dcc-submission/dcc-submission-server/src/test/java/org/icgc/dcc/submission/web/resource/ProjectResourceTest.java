@@ -204,7 +204,7 @@ public class ProjectResourceTest extends ResourceTest {
     val reponse =
         target().path("projects").request(MIME_TYPE).header(AUTH_HEADER, getAuthValue(AUTH_ALLOWED_USER))
             .post(projectJson);
-    verify(projectService, never()).addProject(any(Project.class));
+    verify(projectService, never()).upsertProject(any(Project.class));
     assertThat(reponse.getStatus()).isEqualTo(UNAUTHORIZED.getStatusCode());
     assertThat(reponse.readEntity(String.class)).isEqualTo("{\"code\":\"Unauthorized\",\"parameters\":[]}");
   }
@@ -213,7 +213,7 @@ public class ProjectResourceTest extends ResourceTest {
   public void testAddProjectWhenAdmin() throws Exception {
     val projectJson = json("{\"key\":\"PRJ1\",\"name\":\"Project One\"}");
     val reponse = target().path("projects").request(MIME_TYPE).post(projectJson);
-    verify(projectService).addProject(any(Project.class));
+    verify(projectService).upsertProject(any(Project.class));
     assertThat(reponse.getStatus()).isEqualTo(CREATED.getStatusCode());
     assertThat(reponse.getLocation().toString()).isEqualTo("projects/PRJ1");
   }
@@ -222,18 +222,18 @@ public class ProjectResourceTest extends ResourceTest {
   public void testAddProjectWithValidProjectKeyCharacters() throws Exception {
     val projectJson = json("{\"key\":\"ABC.abc_12-3\",\"name\":\"Project One\"}");
     val reponse = target().path("projects").request(MIME_TYPE).post(projectJson);
-    verify(projectService).addProject(any(Project.class));
+    verify(projectService).upsertProject(any(Project.class));
     assertThat(reponse.getStatus()).isEqualTo(CREATED.getStatusCode());
     assertThat(reponse.getLocation().toString()).isEqualTo("projects/ABC.abc_12-3");
   }
 
   @Test
   public void testAddProjectThatAlreadyExists() throws Exception {
-    doThrow(new DuplicateKey(mock(CommandResult.class))).when(projectService).addProject(any(Project.class));
+    doThrow(new DuplicateKey(mock(CommandResult.class))).when(projectService).upsertProject(any(Project.class));
 
     val projectJson = json("{\"key\":\"PRJ1\",\"name\":\"Project One\"}");
     val reponse = target().path("projects").request(MIME_TYPE).post(projectJson);
-    verify(projectService).addProject(any(Project.class));
+    verify(projectService).upsertProject(any(Project.class));
     assertThat(reponse.getStatus()).isEqualTo(BAD_REQUEST.getStatusCode());
     assertThat(reponse.readEntity(String.class)).isEqualTo("{\"code\":\"AlreadyExists\",\"parameters\":[\"PRJ1\"]}");
   }

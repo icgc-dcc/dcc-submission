@@ -36,8 +36,8 @@ public class ProjectService {
     return projectRepository.findProjectsForUser(username);
   }
 
-  public void addProject(Project project) {
-    log.info("Passing on request to add Project [{}]", project);
+  public void upsertProject(Project project) {
+    log.info("Passing on request to upsert Project [{}]", project);
     projectRepository.upsertProject(project);
   }
 }

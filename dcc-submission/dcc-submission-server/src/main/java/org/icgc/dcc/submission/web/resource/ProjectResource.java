@@ -89,7 +89,7 @@ public class ProjectResource {
     log.info("[{}] is super user", user.getPrincipal());
 
     try {
-      projectService.addProject(project);
+      projectService.upsertProject(project);
 
       val url = UriBuilder.fromResource(ProjectResource.class).path(project.getKey()).build();
       return Response.created(url).build();

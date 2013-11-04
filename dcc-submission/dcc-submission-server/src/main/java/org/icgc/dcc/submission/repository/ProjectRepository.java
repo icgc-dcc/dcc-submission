@@ -20,6 +20,7 @@ package org.icgc.dcc.submission.repository;
 
 import java.util.Set;
 
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import org.icgc.dcc.submission.core.MailService;
@@ -28,10 +29,15 @@ import org.icgc.dcc.submission.core.model.QProject;
 import org.icgc.dcc.submission.core.morphia.BaseMorphiaService;
 
 import com.google.code.morphia.Datastore;
+import com.google.code.morphia.Key;
 import com.google.code.morphia.Morphia;
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Inject;
+import com.mongodb.WriteConcern;
 
+/**
+ * 
+ */
 @Slf4j
 public class ProjectRepository extends BaseMorphiaService<Project> {
 
@@ -41,28 +47,76 @@ public class ProjectRepository extends BaseMorphiaService<Project> {
     super.registerModelClasses(Project.class);
   }
 
+  /**
+   * Search for a Project using its key
+   * 
+   * @param projectKey Project key used in query
+   * 
+   * @return Project or null if none found
+   * 
+   * @see #findProjectForUser(String)
+   */
   public Project findProject(String projectKey) {
     log.info("Finding Project {}", projectKey);
     return where(QProject.project.key.eq(projectKey)).singleResult();
   }
 
+  /**
+   * Return a Project if accessible to the user
+   * 
+   * @param projectKey Project Key
+   * 
+   * @param username Filters results
+   * 
+   * @return Returns the Project or null if none found
+   * 
+   * @see #findProject()
+   */
   public Project findProjectForUser(String projectKey, String username) {
     log.info("Finding Project {} for User {}", projectKey, username);
     return where(QProject.project.key.eq(projectKey)).where(QProject.project.users.contains(username)).singleResult();
   }
 
+  /**
+   * Search for all Projects
+   * 
+   * @return All Projects
+   * 
+   * @see #findProjectsForUser(String)
+   */
   public Set<Project> findProjects() {
     log.info("Finding all Projects");
     return ImmutableSet.copyOf(query().list());
   }
 
+  /**
+   * Search for all Projects accessible to the user
+   * 
+   * @return All Projects viewable by the user
+   * 
+   * @see #findProjects()
+   */
   public Set<Project> findProjectsForUser(String username) {
     log.info("Finding all Projects for {}", username);
     return ImmutableSet.copyOf(where(QProject.project.users.contains(username)).list());
   }
 
-  public void upsertProject(Project project) {
-    log.info("Adding Project {}", project);
-    this.datastore().save(project);
+  /**
+   * Upsert will either insert or update the Project depending on whether it already exists in the database. Existence
+   * check is based on whether the Project already has an id.
+   * 
+   * If the Project is missing an id and already exists, Mongo with throw
+   * {@link com.mongodb.MongoException.DuplicateKey}. If the Project has an id and already exists it will be updated.
+   * Otherwise it will be added.
+   * 
+   * @param project Project used in upsert
+   * @return Response object from Mongo
+   */
+  public Key<Project> upsertProject(Project project) {
+    log.info("Upserting {}", project);
+    val response = this.datastore().save(project, WriteConcern.ACKNOWLEDGED);
+
+    log.info("Upsert Successful! {}", response);
+    return response;
   }
 }

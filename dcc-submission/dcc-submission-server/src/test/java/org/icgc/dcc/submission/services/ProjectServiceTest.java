@@ -87,7 +87,7 @@ public class ProjectServiceTest {
     val expected = Sets.newHashSet(projectOne, projectTwo);
     when(projectRepository.findProjects()).thenReturn(expected);
 
-    projectService.addProject(projectOne);
+    projectService.upsertProject(projectOne);
 
     verify(projectRepository).upsertProject(projectOne);
   }
