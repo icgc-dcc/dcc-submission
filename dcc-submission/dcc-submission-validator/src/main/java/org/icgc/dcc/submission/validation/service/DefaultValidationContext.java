@@ -17,58 +17,149 @@
  */
 package org.icgc.dcc.submission.validation.service;
 
+import static java.util.regex.Pattern.matches;
+import static org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType.SSM_P_TYPE;
+
 import java.util.List;
 
 import lombok.Delegate;
+import lombok.NonNull;
 import lombok.Value;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.icgc.dcc.core.model.SubmissionFileTypes.SubmissionFileType;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
+import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
+import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.Release;
+import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactory;
+import org.icgc.dcc.submission.validation.report.ReportContext;
 import org.icgc.dcc.submission.validation.report.SubmissionReportContext;
 
+import com.google.common.base.Optional;
+
+/**
+ * The "default" implementation of the {@link ValidationContext}.
+ */
 @Value
+@Slf4j
 public class DefaultValidationContext implements ValidationContext {
 
+  /**
+   * Fulfills the {@link ReportContext} contract.
+   */
   @Delegate
+  @NonNull
   SubmissionReportContext reportContext;
 
-  // TODO: Add dependencies here and delegate
+  /**
+   * Supports the non-inherited {@link ValidationContext} contract.
+   */
+  @NonNull
+  String projectKey;
+  @NonNull
+  List<String> emails;
+  @NonNull
+  Release release;
+  @NonNull
+  Dictionary dictionary;
+  @NonNull
+  DccFileSystem dccFileSystem;
+  @NonNull
+  PlatformStrategyFactory platformStrategyFactory;
+
   @Override
   public String getProjectKey() {
-    return null;
+    return projectKey;
   }
 
   @Override
   public List<String> getEmails() {
-    return null;
+    return emails;
   }
 
   @Override
   public Release getRelease() {
-    return null;
+    return release;
   }
 
   @Override
   public Dictionary getDictionary() {
-    return null;
+    return dictionary;
+  }
+
+  @Override
+  public ReleaseFileSystem getReleaseFileSystem() {
+    return dccFileSystem.getReleaseFilesystem(release);
   }
 
   @Override
   public SubmissionDirectory getSubmissionDirectory() {
-    return null;
+    return getReleaseFileSystem().getSubmissionDirectory(projectKey);
   }
 
   @Override
   public DccFileSystem getDccFileSystem() {
-    return null;
+    return dccFileSystem;
   }
 
   @Override
-  public PlatformStrategyFactory getPlatformStategyFactory() {
-    return null;
+  public FileSystem getFileSystem() {
+    return dccFileSystem.getFileSystem();
+  }
+
+  @Override
+  public PlatformStrategy getPlatformStrategy() {
+    // Inputs and outputs
+    Path inputDir = getSubmissionDirectory().getSubmissionDirPath();
+    log.info("Validation context for '{}' has inputDir = {}", projectKey, inputDir);
+    Path outputDir = new Path(getSubmissionDirectory().getValidationDirPath());
+    log.info("Validation context for '{}' has outputDir = {}", projectKey, outputDir);
+    Path systemDir = getReleaseFileSystem().getSystemDirectory();
+    log.info("Validation context for '{}' has systemDir = {}", projectKey, systemDir);
+
+    log.info("Creating platform strategy for project {}", projectKey);
+    val platformStrategy = platformStrategyFactory.get(inputDir, outputDir, systemDir);
+
+    return platformStrategy;
+  }
+
+  @Override
+  public Optional<Path> getSsmPrimaryFile() {
+    // @Anthony: "There has got to be a better way" - Bob T.
+    val submissionDirectory = getSubmissionDirectory();
+    val ssmPrimaryFileSchema = getSsmPrimaryFileSchema(getDictionary());
+    val ssmPrimaryFileNamePattern = ssmPrimaryFileSchema.getPattern();
+
+    for (val submissionFileName : submissionDirectory.listFile()) {
+      val ssmPrimary = matches(ssmPrimaryFileNamePattern, submissionFileName);
+      if (ssmPrimary) {
+        Path ssmPrimaryFile = new Path(submissionDirectory.getDataFilePath(submissionFileName));
+
+        return Optional.of(ssmPrimaryFile);
+      }
+    }
+
+    return Optional.<Path> absent();
+  }
+
+  private static FileSchema getSsmPrimaryFileSchema(Dictionary dictionary) {
+    // @Anthony: "There has got to be a better way" - Bob T.
+    for (val fileSchema : dictionary.getFiles()) {
+      val fileType = SubmissionFileType.from(fileSchema.getName());
+      val ssmPrimary = fileType == SSM_P_TYPE;
+      if (ssmPrimary) {
+        return fileSchema;
+      }
+    }
+
+    throw new IllegalStateException("'ssm_p' file schema missing");
   }
 
 }

@@ -46,7 +46,10 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.compress.BZip2Codec;
 import org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames;
 import org.icgc.dcc.submission.validation.report.ReportContext;
+import org.icgc.dcc.submission.validation.service.ValidationContext;
+import org.icgc.dcc.submission.validation.service.Validator;
 
+import com.google.common.base.Optional;
 import com.google.common.io.LineReader;
 
 /**
@@ -57,7 +60,7 @@ import com.google.common.io.LineReader;
  */
 @Slf4j
 @NoArgsConstructor
-public class ReferenceGenomeValidator {
+public class ReferenceGenomeValidator implements Validator {
 
   public static final String REFERENCE_GENOME_VERSION = "GrCh37";
   public static final String REFERENCE_GENOME_BASE_URL = "ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference";
@@ -100,11 +103,24 @@ public class ReferenceGenomeValidator {
    * is well-formed, and that each individual field is sane.
    */
   @SneakyThrows
-  public void validate(ReportContext context, Path ssmPrimaryFile, FileSystem fileSystem) {
+  @Override
+  public void validate(ValidationContext context) {
     ensureDownload();
 
-    LineReader reader = getLineReader(ssmPrimaryFile, fileSystem);
+    Optional<Path> optionalSsmPrimaryFile = context.getSsmPrimaryFile();
+    if (!optionalSsmPrimaryFile.isPresent()) {
+      log.info("No ssm_p file for '{}'", context.getProjectKey());
+    }
 
+    val ssmPrimaryFile = optionalSsmPrimaryFile.get();
+    val reader = getLineReader(ssmPrimaryFile, context.getFileSystem());
+
+    log.info("Performing reference renome validation on file '{}' for '{}'", ssmPrimaryFile, context.getProjectKey());
+    validate(context, ssmPrimaryFile.getName(), reader);
+  }
+
+  private void validate(ReportContext context, String fileName, LineReader reader)
+      throws IOException {
     long lineNumber = 1;
     int chromosomeIdx = -1;
     int startIdx = -1;
@@ -130,7 +146,7 @@ public class ReferenceGenomeValidator {
 
         if (!isMatch(referenceAllele, referenceSequence)) {
           context.reportError(
-              ssmPrimaryFile.getName(),
+              fileName,
               lineNumber,
               SUBMISSION_OBSERVATION_REFERENCE_GENOME_ALLELE,
               formatValue(referenceSequence, referenceAllele),
@@ -207,4 +223,5 @@ public class ReferenceGenomeValidator {
         ));
     // @formatter:on
   }
+
 }

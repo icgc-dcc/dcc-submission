@@ -18,26 +18,31 @@
 package org.icgc.dcc.submission.validation.report;
 
 import static org.icgc.dcc.submission.validation.cascading.TupleState.createTupleError;
-
-import java.util.List;
-
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.val;
 import lombok.experimental.NonFinal;
 
-import org.icgc.dcc.submission.validation.cascading.TupleState;
 import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
 import org.icgc.dcc.submission.validation.core.ErrorType;
 
+/**
+ * Wraps and "adapts" a {@link SubmissionReport}.
+ */
 @Value
 @RequiredArgsConstructor
 public class SubmissionReportContext implements ReportContext {
 
+  /**
+   * Adaptee.
+   */
   @NonNull
   SubmissionReport submissionReport;
 
+  /**
+   * Total number of errors encountered at a point in time.
+   */
   @NonFinal
   int errorCount;
 
@@ -84,20 +89,25 @@ public class SubmissionReportContext implements ReportContext {
 
   private void addErrorTuple(String fileName, TupleError tupleError) {
     errorCount++;
+
     val schemaReport = resolveSchemaReport(fileName);
     addErrorTuple(schemaReport, tupleError);
   }
 
-  private void addErrorTuple(SchemaReport schemaReport, TupleState.TupleError tupleError) {
-    List<ErrorReport> errorReports = schemaReport.getErrors();
-    for (ErrorReport errorReport : errorReports) {
-      if (errorReport.getErrorType() == tupleError.getType()) {
+  private void addErrorTuple(SchemaReport schemaReport, TupleError tupleError) {
+    val errorReports = schemaReport.getErrors();
+    for (val errorReport : errorReports) {
+      val errorTypeExists = errorReport.getErrorType() == tupleError.getType();
+      if (errorTypeExists) {
+        // Reuse, no need to continue
         errorReport.updateReport(tupleError);
+
         return;
       }
     }
 
-    ErrorReport errorReport = new ErrorReport(tupleError);
+    // Seed on first use
+    val errorReport = new ErrorReport(tupleError);
     schemaReport.addError(errorReport);
   }
 

@@ -18,18 +18,13 @@
 package org.icgc.dcc.submission.validation.service;
 
 import static java.lang.String.format;
-
-import java.util.regex.Pattern;
-
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.QueuedProject;
@@ -43,6 +38,7 @@ import org.icgc.dcc.submission.validation.core.ValidationListener;
 import org.icgc.dcc.submission.validation.planner.Planner;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactory;
+import org.icgc.dcc.submission.validation.primary.PrimaryValidator;
 import org.icgc.dcc.submission.validation.report.SubmissionReportContext;
 import org.icgc.dcc.submission.validation.semantic.ReferenceGenomeValidator;
 
@@ -53,8 +49,10 @@ import com.google.common.collect.Iterables;
 import com.google.inject.Inject;
 
 /**
- * Wraps validation call for the {@code ValidationQueueService} and {@Main} (the validation one) to use
- */
+ * Deprecated service that wraps validation call for the {@code ValidationQueueService}.
+ * <p>
+ * Use {@link PrimaryValidator} in the next refactoring.
+ * */
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @_(@Inject))
 public class ValidationService {
@@ -74,23 +72,17 @@ public class ValidationService {
     val releaseFilesystem = dccFileSystem.getReleaseFilesystem(release);
     val submissionDirectory = releaseFilesystem.getSubmissionDirectory(projectKey);
 
-    Path inputDir = submissionDirectory.getSubmissionDirPath();
-    Path outputDir = new Path(submissionDirectory.getValidationDirPath());
-    Path systemDir = releaseFilesystem.getSystemDirectory();
+    ValidationContext context =
+        new DefaultValidationContext(new SubmissionReportContext(), projectKey, queuedProject.getEmails(), release,
+            dictionary, dccFileSystem, platformStrategyFactory);
 
-    log.info("Validation for '{}' has inputDir = {} ", projectKey, inputDir);
-    log.info("Validation for '{}' has outputDir = {} ", projectKey, outputDir);
-    log.info("Validation for '{}' has systemDir = {} ", projectKey, systemDir);
+    log.info("Checking validation for '{}'", projectKey);
+    checkerValidation(context);
 
-    // TODO: File Checker
-    PlatformStrategy platformStrategy = platformStrategyFactory.get(inputDir, outputDir, systemDir);
-    log.info("Checking validation for '{}' has inputDir = {} ", projectKey, inputDir);
-    checkerValidation(queuedProject, dictionary, submissionDirectory);
+    log.info("Semantic validation for '{}'", projectKey);
+    semanticValidation(context);
 
-    log.info("Semantic validation for '{}' has inputDir = {} ", projectKey, inputDir);
-    semanticValidation(queuedProject, dictionary, submissionDirectory);
-
-    Plan plan = planValidation(queuedProject, submissionDirectory, platformStrategy, dictionary, listener);
+    Plan plan = planValidation(queuedProject, submissionDirectory, context.getPlatformStrategy(), dictionary, listener);
     listener.setPlan(plan);
 
     log.info("Prepared cascade for project {}", projectKey);
@@ -144,49 +136,28 @@ public class ValidationService {
     plan.startCascade();
   }
 
-  private void checkerValidation(QueuedProject queuedProject, Dictionary dictionary,
-      SubmissionDirectory submissionDirectory) throws MalformedSubmissionException {
-    val validator = new FirstPassValidator(dccFileSystem, dictionary, submissionDirectory);
+  private void checkerValidation(ValidationContext context) throws MalformedSubmissionException {
+    val validator = new FirstPassValidator(dccFileSystem, context.getDictionary(), context.getSubmissionDirectory());
 
-    // TODO: Add additional context dependencies
-    ValidationContext context = new DefaultValidationContext(new SubmissionReportContext());
+    log.info("Starting well-formedness validation on project {}...", context.getProjectKey());
     validator.validate(context);
     if (context.hasErrors()) {
-      throw new MalformedSubmissionException(queuedProject, context.getSubmissionReport());
+      throw new MalformedSubmissionException(
+          new QueuedProject(context.getProjectKey(), context.getEmails()),
+          context.getSubmissionReport());
     }
   }
 
-  private void semanticValidation(QueuedProject queuedProject, Dictionary dictionary,
-      SubmissionDirectory submissionDirectory) throws SubmissionSemanticsException {
-    val fileSchema = getSsmPrimaryFileSchema(dictionary);
-    val fileSystem = dccFileSystem.getFileSystem();
-    val regex = fileSchema.getPattern();
+  private void semanticValidation(ValidationContext context) throws SubmissionSemanticsException {
+    val validator = new ReferenceGenomeValidator();
 
-    for (val fileName : submissionDirectory.listFile()) {
-      if (Pattern.matches(regex, fileName)) {
-        Path ssmPrimaryFile = new Path(submissionDirectory.getDataFilePath(fileName));
-
-        log.info("Starting reference genome validation on project {}...", queuedProject.getKey());
-        val validator = new ReferenceGenomeValidator();
-        validator.ensureDownload();
-
-        // TODO: Add additional context dependencies
-        ValidationContext context = new DefaultValidationContext(new SubmissionReportContext());
-        validator.validate(context, ssmPrimaryFile, fileSystem);
-        if (context.hasErrors()) {
-          throw new SubmissionSemanticsException(queuedProject, context.getSubmissionReport());
-        }
-      }
+    log.info("Starting reference genome validation on project {}...", context.getProjectKey());
+    validator.validate(context);
+    if (context.hasErrors()) {
+      throw new SubmissionSemanticsException(
+          new QueuedProject(context.getProjectKey(), context.getEmails()),
+          context.getSubmissionReport());
     }
   }
 
-  private static FileSchema getSsmPrimaryFileSchema(Dictionary dictionary) {
-    for (val fileSchema : dictionary.getFiles()) {
-      if (fileSchema.getName().equals("ssm_p")) {
-        return fileSchema;
-      }
-    }
-
-    return null;
-  }
 }

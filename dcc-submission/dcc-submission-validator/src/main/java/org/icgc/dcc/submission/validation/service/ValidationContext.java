@@ -19,30 +19,82 @@ package org.icgc.dcc.submission.validation.service;
 
 import java.util.List;
 
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.fs.DccFileSystem;
+import org.icgc.dcc.submission.fs.ReleaseFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.Release;
-import org.icgc.dcc.submission.validation.platform.PlatformStrategyFactory;
+import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.icgc.dcc.submission.validation.report.ReportContext;
 import org.icgc.dcc.submission.validation.report.SubmissionReport;
 
+import com.google.common.base.Optional;
+
+/**
+ * The umbilical cord to the rest of the system provided to {@link Validator}s to act as a "façade" that reduces
+ * coupling.
+ * <p>
+ * Its interface should be minimized over time as per "LoD". A context instance gets passed from a {@link Validator} in
+ * a {@link Validation} and validators are expected to call inherited {@link ReportContext} methods to add errors and
+ * statistics. In this sense, it simultaneously an "accumulating parameter".
+ */
 public interface ValidationContext extends ReportContext {
 
+  /**
+   * Gets the project key of the project under validation.
+   */
   String getProjectKey();
 
+  /**
+   * Gets the email addresses of who to email after validation.
+   */
   List<String> getEmails();
 
+  /**
+   * Gets the current release.
+   */
   Release getRelease();
 
+  /**
+   * Gets the current release dictionary.
+   */
   Dictionary getDictionary();
 
+  /**
+   * Gets the submission directory of the associated project under validation.
+   */
   SubmissionDirectory getSubmissionDirectory();
 
+  /**
+   * Gets the optionally available SSM primary file of the associated project under validation.
+   */
+  Optional<Path> getSsmPrimaryFile();
+
+  /**
+   * Gets the root DCC filesystem.
+   */
   DccFileSystem getDccFileSystem();
 
-  PlatformStrategyFactory getPlatformStategyFactory();
+  /**
+   * Gets the platform abstracted file system.
+   */
+  FileSystem getFileSystem();
 
+  /**
+   * Gets the current release file system.
+   */
+  ReleaseFileSystem getReleaseFileSystem();
+
+  /**
+   * Gets the cascading platform strategy for cascading-based {@link Validator}s.
+   */
+  PlatformStrategy getPlatformStrategy();
+
+  /**
+   * Gets the submission report of the associated project under validation.
+   */
   SubmissionReport getSubmissionReport();
 
 }

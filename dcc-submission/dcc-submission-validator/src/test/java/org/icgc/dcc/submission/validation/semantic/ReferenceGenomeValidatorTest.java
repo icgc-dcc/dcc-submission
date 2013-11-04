@@ -18,6 +18,14 @@
 package org.icgc.dcc.submission.validation.semantic;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.icgc.dcc.submission.validation.core.ErrorType.REFERENCE_GENOME_ERROR;
+import static org.mockito.Matchers.anyLong;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.anyVararg;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 
@@ -26,13 +34,24 @@ import lombok.val;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.submission.validation.report.SubmissionReportContext;
+import org.icgc.dcc.submission.validation.service.ValidationContext;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
+import com.google.common.base.Optional;
+
+@RunWith(MockitoJUnitRunner.class)
 public class ReferenceGenomeValidatorTest {
 
-  private ReferenceGenomeValidator validator = null;
+  private static final String TEST_DIR = "src/test/resources/fixtures/validation/rgv";
+
+  private ReferenceGenomeValidator validator;
+
+  @Mock
+  private ValidationContext context;
 
   // See http://genome.ucsc.edu/cgi-bin/hgGateway
   // chromosome, start, end, reference to check
@@ -73,14 +92,26 @@ public class ReferenceGenomeValidatorTest {
 
   @Test
   public void testSSMSamplePrimaryFile() throws IOException {
-    Configuration conf = new Configuration();
-    FileSystem fs = FileSystem.getLocal(conf);
-    Path path = new Path("src/test/resources/fixtures/validation/rgv/ssm_p.txt");
+    // Setup: Use local file system
+    val fileSystem = FileSystem.getLocal(new Configuration());
+    when(context.getFileSystem()).thenReturn(fileSystem);
 
-    val context = new SubmissionReportContext();
-    validator.validate(context, path, fs);
+    // Setup: Establish input for the test
+    val fileName = "ssm_p.txt";
+    val ssmPrimaryFile = Optional.<Path> of(new Path(TEST_DIR + "/" + fileName));
+    when(context.getSsmPrimaryFile()).thenReturn(ssmPrimaryFile);
 
-    assertThat(context.getErrorCount()).isEqualTo(7);
+    // Execute
+    validator.validate(context);
+
+    // Verify
+    verify(context, times(7)).reportError(
+        eq(fileName),
+        anyLong(),
+        eq("reference_genome_allele"),
+        anyString(),
+        eq(REFERENCE_GENOME_ERROR),
+        anyVararg());
   }
 
 }

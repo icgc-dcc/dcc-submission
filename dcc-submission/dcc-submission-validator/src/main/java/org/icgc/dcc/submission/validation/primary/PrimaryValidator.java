@@ -24,13 +24,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.hadoop.fs.Path;
-import org.icgc.dcc.submission.fs.ReleaseFileSystem;
-import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.validation.core.Plan;
 import org.icgc.dcc.submission.validation.planner.Planner;
-import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 import org.icgc.dcc.submission.validation.service.ValidationContext;
 import org.icgc.dcc.submission.validation.service.Validator;
 
@@ -49,12 +45,10 @@ public class PrimaryValidator implements Validator {
 
     // Shorthands
     val projectKey = context.getProjectKey();
-    val release = context.getRelease();
     val dictionary = context.getDictionary();
-    val releaseFilesystem = context.getDccFileSystem().getReleaseFilesystem(release);
-    val submissionDirectory = releaseFilesystem.getSubmissionDirectory(projectKey);
+    val submissionDirectory = context.getSubmissionDirectory();
     val queuedProject = new QueuedProject(context.getProjectKey(), context.getEmails());
-    val platformStrategy = getPlatformStrategy(context, projectKey, releaseFilesystem, submissionDirectory);
+    val platformStrategy = context.getPlatformStrategy();
 
     log.info("Planning cascade for project {}", projectKey);
     Plan plan = planner.plan(queuedProject, submissionDirectory, platformStrategy, dictionary);
@@ -85,22 +79,6 @@ public class PrimaryValidator implements Validator {
       // TODO: Use custom exception
       propagate(t);
     }
-  }
-
-  private PlatformStrategy getPlatformStrategy(ValidationContext context, String projectKey,
-      ReleaseFileSystem releaseFilesystem, SubmissionDirectory submissionDirectory) {
-    // Inputs and outputs
-    Path inputDir = submissionDirectory.getSubmissionDirPath();
-    log.info("Cascade validation for '{}' has inputDir = {} ", projectKey, inputDir);
-    Path outputDir = new Path(submissionDirectory.getValidationDirPath());
-    log.info("Cascade validation for '{}' has outputDir = {} ", projectKey, outputDir);
-    Path systemDir = releaseFilesystem.getSystemDirectory();
-    log.info("Cascade validation for '{}' has systemDir = {} ", projectKey, systemDir);
-
-    log.info("Creating platform strategy for project {}", projectKey);
-    val platformStrategy = context.getPlatformStategyFactory().get(inputDir, outputDir, systemDir);
-
-    return platformStrategy;
   }
 
 }

@@ -17,8 +17,16 @@
  */
 package org.icgc.dcc.submission.validation.service;
 
+/**
+ * Unit of validation execution used with a {@link Validation}.
+ */
 public interface Validator {
 
+  /**
+   * Validation strategy method.
+   * 
+   * @param context the encapsulated context of the validation execution
+   */
   void validate(ValidationContext context);
 
 }

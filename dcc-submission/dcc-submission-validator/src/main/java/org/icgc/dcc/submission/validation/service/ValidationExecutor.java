@@ -24,6 +24,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -31,11 +32,14 @@ import java.util.concurrent.ThreadPoolExecutor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Manages the executing of a fixed number of {@code Validation} "slots".
+ */
 @Slf4j
 public class ValidationExecutor {
 
   /**
-   * Bookkeeping for canceling.
+   * Bookkeeping for canceling, indexed by {@link Validation#getId()}.
    */
   private final ConcurrentMap<String, Future<Throwable>> futures = newConcurrentMap();
 
@@ -45,7 +49,7 @@ public class ValidationExecutor {
   private final ThreadPoolExecutor executor;
 
   /**
-   * Creates a validator with the supplied number of validation slots.
+   * Creates a validator with the supplied number of validation "slots".
    * 
    * @param maxConcurrentValidations - The maximum number of concurrently executing validation tasks.
    */
@@ -54,12 +58,14 @@ public class ValidationExecutor {
   }
 
   /**
-   * Execute a validation task.
+   * Execute a validation job asynchronously. Uses {@link Validation#getId()} to identify in a {@link #cancel} call.
    * 
    * @param validation
+   * @throws RejectedExecutionException if there are no "slots" available
    */
   public void execute(final Validation validation) {
     val id = validation.getId();
+
     log.info("execute: Submitting validation '{}' ... {}", id, getStats());
     val future = executor.submit(new Callable<Throwable>() {
 
@@ -68,6 +74,7 @@ public class ValidationExecutor {
         try {
           log.info("call: Executing validation '{}'... {}", id, getStats());
           validation.execute();
+          log.info("call: Finished executing validation '{}'... {}", id, getStats());
         } catch (Throwable t) {
           log.error("call: Exception executing validation '{}' {}: {}", new Object[] { id, getStats(), t });
           return t;
@@ -75,6 +82,7 @@ public class ValidationExecutor {
           futures.remove(id);
         }
 
+        log.info("call: Exiting validation without error'{}'... {}", id, getStats());
         return null;
       }
     });
@@ -92,13 +100,16 @@ public class ValidationExecutor {
     try {
       val future = futures.get(id);
       if (future != null) {
-        log.error("cancel: Cancelling validation '{}'... {}", id, getStats());
+        log.warn("cancel: Cancelling validation '{}'... {}", id, getStats());
         val cancelled = future.cancel(true);
+        log.warn("cancel: Finshed cancelling validation '{}', cancelled: {}... {}",
+            new Object[] { id, cancelled, getStats() });
 
         return cancelled;
       }
 
     } finally {
+      // No project left behind
       futures.remove(id);
     }
 
@@ -122,17 +133,29 @@ public class ValidationExecutor {
    */
   private ThreadPoolExecutor createExecutor(int maxConcurrentValidations) {
     val poolSize = maxConcurrentValidations;
+
+    // From the Javadoc:
+    //
+    // "A blocking queue in which each insert operation must wait for a corresponding remove operation by another
+    // thread, and vice versa. A synchronous queue does not have any internal capacity, not even a capacity of one."
+    //
+    // We need these semantics because we want the total number of "slots" to be as defined in the constructor. This
+    // ensures the queue length is always zero.
+    val queue = new SynchronousQueue<Runnable>();
+
     return new ThreadPoolExecutor(
-        poolSize,
-        poolSize,
-        0,
-        SECONDS,
-        new SynchronousQueue<Runnable>(),
+        poolSize, poolSize, // Core and max are the same
+        0, SECONDS, // Arbitrary when both pool sizes are the same
+        queue,
+
+        // Need this to get a customized exception when "slots" are full
         new RejectedExecutionHandler() {
 
           @Override
           public void rejectedExecution(Runnable r, ThreadPoolExecutor t) {
             log.info("Rejecting... {}", getStats());
+
+            // Custom exception
             throw new ValidationRejectedException();
           }
 
@@ -142,7 +165,7 @@ public class ValidationExecutor {
   /**
    * Gets basic statistics about the underlying executor.
    * 
-   * @return
+   * @return a formatted stats string
    */
   private String getStats() {
     return format("taskCount: %s, activeCount: %s, completedCount: %s",

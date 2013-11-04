@@ -17,6 +17,9 @@
  */
 package org.icgc.dcc.submission.validation.service;
 
+/**
+ * Exception thrown to indicate that a {@link Validation} was not accepted for execution.
+ */
 public class ValidationRejectedException extends RuntimeException {
 
 }
