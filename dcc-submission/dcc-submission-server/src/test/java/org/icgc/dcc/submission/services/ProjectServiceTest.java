@@ -89,6 +89,6 @@ public class ProjectServiceTest {
 
     projectService.addProject(projectOne);
 
-    verify(projectRepository).addProject(projectOne);
+    verify(projectRepository).upsertProject(projectOne);
   }
 }

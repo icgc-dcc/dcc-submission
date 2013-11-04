@@ -61,7 +61,7 @@ public class ProjectRepository extends BaseMorphiaService<Project> {
     return ImmutableSet.copyOf(where(QProject.project.users.contains(username)).list());
   }
 
-  public void addProject(Project project) {
+  public void upsertProject(Project project) {
     log.info("Adding Project {}", project);
     this.datastore().save(project);
   }

@@ -13,14 +13,18 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.code.morphia.Datastore;
 import com.google.code.morphia.Morphia;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.mongodb.MongoClientURI;
+import com.mongodb.MongoException.DuplicateKey;
 import com.mysema.query.mongodb.morphia.MorphiaQuery;
 
+@RunWith(MockitoJUnitRunner.class)
 public class ProjectRepositoryTest {
 
   @Rule
@@ -31,24 +35,23 @@ public class ProjectRepositoryTest {
 
   private ProjectRepository projectRepository;
 
-  private Project projectOne;
-
-  private Project projectTwo;
-
   private MorphiaQuery<Project> bareMorphiaQuery;
+
+  private final Project projectOne = new Project("PRJ1", "Project One");
+
+  private final Project projectTwo = new Project("PRJ2", "Project Two");
+
+  private Datastore datastore;
 
   @Before
   public void setUp() throws Exception {
     val mailService = mock(MailService.class);
     val morphia = new Morphia();
+    val uri = new MongoClientURI(getMongoUri());
 
-    MongoClientURI uri = new MongoClientURI(getMongoUri());
-
-    Datastore datastore = morphia.createDatastore(embeddedMongo.getMongo(), uri.getDatabase());
-    projectOne = new Project("PRJ1", "Project One");
     projectOne.setUsers(Sets.newHashSet(AUTH_ALLOWED_USER));
 
-    projectTwo = new Project("PRJ2", "Project Two");
+    datastore = morphia.createDatastore(embeddedMongo.getMongo(), uri.getDatabase());
 
     datastore.save(projectOne);
     datastore.save(projectTwo);
@@ -117,8 +120,44 @@ public class ProjectRepositoryTest {
     assertThat(bare).isNull();
   }
 
+  @Test
+  public void testInsertProject() throws Exception {
+    val projectThree = new Project("PRJ3", "Project Three");
+
+    assertThat(projectRepository.findProject(projectThree.getKey())).isNull();
+
+    projectRepository.upsertProject(projectThree);
+
+    assertThat(projectRepository.findProject(projectThree.getKey())).isEqualTo(projectThree);
+    assertThat(bareMorphiaQuery.where(QProject.project.key.eq(projectThree.getKey())).singleResult()).isEqualTo(
+        projectThree);
+  }
+
+  @Test
+  public void testUpdateProject() throws Exception {
+    val projectThree = new Project("PRJ3", "Project Three");
+
+    assertThat(projectRepository.findProject(projectThree.getKey())).isNull();
+
+    projectRepository.upsertProject(projectThree);
+    projectThree.setAlias("PRJ ALIAS");
+    projectRepository.upsertProject(projectThree);
+
+    assertThat(projectRepository.findProject(projectThree.getKey())).isEqualTo(projectThree);
+    assertThat(bareMorphiaQuery.where(QProject.project.key.eq(projectThree.getKey())).singleResult()).isEqualTo(
+        projectThree);
+  }
+
+  @Test(expected = DuplicateKey.class)
+  public void testInsertDuplicateProject() throws Exception {
+    assertThat(projectRepository.findProject("PRJ3")).isNull();
+
+    // Need to create two objects so it tries to add and not update
+    projectRepository.upsertProject(new Project("PRJ3", "Project Three"));
+    projectRepository.upsertProject(new Project("PRJ3", "Project Three"));
+  }
+
   private String getMongoUri() {
     return format("mongodb://localhost:%s/dcc-submission-server.ProjectRepository", embeddedMongo.getPort());
   }
-
 }

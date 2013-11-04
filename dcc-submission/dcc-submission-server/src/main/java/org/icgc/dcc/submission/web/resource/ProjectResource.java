@@ -39,10 +39,8 @@ import javax.ws.rs.core.UriBuilder;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
-import org.apache.shiro.subject.Subject;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.services.ProjectService;
-import org.icgc.dcc.submission.shiro.AuthorizationPrivileges;
 import org.icgc.dcc.submission.web.model.ServerErrorResponseMessage;
 import org.icgc.dcc.submission.web.util.Responses;
 
@@ -57,10 +55,6 @@ public class ProjectResource {
 
   @Inject
   private ProjectService projectService;
-
-  final private boolean isAuthorized(Subject user, String projectKey) {
-    return projectKey != null && user.isPermitted(AuthorizationPrivileges.projectViewPrivilege(projectKey));
-  }
 
   @GET
   public Response getProjects(@Context

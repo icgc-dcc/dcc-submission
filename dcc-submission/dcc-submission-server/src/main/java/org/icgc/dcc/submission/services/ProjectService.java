@@ -38,6 +38,6 @@ public class ProjectService {
 
   public void addProject(Project project) {
     log.info("Passing on request to add Project [{}]", project);
-    projectRepository.addProject(project);
+    projectRepository.upsertProject(project);
   }
 }
