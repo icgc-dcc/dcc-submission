@@ -43,55 +43,55 @@ public class ProjectServiceTest {
   @Test
   public void testFindProjects() throws Exception {
     val expected = Sets.newHashSet(projectOne, projectTwo);
-    when(projectRepository.findProjects()).thenReturn(expected);
+    when(projectRepository.findAll()).thenReturn(expected);
 
-    val actual = projectService.findProjects();
+    val actual = projectService.findAll();
 
-    verify(projectRepository).findProjects();
+    verify(projectRepository).findAll();
     assertThat(actual).isEqualTo(expected);
   }
 
   @Test
   public void testFindProjectsForUser() throws Exception {
     val expected = Sets.newHashSet(projectOne);
-    when(projectRepository.findProjectsForUser(any(String.class))).thenReturn(expected);
+    when(projectRepository.findAllForUser(any(String.class))).thenReturn(expected);
 
-    val actual = projectService.findProjectsForUser(any(String.class));
+    val actual = projectService.findAllForUser(any(String.class));
 
-    verify(projectRepository).findProjectsForUser(any(String.class));
+    verify(projectRepository).findAllForUser(any(String.class));
     assertThat(actual).isEqualTo(expected);
   }
 
   @Test
   public void testFindProject() throws Exception {
     val expected = projectOne;
-    when(projectRepository.findProject(projectOne.getKey())).thenReturn(expected);
+    when(projectRepository.find(projectOne.getKey())).thenReturn(expected);
 
-    val actual = projectService.findProject(projectOne.getKey());
+    val actual = projectService.find(projectOne.getKey());
 
-    verify(projectRepository).findProject(projectOne.getKey());
+    verify(projectRepository).find(projectOne.getKey());
     assertThat(actual).isEqualTo(expected);
   }
 
   @Test
   public void testFindProjectForUser() throws Exception {
     val expected = projectOne;
-    when(projectRepository.findProjectForUser(projectOne.getKey(), "username")).thenReturn(expected);
+    when(projectRepository.findForUser(projectOne.getKey(), "username")).thenReturn(expected);
 
-    val actual = projectService.findProjectForUser(projectOne.getKey(), "username");
+    val actual = projectService.findForUser(projectOne.getKey(), "username");
 
-    verify(projectRepository).findProjectForUser(projectOne.getKey(), "username");
+    verify(projectRepository).findForUser(projectOne.getKey(), "username");
     assertThat(actual).isEqualTo(expected);
   }
 
   @Test
   public void testUpsertProject() throws Exception {
     val expected = new Key<Project>(Project.class, new ObjectId());
-    when(projectRepository.upsertProject(projectOne)).thenReturn(expected);
+    when(projectRepository.upsert(projectOne)).thenReturn(expected);
 
-    val response = projectService.upsertProject(projectOne);
+    val response = projectService.upsert(projectOne);
 
-    verify(projectRepository).upsertProject(projectOne);
+    verify(projectRepository).upsert(projectOne);
     assertThat(response).isEqualTo(expected);
   }
 }

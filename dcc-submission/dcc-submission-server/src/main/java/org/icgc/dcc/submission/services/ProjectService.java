@@ -18,28 +18,28 @@ public class ProjectService {
   @NonNull
   private final ProjectRepository projectRepository;
 
-  public Project findProject(String projectKey) {
+  public Project find(String projectKey) {
     log.info("Passing on request for Project [{}]", projectKey);
-    return projectRepository.findProject(projectKey);
+    return projectRepository.find(projectKey);
   }
 
-  public Project findProjectForUser(String projectKey, String username) {
+  public Project findForUser(String projectKey, String username) {
     log.info("Passing on request for Project [{}] for ", projectKey, username);
-    return projectRepository.findProjectForUser(projectKey, username);
+    return projectRepository.findForUser(projectKey, username);
   }
 
-  public Set<Project> findProjects() {
+  public Set<Project> findAll() {
     log.info("Passing on request to find all Projects");
-    return projectRepository.findProjects();
+    return projectRepository.findAll();
   }
 
-  public Set<Project> findProjectsForUser(String username) {
+  public Set<Project> findAllForUser(String username) {
     log.info("Passing on request to find Projects for User [{}]", username);
-    return projectRepository.findProjectsForUser(username);
+    return projectRepository.findAllForUser(username);
   }
 
-  public Key<Project> upsertProject(Project project) {
+  public Key<Project> upsert(Project project) {
     log.info("Passing on request to upsert Project [{}]", project);
-    return projectRepository.upsertProject(project);
+    return projectRepository.upsert(project);
   }
 }

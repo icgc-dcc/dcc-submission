@@ -66,10 +66,10 @@ public class ProjectResource {
 
     if (isSuperUser(securityContext)) {
       log.info("[{}] is super user", user.getPrincipal());
-      projects = projectService.findProjects();
+      projects = projectService.findAll();
     } else {
       log.info("[{}] is not super user", user.getPrincipal());
-      projects = projectService.findProjectsForUser(user.getPrincipal().toString());
+      projects = projectService.findAllForUser(user.getPrincipal().toString());
     }
 
     return Response.ok(projects).build();
@@ -89,7 +89,7 @@ public class ProjectResource {
     log.info("[{}] is super user", user.getPrincipal());
 
     try {
-      projectService.upsertProject(project);
+      projectService.upsert(project);
 
       val url = UriBuilder.fromResource(ProjectResource.class).path(project.getKey()).build();
       return Response.created(url).build();
@@ -111,10 +111,10 @@ public class ProjectResource {
 
     if (isSuperUser(securityContext)) {
       log.info("[{}] is super user", user.getPrincipal());
-      project = projectService.findProject(projectKey);
+      project = projectService.find(projectKey);
     } else {
       log.info("[{}] is not super user", user.getPrincipal());
-      project = projectService.findProjectForUser(projectKey, user.getPrincipal().toString());
+      project = projectService.findForUser(projectKey, user.getPrincipal().toString());
     }
 
     if (project == null) {

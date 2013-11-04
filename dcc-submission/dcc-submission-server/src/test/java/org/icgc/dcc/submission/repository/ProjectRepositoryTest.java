@@ -70,7 +70,7 @@ public class ProjectRepositoryTest {
   @Test
   public void testFindProjects() {
     val expected = Sets.newHashSet(projectOne, projectTwo);
-    val actual = projectRepository.findProjects();
+    val actual = projectRepository.findAll();
     val bare = ImmutableSet.copyOf(bareMorphiaQuery.list());
 
     assertThat(actual).isEqualTo(expected);
@@ -80,7 +80,7 @@ public class ProjectRepositoryTest {
   @Test
   public void testFindProjectsForUser() {
     val expected = Sets.newHashSet(projectOne);
-    val actual = projectRepository.findProjectsForUser(AUTH_ALLOWED_USER);
+    val actual = projectRepository.findAllForUser(AUTH_ALLOWED_USER);
     val bare = ImmutableSet.copyOf(bareMorphiaQuery.where(QProject.project.users.contains(AUTH_ALLOWED_USER)).list());
 
     assertThat(actual).isEqualTo(expected);
@@ -90,7 +90,7 @@ public class ProjectRepositoryTest {
   @Test
   public void testFindProject() {
     val expected = projectOne;
-    val actual = projectRepository.findProject(projectOne.getKey());
+    val actual = projectRepository.find(projectOne.getKey());
     val bare = bareMorphiaQuery.where(QProject.project.key.eq(projectOne.getKey())).singleResult();
 
     assertThat(actual).isEqualTo(expected);
@@ -100,7 +100,7 @@ public class ProjectRepositoryTest {
   @Test
   public void testFindProjectForAllowedUser() {
     val expected = projectOne;
-    val actual = projectRepository.findProjectForUser(projectOne.getKey(), AUTH_ALLOWED_USER);
+    val actual = projectRepository.findForUser(projectOne.getKey(), AUTH_ALLOWED_USER);
     val bare =
         bareMorphiaQuery.where(QProject.project.key.eq(projectOne.getKey()))
             .where(QProject.project.users.contains(AUTH_ALLOWED_USER)).singleResult();
@@ -111,7 +111,7 @@ public class ProjectRepositoryTest {
 
   @Test
   public void testFindProjectForNotAllowedUser() {
-    val actual = projectRepository.findProjectForUser(projectOne.getKey(), AUTH_NOT_ALLOWED_USER);
+    val actual = projectRepository.findForUser(projectOne.getKey(), AUTH_NOT_ALLOWED_USER);
     val bare =
         bareMorphiaQuery.where(QProject.project.key.eq(projectOne.getKey()))
             .where(QProject.project.users.contains(AUTH_NOT_ALLOWED_USER)).singleResult();
@@ -124,13 +124,13 @@ public class ProjectRepositoryTest {
   public void testInsertProject() throws Exception {
     val projectThree = new Project("PRJ3", "Project Three");
 
-    assertThat(projectRepository.findProject(projectThree.getKey())).isNull();
+    assertThat(projectRepository.find(projectThree.getKey())).isNull();
 
-    val response = projectRepository.upsertProject(projectThree);
+    val response = projectRepository.upsert(projectThree);
 
     assertThat(response).isNotNull();
 
-    assertThat(projectRepository.findProject(projectThree.getKey())).isEqualTo(projectThree);
+    assertThat(projectRepository.find(projectThree.getKey())).isEqualTo(projectThree);
     assertThat(bareMorphiaQuery.where(QProject.project.key.eq(projectThree.getKey())).singleResult()).isEqualTo(
         projectThree);
   }
@@ -139,26 +139,26 @@ public class ProjectRepositoryTest {
   public void testUpdateProject() throws Exception {
     val projectThree = new Project("PRJ3", "Project Three");
 
-    assertThat(projectRepository.findProject(projectThree.getKey())).isNull();
+    assertThat(projectRepository.find(projectThree.getKey())).isNull();
 
-    val first = projectRepository.upsertProject(projectThree);
+    val first = projectRepository.upsert(projectThree);
     projectThree.setAlias("PRJ ALIAS");
-    val second = projectRepository.upsertProject(projectThree);
+    val second = projectRepository.upsert(projectThree);
 
     assertThat(first).isEqualTo(second);
 
-    assertThat(projectRepository.findProject(projectThree.getKey())).isEqualTo(projectThree);
+    assertThat(projectRepository.find(projectThree.getKey())).isEqualTo(projectThree);
     assertThat(bareMorphiaQuery.where(QProject.project.key.eq(projectThree.getKey())).singleResult()).isEqualTo(
         projectThree);
   }
 
   @Test(expected = DuplicateKey.class)
   public void testInsertDuplicateProject() throws Exception {
-    assertThat(projectRepository.findProject("PRJ3")).isNull();
+    assertThat(projectRepository.find("PRJ3")).isNull();
 
     // Need to create two objects so it tries to add and not update
-    projectRepository.upsertProject(new Project("PRJ3", "Project Three"));
-    projectRepository.upsertProject(new Project("PRJ3", "Project Three"));
+    projectRepository.upsert(new Project("PRJ3", "Project Three"));
+    projectRepository.upsert(new Project("PRJ3", "Project Three"));
   }
 
   private String getMongoUri() {

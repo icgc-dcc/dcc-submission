@@ -48,31 +48,31 @@ public class ProjectRepository extends BaseMorphiaService<Project> {
   }
 
   /**
-   * Search for a Project using its key
+   * Search for a Project by its key
    * 
-   * @param projectKey Project key used in query
+   * @param projectKey
    * 
    * @return Project or null if none found
    * 
-   * @see #findProjectForUser(String)
+   * @see #findForUser(String, String)
    */
-  public Project findProject(String projectKey) {
+  public Project find(String projectKey) {
     log.info("Finding Project {}", projectKey);
     return where(QProject.project.key.eq(projectKey)).singleResult();
   }
 
   /**
-   * Return a Project if accessible to the user
+   * Search for a Project by its key and whether it is accessible to the user
    * 
-   * @param projectKey Project Key
+   * @param projectKey
    * 
-   * @param username Filters results
+   * @param username
    * 
-   * @return Returns the Project or null if none found
+   * @return Project or null if none found
    * 
-   * @see #findProject()
+   * @see #find(String)
    */
-  public Project findProjectForUser(String projectKey, String username) {
+  public Project findForUser(String projectKey, String username) {
     log.info("Finding Project {} for User {}", projectKey, username);
     return where(QProject.project.key.eq(projectKey)).where(QProject.project.users.contains(username)).singleResult();
   }
@@ -82,9 +82,9 @@ public class ProjectRepository extends BaseMorphiaService<Project> {
    * 
    * @return All Projects
    * 
-   * @see #findProjectsForUser(String)
+   * @see #findAllForUser(String)
    */
-  public Set<Project> findProjects() {
+  public Set<Project> findAll() {
     log.info("Finding all Projects");
     return ImmutableSet.copyOf(query().list());
   }
@@ -92,11 +92,13 @@ public class ProjectRepository extends BaseMorphiaService<Project> {
   /**
    * Search for all Projects accessible to the user
    * 
+   * @param username
+   * 
    * @return All Projects viewable by the user
    * 
-   * @see #findProjects()
+   * @see #findAll()
    */
-  public Set<Project> findProjectsForUser(String username) {
+  public Set<Project> findAllForUser(String username) {
     log.info("Finding all Projects for {}", username);
     return ImmutableSet.copyOf(where(QProject.project.users.contains(username)).list());
   }
@@ -111,9 +113,10 @@ public class ProjectRepository extends BaseMorphiaService<Project> {
    * Otherwise it will be added.
    * 
    * @param project Project used in upsert
+   * 
    * @return Response object from Mongo
    */
-  public Key<Project> upsertProject(Project project) {
+  public Key<Project> upsert(Project project) {
     log.info("Upserting {}", project);
     val response = this.datastore().save(project, WriteConcern.ACKNOWLEDGED);
 
