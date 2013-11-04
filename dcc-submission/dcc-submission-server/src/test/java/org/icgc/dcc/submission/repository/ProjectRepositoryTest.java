@@ -126,7 +126,9 @@ public class ProjectRepositoryTest {
 
     assertThat(projectRepository.findProject(projectThree.getKey())).isNull();
 
-    projectRepository.upsertProject(projectThree);
+    val response = projectRepository.upsertProject(projectThree);
+
+    assertThat(response).isNotNull();
 
     assertThat(projectRepository.findProject(projectThree.getKey())).isEqualTo(projectThree);
     assertThat(bareMorphiaQuery.where(QProject.project.key.eq(projectThree.getKey())).singleResult()).isEqualTo(
@@ -139,9 +141,11 @@ public class ProjectRepositoryTest {
 
     assertThat(projectRepository.findProject(projectThree.getKey())).isNull();
 
-    projectRepository.upsertProject(projectThree);
+    val first = projectRepository.upsertProject(projectThree);
     projectThree.setAlias("PRJ ALIAS");
-    projectRepository.upsertProject(projectThree);
+    val second = projectRepository.upsertProject(projectThree);
+
+    assertThat(first).isEqualTo(second);
 
     assertThat(projectRepository.findProject(projectThree.getKey())).isEqualTo(projectThree);
     assertThat(bareMorphiaQuery.where(QProject.project.key.eq(projectThree.getKey())).singleResult()).isEqualTo(

@@ -6,6 +6,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import lombok.val;
 
+import org.bson.types.ObjectId;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.repository.ProjectRepository;
 import org.junit.After;
@@ -15,6 +16,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import com.google.code.morphia.Key;
 import com.google.common.collect.Sets;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -83,12 +85,13 @@ public class ProjectServiceTest {
   }
 
   @Test
-  public void testAddProject() throws Exception {
-    val expected = Sets.newHashSet(projectOne, projectTwo);
-    when(projectRepository.findProjects()).thenReturn(expected);
+  public void testUpsertProject() throws Exception {
+    val expected = new Key<Project>(Project.class, new ObjectId());
+    when(projectRepository.upsertProject(projectOne)).thenReturn(expected);
 
-    projectService.upsertProject(projectOne);
+    val response = projectService.upsertProject(projectOne);
 
     verify(projectRepository).upsertProject(projectOne);
+    assertThat(response).isEqualTo(expected);
   }
 }

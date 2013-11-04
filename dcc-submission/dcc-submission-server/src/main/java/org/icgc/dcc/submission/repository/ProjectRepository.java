@@ -103,10 +103,11 @@ public class ProjectRepository extends BaseMorphiaService<Project> {
 
   /**
    * Upsert will either insert or update the Project depending on whether it already exists in the database. Existence
-   * check is based on whether the Project already has an id.
-   * 
-   * If the Project is missing an id and already exists, Mongo with throw
-   * {@link com.mongodb.MongoException.DuplicateKey}. If the Project has an id and already exists it will be updated.
+   * check is based on whether the Project already has an Id. <br>
+   * <br>
+   * If the Project is missing an Id and already exists, Mongo with throw
+   * {@link com.mongodb.MongoException.DuplicateKey}. <br>
+   * If the Project has an Id and already exists it will be updated. <br>
    * Otherwise it will be added.
    * 
    * @param project Project used in upsert

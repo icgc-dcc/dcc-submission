@@ -9,6 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.submission.core.model.Project;
 import org.icgc.dcc.submission.repository.ProjectRepository;
 
+import com.google.code.morphia.Key;
+
 @Slf4j
 @RequiredArgsConstructor
 public class ProjectService {
@@ -36,8 +38,8 @@ public class ProjectService {
     return projectRepository.findProjectsForUser(username);
   }
 
-  public void upsertProject(Project project) {
+  public Key<Project> upsertProject(Project project) {
     log.info("Passing on request to upsert Project [{}]", project);
-    projectRepository.upsertProject(project);
+    return projectRepository.upsertProject(project);
   }
 }
