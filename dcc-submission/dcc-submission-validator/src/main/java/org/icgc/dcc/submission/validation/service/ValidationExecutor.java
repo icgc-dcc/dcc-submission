@@ -18,6 +18,7 @@
 package org.icgc.dcc.submission.validation.service;
 
 import static com.google.common.collect.Maps.newConcurrentMap;
+import static com.google.common.util.concurrent.MoreExecutors.listeningDecorator;
 import static java.lang.String.format;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -32,8 +33,10 @@ import java.util.concurrent.ThreadPoolExecutor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+import com.google.common.util.concurrent.ListenableFuture;
+
 /**
- * Manages the executing of a fixed number of {@code Validation} "slots".
+ * Manages the execution and cancellation of a fixed number of {@code Validation} "slots".
  */
 @Slf4j
 public class ValidationExecutor {
@@ -63,11 +66,11 @@ public class ValidationExecutor {
    * @param validation
    * @throws RejectedExecutionException if there are no "slots" available
    */
-  public void execute(final Validation validation) {
+  public ListenableFuture<Throwable> execute(final Validation validation) {
     val id = validation.getId();
 
     log.info("execute: Submitting validation '{}' ... {}", id, getStats());
-    val future = executor.submit(new Callable<Throwable>() {
+    val future = listeningDecorator(executor).submit(new Callable<Throwable>() {
 
       @Override
       public Throwable call() throws Exception {
@@ -87,7 +90,10 @@ public class ValidationExecutor {
       }
     });
 
+    // Track it for cancellation
     futures.put(id, future);
+
+    return future;
   }
 
   /**

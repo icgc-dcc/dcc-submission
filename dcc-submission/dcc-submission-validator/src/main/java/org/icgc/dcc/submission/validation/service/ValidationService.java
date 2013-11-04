@@ -98,14 +98,13 @@ public class ValidationService {
   @SneakyThrows
   public Plan planValidation(QueuedProject queuedProject, SubmissionDirectory submissionDirectory,
       PlatformStrategy platformStategy, Dictionary dictionary, ValidationListener listener) {
-    // TODO: Separate plan and connect?
     val projectKey = queuedProject.getKey();
     log.info("Planning cascade for project {}...", projectKey);
     Plan plan = planner.plan(queuedProject, submissionDirectory, platformStategy, dictionary);
 
     log.info("Planned cascade for project {}", projectKey);
-    log.info("# internal flows: {}", Iterables.size(plan.getInternalFlows()));
-    log.info("# external flows: {}", Iterables.size(plan.getExternalFlows()));
+    log.info(" # internal flows: {}", Iterables.size(plan.getInternalFlows()));
+    log.info(" # external flows: {}", Iterables.size(plan.getExternalFlows()));
 
     log.info("Connecting cascade for project {}", projectKey);
     plan.connect(platformStategy);

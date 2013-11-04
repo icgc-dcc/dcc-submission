@@ -17,6 +17,8 @@
  */
 package org.icgc.dcc.submission.validation.checker;
 
+import static com.google.common.collect.Iterables.concat;
+import static com.google.common.collect.Iterables.size;
 import static com.google.common.collect.Maps.newHashMap;
 import static org.icgc.dcc.submission.validation.cascading.TupleState.createTupleError;
 
@@ -37,8 +39,6 @@ import org.icgc.dcc.submission.validation.service.ValidationContext;
 import org.icgc.dcc.submission.validation.service.Validator;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
-import com.google.common.collect.Iterables;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -60,11 +60,17 @@ public class FirstPassValidator implements Validator {
 
   @Override
   public void validate(ValidationContext context) {
+    // TODO: Change the design of this object to not have any "validation" relate state.
+
+    // TODO: Remove isValid and pass context to all checkers to prevent memory pressure of collecting errors within
+    // the checkers.
+
+    // Call for side-effects
     isValid();
+
     for (val fileName : getFileSchemaNames()) {
       for (val tupleError : getTupleErrors(fileName)) {
-        // TODO: Remove isValid and pass context to all checkers to prevent memory pressure of collecting errors within
-        // the checkers.
+
         // TODO: Move away from using TupleError and use the other methods provided on the context
         context.reportError(fileName, tupleError);
       }
@@ -76,7 +82,7 @@ public class FirstPassValidator implements Validator {
     for (String filename : submissionDir.listFile()) {
       String fileSchemaName = getFileSchemaName(dictionary, filename);
       if (fileSchemaName != null) {
-        Builder<FirstPassValidationError> errors = ImmutableList.<FirstPassValidationError> builder();
+        val errors = ImmutableList.<FirstPassValidationError> builder();
 
         log.info("Validate file level well-formedness for file schema: {}", fileSchemaName);
         errors.addAll(fileChecker.check(filename));
@@ -88,8 +94,11 @@ public class FirstPassValidator implements Validator {
       }
     }
 
-    List<FirstPassValidationError> flattenListOfErrors = ImmutableList.copyOf(Iterables.concat(errorMap.values()));
-    return (flattenListOfErrors.size() == 0);
+    // Can't we just use errorMap.isEmpty()?
+    val errorCount = size(concat(errorMap.values()));
+    val valid = errorCount == 0;
+
+    return valid;
   }
 
   protected Set<String> getFileSchemaNames() {

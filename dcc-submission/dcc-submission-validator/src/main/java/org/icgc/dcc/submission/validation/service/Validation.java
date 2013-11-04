@@ -25,24 +25,27 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * A {@code Validation} is a high level container which encapsulates the execution context of sequential {@Validator
- * 
- * 
- * }s.
+ * A {@code Validation} is a high level container which encapsulates the execution context of sequential
+ * {@link Validator}s.
  */
 @Value
 @Slf4j
 public class Validation {
 
+  /**
+   * The per-instance context of the validation.
+   */
   @NonNull
   private final ValidationContext context;
+
+  /**
+   * Sequence of validators to apply to the {@link #context}.
+   */
   @NonNull
   private final List<Validator> validators;
 
   /**
    * The identifier used to {@code submit} and {@code cancel} with the {@link ValidationExecutor}.
-   * 
-   * @return
    */
   public String getId() {
     return context.getProjectKey();
@@ -51,7 +54,7 @@ public class Validation {
   /**
    * Executes the sequence of {@link #validators}
    * 
-   * @throws InterruptedException
+   * @throws InterruptedException when interrupted by the {@link ValidationExecutor}
    */
   public void execute() throws InterruptedException {
     log.info("Executing validition '{}'...", getId());
@@ -60,6 +63,12 @@ public class Validation {
     for (val validator : validators) {
       log.info("Executing {} validator for '{}'...", validator.getClass().getSimpleName(), getId());
       validator.validate(context);
+
+      if (context.hasErrors()) {
+        log.info("Executing {} validator for '{}' has errors", validator.getClass().getSimpleName(), getId());
+        break;
+      }
+
       verifyState();
     }
   }
@@ -72,7 +81,7 @@ public class Validation {
   private void verifyState() throws InterruptedException {
     val cancelled = Thread.currentThread().isInterrupted();
     if (cancelled) {
-      throw new InterruptedException("Task '" + getId() + "' was interrupted");
+      throw new InterruptedException("Validation '" + getId() + "' was interrupted");
     }
   }
 

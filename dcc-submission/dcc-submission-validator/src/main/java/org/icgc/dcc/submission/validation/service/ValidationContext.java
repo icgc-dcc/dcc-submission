@@ -48,7 +48,7 @@ public interface ValidationContext extends ReportContext {
   String getProjectKey();
 
   /**
-   * Gets the email addresses of who to email after validation.
+   * Gets the email addresses of whom to email after validation.
    */
   List<String> getEmails();
 
