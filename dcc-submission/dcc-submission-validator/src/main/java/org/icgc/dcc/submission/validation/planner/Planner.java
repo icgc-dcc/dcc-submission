@@ -18,14 +18,11 @@
 package org.icgc.dcc.submission.validation.planner;
 
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
-import org.icgc.dcc.submission.fs.SubmissionDirectory;
-import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.validation.core.Plan;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 
 public interface Planner {
 
-  public Plan plan(QueuedProject queuedProject, SubmissionDirectory submissionDirectory, PlatformStrategy strategy,
-      Dictionary dictionary) throws PlanningException;
+  public Plan plan(String projectKey, PlatformStrategy strategy, Dictionary dictionary) throws PlanningException;
 
 }

@@ -42,7 +42,6 @@ import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.Restriction;
 import org.icgc.dcc.submission.dictionary.model.RestrictionType;
 import org.icgc.dcc.submission.dictionary.model.Term;
-import org.icgc.dcc.submission.release.model.QueuedProject;
 import org.icgc.dcc.submission.validation.cascading.ForbiddenValuesFunction;
 import org.icgc.dcc.submission.validation.core.Plan;
 import org.icgc.dcc.submission.validation.platform.LocalPlatformStrategy;
@@ -67,7 +66,7 @@ public class ValidationInternalIntegrityTest extends BaseValidationIntegrityTest
    * Test data.
    */
   private static final String ROOT_DIR = "/fixtures/validation/internal";
-  private static final QueuedProject QUEUED_PROJECT = new QueuedProject("dummyProject", null);
+  private static final String PROJECT_KEY = "dummyProject";
 
   @Before
   public void setUp() throws JsonProcessingException, IOException {
@@ -219,7 +218,7 @@ public class ValidationInternalIntegrityTest extends BaseValidationIntegrityTest
 
     PlatformStrategy platformStrategy = new LocalPlatformStrategy(rootDir, outputDir, systemDir);
 
-    Plan plan = planner.plan(QUEUED_PROJECT, submissionDirectory, platformStrategy, dictionary);
+    Plan plan = planner.plan(PROJECT_KEY, platformStrategy, dictionary);
     plan.connect(platformStrategy);
 
     plan.getCascade().complete();

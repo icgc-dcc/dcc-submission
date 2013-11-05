@@ -34,7 +34,6 @@ import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
-import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.validation.core.RestrictionContext;
 import org.icgc.dcc.submission.validation.core.RestrictionType;
 import org.icgc.dcc.submission.validation.planner.DefaultPlanner;
@@ -82,8 +81,6 @@ public abstract class BaseValidationIntegrityTest {
   RestrictionContext context;
   @Mock
   DccFileSystem dccFileSystem;
-  @Mock
-  SubmissionDirectory submissionDirectory;
 
   /**
    * Integration dependencies.
