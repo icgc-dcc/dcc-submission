@@ -19,8 +19,6 @@ package org.icgc.dcc.submission.validation.checker.step;
 
 import static org.icgc.dcc.submission.dictionary.model.SummaryType.AVERAGE;
 import static org.icgc.dcc.submission.dictionary.model.ValueType.INTEGER;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -40,7 +38,7 @@ import org.icgc.dcc.submission.dictionary.model.Relation;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.validation.checker.FileChecker;
-import org.icgc.dcc.submission.validation.checker.step.ReferentialFileChecker;
+import org.icgc.dcc.submission.validation.service.ValidationContext;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -100,6 +98,9 @@ public class ReferentialFileCheckerTest {
   @Mock
   SubmissionDirectory submissionDir;
 
+  @Mock
+  ValidationContext validationContext;
+
   @Before
   public void setup() {
     dict = new Dictionary();
@@ -107,136 +108,132 @@ public class ReferentialFileCheckerTest {
     dict.addFile(Schema.B.getSchema());
     dict.addFile(Schema.C.getSchema());
     when(submissionDir.listFile()).thenReturn(ImmutableList.of("testfile1", "testfile2"));
+
+    when(validationContext.getDccFileSystem()).thenReturn(fs);
+    when(validationContext.getSubmissionDirectory()).thenReturn(submissionDir);
+    when(validationContext.getDictionary()).thenReturn(dict);
   }
 
   @Test
   public void validReferentialCheckSchemaB() throws Exception {
-    FileChecker baseChecker = spy(new NoOpFileChecker(fs, dict, submissionDir));
+    FileChecker baseChecker = spy(new NoOpFileChecker(validationContext));
     when(baseChecker.getFileSchemaName(anyString())).thenReturn(Schema.B.getSchema().getName());
     ReferentialFileChecker checker = new ReferentialFileChecker(baseChecker);
     // regardless of the listfile, the file exists
     when(submissionDir.listFile(any(Pattern.class))).thenReturn(ImmutableList.of(anyString()));
-    val errors = checker.check("testfile1");
+    checker.check("testfile1");
     verify(submissionDir, times(2)).listFile(any(Pattern.class));
-    assertTrue(errors.isEmpty());
+    TestUtils.checkNoErrorsReported(validationContext);
     assertTrue(checker.isValid());
   }
 
   @Test
   public void invalidReferentialCheckSchemaB() throws Exception {
-    FileChecker baseChecker = spy(new NoOpFileChecker(fs, dict, submissionDir));
+    FileChecker baseChecker = spy(new NoOpFileChecker(validationContext));
     when(baseChecker.getFileSchemaName(anyString())).thenReturn(Schema.B.getSchema().getName());
     ReferentialFileChecker checker = new ReferentialFileChecker(baseChecker);
     // no referencing and referenced file exists
     when(submissionDir.listFile(any(Pattern.class))).thenReturn(ImmutableList.<String> of());
-    val errors = checker.check("testfile1");
+    checker.check("testfile1");
     verify(submissionDir, times(2)).listFile(any(Pattern.class));
-    assertEquals(2, errors.size());
-    assertFalse(errors.isEmpty());
-    assertFalse(checker.isValid());
+    TestUtils.checkReferentialErrorReported(validationContext, 2);
   }
 
   @Test
   public void invalidReferencedCheckSchemaB() throws Exception {
-    FileChecker baseChecker = spy(new NoOpFileChecker(fs, dict, submissionDir));
+    FileChecker baseChecker = spy(new NoOpFileChecker(validationContext));
     when(baseChecker.getFileSchemaName(anyString())).thenReturn(Schema.B.getSchema().getName());
     ReferentialFileChecker checker = new ReferentialFileChecker(baseChecker);
 
     // no referenced file
     when(submissionDir.listFile(any(Pattern.class))).thenAnswer(new NoSchemaFound("C"));
-    val errors = checker.check("testfile1");
+    checker.check("testfile1");
     verify(submissionDir, times(2)).listFile(any(Pattern.class));
-    assertEquals(1, errors.size());
-    assertFalse(errors.isEmpty());
-    assertFalse(checker.isValid());
+    TestUtils.checkReferentialErrorReported(validationContext, 1);
   }
 
   @Test
   public void invalidReferencingCheckSchemaB() throws Exception {
-    FileChecker baseChecker = spy(new NoOpFileChecker(fs, dict, submissionDir));
+    FileChecker baseChecker = spy(new NoOpFileChecker(validationContext));
     when(baseChecker.getFileSchemaName(anyString())).thenReturn(Schema.B.getSchema().getName());
     ReferentialFileChecker checker = new ReferentialFileChecker(baseChecker);
 
     // no referenced file
     when(submissionDir.listFile(any(Pattern.class))).thenAnswer(new NoSchemaFound("A"));
-    val errors = checker.check("testfile1");
+    checker.check("testfile1");
     verify(submissionDir, times(2)).listFile(any(Pattern.class));
-    assertEquals(1, errors.size());
-    assertFalse(errors.isEmpty());
-    assertFalse(checker.isValid());
+    TestUtils.checkReferentialErrorReported(validationContext, 1);
   }
 
   @Test
   public void validReferentialCheckSchemaA() throws Exception {
-    FileChecker baseChecker = spy(new NoOpFileChecker(fs, dict, submissionDir));
+    FileChecker baseChecker = spy(new NoOpFileChecker(validationContext));
     when(baseChecker.getFileSchemaName(anyString())).thenReturn(Schema.A.getSchema().getName());
     ReferentialFileChecker checker = new ReferentialFileChecker(baseChecker);
     // regardless of the listfile, the file exists
     when(submissionDir.listFile(any(Pattern.class))).thenReturn(ImmutableList.of(anyString()));
-    val errors = checker.check("testfile1");
+    checker.check("testfile1");
     verify(submissionDir, times(1)).listFile(any(Pattern.class));
-    assertTrue(errors.isEmpty());
+    TestUtils.checkNoErrorsReported(validationContext);
     assertTrue(checker.isValid());
   }
 
   @Test
   public void invalidReferentialCheckSchemaA() throws Exception {
-    FileChecker baseChecker = spy(new NoOpFileChecker(fs, dict, submissionDir));
+    FileChecker baseChecker = spy(new NoOpFileChecker(validationContext));
     when(baseChecker.getFileSchemaName(anyString())).thenReturn(Schema.A.getSchema().getName());
     ReferentialFileChecker checker = new ReferentialFileChecker(baseChecker);
     when(submissionDir.listFile(any(Pattern.class))).thenAnswer(new NoSchemaFound("B"));
-    val errors = checker.check("testfile1");
+    checker.check("testfile1");
     verify(submissionDir, times(1)).listFile(any(Pattern.class));
-    assertEquals(1, errors.size());
-    assertFalse(errors.isEmpty());
-    assertFalse(checker.isValid());
+    TestUtils.checkReferentialErrorReported(validationContext, 1);
   }
 
   @Test
   public void validReferentialCheckSchemaANoC() throws Exception {
-    FileChecker baseChecker = spy(new NoOpFileChecker(fs, dict, submissionDir));
+    FileChecker baseChecker = spy(new NoOpFileChecker(validationContext));
     when(baseChecker.getFileSchemaName(anyString())).thenReturn(Schema.A.getSchema().getName());
     ReferentialFileChecker checker = new ReferentialFileChecker(baseChecker);
     when(submissionDir.listFile(any(Pattern.class))).thenAnswer(new NoSchemaFound("C"));
-    val errors = checker.check("testfile1");
+    checker.check("testfile1");
     verify(submissionDir, times(1)).listFile(any(Pattern.class));
-    assertTrue(errors.isEmpty());
+    TestUtils.checkNoErrorsReported(validationContext);
     assertTrue(checker.isValid());
   }
 
   @Test
   public void validReferentialCheckSchemaC() throws Exception {
-    FileChecker baseChecker = spy(new NoOpFileChecker(fs, dict, submissionDir));
+    FileChecker baseChecker = spy(new NoOpFileChecker(validationContext));
     when(baseChecker.getFileSchemaName(anyString())).thenReturn(Schema.C.getSchema().getName());
     ReferentialFileChecker checker = new ReferentialFileChecker(baseChecker);
     when(submissionDir.listFile(any(Pattern.class))).thenReturn(ImmutableList.of(anyString()));
-    val errors = checker.check("testfile1");
+    checker.check("testfile1");
     verify(submissionDir, times(0)).listFile(any(Pattern.class));
-    assertTrue(errors.isEmpty());
+    TestUtils.checkNoErrorsReported(validationContext);
     assertTrue(checker.isValid());
   }
 
   @Test
   public void validReferentialCheckSchemaCNoB() throws Exception {
-    FileChecker baseChecker = spy(new NoOpFileChecker(fs, dict, submissionDir));
+    FileChecker baseChecker = spy(new NoOpFileChecker(validationContext));
     when(baseChecker.getFileSchemaName(anyString())).thenReturn(Schema.C.getSchema().getName());
     ReferentialFileChecker checker = new ReferentialFileChecker(baseChecker);
     when(submissionDir.listFile(any(Pattern.class))).thenAnswer(new NoSchemaFound("B"));
-    val errors = checker.check("testfile1");
+    checker.check("testfile1");
     verify(submissionDir, times(0)).listFile(any(Pattern.class));
-    assertTrue(errors.isEmpty());
+    TestUtils.checkNoErrorsReported(validationContext);
     assertTrue(checker.isValid());
   }
 
   @Test
   public void validReferentialCheckSchemaD() throws Exception {
-    FileChecker baseChecker = spy(new NoOpFileChecker(fs, dict, submissionDir));
+    FileChecker baseChecker = spy(new NoOpFileChecker(validationContext));
     when(baseChecker.getFileSchemaName(anyString())).thenReturn(Schema.C.getSchema().getName());
     ReferentialFileChecker checker = new ReferentialFileChecker(baseChecker);
     when(submissionDir.listFile(any(Pattern.class))).thenReturn(ImmutableList.of(anyString()));
-    val errors = checker.check("testfile1");
+    checker.check("testfile1");
     verify(submissionDir, times(0)).listFile(any(Pattern.class));
-    assertTrue(errors.isEmpty());
+    TestUtils.checkNoErrorsReported(validationContext);
     assertTrue(checker.isValid());
   }
 

@@ -17,13 +17,11 @@
  */
 package org.icgc.dcc.submission.validation.checker.step;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import lombok.val;
+import static org.mockito.Mockito.when;
 
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.validation.checker.step.NoOpRowChecker;
-import org.icgc.dcc.submission.validation.checker.step.RowCharsetChecker;
+import org.icgc.dcc.submission.validation.service.ValidationContext;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -38,12 +36,20 @@ public class RowCharsetCheckerTest {
   @Mock
   private FileSchema fileSchema;
 
+  @Mock
+  ValidationContext validationContext;
+
+  @Before
+  public void setup() {
+    when(baseChecker.getValidationContext()).thenReturn(validationContext);
+  }
+
   @Test
   public void sanity() throws Exception {
     String test_text = "<Hello-World> \t a b c F G Z 0 1 6 9 !?";
     RowCharsetChecker checker = new RowCharsetChecker(baseChecker);
-    val errors = checker.performSelfCheck(fileSchema, test_text, 1);
-    assertTrue(errors.isEmpty());
+    checker.performSelfCheck("myfile", fileSchema, test_text, 1);
+    TestUtils.checkNoErrorsReported(validationContext);
   }
 
   @Test
@@ -53,8 +59,8 @@ public class RowCharsetCheckerTest {
       sb.append((char) i);
     }
     RowCharsetChecker checker = new RowCharsetChecker(baseChecker);
-    val errors = checker.performSelfCheck(fileSchema, sb.toString(), 1);
-    assertTrue(errors.isEmpty());
+    checker.performSelfCheck("myfile", fileSchema, sb.toString(), 1);
+    TestUtils.checkNoErrorsReported(validationContext);
   }
 
   @Test
@@ -67,8 +73,8 @@ public class RowCharsetCheckerTest {
       sb.append((char) i);
     }
     RowCharsetChecker checker = new RowCharsetChecker(baseChecker);
-    val errors = checker.performSelfCheck(fileSchema, sb.toString(), 1);
-    assertFalse(errors.isEmpty());
+    checker.performSelfCheck("myfile", fileSchema, sb.toString(), 1);
+    TestUtils.checkErrorReported(validationContext, 1);
   }
 
   @Test
@@ -76,8 +82,8 @@ public class RowCharsetCheckerTest {
     char tabChar = 9;
     String test_string = Character.toString(tabChar);
     RowCharsetChecker checker = new RowCharsetChecker(baseChecker);
-    val errors = checker.performSelfCheck(fileSchema, test_string, 1);
-    assertTrue(errors.isEmpty());
+    checker.performSelfCheck("myfile", fileSchema, test_string, 1);
+    TestUtils.checkNoErrorsReported(validationContext);
   }
 
   @Test
@@ -85,8 +91,8 @@ public class RowCharsetCheckerTest {
     char nullChar = 0;
     String test_string = Character.toString(nullChar);
     RowCharsetChecker checker = new RowCharsetChecker(baseChecker);
-    val errors = checker.performSelfCheck(fileSchema, test_string, 1);
-    assertFalse(errors.isEmpty());
+    checker.performSelfCheck("myfile", fileSchema, test_string, 1);
+    TestUtils.checkNoErrorsReported(validationContext);
   }
 
   @Test
@@ -94,8 +100,7 @@ public class RowCharsetCheckerTest {
     char carriageReturnChar = 13;
     String test_string = Character.toString(carriageReturnChar);
     RowCharsetChecker checker = new RowCharsetChecker(baseChecker);
-    val errors = checker.performSelfCheck(fileSchema, test_string, 1);
-    assertFalse(errors.isEmpty());
+    checker.performSelfCheck("myfile", fileSchema, test_string, 1);
+    TestUtils.checkNoErrorsReported(validationContext);
   }
-
 }

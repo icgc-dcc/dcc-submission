@@ -17,8 +17,6 @@
  */
 package org.icgc.dcc.submission.validation.checker.step;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -28,17 +26,14 @@ import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
-import java.util.List;
 
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
-import org.icgc.dcc.submission.validation.checker.FirstPassValidationError;
 import org.icgc.dcc.submission.validation.checker.Util;
-import org.icgc.dcc.submission.validation.checker.step.NoOpRowChecker;
-import org.icgc.dcc.submission.validation.checker.step.RowColumnChecker;
+import org.icgc.dcc.submission.validation.service.ValidationContext;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -60,6 +55,9 @@ public class RowColumnCheckerTest {
   @Mock
   private DccFileSystem fs;
 
+  @Mock
+  ValidationContext validationContext;
+
   @Before
   public void setup() {
     FileSchema testSchema = mock(FileSchema.class);
@@ -76,6 +74,10 @@ public class RowColumnCheckerTest {
     f2.setName("b");
     when(fileSchema.getFields()).thenReturn(ImmutableList.of(f1, f2));
     when(dict.fileSchema(anyString())).thenReturn(option);
+
+    when(validationContext.getDccFileSystem()).thenReturn(fs);
+    when(validationContext.getSubmissionDirectory()).thenReturn(submissionDir);
+    when(validationContext.getDictionary()).thenReturn(dict);
   }
 
   @Test
@@ -83,11 +85,10 @@ public class RowColumnCheckerTest {
     DataInputStream fis = new DataInputStream(new ByteArrayInputStream("a\tb\rf1\tf2\r".getBytes()));
     mockStatic(Util.class);
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
-    // when(submissionDir.listFile(any(Pattern.class))).thenReturn(ImmutableList.<String> of());
 
-    RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(fs, dict, submissionDir));
-    List<FirstPassValidationError> errors = checker.check(anyString());
-    assertTrue(errors.isEmpty());
+    RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(validationContext));
+    checker.check(anyString());
+    TestUtils.checkNoErrorsReported(validationContext);
     assertTrue(checker.isValid());
   }
 
@@ -97,11 +98,9 @@ public class RowColumnCheckerTest {
     mockStatic(Util.class);
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
 
-    RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(fs, dict, submissionDir));
-    List<FirstPassValidationError> errors = checker.check(anyString());
-    assertFalse(errors.isEmpty());
-    assertEquals(1, errors.size());
-    assertFalse(checker.isValid());
+    RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(validationContext));
+    checker.check(anyString());
+    TestUtils.checkErrorReported(validationContext, 1);
   }
 
   @Test
@@ -110,11 +109,9 @@ public class RowColumnCheckerTest {
     mockStatic(Util.class);
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
 
-    RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(fs, dict, submissionDir));
-    List<FirstPassValidationError> errors = checker.check(anyString());
-    assertFalse(errors.isEmpty());
-    assertEquals(1, errors.size());
-    assertFalse(checker.isValid());
+    RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(validationContext));
+    checker.check(anyString());
+    TestUtils.checkErrorReported(validationContext, 1);
   }
 
   @Test
@@ -123,11 +120,9 @@ public class RowColumnCheckerTest {
     mockStatic(Util.class);
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
 
-    RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(fs, dict, submissionDir));
-    List<FirstPassValidationError> errors = checker.check(anyString());
-    assertFalse(errors.isEmpty());
-    assertEquals(2, errors.size());
-    assertFalse(checker.isValid());
+    RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(validationContext));
+    checker.check(anyString());
+    TestUtils.checkErrorReported(validationContext, 2);
   }
 
   @Test
@@ -137,11 +132,9 @@ public class RowColumnCheckerTest {
     mockStatic(Util.class);
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
 
-    RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(fs, dict, submissionDir));
-    List<FirstPassValidationError> errors = checker.check(anyString());
-    assertFalse(errors.isEmpty());
-    assertEquals(3, errors.size());
-    assertFalse(checker.isValid());
+    RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(validationContext));
+    checker.check(anyString());
+    TestUtils.checkErrorReported(validationContext, 3);
   }
 
   @Test
@@ -150,10 +143,9 @@ public class RowColumnCheckerTest {
     mockStatic(Util.class);
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
 
-    RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(fs, dict, submissionDir));
-    List<FirstPassValidationError> errors = checker.check(anyString());
-    assertTrue(errors.isEmpty());
+    RowColumnChecker checker = new RowColumnChecker(new NoOpRowChecker(validationContext));
+    checker.check(anyString());
+    TestUtils.checkNoErrorsReported(validationContext);
     assertTrue(checker.isValid());
   }
-
 }

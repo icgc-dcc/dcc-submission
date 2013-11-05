@@ -42,6 +42,7 @@ import org.icgc.dcc.submission.fs.FsConfig;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.validation.checker.Util.CodecType;
 import org.icgc.dcc.submission.validation.checker.step.FileCorruptionCheckerTest;
+import org.icgc.dcc.submission.validation.service.ValidationContext;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -109,6 +110,9 @@ public class FirstPassValidatorClientTest {
   @Mock
   SubmissionDirectory submissionDir;
 
+  @Mock
+  ValidationContext validationContext;
+
   @Before
   public void setup() throws IOException {
     final File file1 = File.createTempFile("testfile1", ".bz2");
@@ -155,14 +159,16 @@ public class FirstPassValidatorClientTest {
         return file.getAbsolutePath();
       }
     });
+
+    when(validationContext.getDccFileSystem()).thenReturn(fs);
+    when(validationContext.getSubmissionDirectory()).thenReturn(submissionDir);
+    when(validationContext.getDictionary()).thenReturn(dict);
   }
 
   @Test
   public void sanity() throws IOException {
-    FirstPassValidator checker = new FirstPassValidator(fs, dict, submissionDir);
-    System.out.println(checker.isValid());
-    for (String schemaName : checker.getFileSchemaNames())
-      System.out.println(checker.getTupleErrors(schemaName));
+    FirstPassValidator fpc = new FirstPassValidator();
+    fpc.validate(validationContext);
   }
 
 }

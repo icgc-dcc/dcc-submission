@@ -17,9 +17,6 @@
  */
 package org.icgc.dcc.submission.validation.checker.step;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -28,18 +25,17 @@ import static org.mockito.Mockito.when;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 
-import lombok.val;
-
 import org.icgc.dcc.submission.dictionary.model.Dictionary;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.fs.DccFileSystem;
 import org.icgc.dcc.submission.fs.SubmissionDirectory;
 import org.icgc.dcc.submission.validation.checker.FileChecker;
 import org.icgc.dcc.submission.validation.checker.Util;
-import org.icgc.dcc.submission.validation.checker.step.FileHeaderChecker;
+import org.icgc.dcc.submission.validation.service.ValidationContext;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -55,6 +51,9 @@ public class FileHeaderCheckerTest {
   private Dictionary dict;
   private DccFileSystem fs;
 
+  @Mock
+  ValidationContext validationContext;
+
   @Before
   public void setup() {
     submissionDir = mock(SubmissionDirectory.class);
@@ -66,6 +65,10 @@ public class FileHeaderCheckerTest {
     Optional<FileSchema> option = Optional.of(fileSchema);
     when(fileSchema.getFieldNames()).thenReturn(ImmutableList.of("a", "b"));
     when(dict.fileSchema(anyString())).thenReturn(option);
+
+    when(validationContext.getDccFileSystem()).thenReturn(fs);
+    when(validationContext.getSubmissionDirectory()).thenReturn(submissionDir);
+    when(validationContext.getDictionary()).thenReturn(dict);
   }
 
   @Test
@@ -74,11 +77,9 @@ public class FileHeaderCheckerTest {
     PowerMockito.mockStatic(Util.class);
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
 
-    FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(fs, dict, submissionDir));
-    val error = checker.check(anyString());
-    assertTrue(error.isEmpty());
-    assertTrue(checker.isValid());
-
+    FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(validationContext));
+    checker.check(anyString());
+    TestUtils.checkNoErrorsReported(validationContext);
   }
 
   @Test
@@ -87,12 +88,9 @@ public class FileHeaderCheckerTest {
     PowerMockito.mockStatic(Util.class);
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
 
-    FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(fs, dict, submissionDir));
-    val error = checker.check(anyString());
-    assertFalse(error.isEmpty());
-    assertEquals(1, error.size());
-    assertFalse(checker.isValid());
-
+    FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(validationContext));
+    checker.check(anyString());
+    TestUtils.checkErrorReported(validationContext, 1);
   }
 
   @Test
@@ -101,11 +99,9 @@ public class FileHeaderCheckerTest {
     PowerMockito.mockStatic(Util.class);
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
 
-    FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(fs, dict, submissionDir));
-    val error = checker.check(anyString());
-    assertFalse(error.isEmpty());
-    assertEquals(1, error.size());
-    assertFalse(checker.isValid());
+    FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(validationContext));
+    checker.check(anyString());
+    TestUtils.checkErrorReported(validationContext, 1);
   }
 
   @Test
@@ -114,11 +110,9 @@ public class FileHeaderCheckerTest {
     PowerMockito.mockStatic(Util.class);
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
 
-    FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(fs, dict, submissionDir));
-    val error = checker.check(anyString());
-    assertFalse(error.isEmpty());
-    assertEquals(1, error.size());
-    assertFalse(checker.isValid());
+    FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(validationContext));
+    checker.check(anyString());
+    TestUtils.checkErrorReported(validationContext, 1);
   }
 
   @Test
@@ -127,11 +121,9 @@ public class FileHeaderCheckerTest {
     PowerMockito.mockStatic(Util.class);
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
 
-    FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(fs, dict, submissionDir));
-    val error = checker.check(anyString());
-    assertFalse(error.isEmpty());
-    assertEquals(1, error.size());
-    assertFalse(checker.isValid());
+    FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(validationContext));
+    checker.check(anyString());
+    TestUtils.checkErrorReported(validationContext, 1);
 
   }
 
@@ -141,11 +133,9 @@ public class FileHeaderCheckerTest {
     PowerMockito.mockStatic(Util.class);
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
 
-    FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(fs, dict, submissionDir));
-    val error = checker.check(anyString());
-    assertFalse(error.isEmpty());
-    assertEquals(1, error.size());
-    assertFalse(checker.isValid());
+    FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(validationContext));
+    checker.check(anyString());
+    TestUtils.checkErrorReported(validationContext, 1);
 
   }
 
@@ -155,11 +145,9 @@ public class FileHeaderCheckerTest {
     PowerMockito.mockStatic(Util.class);
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
 
-    FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(fs, dict, submissionDir));
-    val error = checker.check(anyString());
-    assertFalse(error.isEmpty());
-    assertEquals(1, error.size());
-    assertFalse(checker.isValid());
+    FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(validationContext));
+    checker.check(anyString());
+    TestUtils.checkErrorReported(validationContext, 1);
 
   }
 
@@ -169,11 +157,9 @@ public class FileHeaderCheckerTest {
     PowerMockito.mockStatic(Util.class);
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
 
-    FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(fs, dict, submissionDir));
-    val error = checker.check(anyString());
-    assertFalse(error.isEmpty());
-    assertEquals(1, error.size());
-    assertFalse(checker.isValid());
+    FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(validationContext));
+    checker.check(anyString());
+    TestUtils.checkErrorReported(validationContext, 1);
 
   }
 
@@ -183,10 +169,9 @@ public class FileHeaderCheckerTest {
     PowerMockito.mockStatic(Util.class);
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
 
-    FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(fs, dict, submissionDir));
-    val error = checker.check(anyString());
-    assertTrue(error.isEmpty());
-    assertTrue(checker.isValid());
+    FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(validationContext));
+    checker.check(anyString());
+    TestUtils.checkNoErrorsReported(validationContext);
   }
 
   @Test
@@ -195,10 +180,8 @@ public class FileHeaderCheckerTest {
     PowerMockito.mockStatic(Util.class);
     when(Util.createInputStream(any(DccFileSystem.class), anyString())).thenReturn(fis);
 
-    FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(fs, dict, submissionDir));
-    val error = checker.check(anyString());
-    assertTrue(error.isEmpty());
-    assertTrue(checker.isValid());
+    FileChecker checker = new FileHeaderChecker(new NoOpFileChecker(validationContext));
+    checker.check(anyString());
+    TestUtils.checkNoErrorsReported(validationContext);
   }
-
 }

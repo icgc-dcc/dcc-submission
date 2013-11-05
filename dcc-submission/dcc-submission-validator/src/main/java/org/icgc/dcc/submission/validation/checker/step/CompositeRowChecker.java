@@ -58,6 +58,8 @@ public abstract class CompositeRowChecker extends CompositeFileChecker implement
 
   @Override
   public void performSelfCheck(String filename) {
+    log.info("Start performing {} validation...", this.getClass().getSimpleName());
+
     String filePathname = getSubmissionDirectory().getDataFilePath(filename);
     FileSchema fileSchema = getFileSchema(filename);
     try {
@@ -78,15 +80,23 @@ public abstract class CompositeRowChecker extends CompositeFileChecker implement
     } catch (IOException e) {
       throw new RuntimeException("Unable to check the file: " + filename, e);
     }
+
+    log.info("End performing {} validation. Number of errors found: '{}'",
+        new Object[] {
+            this.getClass().getSimpleName(),
+            checkErrorCount });
   }
 
   @Override
   public void checkRow(String filename, FileSchema fileSchema, String row, long lineNumber) {
     delegate.checkRow(filename, fileSchema, row, lineNumber);
     if (delegate.canContinue()) {
-      log.info("Start performing {} validation...", this.getClass().getSimpleName());
+      log.debug(
+          "Start performing {} validation for row '{}'...",
+          row,
+          this.getClass().getSimpleName());
       performSelfCheck(filename, fileSchema, row, lineNumber);
-      log.info("End performing {} validation. Number of errors found: '{}'", this.getClass(), checkErrorCount);
+      log.debug("End performing {} validation for row '{}'", row, this.getClass().getSimpleName());
     }
   }
 
