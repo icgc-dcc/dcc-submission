@@ -35,6 +35,7 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 /**
  * Manages the execution and cancellation of a fixed number of {@code Validation} "slots".
@@ -58,7 +59,7 @@ public class ValidationExecutor {
    * @param maxConcurrentValidations - The maximum number of concurrently executing validation tasks.
    */
   public ValidationExecutor(int maxConcurrentValidations) {
-    log.info("Initializing executor with {} maximum concurrent validations", maxConcurrentValidations);
+    log.info("Initializing executor with a maximum of {} concurrent validations", maxConcurrentValidations);
     this.executor = createExecutor(maxConcurrentValidations);
   }
 
@@ -131,7 +132,7 @@ public class ValidationExecutor {
       futures.remove(id);
     }
 
-    log.error("cancel: No validation found '{}'... {}", id, getStats());
+    log.warn("cancel: No validation found '{}'... {}", id, getStats());
     return false;
   }
 
@@ -167,15 +168,18 @@ public class ValidationExecutor {
         0, SECONDS, // Arbitrary when both pool sizes are the same
         queue,
 
+        // Name the threads for logging and diagnositics
+        new ThreadFactoryBuilder().setNameFormat("Validation Slot %s").build(),
+
         // Need this to get a customized exception when "slots" are full
         new RejectedExecutionHandler() {
 
           @Override
           public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
-            log.info("Rejecting... {}", getStats());
+            log.warn("Rejecting... {}", getStats());
 
             // Raison d'être
-            throw new ValidationRejectedException();
+            throw new ValidationRejectedException("Validation rejected: " + getStats());
           }
 
         });

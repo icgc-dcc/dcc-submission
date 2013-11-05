@@ -17,23 +17,17 @@
  */
 package org.icgc.dcc.submission.validation.core;
 
-import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Iterables.concat;
 import static com.google.common.collect.Iterables.unmodifiableIterable;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
-import static com.google.common.collect.Maps.newLinkedHashMap;
-import static com.google.common.util.concurrent.Uninterruptibles.sleepUninterruptibly;
 import static java.lang.String.format;
-import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
@@ -48,16 +42,11 @@ import org.icgc.dcc.submission.validation.planner.ExternalFlowPlanner;
 import org.icgc.dcc.submission.validation.planner.FileSchemaFlowPlanner;
 import org.icgc.dcc.submission.validation.planner.InternalFlowPlanner;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
-import org.icgc.dcc.submission.validation.report.Outcome;
-import org.icgc.dcc.submission.validation.report.SchemaReport;
-import org.icgc.dcc.submission.validation.report.SubmissionReport;
+import org.icgc.dcc.submission.validation.report.ReportContext;
 
 import cascading.cascade.Cascade;
 import cascading.cascade.CascadeConnector;
 import cascading.cascade.CascadeDef;
-import cascading.cascade.CascadeListener;
-
-import com.google.common.collect.Iterables;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -87,30 +76,8 @@ public class Plan {
    */
   private Cascade cascade;
 
-  @Getter
-  private volatile boolean killed;
-
-  // TODO: Use proper timer (see DCC-739)
-  private long startTime;
-
   public String path(FileSchema schema) throws FileNotFoundException, IOException {
     return cascadingStrategy.path(schema).getName();
-  }
-
-  public void markKilled() {
-    checkState(!killed, "Attempted to kill plan multiple times");
-    killed = true;
-  }
-
-  /**
-   * startTime must have been set already (unit is milliseconds).
-   */
-  public long getDuration() {
-    if (startTime == 0L) {
-      return 0L;
-    }
-
-    return System.currentTimeMillis() - startTime;
   }
 
   public void include(FileSchema fileSchema, InternalFlowPlanner internal, ExternalFlowPlanner external) {
@@ -181,7 +148,7 @@ public class Plan {
     }
   }
 
-  synchronized public void connect(PlatformStrategy platformStrategy) {
+  public void connect(PlatformStrategy platformStrategy) {
     val cascadeDef = new CascadeDef().setName(queuedProject.getKey() + " validation cascade");
     for (val planner : getPlanners()) {
       val flow = planner.connect(platformStrategy);
@@ -193,72 +160,18 @@ public class Plan {
     cascade = new CascadeConnector().connect(cascadeDef);
   }
 
-  /**
-   * Starts the cascade in a non-blocking manner and takes care of associated action like starting timer and emptying
-   * the working directory.
-   * 
-   * @see https://groups.google.com/d/msg/cascading-user/gjxB2Bg-56w/R1h5lhn-g2IJ
-   */
-  synchronized public void startCascade() {
-    startTime = System.currentTimeMillis();
-    submissionDirectory.resetValidationDir();
-
-    int size = cascade.getFlows().size();
-    log.info("starting cascade with {} flows", size);
-    cascade.start();
-
-    // See link above
-    log.info("Pausing for flows to start so that cancellation won't find an empty jobMap", size);
-    sleepUninterruptibly(2, SECONDS);
-  }
-
-  /**
-   * Stops the cascade in a blocking manner.
-   */
-  synchronized public void stopCascade() {
-    cascade.stop();
-  }
-
-  synchronized public Plan addCascadeListener(CascadeListener listener) {
-    cascade.addListener(listener);
-    return this;
-  }
-
-  synchronized public Cascade getCascade() {
+  public Cascade getCascade() {
     return cascade;
   }
 
-  public Outcome collect(SubmissionReport report) {
-    Outcome result = Outcome.PASSED;
-    Map<String, SchemaReport> schemaReports = newLinkedHashMap();
-    for (val planner : concat(internalPlanners.values(), externalPlanners.values())) {
-      SchemaReport schemaReport = new SchemaReport();
-      Outcome outcome = planner.collect(cascadingStrategy, schemaReport);
-
-      if (outcome == Outcome.FAILED) {
-        result = Outcome.FAILED;
-      }
-
-      if (!schemaReports.containsKey(schemaReport.getName())) {
-        schemaReports.put(schemaReport.getName(), schemaReport);
-      } else {
-        // combine internal and external plans into one
-        SchemaReport sreport = schemaReports.get(schemaReport.getName());
-
-        sreport.addFieldReports(schemaReport.getFieldReports());
-        sreport.addErrors(schemaReport.getErrors());
-      }
+  public void collect(ReportContext reportContext) {
+    for (val planner : getPlanners()) {
+      planner.collect(cascadingStrategy, reportContext);
     }
-
-    // remove empty report
-    schemaReports.remove(null);
-
-    report.setSchemaReports(new ArrayList<SchemaReport>(schemaReports.values()));
-    return result;
   }
 
   private Iterable<FileSchemaFlowPlanner> getPlanners() {
-    return Iterables.concat(internalPlanners.values(), externalPlanners.values());
+    return concat(internalPlanners.values(), externalPlanners.values());
   }
 
 }

@@ -132,7 +132,6 @@ public class DefaultValidationContext implements ValidationContext {
 
   @Override
   public Optional<Path> getSsmPrimaryFile() {
-    // @Anthony: "There has got to be a better way" - Bob T.
     val submissionDirectory = getSubmissionDirectory();
     val ssmPrimaryFileSchema = getSsmPrimaryFileSchema(getDictionary());
     val ssmPrimaryFileNamePattern = ssmPrimaryFileSchema.getPattern();
@@ -150,7 +149,6 @@ public class DefaultValidationContext implements ValidationContext {
   }
 
   private static FileSchema getSsmPrimaryFileSchema(Dictionary dictionary) {
-    // @Anthony: "There has got to be a better way" - Bob T.
     for (val fileSchema : dictionary.getFiles()) {
       val fileType = SubmissionFileType.from(fileSchema.getName());
       val ssmPrimary = fileType == SSM_P_TYPE;

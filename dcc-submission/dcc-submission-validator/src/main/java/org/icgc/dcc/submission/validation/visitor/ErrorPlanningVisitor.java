@@ -17,35 +17,27 @@
  */
 package org.icgc.dcc.submission.validation.visitor;
 
-import static com.google.common.collect.Maps.newHashMap;
 import static org.icgc.dcc.submission.validation.cascading.TupleStates.keepInvalidTuplesFilter;
 import static org.icgc.dcc.submission.validation.cascading.ValidationFields.STATE_FIELD;
 
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
 
 import lombok.Cleanup;
+import lombok.SneakyThrows;
 import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 import org.apache.hadoop.fs.Path;
-import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.MappingIterator;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.ObjectReader;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.PlanExecutionException;
 import org.icgc.dcc.submission.validation.cascading.TupleState;
-import org.icgc.dcc.submission.validation.core.ErrorType;
 import org.icgc.dcc.submission.validation.core.FlowType;
 import org.icgc.dcc.submission.validation.core.ReportingPlanElement;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
-import org.icgc.dcc.submission.validation.report.ErrorReport;
-import org.icgc.dcc.submission.validation.report.Outcome;
 import org.icgc.dcc.submission.validation.report.ReportCollector;
-import org.icgc.dcc.submission.validation.report.SchemaReport;
+import org.icgc.dcc.submission.validation.report.ReportContext;
 
 import cascading.pipe.Each;
 import cascading.pipe.Pipe;
@@ -63,7 +55,6 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
     collect(new ErrorsPlanElement(fileSchema, this.getFlowType()));
   }
 
-  @Slf4j
   static class ErrorsPlanElement implements ReportingPlanElement {
 
     private final FileSchema fileSchema;
@@ -105,74 +96,46 @@ public class ErrorPlanningVisitor extends ReportingFlowPlanningVisitor {
 
     class ErrorReportCollector implements ReportCollector {
 
-      private final Map<ErrorType, ErrorReport> errorMap = newHashMap();
-
-      public ErrorReportCollector() {
-      }
-
       @Override
-      public Outcome collect(PlatformStrategy strategy, SchemaReport schemaReport) {
+      public void collect(PlatformStrategy strategy, ReportContext context) {
         try {
           Path path = strategy.path(getFileSchema());
-          schemaReport.setName(path.getName());
+          val fileName = path.getName();
 
           @Cleanup
           val reportInputStream = getReportInputStream(strategy);
           val tupleStates = getTupleStates(reportInputStream);
 
-          Outcome outcome = Outcome.PASSED;
           while (tupleStates.hasNext()) {
             val tupleState = tupleStates.next();
             if (tupleState.isInvalid()) {
-              outcome = Outcome.FAILED;
               for (val errorTuple : tupleState.getErrors()) {
-                addErrorTuple(errorTuple);
+                context.reportError(fileName, errorTuple);
               }
             }
           }
 
-          updateLineNumbers(path);
-
-          for (val errorReport : errorMap.values()) {
-            schemaReport.addError(errorReport);
-          }
-
-          return outcome;
+          context.reportLineNumbers(path);
         } catch (FileNotFoundException fnfe) {
-          return Outcome.PASSED;
-        } catch (IOException e) {
+          // There were no errors
+        } catch (Exception e) {
           throw new PlanExecutionException(e);
         }
       }
 
-      private InputStream getReportInputStream(PlatformStrategy strategy) throws FileNotFoundException, IOException {
+      @SneakyThrows
+      private InputStream getReportInputStream(PlatformStrategy strategy) {
         return strategy.readReportTap(getFileSchema(), getFlowType(), getName());
       }
 
-      private MappingIterator<TupleState> getTupleStates(InputStream reportInputStream) throws IOException,
-          JsonProcessingException {
-        ObjectReader reader = new ObjectMapper().reader().withType(TupleState.class);
+      @SneakyThrows
+      private MappingIterator<TupleState> getTupleStates(InputStream reportInputStream) {
+        val reader = new ObjectMapper().reader().withType(TupleState.class);
 
         return reader.readValues(reportInputStream);
       }
-
-      private void addErrorTuple(TupleState.TupleError error) {
-        if (errorMap.containsKey(error.getType()) == true) {
-          ErrorReport errorReport = errorMap.get(error.getType());
-          errorReport.updateReport(error);
-        } else {
-          errorMap.put(error.getType(), new ErrorReport(error));
-        }
-      }
-
-      private void updateLineNumbers(Path path) throws IOException {
-        for (val errorReport : errorMap.values()) {
-          log.info("Updating line numbers for '{}'...", path);
-          errorReport.updateLineNumbers(path);
-        }
-      }
-
     }
+
   }
 
 }

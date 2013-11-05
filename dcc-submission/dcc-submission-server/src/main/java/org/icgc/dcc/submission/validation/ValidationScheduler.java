@@ -26,9 +26,11 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.icgc.dcc.submission.release.model.ReleaseState.OPENED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.ERROR;
 import static org.icgc.dcc.submission.release.model.SubmissionState.INVALID;
+import static org.icgc.dcc.submission.release.model.SubmissionState.NOT_VALIDATED;
 import static org.icgc.dcc.submission.release.model.SubmissionState.VALID;
 
 import java.util.Set;
+import java.util.concurrent.CancellationException;
 
 import javax.mail.Address;
 import javax.mail.internet.AddressException;
@@ -209,9 +211,9 @@ public class ValidationScheduler extends AbstractScheduledService {
       public void onFailure(Throwable t) {
         log.error("onFailure - Exception occurred in '{}' validation: {}", project.getKey(), t);
 
-        val state = ERROR;
-        val submissionReport = null;
-        completeValidation(project, state, (SubmissionReport) submissionReport);
+        val state = t instanceof CancellationException ? NOT_VALIDATED : ERROR;
+        val submissionReport = validation.getContext().getSubmissionReport();
+        completeValidation(project, state, submissionReport);
       }
 
     });

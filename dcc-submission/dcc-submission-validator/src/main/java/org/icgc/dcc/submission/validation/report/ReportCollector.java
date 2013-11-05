@@ -21,6 +21,6 @@ import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
 
 public interface ReportCollector {
 
-  Outcome collect(PlatformStrategy strategy, SchemaReport report);
+  void collect(PlatformStrategy strategy, ReportContext context);
 
 }

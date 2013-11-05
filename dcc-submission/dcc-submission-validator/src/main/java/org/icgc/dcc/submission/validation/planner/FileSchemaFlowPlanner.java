@@ -20,8 +20,7 @@ package org.icgc.dcc.submission.validation.planner;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.core.ReportingPlanElement;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
-import org.icgc.dcc.submission.validation.report.Outcome;
-import org.icgc.dcc.submission.validation.report.SchemaReport;
+import org.icgc.dcc.submission.validation.report.ReportContext;
 
 import cascading.flow.Flow;
 
@@ -38,5 +37,6 @@ public interface FileSchemaFlowPlanner {
 
   public void apply(ReportingPlanElement element);
 
-  public Outcome collect(PlatformStrategy strategy, SchemaReport report);
+  public void collect(PlatformStrategy strategy, ReportContext context);
+
 }

@@ -18,10 +18,14 @@
 package org.icgc.dcc.submission.validation.report;
 
 import java.io.InputStream;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.codehaus.jackson.map.MappingIterator;
+import lombok.Cleanup;
+import lombok.SneakyThrows;
+import lombok.val;
+
 import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
@@ -86,6 +90,7 @@ abstract class BaseStatsReportingPlanElement implements ReportingPlanElement {
   @Override
   public String describe() {
     return String.format("%s-%s", this.getName(), Iterables.transform(fields, new Function<Field, String>() {
+
       @Override
       public String apply(Field input) {
         return input.getName();
@@ -149,29 +154,38 @@ abstract class BaseStatsReportingPlanElement implements ReportingPlanElement {
     }
 
     @Override
-    public Outcome collect(PlatformStrategy strategy, SchemaReport report) {
+    public void collect(PlatformStrategy strategy, ReportContext context) {
       try {
-        InputStream src = strategy.readReportTap(getFileSchema(), getFlowType(), getName());
+        @Cleanup
+        val reportIntputStream = getReportInputStream(strategy);
+        val fileName = strategy.path(getFileSchema()).getName();
+        val fieldSummary = getFieldSummaries(reportIntputStream);
 
-        report.setName(strategy.path(getFileSchema()).getName());
+        while (fieldSummary.hasNext()) {
+          FieldReport fieldReport = FieldReport.convert(fieldSummary.next());
 
-        ObjectMapper mapper = new ObjectMapper();
+          Field field = this.fileSchema.field(fieldReport.getName()).get();
+          fieldReport.setLabel(field.getLabel());
+          fieldReport.setType(field.getSummaryType());
 
-        MappingIterator<FieldSummary> fieldSummary = mapper.reader().withType(FieldSummary.class).readValues(src);
-        while(fieldSummary.hasNext()) {
-          FieldReport freport = FieldReport.convert(fieldSummary.next());
-          Field field = this.fileSchema.field(freport.getName()).get();
-          freport.setLabel(field.getLabel());
-          freport.setType(field.getSummaryType());
-
-          report.addFieldReport(freport);
+          context.reportField(fileName, fieldReport);
         }
-
-      } catch(Exception e) {
+      } catch (Exception e) {
         throw new PlanExecutionException(e);
       }
-
-      return Outcome.PASSED;
     }
+
+    @SneakyThrows
+    private InputStream getReportInputStream(PlatformStrategy strategy) {
+      return strategy.readReportTap(getFileSchema(), getFlowType(), getName());
+    }
+
+    @SneakyThrows
+    private Iterator<FieldSummary> getFieldSummaries(InputStream reportIntputStream) {
+      val reader = new ObjectMapper().reader().withType(FieldSummary.class);
+
+      return reader.readValues(reportIntputStream);
+    }
+
   }
 }

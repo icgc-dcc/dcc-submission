@@ -21,13 +21,14 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Map;
 
+import lombok.val;
+
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.validation.core.FlowType;
 import org.icgc.dcc.submission.validation.core.ReportingPlanElement;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
-import org.icgc.dcc.submission.validation.report.Outcome;
 import org.icgc.dcc.submission.validation.report.ReportCollector;
-import org.icgc.dcc.submission.validation.report.SchemaReport;
+import org.icgc.dcc.submission.validation.report.ReportContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,29 +83,24 @@ public abstract class BaseFileSchemaFlowPlanner implements FileSchemaFlowPlanner
   public Flow<?> connect(PlatformStrategy strategy) {
     FlowDef def = new FlowDef().setName(getName());
 
-    for(Map.Entry<String, Pipe> p : reports.entrySet()) {
+    for (Map.Entry<String, Pipe> p : reports.entrySet()) {
       def.addTailSink(p.getValue(), strategy.getReportTap(getSchema(), flowType, p.getKey()));
     }
 
     onConnect(def, strategy);
 
     // Make a flow only if there's something to do
-    if(def.getSinks().size() > 0 && def.getSources().size() > 0) {
+    if (def.getSinks().size() > 0 && def.getSources().size() > 0) {
       return strategy.getFlowConnector().connect(def);
     }
     return null;
   }
 
   @Override
-  public Outcome collect(PlatformStrategy strategy, SchemaReport report) {
-    Outcome result = Outcome.PASSED;
-    for(ReportCollector reportCollector : collectors.values()) {
-      Outcome outcome = reportCollector.collect(strategy, report);
-      if(outcome == Outcome.FAILED) {
-        result = Outcome.FAILED;
-      }
+  public void collect(PlatformStrategy strategy, ReportContext context) {
+    for (val reportCollector : collectors.values()) {
+      reportCollector.collect(strategy, context);
     }
-    return result;
   }
 
   protected abstract Pipe getStructurallyValidTail();

@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.submission.validation.report;
 
+import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
 import org.icgc.dcc.submission.validation.core.ErrorType;
 
@@ -40,6 +41,11 @@ public interface ReportContext {
    */
   int getErrorCount();
 
+  /**
+   * Reports on field statistics.
+   */
+  void reportField(String fileName, FieldReport fieldReport);
+
   void reportError(String fileName, TupleError tupleError);
 
   void reportError(String fileName, long lineNumber, String columnName, Object value, ErrorType type, Object... params);
@@ -51,5 +57,10 @@ public interface ReportContext {
   void reportError(String fileName, ErrorType type, Object... params);
 
   void reportError(String fileName, ErrorType type);
+
+  /**
+   * Allows the context an opportunity to update line numbers referenced in report elements.
+   */
+  void reportLineNumbers(Path path);
 
 }

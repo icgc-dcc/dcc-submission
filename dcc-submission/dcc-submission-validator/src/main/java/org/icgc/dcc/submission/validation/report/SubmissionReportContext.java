@@ -17,13 +17,19 @@
  */
 package org.icgc.dcc.submission.validation.report;
 
+import static com.google.common.base.Throwables.propagate;
 import static org.icgc.dcc.submission.validation.cascading.TupleState.createTupleError;
+
+import java.io.IOException;
+
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.val;
 import lombok.experimental.NonFinal;
+import lombok.extern.slf4j.Slf4j;
 
+import org.apache.hadoop.fs.Path;
 import org.icgc.dcc.submission.validation.cascading.TupleState.TupleError;
 import org.icgc.dcc.submission.validation.core.ErrorType;
 
@@ -32,6 +38,7 @@ import org.icgc.dcc.submission.validation.core.ErrorType;
  */
 @Value
 @RequiredArgsConstructor
+@Slf4j
 public class SubmissionReportContext implements ReportContext {
 
   /**
@@ -48,6 +55,11 @@ public class SubmissionReportContext implements ReportContext {
 
   public SubmissionReportContext() {
     this(new SubmissionReport());
+  }
+
+  @Override
+  public void reportField(String fileName, FieldReport fieldReport) {
+    addFieldReport(fileName, fieldReport);
   }
 
   @Override
@@ -87,6 +99,19 @@ public class SubmissionReportContext implements ReportContext {
     return errorCount > 0;
   }
 
+  @Override
+  public void reportLineNumbers(Path path) {
+    val schemaReport = submissionReport.getSchemaReport(path.getName());
+    for (val errorReport : schemaReport.getErrors()) {
+      try {
+        errorReport.updateLineNumbers(path);
+      } catch (IOException e) {
+        log.error("Exception updating line numbers for: '{}'", path);
+        propagate(e);
+      }
+    }
+  }
+
   private void addErrorTuple(String fileName, TupleError tupleError) {
     errorCount++;
 
@@ -109,6 +134,15 @@ public class SubmissionReportContext implements ReportContext {
     // Seed on first use
     val errorReport = new ErrorReport(tupleError);
     schemaReport.addError(errorReport);
+  }
+
+  private void addFieldReport(String fileName, FieldReport fieldReport) {
+    val schemaReport = resolveSchemaReport(fileName);
+    addFieldReport(schemaReport, fieldReport);
+  }
+
+  private void addFieldReport(SchemaReport schemaReport, FieldReport fieldReport) {
+    schemaReport.addFieldReport(fieldReport);
   }
 
   private SchemaReport resolveSchemaReport(String fileName) {
