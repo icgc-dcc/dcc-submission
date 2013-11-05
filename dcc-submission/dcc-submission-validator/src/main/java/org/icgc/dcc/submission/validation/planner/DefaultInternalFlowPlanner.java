@@ -34,8 +34,6 @@ import java.util.Map;
 
 import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
-import org.icgc.dcc.submission.validation.DuplicateHeaderException;
-import org.icgc.dcc.submission.validation.PlanningFileLevelException;
 import org.icgc.dcc.submission.validation.cascading.ForbiddenValuesFunction;
 import org.icgc.dcc.submission.validation.cascading.RemoveEmptyValidationLineFilter;
 import org.icgc.dcc.submission.validation.cascading.RemoveHeaderFilter;
@@ -48,6 +46,8 @@ import org.icgc.dcc.submission.validation.core.InternalPlanElement;
 import org.icgc.dcc.submission.validation.core.Key;
 import org.icgc.dcc.submission.validation.core.ErrorType;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
+import org.icgc.dcc.submission.validation.primary.DuplicateHeaderException;
+import org.icgc.dcc.submission.validation.primary.PlanningFileLevelException;
 import org.icgc.dcc.submission.validation.restriction.RequiredRestriction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

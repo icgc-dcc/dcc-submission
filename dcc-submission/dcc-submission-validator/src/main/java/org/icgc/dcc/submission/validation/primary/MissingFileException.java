@@ -15,22 +15,23 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation;
+package org.icgc.dcc.submission.validation.primary;
 
-public class PlanExecutionException extends RuntimeException {
-  public PlanExecutionException() {
+public class MissingFileException extends Exception {
+
+  public MissingFileException() {
     super();
   }
 
-  public PlanExecutionException(String message, Throwable cause) {
+  public MissingFileException(String message, Throwable cause) {
     super(message, cause);
   }
 
-  public PlanExecutionException(String message) {
+  public MissingFileException(String message) {
     super(message);
   }
 
-  public PlanExecutionException(Throwable cause) {
+  public MissingFileException(Throwable cause) {
     super(cause);
   }
 }

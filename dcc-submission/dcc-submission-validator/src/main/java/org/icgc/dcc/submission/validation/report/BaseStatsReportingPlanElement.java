@@ -30,12 +30,12 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.icgc.dcc.submission.dictionary.model.Field;
 import org.icgc.dcc.submission.dictionary.model.FileSchema;
 import org.icgc.dcc.submission.dictionary.model.SummaryType;
-import org.icgc.dcc.submission.validation.PlanExecutionException;
 import org.icgc.dcc.submission.validation.cascading.CompletenessBy;
 import org.icgc.dcc.submission.validation.cascading.TupleStates;
 import org.icgc.dcc.submission.validation.core.FlowType;
 import org.icgc.dcc.submission.validation.core.ReportingPlanElement;
 import org.icgc.dcc.submission.validation.platform.PlatformStrategy;
+import org.icgc.dcc.submission.validation.primary.PlanExecutionException;
 
 import cascading.pipe.Each;
 import cascading.pipe.Pipe;

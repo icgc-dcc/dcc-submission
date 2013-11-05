@@ -15,22 +15,22 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation;
+package org.icgc.dcc.submission.validation.primary;
 
-import java.util.List;
-
-import com.google.common.collect.Lists;
-
-public class DuplicateHeaderException extends RuntimeException {
-
-  private final List<String> duplicateHeaderFieldNames = Lists.newArrayList();
-
-  public DuplicateHeaderException(List<String> duplicateHeaderFieldNames) {
+public class PlanExecutionException extends RuntimeException {
+  public PlanExecutionException() {
     super();
-    this.duplicateHeaderFieldNames.addAll(duplicateHeaderFieldNames);
   }
 
-  public List<String> getDuplicateHeaderFieldNames() {
-    return this.duplicateHeaderFieldNames;
+  public PlanExecutionException(String message, Throwable cause) {
+    super(message, cause);
+  }
+
+  public PlanExecutionException(String message) {
+    super(message);
+  }
+
+  public PlanExecutionException(Throwable cause) {
+    super(cause);
   }
 }

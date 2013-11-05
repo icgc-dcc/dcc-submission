@@ -15,23 +15,22 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.submission.validation;
+package org.icgc.dcc.submission.validation.primary;
 
-public class MissingFileException extends Exception {
+import java.util.List;
 
-  public MissingFileException() {
+import com.google.common.collect.Lists;
+
+public class DuplicateHeaderException extends RuntimeException {
+
+  private final List<String> duplicateHeaderFieldNames = Lists.newArrayList();
+
+  public DuplicateHeaderException(List<String> duplicateHeaderFieldNames) {
     super();
+    this.duplicateHeaderFieldNames.addAll(duplicateHeaderFieldNames);
   }
 
-  public MissingFileException(String message, Throwable cause) {
-    super(message, cause);
-  }
-
-  public MissingFileException(String message) {
-    super(message);
-  }
-
-  public MissingFileException(Throwable cause) {
-    super(cause);
+  public List<String> getDuplicateHeaderFieldNames() {
+    return this.duplicateHeaderFieldNames;
   }
 }
