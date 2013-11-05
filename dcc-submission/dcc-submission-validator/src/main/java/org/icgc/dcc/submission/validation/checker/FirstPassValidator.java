@@ -23,6 +23,7 @@ import static org.icgc.dcc.submission.validation.core.ErrorType.ErrorLevel.ROW_L
 import java.util.regex.Pattern;
 
 import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,6 +33,7 @@ import org.icgc.dcc.submission.validation.checker.FileChecker.FileCheckers;
 import org.icgc.dcc.submission.validation.checker.RowChecker.RowCheckers;
 import org.icgc.dcc.submission.validation.core.FileSchemaDirectory;
 import org.icgc.dcc.submission.validation.service.ValidationContext;
+import org.icgc.dcc.submission.validation.service.ValidationExecutor;
 import org.icgc.dcc.submission.validation.service.Validator;
 
 @Slf4j
@@ -49,9 +51,12 @@ public class FirstPassValidator implements Validator {
         log.info("Validate '{}' level well-formedness for file schema: {}", FILE_LEVEL, fileSchemaName);
 
         fileChecker.check(filename);
+        verifyState();
+
         if (fileChecker.canContinue()) {
           log.info("Validating '{}' well-formedness for file schema: '{}'", ROW_LEVEL, fileSchemaName);
           rowChecker.check(filename);
+          verifyState();
         }
       }
     }
@@ -68,6 +73,19 @@ public class FirstPassValidator implements Validator {
     }
 
     return null;
+  }
+
+  /**
+   * Checks if the validation has been cancelled.
+   * 
+   * @throws InterruptedException when interrupted by the {@link ValidationExecutor}
+   */
+  @SneakyThrows
+  private void verifyState() {
+    val cancelled = Thread.currentThread().isInterrupted();
+    if (cancelled) {
+      throw new InterruptedException("First pass validation was interrupted");
+    }
   }
 
 }

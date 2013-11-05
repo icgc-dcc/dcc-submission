@@ -46,6 +46,7 @@ import org.apache.hadoop.io.compress.BZip2Codec;
 import org.icgc.dcc.core.model.FieldNames.SubmissionFieldNames;
 import org.icgc.dcc.submission.validation.report.ReportContext;
 import org.icgc.dcc.submission.validation.service.ValidationContext;
+import org.icgc.dcc.submission.validation.service.ValidationExecutor;
 import org.icgc.dcc.submission.validation.service.Validator;
 
 import com.google.common.base.Optional;
@@ -153,6 +154,8 @@ public class ReferenceGenomeValidator implements Validator {
         }
       }
 
+      verifyState();
+
       lineNumber++;
     }
   }
@@ -218,6 +221,19 @@ public class ReferenceGenomeValidator implements Validator {
                 inputStream
         ));
     // @formatter:on
+  }
+
+  /**
+   * Checks if the validation has been cancelled.
+   * 
+   * @throws InterruptedException when interrupted by the {@link ValidationExecutor}
+   */
+  @SneakyThrows
+  private void verifyState() {
+    val cancelled = Thread.currentThread().isInterrupted();
+    if (cancelled) {
+      throw new InterruptedException("Reference genome validation was interrupted");
+    }
   }
 
 }
